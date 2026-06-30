@@ -173,6 +173,24 @@ export interface MeasureConfig {
 }
 
 //------------------------------------------------------------------------------------------------
+// Grid configuration
+//------------------------------------------------------------------------------------------------
+
+/**
+ * Grid-engine switches the scenario drives onto the measured `GridModel` - the toggles that
+ * materially change how the grid renders large data and must be honored for a representative
+ * measurement. Grows as more grid knobs are exposed.
+ */
+export interface GridScenarioConfig {
+    /**
+     * Reuse a limited set of column DOM elements for the columns visible in the scroll area, rather
+     * than rendering every column (maps to `GridModel.useVirtualColumns`). Essential for wide column
+     * sets - without it the grid easily crashes trying to render them all. Defaults to true.
+     */
+    useVirtualColumns: boolean;
+}
+
+//------------------------------------------------------------------------------------------------
 // Top-level scenario config
 //------------------------------------------------------------------------------------------------
 
@@ -187,6 +205,8 @@ export interface ScenarioConfig {
     protocol: ProtocolConfig;
     /** Which measurement passes to run (memory / performance). Defaults to both when omitted. */
     measure: MeasureConfig;
+    /** Grid-engine switches driven onto the measured `GridModel`. */
+    grid: GridScenarioConfig;
     notes?: string;
 }
 

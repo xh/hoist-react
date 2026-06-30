@@ -27,6 +27,12 @@ export interface BaselineAdapterConfig {
      * non-id field discovered in the first snapshot row.
      */
     aggregators?: string[];
+    /**
+     * Reuse a limited set of column DOM elements for visible columns rather than rendering every
+     * column (`GridModel.useVirtualColumns`). Essential for wide column sets - without it the grid
+     * easily crashes trying to render them all. Defaults to true.
+     */
+    useVirtualColumns?: boolean;
 }
 
 /**
@@ -90,7 +96,8 @@ export class BaselineAdapter extends HoistModel implements DataLayerAdapter {
         super();
         this.adapterConfig = {
             dimensions: config.dimensions ?? [],
-            aggregators: config.aggregators ?? null
+            aggregators: config.aggregators ?? null,
+            useVirtualColumns: config.useVirtualColumns ?? true
         };
     }
 
@@ -267,6 +274,8 @@ export class BaselineAdapter extends HoistModel implements DataLayerAdapter {
         const gridModel = new GridModel({
             store: {idSpec: 'id'},
             treeMode: !isEmpty(dimensions),
+            // Scenario-driven grid switch - essential for wide column sets (see BaselineAdapterConfig).
+            useVirtualColumns: this.adapterConfig.useVirtualColumns,
             // Default each column to a readable width - the generated dataset can have many fields
             // that would otherwise auto-size down to an unreadable squish.
             colDefaults: {width: 110},
