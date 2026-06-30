@@ -101,6 +101,19 @@ Recent decisions affecting current work:
   (ViewManager); runs = transient local state (localStorage). Does NOT affect the Phase 2 goal or its 5/5
   verification (the observable truths are harness-core, independent of demo persistence). Toolbox-only
   code change; 02-08-SUMMARY.md annotated.
+- [Phase 02-measurement-harness, post-close refinements]: Two additive harness/demo refinements, neither
+  affecting the 5/5 goal verification (observable truths are harness-core). (1) PROGRESS HOOK: optional
+  `onProgress` callback on `RunScenarioArgs` (+ `runProtocolAsync`), emitting coarse stages (Capturing
+  baseline / Calibrating / Warming up x/y / Measuring x/y / Finalizing); the Toolbox demo drives a
+  `TaskObserver`-backed mask message from it, replacing the unused `running`/`statusText` fields with
+  `taskObserver.isPending` as the single in-flight source of truth. (2) DECOMPOSED the update `pattern`
+  enum into orthogonal axes - `UpdateConfig.cadence` (steady|burst) + `updateMode` (incremental|
+  fullReplace) - retiring the conflated steadyTrickle/periodicBurst/broadReplace/targetedNarrow
+  (targetedNarrow was just breadth=1; broadReplace was an op-mode, not a temporal pattern). `batchSize`/
+  `breadth` are now purely independent magnitude knobs; the server generator (`DataLabService.generateBatch`)
+  reads cadence/updateMode; the UI renders described options via a custom `optionRenderer` and disables
+  batch/breadth/cadence under fullReplace. NOTE: changes the persisted `ScenarioConfig.update` schema -
+  acceptable as the tooling is brand new (dev-local profiles only, no migration needed).
 
 ### Pending Todos
 
