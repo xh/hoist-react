@@ -25,7 +25,14 @@ import {
 import {BaselineAdapter} from './BaselineAdapter';
 import {CandidateAdapter} from './CandidateAdapter';
 import {runProtocolAsync, toTimingStat} from './MeasurementProtocol';
-import {EnvMetadata, HeapAttribution, RunResult, ScenarioConfig, Scorecard} from './types';
+import {
+    EnvMetadata,
+    HeapAttribution,
+    MeasurementProgressFn,
+    RunResult,
+    ScenarioConfig,
+    Scorecard
+} from './types';
 
 /**
  * One per-iteration measured sample collected inside the protocol loop: the PRIMARY pipeline timing
@@ -78,6 +85,12 @@ export interface RunScenarioArgs extends HarnessDataProvider {
      * `adapter.loadSnapshotAsync(rows)` before handing the adapter to the harness.
      */
     adapter: CandidateAdapter;
+    /**
+     * Optional coarse-progress sink. The harness calls this as it moves through baseline capture,
+     * calibration, warmup, and the measured iterations (the last reporting `current`/`total`), so a
+     * caller can surface run status - e.g. a mask message. Has no effect on measurement.
+     */
+    onProgress?: MeasurementProgressFn;
 }
 
 /**
@@ -138,8 +151,15 @@ export class MeasurementHarness extends HoistModel {
      * @returns the complete RunResult for this scenario + adapter.
      */
     async runScenarioAsync(args: RunScenarioArgs): Promise<RunResult> {
-        const {scenario, adapter, nextBatchAsync, loadNRowsAsync, clearAsync, reloadSnapshotAsync} =
-                args,
+        const {
+                scenario,
+                adapter,
+                nextBatchAsync,
+                loadNRowsAsync,
+                clearAsync,
+                reloadSnapshotAsync,
+                onProgress
+            } = args,
             {protocol} = scenario;
 
         // 1. Environment metadata - stamped on every run so saved scorecards compare meaningfully.
@@ -160,6 +180,7 @@ export class MeasurementHarness extends HoistModel {
         //     adapter without the true-empty hook falls back to no clear (documented limitation - the
         //     baseline always has it).
         const gridSeam = adapter as Partial<BaselineAdapter>;
+        onProgress?.({stage: 'Capturing baseline'});
         await gridSeam.clearPipelineAsync?.();
         const emptyBaselineHeap = await captureEmptyBaselineHeapAsync(protocol.gcSettleMs);
 
@@ -167,6 +188,7 @@ export class MeasurementHarness extends HoistModel {
         // currently SHARES the measured adapter (the caller's loadNRowsAsync/clearAsync load and
         // true-empty the MAIN pipeline), so it leaves the pipeline empty and clobbers any earlier
         // snapshot load. The snapshot is therefore reloaded AFTER calibration, immediately below.
+        onProgress?.({stage: 'Calibrating'});
         const calibration = await this.calibrateAsync({
             loadNRowsAsync,
             clearAsync,
@@ -193,13 +215,15 @@ export class MeasurementHarness extends HoistModel {
                     env,
                     emptyBaselineHeap
                 }),
-            betweenIterationsAsync: () => forceGcAndSettleAsync(protocol.gcSettleMs)
+            betweenIterationsAsync: () => forceGcAndSettleAsync(protocol.gcSettleMs),
+            onProgress
         });
 
         // 4. Reduce the per-iteration samples into the Scorecard.
         const scorecard = this.reduceScorecard(samples, adapter);
 
         // 5. Bounded/documented instrumentation overhead (HARN-03).
+        onProgress?.({stage: 'Finalizing'});
         const overheadMs = await measureOverhead(this, protocol.measuredIterations);
 
         return {scenario, scorecard, env, adapterId: adapter.id, overheadMs};

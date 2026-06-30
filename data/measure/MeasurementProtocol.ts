@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {ProtocolConfig, TimingStat} from './types';
+import {MeasurementProgressFn, ProtocolConfig, TimingStat} from './types';
 
 /**
  * Measurement-protocol engine of the harness core (HARN-05).
@@ -57,8 +57,9 @@ export async function runProtocolAsync<S>(args: {
     setupAsync: () => Promise<void>;
     runIterationAsync: () => Promise<S>;
     betweenIterationsAsync: () => Promise<void>;
+    onProgress?: MeasurementProgressFn;
 }): Promise<S[]> {
-    const {protocol, setupAsync, runIterationAsync, betweenIterationsAsync} = args,
+    const {protocol, setupAsync, runIterationAsync, betweenIterationsAsync, onProgress} = args,
         {warmupIterations, measuredIterations} = protocol;
 
     // One-time setup: caller mounts + warms the grid so we don't measure a cold remount full-replace.
@@ -66,12 +67,14 @@ export async function runProtocolAsync<S>(args: {
 
     // Warmup iterations - run for JIT warmup / lazy alloc / cache fill, samples DISCARDED.
     for (let i = 0; i < warmupIterations; i++) {
+        onProgress?.({stage: 'Warming up', current: i + 1, total: warmupIterations});
         await runIterationAsync();
     }
 
     // Measured iterations - forced-GC + settle BEFORE each, then collect the sample.
     const samples: S[] = [];
     for (let i = 0; i < measuredIterations; i++) {
+        onProgress?.({stage: 'Measuring', current: i + 1, total: measuredIterations});
         await betweenIterationsAsync();
         samples.push(await runIterationAsync());
     }

@@ -41,9 +41,9 @@ storage as a named, shareable profile. The knob taxonomy:
 - **Dataset shape** (`DatasetShapeConfig`): `leafRowCount`, `dimensions`, `fieldCount`,
   `fieldTypeMix` (relative weights for `number` / `string` / `date` / `object` - object-valued
   fields probe the shared-by-reference heap question), `aggregators`, `seed`.
-- **Update** (`UpdateConfig`): `pattern` (`steadyTrickle` | `periodicBurst` | `broadReplace` |
-  `targetedNarrow`), `breadth`, `batchSize`, `ratePerSec`, `transport` (`http` | `webSocket`),
-  `durationSec`.
+- **Update** (`UpdateConfig`): orthogonal axes - `cadence` (`steady` | `burst`, the temporal shape)
+  and `updateMode` (`incremental` | `fullReplace`, diff vs re-snapshot) - plus the magnitude knobs
+  `batchSize` and `breadth`, `ratePerSec`, `transport` (`http` | `webSocket`), `durationSec`.
 - **Protocol** (`ProtocolConfig`): `warmupIterations`, `measuredIterations`, `gcSettleMs`
   (defaults in `DEFAULT_PROTOCOL`), persisted with each run so a scorecard records exactly how it
   was measured.

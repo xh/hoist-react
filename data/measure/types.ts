@@ -9,7 +9,7 @@
  * Serializable type schema for the framework-resident measurement core.
  *
  * Per the locked Phase-2 decisions, the harness is config-driven - "work the knobs first," and
- * "profiles and update patterns are data, not code." Every type here is plain serializable JSON
+ * "profiles and scenarios are data, not code." Every type here is plain serializable JSON
  * (no class instances) so a `ScenarioConfig` round-trips through `ViewManager` JsonBlob storage as
  * a named/shared profile, and a `RunResult` persists for later side-by-side comparison.
  *
@@ -67,14 +67,21 @@ export interface DatasetShapeConfig {
 //------------------------------------------------------------------------------------------------
 
 /**
- * Update pattern. Determines snapshot vs diff ingest and whether the View takes the `fullUpdate`
- * vs `dataOnlyUpdate` path:
- * - `steadyTrickle`   - small, continuous diffs (targeted `updateDataAsync`).
- * - `periodicBurst`   - intermittent large diff batches.
- * - `broadReplace`    - full re-snapshot/replace (`loadDataAsync`).
- * - `targetedNarrow`  - few records, few fields each (narrow `dataOnlyUpdate`-eligible diffs).
+ * Temporal shape of the update stream over time - ORTHOGONAL to batch magnitude (`batchSize`):
+ * - `steady` - every tick changes `batchSize` rows at a constant rate.
+ * - `burst`  - load is concentrated: every 5th tick spikes to ~10x `batchSize`, the ticks between
+ *              run a light trough. `batchSize` is the baseline it scales around. Stresses jank under
+ *              spikes. Applies only to incremental updates (a `fullReplace` is whole-dataset each tick).
  */
-export type UpdatePattern = 'steadyTrickle' | 'periodicBurst' | 'broadReplace' | 'targetedNarrow';
+export type UpdateCadence = 'steady' | 'burst';
+
+/**
+ * What each update delivers - ORTHOGONAL to cadence and magnitude:
+ * - `incremental` - a per-row diff applied via `Cube.updateDataAsync`; shaped by `batchSize`/`breadth`.
+ * - `fullReplace` - a full re-snapshot applied via `Cube.loadDataAsync` each tick. `batchSize`,
+ *                   `breadth`, and `cadence` do not apply (every tick reloads the whole dataset).
+ */
+export type UpdateMode = 'incremental' | 'fullReplace';
 
 /**
  * Change-delivery transport. Only the delivery adapter changes between these - both resolve to the
@@ -83,12 +90,15 @@ export type UpdatePattern = 'steadyTrickle' | 'periodicBurst' | 'broadReplace' |
  */
 export type Transport = 'http' | 'webSocket';
 
-/** Update knobs (HARN-02): pattern, breadth, throughput, transport, and stream duration. */
+/** Update knobs (HARN-02): cadence, delivery mode, breadth, throughput, transport, and duration. */
 export interface UpdateConfig {
-    pattern: UpdatePattern;
-    /** Fields changed per updated record (narrow vs wide). */
+    /** Temporal shape of the stream over time (steady vs bursty). Orthogonal to `batchSize`. */
+    cadence: UpdateCadence;
+    /** Whether each update is an incremental diff or a full re-snapshot. */
+    updateMode: UpdateMode;
+    /** Fields changed per updated record (narrow vs wide). Ignored when `updateMode` is `fullReplace`. */
     breadth: number;
-    /** Records per update batch. */
+    /** Records changed per tick; the baseline a `burst` cadence scales. Ignored when `fullReplace`. */
     batchSize: number;
     /** Update batches delivered per second (throughput). */
     ratePerSec: number;
@@ -125,6 +135,23 @@ export const DEFAULT_PROTOCOL: ProtocolConfig = {
     measuredIterations: 20,
     gcSettleMs: 50
 };
+
+/**
+ * Coarse progress update emitted by the harness during a run so a caller can surface run status
+ * (e.g. drive a mask message). One-shot stages omit `current`/`total`; iterating stages report a
+ * 1-based `current` of `total`.
+ */
+export interface MeasurementProgress {
+    /** Coarse phase label, e.g. 'Capturing baseline', 'Calibrating', 'Warming up', 'Measuring'. */
+    stage: string;
+    /** 1-based index within an iterating stage. */
+    current?: number;
+    /** Total count for an iterating stage. */
+    total?: number;
+}
+
+/** Optional progress sink the caller passes to the harness to receive {@link MeasurementProgress}. */
+export type MeasurementProgressFn = (progress: MeasurementProgress) => void;
 
 //------------------------------------------------------------------------------------------------
 // Top-level scenario config
