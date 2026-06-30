@@ -128,10 +128,10 @@ Recent decisions affecting current work:
 - [Phase 02-measurement-harness, post-close refinements]: Split the harness run into TWO independent,
   optional measurement passes - reframing the run as two concerns rather than one entangled flow.
   MEMORY pass: how much heap the loaded dataset retains, attributed by layer (clear -> empty baseline ->
-  calibrate -> reload snapshot -> forced GC -> attributeHeap), ending with the scenario loaded.
-  PERFORMANCE pass: how fast updates flow at steady state (warmup + measured pipeline/grid-sync, median +
-  p95, overhead probe), with NO baseline/calibration/heap - so a performance-only run skips the 50k
-  calibration churn (the visible win). FULL DECOUPLE: heap is no longer attributed inside the timing loop
+  measure per-record bytes -> reload snapshot -> forced GC -> attributeHeap), ending with the scenario
+  loaded. PERFORMANCE pass: how fast updates flow at steady state (warmup + measured pipeline/grid-sync,
+  median + p95, overhead probe), with NO baseline/sizing/heap - so a performance-only run skips the 50k
+  per-record sizing churn (the visible win). FULL DECOUPLE: heap is no longer attributed in the timing loop
   (`runIterationAsync` returns just `{pipeline, timing}`; the one-shot heap read moved to a new
   `measureMemoryAsync`); `reduceScorecard` became `reduceTimings` (+ a `readRowCounts` helper). Selection
   via new `ScenarioConfig.measure: {memory, performance}` (defaults both true; at least one required or the
@@ -145,9 +145,18 @@ Recent decisions affecting current work:
   stat and compares only metrics both runs measured. Brand-new schema (dev-local profiles only, no
   migration). Does NOT affect the Phase 2 5/5 goal verification (the observable truths are harness-core -
   the harness exists and measures - independent of pass-optionality). Known follow-on (NOT bundled):
-  calibration still shares the measured adapter, churning the watched grid under "Measuring memory" - a
-  dedicated throwaway calibration pipeline would keep it clean and remove the reload-after-calibration
-  coupling.
+  per-record sizing still shares the measured adapter, churning the watched grid under "Measuring memory"
+  - a dedicated throwaway sizing pipeline would keep it clean and remove the reload-after-sizing coupling.
+- [Phase 02-measurement-harness, post-close refinements]: Terminology cleanup - renamed the misleading
+  "calibration" vocabulary to direct "per-record sizing" across the brand-new measure code (no baked-in
+  terms to preserve). "Calibrate" implies preparing an instrument; the step actually MEASURES per-record
+  byte cost (load N rows, divide the heap delta by N), so the name fought the meaning - a mismatch the
+  pass-split spec had already flagged when it folded the old `'Calibrating'` stage label into `'Measuring
+  memory'`. Renames: `calibratePerRecordBytesAsync` -> `measurePerRecordBytesAsync` (HeapAttribution),
+  the harness `calibrateAsync` -> `measureRecordSizingAsync`, the `attributeHeap` `calibration` param and
+  all holder vars -> `sizing`, toolbox `calHttp` -> `sizingHttp`, and every "calibration" comment ->
+  "per-record sizing". Field names (`cubeRecordBytes` etc.) were already clear and kept. Pure rename - no
+  behavior change; both repos tsc + lint clean.
 
 ### Pending Todos
 
