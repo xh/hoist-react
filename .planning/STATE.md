@@ -114,6 +114,17 @@ Recent decisions affecting current work:
   reads cadence/updateMode; the UI renders described options via a custom `optionRenderer` and disables
   batch/breadth/cadence under fullReplace. NOTE: changes the persisted `ScenarioConfig.update` schema -
   acceptable as the tooling is brand new (dev-local profiles only, no migration needed).
+- [Phase 02-measurement-harness, post-close refinements]: Wired `fullReplace` to actually MEASURE the
+  reload (live review caught it producing a bogus ~0.2 ms because the measured loop applied an empty
+  diff and never acted on `op:replace`). `MeasurementHarness.runIterationAsync` now branches on
+  `scenario.update.updateMode`: for fullReplace each iteration times the injected `reloadSnapshotAsync`
+  (full `Cube.loadDataAsync` + connected-View re-aggregation) AS the primary pipeline, and zeroes the
+  grid-sync split (no incremental transaction). Live: full-replace pipeline now ~33 ms (vs ~57 ms
+  incremental at 5000 leaves), grid-sync 0. Known limitation: the wholesale grid re-render is not
+  captured by the incremental Boundary-5 instrumentation (the meaningful full-replace number is the
+  pipeline reload cost). Also fixed `DataLabController.parseUpdateParams` which was dropping
+  cadence/updateMode (forwarding the retired `pattern`), so the server had been defaulting every run to
+  steady/incremental - surfaced only by the live burst/fullReplace check.
 
 ### Pending Todos
 
