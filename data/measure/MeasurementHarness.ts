@@ -31,19 +31,28 @@ import {
     MeasurementProgressFn,
     RunResult,
     ScenarioConfig,
-    Scorecard
+    Scorecard,
+    TimingStat
 } from './types';
 
 /**
- * One per-iteration measured sample collected inside the protocol loop: the PRIMARY pipeline timing
- * (cube ingest + connected-View re-aggregation, Boundaries 1-4), the FINAL grid-sync split
- * (Boundary 5), and a steady-state heap snapshot. The protocol collects these; the harness reduces
- * them into the {@link Scorecard}.
+ * One per-iteration measured sample collected inside the protocol loop (performance pass only): the
+ * PRIMARY pipeline timing (cube ingest + connected-View re-aggregation, Boundaries 1-4) and the
+ * FINAL grid-sync split (Boundary 5). Heap is NOT sampled here - it is a separate one-shot memory
+ * pass (see {@link MeasurementHarness.measureMemoryAsync}). The protocol collects these; the harness
+ * reduces them into the {@link Scorecard} timings.
  */
 interface IterationSample {
     pipeline: PipelineTiming;
     timing: GridSyncTiming;
-    heap: HeapAttribution;
+}
+
+/** The four timing {@link TimingStat}s reduced from the performance pass's measured samples. */
+interface TimingStatSplit {
+    pipeline: TimingStat;
+    compute: TimingStat;
+    bridgeCall: TimingStat;
+    render: TimingStat;
 }
 
 /**
@@ -122,31 +131,31 @@ export class MeasurementHarness extends HoistModel {
     /**
      * Run a single scenario end-to-end and produce a complete {@link RunResult}.
      *
-     * Steps:
-     *   1. Capture {@link EnvMetadata} up front (userAgent, crossOriginIsolated, gc/precise-memory
-     *      heuristics, heap method, timestamp).
-     *   2. Verify the caller pre-loaded the snapshot (`adapter.getResultRowCount() > 0`) - throws a
-     *      clear error if the adapter is empty so a mis-wired caller fails loudly.
-     *   2b. EMPTY-BASELINE FIRST (02-08): clear the live pipeline to TRULY EMPTY via the baseline's
-     *      `clearPipelineAsync` (Cube.clearAsync, pipeline kept alive), then capture a FIXED clean
-     *      post-GC empty-pipeline heap baseline (`captureEmptyBaselineHeapAsync`). Every iteration's
-     *      total heap is differenced against this fixed baseline, so the reported total is positive
-     *      retained heap (not the old inverted within-iteration pre/post-GC delta). Next calibrate
-     *      per-record bytes via `calibratePerRecordBytesAsync` (median-of-5 over N=50000, 02-08) using
-     *      the injected `loadNRowsAsync`/`clearAsync` callbacks. Calibration currently SHARES the
-     *      measured adapter and leaves the pipeline empty, so ONLY THEN RELOAD the snapshot via the
-     *      injected `reloadSnapshotAsync`. Resulting order: clear -> capture empty baseline -> calibrate
-     *      -> reload snapshot -> run protocol.
-     *   3. Run the warmup-discard / forced-GC-between / median+p95 protocol (02-05 Task 1). Each
-     *      measured iteration pulls the next batch via the injected `nextBatchAsync()`, then times the
-     *      REAL cube-ingest + connected-View re-aggregation pipeline (Boundaries 1-4) as the PRIMARY
-     *      compute by wrapping the awaited `adapter.applyDiffAsync` in `measurePipeline` (02-03/02-07);
-     *      then times the FINAL grid-sync stage (Boundary 5) via `measureGridSync` (02-03); then
-     *      settles + `attributeHeap` (02-04) for the steady-state heap sample.
-     *   4. Reduce samples into a {@link Scorecard}: `pipeline` as the primary compute `TimingStat`,
-     *      compute/bridgeCall/render as the grid-sync `TimingStat` split (median + p95); heap as the
-     *      final steady-state attribution; row counts from the adapter.
-     *   5. Measure instrumentation overhead via `measureOverhead` (02-03) for `RunResult.overheadMs`.
+     * The run is split into two INDEPENDENT, OPTIONAL measurement passes selected by
+     * `scenario.measure` (defaults to both; at least one is required or the harness throws):
+     *
+     *   - MEMORY pass (`measure.memory`): how much heap the loaded dataset retains, attributed by
+     *     layer. Order (02-08): clear the live pipeline to TRULY EMPTY -> capture a FIXED clean
+     *     post-GC empty-pipeline heap baseline (reference R) -> calibrate per-record bytes
+     *     (median-of-5 over N=50000) -> reload the scenario snapshot (calibration shares + empties the
+     *     measured adapter) -> forced GC + settle -> read total heap + counts -> `attributeHeap`.
+     *     Ends with the scenario loaded, ready for a following performance pass. Produces `heap`.
+     *
+     *   - PERFORMANCE pass (`measure.performance`): how fast updates flow at steady state. Runs the
+     *     warmup-discard / forced-GC-between / median+p95 protocol; each measured iteration pulls the
+     *     next batch via `nextBatchAsync()`, times the REAL cube-ingest + connected-View
+     *     re-aggregation pipeline (Boundaries 1-4) via `measurePipeline`, then the FINAL grid-sync
+     *     split (Boundary 5) via `measureGridSync`. NO baseline/calibration/heap work - so no 50k
+     *     churn. Assumes the scenario is already loaded (by the caller, or by a preceding memory
+     *     pass). Produces the timing stats + `overheadMs`.
+     *
+     * Both: memory first (it ends with the scenario loaded), then performance on that loaded state.
+     *
+     * Common to both: capture {@link EnvMetadata} up front, and verify the caller pre-loaded the
+     * snapshot (`adapter.getResultRowCount() > 0`) so a mis-wired caller fails loudly. The
+     * {@link Scorecard} is assembled from whichever passes ran - skipped-pass fields read null
+     * (`pipeline`/`compute`/`bridgeCall`/`render` and `overheadMs` for performance; `heap` for
+     * memory). `rowCounts` is always present (the scenario is loaded in every path).
      *
      * @returns the complete RunResult for this scenario + adapter.
      */
@@ -160,12 +169,20 @@ export class MeasurementHarness extends HoistModel {
                 reloadSnapshotAsync,
                 onProgress
             } = args,
-            {protocol} = scenario;
+            {protocol} = scenario,
+            {memory, performance} = scenario.measure ?? {memory: true, performance: true};
 
-        // 1. Environment metadata - stamped on every run so saved scorecards compare meaningfully.
+        if (!memory && !performance) {
+            throw XH.exception(
+                'MeasurementHarness.runScenarioAsync: scenario.measure requests neither the memory ' +
+                    'nor the performance pass - at least one must be enabled.'
+            );
+        }
+
+        // Environment metadata - stamped on every run so saved scorecards compare meaningfully.
         const env = this.captureEnvMetadata();
 
-        // 2. Verify the caller pre-loaded the snapshot.
+        // Verify the caller pre-loaded the snapshot (required by both passes).
         if (adapter.getResultRowCount() <= 0) {
             throw XH.exception(
                 'MeasurementHarness.runScenarioAsync: adapter is empty. The caller must pre-load ' +
@@ -174,65 +191,63 @@ export class MeasurementHarness extends HoistModel {
             );
         }
 
-        // 2b. EMPTY-BASELINE FIRST (02-08): truly empty the live pipeline (cube.clearAsync, pipeline
-        //     kept alive), then capture the FIXED clean post-GC empty-pipeline heap baseline. The
-        //     snapshot reload is intentionally deferred until AFTER calibration (see below). A candidate
-        //     adapter without the true-empty hook falls back to no clear (documented limitation - the
-        //     baseline always has it).
-        const gridSeam = adapter as Partial<BaselineAdapter>;
-        onProgress?.({stage: 'Capturing baseline'});
-        await gridSeam.clearPipelineAsync?.();
-        const emptyBaselineHeap = await captureEmptyBaselineHeapAsync(protocol.gcSettleMs);
+        // MEMORY pass (runs first so it ends with the scenario loaded for a following perf pass).
+        const heap = memory
+            ? await this.measureMemoryAsync({
+                  adapter,
+                  loadNRowsAsync,
+                  clearAsync,
+                  reloadSnapshotAsync,
+                  settleMs: protocol.gcSettleMs,
+                  env,
+                  onProgress
+              })
+            : null;
 
-        // Calibrate per-record byte cost per layer (median-of-5 over N=50000, 02-08). Calibration
-        // currently SHARES the measured adapter (the caller's loadNRowsAsync/clearAsync load and
-        // true-empty the MAIN pipeline), so it leaves the pipeline empty and clobbers any earlier
-        // snapshot load. The snapshot is therefore reloaded AFTER calibration, immediately below.
-        onProgress?.({stage: 'Calibrating'});
-        const calibration = await this.calibrateAsync({
-            loadNRowsAsync,
-            clearAsync,
-            settleMs: protocol.gcSettleMs
-        });
+        // PERFORMANCE pass: warmup + measured timing iterations, then the overhead probe.
+        let timings: TimingStatSplit | null = null,
+            overheadMs: number | null = null;
+        if (performance) {
+            // A full-replace scenario measures a whole-snapshot reload each iteration
+            // (Cube.loadDataAsync, the primary pipeline cost) instead of an incremental diff - see
+            // runIterationAsync. This is the harness's one read of an update knob; everything else
+            // about the update stream (cadence, batch, breadth) is baked into the caller's batches.
+            const fullReplace = scenario.update?.updateMode === 'fullReplace';
 
-        // Restore the full snapshot AFTER calibration (which left the shared pipeline empty), so the
-        // measured protocol runs against the real loaded scenario - not the ~empty residue.
-        await reloadSnapshotAsync();
+            const samples = await runProtocolAsync<IterationSample>({
+                protocol,
+                setupAsync: async () => {
+                    // Scenario is already loaded (caller pre-load, or the preceding memory pass).
+                    // Warmup iterations below drive the pipeline into its incremental-transaction
+                    // steady state, so we never measure a cold remount full-replace (Pitfall 6).
+                },
+                runIterationAsync: () =>
+                    this.runIterationAsync({
+                        adapter,
+                        nextBatchAsync,
+                        reloadSnapshotAsync,
+                        fullReplace
+                    }),
+                betweenIterationsAsync: () => forceGcAndSettleAsync(protocol.gcSettleMs),
+                onProgress
+            });
 
-        // A full-replace scenario measures a whole-snapshot reload each iteration (Cube.loadDataAsync,
-        // the primary pipeline cost) instead of an incremental diff - see runIterationAsync. This is
-        // the harness's one read of an update knob; everything else about the update stream (cadence,
-        // batch, breadth) is already baked into the batches the caller's nextBatchAsync yields.
-        const fullReplace = scenario.update?.updateMode === 'fullReplace';
+            timings = this.reduceTimings(samples);
 
-        // 3. Run the steady-state protocol, collecting one IterationSample per measured iteration.
-        const samples = await runProtocolAsync<IterationSample>({
-            protocol,
-            setupAsync: async () => {
-                // Snapshot is pre-loaded by the caller (verified above). Warmup iterations below
-                // then drive the pipeline into its incremental-transaction steady state, so we never
-                // measure a cold remount full-replace (Pitfall 6).
-            },
-            runIterationAsync: () =>
-                this.runIterationAsync({
-                    adapter,
-                    nextBatchAsync,
-                    reloadSnapshotAsync,
-                    fullReplace,
-                    calibration,
-                    env,
-                    emptyBaselineHeap
-                }),
-            betweenIterationsAsync: () => forceGcAndSettleAsync(protocol.gcSettleMs),
-            onProgress
-        });
+            // Bounded/documented instrumentation overhead (HARN-03).
+            onProgress?.({stage: 'Finalizing'});
+            overheadMs = await measureOverhead(this, protocol.measuredIterations);
+        }
 
-        // 4. Reduce the per-iteration samples into the Scorecard.
-        const scorecard = this.reduceScorecard(samples, adapter);
-
-        // 5. Bounded/documented instrumentation overhead (HARN-03).
-        onProgress?.({stage: 'Finalizing'});
-        const overheadMs = await measureOverhead(this, protocol.measuredIterations);
+        // Assemble the Scorecard from whichever passes ran; skipped-pass fields are null.
+        const scorecard: Scorecard = {
+            pipeline: timings?.pipeline ?? null,
+            compute: timings?.compute ?? null,
+            bridgeCall: timings?.bridgeCall ?? null,
+            render: timings?.render ?? null,
+            heap,
+            rowCounts: this.readRowCounts(adapter)
+        };
 
         return {scenario, scorecard, env, adapterId: adapter.id, overheadMs};
     }
@@ -296,7 +311,73 @@ export class MeasurementHarness extends HoistModel {
     }
 
     /**
-     * One measured iteration. Two shapes, selected by `fullReplace`:
+     * The MEMORY measurement pass (02-08) - a single one-shot heap attribution, fully decoupled from
+     * the performance timing loop. Order:
+     *   1. Clear the live pipeline to TRULY EMPTY via the baseline's `clearPipelineAsync`
+     *      (Cube.clearAsync, pipeline kept alive). A candidate adapter without the true-empty hook
+     *      falls back to no clear (documented limitation - the baseline always has it).
+     *   2. Capture the FIXED clean post-GC empty-pipeline heap baseline (reference R) - the total
+     *      heap is differenced against this so the reported figure is positive retained heap.
+     *   3. Calibrate per-record bytes (median-of-5 over N=50000). Calibration SHARES the measured
+     *      adapter (its load/clear callbacks target the MAIN pipeline) and leaves it empty.
+     *   4. Reload the scenario snapshot (calibration clobbered it), so the heap read reflects the
+     *      real loaded scenario - and the adapter is left loaded for a following performance pass.
+     *   5. Forced GC + settle, then read counts (02-07 full-hierarchy accessors) and `attributeHeap`.
+     *
+     * @returns the {@link HeapAttribution} for the loaded scenario.
+     */
+    private async measureMemoryAsync(args: {
+        adapter: CandidateAdapter;
+        loadNRowsAsync: (n: number) => Promise<void>;
+        clearAsync: () => Promise<void>;
+        reloadSnapshotAsync: () => Promise<void>;
+        settleMs: number;
+        env: EnvMetadata;
+        onProgress?: MeasurementProgressFn;
+    }): Promise<HeapAttribution> {
+        const {
+                adapter,
+                loadNRowsAsync,
+                clearAsync,
+                reloadSnapshotAsync,
+                settleMs,
+                env,
+                onProgress
+            } = args,
+            gridSeam = adapter as Partial<BaselineAdapter>;
+
+        onProgress?.({stage: 'Measuring memory'});
+
+        // 1-2. Truly empty the live pipeline, then capture the FIXED post-GC empty-pipeline baseline.
+        await gridSeam.clearPipelineAsync?.();
+        const emptyBaselineHeap = await captureEmptyBaselineHeapAsync(settleMs);
+
+        // 3. Calibrate per-record byte cost per layer (leaves the shared pipeline empty).
+        const calibration = await this.calibrateAsync({loadNRowsAsync, clearAsync, settleMs});
+
+        // 4. Restore the full snapshot AFTER calibration emptied the shared pipeline.
+        await reloadSnapshotAsync();
+
+        // 5. Forced GC + settle, then attribute the retained heap by layer. Counts come from the
+        //    02-07 full-hierarchy accessors (cube store records, grid store allCount, result rows);
+        //    a generic adapter falls back to the result row count.
+        await forceGcAndSettleAsync(settleMs);
+        const cubeRecordCount = gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),
+            gridRecordCount = gridSeam.getGridRecordCount?.() ?? adapter.getResultRowCount(),
+            viewRowCount = adapter.getResultRowCount();
+
+        return attributeHeap({
+            emptyBaselineHeap,
+            cubeRecordCount,
+            gridRecordCount,
+            viewRowCount,
+            calibration,
+            method: env.heapMethod
+        });
+    }
+
+    /**
+     * One measured PERFORMANCE iteration. Two shapes, selected by `fullReplace`:
      *
      * INCREMENTAL (default): pull the next pre-fetched diff batch, then
      *   1. Time the awaited `applyDiffAsync` (cube ingest + connected-View re-aggregation, Boundaries
@@ -309,27 +390,15 @@ export class MeasurementHarness extends HoistModel {
      * the wholesale grid re-render is not captured by the incremental Boundary-5 instrumentation
      * (documented limitation; the headline pipeline cost is the meaningful full-replace number).
      *
-     * Both shapes then settle + `attributeHeap`, differencing the post-GC heap against the FIXED
-     * empty-pipeline baseline captured up front (02-08), for the steady-state heap sample.
+     * Heap is NOT sampled here - it is the separate one-shot memory pass ({@link measureMemoryAsync}).
      */
     private async runIterationAsync(args: {
         adapter: CandidateAdapter;
         nextBatchAsync: () => Promise<PlainObject[]>;
         reloadSnapshotAsync: () => Promise<void>;
         fullReplace: boolean;
-        calibration: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
-        env: EnvMetadata;
-        emptyBaselineHeap: number;
     }): Promise<IterationSample> {
-        const {
-                adapter,
-                nextBatchAsync,
-                reloadSnapshotAsync,
-                fullReplace,
-                calibration,
-                env,
-                emptyBaselineHeap
-            } = args,
+        const {adapter, nextBatchAsync, reloadSnapshotAsync, fullReplace} = args,
             gridSeam = adapter as Partial<BaselineAdapter>;
 
         let pipeline: PipelineTiming, timing: GridSyncTiming;
@@ -365,62 +434,26 @@ export class MeasurementHarness extends HoistModel {
             });
         }
 
-        // 4. Steady-state heap sample: settle, then pure attribute. The total is differenced against
-        //    the FIXED empty-pipeline baseline captured up front (02-08), NOT a within-iteration
-        //    pre-GC read. Counts come from the 02-07 full-hierarchy accessors (cube store records,
-        //    grid store allCount, result rows); a generic adapter falls back to the result row count.
-        const cubeRecordCount = gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),
-            gridRecordCount = gridSeam.getGridRecordCount?.() ?? adapter.getResultRowCount(),
-            viewRowCount = adapter.getResultRowCount();
-
-        await forceGcAndSettleAsync(0);
-        const heap = attributeHeap({
-            emptyBaselineHeap,
-            cubeRecordCount,
-            gridRecordCount,
-            viewRowCount,
-            calibration,
-            method: env.heapMethod
-        });
-
-        return {pipeline, timing, heap};
+        return {pipeline, timing};
     }
 
-    /** Reduce the per-iteration samples into the final {@link Scorecard} (median + p95 timing). */
-    private reduceScorecard(samples: IterationSample[], adapter: CandidateAdapter): Scorecard {
-        const pipeline = toTimingStat(samples.map(s => s.pipeline.totalMs)),
-            compute = toTimingStat(samples.map(s => s.timing.computeMs)),
-            bridgeCall = toTimingStat(samples.map(s => s.timing.bridgeCallMs)),
-            render = toTimingStat(samples.map(s => s.timing.renderMs)),
-            // Heap is reported as the final steady-state attribution (the last measured iteration).
-            heap = samples.length ? samples[samples.length - 1].heap : this.emptyHeap(),
-            gridSeam = adapter as Partial<BaselineAdapter>,
-            leaf = gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),
-            gridRows = gridSeam.getGridRecordCount?.() ?? adapter.getResultRowCount();
-
+    /** Reduce the per-iteration performance samples into the four timing {@link TimingStat}s. */
+    private reduceTimings(samples: IterationSample[]): TimingStatSplit {
         return {
-            pipeline,
-            compute,
-            bridgeCall,
-            render,
-            heap,
-            rowCounts: {
-                leaf,
-                aggregate: adapter.getResultRowCount(),
-                gridRows
-            }
+            pipeline: toTimingStat(samples.map(s => s.pipeline.totalMs)),
+            compute: toTimingStat(samples.map(s => s.timing.computeMs)),
+            bridgeCall: toTimingStat(samples.map(s => s.timing.bridgeCallMs)),
+            render: toTimingStat(samples.map(s => s.timing.renderMs))
         };
     }
 
-    private emptyHeap(): HeapAttribution {
+    /** Read the loaded scenario's row counts from the adapter (present in every run path). */
+    private readRowCounts(adapter: CandidateAdapter): Scorecard['rowCounts'] {
+        const gridSeam = adapter as Partial<BaselineAdapter>;
         return {
-            cubeStoreRecords: 0,
-            gridStoreRecords: 0,
-            viewResultRows: 0,
-            agGridInternals: 0,
-            totalHeapDelta: 0,
-            unit: 'bytes',
-            method: detectHeapMethod()
+            leaf: gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),
+            aggregate: adapter.getResultRowCount(),
+            gridRows: gridSeam.getGridRecordCount?.() ?? adapter.getResultRowCount()
         };
     }
 }

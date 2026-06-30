@@ -74,7 +74,7 @@ export async function runProtocolAsync<S>(args: {
     // Measured iterations - forced-GC + settle BEFORE each, then collect the sample.
     const samples: S[] = [];
     for (let i = 0; i < measuredIterations; i++) {
-        onProgress?.({stage: 'Measuring', current: i + 1, total: measuredIterations});
+        onProgress?.({stage: 'Measuring performance', current: i + 1, total: measuredIterations});
         await betweenIterationsAsync();
         samples.push(await runIterationAsync());
     }

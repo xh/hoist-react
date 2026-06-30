@@ -142,7 +142,7 @@ export const DEFAULT_PROTOCOL: ProtocolConfig = {
  * 1-based `current` of `total`.
  */
 export interface MeasurementProgress {
-    /** Coarse phase label, e.g. 'Capturing baseline', 'Calibrating', 'Warming up', 'Measuring'. */
+    /** Coarse phase label, e.g. 'Measuring memory', 'Warming up', 'Measuring performance'. */
     stage: string;
     /** 1-based index within an iterating stage. */
     current?: number;
@@ -152,6 +152,25 @@ export interface MeasurementProgress {
 
 /** Optional progress sink the caller passes to the harness to receive {@link MeasurementProgress}. */
 export type MeasurementProgressFn = (progress: MeasurementProgress) => void;
+
+//------------------------------------------------------------------------------------------------
+// Measurement-pass selection
+//------------------------------------------------------------------------------------------------
+
+/**
+ * Selects which of the two independent, optional measurement passes a run performs. The two
+ * concerns are fully decoupled:
+ *  - `memory`      - how much heap the loaded dataset retains, attributed by layer (empty-baseline
+ *                    capture + per-record calibration + post-GC heap read). NO timing work.
+ *  - `performance` - how fast updates flow (warmup + measured pipeline/grid-sync iterations, median
+ *                    + p95, overhead probe). NO baseline/calibration/heap work, so no 50k churn.
+ *
+ * At least one must be true (the harness throws otherwise). Both default to true.
+ */
+export interface MeasureConfig {
+    memory: boolean;
+    performance: boolean;
+}
 
 //------------------------------------------------------------------------------------------------
 // Top-level scenario config
@@ -166,6 +185,8 @@ export interface ScenarioConfig {
     dataset: DatasetShapeConfig;
     update: UpdateConfig;
     protocol: ProtocolConfig;
+    /** Which measurement passes to run (memory / performance). Defaults to both when omitted. */
+    measure: MeasureConfig;
     notes?: string;
 }
 
@@ -216,20 +237,26 @@ export interface HeapAttribution {
  *
  * `pipeline` is the headline compute number; `compute`/`bridgeCall`/`render` are the Boundary-5
  * grid-sync split that follows it (the cost of diffing + applying the re-aggregated rows to AG Grid).
+ *
+ * The timing fields and `heap` are nullable because the two measurement passes are optional: a run
+ * that skips the performance pass has null timings, and one that skips the memory pass has a null
+ * heap. `rowCounts` is always present - the scenario is loaded in every run path.
  */
 export interface Scorecard {
     /**
      * PRIMARY compute: cube ingest + connected-View re-aggregation (Boundaries 1-4), timed around
      * the awaited `applyDiffAsync`. The headline engine cost; grid-sync below is the final stage.
+     * Null when the performance pass is skipped.
      */
-    pipeline: TimingStat;
-    /** FINAL grid-sync stage: Hoist-side compute (genTransaction), timed directly in JS. */
-    compute: TimingStat;
-    /** FINAL grid-sync stage: synchronous JS-to-AG-Grid bridge call (applyTransaction), timed directly. */
-    bridgeCall: TimingStat;
-    /** FINAL grid-sync stage: deferred render/paint after the bridge call (captured via animation frame). */
-    render: TimingStat;
-    heap: HeapAttribution;
+    pipeline: TimingStat | null;
+    /** FINAL grid-sync stage: Hoist-side compute (genTransaction). Null when performance is skipped. */
+    compute: TimingStat | null;
+    /** FINAL grid-sync stage: JS-to-AG-Grid bridge call (applyTransaction). Null when perf is skipped. */
+    bridgeCall: TimingStat | null;
+    /** FINAL grid-sync stage: deferred render/paint after the bridge call. Null when perf is skipped. */
+    render: TimingStat | null;
+    /** Heap attributed by layer. Null when the memory pass is skipped. */
+    heap: HeapAttribution | null;
     rowCounts: {
         leaf: number;
         aggregate: number;
@@ -264,6 +291,7 @@ export interface RunResult {
     /**
      * Null-scenario instrumentation overhead, in ms - the harness's own measured cost on an empty
      * iteration (HARN-03 "bounded, documented overhead"). Subtract or report alongside results.
+     * Null when the performance pass is skipped (the overhead probe runs only with that pass).
      */
-    overheadMs: number;
+    overheadMs: number | null;
 }
