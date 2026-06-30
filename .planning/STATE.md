@@ -178,6 +178,15 @@ Recent decisions affecting current work:
   names updated (`xhDataLab.pipeline` -> `.engine`, `.computeMs` -> `.genTxnMs`). README synced for all of the
   above plus the earlier calibration->sizing leftover. Both repos tsc + lint clean; live-verified the renamed
   scorecard renders end-to-end (Engine 62.35 ms / Build txn 0.5 ms / heap 103.6 MB / 5000-5587 rows).
+- [Phase 02-measurement-harness, post-close refinements]: Data Lab form now reflects pass selection -
+  the update-stream knobs (`updateMode`/`cadence`/`transport`/`batchSize`/`breadth`) are disabled when the
+  performance pass is off, since the MEMORY pass applies no updates (it loads the snapshot, sizes per-record
+  bytes, reads heap - never calls `nextDiffAsync`). Dataset-shape knobs stay live (both passes load the
+  snapshot). Grouped the form into `formFieldSet` groups (the XH go-to for form structure) - "Measurement
+  passes" / "Dataset shape" / "Update stream"; the update set's title reads "Update stream (performance
+  pass off)" when disabled. Also gated `DataLabModel.doRunAsync` so the
+  WebSocket adapter is only spun up when the performance pass will consume diffs (a memory-only run fetches
+  the snapshot over HTTP either way). Toolbox-only; live-verified.
 
 ### Pending Todos
 
