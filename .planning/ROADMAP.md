@@ -88,7 +88,7 @@ This is durable infrastructure, not throwaway scaffolding, and must exist before
 - [x] 02-05-PLAN.md - MeasurementHarness orchestrator + BaselineAdapter + forced-GC/median+p95 protocol (HARN-05/06)
 - [x] 02-06-PLAN.md - Toolbox harness UI: ViewManager-persisted scenarios/runs, scorecard, comparison + README (HARN-06)
 - [x] 02-07-PLAN.md - GAP: time the real cube+view pipeline (Boundaries 1-4) as primary compute + treeMode/includeLeaves large-leaf-plus-aggregate shape (HARN-01/03/05)
-- [ ] 02-08-PLAN.md - GAP: heap protocol - fixed empty-pipeline baseline + median-of-repeats calibration so total is positive and layers are plausible (HARN-04/05)
+- [x] 02-08-PLAN.md - GAP: heap protocol - fixed empty-pipeline baseline + median-of-repeats calibration so total is positive and layers are plausible (HARN-03/04/05/06)
 
 ### Phase 3: Baseline Performance Envelope
 **Goal**: Run the current stack through the harness to map exactly where its walls are - on memory,
