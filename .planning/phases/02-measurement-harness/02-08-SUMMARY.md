@@ -157,3 +157,15 @@ Toolbox repo (branch `data2-research`):
 ---
 *Phase: 02-measurement-harness*
 *Completed: 2026-06-29*
+
+## Post-Close Adjustment (Data Lab demo persistence) - 2026-06-30
+
+Recorded after Phase 2 closed, during interactive Phase-3 prep. The Data Lab demo's run-history
+persistence described above (`runViewManager`, one named view per run) was a misuse of ViewManager:
+runs are transient, un-named measurement records, not named/shared/curated views. It was corrected -
+`runViewManager` removed (`AppModel` + `DataLabModel`); `savedRuns` now persists to localStorage via
+`@persist.with({localStorageKey: 'dataLab.savedRuns'})` (with a confirm-guarded Clear History control),
+and the redundant custom "Save Profile" button was dropped in favor of the built-in `viewManager()`
+controls already in the app bar (scenario profiles stay ViewManager-driven). Toolbox-only change; does
+NOT affect this plan's HARN-04/05 deliverables or the Phase 2 goal re-verification (the 5/5 observable
+truths are harness-core, independent of demo persistence). Full rationale in the STATE.md decision log.
