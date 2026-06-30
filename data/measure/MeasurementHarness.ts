@@ -199,6 +199,12 @@ export class MeasurementHarness extends HoistModel {
         // measured protocol runs against the real loaded scenario - not the ~empty residue.
         await reloadSnapshotAsync();
 
+        // A full-replace scenario measures a whole-snapshot reload each iteration (Cube.loadDataAsync,
+        // the primary pipeline cost) instead of an incremental diff - see runIterationAsync. This is
+        // the harness's one read of an update knob; everything else about the update stream (cadence,
+        // batch, breadth) is already baked into the batches the caller's nextBatchAsync yields.
+        const fullReplace = scenario.update?.updateMode === 'fullReplace';
+
         // 3. Run the steady-state protocol, collecting one IterationSample per measured iteration.
         const samples = await runProtocolAsync<IterationSample>({
             protocol,
@@ -211,6 +217,8 @@ export class MeasurementHarness extends HoistModel {
                 this.runIterationAsync({
                     adapter,
                     nextBatchAsync,
+                    reloadSnapshotAsync,
+                    fullReplace,
                     calibration,
                     env,
                     emptyBaselineHeap
@@ -288,46 +296,74 @@ export class MeasurementHarness extends HoistModel {
     }
 
     /**
-     * One measured iteration. Stage order matters: time the PRIMARY pipeline first (it produces the
-     * new `View.result` + grid store records), then the FINAL grid-sync stage (it diffs and applies
-     * those records to AG Grid), then settle + attribute the heap.
-     *   1. Pull the next pre-fetched diff batch from the injected provider (the harness fetches nothing).
-     *   2. Time the awaited `applyDiffAsync` (cube ingest + connected-View re-aggregation, Boundaries
+     * One measured iteration. Two shapes, selected by `fullReplace`:
+     *
+     * INCREMENTAL (default): pull the next pre-fetched diff batch, then
+     *   1. Time the awaited `applyDiffAsync` (cube ingest + connected-View re-aggregation, Boundaries
      *      1-4) via `measurePipeline` as the PRIMARY compute, with a cheap defensive settle hook.
-     *   3. Time the grid-sync compute/bridge/render split (Boundary 5) via `measureGridSync`.
-     *   4. Settle + `attributeHeap`, differencing the post-GC heap against the FIXED empty-pipeline
-     *      baseline captured up front (02-08), for the steady-state heap sample.
+     *   2. Time the grid-sync compute/bridge/render split (Boundary 5) via `measureGridSync`.
+     *
+     * FULL REPLACE: each iteration re-loads the WHOLE snapshot (`Cube.loadDataAsync`) via the injected
+     * `reloadSnapshotAsync`; that reload IS the primary pipeline cost, measured the same way. There is
+     * no incremental transaction, so the grid-sync split is not applicable and is reported as zero -
+     * the wholesale grid re-render is not captured by the incremental Boundary-5 instrumentation
+     * (documented limitation; the headline pipeline cost is the meaningful full-replace number).
+     *
+     * Both shapes then settle + `attributeHeap`, differencing the post-GC heap against the FIXED
+     * empty-pipeline baseline captured up front (02-08), for the steady-state heap sample.
      */
     private async runIterationAsync(args: {
         adapter: CandidateAdapter;
         nextBatchAsync: () => Promise<PlainObject[]>;
+        reloadSnapshotAsync: () => Promise<void>;
+        fullReplace: boolean;
         calibration: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
         env: EnvMetadata;
         emptyBaselineHeap: number;
     }): Promise<IterationSample> {
-        const {adapter, nextBatchAsync, calibration, env, emptyBaselineHeap} = args,
+        const {
+                adapter,
+                nextBatchAsync,
+                reloadSnapshotAsync,
+                fullReplace,
+                calibration,
+                env,
+                emptyBaselineHeap
+            } = args,
             gridSeam = adapter as Partial<BaselineAdapter>;
 
-        // 1. Pull the next pre-fetched batch from the caller.
-        const batch = await nextBatchAsync();
+        let pipeline: PipelineTiming, timing: GridSyncTiming;
+        if (fullReplace) {
+            // PRIMARY: the full re-snapshot (Cube.loadDataAsync + connected-View re-aggregation) IS
+            // the pipeline cost. No incremental transaction follows, so the grid-sync split is N/A.
+            pipeline = await measurePipeline(this, {
+                applyDiffAsync: () => reloadSnapshotAsync(),
+                settleAsync: () => wait(0),
+                rowCount: adapter.getResultRowCount()
+            });
+            timing = {computeMs: 0, bridgeCallMs: 0, renderMs: 0, renderSuspect: false};
+        } else {
+            // 1. Pull the next pre-fetched batch from the caller.
+            const batch = await nextBatchAsync();
 
-        // 2. PRIMARY: time the awaited cube-ingest + connected-View re-aggregation pipeline. The
-        //    source confirms the await already settles the View; the settle hook is a cheap
-        //    defensive flush (one macrotask) so any trailing reaction is captured, not dropped.
-        const pipeline = await measurePipeline(this, {
-            applyDiffAsync: () => adapter.applyDiffAsync(batch),
-            settleAsync: () => wait(0),
-            rowCount: adapter.getResultRowCount()
-        });
+            // 2. PRIMARY: time the awaited cube-ingest + connected-View re-aggregation pipeline. The
+            //    source confirms the await already settles the View; the settle hook is a cheap
+            //    defensive flush (one macrotask) so any trailing reaction is captured, not dropped.
+            pipeline = await measurePipeline(this, {
+                applyDiffAsync: () => adapter.applyDiffAsync(batch),
+                settleAsync: () => wait(0),
+                rowCount: adapter.getResultRowCount()
+            });
 
-        // 3. FINAL stage - Boundary-5 compute/bridge/render split via the injected grid-sync
-        //    callables. The baseline adapter exposes genTransaction/applyTransaction; a candidate
-        //    adapter must expose equivalents.
-        const timing = await measureGridSync(this, {
-            genTransaction: gridSeam.genTransaction ?? (() => ({})),
-            applyTransaction: gridSeam.applyTransaction ?? (() => undefined),
-            rowCount: adapter.getResultRowCount()
-        });
+            // 3. FINAL stage - Boundary-5 compute/bridge/render split via the injected grid-sync
+            //    callables. The baseline adapter exposes genTransaction/applyTransaction; a candidate
+            //    adapter must expose equivalents.
+            timing = await measureGridSync(this, {
+                genTransaction: gridSeam.genTransaction ?? (() => ({})),
+                applyTransaction: gridSeam.applyTransaction ?? (() => undefined),
+                rowCount: adapter.getResultRowCount()
+            });
+        }
 
         // 4. Steady-state heap sample: settle, then pure attribute. The total is differenced against
         //    the FIXED empty-pipeline baseline captured up front (02-08), NOT a within-iteration
