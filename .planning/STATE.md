@@ -125,6 +125,29 @@ Recent decisions affecting current work:
   pipeline reload cost). Also fixed `DataLabController.parseUpdateParams` which was dropping
   cadence/updateMode (forwarding the retired `pattern`), so the server had been defaulting every run to
   steady/incremental - surfaced only by the live burst/fullReplace check.
+- [Phase 02-measurement-harness, post-close refinements]: Split the harness run into TWO independent,
+  optional measurement passes - reframing the run as two concerns rather than one entangled flow.
+  MEMORY pass: how much heap the loaded dataset retains, attributed by layer (clear -> empty baseline ->
+  calibrate -> reload snapshot -> forced GC -> attributeHeap), ending with the scenario loaded.
+  PERFORMANCE pass: how fast updates flow at steady state (warmup + measured pipeline/grid-sync, median +
+  p95, overhead probe), with NO baseline/calibration/heap - so a performance-only run skips the 50k
+  calibration churn (the visible win). FULL DECOUPLE: heap is no longer attributed inside the timing loop
+  (`runIterationAsync` returns just `{pipeline, timing}`; the one-shot heap read moved to a new
+  `measureMemoryAsync`); `reduceScorecard` became `reduceTimings` (+ a `readRowCounts` helper). Selection
+  via new `ScenarioConfig.measure: {memory, performance}` (defaults both true; at least one required or the
+  harness throws). `Scorecard` timing fields + `heap` and `RunResult.overheadMs` are now nullable so a
+  skipped pass reads null; `rowCounts` stays required (scenario loaded in every path). Stage names: the
+  memory pass emits `'Measuring memory'`; the measured perf loop literal renamed `'Measuring'` ->
+  `'Measuring performance'` (warmup/Finalizing unchanged); the old `'Capturing baseline'`/`'Calibrating'`
+  emits deleted. Toolbox: two `switchInput` toggles (measureMemory/measurePerformance) with an
+  at-least-one cross-field rule + a runAsync guard; the scorecard renders the Timings block only when
+  timings are non-null and the Heap block only when heap is non-null; `comparisonRows` null-guards every
+  stat and compares only metrics both runs measured. Brand-new schema (dev-local profiles only, no
+  migration). Does NOT affect the Phase 2 5/5 goal verification (the observable truths are harness-core -
+  the harness exists and measures - independent of pass-optionality). Known follow-on (NOT bundled):
+  calibration still shares the measured adapter, churning the watched grid under "Measuring memory" - a
+  dedicated throwaway calibration pipeline would keep it clean and remove the reload-after-calibration
+  coupling.
 
 ### Pending Todos
 
