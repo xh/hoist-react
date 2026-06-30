@@ -145,7 +145,7 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
     /**
      * Empty the LIVE pipeline to a true-empty state WITHOUT nulling it - the one true-empty path the
      * harness uses to capture a clean post-GC empty-pipeline heap baseline (02-08) and to leave no
-     * residual heap after each calibration cycle.
+     * residual heap after each per-record sizing cycle.
      *
      * Unlike {@link disposeAsync} (which destroys + nulls cube/view/gridModel, losing the mounted
      * grid the bridge measurement needs), this keeps every pipeline instance ALIVE and only clears

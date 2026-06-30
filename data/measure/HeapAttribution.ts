@@ -15,7 +15,7 @@ import {HeapAttribution, HeapMethod} from './types';
  * This is the no-cross-origin-isolation (no-COI) PRIMARY path by design: it reads whole-heap usage
  * via the non-standard `performance.memory.usedJSHeapSize` (the existing Hoist precedent - see
  * `InspectorService`) and attributes that heap to the owned Hoist layers (cube store records, grid
- * store records, intermediate view-result rows) by `count x calibrated-per-record-bytes`. AG Grid's
+ * store records, intermediate view-result rows) by `count x measured-per-record-bytes`. AG Grid's
  * internal memory is treated as the OPAQUE REMAINDER (total delta minus owned layers) and is never
  * read from AG Grid source.
  *
@@ -103,26 +103,25 @@ export function detectHeapMethod(): HeapMethod {
 }
 
 /**
- * Calibrate the per-record byte cost of a single layer by a dedicated load-N-and-divide run:
+ * Measure the per-record byte cost of a single layer by a dedicated load-N-and-divide run:
  * settle the heap, read a baseline, load `n` rows, settle again, read the heap, and return the
  * delta divided by `n`.
  *
- * Calibration MUST be run once per distinct field-shape. Object-valued-field shapes get their own
- * calibration run because a shared object referenced by many records makes a naive
- * `count x per-record-bytes` double-count the shared bytes (RESEARCH Open Question 1). The harness
- * reports which calibration produced each per-record figure in the scorecard so the accounting is
- * auditable.
+ * MUST be run once per distinct field-shape. Object-valued-field shapes get their own measurement
+ * run because a shared object referenced by many records makes a naive `count x per-record-bytes`
+ * double-count the shared bytes (RESEARCH Open Question 1). The harness reports which run produced
+ * each per-record figure in the scorecard so the accounting is auditable.
  *
- * The `args` object carries the calibration callbacks and counts: `loadNRowsAsync` loads exactly
- * `n` rows of the layer being calibrated; `clearAsync` tears those rows back down so the run leaves
- * no residual heap; `n` is the number of rows in the sample; `repeats` is how many load-N/clear
- * cycles to run before taking the MEDIAN per-record figure; and `settleMs` is the forced-GC settle
- * delay (ms) applied before each heap read.
+ * The `args` object carries the sizing callbacks and counts: `loadNRowsAsync` loads exactly `n`
+ * rows of the layer being measured; `clearAsync` tears those rows back down so the run leaves no
+ * residual heap; `n` is the number of rows in the sample; `repeats` is how many load-N/clear cycles
+ * to run before taking the MEDIAN per-record figure; and `settleMs` is the forced-GC settle delay
+ * (ms) applied before each heap read.
  *
  * LARGER-N + MEDIAN-OF-REPEATS RATIONALE (defaults `n = 50000`, `repeats = 5`): a single small
  * 1000-row diff is sub-noise against the documented tens-of-MB GC/heap variance on a ~366 MB live
  * heap, so it read 0 even under the flags. 50000 rows is 10x the default 5000-leaf scenario, so the
- * calibration load itself moves a clearly tens-of-MB delta that CLEARS that variance, and the median
+ * sizing load itself moves a clearly tens-of-MB delta that CLEARS that variance, and the median
  * over 5 repeats rejects a single mistimed GC. These are deliberately NOT a "sane larger N": the
  * committed per-sample floor-at-0 below means an under-resolved load silently reads 0 again - the
  * exact failure this closes - so the load must be measurably large.
@@ -135,7 +134,7 @@ export function detectHeapMethod(): HeapMethod {
  *
  * @returns the median over `repeats` cycles of `max(0, (afterHeap - beforeHeap) / n)`.
  */
-export async function calibratePerRecordBytesAsync(args: {
+export async function measurePerRecordBytesAsync(args: {
     loadNRowsAsync: (n: number) => Promise<void>;
     clearAsync: () => Promise<void>;
     n?: number;
@@ -181,7 +180,7 @@ export async function calibratePerRecordBytesAsync(args: {
  * -28.2 MB inversion, which came from differencing the post-GC current read against a within-iteration
  * PRE-GC `baselineHeap` (so the "total" measured how much the forced GC freed and went negative).
  *
- * Each owned layer = its live row count x its calibrated per-record bytes. `agGridInternals` is the
+ * Each owned layer = its live row count x its measured per-record bytes. `agGridInternals` is the
  * OPAQUE REMAINDER: `max(0, totalDelta - sumOfOwnedLayers)`. AG Grid's internal node/cell sizes are
  * library-owned and opaque (Phase-1) and are measured ONLY as this remainder - they are NEVER read
  * from AG Grid source, which is the documented anti-pattern. The remainder is floored at 0 because
@@ -194,15 +193,14 @@ export function attributeHeap(ctx: {
     cubeRecordCount: number;
     gridRecordCount: number;
     viewRowCount: number;
-    calibration: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
+    sizing: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
     method: HeapMethod;
 }): HeapAttribution {
-    const {emptyBaselineHeap, cubeRecordCount, gridRecordCount, viewRowCount, calibration, method} =
-            ctx,
+    const {emptyBaselineHeap, cubeRecordCount, gridRecordCount, viewRowCount, sizing, method} = ctx,
         totalHeapDelta = (heapNow() ?? emptyBaselineHeap) - emptyBaselineHeap,
-        cubeStoreRecords = cubeRecordCount * calibration.cubeRecordBytes,
-        gridStoreRecords = gridRecordCount * calibration.gridRecordBytes,
-        viewResultRows = viewRowCount * calibration.viewRowBytes,
+        cubeStoreRecords = cubeRecordCount * sizing.cubeRecordBytes,
+        gridStoreRecords = gridRecordCount * sizing.gridRecordBytes,
+        viewResultRows = viewRowCount * sizing.viewRowBytes,
         ownedSum = cubeStoreRecords + gridStoreRecords + viewResultRows,
         agGridInternals = Math.max(0, totalHeapDelta - ownedSum);
 

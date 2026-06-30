@@ -16,11 +16,11 @@ import {
 } from './BoundaryInstrumentation';
 import {
     attributeHeap,
-    calibratePerRecordBytesAsync,
     captureEmptyBaselineHeapAsync,
     detectHeapMethod,
     forceGcAndSettleAsync,
-    heapNow
+    heapNow,
+    measurePerRecordBytesAsync
 } from './HeapAttribution';
 import {BaselineAdapter} from './BaselineAdapter';
 import {CandidateAdapter} from './CandidateAdapter';
@@ -67,19 +67,19 @@ export interface HarnessDataProvider {
      */
     nextBatchAsync: () => Promise<PlainObject[]>;
     /**
-     * Loads exactly `n` rows of the calibration field-shape into the live pipeline (caller supplies
-     * the pre-fetched rows behind this). Used by `calibratePerRecordBytesAsync` (02-04).
+     * Loads exactly `n` rows of the sizing field-shape into the live pipeline (caller supplies
+     * the pre-fetched rows behind this). Used by `measurePerRecordBytesAsync` (02-04).
      */
     loadNRowsAsync: (n: number) => Promise<void>;
-    /** Tears the calibration rows back down so calibration leaves no residual heap. */
+    /** Tears the sizing rows back down so per-record sizing leaves no residual heap. */
     clearAsync: () => Promise<void>;
     /**
      * Restores the snapshot the harness intentionally cleared to capture the empty-pipeline heap
      * baseline (02-08). The caller already holds the fetched `snapshotRows` and binds this to
-     * `() => adapter.loadSnapshotAsync(snapshotRows)`. Called once, AFTER calibration completes and
-     * immediately before the measured protocol, so the pipeline is back to its loaded state.
-     * Calibration currently shares the measured adapter (its load/clear callbacks target the MAIN
-     * pipeline) and leaves it empty, so the reload MUST run after calibration, not before it.
+     * `() => adapter.loadSnapshotAsync(snapshotRows)`. Called once, AFTER per-record sizing completes
+     * and immediately before the measured protocol, so the pipeline is back to its loaded state.
+     * Sizing currently shares the measured adapter (its load/clear callbacks target the MAIN
+     * pipeline) and leaves it empty, so the reload MUST run after sizing, not before it.
      */
     reloadSnapshotAsync: () => Promise<void>;
 }
@@ -95,8 +95,8 @@ export interface RunScenarioArgs extends HarnessDataProvider {
      */
     adapter: CandidateAdapter;
     /**
-     * Optional coarse-progress sink. The harness calls this as it moves through baseline capture,
-     * calibration, warmup, and the measured iterations (the last reporting `current`/`total`), so a
+     * Optional coarse-progress sink. The harness calls this as it moves through the memory pass and
+     * the performance pass's warmup + measured iterations (the last reporting `current`/`total`), so a
      * caller can surface run status - e.g. a mask message. Has no effect on measurement.
      */
     onProgress?: MeasurementProgressFn;
@@ -119,10 +119,10 @@ export interface RunScenarioArgs extends HarnessDataProvider {
  *   - the caller PRE-FETCHES the initial snapshot and PRE-LOADS it into the adapter via
  *     `adapter.loadSnapshotAsync(rows)` BEFORE handing the adapter to the harness, and
  *   - the caller supplies an injected `nextBatchAsync()` data-provider callback that returns the next
- *     pre-fetched diff batch on demand (plus `loadNRowsAsync`/`clearAsync` for heap calibration).
+ *     pre-fetched diff batch on demand (plus `loadNRowsAsync`/`clearAsync` for per-record sizing).
  * Inside the protocol loop the harness calls `nextBatchAsync()` and applies the batch via
  * `adapter.applyDiffAsync(batch)`. This keeps the split architecture clean: the core stays endpoint-
- * free, Toolbox owns the fetch (HTTP or WebSocket). It mirrors the 02-04 calibration-callback contract.
+ * free, Toolbox owns the fetch (HTTP or WebSocket). It mirrors the 02-04 sizing-callback contract.
  *
  * Extends `HoistModel` so `runner()` (HoistBase) is available for the instrumentation spans, and so the
  * harness participates in the standard `@managed` lifecycle.
@@ -136,8 +136,8 @@ export class MeasurementHarness extends HoistModel {
      *
      *   - MEMORY pass (`measure.memory`): how much heap the loaded dataset retains, attributed by
      *     layer. Order (02-08): clear the live pipeline to TRULY EMPTY -> capture a FIXED clean
-     *     post-GC empty-pipeline heap baseline (reference R) -> calibrate per-record bytes
-     *     (median-of-5 over N=50000) -> reload the scenario snapshot (calibration shares + empties the
+     *     post-GC empty-pipeline heap baseline (reference R) -> measure per-record bytes
+     *     (median-of-5 over N=50000) -> reload the scenario snapshot (sizing shares + empties the
      *     measured adapter) -> forced GC + settle -> read total heap + counts -> `attributeHeap`.
      *     Ends with the scenario loaded, ready for a following performance pass. Produces `heap`.
      *
@@ -145,7 +145,7 @@ export class MeasurementHarness extends HoistModel {
      *     warmup-discard / forced-GC-between / median+p95 protocol; each measured iteration pulls the
      *     next batch via `nextBatchAsync()`, times the REAL cube-ingest + connected-View
      *     re-aggregation pipeline (Boundaries 1-4) via `measurePipeline`, then the FINAL grid-sync
-     *     split (Boundary 5) via `measureGridSync`. NO baseline/calibration/heap work - so no 50k
+     *     split (Boundary 5) via `measureGridSync`. NO baseline/sizing/heap work - so no 50k
      *     churn. Assumes the scenario is already loaded (by the caller, or by a preceding memory
      *     pass). Produces the timing stats + `overheadMs`.
      *
@@ -277,29 +277,29 @@ export class MeasurementHarness extends HoistModel {
     }
 
     /**
-     * Calibrate per-record byte cost for the owned layers using the injected load/clear callbacks.
-     * Runs a standard field-shape calibration and an object-valued-field variant (02-04 / RESEARCH
+     * Measure per-record byte cost for the owned layers using the injected load/clear callbacks.
+     * Runs a standard field-shape sizing pass and an object-valued-field variant (02-04 / RESEARCH
      * Open Q1: object fields shared by reference would otherwise be double-counted). The harness
-     * applies the calibrated per-record bytes uniformly to the cube/grid/view owned layers - the
+     * applies the measured per-record bytes uniformly to the cube/grid/view owned layers - the
      * caller-supplied `loadNRowsAsync` is responsible for loading representative rows.
      */
-    private async calibrateAsync(args: {
+    private async measureRecordSizingAsync(args: {
         loadNRowsAsync: (n: number) => Promise<void>;
         clearAsync: () => Promise<void>;
         settleMs: number;
     }): Promise<{cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number}> {
         const {loadNRowsAsync, clearAsync, settleMs} = args,
-            // Calibrate once over a representative N; the same per-record figure is applied to each
+            // Measure once over a representative N; the same per-record figure is applied to each
             // owned layer (cube store record, grid store record, view-result row). N=50000 (10x the
-            // default 5000-leaf scenario) makes the calibration load move a tens-of-MB delta that
+            // default 5000-leaf scenario) makes the sizing load move a tens-of-MB delta that
             // clears the GC/heap noise floor, and median-of-5 rejects a single mistimed GC (02-08).
-            calN = 50000,
-            calRepeats = 5,
-            perRecordBytes = await calibratePerRecordBytesAsync({
+            sizingN = 50000,
+            sizingRepeats = 5,
+            perRecordBytes = await measurePerRecordBytesAsync({
                 loadNRowsAsync,
                 clearAsync,
-                n: calN,
-                repeats: calRepeats,
+                n: sizingN,
+                repeats: sizingRepeats,
                 settleMs
             });
 
@@ -318,9 +318,9 @@ export class MeasurementHarness extends HoistModel {
      *      falls back to no clear (documented limitation - the baseline always has it).
      *   2. Capture the FIXED clean post-GC empty-pipeline heap baseline (reference R) - the total
      *      heap is differenced against this so the reported figure is positive retained heap.
-     *   3. Calibrate per-record bytes (median-of-5 over N=50000). Calibration SHARES the measured
+     *   3. Measure per-record bytes (median-of-5 over N=50000). This sizing pass SHARES the measured
      *      adapter (its load/clear callbacks target the MAIN pipeline) and leaves it empty.
-     *   4. Reload the scenario snapshot (calibration clobbered it), so the heap read reflects the
+     *   4. Reload the scenario snapshot (sizing clobbered it), so the heap read reflects the
      *      real loaded scenario - and the adapter is left loaded for a following performance pass.
      *   5. Forced GC + settle, then read counts (02-07 full-hierarchy accessors) and `attributeHeap`.
      *
@@ -352,10 +352,10 @@ export class MeasurementHarness extends HoistModel {
         await gridSeam.clearPipelineAsync?.();
         const emptyBaselineHeap = await captureEmptyBaselineHeapAsync(settleMs);
 
-        // 3. Calibrate per-record byte cost per layer (leaves the shared pipeline empty).
-        const calibration = await this.calibrateAsync({loadNRowsAsync, clearAsync, settleMs});
+        // 3. Measure per-record byte cost per layer (leaves the shared pipeline empty).
+        const sizing = await this.measureRecordSizingAsync({loadNRowsAsync, clearAsync, settleMs});
 
-        // 4. Restore the full snapshot AFTER calibration emptied the shared pipeline.
+        // 4. Restore the full snapshot AFTER sizing emptied the shared pipeline.
         await reloadSnapshotAsync();
 
         // 5. Forced GC + settle, then attribute the retained heap by layer. Counts come from the
@@ -371,7 +371,7 @@ export class MeasurementHarness extends HoistModel {
             cubeRecordCount,
             gridRecordCount,
             viewRowCount,
-            calibration,
+            sizing,
             method: env.heapMethod
         });
     }

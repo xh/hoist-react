@@ -161,9 +161,9 @@ export type MeasurementProgressFn = (progress: MeasurementProgress) => void;
  * Selects which of the two independent, optional measurement passes a run performs. The two
  * concerns are fully decoupled:
  *  - `memory`      - how much heap the loaded dataset retains, attributed by layer (empty-baseline
- *                    capture + per-record calibration + post-GC heap read). NO timing work.
+ *                    capture + per-record sizing + post-GC heap read). NO timing work.
  *  - `performance` - how fast updates flow (warmup + measured pipeline/grid-sync iterations, median
- *                    + p95, overhead probe). NO baseline/calibration/heap work, so no 50k churn.
+ *                    + p95, overhead probe). NO baseline/sizing/heap work, so no 50k churn.
  *
  * At least one must be true (the harness throws otherwise). Both default to true.
  */
@@ -210,7 +210,7 @@ export interface TimingStat {
 export type HeapMethod = 'performanceMemory' | 'measureUserAgentSpecificMemory';
 
 /**
- * Heap attributed by layer (HARN-04), all in bytes. Owned layers come from counts x calibrated
+ * Heap attributed by layer (HARN-04), all in bytes. Owned layers come from counts x measured
  * per-record cost; `agGridInternals` is the opaque remainder (total heap delta minus owned
  * layers) and is never read from AG Grid source - AG Grid memory is opaque/library-owned.
  */
