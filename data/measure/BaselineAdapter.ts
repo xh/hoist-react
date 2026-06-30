@@ -267,6 +267,9 @@ export class BaselineAdapter extends HoistModel implements DataLayerAdapter {
         const gridModel = new GridModel({
             store: {idSpec: 'id'},
             treeMode: !isEmpty(dimensions),
+            // Default each column to a readable width - the generated dataset can have many fields
+            // that would otherwise auto-size down to an unreadable squish.
+            colDefaults: {width: 110},
             columns: [
                 ...dimensions.map((field, i) => ({field, isTreeColumn: i === 0})),
                 ...measureKeys.map(field => ({field}))
