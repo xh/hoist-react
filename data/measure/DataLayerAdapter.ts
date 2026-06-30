@@ -7,17 +7,17 @@
 import {PlainObject} from '@xh/hoist/core';
 
 /**
- * The candidate plug-in seam (HARN-06) - the contract that makes the measurement harness reusable
+ * The data-layer plug-in seam (HARN-06) - the contract that makes the measurement harness reusable
  * for BOTH baseline measurement AND candidate evaluation, apples-to-apples through one protocol.
  *
- * The harness instruments and measures against this interface, so the implementation behind it is
- * the only variable:
+ * The harness instruments and measures against this interface, so the data-layer implementation
+ * behind it is the only variable:
  *
  * - The baseline adapter (built with the live Cube/View/GridModel wiring in the orchestrator plan,
- *   02-05) wraps the current pipeline: a snapshot maps to `Cube.loadDataAsync` and a diff maps to
+ *   02-05) wraps the current data layer: a snapshot maps to `Cube.loadDataAsync` and a diff maps to
  *   `Cube.updateDataAsync`, with results materialized through `View.result -> Store -> GridModel`.
- * - A candidate adapter (Phase 6/7) implements the same interface over a different engine, so the
- *   identical scenario, protocol, and scorecard apply to both.
+ * - A candidate adapter (Phase 6/7) implements the same interface over a different data layer, so
+ *   the identical scenario, protocol, and scorecard apply to both.
  *
  * The methods mirror the invariant `View.result -> Store` integration seam Phase 1 mapped - the two
  * ingest operations every transport collapses to, plus read-back accessors for heap accounting and
@@ -28,7 +28,7 @@ import {PlainObject} from '@xh/hoist/core';
  * Note: no concrete `BaselineAdapter` is defined here - that wiring belongs with the orchestrator
  * plan that owns the live Cube/View/GridModel instances.
  */
-export interface CandidateAdapter {
+export interface DataLayerAdapter {
     /** Identifies which implementation produced a RunResult (e.g. 'baseline-cube'). */
     readonly id: string;
 

@@ -6,7 +6,7 @@
  */
 
 export * from './types';
-export * from './CandidateAdapter';
+export * from './DataLayerAdapter';
 export * from './HeapAttribution';
 export * from './BoundaryInstrumentation';
 export * from './MeasurementProtocol';

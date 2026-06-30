@@ -8,11 +8,11 @@
 import {HoistModel, PlainObject, XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {
-    measureGridSync,
-    measureOverhead,
-    measurePipeline,
+    measureGridSyncAsync,
+    measureOverheadAsync,
+    measureEngineAsync,
     GridSyncTiming,
-    PipelineTiming
+    EngineTiming
 } from './BoundaryInstrumentation';
 import {
     attributeHeap,
@@ -23,7 +23,7 @@ import {
     measurePerRecordBytesAsync
 } from './HeapAttribution';
 import {BaselineAdapter} from './BaselineAdapter';
-import {CandidateAdapter} from './CandidateAdapter';
+import {DataLayerAdapter} from './DataLayerAdapter';
 import {runProtocolAsync, toTimingStat} from './MeasurementProtocol';
 import {
     EnvMetadata,
@@ -37,20 +37,20 @@ import {
 
 /**
  * One per-iteration measured sample collected inside the protocol loop (performance pass only): the
- * PRIMARY pipeline timing (cube ingest + connected-View re-aggregation, Boundaries 1-4) and the
+ * PRIMARY engine timing (cube ingest + connected-View re-aggregation, Boundaries 1-4) and the
  * FINAL grid-sync split (Boundary 5). Heap is NOT sampled here - it is a separate one-shot memory
  * pass (see {@link MeasurementHarness.measureMemoryAsync}). The protocol collects these; the harness
  * reduces them into the {@link Scorecard} timings.
  */
 interface IterationSample {
-    pipeline: PipelineTiming;
+    engine: EngineTiming;
     timing: GridSyncTiming;
 }
 
 /** The four timing {@link TimingStat}s reduced from the performance pass's measured samples. */
 interface TimingStatSplit {
-    pipeline: TimingStat;
-    compute: TimingStat;
+    engine: TimingStat;
+    genTxn: TimingStat;
     bridgeCall: TimingStat;
     render: TimingStat;
 }
@@ -61,11 +61,11 @@ interface TimingStatSplit {
  */
 export interface HarnessDataProvider {
     /**
-     * Returns the next pre-fetched diff batch to apply this iteration. The caller (Toolbox) owns the
+     * Returns the next pre-fetched diff to apply this iteration. The caller (Toolbox) owns the
      * fetch - over HTTP or WebSocket - and hands back a plain row array; the harness never knows the
-     * endpoint. Must resolve with the batch (may be empty for a no-op iteration).
+     * endpoint. Must resolve with the diff (may be empty for a no-op iteration).
      */
-    nextBatchAsync: () => Promise<PlainObject[]>;
+    nextDiffAsync: () => Promise<PlainObject[]>;
     /**
      * Loads exactly `n` rows of the sizing field-shape into the live pipeline (caller supplies
      * the pre-fetched rows behind this). Used by `measurePerRecordBytesAsync` (02-04).
@@ -89,11 +89,11 @@ export interface RunScenarioArgs extends HarnessDataProvider {
     /** The serializable scenario definition (dataset/update/protocol knobs). */
     scenario: ScenarioConfig;
     /**
-     * Any pre-loaded {@link CandidateAdapter} - the BASELINE ({@link BaselineAdapter}) or a candidate
+     * Any pre-loaded {@link DataLayerAdapter} - the BASELINE ({@link BaselineAdapter}) or a candidate
      * engine. The caller MUST have already loaded the initial snapshot via
      * `adapter.loadSnapshotAsync(rows)` before handing the adapter to the harness.
      */
-    adapter: CandidateAdapter;
+    adapter: DataLayerAdapter;
     /**
      * Optional coarse-progress sink. The harness calls this as it moves through the memory pass and
      * the performance pass's warmup + measured iterations (the last reporting `current`/`total`), so a
@@ -105,11 +105,11 @@ export interface RunScenarioArgs extends HarnessDataProvider {
 /**
  * The measurement orchestrator (HARN-05 / HARN-06) - the durable, reusable engine that assembles the
  * config/result types (02-01), boundary instrumentation (02-03), and heap attribution (02-04) into a
- * single run that takes a {@link ScenarioConfig} + a pre-loaded {@link CandidateAdapter} and returns a
+ * single run that takes a {@link ScenarioConfig} + a pre-loaded {@link DataLayerAdapter} and returns a
  * complete {@link RunResult}.
  *
  * REUSABLE FOR BASELINE AND CANDIDATE (HARN-06): the harness never hardcodes the baseline - it drives
- * whatever `CandidateAdapter` it is handed through the IDENTICAL protocol. Pass a {@link BaselineAdapter}
+ * whatever `DataLayerAdapter` it is handed through the IDENTICAL protocol. Pass a {@link BaselineAdapter}
  * to measure today's pipeline; pass a candidate engine's adapter (Phase 6/7) to measure it apples-to-
  * apples. One engine, one protocol, comparable RunResults.
  *
@@ -118,10 +118,10 @@ export interface RunScenarioArgs extends HarnessDataProvider {
  * data. Instead the CALLER owns all transport:
  *   - the caller PRE-FETCHES the initial snapshot and PRE-LOADS it into the adapter via
  *     `adapter.loadSnapshotAsync(rows)` BEFORE handing the adapter to the harness, and
- *   - the caller supplies an injected `nextBatchAsync()` data-provider callback that returns the next
- *     pre-fetched diff batch on demand (plus `loadNRowsAsync`/`clearAsync` for per-record sizing).
- * Inside the protocol loop the harness calls `nextBatchAsync()` and applies the batch via
- * `adapter.applyDiffAsync(batch)`. This keeps the split architecture clean: the core stays endpoint-
+ *   - the caller supplies an injected `nextDiffAsync()` data-provider callback that returns the next
+ *     pre-fetched diff on demand (plus `loadNRowsAsync`/`clearAsync` for per-record sizing).
+ * Inside the protocol loop the harness calls `nextDiffAsync()` and applies the diff via
+ * `adapter.applyDiffAsync(diff)`. This keeps the split architecture clean: the core stays endpoint-
  * free, Toolbox owns the fetch (HTTP or WebSocket). It mirrors the 02-04 sizing-callback contract.
  *
  * Extends `HoistModel` so `runner()` (HoistBase) is available for the instrumentation spans, and so the
@@ -143,9 +143,9 @@ export class MeasurementHarness extends HoistModel {
      *
      *   - PERFORMANCE pass (`measure.performance`): how fast updates flow at steady state. Runs the
      *     warmup-discard / forced-GC-between / median+p95 protocol; each measured iteration pulls the
-     *     next batch via `nextBatchAsync()`, times the REAL cube-ingest + connected-View
-     *     re-aggregation pipeline (Boundaries 1-4) via `measurePipeline`, then the FINAL grid-sync
-     *     split (Boundary 5) via `measureGridSync`. NO baseline/sizing/heap work - so no 50k
+     *     next diff via `nextDiffAsync()`, times the REAL cube-ingest + connected-View
+     *     re-aggregation (Boundaries 1-4) via `measureEngineAsync`, then the FINAL grid-sync
+     *     split (Boundary 5) via `measureGridSyncAsync`. NO baseline/sizing/heap work - so no 50k
      *     churn. Assumes the scenario is already loaded (by the caller, or by a preceding memory
      *     pass). Produces the timing stats + `overheadMs`.
      *
@@ -154,7 +154,7 @@ export class MeasurementHarness extends HoistModel {
      * Common to both: capture {@link EnvMetadata} up front, and verify the caller pre-loaded the
      * snapshot (`adapter.getResultRowCount() > 0`) so a mis-wired caller fails loudly. The
      * {@link Scorecard} is assembled from whichever passes ran - skipped-pass fields read null
-     * (`pipeline`/`compute`/`bridgeCall`/`render` and `overheadMs` for performance; `heap` for
+     * (`engine`/`genTxn`/`bridgeCall`/`render` and `overheadMs` for performance; `heap` for
      * memory). `rowCounts` is always present (the scenario is loaded in every path).
      *
      * @returns the complete RunResult for this scenario + adapter.
@@ -163,7 +163,7 @@ export class MeasurementHarness extends HoistModel {
         const {
                 scenario,
                 adapter,
-                nextBatchAsync,
+                nextDiffAsync,
                 loadNRowsAsync,
                 clearAsync,
                 reloadSnapshotAsync,
@@ -209,9 +209,9 @@ export class MeasurementHarness extends HoistModel {
             overheadMs: number | null = null;
         if (performance) {
             // A full-replace scenario measures a whole-snapshot reload each iteration
-            // (Cube.loadDataAsync, the primary pipeline cost) instead of an incremental diff - see
+            // (Cube.loadDataAsync, the primary engine cost) instead of an incremental diff - see
             // runIterationAsync. This is the harness's one read of an update knob; everything else
-            // about the update stream (cadence, batch, breadth) is baked into the caller's batches.
+            // about the update stream (cadence, batch, breadth) is baked into the caller's diffs.
             const fullReplace = scenario.update?.updateMode === 'fullReplace';
 
             const samples = await runProtocolAsync<IterationSample>({
@@ -224,7 +224,7 @@ export class MeasurementHarness extends HoistModel {
                 runIterationAsync: () =>
                     this.runIterationAsync({
                         adapter,
-                        nextBatchAsync,
+                        nextDiffAsync,
                         reloadSnapshotAsync,
                         fullReplace
                     }),
@@ -236,13 +236,13 @@ export class MeasurementHarness extends HoistModel {
 
             // Bounded/documented instrumentation overhead (HARN-03).
             onProgress?.({stage: 'Finalizing'});
-            overheadMs = await measureOverhead(this, protocol.measuredIterations);
+            overheadMs = await measureOverheadAsync(this, protocol.measuredIterations);
         }
 
         // Assemble the Scorecard from whichever passes ran; skipped-pass fields are null.
         const scorecard: Scorecard = {
-            pipeline: timings?.pipeline ?? null,
-            compute: timings?.compute ?? null,
+            engine: timings?.engine ?? null,
+            genTxn: timings?.genTxn ?? null,
             bridgeCall: timings?.bridgeCall ?? null,
             render: timings?.render ?? null,
             heap,
@@ -327,7 +327,7 @@ export class MeasurementHarness extends HoistModel {
      * @returns the {@link HeapAttribution} for the loaded scenario.
      */
     private async measureMemoryAsync(args: {
-        adapter: CandidateAdapter;
+        adapter: DataLayerAdapter;
         loadNRowsAsync: (n: number) => Promise<void>;
         clearAsync: () => Promise<void>;
         reloadSnapshotAsync: () => Promise<void>;
@@ -379,76 +379,76 @@ export class MeasurementHarness extends HoistModel {
     /**
      * One measured PERFORMANCE iteration. Two shapes, selected by `fullReplace`:
      *
-     * INCREMENTAL (default): pull the next pre-fetched diff batch, then
+     * INCREMENTAL (default): pull the next pre-fetched diff, then
      *   1. Time the awaited `applyDiffAsync` (cube ingest + connected-View re-aggregation, Boundaries
-     *      1-4) via `measurePipeline` as the PRIMARY compute, with a cheap defensive settle hook.
-     *   2. Time the grid-sync compute/bridge/render split (Boundary 5) via `measureGridSync`.
+     *      1-4) via `measureEngineAsync` as the PRIMARY engine cost, with a cheap defensive settle hook.
+     *   2. Time the grid-sync genTxn/bridge/render split (Boundary 5) via `measureGridSyncAsync`.
      *
      * FULL REPLACE: each iteration re-loads the WHOLE snapshot (`Cube.loadDataAsync`) via the injected
-     * `reloadSnapshotAsync`; that reload IS the primary pipeline cost, measured the same way. There is
+     * `reloadSnapshotAsync`; that reload IS the primary engine cost, measured the same way. There is
      * no incremental transaction, so the grid-sync split is not applicable and is reported as zero -
      * the wholesale grid re-render is not captured by the incremental Boundary-5 instrumentation
-     * (documented limitation; the headline pipeline cost is the meaningful full-replace number).
+     * (documented limitation; the headline engine cost is the meaningful full-replace number).
      *
      * Heap is NOT sampled here - it is the separate one-shot memory pass ({@link measureMemoryAsync}).
      */
     private async runIterationAsync(args: {
-        adapter: CandidateAdapter;
-        nextBatchAsync: () => Promise<PlainObject[]>;
+        adapter: DataLayerAdapter;
+        nextDiffAsync: () => Promise<PlainObject[]>;
         reloadSnapshotAsync: () => Promise<void>;
         fullReplace: boolean;
     }): Promise<IterationSample> {
-        const {adapter, nextBatchAsync, reloadSnapshotAsync, fullReplace} = args,
+        const {adapter, nextDiffAsync, reloadSnapshotAsync, fullReplace} = args,
             gridSeam = adapter as Partial<BaselineAdapter>;
 
-        let pipeline: PipelineTiming, timing: GridSyncTiming;
+        let engine: EngineTiming, timing: GridSyncTiming;
         if (fullReplace) {
             // PRIMARY: the full re-snapshot (Cube.loadDataAsync + connected-View re-aggregation) IS
-            // the pipeline cost. No incremental transaction follows, so the grid-sync split is N/A.
-            pipeline = await measurePipeline(this, {
+            // the engine cost. No incremental transaction follows, so the grid-sync split is N/A.
+            engine = await measureEngineAsync(this, {
                 applyDiffAsync: () => reloadSnapshotAsync(),
                 settleAsync: () => wait(0),
                 rowCount: adapter.getResultRowCount()
             });
-            timing = {computeMs: 0, bridgeCallMs: 0, renderMs: 0, renderSuspect: false};
+            timing = {genTxnMs: 0, bridgeCallMs: 0, renderMs: 0, renderSuspect: false};
         } else {
-            // 1. Pull the next pre-fetched batch from the caller.
-            const batch = await nextBatchAsync();
+            // 1. Pull the next pre-fetched diff from the caller.
+            const diff = await nextDiffAsync();
 
-            // 2. PRIMARY: time the awaited cube-ingest + connected-View re-aggregation pipeline. The
-            //    source confirms the await already settles the View; the settle hook is a cheap
-            //    defensive flush (one macrotask) so any trailing reaction is captured, not dropped.
-            pipeline = await measurePipeline(this, {
-                applyDiffAsync: () => adapter.applyDiffAsync(batch),
+            // 2. PRIMARY: time the awaited cube-ingest + connected-View re-aggregation. The source
+            //    confirms the await already settles the View; the settle hook is a cheap defensive
+            //    flush (one macrotask) so any trailing reaction is captured, not dropped.
+            engine = await measureEngineAsync(this, {
+                applyDiffAsync: () => adapter.applyDiffAsync(diff),
                 settleAsync: () => wait(0),
                 rowCount: adapter.getResultRowCount()
             });
 
-            // 3. FINAL stage - Boundary-5 compute/bridge/render split via the injected grid-sync
+            // 3. FINAL stage - Boundary-5 genTxn/bridge/render split via the injected grid-sync
             //    callables. The baseline adapter exposes genTransaction/applyTransaction; a candidate
             //    adapter must expose equivalents.
-            timing = await measureGridSync(this, {
+            timing = await measureGridSyncAsync(this, {
                 genTransaction: gridSeam.genTransaction ?? (() => ({})),
                 applyTransaction: gridSeam.applyTransaction ?? (() => undefined),
                 rowCount: adapter.getResultRowCount()
             });
         }
 
-        return {pipeline, timing};
+        return {engine, timing};
     }
 
     /** Reduce the per-iteration performance samples into the four timing {@link TimingStat}s. */
     private reduceTimings(samples: IterationSample[]): TimingStatSplit {
         return {
-            pipeline: toTimingStat(samples.map(s => s.pipeline.totalMs)),
-            compute: toTimingStat(samples.map(s => s.timing.computeMs)),
+            engine: toTimingStat(samples.map(s => s.engine.totalMs)),
+            genTxn: toTimingStat(samples.map(s => s.timing.genTxnMs)),
             bridgeCall: toTimingStat(samples.map(s => s.timing.bridgeCallMs)),
             render: toTimingStat(samples.map(s => s.timing.renderMs))
         };
     }
 
     /** Read the loaded scenario's row counts from the adapter (present in every run path). */
-    private readRowCounts(adapter: CandidateAdapter): Scorecard['rowCounts'] {
+    private readRowCounts(adapter: DataLayerAdapter): Scorecard['rowCounts'] {
         const gridSeam = adapter as Partial<BaselineAdapter>;
         return {
             leaf: gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),

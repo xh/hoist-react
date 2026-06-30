@@ -9,7 +9,7 @@ import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, View} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {isEmpty} from 'lodash';
-import {CandidateAdapter} from './CandidateAdapter';
+import {DataLayerAdapter} from './DataLayerAdapter';
 
 /**
  * Config for the {@link BaselineAdapter}. All optional - sensible defaults make the adapter usable
@@ -30,7 +30,7 @@ export interface BaselineAdapterConfig {
 }
 
 /**
- * The concrete baseline {@link CandidateAdapter} (HARN-06) - it drives the REAL current-pipeline
+ * The concrete baseline {@link DataLayerAdapter} (HARN-06) - it drives the REAL current-pipeline
  * data path so candidate engines are measured apples-to-apples against the system as it exists today.
  *
  * Wiring (the live Phase-1 pipeline):
@@ -55,10 +55,10 @@ export interface BaselineAdapterConfig {
  * FULL hierarchy (aggregate nodes + leaves) - these counts feed 02-08 heap attribution.
  *
  * INVARIANT, CALLER-OWNED DATA: `loadSnapshotAsync(rawRows)` and `applyDiffAsync(diff)` ALWAYS take
- * caller-supplied data (per the 02-01 `CandidateAdapter` contract). The adapter NEVER fetches or
+ * caller-supplied data (per the 02-01 `DataLayerAdapter` contract). The adapter NEVER fetches or
  * generates rows - the harness caller (Toolbox) owns all transport/endpoint knowledge.
  *
- * GRID-SYNC SEAM (the `genTransaction` / `applyTransaction` callables for `measureGridSync`):
+ * GRID-SYNC SEAM (the `genTransaction` / `applyTransaction` callables for `measureGridSyncAsync`):
  * The live `GridLocalModel.genTransaction` (`cmp/grid/Grid.ts`) is an impl-only method that exists
  * only once the grid COMPONENT is mounted and linked - it is not reachable from a `GridModel`
  * instance the harness holds programmatically. So the adapter exposes its OWN `genTransaction` that
@@ -71,7 +71,7 @@ export interface BaselineAdapterConfig {
  * heap are still measured. The bridge half is therefore only non-trivial when 02-06 mounts a live
  * grid and wires its `agApi`; this limitation is documented in the plan SUMMARY.
  */
-export class BaselineAdapter extends HoistModel implements CandidateAdapter {
+export class BaselineAdapter extends HoistModel implements DataLayerAdapter {
     readonly id = 'baseline-cube';
 
     @managed cube: Cube = null;
@@ -95,7 +95,7 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
     }
 
     //--------------------------------------------------------------------------------------------
-    // CandidateAdapter contract - the invariant two-op ingest + read-back accessors
+    // DataLayerAdapter contract - the invariant two-op ingest + read-back accessors
     //--------------------------------------------------------------------------------------------
 
     /** Full snapshot ingest via `Cube.loadDataAsync`. Lazily builds the pipeline on first call. */
@@ -163,7 +163,7 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
     }
 
     //--------------------------------------------------------------------------------------------
-    // Grid-sync seam the harness needs for measureGridSync (Boundary 5)
+    // Grid-sync seam the harness needs for measureGridSyncAsync (Boundary 5)
     //--------------------------------------------------------------------------------------------
 
     /**
@@ -172,7 +172,7 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
      * sync ({@link prevRecords}). Mirrors `GridLocalModel.genTransaction` (`cmp/grid/Grid.ts`)
      * faithfully (add = new id, update = same id different ref, remove = dropped id), since that
      * impl-only method is not reachable from a programmatic GridModel. Returns the transaction object
-     * `measureGridSync` then hands to {@link applyTransaction}.
+     * `measureGridSyncAsync` then hands to {@link applyTransaction}.
      */
     genTransaction = (): unknown => {
         const newList = this.gridModel?.store?.records ?? [],

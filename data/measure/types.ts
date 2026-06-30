@@ -229,13 +229,13 @@ export interface HeapAttribution {
  * The full per-run scorecard (HARN-04 / HARN-05).
  *
  * Stage ordering (read the timing fields in this order):
- *   1. `pipeline`   - PRIMARY compute: cube ingest + connected-View re-aggregation (Boundaries 1-4),
- *                     timed around the awaited `applyDiffAsync`. This is the real engine work.
- *   2. `compute`    - FINAL grid-sync stage, Hoist-side: `genTransaction` building the AG Grid txn.
+ *   1. `engine`     - PRIMARY data-layer cost: cube ingest + connected-View re-aggregation
+ *                     (Boundaries 1-4), timed around the awaited `applyDiffAsync`. The real engine work.
+ *   2. `genTxn`     - FINAL grid-sync stage, Hoist-side: `genTransaction` building the AG Grid txn.
  *   3. `bridgeCall` - FINAL grid-sync stage, the synchronous JS-to-AG-Grid crossing (`applyTransaction`).
  *   4. `render`     - FINAL grid-sync stage, the deferred layout/paint landing in a later frame.
  *
- * `pipeline` is the headline compute number; `compute`/`bridgeCall`/`render` are the Boundary-5
+ * `engine` is the headline data-layer number; `genTxn`/`bridgeCall`/`render` are the Boundary-5
  * grid-sync split that follows it (the cost of diffing + applying the re-aggregated rows to AG Grid).
  *
  * The timing fields and `heap` are nullable because the two measurement passes are optional: a run
@@ -244,13 +244,13 @@ export interface HeapAttribution {
  */
 export interface Scorecard {
     /**
-     * PRIMARY compute: cube ingest + connected-View re-aggregation (Boundaries 1-4), timed around
-     * the awaited `applyDiffAsync`. The headline engine cost; grid-sync below is the final stage.
-     * Null when the performance pass is skipped.
+     * PRIMARY data-layer cost: cube ingest + connected-View re-aggregation (Boundaries 1-4), timed
+     * around the awaited `applyDiffAsync`. The headline engine cost; grid-sync below is the final
+     * stage. Null when the performance pass is skipped.
      */
-    pipeline: TimingStat | null;
-    /** FINAL grid-sync stage: Hoist-side compute (genTransaction). Null when performance is skipped. */
-    compute: TimingStat | null;
+    engine: TimingStat | null;
+    /** FINAL grid-sync stage: Hoist-side transaction build (genTransaction). Null when perf skipped. */
+    genTxn: TimingStat | null;
     /** FINAL grid-sync stage: JS-to-AG-Grid bridge call (applyTransaction). Null when perf is skipped. */
     bridgeCall: TimingStat | null;
     /** FINAL grid-sync stage: deferred render/paint after the bridge call. Null when perf is skipped. */
@@ -286,7 +286,7 @@ export interface RunResult {
     scenario: ScenarioConfig;
     scorecard: Scorecard;
     env: EnvMetadata;
-    /** Identifies which implementation produced this result (see {@link CandidateAdapter.id}). */
+    /** Identifies which implementation produced this result (see {@link DataLayerAdapter.id}). */
     adapterId: string;
     /**
      * Null-scenario instrumentation overhead, in ms - the harness's own measured cost on an empty

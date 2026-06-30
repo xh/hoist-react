@@ -16,9 +16,9 @@ drives this core.
 ```
 hoist-react/data/measure          (this module - the core, fetches nothing)
   types.ts                        ScenarioConfig knobs + RunResult/Scorecard output schema
-  CandidateAdapter.ts             the swap seam: baseline OR a candidate engine
-  BaselineAdapter.ts              CandidateAdapter over the live Cube/View/Store/GridModel pipeline
-  BoundaryInstrumentation.ts      compute / bridge / deferred-render timing split (Boundary 5)
+  DataLayerAdapter.ts             the swap seam: baseline OR a candidate engine
+  BaselineAdapter.ts              DataLayerAdapter over the live Cube/View/Store/GridModel pipeline
+  BoundaryInstrumentation.ts      genTxn / bridge / deferred-render timing split (Boundary 5)
   HeapAttribution.ts              forced GC + per-layer heap accounting
   MeasurementProtocol.ts          warmup-discard + forced-GC-between + median/p95
   MeasurementHarness.ts           runScenarioAsync: scenario + adapter + injected data -> RunResult
@@ -52,7 +52,7 @@ storage as a named, shareable profile. The knob taxonomy:
 
 Each run produces a `RunResult` with a `Scorecard`:
 
-- **Compute vs bridge.** `compute` is Hoist-side JS (`genTransaction`) timed directly with
+- **genTxn vs bridge.** `genTxn` is Hoist-side JS (`genTransaction`) timed directly with
   `performance.now()`. `bridgeCall` is the synchronous cost of crossing into AG Grid
   (`applyTransaction`). `render` captures the deferred layout/paint that lands in a later animation
   frame, so the bridge cost is not undercounted. All three are reported as `TimingStat`
@@ -74,7 +74,7 @@ Each run produces a `RunResult` with a `Scorecard`:
 
 - **Heap by layer.** Heap attribution is an accounting exercise, not a single API call. Owned
   layers (`cubeStoreRecords`, `gridStoreRecords`, `viewResultRows`) come from record counts times a
-  calibrated per-record byte cost. `agGridInternals` is the **opaque remainder** (total heap delta
+  measured per-record byte cost. `agGridInternals` is the **opaque remainder** (total heap delta
   minus the owned layers, floored at 0) and is never read from AG Grid source - AG Grid memory is
   library-owned and opaque. Caveat: the no-cross-origin-isolation path uses
   `performance.memory.usedJSHeapSize` whole-heap deltas, which are V8-heap-only and quantized to
@@ -91,9 +91,9 @@ Each run produces a `RunResult` with a `Scorecard`:
     `captureEmptyBaselineHeapAsync`, then restores the snapshot through the injected
     `reloadSnapshotAsync` provider hook. It is NOT reached by reloading the snapshot as the "clear" -
     a snapshot-loaded baseline would make the total ~0.
-  - **Per-record calibration is N=50000, median-of-5.** Owned per-layer bytes come from a dedicated
-    load-N/clear calibration on an empty pipeline run 5 times with the median per-record figure
-    taken. N=50000 is 10x the default 5000-leaf scenario, so the calibration load itself moves a
+  - **Per-record sizing is N=50000, median-of-5.** Owned per-layer bytes come from a dedicated
+    load-N/clear sizing pass on an empty pipeline run 5 times with the median per-record figure
+    taken. N=50000 is 10x the default 5000-leaf scenario, so the sizing load itself moves a
     tens-of-MB delta that clears the documented GC/heap noise floor (a single small sample read 0
     against the ~366 MB live heap, and the per-sample floor-at-0 would silently keep it 0). The
     forced GC + settle runs before every read.
@@ -138,24 +138,24 @@ leave the tab visible and in the foreground while it runs.
 
 ## Reusing the harness to evaluate a candidate engine
 
-The harness never hardcodes the baseline - it drives whatever `CandidateAdapter` it is handed
+The harness never hardcodes the baseline - it drives whatever `DataLayerAdapter` it is handed
 through the identical protocol. To measure a candidate data engine apples-to-apples against the
 baseline:
 
-1. **Implement `CandidateAdapter`** for the candidate engine: `loadSnapshotAsync(rawRows)`,
+1. **Implement `DataLayerAdapter`** for the candidate engine: `loadSnapshotAsync(rawRows)`,
    `applyDiffAsync(diff)` (the invariant two-op ingest contract), `getResultRowCount()`,
    `getResultRows()`, `disposeAsync()`. To get a non-trivial `bridgeCall`, also expose
    `genTransaction` / `applyTransaction` and mount a live grid on the engine's `GridModel` (the
    `BaselineAdapter` is the worked reference). For a trustworthy heap total, also expose a
    `clearPipelineAsync`-equivalent TRUE-EMPTY path (empty the engine's data while keeping the
    pipeline alive) - the harness uses it to capture the fixed empty-pipeline heap baseline and to
-   leave no residual heap after each calibration cycle. A candidate without it falls back to no
+   leave no residual heap after each per-record sizing cycle. A candidate without it falls back to no
    clear and the empty baseline degrades.
 2. **Pre-load the snapshot.** The caller owns all transport. Fetch the initial rows (over HTTP,
    WebSocket, or any source) and call `await adapter.loadSnapshotAsync(rows)` BEFORE handing the
    adapter to the harness. The harness throws a clear error if the adapter is empty at start.
-3. **Supply the injected data-provider callbacks.** `nextBatchAsync()` returns the next pre-fetched
-   diff batch each iteration; `loadNRowsAsync(n)` / `clearAsync()` back heap calibration; and
+3. **Supply the injected data-provider callbacks.** `nextDiffAsync()` returns the next pre-fetched
+   diff each iteration; `loadNRowsAsync(n)` / `clearAsync()` back per-record sizing; and
    `reloadSnapshotAsync()` restores the snapshot the harness clears to capture the empty-pipeline
    heap baseline (bind it to `() => adapter.loadSnapshotAsync(snapshotRows)`).
 4. **Run it:**
@@ -165,10 +165,10 @@ baseline:
 
    const result = await new MeasurementHarness().runScenarioAsync({
        scenario,           // ScenarioConfig
-       adapter,            // pre-loaded CandidateAdapter (baseline or candidate)
-       nextBatchAsync,     // () => Promise<PlainObject[]>
+       adapter,            // pre-loaded DataLayerAdapter (baseline or candidate)
+       nextDiffAsync,     // () => Promise<PlainObject[]>
        loadNRowsAsync,     // (n: number) => Promise<void>
-       clearAsync,         // () => Promise<void>  (true-empty calibration teardown)
+       clearAsync,         // () => Promise<void>  (true-empty sizing teardown)
        reloadSnapshotAsync // () => Promise<void>  (restore snapshot after the empty baseline)
    });
    ```

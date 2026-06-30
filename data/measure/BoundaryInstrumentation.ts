@@ -18,14 +18,14 @@ import {HoistBase} from '@xh/hoist/core';
  *   3. `View.result` ref write   - the `@observable.ref` ViewResult assignment.
  *   4. Store `_filtered` rebuild - the `@observable.ref` RecordSet assignment.
  *   5. Grid sync bridge          - `dataReaction` to `genTransaction` to `applyTransaction`
- *                                  (split into compute / bridge / deferred render below).
+ *                                  (split into genTxn / bridge / deferred render below).
  *   6. Heap-attribution layers   - measured in 02-04, not here.
  *
  * THE RULE: spans are for STRUCTURE, `performance.now()` is for the NUMBER.
  *
  * WHY: Hoist's `Span` measures elapsed time with `Date.now()` (epoch ms) - see `Span.startTime` /
  * `Span.end()` in `core/Span.ts`, where `duration = endTime - startTime` is whole-millisecond
- * resolution. That is far too coarse for the sub-ms Hoist-side compute we need to attribute (this
+ * resolution. That is far too coarse for the sub-ms Hoist-side work we need to attribute (this
  * is RESEARCH Pitfall 1: relying on `Span.duration` would silently round sub-ms work to 0/1 ms).
  * So every load-bearing number here is captured with `performance.now()` (sub-ms, monotonic) and
  * attached to the span as a tag; the span's own `Date.now()` duration is never read for results.
@@ -59,7 +59,7 @@ const RENDER_FRAME_TIMEOUT_MS = 1000;
  * @param fn   - the boundary work to time (sync or async).
  * @returns the `fn` result plus the precise `performance.now()` elapsed time in ms.
  */
-export async function measureBoundary<T>(
+export async function measureBoundaryAsync<T>(
     host: HoistBase,
     name: string,
     fn: () => Promise<T> | T
@@ -81,10 +81,10 @@ export async function measureBoundary<T>(
 }
 
 /**
- * Result of {@link measurePipeline}: the cube-ingest + view-re-aggregation cost (Boundaries 1-4),
- * the PRIMARY measured compute, all in ms, all timed with `performance.now()`.
+ * Result of {@link measureEngineAsync}: the cube-ingest + view-re-aggregation cost (Boundaries 1-4),
+ * the PRIMARY measured engine cost, all in ms, all timed with `performance.now()`.
  */
-export interface PipelineTiming {
+export interface EngineTiming {
     /**
      * The awaited `applyDiffAsync` cost: `Cube.updateDataAsync` -> connected View re-aggregation
      * (`noteCubeUpdated` -> `generateRows` -> `loadStores`) -> `View.result` write -> Store rebuild.
@@ -93,12 +93,12 @@ export interface PipelineTiming {
     ingestMs: number;
     /** Optional defensive settle/flush after ingest (any trailing reaction); 0 when no hook given. */
     settleMs: number;
-    /** Total primary pipeline cost: `ingestMs + settleMs`. */
+    /** Total primary engine cost: `ingestMs + settleMs`. */
     totalMs: number;
 }
 
 /**
- * Primary pipeline timing (Boundaries 1-4) - the load-bearing HARN-03 / HARN-05 measurement.
+ * Primary engine timing (Boundaries 1-4) - the load-bearing HARN-03 / HARN-05 measurement.
  *
  * Times the REAL engine work that `adapter.applyDiffAsync` performs: cube ingest
  * (`Cube.updateDataAsync`), the connected View re-aggregation it awaits, the `View.result`
@@ -106,7 +106,7 @@ export interface PipelineTiming {
  * `Cube.updateDataAsync` does `await forEachAsync(connectedViews, v => v.noteCubeUpdated(...))`, and
  * `noteCubeUpdated` synchronously runs `generateRows()` -> `loadStores()` -> `updateResults()`
  * within that await - so bracketing the awaited `applyDiffAsync` with `performance.now()` captures
- * the full Boundaries-1-4 cost. This is the PRIMARY compute number; {@link measureGridSync} times
+ * the full Boundaries-1-4 cost. This is the PRIMARY engine number; {@link measureGridSyncAsync} times
  * the FINAL grid-sync stage (Boundary 5).
  *
  * Follows the module rule: a `runner().span()` for trace STRUCTURE, `performance.now()` for the
@@ -115,21 +115,21 @@ export interface PipelineTiming {
  * @param host - the `HoistBase` whose `runner()` opens the span.
  * @param args - injected `applyDiffAsync` (the awaited cube+view work to time), an optional
  *               `settleAsync` defensive flush, and `rowCount` for span tagging.
- * @returns the {@link PipelineTiming} split in ms.
+ * @returns the {@link EngineTiming} split in ms.
  */
-export async function measurePipeline(
+export async function measureEngineAsync(
     host: HoistBase,
     args: {
         applyDiffAsync: () => Promise<void>;
         settleAsync?: () => Promise<void>;
         rowCount: number;
     }
-): Promise<PipelineTiming> {
+): Promise<EngineTiming> {
     const {applyDiffAsync, settleAsync, rowCount} = args;
 
     return host
         .runner()
-        .span(`${PREFIX}.pipeline`)
+        .span(`${PREFIX}.engine`)
         .run(async ctx => {
             // PRIMARY: the awaited cube-ingest + connected-View re-aggregation (Boundaries 1-4).
             const t0 = performance.now();
@@ -155,12 +155,12 @@ export async function measurePipeline(
 }
 
 /**
- * Result of {@link measureGridSync}: the Boundary-5 compute / bridge / render split, all in ms,
+ * Result of {@link measureGridSyncAsync}: the Boundary-5 genTxn / bridge / render split, all in ms,
  * all timed with `performance.now()`.
  */
 export interface GridSyncTiming {
-    /** Hoist-side compute - `genTransaction()` building the AG Grid transaction. */
-    computeMs: number;
+    /** Hoist-side transaction build - `genTransaction()` building the AG Grid transaction. */
+    genTxnMs: number;
     /** Synchronous JS-to-AG-Grid bridge call - `applyTransaction(txn)`. */
     bridgeCallMs: number;
     /** Deferred render/paint landing in a later frame, after the sync bridge call returned. */
@@ -176,12 +176,12 @@ export interface GridSyncTiming {
 }
 
 /**
- * Compute-vs-bridge-vs-render split for Boundary 5 - the load-bearing HARN-05 measurement.
+ * genTxn-vs-bridge-vs-render split for Boundary 5 - the load-bearing HARN-05 measurement.
  *
  * Times the three distinct costs of pushing a grid update through the `dataReaction` to
  * `genTransaction` to `applyTransaction` bridge, all under a single `xhDataLab.gridSync` span:
  *
- *   - `computeMs`     - Hoist-side JS building the transaction (`genTransaction`).
+ *   - `genTxnMs`     - Hoist-side JS building the transaction (`genTransaction`).
  *   - `bridgeCallMs`  - the synchronous, opaque crossing into AG Grid (`applyTransaction`).
  *   - `renderMs`      - the deferred layout/paint AG Grid schedules for a LATER frame. Ignoring
  *                       it undercounts the true bridge cost (RESEARCH Pitfall 4), so we await one
@@ -192,11 +192,11 @@ export interface GridSyncTiming {
  * live `agApi.applyTransaction` from the running grid. GridModel is intentionally not imported.
  *
  * @param host - the `HoistBase` whose `runner()` opens the span.
- * @param args - injected `genTransaction` (compute) + `applyTransaction` (bridge), plus rowCount
+ * @param args - injected `genTransaction` (build) + `applyTransaction` (bridge), plus rowCount
  *               for span tagging.
  * @returns the three timing components in ms.
  */
-export async function measureGridSync(
+export async function measureGridSyncAsync(
     host: HoistBase,
     args: {
         genTransaction: () => unknown;
@@ -211,7 +211,7 @@ export async function measureGridSync(
         .span(`${PREFIX}.gridSync`)
         .run(async ctx => {
             const t0 = performance.now();
-            const txn = genTransaction(); // Hoist-side COMPUTE
+            const txn = genTransaction(); // Hoist-side TRANSACTION BUILD
             const t1 = performance.now();
 
             applyTransaction(txn); // synchronous JS-to-AG-Grid BRIDGE call
@@ -223,26 +223,26 @@ export async function measureGridSync(
             const {suspect} = await nextRenderFrameAsync();
             const t3 = performance.now();
 
-            const computeMs = t1 - t0;
+            const genTxnMs = t1 - t0;
             const bridgeCallMs = t2 - t1;
             const renderMs = t3 - t2;
 
             ctx.span?.setTags({
-                [`${PREFIX}.computeMs`]: computeMs,
+                [`${PREFIX}.genTxnMs`]: genTxnMs,
                 [`${PREFIX}.bridgeCallMs`]: bridgeCallMs,
                 [`${PREFIX}.renderMs`]: renderMs,
                 [`${PREFIX}.renderSuspect`]: suspect,
                 [`${PREFIX}.rowCount`]: rowCount
             });
 
-            return {computeMs, bridgeCallMs, renderMs, renderSuspect: suspect};
+            return {genTxnMs, bridgeCallMs, renderMs, renderSuspect: suspect};
         });
 }
 
 /**
  * Null-scenario instrumentation overhead probe (HARN-03 "bounded, documented overhead").
  *
- * Runs the full {@link measureBoundary} instrumentation path around an empty `fn` `iterations`
+ * Runs the full {@link measureBoundaryAsync} instrumentation path around an empty `fn` `iterations`
  * times and returns the MEDIAN per-iteration overhead in ms. The harness can report this alongside
  * results, or subtract it, to keep the instrumentation cost bounded and documented.
  *
@@ -250,13 +250,13 @@ export async function measureGridSync(
  * @param iterations - number of null iterations to time.
  * @returns median per-iteration overhead in ms (0 when `iterations` is non-positive).
  */
-export async function measureOverhead(host: HoistBase, iterations: number): Promise<number> {
+export async function measureOverheadAsync(host: HoistBase, iterations: number): Promise<number> {
     if (iterations <= 0) return 0;
 
     const samples: number[] = [];
     for (let i = 0; i < iterations; i++) {
         const t0 = performance.now();
-        await measureBoundary(host, 'overheadProbe', () => undefined);
+        await measureBoundaryAsync(host, 'overheadProbe', () => undefined);
         samples.push(performance.now() - t0);
     }
 
