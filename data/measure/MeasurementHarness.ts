@@ -60,8 +60,10 @@ export interface HarnessDataProvider {
     /**
      * Restores the snapshot the harness intentionally cleared to capture the empty-pipeline heap
      * baseline (02-08). The caller already holds the fetched `snapshotRows` and binds this to
-     * `() => adapter.loadSnapshotAsync(snapshotRows)`. Called once, after the empty-baseline capture
-     * and before calibration + the measured protocol, so the pipeline is back to its loaded state.
+     * `() => adapter.loadSnapshotAsync(snapshotRows)`. Called once, AFTER calibration completes and
+     * immediately before the measured protocol, so the pipeline is back to its loaded state.
+     * Calibration currently shares the measured adapter (its load/clear callbacks target the MAIN
+     * pipeline) and leaves it empty, so the reload MUST run after calibration, not before it.
      */
     reloadSnapshotAsync: () => Promise<void>;
 }
@@ -113,13 +115,15 @@ export class MeasurementHarness extends HoistModel {
      *   2. Verify the caller pre-loaded the snapshot (`adapter.getResultRowCount() > 0`) - throws a
      *      clear error if the adapter is empty so a mis-wired caller fails loudly.
      *   2b. EMPTY-BASELINE FIRST (02-08): clear the live pipeline to TRULY EMPTY via the baseline's
-     *      `clearPipelineAsync` (Cube.clearAsync, pipeline kept alive), capture a FIXED clean post-GC
-     *      empty-pipeline heap baseline (`captureEmptyBaselineHeapAsync`), then RELOAD the snapshot via
-     *      the injected `reloadSnapshotAsync`. Every iteration's total heap is differenced against this
-     *      fixed baseline, so the reported total is positive retained heap (not the old inverted
-     *      within-iteration pre/post-GC delta). Then calibrate per-record bytes via
-     *      `calibratePerRecordBytesAsync` (median-of-5 over N=50000, 02-08) using the injected
-     *      `loadNRowsAsync`/`clearAsync` callbacks.
+     *      `clearPipelineAsync` (Cube.clearAsync, pipeline kept alive), then capture a FIXED clean
+     *      post-GC empty-pipeline heap baseline (`captureEmptyBaselineHeapAsync`). Every iteration's
+     *      total heap is differenced against this fixed baseline, so the reported total is positive
+     *      retained heap (not the old inverted within-iteration pre/post-GC delta). Next calibrate
+     *      per-record bytes via `calibratePerRecordBytesAsync` (median-of-5 over N=50000, 02-08) using
+     *      the injected `loadNRowsAsync`/`clearAsync` callbacks. Calibration currently SHARES the
+     *      measured adapter and leaves the pipeline empty, so ONLY THEN RELOAD the snapshot via the
+     *      injected `reloadSnapshotAsync`. Resulting order: clear -> capture empty baseline -> calibrate
+     *      -> reload snapshot -> run protocol.
      *   3. Run the warmup-discard / forced-GC-between / median+p95 protocol (02-05 Task 1). Each
      *      measured iteration pulls the next batch via the injected `nextBatchAsync()`, then times the
      *      REAL cube-ingest + connected-View re-aggregation pipeline (Boundaries 1-4) as the PRIMARY
@@ -151,20 +155,27 @@ export class MeasurementHarness extends HoistModel {
         }
 
         // 2b. EMPTY-BASELINE FIRST (02-08): truly empty the live pipeline (cube.clearAsync, pipeline
-        //     kept alive), capture the FIXED clean post-GC empty-pipeline heap baseline, then reload
-        //     the snapshot. A candidate adapter without the true-empty hook falls back to no clear
-        //     (documented limitation - the baseline always has it).
+        //     kept alive), then capture the FIXED clean post-GC empty-pipeline heap baseline. The
+        //     snapshot reload is intentionally deferred until AFTER calibration (see below). A candidate
+        //     adapter without the true-empty hook falls back to no clear (documented limitation - the
+        //     baseline always has it).
         const gridSeam = adapter as Partial<BaselineAdapter>;
         await gridSeam.clearPipelineAsync?.();
         const emptyBaselineHeap = await captureEmptyBaselineHeapAsync(protocol.gcSettleMs);
-        await reloadSnapshotAsync();
 
-        // Calibrate per-record byte cost per layer (median-of-5 over N=50000, 02-08).
+        // Calibrate per-record byte cost per layer (median-of-5 over N=50000, 02-08). Calibration
+        // currently SHARES the measured adapter (the caller's loadNRowsAsync/clearAsync load and
+        // true-empty the MAIN pipeline), so it leaves the pipeline empty and clobbers any earlier
+        // snapshot load. The snapshot is therefore reloaded AFTER calibration, immediately below.
         const calibration = await this.calibrateAsync({
             loadNRowsAsync,
             clearAsync,
             settleMs: protocol.gcSettleMs
         });
+
+        // Restore the full snapshot AFTER calibration (which left the shared pipeline empty), so the
+        // measured protocol runs against the real loaded scenario - not the ~empty residue.
+        await reloadSnapshotAsync();
 
         // 3. Run the steady-state protocol, collecting one IterationSample per measured iteration.
         const samples = await runProtocolAsync<IterationSample>({
