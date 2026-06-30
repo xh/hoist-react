@@ -187,6 +187,15 @@ Recent decisions affecting current work:
   pass off)" when disabled. Also gated `DataLabModel.doRunAsync` so the
   WebSocket adapter is only spun up when the performance pass will consume diffs (a memory-only run fetches
   the snapshot over HTTP either way). Toolbox-only; live-verified.
+- [Phase 02-measurement-harness, post-close refinements]: Began exposing GridModel switches through the
+  scenario (the grid configs a representative measurement must honor). First one: `useVirtualColumns`
+  (defaults TRUE) - essential for wide column sets; without it the grid easily crashes rendering them all.
+  New `GridScenarioConfig` interface + required `grid` on `ScenarioConfig` (hoist-react types); the harness
+  itself ignores it - `BaselineAdapter` is what respects it, via a new `BaselineAdapterConfig.useVirtualColumns`
+  (default true) passed onto its `GridModel` (which maps to ag-grid `suppressColumnVirtualisation`). Toolbox:
+  new `useVirtualColumns` form field, projected into `scenario.grid`, passed to the `BaselineAdapter`, and
+  surfaced in a new "Grid" `formFieldSet` section (a switch defaulting on). The section is the home for the
+  additional grid switches to come. Live-verified the toggle renders on by default.
 
 ### Pending Todos
 
