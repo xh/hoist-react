@@ -13,8 +13,12 @@ tsconfig.tsbuildinfo
 # Logs
 *.log
 
-# Local Claude Code instructions
+# Claude Code local & runtime state (shared settings.json, skills/, etc. stay tracked)
 CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
+.claude/projects/
+.claude/agent-memory-local/
 
 # GSD project planning (archived to hoist-ai repo)
 .planning/

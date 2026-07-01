@@ -21,7 +21,7 @@ import {action, bindable, makeObservable, observable, override} from '@xh/hoist/
 import {debouncePromise, wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
-import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
+import {escapeRegExp, isEqual, isNil, isPlainObject, unionWith} from 'lodash';
 import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
@@ -157,6 +157,15 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** Field on provided options for sourcing each option's value (default `value`). */
     valueField?: string;
+
+    /**
+     * Function to generate a `SelectOption` for a (non-null) selected value not present in the
+     * current options list. Return null to fall back to the default value-as-label behavior.
+     *
+     * Useful with queryFn-based selects, readonly forms, or any case where options may not be
+     * loaded when a value is set, ensuring the value renders with its proper label.
+     */
+    generateOptionFn?: (value: any) => SelectOption;
 }
 
 /**
@@ -377,7 +386,8 @@ class SelectInputModel extends HoistInputModel {
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
-    // (Exception for a null value, which we will only accept if explicitly present in options.)
+    // (Exception for a null value, which is never synthesized - accepted only if provided via
+    // options.)
     override toInternal(external) {
         return this.findOption(external, !isNil(external));
     }
@@ -393,7 +403,10 @@ class SelectInputModel extends HoistInputModel {
             }
         }
 
-        return createIfNotFound ? this.valueToOption(value) : null;
+        if (!createIfNotFound) return null;
+
+        // Value not among options - let the app generate an option for it, else synthesize one.
+        return this.componentProps.generateOptionFn?.(value) ?? this.valueToOption(value);
     }
 
     override toExternal(internal) {
@@ -453,15 +466,9 @@ class SelectInputModel extends HoistInputModel {
 
                 // Carry forward and add to any existing internalOpts to allow our value
                 // converters to continue all selected values in multiMode.
-                const matchesByVal = keyBy(matchOpts, 'value'),
-                    newOpts = [...matchOpts];
-
-                this.internalOptions.forEach(currOpt => {
-                    const matchOpt = matchesByVal[currOpt.value];
-                    if (!matchOpt) newOpts.push(currOpt); // avoiding dupes
-                });
-
-                this.internalOptions = newOpts;
+                this.internalOptions = unionWith(matchOpts, this.internalOptions, (a, b) =>
+                    isEqual(a.value, b.value)
+                );
 
                 // But only return the matching options back to the combo.
                 return matchOpts;
@@ -484,8 +491,7 @@ class SelectInputModel extends HoistInputModel {
     // Option Rendering
     //----------------------
     formatOptionLabel = (opt, params) => {
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
+        // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
             return opt.label;
         }
@@ -501,7 +507,7 @@ class SelectInputModel extends HoistInputModel {
             return div(opt.label);
         }
 
-        return this.externalValue === opt.value
+        return isEqual(this.externalValue, opt.value)
             ? hbox({
                   items: [
                       div({
