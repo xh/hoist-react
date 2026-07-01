@@ -52,7 +52,7 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     favoritesIcon?: ReactElement;
     /**
      * True to render collapsed in-place, expanding into a popover when opened - useful in toolbars
-     * and other height-constrained containers.
+     * and other height-constrained containers. Opens in the direction set by `menuPlacement`.
      */
     popover?: boolean;
 }
