@@ -13,6 +13,9 @@
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
+  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
+  represent are left untouched rather than corrupted.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -21,7 +24,6 @@
 
 ### ⚙️ Technical
 * Misc. improvements to persistence in the Admin client.
-
 * @azure/msal-browser `5.14 → 5.15`
 * swiper  `12.1.0 -> 14.0.0`,
 
