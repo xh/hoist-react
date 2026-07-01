@@ -16,6 +16,12 @@
 * Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
   clauses are now expanded into editable rows and recombined on commit, and filters it cannot
   represent are left untouched rather than corrupted.
+* Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
+  longer disappears when opened - it now always occupies its place in the layout, so surrounding
+  elements no longer shift. Its clear and favorites controls also respond to a single click rather
+  than requiring the popover to be opened first. This mode is now enabled more naturally via
+  a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
+  as a thin alias.
 
 ### ⚙️ Typescript API Adjustments
 
