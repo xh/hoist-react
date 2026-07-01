@@ -4,6 +4,34 @@
 
 ### 🎁 New Features
 
+* `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
+  not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
+  ensuring such values render with their proper label rather than falling back to the raw value.
+
+### 🐞 Bug Fixes
+
+* Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
+  async query de-duplication now use deep equality, so object values no longer render as
+  `[object Object]` or collide with one another.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
+  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
+  represent are left untouched rather than corrupted.
+
+### ⚙️ Typescript API Adjustments
+
+* Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
+  replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+
+### ⚙️ Technical
+* Misc. improvements to persistence in the Admin client.
+* @azure/msal-browser `5.14 → 5.15`
+* swiper  `12.1.0 -> 14.0.0`,
+
+
+## 86.2.0 - 2026-06-25
+
+### 🎁 New Features
+
 * `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
   controlled by a new `autoFormat` prop. On editable inputs, content is tidied automatically on blur
   (never mid-edit) - users get clean, consistently-formatted JSON without reaching for the format
@@ -37,6 +65,7 @@
   focused and committed (full-precision) value.
 * Fixed inline grid editing not ending when clicking empty grid space to the right of the last
   column or below the last row - such clicks now commit the active edit.
+* Fixed `Icon.placeholder()` to render with the correct width.
 * `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
 * Fixed `Select` (and `SelectEditor`) dropdown menu sizing: windowed menus now auto-size to their
   option labels instead of the control/cell width, and an explicit `menuWidth` is respected rather

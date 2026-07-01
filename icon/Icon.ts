@@ -15,6 +15,7 @@ import {ReactElement} from 'react';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
 import {SetRequired} from 'type-fest';
+import './Icon.scss';
 
 export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps, 'ref'>> {
     /** Name of the icon in FontAwesome. */
@@ -932,9 +933,9 @@ export const Icon = {
     },
 
     /**
-     * Returns an empty div with FA sizing classes applied. Can be used to take up room in a layout
-     * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
-     * not have an icon but others do.
+     * Returns an empty div sized to occupy the width of a standard icon. Can be used to take up
+     * room in a layout where an icon might otherwise go - e.g. to align a series of menu items,
+     * where some items do not have an icon but others do.
      */
     placeholder(opts?: IconProps): any {
         const {size, asHtml = false} = opts ?? {},

@@ -20,7 +20,7 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {viewManager} from '@xh/hoist/desktop/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {ActivityTrackingModel} from './ActivityTrackingModel';
+import {INTERVALS, ActivityTrackingModel} from './ActivityTrackingModel';
 import {aggChartPanel} from '@xh/hoist/admin/tabs/activity/tracking/chart/AggChartPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
 import './ActivityTracking.scss';
@@ -75,32 +75,14 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     disabled: model.endDay >= LocalDate.currentAppDay()
                 }),
                 buttonGroup({
-                    items: [
+                    items: INTERVALS.map(interval =>
                         button({
-                            text: '6m',
-                            onClick: () => model.adjustStartDate(6, 'months'),
-                            active: model.isInterval(6, 'months'),
-                            ...dateBtn
-                        }),
-                        button({
-                            text: '1m',
-                            onClick: () => model.adjustStartDate(1, 'months'),
-                            active: model.isInterval(1, 'months'),
-                            ...dateBtn
-                        }),
-                        button({
-                            text: '7d',
-                            onClick: () => model.adjustStartDate(7, 'days'),
-                            active: model.isInterval(7, 'days'),
-                            ...dateBtn
-                        }),
-                        button({
-                            text: '1d',
-                            onClick: () => model.adjustStartDate(1, 'days'),
-                            active: model.isInterval(1, 'days'),
+                            text: `${interval.value}${interval.unit[0]}`,
+                            onClick: () => model.adjustStartDate(interval),
+                            active: model.isInterval(interval),
                             ...dateBtn
                         })
-                    ]
+                    )
                 }),
                 toolbarSep(),
                 filterChooserToggleButton(),
