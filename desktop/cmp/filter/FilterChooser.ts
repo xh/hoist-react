@@ -24,17 +24,10 @@ import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {elemWithin, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEmpty, isObject, sortBy} from 'lodash';
+import {isEmpty, sortBy} from 'lodash';
 import {badge} from '@xh/hoist/cmp/badge';
 import {cloneElement, ReactElement} from 'react';
 import './FilterChooser.scss';
-
-export interface FilterChooserPopoverOptions {
-    /** Side of the trigger on which to expand the popover. Defaults to 'bottom'. */
-    position?: 'bottom' | 'top';
-    /** Width in pixels of the expanded popover - defaults to matching the trigger width. */
-    width?: number;
-}
 
 export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
     /** True to focus the control on render. */
@@ -58,12 +51,10 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     /** Icon clicked to launch favorites menu. (Defaults to Icon.favorite()) */
     favoritesIcon?: ReactElement;
     /**
-     * True (or an options object) to render the control collapsed in-place, expanding into a
-     * popover when opened. Useful within height-constrained containers such as toolbars, where
-     * the chooser can then grow vertically without disrupting surrounding layout. The collapsed
-     * trigger still supports single-click clearing and favorites access.
+     * True to render collapsed in-place, expanding into a popover when opened - useful in toolbars
+     * and other height-constrained containers.
      */
-    popover?: boolean | FilterChooserPopoverOptions;
+    popover?: boolean;
 }
 
 /**
@@ -200,8 +191,7 @@ const popoverFilterChooser = hoistCmp.factory<FilterChooserProps>({
     render({model, className, ...props}, ref) {
         const impl = useLocalModel(FilterChooserLocalModel),
             {popoverIsOpen} = impl,
-            {popover: popoverSpec, ...rest} = props,
-            opts = isObject(popoverSpec) ? popoverSpec : {},
+            {popover: _popover, ...rest} = props,
             layoutProps = getLayoutProps(rest);
 
         return box({
@@ -213,7 +203,7 @@ const popoverFilterChooser = hoistCmp.factory<FilterChooserProps>({
                 popoverClassName: 'xh-filter-chooser__popover',
                 matchTargetWidth: true,
                 minimal: true,
-                position: opts.position ?? 'bottom',
+                position: 'bottom',
                 item: filterChooserControl({
                     model,
                     flex: 1,
@@ -228,7 +218,6 @@ const popoverFilterChooser = hoistCmp.factory<FilterChooserProps>({
                 content: filterChooserControl({
                     model,
                     flex: 1,
-                    width: opts.width,
                     className: 'xh-filter-chooser__content',
                     ...rest,
                     displayCount: true
