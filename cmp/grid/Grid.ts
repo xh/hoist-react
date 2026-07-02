@@ -395,11 +395,7 @@ export class GridLocalModel extends HoistModel {
                 if (!agApi) return;
                 agApi.setRowGroupColumns(groupBy);
 
-                // AG Grid re-shows any column removed from grouping, ignoring its configured
-                // visibility. Re-assert Hoist's column state for non-grouped columns so a `hidden`
-                // column does not reappear after being grouped then ungrouped. Grouped columns are
-                // left to AG Grid, which hides them as data columns while their values show in the
-                // group rows. See #4473.
+                // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
                 const state = model.columnState
                     .filter(({colId}) => !groupBy.includes(colId))
                     .map(({colId, hidden}) => ({colId, hide: hidden}));
