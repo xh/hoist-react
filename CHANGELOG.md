@@ -4,15 +4,12 @@
 
 ### 💥 Breaking Changes
 
-* Upgraded to AG Grid 36. Applications must bump their own `ag-grid-community`, `ag-grid-react`, and
-  (if used) `ag-grid-enterprise` dependencies to `36.x` - Hoist's `installAgGrid` version gate now
-  requires a v36 runtime.
+* Upgraded to AG Grid 36. Applications must bump their `ag-grid-community`, `ag-grid-react`, and
+  (if used) `ag-grid-enterprise` dependencies to `36.x`.
 * AG Grid 36 restructures the grid into a single scrollable container, renaming internal layout
   classes. Applications with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
   `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new class names. See the
   [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
-* Enterprise applications require an AG Grid license valid for versions released on or after
-  2 June 2026.
 
 ### 🎁 New Features
 
