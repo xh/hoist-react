@@ -1,0 +1,271 @@
+{
+  "generatedAt": "2026-07-02T17:21:52.066Z",
+  "referenceMachine": "MacBook Pro (Mac15,11), Apple M3 Max, 36 GB RAM, macOS 26.5.2, Chrome 149.0.7827.201 (flags: --js-flags=--expose-gc --enable-precise-memory-info)",
+  "env": [
+    {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+      "crossOriginIsolated": false,
+      "exposeGc": true,
+      "preciseMemory": true,
+      "heapMethod": "performanceMemory",
+      "capturedAt": "2026-07-02T16:34:55.870Z"
+    }
+  ],
+  "memorySeries": [
+    {
+      "leafRowCount": 5000,
+      "fieldCount": 20,
+      "totalHeapDeltaBytes": 277690294,
+      "cubeStoreRecords": 8141244.9,
+      "gridStoreRecords": 9092142.30432,
+      "viewResultRows": 9092142.30432,
+      "agGridInternals": 251364764.49136,
+      "tier": "comfortable"
+    },
+    {
+      "leafRowCount": 25000,
+      "fieldCount": 20,
+      "totalHeapDeltaBytes": 277343740,
+      "cubeStoreRecords": 40720669.5,
+      "gridStoreRecords": 41671904.33952,
+      "viewResultRows": 41671904.33952,
+      "agGridInternals": 153279261.82096,
+      "tier": "comfortable"
+    },
+    {
+      "leafRowCount": 50000,
+      "fieldCount": 10,
+      "totalHeapDeltaBytes": 61162985,
+      "cubeStoreRecords": 36059796,
+      "gridStoreRecords": 36480974.41728,
+      "viewResultRows": 36480974.41728,
+      "agGridInternals": 0,
+      "tier": "comfortable"
+    },
+    {
+      "leafRowCount": 50000,
+      "fieldCount": 20,
+      "totalHeapDeltaBytes": 334754586,
+      "cubeStoreRecords": 56918759,
+      "gridStoreRecords": 57583570.10512,
+      "viewResultRows": 57583570.10512,
+      "agGridInternals": 162668686.78976,
+      "tier": "comfortable"
+    },
+    {
+      "leafRowCount": 50000,
+      "fieldCount": 40,
+      "totalHeapDeltaBytes": 664750502,
+      "cubeStoreRecords": 141945013,
+      "gridStoreRecords": 143602930.75184,
+      "viewResultRows": 143602930.75184,
+      "agGridInternals": 235599627.49632,
+      "tier": "degraded"
+    },
+    {
+      "leafRowCount": 100000,
+      "fieldCount": 20,
+      "totalHeapDeltaBytes": 513585154,
+      "cubeStoreRecords": 113974093.99999999,
+      "gridStoreRecords": 114639702.70896,
+      "viewResultRows": 114639702.70896,
+      "agGridInternals": 170331654.58208,
+      "tier": "degraded"
+    },
+    {
+      "leafRowCount": 200000,
+      "fieldCount": 20,
+      "totalHeapDeltaBytes": 872132921,
+      "cubeStoreRecords": 227949156,
+      "gridStoreRecords": 228614767.53552,
+      "viewResultRows": 228614767.53552,
+      "agGridInternals": 186954229.92896008,
+      "tier": "degraded"
+    }
+  ],
+  "cpuSeries": [
+    {
+      "batchSize": 100,
+      "ratePerSec": 2,
+      "cadence": "steady",
+      "engineMedianMs": 435.5,
+      "engineP95Ms": 442.19999999552965,
+      "genTxnMedianMs": 4.099999997764826,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 439.69999999925494,
+      "batchIntervalMs": 500,
+      "keepsUp": true
+    },
+    {
+      "batchSize": 100,
+      "ratePerSec": 2,
+      "cadence": "burst",
+      "engineMedianMs": 476.80000000074506,
+      "engineP95Ms": 491.3999999985099,
+      "genTxnMedianMs": 5.649999998509884,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 482.55000000074506,
+      "batchIntervalMs": 500,
+      "keepsUp": true
+    },
+    {
+      "batchSize": 100,
+      "ratePerSec": 10,
+      "cadence": "steady",
+      "engineMedianMs": 477.3499999977648,
+      "engineP95Ms": 485.3999999985099,
+      "genTxnMedianMs": 4.100000001490116,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 481.55000000074506,
+      "batchIntervalMs": 100,
+      "keepsUp": false
+    },
+    {
+      "batchSize": 100,
+      "ratePerSec": 10,
+      "cadence": "burst",
+      "engineMedianMs": 479.3499999977648,
+      "engineP95Ms": 493.70000000298023,
+      "genTxnMedianMs": 4.100000001490116,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 483.55000000074506,
+      "batchIntervalMs": 100,
+      "keepsUp": false
+    },
+    {
+      "batchSize": 500,
+      "ratePerSec": 2,
+      "cadence": "steady",
+      "engineMedianMs": 475.9000000022352,
+      "engineP95Ms": 494.29999999701977,
+      "genTxnMedianMs": 4.25,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 480.2500000037253,
+      "batchIntervalMs": 500,
+      "keepsUp": true
+    },
+    {
+      "batchSize": 500,
+      "ratePerSec": 2,
+      "cadence": "burst",
+      "engineMedianMs": 393.5999999977648,
+      "engineP95Ms": 414.3999999985099,
+      "genTxnMedianMs": 4.150000002235174,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 397.8500000014901,
+      "batchIntervalMs": 500,
+      "keepsUp": true
+    },
+    {
+      "batchSize": 500,
+      "ratePerSec": 10,
+      "cadence": "steady",
+      "engineMedianMs": 423.30000000074506,
+      "engineP95Ms": 434,
+      "genTxnMedianMs": 4.650000002235174,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 428.05000000447035,
+      "batchIntervalMs": 100,
+      "keepsUp": false
+    },
+    {
+      "batchSize": 500,
+      "ratePerSec": 10,
+      "cadence": "burst",
+      "engineMedianMs": 426.6000000014901,
+      "engineP95Ms": 442.8999999985099,
+      "genTxnMedianMs": 4.950000002980232,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 431.65000000596046,
+      "batchIntervalMs": 100,
+      "keepsUp": false
+    },
+    {
+      "batchSize": 2000,
+      "ratePerSec": 2,
+      "cadence": "steady",
+      "engineMedianMs": 396.69999999925494,
+      "engineP95Ms": 416.3999999985099,
+      "genTxnMedianMs": 5.00000000372529,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 401.80000000447035,
+      "batchIntervalMs": 500,
+      "keepsUp": true
+    },
+    {
+      "batchSize": 2000,
+      "ratePerSec": 2,
+      "cadence": "burst",
+      "engineMedianMs": 377.6000000014901,
+      "engineP95Ms": 441.30000000447035,
+      "genTxnMedianMs": 5.200000002980232,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 382.90000000596046,
+      "batchIntervalMs": 500,
+      "keepsUp": true
+    },
+    {
+      "batchSize": 2000,
+      "ratePerSec": 10,
+      "cadence": "steady",
+      "engineMedianMs": 390.80000000074506,
+      "engineP95Ms": 414.1000000014901,
+      "genTxnMedianMs": 5.0999999940395355,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 395.9999999962747,
+      "batchIntervalMs": 100,
+      "keepsUp": false
+    },
+    {
+      "batchSize": 2000,
+      "ratePerSec": 10,
+      "cadence": "burst",
+      "engineMedianMs": 377.9999999962747,
+      "engineP95Ms": 422.70000000298023,
+      "genTxnMedianMs": 5.200000002980232,
+      "bridgeMedianMs": 0,
+      "renderMedianMs": 0.10000000149011612,
+      "endToEndMedianMs": 383.30000000074506,
+      "batchIntervalMs": 100,
+      "keepsUp": false
+    }
+  ],
+  "anchorBatch": {
+    "batchSize": 500,
+    "fieldCount": 20,
+    "engineMs": 88.94999999925494,
+    "genTxnMs": 3.7999999970197678,
+    "bridgeMs": 0,
+    "renderMs": 0.09999999403953552,
+    "endToEndMs": 92.84999999031425
+  },
+  "tierBoundaries": [
+    {
+      "axis": "memory",
+      "from": "comfortable",
+      "to": "degraded",
+      "atShape": "50000 leaves x 40 fields",
+      "observedValue": 664750502,
+      "rationale": "Retained heap crosses ~500 MB - a normal desktop tab still copes, but headroom is shrinking."
+    },
+    {
+      "axis": "cpu",
+      "from": "keepsUp",
+      "to": "overruns",
+      "atCadence": "100 rows/tick @ 10/s (steady)",
+      "observedValue": 481.55000000074506,
+      "rationale": "Median update-to-render (481.6 ms) exceeds the 100 ms batch interval - the pipeline falls behind the stream."
+    }
+  ]
+}
