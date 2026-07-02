@@ -13,6 +13,11 @@
 * Fixed grid columns configured as `hidden` becoming visible after being grouped and then
   ungrouped. `GridModel` now re-asserts each column's configured visibility whenever `groupBy`
   changes, keeping AG Grid's column state in sync with `columnState`.
+* Fixed `StoreFilterField` and grid Find so an active quick-filter or find query no longer returns
+  different results when the grid's `groupBy` changes.
+* Fixed inline grid cell editors to reliably commit their value when editing ends, including popup
+  editors (e.g. `textAreaEditor`) within a dialog, which previously dropped edits on Enter or
+  click-away.
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
