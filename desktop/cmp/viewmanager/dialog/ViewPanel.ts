@@ -6,7 +6,17 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {div, filler, hbox, hspacer, span, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {
+    div,
+    filler,
+    fragment,
+    hbox,
+    hspacer,
+    span,
+    vbox,
+    vframe,
+    vspacer
+} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -63,20 +73,13 @@ export const viewPanel = hoistCmp.factory({
                             clickableLabel: false,
                             label: formModel.readonly
                                 ? undefined
-                                : hbox({
-                                      alignItems: 'center',
-                                      items: [
-                                          span('Group'),
-                                          filler(),
-                                          button({
-                                              icon: Icon.edit(),
-                                              text: 'Edit',
-                                              outlined: true,
-                                              className: 'xh-view-manager__group-editor__edit-btn',
-                                              onClick: () => groupEditorRef.current?.togglePopover()
-                                          })
-                                      ]
-                                  }),
+                                : fragment(
+                                      span('Group'),
+                                      button({
+                                          icon: Icon.edit(),
+                                          onClick: () => groupEditorRef.current?.togglePopover()
+                                      })
+                                  ),
                             item: groupEditor({
                                 ref: groupEditorRef,
                                 viewManagerModel,

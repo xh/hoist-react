@@ -21,6 +21,14 @@
         &__readonly-display {
           padding: 0;
         }
+
+        &--group-editor {
+          .xh-form-field__label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+          }
+        }
       }
     }
 
@@ -52,7 +60,7 @@
     min-height: var(--xh-input-height-px);
 
     &__value {
-      padding: var(--xh-pad-half-px) 0;
+      padding: 0;
     }
 
     &__popover {
