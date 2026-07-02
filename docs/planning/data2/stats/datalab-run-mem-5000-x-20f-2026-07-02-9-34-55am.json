@@ -1,0 +1,73 @@
+{
+  "scenario": {
+    "name": "Mem 5000 x 20f",
+    "dataset": {
+      "leafRowCount": 5000,
+      "dimensions": [
+        "dim0",
+        "dim1",
+        "dim2"
+      ],
+      "fieldCount": 20,
+      "fieldTypeMix": {
+        "number": 5,
+        "string": 3,
+        "date": 1,
+        "object": 1
+      },
+      "aggregators": [],
+      "seed": 0
+    },
+    "update": {
+      "cadence": "steady",
+      "updateMode": "incremental",
+      "breadth": 1,
+      "batchSize": 10,
+      "ratePerSec": 10,
+      "transport": "http",
+      "durationSec": 5
+    },
+    "protocol": {
+      "warmupIterations": 5,
+      "measuredIterations": 20,
+      "gcSettleMs": 50
+    },
+    "measure": {
+      "memory": true,
+      "performance": false
+    },
+    "grid": {
+      "useVirtualColumns": true
+    }
+  },
+  "scorecard": {
+    "engine": null,
+    "genTxn": null,
+    "bridgeCall": null,
+    "render": null,
+    "heap": {
+      "cubeStoreRecords": 8141244.9,
+      "gridStoreRecords": 9092142.30432,
+      "viewResultRows": 9092142.30432,
+      "agGridInternals": 251364764.49136,
+      "totalHeapDelta": 277690294,
+      "unit": "bytes",
+      "method": "performanceMemory"
+    },
+    "rowCounts": {
+      "leaf": 5000,
+      "aggregate": 5584,
+      "gridRows": 5584
+    }
+  },
+  "env": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+    "crossOriginIsolated": false,
+    "exposeGc": true,
+    "preciseMemory": true,
+    "heapMethod": "performanceMemory",
+    "capturedAt": "2026-07-02T16:34:55.870Z"
+  },
+  "adapterId": "baseline-cube",
+  "overheadMs": null
+}
