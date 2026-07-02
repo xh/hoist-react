@@ -106,7 +106,14 @@ defensible quantitative targets adopted as the harness pass/fail criteria for al
   4. Defensible quantitative targets (max records x fields client-side; sustained batch size/rate
      without jank; update->render latency; per-tab memory ceiling on reference and small-heap machines)
      are proposed, adopted, and wired into the harness as pass/fail criteria (BASE-04).
-**Plans**: TBD
+**Plans**: 7 plans
+- [ ] 03-01-PLAN.md - Harness TargetsConfig + pure evaluateScorecard verdict scaffold (BASE-04)
+- [ ] 03-02-PLAN.md - Data Lab run export/import + distilled-stats export (BASE-01/02/03)
+- [ ] 03-03-PLAN.md - Sweep env (chrome-devtools-mcp) + named ladder profiles + coarse pass (BASE-01/02/03)
+- [ ] 03-04-PLAN.md - Front-loaded presentation package: envelope-stats.json + coarse BASELINE.md (BASE-01/02/03)
+- [ ] 03-05-PLAN.md - Small-heap reference machine + zoom refinement of the walls (BASE-01/02)
+- [ ] 03-06-PLAN.md - Targets proposal + D-08 adoption checkpoint + wired DEFAULT_TARGETS/BASELINE (BASE-04)
+- [ ] 03-07-PLAN.md - Scorecard pass/fail badges + comparison target columns (BASE-04)
 
 ### Phase 4: Toolbox Technology Demo
 **Goal**: Land the highest near-term business-value deliverable - a portfolio / real-time-flavored
@@ -232,7 +239,7 @@ harness and may run in parallel with Phases 2-3 (parallelization enabled).
 |-------|----------------|--------|-----------|
 | 1. Current-State Inventory | 4/4 | Complete | 2026-06-28 |
 | 2. Measurement Harness | 6/6 | Complete | 2026-06-29 |
-| 3. Baseline Performance Envelope | 0/TBD | Not started | - |
+| 3. Baseline Performance Envelope | 0/7 | Planned | - |
 | 4. Toolbox Technology Demo | 0/TBD | Not started | - |
 | 5. Feature Spec & AG Grid 36 Parity | 0/TBD | Not started | - |
 | 6. Technology Candidate Evaluation | 0/TBD | Not started | - |
