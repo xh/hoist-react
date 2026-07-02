@@ -844,6 +844,21 @@ body {
   --xh-tab-font-size: var(--tab-font-size, var(--xh-font-size));
   --xh-tab-font-size-px: calc(var(--xh-tab-font-size) * 1px);
 
+  // Vertical (left/right) TabSwitcher - the styled "rail" of rounded, hoverable items with a
+  // filled active "pill". All overridable via the unprefixed hooks.
+  --xh-tab-switcher-vertical-min-width: var(--tab-switcher-vertical-min-width, auto);
+  --xh-tab-switcher-vertical-padding: var(--tab-switcher-vertical-padding, var(--xh-pad-half-px));
+  --xh-tab-switcher-vertical-border: var(--tab-switcher-vertical-border, var(--xh-border-solid));
+  --xh-tab-switcher-vertical-item-gap: var(--tab-switcher-vertical-item-gap, 2px);
+  --xh-tab-switcher-vertical-item-padding: var(--tab-switcher-vertical-item-padding, var(--xh-pad-half-px) var(--xh-pad-px));
+  --xh-tab-switcher-vertical-item-border-radius: var(--tab-switcher-vertical-item-border-radius, var(--xh-border-radius-px));
+  --xh-tab-switcher-vertical-item-text-color: var(--tab-switcher-vertical-item-text-color, var(--xh-text-color-muted));
+  --xh-tab-switcher-vertical-item-active-text-color: var(--tab-switcher-vertical-item-active-text-color, var(--xh-tab-active-text-color));
+  --xh-tab-switcher-vertical-item-hover-bg: var(--tab-switcher-vertical-item-hover-bg, var(--xh-bg-alt));
+  --xh-tab-switcher-vertical-item-active-bg: var(--tab-switcher-vertical-item-active-bg, var(--xh-bg-highlight));
+  --xh-tab-switcher-vertical-item-font-weight: var(--tab-switcher-vertical-item-font-weight, 500);
+  --xh-tab-switcher-vertical-item-active-font-weight: var(--tab-switcher-vertical-item-active-font-weight, 600);
+
   &.xh-dark {
     --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary-lighter));
   }

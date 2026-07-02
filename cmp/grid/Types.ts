@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import type {HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {HoistModel, HSide, PersistOptions, Some} from '@xh/hoist/core';
 import type {
     FilterBindTarget,
     FilterMatchMode,
@@ -141,6 +141,14 @@ export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSourc
  * @returns the formatted value for display.
  */
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
+
+/** Cross-platform interface for desktop and mobile ColChooserModels. */
+export interface IColChooserModel extends HoistModel {
+    readonly gridModel: GridModel;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+}
 
 /**
  * Configuration for a {@link ColChooserModel} - the model backing the grid column chooser UI.

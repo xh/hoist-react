@@ -28,6 +28,92 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
+  not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
+  ensuring such values render with their proper label rather than falling back to the raw value.
+
+### 🐞 Bug Fixes
+
+* Fixed grid columns configured as `hidden` becoming visible after being grouped and then
+  ungrouped. `GridModel` now re-asserts each column's configured visibility whenever `groupBy`
+  changes, keeping AG Grid's column state in sync with `columnState`.
+* Fixed `StoreFilterField` and grid Find so an active quick-filter or find query no longer returns
+  different results when the grid's `groupBy` changes.
+* Fixed inline grid cell editors to reliably commit their value when editing ends, including popup
+  editors (e.g. `textAreaEditor`) within a dialog, which previously dropped edits on Enter or
+  click-away.
+* Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
+  async query de-duplication now use deep equality, so object values no longer render as
+  `[object Object]` or collide with one another.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
+  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
+  represent are left untouched rather than corrupted.
+* Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
+  longer disappears when opened - it now always occupies its place in the layout, so surrounding
+  elements no longer shift. Its clear and favorites controls also respond to a single click rather
+  than requiring the popover to be opened first. This mode is now enabled more naturally via
+  a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
+  as a thin alias.
+
+### ⚙️ Typescript API Adjustments
+
+* Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
+  replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+
+### ⚙️ Technical
+* Misc. improvements to persistence in the Admin client.
+* @azure/msal-browser `5.14 → 5.15`
+* swiper  `12.1.0 -> 14.0.0`,
+
+
+## 86.2.0 - 2026-06-25
+
+### 🎁 New Features
+
+* `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
+  controlled by a new `autoFormat` prop. On editable inputs, content is tidied automatically on blur
+  (never mid-edit) - users get clean, consistently-formatted JSON without reaching for the format
+  button. For `readonly` inputs it defaults to true, so applications can bind directly to raw source
+  values and drop their pre-formatting logic, simplifying call sites substantially.
+* Grid column filter specs now support a `sortValue` config, letting the Values tab of the filter
+  dialog sort its entries the same way the underlying grid column sorts them. When not provided,
+  the column's own `sortValue` is used.
+* `GridModel.levelLabels` now accepts a partial array covering only the top levels of a tree or
+  grouped grid. The "Expand to..." menu and `ExpandToLevelButton` offer one entry per labelled
+  level, so deeper, unlabelled levels (e.g. system-managed) are no longer required and are omitted
+  as expand-to targets - previously a too-short array disabled the feature entirely.
+* Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
+  when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
+  `7,100,100` rather than collapsing to `7.10m`).
+
+### 🐞 Bug Fixes
+
+* Fixed grid `NumberEditor` to allow starting an edit by typing `-`, `+`, or `.` (e.g. to enter a
+  negative or decimal value), while reliably rejecting other non-numeric keypresses.
+* `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
+  `'auto'`, aligning a `NumberInput` with `precision: null` so its blurred display matches its
+  focused and committed (full-precision) value.
+* Fixed inline grid editing not ending when clicking empty grid space to the right of the last
+  column or below the last row - such clicks now commit the active edit.
+* Fixed `Icon.placeholder()` to render with the correct width.
+* `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
+* Fixed `Select` (and `SelectEditor`) dropdown menu sizing: windowed menus now auto-size to their
+  option labels instead of the control/cell width, and an explicit `menuWidth` is respected rather
+  than overridden by content auto-sizing.
+
+### ⚙️ Typescript API Adjustments
+
+* `GridFilterFieldSpec.renderer` is now typed as a pure value transform (`GridFilterRenderer`),
+  rather than a `ColumnRenderer`. This more accurately represents the existing run-time limitation
+  that a complex column renderer would throw.
+
+### ✨ Styles
+
+* Vertical (left/right) `TabContainer` switchers now render a modern rounded-pill treatment by
+  default, customizable via new `--xh-tab-switcher-vertical-*` CSS variables.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
