@@ -197,6 +197,18 @@ Recent decisions affecting current work:
   surfaced in a new "Grid" `formFieldSet` section (a switch defaulting on). The section is the home for the
   additional grid switches to come. Live-verified the toggle renders on by default.
 
+- [2026-07-02] RESOLVED (was a blocker): AG Grid Enterprise entitlement is confirmed - Enterprise is
+  a clear XH requirement and all clients hold licenses. SPEC-06 is satisfied; Phase 5 spec work may
+  depend on AG Grid 36 Enterprise features (calculated columns, "show values as," FormulaModule)
+  without a per-client entitlement gate. The SPEC-05 parity map no longer needs per-client
+  entitlement status columns.
+- [2026-07-02] DESCOPED: backend aggregation (server-side pre-shaping + delta push on the Grails
+  transport) is out of scope as a candidate - the client-side data layer under question must (and
+  more often does) source data from backend APIs not under XH's control, so a server-controlled
+  pre-shaping path cannot be a candidate answer. TECH-04 descoped; backend aggregation removed from
+  the TECH-02 candidate matrix and Phase 6 roadmap text. It may survive as app-level advice for
+  XH-controlled backends, but is not evaluated or spiked in this effort.
+
 ### Pending Todos
 
 [From .planning/todos/pending/ - ideas captured during sessions]
@@ -207,11 +219,8 @@ None yet.
 
 [Issues that affect future work]
 
-- Open licensing question: AG Grid Enterprise entitlement for AG Grid 36 features (calculated columns,
-  "show values as," FormulaModule) per client - must be confirmed in Phase 5 (SPEC-06) before the spec
-  depends on any of them.
-- Per-client transport + cross-origin-isolation (COOP/COEP) deployability matrix gates SharedArrayBuffer
-  and backend-aggregation candidates - needed before Phase 6 scoring is finalized.
+- Per-client transport + cross-origin-isolation (COOP/COEP) deployability matrix gates
+  SharedArrayBuffer-dependent candidates - needed before Phase 6 scoring is finalized.
 - OPEN REPO: no private client/customer names in any committed file. Allowed names: Hoist, Toolbox,
   JobSite. A local PreToolUse guard blocks commits containing forbidden names.
 

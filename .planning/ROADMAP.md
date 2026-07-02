@@ -145,7 +145,8 @@ Phases 2-4.
      generation, and aggregation editing - mapped against a data-layer-resident approach and the
      shared-store contract (SPEC-05).
   4. AG Grid Enterprise entitlement for the relevant AG Grid 36 features is confirmed per client before
-     any spec item is allowed to depend on them (SPEC-06).
+     any spec item is allowed to depend on them (SPEC-06). *Already satisfied (2026-07-02): Enterprise
+     is a clear XH requirement and all clients hold licenses.*
   5. Every requirement is classified gate-vs-factor and passes a survivor check - no requirement
      combination silently eliminates every otherwise-strong candidate; conflicts are surfaced as
      findings (SPEC-07).
@@ -153,12 +154,14 @@ Phases 2-4.
 
 ### Phase 6: Technology Candidate Evaluation
 **Goal**: With harness, baseline targets, and feature spec in hand, score every candidate on a common
-rubric at real result shapes - running the cheapest experiments (structural sharing, backend
-aggregation) early, measuring the bridge/transpose tax and reactivity bridge as first-class line items,
-and producing an evidence-backed comparison matrix with spike notes. No premature lock-in: candidates
-stay live into prototyping.
+rubric at real result shapes - running the cheapest experiment (structural sharing) early, measuring
+the bridge/transpose tax and reactivity bridge as first-class line items, and producing an
+evidence-backed comparison matrix with spike notes. No premature lock-in: candidates stay live into
+prototyping.
 **Depends on**: Phase 3 (baseline + adopted targets) and Phase 5 (feature spec + gate/factor rubric)
-**Requirements**: TECH-01, TECH-02, TECH-03, TECH-04, TECH-05, TECH-06, TECH-07, TECH-08
+**Requirements**: TECH-01, TECH-02, TECH-03, TECH-05, TECH-06, TECH-07, TECH-08 (TECH-04 descoped
+2026-07-02 - backend aggregation is out of scope; client data layer must work against backend APIs
+not under XH's control)
 **Success Criteria** (what must be TRUE):
   1. A per-candidate rubric scores memory vs. baseline, threading story, JS<->engine bridge cost at
      real result shapes, incremental-update support, MobX/React reactivity bridge, CC-1/2/3 support,
@@ -166,11 +169,10 @@ stay live into prototyping.
      maturity, shared-store-contract fit, and migration/coexistence cost - with explicit "transpose tax"
      and "reactivity bridge" columns (TECH-01).
   2. A comparison matrix scores every candidate (Arrow JS, SQLite-WASM, DuckDB-WASM, Perspective/FINOS,
-     Web Workers, WASM, structural-sharing, server-state patterns, backend aggregation, and any
-     newly-surfaced engine) with evidence and spike notes (TECH-02).
-  3. The two cheapest experiments are measured early: a structural-sharing spike (Immer / Mutative) on
-     the existing record cascade, and a backend-aggregation spike (server-side pre-shaping + delta push
-     on the controllable transport) (TECH-03, TECH-04).
+     Web Workers, WASM, structural-sharing, server-state patterns, and any newly-surfaced engine) with
+     evidence and spike notes (TECH-02).
+  3. The cheapest experiment is measured early: a structural-sharing spike (Immer / Mutative) on the
+     existing record cascade (TECH-03).
   4. Boundary-cost measurements isolate the column->row transpose tax (Arrow JS) as the bridge-cost
      floor, and a Perspective headless spike measures bridge cost, delta granularity under fan-out
      breadth, and the reactivity bridge at real result shapes (TECH-05, TECH-06).

@@ -78,8 +78,9 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 - [ ] **SPEC-05**: An AG Grid 36 parity map covers calculated columns, formulas, "show values as,"
   automatic column generation, and aggregation editing - mapped against a data-layer-resident
   approach and the shared-store contract.
-- [ ] **SPEC-06**: AG Grid Enterprise entitlement for the relevant AG Grid 36 features is confirmed
-  (per client) before any spec item depends on them.
+- [x] **SPEC-06**: AG Grid Enterprise entitlement for the relevant AG Grid 36 features is confirmed
+  (per client) before any spec item depends on them. *Satisfied 2026-07-02: Enterprise is a clear XH
+  requirement and all clients hold licenses - spec items may depend on Enterprise features.*
 - [ ] **SPEC-07**: Requirements are classified gate-vs-factor and pass a survivor check (no requirement
   combination eliminates every otherwise-strong candidate; conflicts are surfaced, not hidden).
 
@@ -92,11 +93,16 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
   fit; migration/coexistence cost. Includes explicit "transpose tax" and "reactivity bridge" columns.
 - [ ] **TECH-02**: A technology comparison matrix scores every candidate (Arrow JS, SQLite-WASM,
   DuckDB-WASM, Perspective/FINOS, Web Workers, WASM, structural-sharing, server-state patterns,
-  backend aggregation, and any newly-surfaced engine) with evidence and spike notes.
+  and any newly-surfaced engine) with evidence and spike notes. *(Backend aggregation removed as a
+  candidate 2026-07-02 - see TECH-04.)*
 - [ ] **TECH-03**: A structural-sharing spike (Immer / Mutative) measures memory reduction in the
   existing record cascade - an early, cheap experiment runnable alongside the baseline.
-- [ ] **TECH-04**: A backend-aggregation spike (server-side pre-shaping + delta push on the
-  controllable transport) measures the lowest-client-memory path; engine-independent.
+- ~~**TECH-04**: A backend-aggregation spike (server-side pre-shaping + delta push on the
+  controllable transport) measures the lowest-client-memory path; engine-independent.~~
+  *DESCOPED 2026-07-02: out of scope - the client-side data layer under question must (and more
+  often does) source data from backend APIs not under XH's control, so server-side pre-shaping
+  cannot be a candidate answer. It may remain app-level advice for XH-controlled backends, but is
+  not part of this evaluation.*
 - [ ] **TECH-05**: A Perspective (FINOS) headless spike measures bridge cost, delta granularity under
   fan-out breadth, and the reactivity bridge at real result shapes.
 - [ ] **TECH-06**: An Arrow JS boundary-cost measurement isolates the column->row transpose tax to
@@ -152,6 +158,7 @@ Deferred - depend on this milestone's recommendation; not in the current roadmap
 | HFT-grade per-tick latency | Target is human-perceptible trading-screen cadence (coalesced batches, sub-second render) |
 | First-class mobile / Firefox / Safari optimization | Chromium / Edge-first, desktop-first |
 | Hard dependence on one transport or ingest pattern | The layer must stay adaptive across client patterns; transport-specific unlocks are conditional, not default |
+| Backend aggregation (server-side pre-shaping + delta push) as a candidate | Descoped 2026-07-02 - the client-side data layer must (and more often does) source data from backend APIs not under XH's control; may survive as app-level advice for XH-controlled backends |
 
 ## Traceability
 
@@ -181,12 +188,12 @@ Each v1 requirement maps to exactly one phase (see `.planning/ROADMAP.md`).
 | SPEC-03 | Phase 5 | Pending |
 | SPEC-04 | Phase 5 | Pending |
 | SPEC-05 | Phase 5 | Pending |
-| SPEC-06 | Phase 5 | Pending |
+| SPEC-06 | Phase 5 | Complete (confirmed 2026-07-02) |
 | SPEC-07 | Phase 5 | Pending |
 | TECH-01 | Phase 6 | Pending |
 | TECH-02 | Phase 6 | Pending |
 | TECH-03 | Phase 6 | Pending |
-| TECH-04 | Phase 6 | Pending |
+| TECH-04 | Phase 6 | Descoped (2026-07-02) |
 | TECH-05 | Phase 6 | Pending |
 | TECH-06 | Phase 6 | Pending |
 | TECH-07 | Phase 6 | Pending |
@@ -203,7 +210,8 @@ Each v1 requirement maps to exactly one phase (see `.planning/ROADMAP.md`).
 | STRAT-05 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 42 total (INV 4, HARN 6, BASE 4, DEMO 3, SPEC 7, TECH 8, PROTO 5, STRAT 5)
+- v1 requirements: 42 total (INV 4, HARN 6, BASE 4, DEMO 3, SPEC 7, TECH 8, PROTO 5, STRAT 5);
+  41 active after TECH-04 descope (2026-07-02)
 - Mapped to phases: 42 ✓
 - Unmapped: 0 ✓
 - Orphaned (no requirement) phases: none - every phase carries at least one requirement

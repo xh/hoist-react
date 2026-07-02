@@ -199,8 +199,9 @@ engine that can't drive fine-grained reactive updates is not a fit.
   during research; deployment/compliance acceptability (esp. the lead client) to be confirmed before adoption.
 - **Transport reality**: assume asymmetric control - we shape our Grails transport; client
   WebSocket/SignalR/HTTP transports are fixed. A per-client transport matrix would sharpen research.
-- **AG Grid Enterprise entitlement**: assume the relevant AG Grid 36 features may carry licensing
-  implications across clients; confirm before depending on them.
+- **AG Grid Enterprise entitlement**: CONFIRMED (2026-07-02) - Enterprise is a clear XH requirement
+  and all clients hold licenses. AG Grid 36 Enterprise features may be depended on without a
+  per-client entitlement check; SPEC-06 is satisfied.
 - **Coexistence pilot**: no preferred first pilot workload chosen yet; candidates drawn from
   `jobsite` / a client app / `toolbox`.
 
@@ -247,6 +248,8 @@ engine that can't drive fine-grained reactive updates is not a fit.
 | Land the Toolbox demo + baseline early | Highest near-term business value; answers the "where's our limit" question being asked now | — Pending |
 | Kickoff brief validated against source + real app usage before planning (corrections in `docs/planning/data2/KICKOFF-VALIDATION.md`) | The brief was authored without repo access; several claims (WebSocket push, built-in weighted-avg, cube-as-MobX-observable) were inaccurate and would have misdirected the roadmap | ✓ Good |
 | Local-only client-name guard (no CI, denylist kept outside the repo) enforces the open-repo no-private-names rule | Open repo must not leak client names; a checked-in denylist would itself leak them. A PreToolUse hook blocks commits with forbidden names. Scanner + denylist live at `~/.claude/projects/-Users-amcclain-dev-hoist-react/client-name-guard/`; run `--all` for a full audit | ✓ Good |
+| AG Grid Enterprise entitlement confirmed for all clients (2026-07-02) | Enterprise is a clear XH requirement and all clients hold licenses - no per-client entitlement gate on AG Grid 36 features | ✓ Good |
+| Backend aggregation descoped as a candidate (2026-07-02) | The client-side data layer must (and more often does) source data from backend APIs not under XH's control - server-side pre-shaping cannot be a candidate answer. TECH-04 dropped; removed from the TECH-02 matrix | ✓ Good |
 
 ---
 *Last updated: 2026-06-27 after initialization, kickoff validation, and open-repo guard setup*
