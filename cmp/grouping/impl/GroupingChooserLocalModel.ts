@@ -6,7 +6,7 @@
  */
 
 import {HoistModel, lookup, SelectOption} from '@xh/hoist/core';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {compact, difference, isEmpty, isEqual, sortBy} from 'lodash';
 import {GroupingChooserModel} from '../GroupingChooserModel';
@@ -24,16 +24,11 @@ export class GroupingChooserLocalModel extends HoistModel {
     @lookup(GroupingChooserModel)
     parentModel: GroupingChooserModel;
 
-    @observable.ref pendingValue: string[] = [];
-    @observable editorIsOpen: boolean = false;
+    @observable.ref accessor pendingValue: string[] = [];
+    @observable accessor editorIsOpen: boolean = false;
 
     /** Used by desktop for DnD transform correction. */
     popoverRef = createObservableRef<HTMLElement>();
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override onLinked() {
         this.addReaction({

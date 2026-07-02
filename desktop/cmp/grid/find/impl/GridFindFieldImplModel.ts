@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
-import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, comparer, computed, observable} from '@xh/hoist/mobx';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -30,8 +30,7 @@ import {
 export class GridFindFieldImplModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable
-    query: string = null;
+    @bindable accessor query: string = null;
 
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
@@ -49,7 +48,7 @@ export class GridFindFieldImplModel extends HoistModel {
         return this.componentProps.excludeFields;
     }
 
-    @observable.ref results;
+    @observable.ref accessor results;
     inputRef = createObservableRef<TextInputModel>();
     _records: StoreRecord[] = null;
 
@@ -98,11 +97,6 @@ export class GridFindFieldImplModel extends HoistModel {
     //------------------------------------------------------------------
     // Trampoline value to grid
     //------------------------------------------------------------------
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     override onLinked() {
         this.addReaction(
             {

@@ -53,7 +53,7 @@ import {
     StoreTransaction
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
@@ -327,16 +327,13 @@ export class ZoneGridModel extends HoistModel {
     @managed
     mapperModel: ZoneMapperModel;
 
-    @observable.ref
-    mappings: Record<Zone, ZoneMapping[]>;
+    @observable.ref accessor mappings: Record<Zone, ZoneMapping[]>;
 
     labelRenderers: Record<string, ColumnRenderer>;
 
-    @bindable.ref
-    leftColumnSpec: Partial<ColumnSpec>;
+    @bindable.ref accessor leftColumnSpec: Partial<ColumnSpec>;
 
-    @bindable.ref
-    rightColumnSpec: Partial<ColumnSpec>;
+    @bindable.ref accessor rightColumnSpec: Partial<ColumnSpec>;
 
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
@@ -348,7 +345,6 @@ export class ZoneGridModel extends HoistModel {
 
     constructor(config: ZoneGridConfig) {
         super();
-        makeObservable(this);
 
         const {
             columns,

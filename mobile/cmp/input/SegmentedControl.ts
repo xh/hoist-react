@@ -16,7 +16,7 @@ import {hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -122,11 +122,6 @@ class SegmentedControlModel extends HoistInputModel {
     get enabledButtons(): HTMLButtonElement[] {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
         return filter(btns, (b: HTMLButtonElement) => !b.disabled) as HTMLButtonElement[];
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     onValueChange = (key: string) => {

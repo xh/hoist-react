@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, ToastSpec} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode, ReactElement} from 'react';
 
@@ -30,7 +30,7 @@ export class ToastModel extends HoistModel {
     position: string;
     containerRef: HTMLElement;
 
-    @observable isOpen = true;
+    @observable accessor isOpen = true;
 
     constructor({
         message,
@@ -42,7 +42,6 @@ export class ToastModel extends HoistModel {
         containerRef = null
     }: ToastSpec) {
         super();
-        makeObservable(this);
         this.message = message;
         this.icon = icon;
         this.timeout = timeout;

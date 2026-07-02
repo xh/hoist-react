@@ -9,7 +9,6 @@ import {CardModel} from '@xh/hoist/cmp/card/CardModel';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {type PersistOptions} from '@xh/hoist/core';
 import {maxSeverity, ValidationSeverity} from '@xh/hoist/data';
-import {makeObservable} from '@xh/hoist/mobx';
 import {uniq, without} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
@@ -48,15 +47,15 @@ export interface FormFieldSetConfig {
 export class FormFieldSetModel extends CardModel {
     declare config: FormFieldSetConfig;
 
-    @observable.ref parent: FormFieldSetModel;
+    @observable.ref accessor parent: FormFieldSetModel;
 
     //-----------------
     // Implementation
     //-----------------
-    @observable.ref private childFormFieldSetModels: FormFieldSetModel[] = [];
-    @observable.ref private childFieldModels: FieldModel[] = [];
-    @observable private isDisabled: boolean;
-    @observable private isReadonly: boolean;
+    @observable.ref private accessor childFormFieldSetModels: FormFieldSetModel[] = [];
+    @observable.ref private accessor childFieldModels: FieldModel[] = [];
+    @observable private accessor isDisabled: boolean;
+    @observable private accessor isReadonly: boolean;
 
     @computed
     get disabled(): boolean {
@@ -95,7 +94,6 @@ export class FormFieldSetModel extends CardModel {
 
     constructor({disabled = false, readonly = false, ...rest}: FormFieldSetConfig = {}) {
         super({...rest, renderMode: 'always'});
-        makeObservable(this);
         this.isDisabled = disabled;
         this.isReadonly = readonly;
     }

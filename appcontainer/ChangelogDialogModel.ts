@@ -5,18 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 export class ChangelogDialogModel extends HoistModel {
     override xhImpl = true;
 
-    @observable isOpen: boolean = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observable accessor isOpen: boolean = false;
 
     init() {
         this.addReaction({

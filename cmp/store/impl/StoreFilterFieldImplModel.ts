@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {appendFilter, Store} from '@xh/hoist/data';
-import {action, comparer, makeObservable} from '@xh/hoist/mobx';
+import {action, comparer} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     debounce,
@@ -39,11 +39,6 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

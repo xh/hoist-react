@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import '@xh/hoist/desktop/register';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
 import {DockContainerModel} from './DockContainerModel';
@@ -78,10 +78,10 @@ export interface DockViewConfig {
  */
 export class DockViewModel extends HoistModel {
     id: string;
-    @bindable title: string;
-    @bindable.ref icon: ReactElement;
-    @observable docked: boolean;
-    @observable collapsed: boolean;
+    @bindable accessor title: string;
+    @bindable.ref accessor icon: ReactElement;
+    @observable accessor docked: boolean;
+    @observable accessor collapsed: boolean;
     content: Content;
     width: string | number;
     height: string | number;
@@ -131,7 +131,6 @@ export class DockViewModel extends HoistModel {
         onClose
     }: DockViewConfig) {
         super();
-        makeObservable(this);
         throwIf(!id, 'DockViewModel requires an id');
 
         this.id = id;

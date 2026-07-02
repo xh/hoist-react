@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH, MessageSpec, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {ReactNode} from 'react';
@@ -43,7 +43,7 @@ export class MessageModel extends HoistModel {
     @managed
     formModel: FormModel;
 
-    @observable isOpen = true;
+    @observable accessor isOpen = true;
 
     constructor({
         title,
@@ -63,7 +63,6 @@ export class MessageModel extends HoistModel {
         cancelOnDismiss = true
     }: MessageSpec) {
         super();
-        makeObservable(this);
 
         this.title = title;
         this.icon = icon;

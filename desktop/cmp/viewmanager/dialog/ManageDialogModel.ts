@@ -15,7 +15,7 @@ import {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, isEmpty, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
@@ -27,7 +27,7 @@ import {ViewPanelModel} from './ViewPanelModel';
 export class ManageDialogModel extends HoistModel {
     viewManagerModel: ViewManagerModel;
 
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     @managed ownedGridModel: GridModel;
     @managed globalGridModel: GridModel;
@@ -37,7 +37,7 @@ export class ManageDialogModel extends HoistModel {
 
     @managed tabContainerModel: TabContainerModel;
 
-    @bindable.ref filter: FilterTestFn;
+    @bindable.ref accessor filter: FilterTestFn;
 
     readonly updateTask = TaskObserver.trackLast();
 
@@ -69,7 +69,6 @@ export class ManageDialogModel extends HoistModel {
 
     constructor(viewManagerModel: ViewManagerModel) {
         super();
-        makeObservable(this);
         this.viewManagerModel = viewManagerModel;
     }
 

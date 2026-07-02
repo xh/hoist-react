@@ -9,7 +9,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {some} from 'lodash';
 
 /**
@@ -19,11 +19,10 @@ export class SaveAsDialogModel extends HoistModel {
     readonly parent: ViewManagerModel;
 
     @managed readonly formModel: FormModel;
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     constructor(parent: ViewManagerModel) {
         super();
-        makeObservable(this);
         this.parent = parent;
         this.formModel = this.createFormModel();
     }

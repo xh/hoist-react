@@ -14,7 +14,7 @@ import {
     ValidationResult,
     ValidationState
 } from '@xh/hoist/data';
-import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {computed, observable, runInAction} from '@xh/hoist/mobx';
 import {compact, flatten, isEmpty, isString, mapValues, values} from 'lodash';
 import {TaskObserver} from '../../core';
 
@@ -25,7 +25,7 @@ import {TaskObserver} from '../../core';
 export class RecordValidator {
     record: StoreRecord;
 
-    @observable.ref private fieldValidations: RecordValidationResultsMap = null;
+    @observable.ref private accessor fieldValidations: RecordValidationResultsMap = null;
     private validationTask = TaskObserver.trackLast();
     private validationRunId = 0;
 
@@ -81,7 +81,6 @@ export class RecordValidator {
 
     constructor(config: {record: StoreRecord}) {
         this.record = config.record;
-        makeObservable(this);
     }
 
     /**

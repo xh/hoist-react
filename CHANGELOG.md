@@ -2,6 +2,15 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* **Migrated to TC39 Stage 3 (2023-05) decorators**, retiring `experimentalDecorators`. Drops
+  `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
+  `accessor` to `@observable`/`@bindable` fields and run the codemod in
+  `docs/codemod/v87/`. Main risk: `@observable accessor` fields are now prototype
+  getter/setters, not own enumerable props — affects `Object.keys` / spread (`{...model}`) over
+  model instances.
+
 ### 🎁 New Features
 
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
@@ -37,6 +46,9 @@
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
 ### ⚙️ Technical
+* Model lookup now subscribes only to slots that can affect resolution — the matched slot, or
+  nullish/HoistModel candidates if no match. Primitive observables are excluded. Tighter than
+  the prior walk, which subscribed indiscriminately and triggered needless re-renders.
 * Misc. improvements to persistence in the Admin client.
 * @azure/msal-browser `5.14 → 5.15`
 * swiper  `12.1.0 -> 14.0.0`,

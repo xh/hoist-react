@@ -14,7 +14,7 @@ import {
 } from '@xh/hoist/core';
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {Field, genDisplayName, View} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
 
@@ -127,8 +127,8 @@ export class GroupingChooserModel extends HoistModel {
         commitOnChange: false
     };
 
-    @observable.ref value: string[];
-    @observable.ref favorites: string[][] = [];
+    @observable.ref accessor value: string[];
+    @observable.ref accessor favorites: string[][] = [];
 
     allowEmpty: boolean;
     bind: GroupingBindTarget;
@@ -137,8 +137,8 @@ export class GroupingChooserModel extends HoistModel {
     persistFavorites: boolean = false;
     sortDimensions: boolean;
 
-    @observable.ref dimensions: Record<string, DimensionSpec>;
-    @observable.ref dimensionNames: string[];
+    @observable.ref accessor dimensions: Record<string, DimensionSpec>;
+    @observable.ref accessor dimensionNames: string[];
 
     @computed
     get dimensionSpecs(): DimensionSpec[] {
@@ -162,7 +162,6 @@ export class GroupingChooserModel extends HoistModel {
         sortDimensions = true
     }: GroupingChooserConfig) {
         super();
-        makeObservable(this);
 
         this.allowEmpty = allowEmpty;
         this.bind = bind;

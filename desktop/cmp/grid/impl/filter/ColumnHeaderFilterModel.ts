@@ -7,7 +7,7 @@
 
 import {Column} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'lodash';
 import {GridFilterModel} from '@xh/hoist/cmp/grid';
 
@@ -17,7 +17,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
     readonly column: Column;
     readonly filterModel: GridFilterModel;
 
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     get hasFilter() {
         const filters = this.filterModel.getColumnFilters(this.column.field);
@@ -30,7 +30,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     constructor(filterModel: GridFilterModel, column: Column) {
         super();
-        makeObservable(this);
         this.filterModel = filterModel;
         this.column = column;
     }

@@ -49,7 +49,7 @@ import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {logError, logWarn, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -171,9 +171,9 @@ class CodeInputModel extends HoistInputModel {
     editor: EditorView;
 
     // Support for internal search feature.
-    @bindable query: string = '';
-    @observable currentMatchIdx: number = -1;
-    @observable.ref matches: {from: number; to: number}[] = [];
+    @bindable accessor query: string = '';
+    @observable accessor currentMatchIdx: number = -1;
+    @observable.ref accessor matches: {from: number; to: number}[] = [];
     private updateMatchesEffect = StateEffect.define<void>();
 
     private themeCompartment = new Compartment();
@@ -263,7 +263,6 @@ class CodeInputModel extends HoistInputModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => this.modalSupportModel.isModal,
             run: () => this.focus(),

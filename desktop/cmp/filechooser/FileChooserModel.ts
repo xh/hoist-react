@@ -8,7 +8,7 @@ import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {FileRejection} from '@xh/hoist/kit/react-dropzone';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {castArray, concat, filter, isEmpty, keys, fromPairs, map, sortBy, uniqBy} from 'lodash';
@@ -74,11 +74,9 @@ export interface FileChooserConfig {
  * a newly added file taking precedence over any existing file of the same name.
  */
 export class FileChooserModel extends HoistModel {
-    @observable.ref
-    files: File[] = [];
+    @observable.ref accessor files: File[] = [];
 
-    @observable
-    disabled: boolean;
+    @observable accessor disabled: boolean;
 
     readonly accept: string[];
     readonly maxFiles: number;
@@ -98,7 +96,6 @@ export class FileChooserModel extends HoistModel {
 
     constructor(config: FileChooserConfig = {}) {
         super();
-        makeObservable(this);
 
         this.accept = isEmpty(config.accept) ? null : sortBy(castArray(config.accept));
         this.maxFiles = config.maxFiles;

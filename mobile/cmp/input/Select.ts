@@ -17,7 +17,7 @@ import {
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
-import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {debouncePromise, wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -199,8 +199,8 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @bindable.ref internalOptions = [];
-    @bindable fullscreen = false;
+    @bindable.ref accessor internalOptions = [];
+    @bindable accessor fullscreen = false;
 
     // Prop-backed convenience getters
     get asyncMode() {
@@ -227,15 +227,10 @@ class SelectInputModel extends HoistInputModel {
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
-    @observable inputValue = null;
+    @observable accessor inputValue = null;
     inputValueChangedSinceSelect = false;
     get manageInputValue() {
         return this.filterMode;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -310,7 +305,7 @@ class SelectInputModel extends HoistInputModel {
         }
     };
 
-    @override
+    @action
     override noteFocused() {
         if (this.fullscreenMode) {
             this.fullscreen = true;
@@ -345,7 +340,7 @@ class SelectInputModel extends HoistInputModel {
         }
     }
 
-    @override
+    @action
     override setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);

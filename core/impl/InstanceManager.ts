@@ -8,7 +8,7 @@
 import {HoistService, HoistModel} from '../';
 import {isNil} from 'lodash';
 import {Store} from '@xh/hoist/data';
-import {observable, makeObservable} from '@xh/hoist/mobx';
+import {observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
 /**
@@ -16,14 +16,11 @@ import {wait} from '@xh/hoist/promise';
  * @internal
  */
 class InstanceManager {
-    @observable.shallow
-    services: Set<HoistService> = new Set();
+    @observable.shallow accessor services: Set<HoistService> = new Set();
 
-    @observable.shallow
-    models: Set<HoistModel> = new Set();
+    @observable.shallow accessor models: Set<HoistModel> = new Set();
 
-    @observable.shallow
-    stores: Set<Store> = new Set();
+    @observable.shallow accessor stores: Set<Store> = new Set();
 
     private modelsByTestId: Map<string, HoistModel> = new Map();
     private testSupportedModels = new Set(['GridModel', 'DataViewModel', 'FormModel', 'TabModel']);
@@ -66,10 +63,6 @@ class InstanceManager {
 
     getModelByTestId(testId: string): HoistModel {
         return this.modelsByTestId.get(testId);
-    }
-
-    constructor() {
-        makeObservable(this);
     }
 }
 export const instanceManager = new InstanceManager();

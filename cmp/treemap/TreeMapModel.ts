@@ -9,7 +9,7 @@ import {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {FilterLike} from '@xh/hoist/data/filter/Types';
 import {numberRenderer} from '@xh/hoist/format';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
@@ -140,23 +140,22 @@ export class TreeMapModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @bindable.ref highchartsConfig: any = {};
-    @observable.ref data: TreeMapRecord[] = [];
-    @bindable labelField: string;
-    @bindable valueField: string;
-    @bindable heatField: string;
-    @bindable maxHeat: number;
-    @bindable maxDepth: number;
-    @bindable algorithm: TreeMapAlgorithm;
-    @bindable colorMode: TreeMapColorMode;
-    @bindable theme: Theme;
-    @bindable isMasking: boolean;
+    @bindable.ref accessor highchartsConfig: any = {};
+    @observable.ref accessor data: TreeMapRecord[] = [];
+    @bindable accessor labelField: string;
+    @bindable accessor valueField: string;
+    @bindable accessor heatField: string;
+    @bindable accessor maxHeat: number;
+    @bindable accessor maxDepth: number;
+    @bindable accessor algorithm: TreeMapAlgorithm;
+    @bindable accessor colorMode: TreeMapColorMode;
+    @bindable accessor theme: Theme;
+    @bindable accessor isMasking: boolean;
 
     _filter;
 
     constructor(config?: TreeMapConfig) {
         super();
-        makeObservable(this);
 
         const {
             store,

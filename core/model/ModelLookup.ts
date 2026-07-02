@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
-import {forOwn} from 'lodash';
+import {isObservableProp, untracked} from '@xh/hoist/mobx';
+import {find} from 'lodash';
 import {createContext} from 'react';
 
 /**
@@ -29,37 +30,88 @@ export class ModelLookup {
     }
 
     /**
-     * Lookup a model in the context hierarchy
+     * Lookup a model in the context hierarchy.
      * @returns model, or null if no matching model found.
+     *
+     * Walk runs inside `untracked()`; we then tracked-read whatever `trackKeys` ended up
+     * with — the matched slot if any level resolved, or every nullish accessor we walked
+     * past if not (so a late arrival triggers re-resolve).
      */
     lookupModel(selector: ModelSelector): HoistModel {
+        const trackKeys: TrackKeys = {value: []};
+        const result = untracked(() => this.lookupModelInternal(selector, trackKeys));
+        for (const [model, key] of trackKeys.value) {
+            void (model as any)[key];
+        }
+        return result;
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    private lookupModelInternal(selector: ModelSelector, trackKeys: TrackKeys): HoistModel {
         const {model, publishMode, parent} = this,
             modeIsDefault = publishMode === 'default';
 
         if (model.matchesSelector(selector, modeIsDefault)) {
+            trackKeys.value = [];
             return model;
         }
 
-        // Try model's direct children. Wildcard not accepted (but would capture model itself above)
         if (modeIsDefault) {
-            let ret = null;
-
-            forOwn(model, (value, key) => {
-                if (
-                    !key.startsWith('_') &&
-                    value?.isHoistModel &&
-                    value.matchesSelector(selector)
-                ) {
-                    ret = value;
-                    return false;
-                }
-            });
-            if (ret) return ret;
+            const match = this.findChildMatch(model, selector, trackKeys);
+            if (match) return match;
         }
 
-        // Try parent
-        return parent?.lookupModel(selector) ?? null;
+        return parent?.lookupModelInternal(selector, trackKeys) ?? null;
     }
+
+    // Scan this model's own props (plain class fields like `@managed grid = new GridModel()`)
+    // and accessor-defined fields (TC39 `@observable.ref accessor chartModel: ChartModel`).
+    private findChildMatch(
+        model: HoistModel,
+        selector: ModelSelector,
+        track: TrackKeys
+    ): HoistModel {
+        // 1) Own enumerable plain class fields — not observable under TC39, no MobX tracking needed.
+        const match = find(model, (v, k) => this.isMatchingChild(k, v, selector)) as HoistModel;
+        if (match) {
+            track.value = [];
+            return match;
+        }
+
+        // 2) TC39 accessor observables on the prototype chain — invisible to `find` above.
+        // If we find one, track and return, otherwise track the null slots we encountered
+        for (
+            let proto = Object.getPrototypeOf(model);
+            proto && proto !== HoistModel.prototype && proto !== Object.prototype;
+            proto = Object.getPrototypeOf(proto)
+        ) {
+            for (const key of Object.getOwnPropertyNames(proto)) {
+                if (
+                    key === 'constructor' ||
+                    !Object.getOwnPropertyDescriptor(proto, key)?.get ||
+                    !isObservableProp(model, key)
+                )
+                    continue;
+                const value = (model as any)[key];
+                if (this.isMatchingChild(key, value, selector)) {
+                    track.value = [[model, key]];
+                    return value;
+                }
+                if (value == null) track.value.push([model, key]);
+            }
+        }
+        return null;
+    }
+
+    private isMatchingChild(key: string, value: any, selector: ModelSelector): boolean {
+        return !key.startsWith('_') && value?.isHoistModel && value.matchesSelector(selector);
+    }
+}
+
+interface TrackKeys {
+    value: Array<[HoistModel, string]>;
 }
 
 /**

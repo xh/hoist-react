@@ -11,21 +11,20 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
     override telemetryPrefix = 'xh.client.admin.connPool';
 
-    @bindable enabled: boolean = true;
-    @bindable.ref poolConfiguration: PlainObject = {};
+    @bindable accessor enabled: boolean = true;
+    @bindable.ref accessor poolConfiguration: PlainObject = {};
 
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
     constructor() {
         super();
-        makeObservable(this);
         this.gridModel = new GridModel({
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('conn-pool-monitor')},

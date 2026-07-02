@@ -9,7 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, HSide, managed, Some, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
 /**
@@ -85,7 +85,7 @@ export class LeftRightChooserModel extends HoistModel {
     @managed leftModel: GridModel;
     @managed rightModel: GridModel;
 
-    @bindable readonly = false;
+    @bindable accessor readonly = false;
 
     onChange: () => void;
 
@@ -149,7 +149,6 @@ export class LeftRightChooserModel extends HoistModel {
         xhImpl = false
     }: LeftRightChooserConfig) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
 
         this.onChange = onChange;
