@@ -35,7 +35,12 @@ export function useInlineEditorModel(
 
     useGridCellEditor({
         // This is called in full-row editing when the user tabs into the cell
-        focusIn: useCallback(() => impl.focus(), [impl])
+        focusIn: useCallback(() => impl.focus(), [impl]),
+        // Backstop to flush any pending edit when editing ends, in case no blur fired (#4134).
+        isCancelAfterEnd: useCallback(() => {
+            impl.ref.current?.doCommit();
+            return false;
+        }, [impl])
     });
 
     return component({
