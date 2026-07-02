@@ -522,27 +522,34 @@ const endToEndMs =
 | A4 | `navigator.deviceMemory` / V8 low-end-device detection is secondary to the explicit heap cap | Small-Heap | Low - the explicit cap is the recommended lever regardless. |
 | A5 | Frame-budget ~100 ms (p95 engine+grid-sync) as the jank threshold per D-03 | BASE-02 | This is the CONTEXT-stated starting figure; exact ms is Claude's discretion, proposed with evidence at the D-08 checkpoint. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> Each question below is a genuinely live-measurement-dependent call routed to a specific plan
+> checkpoint; the recommendation is the resolution unless the checkpoint decides otherwise.
 
 1. **Data Lab branch name.** CONTEXT/canonical-refs cite the Data Lab app on branch `data2-research`,
    but the local Toolbox checkout is currently on `data2`, and the files are present there.
    - What we know: the app exists and is current on `data2` locally.
    - What's unclear: whether `data2-research` is the intended integration branch for D-06/D-11 UI work.
    - Recommendation: confirm the target Toolbox branch with the user before landing UI changes.
+   - **RESOLVED:** routed to 03-03 Task 1 (confirm Toolbox branch before UI work).
 
 2. **Small-heap N (512 vs 1024 MB) and OOM-as-data-point policy.** The exact cap and whether a
    deliberate OOM counts as the red-tier data point (vs a discarded failed run) need a decision.
    - Recommendation: propose 512 MB with evidence, treat a clean OOM near the cap as the hard-wall
      point, surface at the small-heap checkpoint.
+   - **RESOLVED:** routed to 03-05 Task 1 (decision checkpoint: small-heap cap + OOM-as-data policy).
 
 3. **Does the memory-pass sizing churn need a small-heap-specific override?** (Pitfall 1/A3)
    - Recommendation: plan a quick live probe on the capped instance early; if it OOMs during sizing,
      add a scaled sizing N or a memory-only small-ladder variant.
+   - **RESOLVED:** routed to 03-05 Task 1 (validate the heap cap) and Task 2 (small-heap pass with a scaled sizing N if the probe OOMs).
 
 4. **Distilled-stats schema (D-12) shape for the design tool.** Claude's discretion.
    - Recommendation: design a flat, chart-ready JSON (scaling series per axis, tier-boundary points,
      the ~500x20 stage breakdown, env metadata) - avoid making the design tool parse verbose
      `RunResult` objects.
+   - **RESOLVED:** Claude's discretion, exercised in 03-02 Task 1 (`exportDistilledStats` schema) and 03-04 Task 1 (`envelope-stats.json`), kept single-source between the two.
 
 ## Environment Availability
 
