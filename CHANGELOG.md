@@ -52,6 +52,9 @@
   selectors now target `ag-grid-pinned-top-rows-container` / `ag-grid-pinned-bottom-rows-container`,
   `ag-body-horizontal-scroll-viewport`, `ag-grid-scrolling-container`, and
   `ag-body-vertical-scroll-viewport` respectively.
+* Preserved the Hoist grid/DataView font under AG Grid 36 - the theme now applies balham's default
+  font on its inner `ag-styled-root`, so cells are reset to inherit Hoist's font-family and
+  sizing-mode font-size rather than the balham system-font default.
 
 ### 📚 Libraries
 

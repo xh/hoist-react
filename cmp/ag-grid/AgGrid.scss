@@ -48,6 +48,15 @@
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
+  // As of ag-Grid 36 the theme class lands on ag-Grid's own inner `.ag-styled-root`, where the theme
+  // sets font-family/size from balham's --ag-font-* defaults; cells then inherit from it. Override
+  // that back to `inherit` so the styled root - and thus cells - pick up Hoist's font-family and
+  // (sizing-mode-driven) font-size from this wrapper, as they did prior to ag-Grid 36.
+  .ag-styled-root {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
   // ensure ag-grid box-sizing rule is not overridden by
   // body.xh-app box-sizing: inherit
   [class^='ag-'],
