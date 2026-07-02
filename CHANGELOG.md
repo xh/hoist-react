@@ -55,6 +55,10 @@
 * Preserved the Hoist grid/DataView font under AG Grid 36 - the theme now applies balham's default
   font on its inner `ag-styled-root`, so cells are reset to inherit Hoist's font-family and
   sizing-mode font-size rather than the balham system-font default.
+* Restored grid row borders and row-hover styling under AG Grid 36, which moved both onto new inner
+  elements/vars: the `rowBorders` option now sets the row border width itself (the theme no longer
+  supplies one), and `showHover` is driven via `--ag-row-hover-color` so hover no longer appears
+  always-on with the balham default color.
 
 ### 📚 Libraries
 

@@ -55,6 +55,14 @@
   .ag-styled-root {
     font-family: inherit;
     font-size: inherit;
+
+    // ag-Grid 36 renders the row-hover highlight as an overlay tinted by --ag-row-hover-color, which
+    // balham defaults to a visible grey. Default it off; `--show-hover` re-enables it below. (Prior
+    // to 36 hover was drawn on `.ag-row::before`, which Hoist suppressed directly.)
+    --ag-row-hover-color: transparent;
+  }
+  &--show-hover .ag-styled-root {
+    --ag-row-hover-color: var(--xh-grid-bg-hover);
   }
 
   // ensure ag-grid box-sizing rule is not overridden by
@@ -147,10 +155,12 @@
     border-color: var(--xh-grid-summary-row-border-color);
   }
 
-  // Row borders
+  // Row borders. As of ag-Grid 36 the balham theme no longer supplies a row border width on
+  // `.ag-row`, so we set the full border here (previously we set only the color and inherited the
+  // width from the theme).
   &--row-borders {
     .ag-row {
-      border-color: var(--xh-grid-border-color);
+      border-bottom: 1px solid var(--xh-grid-border-color);
 
       // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
       // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
