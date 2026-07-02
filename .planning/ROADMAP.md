@@ -107,8 +107,8 @@ defensible quantitative targets adopted as the harness pass/fail criteria for al
      without jank; update->render latency; per-tab memory ceiling on reference and small-heap machines)
      are proposed, adopted, and wired into the harness as pass/fail criteria (BASE-04).
 **Plans**: 7 plans
-- [ ] 03-01-PLAN.md - Harness TargetsConfig + pure evaluateScorecard verdict scaffold (BASE-04)
-- [ ] 03-02-PLAN.md - Data Lab run export/import + distilled-stats export (BASE-01/02/03)
+- [x] 03-01-PLAN.md - Harness TargetsConfig + pure evaluateScorecard verdict scaffold (BASE-04)
+- [x] 03-02-PLAN.md - Data Lab run export/import + distilled-stats export (BASE-01/02/03)
 - [ ] 03-03-PLAN.md - Sweep env (chrome-devtools-mcp) + named ladder profiles + coarse pass (BASE-01/02/03)
 - [ ] 03-04-PLAN.md - Front-loaded presentation package: envelope-stats.json + coarse BASELINE.md (BASE-01/02/03)
 - [ ] 03-05-PLAN.md - Small-heap reference machine + zoom refinement of the walls (BASE-01/02)
@@ -239,7 +239,7 @@ harness and may run in parallel with Phases 2-3 (parallelization enabled).
 |-------|----------------|--------|-----------|
 | 1. Current-State Inventory | 4/4 | Complete | 2026-06-28 |
 | 2. Measurement Harness | 6/6 | Complete | 2026-06-29 |
-| 3. Baseline Performance Envelope | 0/7 | Planned | - |
+| 3. Baseline Performance Envelope | 2/7 | In Progress|  |
 | 4. Toolbox Technology Demo | 0/TBD | Not started | - |
 | 5. Feature Spec & AG Grid 36 Parity | 0/TBD | Not started | - |
 | 6. Technology Candidate Evaluation | 0/TBD | Not started | - |
