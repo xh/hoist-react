@@ -6,7 +6,7 @@
  */
 import {ClientsModel} from '../ClientsModel';
 import {ColumnSpec} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, persistOptions, PlainObject, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {ReactNode} from 'react';
@@ -52,6 +52,10 @@ export class ClientDetailModel extends HoistModel implements ActivityDetailProvi
 
     override onLinked() {
         super.onLinked();
+
+        this.persistWith = persistOptions(this.clientsModel.persistWith, {
+            pathPrefix: 'activityGrid'
+        });
 
         this.addReaction(
             {

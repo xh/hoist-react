@@ -66,8 +66,12 @@ export class HoistAuthModel extends HoistModel {
      * Process a manual login, submitted by user via form.
      * @returns identity of the user authenticated with the server; null if not yet authenticated.
      */
-    async loginWithCredentialsAsync(username: string, password: string): Promise<IdentityInfo> {
-        return this.runner()
+    async loginWithCredentialsAsync(
+        username: string,
+        password: string,
+        ctx?: CallContextLike
+    ): Promise<IdentityInfo> {
+        return this.runner(ctx)
             .span('login')
             .run(async ctx => {
                 const {success, identity} = await XH.fetchJson(
@@ -87,8 +91,8 @@ export class HoistAuthModel extends HoistModel {
      * The default implementation will call the 'logout' endpoint on the Grails server, clearing
      * any server-side session state there. Override to manage any client-side or third-party state.
      */
-    async logoutAsync(): Promise<void> {
-        await this.runner().span('logout').fetchJson({url: 'xh/logout'});
+    async logoutAsync(ctx?: CallContextLike): Promise<void> {
+        await this.runner(ctx).span('logout').fetchJson({url: 'xh/logout'});
     }
 
     /**
@@ -96,9 +100,12 @@ export class HoistAuthModel extends HoistModel {
      * whitelisted by Hoist to allow access prior to user authentication. For use in bootstrapping
      * client-side auth solutions that require configs such as OAuth endpoint URLs and client IDs.
      * See `BaseAuthenticationService.getClientConfig()` in hoist-core.
+     *
+     * @param ctx - tracing/load context. When called from within a `completeAuthAsync` override,
+     *      forward the supplied context so this fetch nests under the bootstrap trace.
      */
-    async loadConfigAsync(): Promise<PlainObject> {
-        return this.runner().span('config').fetchJson({url: 'xh/authConfig'});
+    async loadConfigAsync(ctx?: CallContextLike): Promise<PlainObject> {
+        return this.runner(ctx).span('config').fetchJson({url: 'xh/authConfig'});
     }
 
     /**

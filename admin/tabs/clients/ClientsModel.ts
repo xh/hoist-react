@@ -9,7 +9,7 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, persistOptions, XH} from '@xh/hoist/core';
 import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -22,6 +22,8 @@ import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class ClientsModel extends BaseAdminTabModel {
     override telemetryPrefix = 'xh.client.admin.clients';
+
+    override persistWith = {localStorageKey: 'xhAdminClientsState'};
 
     @observable
     lastRefresh: number;
@@ -148,6 +150,7 @@ export class ClientsModel extends BaseAdminTabModel {
         return new GridModel({
             emptyText: 'No clients connected.',
             groupBy: this.groupBy,
+            persistWith: persistOptions(this.persistWith, {path: 'mainGrid'}),
             colChooserModel: true,
             enableExport: true,
             selModel: 'multiple',

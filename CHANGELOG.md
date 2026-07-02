@@ -21,11 +21,144 @@
     * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
       failures not skipped via the flags above.  Default delegates to `XH.handleException(e)`.
 
+* `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
+  not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
+  ensuring such values render with their proper label rather than falling back to the raw value.
+
+### 🐞 Bug Fixes
+
+* Fixed grid columns configured as `hidden` becoming visible after being grouped and then
+  ungrouped. `GridModel` now re-asserts each column's configured visibility whenever `groupBy`
+  changes, keeping AG Grid's column state in sync with `columnState`.
+* Fixed `StoreFilterField` and grid Find so an active quick-filter or find query no longer returns
+  different results when the grid's `groupBy` changes.
+* Fixed inline grid cell editors to reliably commit their value when editing ends, including popup
+  editors (e.g. `textAreaEditor`) within a dialog, which previously dropped edits on Enter or
+  click-away.
+* Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
+  async query de-duplication now use deep equality, so object values no longer render as
+  `[object Object]` or collide with one another.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
+  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
+  represent are left untouched rather than corrupted.
+* Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
+  longer disappears when opened - it now always occupies its place in the layout, so surrounding
+  elements no longer shift. Its clear and favorites controls also respond to a single click rather
+  than requiring the popover to be opened first. This mode is now enabled more naturally via
+  a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
+  as a thin alias.
+
 ### ⚙️ Typescript API Adjustments
 
-* `Loadable.handleLoadException(e, loadSpec)` is now a required member of the `Loadable`
-  interface. Classes that implement `Loadable` directly (rather than extending `HoistModel` or
-  `HoistService`, which provide a default) must add this method.
+* Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
+  replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+
+### ⚙️ Technical
+* Misc. improvements to persistence in the Admin client.
+* @azure/msal-browser `5.14 → 5.15`
+* swiper  `12.1.0 -> 14.0.0`,
+
+
+## 86.2.0 - 2026-06-25
+
+### 🎁 New Features
+
+* `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
+  controlled by a new `autoFormat` prop. On editable inputs, content is tidied automatically on blur
+  (never mid-edit) - users get clean, consistently-formatted JSON without reaching for the format
+  button. For `readonly` inputs it defaults to true, so applications can bind directly to raw source
+  values and drop their pre-formatting logic, simplifying call sites substantially.
+* Grid column filter specs now support a `sortValue` config, letting the Values tab of the filter
+  dialog sort its entries the same way the underlying grid column sorts them. When not provided,
+  the column's own `sortValue` is used.
+* `GridModel.levelLabels` now accepts a partial array covering only the top levels of a tree or
+  grouped grid. The "Expand to..." menu and `ExpandToLevelButton` offer one entry per labelled
+  level, so deeper, unlabelled levels (e.g. system-managed) are no longer required and are omitted
+  as expand-to targets - previously a too-short array disabled the feature entirely.
+* Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
+  when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
+  `7,100,100` rather than collapsing to `7.10m`).
+
+### 🐞 Bug Fixes
+
+* Fixed grid `NumberEditor` to allow starting an edit by typing `-`, `+`, or `.` (e.g. to enter a
+  negative or decimal value), while reliably rejecting other non-numeric keypresses.
+* `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
+  `'auto'`, aligning a `NumberInput` with `precision: null` so its blurred display matches its
+  focused and committed (full-precision) value.
+* Fixed inline grid editing not ending when clicking empty grid space to the right of the last
+  column or below the last row - such clicks now commit the active edit.
+* Fixed `Icon.placeholder()` to render with the correct width.
+* `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
+* Fixed `Select` (and `SelectEditor`) dropdown menu sizing: windowed menus now auto-size to their
+  option labels instead of the control/cell width, and an explicit `menuWidth` is respected rather
+  than overridden by content auto-sizing.
+
+### ⚙️ Typescript API Adjustments
+
+* `GridFilterFieldSpec.renderer` is now typed as a pure value transform (`GridFilterRenderer`),
+  rather than a `ColumnRenderer`. This more accurately represents the existing run-time limitation
+  that a complex column renderer would throw.
+
+### ✨ Styles
+
+* Vertical (left/right) `TabContainer` switchers now render a modern rounded-pill treatment by
+  default, customizable via new `--xh-tab-switcher-vertical-*` CSS variables.
+
+## 86.1.0 - 2026-06-22
+
+### 🎁 New Features
+
+* Added a mobile `SegmentedControl` input - the mobile counterpart to the desktop component, with a
+  matching `options`-driven API for selecting a single value from a set of mutually exclusive
+  choices. Built on Hoist's mobile `Button` (no Blueprint dependency).
+    * The shared `SegmentedControlOption` option types now export from `@xh/hoist/cmp/input` rather
+      than the desktop `SegmentedControl` module; update any direct type imports.
+* Added a `leftIcon` prop to mobile `TextInput`.
+* `FilterChooser` and grid column filters on a timestamp (`date`) field now filter by calendar day,
+  comparing against full-day bounds for range and equality operators rather than midnight - e.g.
+  `> 2023-05-31` excludes the 31st and `= 2023-05-31` matches any time that day. Filter specs now
+  default a `date` source field to `fieldType: 'localDate'`; set `fieldType: 'date'` for exact
+  timestamps. Applications using workarounds to provide similar behavior may be able to unwind that
+  behavior and rely on Hoist default behavior.
+
+### 🐞 Bug Fixes
+
+* Fixed the "Is blank" / "Is not blank" grid column filters for `tags`-typed fields - empty tag
+  arrays now correctly match "Is blank", and such filters are edited on the Custom tab rather than
+  producing a phantom blank entry in the Values list.
+* Fixed an issue where `Grid` column headers could fall out of sync with body content during
+  horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
+* Updated `DynamicTabSwitcher` to properly apply `testId` passed down by `TabContainer`.
+* Ensure publication of `router5-plugin-browser` TS module augmentation.
+* Set an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure
+  that the `0` is not interpreted as a `0px` basis and that the container sizes as expected.
+    * ⚠️Apps that upgrade to `hoist-dev-utils v13.x` and use `flex: 1 1 0` or `flex-basis: 0` should
+      verify that their flex layouts continue to work as expected and add an explicit unit if
+      not (e.g. `flex: 1 1 0%` or `flex-basis: 0%`).
+
+### ⚙️ Technical
+
+* `JsonBlobService` and `HoistAuthModel` now accept an optional `CallContextLike` argument on all of
+  their public methods, allowing callers to nest their fetches within an existing trace.
+
+### ✨ Styles
+
+* Mobile `Button` now defaults to a more touch-friendly height (40px, up from 28px) and rounder
+  corners for buttons in body content. Toolbar buttons derive their height from the toolbar size so
+  a single token drives both, landing slightly taller than before (34px, up from 28px).
+    * `SegmentedControl` adopts the same standard height for a consistent control row.
+    * ⚠️ Mobile buttons outside toolbars are now taller - verify body / form / panel layouts that
+      pair tightly with button dimensions.
+* Mobile tab content (`TabContainer`) now takes the themed app background, so content reads
+  correctly in dark mode rather than showing through to Onsen's light default page background.
+* Applied the active theme's `color-scheme` onto `html` and added a `theme-color` meta tag matching
+  the active theme's app-bar color, so browser chrome and overscroll / safe-area regions might
+  better match the theme.
+
+### 📚 Libraries
+
+* @azure/msal-browser `5.13 → 5.14`
 
 ## 86.0.1 - 2026-06-16
 
@@ -39,6 +172,11 @@
 * `TrackService`, `PrefService`, and `TraceService` now flush their pending entries reliably when
   the page is hidden or unloaded, reacting to `XH.pageState` and issuing the flush via
   `fetch({keepalive: true})` (replacing the less reliable `beforeunload` + normal-fetch approach).
+
+### 📚 Libraries
+
+* @azure/msal-browser `5.11 → 5.13`
+* mobx `6.15 → 6.16`
 
 ## 86.0.0 - 2026-06-12
 
