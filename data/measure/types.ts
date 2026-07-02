@@ -315,3 +315,158 @@ export interface RunResult {
      */
     overheadMs: number | null;
 }
+
+//------------------------------------------------------------------------------------------------
+// Targets & pass/fail (BASE-04)
+//------------------------------------------------------------------------------------------------
+
+/** Overall pass/fail outcome for a single metric against its target. */
+export type Verdict = 'pass' | 'fail';
+
+/**
+ * Performance tier a measured value lands in (D-02 green/yellow/red):
+ *  - `comfortable` - meets the aspiration goal (green).
+ *  - `degraded`    - passes the floor regression guard but misses aspiration (yellow).
+ *  - `hardWall`    - breaches the floor (red).
+ */
+export type Tier = 'comfortable' | 'degraded' | 'hardWall';
+
+/**
+ * Hybrid target for one metric (D-05 / D-07): a `floor` regression guard paired with an
+ * `aspiration` business-need goal.
+ *
+ *  - `floor`      - the baseline-derived guard. Breaching it is a hard failure (red / `hardWall`).
+ *  - `aspiration` - the business-need goal. Meeting it is `comfortable` (green); missing it while
+ *                   still respecting the floor is `degraded` (yellow).
+ *
+ * By default a metric is lower-is-better (a SMALLER measured value is better, e.g. latency, heap).
+ * Set `higherIsBetter` to flip the direction for the envelope-level metrics, where a BIGGER value
+ * is better - the client must sustain AT LEAST the floor shape / throughput.
+ */
+export interface MetricTarget {
+    /** Baseline-derived regression guard; breaching it is a hard failure. */
+    floor: number;
+    /** Business-need goal; meeting it is `comfortable`. */
+    aspiration: number;
+    unit: 'ms' | 'bytes' | 'count';
+    /**
+     * When true, a larger measured value is better and the pass/tier direction inverts (the value
+     * must be >= floor to pass). Defaults to false (lower-is-better). Set true for the envelope-level
+     * metrics (`maxRecordsXFields`, `sustainedThroughput`).
+     */
+    higherIsBetter?: boolean;
+}
+
+/**
+ * The complete BASE-04 target set - the single source of truth for pass/fail that the Data Lab
+ * scorecard, comparison table, envelope-summary display, and the distilled BASELINE report all read
+ * from, and that Phase 6 reuses unchanged to score candidates.
+ *
+ * All six targets across the four BASE-04 families are REQUIRED - none is discretionary. Exact
+ * numbers are Claude's-discretion and are NOT adopted here; they are adopted at the D-08 checkpoint
+ * in plan 03-06 (see {@link DEFAULT_TARGETS}).
+ *
+ * The metrics split into two evaluation paths:
+ *  - PER-SCORECARD (lower-is-better, scored once per run by `evaluateScorecard`).
+ *  - ENVELOPE-LEVEL (higher-is-better, scored once per ladder by `evaluateEnvelope` against
+ *    whole-ladder boundary facts - NOT rendered as per-scorecard badges).
+ */
+export interface TargetsConfig {
+    /**
+     * PER-SCORECARD (BASE-03): end-to-end update->render latency at the ~500x20 reference shape,
+     * summed across the four timing stages. Lower is better.
+     */
+    updateRenderLatencyMs: MetricTarget;
+    /**
+     * PER-SCORECARD (BASE-02): sustained engine CPU cost, read from the engine stage p95. Lower is
+     * better.
+     */
+    enginePcpuMs: MetricTarget;
+    /**
+     * PER-SCORECARD (BASE-01): per-tab retained heap ceiling on a reference machine. Lower is better.
+     */
+    heapCeilingReferenceBytes: MetricTarget;
+    /**
+     * PER-SCORECARD (BASE-01): per-tab retained heap ceiling on a small-heap machine. Lower is
+     * better. Evaluated per run by the caller passing this target as the heap ceiling.
+     */
+    heapCeilingSmallHeapBytes: MetricTarget;
+    /**
+     * ENVELOPE-LEVEL (BASE-04 "max records x fields client-side"): the largest leaf-records x fields
+     * shape the client sustains within the comfortable tier. Higher is better; scored once per ladder
+     * by `evaluateEnvelope`, not as a per-scorecard badge.
+     */
+    maxRecordsXFields: MetricTarget;
+    /**
+     * ENVELOPE-LEVEL (BASE-04 "sustained batch size/rate without jank"): the largest
+     * batchSize x ratePerSec sustained without breaching the jank wall. Higher is better; scored once
+     * per ladder by `evaluateEnvelope`, not as a per-scorecard badge.
+     */
+    sustainedThroughput: MetricTarget;
+}
+
+/**
+ * The scored outcome for a single metric: the measured `value` against its `floor`/`aspiration`,
+ * the overall `verdict`, whether it met aspiration, and the resulting `tier`.
+ */
+export interface MetricVerdict {
+    /** Metric key, e.g. 'updateRenderLatencyMs'. */
+    metric: string;
+    value: number;
+    floor: number;
+    aspiration: number;
+    verdict: Verdict;
+    meetsAspiration: boolean;
+    tier: Tier;
+}
+
+/**
+ * Ladder-derived boundary facts feeding the envelope-level verdict (D-03). Derived from the whole
+ * ladder (savedRuns / envelope-stats), NOT from any single Scorecard:
+ *  - `maxComfortableRecordsXFields` - the largest records x fields observed still in the comfortable tier.
+ *  - `maxSustainedThroughput`       - the largest batchSize x ratePerSec that still keeps up (no jank wall).
+ */
+export interface EnvelopeSummary {
+    maxComfortableRecordsXFields: number;
+    maxSustainedThroughput: number;
+}
+
+/**
+ * Provisional target set - NOT adopted. Real numbers are adopted at the D-08 checkpoint in plan
+ * 03-06; do not treat these as final. Every `floor`/`aspiration` here is the sentinel
+ * {@link PROVISIONAL_TARGET} (`-1`), an obviously-invalid placeholder for the ms/bytes/count metrics
+ * (all naturally >= 0) that signals "not yet adopted" rather than a committed number. Committing real
+ * targets before the checkpoint is a RESEARCH anti-pattern.
+ */
+export const PROVISIONAL_TARGET = -1;
+
+/**
+ * PROVISIONAL default targets - see {@link PROVISIONAL_TARGET}. All values are the not-yet-adopted
+ * sentinel; real numbers are adopted at the D-08 checkpoint in plan 03-06. Do not treat as final.
+ */
+export const DEFAULT_TARGETS: TargetsConfig = {
+    updateRenderLatencyMs: {floor: PROVISIONAL_TARGET, aspiration: PROVISIONAL_TARGET, unit: 'ms'},
+    enginePcpuMs: {floor: PROVISIONAL_TARGET, aspiration: PROVISIONAL_TARGET, unit: 'ms'},
+    heapCeilingReferenceBytes: {
+        floor: PROVISIONAL_TARGET,
+        aspiration: PROVISIONAL_TARGET,
+        unit: 'bytes'
+    },
+    heapCeilingSmallHeapBytes: {
+        floor: PROVISIONAL_TARGET,
+        aspiration: PROVISIONAL_TARGET,
+        unit: 'bytes'
+    },
+    maxRecordsXFields: {
+        floor: PROVISIONAL_TARGET,
+        aspiration: PROVISIONAL_TARGET,
+        unit: 'count',
+        higherIsBetter: true
+    },
+    sustainedThroughput: {
+        floor: PROVISIONAL_TARGET,
+        aspiration: PROVISIONAL_TARGET,
+        unit: 'count',
+        higherIsBetter: true
+    }
+};

@@ -10,5 +10,6 @@ export * from './DataLayerAdapter';
 export * from './HeapAttribution';
 export * from './BoundaryInstrumentation';
 export * from './MeasurementProtocol';
+export * from './ScorecardVerdict';
 export * from './BaselineAdapter';
 export * from './MeasurementHarness';
