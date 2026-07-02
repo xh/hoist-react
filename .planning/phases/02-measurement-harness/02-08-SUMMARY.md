@@ -72,7 +72,7 @@ completed: 2026-06-29
 
 - **Tasks:** 6 auto + 1 checkpoint (human-verify, APPROVED on live browser evidence)
 - **Files:** 8 modified (6 hoist-react, 2 Toolbox); no new files
-- **Repos:** hoist-react (branch `data2`), Toolbox (branch `data2-research`)
+- **Repos:** hoist-react (branch `data2`), Toolbox (branch `data2` (renamed from `data2`))
 
 ## Accomplishments
 
@@ -132,7 +132,7 @@ hoist-react repo (branch `data2`), pre-committed before checkpoint approval (NOT
 3. **Task 6: document empty-baseline-first heap protocol + render page-visibility hardening** - `ffd708afa` (docs) - `README.md`
 4. **FIX (post-checkpoint): reload snapshot after calibration so the measured run uses the full scenario** - `18d339e70` (fix) - `MeasurementHarness.ts`
 
-Toolbox repo (branch `data2-research`):
+Toolbox repo (branch `data2` (renamed from `data2`)):
 
 5. **Task 3: wire true-empty + reload provider hooks, add Pipeline comparison rows** - `306b0c43` (feat) - `DataLabModel.ts`
 6. **Task 4: surface Pipeline (cube + view) as the PRIMARY compute scorecard row** - `70b2a461` (feat) - `DataLabPanel.ts`
@@ -148,7 +148,7 @@ Toolbox repo (branch `data2-research`):
 
 ## Self-Check: PASSED
 
-- **Commits confirmed present (NOT re-created):** hoist-react `0242943c0`, `aa0bfd5bb`, `ffd708afa`, `18d339e70` on branch `data2`; Toolbox `306b0c43`, `70b2a461` on branch `data2-research`.
+- **Commits confirmed present (NOT re-created):** hoist-react `0242943c0`, `aa0bfd5bb`, `ffd708afa`, `18d339e70` on branch `data2`; Toolbox `306b0c43`, `70b2a461` on branch `data2` (renamed from `data2`).
 - **hoist-react file content verified:** `HeapAttribution.ts` (emptyBaselineHeap / captureEmptyBaselineHeapAsync / repeats - 15 hits), `BaselineAdapter.ts` (clearPipelineAsync), `MeasurementHarness.ts` (reloadSnapshotAsync / emptyBaselineHeap - 9 hits), `BoundaryInstrumentation.ts` (visibilityState / RENDER_FRAME_TIMEOUT / renderSuspect - 14 hits), `README.md` (baseline / reload / foreground - 16 hits).
 - **Toolbox file content verified:** `DataLabModel.ts` (reloadSnapshotAsync / clearPipelineAsync / Pipeline median - 5 hits), `DataLabPanel.ts` (Pipeline (cube + view) / grid relay - 2 hits).
 - **`npx tsc --noEmit` passes** for hoist-react (exit 0).

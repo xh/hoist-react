@@ -113,7 +113,7 @@ Select Run A + Run B (by label); `comparisonRows` computes absolute `delta` and 
 
 ## Task Commits
 
-Toolbox repo (`/Users/amcclain/dev/toolbox`, branch `data2-research`):
+Toolbox repo (`/Users/amcclain/dev/toolbox`, branch `data2` (renamed from `data2`)):
 
 1. **Task 1: Client ingest adapters (HTTP + WebSocket)** - `96cf44dd` (feat)
 2. **Task 2: Harness example app + standalone registration** - `969ee26c` (feat)
@@ -156,7 +156,7 @@ Auto-mode is active (`workflow.auto_advance: true`), so the `checkpoint:human-ve
 
 ## User Setup Required
 
-To run the harness live: launch Chrome with `--js-flags="--expose-gc" --enable-precise-memory-info`, start the Toolbox Grails server + `client-app` (the `data2-research` branch carries both the 02-02 server API and this UI), open the Examples tab, and select the Data Lab tile.
+To run the harness live: launch Chrome with `--js-flags="--expose-gc" --enable-precise-memory-info`, start the Toolbox Grails server + `client-app` (the `data2` (renamed from `data2`) branch carries both the 02-02 server API and this UI), open the Examples tab, and select the Data Lab tile.
 
 ## Next Phase Readiness
 

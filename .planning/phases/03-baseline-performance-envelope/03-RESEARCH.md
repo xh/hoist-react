@@ -532,7 +532,9 @@ const endToEndMs =
    - What we know: the app exists and is current on `data2` locally.
    - What's unclear: whether `data2-research` is the intended integration branch for D-06/D-11 UI work.
    - Recommendation: confirm the target Toolbox branch with the user before landing UI changes.
-   - **RESOLVED:** routed to 03-03 Task 1 (confirm Toolbox branch before UI work).
+   - **RESOLVED:** routed to 03-03 Task 1 (confirm Toolbox branch before UI work). Outcome (03-03
+     Task 1 checkpoint): the Toolbox branch was renamed `data2-research` -> `data2` for consistency
+     with hoist-react; all phase work lands on Toolbox `data2`.
 
 2. **Small-heap N (512 vs 1024 MB) and OOM-as-data-point policy.** The exact cap and whether a
    deliberate OOM counts as the red-tier data point (vs a discarded failed run) need a decision.
@@ -647,7 +649,7 @@ forbidden names.
 - **Async methods suffixed `Async`**; managed MobX subscriptions via `addReaction`/`addAutorun`;
   `@managed` for child `HoistBase` instances.
 - **Git:** branching/committing/pushing require an explicit ask. This is a feature-branch effort
-  (`data2` / `data2-research`); if orchestrated multi-agent work fans out, agents make discrete
+  (hoist-react and Toolbox both on `data2`); if orchestrated multi-agent work fans out, agents make discrete
   scoped commits as directed by the plan, but never push without an explicit ask.
 - **Changelog:** if any user-facing hoist-react change lands (e.g. `TargetsConfig` export), read
   `docs/changelog-format.md` before editing `CHANGELOG.md`.

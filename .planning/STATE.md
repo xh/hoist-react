@@ -272,7 +272,7 @@ Stopped at: Phase 3 context gathered
   closeout): hoist-react `data2` 0242943c0 (Tasks 1+2 heap baseline + clear hook + calibration),
   aa0bfd5bb (Task 5 render hardening), ffd708afa (Task 6 README), 18d339e70 (FIX: reload AFTER
   calibration so the measured run uses the full scenario - calibration shares the measured adapter);
-  Toolbox `data2-research` 306b0c43 (Task 3 provider hooks + comparison rows), 70b2a461 (Task 4
+  Toolbox `data2` (renamed from `data2`) 306b0c43 (Task 3 provider hooks + comparison rows), 70b2a461 (Task 4
   scorecard Pipeline row). Checkpoint APPROVED on live flagged-Chrome evidence (after 18d339e70):
   5000/5587/5587 counts, pipeline 58.1 ms vs 0.6 ms relay, heap +78.8 MB (cube 3.5 / grid 4.0 / view
   4.0 / AG remainder 67.4, owned+remainder=total), render 3.5 ms median / 0 samples over 900 ms. npx
@@ -295,7 +295,7 @@ Stopped at: Phase 3 context gathered
   outlier - diagnosed as a tab-visibility artifact, NOT a harness bug nor overlapping runs; a
   visible-tab re-run at 5000 leaves gave 0.9-1.4 ms across all 20 samples). HARN-01/03/05 remain
   complete. Earlier this phase: Phase 2 COMPLETE - plan 02-06 (Data Lab harness UI) done; the measurement harness is
-  built, runnable, and documented end-to-end. Toolbox example app `datalab` (branch `data2-research`):
+  built, runnable, and documented end-to-end. Toolbox example app `datalab` (branch `data2` (renamed from `data2`)):
   two thin client ingest adapters (`HttpIngestAdapter` polls `dataLab/snapshot`+`dataLab/diff`;
   `WebSocketIngestAdapter` subscribes to the `xhDataLab/updates` push topic + drives
   `streamStart`/`streamStop`, buffering pushed batches behind a pull-style `nextBatchAsync`) - both
@@ -311,7 +311,7 @@ Stopped at: Phase 3 context gathered
   Portfolio. `data/measure/README.md` (138 lines) documents the split architecture, knob taxonomy,
   scorecard (compute-vs-bridge, heap-by-layer/opaque-remainder, V8/quantization caveats), forced-GC
   protocol, required Chrome flags, and the candidate-reuse recipe (HARN-06). Commits: Toolbox `96cf44dd`
-  (ingest adapters), `969ee26c` (app + registration) on `data2-research`; hoist-react `4c049d343`
+  (ingest adapters), `969ee26c` (app + registration) on `data2` (renamed from `data2`); hoist-react `4c049d343`
   (README) on `data2`. Toolbox commits used `--no-verify` because the pre-commit `tsc` resolves
   `@xh/hoist` against the stale installed package (no `data/measure` yet) - verified instead against
   local hoist-react via a temp tsconfig paths mapping + eslint + prettier. Auto-mode auto-approved the

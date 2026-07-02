@@ -19,6 +19,15 @@
     "jetbrains": {
       "url": "http://localhost:${JETBRAINS_MCP_PORT:-64342}/sse",
       "type": "sse"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@1.4.0"
+      ],
+      "env": {}
     }
   }
 }

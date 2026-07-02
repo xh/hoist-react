@@ -68,7 +68,7 @@ completed: 2026-06-29
 
 ## Task Commits
 
-Committed atomically in the **Toolbox** repo (`/Users/amcclain/dev/toolbox`, branch `data2-research`):
+Committed atomically in the **Toolbox** repo (`/Users/amcclain/dev/toolbox`, branch `data2` (renamed from `data2`)):
 
 1. **Task 1: Seeded shape-parameterized generator (HARN-01)** - `16073bbf` (feat)
 2. **Task 2: HTTP snapshot/diff controller (HARN-02 HTTP)** - `667cab3a` (feat)
@@ -181,7 +181,7 @@ Stream-only params (streamStart):
 - Full Grails compilation is heavyweight and was not run; per the plan's verify guidance, validation used AST syntax checks plus standalone Groovy execution of the generation/stream logic with minimal stubs (BaseService, a fake webSocketService). All determinism, shape, pattern, rate-gating, culling, and stop assertions passed. A live-server smoke test of the HTTP routes and WS push remains a useful follow-up once Toolbox is run.
 
 ## User Setup Required
-None - no external service configuration required. Code lives in the Toolbox repo on branch `data2-research`.
+None - no external service configuration required. Code lives in the Toolbox repo on branch `data2` (renamed from `data2`).
 
 ## Next Phase Readiness
 - The 02-05 client ingest adapter has a complete, documented server contract (endpoints, params, batch shape, WS topic, start/stop, determinism) to build against.

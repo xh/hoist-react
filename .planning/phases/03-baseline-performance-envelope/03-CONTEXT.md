@@ -129,7 +129,7 @@ full phase completion. Plan sequencing should front-load a coarse ladder pass to
   Mermaid diagrams (the presentation's stack-outline source material)
 
 ### Runnable UI (where sweep runs execute)
-- `../toolbox/client-app/src/examples/datalab/` (branch `data2-research`) - Data Lab app:
+- `../toolbox/client-app/src/examples/datalab/` (branch `data2` (renamed from `data2`)) - Data Lab app:
   scenario editor, run controls, scorecard, comparison; D-06/D-11 UI work lands here
 
 </canonical_refs>
@@ -140,7 +140,7 @@ full phase completion. Plan sequencing should front-load a coarse ladder pass to
 ### Reusable Assets
 - **Measurement harness (`data/measure/`)**: complete and verified (HARN-01..06). Phase 3 is its
   first real consumer - no new measurement capability needed for the core sweep.
-- **Data Lab app (Toolbox, `data2-research` branch)**: scenario profiles (ViewManager JsonBlobs),
+- **Data Lab app (Toolbox, `data2` (renamed from `data2`) branch)**: scenario profiles (ViewManager JsonBlobs),
   run controls over HTTP + WebSocket, scorecard, saved-run comparison (localStorage). The ladder
   becomes a set of named scenario profiles here.
 - **Toolbox Grails test-data API**: seeded shape generator + HTTP snapshot/diff + WebSocket push -
