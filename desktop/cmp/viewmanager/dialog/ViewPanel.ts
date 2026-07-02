@@ -12,7 +12,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {groupEditor} from '@xh/hoist/desktop/cmp/viewmanager/dialog/GroupEditor';
+import {groupEditor, GroupEditorModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/GroupEditor';
 import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ViewPanelModel';
 import {
     getVisibilityInfo,
@@ -21,6 +21,7 @@ import {
 } from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {useRef} from 'react';
 
 /**
  * Form to edit or view details on a single saved view within the ViewManager manage dialog.
@@ -29,7 +30,8 @@ export const viewPanel = hoistCmp.factory({
     model: uses(ViewPanelModel),
     render({model}) {
         const {view, parent, formModel} = model,
-            {viewManagerModel} = parent;
+            {viewManagerModel} = parent,
+            groupEditorRef = useRef<GroupEditorModel>(null);
 
         if (!view) return null;
 
@@ -58,7 +60,25 @@ export const viewPanel = hoistCmp.factory({
                         }),
                         formField({
                             field: 'group',
+                            clickableLabel: false,
+                            label: formModel.readonly
+                                ? undefined
+                                : hbox({
+                                      alignItems: 'center',
+                                      items: [
+                                          span('Group'),
+                                          filler(),
+                                          button({
+                                              icon: Icon.edit(),
+                                              text: 'Edit',
+                                              outlined: true,
+                                              className: 'xh-view-manager__group-editor__edit-btn',
+                                              onClick: () => groupEditorRef.current?.togglePopover()
+                                          })
+                                      ]
+                                  }),
                             item: groupEditor({
+                                ref: groupEditorRef,
                                 viewManagerModel,
                                 isGlobal,
                                 onGroupRename: rename => model.setPendingGroupRename(rename)

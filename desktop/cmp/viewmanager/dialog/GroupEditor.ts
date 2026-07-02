@@ -46,6 +46,9 @@ export interface GroupEditorProps extends HoistProps, HoistInputProps, LayoutPro
 /**
  * Input displaying a view's (possibly nested) group, with a popover editor allowing the user to
  * either move the view into a different group or rename/re-parent the current group itself.
+ *
+ * The popover is opened via {@link GroupEditorModel.togglePopover} - pass a ref to this component
+ * to receive its model and wire up an external trigger button (e.g. within the field label).
  */
 export const [GroupEditor, groupEditor] = hoistCmp.withFactory<GroupEditorProps>({
     displayName: 'GroupEditor',
@@ -55,10 +58,7 @@ export const [GroupEditor, groupEditor] = hoistCmp.withFactory<GroupEditorProps>
     }
 });
 
-//-----------------------
-// Implementation
-//-----------------------
-class GroupEditorModel extends HoistInputModel {
+export class GroupEditorModel extends HoistInputModel {
     override xhImpl = true;
 
     @observable isPopoverOpen: boolean = false;
@@ -87,6 +87,10 @@ class GroupEditorModel extends HoistInputModel {
     constructor() {
         super();
         makeObservable(this);
+    }
+
+    togglePopover() {
+        this.isPopoverOpen ? this.cancelPopover() : this.openPopover();
     }
 
     @action
@@ -122,48 +126,39 @@ class GroupEditorModel extends HoistInputModel {
     }
 }
 
+//-----------------------
+// Implementation
+//-----------------------
 const cmp = hoistCmp.factory<GroupEditorProps & {model: GroupEditorModel}>(
-    ({model, className, ...props}, ref) => {
+    ({model, className}, ref) => {
         return hbox({
             ref,
             className,
             alignItems: 'center',
-            items: [
-                div({
+            item: popover({
+                isOpen: model.isPopoverOpen,
+                position: 'bottom-left',
+                minimal: false,
+                item: div({
                     className: 'xh-view-manager__group-editor__value',
                     item: groupPathDisplay(model.renderValue)
                 }),
-                filler(),
-                popover({
-                    isOpen: model.isPopoverOpen,
-                    position: 'bottom-right',
-                    minimal: false,
-                    item: button({
-                        icon: Icon.edit(),
-                        text: 'Edit',
-                        minimal: true,
-                        disabled: props.disabled,
-                        className: 'xh-view-manager__group-editor__edit-btn',
-                        onClick: () =>
-                            model.isPopoverOpen ? model.cancelPopover() : model.openPopover()
-                    }),
-                    content: editorPopover(),
-                    onInteraction: (nextOpenState, e) => {
-                        // Close on outside interaction - the edit button handles its own toggle.
-                        if (
-                            model.isPopoverOpen &&
-                            !nextOpenState &&
-                            e?.target &&
-                            !elemWithin(
-                                e.target as HTMLElement,
-                                'xh-view-manager__group-editor__edit-btn'
-                            )
-                        ) {
-                            model.cancelPopover();
-                        }
+                content: editorPopover(),
+                onInteraction: (nextOpenState, e) => {
+                    // Close on outside interaction - the external edit button toggles itself.
+                    if (
+                        model.isPopoverOpen &&
+                        !nextOpenState &&
+                        e?.target &&
+                        !elemWithin(
+                            e.target as HTMLElement,
+                            'xh-view-manager__group-editor__edit-btn'
+                        )
+                    ) {
+                        model.cancelPopover();
                     }
-                })
-            ]
+                }
+            })
         });
     }
 );
