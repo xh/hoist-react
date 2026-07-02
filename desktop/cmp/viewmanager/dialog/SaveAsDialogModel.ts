@@ -7,7 +7,7 @@
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {normalizeGroupPath, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {some} from 'lodash';
@@ -114,7 +114,7 @@ export class SaveAsDialogModel extends HoistModel {
 
         await parent.saveAsAsync({
             name: name.trim(),
-            group: group?.trim(),
+            group: normalizeGroupPath(group),
             description: description?.trim(),
             isGlobal,
             isShared,

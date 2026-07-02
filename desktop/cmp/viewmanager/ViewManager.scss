@@ -44,4 +44,38 @@
       }
     }
   }
+
+  //------------------------
+  // Group editor
+  //------------------------
+  &__group-editor {
+    min-height: var(--xh-input-height-px);
+
+    &__value {
+      padding: var(--xh-pad-half-px) 0;
+    }
+
+    &__popover {
+      padding: var(--xh-pad-px);
+
+      .xh-panel__content {
+        gap: var(--xh-pad-px);
+      }
+    }
+
+    &__pane {
+      gap: var(--xh-pad-half-px);
+    }
+
+    &__label {
+      font-size: var(--xh-font-size-small-px);
+      color: var(--xh-text-color-muted);
+      margin-top: var(--xh-pad-half-px);
+    }
+
+    &__info {
+      font-size: var(--xh-font-size-small-px);
+      margin-top: var(--xh-pad-half-px);
+    }
+  }
 }

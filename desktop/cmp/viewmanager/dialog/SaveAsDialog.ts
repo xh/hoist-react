@@ -16,7 +16,12 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
-import {getGroupOptions, getVisibilityOptions, getVisibilityInfo} from './Utils';
+import {
+    getGroupPathOptions,
+    getVisibilityOptions,
+    getVisibilityInfo,
+    groupPathOptionRenderer
+} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -46,7 +51,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
         const {parent, formModel} = model,
             {visibility} = formModel.values,
             isGlobal = visibility === 'global',
-            groupOptions = getGroupOptions(parent, isGlobal),
+            groupOptions = getGroupPathOptions(parent, isGlobal),
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
 
@@ -76,7 +81,8 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 enableCreate: true,
                                 enableClear: true,
                                 placeholder: 'Select optional group....',
-                                options: groupOptions
+                                options: groupOptions,
+                                optionRenderer: groupPathOptionRenderer
                             })
                         }),
                         formField({

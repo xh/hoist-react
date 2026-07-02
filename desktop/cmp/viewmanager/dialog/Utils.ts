@@ -5,17 +5,81 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {hbox, span} from '@xh/hoist/cmp/layout';
+import {
+    getAllGroupPaths,
+    getGroupLeaf,
+    isGroupSameOrDescendant,
+    splitGroupPath,
+    ViewManagerModel
+} from '@xh/hoist/cmp/viewmanager';
 import {SelectOption} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, map, startCase, uniq} from 'lodash';
+import {capitalize, startCase} from 'lodash';
+import {ReactNode} from 'react';
 
-export function getGroupOptions(vmm: ViewManagerModel, isGlobal: boolean): SelectOption[] {
-    const views = isGlobal ? vmm.globalViews : vmm.ownedViews;
-    return uniq(map(views, 'group'))
-        .sort()
-        .filter(g => g != null)
-        .map(g => ({label: g, value: g}));
+/** SelectOption for a group path, with depth for indented hierarchical rendering. */
+export interface GroupPathOption extends SelectOption {
+    /** Full delimited group path, or null for the top-level (no group) option. */
+    value: string;
+    /** Leaf segment of the path, for display. */
+    label: string;
+    /** 0-based nesting depth, for indentation. */
+    depth: number;
+}
+
+/**
+ * Options for all existing group paths across the relevant views, including implied ancestor
+ * paths, in depth-first order suitable for display as an indented hierarchy via
+ * {@link groupPathOptionRenderer}.
+ */
+export function getGroupPathOptions(
+    vmm: ViewManagerModel,
+    isGlobal: boolean,
+    opts?: {
+        /** True to prepend a null-valued option representing the top level / no group. */
+        includeRoot?: boolean;
+        /** Group path to exclude, along with all of its descendants. */
+        excludeSubtreeOf?: string;
+    }
+): GroupPathOption[] {
+    const views = isGlobal ? vmm.globalViews : vmm.ownedViews,
+        {includeRoot, excludeSubtreeOf} = opts ?? {};
+
+    const ret = getAllGroupPaths(views)
+        .filter(path => !isGroupSameOrDescendant(path, excludeSubtreeOf))
+        .map(path => ({
+            value: path,
+            label: getGroupLeaf(path),
+            depth: splitGroupPath(path).length - 1
+        }));
+
+    return includeRoot ? [{value: null, label: '(Top Level)', depth: 0}, ...ret] : ret;
+}
+
+/** Display a group path as its segments separated by chevrons, or a muted 'None' when null. */
+export function groupPathDisplay(path: string): ReactNode {
+    if (!path) return span({item: 'None', className: 'xh-text-color-muted'});
+    const items = [];
+    splitGroupPath(path).forEach((segment, idx) => {
+        if (idx) items.push(Icon.chevronRight({className: 'xh-text-color-muted'}));
+        items.push(span(segment));
+    });
+    return hbox({alignItems: 'center', items});
+}
+
+/** Renderer displaying a {@link GroupPathOption} indented according to its depth. */
+export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
+    const {value, label, depth} = opt;
+    return hbox({
+        alignItems: 'center',
+        paddingLeft: (depth ?? 0) * 15,
+        items: [
+            Icon.folder({omit: value == null}),
+            span({item: label, style: {marginLeft: value == null ? 0 : 5}})
+        ]
+    });
 }
 
 /**

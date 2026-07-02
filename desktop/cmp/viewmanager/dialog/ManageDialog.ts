@@ -85,12 +85,7 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
         return vframe({
             paddingTop: 5,
             items: [
-                grid({
-                    model,
-                    agOptions: {
-                        suppressGroupChangesColumnVisibility: 'suppressShowOnUngroup'
-                    }
-                }),
+                grid({model}),
                 div({
                     item: helpText,
                     omit: !helpText,

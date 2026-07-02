@@ -12,11 +12,12 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {groupEditor} from '@xh/hoist/desktop/cmp/viewmanager/dialog/GroupEditor';
 import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ViewPanelModel';
 import {
-    getGroupOptions,
     getVisibilityInfo,
-    getVisibilityOptions
+    getVisibilityOptions,
+    groupPathDisplay
 } from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -36,8 +37,7 @@ export const viewPanel = hoistCmp.factory({
             visibility = formModel.values.visibility,
             isGlobal = visibility === 'global',
             visOptions = getVisibilityOptions(viewManagerModel),
-            visInfo = getVisibilityInfo(viewManagerModel, visibility),
-            groupOptions = getGroupOptions(viewManagerModel, isGlobal);
+            visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
         return panel({
             item: form({
@@ -58,13 +58,12 @@ export const viewPanel = hoistCmp.factory({
                         }),
                         formField({
                             field: 'group',
-                            item: select({
-                                enableCreate: true,
-                                enableClear: true,
-                                options: groupOptions
+                            item: groupEditor({
+                                viewManagerModel,
+                                isGlobal,
+                                onGroupRename: rename => model.setPendingGroupRename(rename)
                             }),
-                            readonlyRenderer: v =>
-                                v || span({item: 'None provided', className: 'xh-text-color-muted'})
+                            readonlyRenderer: v => groupPathDisplay(v)
                         }),
                         formField({
                             field: 'description',
@@ -118,7 +117,7 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
                         icon: Icon.reset(),
                         tooltip: 'Revert changes',
                         minimal: false,
-                        onClick: () => formModel.reset()
+                        onClick: () => model.reset()
                     })
                 ]
             });

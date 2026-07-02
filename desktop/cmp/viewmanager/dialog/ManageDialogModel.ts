@@ -6,18 +6,24 @@
  */
 
 import {badge} from '@xh/hoist/cmp/badge';
-import {dateTimeCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {dateTimeCol, GridAutosizeMode, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {ViewInfo, ViewManagerModel, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
-import {HoistModel, LoadSpec, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {
+    buildViewGroupTree,
+    ViewGroupNode,
+    ViewInfo,
+    ViewManagerModel,
+    ViewUpdateSpec
+} from '@xh/hoist/cmp/viewmanager';
+import {HoistModel, LoadSpec, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
 import {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, compact, every, isEmpty, some, startCase} from 'lodash';
+import {capitalize, compact, every, groupBy, keys, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewPanelModel} from './ViewPanelModel';
 
@@ -59,12 +65,13 @@ export class ManageDialogModel extends HoistModel {
 
     @computed
     get selectedView(): ViewInfo {
-        return this.gridModel.selectedRecord?.data.view;
+        // Null when a synthetic group row is selected - detail panel shows placeholder.
+        return this.gridModel.selectedRecord?.data.view ?? null;
     }
 
     @computed
     get selectedViews(): ViewInfo[] {
-        return this.gridModel.selectedRecords.map(it => it.data.view) as ViewInfo[];
+        return compact(this.gridModel.selectedRecords.map(it => it.data.view)) as ViewInfo[];
     }
 
     constructor(viewManagerModel: ViewManagerModel) {
@@ -96,19 +103,24 @@ export class ManageDialogModel extends HoistModel {
                 this.viewManagerModel;
 
         runInAction(() => {
-            this.ownedGridModel.loadData(ownedViews);
+            this.ownedGridModel.loadData(this.buildTreeData(ownedViews));
             tabContainerModel.setTabTitle('owned', this.ownedTabTitle);
 
             if (enableGlobal) {
-                this.globalGridModel.loadData(globalViews);
+                this.globalGridModel.loadData(this.buildTreeData(globalViews));
                 tabContainerModel.setTabTitle('global', this.globalTabTitle);
             }
 
             if (enableSharing) {
-                this.sharedGridModel.loadData(sharedViews);
+                this.sharedGridModel.loadData(this.buildTreeData(sharedViews, true));
                 tabContainerModel.setTabTitle('shared', this.sharedTabTitle);
             }
         });
+        if (!loadSpec.isRefresh) {
+            [this.ownedGridModel, this.globalGridModel, this.sharedGridModel].forEach(gm =>
+                gm?.expandAll()
+            );
+        }
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
         }
@@ -220,7 +232,62 @@ export class ManageDialogModel extends HoistModel {
         this.tabContainerModel.setActiveTabId(
             view.isOwned ? 'owned' : view.isGlobal ? 'global' : 'shared'
         );
+        // Ensure the target is not hidden within a collapsed group before selecting.
+        this.gridModel.expandAll();
         await this.gridModel.selectAsync(view.token);
+    }
+
+    /**
+     * Convert views into hierarchical store data, with synthetic rows for their groups (nested to
+     * any depth via slash-delimited group names) and, when `byOwner` (shared tab), for each owner.
+     */
+    private buildTreeData(views: ViewInfo[], byOwner: boolean = false): PlainObject[] {
+        if (byOwner) {
+            const viewsByOwner = groupBy(views, 'owner');
+            return keys(viewsByOwner)
+                .sort((a, b) => a.localeCompare(b))
+                .map(owner => ({
+                    id: `owner:${owner}`,
+                    name: owner,
+                    owner,
+                    isGroupRow: true,
+                    children: this.buildTreeData(viewsByOwner[owner]).map(child =>
+                        child.isGroupRow ? {...child, id: `owner:${owner}|${child.id}`} : child
+                    )
+                }));
+        }
+
+        const {roots, ungrouped} = buildViewGroupTree(views);
+        return [
+            ...roots.map(node => this.groupNodeToTreeData(node)),
+            ...ungrouped.map(view => this.viewToTreeData(view))
+        ];
+    }
+
+    private groupNodeToTreeData(node: ViewGroupNode): PlainObject {
+        return {
+            id: `group:${node.path}`,
+            name: node.name,
+            group: node.path,
+            isGroupRow: true,
+            children: [
+                ...node.children.map(child => this.groupNodeToTreeData(child)),
+                ...node.views.map(view => this.viewToTreeData(view))
+            ]
+        };
+    }
+
+    private viewToTreeData(view: ViewInfo): PlainObject {
+        return {
+            id: view.token,
+            name: view.name,
+            group: view.group,
+            owner: view.owner,
+            lastUpdated: view.lastUpdated,
+            isPinned: view.isPinned,
+            isGroupRow: false,
+            view
+        };
     }
 
     private createGridModel(type: 'owned' | 'global' | 'shared'): GridModel {
@@ -231,35 +298,33 @@ export class ManageDialogModel extends HoistModel {
 
         return new GridModel({
             emptyText: `No ${modifier} ${pluralize(typeDisplayName)} found...`,
-            sortBy: 'name',
-            showGroupRowCounts: false,
-            groupBy: ['group'],
+            // Sort groups above loose views among siblings, then alpha by name.
+            sortBy: ['isGroupRow|desc', 'name'],
+            treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             selModel: 'multiple',
             contextMenu: null,
             sizingMode: 'standard',
             hideHeaders: true,
+            rowClassRules: {
+                'xh-grid-clear-background-color': ({data}) => data && !data.data.isGroupRow
+            },
             store: {
-                idSpec: 'token',
-                processRawData: v => ({
-                    name: v.name,
-                    group: v.isGlobal || v.isOwned ? v.group : v.owner,
-                    owner: v.owner,
-                    lastUpdated: v.lastUpdated,
-                    isPinned: v.isPinned,
-                    view: v
-                }),
+                idSpec: 'id',
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'group', type: 'string'},
                     {name: 'owner', type: 'string'},
                     {name: 'lastUpdated', type: 'date'},
                     {name: 'isPinned', type: 'bool'},
+                    {name: 'isGroupRow', type: 'bool'},
                     {name: 'view', type: 'auto'}
                 ]
             },
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             columns: [
-                {field: 'name', flex: true},
+                {field: 'name', flex: true, isTreeColumn: true},
+                {field: 'isGroupRow', hidden: true},
                 {field: 'group', hidden: true},
                 {field: 'owner', hidden: true},
                 {field: 'lastUpdated', ...dateTimeCol, hidden: true},
@@ -270,6 +335,7 @@ export class ManageDialogModel extends HoistModel {
                     headerName: Icon.pin(),
                     headerTooltip: 'Pin to menu',
                     renderer: (isPinned, {record}) => {
+                        if (record.data.isGroupRow) return null;
                         return button({
                             icon: Icon.pin({
                                 prefix: isPinned ? 'fas' : 'fal',
@@ -282,8 +348,7 @@ export class ManageDialogModel extends HoistModel {
                         });
                     }
                 }
-            ],
-            groupRowRenderer: ({value}) => (isEmpty(value) ? 'Ungrouped' : value)
+            ]
         });
     }
 
@@ -353,7 +418,7 @@ export class ManageDialogModel extends HoistModel {
     private get ownedTabTitle(): ReactNode {
         return hbox(
             `My ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
-            badge(this.ownedGridModel.store.allCount)
+            badge(this.viewCount(this.ownedGridModel))
         );
     }
 
@@ -361,14 +426,19 @@ export class ManageDialogModel extends HoistModel {
         const {globalDisplayName, typeDisplayName} = this.viewManagerModel;
         return hbox(
             `${startCase(globalDisplayName)} ${startCase(pluralize(typeDisplayName))}`,
-            badge(this.globalGridModel.store.allCount)
+            badge(this.viewCount(this.globalGridModel))
         );
     }
 
     private get sharedTabTitle(): ReactNode {
         return hbox(
             `Shared ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
-            badge(this.sharedGridModel.store.allCount)
+            badge(this.viewCount(this.sharedGridModel))
         );
+    }
+
+    /** Count of actual views within a grid, excluding synthetic group/owner rows. */
+    private viewCount(gridModel: GridModel): number {
+        return gridModel.store.allRecords.filter(it => !it.data.isGroupRow).length;
     }
 }

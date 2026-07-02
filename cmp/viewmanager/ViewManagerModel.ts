@@ -49,7 +49,15 @@ export interface ViewCreateSpec {
     value: PlainObject;
 }
 
-export type ViewUpdateSpec = Partial<Omit<ViewCreateSpec, 'value'>>;
+export type ViewUpdateSpec = Partial<Omit<ViewCreateSpec, 'value'>> & {
+    /**
+     * Optional signal that the user has renamed or re-parented an entire group (as opposed to
+     * moving this single view into a different group). When provided, the server will rewrite the
+     * group on all other views of the same type and owner whose group equals or falls under the
+     * `from` path. Requires hoist-core v41+.
+     */
+    groupRename?: {from: string; to: string};
+};
 
 export interface ViewUserState {
     currentView?: string;
