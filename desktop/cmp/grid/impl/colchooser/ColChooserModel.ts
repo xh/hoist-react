@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {ColChooserConfig, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
@@ -15,7 +15,7 @@ import {sortBy} from 'lodash';
  * State management for the ColChooser component.
  * @internal
  */
-export class ColChooserModel extends HoistModel {
+export class ColChooserModel extends HoistModel implements IColChooserModel {
     override xhImpl = true;
 
     gridModel: GridModel;

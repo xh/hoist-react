@@ -16,6 +16,7 @@ import {
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
+    IColChooserModel,
     isColumnSpec,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
@@ -305,6 +306,10 @@ export interface GridConfig {
      * expand/collapse options in the default context menu will be enhanced to allow users to
      * expand/collapse to a specific level. See {@link GroupingChooserModel.valueDisplayNames}
      * for a convenient getter that will satisfy this API when a GroupingChooser is in play.
+     *
+     * Labels are matched to levels top-down and need not cover the full depth of the grid - provide
+     * a partial array to label only the top levels (e.g. when deeper levels should not be
+     * expand-to targets). Deeper, unlabelled levels are omitted from the menu.
      */
     levelLabels?: Thunkable<string[]>;
 
@@ -494,7 +499,7 @@ export class GridModel extends HoistModel {
     store: Store;
     selModel: StoreSelectionModel;
     treeMode: boolean;
-    colChooserModel: HoistModel;
+    colChooserModel: IColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
@@ -1173,15 +1178,23 @@ export class GridModel extends HoistModel {
 
     /**
      * Get the resolved level labels for the current state of the grid.
+     * An over-long array is truncated to the current `maxDepth`.
      */
     get resolvedLevelLabels(): string[] {
         const {maxDepth, levelLabels} = this,
             ret = executeIfFunction(levelLabels);
-        if (ret && ret.length < maxDepth + 1) {
-            this.logDebug('Value produced by `GridModel.levelLabels` has insufficient length.');
-            return null;
-        }
-        return ret ? take(ret, maxDepth + 1) : null;
+        return !isEmpty(ret) ? take(ret, maxDepth + 1) : null;
+    }
+
+    /**
+     * True if the given `resolvedLevelLabels` index is the grid's current expand level - used to
+     * mark the active item in the "Expand to..." menu. The deepest labelled level counts as current
+     * whenever the grid is expanded to or beyond it.
+     */
+    isCurrentExpandLevel(idx: number): boolean {
+        const {expandLevel, resolvedLevelLabels} = this,
+            lastIdx = resolvedLevelLabels?.length - 1;
+        return expandLevel === idx || (idx === lastIdx && expandLevel > lastIdx);
     }
 
     /**
@@ -1246,7 +1259,7 @@ export class GridModel extends HoistModel {
     }
 
     showColChooser() {
-        (this.colChooserModel as any)?.open();
+        this.colChooserModel?.open();
     }
 
     noteAgColumnStateChanged(agColState: AgColumnState[]) {
@@ -1973,7 +1986,7 @@ export class GridModel extends HoistModel {
         };
     }
 
-    private parseChooserModel(chooserModel: GridConfig['colChooserModel']): HoistModel {
+    private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;

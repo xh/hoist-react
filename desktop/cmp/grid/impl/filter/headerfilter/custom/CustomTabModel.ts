@@ -5,12 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {CompoundFilterOperator, FilterLike} from '@xh/hoist/data';
+import {
+    CompoundFilterOperator,
+    FieldFilter,
+    FieldFilterOperator,
+    FieldFilterSpec,
+    FilterLike
+} from '@xh/hoist/data';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
-import {compact, isEmpty} from 'lodash';
+import {compact, first, flatMap, forEach, groupBy, isArray, isEmpty, uniq} from 'lodash';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 
-import {CustomRowModel} from './CustomRowModel';
+import {CustomRowModel, usesMultiValueInput} from './CustomRowModel';
 
 export class CustomTabModel extends HoistModel {
     override xhImpl = true;
@@ -23,11 +29,16 @@ export class CustomTabModel extends HoistModel {
     /** Filter config output by this model. */
     @computed.struct
     get filter(): FilterLike {
-        const {op, rowModels} = this,
-            filters = compact(rowModels.map(it => it.value));
-        if (isEmpty(filters)) return null;
-        if (filters.length > 1) return {filters, op};
-        return filters;
+        const {op, rowModels} = this;
+
+        // Null rowModels flags an unrepresentable filter - emit it unchanged so commit is a no-op.
+        if (!rowModels) return this.columnCompoundFilter ?? this.columnFilters;
+
+        const specs = compact(rowModels.map(it => it.value));
+        if (isEmpty(specs)) return null;
+
+        const filters = this.collapseToArrayFilters(specs, op);
+        return filters.length > 1 ? {filters, op} : first(filters);
     }
 
     get fieldSpec() {
@@ -40,6 +51,10 @@ export class CustomTabModel extends HoistModel {
 
     get columnFilters() {
         return this.headerFilterModel.columnFilters;
+    }
+
+    get columnCompoundFilter() {
+        return this.headerFilterModel.columnCompoundFilter;
     }
 
     constructor(headerFilterModel: HeaderFilterModel) {
@@ -73,13 +88,27 @@ export class CustomTabModel extends HoistModel {
     //-------------------
     @action
     private doSyncWithFilter() {
-        const {columnFilters} = this,
-            rowModels = [];
+        const {columnCompoundFilter} = this,
+            op = this.deriveOp();
+        this.op = op;
 
-        // Create rows based on filter.
-        columnFilters.forEach(filter => {
-            const {op, value} = filter;
-            rowModels.push(new CustomRowModel(this, op, value));
+        if (!this.isRepresentable) {
+            this.logWarn('Filter cannot be edited in the custom tab; leaving it unchanged');
+            this.rowModels = null;
+            return;
+        }
+
+        // Expand a multi-value clause destined for a single-value input into one row per value
+        // (joined under the tab op); the multi-select input holds the array directly as one row.
+        const rowModels = [],
+            children = (columnCompoundFilter?.filters ?? this.columnFilters) as FieldFilter[];
+        children.forEach(filter => {
+            const {op: fieldOp, value} = filter;
+            if (this.needsExpansion(filter)) {
+                value.forEach(v => rowModels.push(new CustomRowModel(this, fieldOp, v)));
+            } else {
+                rowModels.push(new CustomRowModel(this, fieldOp, value));
+            }
         });
 
         // Add an empty pending row
@@ -88,5 +117,59 @@ export class CustomTabModel extends HoistModel {
         }
 
         this.rowModels = rowModels;
+    }
+
+    // Whether a multi-value clause must be expanded to one row per value (vs held by a multi-select).
+    private needsExpansion({op, value}: FieldFilter): boolean {
+        return isArray(value) && value.length > 1 && !usesMultiValueInput(this.fieldSpec, op);
+    }
+
+    // The op a multi-value clause joins under: `=`-family => OR, negated => AND.
+    private mergeOpFor(op: FieldFilterOperator): CompoundFilterOperator {
+        return FieldFilter.INCLUDE_LIKE_OPERATORS.includes(op) ? 'OR' : 'AND';
+    }
+
+    // Op joining the tab's rows
+    private deriveOp(): CompoundFilterOperator {
+        const {columnCompoundFilter, columnFilters} = this;
+        if (columnCompoundFilter) return columnCompoundFilter.op;
+
+        const arrayFilter = columnFilters.find(f => this.needsExpansion(f));
+        return arrayFilter ? this.mergeOpFor(arrayFilter.op) : 'AND';
+    }
+
+    // Filter must be representable as a flat set of rows with a single op
+    private get isRepresentable(): boolean {
+        const {columnCompoundFilter} = this,
+            op = this.deriveOp(),
+            children = columnCompoundFilter?.filters ?? this.columnFilters;
+        return children.every(
+            f =>
+                FieldFilter.isFieldFilter(f) &&
+                (!this.needsExpansion(f) || op === this.mergeOpFor(f.op))
+        );
+    }
+
+    // Inverse of the expand in `doSyncWithFilter`: collapse same-field/op rows into one multi-value FieldFilter
+    private collapseToArrayFilters(
+        specs: FieldFilterSpec[],
+        op: CompoundFilterOperator
+    ): FieldFilterSpec[] {
+        const ret: FieldFilterSpec[] = [];
+        forEach(groupBy(specs, 'op'), (groupSpecs, groupOp: FieldFilterOperator) => {
+            const canMerge =
+                groupSpecs.length > 1 &&
+                FieldFilter.ARRAY_OPERATORS.includes(groupOp) &&
+                op === this.mergeOpFor(groupOp);
+
+            if (canMerge) {
+                const {field} = groupSpecs[0],
+                    value = uniq(flatMap(groupSpecs, it => it.value));
+                ret.push({field, op: groupOp, value});
+            } else {
+                ret.push(...groupSpecs);
+            }
+        });
+        return ret;
     }
 }

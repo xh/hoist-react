@@ -5,94 +5,23 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
-import {box, hframe} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {popover} from '@xh/hoist/kit/blueprint';
-import {getLayoutProps} from '@xh/hoist/utils/react';
-import './PopoverFilterChooser.scss';
-import {filterChooser, FilterChooserProps} from './FilterChooser';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
+import {filterChooser, FilterChooserProps} from './FilterChooser';
 
 /**
  * A wrapper around a FilterChooser that renders in a popover when opened, allowing it to expand
  * vertically beyond the height of a toolbar.
+ *
+ * @deprecated Use `filterChooser({popover: true})` instead - the popover behavior is now a built-in
+ *      mode of `FilterChooser`. This alias will be removed in a future major release.
  * @see FilterChooser
  */
 export const [PopoverFilterChooser, popoverFilterChooser] =
     hoistCmp.withFactory<FilterChooserProps>({
         model: uses(FilterChooserModel),
-        className: 'xh-popover-filter-chooser',
-        render({model, className, ...props}, ref) {
-            const layoutProps = getLayoutProps(props),
-                impl = useLocalModel(PopoverFilterChooserLocalModel);
-
-            return box({
-                ref,
-                className,
-                ...layoutProps,
-                item: popover({
-                    isOpen: impl.popoverIsOpen,
-                    popoverClassName: 'xh-popover-filter-chooser__popover',
-                    item: hframe(
-                        filterChooser({
-                            model,
-                            // Omit when popover is open to force update the inputRef
-                            omit: impl.popoverIsOpen,
-                            className: 'xh-popover-filter-chooser__filter-chooser',
-                            displayCount: true,
-                            ...props,
-                            disabled: true
-                        })
-                    ),
-                    content: filterChooser({
-                        model,
-                        displayCount: true,
-                        ...props
-                    }),
-                    matchTargetWidth: true,
-                    minimal: true,
-                    position: 'bottom',
-                    onInteraction: open => {
-                        if (open) {
-                            impl.open();
-                        } else {
-                            impl.close();
-                        }
-                    }
-                })
-            });
+        render(props) {
+            return filterChooser({popover: true, ...props});
         }
     });
-
-class PopoverFilterChooserLocalModel extends HoistModel {
-    override xhImpl = true;
-
-    @lookup(FilterChooserModel)
-    model: FilterChooserModel;
-
-    @bindable accessor popoverIsOpen: boolean = false;
-
-    get displaySelectValue() {
-        return this.model.selectValue[0];
-    }
-
-    open() {
-        this.popoverIsOpen = true;
-
-        // Focus and open the menu when rendered
-        this.addReaction({
-            when: () => !!this.model.inputRef.current,
-            run: () => {
-                const inputRef = this.model.inputRef.current;
-                inputRef.focus();
-                (inputRef as any).reactSelectRef.current?.openMenu('first');
-            }
-        });
-    }
-
-    close() {
-        this.popoverIsOpen = false;
-    }
-}

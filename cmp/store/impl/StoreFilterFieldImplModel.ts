@@ -61,7 +61,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
         this.addReaction(
             {
-                track: () => [this.filterText, gridModel?.columns, gridModel?.groupBy],
+                track: () => [this.filterText, gridModel?.columns],
                 run: () => this.regenerateFilter(),
                 fireImmediately: true
             },
@@ -156,8 +156,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         if (excludeFields) ret = without(ret, ...excludeFields);
 
         if (gridModel) {
-            const groupBy = gridModel.groupBy,
-                visibleCols = gridModel.getVisibleLeafColumns();
+            const visibleCols = gridModel.getVisibleLeafColumns();
 
             // Push on dot-delimited grid column fields. These are supported by Grid and traverse
             // sub-objects in StoreRecord.data to display nested properties. Given that Grid treats these
@@ -177,12 +176,12 @@ export class StoreFilterFieldImplModel extends HoistModel {
             // Run exclude once more to support explicitly excluding a dot-sep field added above.
             if (excludeFields) ret = without(ret, ...excludeFields);
 
-            // Final filter for column visibility, or explicit request for inclusion.
+            // Final filter for column visibility, or explicit request for inclusion. Deliberately
+            // not keyed to groupBy, so filter results stay stable across regrouping (see #4070).
             ret = ret.filter(f => {
                 return (
                     (includeFields && includeFields.includes(f)) ||
-                    visibleCols.find(c => c.field === f) ||
-                    groupBy.includes(f)
+                    visibleCols.find(c => c.field === f)
                 );
             });
         }

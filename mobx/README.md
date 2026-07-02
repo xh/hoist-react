@@ -43,7 +43,8 @@ The following are re-exported from MobX and mobx-react-lite:
 
 The package configures MobX with `enforceActions: 'observed'`, meaning any modification to
 an observable property that is currently being observed must occur inside an `@action` method,
-`runInAction()` block, or `@bindable` setter. MobX logs a warning if this rule is violated.
+`runInAction()` block, `@bindable` setter, or a `reaction`/`when` run callback (MobX
+auto-wraps these in an action). MobX logs a warning if this rule is violated.
 
 This enforcement prevents accidental state mutations and makes data flow predictable.
 

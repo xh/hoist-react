@@ -62,6 +62,14 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
+    /**
+     * True to automatically format content for display using the configured `formatter`.
+     * Defaults to true for `readonly` inputs - set false to opt out. May also be enabled on
+     * editable inputs, in which case content is formatted on blur (never mid-edit, so user
+     * edits and cursor position are preserved while typing).
+     */
+    autoFormat?: boolean;
+
     /** False to not commit on every change/keystroke, default true. */
     commitOnChange?: boolean;
 
@@ -224,7 +232,7 @@ class CodeInputModel extends HoistInputModel {
                 ? button({
                       icon: Icon.magic(),
                       title: 'Auto-format',
-                      onClick: () => this.onAutoFormat()
+                      onClick: () => this.formatAndSetEditorValue()
                   })
                 : null,
             showFullscreenButton
@@ -320,7 +328,16 @@ class CodeInputModel extends HoistInputModel {
         this.editor = new EditorView({state, parent: container});
     };
 
-    onAutoFormat() {
+    get autoFormat(): boolean {
+        const {autoFormat, readonly} = this.componentProps;
+        return withDefault(autoFormat, !!readonly);
+    }
+
+    override toInternal(val: any) {
+        return this.autoFormat ? this.tryPrettyPrint(val) : val;
+    }
+
+    private formatAndSetEditorValue() {
         if (!this.editor) return;
         const val = this.tryPrettyPrint(this.editor.state.doc.toString());
         this.editor.dispatch({changes: {from: 0, to: this.editor.state.doc.length, insert: val}});
@@ -442,7 +459,7 @@ class CodeInputModel extends HoistInputModel {
                     {
                         key: 'Mod-p',
                         run: () => {
-                            this.onAutoFormat();
+                            this.formatAndSetEditorValue();
                             return true;
                         }
                     }

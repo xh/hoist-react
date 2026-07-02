@@ -4,13 +4,28 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
+import {
+    GridFilterModel,
+    GridFilterRenderer,
+    GridFilterSortValueFn,
+    GridModel
+} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
-import {castArray, difference, flatten, isEmpty, map, partition, uniq, without} from 'lodash';
+import {
+    castArray,
+    difference,
+    flatten,
+    isEmpty,
+    isFunction,
+    map,
+    partition,
+    uniq,
+    without
+} from 'lodash';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 
 export class ValuesTabModel extends HoistModel {
@@ -280,8 +295,18 @@ export class ValuesTabModel extends HoistModel {
     private createGridModel() {
         const {BLANK_PLACEHOLDER} = GridFilterModel,
             {headerFilterModel, fieldSpec} = this,
-            {fieldType, column} = headerFilterModel,
-            renderer = fieldSpec.renderer ?? (fieldType !== 'tags' ? column.renderer : null);
+            {fieldType, column} = headerFilterModel;
+
+        // Default to the column's renderer/sortValue, but only where they apply to a bare value -
+        // we call them with the value alone (see below), so treat them as pure value transforms.
+        const renderer =
+                fieldSpec.renderer ??
+                (fieldType !== 'tags' ? (column.renderer as GridFilterRenderer) : null),
+            sortValue =
+                fieldSpec.sortValue ??
+                (fieldType !== 'tags' && isFunction(column.sortValue)
+                    ? (column.sortValue as GridFilterSortValueFn)
+                    : null);
 
         return new GridModel({
             store: {
@@ -339,9 +364,23 @@ export class ValuesTabModel extends HoistModel {
                         if (v2 === BLANK_PLACEHOLDER) return -1 * mul;
                         return defaultComparator(v1, v2);
                     },
-                    renderer: (value, context) => {
-                        if (value === BLANK_PLACEHOLDER) return value;
-                        return renderer ? renderer(value, context) : value;
+                    // Apply renderer/sortValue as pure value transforms - pass no context, skip the
+                    // blank placeholder, and fall back to the raw value if either throws.
+                    sortValue: v => {
+                        if (v === BLANK_PLACEHOLDER || !sortValue) return v;
+                        try {
+                            return sortValue(v);
+                        } catch {
+                            return v;
+                        }
+                    },
+                    renderer: v => {
+                        if (v === BLANK_PLACEHOLDER || !renderer) return v;
+                        try {
+                            return renderer(v);
+                        } catch {
+                            return v;
+                        }
                     }
                 }
             ],

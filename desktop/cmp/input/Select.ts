@@ -31,9 +31,10 @@ import {debouncePromise, wait} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
+import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, unionWith} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
+import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
 import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
@@ -190,6 +191,15 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** Field on provided options for sourcing each option's value (default `value`). */
     valueField?: string;
+
+    /**
+     * Function to generate a `SelectOption` for a (non-null) selected value not present in the
+     * current options list. Return null to fall back to the default value-as-label behavior.
+     *
+     * Useful with queryFn-based selects, readonly forms, or any case where options may not be
+     * loaded when a value is set, ensuring the value renders with its proper label.
+     */
+    generateOptionFn?: (value: any) => SelectOption;
 }
 
 /**
@@ -223,6 +233,8 @@ class SelectInputModel extends HoistInputModel {
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref accessor internalOptions = [];
+
+    @observable windowedMenuWidth: number = null;
 
     // Prop-backed convenience getters
     get asyncMode(): boolean {
@@ -285,6 +297,13 @@ class SelectInputModel extends HoistInputModel {
             run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
+                if (this.windowedMode) {
+                    this.windowedMenuWidth = calcWindowedMenuWidth(
+                        opts,
+                        o => this.formatOptionLabel(o, {context: 'menu'}),
+                        this.getOrCreatePortalDiv()
+                    );
+                }
             },
             fireImmediately: true
         });
@@ -422,7 +441,8 @@ class SelectInputModel extends HoistInputModel {
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
-    // (Exception for a null value, which we will only accept if explicitly present in options.)
+    // (Exception for a null value, which is never synthesized - accepted only if provided via
+    // options.)
     override toInternal(external) {
         if (this.multiMode) {
             if (external == null || isEqual(external, this.emptyValue)) external = []; // avoid [null]
@@ -442,7 +462,10 @@ class SelectInputModel extends HoistInputModel {
             }
         }
 
-        return createIfNotFound ? this.valueToOption(value) : null;
+        if (!createIfNotFound) return null;
+
+        // Value not among options - let the app generate an option for it, else synthesize one.
+        return this.componentProps.generateOptionFn?.(value) ?? this.valueToOption(value);
     }
 
     override toExternal(internal) {
@@ -466,11 +489,11 @@ class SelectInputModel extends HoistInputModel {
     // Normalize / clone a single source value into a normalized option object. Supports Strings
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
-    private toOption(src, depth) {
+    private toOption(src, depth): SelectOption {
         return isPlainObject(src) ? this.objectToOption(src, depth) : this.valueToOption(src);
     }
 
-    private objectToOption(src, depth) {
+    private objectToOption(src, depth): SelectOption {
         const {componentProps} = this,
             labelField = withDefault(componentProps.labelField, 'label'),
             valueField = withDefault(componentProps.valueField, 'value');
@@ -493,7 +516,7 @@ class SelectInputModel extends HoistInputModel {
               };
     }
 
-    private valueToOption(src) {
+    private valueToOption(src): SelectOption {
         return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
@@ -506,13 +529,9 @@ class SelectInputModel extends HoistInputModel {
 
         // Carry forward and add to any existing internalOpts to allow our value
         // converters to continue all selected values in multiMode.
-        const matchesByVal = keyBy(matchOpts, 'value'),
-            newOpts = [...matchOpts];
-        this.internalOptions.forEach(currOpt => {
-            const matchOpt = matchesByVal[currOpt.value];
-            if (!matchOpt) newOpts.push(currOpt); // avoiding dupes
-        });
-        this.internalOptions = newOpts;
+        this.internalOptions = unionWith(matchOpts, this.internalOptions, (a, b) =>
+            isEqual(a.value, b.value)
+        );
 
         // But only return the matching options back to the combo.
         return matchOpts;
@@ -529,8 +548,7 @@ class SelectInputModel extends HoistInputModel {
     // Option Rendering
     //----------------------
     formatOptionLabel = (opt, params) => {
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
+        // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
             return opt.label;
         }
@@ -546,7 +564,7 @@ class SelectInputModel extends HoistInputModel {
             return div(opt.label);
         }
 
-        return castArray(this.externalValue).includes(opt.value)
+        return castArray(this.externalValue).some(v => isEqual(v, opt.value))
             ? hbox({
                   items: [
                       div({
@@ -775,9 +793,10 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.formatCreateLabel = model.createMessageFn;
     }
 
-    if (props.menuWidth) {
+    const menuWidth = props.menuWidth ?? (model.windowedMode ? model.windowedMenuWidth : null);
+    if (menuWidth != null) {
         rsProps.styles = {
-            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+            menu: provided => ({...provided, width: menuWidth, minWidth: '100%'}),
             ...props.rsOptions?.styles
         };
     }

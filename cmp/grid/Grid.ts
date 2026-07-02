@@ -48,6 +48,7 @@ import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {type MouseEvent} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -135,6 +136,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 ],
                 testId,
                 onKeyDown: impl.onKeyDown,
+                onMouseDown: impl.onViewMouseDown,
                 ref: composeRefs(impl.viewRef, model.viewRef, ref)
             }),
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
@@ -150,6 +152,10 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 //------------------------
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
+
+    // Structural "empty" grid space.
+    private static EMPTY_SPACE_SELECTOR =
+        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
 
     @lookup(GridModel)
     private model: GridModel;
@@ -386,7 +392,14 @@ export class GridLocalModel extends HoistModel {
         return {
             track: () => [model.agApi, model.groupBy],
             run: ([agApi, groupBy]) => {
-                if (agApi) agApi.setRowGroupColumns(groupBy);
+                if (!agApi) return;
+                agApi.setRowGroupColumns(groupBy);
+
+                // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
+                const state = model.columnState
+                    .filter(({colId}) => !groupBy.includes(colId))
+                    .map(({colId, hidden}) => ({colId, hide: hidden}));
+                agApi.applyColumnState({state});
             }
         };
     }
@@ -842,6 +855,17 @@ export class GridLocalModel extends HoistModel {
 
     navigateToNextCell = agParams => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);
+    };
+
+    // `stopEditingWhenCellsLoseFocus` doesn't fire on clicks in empty grid space (focus stays in
+    // the grid), so commit the active edit on those clicks ourselves. Require exact match on empty
+    // space to avoid interfering with cell editors.
+    onViewMouseDown = (evt: MouseEvent) => {
+        const {model} = this,
+            target = evt.target as HTMLElement;
+        if (model.isEditing && target.matches(GridLocalModel.EMPTY_SPACE_SELECTOR)) {
+            model.agApi?.stopEditing();
+        }
     };
 
     onCellMouseDown = evt => {

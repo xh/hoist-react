@@ -262,7 +262,6 @@ export class GridFindFieldImplModel extends HoistModel {
 
     private getActiveFields(): string[] {
         const {gridModel, includeFields, excludeFields} = this,
-            groupBy = gridModel.groupBy,
             visibleCols = gridModel.getVisibleLeafColumns();
 
         let ret = ['id', ...gridModel.store.fieldNames];
@@ -287,12 +286,11 @@ export class GridFindFieldImplModel extends HoistModel {
         // Run exclude once more to support explicitly excluding a dot-sep field added above.
         if (excludeFields) ret = without(ret, ...excludeFields);
 
-        // Final filter for column visibility, or explicit request for inclusion.
+        // Final filter for column visibility, or explicit request for inclusion. Deliberately not
+        // keyed to groupBy, so query results stay stable across regrouping (see #4070).
         ret = ret.filter(f => {
             return (
-                (includeFields && includeFields.includes(f)) ||
-                visibleCols.find(c => c.field === f) ||
-                groupBy.includes(f)
+                (includeFields && includeFields.includes(f)) || visibleCols.find(c => c.field === f)
             );
         });
 
