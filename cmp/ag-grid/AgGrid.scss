@@ -20,16 +20,16 @@
 
 .xh-mobile {
   // ag-grid adds these when the center viewport has overflow, so that the space taken by the scrollbar is consistent in
-  // the top and bottom floating divs. On mobile we do not render scrollbars for the center viewport, so force hiding
-  // in the top and bottom floating divs.
-  .ag-floating-top,
-  .ag-floating-bottom {
+  // the top and bottom pinned-row divs. On mobile we do not render scrollbars for the center viewport, so force hiding
+  // in the top and bottom pinned-row divs.
+  .ag-grid-pinned-top-rows-container,
+  .ag-grid-pinned-bottom-rows-container {
     overflow-y: hidden !important;
   }
 
   // Prevent the "bounce" overscroll effect for horizontal scrolling on mobile devices, as it
   // conflicts with the drag management in the Navigator.
-  .ag-center-cols-viewport {
+  .ag-body-horizontal-scroll-viewport {
     overscroll-behavior-x: none;
   }
 }
@@ -58,9 +58,9 @@
   }
 
   // using content-box here rather than border-box increases the height of
-  // the floating top just enough to prevent bleeding through of underlying rows
+  // the pinned top just enough to prevent bleeding through of underlying rows
   // as user scrolls down.
-  .ag-floating-top {
+  .ag-grid-pinned-top-rows-container {
     box-sizing: content-box;
   }
 
@@ -72,7 +72,7 @@
 
   // This ensures that rows will take up at least the full width of the grid in cases where there
   // is no horizontal scrollbar.
-  .ag-center-cols-container {
+  .ag-grid-scrolling-container {
     min-width: 100%;
   }
 
@@ -133,8 +133,8 @@
   }
 
   // Docked summary
-  .ag-floating-top,
-  .ag-floating-bottom {
+  .ag-grid-pinned-top-rows-container,
+  .ag-grid-pinned-bottom-rows-container {
     border-color: var(--xh-grid-summary-row-border-color);
   }
 

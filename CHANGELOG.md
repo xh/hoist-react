@@ -2,6 +2,18 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Upgraded to AG Grid 36. Applications must bump their own `ag-grid-community`, `ag-grid-react`, and
+  (if used) `ag-grid-enterprise` dependencies to `36.x` - Hoist's `installAgGrid` version gate now
+  requires a v36 runtime.
+* AG Grid 36 restructures the grid into a single scrollable container, renaming internal layout
+  classes. Applications with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
+  `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new class names. See the
+  [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+* Enterprise applications require an AG Grid license valid for versions released on or after
+  2 June 2026.
+
 ### 🎁 New Features
 
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
@@ -32,6 +44,19 @@
 * Misc. improvements to persistence in the Admin client.
 * @azure/msal-browser `5.14 → 5.15`
 * swiper  `12.1.0 -> 14.0.0`,
+
+### ✨ Styles
+
+* Migrated internal grid SCSS to AG Grid 36's restructured DOM - the removed `ag-floating-top` /
+  `ag-floating-bottom`, `ag-center-cols-viewport` / `ag-center-cols-container`, and `ag-body-viewport`
+  selectors now target `ag-grid-pinned-top-rows-container` / `ag-grid-pinned-bottom-rows-container`,
+  `ag-body-horizontal-scroll-viewport`, `ag-grid-scrolling-container`, and
+  `ag-body-vertical-scroll-viewport` respectively.
+
+### 📚 Libraries
+
+* ag-grid-community `35.3 → 36.0`
+* ag-grid-react `35.3 → 36.0`
 
 
 ## 86.2.0 - 2026-06-25

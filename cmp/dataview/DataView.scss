@@ -33,7 +33,7 @@
     }
 
     // Always suppress agGrid-provided horizontal scrollbar - we never want it for DVs.
-    .ag-center-cols-viewport {
+    .ag-body-horizontal-scroll-viewport {
       overflow-x: hidden;
     }
 
