@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
+status: executing
 stopped_at: Phase 3 context gathered
-last_updated: "2026-07-02T14:54:15.245Z"
+last_updated: "2026-07-02T15:46:05.364Z"
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 12
+  total_plans: 19
   completed_plans: 12
   percent: 25
 ---
@@ -27,7 +27,7 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 
 Phase: 2 of 8 (Measurement Harness) - COMPLETE: 8/8 plans, goal re-verified 5/5 (2026-06-30)
 Last completed: Phase 2 Plan 08 (gap closure) - heap protocol: total retained heap now differences against a FIXED clean post-GC empty-pipeline baseline captured before the snapshot loads (via BaselineAdapter.clearPipelineAsync -> Cube.clearAsync + the new reloadSnapshotAsync provider hook), and per-layer owned bytes resolve via an N=50000 median-of-5 calibration that clears the noise floor. Also surfaced Pipeline (cube + view) as the PRIMARY compute row in the Toolbox scorecard + comparison table, and hardened the deferred-render metric against backgrounded-tab rAF suspension (visibilityState + Promise.race 1000 ms cap -> renderSuspect). Live-verified in flagged Chrome (after the 18d339e70 reload-ordering fix): full 5000/5587/5587 counts, pipeline 58.1 ms median vs 0.6 ms relay, heap total +78.8 MB POSITIVE (cube 3.5 / grid 4.0 / view 4.0 / AG remainder 67.4, owned+remainder=total), render 3.5 ms median with 0 samples over 900 ms (HARN-03/04/05/06; 6 auto tasks + APPROVED human-verify checkpoint, 2026-06-29)
-Status: Phase 2 goal ACHIEVED - all three 02-VERIFICATION.md gaps closed (gap 1 pipeline timing + gap 2 tree shape by 02-07, gap 3 heap protocol by 02-08) and goal re-verified 5/5 against the codebase + flagged-Chrome live evidence. HARN-01..06 all satisfied. Harness is durable infrastructure ready to adjudicate later "faster/lighter" claims.
+Status: Ready to execute
 Next action: /gsd:plan-phase 03 (Baseline Performance Envelope) - run the current stack through the harness to map its memory/throughput walls. (Note: `gsd-tools phase complete` reported is_last_phase incorrectly; the roadmap has 8 phases and Phase 3 is next.)
 
 Milestone progress: [██░░░░░░] 2/8 phases complete (Phase 2 fully closed, goal re-verified)
