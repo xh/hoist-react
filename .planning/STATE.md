@@ -1,3 +1,18 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: verifying
+stopped_at: Phase 3 context gathered
+last_updated: "2026-07-02T14:54:15.245Z"
+progress:
+  total_phases: 8
+  completed_phases: 2
+  total_plans: 12
+  completed_plans: 12
+  percent: 25
+---
+
 # Project State
 
 ## Project Reference
@@ -20,6 +35,7 @@ Milestone progress: [██░░░░░░] 2/8 phases complete (Phase 2 full
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0
 - Average duration: -
 - Total execution time: 0 hours
@@ -31,6 +47,7 @@ Milestone progress: [██░░░░░░] 2/8 phases complete (Phase 2 full
 | - | - | - | - |
 
 **Recent Trend:**
+
 - Last 5 plans: -
 - Trend: -
 
@@ -57,16 +74,21 @@ Recent decisions affecting current work:
 
 - Roadmap: 8 phases derived from 42 requirements (comprehensive depth) - HARN/BASE/DEMO split
   into separate phases (2/3/4); DEMO and SPEC are harness-independent and may run in parallel.
+
 - Roadmap: Phase 1 consolidates the committed validation notes into the authoritative architecture
   doc rather than starting cold - codebase-mapping is folded into Phase 1.
+
 - Kickoff: Data 2.0 may stand alongside the current system, not replace in-place (coexistence is a
   design requirement).
+
 - Validation: transport is pluggable/transport-agnostic; weighted-avg is a custom Aggregator; MobX
   observability enters at the `View.result` boundary (not a cube-level observable).
+
 - INV-02: a single leaf datum has 4+ concurrent parsed/record representations (raw, cube
   `StoreRecord.data`, leaf `ViewRowData`, grid `StoreRecord.data`); every Store boundary re-parses
   into a new `data` object via `parseRaw`, while AG Grid references the record by ref. The
   `StoreRecord` -> AG Grid node edge is the Phase 2 heap-attribution boundary (opaque library memory).
+
 - [Phase 01-current-state-inventory]: Transport inventory: every delivery transport collapses to the invariant two-operation ingest contract (snapshot -> Cube.loadDataAsync, diff -> Cube.updateDataAsync), making transport-agnosticism a clean knob for HARN-02
 - [Phase 01-current-state-inventory]: WebSocket data push (XH.webSocketService) documented as first-class and distinct from WebSocket-as-notification; no Hoist-native SignalR client, so SignalR is bridged at the app/service layer to the same ingest contract
 - INV-03: MobX observation along View.result -> Store -> GridModel -> AG Grid is at whole-reference
@@ -75,12 +97,14 @@ Recent decisions affecting current work:
   synchronously via one `agApi.applyTransaction()` call (`Grid.ts:693`) - no async/batching layer,
   only implicit MobX action coalescing. Cube->view and store-mutation->rebuildFiltered are imperative
   pushes, not MobX-observed. Reactions are mounted-only (GridLocalModel.onLinked, gated on agApi).
+
 - INV-01: ARCHITECTURE.md is the single authoritative current-state doc (supersedes the validation
   notes, integrates INV-02/03/04). It names six attributable Phase 2 instrumentation boundaries -
   cube ingest (loadDataAsync/updateDataAsync), noteCubeUpdated re-aggregation, the View.result
   @observable.ref write, Store/_filtered rebuild, the dataReaction->genTransaction->applyTransaction
   bridge, and the heap-attribution layers - each mapped to HARN-03 (boundary timing), HARN-04 (heap
   attribution by layer), and HARN-05 (compute-vs-bridge split). This is the Phase 2 bridge.
+
 - [Phase 02-measurement-harness]: HARN type foundation: ScenarioConfig knob schema + RunResult/Scorecard output + CandidateAdapter seam, all serializable JSON exported from data/index.ts
 - [Phase 02-measurement-harness]: Plan 02-02: Toolbox datalab namespace adds a seeded server-side test-data API (HARN-01/02) - generator + HTTP snapshot/diff + WebSocket push, all emitting an identical batch shape so the client ingest adapter resolves any transport to the one two-op contract
 - [Phase 02-measurement-harness]: Plan 02-03: boundary instrumentation - spans for structure (runner().span() into OTel), performance.now() for the number; Boundary-5 split into compute/bridge/deferred-render (requestPostAnimationFrame); genTransaction/applyTransaction injected to decouple from GridModel
@@ -101,6 +125,7 @@ Recent decisions affecting current work:
   (ViewManager); runs = transient local state (localStorage). Does NOT affect the Phase 2 goal or its 5/5
   verification (the observable truths are harness-core, independent of demo persistence). Toolbox-only
   code change; 02-08-SUMMARY.md annotated.
+
 - [Phase 02-measurement-harness, post-close refinements]: Two additive harness/demo refinements, neither
   affecting the 5/5 goal verification (observable truths are harness-core). (1) PROGRESS HOOK: optional
   `onProgress` callback on `RunScenarioArgs` (+ `runProtocolAsync`), emitting coarse stages (Capturing
@@ -114,6 +139,7 @@ Recent decisions affecting current work:
   reads cadence/updateMode; the UI renders described options via a custom `optionRenderer` and disables
   batch/breadth/cadence under fullReplace. NOTE: changes the persisted `ScenarioConfig.update` schema -
   acceptable as the tooling is brand new (dev-local profiles only, no migration needed).
+
 - [Phase 02-measurement-harness, post-close refinements]: Wired `fullReplace` to actually MEASURE the
   reload (live review caught it producing a bogus ~0.2 ms because the measured loop applied an empty
   diff and never acted on `op:replace`). `MeasurementHarness.runIterationAsync` now branches on
@@ -125,6 +151,7 @@ Recent decisions affecting current work:
   pipeline reload cost). Also fixed `DataLabController.parseUpdateParams` which was dropping
   cadence/updateMode (forwarding the retired `pattern`), so the server had been defaulting every run to
   steady/incremental - surfaced only by the live burst/fullReplace check.
+
 - [Phase 02-measurement-harness, post-close refinements]: Split the harness run into TWO independent,
   optional measurement passes - reframing the run as two concerns rather than one entangled flow.
   MEMORY pass: how much heap the loaded dataset retains, attributed by layer (clear -> empty baseline ->
@@ -146,6 +173,7 @@ Recent decisions affecting current work:
   migration). Does NOT affect the Phase 2 5/5 goal verification (the observable truths are harness-core -
   the harness exists and measures - independent of pass-optionality). Known follow-on (NOT bundled):
   per-record sizing still shares the measured adapter, churning the watched grid under "Measuring memory"
+
   - a dedicated throwaway sizing pipeline would keep it clean and remove the reload-after-sizing coupling.
 - [Phase 02-measurement-harness, post-close refinements]: Terminology cleanup - renamed the misleading
   "calibration" vocabulary to direct "per-record sizing" across the brand-new measure code (no baked-in
@@ -157,6 +185,7 @@ Recent decisions affecting current work:
   all holder vars -> `sizing`, toolbox `calHttp` -> `sizingHttp`, and every "calibration" comment ->
   "per-record sizing". Field names (`cubeRecordBytes` etc.) were already clear and kept. Pure rename - no
   behavior change; both repos tsc + lint clean.
+
 - [Phase 02-measurement-harness, post-close refinements]: Broader measure-vocabulary pass to lock the
   language before later phases build on it (the measure code is brand new, so nothing was sacred). Four
   decided renames plus a README sync; all pure renames, no behavior change. (1) SEAM: the `CandidateAdapter`
@@ -178,6 +207,7 @@ Recent decisions affecting current work:
   names updated (`xhDataLab.pipeline` -> `.engine`, `.computeMs` -> `.genTxnMs`). README synced for all of the
   above plus the earlier calibration->sizing leftover. Both repos tsc + lint clean; live-verified the renamed
   scorecard renders end-to-end (Engine 62.35 ms / Build txn 0.5 ms / heap 103.6 MB / 5000-5587 rows).
+
 - [Phase 02-measurement-harness, post-close refinements]: Data Lab form now reflects pass selection -
   the update-stream knobs (`updateMode`/`cadence`/`transport`/`batchSize`/`breadth`) are disabled when the
   performance pass is off, since the MEMORY pass applies no updates (it loads the snapshot, sizes per-record
@@ -187,6 +217,7 @@ Recent decisions affecting current work:
   pass off)" when disabled. Also gated `DataLabModel.doRunAsync` so the
   WebSocket adapter is only spun up when the performance pass will consume diffs (a memory-only run fetches
   the snapshot over HTTP either way). Toolbox-only; live-verified.
+
 - [Phase 02-measurement-harness, post-close refinements]: Began exposing GridModel switches through the
   scenario (the grid configs a representative measurement must honor). First one: `useVirtualColumns`
   (defaults TRUE) - essential for wide column sets; without it the grid easily crashes rendering them all.
@@ -202,6 +233,7 @@ Recent decisions affecting current work:
   depend on AG Grid 36 Enterprise features (calculated columns, "show values as," FormulaModule)
   without a per-client entitlement gate. The SPEC-05 parity map no longer needs per-client
   entitlement status columns.
+
 - [2026-07-02] DESCOPED: backend aggregation (server-side pre-shaping + delta push on the Grails
   transport) is out of scope as a candidate - the client-side data layer under question must (and
   more often does) source data from backend APIs not under XH's control, so a server-controlled
@@ -221,13 +253,14 @@ None yet.
 
 - Per-client transport + cross-origin-isolation (COOP/COEP) deployability matrix gates
   SharedArrayBuffer-dependent candidates - needed before Phase 6 scoring is finalized.
+
 - OPEN REPO: no private client/customer names in any committed file. Allowed names: Hoist, Toolbox,
   JobSite. A local PreToolUse guard blocks commits containing forbidden names.
 
 ## Session Continuity
 
-Last session: 2026-06-29
-Stopped at: Plan 02-08 (gap closure) COMPLETE and closed out - Phase 2 fully closed (8/8 plans),
+Last session: 2026-07-02T14:54:15.238Z
+Stopped at: Phase 3 context gathered
   ready for goal re-verification. Closed gap 3 (heap protocol): attributeHeap now differences against
   a FIXED clean post-GC empty-pipeline baseline captured before the snapshot loads (positive +78.8 MB,
   was -28.2 MB inverted), reached via BaselineAdapter.clearPipelineAsync (Cube.clearAsync, pipeline
@@ -289,4 +322,4 @@ Resume: Re-verify the Phase 2 goal (all 8 plans complete; HARN-01..06 all comple
   `record-session`, `update-progress`, and `phase complete` parsing does not match this project's
   prose STATE/ROADMAP format - Current Position, Session Continuity, and the progress bar are
   maintained by hand; the metric table, decision log, and requirements checkboxes update via gsd-tools.
-Resume file: None
+Resume file: .planning/phases/03-baseline-performance-envelope/03-CONTEXT.md
