@@ -41,20 +41,24 @@
 // or modified for use with that component.
 *:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
 *:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
-  // Bind ag-grid's base bg to Hoist's grid bg - prevents balham-dark default bleeding through.
   --ag-background-color: var(--xh-grid-bg);
 
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
-  // As of ag-Grid 36 the theme class lands on ag-Grid's own inner `.ag-styled-root`, where the theme
-  // sets font-family/size from balham's --ag-font-* defaults; cells then inherit from it. Override
-  // that back to `inherit` so the styled root - and thus cells - pick up Hoist's font-family and
-  // (sizing-mode-driven) font-size from this wrapper, as they did prior to ag-Grid 36.
+  // As of ag-Grid 36 the theme class lands on ag-Grid's own inner `.ag-styled-root`, where the balham
+  // theme (re-)declares its var defaults (font, background, row border/hover colors). A binding set on
+  // this outer wrapper is shadowed there, so we re-bind Hoist's values on the styled root itself.
   .ag-styled-root {
+    // Cells inherit font from the styled root; reset to `inherit` so they pick up Hoist's font-family
+    // and (sizing-mode-driven) font-size from this wrapper, as they did prior to ag-Grid 36.
     font-family: inherit;
     font-size: inherit;
+
+    // Bind ag-grid's base bg to Hoist's grid bg - prevents the balham(-dark) default bleeding through
+    // (e.g. on the row's trailing spacer, past the last column).
+    --ag-background-color: var(--xh-grid-bg);
 
     // ag-Grid 36 renders the row-hover highlight as an overlay tinted by --ag-row-hover-color, which
     // balham defaults to a visible grey. Default it off; `--show-hover` re-enables it below. (Prior
@@ -155,18 +159,19 @@
     border-color: var(--xh-grid-summary-row-border-color);
   }
 
-  // Row borders. As of ag-Grid 36 the balham theme no longer supplies a row border width on
-  // `.ag-row`, so we set the full border here (previously we set only the color and inherited the
-  // width from the theme).
+  // Row borders. As of ag-Grid 36 regular-row borders are drawn on the inner cell containers via the
+  // --ag-row-border-* vars (declared by the balham theme on `.ag-styled-root`), so we drive them
+  // there rather than on `.ag-row`. Full-width group rows are not split into cell containers and keep
+  // their border on `.ag-row`.
   &--row-borders {
-    .ag-row {
-      border-bottom: 1px solid var(--xh-grid-border-color);
+    .ag-styled-root {
+      --ag-row-border-color: var(--xh-grid-border-color);
+    }
 
-      // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
-      // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
-      &.ag-row-group.ag-full-width-row {
-        border-color: var(--xh-grid-group-border-color);
-      }
+    // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
+    // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
+    .ag-row.ag-row-group.ag-full-width-row {
+      border-bottom: 1px solid var(--xh-grid-group-border-color);
     }
     .ag-cell {
       border-bottom: none;
@@ -175,9 +180,8 @@
   }
 
   &--no-row-borders {
-    .ag-row {
-      border-bottom: none;
-      border-top: none;
+    .ag-styled-root {
+      --ag-row-border-width: 0;
     }
 
     // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.

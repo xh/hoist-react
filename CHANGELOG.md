@@ -49,13 +49,13 @@
   selectors now target `ag-grid-pinned-top-rows-container` / `ag-grid-pinned-bottom-rows-container`,
   `ag-body-horizontal-scroll-viewport`, `ag-grid-scrolling-container`, and
   `ag-body-vertical-scroll-viewport` respectively.
-* Preserved the Hoist grid/DataView font under AG Grid 36 - the theme now applies balham's default
-  font on its inner `ag-styled-root`, so cells are reset to inherit Hoist's font-family and
-  sizing-mode font-size rather than the balham system-font default.
-* Restored grid row borders and row-hover styling under AG Grid 36, which moved both onto new inner
-  elements/vars: the `rowBorders` option now sets the row border width itself (the theme no longer
-  supplies one), and `showHover` is driven via `--ag-row-hover-color` so hover no longer appears
-  always-on with the balham default color.
+* Restored Hoist's grid styling under AG Grid 36, which applies the balham theme (font, background,
+  and row border/hover colors) on its own inner `ag-styled-root` element - shadowing the bindings
+  Hoist set on the grid wrapper. These are now re-bound on `ag-styled-root`, fixing: cell font
+  (fell back to balham's system font/size), grid background (balham default bled through, e.g. on
+  the row's trailing spacer), `rowBorders` (drawn on the inner cell containers, so borders appeared
+  always-on), and `showHover` (row-hover overlay appeared always-on in balham's default color).
+  DataView font is likewise preserved.
 
 ### 📚 Libraries
 
