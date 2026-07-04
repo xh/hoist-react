@@ -3209,20 +3209,38 @@ ag-charts-types@13.3.1:
   resolved "https://registry.yarnpkg.com/ag-charts-types/-/ag-charts-types-13.3.1.tgz#c34aaed19847ed633fa468f39caa94bbffc363b3"
   integrity sha512-m37eUe4g//swvGh8PWMlYQH3gknjSsPeW4sQwBhM3/auGAHmN0wvxEWlrdAn98pBPg4HoKbtOy+yf7gPCYsnvQ==
 
-ag-grid-community@35.3.1, ag-grid-community@35.x:
+ag-charts-types@14.0.0:
+  version "14.0.0"
+  resolved "https://registry.yarnpkg.com/ag-charts-types/-/ag-charts-types-14.0.0.tgz#996ee481a56988840b8e2cafc334e780ce636742"
+  integrity sha512-89X4J/OeOTzTp505126JayGEn3k6QUKz3UHSR0/ggoVZYzVqtMN13k/B136S1+YBwgnzyJ/NARnnIRTPWsWG9g==
+
+ag-grid-community@35.x:
   version "35.3.1"
   resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-35.3.1.tgz#b7920da3209e2c121e1e34df59dec812e65349f0"
   integrity sha512-Wmkd/xYTCbAApcZZO74nBggZCnd/oX753NY3MJ4zYARVpfBHRWWhIBJ2sFTFKbDWwHZOWsx3YT9+kkyeuyLKlw==
   dependencies:
     ag-charts-types "13.3.1"
 
-ag-grid-react@35.x:
-  version "35.3.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-35.3.1.tgz#0360eeb880f1ada988ee1420817609b59a9a06b1"
-  integrity sha512-M3ljCQyGL+qzoyPN0BYrn4eAlgZr6Ailcjd8+a7OcneSiVsMNSJb/gTkIMUwmYivkPLIA8EEJ4hTxxKSaya6mQ==
+ag-grid-community@36.0.0:
+  version "36.0.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-36.0.0.tgz#f5a450d7b3e7e9032f4186699bc4f1747de9544f"
+  integrity sha512-73PeuoG1Pofi6o1o2dYd092m5AdCt0uq/iCaVTCxLw9eRJGLZu0I+HICReolUmUH7A5X+CnYDXiE+P9S8dUqCQ==
   dependencies:
-    ag-grid-community "35.3.1"
+    ag-charts-types "14.0.0"
+    ag-stack "36.0.0"
+
+ag-grid-react@36.x:
+  version "36.0.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-36.0.0.tgz#9a2bbe00d1120a12ec6e361c73bd9bbe0f1e9e5f"
+  integrity sha512-ShmynyRQDoxuXBso+kPliZJnivQKwBG/EGclCBV3dg98ou2kq7yxdgf8DhrW4uM5SekNDaqor4Gn9OAGtH2o3g==
+  dependencies:
+    ag-grid-community "36.0.0"
     prop-types "^15.8.1"
+
+ag-stack@36.0.0:
+  version "36.0.0"
+  resolved "https://registry.yarnpkg.com/ag-stack/-/ag-stack-36.0.0.tgz#7176a99417839ceebb588ee664d6659ad6e78670"
+  integrity sha512-ciXqjZygVLk3tnZWOAQyOxP48Ju2ZmaSAtIebekXJwHqA7vB+NJ8ZME/O4XTRpInTSHn2KSu/KTxgWJO8dduiw==
 
 ajv-formats@^2.1.1:
   version "2.1.1"
@@ -9041,11 +9059,6 @@ type-check@^0.4.0, type-check@~0.4.0:
   integrity sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==
   dependencies:
     prelude-ls "^1.2.1"
-
-type-fest@4.x:
-  version "4.41.0"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.41.0.tgz#6ae1c8e5731273c2bf1f58ad39cbae2c91a46c58"
-  integrity sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
 
 type-fest@5.x:
   version "5.7.0"

@@ -105,7 +105,7 @@
     "@types/react-dom": "18.x",
     "@xh/hoist-dev-utils": "13.x",
     "ag-grid-community": "35.x",
-    "ag-grid-react": "35.x",
+    "ag-grid-react": "36.x",
     "csstype": "3.x",
     "eslint": "10.x",
     "eslint-config-prettier": "10.x",
