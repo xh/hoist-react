@@ -2,35 +2,35 @@
 # yarn lockfile v1
 
 
-"@auth0/auth0-auth-js@1.9.1":
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/@auth0/auth0-auth-js/-/auth0-auth-js-1.9.1.tgz#5d3d0e4569d434887f147ead9cd804d3ebb31421"
-  integrity sha512-YY8/We7NpJyN8aDlYZI0ENRFlPsuFQ5NGETI4dkJa+BEwCibNTRlM1E9O9qc77K4TpOANZsmaADSMde2If+Alg==
+"@auth0/auth0-auth-js@1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-auth-js/-/auth0-auth-js-1.10.0.tgz#8659154c814894a77832e192774123ba54fc9dcd"
+  integrity sha512-FDzc0lbaG1E++4sjx3zW7BB9gVK2ODLmuPStGxYPeclKwLMFKkmVyWR8bCyQVNXvTS1KCHeX0dC9HMTJ0WBCJg==
   dependencies:
     jose "^6.0.8"
     openid-client "^6.8.0"
 
-"@auth0/auth0-spa-js@~2.21.1":
-  version "2.21.2"
-  resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.21.2.tgz#6e3a784716aa341eed19aa3b3a180530e1944f12"
-  integrity sha512-CkIzlTJeae0LbYluXgNRPs7X8+Yd7W8ya/d1Cq/AGZ0d5/gfWwgDdFv9tCQR59KhRqdmvESSJUaIQjcjD0B1aA==
+"@auth0/auth0-spa-js@~2.22.0":
+  version "2.22.0"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.22.0.tgz#385b2c19046d32b570b9432735f24a6980d8fff6"
+  integrity sha512-+2MeIGcXNPXaodEimx1F0YYTfajZ3oxbUI14nGhChcPqxOjRZQNwXrr9rRpHy+tMgNHOnM5YwIqvAfkZlB1WjA==
   dependencies:
-    "@auth0/auth0-auth-js" "1.9.1"
+    "@auth0/auth0-auth-js" "1.10.0"
     browser-tabs-lock "1.3.0"
     dpop "2.1.1"
     es-cookie "1.3.2"
 
-"@azure/msal-browser@~5.15.0":
-  version "5.15.0"
-  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.15.0.tgz#bf949eafa6fb8c638df32d4ac4daaafcef4139d8"
-  integrity sha512-2NYT6v+eeQn8kmNddr9LnbXSvXbVELpmFMmfFvtRxD7I/5+5GlkMlncApeuRFj+mY6C9syOwQip1a0Y+TIbyiA==
+"@azure/msal-browser@~5.16.0":
+  version "5.16.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.16.0.tgz#96d5ea6caff4a382d1f5e903c99f01f5825fd6ba"
+  integrity sha512-Wc75FGnQgYpsm5jsOqn1H8AXsh8vXruA6vwip1nhjrJxwby7juxKAIVLr7csepmHiwdZGr6EwI5BlSc3PizEtQ==
   dependencies:
-    "@azure/msal-common" "16.10.0"
+    "@azure/msal-common" "16.11.0"
 
-"@azure/msal-common@16.10.0":
-  version "16.10.0"
-  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.10.0.tgz#b270d164019e7c8d80692e9ceceecff003e6c1dc"
-  integrity sha512-iYtjpanlv6963Jprs0MvzIap07V+QhultjQctfbEDQCflsDAEeO3R7XnVA5gk30fhoBFLdgJT7VqO0TGsEsN9w==
+"@azure/msal-common@16.11.0":
+  version "16.11.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.11.0.tgz#7aae1b7443d7986db398e5ff7a5d78c51de1bec5"
+  integrity sha512-UikJOtMwkFpZNzTH6Dqk8UTUPbow15zH3e0UjGYZy69lYENW/S05gMLhbxI2eonz66uALhIljvhsSMEb6+O30g==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.29.7":
   version "7.29.7"
@@ -948,13 +948,13 @@
   dependencies:
     tslib "~2.6.2"
 
-"@blueprintjs/core@^6.16.0", "@blueprintjs/core@^6.3.2":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-6.16.0.tgz#d126b8738f98e8d320020f433b28a69474f836c9"
-  integrity sha512-xVamwaXDsWxekKmfgx1RuS79V8vqAEn8rYdZLmTLbObZwrZ4Vj7sy/S0Qri5wMid4hVYncSExlXcurWvHoRgrA==
+"@blueprintjs/core@^6.17.0", "@blueprintjs/core@^6.3.2":
+  version "6.17.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-6.17.0.tgz#8f3dae4a505baece57863f9357362d474cd37c68"
+  integrity sha512-ocatKcGPzJjFXGu8CR+IAJDgldwj7Pif3rq5659qYAqFApqsSOe7lgNgrQxYdx2gawMRmVy+Xb4I4KkQbERZ1w==
   dependencies:
     "@blueprintjs/colors" "^5.1.16"
-    "@blueprintjs/icons" "^6.11.0"
+    "@blueprintjs/icons" "^6.12.0"
     "@floating-ui/react" "^0.27.13"
     "@popperjs/core" "^2.11.8"
     classnames "^2.3.1"
@@ -964,13 +964,13 @@
     tslib "~2.6.2"
 
 "@blueprintjs/datetime@^6.0.6":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-6.2.0.tgz#f66fb87ba4c20d8339d41a6ccf53b4e4af3e0fab"
-  integrity sha512-pyKdJ5U3vAtwECvXUGrnP4tA84QXO8ybSMJ62KdHoYpgszl44M/TYrDdOA2bmN83q2weiQyNNl88Wk4ea+lbPQ==
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-6.2.1.tgz#aaee10b9be395cf026f8bf5f12dae4ad6ea41e50"
+  integrity sha512-vp+EDX1eMnW0GK10u8L5CtIHgMdBzeVJ4kc2OzOzVnD91vK+BsitmeZLXrz/g2MEubgSvZv9X4mm8bFEblWRZg==
   dependencies:
-    "@blueprintjs/core" "^6.16.0"
-    "@blueprintjs/icons" "^6.11.0"
-    "@blueprintjs/select" "^6.3.0"
+    "@blueprintjs/core" "^6.17.0"
+    "@blueprintjs/icons" "^6.12.0"
+    "@blueprintjs/select" "^6.3.1"
     classnames "^2.3.1"
     date-fns "^2.28.0"
     date-fns-tz "^2.0.0"
@@ -978,23 +978,23 @@
     react-innertext "^1.1.5"
     tslib "~2.6.2"
 
-"@blueprintjs/icons@^6.11.0":
-  version "6.11.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-6.11.0.tgz#297b4b5a234b69adbd56bb8bd56bac24dbd758c7"
-  integrity sha512-LKNsI2ukS+Q/cRlghzdQcEVHu8tdTw+aXtgjSqecjxOcnjy+mItcMR5DCdwTHMMejEtrFNTwAlrvsz9MFYc1iA==
+"@blueprintjs/icons@^6.12.0":
+  version "6.12.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-6.12.0.tgz#f3710da94be287f4276d26320b19b9496c83dde9"
+  integrity sha512-lQWyGesMlzaKK8YpFfzb+cWjPGRbgkXh5Fs+cbmrwI5bCYimMAzvqRIOD1o+0krI+6DQOi/LWWT+5oJkIpgTZQ==
   dependencies:
     change-case "^4.1.2"
     classnames "^2.3.1"
     tslib "~2.6.2"
 
-"@blueprintjs/select@^6.3.0":
-  version "6.3.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-6.3.0.tgz#06e66470f3f9f6e2950c0465f35e7820c4c1b4f9"
-  integrity sha512-m+tQ6PIG/qWfGUwx2DFZs7nKZfMwx4OKPT4yO5aVe9JCqVkJGs+ZdEfjFO4zf6PF6lD0e9Yxyis497YJh1lawA==
+"@blueprintjs/select@^6.3.1":
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-6.3.1.tgz#d9bdc96c3caeb651fa3458a243121d904fcd1caa"
+  integrity sha512-kc+/DLVnnassu78cSzCPgshAX4kgK4PXmbXWMYOXMI4pQ1HCxKl7L/PRN+kb+TMdwGTMQfuXAjRyJTMrSlzkSw==
   dependencies:
     "@blueprintjs/colors" "^5.1.16"
-    "@blueprintjs/core" "^6.16.0"
-    "@blueprintjs/icons" "^6.11.0"
+    "@blueprintjs/core" "^6.17.0"
+    "@blueprintjs/icons" "^6.12.0"
     classnames "^2.3.1"
     tslib "~2.6.2"
 
@@ -8864,9 +8864,9 @@ svg-tags@^1.0.0:
   integrity sha512-ovssysQTa+luh7A5Weu3Rta6FJlFBBbInjOh722LIt6klpU2/HtdUbszju/G4devcvk8PGt7FCLv5wftu3THUA==
 
 swiper@^14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/swiper/-/swiper-14.0.0.tgz#57130f74835466945bf1316f76c7932f41fd54a6"
-  integrity sha512-F6DXjC+GKt8WGvutu+35FIZO9iZkde+XxDwFqfw0tlFijDwfG7DikHYUiFQKqIYEp25q8TQSqI3Nh2+bHxs2uA==
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/swiper/-/swiper-14.0.1.tgz#65fd8cededb1219dccff2daf22d22589d96df591"
+  integrity sha512-dibQY282S5rn6S9Ba+GTIvofyY4Qujy526a0cPaJnjR2S18Z7HMGKZBr8k/3ukboeKW/ig5h0q//7CYip0MCQw==
 
 symbol-observable@1.2.0:
   version "1.2.0"
@@ -9020,9 +9020,9 @@ tslib@~2.6.2:
   integrity sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==
 
 tsx@^4.21.0:
-  version "4.22.4"
-  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.22.4.tgz#0ab3b7fb4ec7feeee74e5b1f26337caa71e44700"
-  integrity sha512-X8EX+XV4QR5xCsrgxaED954zTDfY8KqlDtskKEL0cHhyS/P8b4IFOvGDQpsC9Q1XnLq915wEfwwY/zzskCtmhg==
+  version "4.23.0"
+  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.23.0.tgz#5393ae8bfce5a9c34db9c00d1353e3d8c3fd3de6"
+  integrity sha512-eUdUIaCr963q2h5u3+QwvYp0+eqPvn+egeqZUm0hwERCqqx1E3kK5ehbGCvqSE5MQAULr67ww0cA3jKc3YkM1w==
   dependencies:
     esbuild "~0.28.0"
   optionalDependencies:
@@ -9041,11 +9041,6 @@ type-check@^0.4.0, type-check@~0.4.0:
   integrity sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==
   dependencies:
     prelude-ls "^1.2.1"
-
-type-fest@4.x:
-  version "4.41.0"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.41.0.tgz#6ae1c8e5731273c2bf1f58ad39cbae2c91a46c58"
-  integrity sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
 
 type-fest@5.x:
   version "5.7.0"
