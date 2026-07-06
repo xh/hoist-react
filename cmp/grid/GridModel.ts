@@ -1363,6 +1363,22 @@ export class GridModel extends HoistModel {
         return this.findColumnGroup(this.columns, groupId);
     }
 
+    /**
+     * True if the given leaf-level column is configured to allow the user to hide it (i.e. its
+     * `hideable` flag). Returns false if the colId does not resolve to a column.
+     */
+    isColumnHideable(colId: string): boolean {
+        return this.getColumn(colId)?.hideable ?? false;
+    }
+
+    /**
+     * True if the given leaf-level column is configured to allow the user to reorder it (i.e. its
+     * `movable` flag). Returns false if the colId does not resolve to a column.
+     */
+    isColumnMovable(colId: string): boolean {
+        return this.getColumn(colId)?.movable ?? false;
+    }
+
     /** Return all leaf-level columns - i.e. excluding column groups. */
     getLeafColumns(): Column[] {
         return this.gatherLeaves(this.columns);

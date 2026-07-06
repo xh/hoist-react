@@ -92,7 +92,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
                     .flatMap(node => getChooserData(node)?.leafColIds ?? [])
                     // A movable-but-locked column can be dragged here - never hide it. Dropping one
                     // (or a group's locked leaves) is a no-op.
-                    .filter(colId => targetGridModel.getColumn(colId)?.hideable)
+                    .filter(colId => targetGridModel.isColumnHideable(colId))
             );
         if (!hideIds.size) return;
 

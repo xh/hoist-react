@@ -120,7 +120,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             record.data.leafColIds.forEach((colId: string) => {
                 // A group's aggregate hideable can be true while it contains a locked leaf - never
                 // hide such a leaf. Showing it is a no-op (a non-hideable column stays visible).
-                if (hidden && !gridModel.getColumn(colId)?.hideable) return;
+                if (hidden && !gridModel.isColumnHideable(colId)) return;
                 updates.push({colId, hidden});
             });
         });
@@ -388,7 +388,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             // Aggregate visibility over the group's *hideable* leaves only - the toggle can only
             // act on those, so a group whose sole visible member is locked must still read as "all
             // hidden" (and toggle back to shown) rather than being stuck permanently "mixed".
-            const hideableLeafIds = it.leafColIds.filter(id => gridModel.getColumn(id)?.hideable),
+            const hideableLeafIds = it.leafColIds.filter(id => gridModel.isColumnHideable(id)),
                 hiddenCount = hideableLeafIds.filter(id => stateById.get(id)?.hidden).length,
                 total = hideableLeafIds.length;
             it.visible =
@@ -402,7 +402,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
             it.hideable = total > 0;
 
-            it.movable = it.leafColIds.every(id => gridModel.getColumn(id)?.movable);
+            it.movable = it.leafColIds.every(id => gridModel.isColumnMovable(id));
         });
 
         return data;
