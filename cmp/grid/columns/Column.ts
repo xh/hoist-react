@@ -292,8 +292,9 @@ export interface ColumnSpec {
     chooserName?: string;
 
     /**
-     * Group name to display within the column chooser component.  Chooser will automatically group
-     * its "available columns" grid if any cols provide.
+     * Group name for organizing this column within the column chooser's Column Library panel
+     * (see {@link ColChooserConfig.showColumnLibrary}). Not used by the chooser's main list, which
+     * groups by actual {@link ColumnGroup} structure instead.
      */
     chooserGroup?: string;
 
