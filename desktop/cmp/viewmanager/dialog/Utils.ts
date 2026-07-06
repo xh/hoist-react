@@ -13,7 +13,7 @@ import {
     splitGroupPath,
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
-import {SelectOption} from '@xh/hoist/core';
+import {PlainObject, SelectOption} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, startCase} from 'lodash';
@@ -76,6 +76,11 @@ export function groupPathDisplay(path: string): ReactNode {
 /** Menu renderer displaying a {@link GroupPathOption} as its leaf name, indented per depth. */
 export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
     const {value, label, depth} = opt;
+
+    // Pass through the "Create..." option injected dynamically by react-select when the user
+    // types a new path (with `enableCreate`) - its label is the formatted create message.
+    if ((opt as PlainObject).__isNew__) return label;
+
     return hbox({
         alignItems: 'center',
         paddingLeft: (depth ?? 0) * 15,

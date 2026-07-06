@@ -212,6 +212,7 @@ const movePane = hoistCmp.factory<GroupEditorModel>({
                     options: getGroupPathOptions(viewManagerModel, isGlobal, {includeRoot: true}),
                     optionRenderer: groupPathOptionRenderer,
                     enableCreate: true,
+                    createMessageFn: v => `Create path "${v}"`,
                     enableFilter: true,
                     placeholder: 'Select or enter a group...',
                     width: null
