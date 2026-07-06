@@ -541,6 +541,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .run(ctx => this.dataAccess.updateViewInfoAsync(view, updates, ctx));
     }
 
+    /** Apply the same metadata updates to multiple views. Requires hoist-core v41 or greater. */
+    async updateViewsInfoAsync(views: ViewInfo[], updates: ViewUpdateSpec): Promise<void> {
+        return this.runner()
+            .span('bulkUpdateInfo')
+            .run(ctx => this.dataAccess.updateViewsInfoAsync(views, updates, ctx));
+    }
+
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
         await this.runner()
             .span('delete')

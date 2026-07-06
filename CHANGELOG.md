@@ -13,6 +13,9 @@
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.
+* The `ViewManager` Manage dialog now supports changing visibility (private/shared/global) for
+  multiple selected views at once, with the same save/revert flow as single-view editing
+  (requires hoist-core v41+).
 
 ### 🐞 Bug Fixes
 

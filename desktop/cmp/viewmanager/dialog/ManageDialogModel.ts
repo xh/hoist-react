@@ -25,6 +25,7 @@ import {action, bindable, computed, makeObservable, observable, runInAction} fro
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, keys, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
+import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 import {ViewPanelModel} from './ViewPanelModel';
 
 /**
@@ -40,6 +41,7 @@ export class ManageDialogModel extends HoistModel {
     @managed sharedGridModel: GridModel;
 
     @managed viewPanelModel: ViewPanelModel;
+    @managed viewMultiPanelModel: ViewMultiPanelModel;
 
     @managed tabContainerModel: TabContainerModel;
 
@@ -134,6 +136,10 @@ export class ManageDialogModel extends HoistModel {
         return this.doUpdateAsync(view, update).linkTo(this.updateTask).catchDefault();
     }
 
+    async updateViewsAsync(views: ViewInfo[], update: ViewUpdateSpec) {
+        return this.doUpdateViewsAsync(views, update).linkTo(this.updateTask).catchDefault();
+    }
+
     @action
     togglePinned(views: ViewInfo[]) {
         const allPinned = every(views, 'isPinned'),
@@ -161,6 +167,7 @@ export class ManageDialogModel extends HoistModel {
 
         this.tabContainerModel = this.createTabContainerModel();
         this.viewPanelModel = new ViewPanelModel(this);
+        this.viewMultiPanelModel = new ViewMultiPanelModel(this);
 
         this.addReaction({
             track: () => this.filter,
@@ -189,6 +196,14 @@ export class ManageDialogModel extends HoistModel {
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
         await this.selectViewAsync(updated.info); // reselect -- may have moved tabs!
+    }
+
+    private async doUpdateViewsAsync(views: ViewInfo[], update: ViewUpdateSpec) {
+        const {viewManagerModel} = this;
+        await viewManagerModel.updateViewsInfoAsync(views, update);
+        await viewManagerModel.refreshAsync();
+        await this.refreshAsync();
+        // No reselect -- views may have moved between tabs.
     }
 
     private async doDeleteAsync(views: ViewInfo[]) {

@@ -117,6 +117,29 @@ export class DataAccess<T> {
             });
     }
 
+    /** Apply the same metadata updates to multiple views. Requires hoist-core v41 or greater. */
+    async updateViewsInfoAsync(
+        views: ViewInfo[],
+        updates: ViewUpdateSpec,
+        ctx: CallContext
+    ): Promise<void> {
+        views.forEach(v => this.ensureEditable(v));
+        const {model} = this;
+        return model
+            .runner(ctx)
+            .postJson({
+                url: 'xhView/bulkUpdateInfo',
+                params: {tokens: map(views, 'token').join(',')},
+                body: updates
+            })
+            .catch(e => {
+                throw XH.exception({
+                    message: `Unable to update ${pluralize(model.typeDisplayName)}`,
+                    cause: e
+                });
+            });
+    }
+
     /** Update a view's value. */
     async updateViewValueAsync(
         view: View<T>,

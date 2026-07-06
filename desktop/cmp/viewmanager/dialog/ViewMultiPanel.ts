@@ -5,40 +5,93 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {placeholder, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {form} from '@xh/hoist/cmp/form';
+import {hbox, hspacer, placeholder, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty} from 'lodash';
-import {ManageDialogModel} from './ManageDialogModel';
+import {getVisibilityInfo, getVisibilityOptions} from './Utils';
+import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 
+/**
+ * Form to bulk-edit visibility across multiple selected views within the ViewManager manage
+ * dialog, along with bulk pin/unpin and delete actions.
+ */
 export const viewMultiPanel = hoistCmp.factory({
-    model: uses(() => ManageDialogModel),
+    model: uses(ViewMultiPanelModel),
     render({model}) {
-        const views = model.selectedViews;
+        const {views, parent, formModel, allEditable} = model,
+            {viewManagerModel} = parent;
+
         if (isEmpty(views)) return null;
 
+        const visOptions = getVisibilityOptions(viewManagerModel),
+            visInfo = getVisibilityInfo(viewManagerModel, formModel.values.visibility);
+
         return panel({
-            item: vframe({
-                className: 'xh-view-manager__manage-dialog__form',
-                item: placeholder(
-                    Icon.gears(),
-                    `${views.length} selected ${pluralize(model.viewManagerModel.typeDisplayName)}`,
-                    vspacer(),
-                    buttons()
-                )
+            item: form({
+                fieldDefaults: {
+                    commitOnChange: true,
+                    minimal: true
+                },
+                item: vframe({
+                    className: 'xh-view-manager__manage-dialog__form',
+                    item: placeholder(
+                        Icon.gears(),
+                        `${views.length} selected ${pluralize(viewManagerModel.typeDisplayName)}`,
+                        vspacer(),
+                        formField({
+                            field: 'visibility',
+                            omit: !allEditable || visOptions.length === 1,
+                            item: select({
+                                options: visOptions,
+                                enableFilter: false,
+                                placeholder: '(Mixed)',
+                                width: 200
+                            }),
+                            info: visInfo
+                        }),
+                        vspacer(),
+                        formButtons()
+                    )
+                })
             })
         });
     }
 });
 
-const buttons = hoistCmp.factory<ManageDialogModel>({
+const formButtons = hoistCmp.factory<ViewMultiPanelModel>({
     render({model}) {
-        const views = model.selectedViews,
-            allEditable = every(views, 'isEditable'),
+        const {formModel, parent, views, allEditable} = model,
             allPinned = every(views, 'isPinned');
+
+        if (formModel.isDirty) {
+            return hbox({
+                justifyContent: 'center',
+                items: [
+                    button({
+                        text: 'Save Changes',
+                        icon: Icon.check(),
+                        intent: 'success',
+                        minimal: false,
+                        disabled: !formModel.isValid,
+                        onClick: () => model.saveAsync()
+                    }),
+                    hspacer(),
+                    button({
+                        icon: Icon.reset(),
+                        tooltip: 'Revert changes',
+                        minimal: false,
+                        onClick: () => model.reset()
+                    })
+                ]
+            });
+        }
 
         return vbox({
             style: {gap: 10, alignItems: 'center'},
@@ -51,7 +104,7 @@ const buttons = hoistCmp.factory<ManageDialogModel>({
                     }),
                     width: 200,
                     outlined: true,
-                    onClick: () => model.togglePinned(views)
+                    onClick: () => parent.togglePinned(views)
                 }),
                 button({
                     text: 'Delete',
@@ -60,7 +113,7 @@ const buttons = hoistCmp.factory<ManageDialogModel>({
                     outlined: true,
                     intent: 'danger',
                     omit: !allEditable,
-                    onClick: () => model.deleteAsync(views)
+                    onClick: () => parent.deleteAsync(views)
                 })
             ]
         });
