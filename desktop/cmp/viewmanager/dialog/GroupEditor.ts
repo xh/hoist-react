@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {br, div, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {
     composeGroupPath,
     getGroupLeaf,
@@ -214,9 +214,13 @@ const movePane = hoistCmp.factory<GroupEditorModel>({
                     placeholder: 'Select or enter a group...',
                     width: null
                 }),
-                infoText(
-                    `Move this ${viewManagerModel.typeDisplayName} into the selected group. Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
-                )
+                infoText({
+                    items: [
+                        `Move this ${viewManagerModel.typeDisplayName} into the selected group.`,
+                        br(),
+                        `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
+                    ]
+                })
             ]
         });
     }
@@ -251,12 +255,17 @@ const renamePane = hoistCmp.factory<GroupEditorModel>({
                     enableFilter: true,
                     width: null
                 }),
-                infoText('Renames this group for all views within it.')
+                infoText({items: 'Renames this group for all views within it.'})
             ]
         });
     }
 });
 
-function infoText(text: string) {
-    return div({className: 'xh-view-manager__group-editor__info xh-text-color-muted', item: text});
-}
+const infoText = hoistCmp.factory({
+    render({children}) {
+        return div({
+            className: 'xh-view-manager__group-editor__info xh-text-color-muted',
+            items: children
+        });
+    }
+});
