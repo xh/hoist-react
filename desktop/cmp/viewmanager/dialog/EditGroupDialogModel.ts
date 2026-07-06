@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {FormModel} from '@xh/hoist/cmp/form';
 import {
     composeGroupPath,
     getGroupLeaf,
@@ -12,8 +13,9 @@ import {
     normalizeGroupPath,
     VIEW_GROUP_DELIMITER
 } from '@xh/hoist/cmp/viewmanager';
-import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {required} from '@xh/hoist/data';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {ManageDialogModel} from './ManageDialogModel';
 
 /**
@@ -31,26 +33,24 @@ export class EditGroupDialogModel extends HoistModel {
     /** True if editing a group of global views, false for owned. */
     @observable isGlobal: boolean = false;
 
-    @bindable leaf: string = null;
-    @bindable nestUnder: string = null;
-
-    get isValid(): boolean {
-        const leaf = this.leaf?.trim();
-        return !!leaf && !leaf.includes(VIEW_GROUP_DELIMITER);
-    }
+    @managed formModel: FormModel;
 
     constructor(parent: ManageDialogModel) {
         super();
         makeObservable(this);
+
         this.parent = parent;
+        this.formModel = this.createFormModel();
     }
 
     @action
     open(group: string, isGlobal: boolean) {
         this.group = group;
         this.isGlobal = isGlobal;
-        this.leaf = getGroupLeaf(group);
-        this.nestUnder = getGroupParent(group);
+        this.formModel.init({
+            name: getGroupLeaf(group),
+            nestUnder: getGroupParent(group)
+        });
         this.isOpen = true;
     }
 
@@ -60,13 +60,36 @@ export class EditGroupDialogModel extends HoistModel {
     }
 
     async saveAsync() {
-        const {parent, group, isGlobal, nestUnder, leaf, isValid} = this;
-        if (!isValid) return;
+        const {parent, group, isGlobal, formModel} = this;
+        if (!(await formModel.validateAsync())) return;
 
-        const to = normalizeGroupPath(composeGroupPath(nestUnder, leaf));
+        const {name, nestUnder} = formModel.getData(),
+            to = normalizeGroupPath(composeGroupPath(nestUnder, name));
         if (to !== group) {
             await parent.renameGroupAsync(group, to, isGlobal);
         }
         this.close();
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    private createFormModel(): FormModel {
+        return new FormModel({
+            fields: [
+                {
+                    name: 'name',
+                    displayName: 'Group Name',
+                    rules: [
+                        required,
+                        ({value}) =>
+                            value?.includes(VIEW_GROUP_DELIMITER)
+                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}" - re-parent via "Nest Under" instead.`
+                                : null
+                    ]
+                },
+                {name: 'nestUnder', displayName: 'Nest Under'}
+            ]
+        });
     }
 }

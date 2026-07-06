@@ -5,9 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {div, filler, vbox} from '@xh/hoist/cmp/layout';
+import {form} from '@xh/hoist/cmp/form';
+import {div, filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -37,51 +39,53 @@ export const editGroupDialog = hoistCmp.factory<EditGroupDialogModel>({
             style: {width: 500},
             canOutsideClickClose: false,
             onClose: () => model.close(),
-            item: editPanel()
+            item: formPanel()
         });
     }
 });
 
-const editPanel = hoistCmp.factory<EditGroupDialogModel>({
+const formPanel = hoistCmp.factory<EditGroupDialogModel>({
     render({model}) {
         const {parent, group, isGlobal} = model,
             {viewManagerModel} = parent;
 
         return panel({
-            item: vbox({
-                className: 'xh-view-manager__edit-group-dialog__pane',
-                items: [
-                    textInput({
-                        model,
-                        bind: 'leaf',
-                        autoFocus: true,
-                        commitOnChange: true,
-                        placeholder: 'Group name',
-                        onKeyDown: e => {
-                            if (e.key === 'Enter') model.saveAsync();
-                        },
-                        width: null
-                    }),
-                    div({
-                        className: 'xh-view-manager__edit-group-dialog__label',
-                        item: 'Nest under'
-                    }),
-                    select({
-                        model,
-                        bind: 'nestUnder',
-                        options: getGroupPathOptions(viewManagerModel, isGlobal, {
-                            includeRoot: true,
-                            excludeSubtreeOf: group
+            item: form({
+                fieldDefaults: {
+                    commitOnChange: true,
+                    minimal: true
+                },
+                item: vframe({
+                    className: 'xh-view-manager__edit-group-dialog__form',
+                    items: [
+                        formField({
+                            field: 'name',
+                            item: textInput({
+                                autoFocus: true,
+                                selectOnFocus: true,
+                                onKeyDown: e => {
+                                    if (e.key === 'Enter') model.saveAsync();
+                                }
+                            })
                         }),
-                        optionRenderer: groupPathOptionRenderer,
-                        enableFilter: true,
-                        width: null
-                    }),
-                    div({
-                        className: 'xh-view-manager__edit-group-dialog__info xh-text-color-muted',
-                        item: `Renames this group for all ${pluralize(viewManagerModel.typeDisplayName)} within it.`
-                    })
-                ]
+                        formField({
+                            field: 'nestUnder',
+                            item: select({
+                                options: getGroupPathOptions(viewManagerModel, isGlobal, {
+                                    includeRoot: true,
+                                    excludeSubtreeOf: group
+                                }),
+                                optionRenderer: groupPathOptionRenderer,
+                                enableFilter: true
+                            })
+                        }),
+                        div({
+                            className:
+                                'xh-view-manager__edit-group-dialog__info xh-text-color-muted',
+                            item: `Renames and/or re-nests this group for all ${pluralize(viewManagerModel.typeDisplayName)} within it.`
+                        })
+                    ]
+                })
             }),
             bbar: toolbar(
                 filler(),
@@ -90,7 +94,7 @@ const editPanel = hoistCmp.factory<EditGroupDialogModel>({
                     text: 'OK',
                     icon: Icon.check(),
                     intent: 'success',
-                    disabled: !model.isValid,
+                    disabled: !model.formModel.isValid,
                     onClick: () => model.saveAsync()
                 })
             ),
