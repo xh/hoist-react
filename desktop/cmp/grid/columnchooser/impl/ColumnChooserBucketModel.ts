@@ -117,7 +117,12 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
             // Hide when fully or partially visible (true/null); show when fully hidden (false)
             const hidden = record.data.visible !== false;
-            record.data.leafColIds.forEach(colId => updates.push({colId, hidden}));
+            record.data.leafColIds.forEach((colId: string) => {
+                // A group's aggregate hideable can be true while it contains a locked leaf - never
+                // hide such a leaf. Showing it is a no-op (a non-hideable column stays visible).
+                if (hidden && !gridModel.getColumn(colId)?.hideable) return;
+                updates.push({colId, hidden});
+            });
         });
 
         gridModel.updateColumnState(updates);
@@ -380,17 +385,24 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
             it.leafColIds = collectLeafColIds(it, columnDataMap);
 
-            const hiddenCount = it.leafColIds.filter(id => stateById.get(id)?.hidden).length;
+            // Aggregate visibility over the group's *hideable* leaves only - the toggle can only
+            // act on those, so a group whose sole visible member is locked must still read as "all
+            // hidden" (and toggle back to shown) rather than being stuck permanently "mixed".
+            const hideableLeafIds = it.leafColIds.filter(id => gridModel.getColumn(id)?.hideable),
+                hiddenCount = hideableLeafIds.filter(id => stateById.get(id)?.hidden).length,
+                total = hideableLeafIds.length;
             it.visible =
-                hiddenCount === 0 ? true : hiddenCount === it.leafColIds.length ? false : null;
+                total === 0
+                    ? false
+                    : hiddenCount === 0
+                      ? true
+                      : hiddenCount === total
+                        ? false
+                        : null;
 
-            it.hideable = it.leafColIds.some(id => {
-                return gridModel.getColumn(id)?.hideable;
-            });
+            it.hideable = total > 0;
 
-            it.movable = it.leafColIds.every(id => {
-                return gridModel.getColumn(id)?.movable;
-            });
+            it.movable = it.leafColIds.every(id => gridModel.getColumn(id)?.movable);
         });
 
         return data;

@@ -86,12 +86,17 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
     handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant) {
         if (source === this) return;
 
-        const hideIds = new Set(
-            (event.nodes ?? []).flatMap(node => getChooserData(node)?.leafColIds ?? [])
-        );
+        const {targetGridModel} = this,
+            hideIds = new Set(
+                (event.nodes ?? [])
+                    .flatMap(node => getChooserData(node)?.leafColIds ?? [])
+                    // A movable-but-locked column can be dragged here - never hide it. Dropping one
+                    // (or a group's locked leaves) is a no-op.
+                    .filter(colId => targetGridModel.getColumn(colId)?.hideable)
+            );
         if (!hideIds.size) return;
 
-        const newState = this.targetGridModel.columnState.map(cs =>
+        const newState = targetGridModel.columnState.map(cs =>
             hideIds.has(cs.colId) ? {...cs, hidden: true} : cs
         );
         this.parent.commit(newState);
