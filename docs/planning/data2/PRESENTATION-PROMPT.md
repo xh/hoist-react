@@ -96,4 +96,3 @@ honesty is part of the story.
 - Use only the terms Hoist, Toolbox, and generic descriptions like "a real-time
   trading-screen workload" - do not invent client or company names.
 - Prefer charts generated from the attached JSON over decorative imagery.
-- 10-14 slides.
