@@ -392,7 +392,14 @@ export class GridLocalModel extends HoistModel {
         return {
             track: () => [model.agApi, model.groupBy],
             run: ([agApi, groupBy]) => {
-                if (agApi) agApi.setRowGroupColumns(groupBy);
+                if (!agApi) return;
+                agApi.setRowGroupColumns(groupBy);
+
+                // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
+                const state = model.columnState
+                    .filter(({colId}) => !groupBy.includes(colId))
+                    .map(({colId, hidden}) => ({colId, hide: hidden}));
+                agApi.applyColumnState({state});
             }
         };
     }
