@@ -31,9 +31,9 @@
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
-* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
-  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
-  represent are left untouched rather than corrupted.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled -
+  multi-value clauses are now expanded into editable rows and recombined on commit, and filters it
+  cannot represent are left untouched rather than corrupted.
 * Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
   longer disappears when opened - it now always occupies its place in the layout, so surrounding
   elements no longer shift. Its clear and favorites controls also respond to a single click rather
@@ -46,11 +46,11 @@
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
-### ⚙️ Technical
-* Misc. improvements to persistence in the Admin client.
-* @azure/msal-browser `5.14 → 5.15`
-* swiper  `12.1.0 -> 14.0.0`,
+### 📚 Libraries
 
+* @auth0/auth0-spa-js `2.21 → 2.23`
+* @azure/msal-browser `5.14 → 5.16`
+* swiper  `12.1 -> 14.0`
 
 ## 86.2.0 - 2026-06-25
 
