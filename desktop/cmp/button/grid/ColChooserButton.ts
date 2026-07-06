@@ -39,19 +39,22 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         gridModel = withDefault(gridModel, useContextModel(GridModel));
         const colChooserModel = gridModel?.colChooserModel as ColChooserModel;
 
-        // Validate bound model available and suitable for use.
-        if (!gridModel) {
+        // Validate bound model available and suitable for use. Render a plain disabled button
+        // (no popover) when unusable - the popover config below dereferences colChooserModel.
+        if (!gridModel || !colChooserModel) {
             logError(
-                'No GridModel available - provide via a `gridModel` prop or context - button will be disabled.',
+                gridModel
+                    ? 'ColChooser not enabled on bound GridModel - button will be disabled.'
+                    : 'No GridModel available - provide via a `gridModel` prop or context - button will be disabled.',
                 ColChooserButton
             );
-            disabled = true;
-        } else if (!colChooserModel) {
-            logError(
-                'ColChooser not enabled on bound GridModel - button will be disabled.',
-                ColChooserButton
-            );
-            disabled = true;
+            return button({
+                icon: withDefault(icon, Icon.gridPanel()),
+                title: withDefault(title, 'Choose grid columns...'),
+                className,
+                disabled: true,
+                ...rest
+            });
         }
 
         return popover({
