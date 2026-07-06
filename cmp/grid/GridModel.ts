@@ -548,6 +548,13 @@ export class GridModel extends HoistModel {
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
 
+    /**
+     * Index of leaf columns by colId, rebuilt in lockstep with `columns` (see {@link setColumns}) so
+     * {@link getColumn} is an O(1) lookup rather than a recursive tree walk. Observable so callers
+     * reading it stay reactive to column changes, exactly as they were when reading `columns`.
+     */
+    @observable.ref private leafColumnMap: Map<string, Column> = new Map();
+
     @computed.struct
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
@@ -1128,7 +1135,7 @@ export class GridModel extends HoistModel {
     setGroupBy(colIds: Some<string>) {
         colIds = isNil(colIds) ? [] : castArray(colIds);
 
-        const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
+        const invalidColIds = colIds.filter(it => !this.getColumn(it));
         if (invalidColIds.length) {
             this.logWarn(
                 'Unknown colId specified in groupBy - grid will not be grouped.',
@@ -1214,7 +1221,7 @@ export class GridModel extends HoistModel {
 
         // Allow sorts associated with Hoist columns as well as ag-Grid dynamic grouping columns
         const invalidSorters = newSorters.filter(
-            it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId)
+            it => !it.colId?.startsWith('ag-Grid') && !this.getColumn(it.colId)
         );
         if (invalidSorters.length) {
             this.logWarn('GridSorter colId not found in grid columns', invalidSorters);
@@ -1252,7 +1259,9 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
+        const leaves = this.getLeafColumns();
+        this.leafColumnMap = new Map(leaves.map(it => [it.colId, it]));
+        this.columnState = leaves.map(it => this.getDefaultStateForColumn(it));
     }
 
     setColumnState(colState: ColumnState[]) {
@@ -1266,7 +1275,7 @@ export class GridModel extends HoistModel {
     noteAgColumnStateChanged(agColState: AgColumnState[]) {
         const colStateChanges: Partial<ColumnState>[] = agColState.map(
             ({colId, width, hide, pinned}) => {
-                const col = this.findColumn(this.columns, colId);
+                const col = this.getColumn(colId);
                 if (!col) return null;
                 return {
                     colId,
@@ -1306,7 +1315,7 @@ export class GridModel extends HoistModel {
     }
 
     noteColumnManuallySized(colId, width) {
-        const col = this.findColumn(this.columns, colId);
+        const col = this.getColumn(colId);
         if (!width || !col || col.flex) return;
         const colStateChanges = [{colId, width, manuallySized: true}];
         this.updateColumnState(colStateChanges);
@@ -1356,7 +1365,7 @@ export class GridModel extends HoistModel {
     }
 
     getColumn(colId: string): Column {
-        return this.findColumn(this.columns, colId);
+        return this.leafColumnMap.get(colId) ?? null;
     }
 
     getColumnGroup(groupId: string): ColumnGroup {
@@ -1811,22 +1820,22 @@ export class GridModel extends HoistModel {
     }
 
     private cleanColumnState(columnState) {
-        const gridCols = this.getLeafColumns();
-
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
         // under a prior release of the app and have since been removed from the code.
-        let ret = columnState.filter(({colId}) => this.findColumn(gridCols, colId));
+        let ret = columnState.filter(({colId}) => this.getColumn(colId));
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
+        const gridCols = this.getLeafColumns(),
+            retColIds = new Set(ret.map(s => s.colId));
         gridCols.forEach((col, idx) => {
-            if (!find(ret, {colId: col.colId})) {
+            if (!retColIds.has(col.colId)) {
                 ret.splice(idx, 0, this.getDefaultStateForColumn(col));
             }
         });
 
         ret = ret.map(state => {
-            const col = this.findColumn(gridCols, state.colId);
+            const col = this.getColumn(state.colId);
 
             // Remove the width from any non-resizable column - we don't want to track those widths as
             // they are set programmatically (e.g. fixed / action columns), and saved state should not
