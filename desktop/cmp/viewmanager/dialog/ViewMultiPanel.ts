@@ -6,7 +6,17 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {hbox, hspacer, placeholder, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {
+    br,
+    fragment,
+    hbox,
+    hspacer,
+    placeholder,
+    vbox,
+    vframe,
+    vspacer
+} from '@xh/hoist/cmp/layout';
+import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -15,12 +25,17 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty} from 'lodash';
-import {getVisibilityInfo, getVisibilityOptions} from './Utils';
-import {ViewMultiPanelModel} from './ViewMultiPanelModel';
+import {
+    getGroupPathOptions,
+    getVisibilityInfo,
+    getVisibilityOptions,
+    groupPathOptionRenderer
+} from './Utils';
+import {MIXED_VALUE, ViewMultiPanelModel} from './ViewMultiPanelModel';
 
 /**
- * Form to bulk-edit visibility across multiple selected views within the ViewManager manage
- * dialog, along with bulk pin/unpin and delete actions.
+ * Form to bulk-edit group and visibility across multiple selected views within the ViewManager
+ * manage dialog, along with bulk pin/unpin and delete actions.
  */
 export const viewMultiPanel = hoistCmp.factory({
     model: uses(ViewMultiPanelModel),
@@ -30,8 +45,10 @@ export const viewMultiPanel = hoistCmp.factory({
 
         if (isEmpty(views)) return null;
 
-        const visOptions = getVisibilityOptions(viewManagerModel),
-            visInfo = getVisibilityInfo(viewManagerModel, formModel.values.visibility);
+        const visibility = formModel.values.visibility,
+            isGlobal = visibility === 'global',
+            visOptions = getVisibilityOptions(viewManagerModel),
+            visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
         return panel({
             item: form({
@@ -41,24 +58,48 @@ export const viewMultiPanel = hoistCmp.factory({
                 },
                 item: vframe({
                     className: 'xh-view-manager__manage-dialog__form',
-                    item: placeholder(
-                        Icon.gears(),
-                        `${views.length} selected ${pluralize(viewManagerModel.typeDisplayName)}`,
-                        vspacer(),
-                        formField({
-                            field: 'visibility',
-                            omit: !allEditable || visOptions.length === 1,
-                            item: select({
-                                options: visOptions,
-                                enableFilter: false,
-                                placeholder: '(Mixed)',
-                                width: 200
+                    items: [
+                        placeholder(
+                            Icon.boxFull(),
+                            `${views.length} selected ${pluralize(viewManagerModel.typeDisplayName)}`
+                        ),
+                        fragment(
+                            vspacer(),
+                            formField({
+                                field: 'group',
+                                omit: !allEditable,
+                                item: select({
+                                    options: getGroupPathOptions(viewManagerModel, isGlobal, {
+                                        includeRoot: true
+                                    }),
+                                    optionRenderer: groupPathOptionRenderer,
+                                    generateOptionFn: v =>
+                                        v === MIXED_VALUE ? {value: v, label: '(Mixed)'} : null,
+                                    enableCreate: true,
+                                    createMessageFn: v => `Create path "${v}"`,
+                                    enableFilter: true,
+                                    placeholder: 'Select or enter a group...'
+                                }),
+                                info: fragment(
+                                    `Move selected ${pluralize(viewManagerModel.typeDisplayName)} into the chosen group.`,
+                                    br(),
+                                    `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
+                                )
                             }),
-                            info: visInfo
-                        }),
-                        vspacer(),
-                        formButtons()
-                    )
+                            formField({
+                                field: 'visibility',
+                                omit: !allEditable || visOptions.length === 1,
+                                item: select({
+                                    options: visOptions,
+                                    enableFilter: false,
+                                    placeholder: '(Mixed)'
+                                }),
+                                info: visInfo
+                            }),
+                            vspacer(),
+                            formButtons()
+                        )
+                    ]
                 })
             })
         });
