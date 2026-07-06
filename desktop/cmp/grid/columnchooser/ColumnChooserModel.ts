@@ -92,11 +92,7 @@ export class ColumnChooserModel extends HoistModel {
 
     @computed
     get gridModel(): GridModel {
-        const ret = withDefault(this.componentProps?.gridModel, this.lookupModel(GridModel));
-        if (!ret) {
-            this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
-        }
-        return ret;
+        return withDefault(this.componentProps?.gridModel, this.lookupModel(GridModel));
     }
 
     constructor() {
@@ -128,6 +124,10 @@ export class ColumnChooserModel extends HoistModel {
     }
 
     override onLinked() {
+        if (!this.gridModel) {
+            this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
+        }
+
         // When the library is enabled, hidden columns live there - default them out of the buckets.
         if (this.columnLibraryEnabled) this.showHidden = false;
 
