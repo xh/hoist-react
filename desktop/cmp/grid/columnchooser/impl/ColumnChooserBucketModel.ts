@@ -53,6 +53,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     @managed
     chooserGridModel: GridModel;
 
+    /** Cache backing {@link parentChainMap}, keyed on the target grid's `columns` ref. */
+    private parentChainCache: {cols: ColumnOrGroup[]; map: Map<string, ColumnGroup[]>} = null;
+
     /** The target GridModel whose columns this bucket manages. */
     get targetGridModel(): GridModel {
         return this.parent.gridModel;
@@ -262,6 +265,17 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     //-----------------
     // Implementation
     //-----------------
+    /**
+     * Leaf colId → ancestor group chain for the target grid, memoized on its `columns` ref so it is
+     * built once per column set rather than on every drag-move.
+     */
+    private get parentChainMap(): Map<string, ColumnGroup[]> {
+        const cols = this.targetGridModel.columns;
+        if (this.parentChainCache?.cols !== cols) {
+            this.parentChainCache = {cols, map: buildParentChainMap(cols)};
+        }
+        return this.parentChainCache.map;
+    }
 
     /**
      * Build the docked summary header record for this bucket. Its `name` labels the bucket and
@@ -306,9 +320,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * populates them from actual children so split groups only contain their own leaves.
      */
     private buildData(columnState: ColumnState[]): ColumnChooserData[] {
-        const {targetGridModel: gridModel} = this,
-            stateById = new Map(columnState.map(cs => [cs.colId, cs])),
-            parentChainMap = buildParentChainMap(gridModel.columns);
+        const {targetGridModel: gridModel, parentChainMap} = this,
+            stateById = new Map(columnState.map(cs => [cs.colId, cs]));
 
         // 1) Walk columnState in order, creating leaf and group records
         const data: ColumnChooserData[] = [],
@@ -470,10 +483,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             // Validate the state the move will actually produce - including unhiding columns
             // dropped from the library - so the visible-contiguity check matches the real result.
             const newState = this.simulateMove(movingLeafColIds, targetData, position, makeVisible);
-            if (
-                newState &&
-                !areGroupsContiguous(newState, buildParentChainMap(this.targetGridModel.columns))
-            ) {
+            if (newState && !areGroupsContiguous(newState, this.parentChainMap)) {
                 return true;
             }
         }
@@ -597,7 +607,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
         // Groups the source belongs to (by groupId, not instance) - so a cross-bucket drag from the
         // same group is recognized even though its members live in a different bucket's instance.
-        const parentChainMap = buildParentChainMap(this.targetGridModel.columns),
+        const {parentChainMap} = this,
             sourceGroupIds = new Set<string>();
         movingLeafColIds.forEach(id =>
             parentChainMap.get(id)?.forEach(g => sourceGroupIds.add(g.groupId))
