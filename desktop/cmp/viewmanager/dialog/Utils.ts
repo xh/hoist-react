@@ -23,7 +23,11 @@ import {ReactNode} from 'react';
 export interface GroupPathOption extends SelectOption {
     /** Full delimited group path, or null for the top-level (no group) option. */
     value: string;
-    /** Leaf segment of the path, for display. */
+    /**
+     * Full delimited group path, displayed as-is in the select's value container so the complete
+     * hierarchy is unambiguous when selected or when typing a new path. Menu items instead render
+     * the leaf segment, indented per depth, via {@link groupPathOptionRenderer}.
+     */
     label: string;
     /** 0-based nesting depth, for indentation. */
     depth: number;
@@ -51,7 +55,7 @@ export function getGroupPathOptions(
         .filter(path => !isGroupSameOrDescendant(path, excludeSubtreeOf))
         .map(path => ({
             value: path,
-            label: getGroupLeaf(path),
+            label: path,
             depth: splitGroupPath(path).length - 1
         }));
 
@@ -69,7 +73,7 @@ export function groupPathDisplay(path: string): ReactNode {
     return hbox({alignItems: 'center', items});
 }
 
-/** Renderer displaying a {@link GroupPathOption} indented according to its depth. */
+/** Menu renderer displaying a {@link GroupPathOption} as its leaf name, indented per depth. */
 export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
     const {value, label, depth} = opt;
     return hbox({
@@ -77,7 +81,10 @@ export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
         paddingLeft: (depth ?? 0) * 15,
         items: [
             Icon.folder({omit: value == null}),
-            span({item: label, style: {marginLeft: value == null ? 0 : 5}})
+            span({
+                item: value == null ? label : getGroupLeaf(value),
+                style: {marginLeft: value == null ? 0 : 5}
+            })
         ]
     });
 }
