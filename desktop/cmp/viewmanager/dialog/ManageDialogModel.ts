@@ -11,6 +11,7 @@ import {br, fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
     buildViewGroupTree,
+    isGroupSameOrDescendant,
     ViewGroupNode,
     ViewInfo,
     ViewManagerModel,
@@ -25,6 +26,7 @@ import {action, bindable, computed, makeObservable, observable, runInAction} fro
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, keys, some, startCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
+import {EditGroupDialogModel} from './EditGroupDialogModel';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 import {ViewPanelModel} from './ViewPanelModel';
 
@@ -42,6 +44,7 @@ export class ManageDialogModel extends HoistModel {
 
     @managed viewPanelModel: ViewPanelModel;
     @managed viewMultiPanelModel: ViewMultiPanelModel;
+    @managed editGroupDialogModel: EditGroupDialogModel;
 
     @managed tabContainerModel: TabContainerModel;
 
@@ -150,6 +153,11 @@ export class ManageDialogModel extends HoistModel {
         return this.doUpdateViewsAsync(views, update).linkTo(this.updateTask).catchDefault();
     }
 
+    /** Rename/re-parent a group, cascading to all views under it. */
+    async renameGroupAsync(from: string, to: string, isGlobal: boolean) {
+        return this.doRenameGroupAsync(from, to, isGlobal).linkTo(this.updateTask).catchDefault();
+    }
+
     @action
     togglePinned(views: ViewInfo[]) {
         const allPinned = every(views, 'isPinned'),
@@ -178,6 +186,7 @@ export class ManageDialogModel extends HoistModel {
         this.tabContainerModel = this.createTabContainerModel();
         this.viewPanelModel = new ViewPanelModel(this);
         this.viewMultiPanelModel = new ViewMultiPanelModel(this);
+        this.editGroupDialogModel = new EditGroupDialogModel(this);
 
         this.addReaction({
             track: () => this.filter,
@@ -214,6 +223,22 @@ export class ManageDialogModel extends HoistModel {
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
         // No reselect -- views may have moved between tabs.
+    }
+
+    private async doRenameGroupAsync(from: string, to: string, isGlobal: boolean) {
+        const {viewManagerModel} = this,
+            views = isGlobal ? viewManagerModel.globalViews : viewManagerModel.ownedViews,
+            anchor = views.find(v => isGroupSameOrDescendant(v.group, from));
+        if (!anchor) return;
+
+        // Server-side rename cascade excludes the target view itself, so set its own rewritten
+        // group in the same update.
+        await viewManagerModel.updateViewInfoAsync(anchor, {
+            group: to + anchor.group.substring(from.length),
+            groupRename: {from, to}
+        });
+        await viewManagerModel.refreshAsync();
+        await this.refreshAsync();
     }
 
     private async doDeleteAsync(views: ViewInfo[]) {
@@ -328,7 +353,25 @@ export class ManageDialogModel extends HoistModel {
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             selModel: 'multiple',
-            contextMenu: null,
+            contextMenu:
+                type == 'shared'
+                    ? null
+                    : [
+                          {
+                              text: 'Edit Group',
+                              icon: Icon.edit(),
+                              displayFn: ({record}) => ({
+                                  hidden:
+                                      !record?.data.isGroupRow ||
+                                      (type == 'global' && !this.viewManagerModel.manageGlobal)
+                              }),
+                              actionFn: ({record}) =>
+                                  this.editGroupDialogModel.open(
+                                      record.data.group,
+                                      type == 'global'
+                                  )
+                          }
+                      ],
             sizingMode: 'standard',
             hideHeaders: true,
             rowClassRules: {

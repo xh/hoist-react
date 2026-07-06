@@ -6,7 +6,7 @@
  */
 
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -17,6 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
+import {editGroupDialog} from './EditGroupDialog';
 import {ManageDialogModel} from './ManageDialogModel';
 import {viewMultiPanel} from './ViewMultiPanel';
 import {viewPanel} from './ViewPanel';
@@ -40,24 +41,27 @@ export const manageDialog = hoistCmp.factory({
             icon: Icon.gear(),
             className,
             isOpen: true,
-            style: {width: '1000px', maxWidth: '90vw', minHeight: '550px'},
+            style: {width: '1000px', maxWidth: '90vw', minHeight: '600px'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
-            item: panel({
-                item: hframe(
-                    selectorPanel(),
-                    panel({
-                        item:
-                            count == 0
-                                ? placeholderPanel()
-                                : count > 1 || model.hasGroupRowsSelected
-                                  ? viewMultiPanel()
-                                  : viewPanel(),
-                        bbar: bbar()
-                    })
-                ),
-                mask: [updateTask, loadTask]
-            })
+            item: fragment(
+                panel({
+                    item: hframe(
+                        selectorPanel(),
+                        panel({
+                            item:
+                                count == 0
+                                    ? placeholderPanel()
+                                    : count > 1 || model.hasGroupRowsSelected
+                                      ? viewMultiPanel()
+                                      : viewPanel(),
+                            bbar: bbar()
+                        })
+                    ),
+                    mask: [updateTask, loadTask]
+                }),
+                editGroupDialog()
+            )
         });
     }
 });

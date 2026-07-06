@@ -21,14 +21,6 @@
         &__readonly-display {
           padding: 0;
         }
-
-        &--group-editor {
-          .xh-form-field__label {
-            display: flex;
-            align-items: center;
-            margin: 0;
-          }
-        }
       }
     }
 
@@ -54,24 +46,11 @@
   }
 
   //------------------------
-  // Group editor
+  // Edit Group dialog
   //------------------------
-  &__group-editor {
-    min-height: var(--xh-input-height-px);
-
-    &__value {
-      padding: 0;
-    }
-
-    &__popover {
-      padding: var(--xh-pad-px);
-
-      .xh-panel__content {
-        gap: var(--xh-pad-px);
-      }
-    }
-
+  &__edit-group-dialog {
     &__pane {
+      padding: var(--xh-pad-px);
       gap: var(--xh-pad-half-px);
     }
 

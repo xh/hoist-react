@@ -11,7 +11,6 @@ import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {normalizeGroupPath, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 
 /**
@@ -21,13 +20,6 @@ export class ViewPanelModel extends HoistModel {
     parent: ManageDialogModel;
 
     @managed formModel: FormModel;
-
-    /**
-     * Pending rename of the view's entire group (vs. a move of this single view), staged by the
-     * group editor and sent to the server with the next save, where it will cascade to all other
-     * views under the renamed group path.
-     */
-    @observable.ref pendingGroupRename: {from: string; to: string} = null;
 
     get view(): ViewInfo {
         return this.parent.selectedView;
@@ -39,7 +31,6 @@ export class ViewPanelModel extends HoistModel {
 
     constructor(parent: ManageDialogModel) {
         super();
-        makeObservable(this);
 
         this.parent = parent;
         this.formModel = this.createFormModel();
@@ -47,7 +38,6 @@ export class ViewPanelModel extends HoistModel {
         this.addReaction({
             track: () => this.view,
             run: view => {
-                this.setPendingGroupRename(null);
                 if (view) {
                     const {formModel} = this;
                     formModel.init({
@@ -62,19 +52,12 @@ export class ViewPanelModel extends HoistModel {
         });
     }
 
-    @action
-    setPendingGroupRename(rename: {from: string; to: string}) {
-        this.pendingGroupRename = rename;
-    }
-
-    @action
     reset() {
         this.formModel.reset();
-        this.pendingGroupRename = null;
     }
 
     async saveAsync() {
-        const {parent, view, formModel, pendingGroupRename} = this,
+        const {parent, view, formModel} = this,
             updates = formModel.getData(true),
             isValid = await formModel.validateAsync(),
             isDirty = formModel.isDirty,
@@ -84,11 +67,6 @@ export class ViewPanelModel extends HoistModel {
 
         if (updates.hasOwnProperty('group')) {
             updates.group = normalizeGroupPath(updates.group);
-            // Only flag the group rename for cascading if still consistent with the outgoing
-            // value - i.e. the user did not subsequently move the view elsewhere.
-            if (pendingGroupRename && updates.group === pendingGroupRename.to) {
-                updates.groupRename = pendingGroupRename;
-            }
         }
 
         if (visibilityField.isDirty) {

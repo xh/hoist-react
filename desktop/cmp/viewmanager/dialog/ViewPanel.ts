@@ -7,6 +7,7 @@
 
 import {form} from '@xh/hoist/cmp/form';
 import {
+    br,
     div,
     filler,
     fragment,
@@ -17,21 +18,22 @@ import {
     vframe,
     vspacer
 } from '@xh/hoist/cmp/layout';
+import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {groupEditor, GroupEditorModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/GroupEditor';
 import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ViewPanelModel';
 import {
+    getGroupPathOptions,
     getVisibilityInfo,
     getVisibilityOptions,
-    groupPathDisplay
+    groupPathDisplay,
+    groupPathOptionRenderer
 } from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {useRef} from 'react';
 
 /**
  * Form to edit or view details on a single saved view within the ViewManager manage dialog.
@@ -40,8 +42,7 @@ export const viewPanel = hoistCmp.factory({
     model: uses(ViewPanelModel),
     render({model}) {
         const {view, parent, formModel} = model,
-            {viewManagerModel} = parent,
-            groupEditorRef = useRef<GroupEditorModel>(null);
+            {viewManagerModel} = parent;
 
         if (!view) return null;
 
@@ -70,23 +71,24 @@ export const viewPanel = hoistCmp.factory({
                         }),
                         formField({
                             field: 'group',
-                            clickableLabel: false,
-                            label: formModel.readonly
-                                ? undefined
-                                : fragment(
-                                      span('Group'),
-                                      button({
-                                          icon: Icon.edit(),
-                                          onClick: () => groupEditorRef.current?.togglePopover()
-                                      })
-                                  ),
-                            item: groupEditor({
-                                ref: groupEditorRef,
-                                viewManagerModel,
-                                isGlobal,
-                                onGroupRename: rename => model.setPendingGroupRename(rename)
+                            item: select({
+                                options: getGroupPathOptions(viewManagerModel, isGlobal, {
+                                    includeRoot: true
+                                }),
+                                optionRenderer: groupPathOptionRenderer,
+                                enableCreate: true,
+                                createMessageFn: v => `Create path "${v}"`,
+                                enableFilter: true,
+                                placeholder: 'Select or enter a group...'
                             }),
-                            readonlyRenderer: v => groupPathDisplay(v)
+                            readonlyRenderer: v => groupPathDisplay(v),
+                            info: isEditable
+                                ? fragment(
+                                      `Move this ${viewManagerModel.typeDisplayName} into the chosen group.`,
+                                      br(),
+                                      `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
+                                  )
+                                : null
                         }),
                         formField({
                             field: 'description',
