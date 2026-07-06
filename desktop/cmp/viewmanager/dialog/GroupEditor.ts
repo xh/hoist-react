@@ -171,7 +171,7 @@ const editorPopover = hoistCmp.factory<GroupEditorModel>({
 
         return panel({
             className: 'xh-view-manager__group-editor__popover',
-            width: 350,
+            width: 600,
             items: [
                 buttonGroupInput({
                     model,
