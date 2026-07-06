@@ -23,7 +23,8 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {elemWithin} from '@xh/hoist/utils/js';
+import {elemWithin, pluralize} from '@xh/hoist/utils/js';
+import {startCase} from 'lodash';
 import {getGroupPathOptions, groupPathDisplay, groupPathOptionRenderer} from './Utils';
 
 export interface GroupEditorProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -165,7 +166,8 @@ const cmp = hoistCmp.factory<GroupEditorProps & {model: GroupEditorModel}>(
 
 const editorPopover = hoistCmp.factory<GroupEditorModel>({
     render({model}) {
-        const {currentGroup, isRenameMode} = model;
+        const {currentGroup, isRenameMode} = model,
+            {typeDisplayName} = model.componentProps.viewManagerModel;
 
         return panel({
             className: 'xh-view-manager__group-editor__popover',
@@ -177,7 +179,7 @@ const editorPopover = hoistCmp.factory<GroupEditorModel>({
                     omit: !currentGroup,
                     fill: true,
                     items: [
-                        button({value: 'move', text: 'Move View'}),
+                        button({value: 'move', text: `Move ${startCase(typeDisplayName)}`}),
                         button({value: 'rename', text: 'Edit Group'})
                     ]
                 }),
@@ -255,7 +257,9 @@ const renamePane = hoistCmp.factory<GroupEditorModel>({
                     enableFilter: true,
                     width: null
                 }),
-                infoText({items: 'Renames this group for all views within it.'})
+                infoText({
+                    items: `Renames this group for all ${pluralize(viewManagerModel.typeDisplayName)} within it.`
+                })
             ]
         });
     }
