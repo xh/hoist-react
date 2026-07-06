@@ -23,7 +23,7 @@ import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, compact, every, groupBy, keys, some, startCase} from 'lodash';
+import {capitalize, compact, every, groupBy, keys, some, startCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 import {ViewPanelModel} from './ViewPanelModel';
@@ -73,7 +73,17 @@ export class ManageDialogModel extends HoistModel {
 
     @computed
     get selectedViews(): ViewInfo[] {
-        return compact(this.gridModel.selectedRecords.map(it => it.data.view)) as ViewInfo[];
+        // Group rows expand to all views beneath them, respecting any active filter.
+        const views = this.gridModel.selectedRecords.flatMap(rec =>
+            rec.data.isGroupRow ? rec.descendants.map(it => it.data.view) : [rec.data.view]
+        );
+        return uniqBy(compact(views), 'token') as ViewInfo[];
+    }
+
+    /** True if any selected row is a synthetic group/owner row. */
+    @computed
+    get hasGroupRowsSelected(): boolean {
+        return this.gridModel.selectedRecords.some(it => it.data.isGroupRow);
     }
 
     constructor(viewManagerModel: ViewManagerModel) {

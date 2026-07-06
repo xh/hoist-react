@@ -15,7 +15,8 @@
   ensuring such values render with their proper label rather than falling back to the raw value.
 * The `ViewManager` Manage dialog now supports changing visibility (private/shared/global) and
   moving views between groups for multiple selected views at once, with the same save/revert flow
-  as single-view editing (requires hoist-core v41+).
+  as single-view editing (requires hoist-core v41+). Selecting group rows targets all views within
+  those groups, and can be combined with individually selected views.
 
 ### 🐞 Bug Fixes
 

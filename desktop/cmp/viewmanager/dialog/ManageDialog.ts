@@ -50,7 +50,7 @@ export const manageDialog = hoistCmp.factory({
                         item:
                             count == 0
                                 ? placeholderPanel()
-                                : count > 1
+                                : count > 1 || model.hasGroupRowsSelected
                                   ? viewMultiPanel()
                                   : viewPanel(),
                         bbar: bbar()
