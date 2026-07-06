@@ -15,6 +15,47 @@
     margin: 7px 4px;
     align-self: start;
   }
+
+  // Popover mode - collapsed trigger expands into an overlaid popover.
+  &--popover > .bp6-popover-target {
+    display: flex;
+    flex: 1;
+  }
+
+  &__trigger {
+    .xh-select__value-container--is-multi {
+      overflow-y: hidden !important;
+    }
+  }
+
+  // Extra class names required to override the default styles of the popover.
+  &__popover.bp6-popover.bp6-minimal {
+    box-shadow: none;
+
+    // Overlay the expanded input onto the collapsed 30px trigger. Offset follows Blueprint's
+    // resolved placement, which flips (bottom-anchored) near the viewport's bottom edge.
+    &.bp6-popover-placement-bottom {
+      margin-top: -30px !important;
+    }
+    &.bp6-popover-placement-top {
+      margin-bottom: -30px !important;
+    }
+
+    // Content is portaled out of .xh-filter-chooser - restate the flex rule so it fills the width.
+    .bp6-popover-target {
+      display: flex;
+      flex: 1;
+    }
+
+    .bp6-popover-content {
+      background: transparent;
+    }
+
+    .xh-select__value-container--is-multi {
+      height: unset;
+      line-height: unset;
+    }
+  }
 }
 
 .xh-filter-chooser-option {

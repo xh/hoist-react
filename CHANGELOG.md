@@ -10,21 +10,37 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed grid columns configured as `hidden` becoming visible after being grouped and then
+  ungrouped. `GridModel` now re-asserts each column's configured visibility whenever `groupBy`
+  changes, keeping AG Grid's column state in sync with `columnState`.
+* Fixed `StoreFilterField` and grid Find so an active quick-filter or find query no longer returns
+  different results when the grid's `groupBy` changes.
+* Fixed inline grid cell editors to reliably commit their value when editing ends, including popup
+  editors (e.g. `textAreaEditor`) within a dialog, which previously dropped edits on Enter or
+  click-away.
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled -
+  multi-value clauses are now expanded into editable rows and recombined on commit, and filters it
+  cannot represent are left untouched rather than corrupted.
+* Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
+  longer disappears when opened - it now always occupies its place in the layout, so surrounding
+  elements no longer shift. Its clear and favorites controls also respond to a single click rather
+  than requiring the popover to be opened first. This mode is now enabled more naturally via
+  a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
+  as a thin alias.
 
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
-### ⚙️ Technical
-* Misc. improvements to persistence in the Admin client.
+### 📚 Libraries
 
-* @azure/msal-browser `5.14 → 5.15`
-* swiper  `12.1.0 -> 14.0.0`,
-
+* @auth0/auth0-spa-js `2.21 → 2.23`
+* @azure/msal-browser `5.14 → 5.16`
+* swiper  `12.1 -> 14.0`
 
 ## 86.2.0 - 2026-06-25
 
