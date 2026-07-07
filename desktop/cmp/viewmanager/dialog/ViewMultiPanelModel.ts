@@ -108,7 +108,7 @@ export class ViewMultiPanelModel extends HoistModel {
             const confirmed = await XH.confirm({
                 message: fragment(msgs.map(m => p(m))),
                 confirmProps: {
-                    text: 'Yes, update visibility',
+                    text: groupField.isDirty ? 'Yes, save changes' : 'Yes, update visibility',
                     outlined: true,
                     autoFocus: false,
                     intent: 'primary'
