@@ -371,6 +371,7 @@ export class ManageDialogModel extends HoistModel {
             sortBy: ['isGroupRow|desc', 'name'],
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
+            rowBorders: true,
             selModel: 'multiple',
             contextMenu:
                 type == 'shared'
