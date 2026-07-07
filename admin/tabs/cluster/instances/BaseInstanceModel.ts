@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {InstancesTabModel} from '@xh/hoist/admin/tabs/cluster/instances/InstancesTabModel';
-import {LoadSpec, lookup, XH} from '@xh/hoist/core';
+import {lookup, XH} from '@xh/hoist/core';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class BaseInstanceModel extends BaseAdminTabModel {
@@ -15,15 +15,14 @@ export class BaseInstanceModel extends BaseAdminTabModel {
         return this.parent.instanceName;
     }
 
-    handleLoadException(e: unknown, loadSpec: LoadSpec) {
+    override handleLoadException(e: unknown) {
         const instanceNotFound = this.isInstanceNotFound(e),
             connDown = this.parent.lastLoadException,
-            {isVisible} = this,
-            {isAutoRefresh} = loadSpec;
+            {isVisible} = this;
         XH.handleException(e, {
             alertType: 'toast',
             showAlert: !instanceNotFound && !connDown && isVisible,
-            logOnServer: !instanceNotFound && !connDown && isVisible && !isAutoRefresh
+            logOnServer: !instanceNotFound && !connDown && isVisible
         });
     }
 

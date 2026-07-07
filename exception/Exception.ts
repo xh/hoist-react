@@ -5,7 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PlainObject} from '@xh/hoist/core';
-import type {HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
+import type {
+    HoistException,
+    LoadAbortedException,
+    TimeoutException,
+    TimeoutExceptionConfig
+} from './Types';
 
 import {isPlainObject} from 'lodash';
 
@@ -36,6 +41,17 @@ export class Exception {
             message: 'An unknown error occurred',
             ...attributes
         });
+    }
+
+    /** Create a {@link LoadAbortedException} signaling that a load has been superseded. */
+    static loadAborted(): LoadAbortedException {
+        return this.createInternal({
+            name: 'LoadAbortedException',
+            message: 'Load aborted',
+            isRoutine: true,
+            isAborted: true,
+            stack: null
+        }) as LoadAbortedException;
     }
 
     /** Create an Error for when an operation (e.g. a Promise) times out. */
