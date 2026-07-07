@@ -239,6 +239,12 @@ export class ManageDialogModel extends HoistModel {
         });
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
+
+        // Group row ids incorporate the group's path, so the renamed group returns from the
+        // refresh as a new record - collapsed and unselected. Re-expand and reselect it.
+        const gridModel = isGlobal ? this.globalGridModel : this.ownedGridModel;
+        gridModel.expandAll();
+        await gridModel.selectAsync(`group:${to}`);
     }
 
     private async doDeleteAsync(views: ViewInfo[]) {
