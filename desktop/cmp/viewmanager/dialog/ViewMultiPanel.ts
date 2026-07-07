@@ -63,7 +63,7 @@ export const viewMultiPanel = hoistCmp.factory({
                     items: [
                         placeholder(
                             Icon.boxFull(),
-                            `${views.length} selected ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
+                            `Configuring ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
                         ),
                         fragment(
                             vspacer(),
@@ -87,9 +87,7 @@ export const viewMultiPanel = hoistCmp.factory({
                                     placeholder: 'Select or enter a group...'
                                 }),
                                 info: fragment(
-                                    `Move selected ${pluralize(viewManagerModel.typeDisplayName)} into another group,`,
-                                    br(),
-                                    `discarding existing nested groups.`,
+                                    `Move ${views.length} ${pluralize(viewManagerModel.typeDisplayName)} to another group, discarding prior grouping.`,
                                     br(),
                                     `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
                                 )
