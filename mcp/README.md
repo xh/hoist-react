@@ -725,6 +725,18 @@ The `resolveDocPath()` utility in `util/paths.ts` validates that resolved paths 
 repository root. It rejects paths containing `..` segments. Always use this function when resolving
 file paths from external input.
 
+### Path Separators (Cross-Platform)
+
+ts-morph's `SourceFile.getFilePath()` always returns **forward-slash** paths on every platform
+(e.g. `D:/hoist-react/cmp/grid/GridModel.ts` on Windows), whereas `resolveRepoRoot()` returns a
+native path from Node's `path` module -- **backslash-separated** on Windows (`D:\hoist-react`).
+Comparing or slicing one against the other (e.g. `filePath.startsWith(repoRoot + '/')`) silently
+fails on Windows, filtering out every source file and yielding an empty symbol index. When
+comparing against or slicing a ts-morph path, use `resolveRepoRootPosix()` (and `toPosixPath()` for
+any incoming file-path argument) from `util/paths.ts` rather than `resolveRepoRoot()`. Filesystem
+access that stays within Node's `path`/`fs` APIs (e.g. the doc registry, the index cache) can keep
+using `resolveRepoRoot()`, since those are separator-consistent on both sides.
+
 ### Registry Sync
 
 The doc registry is hardcoded, not filesystem-scanned. When documentation files are added or
