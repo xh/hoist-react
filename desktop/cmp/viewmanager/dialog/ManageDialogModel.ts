@@ -216,9 +216,13 @@ export class ManageDialogModel extends HoistModel {
 
     private async doUpdateViewsAsync(views: ViewInfo[], update: ViewUpdateSpec) {
         const {viewManagerModel} = this;
-        await viewManagerModel.updateViewsInfoAsync(views, update);
-        await viewManagerModel.refreshAsync();
-        await this.refreshAsync();
+        try {
+            await viewManagerModel.updateViewsInfoAsync(views, update);
+        } finally {
+            // Refresh even on failure - bulk updates apply per-view and can partially succeed.
+            await viewManagerModel.refreshAsync();
+            await this.refreshAsync();
+        }
         // No reselect -- views may have moved between tabs.
     }
 
