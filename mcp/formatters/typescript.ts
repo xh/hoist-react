@@ -11,7 +11,7 @@
  */
 import {z} from 'zod';
 import type {MemberInfo, MemberIndexEntry, SymbolEntry, SymbolDetail} from '../data/ts-registry.js';
-import {resolveRepoRoot} from '../util/paths.js';
+import {resolveRepoRootPosix, toPosixPath} from '../util/paths.js';
 
 /** Remove blank lines from a JSDoc string to produce more compact output. */
 function collapseJsDoc(jsDoc: string): string {
@@ -31,8 +31,12 @@ export function truncateType(typeStr: string): string {
 
 /** Convert an absolute file path to a repo-relative path. */
 export function toRelativePath(filePath: string): string {
-    const root = resolveRepoRoot();
-    return filePath.startsWith(root) ? filePath.slice(root.length + 1) : filePath;
+    // Symbol filePaths originate from ts-morph (forward slashes on all platforms);
+    // compare in POSIX form so the repo-root prefix strips correctly on Windows,
+    // where `resolveRepoRoot()` would otherwise yield a backslash path.
+    const root = resolveRepoRootPosix();
+    const posix = toPosixPath(filePath);
+    return posix.startsWith(root) ? posix.slice(root.length + 1) : posix;
 }
 
 /**
