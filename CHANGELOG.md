@@ -34,6 +34,9 @@
   than requiring the popover to be opened first. This mode is now enabled more naturally via
   a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
   as a thin alias.
+* Fixed "not a valid MIME type" console warnings from `FileChooser`. Accepted extensions are now
+  passed under a dummy MIME type key, silencing the warnings while continuing to filter selected
+  files by extension.
 
 ### ⚙️ Typescript API Adjustments
 
