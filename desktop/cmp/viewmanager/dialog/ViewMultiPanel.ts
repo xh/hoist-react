@@ -29,9 +29,10 @@ import {
     getGroupPathOptions,
     getVisibilityInfo,
     getVisibilityOptions,
-    groupPathOptionRenderer
+    groupPathOptionRenderer,
+    TOP_LEVEL_VALUE
 } from './Utils';
-import {MIXED_VALUE, ViewMultiPanelModel} from './ViewMultiPanelModel';
+import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 
 /**
  * Form to bulk-edit group and visibility across multiple selected views within the ViewManager
@@ -61,7 +62,7 @@ export const viewMultiPanel = hoistCmp.factory({
                     items: [
                         placeholder(
                             Icon.boxFull(),
-                            `${views.length} selected ${pluralize(viewManagerModel.typeDisplayName)}`
+                            `${views.length} selected ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
                         ),
                         fragment(
                             vspacer(),
@@ -69,19 +70,24 @@ export const viewMultiPanel = hoistCmp.factory({
                                 field: 'group',
                                 omit: !allEditable,
                                 item: select({
+                                    // Root option carries a sentinel value - the field inits to
+                                    // null/empty to indicate no pending group change.
                                     options: getGroupPathOptions(viewManagerModel, isGlobal, {
                                         includeRoot: true
-                                    }),
+                                    }).map(it =>
+                                        it.value === null ? {...it, value: TOP_LEVEL_VALUE} : it
+                                    ),
                                     optionRenderer: groupPathOptionRenderer,
-                                    generateOptionFn: v =>
-                                        v === MIXED_VALUE ? {value: v, label: '(Mixed)'} : null,
                                     enableCreate: true,
                                     createMessageFn: v => `Create path "${v}"`,
                                     enableFilter: true,
+                                    enableClear: true,
                                     placeholder: 'Select or enter a group...'
                                 }),
                                 info: fragment(
-                                    `Move selected ${pluralize(viewManagerModel.typeDisplayName)} into the chosen group.`,
+                                    `Move selected ${pluralize(viewManagerModel.typeDisplayName)} into another group,`,
+                                    br(),
+                                    `discarding existing nested groups.`,
                                     br(),
                                     `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
                                 )

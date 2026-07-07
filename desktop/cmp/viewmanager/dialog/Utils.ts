@@ -19,9 +19,19 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, startCase} from 'lodash';
 import {ReactNode} from 'react';
 
+/**
+ * Sentinel option value representing an explicit move to the top level (no group), for group
+ * selects whose field inits to null/empty to mean "no change" - a null-valued top-level option
+ * would neither display nor register as dirty correctly there. Map back to a null group on save.
+ */
+export const TOP_LEVEL_VALUE = 'xh-top-level-group-value';
+
 /** SelectOption for a group path, with depth for indented hierarchical rendering. */
 export interface GroupPathOption extends SelectOption {
-    /** Full delimited group path, or null for the top-level (no group) option. */
+    /**
+     * Full delimited group path, or null (or {@link TOP_LEVEL_VALUE}) for the top-level
+     * (no group) option.
+     */
     value: string;
     /**
      * Full delimited group path, displayed as-is in the select's value container so the complete
@@ -75,7 +85,8 @@ export function groupPathDisplay(path: string): ReactNode {
 
 /** Menu renderer displaying a {@link GroupPathOption} as its leaf name, indented per depth. */
 export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
-    const {value, label, depth} = opt;
+    const {value, label, depth} = opt,
+        isTopLevel = value == null || value === TOP_LEVEL_VALUE;
 
     // Pass through the "Create..." option injected dynamically by react-select when the user
     // types a new path (with `enableCreate`) - its label is the formatted create message.
@@ -85,10 +96,10 @@ export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
         alignItems: 'center',
         paddingLeft: (depth ?? 0) * 15,
         items: [
-            Icon.folder({omit: value == null}),
+            Icon.folder({omit: isTopLevel}),
             span({
-                item: value == null ? label : getGroupLeaf(value),
-                style: {marginLeft: value == null ? 0 : 5}
+                item: isTopLevel ? label : getGroupLeaf(value),
+                style: {marginLeft: isTopLevel ? 0 : 5}
             })
         ]
     });

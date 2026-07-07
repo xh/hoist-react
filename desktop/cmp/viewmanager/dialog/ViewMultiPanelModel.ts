@@ -13,14 +13,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty, uniq} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
-import {Visibility} from './Utils';
-
-/**
- * Sentinel form value indicating the selected views do not all share a common group. Never a
- * legitimate save target - any real selection (including the top-level/null option) differs from
- * this value and marks the field dirty.
- */
-export const MIXED_VALUE = 'xh-mixed-group-value';
+import {TOP_LEVEL_VALUE, Visibility} from './Utils';
 
 /**
  * Backing model for bulk editing of multiple selected views.
@@ -50,10 +43,10 @@ export class ViewMultiPanelModel extends HoistModel {
                 const {formModel} = this,
                     vals = uniq(
                         views.map(v => (v.isShared ? 'shared' : v.isGlobal ? 'global' : 'private'))
-                    ),
-                    groups = uniq(views.map(v => v.group ?? null));
+                    );
+                // Group inits empty - a non-null value always indicates a pending move.
                 formModel.init({
-                    group: groups.length === 1 ? groups[0] : MIXED_VALUE,
+                    group: null,
                     visibility: vals.length === 1 ? vals[0] : null
                 });
                 formModel.readonly = !this.allEditable;
@@ -74,7 +67,8 @@ export class ViewMultiPanelModel extends HoistModel {
         if (!formModel.isDirty || isEmpty(views)) return;
 
         if (groupField.isDirty) {
-            updates.group = normalizeGroupPath(groupField.value);
+            const {value} = groupField;
+            updates.group = value === TOP_LEVEL_VALUE ? null : normalizeGroupPath(value);
         }
 
         if (visibilityField.isDirty) {
