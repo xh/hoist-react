@@ -30,6 +30,7 @@ import {
     getVisibilityInfo,
     getVisibilityOptions,
     groupPathOptionRenderer,
+    parseGroupSelectValue,
     TOP_LEVEL_VALUE
 } from './Utils';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
@@ -79,7 +80,8 @@ export const viewMultiPanel = hoistCmp.factory({
                                     ),
                                     optionRenderer: groupPathOptionRenderer,
                                     enableCreate: true,
-                                    createMessageFn: v => `Create path "${v}"`,
+                                    createMessageFn: v =>
+                                        `Create path "${parseGroupSelectValue(v) ?? v}"`,
                                     enableFilter: true,
                                     enableClear: true,
                                     placeholder: 'Select or enter a group...'

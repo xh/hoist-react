@@ -30,7 +30,8 @@ import {
     getVisibilityInfo,
     getVisibilityOptions,
     groupPathDisplay,
-    groupPathOptionRenderer
+    groupPathOptionRenderer,
+    parseGroupSelectValue
 } from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -77,7 +78,8 @@ export const viewPanel = hoistCmp.factory({
                                 }),
                                 optionRenderer: groupPathOptionRenderer,
                                 enableCreate: true,
-                                createMessageFn: v => `Create path "${v}"`,
+                                createMessageFn: v =>
+                                    `Create path "${parseGroupSelectValue(v) ?? v}"`,
                                 enableFilter: true,
                                 placeholder: 'Select or enter a group...'
                             }),

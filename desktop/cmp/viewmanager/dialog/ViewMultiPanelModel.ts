@@ -7,13 +7,13 @@
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
-import {normalizeGroupPath, ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
+import {ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty, uniq} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
-import {TOP_LEVEL_VALUE, Visibility} from './Utils';
+import {parseGroupSelectValue, Visibility} from './Utils';
 
 /**
  * Backing model for bulk editing of multiple selected views.
@@ -67,8 +67,7 @@ export class ViewMultiPanelModel extends HoistModel {
         if (!formModel.isDirty || isEmpty(views)) return;
 
         if (groupField.isDirty) {
-            const {value} = groupField;
-            updates.group = value === TOP_LEVEL_VALUE ? null : normalizeGroupPath(value);
+            updates.group = parseGroupSelectValue(groupField.value);
         }
 
         if (visibilityField.isDirty) {

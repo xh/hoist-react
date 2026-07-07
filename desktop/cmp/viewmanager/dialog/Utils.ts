@@ -10,7 +10,9 @@ import {
     getAllGroupPaths,
     getGroupLeaf,
     isGroupSameOrDescendant,
+    normalizeGroupPath,
     splitGroupPath,
+    VIEW_GROUP_DELIMITER,
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
 import {PlainObject, SelectOption} from '@xh/hoist/core';
@@ -25,6 +27,23 @@ import {ReactNode} from 'react';
  * would neither display nor register as dirty correctly there. Map back to a null group on save.
  */
 export const TOP_LEVEL_VALUE = 'xh-top-level-group-value';
+
+/** User-facing label for the top-level / no-group option in group path selects. */
+const TOP_LEVEL_LABEL = '(Top Level)';
+
+/**
+ * Resolve a group select's committed value to a persistable group path (null for top level).
+ *
+ * Handles the top-level option's sentinel value and label: with `enableCreate`, the select seeds
+ * its filter input with the selected option's label, so a new path typed while the top-level
+ * option was selected arrives prefixed with its display label - e.g. `(Top Level)/New Group` -
+ * which must not leak into the persisted path.
+ */
+export function parseGroupSelectValue(value: string): string {
+    if (value == null || value === TOP_LEVEL_VALUE || value === TOP_LEVEL_LABEL) return null;
+    const prefix = TOP_LEVEL_LABEL + VIEW_GROUP_DELIMITER;
+    return normalizeGroupPath(value.startsWith(prefix) ? value.substring(prefix.length) : value);
+}
 
 /** SelectOption for a group path, with depth for indented hierarchical rendering. */
 export interface GroupPathOption extends SelectOption {
@@ -69,7 +88,7 @@ export function getGroupPathOptions(
             depth: splitGroupPath(path).length - 1
         }));
 
-    return includeRoot ? [{value: null, label: '(Top Level)', depth: 0}, ...ret] : ret;
+    return includeRoot ? [{value: null, label: TOP_LEVEL_LABEL, depth: 0}, ...ret] : ret;
 }
 
 /** Display a group path as its segments separated by chevrons, or a muted 'None' when null. */

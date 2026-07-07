@@ -11,7 +11,8 @@ import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
-import {normalizeGroupPath, ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {parseGroupSelectValue} from './Utils';
+import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 
 /**
  * Backing model for EditForm
@@ -66,7 +67,7 @@ export class ViewPanelModel extends HoistModel {
         if (!isValid || !isDirty) return;
 
         if (updates.hasOwnProperty('group')) {
-            updates.group = normalizeGroupPath(updates.group);
+            updates.group = parseGroupSelectValue(updates.group);
         }
 
         if (visibilityField.isDirty) {
