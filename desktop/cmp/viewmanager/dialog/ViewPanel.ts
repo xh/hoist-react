@@ -64,7 +64,7 @@ export const viewPanel = hoistCmp.factory({
                     items: [
                         formField({
                             field: 'name',
-                            item: textInput()
+                            item: textInput({enableClear: true})
                         }),
                         formField({
                             field: 'owner',
@@ -81,6 +81,7 @@ export const viewPanel = hoistCmp.factory({
                                 createMessageFn: v =>
                                     `Create path "${parseGroupSelectValue(v) ?? v}"`,
                                 enableFilter: true,
+                                enableClear: true,
                                 placeholder: 'Select or enter a group...'
                             }),
                             readonlyRenderer: v => groupPathDisplay(v),
