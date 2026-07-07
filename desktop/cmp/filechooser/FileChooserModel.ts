@@ -187,10 +187,17 @@ export class FileChooserModel extends HoistModel {
         return true;
     }
 
-    private defaultRejectMessage(rejections: FileRejection[]): ReactElement {
-        // 1) Map rejected files to error messages
+    private defaultRejectMessage = (rejections: FileRejection[]): ReactElement => {
+        // 1) Map rejected files to error messages. Use custom message for invalid types to avoid displaying dummy MIME type.
         const errorsByFile = fromPairs(
-            map(rejections, ({file, errors}) => [file.name, map(errors, 'message')])
+            map(rejections, ({file, errors}) => [
+                file.name,
+                map(errors, e =>
+                    e.code === 'file-invalid-type'
+                        ? `File type must be one of ${this.accept.join(', ')}`
+                        : e.message
+                )
+            ])
         );
 
         // 2) List files with bulleted error messages
@@ -207,7 +214,7 @@ export class FileChooserModel extends HoistModel {
             });
 
         return vbox(rejectItems);
-    }
+    };
 
     private getRejectToastSpec(params: Partial<ToastSpec> | boolean): Partial<ToastSpec> {
         if (params == false) return null;
