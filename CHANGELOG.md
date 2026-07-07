@@ -36,6 +36,12 @@
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
+### 🤖 AI Docs + Tooling
+
+* Fixed the MCP server and `hoist-ts` CLI TypeScript symbol tools (`search`, `symbol`, `members`)
+  returning no results on Windows, where a path-separator mismatch left the symbol index empty.
+  Path handling is now normalized so the developer tools work on Windows as well as macOS/Linux.
+
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.21 → 2.23`
