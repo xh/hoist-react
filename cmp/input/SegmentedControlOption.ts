@@ -33,6 +33,13 @@ export interface SegmentedControlOption {
      * `intent` default. Defaults to the control's `intent`.
      */
     intent?: Intent;
+
+    /**
+     * Optional stable identifier emitted on this option's rendered button as `data-testid`, for
+     * use by E2E tests. If omitted and the control itself has a `testId`, one is auto-derived as
+     * `${controlTestId}-${value}`. If neither is set, no attribute is emitted.
+     */
+    testId?: string;
 }
 
 /**
@@ -58,4 +65,11 @@ export interface SegmentedControlNullOption {
      * `intent` default. Defaults to the control's `intent`.
      */
     intent?: Intent;
+
+    /**
+     * Optional stable identifier emitted on this option's rendered button as `data-testid`, for
+     * use by E2E tests. If omitted and the control itself has a `testId`, one is auto-derived as
+     * `${controlTestId}-null`. If neither is set, no attribute is emitted.
+     */
+    testId?: string;
 }
