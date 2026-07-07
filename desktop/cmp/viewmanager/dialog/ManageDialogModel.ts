@@ -359,7 +359,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private createGridModel(type: 'owned' | 'global' | 'shared'): GridModel {
-        const {typeDisplayName, globalDisplayName} = this.viewManagerModel;
+        const {typeDisplayName, globalDisplayName} = this.viewManagerModel,
+            baseContextMenu = ['expandCollapseAll'];
 
         const modifier =
             type == 'owned' ? `personal` : type == 'global' ? globalDisplayName : 'shared';
@@ -373,7 +374,7 @@ export class ManageDialogModel extends HoistModel {
             selModel: 'multiple',
             contextMenu:
                 type == 'shared'
-                    ? null
+                    ? baseContextMenu
                     : [
                           {
                               text: 'Edit Group',
@@ -388,7 +389,9 @@ export class ManageDialogModel extends HoistModel {
                                       record.data.group,
                                       type == 'global'
                                   )
-                          }
+                          },
+                          '-',
+                          ...baseContextMenu
                       ],
             sizingMode: 'standard',
             hideHeaders: true,
