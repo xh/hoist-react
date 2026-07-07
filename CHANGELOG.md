@@ -30,6 +30,9 @@
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
+* Fixed `Select` with `enableCreate` to always display its "Create..." option while typing -
+  previously the option could be incorrectly filtered out of the menu if the label produced by
+  `createMessageFn` did not contain the typed query verbatim.
 * Hardened the grid column filter's Custom tab against filters it previously mishandled -
   multi-value clauses are now expanded into editable rows and recombined on commit, and filters it
   cannot represent are left untouched rather than corrupted.
