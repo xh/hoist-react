@@ -88,8 +88,11 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
 
         return dropzone({
             ref: model.dropzoneRef,
-            // react-dropzone wants a {type: [extensions]} map; Use a dummy MIME type to prevent browser warnings.
-            accept: accept ? {'application/_': accept} : null,
+            // react-dropzone expects `accept` to be a {type: [extensions]} map. The FileChooserModel
+            // only accepts a list of extensions. Extensions alone are sufficient for validation and
+            // a MIME type is not required. Use `_/_` as a dummy MIME type to prevent console warnings
+            // from react-dropzone.
+            accept: accept ? {'_/_': accept} : null,
             // Disable interaction (drag/click/drop) at the limit; the target shows a clear message.
             disabled: disabled || atLimit,
             maxFiles,

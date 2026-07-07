@@ -7,7 +7,7 @@
 import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {FileRejection} from '@xh/hoist/kit/react-dropzone';
+import {ErrorCode, FileRejection} from '@xh/hoist/kit/react-dropzone';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -193,7 +193,7 @@ export class FileChooserModel extends HoistModel {
             map(rejections, ({file, errors}) => [
                 file.name,
                 map(errors, e =>
-                    e.code === 'file-invalid-type'
+                    e.code === ErrorCode.FileInvalidType
                         ? `File type must be one of ${this.accept.join(', ')}`
                         : e.message
                 )
