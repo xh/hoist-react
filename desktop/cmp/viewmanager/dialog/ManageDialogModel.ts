@@ -70,8 +70,11 @@ export class ManageDialogModel extends HoistModel {
 
     @computed
     get selectedView(): ViewInfo {
-        // Null when a synthetic group row is selected - detail panel shows placeholder.
-        return this.gridModel.selectedRecord?.data.view ?? null;
+        // Null unless the selection resolves to exactly one view — directly or via a single-view group row
+        return (
+            this.gridModel.selectedRecord?.data.view ??
+            (this.selectedViews.length === 1 ? this.selectedViews[0] : null)
+        );
     }
 
     @computed
@@ -81,12 +84,6 @@ export class ManageDialogModel extends HoistModel {
             rec.data.isGroupRow ? rec.descendants.map(it => it.data.view) : [rec.data.view]
         );
         return uniqBy(compact(views), 'token') as ViewInfo[];
-    }
-
-    /** True if any selected row is a synthetic group/owner row. */
-    @computed
-    get hasGroupRowsSelected(): boolean {
-        return this.gridModel.selectedRecords.some(it => it.data.isGroupRow);
     }
 
     constructor(viewManagerModel: ViewManagerModel) {
