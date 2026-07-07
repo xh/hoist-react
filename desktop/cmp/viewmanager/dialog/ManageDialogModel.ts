@@ -301,8 +301,10 @@ export class ManageDialogModel extends HoistModel {
                     name: owner,
                     owner,
                     isGroupRow: true,
+                    // Prefix group row ids by owner at every depth - the same group path can
+                    // exist under multiple owners, and store record ids must be unique.
                     children: this.buildTreeData(viewsByOwner[owner]).map(child =>
-                        child.isGroupRow ? {...child, id: `owner:${owner}|${child.id}`} : child
+                        this.applyIdPrefix(child, `owner:${owner}|`)
                     )
                 }));
         }
@@ -312,6 +314,15 @@ export class ManageDialogModel extends HoistModel {
             ...roots.map(node => this.groupNodeToTreeData(node)),
             ...ungrouped.map(view => this.viewToTreeData(view))
         ];
+    }
+
+    private applyIdPrefix(treeData: PlainObject, idPrefix: string): PlainObject {
+        if (!treeData.isGroupRow) return treeData;
+        return {
+            ...treeData,
+            id: `${idPrefix}${treeData.id}`,
+            children: treeData.children.map(child => this.applyIdPrefix(child, idPrefix))
+        };
     }
 
     private groupNodeToTreeData(node: ViewGroupNode): PlainObject {
