@@ -16,6 +16,10 @@
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.
+* `SegmentedControl` options (desktop and mobile) now accept a `testId`, emitted on the option's
+  rendered button as `data-testid` for E2E targeting. If an option omits its own `testId` but the
+  control has one, an id is auto-derived as `${controlTestId}-${value}` - restoring parity with
+  the legacy `ButtonGroupInput` test-hook pattern for apps migrating between the two.
 
 ### 🐞 Bug Fixes
 
@@ -42,6 +46,9 @@
   than requiring the popover to be opened first. This mode is now enabled more naturally via
   a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
   as a thin alias.
+* Fixed "not a valid MIME type" console warnings from `FileChooser`. Accepted extensions are now
+  passed under a dummy MIME type key, silencing the warnings while continuing to filter selected
+  files by extension.
 
 ### ⚙️ Typescript API Adjustments
 

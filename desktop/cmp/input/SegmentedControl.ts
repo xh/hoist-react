@@ -80,6 +80,7 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
     intent?: Intent;
+    testId?: string;
     _key: string;
 }
 
@@ -92,13 +93,14 @@ class SegmentedControlModel extends HoistInputModel {
         return options.map((o: any, idx: number) => {
             const key = String(idx);
             if (isObject(o)) {
-                const {label, value, icon, disabled, intent} = o as SegmentedControlOption;
+                const {label, value, icon, disabled, intent, testId} = o as SegmentedControlOption;
                 return {
                     value: this.toInternal(value),
                     label: label ?? (icon ? '' : String(value)),
                     icon,
                     disabled,
                     intent,
+                    testId,
                     _key: key
                 };
             } else {
@@ -163,13 +165,15 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
     // applied via a per-button className that our SCSS keys its solid/hint coloring off of.
     const defaultIntent = intent && intent !== 'none' ? intent : null,
         bpOptions = model.normalizedOptions.map(opt => {
-            const optIntent = opt.intent ?? defaultIntent;
+            const optIntent = opt.intent ?? defaultIntent,
+                optTestId = opt.testId ?? (testId ? `${testId}-${String(opt.value)}` : null);
             return {
                 value: opt._key,
                 label: opt.label,
                 icon: opt.icon,
                 disabled: opt.disabled,
-                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null
+                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null,
+                ...(optTestId ? {[TEST_ID]: optTestId} : null)
             };
         });
 
