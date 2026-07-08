@@ -142,7 +142,7 @@ const formButtons = hoistCmp.factory<GroupPanelModel>({
                     outlined: true,
                     intent: 'danger',
                     omit: !allEditable,
-                    onClick: () => parent.deleteAsync(views)
+                    onClick: () => parent.deleteAsync(views, model.groupRecord.data.name)
                 })
             ]
         });

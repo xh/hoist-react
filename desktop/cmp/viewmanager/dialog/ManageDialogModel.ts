@@ -161,8 +161,9 @@ export class ManageDialogModel extends HoistModel {
         }
     }
 
-    async deleteAsync(views: ViewInfo[]) {
-        return this.doDeleteAsync(views).linkTo(this.updateTask).catchDefault();
+    /** Pass `groupName` when deleting the full contents of a group, to contextualize the confirm. */
+    async deleteAsync(views: ViewInfo[], groupName?: string) {
+        return this.doDeleteAsync(views, groupName).linkTo(this.updateTask).catchDefault();
     }
 
     async updateAsync(view: ViewInfo, update: ViewUpdateSpec) {
@@ -271,14 +272,18 @@ export class ManageDialogModel extends HoistModel {
         await gridModel.selectAsync(`group:${to}`);
     }
 
-    private async doDeleteAsync(views: ViewInfo[]) {
+    private async doDeleteAsync(views: ViewInfo[], groupName?: string) {
         const {viewManagerModel} = this,
             {typeDisplayName} = viewManagerModel,
             count = views.length;
 
         if (!count) return;
 
-        const confirmStr = count > 1 ? pluralize(typeDisplayName, count, true) : views[0].typedName;
+        const confirmStr = groupName
+            ? `group "${groupName}" and its ${count} nested ${pluralize(typeDisplayName, count)}`
+            : count > 1
+              ? pluralize(typeDisplayName, count, true)
+              : views[0].typedName;
         const msgs: ReactNode[] = [`Are you sure you want to delete ${confirmStr}?`];
         if (some(views, v => v.isGlobal || v.isShared)) {
             count > 1
@@ -297,7 +302,7 @@ export class ManageDialogModel extends HoistModel {
         const confirmed = await XH.confirm({
             message: fragment(msgs.map(m => p(m))),
             confirmProps: {
-                text: `Yes, delete ${pluralize(typeDisplayName, count)}`,
+                text: 'Yes, delete',
                 outlined: true,
                 autoFocus: false,
                 intent: 'danger'
