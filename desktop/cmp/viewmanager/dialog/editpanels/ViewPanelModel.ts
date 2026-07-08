@@ -10,8 +10,8 @@ import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
-import {ManageDialogModel} from './ManageDialogModel';
-import {parseGroupSelectValue} from './Utils';
+import {ManageDialogModel} from '../ManageDialogModel';
+import {parseGroupSelectValue} from '../Utils';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 
 /**

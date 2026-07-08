@@ -12,8 +12,8 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty, uniq} from 'lodash';
 import {ReactNode} from 'react';
-import {ManageDialogModel} from './ManageDialogModel';
-import {parseGroupSelectValue, Visibility} from './Utils';
+import {ManageDialogModel} from '../ManageDialogModel';
+import {parseGroupSelectValue, Visibility} from '../Utils';
 
 /**
  * Backing model for bulk editing of multiple selected views.

@@ -27,8 +27,8 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, keys, some, startCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
 import {EditGroupDialogModel} from './EditGroupDialogModel';
-import {ViewMultiPanelModel} from './ViewMultiPanelModel';
-import {ViewPanelModel} from './ViewPanelModel';
+import {ViewMultiPanelModel} from './editpanels/ViewMultiPanelModel';
+import {ViewPanelModel} from './editpanels/ViewPanelModel';
 
 /**
  * Backing model for ManageDialog

@@ -32,7 +32,7 @@ import {
     groupPathOptionRenderer,
     parseGroupSelectValue,
     TOP_LEVEL_VALUE
-} from './Utils';
+} from '../Utils';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 
 /**

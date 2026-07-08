@@ -19,8 +19,8 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
 import {editGroupDialog} from './EditGroupDialog';
 import {ManageDialogModel} from './ManageDialogModel';
-import {viewMultiPanel} from './ViewMultiPanel';
-import {viewPanel} from './ViewPanel';
+import {viewMultiPanel} from './editpanels/ViewMultiPanel';
+import {viewPanel} from './editpanels/ViewPanel';
 
 /**
  * Default management dialog for ViewManager.
