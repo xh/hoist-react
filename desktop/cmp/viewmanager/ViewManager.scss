@@ -4,6 +4,13 @@
   //------------------------
   // Dialogs
   //------------------------
+  &__manage-dialog {
+    // Enlarge the folder expand/collapse icons in the group tree grids. Icon width is pinned
+    // by AgGrid.scss to this variable - FontAwesome size props have no effect there.
+    --xh-grid-tree-icon-px: 14px;
+    --xh-grid-tree-indent: 1.5em;
+  }
+
   &__manage-dialog,
   &__save-dialog {
     &__form {

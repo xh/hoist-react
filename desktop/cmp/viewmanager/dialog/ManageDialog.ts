@@ -89,7 +89,23 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
         return vframe({
             paddingTop: 5,
             items: [
-                grid({model}),
+                grid({
+                    model,
+                    agOptions: {
+                        // Groups render as open/closed folders rather than the default carets.
+                        // Icon size is controlled via --xh-grid-tree-icon-px in ViewManager.scss.
+                        icons: {
+                            groupExpanded: Icon.folderOpen({
+                                asHtml: true,
+                                className: 'ag-group-expanded'
+                            }),
+                            groupContracted: Icon.folder({
+                                asHtml: true,
+                                className: 'ag-group-contracted'
+                            })
+                        }
+                    }
+                }),
                 div({
                     item: helpText,
                     omit: !helpText,
