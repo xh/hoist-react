@@ -26,6 +26,16 @@ export class ViewPanelModel extends HoistModel {
         return this.parent.selectedView;
     }
 
+    /** The single edited view as a list, for the shared {@link formButtons}. */
+    get views(): ViewInfo[] {
+        const {view} = this;
+        return view ? [view] : [];
+    }
+
+    get allEditable(): boolean {
+        return !!this.view?.isEditable;
+    }
+
     get loadTask(): TaskObserver {
         return this.parent.loadObserver;
     }

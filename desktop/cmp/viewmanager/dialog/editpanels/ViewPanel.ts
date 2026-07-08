@@ -6,21 +6,9 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {
-    br,
-    div,
-    filler,
-    fragment,
-    hbox,
-    hspacer,
-    span,
-    vbox,
-    vframe,
-    vspacer
-} from '@xh/hoist/cmp/layout';
+import {br, div, filler, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -34,7 +22,7 @@ import {
     parseGroupSelectValue
 } from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon';
+import {formButtons} from './FormButtons';
 
 /**
  * Form to edit or view details on a single saved view within the ViewManager manage dialog.
@@ -109,7 +97,7 @@ export const viewPanel = hoistCmp.factory({
                             info: visInfo
                         }),
                         vspacer(),
-                        formButtons(),
+                        formButtons({model}),
                         filler(),
                         div({
                             className: 'xh-view-manager__manage-dialog__metadata',
@@ -118,62 +106,6 @@ export const viewPanel = hoistCmp.factory({
                     ]
                 })
             })
-        });
-    }
-});
-
-const formButtons = hoistCmp.factory<ViewPanelModel>({
-    render({model}) {
-        const {formModel, parent, view} = model,
-            {readonly} = formModel,
-            {isPinned} = view;
-
-        if (formModel.isDirty) {
-            return hbox({
-                justifyContent: 'center',
-                items: [
-                    button({
-                        text: 'Save Changes',
-                        icon: Icon.check(),
-                        intent: 'success',
-                        minimal: false,
-                        disabled: !formModel.isValid,
-                        onClick: () => model.saveAsync()
-                    }),
-                    hspacer(),
-                    button({
-                        icon: Icon.reset(),
-                        tooltip: 'Revert changes',
-                        minimal: false,
-                        onClick: () => model.reset()
-                    })
-                ]
-            });
-        }
-
-        return vbox({
-            style: {gap: 10, alignItems: 'center'},
-            items: [
-                button({
-                    text: isPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
-                    icon: Icon.pin({
-                        prefix: isPinned ? 'fas' : 'far',
-                        className: isPinned ? 'xh-yellow' : null
-                    }),
-                    width: 200,
-                    outlined: true,
-                    onClick: () => parent.togglePinned([view])
-                }),
-                button({
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    width: 200,
-                    outlined: true,
-                    intent: 'danger',
-                    omit: readonly,
-                    onClick: () => parent.deleteAsync([view])
-                })
-            ]
         });
     }
 });
