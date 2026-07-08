@@ -20,13 +20,12 @@ import {
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {required, StoreRecord} from '@xh/hoist/data';
 import {pluralize} from '@xh/hoist/utils/js';
-import {every, isEmpty, partition, uniq} from 'lodash';
+import {every, partition} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
-import {confirmVisibilityChangeAsync, Visibility} from '../Utils';
 
 /**
- * Backing model for editing a single selected group - rename/re-nest the group itself, plus
- * bulk visibility and pinning updates across all views within it.
+ * Backing model for editing a single selected group - rename the group itself, plus
+ * bulk pinning updates across all views within it.
  */
 export class GroupPanelModel extends HoistModel {
     parent: ManageDialogModel;
@@ -69,14 +68,9 @@ export class GroupPanelModel extends HoistModel {
         this.addReaction({
             track: () => [this.groupRecord, this.views],
             run: () => {
-                const {formModel, group, views, allEditable} = this,
-                    vals = uniq(
-                        views.map(v => (v.isShared ? 'shared' : v.isGlobal ? 'global' : 'private'))
-                    );
+                const {formModel, group, allEditable} = this;
                 formModel.init({
-                    name: getGroupLeaf(group),
-                    nestUnder: getGroupParent(group),
-                    visibility: vals.length === 1 ? vals[0] : null
+                    name: getGroupLeaf(group)
                 });
                 formModel.readonly = !allEditable;
             },
@@ -89,37 +83,18 @@ export class GroupPanelModel extends HoistModel {
     }
 
     async saveAsync() {
-        const {parent, group, views, isGlobal, canEditGroup, formModel} = this,
-            visibilityField = formModel.fields.visibility;
+        const {parent, group, isGlobal, canEditGroup, formModel} = this;
 
         if (!formModel.isDirty) return;
         if (!(await formModel.validateAsync())) return;
 
-        const {name, nestUnder} = formModel.getData(),
-            to = normalizeGroupPath(composeGroupPath(nestUnder, name)),
-            renamePending = canEditGroup && to !== group,
-            visibilityPending = visibilityField.isDirty && !isEmpty(views);
+        const {name} = formModel.getData(),
+            to = normalizeGroupPath(composeGroupPath(getGroupParent(group), name)),
+            renamePending = canEditGroup && to !== group;
 
         // Run all confirms up front, before applying any changes.
-        let viewUpdates = null;
-        if (visibilityPending) {
-            const visibility = visibilityField.value as Visibility,
-                confirmed = await confirmVisibilityChangeAsync(
-                    parent.viewManagerModel,
-                    views,
-                    visibility,
-                    renamePending
-                );
-            if (!confirmed) return;
-            viewUpdates = {isShared: visibility === 'shared', isGlobal: visibility === 'global'};
-        }
         if (renamePending && !(await this.confirmMergeIfExistsAsync(to))) return;
-
-        // Rename first - a visibility change can move the views into a different owner namespace,
-        // which would break a subsequent rename cascade scoped to the pre-change namespace. The
-        // bulk visibility update is token-based and unaffected by the rename.
         if (renamePending) await parent.renameGroupAsync(group, to, isGlobal);
-        if (viewUpdates) await parent.updateViewsAsync(views, viewUpdates);
     }
 
     //------------------------
@@ -165,12 +140,10 @@ export class GroupPanelModel extends HoistModel {
                         required,
                         ({value}) =>
                             value?.includes(VIEW_GROUP_DELIMITER)
-                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}" - re-parent via "Nest Under" instead.`
+                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
                                 : null
                     ]
-                },
-                {name: 'nestUnder', displayName: 'Nest Under'},
-                {name: 'visibility'}
+                }
             ]
         });
     }

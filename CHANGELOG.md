@@ -5,7 +5,12 @@
 ### 🎁 New Features
 
 * `ViewManager` groups now support unlimited nesting - forward slashes within a group name (e.g.
-  `Reports/Sales/Monthly`) are interpreted as sub-group delimiters. (requires hoist-core v41+).
+  `Reports/Sales/Monthly`) are interpreted as sub-group delimiters, rendered as nested sub-menus
+  in the ViewManager menu and as expandable tree grids in the Manage dialog (requires
+  hoist-core v41+).
+* The `ViewManager` Manage dialog now supports bulk editing: select multiple views to change their
+  visibility or move them into another group at once, or select a group row to rename the group
+  (applying to all views within it), pin/unpin its views to your menu, or delete them as a unit.
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.

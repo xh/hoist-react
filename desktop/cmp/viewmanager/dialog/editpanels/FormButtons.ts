@@ -26,7 +26,7 @@ export interface EditPanelModel extends HoistModel {
 
 interface FormButtonsProps extends HoistProps<EditPanelModel> {
     /** Group name to contextualize the delete confirm as a full-group deletion. */
-    deleteGroupName?: string;
+    groupName?: string;
 }
 
 /**
@@ -34,9 +34,10 @@ interface FormButtonsProps extends HoistProps<EditPanelModel> {
  * actions across the panel's views. Shared by the group and multi-view edit panels.
  */
 export const formButtons = hoistCmp.factory<FormButtonsProps>({
-    render({model, deleteGroupName}) {
+    render({model, groupName}) {
         const {formModel, parent, views, allEditable} = model,
-            allPinned = every(views, 'isPinned');
+            allPinned = every(views, 'isPinned'),
+            isGroupRow = !!groupName;
 
         if (formModel.isDirty) {
             return hbox({
@@ -63,16 +64,19 @@ export const formButtons = hoistCmp.factory<FormButtonsProps>({
 
         if (isEmpty(views)) return null;
 
+        const groupViews = isGroupRow ? "group's views " : '';
         return vbox({
             style: {gap: 10, alignItems: 'center'},
             items: [
                 button({
-                    text: allPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
+                    text: allPinned
+                        ? `Unpin ${groupViews}from your Menu`
+                        : `Pin ${groupViews}to your Menu`,
                     icon: Icon.pin({
                         prefix: allPinned ? 'fas' : 'far',
                         className: allPinned ? 'xh-yellow' : ''
                     }),
-                    width: 200,
+                    minWidth: 200,
                     outlined: true,
                     onClick: () => parent.togglePinned(views)
                 }),
@@ -83,7 +87,7 @@ export const formButtons = hoistCmp.factory<FormButtonsProps>({
                     outlined: true,
                     intent: 'danger',
                     omit: !allEditable,
-                    onClick: () => parent.deleteAsync(views, deleteGroupName)
+                    onClick: () => parent.deleteAsync(views, groupName)
                 })
             ]
         });
