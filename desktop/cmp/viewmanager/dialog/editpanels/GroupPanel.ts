@@ -6,20 +6,19 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {fragment, hbox, hspacer, placeholder, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {fragment, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {every, isEmpty} from 'lodash';
 import {
     getGroupPathOptions,
     getVisibilityInfo,
     getVisibilityOptions,
     groupPathOptionRenderer
 } from '../Utils';
+import {formButtons} from './FormButtons';
 import {GroupPanelModel} from './GroupPanelModel';
 
 /**
@@ -83,68 +82,11 @@ export const groupPanel = hoistCmp.factory({
                                 info: visInfo
                             }),
                             vspacer(),
-                            formButtons()
+                            formButtons({model, deleteGroupName: groupRecord.data.name})
                         )
                     ]
                 })
             })
-        });
-    }
-});
-
-const formButtons = hoistCmp.factory<GroupPanelModel>({
-    render({model}) {
-        const {formModel, parent, views, allEditable} = model,
-            allPinned = every(views, 'isPinned');
-
-        if (formModel.isDirty) {
-            return hbox({
-                justifyContent: 'center',
-                items: [
-                    button({
-                        text: 'Save Changes',
-                        icon: Icon.check(),
-                        intent: 'success',
-                        minimal: false,
-                        disabled: !formModel.isValid,
-                        onClick: () => model.saveAsync()
-                    }),
-                    hspacer(),
-                    button({
-                        icon: Icon.reset(),
-                        tooltip: 'Revert changes',
-                        minimal: false,
-                        onClick: () => model.reset()
-                    })
-                ]
-            });
-        }
-
-        if (isEmpty(views)) return null;
-
-        return vbox({
-            style: {gap: 10, alignItems: 'center'},
-            items: [
-                button({
-                    text: allPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
-                    icon: Icon.pin({
-                        prefix: allPinned ? 'fas' : 'far',
-                        className: allPinned ? 'xh-yellow' : ''
-                    }),
-                    width: 200,
-                    outlined: true,
-                    onClick: () => parent.togglePinned(views)
-                }),
-                button({
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    width: 200,
-                    outlined: true,
-                    intent: 'danger',
-                    omit: !allEditable,
-                    onClick: () => parent.deleteAsync(views, model.groupRecord.data.name)
-                })
-            ]
         });
     }
 });

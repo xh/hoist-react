@@ -6,25 +6,15 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {
-    br,
-    fragment,
-    hbox,
-    hspacer,
-    placeholder,
-    vbox,
-    vframe,
-    vspacer
-} from '@xh/hoist/cmp/layout';
+import {br, fragment, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
-import {every, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import {
     getGroupPathOptions,
     getVisibilityInfo,
@@ -33,6 +23,7 @@ import {
     parseGroupSelectValue,
     TOP_LEVEL_VALUE
 } from '../Utils';
+import {formButtons} from './FormButtons';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 
 /**
@@ -103,66 +94,11 @@ export const viewMultiPanel = hoistCmp.factory({
                                 info: visInfo
                             }),
                             vspacer(),
-                            formButtons()
+                            formButtons({model})
                         )
                     ]
                 })
             })
-        });
-    }
-});
-
-const formButtons = hoistCmp.factory<ViewMultiPanelModel>({
-    render({model}) {
-        const {formModel, parent, views, allEditable} = model,
-            allPinned = every(views, 'isPinned');
-
-        if (formModel.isDirty) {
-            return hbox({
-                justifyContent: 'center',
-                items: [
-                    button({
-                        text: 'Save Changes',
-                        icon: Icon.check(),
-                        intent: 'success',
-                        minimal: false,
-                        disabled: !formModel.isValid,
-                        onClick: () => model.saveAsync()
-                    }),
-                    hspacer(),
-                    button({
-                        icon: Icon.reset(),
-                        tooltip: 'Revert changes',
-                        minimal: false,
-                        onClick: () => model.reset()
-                    })
-                ]
-            });
-        }
-
-        return vbox({
-            style: {gap: 10, alignItems: 'center'},
-            items: [
-                button({
-                    text: allPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
-                    icon: Icon.pin({
-                        prefix: allPinned ? 'fas' : 'far',
-                        className: allPinned ? 'xh-yellow' : ''
-                    }),
-                    width: 200,
-                    outlined: true,
-                    onClick: () => parent.togglePinned(views)
-                }),
-                button({
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    width: 200,
-                    outlined: true,
-                    intent: 'danger',
-                    omit: !allEditable,
-                    onClick: () => parent.deleteAsync(views)
-                })
-            ]
         });
     }
 });
