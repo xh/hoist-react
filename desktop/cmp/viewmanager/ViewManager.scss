@@ -51,19 +51,4 @@
       }
     }
   }
-
-  //------------------------
-  // Edit Group dialog
-  //------------------------
-  &__edit-group-dialog {
-    &__form {
-      padding: var(--xh-pad-px);
-      gap: var(--xh-pad-half-px);
-    }
-
-    &__info {
-      font-size: var(--xh-font-size-small-px);
-      margin: var(--xh-pad-half-px) auto 0 auto;
-    }
-  }
 }

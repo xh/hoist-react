@@ -6,14 +6,11 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
-import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {pluralize} from '@xh/hoist/utils/js';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {every, isEmpty, uniq} from 'lodash';
-import {ReactNode} from 'react';
 import {ManageDialogModel} from '../ManageDialogModel';
-import {parseGroupSelectValue, Visibility} from '../Utils';
+import {confirmVisibilityChangeAsync, parseGroupSelectValue, Visibility} from '../Utils';
 
 /**
  * Backing model for bulk editing of multiple selected views.
@@ -75,38 +72,12 @@ export class ViewMultiPanelModel extends HoistModel {
             updates.isShared = visibility === 'shared';
             updates.isGlobal = visibility === 'global';
 
-            const countStr = pluralize(parent.viewManagerModel.typeDisplayName, views.length, true),
-                msgs: ReactNode[] = [strong('Are you sure you want to proceed?')];
-            switch (visibility) {
-                case 'private':
-                    msgs.unshift(
-                        `${countStr} will no longer be available to all other ${XH.appName} users.`
-                    );
-                    break;
-                case 'global':
-                    msgs.unshift(
-                        `${countStr} will become globally visible to all other ${XH.appName} users.`
-                    );
-                    break;
-                case 'shared':
-                    every(views, 'isGlobal')
-                        ? msgs.unshift(
-                              `${countStr} will no longer be globally visible to all other ${XH.appName} users.`
-                          )
-                        : msgs.unshift(
-                              `${countStr} will become available to all other ${XH.appName} users.`
-                          );
-            }
-
-            const confirmed = await XH.confirm({
-                message: fragment(msgs.map(m => p(m))),
-                confirmProps: {
-                    text: groupField.isDirty ? 'Yes, save changes' : 'Yes, update visibility',
-                    outlined: true,
-                    autoFocus: false,
-                    intent: 'primary'
-                }
-            });
+            const confirmed = await confirmVisibilityChangeAsync(
+                parent.viewManagerModel,
+                views,
+                visibility,
+                groupField.isDirty
+            );
             if (!confirmed) return;
         }
 

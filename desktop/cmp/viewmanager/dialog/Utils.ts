@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {div, hbox, span} from '@xh/hoist/cmp/layout';
+import {div, fragment, hbox, p, span, strong} from '@xh/hoist/cmp/layout';
 import {
     getAllGroupPaths,
     getGroupLeaf,
@@ -13,12 +13,13 @@ import {
     normalizeGroupPath,
     splitGroupPath,
     VIEW_GROUP_DELIMITER,
+    ViewInfo,
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
-import {PlainObject, SelectOption} from '@xh/hoist/core';
+import {PlainObject, SelectOption, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, startCase} from 'lodash';
+import {capitalize, every, startCase} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
@@ -140,6 +141,51 @@ export function groupPathOptionRenderer(
             ]
         });
     };
+}
+
+/**
+ * Confirm a bulk visibility change across one or more views, with wording appropriate to the
+ * target visibility. Pass `hasOtherChanges` when the same save carries additional updates, to
+ * broaden the confirm button text accordingly.
+ */
+export async function confirmVisibilityChangeAsync(
+    vmm: ViewManagerModel,
+    views: ViewInfo[],
+    visibility: Visibility,
+    hasOtherChanges: boolean
+): Promise<boolean> {
+    const countStr = pluralize(vmm.typeDisplayName, views.length, true),
+        msgs: ReactNode[] = [strong('Are you sure you want to proceed?')];
+    switch (visibility) {
+        case 'private':
+            msgs.unshift(
+                `${countStr} will no longer be available to all other ${XH.appName} users.`
+            );
+            break;
+        case 'global':
+            msgs.unshift(
+                `${countStr} will become globally visible to all other ${XH.appName} users.`
+            );
+            break;
+        case 'shared':
+            every(views, 'isGlobal')
+                ? msgs.unshift(
+                      `${countStr} will no longer be globally visible to all other ${XH.appName} users.`
+                  )
+                : msgs.unshift(
+                      `${countStr} will become available to all other ${XH.appName} users.`
+                  );
+    }
+
+    return XH.confirm({
+        message: fragment(msgs.map(m => p(m))),
+        confirmProps: {
+            text: hasOtherChanges ? 'Yes, save changes' : 'Yes, update visibility',
+            outlined: true,
+            autoFocus: false,
+            intent: 'primary'
+        }
+    });
 }
 
 /**

@@ -18,7 +18,7 @@ import {
     ViewUpdateSpec
 } from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, LoadSpec, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
-import {FilterTestFn} from '@xh/hoist/data';
+import {FilterTestFn, StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
@@ -26,7 +26,7 @@ import {action, bindable, computed, makeObservable, observable, runInAction} fro
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, keys, some, startCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
-import {EditGroupDialogModel} from './EditGroupDialogModel';
+import {GroupPanelModel} from './editpanels/GroupPanelModel';
 import {ViewMultiPanelModel} from './editpanels/ViewMultiPanelModel';
 import {ViewPanelModel} from './editpanels/ViewPanelModel';
 
@@ -44,7 +44,7 @@ export class ManageDialogModel extends HoistModel {
 
     @managed viewPanelModel: ViewPanelModel;
     @managed viewMultiPanelModel: ViewMultiPanelModel;
-    @managed editGroupDialogModel: EditGroupDialogModel;
+    @managed groupPanelModel: GroupPanelModel;
 
     @managed tabContainerModel: TabContainerModel;
 
@@ -56,13 +56,23 @@ export class ManageDialogModel extends HoistModel {
         return this.viewManagerModel.loadObserver;
     }
 
-    get gridModel(): GridModel {
+    get gridType(): 'owned' | 'global' | 'shared' {
         switch (this.tabContainerModel.activeTabId) {
+            case 'global':
+                return 'global';
+            case 'shared':
+                return 'shared';
+            default:
+                return 'owned';
+        }
+    }
+
+    get gridModel(): GridModel {
+        switch (this.gridType) {
             case 'global':
                 return this.globalGridModel;
             case 'shared':
                 return this.sharedGridModel;
-            case 'owned':
             default:
                 return this.ownedGridModel;
         }
@@ -84,6 +94,19 @@ export class ManageDialogModel extends HoistModel {
             rec.data.isGroupRow ? rec.descendants.map(it => it.data.view) : [rec.data.view]
         );
         return uniqBy(compact(views), 'token') as ViewInfo[];
+    }
+
+    /** The selected group row, when it is the sole selection - drives the GroupPanel. */
+    @computed
+    get selectedGroupRecord(): StoreRecord {
+        const recs = this.gridModel.selectedRecords;
+        return recs.length === 1 && recs[0].data.isGroupRow ? recs[0] : null;
+    }
+
+    /** True if any selected row is a synthetic group/owner row. */
+    @computed
+    get hasGroupRowsSelected(): boolean {
+        return this.gridModel.selectedRecords.some(it => it.data.isGroupRow);
     }
 
     constructor(viewManagerModel: ViewManagerModel) {
@@ -183,7 +206,7 @@ export class ManageDialogModel extends HoistModel {
         this.tabContainerModel = this.createTabContainerModel();
         this.viewPanelModel = new ViewPanelModel(this);
         this.viewMultiPanelModel = new ViewMultiPanelModel(this);
-        this.editGroupDialogModel = new EditGroupDialogModel(this);
+        this.groupPanelModel = new GroupPanelModel(this);
 
         this.addReaction({
             track: () => this.filter,
@@ -373,27 +396,7 @@ export class ManageDialogModel extends HoistModel {
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             rowBorders: true,
             selModel: 'multiple',
-            contextMenu:
-                type == 'shared'
-                    ? baseContextMenu
-                    : [
-                          {
-                              text: 'Edit Group',
-                              icon: Icon.edit(),
-                              displayFn: ({record}) => ({
-                                  hidden:
-                                      !record?.data.isGroupRow ||
-                                      (type == 'global' && !this.viewManagerModel.manageGlobal)
-                              }),
-                              actionFn: ({record}) =>
-                                  this.editGroupDialogModel.open(
-                                      record.data.group,
-                                      type == 'global'
-                                  )
-                          },
-                          '-',
-                          ...baseContextMenu
-                      ],
+            contextMenu: baseContextMenu,
             sizingMode: 'standard',
             hideHeaders: true,
             rowClassRules: {
