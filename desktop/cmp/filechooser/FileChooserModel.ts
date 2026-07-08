@@ -7,7 +7,7 @@
 import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {FileRejection} from '@xh/hoist/kit/react-dropzone';
+import {ErrorCode, FileRejection} from '@xh/hoist/kit/react-dropzone';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -187,10 +187,17 @@ export class FileChooserModel extends HoistModel {
         return true;
     }
 
-    private defaultRejectMessage(rejections: FileRejection[]): ReactElement {
-        // 1) Map rejected files to error messages
+    private defaultRejectMessage = (rejections: FileRejection[]): ReactElement => {
+        // 1) Map rejected files to error messages. Use custom message for invalid types to avoid displaying dummy MIME type.
         const errorsByFile = fromPairs(
-            map(rejections, ({file, errors}) => [file.name, map(errors, 'message')])
+            map(rejections, ({file, errors}) => [
+                file.name,
+                map(errors, e =>
+                    e.code === ErrorCode.FileInvalidType
+                        ? `File type must be one of ${this.accept.join(', ')}`
+                        : e.message
+                )
+            ])
         );
 
         // 2) List files with bulleted error messages
@@ -207,7 +214,7 @@ export class FileChooserModel extends HoistModel {
             });
 
         return vbox(rejectItems);
-    }
+    };
 
     private getRejectToastSpec(params: Partial<ToastSpec> | boolean): Partial<ToastSpec> {
         if (params == false) return null;
