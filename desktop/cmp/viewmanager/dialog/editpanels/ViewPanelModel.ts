@@ -10,8 +10,9 @@ import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
-import {ManageDialogModel} from './ManageDialogModel';
-import {normalizeGroupPath, ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {ManageDialogModel} from '../ManageDialogModel';
+import {parseGroupSelectValue} from '../Utils';
+import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 
 /**
  * Backing model for EditForm
@@ -23,6 +24,16 @@ export class ViewPanelModel extends HoistModel {
 
     get view(): ViewInfo {
         return this.parent.selectedView;
+    }
+
+    /** The single edited view as a list, for the shared {@link formButtons}. */
+    get views(): ViewInfo[] {
+        const {view} = this;
+        return view ? [view] : [];
+    }
+
+    get allEditable(): boolean {
+        return !!this.view?.isEditable;
     }
 
     get loadTask(): TaskObserver {
@@ -66,7 +77,7 @@ export class ViewPanelModel extends HoistModel {
         if (!isValid || !isDirty) return;
 
         if (updates.hasOwnProperty('group')) {
-            updates.group = normalizeGroupPath(updates.group);
+            updates.group = parseGroupSelectValue(updates.group);
         }
 
         if (visibilityField.isDirty) {

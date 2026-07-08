@@ -6,7 +6,7 @@
  */
 
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {div, filler, fragment, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -17,10 +17,10 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
-import {editGroupDialog} from './EditGroupDialog';
 import {ManageDialogModel} from './ManageDialogModel';
-import {viewMultiPanel} from './ViewMultiPanel';
-import {viewPanel} from './ViewPanel';
+import {groupPanel} from './editpanels/GroupPanel';
+import {viewMultiPanel} from './editpanels/ViewMultiPanel';
+import {viewPanel} from './editpanels/ViewPanel';
 
 /**
  * Default management dialog for ViewManager.
@@ -44,24 +44,22 @@ export const manageDialog = hoistCmp.factory({
             style: {width: '1000px', maxWidth: '90vw', minHeight: '600px'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
-            item: fragment(
-                panel({
-                    item: hframe(
-                        selectorPanel(),
-                        panel({
-                            item:
-                                count == 0
-                                    ? placeholderPanel()
-                                    : count > 1 || model.hasGroupRowsSelected
-                                      ? viewMultiPanel()
-                                      : viewPanel(),
-                            bbar: bbar()
-                        })
-                    ),
-                    mask: [updateTask, loadTask]
-                }),
-                editGroupDialog()
-            )
+            item: panel({
+                item: hframe(
+                    selectorPanel(),
+                    panel({
+                        item: model.selectedGroupRecord
+                            ? groupPanel()
+                            : count == 0 || model.hasGroupRowsSelected
+                              ? placeholderPanel()
+                              : count > 1
+                                ? viewMultiPanel()
+                                : viewPanel(),
+                        bbar: bbar()
+                    })
+                ),
+                mask: [updateTask, loadTask]
+            })
         });
     }
 });
@@ -89,7 +87,23 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
         return vframe({
             paddingTop: 5,
             items: [
-                grid({model}),
+                grid({
+                    model,
+                    agOptions: {
+                        // Groups render as open/closed folders rather than the default carets.
+                        // Icon size is controlled via --xh-grid-tree-icon-px in ViewManager.scss.
+                        icons: {
+                            groupExpanded: Icon.folderOpen({
+                                asHtml: true,
+                                className: 'ag-group-expanded'
+                            }),
+                            groupContracted: Icon.folder({
+                                asHtml: true,
+                                className: 'ag-group-contracted'
+                            })
+                        }
+                    }
+                }),
                 div({
                     item: helpText,
                     omit: !helpText,
@@ -102,7 +116,10 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
 
 const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
-        return placeholder(Icon.gears(), `Select a ${model.viewManagerModel.typeDisplayName}`);
+        return placeholder(
+            Icon.gears(),
+            `Select a ${model.viewManagerModel.typeDisplayName} or group`
+        );
     }
 });
 

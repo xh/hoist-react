@@ -5,23 +5,53 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {hbox, span} from '@xh/hoist/cmp/layout';
+import {div, fragment, hbox, p, span, strong} from '@xh/hoist/cmp/layout';
 import {
     getAllGroupPaths,
     getGroupLeaf,
     isGroupSameOrDescendant,
+    normalizeGroupPath,
     splitGroupPath,
+    VIEW_GROUP_DELIMITER,
+    ViewInfo,
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
-import {PlainObject, SelectOption} from '@xh/hoist/core';
+import {PlainObject, SelectOption, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, startCase} from 'lodash';
+import {capitalize, every, startCase} from 'lodash';
 import {ReactNode} from 'react';
+
+/**
+ * Sentinel option value representing an explicit move to the top level (no group), for group
+ * selects whose field inits to null/empty to mean "no change" - a null-valued top-level option
+ * would neither display nor register as dirty correctly there. Map back to a null group on save.
+ */
+export const TOP_LEVEL_VALUE = 'xh-top-level-group-value';
+
+/** User-facing label for the top-level / no-group option in group path selects. */
+const TOP_LEVEL_LABEL = '(Top Level)';
+
+/**
+ * Resolve a group select's committed value to a persistable group path (null for top level).
+ *
+ * Handles the top-level option's sentinel value and label: with `enableCreate`, the select seeds
+ * its filter input with the selected option's label, so a new path typed while the top-level
+ * option was selected arrives prefixed with its display label - e.g. `(Top Level)/New Group` -
+ * which must not leak into the persisted path.
+ */
+export function parseGroupSelectValue(value: string): string {
+    if (value == null || value === TOP_LEVEL_VALUE || value === TOP_LEVEL_LABEL) return null;
+    const prefix = TOP_LEVEL_LABEL + VIEW_GROUP_DELIMITER;
+    return normalizeGroupPath(value.startsWith(prefix) ? value.substring(prefix.length) : value);
+}
 
 /** SelectOption for a group path, with depth for indented hierarchical rendering. */
 export interface GroupPathOption extends SelectOption {
-    /** Full delimited group path, or null for the top-level (no group) option. */
+    /**
+     * Full delimited group path, or null (or {@link TOP_LEVEL_VALUE}) for the top-level
+     * (no group) option.
+     */
     value: string;
     /**
      * Full delimited group path, displayed as-is in the select's value container so the complete
@@ -59,7 +89,7 @@ export function getGroupPathOptions(
             depth: splitGroupPath(path).length - 1
         }));
 
-    return includeRoot ? [{value: null, label: '(Top Level)', depth: 0}, ...ret] : ret;
+    return includeRoot ? [{value: null, label: TOP_LEVEL_LABEL, depth: 0}, ...ret] : ret;
 }
 
 /** Display a group path as its segments separated by chevrons, or a muted 'None' when null. */
@@ -73,24 +103,88 @@ export function groupPathDisplay(path: string): ReactNode {
     return hbox({alignItems: 'center', items});
 }
 
-/** Menu renderer displaying a {@link GroupPathOption} as its leaf name, indented per depth. */
-export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
-    const {value, label, depth} = opt;
+/**
+ * Factory for a menu renderer displaying a {@link GroupPathOption} as its leaf name, indented
+ * per depth. Mirrors the default Select renderer's left gutter, with a check marking the option
+ * matching `selectedValue` - pass the select's currently committed value from the caller's
+ * render, as custom option renderers do not otherwise receive the selection.
+ */
+export function groupPathOptionRenderer(
+    selectedValue: string
+): (opt: GroupPathOption) => ReactNode {
+    return opt => {
+        const {value, label, depth} = opt,
+            isTopLevel = value == null || value === TOP_LEVEL_VALUE;
 
-    // Pass through the "Create..." option injected dynamically by react-select when the user
-    // types a new path (with `enableCreate`) - its label is the formatted create message.
-    if ((opt as PlainObject).__isNew__) return label;
+        // Pass through the "Create..." option injected dynamically by react-select when the user
+        // types a new path (with `enableCreate`) - its label is the formatted create message.
+        if ((opt as PlainObject).__isNew__) return div({item: label, style: {paddingLeft: 25}});
 
-    return hbox({
-        alignItems: 'center',
-        paddingLeft: (depth ?? 0) * 15,
-        items: [
-            Icon.folder({omit: value == null}),
-            span({
-                item: value == null ? label : getGroupLeaf(value),
-                style: {marginLeft: value == null ? 0 : 5}
-            })
-        ]
+        return hbox({
+            alignItems: 'center',
+            items: [
+                div({
+                    style: {minWidth: 25, textAlign: 'center'},
+                    item: value === selectedValue ? Icon.check({size: 'sm'}) : null
+                }),
+                hbox({
+                    alignItems: 'center',
+                    paddingLeft: (depth ?? 0) * 15,
+                    items: [
+                        Icon.folder({omit: isTopLevel}),
+                        span({
+                            item: isTopLevel ? label : getGroupLeaf(value),
+                            style: {marginLeft: isTopLevel ? 0 : 5}
+                        })
+                    ]
+                })
+            ]
+        });
+    };
+}
+
+/**
+ * Confirm a bulk visibility change across one or more views, with wording appropriate to the
+ * target visibility. Pass `hasOtherChanges` when the same save carries additional updates, to
+ * broaden the confirm button text accordingly.
+ */
+export async function confirmVisibilityChangeAsync(
+    vmm: ViewManagerModel,
+    views: ViewInfo[],
+    visibility: Visibility,
+    hasOtherChanges: boolean
+): Promise<boolean> {
+    const countStr = pluralize(vmm.typeDisplayName, views.length, true),
+        msgs: ReactNode[] = [strong('Are you sure you want to proceed?')];
+    switch (visibility) {
+        case 'private':
+            msgs.unshift(
+                `${countStr} will no longer be available to all other ${XH.appName} users.`
+            );
+            break;
+        case 'global':
+            msgs.unshift(
+                `${countStr} will become globally visible to all other ${XH.appName} users.`
+            );
+            break;
+        case 'shared':
+            every(views, 'isGlobal')
+                ? msgs.unshift(
+                      `${countStr} will no longer be globally visible to all other ${XH.appName} users.`
+                  )
+                : msgs.unshift(
+                      `${countStr} will become available to all other ${XH.appName} users.`
+                  );
+    }
+
+    return XH.confirm({
+        message: fragment(msgs.map(m => p(m))),
+        confirmProps: {
+            text: hasOtherChanges ? 'Yes, save changes' : 'Yes, update visibility',
+            outlined: true,
+            autoFocus: false,
+            intent: 'primary'
+        }
     });
 }
 

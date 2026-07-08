@@ -5,14 +5,7 @@
 ### 🎁 New Features
 
 * `ViewManager` groups now support unlimited nesting - forward slashes within a group name (e.g.
-  `Reports/Sales/Monthly`) are interpreted as sub-group delimiters. Views can be moved into a
-  different or new group via inline group selects in the Manage dialog's detail panels, and groups
-  themselves can be renamed or re-parented via a right-click "Edit Group" action on group rows,
-  with renames cascading to all views under the renamed path (requires hoist-core v41+).
-* The `ViewManager` Manage dialog now supports changing visibility (private/shared/global) and
-  moving views between groups for multiple selected views at once (requires hoist-core v41+).
-  Selecting group rows targets all views within those groups, and can be combined with individually
-  selected views.
+  `Reports/Sales/Monthly`) are interpreted as sub-group delimiters. (requires hoist-core v41+).
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.
@@ -34,6 +27,9 @@
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
+* Fixed `Select` with `enableCreate` to always display its "Create..." option while typing -
+  previously the option could be incorrectly filtered out of the menu if the label produced by
+  `createMessageFn` did not contain the typed query verbatim.
 * Hardened the grid column filter's Custom tab against filters it previously mishandled -
   multi-value clauses are now expanded into editable rows and recombined on commit, and filters it
   cannot represent are left untouched rather than corrupted.

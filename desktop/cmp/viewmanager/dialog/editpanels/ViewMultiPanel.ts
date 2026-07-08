@@ -6,32 +6,25 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {
-    br,
-    fragment,
-    hbox,
-    hspacer,
-    placeholder,
-    vbox,
-    vframe,
-    vspacer
-} from '@xh/hoist/cmp/layout';
+import {br, fragment, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
-import {every, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import {
     getGroupPathOptions,
     getVisibilityInfo,
     getVisibilityOptions,
-    groupPathOptionRenderer
-} from './Utils';
-import {MIXED_VALUE, ViewMultiPanelModel} from './ViewMultiPanelModel';
+    groupPathOptionRenderer,
+    parseGroupSelectValue,
+    TOP_LEVEL_VALUE
+} from '../Utils';
+import {formButtons} from './FormButtons';
+import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 
 /**
  * Form to bulk-edit group and visibility across multiple selected views within the ViewManager
@@ -61,7 +54,7 @@ export const viewMultiPanel = hoistCmp.factory({
                     items: [
                         placeholder(
                             Icon.boxFull(),
-                            `${views.length} selected ${pluralize(viewManagerModel.typeDisplayName)}`
+                            `Configuring ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
                         ),
                         fragment(
                             vspacer(),
@@ -69,19 +62,23 @@ export const viewMultiPanel = hoistCmp.factory({
                                 field: 'group',
                                 omit: !allEditable,
                                 item: select({
+                                    // Root option carries a sentinel value - the field inits to
+                                    // null/empty to indicate no pending group change.
                                     options: getGroupPathOptions(viewManagerModel, isGlobal, {
                                         includeRoot: true
-                                    }),
-                                    optionRenderer: groupPathOptionRenderer,
-                                    generateOptionFn: v =>
-                                        v === MIXED_VALUE ? {value: v, label: '(Mixed)'} : null,
+                                    }).map(it =>
+                                        it.value === null ? {...it, value: TOP_LEVEL_VALUE} : it
+                                    ),
+                                    optionRenderer: groupPathOptionRenderer(formModel.values.group),
                                     enableCreate: true,
-                                    createMessageFn: v => `Create path "${v}"`,
+                                    createMessageFn: v =>
+                                        `Create group "${parseGroupSelectValue(v) ?? v}"`,
                                     enableFilter: true,
+                                    enableClear: true,
                                     placeholder: 'Select or enter a group...'
                                 }),
                                 info: fragment(
-                                    `Move selected ${pluralize(viewManagerModel.typeDisplayName)} into the chosen group.`,
+                                    `Move ${views.length} ${pluralize(viewManagerModel.typeDisplayName)} to another group, discarding prior grouping.`,
                                     br(),
                                     `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
                                 )
@@ -97,66 +94,11 @@ export const viewMultiPanel = hoistCmp.factory({
                                 info: visInfo
                             }),
                             vspacer(),
-                            formButtons()
+                            formButtons({model})
                         )
                     ]
                 })
             })
-        });
-    }
-});
-
-const formButtons = hoistCmp.factory<ViewMultiPanelModel>({
-    render({model}) {
-        const {formModel, parent, views, allEditable} = model,
-            allPinned = every(views, 'isPinned');
-
-        if (formModel.isDirty) {
-            return hbox({
-                justifyContent: 'center',
-                items: [
-                    button({
-                        text: 'Save Changes',
-                        icon: Icon.check(),
-                        intent: 'success',
-                        minimal: false,
-                        disabled: !formModel.isValid,
-                        onClick: () => model.saveAsync()
-                    }),
-                    hspacer(),
-                    button({
-                        icon: Icon.reset(),
-                        tooltip: 'Revert changes',
-                        minimal: false,
-                        onClick: () => model.reset()
-                    })
-                ]
-            });
-        }
-
-        return vbox({
-            style: {gap: 10, alignItems: 'center'},
-            items: [
-                button({
-                    text: allPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
-                    icon: Icon.pin({
-                        prefix: allPinned ? 'fas' : 'far',
-                        className: allPinned ? 'xh-yellow' : ''
-                    }),
-                    width: 200,
-                    outlined: true,
-                    onClick: () => parent.togglePinned(views)
-                }),
-                button({
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    width: 200,
-                    outlined: true,
-                    intent: 'danger',
-                    omit: !allEditable,
-                    onClick: () => parent.deleteAsync(views)
-                })
-            ]
         });
     }
 });
