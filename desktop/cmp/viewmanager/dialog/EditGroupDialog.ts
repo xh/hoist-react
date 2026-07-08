@@ -46,7 +46,7 @@ export const editGroupDialog = hoistCmp.factory<EditGroupDialogModel>({
 
 const formPanel = hoistCmp.factory<EditGroupDialogModel>({
     render({model}) {
-        const {parent, group, isGlobal} = model,
+        const {parent, group, isGlobal, formModel} = model,
             {viewManagerModel} = parent;
 
         return panel({
@@ -75,7 +75,7 @@ const formPanel = hoistCmp.factory<EditGroupDialogModel>({
                                     includeRoot: true,
                                     excludeSubtreeOf: group
                                 }),
-                                optionRenderer: groupPathOptionRenderer,
+                                optionRenderer: groupPathOptionRenderer(formModel.values.nestUnder),
                                 enableFilter: true
                             })
                         }),

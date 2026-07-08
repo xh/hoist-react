@@ -76,7 +76,7 @@ export const viewPanel = hoistCmp.factory({
                                 options: getGroupPathOptions(viewManagerModel, isGlobal, {
                                     includeRoot: true
                                 }),
-                                optionRenderer: groupPathOptionRenderer,
+                                optionRenderer: groupPathOptionRenderer(formModel.values.group),
                                 enableCreate: true,
                                 createMessageFn: v =>
                                     `Create group "${parseGroupSelectValue(v) ?? v}"`,

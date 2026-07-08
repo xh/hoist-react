@@ -78,7 +78,7 @@ export const viewMultiPanel = hoistCmp.factory({
                                     }).map(it =>
                                         it.value === null ? {...it, value: TOP_LEVEL_VALUE} : it
                                     ),
-                                    optionRenderer: groupPathOptionRenderer,
+                                    optionRenderer: groupPathOptionRenderer(formModel.values.group),
                                     enableCreate: true,
                                     createMessageFn: v =>
                                         `Create group "${parseGroupSelectValue(v) ?? v}"`,

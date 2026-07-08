@@ -82,7 +82,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 enableClear: true,
                                 placeholder: 'Select optional group....',
                                 options: groupOptions,
-                                optionRenderer: groupPathOptionRenderer
+                                optionRenderer: groupPathOptionRenderer(formModel.values.group)
                             })
                         }),
                         formField({

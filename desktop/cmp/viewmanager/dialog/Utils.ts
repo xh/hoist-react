@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {hbox, span} from '@xh/hoist/cmp/layout';
+import {div, hbox, span} from '@xh/hoist/cmp/layout';
 import {
     getAllGroupPaths,
     getGroupLeaf,
@@ -102,26 +102,44 @@ export function groupPathDisplay(path: string): ReactNode {
     return hbox({alignItems: 'center', items});
 }
 
-/** Menu renderer displaying a {@link GroupPathOption} as its leaf name, indented per depth. */
-export function groupPathOptionRenderer(opt: GroupPathOption): ReactNode {
-    const {value, label, depth} = opt,
-        isTopLevel = value == null || value === TOP_LEVEL_VALUE;
+/**
+ * Factory for a menu renderer displaying a {@link GroupPathOption} as its leaf name, indented
+ * per depth. Mirrors the default Select renderer's left gutter, with a check marking the option
+ * matching `selectedValue` - pass the select's currently committed value from the caller's
+ * render, as custom option renderers do not otherwise receive the selection.
+ */
+export function groupPathOptionRenderer(
+    selectedValue: string
+): (opt: GroupPathOption) => ReactNode {
+    return opt => {
+        const {value, label, depth} = opt,
+            isTopLevel = value == null || value === TOP_LEVEL_VALUE;
 
-    // Pass through the "Create..." option injected dynamically by react-select when the user
-    // types a new path (with `enableCreate`) - its label is the formatted create message.
-    if ((opt as PlainObject).__isNew__) return label;
+        // Pass through the "Create..." option injected dynamically by react-select when the user
+        // types a new path (with `enableCreate`) - its label is the formatted create message.
+        if ((opt as PlainObject).__isNew__) return div({item: label, style: {paddingLeft: 25}});
 
-    return hbox({
-        alignItems: 'center',
-        paddingLeft: (depth ?? 0) * 15,
-        items: [
-            Icon.folder({omit: isTopLevel}),
-            span({
-                item: isTopLevel ? label : getGroupLeaf(value),
-                style: {marginLeft: isTopLevel ? 0 : 5}
-            })
-        ]
-    });
+        return hbox({
+            alignItems: 'center',
+            items: [
+                div({
+                    style: {minWidth: 25, textAlign: 'center'},
+                    item: value === selectedValue ? Icon.check({size: 'sm'}) : null
+                }),
+                hbox({
+                    alignItems: 'center',
+                    paddingLeft: (depth ?? 0) * 15,
+                    items: [
+                        Icon.folder({omit: isTopLevel}),
+                        span({
+                            item: isTopLevel ? label : getGroupLeaf(value),
+                            style: {marginLeft: isTopLevel ? 0 : 5}
+                        })
+                    ]
+                })
+            ]
+        });
+    };
 }
 
 /**
