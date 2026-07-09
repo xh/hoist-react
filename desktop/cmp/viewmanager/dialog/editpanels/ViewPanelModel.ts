@@ -8,11 +8,12 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from '../ManageDialogModel';
 import {parseGroupSelectValue} from '../Utils';
-import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {composeGroupPath, VIEW_GROUP_DELIMITER, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 
 /**
  * Backing model for EditForm
@@ -21,6 +22,9 @@ export class ViewPanelModel extends HoistModel {
     parent: ManageDialogModel;
 
     @managed formModel: FormModel;
+
+    /** True to show the text input naming a new group to create under the selected group. */
+    @bindable isAddingNewGroup: boolean = false;
 
     get view(): ViewInfo {
         return this.parent.selectedView;
@@ -42,6 +46,7 @@ export class ViewPanelModel extends HoistModel {
 
     constructor(parent: ManageDialogModel) {
         super();
+        makeObservable(this);
 
         this.parent = parent;
         this.formModel = this.createFormModel();
@@ -49,12 +54,14 @@ export class ViewPanelModel extends HoistModel {
         this.addReaction({
             track: () => this.view,
             run: view => {
+                this.isAddingNewGroup = false;
                 if (view) {
                     const {formModel} = this;
                     formModel.init({
                         ...view,
                         visibility: view.isShared ? 'shared' : view.isGlobal ? 'global' : 'private',
-                        owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName)
+                        owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName),
+                        newGroup: null
                     });
                     formModel.readonly = !view.isEditable;
                 }
@@ -65,6 +72,7 @@ export class ViewPanelModel extends HoistModel {
 
     reset() {
         this.formModel.reset();
+        this.isAddingNewGroup = false;
     }
 
     async saveAsync() {
@@ -76,9 +84,12 @@ export class ViewPanelModel extends HoistModel {
 
         if (!isValid || !isDirty) return;
 
-        if (updates.hasOwnProperty('group')) {
-            updates.group = parseGroupSelectValue(updates.group);
+        const newGroup = formModel.values.newGroup?.trim();
+        if (updates.hasOwnProperty('group') || newGroup) {
+            const base = parseGroupSelectValue(formModel.values.group);
+            updates.group = newGroup ? composeGroupPath(base, newGroup) : base;
         }
+        delete updates.newGroup;
 
         if (visibilityField.isDirty) {
             const visibility = visibilityField.value;
@@ -142,6 +153,16 @@ export class ViewPanelModel extends HoistModel {
                 },
                 {name: 'owner'},
                 {name: 'group'},
+                {
+                    name: 'newGroup',
+                    displayName: 'New Group',
+                    rules: [
+                        ({value}) =>
+                            value?.includes(VIEW_GROUP_DELIMITER)
+                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
+                                : null
+                    ]
+                },
                 {name: 'description'},
                 {name: 'visibility'}
             ]

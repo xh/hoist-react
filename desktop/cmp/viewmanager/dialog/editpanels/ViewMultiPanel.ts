@@ -6,8 +6,7 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {br, fragment, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
-import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
+import {fragment, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select} from '@xh/hoist/desktop/cmp/input';
@@ -19,11 +18,10 @@ import {
     getGroupPathOptions,
     getVisibilityInfo,
     getVisibilityOptions,
-    groupPathOptionRenderer,
-    parseGroupSelectValue,
     TOP_LEVEL_VALUE
 } from '../Utils';
 import {formButtons} from './FormButtons';
+import {groupField} from './GroupField';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 
 /**
@@ -58,29 +56,18 @@ export const viewMultiPanel = hoistCmp.factory({
                         ),
                         fragment(
                             vspacer(),
-                            formField({
-                                field: 'group',
+                            groupField({
+                                model,
                                 omit: !allEditable,
-                                item: select({
-                                    // Root option carries a sentinel value - the field inits to
-                                    // null/empty to indicate no pending group change.
-                                    options: getGroupPathOptions(viewManagerModel, isGlobal, {
-                                        includeRoot: true
-                                    }).map(it =>
-                                        it.value === null ? {...it, value: TOP_LEVEL_VALUE} : it
-                                    ),
-                                    optionRenderer: groupPathOptionRenderer(formModel.values.group),
-                                    enableCreate: true,
-                                    createMessageFn: v =>
-                                        `Create group "${parseGroupSelectValue(v) ?? v}"`,
-                                    enableFilter: true,
-                                    enableClear: true,
-                                    placeholder: 'Select or enter a group...'
-                                }),
+                                // Root option carries a sentinel value - the field inits to
+                                // null/empty to indicate no pending group change.
+                                options: getGroupPathOptions(viewManagerModel, isGlobal, {
+                                    includeRoot: true
+                                }).map(it =>
+                                    it.value === null ? {...it, value: TOP_LEVEL_VALUE} : it
+                                ),
                                 info: fragment(
-                                    `Move ${views.length} ${pluralize(viewManagerModel.typeDisplayName)} to another group, discarding prior grouping.`,
-                                    br(),
-                                    `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
+                                    `Move ${views.length} ${pluralize(viewManagerModel.typeDisplayName)} to another group, discarding prior grouping.`
                                 )
                             }),
                             formField({

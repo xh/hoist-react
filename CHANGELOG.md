@@ -11,6 +11,8 @@
 * The `ViewManager` Manage dialog now supports bulk editing: select multiple views to change their
   visibility or move them into another group at once, or select a group row to rename the group
   (applying to all views within it), pin/unpin its views to your menu, or delete them as a unit.
+  New groups are created via a dedicated "New" button alongside the group selects, replacing
+  free-typed path creation.
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.

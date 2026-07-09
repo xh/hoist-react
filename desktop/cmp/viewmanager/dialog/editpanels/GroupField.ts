@@ -1,0 +1,102 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+import {FormModel} from '@xh/hoist/cmp/form';
+import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {select, textInput} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
+import {ReactNode} from 'react';
+import {GroupPathOption, groupPathDisplay, groupPathOptionRenderer} from '../Utils';
+
+/** Common surface of the edit panel models backing the shared {@link groupField}. */
+export interface GroupFieldPanelModel extends HoistModel {
+    /** Must contain 'group' and 'newGroup' fields. */
+    formModel: FormModel;
+    /** Bindable on the panel models. */
+    isAddingNewGroup: boolean;
+}
+
+interface GroupFieldProps extends HoistProps<GroupFieldPanelModel> {
+    options: GroupPathOption[];
+    placeholder?: string;
+    info?: ReactNode;
+}
+
+/**
+ * Group select for the view edit panels, with a "New Group" button that swaps to a text input
+ * naming a single new group to be created under the selected group on save. Replaces free-typed
+ * path creation within the select itself.
+ */
+export const groupField = hoistCmp.factory<GroupFieldProps>({
+    render({model, options, placeholder = 'Select a group...', info}) {
+        const {formModel, isAddingNewGroup} = model,
+            {readonly} = formModel;
+
+        return vbox({
+            className: 'xh-view-manager__group-field',
+            items: [
+                hbox({
+                    alignItems: 'flex-start',
+                    items: [
+                        formField({
+                            field: 'group',
+                            flex: 1,
+                            item: select({
+                                options,
+                                optionRenderer: groupPathOptionRenderer(formModel.values.group),
+                                enableFilter: true,
+                                enableClear: true,
+                                placeholder
+                            }),
+                            readonlyRenderer: v => groupPathDisplay(v)
+                        }),
+                        ...(isAddingNewGroup && !readonly
+                            ? [
+                                  formField({
+                                      field: 'newGroup',
+                                      width: 180,
+                                      item: textInput({
+                                          autoFocus: true,
+                                          placeholder: 'New group name...'
+                                      })
+                                  }),
+                                  button({
+                                      icon: Icon.x(),
+                                      tooltip: 'Cancel new group',
+                                      marginTop: 23,
+                                      minimal: false,
+                                      onClick: () => {
+                                          formModel.fields.newGroup.setValue(null);
+                                          model.isAddingNewGroup = false;
+                                      }
+                                  })
+                              ]
+                            : [
+                                  button({
+                                      text: 'New Group',
+                                      icon: Icon.add(),
+                                      omit: readonly,
+                                      marginTop: 23,
+                                      minimal: false,
+                                      onClick: () => (model.isAddingNewGroup = true)
+                                  })
+                              ])
+                    ]
+                }),
+                // Info spans the full width of the combined fields above.
+                div({
+                    omit: !info,
+                    className: 'xh-view-manager__group-field__info',
+                    item: info
+                })
+            ]
+        });
+    }
+});

@@ -51,4 +51,22 @@
       }
     }
   }
+
+  //------------------------
+  // Edit panel group field
+  //------------------------
+  &__group-field {
+    margin-bottom: var(--xh-pad-px);
+
+    .xh-form-field {
+      margin-bottom: 0;
+    }
+    // Mirror the standard FormField info-msg styling for the full-width info line.
+    &__info {
+      padding-left: var(--xh-form-field-padding);
+      font-size: var(--xh-form-field-msg-font-size);
+      line-height: var(--xh-form-field-msg-line-height);
+      text-transform: var(--xh-form-field-msg-text-transform);
+    }
+  }
 }

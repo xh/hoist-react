@@ -67,7 +67,7 @@ export const manageDialog = hoistCmp.factory({
 const selectorPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return panel({
-            modelConfig: {defaultSize: 650, side: 'left', collapsible: false},
+            modelConfig: {defaultSize: 600, side: 'left', collapsible: false},
             item: tabContainer(),
             bbar: [
                 storeFilterField({

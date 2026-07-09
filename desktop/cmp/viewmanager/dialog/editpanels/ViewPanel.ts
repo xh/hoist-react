@@ -6,8 +6,7 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {br, div, filler, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
-import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
+import {div, filler, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -16,13 +15,11 @@ import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/editpanel
 import {
     getGroupPathOptions,
     getVisibilityInfo,
-    getVisibilityOptions,
-    groupPathDisplay,
-    groupPathOptionRenderer,
-    parseGroupSelectValue
+    getVisibilityOptions
 } from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {formButtons} from './FormButtons';
+import {groupField} from './GroupField';
 
 /**
  * Form to edit or view details on a single saved view within the ViewManager manage dialog.
@@ -58,27 +55,13 @@ export const viewPanel = hoistCmp.factory({
                             field: 'owner',
                             omit: isEditable
                         }),
-                        formField({
-                            field: 'group',
-                            item: select({
-                                options: getGroupPathOptions(viewManagerModel, isGlobal, {
-                                    includeRoot: true
-                                }),
-                                optionRenderer: groupPathOptionRenderer(formModel.values.group),
-                                enableCreate: true,
-                                createMessageFn: v =>
-                                    `Create group "${parseGroupSelectValue(v) ?? v}"`,
-                                enableFilter: true,
-                                enableClear: true,
-                                placeholder: 'Select or enter a group...'
+                        groupField({
+                            model,
+                            options: getGroupPathOptions(viewManagerModel, isGlobal, {
+                                includeRoot: true
                             }),
-                            readonlyRenderer: v => groupPathDisplay(v),
                             info: isEditable
-                                ? fragment(
-                                      `Move this ${viewManagerModel.typeDisplayName} into the chosen group.`,
-                                      br(),
-                                      `Type to create a new group - use "${VIEW_GROUP_DELIMITER}" to nest.`
-                                  )
+                                ? `Move this ${viewManagerModel.typeDisplayName} into the chosen group.`
                                 : null
                         }),
                         formField({

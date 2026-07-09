@@ -6,8 +6,14 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
-import {ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
+import {
+    composeGroupPath,
+    VIEW_GROUP_DELIMITER,
+    ViewInfo,
+    ViewUpdateSpec
+} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed} from '@xh/hoist/core';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {every, isEmpty, uniq} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
 import {confirmVisibilityChangeAsync, parseGroupSelectValue, Visibility} from '../Utils';
@@ -20,6 +26,9 @@ export class ViewMultiPanelModel extends HoistModel {
 
     @managed formModel: FormModel;
 
+    /** True to show the text input naming a new group to create under the selected group. */
+    @bindable isAddingNewGroup: boolean = false;
+
     get views(): ViewInfo[] {
         return this.parent.selectedViews;
     }
@@ -30,9 +39,25 @@ export class ViewMultiPanelModel extends HoistModel {
 
     constructor(parent: ManageDialogModel) {
         super();
+        makeObservable(this);
 
         this.parent = parent;
-        this.formModel = new FormModel({fields: [{name: 'group'}, {name: 'visibility'}]});
+        this.formModel = new FormModel({
+            fields: [
+                {name: 'group'},
+                {
+                    name: 'newGroup',
+                    displayName: 'New Group',
+                    rules: [
+                        ({value}) =>
+                            value?.includes(VIEW_GROUP_DELIMITER)
+                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
+                                : null
+                    ]
+                },
+                {name: 'visibility'}
+            ]
+        });
 
         this.addReaction({
             track: () => this.views,
@@ -41,9 +66,11 @@ export class ViewMultiPanelModel extends HoistModel {
                     vals = uniq(
                         views.map(v => (v.isShared ? 'shared' : v.isGlobal ? 'global' : 'private'))
                     );
+                this.isAddingNewGroup = false;
                 // Group inits empty - a non-null value always indicates a pending move.
                 formModel.init({
                     group: null,
+                    newGroup: null,
                     visibility: vals.length === 1 ? vals[0] : null
                 });
                 formModel.readonly = !this.allEditable;
@@ -54,6 +81,7 @@ export class ViewMultiPanelModel extends HoistModel {
 
     reset() {
         this.formModel.reset();
+        this.isAddingNewGroup = false;
     }
 
     async saveAsync() {
@@ -63,8 +91,10 @@ export class ViewMultiPanelModel extends HoistModel {
 
         if (!formModel.isDirty || isEmpty(views)) return;
 
-        if (groupField.isDirty) {
-            updates.group = parseGroupSelectValue(groupField.value);
+        const newGroup = formModel.values.newGroup?.trim();
+        if (groupField.isDirty || newGroup) {
+            const base = parseGroupSelectValue(groupField.value);
+            updates.group = newGroup ? composeGroupPath(base, newGroup) : base;
         }
 
         if (visibilityField.isDirty) {
