@@ -11,6 +11,8 @@ import {br, fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
     buildViewGroupTree,
+    composeGroupPath,
+    getGroupLeaf,
     isGroupSameOrDescendant,
     ViewGroupNode,
     ViewInfo,
@@ -22,13 +24,25 @@ import {FilterTestFn, StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
+import {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, compact, every, groupBy, keys, some, startCase, uniqBy} from 'lodash';
+import {capitalize, compact, every, groupBy, isEqual, keys, some, startCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
 import {GroupPanelModel} from './editpanels/GroupPanelModel';
 import {ViewMultiPanelModel} from './editpanels/ViewMultiPanelModel';
 import {ViewPanelModel} from './editpanels/ViewPanelModel';
+
+/** Sentinel id marking the top level (outside all groups) as a pending drop target. */
+const TOP_LEVEL_DROP_ID = 'xh-top-level-drop';
+
+type GridType = 'owned' | 'global' | 'shared';
+
+/** Resolved drop target - a group row id + path, or the top-level sentinel (null path). */
+interface DropTarget {
+    id: string;
+    path: string;
+}
 
 /**
  * Backing model for ManageDialog
@@ -50,6 +64,9 @@ export class ManageDialogModel extends HoistModel {
 
     @bindable.ref filter: FilterTestFn;
 
+    /** Pending row-drag drop target within one of the grids, for highlighting. */
+    @observable.ref private dropTarget: {type: GridType; id: string} = null;
+
     readonly updateTask = TaskObserver.trackLast();
 
     get loadTask(): TaskObserver {
@@ -68,14 +85,7 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get gridModel(): GridModel {
-        switch (this.gridType) {
-            case 'global':
-                return this.globalGridModel;
-            case 'shared':
-                return this.sharedGridModel;
-            default:
-                return this.ownedGridModel;
-        }
+        return this.gridModelFor(this.gridType);
     }
 
     @computed
@@ -189,6 +199,41 @@ export class ManageDialogModel extends HoistModel {
         this.refreshAsync();
     }
 
+    /**
+     * Row-drag GridOptions for one of this dialog's grids, applied via the grid's agOptions.
+     * Drops move the dragged views/group immediately - no confirm or save. Empty on grids that
+     * do not support drag-and-drop. Requires ag-Grid's `RowDragModule` to be registered.
+     */
+    getRowDragAgOptions(gridModel: GridModel): GridOptions {
+        const type = this.gridTypeFor(gridModel);
+        if (!this.dragDropEnabled(type)) return {};
+
+        const {typeDisplayName} = this.viewManagerModel;
+        return {
+            rowDragMultiRow: true,
+            rowDragText: (params, dragItemCount) => {
+                const rec = params.rowNode?.data as StoreRecord;
+                return rec?.data.isGroupRow
+                    ? `Group "${rec.data.name}"`
+                    : pluralize(typeDisplayName, dragItemCount, true);
+            },
+            onRowDragMove: e => this.onRowDragMove(type, e),
+            onRowDragLeave: () => this.setDropTarget(type, null),
+            onRowDragCancel: () => this.setDropTarget(type, null),
+            onRowDragEnd: e => this.onRowDragEnd(type, e)
+        };
+    }
+
+    /** True when a drag within `gridModel` is pending a drop onto the top level. */
+    isTopLevelDropTarget(gridModel: GridModel): boolean {
+        const {dropTarget} = this;
+        return (
+            !!dropTarget &&
+            dropTarget.id === TOP_LEVEL_DROP_ID &&
+            dropTarget.type === this.gridTypeFor(gridModel)
+        );
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -251,25 +296,189 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async doRenameGroupAsync(from: string, to: string, isGlobal: boolean) {
+        await this.applyGroupRenameAsync(from, to, isGlobal);
+        await this.viewManagerModel.refreshAsync();
+        await this.refreshAsync();
+        await this.reselectGroupAsync(to, isGlobal);
+    }
+
+    /**
+     * Rename/re-parent a group by rewriting the group of an anchor view beneath it, with a
+     * server-side `groupRename` cascade covering all other views under the group. The cascade
+     * excludes the anchor view itself, so its own rewritten group is set in the same update.
+     */
+    private async applyGroupRenameAsync(from: string, to: string, isGlobal: boolean) {
         const {viewManagerModel} = this,
             views = isGlobal ? viewManagerModel.globalViews : viewManagerModel.ownedViews,
             anchor = views.find(v => isGroupSameOrDescendant(v.group, from));
         if (!anchor) return;
 
-        // Server-side rename cascade excludes the target view itself, so set its own rewritten
-        // group in the same update.
         await viewManagerModel.updateViewInfoAsync(anchor, {
             group: to + anchor.group.substring(from.length),
             groupRename: {from, to}
         });
-        await viewManagerModel.refreshAsync();
-        await this.refreshAsync();
+    }
 
-        // Group row ids incorporate the group's path, so the renamed group returns from the
-        // refresh as a new record - collapsed and unselected. Re-expand and reselect it.
+    /**
+     * Group row ids incorporate the group's path, so a renamed/moved group returns from refresh
+     * as a new record - collapsed and unselected. Re-expand and reselect it.
+     */
+    private async reselectGroupAsync(path: string, isGlobal: boolean) {
         const gridModel = isGlobal ? this.globalGridModel : this.ownedGridModel;
         gridModel.expandAll();
-        await gridModel.selectAsync(`group:${to}`);
+        await gridModel.selectAsync(`group:${path}`);
+    }
+
+    //------------------------
+    // Drag and drop
+    //------------------------
+    private gridTypeFor(gridModel: GridModel): GridType {
+        return gridModel === this.globalGridModel
+            ? 'global'
+            : gridModel === this.sharedGridModel
+              ? 'shared'
+              : 'owned';
+    }
+
+    private gridModelFor(type: GridType): GridModel {
+        switch (type) {
+            case 'global':
+                return this.globalGridModel;
+            case 'shared':
+                return this.sharedGridModel;
+            default:
+                return this.ownedGridModel;
+        }
+    }
+
+    private dragDropEnabled(type: GridType): boolean {
+        return type === 'owned' || (type === 'global' && this.viewManagerModel.manageGlobal);
+    }
+
+    private onRowDragMove(type: GridType, e: any) {
+        const payload = this.getDragPayload(e),
+            target = this.resolveDropTarget(e);
+        this.setDropTarget(type, this.isValidDrop(payload, target) ? target : null);
+    }
+
+    private onRowDragEnd(type: GridType, e: any) {
+        const payload = this.getDragPayload(e),
+            target = this.resolveDropTarget(e),
+            valid = this.isValidDrop(payload, target);
+
+        this.setDropTarget(type, null);
+        if (!valid) return;
+
+        const {group, views} = payload;
+        group != null
+            ? this.dropMoveGroupAsync(group, target.path, type === 'global').linkTo(this.updateTask)
+            : this.dropMoveViewsAsync(views, target.path).linkTo(this.updateTask);
+    }
+
+    /**
+     * Dragged payload - a single group path when the drag originates on a group row (any other
+     * selected rows are ignored - groups move one at a time), else the deduped views across all
+     * dragged leaf rows.
+     */
+    private getDragPayload(e: any): {group?: string; views?: ViewInfo[]} {
+        const origin = e.node?.data as StoreRecord;
+        if (origin?.data.isGroupRow) return {group: origin.data.group};
+
+        const nodes: any[] = e.nodes ?? [e.node],
+            views = nodes
+                .map(n => n?.data as StoreRecord)
+                .filter(rec => rec && !rec.data.isGroupRow)
+                .map(rec => rec.data.view as ViewInfo);
+        return {views: uniqBy(compact(views), 'token')};
+    }
+
+    /**
+     * Group targeted by the hover - a hovered group row targets itself, a hovered leaf row its
+     * parent group, and empty space (or a top-level leaf) the top level, outside all groups.
+     */
+    private resolveDropTarget(e: any): DropTarget {
+        const over = e.overNode?.data as StoreRecord;
+        if (!over) return {id: TOP_LEVEL_DROP_ID, path: null};
+        if (over.data.isGroupRow) return {id: over.id as string, path: over.data.group};
+
+        const parent = e.overNode.parent?.data as StoreRecord;
+        return parent
+            ? {id: parent.id as string, path: parent.data.group}
+            : {id: TOP_LEVEL_DROP_ID, path: null};
+    }
+
+    private isValidDrop(payload: {group?: string; views?: ViewInfo[]}, target: DropTarget) {
+        if (!target) return false;
+        const {group, views} = payload,
+            targetPath = target.path;
+
+        if (group != null) {
+            // No dropping a group into itself or its own subtree, and no no-op moves.
+            if (isGroupSameOrDescendant(targetPath, group)) return false;
+            return composeGroupPath(targetPath, getGroupLeaf(group)) !== group;
+        }
+
+        // At least one view must actually move.
+        return views.some(v => (v.group ?? null) !== (targetPath ?? null));
+    }
+
+    @action
+    private setDropTarget(type: GridType, target: DropTarget) {
+        const prev = this.dropTarget,
+            next = target ? {type, id: target.id} : null;
+        if (isEqual(prev, next)) return;
+        this.dropTarget = next;
+
+        // Redraw only the affected rows, so the drop-target rowClassRule re-evaluates.
+        const gridModel = this.gridModelFor(type),
+            agApi = gridModel?.agApi;
+        if (!agApi) return;
+        const rowNodes = compact(
+            [prev, next].map(t => {
+                if (!t || t.type !== type || t.id === TOP_LEVEL_DROP_ID) return null;
+                const rec = gridModel.store.getById(t.id);
+                return rec ? agApi.getRowNode(rec.agId) : null;
+            })
+        );
+        if (rowNodes.length) agApi.redrawRows({rowNodes});
+    }
+
+    /** Drop-driven flat move of views into a group (or the top level). */
+    private async dropMoveViewsAsync(views: ViewInfo[], targetPath: string) {
+        const {viewManagerModel} = this,
+            countStr = pluralize(viewManagerModel.typeDisplayName, views.length, true),
+            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'the top level';
+        try {
+            await viewManagerModel.updateViewsInfoAsync(views, {group: targetPath});
+            XH.successToast(`Moved ${countStr} to ${destStr}.`);
+        } catch (e) {
+            XH.handleException(e, {showAlert: false});
+            XH.dangerToast(`Unable to move ${countStr} to ${destStr}.`);
+        } finally {
+            // Refresh even on failure - bulk updates apply per-view and can partially succeed.
+            await viewManagerModel.refreshAsync();
+            await this.refreshAsync();
+        }
+    }
+
+    /** Drop-driven re-parenting of a group and its full subtree. */
+    private async dropMoveGroupAsync(from: string, targetPath: string, isGlobal: boolean) {
+        const leaf = getGroupLeaf(from),
+            to = composeGroupPath(targetPath, leaf),
+            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'the top level';
+        let moved = false;
+        try {
+            await this.applyGroupRenameAsync(from, to, isGlobal);
+            moved = true;
+            XH.successToast(`Moved group "${leaf}" to ${destStr}.`);
+        } catch (e) {
+            XH.handleException(e, {showAlert: false});
+            XH.dangerToast(`Unable to move group "${leaf}" to ${destStr}.`);
+        } finally {
+            await this.viewManagerModel.refreshAsync();
+            await this.refreshAsync();
+        }
+        if (moved) await this.reselectGroupAsync(to, isGlobal);
     }
 
     private async doDeleteAsync(views: ViewInfo[], groupName?: string) {
@@ -405,7 +614,10 @@ export class ManageDialogModel extends HoistModel {
             sizingMode: 'standard',
             hideHeaders: true,
             rowClassRules: {
-                'xh-grid-clear-background-color': ({data}) => data && !data.data.isGroupRow
+                'xh-grid-clear-background-color': ({data}) => data && !data.data.isGroupRow,
+                // Highlight the row of the pending drop-target group.
+                'xh-view-manager__drop-target': ({data}) =>
+                    data && this.dropTarget?.type === type && this.dropTarget.id === data.id
             },
             store: {
                 idSpec: 'id',
@@ -421,6 +633,15 @@ export class ManageDialogModel extends HoistModel {
             },
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             columns: [
+                {
+                    colId: 'dragHandle',
+                    headerName: null,
+                    width: 28,
+                    resizable: false,
+                    align: 'center',
+                    omit: !this.dragDropEnabled(type),
+                    agOptions: {rowDrag: true}
+                },
                 {field: 'name', flex: true, isTreeColumn: true},
                 {field: 'isGroupRow', hidden: true},
                 {field: 'group', hidden: true},

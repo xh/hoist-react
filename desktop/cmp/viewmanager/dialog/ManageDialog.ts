@@ -9,7 +9,7 @@ import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {div, filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
 import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -84,8 +84,14 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
 
 export const viewsGrid = hoistCmp.factory<GridModel>({
     render({model, helpText}) {
+        const dialogModel = useContextModel(ManageDialogModel);
         return vframe({
             paddingTop: 5,
+            // Green indicator when a drag is pending a drop onto the top level - outside all
+            // groups, there is no target row to highlight, so decorate the grid body itself.
+            className: dialogModel?.isTopLevelDropTarget(model)
+                ? 'xh-view-manager__manage-dialog__grid--drop-target'
+                : null,
             items: [
                 grid({
                     model,
@@ -101,7 +107,9 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                                 asHtml: true,
                                 className: 'ag-group-contracted'
                             })
-                        }
+                        },
+                        // Drag-and-drop of views/groups, where supported by the grid + user.
+                        ...dialogModel?.getRowDragAgOptions(model)
                     }
                 }),
                 div({

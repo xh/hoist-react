@@ -9,6 +9,23 @@
     // by AgGrid.scss to this variable - FontAwesome size props have no effect there.
     --xh-grid-tree-icon-px: 14px;
     --xh-grid-tree-indent: 1.5em;
+
+    // Diff-style "addition" green for the drag-and-drop target highlights below.
+    --drop-target-green: 46, 160, 67;
+
+    // Row of the group targeted by an in-flight row drag - drop here to move the dragged items
+    // into the group. Important required to beat the grid's own row background rules
+    // (clear-background, tree highlights).
+    .ag-row.xh-view-manager__drop-target {
+      background-color: rgba(var(--drop-target-green), 0.3) !important;
+    }
+
+    // Top-level drop pending (dragged over empty space/a top-level view) - no target rows to
+    // highlight, so indicate on the grid body itself. Important required to beat the theme's
+    // own ag-root-wrapper border reset.
+    &__grid--drop-target .ag-root-wrapper {
+      border: 2px solid rgb(var(--drop-target-green)) !important;
+    }
   }
 
   &__manage-dialog,
