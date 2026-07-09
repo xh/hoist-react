@@ -201,8 +201,9 @@ export class ManageDialogModel extends HoistModel {
 
     /**
      * Row-drag GridOptions for one of this dialog's grids, applied via the grid's agOptions.
-     * Drops move the dragged views/group immediately - no confirm or save. Empty on grids that
-     * do not support drag-and-drop. Requires ag-Grid's `RowDragModule` to be registered.
+     * Drops move the dragged views/group immediately - no save step, with a confirm only when
+     * the move affects any global view. Empty on grids that do not support drag-and-drop.
+     * Requires ag-Grid's `RowDragModule` to be registered.
      */
     getRowDragAgOptions(gridModel: GridModel): GridOptions {
         const type = this.gridTypeFor(gridModel);
@@ -213,8 +214,9 @@ export class ManageDialogModel extends HoistModel {
             rowDragMultiRow: true,
             rowDragText: (params, dragItemCount) => {
                 const rec = params.rowNode?.data as StoreRecord;
-                return rec?.data.isGroupRow
-                    ? `Group "${rec.data.name}"`
+                if (rec?.data.isGroupRow) return `Group "${rec.data.name}"`;
+                return dragItemCount === 1
+                    ? `${capitalize(typeDisplayName)} "${rec?.data.name}"`
                     : pluralize(typeDisplayName, dragItemCount, true);
             },
             onRowDragMove: e => this.onRowDragMove(type, e),
@@ -368,11 +370,62 @@ export class ManageDialogModel extends HoistModel {
 
         this.setDropTarget(type, null);
         if (!valid) return;
+        this.doRowDragDropAsync(type, payload, target).catchDefault();
+    }
 
-        const {group, views} = payload;
-        group != null
-            ? this.dropMoveGroupAsync(group, target.path, type === 'global').linkTo(this.updateTask)
+    private async doRowDragDropAsync(
+        type: GridType,
+        payload: {group?: string; views?: ViewInfo[]},
+        target: DropTarget
+    ) {
+        const isGlobal = type === 'global',
+            {group, views} = payload;
+
+        if (!(await this.confirmGlobalDropAsync(payload, isGlobal))) return;
+
+        return group != null
+            ? this.dropMoveGroupAsync(group, target.path, isGlobal).linkTo(this.updateTask)
             : this.dropMoveViewsAsync(views, target.path).linkTo(this.updateTask);
+    }
+
+    /**
+     * Confirm before a drop that moves any global view - such moves re-group the view within
+     * every user's menu, not just the current user's.
+     */
+    private async confirmGlobalDropAsync(
+        payload: {group?: string; views?: ViewInfo[]},
+        isGlobal: boolean
+    ): Promise<boolean> {
+        const {viewManagerModel} = this,
+            {globalDisplayName, typeDisplayName} = viewManagerModel,
+            affected =
+                payload.group != null
+                    ? (isGlobal
+                          ? viewManagerModel.globalViews
+                          : viewManagerModel.ownedViews
+                      ).filter(v => isGroupSameOrDescendant(v.group, payload.group))
+                    : payload.views,
+            globalViews = affected.filter(v => v.isGlobal);
+
+        if (!globalViews.length) return true;
+
+        const countStr = pluralize(
+            `${globalDisplayName} ${typeDisplayName}`,
+            globalViews.length,
+            true
+        );
+        return XH.confirm({
+            message: fragment(
+                p(`This will move ${countStr} for all other ${XH.appName} users.`),
+                p(strong('Are you sure you want to proceed?'))
+            ),
+            confirmProps: {
+                text: 'Yes, move',
+                outlined: true,
+                autoFocus: false,
+                intent: 'primary'
+            }
+        });
     }
 
     /**
@@ -450,10 +503,13 @@ export class ManageDialogModel extends HoistModel {
             destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'the top level';
         try {
             await viewManagerModel.updateViewsInfoAsync(views, {group: targetPath});
-            XH.successToast(`Moved ${countStr} to ${destStr}.`);
+            XH.successToast({message: `Moved ${countStr} to ${destStr}.`, position: 'top'});
         } catch (e) {
             XH.handleException(e, {showAlert: false});
-            XH.dangerToast(`Unable to move ${countStr} to ${destStr}.`);
+            XH.dangerToast({
+                message: `Unable to move ${countStr} to ${destStr}.`,
+                position: 'top'
+            });
         } finally {
             // Refresh even on failure - bulk updates apply per-view and can partially succeed.
             await viewManagerModel.refreshAsync();
@@ -470,10 +526,13 @@ export class ManageDialogModel extends HoistModel {
         try {
             await this.applyGroupRenameAsync(from, to, isGlobal);
             moved = true;
-            XH.successToast(`Moved group "${leaf}" to ${destStr}.`);
+            XH.successToast({message: `Moved group "${leaf}" to ${destStr}.`, position: 'top'});
         } catch (e) {
             XH.handleException(e, {showAlert: false});
-            XH.dangerToast(`Unable to move group "${leaf}" to ${destStr}.`);
+            XH.dangerToast({
+                message: `Unable to move group "${leaf}" to ${destStr}.`,
+                position: 'top'
+            });
         } finally {
             await this.viewManagerModel.refreshAsync();
             await this.refreshAsync();

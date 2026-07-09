@@ -15,10 +15,10 @@
   free-typed path creation.
 * The `ViewManager` Manage dialog now supports drag-and-drop reorganization within the personal and
   global tabs - drag any number of selected views into a group (or out to the top level), or drag a
-  group row to re-parent it with its full nested subtree intact. Drops apply immediately, with a
-  toast reporting the outcome. ⚠ NOTE - this requires ag-Grid's `RowDragModule` to be registered by
-  the app in its `Bootstrap.ts` (alongside the other required community modules) - the drag handles
-  will not render without it.
+  group row to re-parent it with its full nested subtree intact. Drops apply immediately - after a
+  confirm when the move affects any global view - and report the outcome with a toast. ⚠ NOTE -
+  this requires ag-Grid's `RowDragModule` to be registered by the app in its `Bootstrap.ts`
+  (alongside the other required community modules) - the drag handles will not render without it.
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.
