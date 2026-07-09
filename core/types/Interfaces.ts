@@ -330,9 +330,14 @@ export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, 
 //------------------------
 /**
  * An option to be passed to Select controls.
+ *
+ * Accepts an optional type param `T` to type any additional custom fields carried on the option
+ * (beyond the standard `value`/`label`/`options`). Such fields are passed through to the source
+ * `options` and on to callbacks like `optionRenderer` and `filterFn`, supporting richer rendering
+ * and filtering - e.g. `SelectOption<{data: MyRecord}>`. Defaults to no additional fields.
  */
-export interface SelectOption {
+export type SelectOption<T = {}> = {
     value?: any;
     label?: string;
     options?: (SelectOption | any)[];
-}
+} & T;

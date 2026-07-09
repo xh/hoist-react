@@ -42,6 +42,11 @@
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+* `SelectOption` now accepts an optional type param for custom fields carried alongside the standard
+  `value`/`label` (e.g. `SelectOption<{data: MyRecord}>`), and `SelectProps`, `PickerProps`, and
+  `SelectEditorProps` are correspondingly generic. Callbacks like `optionRenderer` and `filterFn`
+  receive typed access to these fields, supporting richer rendering and filtering. Defaults preserve
+  existing behavior, so untyped usage is unaffected.
 
 ### 🤖 AI Docs + Tooling
 
