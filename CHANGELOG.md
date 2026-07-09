@@ -42,6 +42,9 @@
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+* Added the exported `HoistRoute` type - Router5's `Route` extended with Hoist's `omit` key - and
+  retyped `HoistAppModel.getRoutes()` to return it, so declarative route exclusion (e.g.
+  `omit: !XH.getUser().isHoistAdmin`) now type-checks without a cast.
 
 ### 🤖 AI Docs + Tooling
 
