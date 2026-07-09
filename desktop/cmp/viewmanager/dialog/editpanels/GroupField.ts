@@ -5,14 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {FormModel} from '@xh/hoist/cmp/form';
+import {FormContext, FormModel} from '@xh/hoist/cmp/form';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {ReactNode} from 'react';
+import {ReactNode, useContext} from 'react';
 import {
     GroupPathOption,
     groupPathDisplay,
@@ -43,13 +43,19 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
     render({model, options, placeholder = 'Select optional group...', info}) {
         const {formModel, isAddingNewGroup} = model,
             {readonly} = formModel,
-            isMixed = formModel.values.group === MIXED_GROUP_VALUE;
+            isMixed = formModel.values.group === MIXED_GROUP_VALUE,
+            // Suppress the newGroup label when the enclosing Form lays fields out inline -
+            // a side-by-side label would crowd the row, and the input placeholder suffices.
+            inline = useContext(FormContext).fieldDefaults?.inline ?? false;
 
         return vbox({
             className: 'xh-view-manager__group-field',
             items: [
                 hbox({
-                    alignItems: 'flex-start',
+                    // Bottom-align so the buttons track the input row across both stacked-label
+                    // and inline formField layouts. Requires minimal (tooltip) validation - an
+                    // inline validation message would add a row below the input and misalign.
+                    alignItems: 'flex-end',
                     items: [
                         formField({
                             field: 'group',
@@ -70,6 +76,7 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                             ? [
                                   formField({
                                       field: 'newGroup',
+                                      label: inline ? null : undefined,
                                       width: 180,
                                       item: textInput({
                                           autoFocus: true,
@@ -79,7 +86,8 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                                   button({
                                       icon: Icon.x(),
                                       tooltip: 'Cancel new group',
-                                      marginTop: 23,
+                                      // Offset the formFields' own 3px bottom padding.
+                                      marginBottom: 3,
                                       minimal: false,
                                       onClick: () => {
                                           formModel.fields.newGroup.setValue(null);
@@ -95,7 +103,8 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                                       // A new group needs an unambiguous parent - clear the
                                       // mixed select (to top level) or pick a group first.
                                       disabled: isMixed,
-                                      marginTop: 23,
+                                      // Offset the formFields' own 3px bottom padding.
+                                      marginBottom: 3,
                                       minimal: false,
                                       onClick: () => (model.isAddingNewGroup = true)
                                   })

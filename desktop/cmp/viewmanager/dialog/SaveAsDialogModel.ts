@@ -7,9 +7,14 @@
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
-import {normalizeGroupPath, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {
+    composeGroupPath,
+    normalizeGroupPath,
+    VIEW_GROUP_DELIMITER,
+    ViewManagerModel
+} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {some} from 'lodash';
 
 /**
@@ -20,6 +25,9 @@ export class SaveAsDialogModel extends HoistModel {
 
     @managed readonly formModel: FormModel;
     @observable isOpen: boolean = false;
+
+    /** True to show the text input naming a new group to create under the selected group. */
+    @bindable isAddingNewGroup: boolean = false;
 
     constructor(parent: ViewManagerModel) {
         super();
@@ -37,12 +45,14 @@ export class SaveAsDialogModel extends HoistModel {
         formModel.init({
             name,
             group: src.group,
+            newGroup: null,
             // Do not copy description or visibility from source view
             description: null,
             visibility: 'private',
             isPinned: !!src.info?.isPinned
         });
 
+        this.isAddingNewGroup = false;
         this.isOpen = true;
     }
 
@@ -78,6 +88,16 @@ export class SaveAsDialogModel extends HoistModel {
                     ]
                 },
                 {name: 'group'},
+                {
+                    name: 'newGroup',
+                    displayName: 'New Group',
+                    rules: [
+                        ({value}) =>
+                            value?.includes(VIEW_GROUP_DELIMITER)
+                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
+                                : null
+                    ]
+                },
                 {name: 'description'},
                 {name: 'visibility'}
             ]
@@ -87,7 +107,7 @@ export class SaveAsDialogModel extends HoistModel {
     private async doSaveAsAsync() {
         let {formModel, parent} = this,
             {typeDisplayName, globalDisplayName} = parent,
-            {name, group, description, visibility} = formModel.getData(),
+            {name, group, newGroup, description, visibility} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             isGlobal = visibility === 'global',
             isShared = visibility === 'shared';
@@ -112,9 +132,12 @@ export class SaveAsDialogModel extends HoistModel {
             if (!confirmed) return;
         }
 
+        const base = normalizeGroupPath(group),
+            trimmedNewGroup = newGroup?.trim();
+
         await parent.saveAsAsync({
             name: name.trim(),
-            group: normalizeGroupPath(group),
+            group: trimmedNewGroup ? composeGroupPath(base, trimmedNewGroup) : base,
             description: description?.trim(),
             isGlobal,
             isShared,

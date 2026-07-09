@@ -13,7 +13,7 @@ import {
     ViewInfo,
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
-import {PlainObject, SelectOption, XH} from '@xh/hoist/core';
+import {SelectOption, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, every, startCase} from 'lodash';
@@ -75,11 +75,7 @@ export function groupPathOptionRenderer(
     selectedValue: string
 ): (opt: GroupPathOption) => ReactNode {
     return opt => {
-        const {value, label, depth} = opt;
-
-        // Pass through the "Create..." option injected dynamically by react-select when the user
-        // types a new path (with `enableCreate`) - its label is the formatted create message.
-        if ((opt as PlainObject).__isNew__) return div({item: label, style: {paddingLeft: 25}});
+        const {value, depth} = opt;
 
         return hbox({
             alignItems: 'center',
