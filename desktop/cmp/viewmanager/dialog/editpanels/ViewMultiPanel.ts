@@ -54,10 +54,7 @@ export const viewMultiPanel = hoistCmp.factory({
                             groupField({
                                 model,
                                 omit: !allEditable,
-                                options: getGroupPathOptions(viewManagerModel, isGlobal),
-                                info: fragment(
-                                    `Move ${views.length} ${pluralize(viewManagerModel.typeDisplayName)} to another group, discarding prior grouping.`
-                                )
+                                options: getGroupPathOptions(viewManagerModel, isGlobal)
                             }),
                             formField({
                                 field: 'visibility',

@@ -59,10 +59,7 @@ export const viewPanel = hoistCmp.factory({
                             model,
                             // No explicit top-level option - an empty select reads as top level,
                             // with clear removing the view from its group.
-                            options: getGroupPathOptions(viewManagerModel, isGlobal),
-                            info: isEditable
-                                ? `Move this ${viewManagerModel.typeDisplayName} into the chosen group.`
-                                : null
+                            options: getGroupPathOptions(viewManagerModel, isGlobal)
                         }),
                         formField({
                             field: 'description',

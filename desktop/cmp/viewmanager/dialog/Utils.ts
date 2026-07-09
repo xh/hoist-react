@@ -10,6 +10,7 @@ import {
     getAllGroupPaths,
     getGroupLeaf,
     splitGroupPath,
+    VIEW_GROUP_DELIMITER,
     ViewInfo,
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
@@ -31,9 +32,9 @@ export interface GroupPathOption extends SelectOption {
     /** Full delimited group path. */
     value: string;
     /**
-     * Full delimited group path, displayed as-is in the select's value container so the complete
-     * hierarchy is unambiguous when selected or when typing a new path. Menu items instead render
-     * the leaf segment, indented per depth, via {@link groupPathOptionRenderer}.
+     * Leaf segment of the path, displayed in the select's value container (and matched when
+     * filtering). The full path is shown via the menu's indented hierarchy and the group field's
+     * companion path display.
      */
     label: string;
     /** 0-based nesting depth, for indentation. */
@@ -49,20 +50,15 @@ export function getGroupPathOptions(vmm: ViewManagerModel, isGlobal: boolean): G
     const views = isGlobal ? vmm.globalViews : vmm.ownedViews;
     return getAllGroupPaths(views).map(path => ({
         value: path,
-        label: path,
+        label: getGroupLeaf(path),
         depth: splitGroupPath(path).length - 1
     }));
 }
 
-/** Display a group path as its segments separated by chevrons, or a muted 'None' when null. */
+/** Display a group path as a delimiter-prefixed absolute path, or an empty string when null. */
 export function groupPathDisplay(path: string): ReactNode {
-    if (!path) return span({item: 'None', className: 'xh-text-color-muted'});
-    const items = [];
-    splitGroupPath(path).forEach((segment, idx) => {
-        if (idx) items.push(Icon.chevronRight({className: 'xh-text-color-muted'}));
-        items.push(span(segment));
-    });
-    return hbox({alignItems: 'center', items});
+    if (!path) return '';
+    return VIEW_GROUP_DELIMITER + path;
 }
 
 /**

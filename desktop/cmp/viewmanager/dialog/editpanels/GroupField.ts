@@ -13,7 +13,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {ReactNode, useContext} from 'react';
+import {useContext} from 'react';
 import {
     GroupPathOption,
     groupPathDisplay,
@@ -32,7 +32,6 @@ export interface GroupFieldPanelModel extends HoistModel {
 interface GroupFieldProps extends HoistProps<GroupFieldPanelModel> {
     options: GroupPathOption[];
     placeholder?: string;
-    info?: ReactNode;
 }
 
 /**
@@ -41,13 +40,17 @@ interface GroupFieldProps extends HoistProps<GroupFieldPanelModel> {
  * path creation within the select itself.
  */
 export const groupField = hoistCmp.factory<GroupFieldProps>({
-    render({model, options, placeholder = 'Select optional group...', info}) {
+    render({model, options, placeholder = 'Select optional group...'}) {
         const {formModel, isAddingNewGroup} = model,
             {readonly} = formModel,
-            isMixed = formModel.values.group === MIXED_GROUP_VALUE,
+            group = formModel.values.group,
+            isMixed = group === MIXED_GROUP_VALUE,
             // Suppress the newGroup label when the enclosing Form lays fields out inline -
             // a side-by-side label would crowd the row, and the input placeholder suffices.
-            inline = useContext(FormContext).fieldDefaults?.inline ?? false;
+            fieldDefaults = useContext(FormContext).fieldDefaults,
+            inline = fieldDefaults?.inline ?? false,
+            // Matches FormField's inline label box - explicit labelWidth, else its 80px minWidth.
+            labelWidth = fieldDefaults?.labelWidth ?? 80;
 
         return vbox({
             className: 'xh-view-manager__group-field',
@@ -63,7 +66,7 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                             flex: 1,
                             item: select({
                                 options,
-                                optionRenderer: groupPathOptionRenderer(formModel.values.group),
+                                optionRenderer: groupPathOptionRenderer(group),
                                 // Display the mixed-groups sentinel - never itself an option.
                                 generateOptionFn: v =>
                                     v === MIXED_GROUP_VALUE ? {value: v, label: '[mixed]'} : null,
@@ -116,11 +119,15 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                               ])
                     ]
                 }),
-                // Info spans the full width of the combined fields above.
+                // Full path of the selected group, spanning the combined fields above - the
+                // select's value container shows only the leaf name. Redundant when readonly,
+                // where the field itself renders the full path.
                 div({
-                    omit: !info,
+                    omit: readonly || isMixed,
                     className: 'xh-view-manager__group-field__info',
-                    item: info
+                    // Indent past the inline side-label to align with the select control.
+                    style: inline ? {marginLeft: labelWidth} : null,
+                    item: groupPathDisplay(group)
                 })
             ]
         });
