@@ -58,6 +58,10 @@
   &__group-field {
     margin-bottom: var(--xh-pad-px);
 
+    .view-group-delimiter {
+      font-size: 28px;
+      font-weight: 100;
+    }
     .xh-form-field {
       margin-bottom: 0;
     }

@@ -6,7 +6,8 @@
  */
 
 import {FormContext, FormModel} from '@xh/hoist/cmp/form';
-import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {div, hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {VIEW_GROUP_DELIMITER} from '@xh/hoist/cmp/viewmanager';
 import {hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -74,6 +75,10 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                         }),
                         ...(isAddingNewGroup && !readonly
                             ? [
+                                  span({
+                                      className: 'view-group-delimiter',
+                                      item: VIEW_GROUP_DELIMITER
+                                  }),
                                   formField({
                                       field: 'newGroup',
                                       label: inline ? null : undefined,
