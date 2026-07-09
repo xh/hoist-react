@@ -14,15 +14,14 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {GroupPanelModel} from './GroupPanelModel';
+import {RenameGroupDialogModel} from './RenameGroupDialogModel';
 
 /**
  * Dialog to rename a group in place, opened via the "Rename Group" context-menu item on the
- * Manage dialog's group rows. Backed by the same form and save flow as the selection-driven
- * GroupPanel.
+ * Manage dialog's group rows.
  */
 export const renameGroupDialog = hoistCmp.factory({
-    model: uses(GroupPanelModel),
+    model: uses(RenameGroupDialogModel),
     render({model}) {
         const {isRenameDialogOpen, groupRecord, formModel, parent} = model;
         if (!isRenameDialogOpen || !groupRecord) return null;
@@ -31,8 +30,8 @@ export const renameGroupDialog = hoistCmp.factory({
             if (await model.saveAsync()) model.isRenameDialogOpen = false;
         };
 
-        // Cancelling discards any pending edit - the form is shared with the GroupPanel, which
-        // would otherwise surface it as a dirty, unsaved change.
+        // Cancelling discards any pending edit - it would otherwise linger in the form and
+        // resurface if the dialog were reopened on the same group.
         const cancel = () => {
             model.reset();
             model.isRenameDialogOpen = false;

@@ -25,15 +25,15 @@ import {every, partition} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
 
 /**
- * Backing model for editing a single selected group - rename the group itself, plus
- * bulk pinning updates across all views within it.
+ * Backing model for the RenameGroupDialog - rename/re-nest a single selected group in place,
+ * cascading to all views within it. Opened via the grids' "Rename Group" context-menu item.
  */
-export class GroupPanelModel extends HoistModel {
+export class RenameGroupDialogModel extends HoistModel {
     parent: ManageDialogModel;
 
     @managed formModel: FormModel;
 
-    /** True to display the context-menu-driven rename dialog, backed by this same form. */
+    /** True to display the dialog. */
     @bindable isRenameDialogOpen = false;
 
     get groupRecord(): StoreRecord {

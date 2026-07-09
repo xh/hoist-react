@@ -67,7 +67,12 @@ export const viewMultiPanel = hoistCmp.factory({
                                 info: visInfo
                             }),
                             vspacer(),
-                            formButtons({model})
+                            // Group name contextualizes delete/pin wording when the selection
+                            // is a sole group row, operating on the group's views as a unit.
+                            formButtons({
+                                model,
+                                groupName: parent.selectedGroupRecord?.data.name
+                            })
                         )
                     ]
                 })

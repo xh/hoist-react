@@ -11,6 +11,7 @@ import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
 
@@ -20,8 +21,7 @@ export interface EditPanelModel extends HoistModel {
     views: ViewInfo[];
     allEditable: boolean;
     parent: ManageDialogModel;
-    /** May resolve to a flag indicating whether changes were applied - ignored here. */
-    saveAsync(): Promise<void | boolean>;
+    saveAsync(): Promise<void>;
     reset(): void;
 }
 
@@ -32,7 +32,7 @@ interface FormButtonsProps extends HoistProps<EditPanelModel> {
 
 /**
  * Save/Revert buttons while the backing form is dirty, otherwise bulk Pin/Unpin and Delete
- * actions across the panel's views. Shared by the group and multi-view edit panels.
+ * actions across the panel's views. Shared by the single- and multi-view edit panels.
  */
 export const formButtons = hoistCmp.factory<FormButtonsProps>({
     render({model, groupName}) {
@@ -65,7 +65,9 @@ export const formButtons = hoistCmp.factory<FormButtonsProps>({
 
         if (isEmpty(views)) return null;
 
-        const groupViews = isGroupRow ? "group's views " : '';
+        const groupViews = isGroupRow
+            ? `${pluralize(parent.viewManagerModel.typeDisplayName, views.length, true)} `
+            : '';
         return vbox({
             style: {gap: 10, alignItems: 'center'},
             items: [

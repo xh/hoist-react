@@ -18,7 +18,6 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
-import {groupPanel} from './editpanels/GroupPanel';
 import {renameGroupDialog} from './editpanels/RenameGroupDialog';
 import {viewMultiPanel} from './editpanels/ViewMultiPanel';
 import {viewPanel} from './editpanels/ViewPanel';
@@ -50,8 +49,10 @@ export const manageDialog = hoistCmp.factory({
                     item: hframe(
                         selectorPanel(),
                         panel({
+                            // A sole-selected group row edits its encompassed views in bulk via
+                            // the multi panel - the group itself is renamed via its context menu.
                             item: model.selectedGroupRecord
-                                ? groupPanel()
+                                ? viewMultiPanel()
                                 : count == 0 || model.hasGroupRowsSelected
                                   ? placeholderPanel()
                                   : count > 1

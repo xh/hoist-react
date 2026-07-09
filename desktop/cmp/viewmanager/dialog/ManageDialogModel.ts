@@ -29,7 +29,7 @@ import {action, bindable, computed, makeObservable, observable, runInAction} fro
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, isEqual, keys, some, startCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
-import {GroupPanelModel} from './editpanels/GroupPanelModel';
+import {RenameGroupDialogModel} from './editpanels/RenameGroupDialogModel';
 import {ViewMultiPanelModel} from './editpanels/ViewMultiPanelModel';
 import {ViewPanelModel} from './editpanels/ViewPanelModel';
 
@@ -58,7 +58,7 @@ export class ManageDialogModel extends HoistModel {
 
     @managed viewPanelModel: ViewPanelModel;
     @managed viewMultiPanelModel: ViewMultiPanelModel;
-    @managed groupPanelModel: GroupPanelModel;
+    @managed renameGroupDialogModel: RenameGroupDialogModel;
 
     @managed tabContainerModel: TabContainerModel;
 
@@ -106,7 +106,7 @@ export class ManageDialogModel extends HoistModel {
         return uniqBy(compact(views), 'token') as ViewInfo[];
     }
 
-    /** The selected group row, when it is the sole selection - drives the GroupPanel. */
+    /** The selected group row, when it is the sole selection. */
     @computed
     get selectedGroupRecord(): StoreRecord {
         const recs = this.gridModel.selectedRecords;
@@ -135,7 +135,7 @@ export class ManageDialogModel extends HoistModel {
     @action
     close() {
         this.isOpen = false;
-        if (this.groupPanelModel) this.groupPanelModel.isRenameDialogOpen = false;
+        if (this.renameGroupDialogModel) this.renameGroupDialogModel.isRenameDialogOpen = false;
     }
 
     activateSelectedViewAndClose() {
@@ -255,7 +255,7 @@ export class ManageDialogModel extends HoistModel {
         this.tabContainerModel = this.createTabContainerModel();
         this.viewPanelModel = new ViewPanelModel(this);
         this.viewMultiPanelModel = new ViewMultiPanelModel(this);
-        this.groupPanelModel = new GroupPanelModel(this);
+        this.renameGroupDialogModel = new RenameGroupDialogModel(this);
 
         this.addReaction({
             track: () => this.filter,
@@ -665,7 +665,7 @@ export class ManageDialogModel extends HoistModel {
     /** Select the group row - binding the shared group form to it - then open the dialog. */
     private async startRenameGroupAsync(record: StoreRecord, gridModel: GridModel) {
         await gridModel.selectAsync(record);
-        this.groupPanelModel.isRenameDialogOpen = true;
+        this.renameGroupDialogModel.isRenameDialogOpen = true;
     }
 
     private createGridModel(type: 'owned' | 'global' | 'shared'): GridModel {
