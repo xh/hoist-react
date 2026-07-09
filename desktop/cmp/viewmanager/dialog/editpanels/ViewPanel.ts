@@ -57,9 +57,9 @@ export const viewPanel = hoistCmp.factory({
                         }),
                         groupField({
                             model,
-                            options: getGroupPathOptions(viewManagerModel, isGlobal, {
-                                includeRoot: true
-                            }),
+                            // No explicit top-level option - an empty select reads as top level,
+                            // with clear removing the view from its group.
+                            options: getGroupPathOptions(viewManagerModel, isGlobal),
                             info: isEditable
                                 ? `Move this ${viewManagerModel.typeDisplayName} into the chosen group.`
                                 : null
