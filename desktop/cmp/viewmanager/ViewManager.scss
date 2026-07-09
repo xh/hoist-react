@@ -10,6 +10,14 @@
     --xh-grid-tree-icon-px: 14px;
     --xh-grid-tree-indent: 1.5em;
 
+    // Remove the extra leaf indent (a full tree-indent step) the framework adds to align leaf
+    // text with parent group labels. With views and groups as siblings at every level here, it
+    // reads as an additional level of nesting - align each view with the folder icons of its
+    // sibling groups instead. Important to beat the framework rule's per-level specificity.
+    .ag-ltr .ag-row-group-leaf-indent {
+      margin-left: 0 !important;
+    }
+
     // Diff-style "addition" green for the drag-and-drop target highlights below.
     --drop-target-green: 46, 160, 67;
 
