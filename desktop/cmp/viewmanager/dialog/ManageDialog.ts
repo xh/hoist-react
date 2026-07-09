@@ -6,7 +6,7 @@
  */
 
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
@@ -19,6 +19,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 import {groupPanel} from './editpanels/GroupPanel';
+import {renameGroupDialog} from './editpanels/RenameGroupDialog';
 import {viewMultiPanel} from './editpanels/ViewMultiPanel';
 import {viewPanel} from './editpanels/ViewPanel';
 
@@ -36,31 +37,34 @@ export const manageDialog = hoistCmp.factory({
         const {updateTask, loadTask, selectedViews, viewManagerModel} = model,
             count = selectedViews.length;
 
-        return dialog({
-            title: `Manage ${capitalize(pluralize(viewManagerModel.typeDisplayName))}`,
-            icon: Icon.gear(),
-            className,
-            isOpen: true,
-            style: {width: '1000px', maxWidth: '90vw', minHeight: '600px'},
-            canOutsideClickClose: false,
-            onClose: () => model.close(),
-            item: panel({
-                item: hframe(
-                    selectorPanel(),
-                    panel({
-                        item: model.selectedGroupRecord
-                            ? groupPanel()
-                            : count == 0 || model.hasGroupRowsSelected
-                              ? placeholderPanel()
-                              : count > 1
-                                ? viewMultiPanel()
-                                : viewPanel(),
-                        bbar: bbar()
-                    })
-                ),
-                mask: [updateTask, loadTask]
-            })
-        });
+        return fragment(
+            dialog({
+                title: `Manage ${capitalize(pluralize(viewManagerModel.typeDisplayName))}`,
+                icon: Icon.gear(),
+                className,
+                isOpen: true,
+                style: {width: '1000px', maxWidth: '90vw', minHeight: '600px'},
+                canOutsideClickClose: false,
+                onClose: () => model.close(),
+                item: panel({
+                    item: hframe(
+                        selectorPanel(),
+                        panel({
+                            item: model.selectedGroupRecord
+                                ? groupPanel()
+                                : count == 0 || model.hasGroupRowsSelected
+                                  ? placeholderPanel()
+                                  : count > 1
+                                    ? viewMultiPanel()
+                                    : viewPanel(),
+                            bbar: bbar()
+                        })
+                    ),
+                    mask: [updateTask, loadTask]
+                })
+            }),
+            renameGroupDialog()
+        );
     }
 });
 

@@ -20,7 +20,7 @@ import {
     ViewUpdateSpec
 } from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, LoadSpec, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
-import {FilterTestFn, StoreRecord} from '@xh/hoist/data';
+import {FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
@@ -135,6 +135,7 @@ export class ManageDialogModel extends HoistModel {
     @action
     close() {
         this.isOpen = false;
+        if (this.groupPanelModel) this.groupPanelModel.isRenameDialogOpen = false;
     }
 
     activateSelectedViewAndClose() {
@@ -654,9 +655,33 @@ export class ManageDialogModel extends HoistModel {
         };
     }
 
+    /** True if the record is a group row whose views can all be edited by the current user. */
+    private canRenameGroupRecord(record: StoreRecord): boolean {
+        if (!record?.data.isGroupRow || record.data.group == null) return false;
+        const views = compact(record.descendants.map(r => r.data.view as ViewInfo));
+        return !!views.length && views.every(v => v.isEditable);
+    }
+
+    /** Select the group row - binding the shared group form to it - then open the dialog. */
+    private async startRenameGroupAsync(record: StoreRecord, gridModel: GridModel) {
+        await gridModel.selectAsync(record);
+        this.groupPanelModel.isRenameDialogOpen = true;
+    }
+
     private createGridModel(type: 'owned' | 'global' | 'shared'): GridModel {
-        const {typeDisplayName, globalDisplayName} = this.viewManagerModel,
-            baseContextMenu = ['expandCollapseAll'];
+        const {typeDisplayName, globalDisplayName} = this.viewManagerModel;
+
+        const renameGroupAction: RecordActionSpec = {
+            text: 'Rename Group',
+            icon: Icon.edit(),
+            displayFn: ({record}) => ({hidden: !this.canRenameGroupRecord(record)}),
+            actionFn: ({record, gridModel}) => {
+                this.startRenameGroupAsync(record, gridModel).catchDefault();
+            }
+        };
+
+        const contextMenu =
+            type === 'shared' ? ['expandCollapseAll'] : [renameGroupAction, 'expandCollapseAll'];
 
         const modifier =
             type == 'owned' ? `personal` : type == 'global' ? globalDisplayName : 'shared';
@@ -669,7 +694,7 @@ export class ManageDialogModel extends HoistModel {
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             rowBorders: true,
             selModel: 'multiple',
-            contextMenu: baseContextMenu,
+            contextMenu,
             sizingMode: 'standard',
             hideHeaders: true,
             rowClassRules: {

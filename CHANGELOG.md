@@ -12,7 +12,8 @@
   visibility or move them into another group at once, or select a group row to rename the group
   (applying to all views within it), pin/unpin its views to your menu, or delete them as a unit.
   New groups are created via a dedicated "New" button alongside the group selects, replacing
-  free-typed path creation.
+  free-typed path creation. Group rows also offer a right-click "Rename Group" menu item, opening
+  a focused rename dialog.
 * The `ViewManager` Manage dialog now supports drag-and-drop reorganization within the personal and
   global tabs - drag any number of selected views into a group (or out to the top level), or drag a
   group row to re-parent it with its full nested subtree intact. Drops apply immediately - after a

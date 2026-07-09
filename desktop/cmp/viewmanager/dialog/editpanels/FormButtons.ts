@@ -20,7 +20,8 @@ export interface EditPanelModel extends HoistModel {
     views: ViewInfo[];
     allEditable: boolean;
     parent: ManageDialogModel;
-    saveAsync(): Promise<void>;
+    /** May resolve to a flag indicating whether changes were applied - ignored here. */
+    saveAsync(): Promise<void | boolean>;
     reset(): void;
 }
 
