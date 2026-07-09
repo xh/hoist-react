@@ -14,12 +14,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {
-    getGroupPathOptions,
-    getVisibilityInfo,
-    getVisibilityOptions,
-    TOP_LEVEL_VALUE
-} from '../Utils';
+import {getGroupPathOptions, getVisibilityInfo, getVisibilityOptions} from '../Utils';
 import {formButtons} from './FormButtons';
 import {groupField} from './GroupField';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
@@ -59,13 +54,7 @@ export const viewMultiPanel = hoistCmp.factory({
                             groupField({
                                 model,
                                 omit: !allEditable,
-                                // Root option carries a sentinel value - the field inits to
-                                // null/empty to indicate no pending group change.
-                                options: getGroupPathOptions(viewManagerModel, isGlobal, {
-                                    includeRoot: true
-                                }).map(it =>
-                                    it.value === null ? {...it, value: TOP_LEVEL_VALUE} : it
-                                ),
+                                options: getGroupPathOptions(viewManagerModel, isGlobal),
                                 info: fragment(
                                     `Move ${views.length} ${pluralize(viewManagerModel.typeDisplayName)} to another group, discarding prior grouping.`
                                 )

@@ -8,6 +8,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {
     composeGroupPath,
+    normalizeGroupPath,
     VIEW_GROUP_DELIMITER,
     ViewInfo,
     ViewUpdateSpec
@@ -16,7 +17,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {every, isEmpty, uniq} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
-import {confirmVisibilityChangeAsync, parseGroupSelectValue, Visibility} from '../Utils';
+import {confirmVisibilityChangeAsync, MIXED_GROUP_VALUE, Visibility} from '../Utils';
 
 /**
  * Backing model for bulk editing of multiple selected views.
@@ -67,9 +68,11 @@ export class ViewMultiPanelModel extends HoistModel {
                         views.map(v => (v.isShared ? 'shared' : v.isGlobal ? 'global' : 'private'))
                     );
                 this.isAddingNewGroup = false;
-                // Group inits empty - a non-null value always indicates a pending move.
+                // Group inits to the views' common group when uniform (empty meaning top level,
+                // as in the single-view panel), else to the displayed-only mixed sentinel.
+                const groups = uniq(views.map(v => v.group ?? null));
                 formModel.init({
-                    group: null,
+                    group: groups.length === 1 ? groups[0] : MIXED_GROUP_VALUE,
                     newGroup: null,
                     visibility: vals.length === 1 ? vals[0] : null
                 });
@@ -91,9 +94,12 @@ export class ViewMultiPanelModel extends HoistModel {
 
         if (!formModel.isDirty || isEmpty(views)) return;
 
-        const newGroup = formModel.values.newGroup?.trim();
-        if (groupField.isDirty || newGroup) {
-            const base = parseGroupSelectValue(groupField.value);
+        // An undirtied mixed sentinel means no group change - it can never be dirty itself, and
+        // the New Group button is disabled while it is in place.
+        const newGroup = formModel.values.newGroup?.trim(),
+            groupValue = groupField.value;
+        if (groupField.isDirty || (newGroup && groupValue !== MIXED_GROUP_VALUE)) {
+            const base = normalizeGroupPath(groupValue);
             updates.group = newGroup ? composeGroupPath(base, newGroup) : base;
         }
 

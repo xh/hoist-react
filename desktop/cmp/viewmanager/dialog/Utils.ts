@@ -9,10 +9,7 @@ import {div, fragment, hbox, p, span, strong} from '@xh/hoist/cmp/layout';
 import {
     getAllGroupPaths,
     getGroupLeaf,
-    isGroupSameOrDescendant,
-    normalizeGroupPath,
     splitGroupPath,
-    VIEW_GROUP_DELIMITER,
     ViewInfo,
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
@@ -23,35 +20,15 @@ import {capitalize, every, startCase} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
- * Sentinel option value representing an explicit move to the top level (no group), for group
- * selects whose field inits to null/empty to mean "no change" - a null-valued top-level option
- * would neither display nor register as dirty correctly there. Map back to a null group on save.
+ * Sentinel value for a group select whose bound views span multiple groups. Displayed via a
+ * generated "[mixed]" option and never a legitimate save target - any real selection (or a clear
+ * to empty, meaning top level) differs from this value and marks the field dirty.
  */
-export const TOP_LEVEL_VALUE = 'xh-top-level-group-value';
-
-/** User-facing label for the top-level / no-group option in group path selects. */
-const TOP_LEVEL_LABEL = '(Top Level)';
-
-/**
- * Resolve a group select's committed value to a persistable group path (null for top level).
- *
- * Handles the top-level option's sentinel value and label: with `enableCreate`, the select seeds
- * its filter input with the selected option's label, so a new path typed while the top-level
- * option was selected arrives prefixed with its display label - e.g. `(Top Level)/New Group` -
- * which must not leak into the persisted path.
- */
-export function parseGroupSelectValue(value: string): string {
-    if (value == null || value === TOP_LEVEL_VALUE || value === TOP_LEVEL_LABEL) return null;
-    const prefix = TOP_LEVEL_LABEL + VIEW_GROUP_DELIMITER;
-    return normalizeGroupPath(value.startsWith(prefix) ? value.substring(prefix.length) : value);
-}
+export const MIXED_GROUP_VALUE = 'xh-mixed-group-value';
 
 /** SelectOption for a group path, with depth for indented hierarchical rendering. */
 export interface GroupPathOption extends SelectOption {
-    /**
-     * Full delimited group path, or null (or {@link TOP_LEVEL_VALUE}) for the top-level
-     * (no group) option.
-     */
+    /** Full delimited group path. */
     value: string;
     /**
      * Full delimited group path, displayed as-is in the select's value container so the complete
@@ -68,28 +45,13 @@ export interface GroupPathOption extends SelectOption {
  * paths, in depth-first order suitable for display as an indented hierarchy via
  * {@link groupPathOptionRenderer}.
  */
-export function getGroupPathOptions(
-    vmm: ViewManagerModel,
-    isGlobal: boolean,
-    opts?: {
-        /** True to prepend a null-valued option representing the top level / no group. */
-        includeRoot?: boolean;
-        /** Group path to exclude, along with all of its descendants. */
-        excludeSubtreeOf?: string;
-    }
-): GroupPathOption[] {
-    const views = isGlobal ? vmm.globalViews : vmm.ownedViews,
-        {includeRoot, excludeSubtreeOf} = opts ?? {};
-
-    const ret = getAllGroupPaths(views)
-        .filter(path => !isGroupSameOrDescendant(path, excludeSubtreeOf))
-        .map(path => ({
-            value: path,
-            label: path,
-            depth: splitGroupPath(path).length - 1
-        }));
-
-    return includeRoot ? [{value: null, label: TOP_LEVEL_LABEL, depth: 0}, ...ret] : ret;
+export function getGroupPathOptions(vmm: ViewManagerModel, isGlobal: boolean): GroupPathOption[] {
+    const views = isGlobal ? vmm.globalViews : vmm.ownedViews;
+    return getAllGroupPaths(views).map(path => ({
+        value: path,
+        label: path,
+        depth: splitGroupPath(path).length - 1
+    }));
 }
 
 /** Display a group path as its segments separated by chevrons, or a muted 'None' when null. */
@@ -113,8 +75,7 @@ export function groupPathOptionRenderer(
     selectedValue: string
 ): (opt: GroupPathOption) => ReactNode {
     return opt => {
-        const {value, label, depth} = opt,
-            isTopLevel = value == null || value === TOP_LEVEL_VALUE;
+        const {value, label, depth} = opt;
 
         // Pass through the "Create..." option injected dynamically by react-select when the user
         // types a new path (with `enableCreate`) - its label is the formatted create message.
@@ -131,10 +92,10 @@ export function groupPathOptionRenderer(
                     alignItems: 'center',
                     paddingLeft: (depth ?? 0) * 15,
                     items: [
-                        Icon.folder({omit: isTopLevel}),
+                        Icon.folder(),
                         span({
-                            item: isTopLevel ? label : getGroupLeaf(value),
-                            style: {marginLeft: isTopLevel ? 0 : 5}
+                            item: getGroupLeaf(value),
+                            style: {marginLeft: 5}
                         })
                     ]
                 })

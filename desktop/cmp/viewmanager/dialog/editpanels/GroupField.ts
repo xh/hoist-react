@@ -13,7 +13,12 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {ReactNode} from 'react';
-import {GroupPathOption, groupPathDisplay, groupPathOptionRenderer} from '../Utils';
+import {
+    GroupPathOption,
+    groupPathDisplay,
+    groupPathOptionRenderer,
+    MIXED_GROUP_VALUE
+} from '../Utils';
 
 /** Common surface of the edit panel models backing the shared {@link groupField}. */
 export interface GroupFieldPanelModel extends HoistModel {
@@ -37,7 +42,8 @@ interface GroupFieldProps extends HoistProps<GroupFieldPanelModel> {
 export const groupField = hoistCmp.factory<GroupFieldProps>({
     render({model, options, placeholder = 'Select a group...', info}) {
         const {formModel, isAddingNewGroup} = model,
-            {readonly} = formModel;
+            {readonly} = formModel,
+            isMixed = formModel.values.group === MIXED_GROUP_VALUE;
 
         return vbox({
             className: 'xh-view-manager__group-field',
@@ -51,6 +57,9 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                             item: select({
                                 options,
                                 optionRenderer: groupPathOptionRenderer(formModel.values.group),
+                                // Display the mixed-groups sentinel - never itself an option.
+                                generateOptionFn: v =>
+                                    v === MIXED_GROUP_VALUE ? {value: v, label: '[mixed]'} : null,
                                 enableFilter: true,
                                 enableClear: true,
                                 placeholder
@@ -83,6 +92,9 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                                       text: 'New Group',
                                       icon: Icon.add(),
                                       omit: readonly,
+                                      // A new group needs an unambiguous parent - clear the
+                                      // mixed select (to top level) or pick a group first.
+                                      disabled: isMixed,
                                       marginTop: 23,
                                       minimal: false,
                                       onClick: () => (model.isAddingNewGroup = true)

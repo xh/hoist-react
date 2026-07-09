@@ -12,8 +12,12 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from '../ManageDialogModel';
-import {parseGroupSelectValue} from '../Utils';
-import {composeGroupPath, VIEW_GROUP_DELIMITER, ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {
+    composeGroupPath,
+    normalizeGroupPath,
+    VIEW_GROUP_DELIMITER,
+    ViewInfo
+} from '@xh/hoist/cmp/viewmanager';
 
 /**
  * Backing model for EditForm
@@ -86,7 +90,7 @@ export class ViewPanelModel extends HoistModel {
 
         const newGroup = formModel.values.newGroup?.trim();
         if (updates.hasOwnProperty('group') || newGroup) {
-            const base = parseGroupSelectValue(formModel.values.group);
+            const base = normalizeGroupPath(formModel.values.group);
             updates.group = newGroup ? composeGroupPath(base, newGroup) : base;
         }
         delete updates.newGroup;
