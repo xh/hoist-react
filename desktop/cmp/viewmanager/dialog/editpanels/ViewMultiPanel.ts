@@ -13,6 +13,7 @@ import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
+import {CSSProperties} from 'react';
 import {getGroupPathOptions, getVisibilityInfo, getVisibilityOptions} from '../Utils';
 import {formButtons} from './FormButtons';
 import {groupField} from './GroupField';
@@ -47,7 +48,19 @@ export const viewMultiPanel = hoistCmp.factory({
                         div({
                             className: 'xh-view-manager__manage-dialog__multi-header',
                             items: [
-                                defaultViewIcon,
+                                // One icon per view, fanned like a hand of cards - see the
+                                // companion styles for the CSS-var driven rotation.
+                                div({
+                                    className: 'xh-view-manager__manage-dialog__multi-header__fan',
+                                    style: {'--card-n': views.length} as CSSProperties,
+                                    items: views.map((v, i) =>
+                                        span({
+                                            key: v.token,
+                                            style: {'--card-i': i} as CSSProperties,
+                                            item: defaultViewIcon
+                                        })
+                                    )
+                                }),
                                 span(
                                     `Configuring ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
                                 )

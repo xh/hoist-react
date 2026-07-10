@@ -54,9 +54,50 @@
       padding: var(--xh-pad-px);
       color: var(--xh-text-color-muted);
 
-      > .xh-icon {
+      // One icon per selected view, fanned out like a hand of cards. Each card's rotation
+      // derives from its index (--card-i) and the total count (--card-n), both set inline -
+      // offset from the hand's center, times a per-card angle that shrinks as the hand grows,
+      // clamping the total spread. Pivot sits below the icons so rotation also arcs them.
+      &__fan {
+        --card-w: 1.4em;
+
+        display: flex;
+        // Full width of the header, giving the %-based card margins below a stable basis.
+        align-self: stretch;
+        justify-content: center;
         font-size: 2.5em;
-        opacity: 0.5;
+        margin: 0 0 var(--xh-pad-px) 0;
+
+        > * {
+          --card-angle: min(16deg, 72deg / max(var(--card-n) - 1, 1));
+
+          // Fixed overlap between neighboring cards, tightening once the hand would overflow
+          // the header - the inner min() arg solves for the margin at which the hand's visible
+          // span exactly fills the available width, and the max() floor stops at a full stack.
+          --card-mx: max(
+            min(-0.52em, ((80% - var(--card-w)) / max(var(--card-n) - 1, 1) - var(--card-w)) / 2),
+            var(--card-w) / -2
+          );
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: var(--card-w);
+          margin: 0 var(--card-mx);
+          padding: 0.2em 0;
+          background-color: var(--xh-bg);
+          border: 1px solid var(--xh-border-color);
+          border-radius: 0.15em;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+          transform: rotate(calc((var(--card-i) - (var(--card-n) - 1) / 2) * var(--card-angle)));
+          transform-origin: 50% 150%;
+
+          // Opacity on the icon only - the card itself must stay opaque to occlude the
+          // cards fanned behind it.
+          .xh-icon {
+            opacity: 0.5;
+          }
+        }
       }
     }
   }
