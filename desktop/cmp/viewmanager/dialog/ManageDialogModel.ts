@@ -248,6 +248,16 @@ export class ManageDialogModel extends HoistModel {
         );
     }
 
+    /**
+     * True when the grid's current selection cannot be dragged - a group row can only move on
+     * its own, so any selection combining a group with other rows (more groups or views)
+     * disables drag-and-drop across the grid.
+     */
+    isDragDisabled(gridModel: GridModel): boolean {
+        const recs = gridModel.selectedRecords;
+        return recs.length > 1 && recs.some(r => r.data.isGroupRow);
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -370,6 +380,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private onRowDragMove(type: GridType, e: any) {
+        if (this.isDragDisabled(this.gridModelFor(type))) return;
+
         const payload = this.getDragPayload(e),
             target = this.resolveDropTarget(e);
         this.setDropTarget(type, this.isValidDrop(payload, target) ? target : null);
@@ -377,13 +389,12 @@ export class ManageDialogModel extends HoistModel {
 
     private onRowDragEnd(type: GridType, e: any) {
         this.disarmOutsideDrop();
+        this.setDropTarget(type, null);
+        if (this.isDragDisabled(this.gridModelFor(type))) return;
 
         const payload = this.getDragPayload(e),
-            target = this.resolveDropTarget(e),
-            valid = this.isValidDrop(payload, target);
-
-        this.setDropTarget(type, null);
-        if (!valid) return;
+            target = this.resolveDropTarget(e);
+        if (!this.isValidDrop(payload, target)) return;
         this.doRowDragDropAsync(type, payload, target).catchDefault();
     }
 
@@ -394,6 +405,8 @@ export class ManageDialogModel extends HoistModel {
      * and re-entering the grid disarms.
      */
     private onRowDragLeave(type: GridType, e: any) {
+        if (this.isDragDisabled(this.gridModelFor(type))) return;
+
         const payload = this.getDragPayload(e),
             target: DropTarget = {id: TOP_LEVEL_DROP_ID, path: null};
 

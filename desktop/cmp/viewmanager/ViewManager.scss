@@ -34,6 +34,14 @@
     &__grid--drop-target .ag-root-wrapper {
       border: 2px solid rgb(var(--drop-target-green)) !important;
     }
+
+    // Dragging is disabled while the selection cannot be dragged (a group row combined with
+    // any other rows) - gray out the handles and block drag initiation.
+    &__grid--drag-disabled .ag-drag-handle {
+      color: var(--xh-text-color-muted);
+      opacity: 0.2;
+      pointer-events: none;
+    }
   }
 
   &__manage-dialog,

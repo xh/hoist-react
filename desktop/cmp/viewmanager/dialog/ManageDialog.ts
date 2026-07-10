@@ -16,6 +16,7 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {capitalize} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 import {renameGroupDialog} from './editpanels/RenameGroupDialog';
@@ -92,11 +93,15 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
         const dialogModel = useContextModel(ManageDialogModel);
         return vframe({
             paddingTop: 5,
-            // Green indicator when a drag is pending a drop onto the top level - outside all
-            // groups, there is no target row to highlight, so decorate the grid body itself.
-            className: dialogModel?.isTopLevelDropTarget(model)
-                ? 'xh-view-manager__manage-dialog__grid--drop-target'
-                : null,
+            className: classNames({
+                // Green indicator when a drag is pending a drop onto the top level - outside
+                // all groups, there is no target row to highlight, so decorate the grid body.
+                'xh-view-manager__manage-dialog__grid--drop-target':
+                    dialogModel?.isTopLevelDropTarget(model),
+                // Grays + disables the drag handles while the selection cannot be dragged.
+                'xh-view-manager__manage-dialog__grid--drag-disabled':
+                    dialogModel?.isDragDisabled(model)
+            }),
             items: [
                 grid({
                     model,
