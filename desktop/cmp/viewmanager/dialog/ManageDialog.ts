@@ -31,7 +31,7 @@ export const manageDialog = hoistCmp.factory({
     className: 'xh-view-manager__manage-dialog',
     model: uses(() => ManageDialogModel),
 
-    render({model, className}) {
+    render({model, className, defaultViewIcon}) {
         if (!model.isOpen) return null;
 
         const {updateTask, loadTask, selectedViews, viewManagerModel} = model,
@@ -53,11 +53,11 @@ export const manageDialog = hoistCmp.factory({
                             // A sole-selected group row edits its encompassed views in bulk via
                             // the multi panel - the group itself is renamed via its context menu.
                             item: model.selectedGroupRecord
-                                ? viewMultiPanel()
+                                ? viewMultiPanel({defaultViewIcon})
                                 : count == 0 || model.hasGroupRowsSelected
                                   ? placeholderPanel()
                                   : count > 1
-                                    ? viewMultiPanel()
+                                    ? viewMultiPanel({defaultViewIcon})
                                     : viewPanel(),
                             bbar: bbar()
                         })

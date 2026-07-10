@@ -6,12 +6,11 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {fragment, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {div, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {getGroupPathOptions, getVisibilityInfo, getVisibilityOptions} from '../Utils';
@@ -25,7 +24,7 @@ import {ViewMultiPanelModel} from './ViewMultiPanelModel';
  */
 export const viewMultiPanel = hoistCmp.factory({
     model: uses(ViewMultiPanelModel),
-    render({model}) {
+    render({model, defaultViewIcon}) {
         const {views, parent, formModel, allEditable} = model,
             {viewManagerModel} = parent;
 
@@ -45,10 +44,15 @@ export const viewMultiPanel = hoistCmp.factory({
                 item: vframe({
                     className: 'xh-view-manager__manage-dialog__form',
                     items: [
-                        placeholder(
-                            Icon.boxFull(),
-                            `Configuring ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
-                        ),
+                        div({
+                            className: 'xh-view-manager__manage-dialog__multi-header',
+                            items: [
+                                defaultViewIcon,
+                                span(
+                                    `Configuring ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
+                                )
+                            ]
+                        }),
                         fragment(
                             groupField({
                                 model,

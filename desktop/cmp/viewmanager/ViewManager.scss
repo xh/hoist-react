@@ -42,6 +42,23 @@
       opacity: 0.2;
       pointer-events: none;
     }
+
+    // Compact, non-expanding header for the multi-view edit panel - mirrors the muted styling
+    // of a Placeholder without growing to fill the panel.
+    &__multi-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--xh-pad-px);
+      padding: var(--xh-pad-px);
+      color: var(--xh-text-color-muted);
+
+      > .xh-icon {
+        font-size: 2.5em;
+        opacity: 0.5;
+      }
+    }
   }
 
   &__manage-dialog,
