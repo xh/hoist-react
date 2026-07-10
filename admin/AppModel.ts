@@ -7,9 +7,12 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
+import {CallContextLike, HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {without} from 'lodash';
+import {RoleModuleConfig} from './tabs/userData/roles/Types';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';
@@ -27,23 +30,40 @@ export class AppModel extends HoistAppModel {
 
     viewManagerModels: Record<string, ViewManagerModel> = {};
 
+    /**
+     * Role-module config, loaded once at init (see {@link loadRoleModuleConfigAsync}) and shared
+     * with the Roles tab so it need not re-query. Null if not yet loaded or the query failed - the
+     * app not running the Hoist role module is reflected by a loaded config with `enabled: false`.
+     */
+    @observable.ref roleModuleConfig: RoleModuleConfig = null;
+
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
     }
 
     constructor() {
         super();
-
-        this.tabModel = new TabContainerModel({
-            route: 'default',
-            tabs: this.createTabs()
-        });
+        makeObservable(this);
 
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.defaults.autosizeMode = 'managed';
     }
 
     override async initAsync(ctx: InitContext) {
+        // Determine role-module availability up-front so we can title the User Data tab and show
+        // its Roles sub-tab only when the Hoist-provided DefaultRoleService is actually in use.
+        // Swallow errors here so a transient failure doesn't block admin startup.
+        try {
+            await this.loadRoleModuleConfigAsync(ctx);
+        } catch (e) {
+            XH.handleException(e, {showAlert: false, logOnServer: false});
+        }
+
+        this.tabModel = new TabContainerModel({
+            route: 'default',
+            tabs: this.createTabs()
+        });
+
         await this.initViewManagerModelsAsync(ctx);
         await super.initAsync(ctx);
     }
@@ -122,7 +142,8 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
-        const conf = XH.getConf('xhAdminAppConfig', {});
+        const conf = XH.getConf('xhAdminAppConfig', {}),
+            rolesEnabled = this.roleModuleConfig?.enabled ?? true;
 
         return [
             {
@@ -159,6 +180,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 id: 'userData',
+                title: rolesEnabled ? 'User Data & Roles' : 'User Data',
                 icon: Icon.users(),
                 content: {
                     refreshMode: 'onShowAlways',
@@ -172,7 +194,8 @@ export class AppModel extends HoistAppModel {
                         {
                             id: 'roles',
                             icon: Icon.idBadge(),
-                            content: rolePanel
+                            content: rolePanel,
+                            omit: !rolesEnabled
                         },
                         {
                             id: 'prefs',
@@ -207,6 +230,23 @@ export class AppModel extends HoistAppModel {
     getPrimaryAppCode() {
         const appCodes = without(XH.clientApps, XH.clientAppCode, 'mobile');
         return appCodes.find(it => it === 'app') ?? appCodes[0];
+    }
+
+    /**
+     * Load the role-module config from the server, caching it on this model as the single source
+     * of truth (the Roles tab reads it from here). The config reports whether role management is
+     * enabled - i.e. the app runs the Hoist-provided `DefaultRoleService` - which drives both the
+     * Roles sub-tab's presence and its mention in the enclosing tab's title.
+     *
+     * Called once at init; the Roles tab invokes it again only if that init load did not complete.
+     * Kept on a tight timeout - this should return near-instantly. Throws on failure; callers
+     * decide whether to surface or swallow (init swallows, the Roles tab lets its loader report).
+     */
+    async loadRoleModuleConfigAsync(ctx?: CallContextLike) {
+        const config = await this.runner(ctx)
+            .span('loadRoleModuleConfig')
+            .fetchJson({url: 'roleAdmin/config', timeout: 10 * SECONDS});
+        runInAction(() => (this.roleModuleConfig = config));
     }
 
     async initViewManagerModelsAsync(ctx: InitContext) {

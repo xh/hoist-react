@@ -25,13 +25,13 @@ export const rolePanel = hoistCmp.factory({
     model: creates(RoleModel),
 
     render({className, model}) {
-        const {moduleConfig} = model;
+        const {moduleConfig, gridModel, readonly} = model;
         if (!moduleConfig) return null;
         if (!moduleConfig.enabled) {
             return errorMessage({error: 'Default Role Module not enabled.'});
         }
-
-        const {gridModel, readonly} = model;
+        // Config is known and enabled, but the grid is built lazily just after - wait for it.
+        if (!gridModel) return null;
         return fragment(
             panel({
                 className,

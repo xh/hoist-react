@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {getAppModel} from '@xh/hoist/admin/AdminUtils';
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
@@ -33,15 +34,21 @@ export class RoleModel extends HoistModel {
 
     override persistWith = RoleModel.PERSIST_WITH;
 
-    @managed gridModel: GridModel;
+    // Observable as it is created lazily post-load (once the module config is known) and gates
+    // panel rendering - see RolePanel and ensureInitializedAsync.
+    @managed @observable.ref gridModel: GridModel;
     @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
     @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
-    @observable.ref moduleConfig: RoleModuleConfig;
 
     @bindable showInGroups = true;
+
+    /** Role-module config - sourced from AppModel, our single load point (see RoleModel docs). */
+    get moduleConfig(): RoleModuleConfig {
+        return getAppModel().roleModuleConfig;
+    }
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -234,16 +241,22 @@ export class RoleModel extends HoistModel {
     }
 
     private async ensureInitializedAsync(ctx: CallContext) {
-        if (this.moduleConfig) return;
+        if (this.gridModel) return;
 
-        const config = await this.runner(ctx).fetchJson({url: 'roleAdmin/config'});
-        runInAction(() => {
-            this.moduleConfig = config;
-            if (config.enabled) {
+        // Config is normally loaded by AppModel at init; ask it to (re)load only if that did not
+        // complete, keeping AppModel the single load point. Lets any failure surface via our
+        // doLoadAsync catch below, as before.
+        const appModel = getAppModel();
+        if (!appModel.roleModuleConfig) {
+            await appModel.loadRoleModuleConfigAsync(ctx);
+        }
+
+        if (this.moduleConfig.enabled) {
+            runInAction(() => {
                 this.gridModel = this.createGridModel();
                 this.filterChooserModel = this.createFilterChooserModel();
-            }
-        });
+            });
+        }
     }
 
     private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {
