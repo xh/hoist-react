@@ -14,19 +14,14 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {useContext} from 'react';
-import {
-    GroupPathOption,
-    groupPathDisplay,
-    groupPathOptionRenderer,
-    MIXED_GROUP_VALUE
-} from '../Utils';
+import {GroupPathOption, groupPathDisplay, groupPathOptionRenderer} from '../Utils';
 
 /** Common surface of the edit panel models backing the shared {@link groupField}. */
 export interface GroupFieldPanelModel extends HoistModel {
-    /** Must contain 'group' and 'newGroup' fields. */
+    /** Must contain 'group' and 'subgroup' fields. */
     formModel: FormModel;
     /** Bindable on the panel models. */
-    isAddingNewGroup: boolean;
+    isAddingSubgroup: boolean;
 }
 
 interface GroupFieldProps extends HoistProps<GroupFieldPanelModel> {
@@ -41,11 +36,10 @@ interface GroupFieldProps extends HoistProps<GroupFieldPanelModel> {
  */
 export const groupField = hoistCmp.factory<GroupFieldProps>({
     render({model, options, placeholder = '[root]'}) {
-        const {formModel, isAddingNewGroup} = model,
+        const {formModel, isAddingSubgroup} = model,
             {readonly} = formModel,
             group = formModel.values.group,
-            isMixed = group === MIXED_GROUP_VALUE,
-            // Suppress the newGroup label when the enclosing Form lays fields out inline -
+            // Suppress the subgroup label when the enclosing Form lays fields out inline -
             // a side-by-side label would crowd the row, and the input placeholder suffices.
             fieldDefaults = useContext(FormContext).fieldDefaults,
             inline = fieldDefaults?.inline ?? false,
@@ -67,24 +61,21 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                             item: select({
                                 options,
                                 optionRenderer: groupPathOptionRenderer(group),
-                                // Display the mixed-groups sentinel - never itself an option.
-                                generateOptionFn: v =>
-                                    v === MIXED_GROUP_VALUE ? {value: v, label: '[mixed]'} : null,
                                 enableFilter: true,
                                 enableClear: true,
                                 placeholder
                             }),
                             readonlyRenderer: v => groupPathDisplay(v)
                         }),
-                        ...(isAddingNewGroup && !readonly
+                        ...(isAddingSubgroup && !readonly
                             ? [
                                   span({
                                       className: 'view-group-delimiter',
                                       item: VIEW_GROUP_DELIMITER
                                   }),
                                   formField({
-                                      field: 'newGroup',
-                                      label: inline ? null : 'Nested Group',
+                                      field: 'subgroup',
+                                      label: inline ? null : 'Sub Group',
                                       width: 160,
                                       item: textInput({
                                           autoFocus: true,
@@ -93,28 +84,25 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                                   }),
                                   button({
                                       icon: Icon.x(),
-                                      tooltip: 'Cancel nested group',
+                                      tooltip: 'Cancel sub group',
                                       // Offset the formFields' own 3px bottom padding.
                                       marginBottom: 3,
                                       minimal: false,
                                       onClick: () => {
-                                          formModel.fields.newGroup.setValue(null);
-                                          model.isAddingNewGroup = false;
+                                          formModel.fields.subgroup.setValue(null);
+                                          model.isAddingSubgroup = false;
                                       }
                                   })
                               ]
                             : [
                                   button({
-                                      text: 'Nested Group',
+                                      text: 'Sub Group',
                                       icon: Icon.add(),
                                       omit: readonly,
-                                      // A new group needs an unambiguous parent - clear the
-                                      // mixed select (to top level) or pick a group first.
-                                      disabled: isMixed,
                                       // Offset the formFields' own 3px bottom padding.
                                       marginBottom: 3,
                                       minimal: false,
-                                      onClick: () => (model.isAddingNewGroup = true)
+                                      onClick: () => (model.isAddingSubgroup = true)
                                   })
                               ])
                     ]
@@ -123,7 +111,7 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                 // select's value container shows only the leaf name. Redundant when readonly,
                 // where the field itself renders the full path.
                 div({
-                    omit: readonly || isMixed,
+                    omit: readonly,
                     className: 'xh-view-manager__group-field__info',
                     // Indent past the inline side-label to align with the select control.
                     style: inline ? {marginLeft: labelWidth} : null,

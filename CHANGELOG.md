@@ -6,7 +6,7 @@
 
 * `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus
   in the ViewManager menu and as expandable tree grids in the Manage dialog (requires
-  hoist-core v41+).  Groups and views now support drag-and-drop reorganization within the personal and
+  hoist-core v41+). Groups and views now support drag-and-drop reorganization within the personal and
   global tabs. ⚠️ NOTE - this requires ag-Grid's `RowDragModule` to be registered by the app in its
   `Bootstrap.ts` (alongside the other required community modules) - the drag handles will not render
   without it. The `ViewManager` now supports bulk editing of views' pin and visibility state.

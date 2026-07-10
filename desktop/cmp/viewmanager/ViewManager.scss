@@ -73,7 +73,7 @@
 
           // Fixed overlap between neighboring cards, tightening once the hand would overflow
           // the header - the inner min() arg solves for the margin at which the hand's visible
-          // span exactly fills the available width, and the max() floor stops at a full stack.
+          // span fills 80% of the available width, and the max() floor stops at a full stack.
           --card-mx: max(
             min(-0.52em, ((80% - var(--card-w)) / max(var(--card-n) - 1, 1) - var(--card-w)) / 2),
             var(--card-w) / -2

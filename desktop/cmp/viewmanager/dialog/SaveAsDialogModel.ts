@@ -27,7 +27,7 @@ export class SaveAsDialogModel extends HoistModel {
     @observable isOpen: boolean = false;
 
     /** True to show the text input naming a new group to create under the selected group. */
-    @bindable isAddingNewGroup: boolean = false;
+    @bindable isAddingSubgroup: boolean = false;
 
     constructor(parent: ViewManagerModel) {
         super();
@@ -45,14 +45,14 @@ export class SaveAsDialogModel extends HoistModel {
         formModel.init({
             name,
             group: src.group,
-            newGroup: null,
+            subgroup: null,
             // Do not copy description or visibility from source view
             description: null,
             visibility: 'private',
             isPinned: !!src.info?.isPinned
         });
 
-        this.isAddingNewGroup = false;
+        this.isAddingSubgroup = false;
         this.isOpen = true;
     }
 
@@ -89,8 +89,8 @@ export class SaveAsDialogModel extends HoistModel {
                 },
                 {name: 'group'},
                 {
-                    name: 'newGroup',
-                    displayName: 'New Group',
+                    name: 'subgroup',
+                    displayName: 'Sub Group',
                     rules: [
                         ({value}) =>
                             value?.includes(VIEW_GROUP_DELIMITER)
@@ -107,7 +107,7 @@ export class SaveAsDialogModel extends HoistModel {
     private async doSaveAsAsync() {
         let {formModel, parent} = this,
             {typeDisplayName, globalDisplayName} = parent,
-            {name, group, newGroup, description, visibility} = formModel.getData(),
+            {name, group, subgroup, description, visibility} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             isGlobal = visibility === 'global',
             isShared = visibility === 'shared';
@@ -133,11 +133,11 @@ export class SaveAsDialogModel extends HoistModel {
         }
 
         const base = normalizeGroupPath(group),
-            trimmedNewGroup = newGroup?.trim();
+            trimmedSubgroup = subgroup?.trim();
 
         await parent.saveAsAsync({
             name: name.trim(),
-            group: trimmedNewGroup ? composeGroupPath(base, trimmedNewGroup) : base,
+            group: trimmedSubgroup ? composeGroupPath(base, trimmedSubgroup) : base,
             description: description?.trim(),
             isGlobal,
             isShared,

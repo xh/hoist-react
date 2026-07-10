@@ -9,7 +9,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {capitalize} from 'lodash';
+import {capitalize, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from '../ManageDialogModel';
 import {
@@ -27,8 +27,8 @@ export class ViewPanelModel extends HoistModel {
 
     @managed formModel: FormModel;
 
-    /** True to show the text input naming a new group to create under the selected group. */
-    @bindable isAddingNewGroup: boolean = false;
+    /** True to show the text input naming a subgroup to create under the selected group. */
+    @bindable isAddingSubgroup: boolean = false;
 
     get view(): ViewInfo {
         return this.parent.selectedView;
@@ -58,14 +58,14 @@ export class ViewPanelModel extends HoistModel {
         this.addReaction({
             track: () => this.view,
             run: view => {
-                this.isAddingNewGroup = false;
+                this.isAddingSubgroup = false;
                 if (view) {
                     const {formModel} = this;
                     formModel.init({
                         ...view,
                         visibility: view.isShared ? 'shared' : view.isGlobal ? 'global' : 'private',
                         owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName),
-                        newGroup: null
+                        subgroup: null
                     });
                     formModel.readonly = !view.isEditable;
                 }
@@ -76,7 +76,7 @@ export class ViewPanelModel extends HoistModel {
 
     reset() {
         this.formModel.reset();
-        this.isAddingNewGroup = false;
+        this.isAddingSubgroup = false;
     }
 
     async saveAsync() {
@@ -88,12 +88,15 @@ export class ViewPanelModel extends HoistModel {
 
         if (!isValid || !isDirty) return;
 
-        const newGroup = formModel.values.newGroup?.trim();
-        if (updates.hasOwnProperty('group') || newGroup) {
+        const subgroup = formModel.values.subgroup?.trim();
+        if (updates.hasOwnProperty('group') || subgroup) {
             const base = normalizeGroupPath(formModel.values.group);
-            updates.group = newGroup ? composeGroupPath(base, newGroup) : base;
+            updates.group = subgroup ? composeGroupPath(base, subgroup) : base;
         }
-        delete updates.newGroup;
+        delete updates.subgroup;
+
+        // A whitespace-only subgroup can dirty the form without producing any real updates.
+        if (isEmpty(updates)) return;
 
         if (visibilityField.isDirty) {
             const visibility = visibilityField.value;
@@ -158,8 +161,8 @@ export class ViewPanelModel extends HoistModel {
                 {name: 'owner'},
                 {name: 'group'},
                 {
-                    name: 'newGroup',
-                    displayName: 'New Group',
+                    name: 'subgroup',
+                    displayName: 'Sub Group',
                     rules: [
                         ({value}) =>
                             value?.includes(VIEW_GROUP_DELIMITER)

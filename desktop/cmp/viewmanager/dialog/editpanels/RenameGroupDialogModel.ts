@@ -14,14 +14,13 @@ import {
     getGroupParent,
     isGroupSameOrDescendant,
     normalizeGroupPath,
-    VIEW_GROUP_DELIMITER,
-    ViewInfo
+    VIEW_GROUP_DELIMITER
 } from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {required, StoreRecord} from '@xh/hoist/data';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {every, partition} from 'lodash';
+import {partition} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
 
 /**
@@ -45,20 +44,6 @@ export class RenameGroupDialogModel extends HoistModel {
         return this.groupRecord?.data.group ?? null;
     }
 
-    /** Views within the group, respecting any active grid filter. */
-    get views(): ViewInfo[] {
-        return this.parent.selectedViews;
-    }
-
-    get allEditable(): boolean {
-        return every(this.views, 'isEditable');
-    }
-
-    /** True if the group itself can be renamed/re-nested by the current user. */
-    get canEditGroup(): boolean {
-        return this.group != null && this.allEditable;
-    }
-
     get isGlobal(): boolean {
         return this.parent.gridType === 'global';
     }
@@ -71,13 +56,12 @@ export class RenameGroupDialogModel extends HoistModel {
         this.formModel = this.createFormModel();
 
         this.addReaction({
-            track: () => [this.groupRecord, this.views],
+            track: () => [this.groupRecord],
             run: () => {
-                const {formModel, group, allEditable} = this;
+                const {formModel, group} = this;
                 formModel.init({
                     name: getGroupLeaf(group)
                 });
-                formModel.readonly = !allEditable;
             },
             fireImmediately: true
         });
@@ -89,14 +73,14 @@ export class RenameGroupDialogModel extends HoistModel {
 
     /** @returns true if changes were applied (or none were pending), false if blocked. */
     async saveAsync(): Promise<boolean> {
-        const {parent, group, isGlobal, canEditGroup, formModel} = this;
+        const {parent, group, isGlobal, formModel} = this;
 
         if (!formModel.isDirty) return true;
         if (!(await formModel.validateAsync())) return false;
 
         const {name} = formModel.getData(),
             to = normalizeGroupPath(composeGroupPath(getGroupParent(group), name)),
-            renamePending = canEditGroup && to !== group;
+            renamePending = to !== group;
 
         // Run all confirms up front, before applying any changes.
         if (renamePending && !(await this.confirmGlobalRenameAsync())) return false;

@@ -28,7 +28,7 @@ export class ViewMultiPanelModel extends HoistModel {
     @managed formModel: FormModel;
 
     /** True to show the text input naming a new group to create under the selected group. */
-    @bindable isAddingNewGroup: boolean = false;
+    @bindable isAddingSubgroup: boolean = false;
 
     get views(): ViewInfo[] {
         return this.parent.selectedViews;
@@ -47,8 +47,8 @@ export class ViewMultiPanelModel extends HoistModel {
             fields: [
                 {name: 'group'},
                 {
-                    name: 'newGroup',
-                    displayName: 'New Group',
+                    name: 'subgroup',
+                    displayName: 'Sub Group',
                     rules: [
                         ({value}) =>
                             value?.includes(VIEW_GROUP_DELIMITER)
@@ -67,13 +67,13 @@ export class ViewMultiPanelModel extends HoistModel {
                     vals = uniq(
                         views.map(v => (v.isShared ? 'shared' : v.isGlobal ? 'global' : 'private'))
                     );
-                this.isAddingNewGroup = false;
+                this.isAddingSubgroup = false;
                 // Group inits to the views' common group when uniform (empty meaning top level,
                 // as in the single-view panel), else to the displayed-only mixed sentinel.
                 const groups = uniq(views.map(v => v.group ?? null));
                 formModel.init({
                     group: groups.length === 1 ? groups[0] : MIXED_GROUP_VALUE,
-                    newGroup: null,
+                    subgroup: null,
                     visibility: vals.length === 1 ? vals[0] : null
                 });
                 formModel.readonly = !this.allEditable;
@@ -84,7 +84,7 @@ export class ViewMultiPanelModel extends HoistModel {
 
     reset() {
         this.formModel.reset();
-        this.isAddingNewGroup = false;
+        this.isAddingSubgroup = false;
     }
 
     async saveAsync() {
@@ -94,13 +94,11 @@ export class ViewMultiPanelModel extends HoistModel {
 
         if (!formModel.isDirty || isEmpty(views)) return;
 
-        // An undirtied mixed sentinel means no group change - it can never be dirty itself, and
-        // the New Group button is disabled while it is in place.
-        const newGroup = formModel.values.newGroup?.trim(),
+        const subgroup = formModel.values.subgroup?.trim(),
             groupValue = groupField.value;
-        if (groupField.isDirty || (newGroup && groupValue !== MIXED_GROUP_VALUE)) {
+        if (groupField.isDirty || (subgroup && groupValue !== MIXED_GROUP_VALUE)) {
             const base = normalizeGroupPath(groupValue);
-            updates.group = newGroup ? composeGroupPath(base, newGroup) : base;
+            updates.group = subgroup ? composeGroupPath(base, subgroup) : base;
         }
 
         if (visibilityField.isDirty) {
