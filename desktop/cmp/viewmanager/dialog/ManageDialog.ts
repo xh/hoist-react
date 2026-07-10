@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {card} from '@xh/hoist/cmp/card';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {div, filler, fragment, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
@@ -89,7 +90,7 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
 });
 
 export const viewsGrid = hoistCmp.factory<GridModel>({
-    render({model, helpText}) {
+    render({model, helpText, helpIcon}) {
         const dialogModel = useContextModel(ManageDialogModel);
         return vframe({
             paddingTop: 5,
@@ -122,9 +123,13 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                         ...dialogModel?.getRowDragAgOptions(model)
                     }
                 }),
-                div({
+                card({
+                    title: 'Help',
+                    icon: helpIcon,
                     item: helpText,
+                    modelConfig: {collapsible: true, defaultCollapsed: true},
                     omit: !helpText,
+                    intent: 'primary',
                     className: 'xh-view-manager__manage-dialog__help-text'
                 })
             ]

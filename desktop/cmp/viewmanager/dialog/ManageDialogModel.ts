@@ -852,11 +852,13 @@ export class ManageDialogModel extends HoistModel {
                     title: this.ownedTabTitle,
                     content: viewsGrid({
                         model: this.ownedGridModel,
+                        helpIcon: Icon.user(),
                         helpText: fragment(
-                            Icon.user(),
                             `This tab shows ${views} you have created.`,
                             br(),
-                            `Pin ${views} to your menu for quick access. Use groups to nest them under sub-menus.`,
+                            `Pin ${views} to your menu for quick access.`,
+                            br(),
+                            `Use groups to nest them under unlimited depth sub-menus.`,
                             ...(enableSharing
                                 ? [
                                       br(),
@@ -874,8 +876,8 @@ export class ManageDialogModel extends HoistModel {
                 title: this.globalTabTitle,
                 content: viewsGrid({
                     model: this.globalGridModel,
+                    helpIcon: Icon.globe(),
                     helpText: fragment(
-                        Icon.globe(),
                         `This tab shows ${globalViews} available to everyone.`,
                         br(),
                         `${capitalize(globalViews)} appear by default in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
@@ -890,8 +892,8 @@ export class ManageDialogModel extends HoistModel {
                 title: this.sharedTabTitle,
                 content: viewsGrid({
                     model: this.sharedGridModel,
+                    helpIcon: Icon.users(),
                     helpText: fragment(
-                        Icon.users(),
                         `This tab shows ${views} shared by other ${XH.appName} users.`,
                         br(),
                         `You can pin these ${views} to your menu for quick access. Only the owner will be able to save changes to a shared ${view}, but you can save a copy to make it your own.`

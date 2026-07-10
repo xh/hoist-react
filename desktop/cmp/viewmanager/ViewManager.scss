@@ -128,17 +128,13 @@
     }
 
     &__help-text {
-      display: flex;
-      align-items: center;
-      gap: var(--xh-pad-px);
       margin: var(--xh-pad-px);
-      padding: var(--xh-pad-px);
-      border: var(--xh-border-solid);
-      border-radius: var(--xh-border-radius-px);
       background-color: var(--xh-bg-alt);
 
-      .xh-icon {
-        font-size: 1.2em;
+      &.xh-card--collapsed {
+        margin-bottom: 0;
+        background-color: unset;
+        border-radius: 0;
       }
     }
   }
