@@ -40,7 +40,7 @@ interface GroupFieldProps extends HoistProps<GroupFieldPanelModel> {
  * path creation within the select itself.
  */
 export const groupField = hoistCmp.factory<GroupFieldProps>({
-    render({model, options, placeholder = 'Select optional group...'}) {
+    render({model, options, placeholder = '[root]'}) {
         const {formModel, isAddingNewGroup} = model,
             {readonly} = formModel,
             group = formModel.values.group,
