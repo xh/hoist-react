@@ -14,7 +14,12 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {CSSProperties} from 'react';
-import {getGroupPathOptions, getVisibilityInfo, getVisibilityOptions} from '../Utils';
+import {
+    getGroupPathOptions,
+    getVisibilityInfo,
+    getVisibilityOptions,
+    MIXED_GROUP_VALUE
+} from '../Utils';
 import {formButtons} from './FormButtons';
 import {groupField} from './GroupField';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
@@ -33,6 +38,7 @@ export const viewMultiPanel = hoistCmp.factory({
 
         const visibility = formModel.values.visibility,
             isGlobal = visibility === 'global',
+            isMixedGroup = formModel.values.group === MIXED_GROUP_VALUE,
             visOptions = getVisibilityOptions(viewManagerModel),
             visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
@@ -69,7 +75,9 @@ export const viewMultiPanel = hoistCmp.factory({
                         fragment(
                             groupField({
                                 model,
-                                omit: !allEditable,
+                                // Omitted when the selected views span multiple groups - there
+                                // is no meaningful single group value to display or edit.
+                                omit: !allEditable || isMixedGroup,
                                 options: getGroupPathOptions(viewManagerModel, isGlobal)
                             }),
                             formField({
