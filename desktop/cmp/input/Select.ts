@@ -421,11 +421,6 @@ class SelectInputModel extends HoistInputModel {
     filterOption = (opt, inputVal) => {
         const {componentProps, asyncMode, inputValue, inputValueChangedSinceSelect} = this;
 
-        // 0) Always pass the "Create..." option injected by react-select (with `enableCreate`) -
-        //    its visibility is governed by react-select itself, and its label (customizable via
-        //    `createMessageFn`) need not echo the typed query.
-        if (opt.data?.__isNew__) return true;
-
         // 1) show all options if input has not changed since last select (i.e. user has not typed)
         //    or if in async mode (i.e. queryFn specified).
         if (

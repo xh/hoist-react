@@ -117,7 +117,7 @@ export class DataAccess<T> {
             });
     }
 
-    /** Apply the same metadata updates to multiple views. Requires hoist-core v41 or greater. */
+    /** Apply the same metadata updates to multiple views.*/
     async updateViewsInfoAsync(
         views: ViewInfo[],
         updates: ViewUpdateSpec,
