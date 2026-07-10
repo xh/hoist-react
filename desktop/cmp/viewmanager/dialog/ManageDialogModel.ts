@@ -67,6 +67,9 @@ export class ManageDialogModel extends HoistModel {
     /** Pending row-drag drop target within one of the grids, for highlighting. */
     @observable.ref private dropTarget: {type: GridType; id: string} = null;
 
+    /** Cleanup for the one-shot drop listener armed by dragging out past the top of a grid. */
+    private outsideDropCleanup: () => void = null;
+
     readonly updateTask = TaskObserver.trackLast();
 
     get loadTask(): TaskObserver {
@@ -135,6 +138,7 @@ export class ManageDialogModel extends HoistModel {
     @action
     close() {
         this.isOpen = false;
+        this.disarmOutsideDrop();
         if (this.renameGroupDialogModel) this.renameGroupDialogModel.isRenameDialogOpen = false;
     }
 
@@ -220,9 +224,13 @@ export class ManageDialogModel extends HoistModel {
                     ? `${capitalize(typeDisplayName)} "${rec?.data.name}"`
                     : pluralize(typeDisplayName, dragItemCount, true);
             },
+            onRowDragEnter: () => this.disarmOutsideDrop(),
             onRowDragMove: e => this.onRowDragMove(type, e),
-            onRowDragLeave: () => this.setDropTarget(type, null),
-            onRowDragCancel: () => this.setDropTarget(type, null),
+            onRowDragLeave: e => this.onRowDragLeave(type, e),
+            onRowDragCancel: () => {
+                this.disarmOutsideDrop();
+                this.setDropTarget(type, null);
+            },
             onRowDragEnd: e => this.onRowDragEnd(type, e)
         };
     }
@@ -365,6 +373,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private onRowDragEnd(type: GridType, e: any) {
+        this.disarmOutsideDrop();
+
         const payload = this.getDragPayload(e),
             target = this.resolveDropTarget(e),
             valid = this.isValidDrop(payload, target);
@@ -372,6 +382,65 @@ export class ManageDialogModel extends HoistModel {
         this.setDropTarget(type, null);
         if (!valid) return;
         this.doRowDragDropAsync(type, payload, target).catchDefault();
+    }
+
+    /**
+     * Dragging out past the top of the grid targets the top level, symmetric with the empty
+     * space below the last row - arm a one-shot drop completing on release outside the grid
+     * (ag-Grid fires no end event out there). Any other exit simply clears the pending target,
+     * and re-entering the grid disarms.
+     */
+    private onRowDragLeave(type: GridType, e: any) {
+        const payload = this.getDragPayload(e),
+            target: DropTarget = {id: TOP_LEVEL_DROP_ID, path: null};
+
+        if (this.didExitGridTop(type, e) && this.isValidDrop(payload, target)) {
+            this.setDropTarget(type, target);
+            this.armOutsideDrop(type, payload, target);
+        } else {
+            this.setDropTarget(type, null);
+        }
+    }
+
+    /** True if the drag left the grid past its top edge. */
+    private didExitGridTop(type: GridType, e: any): boolean {
+        const clientY = e.event?.clientY,
+            gridId = this.gridModelFor(type)?.agApi?.getGridId(),
+            gridEl = gridId
+                ? document.querySelector(`.ag-root-wrapper[grid-id="${gridId}"]`)
+                : null;
+        return gridEl != null && clientY != null && clientY <= gridEl.getBoundingClientRect().top;
+    }
+
+    private armOutsideDrop(
+        type: GridType,
+        payload: {group?: string; views?: ViewInfo[]},
+        target: DropTarget
+    ) {
+        this.disarmOutsideDrop();
+        const onMouseUp = () => {
+            this.disarmOutsideDrop();
+            this.setDropTarget(type, null);
+            this.doRowDragDropAsync(type, payload, target).catchDefault();
+        };
+        // ag-Grid does not observe Escape while the drag is outside the grid - cancel here.
+        const onKeyDown = (ev: KeyboardEvent) => {
+            if (ev.key === 'Escape') {
+                this.disarmOutsideDrop();
+                this.setDropTarget(type, null);
+            }
+        };
+        document.addEventListener('mouseup', onMouseUp, {capture: true});
+        document.addEventListener('keydown', onKeyDown, {capture: true});
+        this.outsideDropCleanup = () => {
+            document.removeEventListener('mouseup', onMouseUp, {capture: true});
+            document.removeEventListener('keydown', onKeyDown, {capture: true});
+            this.outsideDropCleanup = null;
+        };
+    }
+
+    private disarmOutsideDrop() {
+        this.outsideDropCleanup?.();
     }
 
     private async doRowDragDropAsync(
