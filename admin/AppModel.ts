@@ -7,10 +7,9 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {HoistAppModel, InitContext, XH} from '@xh/hoist/core';
+import {HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
-import {Route} from 'router5';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';
@@ -49,7 +48,7 @@ export class AppModel extends HoistAppModel {
         await super.initAsync(ctx);
     }
 
-    override getRoutes(): Route[] {
+    override getRoutes(): HoistRoute[] {
         return [
             {
                 name: 'default',
@@ -66,7 +65,7 @@ export class AppModel extends HoistAppModel {
         return [];
     }
 
-    getTabRoutes(): Route[] {
+    getTabRoutes(): HoistRoute[] {
         return [
             {
                 name: 'general',
