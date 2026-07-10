@@ -84,16 +84,16 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                                   }),
                                   formField({
                                       field: 'newGroup',
-                                      label: inline ? null : undefined,
-                                      width: 180,
+                                      label: inline ? null : 'Nested Group',
+                                      width: 160,
                                       item: textInput({
                                           autoFocus: true,
-                                          placeholder: 'New group name...'
+                                          placeholder: 'type name...'
                                       })
                                   }),
                                   button({
                                       icon: Icon.x(),
-                                      tooltip: 'Cancel new group',
+                                      tooltip: 'Cancel nested group',
                                       // Offset the formFields' own 3px bottom padding.
                                       marginBottom: 3,
                                       minimal: false,
@@ -105,7 +105,7 @@ export const groupField = hoistCmp.factory<GroupFieldProps>({
                               ]
                             : [
                                   button({
-                                      text: 'New Group',
+                                      text: 'Nested Group',
                                       icon: Icon.add(),
                                       omit: readonly,
                                       // A new group needs an unambiguous parent - clear the
