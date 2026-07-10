@@ -216,6 +216,9 @@ export class ManageDialogModel extends HoistModel {
 
         const {typeDisplayName} = this.viewManagerModel;
         return {
+            // Sticky group rows overlay the top of the grid while scrolled, where they capture
+            // hovers/drops not intended for them - confusing during drag-and-drop.
+            suppressGroupRowsSticky: true,
             rowDragMultiRow: true,
             rowDragText: (params, dragItemCount) => {
                 const rec = params.rowNode?.data as StoreRecord;
