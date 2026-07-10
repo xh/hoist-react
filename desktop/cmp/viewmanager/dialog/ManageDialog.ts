@@ -40,7 +40,7 @@ export const manageDialog = hoistCmp.factory({
         return fragment(
             dialog({
                 title: `Manage ${capitalize(pluralize(viewManagerModel.typeDisplayName))}`,
-                icon: Icon.gear(),
+                icon: defaultViewIcon,
                 className,
                 isOpen: true,
                 style: {width: '1000px', maxWidth: '90vw', minHeight: '600px'},
