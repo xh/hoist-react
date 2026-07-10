@@ -50,7 +50,6 @@ export const viewMultiPanel = hoistCmp.factory({
                             `Configuring ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
                         ),
                         fragment(
-                            vspacer(),
                             groupField({
                                 model,
                                 omit: !allEditable,
