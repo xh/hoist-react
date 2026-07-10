@@ -2,26 +2,19 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus
+  in the ViewManager menu and as expandable tree grids in the Manage dialog (requires
+  hoist-core v41+).  Groups and views now support drag-and-drop reorganization within the personal and
+  global tabs. ⚠️ NOTE - this requires ag-Grid's `RowDragModule` to be registered by the app in its
+  `Bootstrap.ts` (alongside the other required community modules) - the drag handles will not render
+  without it. The `ViewManager` now supports bulk editing of views' pin and visibility state.
+
 ## 86.3.0 - 2026-07-10
 
 ### 🎁 New Features
 
-* `ViewManager` groups now support unlimited nesting - forward slashes within a group name (e.g.
-  `Reports/Sales/Monthly`) are interpreted as sub-group delimiters, rendered as nested sub-menus
-  in the ViewManager menu and as expandable tree grids in the Manage dialog (requires
-  hoist-core v41+).
-* The `ViewManager` Manage dialog now supports bulk editing: select multiple views - or a group
-  row - to change their visibility or move them into another group at once, pin/unpin them to
-  your menu, or delete them as a unit. Groups are renamed via a right-click "Rename Group" menu
-  item on their rows, opening a focused rename dialog that cascades to all views within. New
-  groups are created via a dedicated "New" button alongside the group selects, replacing
-  free-typed path creation.
-* The `ViewManager` Manage dialog now supports drag-and-drop reorganization within the personal and
-  global tabs - drag any number of selected views into a group (or out to the top level), or drag a
-  group row to re-parent it with its full nested subtree intact. Drops apply immediately - after a
-  confirm when the move affects any global view - and report the outcome with a toast. ⚠ NOTE -
-  this requires ag-Grid's `RowDragModule` to be registered by the app in its `Bootstrap.ts`
-  (alongside the other required community modules) - the drag handles will not render without it.
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.
@@ -43,9 +36,6 @@
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
-* Fixed `Select` with `enableCreate` to always display its "Create..." option while typing -
-  previously the option could be incorrectly filtered out of the menu if the label produced by
-  `createMessageFn` did not contain the typed query verbatim.
 * Hardened the grid column filter's Custom tab against filters it previously mishandled -
   multi-value clauses are now expanded into editable rows and recombined on commit, and filters it
   cannot represent are left untouched rather than corrupted.
