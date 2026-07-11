@@ -4,59 +4,45 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridModel} from '@xh/hoist/cmp/grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {filler, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {filler, hframe, vbox} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
-import {ColumnChooserModel} from './ColumnChooserModel';
-import {ColumnChooserBucketModel} from './impl/ColumnChooserBucketModel';
+import {ColChooserModel} from './ColChooserModel';
 import './ColumnChooser.scss';
+import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
 
-export interface ColumnChooserProps extends HoistProps, LayoutProps {
-    /** GridModel whose columns this chooser manages. Falls back to context lookup. */
-    gridModel?: GridModel;
-
-    /** True (default) to show the Restore Defaults button. */
-    showRestoreDefaults?: boolean;
-
-    /**
-     * True to show the Column Library - a left-docked panel listing hidden columns (grouped by
-     * `chooserGroup`) that can be dragged onto the bucket grids to show them, and onto which bucket
-     * columns can be dragged to hide them. When enabled, hidden columns are removed from the bucket
-     * grids by default (toggle via the "Show Hidden" control). Default false.
-     */
-    showColumnLibrary?: boolean;
-}
+export interface ColumnChooserProps extends HoistProps<ColChooserModel>, LayoutProps {}
 
 /**
- * A standalone component for managing Grid column visibility, ordering, and pinning.
- * Renders three internal grids - pinned-left, unpinned, and pinned-right - with drag-and-drop
- * supported both within and across grids. Bind to a GridModel via the `gridModel` prop or
- * context lookup.
+ * A component for managing Grid column visibility, ordering, and pinning. Renders three internal
+ * grids - pinned-left, unpinned, and pinned-right - with drag-and-drop supported both within and
+ * across grids. Bound to a {@link ColChooserModel}, which is owned by the grid and shared across
+ * the chooser's dialog, popover, and panel presentations.
  */
 export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooserProps>({
     displayName: 'ColumnChooser',
     className: 'xh-column-chooser',
+    model: uses(ColChooserModel),
 
-    render({className, showRestoreDefaults, showColumnLibrary, ...props}) {
-        const impl = useLocalModel(ColumnChooserModel),
-            [layoutProps] = splitLayoutProps(props);
+    render({model, className, ...props}) {
+        const [layoutProps] = splitLayoutProps(props),
+            {showRestoreDefaults, commitOnChange, filterMatchMode} = model;
 
-        return hbox({
+        return hframe({
             className,
             ...layoutProps,
             items: [
                 columnLibraryPanel({
-                    impl,
-                    omit: !impl.columnLibraryEnabled || !impl.showLibrary
+                    chooserModel: model,
+                    omit: !model.isLibraryShown
                 }),
                 vbox({
                     flex: 1,
@@ -66,60 +52,80 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                             items: [
                                 gridFindField({
                                     flex: 1,
-                                    gridModel: impl.unpinnedBucketModel.chooserGridModel,
+                                    gridModel: model.unpinnedBucketModel.chooserGridModel,
+                                    matchMode: filterMatchMode,
                                     placeholder: 'Find Columns'
                                 })
                             ]
                         }),
                         pinnedBucketGrid({
-                            bucket: impl.leftBucketModel,
+                            bucket: model.leftBucketModel,
                             side: 'left',
-                            omit: !impl.columnPinningEnabled
+                            omit: !model.columnPinningEnabled
                         }),
                         grid({
                             className:
                                 'xh-column-chooser__bucket xh-column-chooser__bucket--unpinned',
-                            model: impl.unpinnedBucketModel.chooserGridModel,
-                            agOptions: impl.unpinnedBucketModel.agOptions
+                            model: model.unpinnedBucketModel.chooserGridModel,
+                            agOptions: model.unpinnedBucketModel.agOptions
                         }),
                         pinnedBucketGrid({
-                            bucket: impl.rightBucketModel,
+                            bucket: model.rightBucketModel,
                             side: 'right',
-                            omit: !impl.columnPinningEnabled
+                            omit: !model.columnPinningEnabled
                         }),
                         toolbar({
                             items: [
                                 button({
-                                    omit: !impl.hasColumnGroups,
-                                    icon: impl.showGroups
+                                    omit: !model.hasColumnGroups,
+                                    icon: model.showGroups
                                         ? Icon.checkSquare({intent: 'primary'})
                                         : Icon.square(),
                                     text: 'Show Groups',
-                                    onClick: () => (impl.showGroups = !impl.showGroups)
+                                    onClick: () => (model.showGroups = !model.showGroups)
                                 }),
                                 button({
-                                    omit: !impl.columnLibraryEnabled,
-                                    icon: impl.showHidden
+                                    omit: !model.columnLibraryEnabled,
+                                    icon: model.showHidden
                                         ? Icon.checkSquare({intent: 'primary'})
                                         : Icon.square(),
                                     text: 'Show Hidden',
-                                    onClick: () => (impl.showHidden = !impl.showHidden)
+                                    onClick: () => (model.showHidden = !model.showHidden)
                                 }),
                                 button({
-                                    omit: !impl.columnLibraryEnabled,
-                                    icon: impl.showLibrary
+                                    omit: !model.columnLibraryEnabled,
+                                    icon: model.showLibrary
                                         ? Icon.checkSquare({intent: 'primary'})
                                         : Icon.square(),
                                     text: 'Column Library',
-                                    onClick: () => (impl.showLibrary = !impl.showLibrary)
+                                    onClick: () => (model.showLibrary = !model.showLibrary)
                                 }),
                                 filler(),
                                 button({
-                                    omit: showRestoreDefaults === false,
+                                    omit: !showRestoreDefaults,
                                     intent: 'danger',
                                     icon: Icon.reset(),
                                     text: 'Restore Defaults',
-                                    onClick: () => impl.restoreDefaultsAsync()
+                                    onClick: () => model.restoreDefaultsAsync()
+                                }),
+                                toolbarSep({
+                                    omit: commitOnChange || !showRestoreDefaults
+                                }),
+                                button({
+                                    omit: commitOnChange,
+                                    text: 'Cancel',
+                                    onClick: () => model.close()
+                                }),
+                                button({
+                                    omit: commitOnChange,
+                                    text: 'Save',
+                                    icon: Icon.check(),
+                                    intent: 'success',
+                                    disabled: !model.isDirty,
+                                    onClick: () => {
+                                        model.commitPendingAsync();
+                                        model.close();
+                                    }
                                 })
                             ]
                         })
@@ -154,10 +160,10 @@ const pinnedBucketGrid = hoistCmp.factory<BucketGridProps>(({bucket, side}) =>
 );
 
 interface ColumnLibraryPanelProps extends HoistProps {
-    impl: ColumnChooserModel;
+    chooserModel: ColChooserModel;
 }
 
-const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({impl}) =>
+const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({chooserModel}) =>
     panel({
         className: 'xh-column-chooser__library',
         modelConfig: {
@@ -169,15 +175,16 @@ const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({impl}) =>
         tbar: toolbar(
             storeFilterField({
                 flex: 1,
-                gridModel: impl.libraryModel.chooserGridModel,
+                gridModel: chooserModel.libraryModel.chooserGridModel,
                 includeFields: ['name', 'description', 'chooserGroup'],
+                matchMode: chooserModel.filterMatchMode,
                 placeholder: 'Filter Columns...'
             })
         ),
         item: grid({
             className: 'xh-column-chooser__bucket xh-column-chooser__library-grid',
-            model: impl.libraryModel.chooserGridModel,
-            agOptions: impl.libraryModel.agOptions
+            model: chooserModel.libraryModel.chooserGridModel,
+            agOptions: chooserModel.libraryModel.agOptions
         })
     })
 );

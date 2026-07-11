@@ -10,7 +10,7 @@ import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -27,11 +27,13 @@ import {
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {
     colChooser as desktopColChooser,
+    colChooserPanel as desktopColChooserPanel,
     gridFilterDialog,
     ModalSupportModel,
     DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
+import type {ColChooserPanelModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserPanelModel';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
@@ -104,6 +106,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 treeStyle,
                 highlightRowOnClick,
                 colChooserModel,
+                colChooserPanelModel,
                 filterModel,
                 enableFullWidthScroll
             } = model,
@@ -121,25 +124,39 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
+        const gridContainer = container({
+            className,
+            items: [
+                agGrid({
+                    model: model.agGridModel,
+                    ...getLayoutProps(props),
+                    ...impl.agOptions
+                }),
+                gridHScrollbar({
+                    omit: !enableFullWidthScroll,
+                    gridLocalModel: impl
+                })
+            ],
+            testId,
+            onKeyDown: impl.onKeyDown,
+            onMouseDown: impl.onViewMouseDown,
+            ref: composeRefs(impl.viewRef, model.viewRef, ref)
+        });
+
+        // Wrap alongside the docked side-panel chooser when enabled (desktop-only - the model is
+        // never created on mobile).
+        let content = gridContainer;
+        if (colChooserPanelModel) {
+            const chooserPanel = desktopColChooserPanel({model: colChooserPanelModel}),
+                {side} = (colChooserPanelModel as ColChooserPanelModel).panelModel;
+            content =
+                side === 'left'
+                    ? hframe(chooserPanel, gridContainer)
+                    : hframe(gridContainer, chooserPanel);
+        }
+
         return fragment(
-            container({
-                className,
-                items: [
-                    agGrid({
-                        model: model.agGridModel,
-                        ...getLayoutProps(props),
-                        ...impl.agOptions
-                    }),
-                    gridHScrollbar({
-                        omit: !enableFullWidthScroll,
-                        gridLocalModel: impl
-                    })
-                ],
-                testId,
-                onKeyDown: impl.onKeyDown,
-                onMouseDown: impl.onViewMouseDown,
-                ref: composeRefs(impl.viewRef, model.viewRef, ref)
-            }),
+            content,
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
             filterModel ? gridFilterDialog({model: filterModel}) : null
         );

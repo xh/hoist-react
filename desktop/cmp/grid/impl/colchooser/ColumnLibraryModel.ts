@@ -8,7 +8,7 @@ import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 
-import type {ColumnChooserModel} from '../ColumnChooserModel';
+import type {ColChooserModel} from './ColChooserModel';
 import {
     ChooserColumnName,
     type ColumnChooserDropParticipant,
@@ -26,7 +26,7 @@ const UNGROUPED = 'Ungrouped';
 export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropParticipant {
     override xhImpl = true;
 
-    readonly parent: ColumnChooserModel;
+    readonly parent: ColChooserModel;
 
     @managed
     chooserGridModel: GridModel;
@@ -46,7 +46,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         };
     }
 
-    constructor({parent}: {parent: ColumnChooserModel}) {
+    constructor({parent}: {parent: ColChooserModel}) {
         super();
         this.parent = parent;
         this.chooserGridModel = this.createGridModel();
@@ -96,10 +96,10 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
             );
         if (!hideIds.size) return;
 
-        const newState = targetGridModel.columnState.map(cs =>
+        const newState = this.parent.currentState.map(cs =>
             hideIds.has(cs.colId) ? {...cs, hidden: true} : cs
         );
-        this.parent.commit(newState);
+        this.parent.applyState(newState);
     }
 
     getCrossBucketDropIcon(): string {

@@ -49,7 +49,10 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
+import {
+    ColChooserModalModel as DesktopColChooserModalModel,
+    ColChooserPanelModel as DesktopColChooserPanelModel
+} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -113,6 +116,7 @@ import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
     ColChooserConfig,
+    ColChooserPanelConfig,
     ColumnState,
     GridModelPersistOptions,
     GroupRowRenderer,
@@ -155,8 +159,16 @@ export interface GridConfig {
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
     filterModel?: GridFilterModelConfig | boolean;
 
-    /** Config with which to create a ColChooserModel, or boolean `true` to enable default.*/
+    /**
+     * Config for the modal (dialog/popover) column chooser, or boolean `true` to enable default.
+     */
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean;
+
+    /**
+     * Config for the docked, non-modal side-panel column chooser, or boolean `true` to enable
+     * default. Desktop only - ignored on mobile.
+     */
+    colChooserPanelModel?: Omit<ColChooserPanelConfig, 'gridModel'> | boolean;
 
     /**
      * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
@@ -407,6 +419,7 @@ export interface GridModelDefaults {
     cellBorders?: boolean;
     clicksToExpand?: number | null;
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean | null;
+    colChooserPanelModel?: Omit<ColChooserPanelConfig, 'gridModel'> | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
@@ -453,6 +466,7 @@ export class GridModel extends HoistModel {
         cellBorders: false,
         clicksToExpand: null,
         colChooserModel: null,
+        colChooserPanelModel: null,
         colDefaults: null,
         contextMenu: [
             'filter',
@@ -500,6 +514,7 @@ export class GridModel extends HoistModel {
     selModel: StoreSelectionModel;
     treeMode: boolean;
     colChooserModel: IColChooserModel;
+    colChooserPanelModel: IColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
@@ -618,6 +633,7 @@ export class GridModel extends HoistModel {
             selModel,
             filterModel,
             colChooserModel = GridModel.defaults.colChooserModel,
+            colChooserPanelModel = GridModel.defaults.colChooserPanelModel,
             emptyText = GridModel.defaults.emptyText,
             hideEmptyTextBeforeLoad = true,
             sortBy = [],
@@ -743,6 +759,7 @@ export class GridModel extends HoistModel {
         });
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
+        this.colChooserPanelModel = this.parsePanelChooserModel(colChooserPanelModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
         if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
@@ -1264,12 +1281,17 @@ export class GridModel extends HoistModel {
         this.columnState = leaves.map(it => this.getDefaultStateForColumn(it));
     }
 
+    @action
     setColumnState(colState: ColumnState[]) {
         this.columnState = this.cleanColumnState(colState);
     }
 
     showColChooser() {
         this.colChooserModel?.open();
+    }
+
+    showColChooserPanel() {
+        this.colChooserPanelModel?.open();
     }
 
     noteAgColumnStateChanged(agColState: AgColumnState[]) {
@@ -2020,9 +2042,21 @@ export class GridModel extends HoistModel {
     private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
-        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
+        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModalModel;
         chooserModel = chooserModel === true ? {} : chooserModel;
         return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
+    }
+
+    // Docked side-panel chooser is a desktop-only, non-modal presentation - never built on mobile.
+    private parsePanelChooserModel(
+        chooserModel: GridConfig['colChooserPanelModel']
+    ): IColChooserModel {
+        if (XH.isMobileApp || !chooserModel) return null;
+
+        chooserModel = chooserModel === true ? {} : chooserModel;
+        return this.markManaged(
+            new DesktopColChooserPanelModel({...chooserModel, gridModel: this})
+        );
     }
 
     private isGroupSpec(col: ColumnOrGroupSpec): col is ColumnGroupSpec {

@@ -21,7 +21,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {castArray, findLastIndex, isEmpty} from 'lodash';
 
-import type {ColumnChooserModel} from '../ColumnChooserModel';
+import type {ColChooserModel} from './ColChooserModel';
 import {
     ChooserColumnName,
     type ColumnChooserData,
@@ -30,7 +30,7 @@ import {
 } from './ColumnChooserUtils';
 
 export interface ColumnChooserBucketConfig {
-    parent: ColumnChooserModel;
+    parent: ColChooserModel;
     pinned: HSide | null;
     /** Label shown in the bucket's docked summary header row. */
     summaryName: string;
@@ -40,13 +40,13 @@ export interface ColumnChooserBucketConfig {
 /**
  * Per-bucket model backing a single chooser grid (pinned-left, unpinned, or pinned-right).
  * Owns its slice of the target grid's columnState - building chooser records, validating and
- * handling drag/drop, and toggling visibility. The parent {@link ColumnChooserModel}
+ * handling drag/drop, and toggling visibility. The parent {@link ColChooserModel}
  * orchestrates the buckets, providing the target GridModel and the state commit chokepoint.
  */
 export class ColumnChooserBucketModel extends HoistModel implements ColumnChooserDropParticipant {
     override xhImpl = true;
 
-    readonly parent: ColumnChooserModel;
+    readonly parent: ColChooserModel;
     readonly pinned: HSide | null;
     readonly summaryName: string;
 
@@ -128,7 +128,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             });
         });
 
-        gridModel.updateColumnState(updates);
+        this.parent.updateColumns(updates);
     }
 
     /**
@@ -245,7 +245,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
     /**
      * Drag-image icon name for a cross-bucket drag hovering this bucket's grid. ag-grid hardcodes
-     * the external drop-zone icon to 'move' regardless of `isRowValidDropPosition`; ColumnChooserModel
+     * the external drop-zone icon to 'move' regardless of `isRowValidDropPosition`; ColChooserModel
      * injects this as the zone's getIconName. Shows 'notAllowed' when hovering an actual row at a
      * position the drop would refuse (e.g. a locked-group split) - read from the resolved drop target
      * ag-grid computes from our {@link getValidDropPosition}. A drop over empty space (no `overNode`)
@@ -502,16 +502,16 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ): ColumnState[] | null {
-        const {targetGridModel: gridModel} = this,
+        const currentState = this.parent.currentState,
             movingIds = new Set(movingLeafColIds),
-            movingState = gridModel.columnState
+            movingState = currentState
                 .filter(cs => movingIds.has(cs.colId))
                 .map(cs => ({...cs, pinned: this.pinned, ...(makeVisible ? {hidden: false} : {})}));
 
         if (!movingState.length) return null;
 
-        const slices = partitionByPinned(gridModel.columnState, movingIds),
-            fullSlice = gridModel.columnState.filter(cs => (cs.pinned ?? null) === this.pinned),
+        const slices = partitionByPinned(currentState, movingIds),
+            fullSlice = currentState.filter(cs => (cs.pinned ?? null) === this.pinned),
             targetSlice = slices[this.pinned ?? 'none'],
             insertionIndex = targetData
                 ? computeInsertionIndex(fullSlice, movingIds, targetData, position)
@@ -536,7 +536,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         if (this.isDropDisallowed(movingLeafColIds, targetData, position, makeVisible)) return;
 
         const newState = this.simulateMove(movingLeafColIds, targetData, position, makeVisible);
-        if (newState) this.parent.commit(newState);
+        if (newState) this.parent.applyState(newState);
     }
 
     private getLastDisplayedRow() {
@@ -556,9 +556,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         position: RowDropTargetPosition
     ): boolean {
         const movingIds = new Set(movingLeafColIds),
-            slice = this.targetGridModel.columnState.filter(
-                cs => (cs.pinned ?? null) === this.pinned
-            ),
+            slice = this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned),
             movingState = slice.filter(cs => movingIds.has(cs.colId));
 
         // Cross-bucket source has no leaves in this slice - never a no-op for this bucket.
@@ -589,9 +587,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     ): IsRowValidDropPositionResult {
         const {agApi} = this.chooserGridModel,
             movingIds = new Set(movingLeafColIds),
-            slice = this.targetGridModel.columnState.filter(
-                cs => (cs.pinned ?? null) === this.pinned
-            ),
+            slice = this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned),
             remaining = slice.filter(cs => !movingIds.has(cs.colId)),
             insertIdx = computeInsertionIndex(slice, movingIds, targetData, position);
 

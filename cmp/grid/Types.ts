@@ -6,6 +6,7 @@
  */
 
 import type {HoistModel, HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {PanelConfig} from '@xh/hoist/desktop/cmp/panel';
 import type {
     FilterBindTarget,
     FilterMatchMode,
@@ -148,6 +149,7 @@ export interface IColChooserModel extends HoistModel {
     readonly isOpen: boolean;
     open(): void;
     close(): void;
+    toggle(): void;
 }
 
 /**
@@ -194,7 +196,22 @@ export interface ColChooserConfig {
      * hide. When enabled, hidden columns are removed from the buckets by default. Default false.
      * Desktop only.
      */
-    showColumnLibrary?: boolean;
+    columnLibraryEnabled?: boolean;
+}
+
+/**
+ * Configuration for a docked, non-modal column chooser - the model backing the side-panel chooser
+ * presentation. Passed via the `colChooserPanelModel` config on {@link GridConfig}. Extends
+ * {@link ColChooserConfig}; changes always auto-commit and stay in sync with external column state
+ * (i.e. `commitOnChange` is forced true). Desktop only.
+ */
+export interface ColChooserPanelConfig extends Omit<ColChooserConfig, 'commitOnChange'> {
+    /**
+     * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
+     * horizontally, so `side` is limited to 'left'/'right' (default 'right'). `collapsible` is
+     * omitted - open/close is driven by the panel's collapsed state, so it is always collapsible.
+     */
+    panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;

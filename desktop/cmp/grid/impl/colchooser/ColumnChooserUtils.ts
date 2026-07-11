@@ -33,7 +33,7 @@ export interface ColumnChooserData {
 
 /**
  * A grid that participates in cross-grid drag-and-drop within the ColumnChooser - the three
- * pinned-side buckets and the optional Column Library. {@link ColumnChooserModel} wires drop zones
+ * pinned-side buckets and the optional Column Library. {@link ColChooserModel} wires drop zones
  * between every pair of participants.
  */
 export interface ColumnChooserDropParticipant {

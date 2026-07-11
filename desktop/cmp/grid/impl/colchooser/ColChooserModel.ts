@@ -4,62 +4,421 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserConfig, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
-import {HoistModel} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {ColChooserConfig, ColumnState, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
+import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {FilterMatchMode} from '@xh/hoist/data';
+import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
+import {isEqual} from 'lodash';
+
+import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
+import {ColumnLibraryModel} from './ColumnLibraryModel';
+import type {ColumnChooserDropParticipant} from './ColumnChooserUtils';
 
 /**
- * Visibility and config host for the desktop column chooser, shared between its dialog and popover
- * presentations. The chooser UI itself is rendered by the {@link ColumnChooser} component, which
- * manages column state via its own local model.
+ * Abstract base for the grid column chooser model, holding all presentation-agnostic state: the
+ * three per-pinned-side {@link ColumnChooserBucketModel}s and the optional {@link ColumnLibraryModel}
+ * (synced from a working copy of the target grid's columnState), cross-bucket drag-and-drop wiring,
+ * and commit of state changes back to the grid. All state is rendered by the {@link ColumnChooser}
+ * component bound to this model.
+ *
+ * Concrete subclasses supply the presentation-open state: {@link ColChooserModalModel} (dialog and
+ * popover) and {@link ColChooserPanelModel} (docked side panel).
+ *
+ * When `commitOnChange` is false, mutations accumulate in {@link workingState} and are pushed to the
+ * grid only via {@link commitPendingAsync} (Save); external changes to the grid's column state while
+ * edits are pending trigger a resolve-conflict prompt. The docked panel forces `commitOnChange` true.
  * @internal
  */
-export class ColChooserModel extends HoistModel implements IColChooserModel {
+export abstract class ColChooserModel extends HoistModel implements IColChooserModel {
     override xhImpl = true;
 
-    gridModel: GridModel;
+    readonly gridModel: GridModel;
 
-    // Show in dialog
-    @observable isOpen = false;
+    //-----------------
+    // Config
+    //-----------------
+    @bindable commitOnChange: boolean;
+    @bindable showRestoreDefaults: boolean;
+    @bindable autosizeOnCommit: boolean;
+    @bindable width: string | number;
+    @bindable height: string | number;
+    @bindable filterMatchMode: FilterMatchMode;
 
-    // Show in popover
-    @observable isPopoverOpen = false;
+    // Stable config, deliberately not observable - toggled at runtime via the observable
+    // `showLibrary`, not this config.
+    columnLibraryEnabled: boolean;
 
-    showRestoreDefaults: boolean;
-    showColumnLibrary: boolean;
-    width: string | number;
-    height: string | number;
+    //-----------------
+    // Sub-models (one grid each)
+    //-----------------
+    @managed
+    readonly leftBucketModel: ColumnChooserBucketModel;
+
+    @managed
+    readonly unpinnedBucketModel: ColumnChooserBucketModel;
+
+    @managed
+    readonly rightBucketModel: ColumnChooserBucketModel;
+
+    /** Library of hidden columns - rendered and wired only when {@link columnLibraryEnabled}. */
+    @managed
+    readonly libraryModel: ColumnLibraryModel;
+
+    @bindable
+    showGroups: boolean = true;
+
+    /**
+     * Show hidden columns inline in the bucket grids. Only toggleable when the Column Library is
+     * enabled (otherwise hidden columns must stay inline to remain un-hideable); defaults false in
+     * that case, so hidden columns live in the library rather than the buckets.
+     */
+    @bindable
+    showHidden: boolean = true;
+
+    /** Show the Column Library panel (runtime toggle; only relevant when {@link columnLibraryEnabled}). */
+    @bindable
+    showLibrary: boolean = true;
+
+    /** Pending working copy of the grid's columnState - the source of truth for the bucket grids. */
+    @observable.ref
+    workingState: ColumnState[] = null;
+
+    /** Last grid columnState synced/committed against - the baseline for {@link isDirty}. */
+    @observable.ref
+    private baseline: ColumnState[] = null;
+
+    /** Guards against stacking resolve-conflict prompts while one is already open. */
+    private resolvingConflict = false;
+
+    /** Cross-bucket drop zone registrations, retained for removal on bucket grid unmount. */
+    private dropZoneRegistrations: Array<{sourceApi: GridApi; params: RowDropZoneParams}> = [];
+
+    //-----------------
+    // Presentation contract (implemented by subclasses)
+    //-----------------
+    /** True when the chooser is currently shown in this model's presentation. */
+    abstract get isOpen(): boolean;
+
+    /** Show the chooser in this model's presentation. */
+    abstract open(): void;
+
+    /** Hide the chooser - discarding any uncommitted edits, matching an explicit Cancel. */
+    close() {
+        this.hide();
+        this.discardPending();
+    }
+
+    /** Show the chooser if hidden, hide it if shown. */
+    toggle() {
+        this.isOpen ? this.close() : this.open();
+    }
+
+    /** Subclass hook to clear presentation-open state. */
+    protected abstract hide(): void;
+
+    //-----------------
+    // Derived state
+    //-----------------
+    /** Column state the chooser is currently displaying/operating on (pending working copy). */
+    get currentState(): ColumnState[] {
+        return this.workingState ?? this.gridModel.columnState;
+    }
+
+    /** True when the working copy has uncommitted edits relative to its baseline. */
+    @computed
+    get isDirty(): boolean {
+        return !!this.workingState && !isEqual(this.workingState, this.baseline);
+    }
+
+    get bucketModels(): ColumnChooserBucketModel[] {
+        return [this.leftBucketModel, this.unpinnedBucketModel, this.rightBucketModel];
+    }
+
+    /** Grids participating in cross-grid drag-and-drop - the buckets, plus the library if enabled. */
+    get dropParticipants(): ColumnChooserDropParticipant[] {
+        return this.columnLibraryEnabled
+            ? [...this.bucketModels, this.libraryModel]
+            : this.bucketModels;
+    }
+
+    /**
+     * True when the Column Library panel is on screen. The buckets hide their per-row visibility
+     * action in this state - columns are hidden by dragging them to the library instead.
+     */
+    @computed
+    get isLibraryShown(): boolean {
+        return this.columnLibraryEnabled && this.showLibrary;
+    }
+
+    @computed
+    get hasColumnGroups(): boolean {
+        return this.gridModel.columns.some(c => c instanceof ColumnGroup);
+    }
+
+    @computed
+    get columnPinningEnabled(): boolean {
+        return this.gridModel.enableColumnPinning;
+    }
 
     constructor({
         gridModel,
+        commitOnChange = true,
         showRestoreDefaults = true,
-        showColumnLibrary = false,
+        autosizeOnCommit = false,
+        columnLibraryEnabled = false,
         width = 300,
-        height = 600
+        height = 600,
+        filterMatchMode = 'startWord'
     }: ColChooserConfig) {
         super();
         makeObservable(this);
 
+        throwIf(!gridModel, "ColChooserModel requires a GridModel via its 'gridModel' config.");
+
         this.gridModel = gridModel;
+        this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
-        this.showColumnLibrary = showColumnLibrary;
+        this.autosizeOnCommit = autosizeOnCommit;
+        this.columnLibraryEnabled = columnLibraryEnabled;
         this.width = width;
         this.height = height;
+        this.filterMatchMode = filterMatchMode;
+
+        this.leftBucketModel = new ColumnChooserBucketModel({
+            parent: this,
+            pinned: 'left',
+            summaryName: 'Left Pinned',
+            emptyText: 'Drop a column here to pin left'
+        });
+
+        this.unpinnedBucketModel = new ColumnChooserBucketModel({
+            parent: this,
+            pinned: null,
+            summaryName: 'Columns',
+            emptyText: 'No columns'
+        });
+
+        this.rightBucketModel = new ColumnChooserBucketModel({
+            parent: this,
+            pinned: 'right',
+            summaryName: 'Right Pinned',
+            emptyText: 'Drop a column here to pin right'
+        });
+
+        // Library backs an opt-in panel - build it (and default hidden columns into it) only when enabled.
+        if (this.columnLibraryEnabled) {
+            this.libraryModel = new ColumnLibraryModel({parent: this});
+            this.showHidden = false;
+        }
+
+        this.addReaction({
+            track: () => [this.gridModel.columnState, this.gridModel.columns],
+            run: () => this.onGridStateChange(),
+            fireImmediately: true
+        });
+
+        this.addReaction({
+            track: () => [this.showGroups, this.showHidden],
+            run: () => this.syncBuckets()
+        });
+
+        // Hide the buckets' per-row visibility action while the library panel is shown.
+        this.addReaction({
+            track: () => this.isLibraryShown,
+            run: shown => this.bucketModels.forEach(it => it.setActionColumnVisible(!shown)),
+            fireImmediately: true
+        });
+
+        // Wire cross-grid drag-and-drop whenever the set of mounted participant grids changes.
+        // Stale registrations must be removed - ag-grid only auto-cleans drop zones when the
+        // *source* grid is destroyed, leaving broken references to destroyed *target* grids.
+        this.addReaction({
+            track: () => this.dropParticipants.map(it => it.chooserGridModel.agApi),
+            run: () => this.refreshCrossBucketDropZones()
+        });
+    }
+
+    //-----------------
+    // Mutation chokepoint (shared by both commit modes)
+    //-----------------
+    /**
+     * Apply a new normalized full column state. The single chokepoint for bucket-driven reorders and
+     * cross-bucket moves - updates the working copy and pushes it straight to the grid when
+     * auto-committing.
+     */
+    @action
+    applyState(newState: ColumnState[]) {
+        this.workingState = newState;
+        if (this.commitOnChange) {
+            // The grid write's columnState reaction re-syncs the buckets (adopt -> syncBuckets)
+            // synchronously before paint, so no optimistic rebuild is needed here.
+            this.gridModel.setColumnState(newState);
+            this.autosizeIfNeeded();
+        } else {
+            // Deferred: no grid write fires the sync reaction, so reflect the working copy ourselves.
+            this.syncBuckets();
+        }
+    }
+
+    /**
+     * Apply partial column-state changes (e.g. visibility toggles), merged into the working copy.
+     * Auto-commits via the grid's own partial update path when auto-committing.
+     */
+    @action
+    updateColumns(changes: Partial<ColumnState>[]) {
+        if (!changes.length) return;
+
+        const byId = new Map(changes.map(c => [c.colId, c]));
+        this.workingState = this.currentState.map(cs =>
+            byId.has(cs.colId) ? {...cs, ...byId.get(cs.colId)} : cs
+        );
+        if (this.commitOnChange) {
+            this.gridModel.updateColumnState(changes);
+            this.autosizeIfNeeded();
+        } else {
+            this.syncBuckets();
+        }
+    }
+
+    /** Push the pending working copy to the grid (deferred-commit Save). No-op if not dirty. */
+    async commitPendingAsync() {
+        const {gridModel, workingState} = this;
+        if (!this.isDirty) return;
+
+        // Advance the baseline before mutating the grid so the resulting sync reaction sees a clean
+        // (non-dirty) state and adopts it, rather than treating our own commit as an external change.
+        this.setBaseline(workingState);
+        gridModel.setColumnState(workingState);
+        await this.autosizeIfNeeded();
+    }
+
+    /** Autosize the grid's columns after a commit if configured. Fire-and-forget in immediate mode. */
+    private autosizeIfNeeded(): Promise<void> {
+        return this.autosizeOnCommit ? this.gridModel.autosizeAsync({showMask: true}) : undefined;
+    }
+
+    /** Discard pending edits, reverting the working copy to the last committed baseline. */
+    @action
+    discardPending() {
+        this.workingState = this.baseline;
+        this.syncBuckets();
+    }
+
+    async restoreDefaultsAsync() {
+        // Drop any pending edits first so the reaction from the restore adopts silently rather than
+        // treating the restored state as an external conflict.
+        this.discardPending();
+        await this.gridModel?.restoreDefaultsAsync();
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    /** Adopt the current grid columnState as both working copy and baseline. */
+    @action
+    private adopt(columnState: ColumnState[]) {
+        this.baseline = columnState;
+        this.workingState = columnState;
+        this.syncBuckets();
+    }
+
+    /** React to the grid's columnState changing - adopt, or (deferred + dirty) resolve a conflict. */
+    private onGridStateChange() {
+        const gs = this.gridModel.columnState;
+
+        // Auto-commit, or no pending local edits: take the grid's state outright.
+        if (this.commitOnChange || !this.isDirty) {
+            this.adopt(gs);
+            return;
+        }
+
+        // Deferred mode with pending edits - the grid changed out from under us. Prompt to resolve.
+        if (!isEqual(gs, this.baseline)) {
+            this.resolveConflictAsync();
+        }
+    }
+
+    private async resolveConflictAsync() {
+        if (this.resolvingConflict) return;
+        this.resolvingConflict = true;
+
+        const loadNew = await XH.confirm({
+            title: 'Columns Changed',
+            message:
+                "This grid's columns were changed elsewhere while you have unsaved column changes. " +
+                'Load the new changes (discarding yours), or keep editing your changes?',
+            confirmProps: {text: 'Load New Changes', intent: 'primary'},
+            cancelProps: {text: 'Keep My Changes'}
+        });
+
+        this.resolvingConflict = false;
+
+        const gs = this.gridModel.columnState;
+        if (loadNew) {
+            this.adopt(gs);
+        } else {
+            // Advance the baseline so we stop re-prompting; keep the user's working edits, which will
+            // overwrite the external change on the next commit.
+            this.setBaseline(gs);
+        }
     }
 
     @action
-    open() {
-        this.isOpen = true;
+    private setBaseline(columnState: ColumnState[]) {
+        this.baseline = columnState;
     }
 
     @action
-    openPopover() {
-        this.isPopoverOpen = true;
+    private syncBuckets(columnState: ColumnState[] = this.currentState) {
+        if (!columnState) return;
+        this.bucketModels.forEach(it =>
+            it.syncFromState(columnState, this.showGroups, this.showHidden)
+        );
+        if (this.columnLibraryEnabled) this.libraryModel.syncFromState(columnState);
     }
 
-    @action
-    close() {
-        this.isOpen = false;
-        this.isPopoverOpen = false;
+    private refreshCrossBucketDropZones() {
+        this.clearCrossBucketDropZones();
+        this.installCrossBucketDropZones();
+    }
+
+    private clearCrossBucketDropZones() {
+        this.dropZoneRegistrations.forEach(({sourceApi, params}) => {
+            // A destroyed source already had its zones auto-removed by ag-grid.
+            if (!sourceApi.isDestroyed()) sourceApi.removeRowDropZone(params);
+        });
+        this.dropZoneRegistrations = [];
+    }
+
+    /** Register drop zones between each pair of currently mounted participant grids. */
+    private installCrossBucketDropZones() {
+        this.dropParticipants.forEach(source => {
+            const sourceApi = source.chooserGridModel.agApi;
+            if (!sourceApi) return;
+
+            this.dropParticipants.forEach(target => {
+                if (target === source) return;
+
+                const targetApi = target.chooserGridModel.agApi;
+                if (!targetApi) return;
+
+                const params = targetApi.getRowDropZoneParams({
+                    onDragStop: e => target.handleCrossBucketDrop(e, source)
+                });
+
+                if (params) {
+                    // ag-grid hardcodes the external drop-zone drag icon to 'move'. Our params carry
+                    // fromGrid:true so they pass through verbatim - an injected getIconName overrides
+                    // that default, letting us flag drops the target would reject (e.g. a position
+                    // that splits a locked column group) with the 'notAllowed' icon.
+                    (params as any).getIconName = (e: any) => target.getCrossBucketDropIcon(e);
+                    sourceApi.addRowDropZone(params);
+                    this.dropZoneRegistrations.push({sourceApi, params});
+                }
+            });
+        });
     }
 }
