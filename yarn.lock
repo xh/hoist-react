@@ -20,17 +20,17 @@
     dpop "^2.1.1"
     es-cookie "~1.3.2"
 
-"@azure/msal-browser@~5.16.0":
-  version "5.16.0"
-  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.16.0.tgz#96d5ea6caff4a382d1f5e903c99f01f5825fd6ba"
-  integrity sha512-Wc75FGnQgYpsm5jsOqn1H8AXsh8vXruA6vwip1nhjrJxwby7juxKAIVLr7csepmHiwdZGr6EwI5BlSc3PizEtQ==
+"@azure/msal-browser@~5.17.0":
+  version "5.17.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.17.0.tgz#4b1f8d420ef81bbd8947295990ae0609b08ba1dc"
+  integrity sha512-/yTnW2TCk9Mh+2b/NOaHAN+MryUNxzRTaJD/YtrqOA9bpBWfTXn/iyReRbaLrK/btBo3stEzLyEvuWp2NZ5DuA==
   dependencies:
-    "@azure/msal-common" "16.11.0"
+    "@azure/msal-common" "16.11.1"
 
-"@azure/msal-common@16.11.0":
-  version "16.11.0"
-  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.11.0.tgz#7aae1b7443d7986db398e5ff7a5d78c51de1bec5"
-  integrity sha512-UikJOtMwkFpZNzTH6Dqk8UTUPbow15zH3e0UjGYZy69lYENW/S05gMLhbxI2eonz66uALhIljvhsSMEb6+O30g==
+"@azure/msal-common@16.11.1":
+  version "16.11.1"
+  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.11.1.tgz#fc1c77d7b19b28ea0b90618a83e0f7f967e910e9"
+  integrity sha512-yPohvMwWLv1XnaWnIUyKUh8CvcVChCGqG/VluGwfGmaAfrZTNt5yQ+sIs462Sgw6+e2K83KGmMJ860p73ZSCrw==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.29.7":
   version "7.29.7"
@@ -948,10 +948,10 @@
   dependencies:
     tslib "~2.6.2"
 
-"@blueprintjs/core@^6.17.1", "@blueprintjs/core@^6.3.2":
-  version "6.17.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-6.17.1.tgz#336439ca492b26e99527161284f094a9cef6ddba"
-  integrity sha512-fRGphamWAyz34GWygyisFk7ki8qiYNL+/V/8S/jU1Kr3x0yKAAIIEzh+aUNy3zViZ8eehgngqrVGdiRA6RYlnA==
+"@blueprintjs/core@^6.17.2", "@blueprintjs/core@^6.3.2":
+  version "6.17.2"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-6.17.2.tgz#12b1d6c1a3966faf2def2e31e491de2bfa276774"
+  integrity sha512-mY7gmb31iN80/0wJvLvVpp0RPlYrSX7VNh657cGUDVohUsZ+Nxtj62GgJlNmJhkoura9J2lK3rbvHnBqZcMIIA==
   dependencies:
     "@blueprintjs/colors" "^5.1.16"
     "@blueprintjs/icons" "^6.13.0"
@@ -964,13 +964,13 @@
     tslib "~2.6.2"
 
 "@blueprintjs/datetime@^6.0.6":
-  version "6.2.2"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-6.2.2.tgz#eddef1e648269b7a11434f1eb8ac710e26c75b47"
-  integrity sha512-1hqU6RywTG/Oh4B62s3SNUNuQxBrT0jLaA1TIINSTlWlXFwET0WhK2WdWw2p7xROZNYt7tCK4s7hQM1IhPzmvw==
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-6.2.3.tgz#d5d27082379dc661df0773f52d33e9a61536795f"
+  integrity sha512-tIMR+ZwrdcRkJ/WI5nCGZfyJ9p6NL/inEKrryeOjvxohQJlPALhSbH1XDt2flXdb/k4g3vpzImRRLBuheVHdCg==
   dependencies:
-    "@blueprintjs/core" "^6.17.1"
+    "@blueprintjs/core" "^6.17.2"
     "@blueprintjs/icons" "^6.13.0"
-    "@blueprintjs/select" "^6.3.2"
+    "@blueprintjs/select" "^6.3.3"
     classnames "^2.3.1"
     date-fns "^2.28.0"
     date-fns-tz "^2.0.0"
@@ -987,13 +987,13 @@
     classnames "^2.3.1"
     tslib "~2.6.2"
 
-"@blueprintjs/select@^6.3.2":
-  version "6.3.2"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-6.3.2.tgz#388985c915bef2ca712c5154d3c06e50f74f8ecb"
-  integrity sha512-crYvHV64FmJDii3f7zaYASGZ4nLVc31NzE/bLSrnqadfsuwqkV5i+lP/dF80yZ4TRXHn/1ATSmJI8AKb7l9q/Q==
+"@blueprintjs/select@^6.3.3":
+  version "6.3.3"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-6.3.3.tgz#cabdfb9b84abeba5e161d8875a1358d642c7e8cc"
+  integrity sha512-euOddNEZ910cLNIgOKjLdKIOJUG++X19B0OS88gNPzxDv5Q90IGridM2XZI/6qrQB0piLGUXwASLWlwVZIi4UA==
   dependencies:
     "@blueprintjs/colors" "^5.1.16"
-    "@blueprintjs/core" "^6.17.1"
+    "@blueprintjs/core" "^6.17.2"
     "@blueprintjs/icons" "^6.13.0"
     classnames "^2.3.1"
     tslib "~2.6.2"
@@ -1802,9 +1802,9 @@
     "@fortawesome/fontawesome-common-types" "7.3.0"
 
 "@fortawesome/react-fontawesome@^3.2.0":
-  version "3.3.1"
-  resolved "https://npm.fontawesome.com/@fortawesome/react-fontawesome/-/react-fontawesome-3.3.1.tgz#7fb1d1f4b48a15b9c6c4d88d579dacc478ebf3ef"
-  integrity sha512-wGnAPhfzivDwBWYmEG8MSrEXPruoiMMo48NnsRkj1NZkoaawgOijPNAiSHKMYEoCsqTBSgLTzL6EqTTWGaUR4w==
+  version "3.4.0"
+  resolved "https://npm.fontawesome.com/@fortawesome/react-fontawesome/-/react-fontawesome-3.4.0.tgz#17b989390349ded9214ffb35ad279da7c9a728ba"
+  integrity sha512-EgY5CXzzm6WGnUB40j9qNajYmoJHC8TUV/rvpcmHUoPZmQyRlh8WuRaxaerjMq61NZAz0vS+MOoJaPbZWRDibw==
 
 "@hello-pangea/dnd@^18.0.1":
   version "18.0.1"
@@ -2960,16 +2960,16 @@
     eslint-visitor-keys "^5.0.0"
 
 "@uiw/codemirror-theme-github@~4.25.10":
-  version "4.25.10"
-  resolved "https://registry.yarnpkg.com/@uiw/codemirror-theme-github/-/codemirror-theme-github-4.25.10.tgz#4d7703b328c930b9098b1f3ed38f672476956a96"
-  integrity sha512-iMM2QT4FaebJMO4W7lXmxNkRPIjKzgY26wL0QG0Ugy0gzsnxoNz4zgNeFIblPA8rvrN3vOIhNNh4nk9UOlFKxA==
+  version "4.25.11"
+  resolved "https://registry.yarnpkg.com/@uiw/codemirror-theme-github/-/codemirror-theme-github-4.25.11.tgz#42162bbfecb3bb242e0702bab6fccb82ef36cc9c"
+  integrity sha512-3s0LK3gX2mvGI996z3G0tEHZqshbeJRly+QMRsKGAI1Tfr1V475bfaW9NvnoDdINuQHt+RB+ri6q57+WWF8d+A==
   dependencies:
-    "@uiw/codemirror-themes" "4.25.10"
+    "@uiw/codemirror-themes" "4.25.11"
 
-"@uiw/codemirror-themes@4.25.10":
-  version "4.25.10"
-  resolved "https://registry.yarnpkg.com/@uiw/codemirror-themes/-/codemirror-themes-4.25.10.tgz#f6e467d8fc94c3a920891f92a58c0f155011718e"
-  integrity sha512-Fqiz1HIuDlDftcL+/O53V333UOH6MqQ84VbiQB5egn6u+uDwAqACp1FrdAoi4wgpR3b3TGW4Gr0wIYcrJSSz1A==
+"@uiw/codemirror-themes@4.25.11":
+  version "4.25.11"
+  resolved "https://registry.yarnpkg.com/@uiw/codemirror-themes/-/codemirror-themes-4.25.11.tgz#13a092c41c570ac14ca11ebf1ee4ad52898c380c"
+  integrity sha512-SBNCOgRsCtewGNocRbmjbCkltGXlFcPJsvhxQ351VynQjnWUiPbUrFcEU/haQ3HanROdAAjWXZJPk5bMBxl2jw==
   dependencies:
     "@codemirror/language" "^6.0.0"
     "@codemirror/state" "^6.0.0"
@@ -5028,9 +5028,9 @@ file-selector@^2.1.0:
     tslib "^2.7.0"
 
 filesize@~11.0.2:
-  version "11.0.19"
-  resolved "https://registry.yarnpkg.com/filesize/-/filesize-11.0.19.tgz#e7f7b4dd73ffe5e3638c719ec9089bd43e512132"
-  integrity sha512-9Q2itINBvCHwFw9v5X7czZm855yAiFIYlnugrh7+8tYO4ITHZMzV91m35q2FngL9hoZwwjSTQACFF/W52OzJZQ==
+  version "11.0.22"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-11.0.22.tgz#7ceb11d6b7ee33248939c83a93b042e6562c6015"
+  integrity sha512-RlCVs9CY+oSsRnNZn95J9vDXjNjOwddKyTFjOYtA4yxYVIxBnwiVVGJX+TFhsmu3uUf81JDGyijtYL9xgawlTw==
 
 fill-range@^7.1.1:
   version "7.1.1"
@@ -8864,9 +8864,9 @@ svg-tags@^1.0.0:
   integrity sha512-ovssysQTa+luh7A5Weu3Rta6FJlFBBbInjOh722LIt6klpU2/HtdUbszju/G4devcvk8PGt7FCLv5wftu3THUA==
 
 swiper@^14.0.0:
-  version "14.0.1"
-  resolved "https://registry.yarnpkg.com/swiper/-/swiper-14.0.1.tgz#65fd8cededb1219dccff2daf22d22589d96df591"
-  integrity sha512-dibQY282S5rn6S9Ba+GTIvofyY4Qujy526a0cPaJnjR2S18Z7HMGKZBr8k/3ukboeKW/ig5h0q//7CYip0MCQw==
+  version "14.0.5"
+  resolved "https://registry.yarnpkg.com/swiper/-/swiper-14.0.5.tgz#a9947029b764eeefc87faf23f83b455366e21d01"
+  integrity sha512-SMSKS0sj+lPIFzngfIKb5cyBtzmAuJw7rXgXdyYiDReb+pSpJXuNljHYgT4DXa5Stnl2Ew2/Lam5ipv4PIqZ7A==
 
 symbol-observable@1.2.0:
   version "1.2.0"
