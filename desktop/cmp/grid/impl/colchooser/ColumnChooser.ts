@@ -5,14 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {filler, hframe, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, hframe, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import {ColChooserModel} from './ColChooserModel';
@@ -34,100 +35,79 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
 
     render({model, className, ...props}) {
         const [layoutProps] = splitLayoutProps(props),
-            {showRestoreDefaults, commitOnChange, filterMatchMode} = model;
+            {commitOnChange, filterMatchMode} = model;
 
-        return hframe({
+        return vframe({
             className,
             ...layoutProps,
             items: [
-                columnLibraryPanel({
-                    chooserModel: model,
-                    omit: !model.isLibraryShown
-                }),
-                vbox({
-                    flex: 1,
+                hframe({
                     items: [
-                        toolbar({
-                            className: 'xh-column-chooser__tbar',
+                        columnLibraryPanel({
+                            chooserModel: model,
+                            omit: !model.isLibraryShown
+                        }),
+                        vbox({
+                            flex: 1,
                             items: [
-                                gridFindField({
-                                    flex: 1,
-                                    gridModel: model.unpinnedBucketModel.chooserGridModel,
-                                    matchMode: filterMatchMode,
-                                    placeholder: 'Find Columns'
+                                toolbar({
+                                    className: 'xh-column-chooser__tbar',
+                                    items: [
+                                        gridFindField({
+                                            flex: 1,
+                                            gridModel: model.unpinnedBucketModel.chooserGridModel,
+                                            matchMode: filterMatchMode,
+                                            placeholder: 'Find Columns'
+                                        }),
+                                        viewMenu({chooserModel: model})
+                                    ]
+                                }),
+                                pinnedBucketGrid({
+                                    bucket: model.leftBucketModel,
+                                    side: 'left',
+                                    omit: !model.columnPinningEnabled
+                                }),
+                                grid({
+                                    className:
+                                        'xh-column-chooser__bucket xh-column-chooser__bucket--unpinned',
+                                    model: model.unpinnedBucketModel.chooserGridModel,
+                                    agOptions: model.unpinnedBucketModel.agOptions
+                                }),
+                                pinnedBucketGrid({
+                                    bucket: model.rightBucketModel,
+                                    side: 'right',
+                                    omit: !model.columnPinningEnabled
                                 })
                             ]
+                        })
+                    ]
+                }),
+                toolbar({
+                    // Footer carries only the primary Save/Cancel actions - view toggles and
+                    // Restore Defaults live in the header "View" menu. Empty when auto-committing.
+                    omit: commitOnChange,
+                    items: [
+                        button({
+                            omit: !model.showRestoreDefaults,
+                            intent: 'danger',
+                            icon: Icon.reset(),
+                            text: 'Restore Defaults',
+                            onClick: () => model.restoreDefaultsAsync()
                         }),
-                        pinnedBucketGrid({
-                            bucket: model.leftBucketModel,
-                            side: 'left',
-                            omit: !model.columnPinningEnabled
+                        filler(),
+                        button({
+                            text: 'Cancel',
+                            onClick: () => model.close()
                         }),
-                        grid({
-                            className:
-                                'xh-column-chooser__bucket xh-column-chooser__bucket--unpinned',
-                            model: model.unpinnedBucketModel.chooserGridModel,
-                            agOptions: model.unpinnedBucketModel.agOptions
-                        }),
-                        pinnedBucketGrid({
-                            bucket: model.rightBucketModel,
-                            side: 'right',
-                            omit: !model.columnPinningEnabled
-                        }),
-                        toolbar({
-                            items: [
-                                button({
-                                    omit: !model.hasColumnGroups,
-                                    icon: model.showGroups
-                                        ? Icon.checkSquare({intent: 'primary'})
-                                        : Icon.square(),
-                                    text: 'Show Groups',
-                                    onClick: () => (model.showGroups = !model.showGroups)
-                                }),
-                                button({
-                                    omit: !model.columnLibraryEnabled,
-                                    icon: model.showHidden
-                                        ? Icon.checkSquare({intent: 'primary'})
-                                        : Icon.square(),
-                                    text: 'Show Hidden',
-                                    onClick: () => (model.showHidden = !model.showHidden)
-                                }),
-                                button({
-                                    omit: !model.columnLibraryEnabled,
-                                    icon: model.showLibrary
-                                        ? Icon.checkSquare({intent: 'primary'})
-                                        : Icon.square(),
-                                    text: 'Column Library',
-                                    onClick: () => (model.showLibrary = !model.showLibrary)
-                                }),
-                                filler(),
-                                button({
-                                    omit: !showRestoreDefaults,
-                                    intent: 'danger',
-                                    icon: Icon.reset(),
-                                    text: 'Restore Defaults',
-                                    onClick: () => model.restoreDefaultsAsync()
-                                }),
-                                toolbarSep({
-                                    omit: commitOnChange || !showRestoreDefaults
-                                }),
-                                button({
-                                    omit: commitOnChange,
-                                    text: 'Cancel',
-                                    onClick: () => model.close()
-                                }),
-                                button({
-                                    omit: commitOnChange,
-                                    text: 'Save',
-                                    icon: Icon.check(),
-                                    intent: 'success',
-                                    disabled: !model.isDirty,
-                                    onClick: () => {
-                                        model.commitPendingAsync();
-                                        model.close();
-                                    }
-                                })
-                            ]
+                        button({
+                            text: 'Save',
+                            icon: Icon.check(),
+                            intent: 'success',
+                            disabled: !model.isDirty,
+                            onClick: () => {
+                                model.commitPendingAsync();
+                                model.close();
+                            }
                         })
                     ]
                 })
@@ -135,6 +115,84 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
         });
     }
 });
+
+interface ViewMenuProps extends HoistProps {
+    chooserModel: ColChooserModel;
+}
+
+/**
+ * Header "View" popover consolidating the chooser's display toggles (group tree, column library,
+ * show-hidden-inline) with the destructive Restore Defaults action, kept visually separate below a
+ * divider. Omitted entirely when none of its items apply.
+ */
+const viewMenu = hoistCmp.factory<ViewMenuProps>(({chooserModel}) => {
+    const {hasColumnGroups, columnLibraryEnabled, showRestoreDefaults} = chooserModel,
+        hasToggles = hasColumnGroups || columnLibraryEnabled;
+
+    if (!hasToggles && !showRestoreDefaults) return null;
+
+    return popover({
+        position: 'bottom-right',
+        minimal: true,
+        item: button({
+            icon: Icon.ellipsisVertical()
+        }),
+        content: menu({
+            items: [
+                menuDivider({title: 'Display', omit: !hasToggles}),
+                viewToggle({
+                    omit: !hasColumnGroups,
+                    checked: chooserModel.showGroups,
+                    label: 'Group columns',
+                    help: "Show the grid's group hierarchy as a tree",
+                    onToggle: () => (chooserModel.showGroups = !chooserModel.showGroups)
+                }),
+                viewToggle({
+                    omit: !columnLibraryEnabled,
+                    checked: chooserModel.showLibrary,
+                    label: 'Column library',
+                    help: 'Side panel of hidden columns to drag in',
+                    onToggle: () => (chooserModel.showLibrary = !chooserModel.showLibrary)
+                }),
+                viewToggle({
+                    omit: !columnLibraryEnabled,
+                    checked: chooserModel.showHidden,
+                    label: 'Show hidden inline',
+                    help: 'List hidden columns in place, dimmed',
+                    onToggle: () => (chooserModel.showHidden = !chooserModel.showHidden)
+                }),
+                menuDivider({omit: !hasToggles || !showRestoreDefaults}),
+                menuItem({
+                    omit: !showRestoreDefaults,
+                    intent: 'danger',
+                    icon: Icon.reset(),
+                    text: 'Restore Defaults',
+                    onClick: () => chooserModel.restoreDefaultsAsync()
+                })
+            ]
+        })
+    });
+});
+
+interface ViewToggleProps extends HoistProps {
+    checked: boolean;
+    label: string;
+    help: string;
+    onToggle: () => void;
+}
+
+const viewToggle = hoistCmp.factory<ViewToggleProps>(({checked, label, help, onToggle}) =>
+    menuItem({
+        // Keep the menu open so multiple toggles can be flipped in a single visit.
+        shouldDismissPopover: false,
+        icon: checked ? Icon.checkSquare({intent: 'primary'}) : Icon.square(),
+        onClick: onToggle,
+        text: div({
+            className: 'xh-column-chooser__view-item',
+            items: [div(label), div({className: 'xh-column-chooser__view-item__help', item: help})]
+        })
+    })
+);
 
 interface BucketGridProps extends HoistProps {
     bucket: ColumnChooserBucketModel;

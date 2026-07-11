@@ -12,6 +12,14 @@
     background-color: var(--xh-bg);
   }
 
+  // Two-line label + helper text within the header "View" popover menu.
+  &__view-item {
+    &__help {
+      font-size: var(--xh-font-size-small-px);
+      color: var(--xh-text-color-muted);
+    }
+  }
+
   // Left-docked panel listing hidden columns, grouped by chooserGroup.
   &__library {
     border-right: var(--xh-border-solid);
