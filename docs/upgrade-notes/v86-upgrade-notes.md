@@ -221,7 +221,21 @@ grep -rn "fileChooser\|FileChooser" client-app/src/
 | `minSize` (prop) | `FileChooserModel` config `minFileSize` |
 | `enableMulti` / `enableAddMulti` (props) | `FileChooserModel` config `maxFiles` (set `1` for single-file; omit for unlimited) |
 | `showFileGrid` (prop) | Removed - default display is a grid; customize via the `fileDisplay` content prop |
-| `targetText` (prop) | `FileChooserModel` config `emptyDisplayPrompt` (+ `emptyDisplayHint`), or replace via the `emptyDisplay` content prop |
+| `targetText` (prop) | **Preferred:** `FileChooserModel` config `emptyDisplayPrompt` (+ `emptyDisplayHint`). Use the `emptyDisplay` content prop only for a fully custom layout. |
+
+> **`emptyDisplay` and `fileDisplay` switch on file *presence*; v85's `targetText` did not.**
+> In v85 the drop target that rendered `targetText` was **always visible** - even with files
+> selected - and the file grid (if enabled) sat alongside it. v86 has no always-visible text slot:
+> `emptyDisplay` renders **only when no files are selected**, and `fileDisplay` (defaulting to the
+> grid/card) renders **only when files are present**. There is therefore no mechanical mapping for a
+> `targetText` - you must decide which presence-state its content belonged to:
+> - A drop prompt ("Drag and drop files here") is empty-state content - set it as
+>   `emptyDisplayPrompt` (a plain string, preferred - keeps Hoist's icon, styling, and the
+>   auto-generated constraints hint). When files exist, the grid/`fileDisplay` takes over.
+> - A message that only makes sense once a file is chosen (e.g. "Ready to upload") belongs in
+>   `fileDisplay`, which replaces the default grid - so set it only if you don't need that grid.
+> - If your `targetText` varied on an **app flag** rather than on file presence, preserve that flag
+>   *inside* the slot you choose - do not let the empty/file switch silently stand in for it.
 
 Before (v85 - config as component props, model takes no args):
 ```typescript
@@ -283,17 +297,68 @@ constructor() {
 }
 ```
 
-**If your `targetText` was a React element** (not a plain string) - e.g. a `placeholder(...)` or a
-custom layout - move it to the `emptyDisplay` content prop rather than `emptyDisplayPrompt`.
-`emptyDisplayPrompt` accepts a `ReactNode` and is fine for a styled message, but `emptyDisplay`
-replaces the entire empty-state content, which is the closer match for a fully custom `targetText`:
+**Prefer the styled text prompt over rebuilding the UI.** Most `targetText` values were a string or
+a simple `placeholder(Icon.upload(), '...')` - which is exactly what the default empty display
+already renders. Map these to `emptyDisplayPrompt` (a plain string on the model), optionally with
+`emptyDisplayHint`: you keep Hoist's upload icon, styling, and the auto-generated summary of accepted
+types and size/count limits. This holds even when `targetText` was a `placeholder(...)` element -
+collapse it back to the prompt string rather than reaching for a content prop.
 
 ```typescript
-// Before (v85)
+// Before (v85) - a plain-text or simple-placeholder targetText
+fileChooser({model, targetText: 'Drop loan docs here'})
 fileChooser({model, targetText: placeholder(Icon.upload(), 'Drop loan docs here')})
 
-// After (v86)
-fileChooser({model, emptyDisplay: placeholder(Icon.upload(), 'Drop loan docs here')})
+// After (v86) - map targetText to a styled prompt on the model; icon, styling, and the constraints
+// hint come for free, and the component render needs no change
+new FileChooserModel({emptyDisplayPrompt: 'Drop loan docs here'});
+```
+
+Reserve the `emptyDisplay` / `fileDisplay` content props for layouts the prompt/hint genuinely can't
+express. Note they are **not** interchangeable targets for a `targetText`: `emptyDisplay` renders
+only when empty and `fileDisplay` only when files are present, so content meant for the
+file-populated state must go to `fileDisplay` - never `emptyDisplay`.
+
+**If your `targetText` was conditional** - a ternary or computed expression - work out what the
+condition actually tracked before migrating, because v86 already switches content on file presence.
+
+In the common case the condition tracked *file presence* (a flag toggled as files are added and
+removed). v86's built-in switch replaces it directly: the no-file prompt becomes `emptyDisplayPrompt`
+and the flag is dropped. The plain drop text needs no content prop at all - only the custom "ready"
+affirmation, meant for the file-populated state, uses `fileDisplay` (which overrides the default
+grid). `enableMulti` moves to `maxFiles` on the model:
+
+```typescript
+// Before (v85) - targetText always visible, toggled by a presence-derived flag
+fileChooser({
+    model,
+    enableMulti: !singleDoc,
+    targetText: hasFile
+        ? placeholder(Icon.check({intent: 'success'}), 'Ready to upload')
+        : placeholder(Icon.upload(), 'Drag and drop files here')
+})
+
+// After (v86) - the presence switch is built in, so the flag is no longer needed
+this.chooserModel = new FileChooserModel({
+    maxFiles: singleDoc ? 1 : null,
+    emptyDisplayPrompt: 'Drag and drop files here'
+});
+fileChooser({
+    model: this.chooserModel,
+    fileDisplay: placeholder(Icon.check({intent: 'success'}), 'Ready to upload')
+})
+```
+
+The trap is a condition that is **independent of file presence** (e.g. an "uploads open" flag). Its
+branches are *not* an empty/file pair, so splitting them across `emptyDisplay` / `fileDisplay` would
+drop the condition and silently re-key the content onto presence. Keep such a flag *inside* the slot
+its content belongs to - here, still on the styled prompt:
+
+```typescript
+// independent flag - preserved on the styled prompt (model config), not mapped onto presence
+new FileChooserModel({
+    emptyDisplayPrompt: acceptingUploads ? 'Drag and drop files here' : 'Uploads are closed'
+});
 ```
 
 ### 4. Remove Deleted Mobile `DateInput` Props

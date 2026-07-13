@@ -52,6 +52,7 @@ import {IRowNode} from 'ag-grid-community';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {type MouseEvent} from 'react';
+import {PartialDeep} from 'type-fest';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -69,7 +70,7 @@ export interface GridProps<M extends GridModel = GridModel>
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions?: GridOptions;
+    agOptions?: PartialDeep<GridOptions>;
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
