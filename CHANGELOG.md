@@ -2,6 +2,20 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `PrefService.isSet()` to report whether the current user has an explicit value on file for a
+  preference vs. receiving its server-side default - a distinction that cannot be reliably inferred
+  by comparing the value to the default. Requires a hoist-core version that emits the backing
+  `isSet` flag; against older servers all prefs report as unset.
+
+### 🐞 Bug Fixes
+
+* `PrefService.unset()` now performs a true server-side unset, clearing the user's stored value so
+  the preference reverts to its (possibly changing) default and `isSet()` reports `false`.
+  Previously it persisted the current default as an explicit user value. Requires a hoist-core
+  version providing the `xh/unsetPrefs` endpoint.
+
 ## 86.3.0 - 2026-07-10
 
 ### 🎁 New Features
