@@ -45,7 +45,7 @@ export class RoleModel extends HoistModel {
 
     @bindable showInGroups = true;
 
-    /** Role-module config - sourced from AppModel, our single load point (see RoleModel docs). */
+    /** Role-module config - sourced from AppModel, our single load point (see ensureInitializedAsync). */
     get moduleConfig(): RoleModuleConfig {
         return getAppModel().roleModuleConfig;
     }
