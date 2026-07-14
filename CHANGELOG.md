@@ -13,8 +13,8 @@
 
 * `PrefService.unset()` now performs a true server-side unset, clearing the user's stored value so
   the preference reverts to its (possibly changing) default and `isSet()` reports `false`.
-  Previously it persisted the current default as an explicit user value. Requires a hoist-core
-  version providing the `xh/unsetPrefs` endpoint.
+  Previously it persisted the current default as an explicit user value. Falls back to the legacy
+  behavior against hoist-core versions that predate the `xh/unsetPrefs` endpoint.
 
 ## 86.3.0 - 2026-07-10
 

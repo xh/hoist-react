@@ -30,10 +30,8 @@ export class PrefService extends HoistService {
     override telemetryPrefix = 'xh.client.prefs';
 
     static instance: PrefService;
-
     private _data: Record<string, PrefEntry> = {};
-    private _updates: Record<string, any> = {};
-    private _unsets = new Set<string>();
+    private _updates: Record<string, any> = {}; // undefined indicates unset
 
     override async initAsync(ctx: InitContext) {
         // Flush on page teardown while the page is still alive.
@@ -57,19 +55,11 @@ export class PrefService extends HoistService {
      * Check whether the current user has an explicit value on file for the given preference, vs.
      * receiving the preference's server-side default value.
      *
-     * Note this is distinct from comparing the current value to the default - a user can explicitly
-     * set a value that happens to equal the default (still "set"), and defaults can change over
-     * time. This flag reflects the authoritative server state: whether a `UserPreference` record
-     * exists for this user + key.
-     *
      * @param key - unique key used to identify the pref.
      */
     isSet(key: string): boolean {
-        const pref = this._data[key];
-        throwIf(!pref, `Preference key not found: '${key}'`);
-        // Coerce to boolean - `isSet` is absent when running against a hoist-core version that
-        // predates server support for this flag, in which case treat prefs as unset.
-        return !!pref.isSet;
+        this.ensureKeyExists(key);
+        return !!this._data[key].isSet;
     }
 
     /**
@@ -115,30 +105,27 @@ export class PrefService extends HoistService {
         pref.value = value;
         pref.isSet = true;
 
-        // Schedule serialization to storage, superseding any pending unset for this key.
+        // Schedule serialization to storage
         this._updates[key] = value;
-        this._unsets.delete(key);
         this.pushPendingBuffered();
     }
 
     /**
      * Restore a preference to its default value, clearing the user's explicit value on the server.
      *
-     * Unlike `set()`, this fully removes the user's value (deleting the backing `UserPreference`
-     * record) rather than persisting the default as an explicit value - so {@link isSet} will
-     * report `false` afterwards. Change is saved to the server asynchronously (see `set()`).
+     * Unlike `set()`, this clears the user's explicit value rather than persisting the default as
+     * one - so {@link isSet} will report `false` afterwards. Saved asynchronously (see `set()`).
      */
     unset(key: string) {
+        this.ensureKeyExists(key);
         const pref = this._data[key];
-        throwIf(!pref, `Cannot unset preference ${key}: not found`);
-        if (!pref.isSet) return;
+        if (!pref.isSet && isEqual(pref.value, pref.defaultValue)) return;
 
         pref.value = pref.defaultValue;
         pref.isSet = false;
 
-        // Schedule a real server-side unset, superseding any pending update for this key.
-        this._unsets.add(key);
-        delete this._updates[key];
+        // Schedule serialization to storage
+        this._updates[key] = undefined;
         this.pushPendingBuffered();
     }
 
@@ -161,31 +148,44 @@ export class PrefService extends HoistService {
      * and when page is hidden/terminated.
      */
     async pushPendingAsync() {
-        const updates = this._updates,
-            unsets = Array.from(this._unsets);
-        if (isEmpty(updates) && isEmpty(unsets)) return;
+        const updates = this._updates;
+        if (isEmpty(updates)) return;
 
         // Clear synchronously with the capture, so overlapping flushes cannot post twice.
         this._updates = {};
-        this._unsets = new Set();
+
+        // Partition into value updates and unsets.
+        // On a core that predates unset support, fall back to persisting default
+        const setPrefs = {},
+            unsetKeys = [];
+        forEach(updates, (value, key) => {
+            const pref = this._data[key];
+            if (value !== undefined) {
+                setPrefs[key] = value;
+            } else if (pref.hasOwnProperty('isSet')) {
+                unsetKeys.push(key);
+            } else {
+                setPrefs[key] = pref.defaultValue;
+            }
+        });
 
         await this.runner()
-            .span('set')
+            .span('update')
             .run(async ctx => {
                 const clientUsername = XH.getUsername(),
                     tasks = [];
-                if (!isEmpty(updates)) {
+                if (!isEmpty(setPrefs)) {
                     tasks.push(
                         terminationSafePostJson(
-                            {url: 'xh/setPrefs', body: updates, params: {clientUsername}},
+                            {url: 'xh/setPrefs', body: setPrefs, params: {clientUsername}},
                             ctx
                         )
                     );
                 }
-                if (!isEmpty(unsets)) {
+                if (!isEmpty(unsetKeys)) {
                     tasks.push(
                         terminationSafePostJson(
-                            {url: 'xh/unsetPrefs', body: unsets, params: {clientUsername}},
+                            {url: 'xh/unsetPrefs', body: unsetKeys, params: {clientUsername}},
                             ctx
                         )
                     );
@@ -221,9 +221,13 @@ export class PrefService extends HoistService {
             });
     }
 
-    private validateBeforeSet(key, value) {
+    private ensureKeyExists(key: string) {
+        throwIf(!this.hasKey(key), `Preference key not found: '${key}'`);
+    }
+
+    private validateBeforeSet(key: string, value: any) {
+        this.ensureKeyExists(key);
         const pref = this._data[key];
-        throwIf(!pref, `Cannot set preference ${key}: not found`);
         throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
         throwIf(
             !this.valueIsOfType(value, pref.type),
@@ -255,6 +259,5 @@ interface PrefEntry {
     type: string;
     value: any;
     defaultValue: any;
-    /** True if the user has an explicit value on file, vs. the server-side default. */
     isSet: boolean;
 }
