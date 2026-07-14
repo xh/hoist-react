@@ -186,6 +186,12 @@ XH.setPref('gridPageSize', 100);
 
 // Immediate save - no alias, access service directly
 await XH.prefService.pushAsync('criticalPref', value);
+
+// Distinguish an explicit user value from the server-side default
+if (XH.prefService.isSet('gridPageSize')) { /* user has customized this */ }
+
+// Clear the user's value, reverting to the default (real server-side unset)
+XH.prefService.unset('gridPageSize');
 ```
 
 Preferences are type-validated against server-defined types: `string`, `int`, `long`, `double`,
