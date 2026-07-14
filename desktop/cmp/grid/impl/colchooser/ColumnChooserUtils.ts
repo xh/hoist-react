@@ -42,6 +42,8 @@ export interface ColumnChooserDropParticipant {
     handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant): void;
     /** Drag-image icon name for a cross-grid drag hovering this participant's grid. */
     getCrossBucketDropIcon(draggingEvent: any): string;
+    /** Flag a cross-bucket drag entering/leaving this participant (buckets only). */
+    setDragOver?(over: boolean): void;
 }
 
 /** Extract ColumnChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
@@ -59,14 +61,6 @@ export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
         useEffect(() => {
             if (ref.current) registerRowDragger(ref.current);
         }, [registerRowDragger]);
-
-        // Summary header rows show a styled label only - no drag handle.
-        if (record?.isSummary) {
-            return span({
-                className: 'xh-column-chooser__summary-name',
-                item: record.data.name ?? ''
-            });
-        }
 
         const movable = record?.data?.movable !== false;
         return hbox({

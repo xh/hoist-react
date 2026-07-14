@@ -1,6 +1,9 @@
 .xh-column-chooser {
   background: var(--xh-bg);
 
+  // Theme the ag-grid row drop indicator line with our primary intent color.
+  --ag-row-drag-indicator-color: var(--xh-intent-primary);
+
   // Force drop indicator line to span the full row width, regardless of tree depth
   .ag-row-highlight-indent::after {
     left: 1px;
@@ -29,16 +32,56 @@
     }
   }
 
-  .ag-floating-top-container {
-    background: var(--xh-bg-alt);
+  // Compact bucket header - tighter than the standard Panel compact header
+  .xh-panel-header.xh-column-chooser__bucket-header {
+    height: 24px;
+    min-height: 24px;
+    padding: 0 var(--xh-pad-half-px);
+    background-color: var(--xh-bg-alt);
+    color: var(--xh-text-color-muted);
+    text-transform: uppercase;
+
+    .xh-panel-header__title {
+      font-size: var(--xh-font-size-small-px);
+      letter-spacing: 0.02em;
+    }
+
+    // Collapse chevron - shrink to fit the compact header.
+    .xh-button {
+      min-height: 18px;
+      padding: 0 2px;
+    }
   }
 
-  &__bucket {
-    .ag-row-pinned {
-      --xh-grid-bg: var(--xh-bg-alt);
-      --xh-grid-total-row-bg: var(--xh-bg-alt);
+  // Bucket label + count badge, shown as the compact header's title.
+  &__bucket-title {
+    gap: var(--xh-pad-half-px);
+
+    &__count {
+      color: var(--xh-text-color-muted);
       font-size: var(--xh-font-size-small-px);
-      text-transform: uppercase;
+      text-transform: none;
+    }
+  }
+
+  // Keep an empty pinned rail open as a minimal 1-line drop strip (an auto-height grid collapses
+  // to 0 rows). The empty panel drops its header, so the grid's emptyText is the whole strip.
+  &__bucket--left,
+  &__bucket--right {
+    min-height: 30px;
+  }
+
+  &__bucket-panel--empty {
+    border-top: var(--xh-border-width-px) dashed var(--xh-border-color);
+    border-bottom: var(--xh-border-width-px) dashed var(--xh-border-color);
+
+    // Highlight the strip while a column is dragged over it, matching the drop-indicator color.
+    // Override the grid's bg / empty-text vars (specificity-proof - the Hoist grid theme rules that
+    // set these win on selector specificity, but a var set here cascades into them).
+    &.xh-column-chooser__bucket-panel--drag-over {
+      --xh-grid-bg: var(--xh-intent-primary-trans1);
+      --xh-grid-empty-text-color: var(--xh-intent-primary);
+      border-color: var(--xh-intent-primary);
     }
   }
 

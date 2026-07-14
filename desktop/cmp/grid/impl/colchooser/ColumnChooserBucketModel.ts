@@ -12,6 +12,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import type {
     GridOptions,
     IsRowValidDropPositionParams,
@@ -32,8 +33,8 @@ import {
 export interface ColumnChooserBucketConfig {
     parent: ColChooserModel;
     pinned: HSide | null;
-    /** Label shown in the bucket's docked summary header row. */
-    summaryName: string;
+    /** Label shown in the bucket's compact Panel header. */
+    title: string;
     emptyText: string;
 }
 
@@ -48,10 +49,14 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
     readonly parent: ColChooserModel;
     readonly pinned: HSide | null;
-    readonly summaryName: string;
+    readonly title: string;
 
     @managed
     chooserGridModel: GridModel;
+
+    /** True while a cross-bucket drag is hovering this bucket - drives the empty-strip highlight. */
+    @bindable
+    dragOver: boolean = false;
 
     /** Cache backing {@link parentChainMap}, keyed on the target grid's `columns` ref. */
     private parentChainCache: {cols: ColumnOrGroup[]; map: Map<string, ColumnGroup[]>} = null;
@@ -82,13 +87,82 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         };
     }
 
-    constructor({parent, pinned, summaryName, emptyText}: ColumnChooserBucketConfig) {
+    constructor({parent, pinned, title, emptyText}: ColumnChooserBucketConfig) {
         super();
+        makeObservable(this);
         this.parent = parent;
         this.pinned = pinned;
-        this.summaryName = summaryName;
+        this.title = title;
 
         this.chooserGridModel = this.createGridModel(emptyText);
+    }
+
+    //-----------------
+    // Header state (rendered in the bucket's compact Panel header - see ColumnChooser view)
+    //-----------------
+    /** This bucket's slice of the current column state (columns pinned to this side). */
+    private get slice(): ColumnState[] {
+        return this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned);
+    }
+
+    /** Hideable leaf columns in this bucket - the columns the header "toggle all" control acts on. */
+    private get hideableLeaves(): ColumnState[] {
+        const {targetGridModel: gridModel} = this;
+        return this.slice.filter(cs => {
+            const col = gridModel.getColumn(cs.colId);
+            return col && !col.excludeFromChooser && col.hideable;
+        });
+    }
+
+    /** True when this bucket holds any column the header toggle can show/hide. */
+    get hasHideableColumns(): boolean {
+        return !isEmpty(this.hideableLeaves);
+    }
+
+    /**
+     * Count of this bucket's leaf columns as actually DISPLAYED - for the header badge and the
+     * view's empty-rail detection. Excludes chooser-excluded columns, and (when hidden columns are
+     * routed to the Column Library instead of shown inline) hidden ones too, so the count matches the
+     * rows rendered rather than over-counting library-resident columns.
+     */
+    get columnCount(): number {
+        const {targetGridModel: gridModel} = this,
+            {showHidden} = this.parent;
+        return this.slice.filter(cs => {
+            const col = gridModel.getColumn(cs.colId);
+            return col && !col.excludeFromChooser && (showHidden || !cs.hidden);
+        }).length;
+    }
+
+    /** Bucket-scoped aggregate visibility over hideable leaves: true (all) / false (none) / null (mixed). */
+    get aggregateVisible(): boolean | null {
+        const leaves = this.hideableLeaves,
+            total = leaves.length,
+            hiddenCount = leaves.filter(cs => cs.hidden).length;
+        return total === 0
+            ? false
+            : hiddenCount === 0
+              ? true
+              : hiddenCount === total
+                ? false
+                : null;
+    }
+
+    /** Show or hide all hideable columns in this bucket (backs the header "toggle all" control). */
+    toggleBucketVisibility() {
+        const {targetGridModel: gridModel} = this,
+            leaves = this.hideableLeaves;
+        if (isEmpty(leaves)) return;
+
+        // Hide when fully or partially visible (true/null); show when fully hidden (false).
+        const hidden = this.aggregateVisible !== false,
+            updates: Partial<ColumnState>[] = [];
+        leaves.forEach(cs => {
+            // Never hide a leaf that isn't hideable; showing one is a harmless no-op.
+            if (hidden && !gridModel.isColumnHideable(cs.colId)) return;
+            updates.push({colId: cs.colId, hidden});
+        });
+        this.parent.updateColumns(updates);
     }
 
     /**
@@ -99,7 +173,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     syncFromState(columnState: ColumnState[], showGroups: boolean, showHidden: boolean) {
         let slice = columnState.filter(cs => (cs.pinned ?? null) === this.pinned);
         if (!showHidden) slice = slice.filter(cs => !cs.hidden);
-        this.loadData(this.buildData(slice), this.buildSummary(slice), showGroups);
+        this.loadData(this.buildData(slice), showGroups);
     }
 
     /** Show or hide this bucket's per-row visibility action column. */
@@ -278,37 +352,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     }
 
     /**
-     * Build the docked summary header record for this bucket. Its `name` labels the bucket and
-     * its `visible` field is the bucket-scoped aggregate visibility (true/false/null). Toggling
-     * it applies to all hideable leaf columns in the bucket via {@link toggleVisibility}.
-     */
-    private buildSummary(slice: ColumnState[]): ColumnChooserData {
-        const {targetGridModel: gridModel} = this,
-            hideableLeaves = slice.filter(cs => {
-                const col = gridModel.getColumn(cs.colId);
-                return col && !col.excludeFromChooser && col.hideable;
-            }),
-            hiddenCount = hideableLeaves.filter(cs => cs.hidden).length,
-            total = hideableLeaves.length;
-
-        const visible =
-            total === 0 ? false : hiddenCount === 0 ? true : hiddenCount === total ? false : null;
-
-        return {
-            id: `summary-${this.pinned ?? 'none'}`,
-            name: this.summaryName,
-            description: '',
-            visible,
-            isGroup: false,
-            hideable: total > 0,
-            movable: false,
-            parentId: null,
-            sortOrder: -1,
-            leafColIds: hideableLeaves.map(cs => cs.colId)
-        };
-    }
-
-    /**
      * Build chooser records from a slice of columnState (this bucket's worth, in display order).
      *
      * Iterates the slice (source of truth for display order within the bucket), and for each
@@ -421,13 +464,13 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return data;
     }
 
-    private loadData(data: ColumnChooserData[], summary: ColumnChooserData, showGroups: boolean) {
+    private loadData(data: ColumnChooserData[], showGroups: boolean) {
         const {store} = this.chooserGridModel,
             leaves = data.filter(r => !r.isGroup),
             leafIdSet = new Set(leaves.map(r => r.id));
 
         if (!showGroups) {
-            store.loadData(leaves, summary);
+            store.loadData(leaves);
             return;
         }
 
@@ -452,7 +495,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             rootLeaves = leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId)),
             rootData = [...rootGroups, ...rootLeaves].map(buildNested);
 
-        store.loadData(rootData, summary);
+        store.loadData(rootData);
     }
 
     /** Check if a record is a descendant of a potential ancestor in this bucket's tree. */
@@ -674,7 +717,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return new GridModel({
             treeMode: true,
             treeStyle: 'none',
-            showSummary: 'top',
             clicksToExpand: 0,
             expandLevel: -1,
             sortBy: 'sortOrder',
@@ -707,7 +749,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 ]
             },
             rowClassRules: {
-                'xh-column-chooser__column-row': ({data: rec}) => !rec.isSummary,
+                'xh-column-chooser__column-row': () => true,
                 'xh-column-chooser__column-row--hidden': ({data: rec}) => rec.data.visible === false
             },
             columns: [
@@ -729,16 +771,11 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 {
                     ...actionCol,
                     width: calcActionColWidth(1),
-                    actionsShowOnSummaryRow: true,
                     actions: [
                         {
                             icon: Icon.checkSquare(),
                             displayFn: ({record}) => {
                                 if (!record.data.hideable) {
-                                    if (record.isSummary) {
-                                        return {hidden: true};
-                                    }
-
                                     return {
                                         icon: Icon.lock(),
                                         disabled: true

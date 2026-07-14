@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -15,6 +15,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 
 import {ColChooserModel} from './ColChooserModel';
 import './ColumnChooser.scss';
@@ -62,20 +63,21 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                                         viewMenu({chooserModel: model})
                                     ]
                                 }),
-                                pinnedBucketGrid({
-                                    bucket: model.leftBucketModel,
-                                    side: 'left',
+                                bucketPanel({
+                                    chooserModel: model,
+                                    bucketModel: model.leftBucketModel,
+                                    bucket: 'left',
                                     omit: !model.columnPinningEnabled
                                 }),
-                                grid({
-                                    className:
-                                        'xh-column-chooser__bucket xh-column-chooser__bucket--unpinned',
-                                    model: model.unpinnedBucketModel.chooserGridModel,
-                                    agOptions: model.unpinnedBucketModel.agOptions
+                                bucketPanel({
+                                    chooserModel: model,
+                                    bucketModel: model.unpinnedBucketModel,
+                                    bucket: 'unpinned'
                                 }),
-                                pinnedBucketGrid({
-                                    bucket: model.rightBucketModel,
-                                    side: 'right',
+                                bucketPanel({
+                                    chooserModel: model,
+                                    bucketModel: model.rightBucketModel,
+                                    bucket: 'right',
                                     omit: !model.columnPinningEnabled
                                 })
                             ]
@@ -194,28 +196,102 @@ const viewToggle = hoistCmp.factory<ViewToggleProps>(({checked, label, help, onT
     })
 );
 
-interface BucketGridProps extends HoistProps {
-    bucket: ColumnChooserBucketModel;
-    side: 'left' | 'right';
+interface BucketPanelProps extends HoistProps {
+    chooserModel: ColChooserModel;
+    bucketModel: ColumnChooserBucketModel;
+    bucket: 'left' | 'right' | 'unpinned';
 }
 
-const pinnedBucketGrid = hoistCmp.factory<BucketGridProps>(({bucket, side}) =>
-    panel({
-        className: 'xh-column-chooser__bucket-panel',
-        modelConfig: {
-            side: side === 'left' ? 'top' : 'bottom',
-            defaultSize: 80,
-            minSize: 80,
-            collapsible: false
-        },
-        item: grid({
-            className: `xh-column-chooser__bucket xh-column-chooser__bucket--${side}`,
-            model: bucket.chooserGridModel,
-            agOptions: bucket.agOptions,
-            flex: null
-        })
+/**
+ * A single chooser bucket rendered as a compact-header Panel. The pinned (left/right) rails
+ * auto-height to their content via the grid's `domLayout: 'autoHeight'` - growing/shrinking as
+ * columns are pinned - and are user-collapsible via a header chevron. When a pinned side holds no
+ * columns its header is dropped entirely, leaving a minimal 1-line drop strip (the empty grid).
+ * The unpinned "Columns" bucket flexes to fill remaining space and scrolls internally.
+ */
+const bucketPanel = hoistCmp.factory<BucketPanelProps>(
+    ({chooserModel, bucketModel: bucket, bucket: variant}) => {
+        const pinned = variant !== 'unpinned',
+            empty = pinned && bucket.columnCount === 0;
+
+        return panel({
+            className: classNames(
+                'xh-column-chooser__bucket-panel',
+                `xh-column-chooser__bucket-panel--${variant}`,
+                empty ? 'xh-column-chooser__bucket-panel--empty' : null,
+                empty && bucket.dragOver ? 'xh-column-chooser__bucket-panel--drag-over' : null
+            ),
+            compactHeader: true,
+            headerClassName: 'xh-column-chooser__bucket-header',
+            // Empty pinned rail: no header - just the 1-line drop strip.
+            title: empty ? null : bucketTitle({bucket}),
+            headerItems: empty ? null : [bucketVisibilityToggle({chooserModel, bucket})],
+            flex: pinned ? undefined : 1,
+            modelConfig: pinned
+                ? {
+                      side: variant === 'left' ? 'top' : 'bottom',
+                      defaultSize: 'fit-content',
+                      collapsible: true,
+                      resizable: false,
+                      showSplitter: false,
+                      showHeaderCollapseButton: true
+                  }
+                : undefined,
+            item: grid({
+                className: `xh-column-chooser__bucket xh-column-chooser__bucket--${variant}`,
+                model: bucket.chooserGridModel,
+                agOptions: pinned
+                    ? {...bucket.agOptions, domLayout: 'autoHeight'}
+                    : bucket.agOptions,
+                flex: pinned ? null : 1
+            })
+        });
+    }
+);
+
+interface BucketHeaderProps extends HoistProps {
+    chooserModel: ColChooserModel;
+    bucket: ColumnChooserBucketModel;
+}
+
+/** Bucket label plus a column-count badge, rendered as a bucket's compact Panel title. */
+const bucketTitle = hoistCmp.factory<{bucket: ColumnChooserBucketModel} & HoistProps>(({bucket}) =>
+    hbox({
+        className: 'xh-column-chooser__bucket-title',
+        alignItems: 'baseline',
+        items: [
+            span(bucket.title),
+            span({
+                className: 'xh-column-chooser__bucket-title__count',
+                item: `${bucket.columnCount}`
+            })
+        ]
     })
 );
+
+/**
+ * Bucket-scoped "toggle all visibility" control in a bucket's compact Panel header. Reflects the
+ * aggregate all/none/mixed state; omitted while the Column Library is shown (columns are hidden by
+ * dragging to the library then) or when the bucket has no hideable columns.
+ */
+const bucketVisibilityToggle = hoistCmp.factory<BucketHeaderProps>(({chooserModel, bucket}) => {
+    if (chooserModel.isLibraryShown || !bucket.hasHideableColumns) return null;
+
+    const visible = bucket.aggregateVisible,
+        icon =
+            visible === null
+                ? Icon.squareMinus()
+                : visible
+                  ? Icon.checkSquare({intent: 'primary'})
+                  : Icon.square();
+
+    return button({
+        className: 'xh-column-chooser__bucket-header__toggle',
+        icon,
+        minimal: true,
+        onClick: () => bucket.toggleBucketVisibility()
+    });
+});
 
 interface ColumnLibraryPanelProps extends HoistProps {
     chooserModel: ColChooserModel;

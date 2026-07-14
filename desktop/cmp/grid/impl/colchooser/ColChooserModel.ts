@@ -190,21 +190,21 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.leftBucketModel = new ColumnChooserBucketModel({
             parent: this,
             pinned: 'left',
-            summaryName: 'Left Pinned',
+            title: 'Pinned Left',
             emptyText: 'Drop a column here to pin left'
         });
 
         this.unpinnedBucketModel = new ColumnChooserBucketModel({
             parent: this,
             pinned: null,
-            summaryName: 'Columns',
+            title: 'Columns',
             emptyText: 'No columns'
         });
 
         this.rightBucketModel = new ColumnChooserBucketModel({
             parent: this,
             pinned: 'right',
-            summaryName: 'Right Pinned',
+            title: 'Pinned Right',
             emptyText: 'Drop a column here to pin right'
         });
 
@@ -406,7 +406,12 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
                 if (!targetApi) return;
 
                 const params = targetApi.getRowDropZoneParams({
-                    onDragStop: e => target.handleCrossBucketDrop(e, source)
+                    onDragEnter: () => target.setDragOver?.(true),
+                    onDragLeave: () => target.setDragOver?.(false),
+                    onDragStop: e => {
+                        target.setDragOver?.(false);
+                        target.handleCrossBucketDrop(e, source);
+                    }
                 });
 
                 if (params) {
