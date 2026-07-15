@@ -9,7 +9,6 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -25,13 +24,7 @@ export const rolePanel = hoistCmp.factory({
     model: creates(RoleModel),
 
     render({className, model}) {
-        const {moduleConfig, gridModel, readonly} = model;
-        if (!moduleConfig) return null;
-        if (!moduleConfig.enabled) {
-            return errorMessage({error: 'Default Role Module not enabled.'});
-        }
-        // Config is known and enabled, but the grid is built lazily just after - wait for it.
-        if (!gridModel) return null;
+        const {gridModel, readonly} = model;
         return fragment(
             panel({
                 className,

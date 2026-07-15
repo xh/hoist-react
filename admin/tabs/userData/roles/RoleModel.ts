@@ -10,7 +10,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {CallContext, HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -34,9 +34,7 @@ export class RoleModel extends HoistModel {
 
     override persistWith = RoleModel.PERSIST_WITH;
 
-    // Observable as it is created lazily post-load (once the module config is known) and gates
-    // panel rendering - see RolePanel and ensureInitializedAsync.
-    @managed @observable.ref gridModel: GridModel;
+    @managed gridModel: GridModel;
     @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
     @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
@@ -45,7 +43,7 @@ export class RoleModel extends HoistModel {
 
     @bindable showInGroups = true;
 
-    /** Role-module config - sourced from AppModel, our single load point (see ensureInitializedAsync). */
+    /** Role-module config - loaded at init. */
     get moduleConfig(): RoleModuleConfig {
         return getAppModel().roleModuleConfig;
     }
@@ -63,6 +61,10 @@ export class RoleModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = this.createGridModel();
+        this.filterChooserModel = this.createFilterChooserModel();
+
         this.addReaction({
             track: () => this.showInGroups,
             run: showInGroups => {
@@ -81,9 +83,6 @@ export class RoleModel extends HoistModel {
         return this.runner({loadSpec})
             .span('list')
             .run(async ctx => {
-                await this.ensureInitializedAsync(ctx);
-                if (!this.moduleConfig.enabled) return;
-
                 const {data} = await XH.fetchJson({url: 'roleAdmin/list'}, ctx);
                 if (loadSpec.isStale) return;
 
@@ -238,25 +237,6 @@ export class RoleModel extends HoistModel {
         gridModel.loadData(gridData);
         if (!isRefresh) gridModel.expandAll();
         gridModel.autosizeAsync({includeCollapsedChildren: true});
-    }
-
-    private async ensureInitializedAsync(ctx: CallContext) {
-        if (this.gridModel) return;
-
-        // Config is normally loaded by AppModel at init; ask it to (re)load only if that did not
-        // complete, keeping AppModel the single load point. Lets any failure surface via our
-        // doLoadAsync catch below, as before.
-        const appModel = getAppModel();
-        if (!appModel.roleModuleConfig) {
-            await appModel.loadRoleModuleConfigAsync(ctx);
-        }
-
-        if (this.moduleConfig.enabled) {
-            runInAction(() => {
-                this.gridModel = this.createGridModel();
-                this.filterChooserModel = this.createFilterChooserModel();
-            });
-        }
     }
 
     private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {

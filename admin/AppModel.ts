@@ -7,9 +7,8 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {CallContextLike, HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
+import {HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {without} from 'lodash';
 import {RoleModuleConfig} from './tabs/userData/roles/Types';
@@ -30,12 +29,8 @@ export class AppModel extends HoistAppModel {
 
     viewManagerModels: Record<string, ViewManagerModel> = {};
 
-    /**
-     * Role-module config, loaded once at init (see {@link loadRoleModuleConfigAsync}) and shared
-     * with the Roles tab so it need not re-query. Null if not yet loaded or the query failed - the
-     * app not running the Hoist role module is reflected by a loaded config with `enabled: false`.
-     */
-    @observable.ref roleModuleConfig: RoleModuleConfig = null;
+    /** Role-module config, loaded once at init and shared with the Roles tab. */
+    roleModuleConfig: RoleModuleConfig = null;
 
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
@@ -43,20 +38,18 @@ export class AppModel extends HoistAppModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.defaults.autosizeMode = 'managed';
     }
 
     override async initAsync(ctx: InitContext) {
-        // Determine role-module availability up-front so we can title the User Data tab and show
-        // its Roles sub-tab only when the Hoist-provided DefaultRoleService is actually in use.
-        // Swallow errors here so a transient failure doesn't block admin startup.
+        // Load role config up-front to title/show the Roles tab (see createTabs).
+        // But never block, in the unexpected case that config can't load.
         try {
             await this.loadRoleModuleConfigAsync(ctx);
         } catch (e) {
-            XH.handleException(e, {showAlert: false, logOnServer: false});
+            XH.handleException(e, {alertType: 'toast'});
         }
 
         this.tabModel = new TabContainerModel({
@@ -143,7 +136,7 @@ export class AppModel extends HoistAppModel {
 
     createTabs(): TabConfig[] {
         const conf = XH.getConf('xhAdminAppConfig', {}),
-            rolesEnabled = this.roleModuleConfig?.enabled ?? true;
+            rolesEnabled = this.roleModuleConfig?.enabled ?? false;
 
         return [
             {
@@ -232,23 +225,6 @@ export class AppModel extends HoistAppModel {
         return appCodes.find(it => it === 'app') ?? appCodes[0];
     }
 
-    /**
-     * Load the role-module config from the server, caching it on this model as the single source
-     * of truth (the Roles tab reads it from here). The config reports whether role management is
-     * enabled - i.e. the app runs the Hoist-provided `DefaultRoleService` - which drives both the
-     * Roles sub-tab's presence and its mention in the enclosing tab's title.
-     *
-     * Called once at init; the Roles tab invokes it again only if that init load did not complete.
-     * Kept on a tight timeout - this should return near-instantly. Throws on failure; callers
-     * decide whether to surface or swallow (init swallows, the Roles tab lets its loader report).
-     */
-    async loadRoleModuleConfigAsync(ctx?: CallContextLike) {
-        const config = await this.runner(ctx)
-            .span('loadRoleModuleConfig')
-            .fetchJson({url: 'roleAdmin/config', timeout: 10 * SECONDS});
-        runInAction(() => (this.roleModuleConfig = config));
-    }
-
     async initViewManagerModelsAsync(ctx: InitContext) {
         this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync(
             {
@@ -258,5 +234,14 @@ export class AppModel extends HoistAppModel {
             },
             ctx
         );
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    private async loadRoleModuleConfigAsync(ctx: InitContext) {
+        this.roleModuleConfig = await this.runner(ctx)
+            .span('loadRoleModuleConfig')
+            .fetchJson({url: 'roleAdmin/config', timeout: 10 * SECONDS});
     }
 }
