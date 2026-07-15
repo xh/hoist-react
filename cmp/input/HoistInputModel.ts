@@ -11,8 +11,7 @@ import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {FocusEvent, ForwardedRef, ReactElement, ReactInstance, useImperativeHandle} from 'react';
-import {findDOMNode} from 'react-dom';
+import {FocusEvent, ForwardedRef, ReactElement, useImperativeHandle} from 'react';
 import './HoistInput.scss';
 
 /**
@@ -72,10 +71,8 @@ export class HoistInputModel extends HoistModel {
      * root of the rendered component sub-tree.
      */
     get domEl(): HTMLElement {
-        const current = this.domRef.current as ReactInstance;
-        return (
-            !current || current instanceof Element ? current : findDOMNode(current)
-        ) as HTMLElement;
+        const {current} = this.domRef;
+        return current instanceof Element ? (current as HTMLElement) : null;
     }
 
     /**
@@ -89,8 +86,7 @@ export class HoistInputModel extends HoistModel {
      */
     get inputEl(): HTMLInputElement | HTMLTextAreaElement {
         return (this.inputRef.current ?? this.domEl?.querySelector('input')) as
-            | HTMLInputElement
-            | HTMLTextAreaElement;
+            HTMLInputElement | HTMLTextAreaElement;
     }
 
     /** Bound model, if any.*/
@@ -103,7 +99,7 @@ export class HoistInputModel extends HoistModel {
     //------------------------
     @observable.ref internalValue: any = null; // Cached internal value
     inputRef = createObservableRef<HTMLElement>(); // ref to internal <input> element, if any
-    domRef = createObservableRef<HTMLElement>(); // ref to outermost element, or class Component.
+    domRef = createObservableRef<HTMLElement>(); // ref to outermost rendered DOM element.
     isDirty: boolean = false;
 
     constructor() {

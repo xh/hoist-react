@@ -9,6 +9,7 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {MomentInput} from 'moment';
 import {Component, FunctionComponent, ReactElement} from 'react';
 import {DebounceSettings} from 'lodash';
+import {Route} from 'router5';
 
 /** Values available for intents. */
 export type Intent = 'primary' | 'success' | 'warning' | 'danger';
@@ -55,13 +56,21 @@ export type DebounceSpec = number | (DebounceSettings & {interval: number});
  * function that returns a ReactElement. In either case, the function will be called with no arguments.
  */
 export type Content =
-    | ReactElement
-    | FunctionComponent
-    | Component
-    | ElementFactory
-    | (() => ReactElement);
+    ReactElement | FunctionComponent | Component | ElementFactory | (() => ReactElement);
 
 export type DateLike = Date | LocalDate | MomentInput;
+
+/**
+ * A Router5 {@link Route} spec, extended with Hoist's `omit` support for declarative exclusion of
+ * routes at registration time (e.g. role-gated sections). Note `omit` is evaluated once when routes
+ * are added to the router during app startup - it is not reactive.
+ *
+ * @see HoistAppModel.getRoutes
+ */
+export interface HoistRoute extends Omit<Route, 'children'> {
+    omit?: Thunkable<boolean>;
+    children?: HoistRoute[];
+}
 
 /** Valid units for the {@link LocalDate} adjustment methods. */
 export type LocalDateUnit =

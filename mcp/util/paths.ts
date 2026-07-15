@@ -39,6 +39,27 @@ export function resolveRepoRoot(): string {
     return repoRoot;
 }
 
+/** Convert a filesystem path to POSIX (forward-slash) form. */
+export function toPosixPath(p: string): string {
+    return p.replace(/\\/g, '/');
+}
+
+/**
+ * Repo root in POSIX (forward-slash) form, matching ts-morph's `getFilePath()`
+ * convention, which always reports forward slashes on every platform.
+ *
+ * On Windows, {@link resolveRepoRoot} returns a backslash path (e.g.
+ * `D:\hoist-react`) while ts-morph reports `D:/hoist-react/...`; comparing or
+ * slicing the two directly fails, silently filtering out every source file and
+ * yielding an empty symbol index. Use this whenever comparing against or
+ * slicing a ts-morph source-file path (see `data/ts-registry.ts` and
+ * `formatters/typescript.ts`). Filesystem access that stays within Node's
+ * `path` APIs should keep using {@link resolveRepoRoot}.
+ */
+export function resolveRepoRootPosix(): string {
+    return toPosixPath(resolveRepoRoot());
+}
+
 /**
  * Resolve the `@xh/hoist` library version from the repo root `package.json`.
  *

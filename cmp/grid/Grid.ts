@@ -49,6 +49,7 @@ import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {type MouseEvent} from 'react';
+import {PartialDeep} from 'type-fest';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -66,7 +67,7 @@ export interface GridProps<M extends GridModel = GridModel>
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions?: GridOptions;
+    agOptions?: PartialDeep<GridOptions>;
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
@@ -392,7 +393,14 @@ export class GridLocalModel extends HoistModel {
         return {
             track: () => [model.agApi, model.groupBy],
             run: ([agApi, groupBy]) => {
-                if (agApi) agApi.setRowGroupColumns(groupBy);
+                if (!agApi) return;
+                agApi.setRowGroupColumns(groupBy);
+
+                // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
+                const state = model.columnState
+                    .filter(({colId}) => !groupBy.includes(colId))
+                    .map(({colId, hidden}) => ({colId, hide: hidden}));
+                agApi.applyColumnState({state});
             }
         };
     }

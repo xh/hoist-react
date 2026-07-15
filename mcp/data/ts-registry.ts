@@ -24,7 +24,7 @@ import type {
 import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
-import {resolveRepoRoot} from '../util/paths.js';
+import {resolveRepoRoot, resolveRepoRootPosix, toPosixPath} from '../util/paths.js';
 import {computeFingerprint, loadCache, writeCache} from './index-cache.js';
 
 //------------------------------------------------------------------
@@ -295,7 +295,9 @@ function buildSymbolIndex(proj: Project): {
 } {
     const index = new Map<string, SymbolEntry[]>();
     const mIndex = new Map<string, MemberIndexEntry[]>();
-    const repoRoot = resolveRepoRoot();
+    // POSIX form: compared against ts-morph `getFilePath()`, which always uses
+    // forward slashes even on Windows.
+    const repoRoot = resolveRepoRootPosix();
 
     const counts = {total: 0, exported: 0, byKind: {} as Record<string, number>};
     let memberCount = 0;
@@ -549,7 +551,7 @@ function buildSymbolIndex(proj: Project): {
     // Index Promise prototype extensions from promise/Promise.ts
     const promiseFile = proj.getSourceFile(sf => sf.getFilePath().endsWith('/promise/Promise.ts'));
     if (promiseFile) {
-        indexPromiseExtensions(promiseFile, index, mIndex, resolveRepoRoot());
+        indexPromiseExtensions(promiseFile, index, mIndex, resolveRepoRootPosix());
     }
 
     // Populate `memberNames` on symbol entries for every member-indexed owner
@@ -799,7 +801,8 @@ function ensureProject(): Project {
  * JSDoc).
  */
 function enrichMemberIndexFromImplements(proj: Project): void {
-    const repoRoot = resolveRepoRoot();
+    // POSIX form: compared against ts-morph `getFilePath()` (see buildSymbolIndex).
+    const repoRoot = resolveRepoRootPosix();
 
     for (const sourceFile of proj.getSourceFiles()) {
         const filePath = sourceFile.getFilePath();
@@ -1374,8 +1377,12 @@ function findIndexEntry(name: string, filePath?: string): SymbolEntry | null {
 
     if (filePath) {
         // Resolve relative paths against repo root -- search results display repo-relative
-        // paths, so callers will typically pass those rather than absolute paths.
-        const resolved = filePath.startsWith('/') ? filePath : resolve(resolveRepoRoot(), filePath);
+        // paths, so callers will typically pass those rather than absolute paths. Normalize
+        // to POSIX so the comparison matches entry.filePath (ts-morph forward slashes) on
+        // Windows, and recognize Windows drive-letter absolutes (e.g. `D:/...`) as absolute.
+        const posix = toPosixPath(filePath);
+        const isAbsolute = posix.startsWith('/') || /^[a-zA-Z]:\//.test(posix);
+        const resolved = isAbsolute ? posix : toPosixPath(resolve(resolveRepoRoot(), posix));
         return exact.find(e => e.filePath === resolved) ?? null;
     }
 

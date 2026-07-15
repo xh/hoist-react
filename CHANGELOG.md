@@ -2,45 +2,30 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade.)
+* Hoist v87 updates to React 19. Applications may require minor adjustments and should be
+  carefully tested.
+    * Apply any type adjustments needed to meet React 19's stricter typing. See
+      https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
+    * Both desktop and mobile `Popover` implementations now render on Floating UI, rather than
+      Popper.js, which is not React-19 compatible.  This changes the underlying DOM and CSS classes
+      for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
+      any custom styling that targeted  Blueprint or Popper css classes (e.g. `bp6-minimal`).
+    * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
 
-* Upgraded to AG Grid 36. Applications must bump their `ag-grid-community`, `ag-grid-react`, and
-  (if used) `ag-grid-enterprise` dependencies to `36.x`.
-* AG Grid 36 restructures the grid into a single scrollable container, renaming internal layout
-  classes. Applications with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
-  `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new class names. See the
-  [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
-
-### 🎁 New Features
-
-* `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
-  not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
-  ensuring such values render with their proper label rather than falling back to the raw value.
-
-### 🐞 Bug Fixes
-
-* Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
-  async query de-duplication now use deep equality, so object values no longer render as
-  `[object Object]` or collide with one another.
-* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
-  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
-  represent are left untouched rather than corrupted.
-* Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
-  longer disappears when opened - it now always occupies its place in the layout, so surrounding
-  elements no longer shift. Its clear and favorites controls also respond to a single click rather
-  than requiring the popover to be opened first. This mode is now enabled more naturally via
-  a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
-  as a thin alias.
-
-### ⚙️ Typescript API Adjustments
-
-* Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
-  replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+* Hoist v87 updates to AG Grid 36.
+    * Applications must bump their `ag-grid-community`, `ag-grid-react`, and
+      (if used) `ag-grid-enterprise` dependencies to `36.x`.
+    * AG Grid 36 restructures the grid into a single scrollable container, renaming internal layout
+      classes. Applications with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
+      `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new class names. See the
+      [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
 
 ### ⚙️ Technical
-* Misc. improvements to persistence in the Admin client.
-* @azure/msal-browser `5.14 → 5.15`
-* swiper  `12.1.0 -> 14.0.0`,
+* Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
+  onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
+  have been updated so no app call-site changes are required.
+* Applied type adjustments to meet React 19's stricter `@types/react` typing.
 
 ### ✨ Styles
 
@@ -55,10 +40,82 @@
   `showHover` would otherwise appear always-on).
 
 ### 📚 Libraries
-
+* react `18.2 → 19.2`
 * ag-grid-community `35.3 → 36.0`
 * ag-grid-react `35.3 → 36.0`
 
+## 86.4.0 - 2026-07-15
+
+### 🎁 New Features
+* Added `PrefService.isSet()` to report whether the current user has an explicit value on file for a
+  preference vs. receiving its server-side default - a distinction that cannot be reliably inferred
+  by comparing the value to the default. Requires a hoist-core version that emits the backing
+  `isSet` flag; against older servers all prefs report as unset.
+
+### 🐞 Bug Fixes
+* `PrefService.unset()` now performs a true server-side unset, clearing the user's stored value so
+  the preference reverts to its (possibly changing) default and `isSet()` reports `false`.
+  Previously it persisted the current default as an explicit user value. Falls back to the legacy
+  behavior against hoist-core versions that predate the `xh/unsetPrefs` endpoint.
+* Fixed `FilterChooser` popover mode to render an opaque background when expanded.
+
+## 86.3.0 - 2026-07-10
+
+### 🎁 New Features
+
+* `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
+  not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
+  ensuring such values render with their proper label rather than falling back to the raw value.
+* `SegmentedControl` options (desktop and mobile) now accept a `testId`, emitted on the option's
+  rendered button as `data-testid` for E2E targeting. If an option omits its own `testId` but the
+  control has one, an id is auto-derived as `${controlTestId}-${value}` - restoring parity with
+  the legacy `ButtonGroupInput` test-hook pattern for apps migrating between the two.
+
+### 🐞 Bug Fixes
+
+* Fixed grid columns configured as `hidden` becoming visible after being grouped and then
+  ungrouped. `GridModel` now re-asserts each column's configured visibility whenever `groupBy`
+  changes, keeping AG Grid's column state in sync with `columnState`.
+* Fixed `StoreFilterField` and grid Find so an active quick-filter or find query no longer returns
+  different results when the grid's `groupBy` changes.
+* Fixed inline grid cell editors to reliably commit their value when editing ends, including popup
+  editors (e.g. `textAreaEditor`) within a dialog, which previously dropped edits on Enter or
+  click-away.
+* Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
+  async query de-duplication now use deep equality, so object values no longer render as
+  `[object Object]` or collide with one another.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled -
+  multi-value clauses are now expanded into editable rows and recombined on commit, and filters it
+  cannot represent are left untouched rather than corrupted.
+* Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
+  longer disappears when opened - it now always occupies its place in the layout, so surrounding
+  elements no longer shift. Its clear and favorites controls also respond to a single click rather
+  than requiring the popover to be opened first. This mode is now enabled more naturally via
+  a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
+  as a thin alias.
+* Fixed "not a valid MIME type" console warnings from `FileChooser`. Accepted extensions are now
+  passed under a dummy MIME type key, silencing the warnings while continuing to filter selected
+  files by extension.
+
+### ⚙️ Typescript API Adjustments
+
+* Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
+  replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+* Added the exported `HoistRoute` type - Router5's `Route` extended with Hoist's `omit` key - and
+  retyped `HoistAppModel.getRoutes()` to return it, so declarative route exclusion (e.g.
+  `omit: !XH.getUser().isHoistAdmin`) now type-checks without a cast.
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the MCP server and `hoist-ts` CLI TypeScript symbol tools (`search`, `symbol`, `members`)
+  returning no results on Windows, where a path-separator mismatch left the symbol index empty.
+  Path handling is now normalized so the developer tools work on Windows as well as macOS/Linux.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.21 → 2.23`
+* @azure/msal-browser `5.14 → 5.16`
+* swiper  `12.1 -> 14.0`
 
 ## 86.2.0 - 2026-06-25
 
