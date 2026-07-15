@@ -1,46 +1,35 @@
 # Changelog
 
-## 88.0.0-SNAPSHOT - unreleased
-
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
-
-* Apply any type adjustments needed to meet React 19's stricter typing. See
-  https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
-* Removed the `popperOptions` `popper.js` escape-hatch prop from the mobile `Popover`. Popper.js
-  is not React 19 compatible and is being removed in this release (see below).
-
-### 🎁 New Features
-
-* Added support for React 19. The framework now type-checks and runs against React 19 while
-  retaining React 18 compatibility — the `react` / `react-dom` peer dependency is widened to
-  `~18.2.0 || ^19.0.0`.
-
-### ⚙️ Technical
-* Moved both popover implementations off the deprecated, React-18-capped Popper.js onto Floating UI
-  for React 19 compatibility. The desktop `Popover` kit wrapper now uses Blueprint's Floating
-  UI-based `PopoverNext`; the `popover` factory keeps its existing `PopoverProps` API, so no
-  call-site changes are required.
-* Migrated the mobile `Popover` from `react-popper` to Floating UI.
-* Applied type adjustments to meet React 19's stricter `@types/react` typing
-  (an explicit `useRef` initial arg, `cloneElement` element typing, element `props` access, ref
-  callbacks returning void, and narrowing a few render-fn results). No behavior change on React 18.
-
-
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade.)
+* Hoist v87 updates to React 19. Applications may require minor adjustments and should be
+  carefully tested.
+    * Apply any type adjustments needed to meet React 19's stricter typing. See
+      https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
+    * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
+      Popper.js is not React 19 compatible and is being removed in this release.
 
+### 🎁 New Features
 * Added `PrefService.isSet()` to report whether the current user has an explicit value on file for a
   preference vs. receiving its server-side default - a distinction that cannot be reliably inferred
   by comparing the value to the default. Requires a hoist-core version that emits the backing
   `isSet` flag; against older servers all prefs report as unset.
 
 ### 🐞 Bug Fixes
-
 * `PrefService.unset()` now performs a true server-side unset, clearing the user's stored value so
   the preference reverts to its (possibly changing) default and `isSet()` reports `false`.
   Previously it persisted the current default as an explicit user value. Falls back to the legacy
   behavior against hoist-core versions that predate the `xh/unsetPrefs` endpoint.
+
+### ⚙️ Technical
+* Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
+  onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
+  have been updated so no app call-site changes are required.
+* Applied type adjustments to meet React 19's stricter `@types/react` typing.
+
+### 📚 Libraries
+* react `18.x → 19.x`
 
 ## 86.3.0 - 2026-07-10
 
