@@ -156,7 +156,7 @@ export class GridLocalModel extends HoistModel {
 
     // Structural "empty" grid space.
     private static EMPTY_SPACE_SELECTOR =
-        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
+        '.ag-grid-viewport, .ag-grid-scrollable-area, .ag-grid-scrolling-container, .ag-row';
 
     @lookup(GridModel)
     private model: GridModel;

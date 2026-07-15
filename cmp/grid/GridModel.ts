@@ -590,7 +590,7 @@ export class GridModel extends HoistModel {
     }
 
     get bodyViewport(): HTMLElement {
-        return this.viewRef.current?.querySelector('.ag-body-viewport') as HTMLElement;
+        return this.viewRef.current?.querySelector('.ag-grid-viewport') as HTMLElement;
     }
 
     /** Tracks execution of filtering operations.*/
