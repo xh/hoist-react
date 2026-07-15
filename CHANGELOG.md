@@ -7,8 +7,11 @@
   carefully tested.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
+    * Both desktop and mobile `Popover` implementations now render on Floating UI, rather than
+      Popper.js, which is not React-19 compatible.  This changes the underlying DOM and CSS classes
+      for popovers.Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
+      any custom styling that targeted  Blueprint or Popper css classes (e.g. `bp6-minimal`).
     * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
-      Popper.js is not React 19 compatible and is being removed in this release.
 
 ### 🎁 New Features
 * Added `PrefService.isSet()` to report whether the current user has an explicit value on file for a
