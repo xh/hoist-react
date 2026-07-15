@@ -48,6 +48,7 @@
     "@codemirror/lint": "^6.9.6",
     "@codemirror/state": "^6.7.0",
     "@codemirror/view": "^6.43.0",
+    "@floating-ui/react": "^0.27.13",
     "@fortawesome/fontawesome-pro": "^7.2.0",
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/pro-light-svg-icons": "^7.2.0",
@@ -79,7 +80,6 @@
     "react-grid-layout": "~2.2.3",
     "react-markdown": "~10.1.0",
     "react-onsenui": "~1.13.2",
-    "react-popper": "~2.3.0",
     "react-select": "~5.10.2",
     "react-window": "~2.2.7",
     "react-windowed-select": "~5.2.0",
@@ -97,12 +97,12 @@
     "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "react": "~18.2.0",
-    "react-dom": "~18.2.0"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@types/react": "18.x",
-    "@types/react-dom": "18.x",
+    "@types/react": "19.x",
+    "@types/react-dom": "19.x",
     "@xh/hoist-dev-utils": "13.x",
     "ag-grid-community": "35.x",
     "ag-grid-react": "35.x",
@@ -114,16 +114,16 @@
     "lint-staged": "17.x",
     "postcss": "8.x",
     "prettier": "3.x",
-    "react": "~18.2.0",
-    "react-dom": "~18.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "stylelint": "17.x",
     "stylelint-config-standard-scss": "17.x",
     "type-fest": "5.x",
     "typescript": "~5.9.3"
   },
   "resolutions": {
-    "@types/react": "18.x",
-    "@types/react-dom": "18.x",
+    "@types/react": "19.x",
+    "@types/react-dom": "19.x",
     "core-js": "3.x"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
