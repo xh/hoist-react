@@ -44,13 +44,7 @@ export class AppModel extends HoistAppModel {
     }
 
     override async initAsync(ctx: InitContext) {
-        // Load role config up-front to title/show the Roles tab (see createTabs).
-        // But never block, in the unexpected case that config can't load.
-        try {
-            await this.loadRoleModuleConfigAsync(ctx);
-        } catch (e) {
-            XH.handleException(e, {alertType: 'toast'});
-        }
+        await this.loadRoleModuleConfigAsync(ctx);
 
         this.tabModel = new TabContainerModel({
             route: 'default',
@@ -240,8 +234,17 @@ export class AppModel extends HoistAppModel {
     // Implementation
     //----------------
     private async loadRoleModuleConfigAsync(ctx: InitContext) {
-        this.roleModuleConfig = await this.runner(ctx)
-            .span('loadRoleModuleConfig')
-            .fetchJson({url: 'roleAdmin/config', timeout: 10 * SECONDS});
+        // Load role config up-front to title/show the Roles tab (see createTabs).
+        // Never block startup if it can't load - the tab defaults to hidden.
+        try {
+            this.roleModuleConfig = await this.runner(ctx)
+                .span('loadRoleModuleConfig')
+                .fetchJson({url: 'roleAdmin/config', timeout: 10 * SECONDS});
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Unable to load roles configuration',
+                alertType: 'toast'
+            });
+        }
     }
 }
