@@ -9,7 +9,9 @@ import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {without} from 'lodash';
+import {RoleModuleConfig} from './tabs/userData/roles/Types';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';
@@ -27,6 +29,9 @@ export class AppModel extends HoistAppModel {
 
     viewManagerModels: Record<string, ViewManagerModel> = {};
 
+    /** Role-module config, loaded once at init and shared with the Roles tab. */
+    roleModuleConfig: RoleModuleConfig = null;
+
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
     }
@@ -34,16 +39,18 @@ export class AppModel extends HoistAppModel {
     constructor() {
         super();
 
-        this.tabModel = new TabContainerModel({
-            route: 'default',
-            tabs: this.createTabs()
-        });
-
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.defaults.autosizeMode = 'managed';
     }
 
     override async initAsync(ctx: InitContext) {
+        await this.loadRoleModuleConfigAsync(ctx);
+
+        this.tabModel = new TabContainerModel({
+            route: 'default',
+            tabs: this.createTabs()
+        });
+
         await this.initViewManagerModelsAsync(ctx);
         await super.initAsync(ctx);
     }
@@ -122,7 +129,8 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
-        const conf = XH.getConf('xhAdminAppConfig', {});
+        const conf = XH.getConf('xhAdminAppConfig', {}),
+            rolesEnabled = this.roleModuleConfig?.enabled ?? false;
 
         return [
             {
@@ -159,6 +167,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 id: 'userData',
+                title: rolesEnabled ? 'User Data & Roles' : 'User Data',
                 icon: Icon.users(),
                 content: {
                     refreshMode: 'onShowAlways',
@@ -172,7 +181,8 @@ export class AppModel extends HoistAppModel {
                         {
                             id: 'roles',
                             icon: Icon.idBadge(),
-                            content: rolePanel
+                            content: rolePanel,
+                            omit: !rolesEnabled
                         },
                         {
                             id: 'prefs',
@@ -218,5 +228,23 @@ export class AppModel extends HoistAppModel {
             },
             ctx
         );
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    private async loadRoleModuleConfigAsync(ctx: InitContext) {
+        // Load role config up-front to title/show the Roles tab (see createTabs).
+        // Never block startup if it can't load - the tab defaults to hidden.
+        try {
+            this.roleModuleConfig = await this.runner(ctx)
+                .span('loadRoleModuleConfig')
+                .fetchJson({url: 'roleAdmin/config', timeout: 10 * SECONDS});
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Unable to load roles configuration',
+                alertType: 'toast'
+            });
+        }
     }
 }
