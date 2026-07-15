@@ -1,26 +1,18 @@
-# Plan: React 19 preparation (forward-compatible, stay on React 18)
+# React 19 upgrade
 
-**Branch:** `react-19` (based on `develop`)
+**Branch:** `react-19-upgrade` (based on `develop`) — see [#4205](https://github.com/xh/hoist-react/issues/4205).
 
-**Goal:** remove the things in hoist-react's own code that will *block* a future React 19
-migration, **without upgrading off React 18**. Every change here is forward-compatible — it
-behaves identically on React 18 and simply drops an API or component that React 19 removes /
-breaks. The actual React 19 upgrade (runtime bump, dependency work) happens later and is tracked
-in [#4205](https://github.com/xh/hoist-react/issues/4205).
-
-**Why these are all React-18-safe:** each phase swaps a React-19-incompatible API for a
-replacement that *also* runs on React 18. The precedent is already in the tree —
-`kit/blueprint/Wrappers.ts` runs `Overlay2 as Overlay` on React 18 today. Phases 2 and 3 apply
-that same pattern to `PopoverNext` and `@floating-ui/react`.
+**Outcome:** hoist-react now type-checks and runs against React 19. This is a clean cut — the
+`react` / `react-dom` peer dependency moves to `^19.2.0` and React 18 is no longer supported.
+Consuming apps upgrade to React 19 alongside this Hoist major.
 
 ## Context
 
-A scan of hoist-react for React-19-affected internal APIs found the surface is small, and most
-of it is already handled:
+A scan of hoist-react for React-19-affected internal APIs found the surface small, and most of it
+was already handled before this branch:
 
-- `ReactDOM.render` / `hydrate` / `unmountComponentAtNode` — **none** (already migrated to
-  `createRoot`, in `appcontainer/AppContainerModel.ts` and
-  `desktop/cmp/dash/container/DashContainerModel.ts`).
+- `ReactDOM.render` / `hydrate` / `unmountComponentAtNode` — **none** (already on `createRoot`, in
+  `appcontainer/AppContainerModel.ts` and `desktop/cmp/dash/container/DashContainerModel.ts`).
 - legacy Blueprint `Overlay` — already migrated to `Overlay2` in `kit/blueprint/Wrappers.ts`.
 - `defaultProps` on function components — none.
 - Legacy context (`childContextTypes` / `getChildContext`) — none.
@@ -28,103 +20,89 @@ of it is already handled:
 - `cloneElement` is used in several places but never to forward a `ref`, so the React 19
   `cloneElement` ref-handling change does not apply.
 
-That leaves three forward-compatible blockers to remove, sequenced as phases below.
+That left the work below: two removed/broken APIs (`findDOMNode`, Popper.js-based popovers), the
+custom-element boolean-prop change that affects the Onsen kit, the types/peer bump, and the
+type-only fallout from `@types/react@19`.
 
-## Phase 1 — `findDOMNode` removal (required)
+## Types / peer bump
 
-`findDOMNode` is **deprecated in React 18** (works, warns under StrictMode) and **removed in
-React 19**, so it is a genuine hard blocker. The ref-based replacement behaves identically on
-React 18.
+- `package.json`: `peerDependencies.react` / `react-dom` → `^19.2.0` (React 18 dropped);
+  dev `react` / `react-dom` → `^19.2.0`; `@types/react` / `@types/react-dom` and their
+  `resolutions` pins → `19.x`.
+- Removed `react-popper` as a direct dependency; added `@floating-ui/react` (see below).
 
-**`cmp/input/HoistInputModel.ts`** — import (line ~15) + the `domEl` getter (line ~77):
+## `findDOMNode` removal
 
-```ts
-const current = this.domRef.current as ReactInstance;
-return (!current || current instanceof Element ? current : findDOMNode(current)) as HTMLElement;
-```
+`findDOMNode` is removed in React 19. `HoistInputModel.domEl` (`cmp/input/HoistInputModel.ts`)
+used it as a fallback for when `domRef.current` resolved to a class instance rather than a DOM
+element. A trace of all desktop + mobile HoistInput implementations confirmed every one roots
+`domRef` on a DOM element, so the fallback was dead defensive code. `domEl` now resolves the
+element directly from the ref; the `findDOMNode` / `ReactInstance` imports are dropped.
 
-- The `findDOMNode` branch only fires when `domRef.current` is a class / `ReactInstance` rather
-  than an `Element`. Inputs already place `domRef` on the rendered root, so resolve the element
-  directly from the ref.
-- Replace the fallback; if a non-`Element` ever appears, surface it (dev warning) instead of
-  silently degrading. Drop the now-unused `ReactInstance` import.
-- **Verify on React 18:** confirm `domRef.current` always resolves to a DOM `Element` across the
-  HoistInput implementations now that the class-instance fallback is gone.
+## Popovers off Popper.js → Floating UI
 
-## Phase 2 — `Popover` kit wrapper on `PopoverNext` (mirror the `Overlay2` approach)
+Both popover implementations relied on Popper.js, which is React-18-capped and not React 19
+compatible.
 
-Blueprint's legacy `Popover` relies on the removed `findDOMNode` and breaks under React 19.
-`PopoverNext` is the `findDOMNode`-free replacement in the same Blueprint 6.15.0 package and runs
-on React 18 — exactly as `Overlay2` already does. We handle it identically: the kit owns a
-`Popover` wrapper that re-exports `PopoverNext` under our canonical name.
+- **Desktop kit wrapper — `kit/blueprint/Wrappers.ts`.** Blueprint's legacy `Popover` relies on
+  the removed `findDOMNode`; its Floating UI-based `PopoverNext` (same Blueprint build) is the
+  replacement — mirroring the existing `Overlay2 as Overlay` pattern. The wrapper now renders
+  `PopoverNext` and runs incoming props through Blueprint's `popoverPropsToNextProps()` helper,
+  which maps `position` / `modifiers` / `minimal` / `boundary` and preserves the legacy
+  `shouldReturnFocusOnClose` default. Because the helper handles the mapping, the `popover`
+  factory keeps its existing `PopoverProps` API and **no call sites needed edits**.
+- **Mobile — `mobile/cmp/popover/Popover.ts`** (the sole `react-popper` consumer). Swapped
+  `usePopper` for `@floating-ui/react`'s `useFloating`, reusing the Floating UI copy Blueprint's
+  `PopoverNext` already pulls in rather than adding a separate library. Positioning uses
+  `middleware: [autoPlacement() | flip(), shift({padding: 10})]` with `whileElementsMounted:
+  autoUpdate`; placement names are shared with Popper.js so `menuPositionToPlacement` is
+  unchanged. Element wiring uses Floating UI's own `refs.setReference` / `refs.setFloating`
+  callback refs rather than the previous observable refs — the MobX-observer re-render the old
+  approach depended on did not reliably fire under React 19 for the portaled content. The obsolete
+  Popper.js-specific `popperOptions` escape-hatch prop was removed (breaking change; unused in
+  Hoist).
 
-- **`kit/blueprint/Wrappers.ts`** — change the import from `Popover as BpPopover` to
-  `PopoverNext as BpPopover`; point the `PopoverProps` type import at `PopoverNext`'s props. Keep
-  the thin wrapper that disables the open/close transition by default (verify the right knob on
-  `PopoverNext` — `transitionDuration: 0` may become `animation`-based; see prop map below).
-- Propagate the `PopoverNext` prop renames to call sites that pass Popover props:
-  - **`desktop/cmp/input/DateInput.ts`** (`minimal`, `modifiers`, `position`, `boundary`,
-    `onInteraction`)
-  - **`desktop/cmp/input/Picker.ts`** (`minimal`, `position`, `onInteraction`) — shared base for
-    Select/combo inputs
-  - **`desktop/cmp/viewmanager/ViewMenu.ts`** (verify — `shouldDismissPopover` is a `MenuItem`
-    prop, likely unaffected)
-  - **`mobile/cmp/menu/MenuButton.ts`** (`popoverProps?: Partial<PopoverProps>` passthrough)
-- Prop map (Blueprint v6.14 guide): `position` -> `placement`; `modifiers` -> `middleware` (via
-  `popperModifiersToNextMiddleware()`); `minimal={true}` -> `animation="minimal"` +
-  `arrow={false}`; `boundary="clippingParents"` -> `"clippingAncestors"`.
-- **Behavior watch:** `shouldReturnFocusOnClose` default flips `false` -> `true` — verify
-  Select/DateInput focus return doesn't regress.
-- Enable the `@typescript-eslint/no-deprecated` rule to surface any remaining deprecated
-  Blueprint usages.
-- **React 18 safe:** `PopoverNext` ships in the current Blueprint build and runs on React 18
-  (same as `Overlay2`). No runtime bump required.
+## Onsen custom-element boolean props — `kit/onsen/index.ts`
 
-## Phase 3 — `react-popper` -> `@floating-ui/react`
+react-onsenui encodes boolean props as the string `''` (or `null`). Under React 18 these were
+assigned as DOM *attributes*; React 19 assigns them as DOM *properties* on the underlying custom
+element, and Onsen's boolean property setters treat `''` as falsy — so props like `checked`,
+`disabled`, and `visible` silently failed to apply. The kit wrapper now strips boolean props from
+the rendered props and applies the real booleans imperatively via a ref in `useLayoutEffect`
+(accounting for Onsen's deprecated aliases `isOpen`/`isCancelable`/`isDisabled`), routing through
+Onsen's own setters.
 
-`react-popper` is deprecated, its repo archived, and its peer dep caps at React 18 — a genuine
-code incompatibility with React 19. `@floating-ui/react` supports React 16.8+, so this is a
-like-for-like swap that runs on React 18.
+## `@types/react@19` type adjustments
 
-- **`mobile/cmp/popover/Popover.ts`** is the sole consumer (`usePopper` at line ~93; results used
-  for `popper.styles.popper` at line ~126; `ReactDom.createPortal` at line ~120 stays — unchanged
-  in React 19).
-- Replace `usePopper` with `useFloating` + `autoUpdate` + `offset` / `flip` / `shift`
-  middleware; map `styles.popper` / `attributes` to floating-ui's `floatingStyles`.
-- Add `@floating-ui/react` dependency; remove `react-popper` (and the `react-popper` entry in
-  `package.json`).
-- **React 18 safe:** floating-ui runs on React 18; no runtime bump required.
+Type-only fallout, no runtime behavior change:
 
-## Verification (each phase)
+- `useRef` now requires an initial arg — `desktop/cmp/tab/dynamic/DynamicTabSwitcher.ts`
+  (`useRef<HTMLDivElement>(null)`).
+- Ref-callback return values are treated as cleanup functions — `desktop/cmp/input/CodeInput.ts`
+  wraps its `createCodeEditor` ref callback to return `void` (the method is `async`, so it would
+  otherwise return a Promise that React invokes as a destructor).
+- `ReactElement.props` is typed `unknown` — `desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooser.ts`
+  narrows icon `props` before reading `iconName`.
+- Widened FC return type / stricter element typing — casts in `cmp/grid/columns/Column.ts` and
+  `desktop/cmp/tab/dynamic/scroller/Scroller.ts` (`as ReactElement`), and `ReactElement<any>` in
+  `desktop/hooks/UseContextMenu.ts` and `desktop/hooks/UseHotkeys.ts`.
 
-- `tsc --build` clean (still against `@types/react@18`).
-- `yarn lint` (incl. `no-deprecated` after Phase 2).
+## Not done (still valid on React 19)
+
+- **`forwardRef` → `ref`-as-prop.** `forwardRef` is *deprecated* in React 19, not removed — it
+  still works, so it never blocked this upgrade. Left in place as future modernization cleanup;
+  sites include `core/HoistComponent.ts` (the framework-wide `cfg.isForwardRef` ref wrap — the
+  delicate one), `cmp/grid/columns/Column.ts`, and `kit/onsen/index.ts`.
+- **`propTypes`** — React 19 ignores them (not an error). No runtime `propTypes` definitions exist
+  in the codebase; only a stale comment reference in `desktop/cmp/button/index.ts`.
+
+## Verification
+
+- `tsc --noEmit` clean against `@types/react@19`.
+- `yarn lint`.
 - Smoke in toolbox via `yarn startWithHoist`:
-  - Phase 1 — inputs / anything reading `HoistInputModel.domEl` (focus, autofocus,
-    sizing/measurement); confirm no `findDOMNode` StrictMode warnings remain.
-  - Phase 2 — desktop popovers: Select, DateInput, combos, column chooser, ViewManager menu,
-    mobile MenuButton; check placement, dismissal, and focus-return behavior.
-  - Phase 3 — mobile Popover positioning, flip/shift near viewport edges, scroll/resize updates.
-
-## Deferred to the actual React 19 migration (NOT in this branch)
-
-### `forwardRef` -> `ref`-as-prop
-Left for the migration for two reasons:
-
-1. **Not possible on React 18.** `ref`-as-a-regular-prop is a React-19-only feature; stripping
-   `forwardRef` while on 18 breaks ref forwarding (function components on 18 don't receive `ref`
-   through props).
-2. **Not a blocker.** `forwardRef` is *deprecated* in React 19, not removed — it still works, so
-   it never blocks the migration. It is pure modernization cleanup to do after landing on 19.
-
-Sites for later: `core/HoistComponent.ts` (the `cfg.isForwardRef` path — the framework-wide ref
-wrap, the delicate one), `cmp/grid/columns/Column.ts` (x2), `kit/onsen/index.ts`.
-
-### Types / peer bump
-`@types/react` / `@types/react-dom` -> `19.x` and widening `peerDependencies.react` /
-`react-dom` to `~18.2.0 || ^19` belong with the runtime upgrade. Bumping types ahead of the
-React 18 runtime only produces phantom type errors that do not reflect runtime behavior.
-
-### Minor / no-op
-`propTypes` — React 19 ignores them (not an error). Only a stale comment reference in
-`desktop/cmp/button/index.ts`; no runtime `propTypes` definitions found. Leave as-is.
+  - inputs and anything reading `HoistInputModel.domEl` (focus, autofocus, sizing/measurement);
+  - desktop popovers: Select, DateInput, combos, column chooser, ViewManager menu, mobile
+    MenuButton — placement, dismissal, and focus-return behavior;
+  - mobile Popover positioning, flip/shift near viewport edges, scroll/resize updates;
+  - Onsen-backed mobile controls with boolean state (checkboxes, switches, dialog visibility).

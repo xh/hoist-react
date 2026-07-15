@@ -32,8 +32,6 @@ export const [Scroller, scroller] = hoistCmp.withFactory<ScrollerProps>({
             className,
             items: [
                 scrollButton({direction: 'backward', model}),
-                // `content` is a Hoist element factory — call it directly. Cast the result:
-                // React 19 widened the FC return type to a `Promise`-inclusive `ReactNode`.
                 content({
                     ...contentProps,
                     ref: composeRefs(
