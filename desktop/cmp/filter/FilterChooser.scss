@@ -47,8 +47,9 @@
       flex: 1;
     }
 
+    // Opaque bg to occlude the trigger and page beneath (--xh-input-bg is translucent in dark mode).
     .bp6-popover-content {
-      background: transparent;
+      background: var(--xh-bg);
     }
 
     .xh-select__value-container--is-multi {

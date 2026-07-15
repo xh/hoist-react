@@ -15,6 +15,7 @@
   the preference reverts to its (possibly changing) default and `isSet()` reports `false`.
   Previously it persisted the current default as an explicit user value. Falls back to the legacy
   behavior against hoist-core versions that predate the `xh/unsetPrefs` endpoint.
+* Fixed `FilterChooser` popover mode to render an opaque background when expanded.
 
 ## 86.3.0 - 2026-07-10
 
