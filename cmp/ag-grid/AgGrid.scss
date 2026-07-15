@@ -254,6 +254,13 @@
     }
   }
 
+  // Workaround for ag-Grid 36: its column separator (`::before`) doubles up with a section's
+  // boundary border on the section's last column. Suppress it there so only the boundary shows.
+  .ag-grid-scrolling-cells .ag-header-cell:last-child::before,
+  .ag-grid-container-wrapper .ag-header-cell:last-child::before {
+    display: none;
+  }
+
   .ag-cell {
     &.ag-cell-last-left-pinned:not(.ag-cell-focus) {
       @include pinned-border(right);
