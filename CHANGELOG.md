@@ -29,15 +29,9 @@
 
 ### ✨ Styles
 
-* Migrated internal grid SCSS to AG Grid 36's restructured DOM - the removed `ag-floating-top` /
-  `ag-floating-bottom`, `ag-center-cols-viewport` / `ag-center-cols-container`, and `ag-body-viewport`
-  selectors now target `ag-grid-pinned-top-rows-container` / `ag-grid-pinned-bottom-rows-container`,
-  `ag-body-horizontal-scroll-viewport`, `ag-grid-scrolling-container`, and
-  `ag-body-vertical-scroll-viewport` respectively.
-* Preserved Hoist grid/DataView styling under AG Grid 36, which sets balham's var defaults on its
-  inner `ag-styled-root`, shadowing Hoist's wrapper bindings. Re-bound there so cell font, grid
-  background, `rowBorders`, and `showHover` continue to honor their Hoist settings (`rowBorders` and
-  `showHover` would otherwise appear always-on).
+* Migrated internal grid SCSS to AG Grid 36's restructured DOM and renamed layout classes.
+* Re-bound Hoist grid/DataView styling on AG Grid 36's inner `ag-styled-root`, which otherwise
+  shadows Hoist's wrapper bindings for cell font, grid background, `rowBorders`, and `showHover`.
 
 ### 📚 Libraries
 * react `18.2 → 19.2`

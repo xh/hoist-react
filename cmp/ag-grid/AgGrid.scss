@@ -47,12 +47,12 @@
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
-  // As of ag-Grid 36 the theme class lands on ag-Grid's own inner `.ag-styled-root`, where the balham
-  // theme (re-)declares its var defaults (font, background, row border/hover colors). A binding set on
-  // this outer wrapper is shadowed there, so we re-bind Hoist's values on the styled root itself.
+  // The balham theme (re-)declares its var defaults (font, background, row border/hover colors) on
+  // ag-Grid's inner `.ag-styled-root`, where they shadow any binding set on this outer wrapper - so
+  // re-bind Hoist's values on the styled root itself.
   .ag-styled-root {
     // Cells inherit font from the styled root; reset to `inherit` so they pick up Hoist's font-family
-    // and (sizing-mode-driven) font-size from this wrapper, as they did prior to ag-Grid 36.
+    // and (sizing-mode-driven) font-size from this wrapper.
     font-family: inherit;
     font-size: inherit;
 
@@ -60,9 +60,8 @@
     // (e.g. on the row's trailing spacer, past the last column).
     --ag-background-color: var(--xh-grid-bg);
 
-    // ag-Grid 36 renders the row-hover highlight as an overlay tinted by --ag-row-hover-color, which
-    // balham defaults to a visible grey. Default it off; `--show-hover` re-enables it below. (Prior
-    // to 36 hover was drawn on `.ag-row::before`, which Hoist suppressed directly.)
+    // Row-hover highlight is an overlay tinted by --ag-row-hover-color, which balham defaults to a
+    // visible grey. Default it off; `--show-hover` re-enables it below.
     --ag-row-hover-color: transparent;
   }
   &--show-hover .ag-styled-root {
@@ -101,7 +100,9 @@
   // Core Header Classes
   //------------------------
   .ag-header {
-    background-color: var(--xh-grid-header-bg);
+    // Header background is painted on inner header elements from `--ag-header-background-color`, so
+    // drive it through the var rather than a `background-color` on this wrapper (which they cover).
+    --ag-header-background-color: var(--xh-grid-header-bg);
     border-color: var(--xh-grid-header-border-color);
     font-family: var(--xh-grid-header-font-family);
 
@@ -159,10 +160,10 @@
     border-color: var(--xh-grid-summary-row-border-color);
   }
 
-  // Row borders. As of ag-Grid 36 regular-row borders are drawn on the inner cell containers via the
-  // --ag-row-border-* vars (declared by the balham theme on `.ag-styled-root`), so we drive them
-  // there rather than on `.ag-row`. Full-width group rows are not split into cell containers and keep
-  // their border on `.ag-row`.
+  // Row borders. Regular-row borders are drawn on the inner cell containers via the --ag-row-border-*
+  // vars (declared by the balham theme on `.ag-styled-root`), so we drive them there rather than on
+  // `.ag-row`. Full-width group rows are not split into cell containers and keep their border on
+  // `.ag-row`.
   &--row-borders {
     .ag-styled-root {
       --ag-row-border-color: var(--xh-grid-border-color);
@@ -239,6 +240,11 @@
   .ag-header-group-cell {
     padding-left: var(--xh-grid-header-lr-pad-px);
     padding-right: var(--xh-grid-header-lr-pad-px);
+
+    // Data cells carry a 1px transparent l/r border (balham's `--ag-cell-horizontal-border`) that
+    // insets their content; match it on header cells so header labels align with the cells below.
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
 
     // Override ag-Grid defaults for the header separator to make it responsive to different header heights
     &::after {
