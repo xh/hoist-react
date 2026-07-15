@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {getAppModel} from '@xh/hoist/admin/AdminUtils';
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {CallContext, HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -39,9 +40,13 @@ export class RoleModel extends HoistModel {
     @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
-    @observable.ref moduleConfig: RoleModuleConfig;
 
     @bindable showInGroups = true;
+
+    /** Role-module config - loaded at init. */
+    get moduleConfig(): RoleModuleConfig {
+        return getAppModel().roleModuleConfig;
+    }
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -56,6 +61,10 @@ export class RoleModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = this.createGridModel();
+        this.filterChooserModel = this.createFilterChooserModel();
+
         this.addReaction({
             track: () => this.showInGroups,
             run: showInGroups => {
@@ -74,9 +83,6 @@ export class RoleModel extends HoistModel {
         return this.runner({loadSpec})
             .span('list')
             .run(async ctx => {
-                await this.ensureInitializedAsync(ctx);
-                if (!this.moduleConfig.enabled) return;
-
                 const {data} = await XH.fetchJson({url: 'roleAdmin/list'}, ctx);
                 if (loadSpec.isStale) return;
 
@@ -231,19 +237,6 @@ export class RoleModel extends HoistModel {
         gridModel.loadData(gridData);
         if (!isRefresh) gridModel.expandAll();
         gridModel.autosizeAsync({includeCollapsedChildren: true});
-    }
-
-    private async ensureInitializedAsync(ctx: CallContext) {
-        if (this.moduleConfig) return;
-
-        const config = await this.runner(ctx).fetchJson({url: 'roleAdmin/config'});
-        runInAction(() => {
-            this.moduleConfig = config;
-            if (config.enabled) {
-                this.gridModel = this.createGridModel();
-                this.filterChooserModel = this.createFilterChooserModel();
-            }
-        });
     }
 
     private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {

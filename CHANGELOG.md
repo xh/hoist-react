@@ -30,9 +30,29 @@
 
 ### 🎁 New Features
 
+* Added `PrefService.isSet()` to report whether the current user has an explicit value on file for a
+  preference vs. receiving its server-side default - a distinction that cannot be reliably inferred
+  by comparing the value to the default. Requires a hoist-core version that emits the backing
+  `isSet` flag; against older servers all prefs report as unset.
+
+### 🐞 Bug Fixes
+
+* `PrefService.unset()` now performs a true server-side unset, clearing the user's stored value so
+  the preference reverts to its (possibly changing) default and `isSet()` reports `false`.
+  Previously it persisted the current default as an explicit user value. Falls back to the legacy
+  behavior against hoist-core versions that predate the `xh/unsetPrefs` endpoint.
+
+## 86.3.0 - 2026-07-10
+
+### 🎁 New Features
+
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.
+* `SegmentedControl` options (desktop and mobile) now accept a `testId`, emitted on the option's
+  rendered button as `data-testid` for E2E targeting. If an option omits its own `testId` but the
+  control has one, an id is auto-derived as `${controlTestId}-${value}` - restoring parity with
+  the legacy `ButtonGroupInput` test-hook pattern for apps migrating between the two.
 
 ### 🐞 Bug Fixes
 
@@ -47,26 +67,38 @@
 * Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
   async query de-duplication now use deep equality, so object values no longer render as
   `[object Object]` or collide with one another.
-* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
-  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
-  represent are left untouched rather than corrupted.
+* Hardened the grid column filter's Custom tab against filters it previously mishandled -
+  multi-value clauses are now expanded into editable rows and recombined on commit, and filters it
+  cannot represent are left untouched rather than corrupted.
 * Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
   longer disappears when opened - it now always occupies its place in the layout, so surrounding
   elements no longer shift. Its clear and favorites controls also respond to a single click rather
   than requiring the popover to be opened first. This mode is now enabled more naturally via
   a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
   as a thin alias.
+* Fixed "not a valid MIME type" console warnings from `FileChooser`. Accepted extensions are now
+  passed under a dummy MIME type key, silencing the warnings while continuing to filter selected
+  files by extension.
 
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+* Added the exported `HoistRoute` type - Router5's `Route` extended with Hoist's `omit` key - and
+  retyped `HoistAppModel.getRoutes()` to return it, so declarative route exclusion (e.g.
+  `omit: !XH.getUser().isHoistAdmin`) now type-checks without a cast.
 
-### ⚙️ Technical
-* Misc. improvements to persistence in the Admin client.
-* @azure/msal-browser `5.14 → 5.15`
-* swiper  `12.1.0 -> 14.0.0`,
+### 🤖 AI Docs + Tooling
 
+* Fixed the MCP server and `hoist-ts` CLI TypeScript symbol tools (`search`, `symbol`, `members`)
+  returning no results on Windows, where a path-separator mismatch left the symbol index empty.
+  Path handling is now normalized so the developer tools work on Windows as well as macOS/Linux.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.21 → 2.23`
+* @azure/msal-browser `5.14 → 5.16`
+* swiper  `12.1 -> 14.0`
 
 ## 86.2.0 - 2026-06-25
 
