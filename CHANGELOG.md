@@ -26,6 +26,8 @@
   onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
   have been updated so no app call-site changes are required.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
+* Deprecated `GridModel.enableFullWidthScroll`. AG Grid 36 now always renders a single full-width
+  horizontal scrollbar spanning all columns natively.
 
 ### ✨ Styles
 
