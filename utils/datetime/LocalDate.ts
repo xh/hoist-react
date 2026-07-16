@@ -18,6 +18,15 @@ import moment, {Moment, MomentInput} from 'moment';
  * For efficiency and to enable strict equality checks, instances of this class are memoized:
  * only a single version of the object will be created and returned for each calendar day,
  * as long as the caller uses one of the *public factory methods*, which they always should!
+ *
+ * Instances serialize directly to their ISO date string (e.g. '2024-01-15') via built-in
+ * `toString()`, `valueOf()`, and `toJSON()` overrides. This means a LocalDate can be passed
+ * as-is within the params or body of a `FetchService` request (or any `JSON.stringify()` call)
+ * and will serialize as expected - prefer this over calling `toString()` or `format()` yourself.
+ *
+ * Instances also support natural comparison: because they are memoized, `===` tests whether two
+ * references are the same calendar day, while `valueOf()` returning the (lexically sortable) ISO
+ * string means the relational operators `<`, `>`, `<=`, `>=` order instances chronologically.
  */
 export class LocalDate {
     static readonly VALID_UNITS: Set<LocalDateUnit> = new Set([
@@ -77,7 +86,11 @@ export class LocalDate {
         return this.get(m.format('YYYY-MM-DD'));
     }
 
-    /** LocalDate representing the current day. */
+    /**
+     * LocalDate representing the current day in the browser's local time zone.
+     * See `currentAppDay()` / `currentServerDay()` to resolve "today" in the app or server zone,
+     * which can differ from the browser for users in another region.
+     */
     static today(): LocalDate {
         return this.from(moment());
     }
@@ -120,18 +133,26 @@ export class LocalDate {
         return this._isoString;
     }
 
+    /** JS `Date` for this day at midnight in the browser's local time zone. Fresh instance per call. */
     get date(): Date {
         return new Date(this.timestamp);
     }
 
+    /** A mutable moment.js clone - safe to modify without affecting this (immutable) instance. */
     get moment(): Moment {
         return this._moment.clone();
     }
 
+    /** Epoch millis for this day at midnight in the browser's local time zone. */
     get timestamp(): number {
         return this._date.getTime();
     }
 
+    /**
+     * Format this date using moment.js format tokens, primarily for display.
+     * Note: to send a LocalDate to the server, pass the instance directly rather than a formatted
+     * string - it serializes to an ISO date on its own (see class-level docs).
+     */
     format(...args): string {
         return this._moment.format(...args);
     }
@@ -186,6 +207,7 @@ export class LocalDate {
         return this._isoString;
     }
 
+    // Returns the ISO string (not a number) so the relational operators sort instances by date.
     valueOf(): string {
         return this._isoString;
     }
@@ -319,6 +341,7 @@ export class LocalDate {
         return this.isWeekday ? this : this.previousWeekday();
     }
 
+    /** Difference between this date and `other` in the given unit; positive when this is later. */
     diff(other: LocalDate, unit: LocalDateUnit = 'days'): number {
         this.ensureUnitValid(unit);
         return this._moment.diff(other._moment, unit);

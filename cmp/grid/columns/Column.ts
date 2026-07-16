@@ -41,6 +41,7 @@ import {
     forwardRef,
     FunctionComponent,
     isValidElement,
+    ReactElement,
     ReactNode,
     useImperativeHandle,
     useLayoutEffect,
@@ -1062,7 +1063,7 @@ export class Column {
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
                 if ((editor as any).isHoistComponent) return createElement(editor, props);
-                if (isFunction(editor)) return editor(props);
+                if (isFunction(editor)) return editor(props) as ReactElement;
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellEditorPopup = this.editorIsPopup;
