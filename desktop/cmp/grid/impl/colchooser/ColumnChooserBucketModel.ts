@@ -20,9 +20,13 @@ import type {
     RowDragEndEvent,
     RowDropTargetPosition
 } from '@xh/hoist/kit/ag-grid';
-import {castArray, findLastIndex, isEmpty} from 'lodash';
+import {castArray, isEmpty} from 'lodash';
 
 import type {ColChooserModel} from './ColChooserModel';
+import {
+    resolveDrop as resolveDropEngine,
+    isNoOpDrop as isNoOpDropEngine
+} from './colChooserDropEngine';
 import {
     ChooserColumnName,
     type ColumnChooserData,
@@ -60,6 +64,18 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
     /** Cache backing {@link parentChainMap}, keyed on the target grid's `columns` ref. */
     private parentChainCache: {cols: ColumnOrGroup[]; map: Map<string, ColumnGroup[]>} = null;
+
+    /**
+     * The state resolved by the most recent valid {@link getValidDropPosition}, applied verbatim on
+     * drop (see {@link applyPendingDrop}) so the commit never re-derives from the indicator anchor -
+     * which is a lossy proxy that can re-resolve differently when a group spans buckets. Keyed by the
+     * (target, position) we returned, i.e. the `event.rowsDrop` the drop handler receives.
+     */
+    private pendingDrop: {
+        targetId: string | null;
+        position: RowDropTargetPosition;
+        state: ColumnState[];
+    } = null;
 
     /** The target GridModel whose columns this bucket manages. */
     get targetGridModel(): GridModel {
@@ -209,19 +225,26 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * Validate a proposed drop position during unmanaged row dragging within this bucket.
      */
     getValidDropPosition(params: IsRowValidDropPositionParams): IsRowValidDropPositionResult {
+        // Invalidate any prior cache; only a successful resolution below re-arms it for the commit.
+        this.pendingDrop = null;
+
         const payload = buildDragPayload(params.rows ?? [params.source]);
         let target = params.target,
             {position} = params;
 
-        // When the cursor is past the last row in a tree with expanded groups, ag-grid walks
-        // target up to the outermost ancestor group — which makes the drop-indicator line
-        // render under that group header instead of under the actual last leaf. Re-pin target
-        // to the last displayed row.
+        // No row under the cursor - it is above the first row or below the last (ag-grid also walks
+        // `target` up to an ancestor group here, misplacing the indicator). Anchor to the nearer end
+        // via `y` (0 = top of the first row, comparable to rowTop): above the content prepends, below
+        // it appends. Without the `y` check, dropping above the first row wrongly falls through to an
+        // append-at-end - which especially bites the top bucket, whose start sits at the top edge.
         if (!params.overNode) {
-            const lastRow = this.getLastDisplayedRow();
-            if (lastRow) {
-                target = lastRow;
-                position = 'below';
+            const {agApi} = this.chooserGridModel,
+                firstRow = agApi?.getDisplayedRowAtIndex(0),
+                lastRow = this.getLastDisplayedRow();
+            if (firstRow && lastRow) {
+                const contentMid = (firstRow.rowTop + lastRow.rowTop + lastRow.rowHeight) / 2;
+                target = params.y < contentMid ? firstRow : lastRow;
+                position = params.y < contentMid ? 'above' : 'below';
             }
         }
 
@@ -232,89 +255,108 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         if (payload.recordIds.has(targetData.id) && !payload.fromLibrary) return {allowed: false};
 
         if (targetData.isGroup) {
-            // Hovering a group row always means "before the group" - getDropHighlight then resolves
-            // to the group's first child (when the dragged column belongs to the group) or above the
-            // group header (when it doesn't). ag-grid otherwise uses the cursor's half over the group
-            // row to mean before vs. after the whole group, which behaves differently for cross-bucket
-            // drags (cursor-relative) than in-bucket drags - this normalizes both.
+            // Normalize a group-row hover to "before the group" - resolveDrop anchors on the group's
+            // run. ag-grid otherwise uses the cursor's half over the group row to mean before vs.
+            // after, which differs between cursor-relative cross-bucket drags and in-bucket drags.
             position = 'above';
         } else if (position === 'inside') {
             // Can't drop "inside" a leaf — treat as "below"
             position = 'below';
         }
 
-        // Prevent dropping a dragged group inside itself
-        if (payload.groupIds.some(gid => this.isDescendantOf(targetData.id, gid))) {
+        // Prevent dropping onto the dragged leaves themselves. Gate on the dragged LEAVES, not on
+        // every descendant of a dragged group: when a group spans buckets, its members in ANOTHER
+        // bucket are valid rejoin targets, and blocking them wrongly stopped a spanning group's
+        // portion from being dropped among its other-bucket members (spec C-SPAN). Dropping a group
+        // onto its own node is still blocked by the recordIds check above.
+        if (!payload.fromLibrary && payload.leafColIds.includes(targetData.id)) {
             return {allowed: false};
         }
 
-        // Reject (and don't preview) drops the commit will refuse - splitting a locked group - so
-        // the drag indicator agrees with what a drop actually does. This callback runs on the
-        // target grid for cross-bucket drags too, so it gates those. A drop from the library unhides
-        // its columns, so validate against that to gate it like the commit will.
-        if (this.isDropDisallowed(payload.leafColIds, targetData, position, payload.fromLibrary)) {
+        // Resolve the drop through the same engine the commit uses, so the indicator always agrees
+        // with what the drop will do (splitting a locked group is rejected here and there). A drop
+        // from the library unhides its columns, so resolve with makeVisible to gate it as the commit
+        // will.
+        const {allowed, state} = this.resolveDrop(
+            payload.leafColIds,
+            payload.dragUnitGroupId,
+            targetData,
+            position,
+            payload.fromLibrary
+        );
+        if (!allowed || !state) return {allowed: false};
+
+        // Suppress the indicator when the drop leaves the chooser visually unchanged - including one
+        // whose only effect is reordering a visible column past an adjacent hidden one (a "nothing
+        // happened" no-op to the user that silently churns the master order). A library drop unhides
+        // its columns, so it always changes the rendered view and is never a no-op.
+        if (!payload.fromLibrary && this.isNoOpDrop(state)) {
             return {allowed: false};
         }
 
-        // Suppress the indicator when the drop would leave the order unchanged. A drop from the
-        // Column Library always changes state (it unhides), so it is never a no-op.
-        if (!payload.fromLibrary && this.isNoOpMove(payload.leafColIds, targetData, position)) {
-            return {allowed: false};
-        }
+        // Cache the validated state for the commit to apply verbatim (see pendingDrop / handlers), so
+        // it never re-derives from the indicator anchor below. The anchor is a single canonical row
+        // for a clean line (see getDropHighlight), but re-resolving from it can diverge when a group
+        // spans buckets (its pinned member separates the run from the next visible row).
+        const highlight = this.getDropHighlight(state, payload.leafColIds);
+        this.pendingDrop = {
+            targetId: getChooserData(highlight.target)?.id ?? null,
+            position: highlight.position,
+            state
+        };
+        return highlight;
+    }
 
-        // Pin the indicator to a single canonical row by mapping the real insertion point to the
-        // row that will follow it (see getDropHighlight). This removes the ~1px above/below flicker
-        // between adjacent rows and ensures a drop landing before a group renders above the group
-        // header, not above its first child (the dropped column lands before the group in the tree).
-        return this.getDropHighlight(payload.leafColIds, targetData, position, target);
+    /**
+     * Apply the state {@link getValidDropPosition} validated for exactly this drop (matched against
+     * `event.rowsDrop`), committing preview == commit by construction. Returns false if no cached
+     * drop matches (the caller then falls back to re-resolving).
+     */
+    private applyPendingDrop(dropInfo: RowDragEndEvent['rowsDrop']): boolean {
+        const pd = this.pendingDrop;
+        if (!pd) return false;
+        const targetId = getChooserData(dropInfo.target)?.id ?? null;
+        if (pd.targetId !== targetId || pd.position !== dropInfo.position) return false;
+        this.pendingDrop = null;
+        this.parent.applyState(pd.state);
+        return true;
     }
 
     /** Handle intra-bucket drag end. */
     handleRowDragEnd(event: RowDragEndEvent) {
-        const payload = buildDragPayload(event.nodes);
-        if (!payload) return;
-
         const dropInfo = event.rowsDrop;
-        if (!dropInfo || !dropInfo.allowed) return;
-
-        const targetData = getChooserData(dropInfo.target);
-        if (!targetData) return;
-
-        const {position} = dropInfo;
-        if (position === 'none') return;
-
-        this.moveColumns(payload.leafColIds, targetData, position);
+        if (!dropInfo || !dropInfo.allowed || dropInfo.position === 'none') return;
+        this.applyPendingDrop(dropInfo);
     }
 
     /**
-     * Handle a drop into this bucket from another bucket, via an ag-grid row drop zone. Reuses the
-     * target/position our {@link getValidDropPosition} already computed for the drag (event.rowsDrop)
-     * - the same group-aware logic as an intra-bucket drop - rather than re-deriving from the cursor,
-     * so cross-bucket drops over groups behave identically. Falls back to "append to end" only when
-     * there's no row under the cursor (empty bucket or below the last row).
+     * Handle a drop into this bucket from another bucket, via an ag-grid row drop zone. Applies the
+     * state {@link getValidDropPosition} already validated for the drag (matched via `event.rowsDrop`)
+     * so a cross-bucket drop commits exactly what was previewed. Falls back to a pin-in-place append
+     * only when there's no row under the cursor (empty bucket) and hence no cached preview.
      */
     handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant) {
         if (source === this) return;
 
-        const payload = buildDragPayload(event.nodes);
-        if (!payload) return;
-
-        // A drop arriving from the Column Library means "show" the columns - clear their hidden flag
-        // as they land in this (visible) bucket. Inter-bucket drags keep their hidden state.
-        const makeVisible = source === this.parent.libraryModel;
-
         const dropInfo = event.rowsDrop;
-        if (dropInfo?.allowed && dropInfo.position !== 'none') {
-            const targetData = getChooserData(dropInfo.target);
-            if (targetData) {
-                this.moveColumns(payload.leafColIds, targetData, dropInfo.position, makeVisible);
-                return;
-            }
+        if (dropInfo?.allowed && dropInfo.position !== 'none' && this.applyPendingDrop(dropInfo)) {
+            return;
         }
 
-        // No valid row under the cursor (empty bucket / below the last row) - append. A drop rejected
-        // over an actual row (hidden/locked/no-op) falls through to a no-op; moveColumns re-validates.
-        if (!event.overNode) this.moveColumns(payload.leafColIds, null, 'below', makeVisible);
+        // No cached preview matched (empty bucket / no row under the cursor) - pin the dragged leaves
+        // in place (§6). A drop from the Column Library also unhides them (makeVisible).
+        if (!event.overNode) {
+            const payload = buildDragPayload(event.nodes);
+            if (!payload) return;
+            const makeVisible = source === this.parent.libraryModel;
+            this.moveColumns(
+                payload.leafColIds,
+                payload.dragUnitGroupId,
+                null,
+                'below',
+                makeVisible
+            );
+        }
     }
 
     /**
@@ -498,88 +540,60 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         store.loadData(rootData);
     }
 
-    /** Check if a record is a descendant of a potential ancestor in this bucket's tree. */
-    private isDescendantOf(candidateId: string, ancestorId: string): boolean {
-        const {store} = this.chooserGridModel;
-        let current = store.getById(candidateId);
-        while (current?.data.parentId) {
-            if (current.data.parentId === ancestorId) return true;
-            current = store.getById(current.data.parentId);
-        }
-        return false;
-    }
-
     /**
-     * Whether a proposed drop must be rejected. The single validation predicate shared by the
-     * drag-preview path ({@link getValidDropPosition}) and the commit path ({@link moveColumns}),
-     * so the indicator always agrees with what a drop will do. Rejects any move that would leave a
-     * column group's leaves non-contiguous while lockColumnGroups is set - evaluated against the
-     * full resulting state, so it also gates cross-bucket moves.
+     * Adapt this bucket's live state to the pure {@link resolveDropEngine} - the single source of
+     * truth for both the drag preview ({@link getValidDropPosition}) and the commit
+     * ({@link moveColumns}). See `colChooserDropEngine.ts` and `locked-group-dnd-spec.md`.
+     *
+     * `dragUnitGroupId` is the groupId of an explicitly dragged group row (null for a leaf drag).
      */
-    private isDropDisallowed(
+    private resolveDrop(
         movingLeafColIds: string[],
+        dragUnitGroupId: string | null,
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
-    ): boolean {
-        if (this.targetGridModel.lockColumnGroups) {
-            // Validate the state the move will actually produce - including unhiding columns
-            // dropped from the library - so the visible-contiguity check matches the real result.
-            const newState = this.simulateMove(movingLeafColIds, targetData, position, makeVisible);
-            if (newState && !areGroupsContiguous(newState, this.parentChainMap)) {
-                return true;
-            }
-        }
-
-        return false;
+    ): {allowed: boolean; state: ColumnState[] | null} {
+        return resolveDropEngine({
+            master: this.parent.currentState,
+            chainOf: colId => (this.parentChainMap.get(colId) ?? []).map(g => g.groupId),
+            side: this.pinned,
+            showHidden: this.parent.showHidden,
+            lockColumnGroups: this.targetGridModel.lockColumnGroups,
+            movingLeafColIds,
+            dragUnitGroupId,
+            target: targetData
+                ? {
+                      id: targetData.id,
+                      isGroup: !!targetData.isGroup,
+                      leafColIds: targetData.leafColIds
+                  }
+                : null,
+            position,
+            makeVisible
+        });
     }
 
     /**
-     * Build the full column state a move would produce (across all buckets), re-pinning the moving
-     * leaves to this bucket. Returns null if nothing would move. The single source of truth for
-     * both validating a drop ({@link isDropDisallowed}) and performing it ({@link moveColumns}).
-     */
-    private simulateMove(
-        movingLeafColIds: string[],
-        targetData: ColumnChooserData | null,
-        position: RowDropTargetPosition,
-        makeVisible: boolean = false
-    ): ColumnState[] | null {
-        const currentState = this.parent.currentState,
-            movingIds = new Set(movingLeafColIds),
-            movingState = currentState
-                .filter(cs => movingIds.has(cs.colId))
-                .map(cs => ({...cs, pinned: this.pinned, ...(makeVisible ? {hidden: false} : {})}));
-
-        if (!movingState.length) return null;
-
-        const slices = partitionByPinned(currentState, movingIds),
-            fullSlice = currentState.filter(cs => (cs.pinned ?? null) === this.pinned),
-            targetSlice = slices[this.pinned ?? 'none'],
-            insertionIndex = targetData
-                ? computeInsertionIndex(fullSlice, movingIds, targetData, position)
-                : targetSlice.length;
-
-        targetSlice.splice(insertionIndex, 0, ...movingState);
-        return [...slices.left, ...slices.none, ...slices.right];
-    }
-
-    /**
-     * Move columns into this bucket at the given drop position - from elsewhere in this bucket
-     * or from another bucket - committing the resulting normalized full state via the parent.
-     * No-ops if the drop is disallowed (see {@link isDropDisallowed}).
+     * Move columns into this bucket at the given drop position, committing the resolved full state
+     * via the parent. No-ops if the drop is disallowed. See {@link resolveDrop}.
      */
     private moveColumns(
         movingLeafColIds: string[],
+        dragUnitGroupId: string | null,
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ) {
         if (!this.targetGridModel) return;
-        if (this.isDropDisallowed(movingLeafColIds, targetData, position, makeVisible)) return;
-
-        const newState = this.simulateMove(movingLeafColIds, targetData, position, makeVisible);
-        if (newState) this.parent.applyState(newState);
+        const {allowed, state} = this.resolveDrop(
+            movingLeafColIds,
+            dragUnitGroupId,
+            targetData,
+            position,
+            makeVisible
+        );
+        if (allowed && state) this.parent.applyState(state);
     }
 
     private getLastDisplayedRow() {
@@ -588,125 +602,80 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return lastIdx >= 0 ? agApi?.getDisplayedRowAtIndex(lastIdx) : null;
     }
 
-    /**
-     * True if dropping the moving leaves at the given target/position would reproduce the bucket's
-     * current order - i.e. the drop is a no-op. Mirrors {@link moveColumns} (splice moving block
-     * into the remaining slice at the computed index) and compares the result to the original.
-     */
-    private isNoOpMove(
-        movingLeafColIds: string[],
-        targetData: ColumnChooserData,
-        position: RowDropTargetPosition
-    ): boolean {
-        const movingIds = new Set(movingLeafColIds),
-            slice = this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned),
-            movingState = slice.filter(cs => movingIds.has(cs.colId));
-
-        // Cross-bucket source has no leaves in this slice - never a no-op for this bucket.
-        if (!movingState.length) return false;
-
-        const remaining = slice.filter(cs => !movingIds.has(cs.colId)),
-            insertIdx = computeInsertionIndex(slice, movingIds, targetData, position),
-            result = [...remaining];
-        result.splice(insertIdx, 0, ...movingState);
-
-        return result.every((cs, i) => cs.colId === slice[i].colId);
+    /** True if committing `state` leaves every bucket's rendered view unchanged (spec §5A Rule B). */
+    private isNoOpDrop(state: ColumnState[]): boolean {
+        return isNoOpDropEngine(state, this.parent.currentState, this.parent.showHidden);
     }
 
     /**
-     * Drop-indicator highlight (locked or unlocked). The insertion index is computed exactly as the
-     * move will perform it, then mapped to the row that follows it - shown as 'above' that row. When
-     * that following column is a group's first leaf, the indicator climbs to the group header so
-     * "before the group" renders as one line above the header rather than flipping with "above the
-     * first child" - the dropped column lands before the group in the tree. Positions within a group
-     * (the following column is not its group's first leaf) stay fine-grained, supporting split-group
-     * drops when unlocked. Drops past the end pin to the bottom of the last displayed row.
+     * Map a resolved drop `state` to a single canonical indicator row, so the drag line neither
+     * flickers between "below row N" / "above row N+1" nor sits at the raw cursor position. Anchors
+     * 'above' the first column that follows the moved block in the resolved order and has a rendered
+     * row in this bucket - climbing to a group header when that column heads a group the dragged unit
+     * is not part of, so "before the group" shows as one line above the header rather than above its
+     * first child. Falls to 'below' the last displayed row when the block lands at the bucket's end
+     * (or past all remaining hidden columns).
      */
     private getDropHighlight(
-        movingLeafColIds: string[],
-        targetData: ColumnChooserData,
-        position: RowDropTargetPosition,
-        fallbackTarget: any
+        state: ColumnState[],
+        movingLeafColIds: string[]
     ): IsRowValidDropPositionResult {
-        const {agApi} = this.chooserGridModel,
+        const {pinned} = this,
+            {agApi, store} = this.chooserGridModel,
             movingIds = new Set(movingLeafColIds),
-            slice = this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned),
-            remaining = slice.filter(cs => !movingIds.has(cs.colId)),
-            insertIdx = computeInsertionIndex(slice, movingIds, targetData, position);
+            bucket = state.filter(cs => (cs.pinned ?? null) === pinned),
+            startIdx = bucket.findIndex(cs => movingIds.has(cs.colId));
 
-        // Dropping past the last column - pin to the bottom of the final row.
-        if (insertIdx >= remaining.length) {
-            return {
-                allowed: true,
-                highlight: true,
-                position: 'below',
-                target: this.getLastDisplayedRow()
-            };
-        }
+        const belowLast = (): IsRowValidDropPositionResult => ({
+            allowed: true,
+            highlight: true,
+            position: 'below',
+            target: this.getLastDisplayedRow()
+        });
+        if (startIdx < 0) return belowLast();
 
-        // Groups the source belongs to (by groupId, not instance) - so a cross-bucket drag from the
-        // same group is recognized even though its members live in a different bucket's instance.
-        const {parentChainMap} = this,
-            sourceGroupIds = new Set<string>();
-        movingLeafColIds.forEach(id =>
-            parentChainMap.get(id)?.forEach(g => sourceGroupIds.add(g.groupId))
-        );
-
-        // Skip forward past any following columns with no displayed row - hidden columns when
-        // showHidden is off - to the next column actually rendered in this bucket. Anchoring on a
-        // non-displayed row leaves the indicator flickering on the raw cursor position; pinning to
-        // the next real row (or the bottom, if none follow) keeps it on a single canonical line.
-        const {store} = this.chooserGridModel;
+        // First post-block column with a rendered row in this bucket - skips hidden columns (no
+        // displayed row when showHidden is off) so the anchor lands on a real line.
         let followingColId: string = null;
-        for (let i = insertIdx; i < remaining.length; i++) {
-            if (store.getById(remaining[i].colId)) {
-                followingColId = remaining[i].colId;
+        for (let i = startIdx; i < bucket.length; i++) {
+            const {colId} = bucket[i];
+            if (movingIds.has(colId)) continue;
+            if (store.getById(colId)) {
+                followingColId = colId;
                 break;
             }
         }
+        if (followingColId == null) return belowLast();
 
-        if (followingColId == null) {
-            return {
-                allowed: true,
-                highlight: true,
-                position: 'below',
-                target: this.getLastDisplayedRow()
-            };
-        }
+        // Groups the dragged unit belongs to - the climb stops short of these, keeping a within-group
+        // reorder above the first child rather than jumping to the group header.
+        const dragGroupIds = new Set<string>();
+        movingLeafColIds.forEach(id =>
+            this.parentChainMap.get(id)?.forEach(g => dragGroupIds.add(g.groupId))
+        );
 
-        const followingRec = this.getGroupBoundaryRecord(
-                followingColId,
-                sourceGroupIds,
-                parentChainMap
-            ),
-            node = followingRec ? agApi?.getRowNode(followingRec.agId) : null;
+        const anchor = this.getGroupBoundaryRecord(followingColId, dragGroupIds),
+            node = anchor ? agApi?.getRowNode(anchor.agId) : null;
         return node
             ? {allowed: true, highlight: true, position: 'above', target: node}
-            : {allowed: true, highlight: true, position, target: fallbackTarget};
+            : belowLast();
     }
 
     /**
-     * Resolve the row to highlight 'above' for an insertion that precedes the given column. Climbs
-     * to the outermost enclosing group whose first leaf is this column (a true group boundary);
-     * otherwise returns the column's own record (a position within a group). Stops short of any
-     * group the dragged column belongs to - it stays inside that group, so the indicator sits above
-     * its first child, not above the group header. Membership is by groupId (via the chain), so this
-     * holds for a cross-bucket drag from the same group, whose target-bucket instance has different
-     * leaves.
+     * Resolve the row to anchor 'above' for an insertion that precedes `colId`. Climbs to the
+     * outermost enclosing group whose first leaf is `colId` (a true group boundary); otherwise
+     * returns the column's own record (a position within a group). Stops short of any group the
+     * dragged unit belongs to, so the anchor stays above that group's first child, not its header.
      */
-    private getGroupBoundaryRecord(
-        colId: string,
-        sourceGroupIds: Set<string>,
-        parentChainMap: Map<string, ColumnGroup[]>
-    ): StoreRecord {
+    private getGroupBoundaryRecord(colId: string, dragGroupIds: Set<string>): StoreRecord {
         const {store} = this.chooserGridModel,
-            chain = parentChainMap.get(colId) ?? [];
+            chain = this.parentChainMap.get(colId) ?? [];
         let rec = store.getById(colId),
             depth = chain.length - 1; // innermost group enclosing colId; climbs outward
         while (rec?.data.parentId && depth >= 0) {
             const parent = store.getById(rec.data.parentId);
             if (!parent || parent.data.leafColIds[0] !== colId) break;
-            if (sourceGroupIds.has(chain[depth].groupId)) break;
+            if (dragGroupIds.has(chain[depth].groupId)) break;
             rec = parent;
             depth--;
         }
@@ -838,12 +807,15 @@ function getActiveGroupId(
  * The columns being dragged, aggregated across one or more selected rows (a row may itself be a
  * group representing many leaves). The move/validation engine is driven entirely by `leafColIds`;
  * `recordIds`/`groupIds` gate the self-drop and group-inside-itself checks; `fromLibrary` flags a
- * drag out of the Column Library (which unhides on drop).
+ * drag out of the Column Library (which unhides on drop). `dragUnitGroupId` is the id of the single
+ * group being dragged as a unit (null unless exactly one group is dragged), marking an explicit
+ * group drag vs. a leaf drag for the resolve/move engine.
  */
 interface DragPayload {
     leafColIds: string[];
     recordIds: Set<string>;
     groupIds: string[];
+    dragUnitGroupId: string | null;
     fromLibrary: boolean;
 }
 
@@ -863,7 +835,8 @@ function buildDragPayload(nodes: any[]): DragPayload | null {
         if (rec.fromLibrary) fromLibrary = true;
     });
 
-    return {leafColIds: [...leafColIds], recordIds, groupIds, fromLibrary};
+    const dragUnitGroupId = groupIds.length === 1 ? groupIds[0] : null;
+    return {leafColIds: [...leafColIds], recordIds, groupIds, dragUnitGroupId, fromLibrary};
 }
 
 /** Recursively collect leaf colIds for a group from its actual children in the record set. */
@@ -881,105 +854,4 @@ function collectLeafColIds(
         }
     }
     return ids;
-}
-
-/**
- * True if every column group's *visible* leaves are contiguous within each pinned section.
- *
- * Group locking is enforced per-bucket: a group MAY span pinned sections (e.g. one member pinned
- * while the rest stay unpinned - pinning never breaks group locking), but within each section the
- * group's leaves must be contiguous. So we check each section ([left], [none], [right]) on its own;
- * a group split across the boundary is allowed, a group split inside a single section is not.
- *
- * Hidden columns are excluded - they aren't rendered, so they can't visually split a group. This is
- * what lets a column be shown from the Column Library when its whole group is hidden (no visible
- * siblings to stay adjacent to), while still keeping visible group members together.
- */
-function areGroupsContiguous(
-    state: {colId: string; pinned?: HSide | null; hidden?: boolean}[],
-    parentChainMap: Map<string, ColumnGroup[]>
-): boolean {
-    const sides: Array<HSide | null> = ['left', null, 'right'];
-    return sides.every(side =>
-        isSectionContiguous(
-            state.filter(cs => !cs.hidden && (cs.pinned ?? null) === side),
-            parentChainMap
-        )
-    );
-}
-
-/** True if every column group's leaves form a contiguous range within a single bucket's slice. */
-function isSectionContiguous(
-    section: {colId: string}[],
-    parentChainMap: Map<string, ColumnGroup[]>
-): boolean {
-    // Track each group's last-seen leaf index; a non-consecutive jump means it's split.
-    const lastIdx = new Map<string, number>(),
-        closed = new Set<string>();
-
-    for (let i = 0; i < section.length; i++) {
-        const chain = parentChainMap.get(section[i].colId);
-        if (!chain) continue;
-
-        const currentGroupIds = new Set(chain.map(g => g.groupId));
-
-        // Any group that was active but isn't in this chain is now closed
-        for (const groupId of lastIdx.keys()) {
-            if (!currentGroupIds.has(groupId)) closed.add(groupId);
-        }
-
-        // If a group we previously closed shows up again, it's split
-        for (const groupId of currentGroupIds) {
-            if (closed.has(groupId)) return false;
-            lastIdx.set(groupId, i);
-        }
-    }
-
-    return true;
-}
-
-/**
- * Compute where the moving columns should be spliced into the bucket's moving-excluded slice.
- *
- * Anchors on the FULL slice - where the target's columns always exist, even when the moving block
- * is the only remaining leaf of a (split) group instance - then translates that anchor to an index
- * into the excluded array by counting the non-moving columns before it. Anchoring on `remaining`
- * instead would lose the target's position when its leaves are all excluded, wrongly collapsing to
- * an append-at-end. `slice.length` is returned only as a defensive fallback for a target that is
- * genuinely absent from the slice.
- */
-function computeInsertionIndex(
-    slice: {colId: string}[],
-    movingIds: Set<string>,
-    targetData: ColumnChooserData,
-    position: RowDropTargetPosition
-): number {
-    // Anchor: the full-slice index before which the moving block lands.
-    let anchor: number;
-    if (targetData.isGroup) {
-        const ids = new Set(targetData.leafColIds),
-            firstIdx = slice.findIndex(cs => ids.has(cs.colId)),
-            lastIdx = findLastIndex(slice, cs => ids.has(cs.colId));
-        anchor = firstIdx === -1 ? slice.length : position === 'above' ? firstIdx : lastIdx + 1;
-    } else {
-        const targetIdx = slice.findIndex(cs => cs.colId === targetData.id);
-        anchor = targetIdx === -1 ? slice.length : position === 'above' ? targetIdx : targetIdx + 1;
-    }
-
-    // Translate to the moving-excluded array: count non-moving columns preceding the anchor.
-    let idx = 0;
-    for (let i = 0; i < anchor; i++) {
-        if (!movingIds.has(slice[i].colId)) idx++;
-    }
-    return idx;
-}
-
-/** Partition columnState by pinned side, optionally excluding a set of moving colIds. */
-function partitionByPinned(state: ColumnState[], excludeIds?: Set<string>) {
-    const filterFn = (cs: ColumnState) => !excludeIds?.has(cs.colId);
-    return {
-        left: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === 'left'),
-        none: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === null),
-        right: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === 'right')
-    };
 }
