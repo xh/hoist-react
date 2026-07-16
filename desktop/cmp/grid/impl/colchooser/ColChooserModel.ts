@@ -6,6 +6,7 @@
  */
 import {ColChooserConfig, ColumnState, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
+import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
@@ -93,6 +94,12 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     /** Guards against stacking resolve-conflict prompts while one is already open. */
     private resolvingConflict = false;
 
+    /** True while a restore-defaults is in flight, so its resulting state change is adopted silently. */
+    private restoringDefaults = false;
+
+    /** Cache backing {@link parentChainMap}, keyed on the grid's `columns` ref. */
+    private parentChainCache: {cols: ColumnOrGroup[]; map: Map<string, ColumnGroup[]>} = null;
+
     /** Cross-bucket drop zone registrations, retained for removal on bucket grid unmount. */
     private dropZoneRegistrations: Array<{sourceApi: GridApi; params: RowDropZoneParams}> = [];
 
@@ -161,6 +168,19 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @computed
     get columnPinningEnabled(): boolean {
         return this.gridModel.enableColumnPinning;
+    }
+
+    /**
+     * Leaf colId → ancestor group chain for the target grid, memoized on its `columns` ref. Shared by
+     * all three buckets and the drop engine, so the column tree is walked once per column set rather
+     * than once per bucket.
+     */
+    get parentChainMap(): Map<string, ColumnGroup[]> {
+        const cols = this.gridModel.columns;
+        if (this.parentChainCache?.cols !== cols) {
+            this.parentChainCache = {cols, map: buildParentChainMap(cols)};
+        }
+        return this.parentChainCache.map;
     }
 
     constructor({
@@ -308,10 +328,15 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     async restoreDefaultsAsync() {
-        // Drop any pending edits first so the reaction from the restore adopts silently rather than
-        // treating the restored state as an external conflict.
-        this.discardPending();
-        await this.gridModel?.restoreDefaultsAsync();
+        // Adopt the restored state silently (rather than treating it as an external conflict) - but
+        // only if the user confirms the restore. On cancel, restoreDefaultsAsync leaves the grid
+        // unchanged, no state-change reaction fires, and pending edits are preserved.
+        this.restoringDefaults = true;
+        try {
+            await this.gridModel?.restoreDefaultsAsync();
+        } finally {
+            this.restoringDefaults = false;
+        }
     }
 
     //-----------------
@@ -329,16 +354,42 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     private onGridStateChange() {
         const gs = this.gridModel.columnState;
 
-        // Auto-commit, or no pending local edits: take the grid's state outright.
-        if (this.commitOnChange || !this.isDirty) {
+        // Auto-commit, no pending local edits, or mid restore-defaults: take the grid's state outright.
+        if (this.commitOnChange || !this.isDirty || this.restoringDefaults) {
             this.adopt(gs);
             return;
         }
 
-        // Deferred mode with pending edits - the grid changed out from under us. Prompt to resolve.
-        if (!isEqual(gs, this.baseline)) {
+        // Deferred mode with pending edits - the grid changed out from under us.
+        if (this.hasStructuralChange(gs, this.baseline)) {
+            // A real ordering / visibility / pinning change - prompt to resolve.
             this.resolveConflictAsync();
+        } else if (!isEqual(gs, this.baseline)) {
+            // Only cosmetic (width / manuallySized) changed - absorb silently, keeping pending edits.
+            this.absorbCosmeticChange(gs);
         }
+    }
+
+    /** True if two column states differ in ordering, visibility, or pinning (ignoring width). */
+    private hasStructuralChange(a: ColumnState[], b: ColumnState[]): boolean {
+        const strip = (st: ColumnState[]) =>
+            st.map(({colId, hidden, pinned}) => ({colId, hidden, pinned: pinned ?? null}));
+        return !isEqual(strip(a), strip(b));
+    }
+
+    /**
+     * Fold a cosmetic-only grid change (column widths) into the pending working copy and advance the
+     * baseline to match, so a benign resize while edits are pending neither prompts the user nor is
+     * lost on the next commit.
+     */
+    @action
+    private absorbCosmeticChange(gs: ColumnState[]) {
+        const byId = new Map(gs.map(cs => [cs.colId, cs]));
+        this.workingState = this.workingState.map(cs => {
+            const g = byId.get(cs.colId);
+            return g ? {...cs, width: g.width, manuallySized: g.manuallySized} : cs;
+        });
+        this.baseline = gs;
     }
 
     private async resolveConflictAsync() {
@@ -426,4 +477,20 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             });
         });
     }
+}
+
+/** Map each leaf colId to its parent group chain (outermost to innermost). */
+function buildParentChainMap(columns: ColumnOrGroup[]): Map<string, ColumnGroup[]> {
+    const ret = new Map<string, ColumnGroup[]>();
+    const walk = (cols: ColumnOrGroup[], ancestors: ColumnGroup[]) => {
+        for (const col of cols) {
+            if (col instanceof ColumnGroup) {
+                walk(col.children, [...ancestors, col]);
+            } else {
+                ret.set(col.colId, ancestors);
+            }
+        }
+    };
+    walk(columns, []);
+    return ret;
 }

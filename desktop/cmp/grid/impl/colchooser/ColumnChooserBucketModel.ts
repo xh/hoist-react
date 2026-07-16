@@ -6,7 +6,6 @@
  */
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
-import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import type {HSide, Some} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
@@ -61,9 +60,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     /** True while a cross-bucket drag is hovering this bucket - drives the empty-strip highlight. */
     @bindable
     dragOver: boolean = false;
-
-    /** Cache backing {@link parentChainMap}, keyed on the target grid's `columns` ref. */
-    private parentChainCache: {cols: ColumnOrGroup[]; map: Map<string, ColumnGroup[]>} = null;
 
     /**
      * The state resolved by the most recent valid {@link getValidDropPosition}, applied verbatim on
@@ -152,16 +148,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
     /** Bucket-scoped aggregate visibility over hideable leaves: true (all) / false (none) / null (mixed). */
     get aggregateVisible(): boolean | null {
-        const leaves = this.hideableLeaves,
-            total = leaves.length,
-            hiddenCount = leaves.filter(cs => cs.hidden).length;
-        return total === 0
-            ? false
-            : hiddenCount === 0
-              ? true
-              : hiddenCount === total
-                ? false
-                : null;
+        const leaves = this.hideableLeaves;
+        return aggregateVisibility(leaves.length, leaves.filter(cs => cs.hidden).length);
     }
 
     /** Show or hide all hideable columns in this bucket (backs the header "toggle all" control). */
@@ -381,16 +369,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     //-----------------
     // Implementation
     //-----------------
-    /**
-     * Leaf colId → ancestor group chain for the target grid, memoized on its `columns` ref so it is
-     * built once per column set rather than on every drag-move.
-     */
+    /** Leaf colId → ancestor group chain, shared across buckets by the parent {@link ColChooserModel}. */
     private get parentChainMap(): Map<string, ColumnGroup[]> {
-        const cols = this.targetGridModel.columns;
-        if (this.parentChainCache?.cols !== cols) {
-            this.parentChainCache = {cols, map: buildParentChainMap(cols)};
-        }
-        return this.parentChainCache.map;
+        return this.parent.parentChainMap;
     }
 
     /**
@@ -414,7 +395,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             activeGroups: (string | null)[] = [];
 
         columnState.forEach((state, idx) => {
-            const col = gridModel.findColumn(gridModel.columns, state.colId);
+            const col = gridModel.getColumn(state.colId);
             if (!col || col.excludeFromChooser) return;
 
             const chain = parentChainMap.get(state.colId) ?? [];
@@ -489,15 +470,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             const hideableLeafIds = it.leafColIds.filter(id => gridModel.isColumnHideable(id)),
                 hiddenCount = hideableLeafIds.filter(id => stateById.get(id)?.hidden).length,
                 total = hideableLeafIds.length;
-            it.visible =
-                total === 0
-                    ? false
-                    : hiddenCount === 0
-                      ? true
-                      : hiddenCount === total
-                        ? false
-                        : null;
-
+            it.visible = aggregateVisibility(total, hiddenCount);
             it.hideable = total > 0;
 
             it.movable = it.leafColIds.every(id => gridModel.isColumnMovable(id));
@@ -777,20 +750,15 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 // Pure helpers
 //------------------
 
-/** Map each leaf colId to its parent group chain (outermost to innermost). */
-function buildParentChainMap(columns: ColumnOrGroup[]): Map<string, ColumnGroup[]> {
-    const ret = new Map<string, ColumnGroup[]>();
-    const walk = (cols: ColumnOrGroup[], ancestors: ColumnGroup[]) => {
-        for (const col of cols) {
-            if (col instanceof ColumnGroup) {
-                walk(col.children, [...ancestors, col]);
-            } else {
-                ret.set(col.colId, ancestors);
-            }
-        }
-    };
-    walk(columns, []);
-    return ret;
+/**
+ * Aggregate visibility over a set of hideable leaves: true (all shown) / false (none shown) /
+ * null (mixed). No hideable leaves reads as false, so the toggle acts as "show".
+ */
+function aggregateVisibility(total: number, hiddenCount: number): boolean | null {
+    if (total === 0) return false;
+    if (hiddenCount === 0) return true;
+    if (hiddenCount === total) return false;
+    return null;
 }
 
 function getActiveGroupId(
