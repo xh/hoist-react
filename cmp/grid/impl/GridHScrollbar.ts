@@ -76,11 +76,7 @@ class GridHScrollbarModel extends HoistModel {
     }
 
     private get agViewport(): HTMLDivElement {
-        return this.viewRef.current.querySelector('.ag-center-cols-viewport');
-    }
-
-    private get agHeaderViewport(): HTMLDivElement {
-        return this.viewRef.current.querySelector('.ag-header-viewport');
+        return this.viewRef.current.querySelector('.ag-grid-viewport');
     }
 
     private get agVerticalScrollContainer(): HTMLDivElement {
@@ -106,7 +102,6 @@ class GridHScrollbarModel extends HoistModel {
 
     scrollViewport(left: number) {
         this.agViewport.scrollLeft = left;
-        this.agHeaderViewport.scrollLeft = left;
     }
 
     override afterLinked() {
@@ -118,7 +113,6 @@ class GridHScrollbarModel extends HoistModel {
                 agViewport.addEventListener('scroll', e => {
                     const left = (e.target as HTMLDivElement).scrollLeft;
                     this.scrollScroller(left);
-                    this.agHeaderViewport.scrollLeft = left;
                 });
                 this.agViewportResizeObserver = observeResize(
                     () => this.onAgViewportResized(),

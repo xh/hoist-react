@@ -440,7 +440,7 @@
 
   // Restore right border on cells - not included by default with ag-grid but
   // causes right-aligned content to shift by one pixel when focused.
-  .ag-cell.ag-cell-no-focus {
+  .ag-cell:not(.ag-cell-focus) {
     border-right: 1px solid transparent;
   }
 
@@ -453,11 +453,6 @@
 
   .ag-status-bar {
     border: none;
-  }
-
-  // Disabling the "row loading" render overlay
-  .ag-bl-overlay {
-    display: none;
   }
 
   // Adds padding to select all checkbox option in column set filter
