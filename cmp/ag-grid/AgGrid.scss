@@ -63,6 +63,9 @@
     // Row-hover highlight is an overlay tinted by --ag-row-hover-color, which balham defaults to a
     // visible grey. Default it off; `--show-hover` re-enables it below.
     --ag-row-hover-color: transparent;
+
+    // Selected-row highlight, painted across the cell containers and the row's trailing spacer.
+    --ag-selected-row-background-color: var(--xh-grid-selected-row-bg);
   }
   &--show-hover .ag-styled-root {
     --ag-row-hover-color: var(--xh-grid-bg-hover);
