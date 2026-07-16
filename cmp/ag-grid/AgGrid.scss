@@ -20,16 +20,16 @@
 
 .xh-mobile {
   // ag-grid adds these when the center viewport has overflow, so that the space taken by the scrollbar is consistent in
-  // the top and bottom floating divs. On mobile we do not render scrollbars for the center viewport, so force hiding
-  // in the top and bottom floating divs.
-  .ag-floating-top,
-  .ag-floating-bottom {
+  // the top and bottom pinned-row divs. On mobile we do not render scrollbars for the center viewport, so force hiding
+  // in the top and bottom pinned-row divs.
+  .ag-grid-pinned-top-rows-container,
+  .ag-grid-pinned-bottom-rows-container {
     overflow-y: hidden !important;
   }
 
   // Prevent the "bounce" overscroll effect for horizontal scrolling on mobile devices, as it
   // conflicts with the drag management in the Navigator.
-  .ag-center-cols-viewport {
+  .ag-body-horizontal-scroll-viewport {
     overscroll-behavior-x: none;
   }
 }
@@ -41,12 +41,35 @@
 // or modified for use with that component.
 *:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
 *:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
-  // Bind ag-grid's base bg to Hoist's grid bg - prevents balham-dark default bleeding through.
   --ag-background-color: var(--xh-grid-bg);
 
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
+
+  // The balham theme (re-)declares its var defaults (font, background, row border/hover colors) on
+  // ag-Grid's inner `.ag-styled-root`, where they shadow any binding set on this outer wrapper - so
+  // re-bind Hoist's values on the styled root itself.
+  .ag-styled-root {
+    // Cells inherit font from the styled root; reset to `inherit` so they pick up Hoist's font-family
+    // and (sizing-mode-driven) font-size from this wrapper.
+    font-family: inherit;
+    font-size: inherit;
+
+    // Bind ag-grid's base bg to Hoist's grid bg - prevents the balham(-dark) default bleeding through
+    // (e.g. on the row's trailing spacer, past the last column).
+    --ag-background-color: var(--xh-grid-bg);
+
+    // Row-hover highlight is an overlay tinted by --ag-row-hover-color, which balham defaults to a
+    // visible grey. Default it off; `--show-hover` re-enables it below.
+    --ag-row-hover-color: transparent;
+
+    // Selected-row highlight, painted across the cell containers and the row's trailing spacer.
+    --ag-selected-row-background-color: var(--xh-grid-selected-row-bg);
+  }
+  &--show-hover .ag-styled-root {
+    --ag-row-hover-color: var(--xh-grid-bg-hover);
+  }
 
   // ensure ag-grid box-sizing rule is not overridden by
   // body.xh-app box-sizing: inherit
@@ -58,9 +81,9 @@
   }
 
   // using content-box here rather than border-box increases the height of
-  // the floating top just enough to prevent bleeding through of underlying rows
+  // the pinned top just enough to prevent bleeding through of underlying rows
   // as user scrolls down.
-  .ag-floating-top {
+  .ag-grid-pinned-top-rows-container {
     box-sizing: content-box;
   }
 
@@ -72,7 +95,7 @@
 
   // This ensures that rows will take up at least the full width of the grid in cases where there
   // is no horizontal scrollbar.
-  .ag-center-cols-container {
+  .ag-grid-scrolling-container {
     min-width: 100%;
   }
 
@@ -80,7 +103,9 @@
   // Core Header Classes
   //------------------------
   .ag-header {
-    background-color: var(--xh-grid-header-bg);
+    // Header background is painted on inner header elements from `--ag-header-background-color`, so
+    // drive it through the var rather than a `background-color` on this wrapper (which they cover).
+    --ag-header-background-color: var(--xh-grid-header-bg);
     border-color: var(--xh-grid-header-border-color);
     font-family: var(--xh-grid-header-font-family);
 
@@ -119,6 +144,12 @@
       }
     }
 
+    // Keep full-width rows (e.g. group rows) pinned in view during horizontal scroll, restoring
+    // the sticky anchor that ag-Grid own `.ag-row.ag-full-width-row > *` rule overrides.
+    &.ag-full-width-row > .ag-full-width-anchor {
+      position: sticky;
+    }
+
     // Set a constant width, since the two icons are different sizes.
     // This caused rows to jump around when expansion was toggled.
     .ag-group-expanded,
@@ -133,21 +164,24 @@
   }
 
   // Docked summary
-  .ag-floating-top,
-  .ag-floating-bottom {
+  .ag-grid-pinned-top-rows-container,
+  .ag-grid-pinned-bottom-rows-container {
     border-color: var(--xh-grid-summary-row-border-color);
   }
 
-  // Row borders
+  // Row borders. Regular-row borders are drawn on the inner cell containers via the --ag-row-border-*
+  // vars (declared by the balham theme on `.ag-styled-root`), so we drive them there rather than on
+  // `.ag-row`. Full-width group rows are not split into cell containers and keep their border on
+  // `.ag-row`.
   &--row-borders {
-    .ag-row {
-      border-color: var(--xh-grid-border-color);
+    .ag-styled-root {
+      --ag-row-border-color: var(--xh-grid-border-color);
+    }
 
-      // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
-      // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
-      &.ag-row-group.ag-full-width-row {
-        border-color: var(--xh-grid-group-border-color);
-      }
+    // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
+    // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
+    .ag-row.ag-row-group.ag-full-width-row {
+      border-bottom: 1px solid var(--xh-grid-group-border-color);
     }
     .ag-cell {
       border-bottom: none;
@@ -156,9 +190,8 @@
   }
 
   &--no-row-borders {
-    .ag-row {
-      border-bottom: none;
-      border-top: none;
+    .ag-styled-root {
+      --ag-row-border-width: 0;
     }
 
     // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
@@ -217,12 +250,24 @@
     padding-left: var(--xh-grid-header-lr-pad-px);
     padding-right: var(--xh-grid-header-lr-pad-px);
 
+    // Data cells carry a 1px transparent l/r border (balham's `--ag-cell-horizontal-border`) that
+    // insets their content; match it on header cells so header labels align with the cells below.
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+
     // Override ag-Grid defaults for the header separator to make it responsive to different header heights
     &::after {
       height: 50%;
       margin-top: unset;
       top: unset;
     }
+  }
+
+  // Workaround for ag-Grid 36: its column separator (`::before`) doubles up with a section's
+  // boundary border on the section's last column. Suppress it there so only the boundary shows.
+  .ag-grid-scrolling-cells .ag-header-cell:last-child::before,
+  .ag-grid-container-wrapper .ag-header-cell:last-child::before {
+    display: none;
   }
 
   .ag-cell {
@@ -404,7 +449,7 @@
 
   // Restore right border on cells - not included by default with ag-grid but
   // causes right-aligned content to shift by one pixel when focused.
-  .ag-cell.ag-cell-no-focus {
+  .ag-cell:not(.ag-cell-focus) {
     border-right: 1px solid transparent;
   }
 
@@ -417,11 +462,6 @@
 
   .ag-status-bar {
     border: none;
-  }
-
-  // Disabling the "row loading" render overlay
-  .ag-bl-overlay {
-    display: none;
   }
 
   // Adds padding to select all checkbox option in column set filter

@@ -22,6 +22,13 @@
     font-family: var(--xh-font-family);
     font-size: var(--xh-font-size-px);
 
+    // The theme font lands on ag-Grid's inner `.ag-styled-root`; override back to `inherit` so
+    // DataView items pick up the app font above rather than balham's defaults.
+    .ag-styled-root {
+      font-family: inherit;
+      font-size: inherit;
+    }
+
     .ag-root-wrapper {
       border: none;
       background-color: var(--xh-bg);
@@ -33,7 +40,7 @@
     }
 
     // Always suppress agGrid-provided horizontal scrollbar - we never want it for DVs.
-    .ag-center-cols-viewport {
+    .ag-body-horizontal-scroll-viewport {
       overflow-x: hidden;
     }
 
@@ -166,10 +173,6 @@
 
     .ag-status-bar {
       border: none;
-    }
-
-    .ag-bl-overlay {
-      display: none;
     }
   }
 }

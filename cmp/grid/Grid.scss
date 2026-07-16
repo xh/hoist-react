@@ -84,10 +84,10 @@
     }
   }
 
-  // Floating viewports host total rows.
-  .ag-floating-bottom,
-  .ag-floating-top {
-    // Background on viewport itself covers area left blank by presence of a flex column.
+  // Pinned-row containers host total rows.
+  .ag-grid-pinned-bottom-rows-container,
+  .ag-grid-pinned-top-rows-container {
+    // Background on container itself covers area left blank by presence of a flex column.
     background-color: var(--xh-grid-total-row-bg);
 
     .ag-row-pinned.ag-row-first {
@@ -251,8 +251,8 @@
 
     // With colors
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
-      .ag-floating-bottom,
-      .ag-floating-top {
+      .ag-grid-pinned-bottom-rows-container,
+      .ag-grid-pinned-top-rows-container {
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 
@@ -274,12 +274,12 @@
       }
     }
 
-    // Floating viewports host total rows.
-    .ag-floating-bottom {
+    // Pinned-row containers host total rows.
+    .ag-grid-pinned-bottom-rows-container {
       border-color: var(--xh-grid-tree-group-border-color);
     }
 
-    .ag-floating-top {
+    .ag-grid-pinned-top-rows-container {
       border-color: var(--xh-grid-tree-group-border-color);
     }
   }
@@ -323,8 +323,8 @@
 
     // With colors
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
-      .ag-floating-bottom,
-      .ag-floating-top {
+      .ag-grid-pinned-bottom-rows-container,
+      .ag-grid-pinned-top-rows-container {
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 

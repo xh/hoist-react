@@ -13,14 +13,32 @@
       any custom styling that targeted  Blueprint or Popper css classes (e.g. `bp6-minimal`).
     * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
 
+* Hoist v87 updates to AG Grid 36.
+    * Applications must bump their `ag-grid-community`, `ag-grid-react`, and
+      (if used) `ag-grid-enterprise` dependencies to `36.x`.
+    * AG Grid 36 restructures the grid into a single scrollable container, renaming internal layout
+      classes. Applications with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
+      `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new class names. See the
+      [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
   onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
   have been updated so no app call-site changes are required.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
+* Deprecated `GridModel.enableFullWidthScroll`. AG Grid 36 now always renders a single full-width
+  horizontal scrollbar spanning all columns natively.
+
+### ✨ Styles
+
+* Migrated internal grid SCSS to AG Grid 36's restructured DOM and renamed layout classes.
+* Re-bound Hoist grid/DataView styling on AG Grid 36's inner `ag-styled-root`, which otherwise
+  shadows Hoist's wrapper bindings for cell font, grid background, `rowBorders`, and `showHover`.
 
 ### 📚 Libraries
 * react `18.2 → 19.2`
+* ag-grid-community `35.3 → 36.0`
+* ag-grid-react `35.3 → 36.0`
 
 ## 86.4.0 - 2026-07-15
 
