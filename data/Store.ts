@@ -559,8 +559,9 @@ export class Store
      * Add new Records to this Store in a local, uncommitted state - i.e. with data that has yet to
      * be persisted back to, or sourced from, the server or other data source of record.
      *
-     * Note that data objects passed to this method must include a unique ID - callers can generate
-     * one with `XH.genId()` if no natural ID can be produced locally on the client.
+     * Note that data objects passed to this method must include a literal `id` property - this
+     * method does *not* run the Store's `idSpec` function. Callers can generate an id with
+     * `XH.genId()` if no natural ID can be produced locally on the client.
      *
      * For StoreRecord additions that originate from the server, call `updateData()` instead.
      *

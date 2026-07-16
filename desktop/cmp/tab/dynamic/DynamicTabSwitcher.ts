@@ -122,7 +122,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
         isCloseable =
             tab.disabled ||
             model.enabledVisibleTabs.filter(it => it instanceof TabModel).length > 1,
-        tabRef = useRef<HTMLDivElement>(),
+        tabRef = useRef<HTMLDivElement>(null),
         scrollerModel = useContextModel(ScrollerModel),
         {showScrollButtons} = scrollerModel,
         {disabled, icon, tooltip} = tab,
