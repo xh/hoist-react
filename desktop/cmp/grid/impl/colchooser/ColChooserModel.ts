@@ -333,7 +333,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         // unchanged, no state-change reaction fires, and pending edits are preserved.
         this.restoringDefaults = true;
         try {
-            await this.gridModel?.restoreDefaultsAsync();
+            await this.gridModel.restoreDefaultsAsync();
         } finally {
             this.restoringDefaults = false;
         }

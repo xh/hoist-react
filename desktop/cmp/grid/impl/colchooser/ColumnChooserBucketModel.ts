@@ -27,7 +27,9 @@ import {
     isNoOpDrop as isNoOpDropEngine
 } from './colChooserDropEngine';
 import {
-    ChooserColumnName,
+    chooserDragAgOptions,
+    chooserGridConfig,
+    chooserNameColumn,
     type ColumnChooserData,
     type ColumnChooserDropParticipant,
     getChooserData
@@ -80,11 +82,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
     get agOptions(): GridOptions {
         return {
-            suppressMoveWhenRowDragging: true,
+            ...chooserDragAgOptions,
             suppressGroupRowsSticky: true,
-            rowDragMultiRow: true,
-            rowDragText: (params, count) =>
-                count > 1 ? `${count} columns` : (getChooserData(params.rowNode)?.name ?? ''),
             isRowValidDropPosition: params => this.getValidDropPosition(params),
             onRowDragEnd: event => this.handleRowDragEnd(event),
             onCellDoubleClicked: event => {
@@ -186,10 +185,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     }
 
     toggleVisibility(recordIds: Some<StoreRecordId>) {
-        const {targetGridModel: gridModel} = this;
-        if (!gridModel) return;
-
-        const {store} = this.chooserGridModel,
+        const {targetGridModel: gridModel} = this,
+            {store} = this.chooserGridModel,
             updates: Partial<ColumnState>[] = [];
 
         castArray(recordIds).forEach(id => {
@@ -516,7 +513,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     /**
      * Adapt this bucket's live state to the pure {@link resolveDropEngine} - the single source of
      * truth for both the drag preview ({@link getValidDropPosition}) and the commit
-     * ({@link moveColumns}). See `colChooserDropEngine.ts` and `locked-group-dnd-spec.md`.
+     * ({@link moveColumns}). See `colChooserDropEngine.ts` and `docs/planning/locked-group-dnd-spec.md`.
      *
      * `dragUnitGroupId` is the groupId of an explicitly dragged group row (null for a leaf drag).
      */
@@ -558,7 +555,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ) {
-        if (!this.targetGridModel) return;
         const {allowed, state} = this.resolveDrop(
             movingLeafColIds,
             dragUnitGroupId,
@@ -661,12 +657,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             treeStyle: 'none',
             clicksToExpand: 0,
             expandLevel: -1,
+            ...chooserGridConfig,
             sortBy: 'sortOrder',
             emptyText,
-            hideEmptyTextBeforeLoad: false,
-            selModel: 'multiple',
-            hideHeaders: true,
-            rowBorders: true,
             onKeyDown: e => {
                 const {selectedRecords} = this.chooserGridModel;
                 if (isEmpty(selectedRecords)) return;
@@ -695,21 +688,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 'xh-column-chooser__column-row--hidden': ({data: rec}) => rec.data.visible === false
             },
             columns: [
-                {
-                    field: 'name',
-                    isTreeColumn: true,
-                    rendererIsComplex: true,
-                    flex: 1,
-                    cellClass: 'xh-column-chooser__name-cell',
-                    agOptions: {
-                        cellRendererParams: {
-                            // Re-specify Hoist defaults — agOptions merges shallow
-                            suppressCount: true,
-                            suppressDoubleClickExpand: true,
-                            innerRenderer: ChooserColumnName
-                        }
-                    }
-                },
+                chooserNameColumn(true),
                 {
                     ...actionCol,
                     width: calcActionColWidth(1),

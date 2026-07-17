@@ -10,7 +10,9 @@ import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 
 import type {ColChooserModel} from './ColChooserModel';
 import {
-    ChooserColumnName,
+    chooserDragAgOptions,
+    chooserGridConfig,
+    chooserNameColumn,
     type ColumnChooserDropParticipant,
     getChooserData
 } from './ColumnChooserUtils';
@@ -38,11 +40,8 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
 
     get agOptions(): GridOptions {
         return {
-            suppressGroupChangesColumnVisibility: true,
-            suppressMoveWhenRowDragging: true,
-            rowDragMultiRow: true,
-            rowDragText: (params, count) =>
-                count > 1 ? `${count} columns` : (getChooserData(params.rowNode)?.name ?? '')
+            ...chooserDragAgOptions,
+            suppressGroupChangesColumnVisibility: true
         };
     }
 
@@ -55,7 +54,6 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
     /** Reload the library with the currently hidden, non-excluded columns. groupBy does the rest. */
     syncFromState(columnState: ColumnState[]) {
         const {targetGridModel, chooserGridModel} = this;
-        if (!targetGridModel) return;
 
         let grouped = false;
         const data: ColumnLibraryData[] = [];
@@ -111,12 +109,9 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
     //-----------------
     private createGridModel(): GridModel {
         return new GridModel({
+            ...chooserGridConfig,
             sortBy: 'name',
             emptyText: 'No hidden columns',
-            hideEmptyTextBeforeLoad: false,
-            selModel: 'multiple',
-            hideHeaders: true,
-            rowBorders: true,
             store: {
                 fields: [
                     {name: 'name', type: 'string'},
@@ -132,13 +127,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
                 'xh-column-chooser__column-row': ({data: rec}) => rec && !rec.isSummary
             },
             columns: [
-                {
-                    field: 'name',
-                    flex: 1,
-                    rendererIsComplex: true,
-                    cellClass: 'xh-column-chooser__name-cell',
-                    agOptions: {cellRenderer: ChooserColumnName}
-                },
+                chooserNameColumn(false),
                 {
                     field: 'chooserGroup',
                     hidden: true

@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import type {ICellRendererParams, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
+import type {GridOptions, ICellRendererParams, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {useEffect, useRef} from 'react';
@@ -49,6 +49,53 @@ export interface ColumnChooserDropParticipant {
 /** Extract ColumnChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
 export function getChooserData(node: any): ColumnChooserData | null {
     return node?.data?.data ?? null;
+}
+
+/**
+ * agOptions shared by every chooser drag-source grid (buckets + library): multi-row dragging with a
+ * "N columns" / single-column-name drag label, plus suppression of ag-grid's built-in row move -
+ * drops are applied by the chooser models, never by ag-grid.
+ */
+export const chooserDragAgOptions: GridOptions = {
+    suppressMoveWhenRowDragging: true,
+    rowDragMultiRow: true,
+    rowDragText: (params, count) =>
+        count > 1 ? `${count} columns` : (getChooserData(params.rowNode)?.name ?? '')
+};
+
+/** Base GridModel config shared by the chooser's bucket and library grids. */
+export const chooserGridConfig: Partial<GridConfig> = {
+    hideEmptyTextBeforeLoad: false,
+    selModel: 'multiple',
+    hideHeaders: true,
+    rowBorders: true
+};
+
+/**
+ * Base config for the chooser grids' name column - grip-handle + name via {@link ChooserColumnName}.
+ * Bucket grids render it as a tree column (via `innerRenderer`); the flat library grid renders it
+ * directly.
+ */
+export function chooserNameColumn(tree: boolean): ColumnSpec {
+    return {
+        field: 'name',
+        flex: 1,
+        rendererIsComplex: true,
+        cellClass: 'xh-column-chooser__name-cell',
+        ...(tree
+            ? {
+                  isTreeColumn: true,
+                  agOptions: {
+                      cellRendererParams: {
+                          // Re-specify Hoist defaults — agOptions merges shallow
+                          suppressCount: true,
+                          suppressDoubleClickExpand: true,
+                          innerRenderer: ChooserColumnName
+                      }
+                  }
+              }
+            : {agOptions: {cellRenderer: ChooserColumnName}})
+    };
 }
 
 interface ChooserColumnNameProps extends HoistProps, ICellRendererParams<StoreRecord> {}

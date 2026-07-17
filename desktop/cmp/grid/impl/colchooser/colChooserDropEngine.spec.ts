@@ -12,7 +12,7 @@
  * this is a self-contained, exit-coded driver: it runs a table of cases against the pure
  * {@link resolveDrop} engine, prints pass/fail per case, and exits 1 on any failure.
  *
- * Every case traces to `locked-group-dnd-spec.md` (§5A rules, §10A captured cases C-F1..C-SPAN). Each
+ * Every case traces to `docs/planning/locked-group-dnd-spec.md` (§5A rules, §10A captured cases C-F1..C-SPAN). Each
  * allowed locked drop is additionally asserted #39-free via {@link invariantHolds} (ag-Grid's
  * marryChildren). Add a case here whenever a new drag scenario is captured. No browser/Toolbox needed.
  */

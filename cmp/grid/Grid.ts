@@ -145,15 +145,15 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
         });
 
         // Wrap alongside the docked side-panel chooser when enabled (desktop-only - the model is
-        // never created on mobile).
+        // never created on mobile). colChooserPanel renders the resizable dock plus its grid-edge
+        // toggle rail, ordered by side, so the chooser sits between the grid and the rail.
         let content = gridContainer;
         if (colChooserPanelModel) {
-            const chooserPanel = desktopColChooserPanel({model: colChooserPanelModel}),
-                {side} = (colChooserPanelModel as ColChooserPanelModel).panelModel;
+            const chooser = desktopColChooserPanel({model: colChooserPanelModel}),
+                {side} = colChooserPanelModel as ColChooserPanelModel;
+
             content =
-                side === 'left'
-                    ? hframe(chooserPanel, gridContainer)
-                    : hframe(gridContainer, chooserPanel);
+                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser);
         }
 
         return fragment(
