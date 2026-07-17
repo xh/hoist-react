@@ -25,11 +25,16 @@
 
   // Left-docked panel listing hidden columns, grouped by chooserGroup.
   &__library {
-    border-right: var(--xh-border-solid);
-
     .xh-toolbar {
       background-color: var(--xh-bg);
     }
+  }
+
+  // Smaller/minimal library panel splitter
+  .xh-resizable-splitter.horizontal {
+    width: 2px;
+    background-color: var(--xh-border-color);
+    border: none;
   }
 
   // Compact bucket header - tighter than the standard Panel compact header
