@@ -304,7 +304,8 @@ const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({chooserMo
             side: 'left',
             defaultSize: 250,
             minSize: 150,
-            collapsible: true
+            collapsible: false,
+            resizable: true
         },
         tbar: toolbar(
             storeFilterField({
