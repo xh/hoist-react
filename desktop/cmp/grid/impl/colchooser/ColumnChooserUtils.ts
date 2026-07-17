@@ -21,6 +21,12 @@ export interface ColumnChooserData {
     description: string;
     /** true = all visible, false = none visible, null = indeterminate (mixed). */
     visible: boolean | null;
+    /**
+     * Whether to dim this row. A leaf is muted when hidden; a group when all its rendered leaf
+     * children are hidden. Distinct from `visible`, which tracks only *hideable* leaves for the
+     * toggle control - a group of all-locked (visible) columns must not be muted.
+     */
+    muted: boolean;
     isGroup: boolean;
     hideable: boolean;
     movable: boolean;

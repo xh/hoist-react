@@ -423,6 +423,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                     name: typeof group.headerName === 'string' ? group.headerName : group.groupId,
                     description: '',
                     visible: false,
+                    muted: false,
                     isGroup: true,
                     hideable: false,
                     movable: true,
@@ -445,6 +446,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 name: col.chooserName,
                 description: col.chooserDescription ?? '',
                 visible: !state.hidden,
+                muted: !!state.hidden,
                 isGroup: false,
                 hideable: col.hideable,
                 movable: col.movable,
@@ -469,6 +471,11 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 total = hideableLeafIds.length;
             it.visible = aggregateVisibility(total, hiddenCount);
             it.hideable = total > 0;
+
+            // Mute a group only when *every* rendered leaf child is hidden - independent of
+            // hideability, so an all-locked (visible) group reads as shown, not dimmed.
+            it.muted =
+                !isEmpty(it.leafColIds) && it.leafColIds.every(id => stateById.get(id)?.hidden);
 
             it.movable = it.leafColIds.every(id => gridModel.isColumnMovable(id));
         });
@@ -675,6 +682,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                     {name: 'name', type: 'string'},
                     {name: 'description', type: 'string'},
                     {name: 'visible', type: 'auto'},
+                    {name: 'muted', type: 'bool'},
                     {name: 'isGroup', type: 'bool'},
                     {name: 'hideable', type: 'bool'},
                     {name: 'movable', type: 'bool'},
@@ -685,7 +693,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             },
             rowClassRules: {
                 'xh-column-chooser__column-row': () => true,
-                'xh-column-chooser__column-row--hidden': ({data: rec}) => rec.data.visible === false
+                'xh-column-chooser__column-row--hidden': ({data: rec}) => rec.data.muted === true
             },
             columns: [
                 chooserNameColumn(true),
