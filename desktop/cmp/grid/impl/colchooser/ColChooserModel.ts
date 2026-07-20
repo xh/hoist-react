@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColChooserConfig, ColumnState, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
+import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
@@ -68,12 +69,31 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @managed
     readonly libraryModel: ColumnLibraryModel;
 
-    @bindable
-    showGroups: boolean = true;
+    /**
+     * Display toggles delegate to a shared, persisted {@link ColChooserOptionsModel} singleton, so
+     * they roam across all choosers for the user on this device and live-sync between choosers open
+     * at once. A library-disabled chooser reads `showLibrary` but never writes it (no toggle UI).
+     */
+    get showGroups(): boolean {
+        return this.options.showGroups;
+    }
+
+    set showGroups(v: boolean) {
+        this.options.showGroups = v;
+    }
 
     /** Show the Column Library panel (runtime toggle; only relevant when {@link columnLibraryEnabled}). */
-    @bindable
-    showLibrary: boolean = true;
+    get showLibrary(): boolean {
+        return this.options.showLibrary;
+    }
+
+    set showLibrary(v: boolean) {
+        this.options.showLibrary = v;
+    }
+
+    private get options(): ColChooserOptionsModel {
+        return XH.appContainerModel.colChooserOptionsModel;
+    }
 
     /** Pending working copy of the grid's columnState - the source of truth for the bucket grids. */
     @observable.ref

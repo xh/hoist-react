@@ -50,6 +50,7 @@ import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
 import {ChangelogDialogModel} from './ChangelogDialogModel';
+import {ColChooserOptionsModel} from './ColChooserOptionsModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -103,6 +104,7 @@ export class AppContainerModel extends HoistModel {
     @managed sizingModeModel = new SizingModeModel();
     @managed viewportSizeModel = new ViewportSizeModel();
     @managed themeModel = new ThemeModel();
+    @managed colChooserOptionsModel = new ColChooserOptionsModel();
     @managed userAgentModel = new UserAgentModel();
 
     /**
@@ -321,7 +323,8 @@ export class AppContainerModel extends HoistModel {
                     this.sizingModeModel,
                     this.viewportSizeModel,
                     this.themeModel,
-                    this.userAgentModel
+                    this.userAgentModel,
+                    this.colChooserOptionsModel
                 ];
                 models.forEach((m: any) => m.init?.());
 
