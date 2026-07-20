@@ -71,14 +71,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @bindable
     showGroups: boolean = true;
 
-    /**
-     * Show hidden columns inline in the bucket grids. Only toggleable when the Column Library is
-     * enabled (otherwise hidden columns must stay inline to remain un-hideable); defaults false in
-     * that case, so hidden columns live in the library rather than the buckets.
-     */
-    @bindable
-    showHidden: boolean = true;
-
     /** Show the Column Library panel (runtime toggle; only relevant when {@link columnLibraryEnabled}). */
     @bindable
     showLibrary: boolean = true;
@@ -160,6 +152,15 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         return this.columnLibraryEnabled && this.showLibrary;
     }
 
+    /**
+     * Whether hidden columns are listed inline in the bucket grids. Automatic: they show inline
+     * unless the Column Library panel is on screen, where they live in the library instead.
+     */
+    @computed
+    get showHidden(): boolean {
+        return !this.isLibraryShown;
+    }
+
     @computed
     get hasColumnGroups(): boolean {
         return this.gridModel.columns.some(c => c instanceof ColumnGroup);
@@ -228,10 +229,9 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             emptyText: 'Drop a column here to pin right'
         });
 
-        // Library backs an opt-in panel - build it (and default hidden columns into it) only when enabled.
+        // Library backs an opt-in panel - build it only when enabled.
         if (this.columnLibraryEnabled) {
             this.libraryModel = new ColumnLibraryModel({parent: this});
-            this.showHidden = false;
         }
 
         this.addReaction({

@@ -123,9 +123,9 @@ interface ViewMenuProps extends HoistProps {
 }
 
 /**
- * Header "View" popover consolidating the chooser's display toggles (group tree, column library,
- * show-hidden-inline) with the destructive Restore Defaults action, kept visually separate below a
- * divider. Omitted entirely when none of its items apply.
+ * Header "View" popover consolidating the chooser's display toggles (group tree, column library)
+ * with the destructive Restore Defaults action, kept visually separate below a divider. Omitted
+ * entirely when none of its items apply.
  */
 const viewMenu = hoistCmp.factory<ViewMenuProps>(({chooserModel}) => {
     const {hasColumnGroups, columnLibraryEnabled, showRestoreDefaults} = chooserModel,
@@ -155,13 +155,6 @@ const viewMenu = hoistCmp.factory<ViewMenuProps>(({chooserModel}) => {
                     label: 'Column library',
                     help: 'Side panel of hidden columns to drag in',
                     onToggle: () => (chooserModel.showLibrary = !chooserModel.showLibrary)
-                }),
-                viewToggle({
-                    omit: !columnLibraryEnabled,
-                    checked: chooserModel.showHidden,
-                    label: 'Show hidden inline',
-                    help: 'List hidden columns in place, dimmed',
-                    onToggle: () => (chooserModel.showHidden = !chooserModel.showHidden)
                 }),
                 menuDivider({omit: !hasToggles || !showRestoreDefaults}),
                 menuItem({
