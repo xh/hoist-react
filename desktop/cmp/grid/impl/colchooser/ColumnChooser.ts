@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -198,8 +198,8 @@ interface BucketPanelProps extends HoistProps {
 /**
  * A single chooser bucket rendered as a compact-header Panel. The pinned (left/right) rails
  * auto-height to their content via the grid's `domLayout: 'autoHeight'` - growing/shrinking as
- * columns are pinned - and are user-collapsible via a header chevron. When a pinned side holds no
- * columns its header is dropped entirely, leaving a minimal 1-line drop strip (the empty grid).
+ * columns are pinned. When a pinned side holds no columns its header is dropped entirely, leaving a
+ * minimal 1-line drop strip (the empty grid).
  * The unpinned "Columns" bucket flexes to fill remaining space and scrolls internally.
  */
 const bucketPanel = hoistCmp.factory<BucketPanelProps>(
@@ -219,17 +219,9 @@ const bucketPanel = hoistCmp.factory<BucketPanelProps>(
             // Empty pinned rail: no header - just the 1-line drop strip.
             title: empty ? null : bucketTitle({bucket}),
             headerItems: empty ? null : [bucketVisibilityToggle({chooserModel, bucket})],
+            // Pinned rails size to their (auto-height) grid content; the unpinned bucket flexes.
             flex: pinned ? undefined : 1,
-            modelConfig: pinned
-                ? {
-                      side: variant === 'left' ? 'top' : 'bottom',
-                      defaultSize: 'fit-content',
-                      collapsible: true,
-                      resizable: false,
-                      showSplitter: false,
-                      showHeaderCollapseButton: true
-                  }
-                : undefined,
+            height: pinned ? 'fit-content' : undefined,
             item: grid({
                 className: `xh-column-chooser__bucket xh-column-chooser__bucket--${variant}`,
                 model: bucket.chooserGridModel,
@@ -247,19 +239,9 @@ interface BucketHeaderProps extends HoistProps {
     bucket: ColumnChooserBucketModel;
 }
 
-/** Bucket label plus a column-count badge, rendered as a bucket's compact Panel title. */
+/** Bucket label, rendered as a bucket's compact Panel title. */
 const bucketTitle = hoistCmp.factory<{bucket: ColumnChooserBucketModel} & HoistProps>(({bucket}) =>
-    hbox({
-        className: 'xh-column-chooser__bucket-title',
-        alignItems: 'baseline',
-        items: [
-            span(bucket.title),
-            span({
-                className: 'xh-column-chooser__bucket-title__count',
-                item: `${bucket.columnCount}`
-            })
-        ]
-    })
+    span({className: 'xh-column-chooser__bucket-title', item: bucket.title})
 );
 
 /**

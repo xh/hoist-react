@@ -37,35 +37,20 @@
     border: none;
   }
 
-  // Compact bucket header - tighter than the standard Panel compact header
+  // Compact bucket header, styled to match the library grid's full-width group rows.
   .xh-panel-header.xh-column-chooser__bucket-header {
     height: 24px;
     min-height: 24px;
     padding: 0 var(--xh-pad-half-px);
-    background-color: var(--xh-bg-alt);
-    color: var(--xh-text-color-muted);
-    text-transform: uppercase;
-
-    .xh-panel-header__title {
-      font-size: var(--xh-font-size-small-px);
-      letter-spacing: 0.02em;
-    }
+    background-color: var(--xh-grid-group-bg);
+    color: var(--xh-grid-group-text-color);
+    border-bottom: 1px solid var(--xh-grid-group-border-color);
 
     // Collapse chevron - shrink to fit the compact header.
     .xh-button {
       min-height: 18px;
       padding: 0 2px;
-    }
-  }
-
-  // Bucket label + count badge, shown as the compact header's title.
-  &__bucket-title {
-    gap: var(--xh-pad-half-px);
-
-    &__count {
-      color: var(--xh-text-color-muted);
-      font-size: var(--xh-font-size-small-px);
-      text-transform: none;
+      color: var(--xh-grid-group-text-color);
     }
   }
 
@@ -74,6 +59,20 @@
   &__bucket--left,
   &__bucket--right {
     min-height: 30px;
+
+    // Override ag-grid's 50px auto-height viewport floor to match our compact drop strip.
+    .ag-layout-auto-height .ag-center-cols-viewport {
+      min-height: 30px;
+    }
+
+    .ag-overlay-no-rows-wrapper {
+      // ag-grid bakes an inline padding-top to vertically center the overlay, computed against a
+      // pre-layout (~0) auto-height viewport - stale until a resize recomputes it, which hides the
+      // text on first paint. Our strip is a fixed band, so drop the centering entirely.
+      padding-top: 0 !important;
+      font-size: 11px;
+      font-style: italic;
+    }
   }
 
   &__bucket-panel--empty {

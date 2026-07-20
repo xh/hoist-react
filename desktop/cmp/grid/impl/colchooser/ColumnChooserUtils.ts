@@ -74,7 +74,10 @@ export const chooserGridConfig: Partial<GridConfig> = {
     hideEmptyTextBeforeLoad: false,
     selModel: 'multiple',
     hideHeaders: true,
-    rowBorders: true
+    rowBorders: true,
+    stripeRows: false,
+    showHover: true,
+    contextMenu: false
 };
 
 /**
