@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {hbox, span} from '@xh/hoist/cmp/layout';
+import {div, hbox, hframe, span, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
@@ -103,6 +103,91 @@ export function chooserNameColumn(tree: boolean): ColumnSpec {
             : {agOptions: {cellRenderer: ChooserColumnName}})
     };
 }
+
+/** Shape of leaf-column record data in the Column Library's internal grid. */
+export interface ColumnLibraryData {
+    id: string;
+    name: string;
+    description: string;
+    chooserGroup: string;
+    movable: boolean;
+    /** Always false - the library has no draggable group records (groupBy renders group rows). */
+    isGroup: boolean;
+    /** Always `[id]` - the leaves the receiving bucket should show on drop. */
+    leafColIds: string[];
+    /** Always true - tells the receiving bucket to unhide on drop (see ColumnChooserBucketModel). */
+    fromLibrary: boolean;
+}
+
+/**
+ * Column spec for the Column Library's flat grid - an auto-height row rendered by
+ * {@link LibraryColumnCell}.
+ */
+export function chooserLibraryColumn(): ColumnSpec {
+    return {
+        field: 'name',
+        flex: 1,
+        rendererIsComplex: true,
+        autoHeight: true,
+        cellClass: 'xh-column-chooser__lib-cell',
+        agOptions: {
+            cellRenderer: LibraryColumnCell
+        }
+    };
+}
+
+interface LibraryColumnCellProps extends HoistProps, ICellRendererParams<StoreRecord> {}
+
+/**
+ * Cell renderer for a Column Library row: a drag handle beside the column name over an optional
+ * wrapped, inline description (the row auto-heights to fit it).
+ */
+export const LibraryColumnCell = hoistCmp<LibraryColumnCellProps>(
+    ({registerRowDragger, data: record}) => {
+        const ref = useRef<HTMLSpanElement>(null);
+
+        useEffect(() => {
+            if (ref.current) registerRowDragger(ref.current);
+        }, [registerRowDragger]);
+
+        const data = record?.data as ColumnLibraryData;
+        if (!data) return null;
+
+        const {name, description, movable} = data,
+            hasDescription = !isEmpty(description);
+
+        const dragHandle = movable
+            ? span({
+                  ref,
+                  className: 'xh-column-chooser__name-cell__drag-handle',
+                  item: Icon.grip({prefix: 'fas'})
+              })
+            : span({
+                  className: 'xh-column-chooser__name-cell__lock',
+                  item: Icon.lock()
+              });
+
+        return hframe({
+            className: 'xh-column-chooser__lib-cell__row',
+            alignItems: 'center',
+            items: [
+                dragHandle,
+                vframe({
+                    className: 'xh-column-chooser__lib-cell__body',
+                    items: [
+                        span({className: 'xh-column-chooser__lib-cell__name', item: name}),
+                        hasDescription
+                            ? div({
+                                  className: 'xh-column-chooser__lib-cell__desc',
+                                  item: description
+                              })
+                            : null
+                    ]
+                })
+            ]
+        });
+    }
+);
 
 interface ChooserColumnNameProps extends HoistProps, ICellRendererParams<StoreRecord> {}
 

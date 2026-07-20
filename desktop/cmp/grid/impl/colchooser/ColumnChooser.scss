@@ -99,6 +99,50 @@
     }
   }
 
+  // Column Library row: drag handle beside the name over an optional wrapped inline description.
+  // The cell auto-heights (via Column.autoHeight) so the description can wrap freely.
+  &__lib-cell.ag-cell {
+    // Row owns its vertical rhythm; let the cell grow with wrapped content.
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 1.4;
+    white-space: normal;
+  }
+
+  &__lib-cell {
+    &__row {
+      gap: var(--xh-pad-px);
+      padding: var(--xh-pad-half-px) 0;
+      width: 100%;
+      min-height: 24px;
+
+      // Row gap owns handle spacing - drop the shared name-cell margin.
+      .xh-column-chooser__name-cell__drag-handle,
+      .xh-column-chooser__name-cell__lock {
+        margin-right: 0;
+        flex: none;
+      }
+    }
+
+    &__body {
+      flex: 1;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    &__name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__desc {
+      font-size: var(--xh-font-size-small-px);
+      line-height: 1.4;
+      color: var(--xh-text-color-muted);
+    }
+  }
+
   &__name-cell {
     &__drag-handle,
     &__lock {

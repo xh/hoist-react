@@ -188,7 +188,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         commitOnChange = true,
         showRestoreDefaults = true,
         autosizeOnCommit = false,
-        columnLibraryEnabled = false,
+        columnLibrary = false,
         width = 300,
         height = 600,
         filterMatchMode = 'startWord'
@@ -202,7 +202,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
         this.autosizeOnCommit = autosizeOnCommit;
-        this.columnLibraryEnabled = columnLibraryEnabled;
+        this.columnLibraryEnabled = !!columnLibrary;
         this.width = width;
         this.height = height;
         this.filterMatchMode = filterMatchMode;

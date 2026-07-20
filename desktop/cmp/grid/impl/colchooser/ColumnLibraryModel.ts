@@ -7,13 +7,15 @@
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
+import {makeObservable} from '@xh/hoist/mobx';
 
 import type {ColChooserModel} from './ColChooserModel';
 import {
     chooserDragAgOptions,
     chooserGridConfig,
-    chooserNameColumn,
+    chooserLibraryColumn,
     type ColumnChooserDropParticipant,
+    type ColumnLibraryData,
     getChooserData
 } from './ColumnChooserUtils';
 
@@ -47,6 +49,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
 
     constructor({parent}: {parent: ColChooserModel}) {
         super();
+        makeObservable(this);
         this.parent = parent;
         this.chooserGridModel = this.createGridModel();
     }
@@ -127,7 +130,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
                 'xh-column-chooser__column-row': ({data: rec}) => rec && !rec.isSummary
             },
             columns: [
-                chooserNameColumn(false),
+                chooserLibraryColumn(),
                 {
                     field: 'chooserGroup',
                     hidden: true
@@ -135,19 +138,4 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
             ]
         });
     }
-}
-
-/** Shape of leaf-column record data in the Column Library's internal grid. */
-interface ColumnLibraryData {
-    id: string;
-    name: string;
-    description: string;
-    chooserGroup: string;
-    movable: boolean;
-    /** Always false - the library has no draggable group records (groupBy renders group rows). */
-    isGroup: boolean;
-    /** Always `[id]` - the leaves the receiving bucket should show on drop. */
-    leafColIds: string[];
-    /** Always true - tells the receiving bucket to unhide on drop (see ColumnChooserBucketModel). */
-    fromLibrary: boolean;
 }

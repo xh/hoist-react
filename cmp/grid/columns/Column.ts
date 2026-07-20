@@ -294,7 +294,7 @@ export interface ColumnSpec {
 
     /**
      * Group name for organizing this column within the column chooser's Column Library panel
-     * (see {@link ColChooserConfig.columnLibraryEnabled}). Not used by the chooser's main list, which
+     * (see {@link ColChooserConfig.columnLibrary}). Not used by the chooser's main list, which
      * groups by actual {@link ColumnGroup} structure instead.
      */
     chooserGroup?: string;
