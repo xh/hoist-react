@@ -13,16 +13,14 @@ import {ColChooserModel} from './ColChooserModel';
 /**
  * Column chooser model for the docked, non-modal side-panel presentation. Owns the {@link PanelModel}
  * that governs the dock's user-resizable width. Open/close is tracked directly by {@link isOpen} -
- * the panel renders only while open, driven by the persistent grid-edge toggle rail rather than by
- * panel collapse, so the closed grid edge carries only that rail. Non-modal display means changes
- * always auto-commit and live-sync with external column state, so `commitOnChange` is forced true.
+ * the panel renders only while open, driven externally (e.g. a `ColChooserButton` with
+ * `target: 'panel'`, or `GridModel.showColChooserPanel()`) rather than by panel collapse. Non-modal
+ * display means changes always auto-commit and live-sync with external column state, so
+ * `commitOnChange` is forced true.
  * @internal
  */
 export class ColChooserPanelModel extends ColChooserModel {
     @observable override isOpen = false;
-
-    /** Show the grid-edge toggle rail (the dock's built-in open/close affordance). */
-    readonly showRail: boolean;
 
     @managed
     readonly panelModel: PanelModel;
@@ -34,7 +32,6 @@ export class ColChooserPanelModel extends ColChooserModel {
     constructor(config: ColChooserPanelConfig) {
         super({...config, commitOnChange: true});
         makeObservable(this);
-        this.showRail = config.showRail ?? true;
         this.panelModel = new PanelModel({
             side: 'right',
             defaultSize: this.width,

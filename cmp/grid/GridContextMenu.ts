@@ -20,6 +20,7 @@ export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | 
  *          `autosizeColumns` - autosize columns to fit their contents.
  *          `copyCell` - copy cell value to clipboard.
  *          `colChooser` - display column chooser for a grid.
+ *          `colChooserPanel` - open the docked, non-modal side-panel column chooser. Desktop only.
  *          `expandCollapse` - expand/collapse parent rows on grouped or tree grid.
  *          `export` - export grid data to excel via Hoist's server-side export capabilities.
  *          `exportExcel` - alias for `export`.
@@ -33,6 +34,7 @@ export type GridContextMenuToken =
     | 'autosizeColumns'
     | 'copyCell'
     | 'colChooser'
+    | 'colChooserPanel'
     | 'expandCollapseAll'
     | 'expandCollapse'
     | 'export'

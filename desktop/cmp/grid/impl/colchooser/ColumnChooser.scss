@@ -90,8 +90,6 @@
     }
   }
 
-  // Rail rules live at top level below - the rail renders as a grid-edge sibling, not nested here.
-
   &__column-row {
     // Dim the cell content, not the row - opacity on the row dims its drop-indicator ::after too.
     &--hidden .ag-cell {
@@ -161,42 +159,5 @@
     &__lock {
       cursor: not-allowed;
     }
-  }
-}
-
-// Persistent grid-edge rail toggling the docked chooser. A compact vertical toolbar rendered as a
-// grid sibling (see ColChooserRail), so its rules sit outside the .xh-column-chooser block.
-.xh-column-chooser__rail {
-  flex: none;
-  background-color: var(--xh-grid-bg-odd);
-
-  &__btn.xh-button {
-    // Stack the icon over a vertically-oriented label to keep the rail narrow.
-    flex-direction: column;
-    gap: var(--xh-pad-half-px);
-    min-width: 0;
-    // The compact toolbar caps button height via `max-height` (sized for horizontal bars); the
-    // rail's stacked icon + vertical label must grow past it. !important to beat the deep compact
-    // selector (.xh-app .xh-toolbar--compact button.xh-button.bp6-button.xh-button--minimal).
-    max-height: none !important;
-    height: auto;
-
-    // Center the icon: the compact rule adds a right-margin to non-final svgs, off-centering it here.
-    svg {
-      margin: 0 !important;
-    }
-
-    .bp6-button-text {
-      margin: 0;
-      writing-mode: vertical-rl;
-      letter-spacing: 0.02em;
-    }
-  }
-
-  // Muted gray icon + label while the dock is closed (color drives the icon via currentColor);
-  // when open, the button keeps its default text color. No background or border emphasis either way.
-  // Overriding the button's own text-color var avoids a specificity fight.
-  &__btn--closed.xh-button {
-    --xh-button-text-color: var(--xh-gray);
   }
 }

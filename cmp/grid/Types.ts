@@ -207,16 +207,10 @@ export interface ColChooserConfig {
  */
 export interface ColChooserPanelConfig extends Omit<ColChooserConfig, 'commitOnChange'> {
     /**
-     * Show the grid-edge toggle rail that opens and closes the dock (default true). Set false to
-     * drive open/close from your own control instead - e.g. a `ColChooserButton` with
-     * `target: 'panel'`, or `GridModel.showColChooserPanel()`.
-     */
-    showRail?: boolean;
-
-    /**
      * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
      * horizontally, so `side` is limited to 'left'/'right' (default 'right'). The dock is resize-only
-     * (open/close is driven by `showRail`/its own state), so `collapsible` is omitted.
+     * (open/close is driven externally - e.g. a `ColChooserButton` with `target: 'panel'`, or
+     * `GridModel.showColChooserPanel()`), so `collapsible` is omitted.
      */
     panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
 }
