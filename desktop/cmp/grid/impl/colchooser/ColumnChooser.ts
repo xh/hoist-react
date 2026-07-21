@@ -36,7 +36,13 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
 
     render({model, className, ...props}) {
         const [layoutProps] = splitLayoutProps(props),
-            {commitOnChange, filterMatchMode} = model;
+            {commitOnChange, filterMatchMode, columnPinningEnabled} = model,
+            {leftBucketModel, unpinnedBucketModel, rightBucketModel} = model,
+            leftHasCols = columnPinningEnabled && leftBucketModel.columnCount > 0,
+            rightHasCols = columnPinningEnabled && rightBucketModel.columnCount > 0,
+            // The free-floating "Columns" zone only needs a label when a populated pinned zone sits
+            // beside it - with both pinned rails empty there are no adjacent zones to tell it apart.
+            showColumnsLabel = leftHasCols || rightHasCols;
 
         return vframe({
             className,
@@ -56,29 +62,44 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                                     items: [
                                         gridFindField({
                                             flex: 1,
-                                            gridModel: model.unpinnedBucketModel.chooserGridModel,
+                                            gridModel: unpinnedBucketModel.chooserGridModel,
                                             matchMode: filterMatchMode,
                                             placeholder: 'Find Columns'
                                         }),
                                         viewMenu({chooserModel: model})
                                     ]
                                 }),
-                                bucketPanel({
+                                bucketSeparator({
                                     chooserModel: model,
-                                    bucketModel: model.leftBucketModel,
-                                    bucket: 'left',
-                                    omit: !model.columnPinningEnabled
+                                    bucket: leftBucketModel,
+                                    variant: 'left',
+                                    omit: !leftHasCols
                                 }),
-                                bucketPanel({
+                                bucketGrid({
+                                    bucketModel: leftBucketModel,
+                                    bucket: 'left',
+                                    omit: !columnPinningEnabled
+                                }),
+                                bucketSeparator({
                                     chooserModel: model,
-                                    bucketModel: model.unpinnedBucketModel,
+                                    bucket: unpinnedBucketModel,
+                                    variant: 'unpinned',
+                                    omit: !showColumnsLabel
+                                }),
+                                bucketGrid({
+                                    bucketModel: unpinnedBucketModel,
                                     bucket: 'unpinned'
                                 }),
-                                bucketPanel({
+                                bucketSeparator({
                                     chooserModel: model,
-                                    bucketModel: model.rightBucketModel,
+                                    bucket: rightBucketModel,
+                                    variant: 'right',
+                                    omit: !rightHasCols
+                                }),
+                                bucketGrid({
+                                    bucketModel: rightBucketModel,
                                     bucket: 'right',
-                                    omit: !model.columnPinningEnabled
+                                    omit: !columnPinningEnabled
                                 })
                             ]
                         })
@@ -189,47 +210,71 @@ const viewToggle = hoistCmp.factory<ViewToggleProps>(({checked, label, help, onT
     })
 );
 
-interface BucketPanelProps extends HoistProps {
-    chooserModel: ColChooserModel;
+interface BucketGridProps extends HoistProps {
     bucketModel: ColumnChooserBucketModel;
     bucket: 'left' | 'right' | 'unpinned';
 }
 
 /**
- * A single chooser bucket rendered as a compact-header Panel. The pinned (left/right) rails
- * auto-height to their content via the grid's `domLayout: 'autoHeight'` - growing/shrinking as
- * columns are pinned. When a pinned side holds no columns its header is dropped entirely, leaving a
- * minimal 1-line drop strip (the empty grid).
- * The unpinned "Columns" bucket flexes to fill remaining space and scrolls internally.
+ * A single chooser bucket grid. The pinned (left/right) rails auto-height to their content via
+ * `domLayout: 'autoHeight'` - growing/shrinking as columns are pinned. When a pinned side holds no
+ * columns the grid collapses to a minimal 1-line drop strip (its emptyText, keyed to the pin
+ * direction). The unpinned "Columns" bucket flexes to fill remaining space and scrolls internally.
  */
-const bucketPanel = hoistCmp.factory<BucketPanelProps>(
-    ({chooserModel, bucketModel: bucket, bucket: variant}) => {
-        const pinned = variant !== 'unpinned',
-            empty = pinned && bucket.columnCount === 0;
+const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucketModel: bucket, bucket: variant}) => {
+    const pinned = variant !== 'unpinned',
+        empty = pinned && bucket.columnCount === 0;
 
-        return panel({
+    return grid({
+        className: classNames(
+            'xh-column-chooser__bucket',
+            `xh-column-chooser__bucket--${variant}`,
+            empty ? 'xh-column-chooser__bucket--empty' : null,
+            empty && bucket.dragOver ? 'xh-column-chooser__bucket--drag-over' : null
+        ),
+        model: bucket.chooserGridModel,
+        agOptions: pinned ? {...bucket.agOptions, domLayout: 'autoHeight'} : bucket.agOptions,
+        // Pinned rails size to their (auto-height) grid content; the unpinned bucket flexes.
+        flex: pinned ? null : 1
+    });
+});
+
+interface BucketSeparatorProps extends HoistProps {
+    chooserModel: ColChooserModel;
+    bucket: ColumnChooserBucketModel;
+    variant: 'left' | 'right' | 'unpinned';
+}
+
+/**
+ * Zone divider - a lighter-weight label riding a hairline rule, deliberately distinct from a filled
+ * column-group header bar so the eye reads "structural zone" not "group". Aligned to echo the zone's
+ * position (left / center / right); pinned zones flank the label with a direction arrow. The bucket's
+ * "toggle all visibility" control rides the far end (omitted when it has nothing to act on).
+ */
+const bucketSeparator = hoistCmp.factory<BucketSeparatorProps>(
+    ({chooserModel, bucket, variant}) => {
+        const arrow =
+            variant === 'left'
+                ? Icon.arrowToLeft({className: 'xh-column-chooser__separator__arrow'})
+                : variant === 'right'
+                  ? Icon.arrowToRight({className: 'xh-column-chooser__separator__arrow'})
+                  : null;
+
+        return div({
             className: classNames(
-                'xh-column-chooser__bucket-panel',
-                `xh-column-chooser__bucket-panel--${variant}`,
-                empty ? 'xh-column-chooser__bucket-panel--empty' : null,
-                empty && bucket.dragOver ? 'xh-column-chooser__bucket-panel--drag-over' : null
+                'xh-column-chooser__separator',
+                `xh-column-chooser__separator--${variant}`
             ),
-            compactHeader: true,
-            headerClassName: 'xh-column-chooser__bucket-header',
-            // Empty pinned rail: no header - just the 1-line drop strip.
-            title: empty ? null : bucketTitle({bucket}),
-            headerItems: empty ? null : [bucketVisibilityToggle({chooserModel, bucket})],
-            // Pinned rails size to their (auto-height) grid content; the unpinned bucket flexes.
-            flex: pinned ? undefined : 1,
-            height: pinned ? 'fit-content' : undefined,
-            item: grid({
-                className: `xh-column-chooser__bucket xh-column-chooser__bucket--${variant}`,
-                model: bucket.chooserGridModel,
-                agOptions: pinned
-                    ? {...bucket.agOptions, domLayout: 'autoHeight'}
-                    : bucket.agOptions,
-                flex: pinned ? null : 1
-            })
+            items: [
+                div({className: 'xh-column-chooser__separator__line'}),
+                span({
+                    className: 'xh-column-chooser__separator__label',
+                    // Arrow trails the label on the right rail, leads it on the left.
+                    items: variant === 'right' ? [bucket.title, arrow] : [arrow, bucket.title]
+                }),
+                div({className: 'xh-column-chooser__separator__line'}),
+                bucketVisibilityToggle({chooserModel, bucket})
+            ]
         });
     }
 );
@@ -239,13 +284,8 @@ interface BucketHeaderProps extends HoistProps {
     bucket: ColumnChooserBucketModel;
 }
 
-/** Bucket label, rendered as a bucket's compact Panel title. */
-const bucketTitle = hoistCmp.factory<{bucket: ColumnChooserBucketModel} & HoistProps>(({bucket}) =>
-    span({className: 'xh-column-chooser__bucket-title', item: bucket.title})
-);
-
 /**
- * Bucket-scoped "toggle all visibility" control in a bucket's compact Panel header. Reflects the
+ * Bucket-scoped "toggle all visibility" control riding the end of a zone separator. Reflects the
  * aggregate all/none/mixed state; omitted while the Column Library is shown (columns are hidden by
  * dragging to the library then) or when the bucket has no hideable columns.
  */
@@ -261,7 +301,7 @@ const bucketVisibilityToggle = hoistCmp.factory<BucketHeaderProps>(({chooserMode
                   : Icon.square();
 
     return button({
-        className: 'xh-column-chooser__bucket-header__toggle',
+        className: 'xh-column-chooser__separator__toggle',
         icon,
         minimal: true,
         onClick: () => bucket.toggleBucketVisibility()

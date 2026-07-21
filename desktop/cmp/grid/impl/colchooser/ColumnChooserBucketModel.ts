@@ -6,6 +6,7 @@
  */
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
+import {hbox, span} from '@xh/hoist/cmp/layout';
 import type {HSide, Some} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
@@ -20,6 +21,7 @@ import type {
     RowDropTargetPosition
 } from '@xh/hoist/kit/ag-grid';
 import {castArray, isEmpty} from 'lodash';
+import type {ReactNode} from 'react';
 
 import type {ColChooserModel} from './ColChooserModel';
 import {
@@ -658,6 +660,25 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return rec;
     }
 
+    /**
+     * Empty-bucket prompt. Pinned rails pair the text with a pin-direction arrow (leading on the
+     * left rail, trailing on the right) so the empty strip still signals which way it pins. The
+     * unpinned bucket has no direction, so its plain text stands alone.
+     */
+    private emptyDropHint(text: string): ReactNode {
+        const {pinned} = this;
+        if (!pinned) return text;
+
+        const arrow =
+            pinned === 'left'
+                ? Icon.arrowToLeft({className: 'xh-column-chooser__drop-hint__arrow', size: 'sm'})
+                : Icon.arrowToRight({className: 'xh-column-chooser__drop-hint__arrow', size: 'sm'});
+        return hbox({
+            className: 'xh-column-chooser__drop-hint',
+            items: pinned === 'left' ? [arrow, span(text)] : [span(text), arrow]
+        });
+    }
+
     private createGridModel(emptyText: string) {
         return new GridModel({
             treeMode: true,
@@ -666,7 +687,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             expandLevel: -1,
             ...chooserGridConfig,
             sortBy: 'sortOrder',
-            emptyText,
+            emptyText: this.emptyDropHint(emptyText),
             onKeyDown: e => {
                 const {selectedRecords} = this.chooserGridModel;
                 if (isEmpty(selectedRecords)) return;

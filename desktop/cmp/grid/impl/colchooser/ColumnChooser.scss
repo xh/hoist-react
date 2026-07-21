@@ -37,32 +37,91 @@
     border: none;
   }
 
-  // Compact bucket header, styled to match the library grid's full-width group rows.
-  .xh-panel-header.xh-column-chooser__bucket-header {
-    height: 24px;
-    min-height: 24px;
-    padding: 0 var(--xh-pad-half-px);
-    background-color: var(--xh-grid-group-bg);
-    color: var(--xh-grid-group-text-color);
-    border-bottom: 1px solid var(--xh-grid-group-border-color);
+  // Zone divider: a low-weight label riding a hairline rule, deliberately unlike a group-header bar.
+  &__separator {
+    display: flex;
+    align-items: center;
+    gap: var(--xh-pad-half-px);
+    flex: none;
+    // Flush to the grid's right edge so the toggle can sit directly over the per-row action column;
+    // the label keeps a small left inset to echo the row content.
+    margin: var(--xh-pad-px) 0 var(--xh-pad-half-px);
 
-    // Collapse chevron - shrink to fit the compact header.
-    .xh-button {
-      min-height: 18px;
-      padding: 0 2px;
-      color: var(--xh-grid-group-text-color);
+    padding: 0 var(--xh-pad-half-px);
+
+    &:has(.xh-button) {
+      padding-right: 0;
+    }
+
+    &__line {
+      flex: 1;
+      height: 0;
+      border-top: var(--xh-border-width-px) solid var(--xh-border-color);
+    }
+
+    &__label {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--xh-pad-half-px);
+      white-space: nowrap;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--xh-blue-gray);
+    }
+
+    &__arrow {
+      color: var(--xh-orange-muted);
+    }
+
+    // Bulk-visibility checkbox: sized and positioned to line up with the per-row action checkboxes -
+    // grid-sized glyph, and a fixed width matching the action column so its icon centers over them.
+    &__toggle.xh-button {
+      flex: none;
+      width: 36px; // = calcActionColWidth(1): centers the glyph over the action column
+      min-height: 0;
+      padding: 0;
+      font-size: var(--xh-grid-font-size-px);
+
+      // Match the per-row action checkbox, which renders its checked state in the lighter primary
+      // tone for legibility on the dark grid bg - not the base tone the Icon `intent` prop applies.
+      .xh-intent-primary {
+        color: var(--xh-intent-primary-lighter);
+      }
+    }
+
+    // Match-zone alignment: drop the line segment on the side the label hugs, so left/center/right
+    // placement doubles as a wayfinding cue atop the pin-direction arrow.
+    &--left > .xh-column-chooser__separator__line:first-child,
+    &--right .xh-column-chooser__separator__label + .xh-column-chooser__separator__line {
+      display: none;
     }
   }
 
+  // The grid's own container is a Frame with an inline `flex: auto`, so left to itself every bucket
+  // would grow evenly. Override it here (the role the removed Panel wrappers used to own): the
+  // unpinned bucket flexes to fill, the pinned rails size to their auto-height content.
+
+  // Unpinned bucket fills remaining space; min-height:0 lets it shrink below content so it scrolls
+  // internally rather than overflowing the column.
+  &__bucket--unpinned {
+    flex: 1 1 0 !important;
+    min-height: 0;
+  }
+
   // Keep an empty pinned rail open as a minimal 1-line drop strip (an auto-height grid collapses
-  // to 0 rows). The empty panel drops its header, so the grid's emptyText is the whole strip.
+  // to 0 rows). The grid's emptyText is the whole strip.
   &__bucket--left,
   &__bucket--right {
-    min-height: 30px;
+    flex: none !important;
+    height: fit-content;
+    min-height: 40px;
 
     // Override ag-grid's 50px auto-height viewport floor to match our compact drop strip.
     .ag-layout-auto-height .ag-center-cols-viewport {
-      min-height: 30px;
+      min-height: 40px;
     }
 
     .ag-overlay-no-rows-wrapper {
@@ -70,19 +129,30 @@
       // pre-layout (~0) auto-height viewport - stale until a resize recomputes it, which hides the
       // text on first paint. Our strip is a fixed band, so drop the centering entirely.
       padding-top: 0 !important;
-      font-size: 11px;
+      font-size: 12px;
       font-style: italic;
     }
   }
 
-  &__bucket-panel--empty {
+  // Empty pinned-rail drop hint: pin-direction arrow beside the prompt, centered in the strip.
+  &__drop-hint {
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    &__arrow {
+      color: var(--xh-orange-muted);
+    }
+  }
+
+  &__bucket--empty {
     border-top: var(--xh-border-width-px) dashed var(--xh-border-color);
     border-bottom: var(--xh-border-width-px) dashed var(--xh-border-color);
 
     // Highlight the strip while a column is dragged over it, matching the drop-indicator color.
     // Override the grid's bg / empty-text vars (specificity-proof - the Hoist grid theme rules that
     // set these win on selector specificity, but a var set here cascades into them).
-    &.xh-column-chooser__bucket-panel--drag-over {
+    &.xh-column-chooser__bucket--drag-over {
       --xh-grid-bg: var(--xh-intent-primary-trans1);
       --xh-grid-empty-text-color: var(--xh-intent-primary);
       border-color: var(--xh-intent-primary);
