@@ -194,9 +194,23 @@ export interface ColChooserConfig {
      * Enable the Column Library - a docked panel listing hidden columns (grouped by `chooserGroup`)
      * that users drag onto the chooser's bucket grids to show, and onto which they drag columns to
      * hide. When enabled, hidden columns are removed from the buckets by default. Default false.
-     * Desktop only.
+     * Pass `true` for defaults, or a {@link ColLibraryConfig} to customize. Desktop only.
      */
-    columnLibrary?: boolean;
+    columnLibrary?: boolean | ColLibraryConfig;
+}
+
+/**
+ * Configuration for the ColumnChooser's optional Column Library, passed via
+ * {@link ColChooserConfig.columnLibrary}. Desktop only.
+ */
+export interface ColLibraryConfig {
+    /**
+     * Render the library's `chooserGroup` groups collapsed by default (default false). Recommended
+     * for large column sets - lets users scan group headers before expanding one. This is a starting
+     * state, not a lock: groups the user expands stay expanded across resyncs, and every fresh open
+     * starts collapsed again.
+     */
+    collapseGroups?: boolean;
 }
 
 /**

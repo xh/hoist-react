@@ -33,6 +33,9 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
 
     readonly parent: ColChooserModel;
 
+    /** Render `chooserGroup` groups collapsed by default (see {@link ColLibraryConfig}). */
+    private readonly collapseGroups: boolean;
+
     @managed
     chooserGridModel: GridModel;
 
@@ -48,10 +51,11 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         };
     }
 
-    constructor({parent}: {parent: ColChooserModel}) {
+    constructor({parent, collapseGroups}: {parent: ColChooserModel; collapseGroups: boolean}) {
         super();
         makeObservable(this);
         this.parent = parent;
+        this.collapseGroups = collapseGroups;
         this.chooserGridModel = this.createGridModel();
     }
 
@@ -126,6 +130,8 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
     private createGridModel(): GridModel {
         return new GridModel({
             ...chooserGridConfig,
+            // 0 collapses groups by default; standard non-tree default of 1 expands them.
+            expandLevel: this.collapseGroups ? 0 : 1,
             sortBy: 'name',
             emptyText: 'No hidden columns',
             store: {

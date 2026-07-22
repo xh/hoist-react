@@ -13,7 +13,7 @@ import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEqual} from 'lodash';
+import {isEqual, isBoolean} from 'lodash';
 
 import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
 import {ColumnLibraryModel} from './ColumnLibraryModel';
@@ -281,6 +281,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
         this.autosizeOnCommit = autosizeOnCommit;
+        const libraryConfig = isBoolean(columnLibrary) ? {} : columnLibrary;
         this.columnLibraryEnabled = !!columnLibrary;
         this.width = width;
         this.height = height;
@@ -309,7 +310,10 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
         // Library backs an opt-in panel - build it only when enabled.
         if (this.columnLibraryEnabled) {
-            this.libraryModel = new ColumnLibraryModel({parent: this});
+            this.libraryModel = new ColumnLibraryModel({
+                parent: this,
+                collapseGroups: !!libraryConfig.collapseGroups
+            });
         }
 
         this.addReaction({
