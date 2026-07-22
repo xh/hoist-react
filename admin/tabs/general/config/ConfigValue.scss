@@ -1,0 +1,30 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+.xh-config-value {
+  width: 100%;
+
+  // "DB Value" tab label when an instance value overrides it.
+  &__overridden {
+    text-decoration: line-through;
+    color: var(--xh-text-color-muted);
+  }
+
+  // Resolved-tab: mute default/unchanged lines so explicitly-set keys stand out. The text-color
+  // override must beat syntax-token colors on descendant spans.
+  .cm-line.xh-config-value__muted,
+  .cm-line.xh-config-value__muted span {
+    color: var(--xh-text-color-muted) !important;
+  }
+}
+
+// The read-only wrapper FormField injects is a flex item that otherwise shrinks to the editor's
+// content width - make it (and thus our content) fill the full field width.
+.xh-form-field__readonly-display:has(> .xh-config-value) {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}

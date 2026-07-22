@@ -80,7 +80,14 @@ const tbar = hoistCmp.factory<RestFormModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save Changes',
+            text: 'Revert',
+            icon: Icon.reset(),
+            onClick: () => formModel.reset(),
+            disabled: !formModel.isDirty,
+            omit: formModel.readonly
+        }),
+        button({
+            text: 'Save',
             icon: Icon.check(),
             intent: 'success',
             outlined: true,

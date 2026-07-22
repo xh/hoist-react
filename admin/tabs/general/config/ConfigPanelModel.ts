@@ -10,7 +10,6 @@ import * as Col from '@xh/hoist/admin/columns';
 import {br, fragment, hbox, hspacer} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
-import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -25,6 +24,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
+import {configValue} from './ConfigValue';
 
 export class ConfigPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminConfigState'};
@@ -90,7 +90,12 @@ export class ConfigPanelModel extends HoistModel {
                         name: 'overrideValue',
                         typeField: 'valueType',
                         editable: false
-                    }
+                    },
+                    {name: 'resolvedValue', type: 'auto', editable: false},
+
+                    // Synthetic  read-only presentation slot for the value editor.
+                    // Actual edits flow through the `value` field, which the editor binds to.
+                    {name: 'valueDisplay', type: 'auto', editable: false}
                 ]
             },
             // Cols + editors
@@ -113,19 +118,19 @@ export class ConfigPanelModel extends HoistModel {
                 {field: 'name'},
                 {field: 'groupName'},
                 {field: 'valueType'},
-                {field: 'value'},
+                // Use this readOnlyRenderer to effectively get a custom editor for value
                 {
-                    field: 'overrideValue',
-                    omit: isNil,
+                    field: 'valueDisplay',
                     formField: {
-                        className: 'xh-bg-intent-warning',
-                        info: 'Editable (database) value overridden by instance config / env variable.',
-                        readonlyRenderer: (v, model) =>
-                            model.formModel.values.valueType === 'pwd'
-                                ? '*****'
-                                : defaultReadonlyRenderer(v)
+                        label: 'Value',
+                        readonlyRenderer: (_v, model) =>
+                            configValue({formModel: model.formModel, height: 250})
                     }
                 },
+                // Data/bind fields for the presentation above; never rendered directly.
+                {field: 'value', omit: true},
+                {field: 'resolvedValue', omit: true},
+                {field: 'overrideValue', omit: true},
                 {field: 'note', formField: {item: textArea({height: 100})}},
                 {field: 'clientVisible'},
                 {field: 'lastUpdated'},

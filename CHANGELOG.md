@@ -13,6 +13,14 @@
       any custom styling that targeted  Blueprint or Popper css classes (e.g. `bp6-minimal`).
     * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
 
+### 🎁 New Features
+* Enhanced the Admin Console config editor: JSON configs backed by a typed class and/or an active
+  instance-config override now present a tabbed value editor - surfacing the resolved
+  (defaults-applied) value, the instance override, and the editable database value as applicable.
+  Plain configs are unchanged. Requires hoist-core v41+, but falls back to the standard editor against
+  older versions of Hoist Core.
+* Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based) lines.
+
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
   onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
