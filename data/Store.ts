@@ -45,6 +45,7 @@ import {
     values
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
+import {RecordDataFactory} from './impl/RecordDataFactory';
 import {RecordSet} from './impl/RecordSet';
 
 /**
@@ -308,6 +309,7 @@ export class Store
     _filtered: RecordSet;
 
     private _dataDefaults = null;
+    private _dataFactory: RecordDataFactory = null;
     _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
@@ -351,6 +353,7 @@ export class Store
         this.validator = new StoreValidator({store: this});
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
+        this._dataFactory = RecordDataFactory.create(this.fields);
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -1202,6 +1205,24 @@ export class Store
     }
 
     private parseRaw(data: PlainObject): PlainObject {
+        // Optimized route - build the complete data object in a single literal, with an own
+        // property (default-valued or parsed) for every Field. Keeps record data objects in V8's
+        // memory/CPU-optimized "fast properties" mode - see RecordDataFactory for background.
+        const {_dataFactory} = this;
+        if (_dataFactory) {
+            const {fields, fieldIndices} = _dataFactory,
+                vals = _dataFactory.cloneDefaults();
+            forIn(data, (raw, name) => {
+                const idx = fieldIndices.get(name);
+                if (idx !== undefined) {
+                    vals[idx] = fields[idx].parseVal(raw);
+                }
+            });
+            return _dataFactory.create(vals);
+        }
+
+        // Legacy sparse route, for wide stores and restricted (no 'unsafe-eval') environments -
+        // defaults held on a shared prototype, own properties for non-default values only.
         // a) create/prepare the data object
         const ret = Object.create(this._dataDefaults);
 
@@ -1221,6 +1242,38 @@ export class Store
     }
 
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
+        // Optimized route - see parseRaw() above. Reads seed values off the existing data object
+        // (own or prototype props) and rebuilds via the factory, preserving the shared shape.
+        const {_dataFactory} = this;
+        if (_dataFactory) {
+            const {fields, fieldIndices} = _dataFactory,
+                len = fields.length,
+                vals = new Array(len);
+
+            // a) seed values from the existing data object
+            for (let idx = 0; idx < len; idx++) {
+                vals[idx] = data[fields[idx].name];
+            }
+
+            // b) apply changes
+            forIn(update, (raw, name) => {
+                const idx = fieldIndices.get(name);
+                if (idx !== undefined) {
+                    vals[idx] = fields[idx].parseVal(raw);
+                }
+            });
+
+            // c) carry over the record id - required for the deep-equal comparisons within
+            // modifyRecords() (no-op detection and revert-to-clean normalization), which run
+            // before the StoreRecord ctor installs the id. Shape-safe post-literal add.
+            const ret = _dataFactory.create(vals);
+            ret.id = data.id;
+            return ret;
+        }
+
+        // Legacy sparse route. Note the `delete` below drops the updated record data object into
+        // V8 dictionary mode, but is required to keep reverted-to-default objects deep-equal to
+        // their committed counterparts (which carry no own property for default values).
         const {_fieldMap} = this;
 
         // a) clone the existing object

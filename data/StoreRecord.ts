@@ -42,10 +42,15 @@ export class StoreRecord {
     /**
      * An object containing the current field values for this record.
      *
-     * Note that this object will only contain explicit 'own' properties for fields that are
-     * not at their default values - default values will be present via the prototype.
+     * For typical stores (up to ~100 fields), this object carries an explicit 'own' property for
+     * every field, with default values filled in - a representation optimized for V8 memory
+     * usage and property-read performance. For stores with very many fields, or in environments
+     * that disallow runtime code generation (strict CSP without 'unsafe-eval'), a sparse
+     * representation is used instead - 'own' properties only for fields that are not at their
+     * default values, with defaults present via the prototype.
      *
-     * Call {@link getValues} for an object providing an explicit enumeration of all field values.
+     * Call {@link getValues} for an object providing an explicit enumeration of all field values
+     * regardless of representation.
      */
     readonly data: PlainObject;
 
