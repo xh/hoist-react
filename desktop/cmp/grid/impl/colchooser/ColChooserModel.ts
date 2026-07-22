@@ -323,11 +323,11 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             run: () => this.syncBuckets()
         });
 
-        // Hide the buckets' per-row visibility action while the library panel is shown.
+        // Repaint the buckets' per-row action cells when the library toggles - they hide their
+        // control while the library is shown (see the action column's displayFn).
         this.addReaction({
             track: () => this.isLibraryShown,
-            run: shown => this.bucketModels.forEach(it => it.setActionColumnVisible(!shown)),
-            fireImmediately: true
+            run: () => this.bucketModels.forEach(it => it.refreshActionColumn())
         });
 
         // Wire cross-grid drag-and-drop whenever the set of mounted participant grids changes.

@@ -86,6 +86,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return {
             ...chooserDragAgOptions,
             suppressGroupRowsSticky: true,
+            // The action column reserves its width permanently (toggled by content, not presence),
+            // so column layout never reflows - suppress ag-grid's slide animation for good measure.
+            suppressColumnMoveAnimation: true,
             isRowValidDropPosition: params => this.getValidDropPosition(params),
             onRowDragEnd: event => this.handleRowDragEnd(event),
             onCellDoubleClicked: event => {
@@ -190,9 +193,12 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         this.loadData(this.buildData(slice), showGroups);
     }
 
-    /** Show or hide this bucket's per-row visibility action column. */
-    setActionColumnVisible(visible: boolean) {
-        this.chooserGridModel.setColumnVisible(actionCol.colId, visible);
+    /**
+     * Force ag-grid to re-render the per-row action cells - their `displayFn` reads the observable
+     * library-shown state, but ag-grid-mounted cells don't reliably repaint on that change.
+     */
+    refreshActionColumn() {
+        this.chooserGridModel.agApi?.refreshCells({columns: [actionCol.colId], force: true});
     }
 
     toggleVisibility(recordIds: Some<StoreRecordId>) {
@@ -743,6 +749,10 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                         {
                             icon: Icon.checkSquare(),
                             displayFn: ({record}) => {
+                                // Columns are hidden by dragging to the library instead - keep the
+                                // column's width to hold layout stable, but render no control.
+                                if (this.parent.isLibraryShown) return {hidden: true};
+
                                 if (!record.data.hideable) {
                                     return {
                                         icon: Icon.lock(),
