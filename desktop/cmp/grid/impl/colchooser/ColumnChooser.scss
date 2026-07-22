@@ -15,12 +15,13 @@
     background-color: var(--xh-bg);
   }
 
-  // Two-line label + helper text within the header "View" popover menu.
-  &__view-item {
-    &__help {
-      font-size: var(--xh-font-size-small-px);
-      color: var(--xh-text-color-muted);
-    }
+  // Minimal display-toggle buttons in the top bar. Active state carries the primary intent from
+  // its `intent: 'primary'`; the neutral (inactive) state is muted gray. Override the button's
+  // neutral text-color var rather than its `color` - the primary state resolves a different var,
+  // so this leaves the active styling untouched while dodging a specificity fight with the
+  // high-specificity Hoist button rules.
+  &__toggle {
+    --xh-button-text-color: var(--xh-gray);
   }
 
   // Smaller/minimal library panel splitter

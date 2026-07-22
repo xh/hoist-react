@@ -12,10 +12,10 @@ import type {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {Icon, IconProps} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {ReactElement} from 'react';
 
 import {ColChooserModel} from './ColChooserModel';
 import './ColumnChooser.scss';
@@ -59,8 +59,8 @@ interface ChooserSectionProps extends HoistProps {
 
 /**
  * Single toolbar spanning the library and the buckets, holding the shared filter control and the
- * "View" menu. Deliberately reads no bucket record state, so it stays stable while filtering or
- * dragging churns the grids below.
+ * minimal display-toggle / restore-defaults buttons. Deliberately reads no bucket record state, so
+ * it stays stable while filtering or dragging churns the grids below.
  */
 const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
     toolbar({
@@ -82,7 +82,28 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
                 matchMode: chooserModel.filterMatchMode,
                 placeholder: 'Filter columns...'
             }),
-            viewMenu({chooserModel})
+            viewToggle({
+                omit: !chooserModel.hasColumnGroups,
+                active: chooserModel.showGroups,
+                icon: Icon.treeList,
+                label: 'Column Groups',
+                onToggle: () => (chooserModel.showGroups = !chooserModel.showGroups)
+            }),
+            viewToggle({
+                omit: !chooserModel.columnLibraryEnabled,
+                active: chooserModel.showLibrary,
+                icon: Icon.books,
+                label: 'Column Library',
+                onToggle: () => (chooserModel.showLibrary = !chooserModel.showLibrary)
+            }),
+            button({
+                omit: !chooserModel.showRestoreDefaults,
+                minimal: true,
+                intent: 'danger',
+                icon: Icon.reset(),
+                tooltip: 'Restore Defaults',
+                onClick: () => chooserModel.restoreDefaultsAsync()
+            })
         ]
     })
 );
@@ -155,19 +176,12 @@ const columnsSeparator = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) 
 });
 
 /**
- * Footer Save/Cancel actions (plus Restore Defaults). Absent when auto-committing. Isolated so its
- * `isDirty` dependency re-renders only these buttons.
+ * Footer Save/Cancel actions. Absent when auto-committing. Isolated so its `isDirty` dependency
+ * re-renders only these buttons.
  */
 const chooserFooter = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => {
     if (chooserModel.commitOnChange) return null;
     return toolbar(
-        button({
-            omit: !chooserModel.showRestoreDefaults,
-            intent: 'danger',
-            icon: Icon.reset(),
-            text: 'Restore Defaults',
-            onClick: () => chooserModel.restoreDefaultsAsync()
-        }),
         filler(),
         button({
             text: 'Cancel',
@@ -186,74 +200,26 @@ const chooserFooter = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => 
     );
 });
 
-interface ViewMenuProps extends HoistProps {
-    chooserModel: ColChooserModel;
-}
-
-/**
- * Header "View" popover consolidating the chooser's display toggles (group tree, column library)
- * with the destructive Restore Defaults action, kept visually separate below a divider. Omitted
- * entirely when none of its items apply.
- */
-const viewMenu = hoistCmp.factory<ViewMenuProps>(({chooserModel}) => {
-    const {hasColumnGroups, columnLibraryEnabled, showRestoreDefaults} = chooserModel,
-        hasToggles = hasColumnGroups || columnLibraryEnabled;
-
-    if (!hasToggles && !showRestoreDefaults) return null;
-
-    return popover({
-        position: 'bottom-right',
-        minimal: true,
-        item: button({
-            icon: Icon.ellipsisVertical()
-        }),
-        content: menu({
-            items: [
-                menuDivider({title: 'Display', omit: !hasToggles}),
-                viewToggle({
-                    omit: !hasColumnGroups,
-                    checked: chooserModel.showGroups,
-                    label: 'Group columns',
-                    help: "Show the grid's group hierarchy as a tree",
-                    onToggle: () => (chooserModel.showGroups = !chooserModel.showGroups)
-                }),
-                viewToggle({
-                    omit: !columnLibraryEnabled,
-                    checked: chooserModel.showLibrary,
-                    label: 'Column library',
-                    help: 'Side panel of hidden columns to drag in',
-                    onToggle: () => (chooserModel.showLibrary = !chooserModel.showLibrary)
-                }),
-                menuDivider({omit: !hasToggles || !showRestoreDefaults}),
-                menuItem({
-                    omit: !showRestoreDefaults,
-                    intent: 'danger',
-                    icon: Icon.reset(),
-                    text: 'Restore Defaults',
-                    onClick: () => chooserModel.restoreDefaultsAsync()
-                })
-            ]
-        })
-    });
-});
-
 interface ViewToggleProps extends HoistProps {
-    checked: boolean;
+    active: boolean;
+    icon: (p?: IconProps) => ReactElement;
     label: string;
-    help: string;
     onToggle: () => void;
 }
 
-const viewToggle = hoistCmp.factory<ViewToggleProps>(({checked, label, help, onToggle}) =>
-    menuItem({
-        // Keep the menu open so multiple toggles can be flipped in a single visit.
-        shouldDismissPopover: false,
-        icon: checked ? Icon.checkSquare({intent: 'primary'}) : Icon.square(),
-        onClick: onToggle,
-        text: div({
-            className: 'xh-column-chooser__view-item',
-            items: [div(label), div({className: 'xh-column-chooser__view-item__help', item: help})]
-        })
+/**
+ * Minimal icon-only display toggle riding the top bar - solid + primary intent when active, thin +
+ * muted gray when not. Tooltip reflects the action it will perform (`Show`/`Hide`) given the current
+ * state.
+ */
+const viewToggle = hoistCmp.factory<ViewToggleProps>(({active, icon, label, onToggle}) =>
+    button({
+        className: 'xh-column-chooser__toggle',
+        minimal: true,
+        intent: active ? 'primary' : null,
+        icon: icon({prefix: active ? 'far' : 'fat'}),
+        tooltip: `${active ? 'Hide' : 'Show'} ${label}`,
+        onClick: onToggle
     })
 );
 
