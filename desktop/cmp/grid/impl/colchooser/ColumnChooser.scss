@@ -43,15 +43,11 @@
     align-items: center;
     gap: var(--xh-pad-half-px);
     flex: none;
-    // Flush to the grid's right edge so the toggle can sit directly over the per-row action column;
-    // the label keeps a small left inset to echo the row content.
+    // Right edge reserves the scrollbar gutter (see below) so the toggle sits over the per-row
+    // action column; the label keeps a small left inset to echo the row content.
     margin: var(--xh-pad-px) 0 var(--xh-pad-half-px);
 
-    padding: 0 var(--xh-pad-half-px);
-
-    &:has(.xh-button) {
-      padding-right: 0;
-    }
+    padding: 0 var(--xh-scrollbar-size-px) 0 var(--xh-pad-half-px);
 
     &__line {
       flex: 1;
@@ -109,6 +105,14 @@
   &__bucket--unpinned {
     flex: 1 1 0 !important;
     min-height: 0;
+
+    // Paired with `alwaysShowVerticalScroll` on this bucket's grid, which reserves the scrollbar
+    // gutter at all times (keeping a stable right edge - see ColumnChooser.ts). That option also
+    // forces the fake scrollbar's track visible; override its viewport back to `auto` so the bar
+    // paints only on real overflow while the reserved gutter width persists - no empty track.
+    .ag-body-vertical-scroll-viewport {
+      overflow-y: auto !important;
+    }
   }
 
   // Keep an empty pinned rail open as a minimal 1-line drop strip (an auto-height grid collapses
@@ -118,6 +122,10 @@
     flex: none !important;
     height: fit-content;
     min-height: 40px;
+
+    // Match the unpinned bucket's reserved scrollbar gutter (these auto-height rails never scroll),
+    // so their action-column checkboxes share the same right edge.
+    padding-right: var(--xh-scrollbar-size-px);
 
     // Override ag-grid's 50px auto-height viewport floor to match our compact drop strip.
     .ag-layout-auto-height .ag-center-cols-viewport {

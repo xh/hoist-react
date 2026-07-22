@@ -233,7 +233,13 @@ const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucketModel: bucket, buck
             empty && bucket.dragOver ? 'xh-column-chooser__bucket--drag-over' : null
         ),
         model: bucket.chooserGridModel,
-        agOptions: pinned ? {...bucket.agOptions, domLayout: 'autoHeight'} : bucket.agOptions,
+        // The unpinned bucket permanently reserves its vertical-scrollbar gutter so its action-column
+        // checkboxes hold the same right edge as the pinned rails and separator toggles whether or not
+        // it overflows (SCSS suppresses the empty track when it doesn't). ag-grid otherwise collapses
+        // that gutter to 0 with no overflow. Pinned rails auto-height and never scroll.
+        agOptions: pinned
+            ? {...bucket.agOptions, domLayout: 'autoHeight'}
+            : {...bucket.agOptions, alwaysShowVerticalScroll: true},
         // Pinned rails size to their (auto-height) grid content; the unpinned bucket flexes.
         flex: pinned ? null : 1
     });
