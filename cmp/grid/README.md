@@ -264,6 +264,45 @@ columns: [
 ]
 ```
 
+### Intent Row & Cell Backgrounds
+
+Hoist ships a selection-aware background palette for grids. Apply one of these classes to a row (via
+`rowClassFn` / `rowClassRules`) or a cell (via `cellClass` / `cellClassRules`) to tint its background
+by intent without clobbering the row-selection highlight:
+
+```
+xh-grid-bg-intent-primary
+xh-grid-bg-intent-success
+xh-grid-bg-intent-warning
+xh-grid-bg-intent-danger
+xh-grid-bg-intent-neutral
+```
+
+Each class shows a subtle tint when unselected and a stronger tint of the same intent when the row is
+selected, so selection and hover keep working. Zebra striping is overridden for tinted rows; standard
+hover still applies. Prefer `rowClassRules` / `cellClassRules` for data that changes across refreshes,
+since they add and remove classes cleanly:
+
+```typescript
+cellClassRules: {
+    'xh-grid-bg-intent-danger': ({data}) => data?.status === 'ERROR',
+    'xh-grid-bg-intent-success': ({data}) => data?.status === 'OK'
+}
+```
+
+This is distinct from the solid, full-saturation `xh-bg-intent-*` utility (white text, for
+banners/badges).
+
+**Customizing.** Each intent resolves through bare CSS-var hooks. To make selected intent rows use the
+standard blue selection color everywhere, set the global hook once (it overrides per-intent hooks):
+
+```scss
+:root { --grid-bg-intent-standard-selection: var(--xh-grid-selected-row-bg); }
+```
+
+Recolor a single slot with `--grid-bg-intent-{intent}` (unselected) or
+`--grid-bg-intent-{intent}-selected` (selected).
+
 ## Column Properties Reference
 
 Every column within a `GridModel` must resolve to a **unique ID**. The `colId` defaults to `field`

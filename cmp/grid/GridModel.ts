@@ -241,12 +241,16 @@ export interface GridConfig {
      * Closure to generate CSS class names for a row.
      * NOTE that, once added, classes will *not* be removed if the data changes.
      * Use `rowClassRules` instead if StoreRecord data can change across refreshes.
+     *
+     * See "Intent Row & Cell Backgrounds" in `cmp/grid/README.md` before styling row backgrounds.
      */
     rowClassFn?: RowClassFn;
 
     /**
      * Object keying CSS class names to functions determining if they should be added or
      * removed from the row. See Ag-Grid docs on "row styles" for details.
+     *
+     * See "Intent Row & Cell Backgrounds" in `cmp/grid/README.md` before styling row backgrounds.
      */
     rowClassRules?: Record<string, RowClassRuleFn>;
 

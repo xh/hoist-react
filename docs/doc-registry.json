@@ -85,7 +85,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Primary data grid built on ag-Grid.",
-            "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
+            "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu", "row background", "cell background", "intent background", "status color", "highlight row"]
         },
         {
             "id": "cmp/form/README.md",

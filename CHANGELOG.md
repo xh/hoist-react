@@ -7,6 +7,11 @@
 * `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
   not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
   ensuring such values render with their proper label rather than falling back to the raw value.
+* Added a selection-aware grid intent background palette. Apply
+  `xh-grid-bg-intent-{primary|success|warning|danger|neutral}` to a row or cell (via
+  `rowClassFn`/`rowClassRules` or `cellClass`/`cellClassRules`) to tint its background by intent while
+  preserving row selection and hover. Colors are themable via `--grid-bg-intent-*` hooks, including a
+  one-line `--grid-bg-intent-standard-selection` override to keep standard blue selection.
 
 ### 🐞 Bug Fixes
 

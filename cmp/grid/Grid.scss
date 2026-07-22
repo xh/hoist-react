@@ -348,6 +348,37 @@
 }
 
 //------------------------
+// Intent background palette
+//------------------------
+// Selection-aware background tints applied to rows/cells via rowClass(Rules)/cellClass(Rules).
+// See cmp/grid/README.md. Wins over zebra striping; standard hover wins over the unselected tint.
+// Distinct from the solid `xh-bg-intent-*` utility in styles/XH.scss.
+$xh-grid-bg-intents: primary, success, warning, danger, neutral;
+
+@each $intent in $xh-grid-bg-intents {
+  // Matches the class on a cell within a row (descendant) or on the row itself (compound) - both at
+  // 3-class specificity so the selected tint reliably beats the core `.ag-row-selected` rule.
+  .xh-ag-grid .ag-row .xh-grid-bg-intent-#{$intent},
+  .xh-ag-grid .ag-row.xh-grid-bg-intent-#{$intent} {
+    // Selected state (row selected, or cell within a selected row).
+    background-color: var(--xh-grid-bg-intent-#{$intent}-selected);
+
+    // Unselected state - guarded for both application sites.
+    &:not(.ag-row-selected):not(.ag-row-selected *) {
+      background-color: var(--xh-grid-bg-intent-#{$intent});
+    }
+  }
+
+  // Standard hover wins over an unselected intent tint, including cell-level application (a cell's
+  // own background otherwise paints over the row-level hover color).
+  .xh-ag-grid--show-hover,
+    .ag-row.ag-row-hover:not(.ag-row-selected):not(.ag-row-pinned),
+    .xh-grid-bg-intent-#{$intent} {
+    background-color: var(--xh-grid-bg-hover);
+  }
+}
+
+//------------------------
 // Tooltips
 //------------------------
 .xh-grid-tooltip {

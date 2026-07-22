@@ -635,6 +635,18 @@ body {
   --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 400px);
   --xh-grid-filter-popover-width-px: var(--grid-filter-popover-width-px, 280px);
 
+  // Grid Intent Backgrounds
+  --xh-grid-bg-intent-primary: var(--grid-bg-intent-primary, var(--xh-intent-primary-trans1));
+  --xh-grid-bg-intent-success: var(--grid-bg-intent-success, var(--xh-intent-success-trans1));
+  --xh-grid-bg-intent-warning: var(--grid-bg-intent-warning, var(--xh-intent-warning-trans1));
+  --xh-grid-bg-intent-danger: var(--grid-bg-intent-danger, var(--xh-intent-danger-trans1));
+  --xh-grid-bg-intent-neutral: var(--grid-bg-intent-neutral, var(--xh-intent-neutral-trans1));
+  --xh-grid-bg-intent-primary-selected: var(--grid-bg-intent-standard-selection, var(--grid-bg-intent-primary-selected, var(--xh-intent-primary-trans2)));
+  --xh-grid-bg-intent-success-selected: var(--grid-bg-intent-standard-selection, var(--grid-bg-intent-success-selected, var(--xh-intent-success-trans2)));
+  --xh-grid-bg-intent-warning-selected: var(--grid-bg-intent-standard-selection, var(--grid-bg-intent-warning-selected, var(--xh-intent-warning-trans2)));
+  --xh-grid-bg-intent-danger-selected: var(--grid-bg-intent-standard-selection, var(--grid-bg-intent-danger-selected, var(--xh-intent-danger-trans2)));
+  --xh-grid-bg-intent-neutral-selected: var(--grid-bg-intent-standard-selection, var(--grid-bg-intent-neutral-selected, var(--xh-intent-neutral-trans2)));
+
   // Dark Grid
   &.xh-dark {
     --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 22%));
