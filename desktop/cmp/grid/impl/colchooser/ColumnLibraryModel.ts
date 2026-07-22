@@ -8,6 +8,7 @@ import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {makeObservable} from '@xh/hoist/mobx';
+import {isEmpty} from 'lodash';
 
 import type {ColChooserModel} from './ColChooserModel';
 import {
@@ -103,8 +104,20 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         this.parent.applyState(newState);
     }
 
-    getCrossBucketDropIcon(): string {
-        return 'hide';
+    getCrossBucketDropIcon(draggingEvent: any): string {
+        const {targetGridModel} = this,
+            dragItem = draggingEvent?.dragItem,
+            nodes = dragItem?.rowNodes?.length
+                ? dragItem.rowNodes
+                : dragItem?.rowNode
+                  ? [dragItem.rowNode]
+                  : [],
+            leafColIds: string[] = nodes.flatMap((n: any) => getChooserData(n)?.leafColIds ?? []);
+
+        // Refuse a drag with no hideable leaf - dropping it here would be a no-op. A partially
+        // hideable group is still allowed, hiding only its hideable leaves (see handleCrossBucketDrop).
+        if (isEmpty(leafColIds)) return 'hide';
+        return leafColIds.some(id => targetGridModel.isColumnHideable(id)) ? 'hide' : 'notAllowed';
     }
 
     //-----------------

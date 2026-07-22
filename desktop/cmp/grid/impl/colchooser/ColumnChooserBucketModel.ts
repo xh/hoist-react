@@ -749,16 +749,19 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                         {
                             icon: Icon.checkSquare(),
                             displayFn: ({record}) => {
-                                // Columns are hidden by dragging to the library instead - keep the
-                                // column's width to hold layout stable, but render no control.
-                                if (this.parent.isLibraryShown) return {hidden: true};
-
+                                // Non-hideable columns always show a static lock - including in
+                                // library mode, where the grip stays live for reorder/re-pin but a
+                                // drop onto the library can't hide them (see ColumnLibraryModel).
                                 if (!record.data.hideable) {
                                     return {
                                         icon: Icon.lock(),
                                         disabled: true
                                     };
                                 }
+
+                                // Hideable columns are hidden by dragging to the library instead -
+                                // keep the column's width to hold layout stable, but render no control.
+                                if (this.parent.isLibraryShown) return {hidden: true};
 
                                 const {visible} = record.data;
                                 if (visible === null) {
