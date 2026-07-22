@@ -9,7 +9,7 @@ import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsMo
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import type {FilterMatchMode} from '@xh/hoist/data';
+import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -52,6 +52,16 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     // Stable config, deliberately not observable - toggled at runtime via the observable
     // `showLibrary`, not this config.
     columnLibraryEnabled: boolean;
+
+    //-----------------
+    // Filter state
+    //-----------------
+    /**
+     * Raw text of the single filter control (shared across all grids). Bound directly by the
+     * StoreFilterField; the derived match predicate is pushed to every grid store via
+     * {@link applyFilterTestFn}.
+     */
+    @bindable filterText: string = null;
 
     //-----------------
     // Sub-models (one grid each)
@@ -128,6 +138,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     close() {
         this.hide();
         this.discardPending();
+        this.clearFilter();
     }
 
     /** Show the chooser if hidden, hide it if shown. */
@@ -161,6 +172,53 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         return this.columnLibraryEnabled
             ? [...this.bucketModels, this.libraryModel]
             : this.bucketModels;
+    }
+
+    /**
+     * Store bound to the shared filter control - used only for field inference (and to suppress the
+     * control's fallback GridModel context-lookup, which would otherwise latch onto the target grid).
+     * The derived predicate is applied to every grid via {@link applyFilterTestFn}. Prefer the library
+     * store when present - it carries `chooserGroup` on top of `name`/`description`.
+     */
+    get filterFieldStore(): Store {
+        return this.columnLibraryEnabled
+            ? this.libraryModel.chooserGridModel.store
+            : this.unpinnedBucketModel.chooserGridModel.store;
+    }
+
+    /** Grid models with a filterable store - the buckets, plus the library if enabled. */
+    private get filterableGridModels(): GridModel[] {
+        const models = this.bucketModels.map(b => b.chooserGridModel);
+        if (this.columnLibraryEnabled) models.push(this.libraryModel.chooserGridModel);
+        return models;
+    }
+
+    /**
+     * Leaf colIds currently rendered across the three bucket grids - respecting both routing to the
+     * Column Library (the `showHidden` case) and any active Store filter. Backs the `isDisplayed`
+     * predicate the drop engine consumes, so drag-and-drop resolves against what the user can see.
+     */
+    get displayedLeafColIds(): Set<string> {
+        const ids = new Set<string>();
+        this.bucketModels.forEach(b =>
+            b.chooserGridModel.store.records.forEach(rec => {
+                if (!rec.data.isGroup) ids.add(rec.id as string);
+            })
+        );
+        return ids;
+    }
+
+    /** Apply the shared match predicate (or clear it) across every present grid store. */
+    applyFilterTestFn(testFn: FilterTestFn | null) {
+        const filter = testFn ? {key: 'default', testFn} : null;
+        this.filterableGridModels.forEach(gm => gm.store.setFilter(filter));
+    }
+
+    /** Clear the filter text and remove the filter from every grid store. */
+    @action
+    clearFilter() {
+        this.filterText = null;
+        this.applyFilterTestFn(null);
     }
 
     /**

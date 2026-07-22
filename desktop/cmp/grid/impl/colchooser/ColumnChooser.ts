@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
+import type {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -35,108 +35,155 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
     model: uses(ColChooserModel),
 
     render({model, className, ...props}) {
-        const [layoutProps] = splitLayoutProps(props),
-            {commitOnChange, filterMatchMode, columnPinningEnabled} = model,
-            {leftBucketModel, unpinnedBucketModel, rightBucketModel} = model,
-            leftHasCols = columnPinningEnabled && leftBucketModel.columnCount > 0,
-            rightHasCols = columnPinningEnabled && rightBucketModel.columnCount > 0,
-            // The free-floating "Columns" zone only needs a label when a populated pinned zone sits
-            // beside it - with both pinned rails empty there are no adjacent zones to tell it apart.
-            showColumnsLabel = leftHasCols || rightHasCols;
-
+        const [layoutProps] = splitLayoutProps(props);
+        // The root reads no frequently-changing observables, so it renders once. Each section below
+        // is its own observer and re-renders only when the observables it reads change - keeping the
+        // record/filter churn (which re-renders the bucket zones) out of the toolbar and footer. The
+        // Blueprint filter input in particular self-measures its width and will loop if it is pulled
+        // into a re-render while the buckets below it are reflowing.
         return vframe({
             className,
             ...layoutProps,
             items: [
-                hframe({
-                    items: [
-                        columnLibraryPanel({
-                            chooserModel: model,
-                            omit: !model.isLibraryShown
-                        }),
-                        vbox({
-                            flex: 1,
-                            items: [
-                                toolbar({
-                                    className: 'xh-column-chooser__tbar',
-                                    items: [
-                                        gridFindField({
-                                            flex: 1,
-                                            gridModel: unpinnedBucketModel.chooserGridModel,
-                                            matchMode: filterMatchMode,
-                                            placeholder: 'Find Columns'
-                                        }),
-                                        viewMenu({chooserModel: model})
-                                    ]
-                                }),
-                                bucketSeparator({
-                                    chooserModel: model,
-                                    bucket: leftBucketModel,
-                                    variant: 'left',
-                                    omit: !leftHasCols
-                                }),
-                                bucketGrid({
-                                    bucketModel: leftBucketModel,
-                                    bucket: 'left',
-                                    omit: !columnPinningEnabled
-                                }),
-                                bucketSeparator({
-                                    chooserModel: model,
-                                    bucket: unpinnedBucketModel,
-                                    variant: 'unpinned',
-                                    omit: !showColumnsLabel
-                                }),
-                                bucketGrid({
-                                    bucketModel: unpinnedBucketModel,
-                                    bucket: 'unpinned'
-                                }),
-                                bucketSeparator({
-                                    chooserModel: model,
-                                    bucket: rightBucketModel,
-                                    variant: 'right',
-                                    omit: !rightHasCols
-                                }),
-                                bucketGrid({
-                                    bucketModel: rightBucketModel,
-                                    bucket: 'right',
-                                    omit: !columnPinningEnabled
-                                })
-                            ]
-                        })
-                    ]
-                }),
-                toolbar({
-                    // Footer carries only the primary Save/Cancel actions - view toggles and
-                    // Restore Defaults live in the header "View" menu. Empty when auto-committing.
-                    omit: commitOnChange,
-                    items: [
-                        button({
-                            omit: !model.showRestoreDefaults,
-                            intent: 'danger',
-                            icon: Icon.reset(),
-                            text: 'Restore Defaults',
-                            onClick: () => model.restoreDefaultsAsync()
-                        }),
-                        filler(),
-                        button({
-                            text: 'Cancel',
-                            onClick: () => model.close()
-                        }),
-                        button({
-                            text: 'Save',
-                            icon: Icon.check(),
-                            intent: 'success',
-                            disabled: !model.isDirty,
-                            onClick: () => {
-                                model.commitPendingAsync();
-                                model.close();
-                            }
-                        })
-                    ]
-                })
+                chooserTopBar({chooserModel: model}),
+                chooserBody({chooserModel: model}),
+                chooserFooter({chooserModel: model})
             ]
         });
     }
+});
+
+interface ChooserSectionProps extends HoistProps {
+    chooserModel: ColChooserModel;
+}
+
+/**
+ * Single toolbar spanning the library and the buckets, holding the shared filter control and the
+ * "View" menu. Deliberately reads no bucket record state, so it stays stable while filtering or
+ * dragging churns the grids below.
+ */
+const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
+    toolbar({
+        className: 'xh-column-chooser__tbar',
+        items: [
+            storeFilterField({
+                flex: 1,
+                model: chooserModel,
+                bind: 'filterText',
+                // Bind a real store only to infer fields + suppress the control's fallback GridModel
+                // context-lookup; the predicate is applied to every grid via applyFilterTestFn.
+                store: chooserModel.filterFieldStore,
+                autoApply: false,
+                onFilterChange: (fn: FilterTestFn) => chooserModel.applyFilterTestFn(fn),
+                // Match only fields shown in the grids - name (buckets + library) and the library's
+                // chooserGroup header. Description is a bucket tooltip only, so matching it would
+                // surface rows on text the user can't see.
+                includeFields: ['name', 'chooserGroup'],
+                matchMode: chooserModel.filterMatchMode,
+                placeholder: 'Filter columns...'
+            }),
+            viewMenu({chooserModel})
+        ]
+    })
+);
+
+/** Library panel (when shown) beside the stack of bucket zones. */
+const chooserBody = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
+    hframe(columnLibraryPanel({chooserModel}), bucketStack({chooserModel}))
+);
+
+/**
+ * The bucket zones in master order: pinned-left, the unpinned "Columns" divider + grid, pinned-right.
+ * Holds no observable state of its own - each zone re-renders independently off its own bucket.
+ */
+const bucketStack = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
+    vbox({
+        flex: 1,
+        items: [
+            pinnedBucketZone({chooserModel, bucket: chooserModel.leftBucketModel, variant: 'left'}),
+            columnsSeparator({chooserModel}),
+            bucketGrid({bucketModel: chooserModel.unpinnedBucketModel, bucket: 'unpinned'}),
+            pinnedBucketZone({
+                chooserModel,
+                bucket: chooserModel.rightBucketModel,
+                variant: 'right'
+            })
+        ]
+    })
+);
+
+interface PinnedBucketZoneProps extends ChooserSectionProps {
+    bucket: ColumnChooserBucketModel;
+    variant: 'left' | 'right';
+}
+
+/**
+ * A pinned rail: its zone separator (shown only when the rail holds rendered columns) above its
+ * grid, emitted as siblings so both stay direct flex children of the stack. Scoped to a single
+ * bucket's `columnCount`, so only this rail re-renders when its own membership changes - and it
+ * collapses to a bare drop strip (no separator) when filtered empty, like a genuinely empty rail.
+ * Omitted entirely when column pinning is disabled.
+ */
+const pinnedBucketZone = hoistCmp.factory<PinnedBucketZoneProps>(
+    ({chooserModel, bucket, variant}) => {
+        if (!chooserModel.columnPinningEnabled) return null;
+        return fragment(
+            bucketSeparator({chooserModel, bucket, variant, omit: bucket.columnCount === 0}),
+            bucketGrid({bucketModel: bucket, bucket: variant})
+        );
+    }
+);
+
+/**
+ * The unpinned "Columns" zone divider, split out from the unpinned grid so its cross-bucket read
+ * (does either pinned rail hold columns?) re-renders only this hairline, never the grid. Shown only
+ * when a populated pinned zone sits beside it - with both rails empty there are no adjacent zones to
+ * tell it apart.
+ */
+const columnsSeparator = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => {
+    const {columnPinningEnabled, leftBucketModel, rightBucketModel} = chooserModel,
+        show =
+            columnPinningEnabled &&
+            (leftBucketModel.columnCount > 0 || rightBucketModel.columnCount > 0);
+    return show
+        ? bucketSeparator({
+              chooserModel,
+              bucket: chooserModel.unpinnedBucketModel,
+              variant: 'unpinned'
+          })
+        : null;
+});
+
+/**
+ * Footer Save/Cancel actions (plus Restore Defaults). Absent when auto-committing. Isolated so its
+ * `isDirty` dependency re-renders only these buttons.
+ */
+const chooserFooter = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => {
+    if (chooserModel.commitOnChange) return null;
+    return toolbar(
+        button({
+            omit: !chooserModel.showRestoreDefaults,
+            intent: 'danger',
+            icon: Icon.reset(),
+            text: 'Restore Defaults',
+            onClick: () => chooserModel.restoreDefaultsAsync()
+        }),
+        filler(),
+        button({
+            text: 'Cancel',
+            onClick: () => chooserModel.close()
+        }),
+        button({
+            text: 'Save',
+            icon: Icon.check(),
+            intent: 'success',
+            disabled: !chooserModel.isDirty,
+            onClick: () => {
+                chooserModel.commitPendingAsync();
+                chooserModel.close();
+            }
+        })
+    );
 });
 
 interface ViewMenuProps extends HoistProps {
@@ -318,8 +365,9 @@ interface ColumnLibraryPanelProps extends HoistProps {
     chooserModel: ColChooserModel;
 }
 
-const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({chooserModel}) =>
-    panel({
+const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({chooserModel}) => {
+    if (!chooserModel.isLibraryShown) return null;
+    return panel({
         className: 'xh-column-chooser__library',
         modelConfig: {
             side: 'left',
@@ -328,19 +376,10 @@ const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({chooserMo
             collapsible: false,
             resizable: true
         },
-        tbar: toolbar(
-            storeFilterField({
-                flex: 1,
-                gridModel: chooserModel.libraryModel.chooserGridModel,
-                includeFields: ['name', 'description', 'chooserGroup'],
-                matchMode: chooserModel.filterMatchMode,
-                placeholder: 'Filter Columns...'
-            })
-        ),
         item: grid({
             className: 'xh-column-chooser__bucket xh-column-chooser__library-grid',
             model: chooserModel.libraryModel.chooserGridModel,
             agOptions: chooserModel.libraryModel.agOptions
         })
-    })
-);
+    });
+});

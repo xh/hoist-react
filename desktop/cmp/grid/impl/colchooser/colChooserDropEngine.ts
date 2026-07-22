@@ -35,7 +35,12 @@ export interface ResolveDropInput {
     chainOf: ChainOf;
     /** The target (drop) bucket. */
     side: HSide | null;
-    showHidden: boolean;
+    /**
+     * True if a leaf colId is currently rendered in its bucket. Unifies the two ways a column can be
+     * absent from a bucket's rendered rows: routed to the Column Library (the old `showHidden` case)
+     * or excluded by an active Store filter. Derived from each bucket store's `records`.
+     */
+    isDisplayed: (colId: string) => boolean;
     lockColumnGroups: boolean;
     /** Leaf colIds under the dragged row(s). */
     movingLeafColIds: string[];
@@ -61,7 +66,7 @@ export function resolveDrop(input: ResolveDropInput): {
         master,
         chainOf,
         side: pinned,
-        showHidden,
+        isDisplayed,
         lockColumnGroups,
         movingLeafColIds,
         dragUnitGroupId,
@@ -104,7 +109,7 @@ export function resolveDrop(input: ResolveDropInput): {
         dragLeaf,
         dragUnitGroupId,
         pinned,
-        showHidden,
+        isDisplayed,
         L,
         chainOf
     );
@@ -129,18 +134,19 @@ export function resolveDrop(input: ResolveDropInput): {
 /**
  * True if committing `candidate` would leave the chooser visually unchanged (spec §5A Rule B): the
  * rendered column sequence of every bucket - left, unpinned, right - is identical, each compared
- * independently. Hidden columns are excluded when showHidden is off. Comparing per bucket (not the
- * interleaved master) is essential: a pinned column reordering relative to an unpinned one in master
- * is invisible - separate rails - so it counts as a no-op and never commits a churn (see C-N1/C-GR).
+ * independently. Non-displayed columns (routed to the library or filtered out) are excluded via
+ * `isDisplayed`. Comparing per bucket (not the interleaved master) is essential: a pinned column
+ * reordering relative to an unpinned one in master is invisible - separate rails - so it counts as a
+ * no-op and never commits a churn (see C-N1/C-GR).
  */
 export function isNoOpDrop(
     candidate: ColumnState[],
     current: ColumnState[],
-    showHidden: boolean
+    isDisplayed: (colId: string) => boolean
 ): boolean {
     const view = (st: ColumnState[], side: HSide | null) =>
         st
-            .filter(cs => (cs.pinned ?? null) === side && (showHidden || !cs.hidden))
+            .filter(cs => (cs.pinned ?? null) === side && isDisplayed(cs.colId))
             .map(cs => cs.colId)
             .join('|');
     return ([null, 'left', 'right'] as (HSide | null)[]).every(
@@ -190,7 +196,7 @@ function spliceMove(
             master,
             chainOf,
             side: pinned,
-            showHidden,
+            isDisplayed,
             lockColumnGroups,
             position,
             makeVisible = false
@@ -212,7 +218,7 @@ function spliceMove(
                   target,
                   position,
                   pinned,
-                  showHidden,
+                  isDisplayed,
                   dragChain,
                   chainOf
               )
@@ -250,12 +256,12 @@ function groupLeafIds(state: ColumnState[], groupId: string, chainOf: ChainOf): 
     return state.filter(cs => chainOf(cs.colId).includes(groupId)).map(cs => cs.colId);
 }
 
-/** True if `groupId` has a rendered member in the given bucket (respecting showHidden), excluding L. */
+/** True if `groupId` has a displayed member in the given bucket (respecting filter/routing), excluding L. */
 function groupRenderedInBucket(
     state: ColumnState[],
     groupId: string,
     side: HSide | null,
-    showHidden: boolean,
+    isDisplayed: (colId: string) => boolean,
     L: Set<string>,
     chainOf: ChainOf
 ): boolean {
@@ -263,7 +269,7 @@ function groupRenderedInBucket(
         cs =>
             !L.has(cs.colId) &&
             (cs.pinned ?? null) === side &&
-            (showHidden || !cs.hidden) &&
+            isDisplayed(cs.colId) &&
             chainOf(cs.colId).includes(groupId)
     );
 }
@@ -290,13 +296,13 @@ function renderedAncestor(
     dragLeaf: string,
     dragUnitGroupId: string | null,
     side: HSide | null,
-    showHidden: boolean,
+    isDisplayed: (colId: string) => boolean,
     L: Set<string>,
     chainOf: ChainOf
 ): string | null {
     const chain = chainOf(dragLeaf);
     for (let d = unitDepth(dragLeaf, dragUnitGroupId, chainOf) - 1; d >= 0; d--) {
-        if (groupRenderedInBucket(state, chain[d], side, showHidden, L, chainOf)) return chain[d];
+        if (groupRenderedInBucket(state, chain[d], side, isDisplayed, L, chainOf)) return chain[d];
     }
     return null;
 }
@@ -339,12 +345,11 @@ function viewInsertionIndex(
     target: DropTarget,
     position: RowDropTargetPosition,
     side: HSide | null,
-    showHidden: boolean,
+    isDisplayed: (colId: string) => boolean,
     dragChain: Set<string>,
     chainOf: ChainOf
 ): number {
-    const isRendered = (cs: ColumnState) =>
-            (cs.pinned ?? null) === side && (showHidden || !cs.hidden),
+    const isRendered = (cs: ColumnState) => (cs.pinned ?? null) === side && isDisplayed(cs.colId),
         runStart = (g: string) => remaining.findIndex(cs => chainOf(cs.colId).includes(g)),
         runEnd = (g: string) => findLastIndex(remaining, cs => chainOf(cs.colId).includes(g)) + 1,
         idxOf = (colId: string) => remaining.findIndex(cs => cs.colId === colId);

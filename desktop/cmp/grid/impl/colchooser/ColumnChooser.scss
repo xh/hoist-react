@@ -23,13 +23,6 @@
     }
   }
 
-  // Left-docked panel listing hidden columns, grouped by chooserGroup.
-  &__library {
-    .xh-toolbar {
-      background-color: var(--xh-bg);
-    }
-  }
-
   // Smaller/minimal library panel splitter
   .xh-resizable-splitter.horizontal {
     width: 2px;

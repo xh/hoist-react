@@ -118,12 +118,26 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned);
     }
 
-    /** Hideable leaf columns in this bucket - the columns the header "toggle all" control acts on. */
+    /**
+     * Leaf colIds currently rendered in this bucket's grid - the rows the user can actually see. Both
+     * routing to the Column Library (showHidden) and any active Store filter narrow `store.records`,
+     * so every visibility control scopes to this and never counts or toggles an out-of-view column.
+     */
+    private get renderedLeafIds(): Set<string> {
+        const ids = new Set<string>();
+        this.chooserGridModel.store.records.forEach(rec => {
+            if (!rec.data.isGroup) ids.add(rec.id as string);
+        });
+        return ids;
+    }
+
+    /** Rendered hideable leaf columns - the columns the "toggle all" control acts on. */
     private get hideableLeaves(): ColumnState[] {
-        const {targetGridModel: gridModel} = this;
+        const {targetGridModel: gridModel} = this,
+            rendered = this.renderedLeafIds;
         return this.slice.filter(cs => {
             const col = gridModel.getColumn(cs.colId);
-            return col && !col.excludeFromChooser && col.hideable;
+            return rendered.has(cs.colId) && col && !col.excludeFromChooser && col.hideable;
         });
     }
 
@@ -133,18 +147,13 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     }
 
     /**
-     * Count of this bucket's leaf columns as actually DISPLAYED - for the header badge and the
-     * view's empty-rail detection. Excludes chooser-excluded columns, and (when hidden columns are
-     * routed to the Column Library instead of shown inline) hidden ones too, so the count matches the
-     * rows rendered rather than over-counting library-resident columns.
+     * Count of this bucket's leaf columns as actually rendered - backs the view's empty-rail
+     * detection. Reflects routing to the Column Library (showHidden) and any active filter, so a
+     * pinned rail whose columns are all filtered out reads as empty - no separator, collapsed drop
+     * strip - exactly like a genuinely empty one.
      */
     get columnCount(): number {
-        const {targetGridModel: gridModel} = this,
-            {showHidden} = this.parent;
-        return this.slice.filter(cs => {
-            const col = gridModel.getColumn(cs.colId);
-            return col && !col.excludeFromChooser && (showHidden || !cs.hidden);
-        }).length;
+        return this.renderedLeafIds.size;
     }
 
     /** Bucket-scoped aggregate visibility over hideable leaves: true (all) / false (none) / null (mixed). */
@@ -189,6 +198,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     toggleVisibility(recordIds: Some<StoreRecordId>) {
         const {targetGridModel: gridModel} = this,
             {store} = this.chooserGridModel,
+            rendered = this.renderedLeafIds,
             updates: Partial<ColumnState>[] = [];
 
         castArray(recordIds).forEach(id => {
@@ -198,6 +208,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             // Hide when fully or partially visible (true/null); show when fully hidden (false)
             const hidden = record.data.visible !== false;
             record.data.leafColIds.forEach((colId: string) => {
+                // Only act on leaves rendered in this bucket - a group toggle under an active filter
+                // must not flip the visibility of columns the user can't currently see.
+                if (!rendered.has(colId)) return;
                 // A group's aggregate hideable can be true while it contains a locked leaf - never
                 // hide such a leaf. Showing it is a no-op (a non-hideable column stays visible).
                 if (hidden && !gridModel.isColumnHideable(colId)) return;
@@ -533,11 +546,12 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ): {allowed: boolean; state: ColumnState[] | null} {
+        const displayed = this.parent.displayedLeafColIds;
         return resolveDropEngine({
             master: this.parent.currentState,
             chainOf: colId => (this.parentChainMap.get(colId) ?? []).map(g => g.groupId),
             side: this.pinned,
-            showHidden: this.parent.showHidden,
+            isDisplayed: id => displayed.has(id),
             lockColumnGroups: this.targetGridModel.lockColumnGroups,
             movingLeafColIds,
             dragUnitGroupId,
@@ -582,7 +596,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
     /** True if committing `state` leaves every bucket's rendered view unchanged (spec §5A Rule B). */
     private isNoOpDrop(state: ColumnState[]): boolean {
-        return isNoOpDropEngine(state, this.parent.currentState, this.parent.showHidden);
+        const displayed = this.parent.displayedLeafColIds;
+        return isNoOpDropEngine(state, this.parent.currentState, id => displayed.has(id));
     }
 
     /**
@@ -618,7 +633,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         for (let i = startIdx; i < bucket.length; i++) {
             const {colId} = bucket[i];
             if (movingIds.has(colId)) continue;
-            if (store.getById(colId)) {
+            // respectFilter: a filtered-out row has no ag-grid line, so it's not a valid anchor.
+            if (store.getById(colId, true)) {
                 followingColId = colId;
                 break;
             }
@@ -648,10 +664,10 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     private getGroupBoundaryRecord(colId: string, dragGroupIds: Set<string>): StoreRecord {
         const {store} = this.chooserGridModel,
             chain = this.parentChainMap.get(colId) ?? [];
-        let rec = store.getById(colId),
+        let rec = store.getById(colId, true),
             depth = chain.length - 1; // innermost group enclosing colId; climbs outward
         while (rec?.data.parentId && depth >= 0) {
-            const parent = store.getById(rec.data.parentId);
+            const parent = store.getById(rec.data.parentId, true);
             if (!parent || parent.data.leafColIds[0] !== colId) break;
             if (dragGroupIds.has(chain[depth].groupId)) break;
             rec = parent;
@@ -699,6 +715,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 }
             },
             store: {
+                // Matching a group header reveals its columns (leaf->ancestor is automatic).
+                filterIncludesChildren: true,
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'description', type: 'string'},
