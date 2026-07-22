@@ -38,9 +38,23 @@ export class LeafRow extends BaseRow {
         this.data.cubeLabel = rawRecord.id.toString();
         this.data.cubeDimension = null;
 
-        view.fields.forEach(({name}) => {
-            this.data[name] = rawRecord.data[name];
-        });
+        // Install field values via compiled assigner when available, keeping this data object in
+        // V8 fast-properties mode - see RecordDataFactory.createAssigner.
+        const {_rowDataAssigner} = view;
+        if (_rowDataAssigner) {
+            const {fields} = view,
+                len = fields.length,
+                vals = new Array(len),
+                recData = rawRecord.data;
+            for (let i = 0; i < len; i++) {
+                vals[i] = recData[fields[i].name];
+            }
+            _rowDataAssigner(this.data, vals);
+        } else {
+            view.fields.forEach(({name}) => {
+                this.data[name] = rawRecord.data[name];
+            });
+        }
     }
 
     applyLeafDataUpdate(newRec: StoreRecord, updatedRowDatas: Set<PlainObject>) {

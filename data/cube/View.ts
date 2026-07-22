@@ -21,6 +21,7 @@ import {
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
+import {RecordDataAssigner, RecordDataFactory} from '@xh/hoist/data/impl/RecordDataFactory';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
@@ -131,6 +132,9 @@ export class View
     private _bucketDependentFields = new Set<string>();
     _aggContext: AggregationContext = null;
     _rowCache: Map<string, BaseRow> = null;
+    // Compiled per-query assigner keeping ViewRowData objects in V8 fast-properties mode, or
+    // null to use legacy keyed-assignment loops - see RecordDataFactory.createAssigner.
+    _rowDataAssigner: RecordDataAssigner = null;
 
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
@@ -140,6 +144,7 @@ export class View
         const {query, stores = [], connect = false} = config;
 
         this.query = query;
+        this._rowDataAssigner = this.createRowDataAssigner();
         this.stores = this.parseStores(stores);
         this._rowCache = new Map();
         this.fullUpdate();
@@ -201,6 +206,7 @@ export class View
         if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
+        this._rowDataAssigner = this.createRowDataAssigner();
 
         // If the cube is changing then we need to clear the row cache, and potentially disconnect
         // from the old cube and connect to the new one
@@ -516,6 +522,10 @@ export class View
         }
 
         return false;
+    }
+
+    private createRowDataAssigner(): RecordDataAssigner {
+        return RecordDataFactory.createAssigner(this.query.fields.map(it => it.name));
     }
 
     private cachedRow<T extends BaseRow>(id: string, children: BaseRow[], fn: () => T): T {

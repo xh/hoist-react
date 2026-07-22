@@ -23,6 +23,10 @@
   (defaults included) on the optimized path - apps relying on `Object.keys(record.data)` or
   spread/`JSON.stringify` of `data` returning only non-default fields should use
   `record.getModifiedValues()` or `record.getValues()` as appropriate instead.
+* Applied the same optimization to Cube `View` row data - `ViewRowData` objects (leaf and
+  aggregate rows) are now populated via a per-View compiled assigner, measured ~5-6x smaller at
+  typical view widths (more than ~20 fields), with faster row generation and aggregation reads.
+  Views with very many fields and strict-CSP environments continue to use the prior route.
 
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js

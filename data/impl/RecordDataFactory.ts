@@ -86,6 +86,35 @@ export class RecordDataFactory {
         return new RecordDataFactory(fields);
     }
 
+    /**
+     * Compile an assigner that installs the given field names onto a target object via
+     * constant-key (named) property stores - `(target, values) => void`, with `values` in
+     * `fieldNames` order.
+     *
+     * Unlike dynamic keyed-store loops (`obj[name] = val`), named stores are exempt from V8's
+     * fast-properties limit on dynamically-added properties, so objects populated this way remain
+     * in fast mode with a hidden class shared across all identically-shaped instances. Used by
+     * Cube `View` to build `ViewRowData` row objects, which take their field properties
+     * post-construction and cannot use the literal-factory route above.
+     *
+     * Returns null under the same conditions as {@link create} - caller should fall back to its
+     * legacy assignment loop.
+     */
+    static createAssigner(fieldNames: string[]): RecordDataAssigner {
+        if (
+            !RecordDataFactory.enabled ||
+            fieldNames.length > RecordDataFactory.MAX_FACTORY_FIELDS ||
+            fieldNames.includes('__proto__') ||
+            !isCodegenSupported()
+        ) {
+            return null;
+        }
+        const body = fieldNames
+            .map((name, idx) => `t[${JSON.stringify(name)}]=v[${idx}];`)
+            .join('');
+        return new Function('t', 'v', body) as RecordDataAssigner;
+    }
+
     /** Array of per-field default values, in slot order - clone to seed a values array. */
     cloneDefaults(): any[] {
         return this.defaults.slice();
@@ -113,6 +142,9 @@ export class RecordDataFactory {
         this.createFn = new Function('v', body) as (values: any[]) => PlainObject;
     }
 }
+
+/** Assigner function compiled by {@link RecordDataFactory.createAssigner}. @internal */
+export type RecordDataAssigner = (target: PlainObject, values: any[]) => void;
 
 //------------------------
 // Implementation

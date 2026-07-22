@@ -142,28 +142,60 @@ export abstract class BaseRow {
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        view.fields.forEach(({name}) => (data[name] = null));
-        Object.assign(data, appliedDimensions);
-
-        this.canAggregate = reduce(
-            view.fields,
-            (ret, field) => {
-                const {name} = field;
+        // Install field values (and the parallel canAggregate flags) via compiled assigner when
+        // available, keeping these objects in V8 fast-properties mode - see
+        // RecordDataFactory.createAssigner.
+        const {_rowDataAssigner} = view;
+        if (_rowDataAssigner) {
+            const {fields} = view,
+                ctx = view._aggContext,
+                len = fields.length,
+                dataVals = new Array(len),
+                canAggVals = new Array(len);
+            for (let i = 0; i < len; i++) {
+                const field = fields[i],
+                    {name} = field;
                 if (appliedDimensions.hasOwnProperty(name)) {
-                    ret[name] = false;
+                    dataVals[i] = appliedDimensions[name];
+                    canAggVals[i] = false;
                 } else {
-                    const {aggregator, canAggregateFn} = field,
-                        ctx = view._aggContext;
-
-                    ret[name] =
+                    const {aggregator, canAggregateFn} = field;
+                    dataVals[i] = null;
+                    canAggVals[i] = !!(
                         aggregator &&
                         (!canAggregateFn ||
-                            canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
+                            canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx))
+                    );
                 }
-                return ret;
-            },
-            {}
-        );
+            }
+            _rowDataAssigner(data, dataVals);
+            const canAggregate = {};
+            _rowDataAssigner(canAggregate, canAggVals);
+            this.canAggregate = canAggregate;
+        } else {
+            view.fields.forEach(({name}) => (data[name] = null));
+            Object.assign(data, appliedDimensions);
+
+            this.canAggregate = reduce(
+                view.fields,
+                (ret, field) => {
+                    const {name} = field;
+                    if (appliedDimensions.hasOwnProperty(name)) {
+                        ret[name] = false;
+                    } else {
+                        const {aggregator, canAggregateFn} = field,
+                            ctx = view._aggContext;
+
+                        ret[name] =
+                            aggregator &&
+                            (!canAggregateFn ||
+                                canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
+                    }
+                    return ret;
+                },
+                {}
+            );
+        }
 
         this.computeAggregates();
     }
