@@ -101,6 +101,7 @@ const store = new Store({
 | `loadRootAsSummary` | `boolean` | `false` | Treat root node as summary record                                                      |
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
 | `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
+| `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 

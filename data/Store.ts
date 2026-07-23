@@ -147,6 +147,17 @@ export interface StoreConfig {
     reuseRecords?: boolean;
 
     /**
+     * True (default) to have each StoreRecord retain a reference to the raw data object from
+     * which it was created, exposed as `StoreRecord.raw`. May be set to false to reduce memory
+     * usage on large stores - raw data objects are then eligible for garbage collection after
+     * parsing, and `StoreRecord.raw` will be null.
+     *
+     * Not compatible with `reuseRecords`, which requires retained raw data for its
+     * reference-identity checks.
+     */
+    retainRaw?: boolean;
+
+    /**
      * Set to true to always validate all uncommitted records on every change to
      * uncommitted records (add, modify, or remove). Default false.
      */
@@ -269,6 +280,7 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     reuseRecords: boolean;
+    retainRaw: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -325,12 +337,17 @@ export class Store
         freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
         reuseRecords = false,
+        retainRaw = true,
         validationIsComplex = false,
         experimental,
         data
     }: StoreConfig) {
         super();
         makeObservable(this);
+        throwIf(
+            reuseRecords && !retainRaw,
+            'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
+        );
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
@@ -343,6 +360,7 @@ export class Store
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
+        this.retainRaw = retainRaw;
         this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
@@ -1144,7 +1162,7 @@ export class Store
             }
         }
 
-        const {processRawData} = this;
+        const {processRawData, retainRaw} = this;
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
@@ -1158,7 +1176,7 @@ export class Store
         const ret = new StoreRecord({
             id,
             store: this,
-            raw,
+            raw: retainRaw ? raw : null,
             data,
             committedData: data,
             parent,
