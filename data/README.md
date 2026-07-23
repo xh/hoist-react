@@ -146,10 +146,11 @@ store.updateData({
 });
 ```
 
-**`loadDataAsync(rawData, rawSummaryData?)`** - Streaming counterpart to `loadData()`. Accepts a
-sync or async iterable yielding raw records (or arrays/chunks of records), creating records
-incrementally without buffering the complete raw dataset in memory - useful for very large
-datasets streamed from the server. Pair with `XH.fetchNdjson()` for NDJSON responses:
+**`loadDataAsync(rawData)`** - Streaming counterpart to `loadData()`. Accepts a sync or async
+iterable yielding raw records (or arrays/chunks of records), creating records incrementally
+without buffering the complete raw dataset in memory - useful for very large datasets streamed
+from the server. Does not accept summary data (an aggregate cannot precede its stream) - install
+via `updateData({rawSummaryData})` after loading. Pair with `XH.fetchNdjson()` for NDJSON:
 
 ```typescript
 await store.loadDataAsync(XH.fetchNdjson({url: 'myRows'}));

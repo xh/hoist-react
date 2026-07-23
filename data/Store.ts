@@ -420,48 +420,33 @@ export class Store
      * installed in a single observable transaction, exactly as with `loadData()`. If the source
      * throws, the Store remains unchanged.
      *
+     * Note this method does not accept summary data - a summary is an aggregate, unavailable
+     * until a stream completes. Any pre-existing summary records are cleared. Install summary
+     * data via `updateData({rawSummaryData})` after loading, if desired. Not supported for
+     * stores with `loadRootAsSummary` - such payloads nest all row data within a single root
+     * node and cannot be streamed.
+     *
      * @param rawData - iterable yielding raw records, or chunks (arrays) of raw records.
-     * @param rawSummaryData - source data for optional summary record(s), representing
-     *      custom aggregations for the dataset, if desired.
      */
     async loadDataAsync(
-        rawData: AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>,
-        rawSummaryData?: Some<PlainObject>
+        rawData: AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>
     ): Promise<void> {
-        const {loadRootAsSummary} = this;
+        throwIf(
+            this.loadRootAsSummary,
+            'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
+        );
 
-        // Create any provided summary records up-front, so streamed records are checked for ID
-        // collisions against them (as with loadData).
-        let summaryRecords: StoreRecord[] = rawSummaryData
-            ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
-            : null;
-
-        let summaryIds = new Set<StoreRecordId>(summaryRecords?.map(it => it.id) ?? []),
-            rootSummary: PlainObject = null;
-        const recordMap = new Map<StoreRecordId, StoreRecord>();
+        const recordMap = new Map<StoreRecordId, StoreRecord>(),
+            summaryIds = new Set<StoreRecordId>();
 
         for await (const chunk of rawData) {
             for (const raw of castArray(chunk)) {
-                if (loadRootAsSummary) {
-                    throwIf(
-                        rootSummary || rawSummaryData,
-                        'Incorrect call to loadDataAsync with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
-                    );
-                    rootSummary = raw;
-                } else {
-                    this.createRecords([raw], null, recordMap, summaryIds);
-                }
+                this.createRecords([raw], null, recordMap, summaryIds);
             }
         }
 
-        if (rootSummary) {
-            summaryRecords = [this.createRecord(rootSummary, null, true)];
-            summaryIds = new Set(summaryRecords.map(it => it.id));
-            this.createRecords(rootSummary.children ?? [], null, recordMap, summaryIds);
-        }
-
         runInAction(() => {
-            this.summaryRecords = summaryRecords;
+            this.summaryRecords = null;
             this._committed = this._current = this._committed.withNewRecords(recordMap);
             this.rebuildFiltered();
             this.lastLoaded = this.lastUpdated = Date.now();
