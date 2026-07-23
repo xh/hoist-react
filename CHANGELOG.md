@@ -18,6 +18,8 @@
   async iterable yielding raw records or chunks. Creates records incrementally without buffering
   the complete raw dataset in memory, then installs them in a single transaction once the source
   completes.
+* Added `ndjsonChunks()` util (`@xh/hoist/utils/async`) to read an NDJSON `Response` body
+  incrementally - the natural streaming source for `Store.loadDataAsync()`.
 
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
