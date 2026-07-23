@@ -13,6 +13,12 @@
       any custom styling that targeted  Blueprint or Popper css classes (e.g. `bp6-minimal`).
     * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
 
+### 🎁 New Features
+* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
+  async iterable yielding raw records or chunks. Creates records incrementally without buffering
+  the complete raw dataset in memory, then installs them in a single transaction once the source
+  completes.
+
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
   onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
