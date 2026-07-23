@@ -235,15 +235,15 @@ export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
 
 /**
  * On-demand column metadata, revealed on hover of a small info icon trailing the name. Rendered only
- * when the column carries metadata worth surfacing (`chooserGroup` and/or `chooserDescription`), so
- * its mere presence signals "more info here". Content mirrors the library row treatment - name as
- * title, group as a tag, description as body copy - so both panels read as one system.
+ * when the column carries metadata worth surfacing (`chooserDescription`), so its mere presence
+ * signals "more info here". Content mirrors the library row treatment - name as title, group as a tag,
+ * description as body copy - so both panels read as one system.
  */
 function columnMetaTooltip(data: ColumnChooserData): ReactNode {
     const {name, description, chooserGroup} = data,
         hasGroup = !isEmpty(chooserGroup),
         hasDesc = !isEmpty(description);
-    if (!hasGroup && !hasDesc) return null;
+    if (!hasDesc) return null;
 
     return tooltip({
         className: 'xh-column-chooser__name-cell__meta',
