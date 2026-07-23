@@ -5,20 +5,22 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {div, hbox, hframe, span, vframe} from '@xh/hoist/cmp/layout';
+import {div, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import type {GridOptions, ICellRendererParams, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
-import {useEffect, useRef} from 'react';
+import {type ReactNode, useEffect, useRef} from 'react';
 
 /** Shape of record data in the ColumnChooser's internal grids (buckets and library). */
 export interface ColumnChooserData {
     id: string;
     name: string;
     description: string;
+    /** Library source-group of the underlying column - surfaced in the row's metadata tooltip. */
+    chooserGroup: string;
     /** true = all visible, false = none visible, null = indeterminate (mixed). */
     visible: boolean | null;
     /**
@@ -194,7 +196,11 @@ export const LibraryColumnCell = hoistCmp<LibraryColumnCellProps>(
 
 interface ChooserColumnNameProps extends HoistProps, ICellRendererParams<StoreRecord> {}
 
-/** Cell renderer for a chooser/library name column - grip drag handle + column name. */
+/**
+ * Cell renderer for a bucket chooser name column - grip drag handle + column name, plus an on-demand
+ * metadata info icon (see {@link columnMetaTooltip}). The name itself is a plain drag target: metadata
+ * lives behind its own hit target so scanning the list never fires a tooltip by accident.
+ */
 export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
     ({registerRowDragger, data: record}) => {
         const ref = useRef<HTMLSpanElement>(null);
@@ -203,7 +209,10 @@ export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
             if (ref.current) registerRowDragger(ref.current);
         }, [registerRowDragger]);
 
-        const movable = record?.data?.movable !== false;
+        const data = record?.data as ColumnChooserData;
+        if (!data) return null;
+
+        const {name, movable} = data;
         return hbox({
             alignItems: 'center',
             items: [
@@ -217,16 +226,49 @@ export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
                           className: 'xh-column-chooser__name-cell__lock',
                           item: Icon.lock()
                       }),
-                tooltip({
-                    item: span({
-                        className: 'xh-column-chooser__name-cell__name',
-                        item: record?.data?.name ?? ''
-                    }),
-                    content: record?.data?.description,
-                    minimal: true,
-                    disabled: isEmpty(record?.data?.description)
-                })
+                span({className: 'xh-column-chooser__name-cell__name', item: name ?? ''}),
+                columnMetaTooltip(data)
             ]
         });
     }
 );
+
+/**
+ * On-demand column metadata, revealed on hover of a small info icon trailing the name. Rendered only
+ * when the column carries metadata worth surfacing (`chooserGroup` and/or `chooserDescription`), so
+ * its mere presence signals "more info here". Content mirrors the library row treatment - name as
+ * title, group as a tag, description as body copy - so both panels read as one system.
+ */
+function columnMetaTooltip(data: ColumnChooserData): ReactNode {
+    const {name, description, chooserGroup} = data,
+        hasGroup = !isEmpty(chooserGroup),
+        hasDesc = !isEmpty(description);
+    if (!hasGroup && !hasDesc) return null;
+
+    return tooltip({
+        className: 'xh-column-chooser__name-cell__meta',
+        popoverClassName: 'xh-column-chooser__meta-popover',
+        minimal: true,
+        item: Icon.info(),
+        content: vbox({
+            className: 'xh-column-chooser__meta-tip',
+            items: [
+                hbox({
+                    className: 'xh-column-chooser__meta-tip__header',
+                    items: [
+                        span({className: 'xh-column-chooser__meta-tip__title', item: name}),
+                        hasGroup
+                            ? span({
+                                  className: 'xh-column-chooser__meta-tip__group',
+                                  item: chooserGroup
+                              })
+                            : null
+                    ]
+                }),
+                hasDesc
+                    ? div({className: 'xh-column-chooser__meta-tip__desc', item: description})
+                    : null
+            ]
+        })
+    });
+}

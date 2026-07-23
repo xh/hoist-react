@@ -443,6 +443,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                     id: instanceId,
                     name: typeof group.headerName === 'string' ? group.headerName : group.groupId,
                     description: '',
+                    chooserGroup: '',
                     visible: false,
                     muted: false,
                     isGroup: true,
@@ -466,6 +467,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 id: state.colId,
                 name: col.chooserName,
                 description: col.chooserDescription ?? '',
+                chooserGroup: col.chooserGroup ?? '',
                 visible: !state.hidden,
                 muted: !!state.hidden,
                 isGroup: false,
@@ -726,6 +728,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'description', type: 'string'},
+                    {name: 'chooserGroup', type: 'string'},
                     {name: 'visible', type: 'auto'},
                     {name: 'muted', type: 'bool'},
                     {name: 'isGroup', type: 'bool'},

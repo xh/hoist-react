@@ -230,5 +230,76 @@
     &__lock {
       cursor: not-allowed;
     }
+
+    // On-demand metadata target: a small, quiet info glyph trailing the name. Sized in px so it
+    // reads as a minor affordance rather than competing with the name; brightens on hover.
+    &__meta {
+      margin-left: var(--xh-pad-half-px);
+      font-size: 10px;
+      color: var(--xh-blue-gray);
+      cursor: default;
+
+      &:hover {
+        color: var(--xh-orange-muted);
+        cursor: pointer;
+      }
+
+      // Center the glyph. Blueprint sets `span.bp6-popover-target { display: inline-block }` -
+      // element-qualified, so it outranks a lone class and defeats a plain flex rule, leaving the
+      // svg baseline-aligned in the row's tall line box (riding high). Chain the popover class to
+      // win specificity and make the wrapper an actual flex container.
+      &.bp6-popover-target {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+  }
+}
+
+// Column metadata tooltip - blueprint portals the popover to the document body, so these rules live
+// outside the .xh-column-chooser block. Styled as a compact card matching the library row treatment.
+.xh-column-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
+  padding: 0;
+  background: var(--xh-bg);
+  border: var(--xh-border-solid);
+  border-radius: var(--xh-border-radius-px);
+}
+
+.xh-column-chooser__meta-tip {
+  gap: var(--xh-pad-half-px);
+  padding: var(--xh-pad-px);
+  max-width: 280px;
+
+  &__header {
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--xh-pad-px);
+
+    // Divider below the header only when a description follows it.
+    &:not(:last-child) {
+      padding-bottom: var(--xh-pad-half-px);
+      margin-bottom: var(--xh-pad-half-px);
+      border-bottom: var(--xh-border-width-px) solid var(--xh-border-color);
+    }
+  }
+
+  &__title {
+    color: var(--xh-text-color);
+  }
+
+  &__group {
+    flex: none;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--xh-text-color-muted);
+    background: var(--xh-intent-neutral-trans2);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  &__desc {
+    font-size: var(--xh-font-size-small-px);
+    line-height: 1.4;
+    color: var(--xh-text-color-muted);
   }
 }
