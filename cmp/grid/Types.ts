@@ -181,7 +181,12 @@ export interface ColChooserConfig {
      */
     autosizeOnCommit?: boolean;
 
-    /** Chooser width for popover and dialog. Desktop only. */
+    /**
+     * Width of the chooser's bucket column - the always-present part, excluding the optional Column
+     * Library (see {@link ColLibraryConfig.libraryWidth}). In the popover and dialog the overlay
+     * sizes to fit this plus the library when shown; in the docked panel it is the initial dock width
+     * (grown by the library width while shown). Desktop only.
+     */
     width?: string | number;
 
     /** Chooser height for popover and dialog. Desktop only. */
@@ -211,6 +216,13 @@ export interface ColLibraryConfig {
      * starts collapsed again.
      */
     collapseGroups?: boolean;
+
+    /**
+     * Fixed width of the Column Library panel (default 250). Added to the chooser's
+     * {@link ColChooserConfig.width} whenever the library is shown - so the buckets keep a constant
+     * width regardless of library visibility. Desktop only.
+     */
+    libraryWidth?: number;
 }
 
 /**

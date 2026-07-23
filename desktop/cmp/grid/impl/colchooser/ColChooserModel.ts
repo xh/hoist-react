@@ -47,6 +47,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @bindable autosizeOnCommit: boolean;
     @bindable width: string | number;
     @bindable height: string | number;
+    @bindable libraryWidth: number;
     @bindable filterMatchMode: FilterMatchMode;
 
     // Stable config, deliberately not observable - toggled at runtime via the observable
@@ -130,6 +131,15 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     //-----------------
     /** True when the chooser is currently shown in this model's presentation. */
     abstract get isOpen(): boolean;
+
+    /**
+     * True when the chooser sizes itself to its content (the overlay presentations - popover and
+     * dialog - hug their buckets + library). False when an outer container governs its size (the
+     * docked panel), where the buckets flex to fill and the library takes a fixed width.
+     */
+    get sizeToContent(): boolean {
+        return true;
+    }
 
     /** Show the chooser in this model's presentation. */
     abstract open(): void;
@@ -285,6 +295,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.columnLibraryEnabled = !!columnLibrary;
         this.width = width;
         this.height = height;
+        this.libraryWidth = libraryConfig.libraryWidth ?? 250;
         this.filterMatchMode = filterMatchMode;
 
         this.leftBucketModel = new ColumnChooserBucketModel({

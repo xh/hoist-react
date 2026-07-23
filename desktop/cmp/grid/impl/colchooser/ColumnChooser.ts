@@ -10,7 +10,6 @@ import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import type {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon, IconProps} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -41,8 +40,13 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
         // record/filter churn (which re-renders the bucket zones) out of the toolbar and footer. The
         // Blueprint filter input in particular self-measures its width and will loop if it is pulled
         // into a re-render while the buckets below it are reflowing.
+        //
+        // Overlays (popover/dialog) hug their content, so the root takes only a fixed height and its
+        // width follows the buckets + library below. The docked panel is sized by its outer
+        // PanelModel, so the root just fills it.
         return vframe({
             className,
+            height: model.sizeToContent ? model.height : null,
             ...layoutProps,
             items: [
                 chooserTopBar({chooserModel: model}),
@@ -115,11 +119,14 @@ const chooserBody = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
 
 /**
  * The bucket zones in master order: pinned-left, the unpinned "Columns" divider + grid, pinned-right.
- * Holds no observable state of its own - each zone re-renders independently off its own bucket.
+ * Holds no observable state of its own - each zone re-renders independently off its own bucket. Takes
+ * a fixed width in the content-hugging overlays; flexes to fill the dock (beside the fixed-width
+ * library) in the docked panel.
  */
 const bucketStack = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
     vbox({
-        flex: 1,
+        flex: chooserModel.sizeToContent ? null : 1,
+        width: chooserModel.sizeToContent ? chooserModel.width : null,
         items: [
             pinnedBucketZone({chooserModel, bucket: chooserModel.leftBucketModel, variant: 'left'}),
             columnsSeparator({chooserModel}),
@@ -333,17 +340,16 @@ interface ColumnLibraryPanelProps extends HoistProps {
 
 const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({chooserModel}) => {
     if (!chooserModel.isLibraryShown) return null;
-    return panel({
+    // A vbox (not vframe) for a fixed-width column: vframe forces `flex: auto`, which would let the
+    // library grow into the buckets' space instead of the buckets flexing to fill the dock. The grid
+    // takes `flex: 1` to fill the library's height.
+    return vbox({
         className: 'xh-column-chooser__library',
-        modelConfig: {
-            side: 'left',
-            defaultSize: 250,
-            minSize: 150,
-            collapsible: false,
-            resizable: true
-        },
+        flex: 'none',
+        width: chooserModel.libraryWidth,
         item: grid({
             className: 'xh-column-chooser__bucket xh-column-chooser__library-grid',
+            flex: 1,
             model: chooserModel.libraryModel.chooserGridModel,
             agOptions: chooserModel.libraryModel.agOptions
         })

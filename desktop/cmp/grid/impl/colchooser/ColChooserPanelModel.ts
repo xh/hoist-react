@@ -8,6 +8,7 @@ import {ColChooserPanelConfig} from '@xh/hoist/cmp/grid';
 import {managed} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {isNumber} from 'lodash';
 import {ColChooserModel} from './ColChooserModel';
 
 /**
@@ -29,12 +30,19 @@ export class ColChooserPanelModel extends ColChooserModel {
         return this.panelModel.side as 'left' | 'right';
     }
 
+    // Outer panel governs the dock width; the library takes a fixed slice of it, buckets flex.
+    override get sizeToContent(): boolean {
+        return false;
+    }
+
     constructor(config: ColChooserPanelConfig) {
         super({...config, commitOnChange: true});
         makeObservable(this);
         this.panelModel = new PanelModel({
             side: 'right',
-            defaultSize: this.width,
+            // Seed the dock wide enough to hold the buckets plus the library if it opens shown; the
+            // toggle reaction keeps it in sync from there.
+            defaultSize: this.dockSizeFor(this.isLibraryShown),
             minSize: 250,
             ...config.panelConfig,
             // Open/close is driven by `isOpen` (panel rendered only when open), not collapse - the
@@ -42,6 +50,24 @@ export class ColChooserPanelModel extends ColChooserModel {
             collapsible: false,
             resizable: true
         });
+
+        // Keep the buckets a constant width as the (roaming, shared) library toggles: grow the dock
+        // by the library width when it shows, shrink it back when it hides. Delta-based so any manual
+        // resize of the dock is preserved across toggles. Skips a non-numeric (percent) size.
+        this.addReaction({
+            track: () => this.isLibraryShown,
+            run: shown => {
+                const {size} = this.panelModel;
+                if (isNumber(size)) {
+                    this.panelModel.size = size + (shown ? this.libraryWidth : -this.libraryWidth);
+                }
+            }
+        });
+    }
+
+    private dockSizeFor(libraryShown: boolean): number | string {
+        const {width, libraryWidth} = this;
+        return isNumber(width) && libraryShown ? width + libraryWidth : width;
     }
 
     @action

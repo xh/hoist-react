@@ -98,11 +98,8 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                 onDoubleClick: stopPropagation,
                 items: [
                     div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
-                    columnChooser({
-                        model: modalModel,
-                        width: modalModel.width,
-                        height: modalModel.height
-                    })
+                    // Self-sizes to its buckets + library; no explicit width/height needed.
+                    columnChooser({model: modalModel})
                 ]
             }),
             onInteraction: willOpen => {

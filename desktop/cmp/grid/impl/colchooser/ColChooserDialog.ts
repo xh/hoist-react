@@ -15,17 +15,17 @@ export const colChooserDialog = hoistCmp.factory({
     className: 'xh-col-chooser-dialog',
 
     render({model, className}) {
-        const {isOpen, width, height} = model;
-        if (!isOpen) return null;
+        if (!model.isOpen) return null;
 
         return dialog({
             icon: Icon.gridPanel(),
             title: 'Choose Columns',
             isOpen: true,
             onClose: () => model.close(),
-            item: columnChooser({model, width, height}),
+            item: columnChooser({model}),
             className,
-            style: {width}
+            // Hug the chooser's content - it sizes itself to the buckets plus the library when shown.
+            style: {width: 'fit-content', maxWidth: '90vw'}
         });
     }
 });

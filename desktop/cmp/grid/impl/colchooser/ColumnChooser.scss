@@ -39,11 +39,10 @@
     --xh-button-text-color: var(--xh-gray);
   }
 
-  // Smaller/minimal library panel splitter
-  .xh-resizable-splitter.horizontal {
-    width: 2px;
-    background-color: var(--xh-border-color);
-    border: none;
+  // Fixed-width library (width + `flex: none` set inline), divided from the buckets by a hairline
+  // rule - it is no longer a resizable splitter panel.
+  &__library {
+    border-right: var(--xh-border-width-px) solid var(--xh-border-color);
   }
 
   // Zone divider: a low-weight label riding a hairline rule, deliberately unlike a group-header bar.
