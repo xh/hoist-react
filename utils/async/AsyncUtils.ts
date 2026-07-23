@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 
 /**
@@ -70,35 +70,6 @@ export async function whileAsync(
         }
         fn();
     }
-}
-
-/**
- * Read an NDJSON (newline-delimited JSON) `Response` body incrementally, yielding chunks
- * (arrays) of parsed records as they arrive off the network. Each line is parsed with native
- * `JSON.parse`, and no more than one network chunk of raw text is buffered - partial trailing
- * lines are carried across chunk boundaries.
- *
- * Lower-level primitive behind {@link FetchService.fetchNdjson}, which is the preferred entry
- * point for Hoist-issued requests. Use this util directly when you already hold a `Response`
- * from another source.
- */
-export async function* ndjsonChunks<T = PlainObject>(response: Response): AsyncGenerator<T[]> {
-    const reader = response.body.getReader(),
-        decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-        const {done, value} = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, {stream: true});
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // retain any partial trailing line for the next chunk
-        if (lines.length) yield lines.filter(Boolean).map(it => JSON.parse(it));
-    }
-
-    buffer += decoder.decode();
-    if (buffer.trim()) yield [JSON.parse(buffer)];
 }
 
 export interface AsyncLoopOptions {

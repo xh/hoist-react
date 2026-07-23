@@ -20,8 +20,7 @@
   completes.
 * Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
   as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
-  directly via `for await` for any streamed endpoint. Backed by a new lower-level
-  `ndjsonChunks()` util in `@xh/hoist/utils/async` for use with an existing `Response`.
+  directly via `for await` for any streamed endpoint.
 
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
