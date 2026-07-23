@@ -184,7 +184,8 @@ export class FetchService extends HoistService {
         }
 
         // The runner will manage the lifecycle, but we won't await it here -- return
-        // the generator straight away.
+        // the generator straight away. Don't produce unhandled exceptions from telemetry
+        // only. Generator will already produce them.
         let ret: AsyncGenerator<PlainObject[]>;
         runner
             .run(async innerCtx => {
@@ -199,8 +200,7 @@ export class FetchService extends HoistService {
                 await fetchPromise;
                 await streamPromise;
             })
-            .catch(noop); // Telemetry-scoping promise only - failures reach the consumer via the generator.
-
+            .catch(noop);
         return ret;
     }
 
