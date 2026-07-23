@@ -23,7 +23,7 @@ import {
     ValidationResult
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -460,18 +460,12 @@ export class Store
             this.createRecords(rootSummary.children ?? [], null, recordMap, summaryIds);
         }
 
-        this.installLoadedRecords(recordMap, summaryRecords);
-    }
-
-    @action
-    private installLoadedRecords(
-        records: Map<StoreRecordId, StoreRecord>,
-        summaryRecords: StoreRecord[]
-    ) {
-        this.summaryRecords = summaryRecords;
-        this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
-        this.lastLoaded = this.lastUpdated = Date.now();
+        runInAction(() => {
+            this.summaryRecords = summaryRecords;
+            this._committed = this._current = this._committed.withNewRecords(recordMap);
+            this.rebuildFiltered();
+            this.lastLoaded = this.lastUpdated = Date.now();
+        });
     }
 
     /**
