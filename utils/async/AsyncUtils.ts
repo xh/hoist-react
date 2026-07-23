@@ -78,13 +78,9 @@ export async function whileAsync(
  * `JSON.parse`, and no more than one network chunk of raw text is buffered - partial trailing
  * lines are carried across chunk boundaries.
  *
- * The natural source for {@link Store.loadDataAsync} when streaming large datasets from the
- * server - pass a `Response` from `XH.fetch()`:
- *
- * ```typescript
- * const response = await XH.fetch({url: 'myRows'});
- * await store.loadDataAsync(ndjsonChunks(response));
- * ```
+ * Lower-level primitive behind {@link FetchService.fetchNdjson}, which is the preferred entry
+ * point for Hoist-issued requests. Use this util directly when you already hold a `Response`
+ * from another source.
  */
 export async function* ndjsonChunks<T = PlainObject>(response: Response): AsyncGenerator<T[]> {
     const reader = response.body.getReader(),

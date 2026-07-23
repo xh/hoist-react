@@ -20,6 +20,7 @@ import {
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
+import {ndjsonChunks} from '@xh/hoist/utils/async';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
@@ -43,7 +44,8 @@ export interface FetchServiceDefaults {
  *
  * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
  * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,
- * `deleteJson`, `getJson`) that handle serialization and content-type headers automatically.
+ * `deleteJson`, `getJson`) that handle serialization and content-type headers automatically,
+ * plus `fetchNdjson` for consuming streamed NDJSON responses incrementally.
  *
  * Key features:
  * - Configurable timeouts (default 30s) via {@link FetchOptions.timeout}
@@ -150,6 +152,20 @@ export class FetchService extends HoistService {
      */
     async getJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
         return this.fetchInternalAsync({asJson: true, method: 'GET', ...opts}, ctx);
+    }
+
+    /**
+     * Send an HTTP request and decode the response body incrementally as NDJSON - newline
+     * delimited JSON, aka JSON Lines / JSONL - yielding chunks (arrays) of parsed records as
+     * they arrive off the network. No more than one network chunk of raw text is buffered,
+     * making this suitable for consuming very large or long-running streamed responses.
+     *
+     * The natural source for {@link Store.loadDataAsync} - e.g.
+     * `store.loadDataAsync(XH.fetchNdjson({url}))` - or iterate directly via `for await` for
+     * non-Store streaming.
+     */
+    async *fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
+        yield* ndjsonChunks(await this.fetchInternalAsync(opts, ctx));
     }
 
     /**

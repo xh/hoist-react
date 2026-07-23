@@ -149,12 +149,10 @@ store.updateData({
 **`loadDataAsync(rawData, rawSummaryData?)`** - Streaming counterpart to `loadData()`. Accepts a
 sync or async iterable yielding raw records (or arrays/chunks of records), creating records
 incrementally without buffering the complete raw dataset in memory - useful for very large
-datasets read incrementally from a fetch `Response` body stream. For NDJSON responses, pair with
-the `ndjsonChunks()` util from `@xh/hoist/utils/async`:
+datasets streamed from the server. Pair with `XH.fetchNdjson()` for NDJSON responses:
 
 ```typescript
-const response = await XH.fetch({url: 'myRows'});
-await store.loadDataAsync(ndjsonChunks(response));
+await store.loadDataAsync(XH.fetchNdjson({url: 'myRows'}));
 ```
 
 The Store updates in a single transaction once the source completes, and remains unchanged if

@@ -411,9 +411,10 @@ export class Store
      * Records as needed - the streaming counterpart to {@link loadData}.
      *
      * Use to load very large datasets without buffering the complete raw dataset in a single
-     * array - e.g. rows read incrementally from a fetch `Response` body stream (NDJSON or
-     * similar). The source may be a sync or async iterable, yielding individual raw records or
-     * arrays (chunks) of records.
+     * array - e.g. rows streamed incrementally from the server. The source may be a sync or
+     * async iterable, yielding individual raw records or arrays (chunks) of records - see
+     * {@link FetchService.fetchNdjson} for the natural source when streaming NDJSON, e.g.
+     * `store.loadDataAsync(XH.fetchNdjson({url}))`.
      *
      * The Store is not modified until the source has been fully consumed - all records are then
      * installed in a single observable transaction, exactly as with `loadData()`. If the source
