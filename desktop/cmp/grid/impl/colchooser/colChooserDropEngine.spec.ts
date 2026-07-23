@@ -19,11 +19,15 @@
 import type {ColumnState} from '@xh/hoist/cmp/grid';
 import type {HSide} from '@xh/hoist/core';
 import {
+    collapseSelection,
     invariantHolds,
     isNoOpDrop,
+    isValidDragSelection,
     resolveDrop,
     type ChainOf,
-    type DropTarget
+    type DragSelectionRow,
+    type DropTarget,
+    type SelectionUnit
 } from './colChooserDropEngine';
 
 //------------------
@@ -378,7 +382,141 @@ for (const c of cases) {
     }
 }
 
-console.log(`\n${passed}/${cases.length} passed, ${failures.length} failed`);
+//------------------
+// isValidDragSelection: up-front multi-select gate (target-independent)
+//------------------
+const leaf = (parentGroupId: string | null, movable = true): DragSelectionRow => ({
+    isGroup: false,
+    movable,
+    parentGroupId
+});
+const group = (movable = true): DragSelectionRow => ({isGroup: true, movable, parentGroupId: null});
+
+interface SelCase {
+    name: string;
+    rows: DragSelectionRow[];
+    lock?: boolean; // default true
+    expect: boolean;
+}
+
+const selCases: SelCase[] = [
+    {name: 'SEL empty -> invalid', rows: [], expect: false},
+    {name: 'SEL single movable leaf -> valid', rows: [leaf('grp-security')], expect: true},
+    {
+        name: 'SEL single non-movable leaf -> invalid',
+        rows: [leaf('grp-security', false)],
+        expect: false
+    },
+    {
+        name: 'SEL locked siblings (same parent) -> valid',
+        rows: [leaf('grp-security'), leaf('grp-security')],
+        expect: true
+    },
+    {
+        name: 'SEL locked non-siblings (different parents) -> invalid',
+        rows: [leaf('grp-security'), leaf('grp-account')],
+        expect: false
+    },
+    {
+        name: 'SEL unlocked non-siblings -> valid (no contiguity constraint)',
+        rows: [leaf('grp-security'), leaf('grp-account')],
+        lock: false,
+        expect: true
+    },
+    {
+        name: 'SEL locked ungrouped leaves (shared root) -> valid',
+        rows: [leaf(null), leaf(null)],
+        expect: true
+    },
+    {
+        name: 'SEL any non-movable leaf in selection -> invalid',
+        rows: [leaf('grp-security'), leaf('grp-security', false)],
+        expect: false
+    },
+    {name: 'SEL single movable group -> valid', rows: [group()], expect: true},
+    {name: 'SEL single all-locked group -> invalid', rows: [group(false)], expect: false},
+    {
+        name: 'SEL group mixed with another row -> invalid (group drags alone)',
+        rows: [group(), leaf('grp-security')],
+        expect: false
+    }
+];
+
+for (const c of selCases) {
+    const got = isValidDragSelection(c.rows, c.lock ?? true);
+    if (got === c.expect) {
+        passed++;
+        console.log(`✓ ${c.name}`);
+    } else {
+        failures.push(c.name);
+        console.log(`✗ ${c.name}\n    expected ${c.expect}, got ${got}`);
+    }
+}
+
+//------------------
+// collapseSelection: subsume rows contained in a selected group (redundant multi-select)
+//------------------
+/** Build a SelectionUnit from a fixture id - a group if it has member leaves, else a leaf. */
+const unit = (id: string): SelectionUnit => {
+    const leaves = NAT_ORDER.filter(c => chainOf(c).includes(id));
+    return leaves.length
+        ? {id, isGroup: true, leafColIds: leaves}
+        : {id, isGroup: false, leafColIds: [id]};
+};
+
+interface CollapseCase {
+    name: string;
+    ids: string[];
+    expect: string[];
+}
+
+const collapseCases: CollapseCase[] = [
+    {
+        name: 'COLLAPSE leaf + its group -> group only',
+        ids: ['delta', 'grp-greeks'],
+        expect: ['grp-greeks']
+    },
+    {
+        name: 'COLLAPSE subgroup + ancestor group -> ancestor only',
+        ids: ['grp-greeks', 'grp-risk'],
+        expect: ['grp-risk']
+    },
+    {
+        name: 'COLLAPSE group + several of its own children -> group only',
+        ids: ['grp-greeks', 'delta', 'gamma'],
+        expect: ['grp-greeks']
+    },
+    {
+        name: 'COLLAPSE group + foreign leaf -> both kept',
+        ids: ['grp-greeks', 'portfolio'],
+        expect: ['grp-greeks', 'portfolio']
+    },
+    {
+        name: 'COLLAPSE two sibling subgroups -> both kept',
+        ids: ['grp-greeks', 'grp-rates'],
+        expect: ['grp-greeks', 'grp-rates']
+    },
+    {
+        name: 'COLLAPSE two ungrouped leaves -> unchanged',
+        ids: ['symbol', 'portfolio'],
+        expect: ['symbol', 'portfolio']
+    },
+    {name: 'COLLAPSE single group -> unchanged', ids: ['grp-greeks'], expect: ['grp-greeks']}
+];
+
+for (const c of collapseCases) {
+    const got = collapseSelection(c.ids.map(unit)).map(u => u.id);
+    if (arrEq(got, c.expect)) {
+        passed++;
+        console.log(`✓ ${c.name}`);
+    } else {
+        failures.push(c.name);
+        console.log(`✗ ${c.name}\n    expected [${c.expect}], got [${got}]`);
+    }
+}
+
+const total = cases.length + selCases.length + collapseCases.length;
+console.log(`\n${passed}/${total} passed, ${failures.length} failed`);
 if (failures.length) {
     console.log('FAILED:', failures.join('; '));
     process.exit(1);

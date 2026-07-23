@@ -26,7 +26,10 @@ import type {ReactNode} from 'react';
 import type {ColChooserModel} from './ColChooserModel';
 import {
     resolveDrop as resolveDropEngine,
-    isNoOpDrop as isNoOpDropEngine
+    isNoOpDrop as isNoOpDropEngine,
+    isValidDragSelection,
+    collapseSelection,
+    type DragSelectionRow
 } from './colChooserDropEngine';
 import {
     chooserDragAgOptions,
@@ -234,7 +237,10 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         // Invalidate any prior cache; only a successful resolution below re-arms it for the commit.
         this.pendingDrop = null;
 
-        const payload = buildDragPayload(params.rows ?? [params.source]);
+        const records = collapseSelection(getDragRecords(params.rows ?? [params.source]));
+        if (!this.isValidSelection(records)) return {allowed: false};
+
+        const payload = buildDragPayload(records);
         let target = params.target,
             {position} = params;
 
@@ -352,7 +358,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         // No cached preview matched (empty bucket / no row under the cursor) - pin the dragged leaves
         // in place (§6). A drop from the Column Library also unhides them (makeVisible).
         if (!event.overNode) {
-            const payload = buildDragPayload(event.nodes);
+            const records = collapseSelection(getDragRecords(event.nodes));
+            if (!this.isValidSelection(records)) return;
+            const payload = buildDragPayload(records);
             if (!payload) return;
             const makeVisible = source === this.parent.libraryModel;
             this.moveColumns(
@@ -390,6 +398,23 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     /** Leaf colId → ancestor group chain, shared across buckets by the parent {@link ColChooserModel}. */
     private get parentChainMap(): Map<string, ColumnGroup[]> {
         return this.parent.parentChainMap;
+    }
+
+    /**
+     * Gate the whole drag by its selected rows (see {@link isValidDragSelection}) - an incoherent
+     * multi-select is refused up front rather than moving only part of it. Library drags are exempt:
+     * dragging hidden columns out to unhide isn't a group-locked reorder.
+     */
+    private isValidSelection(records: ColumnChooserData[]): boolean {
+        if (records.some(r => r.fromLibrary)) return true;
+        const rows: DragSelectionRow[] = records.map(r => ({
+            isGroup: r.isGroup,
+            movable: r.movable,
+            parentGroupId: r.isGroup
+                ? null
+                : (this.parentChainMap.get(r.id)?.at(-1)?.groupId ?? null)
+        }));
+        return isValidDragSelection(rows, this.targetGridModel.lockColumnGroups);
     }
 
     /**
@@ -500,7 +525,10 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             it.muted =
                 !isEmpty(it.leafColIds) && it.leafColIds.every(id => stateById.get(id)?.hidden);
 
-            it.movable = it.leafColIds.every(id => gridModel.isColumnMovable(id));
+            // A group can be dragged as long as at least one child is movable - a movable:false
+            // child rides along when the group moves (ag-Grid suppressMovable semantics). Only an
+            // all-locked group is itself locked.
+            it.movable = it.leafColIds.some(id => gridModel.isColumnMovable(id));
         });
 
         return data;
@@ -829,9 +857,13 @@ interface DragPayload {
     fromLibrary: boolean;
 }
 
-/** Aggregate the dragged ag-grid row nodes into a single {@link DragPayload}. */
-function buildDragPayload(nodes: any[]): DragPayload | null {
-    const records = (nodes ?? []).map(getChooserData).filter(Boolean) as ColumnChooserData[];
+/** Extract the chooser records from the dragged ag-grid row nodes. */
+function getDragRecords(nodes: any[]): ColumnChooserData[] {
+    return (nodes ?? []).map(getChooserData).filter(Boolean) as ColumnChooserData[];
+}
+
+/** Aggregate the dragged chooser records into a single {@link DragPayload}. */
+function buildDragPayload(records: ColumnChooserData[]): DragPayload | null {
     if (!records.length) return null;
 
     const leafColIds = new Set<string>(),

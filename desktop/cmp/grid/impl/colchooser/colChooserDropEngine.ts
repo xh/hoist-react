@@ -131,6 +131,73 @@ export function resolveDrop(input: ResolveDropInput): {
     return {allowed: false, state: null}; // unreachable: the root candidate always satisfies
 }
 
+/** A dragged row identified by its leaf membership, for {@link collapseSelection}. */
+export interface SelectionUnit {
+    id: string;
+    isGroup: boolean;
+    /** The leaf colIds this row represents ([self] for a leaf, all members for a group). */
+    leafColIds: string[];
+}
+
+/**
+ * Drop rows subsumed by a selected group - the redundant part of a multi-select where a group is
+ * dragged alongside its own descendants (its leaves, a nested subgroup, or its parent group).
+ * Selecting a group already moves all its children, so a descendant adds nothing; collapsing to the
+ * enclosing unit makes such a selection a coherent single-group drag rather than an incoherent mix.
+ * A foreign row (not contained in any selected group) is retained, so a group + an unrelated
+ * column/sibling-group still reads as multiple units (and is rejected by {@link isValidDragSelection}
+ * when groups are locked). Input order is preserved.
+ */
+export function collapseSelection<T extends SelectionUnit>(rows: T[]): T[] {
+    return rows.filter(
+        (r, i) =>
+            !rows.some((g, j) => {
+                if (j === i || !g.isGroup) return false;
+                const gLeaves = new Set(g.leafColIds);
+                if (!r.leafColIds.every(id => gLeaves.has(id))) return false;
+                // Equal leaf sets (degenerate - e.g. a single-column group and its child): keep the
+                // earlier row so the two never subsume each other into nothing.
+                return g.leafColIds.length === r.leafColIds.length ? j < i : true;
+            })
+    );
+}
+
+/** A single dragged row, for {@link isValidDragSelection}. */
+export interface DragSelectionRow {
+    /** True for a column-group row (dragged as a unit); false for a leaf column. */
+    isGroup: boolean;
+    /** Whether this row may be dragged: a leaf's `movable`, or a group with any movable descendant. */
+    movable: boolean;
+    /** The row's immediate parent groupId, or null at the root. Only consulted for leaf rows. */
+    parentGroupId: string | null;
+}
+
+/**
+ * Gate a drag by its selected rows alone (target-independent), so an incoherent multi-select is
+ * refused up front - the drag shows `notAllowed` everywhere rather than silently moving only part of
+ * the selection. A `movable:false` column still can't be dragged directly, but rides along freely
+ * when a parent group moves (matching ag-Grid's `suppressMovable`), so movability is enforced only on
+ * the rows the user grabbed, never on a group's passenger children.
+ *
+ * Rejects when:
+ * - the selection is empty, or any selected row is not movable;
+ * - a group row is mixed with any other row (a group is always dragged as a lone unit);
+ * - groups are locked and the selected leaves don't all share one immediate parent (columns from
+ *   different groups can't move together without splitting a group).
+ */
+export function isValidDragSelection(rows: DragSelectionRow[], lockColumnGroups: boolean): boolean {
+    if (!rows.length || rows.some(r => !r.movable)) return false;
+
+    const groupCount = rows.filter(r => r.isGroup).length;
+    if (groupCount > 0) return rows.length === 1;
+
+    if (lockColumnGroups) {
+        const parents = new Set(rows.map(r => r.parentGroupId ?? null));
+        if (parents.size > 1) return false;
+    }
+    return true;
+}
+
 /**
  * True if committing `candidate` would leave the chooser visually unchanged (spec §5A Rule B): the
  * rendered column sequence of every bucket - left, unpinned, right - is identical, each compared
