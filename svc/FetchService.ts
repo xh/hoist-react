@@ -23,7 +23,7 @@ import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
+import {isDate, isFunction, isNil, isObject, isString, noop, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 import ShortUniqueId from 'short-unique-id';
 
@@ -162,9 +162,46 @@ export class FetchService extends HoistService {
      * The natural source for {@link Store.loadDataAsync} - e.g.
      * `store.loadDataAsync(XH.fetchNdjson({url}))` - or iterate directly via `for await` for
      * non-Store streaming.
+     *
+     * Tracing spans and `track` cover the full lifetime of the stream, through complete
+     * consumption. Note that `timeout` covers the request phase only - no timeout applies while
+     * the stream is being read.
      */
-    async *fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
-        yield* this.ndjsonChunks(await this.fetchInternalAsync(opts, ctx));
+    fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
+        opts = this.withCorrelationId(opts);
+
+        let runner = this.runner(ctx);
+
+        // Configure special track and spanning across the async consumption.
+        const spanConfig = this.createSpanConfig(opts),
+            {track} = opts;
+        if (spanConfig) {
+            runner = runner.span(spanConfig);
+        }
+        if (track) {
+            const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
+            runner = runner.track({...trackOptions, correlationId: opts.correlationId as string});
+        }
+
+        // The runner will manage the lifecycle, but we won't await it here -- return
+        // the generator straight away.
+        let ret: AsyncGenerator<PlainObject[]>;
+        runner
+            .run(async innerCtx => {
+                const fetchPromise = this.fetchInternalAsync(opts, innerCtx, true);
+
+                let onComplete: (err?: unknown) => void;
+                const streamPromise = new Promise<void>(
+                    (res, rej) => (onComplete = err => (err ? rej(err) : res()))
+                );
+                ret = this.streamNdjson(opts, innerCtx, fetchPromise, onComplete);
+
+                await fetchPromise;
+                await streamPromise;
+            })
+            .catch(noop); // Telemetry-scoping promise only - failures reach the consumer via the generator.
+
+        return ret;
     }
 
     /**
@@ -217,7 +254,15 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private async fetchInternalAsync(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+    /**
+     * @param forStreaming - true when called by fetchNdjson, which applies its own span and
+     *      track across the full stream lifetime - suppresses both here.
+     */
+    private async fetchInternalAsync(
+        opts: FetchOptions,
+        ctx?: CallContextLike,
+        forStreaming: boolean = false
+    ): Promise<any> {
         // Default to deprecated context
         ctx ??= {span: opts.span, loadSpec: opts.loadSpec as LoadSpec};
         apiDeprecated('FetchOptions.span', {
@@ -234,7 +279,7 @@ export class FetchService extends HoistService {
         });
         opts = omit(opts, 'span', 'loadSpec');
 
-        let spanConfig = this.createSpanConfig(opts),
+        let spanConfig = forStreaming ? null : this.createSpanConfig(opts),
             runner = spanConfig ? this.runner(ctx).span(spanConfig) : this.runner(ctx),
             ret = runner.run(ctx => {
                 opts = this.withCorrelationId(opts);
@@ -245,7 +290,7 @@ export class FetchService extends HoistService {
             });
 
         // 2) Apply tracking
-        if (opts.track) {
+        if (opts.track && !forStreaming) {
             const {correlationId, track} = opts;
             const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
             warnIf(
@@ -566,6 +611,38 @@ export class FetchService extends HoistService {
     }
 
     /**
+     * Await the pending request, then stream its body - wrapping any failure raised while
+     * reading or parsing the stream in an enriched FetchException.
+     *
+     * Reports the streaming phase's outcome via the `onComplete` callback - with any error on
+     * failure, and unconditionally on exit to cover early termination by the consumer.
+     * Request-phase failures propagate already-enriched and without an `onComplete` error - the
+     * caller observes them on the fetch promise directly.
+     */
+    private async *streamNdjson(
+        opts: FetchOptions,
+        ctx: CallContextLike,
+        fetchPromise: Promise<Response>,
+        onComplete: (err?: unknown) => void
+    ): AsyncGenerator<PlainObject[]> {
+        try {
+            const response = await fetchPromise;
+            try {
+                yield* this.ndjsonChunks(response);
+            } catch (e) {
+                const ex =
+                    e?.name === 'AbortError'
+                        ? this.abortedException(opts, ctx, e)
+                        : this.streamFailedException(opts, ctx, response, e);
+                onComplete(ex);
+                throw ex;
+            }
+        } finally {
+            onComplete(); // only finally blocks run if the consumer exits its loop early
+        }
+    }
+
+    /**
      * Read an NDJSON Response body incrementally, yielding chunks (arrays) of parsed records as
      * they arrive off the network. Each line is parsed with native JSON.parse, partial trailing
      * lines are carried across chunk boundaries, and no more than one network chunk of raw text
@@ -618,7 +695,7 @@ export class FetchService extends HoistService {
      */
     private abortedException(
         fetchOptions: FetchOptions,
-        callContext: CallContext,
+        callContext: CallContextLike,
         cause: any
     ): FetchException {
         return this.createException({
@@ -660,6 +737,29 @@ export class FetchService extends HoistService {
     }
 
     /**
+     * Create an Error to throw when a fetch call fails while reading or parsing its streamed
+     * response body.
+     * @param fetchOptions - original options passed to FetchService.
+     * @param response - response whose body was being streamed.
+     * @param cause - underlying error raised while reading or parsing the stream.
+     */
+    private streamFailedException(
+        fetchOptions: FetchOptions,
+        callContext: CallContextLike,
+        response: Response,
+        cause: any
+    ): FetchException {
+        return this.createException({
+            name: 'Fetch Stream Failed',
+            message: `Failure while reading streamed response, url: "${fetchOptions.url}" - ${cause.message}`,
+            httpStatus: response.status,
+            fetchOptions,
+            callContext,
+            cause
+        });
+    }
+
+    /**
      * Create an Error for when the server called by fetch does not respond
      * @param fetchOptions - original options the app passed to FetchService.fetch
      * @param cause - object thrown by native fetch
@@ -690,8 +790,11 @@ export class FetchService extends HoistService {
 
     private createException(attributes: PlainObject) {
         const {fetchOptions} = attributes;
+        // Prefer the header actually sent - fall back to the resolved option for exceptions
+        // created against pre-resolution options (e.g. streaming failures).
         const correlationId: string =
-            fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ?? null;
+            fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ??
+            (isString(fetchOptions?.correlationId) ? fetchOptions.correlationId : null);
         const traceId: string = fetchOptions?.traceId ?? null;
 
         return Exception.create({
