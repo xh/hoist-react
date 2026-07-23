@@ -1,3 +1,18 @@
+// Readable secondary text (library + meta-tooltip descriptions). Muted (grey-500) fails WCAG AA on
+// the light background, so darken it there; grey-500 reads fine on the dark background. Scoped to
+// both roots since the meta tooltip is portaled to body, outside the chooser.
+.xh-column-chooser,
+.xh-column-chooser__meta-tip {
+  --column-chooser-text-color-alt: color-mix(in srgb, var(--xh-gray) 60%, black);
+}
+
+.xh-dark {
+  .xh-column-chooser,
+  .xh-column-chooser__meta-tip {
+    --column-chooser-text-color-alt: var(--xh-gray);
+  }
+}
+
 .xh-column-chooser {
   background: var(--xh-bg);
 
@@ -208,7 +223,7 @@
     &__desc {
       font-size: var(--xh-font-size-small-px);
       line-height: 1.4;
-      color: var(--xh-text-color-muted);
+      color: var(--column-chooser-text-color-alt);
     }
   }
 
@@ -236,8 +251,8 @@
     &__meta {
       margin-left: var(--xh-pad-half-px);
       font-size: 10px;
-      color: var(--xh-blue-gray);
       cursor: default;
+      color: var(--column-chooser-text-color-alt);
 
       &:hover {
         color: var(--xh-orange-muted);
@@ -300,6 +315,6 @@
   &__desc {
     font-size: var(--xh-font-size-small-px);
     line-height: 1.4;
-    color: var(--xh-text-color-muted);
+    color: var(--column-chooser-text-color-alt);
   }
 }
