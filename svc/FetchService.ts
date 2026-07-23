@@ -164,7 +164,7 @@ export class FetchService extends HoistService {
      * non-Store streaming.
      */
     async *fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
-        yield* ndjsonChunks(await this.fetchInternalAsync(opts, ctx));
+        yield* this.ndjsonChunks(await this.fetchInternalAsync(opts, ctx));
     }
 
     /**
@@ -566,6 +566,31 @@ export class FetchService extends HoistService {
     }
 
     /**
+     * Read an NDJSON Response body incrementally, yielding chunks (arrays) of parsed records as
+     * they arrive off the network. Each line is parsed with native JSON.parse, partial trailing
+     * lines are carried across chunk boundaries, and no more than one network chunk of raw text
+     * is buffered.
+     */
+    private async *ndjsonChunks(response: Response): AsyncGenerator<PlainObject[]> {
+        const reader = response.body.getReader(),
+            decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, {stream: true});
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // retain any partial trailing line for the next chunk
+            if (lines.length) yield lines.filter(Boolean).map(it => JSON.parse(it));
+        }
+
+        buffer += decoder.decode();
+        if (buffer.trim()) yield [JSON.parse(buffer)];
+    }
+
+    /**
      * Create an Error to throw when a fetchJson call encounters a SyntaxError.
      * @param fetchOptions - original options passed to FetchService.
      * @param cause - object thrown by native {@link response.json}.
@@ -839,32 +864,4 @@ export interface FetchException extends HoistException {
      * @see FetchOptions.autoAbortKey
      */
     isFetchAborted: boolean;
-}
-
-//------------------------
-// Implementation
-//------------------------
-/**
- * Read an NDJSON Response body incrementally, yielding chunks (arrays) of parsed records as
- * they arrive off the network. Each line is parsed with native JSON.parse, partial trailing
- * lines are carried across chunk boundaries, and no more than one network chunk of raw text
- * is buffered.
- */
-async function* ndjsonChunks(response: Response): AsyncGenerator<PlainObject[]> {
-    const reader = response.body.getReader(),
-        decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-        const {done, value} = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, {stream: true});
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // retain any partial trailing line for the next chunk
-        if (lines.length) yield lines.filter(Boolean).map(it => JSON.parse(it));
-    }
-
-    buffer += decoder.decode();
-    if (buffer.trim()) yield [JSON.parse(buffer)];
 }
