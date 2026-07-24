@@ -8,7 +8,7 @@
 import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {defaultsDeep, isEmpty} from 'lodash';
+import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
@@ -273,14 +273,25 @@ export class Cube extends HoistBase {
      * Populate this cube with a new dataset.
      * This method largely delegates to {@link Store.loadData} - see that method for more info.
      *
+     * May also be passed a streaming source - a sync or async iterable yielding raw records or
+     * chunks of records - loaded via {@link Store.loadDataAsync}, e.g.
+     * `cube.loadDataAsync(XH.fetchNdjson({url}))`.
+     *
      * Note that this method will update its views asynchronously in order to avoid locking up the
      * browser when attached to multiple expensive views.
      *
-     * @param rawData - flat array of lowest/leaf level data rows.
+     * @param rawData - flat array of lowest/leaf level data rows, or a streaming source of same.
      * @param info - optional metadata to associate with this cube/dataset.
      */
-    async loadDataAsync(rawData: PlainObject[], info: PlainObject = {}): Promise<void> {
-        this.store.loadData(rawData);
+    async loadDataAsync(
+        rawData: PlainObject[] | AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>,
+        info: PlainObject = {}
+    ): Promise<void> {
+        if (isArray(rawData)) {
+            this.store.loadData(rawData);
+        } else {
+            await this.store.loadDataAsync(rawData);
+        }
         this.setInfo(info);
         await forEachAsync(this._connectedViews, v => v.noteCubeLoaded());
     }
