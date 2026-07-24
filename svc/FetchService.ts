@@ -265,14 +265,18 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Clear all string-interning caches maintained for {@link FetchOptions.internStrings}.
+     * Clear string-interning caches maintained for {@link FetchOptions.internStrings} - all of
+     * them, or just the cache for a single key.
      *
      * Interned strings referenced by live records remain retained by those records - this
      * releases only the cache's own references. Useful after tearing down large views whose
-     * datasets will not be refetched.
+     * datasets will not be refetched, where the cache would otherwise continue to retain the
+     * last response's distinct values.
+     *
+     * @param key - specific {@link InternStringsSpec.key} to clear, or omit to clear all.
      */
-    clearInternCaches() {
-        this.interners.clear();
+    clearInternCaches(key?: string) {
+        key ? this.interners.delete(key) : this.interners.clear();
     }
 
     /**
