@@ -712,14 +712,16 @@ export class FetchService extends HoistService {
             buffer = lines.pop(); // retain any partial trailing line for the next chunk
             if (lines.length) {
                 const chunk = lines.filter(Boolean).map(it => JSON.parse(it));
-                yield interner ? interner.intern(chunk) : chunk;
+                interner?.intern(chunk);
+                yield chunk;
             }
         }
 
         buffer += decoder.decode();
         if (buffer.trim()) {
             const chunk = [JSON.parse(buffer)];
-            yield interner ? interner.intern(chunk) : chunk;
+            interner?.intern(chunk);
+            yield chunk;
         }
     }
 

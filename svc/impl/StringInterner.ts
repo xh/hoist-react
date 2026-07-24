@@ -65,19 +65,18 @@ export class StringInterner {
     }
 
     /**
-     * Intern string values within the given data, in place. Returns the same value.
+     * Intern string values within the given data, mutating it in place.
      *
      * Accepts an array of records, or a single plain-object record - the latter treated as a
      * root node, with its own string values interned and `childrenKey` recursion applying as
-     * usual. Any other value passes through untouched.
+     * usual. Values of any other shape are ignored.
      */
-    intern<T>(data: T): T {
+    intern(data: PlainObject | PlainObject[]) {
         this.pending ??= new Map();
         const rows = isArray(data) ? data : [data];
         rows.forEach(row => {
             if (isPlainObject(row)) this.internRow(row);
         });
-        return data;
     }
 
     /** Install pending values as the new committed generation, evicting values not re-seen. */
