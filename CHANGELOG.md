@@ -14,13 +14,14 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 
 ### 🎁 New Features
-* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
-  async iterable yielding raw records or chunks. Creates records incrementally without buffering
-  the complete raw dataset in memory, then installs them in a single transaction once the source
+
+* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or async
+  iterable yielding raw records or chunks. Creates records incrementally without buffering the
+  complete raw dataset in memory, then installs them in a single transaction once the source
   completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
-* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
-  as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
-  directly via `for await` for any streamed endpoint.
+* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally as
+  an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable directly
+  via `for await` for any streamed endpoint.
 
 ### ⚙️ Technical
 
