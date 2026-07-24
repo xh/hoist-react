@@ -14,14 +14,15 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 
 ### 🎁 New Features
+
 * Improved `Store` memory usage and read performance for record data. Records in stores with up to
   100 fields now build their `data` objects via a per-store compiled factory, keeping them in V8's
   optimized "fast properties" mode - measured 6-8x smaller at typical record widths, with faster
   loads and faster downstream field reads (grid rendering, sorting, filtering, cube aggregation).
   Wider stores and environments with a strict CSP (no `unsafe-eval`) continue to use the prior
   sparse representation. Note `StoreRecord.data` objects now carry an own property for every field
-  (defaults included) on the optimized path - apps relying on `Object.keys(record.data)` or
-  spread/`JSON.stringify` of `data` returning only non-default fields should use
+  (defaults included) on the optimized path - apps relying on `Object.keys(record.data)` or spread/
+  `JSON.stringify` of `data` returning only non-default fields should use
   `record.getModifiedValues()` or `record.getValues()` as appropriate instead.
 
 ### ⚙️ Technical
