@@ -79,7 +79,11 @@ export class StringInterner {
         });
     }
 
-    /** Install pending values as the new committed generation, evicting values not re-seen. */
+    /**
+     * Install pending values as the new committed generation, evicting values not re-seen.
+     * No-op on the committed generation if the spec opts out via `retainAcrossFetches: false` -
+     * `committed` then remains permanently empty, and interning is per-response only.
+     */
     commit() {
         if (this.pending) {
             this.lastStats = {
@@ -87,7 +91,7 @@ export class StringInterner {
                 retained: this.pending.size,
                 carried: this.carried
             };
-            this.committed = this.pending;
+            if (this.spec.retainAcrossFetches !== false) this.committed = this.pending;
             this.pending = null;
             this.processed = this.carried = 0;
         }

@@ -1054,6 +1054,14 @@ export interface InternStringsSpec {
      * null - no recursion.
      */
     childrenKey?: string;
+
+    /**
+     * True (default) to hold each response's interned values for reuse by the next response
+     * with the same key. Set false to intern within each response only - appropriate for large
+     * one-shot datasets that will not be refetched, where a retained cache would pin the last
+     * response's distinct values for no future benefit.
+     */
+    retainAcrossFetches?: boolean;
 }
 
 /**
