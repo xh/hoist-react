@@ -27,6 +27,14 @@
   aggregate rows) are now populated via a per-View compiled assigner, measured ~5-6x smaller at
   typical view widths (more than ~20 fields), with faster row generation and aggregation reads.
   Views with very many fields and strict-CSP environments continue to use the prior route.
+* Added an opt-in `Store.adoptRawData` mode for read-only projections of already-parsed data - most
+  notably a connected Cube `View` feeding a (tree) grid. Records adopt the provider's row object as
+  their `data` by reference rather than re-parsing and copying it, collapsing the usual two per-row
+  objects to one and skipping the per-row parse on every load and update - a memory-focused
+  optimization for large, high-frequency Cube-backed grids. This is a read-only mode - the local
+  edit/commit/revert APIs throw, `freezeData` is forced off, and the data provider must supply
+  pre-parsed values. See the `adoptRawData` config docs for the full contract. Default off,
+  non-breaking.
 
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
