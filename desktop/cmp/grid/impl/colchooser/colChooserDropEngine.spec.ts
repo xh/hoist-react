@@ -569,7 +569,171 @@ for (const c of collapseCases) {
     }
 }
 
-const total = cases.length + selCases.length + reasonCases.length + collapseCases.length;
+//------------------
+// C-HIDDEN-GAP: a second fixture mirroring the Toolbox `columnChooser` example - a nested Sales
+// group (projected + actual subgroups) followed in master by an all-HIDDEN Compensation group and a
+// trailing ungrouped column (retain). The hidden foreign group between the Sales run and retain is
+// exactly what tripped `viewInsertionIndex`: dropping a subgroup below the last leaf of its sibling
+// subgroup must land it inside the Sales run (a minimal reorder), not overshoot retain's raw master
+// index across the hidden Compensation columns (which split Sales and forced the whole group to the
+// end). See `docs/planning/locked-group-dnd-spec.md` §5A.
+//------------------
+const CHAIN2: Record<string, string[]> = {
+    fullName: ['rep'],
+    firstName: ['rep'],
+    lastName: ['rep'],
+    email: ['rep'],
+    city: ['location'],
+    state: ['location'],
+    region: ['location'],
+    salary: [],
+    tenure: [],
+    projectedUnitsSold: ['sales', 'projected'],
+    projectedGross: ['sales', 'projected'],
+    actualUnitsSold: ['sales', 'actual'],
+    actualGross: ['sales', 'actual'],
+    commissionRate: ['compensation'],
+    commission: ['compensation'],
+    retain: []
+};
+const NAT2 = Object.keys(CHAIN2);
+const HIDDEN2 = new Set([
+    'firstName',
+    'lastName',
+    'email',
+    'city',
+    'region',
+    'tenure',
+    'commissionRate',
+    'commission'
+]);
+const PINS2: Record<string, HSide> = {fullName: 'left'};
+const chainOf2: ChainOf = c => CHAIN2[c] ?? [];
+const isDisplayed2 = (c: string) => !HIDDEN2.has(c);
+const master2: ColumnState[] = NAT2.map(colId => ({
+    colId,
+    width: 100,
+    hidden: HIDDEN2.has(colId),
+    pinned: PINS2[colId]
+}));
+const mkTarget2 = (id: string): DropTarget => {
+    const leaves = NAT2.filter(c => chainOf2(c).includes(id));
+    return leaves.length
+        ? {id, isGroup: true, leafColIds: leaves}
+        : {id, isGroup: false, leafColIds: [id]};
+};
+const bucketView2 = (st: ColumnState[], side: HSide | null) =>
+    st.filter(cs => (cs.pinned ?? null) === side && !cs.hidden).map(cs => cs.colId);
+
+interface HGCase {
+    name: string;
+    moving: string[];
+    guid?: string | null;
+    target: string;
+    position: 'above' | 'below';
+    expectUnpinned: string[];
+}
+
+const hiddenGapCases: HGCase[] = [
+    {
+        // The captured bug: Projected dropped below the last Actual leaf -> minimal reorder within
+        // Sales (Actual then Projected). Before the fix this relocated the whole Sales group past
+        // Retain.
+        name: 'C-HIDDEN-GAP subgroup below sibling subgroup last leaf -> reorder in place',
+        moving: ['projectedUnitsSold', 'projectedGross'],
+        guid: 'projected',
+        target: 'actualGross',
+        position: 'below',
+        expectUnpinned: [
+            'state',
+            'salary',
+            'actualUnitsSold',
+            'actualGross',
+            'projectedUnitsSold',
+            'projectedGross',
+            'retain'
+        ]
+    },
+    {
+        // Symmetric direction: Actual dropped above the first Projected leaf -> Actual then Projected,
+        // Sales still in place (never jumps the hidden Compensation gap).
+        name: 'C-HIDDEN-GAP subgroup above sibling subgroup first leaf -> reorder in place',
+        moving: ['actualUnitsSold', 'actualGross'],
+        guid: 'actual',
+        target: 'projectedUnitsSold',
+        position: 'above',
+        expectUnpinned: [
+            'state',
+            'salary',
+            'actualUnitsSold',
+            'actualGross',
+            'projectedUnitsSold',
+            'projectedGross',
+            'retain'
+        ]
+    },
+    {
+        // Foreign to BOTH rendered neighbors: an ungrouped column dropped below Actual Gross, whose
+        // rendered next (Retain) is separated from the Sales run by the hidden Compensation group.
+        // The drop anchors right after the preceding row (Actual Gross), NOT before Retain across the
+        // hidden gap: prefer the position immediately after the row before the indicator, and when it
+        // can't sit immediately before the next row (hidden columns or locked-group rules in the way),
+        // the nearest position after the preceding row is where it lands.
+        name: 'C-HIDDEN-GAP ungrouped leaf below a group, hidden gap before next -> after preceding row',
+        moving: ['salary'],
+        guid: null,
+        target: 'actualGross',
+        position: 'below',
+        expectUnpinned: [
+            'state',
+            'projectedUnitsSold',
+            'projectedGross',
+            'actualUnitsSold',
+            'actualGross',
+            'salary',
+            'retain'
+        ]
+    }
+];
+
+for (const c of hiddenGapCases) {
+    const errs: string[] = [];
+    const res = resolveDrop({
+        master: master2,
+        chainOf: chainOf2,
+        side: null,
+        isDisplayed: isDisplayed2,
+        lockColumnGroups: true,
+        movingLeafColIds: c.moving,
+        dragUnitGroupId: c.guid ?? null,
+        target: mkTarget2(c.target),
+        position: c.position
+    });
+    if (!res.allowed || !res.state) {
+        errs.push(`allowed: expected true, got ${res.allowed} (reason ${res.reason})`);
+    } else {
+        if (!invariantHolds(res.state, chainOf2))
+            errs.push('marryChildren invariant VIOLATED (would trigger #39)');
+        const got = bucketView2(res.state, null);
+        if (!arrEq(got, c.expectUnpinned))
+            errs.push(`unpinned view: expected [${c.expectUnpinned}], got [${got}]`);
+    }
+    if (errs.length) {
+        failures.push(c.name);
+        console.log(`✗ ${c.name}`);
+        errs.forEach(e => console.log(`    ${e}`));
+    } else {
+        passed++;
+        console.log(`✓ ${c.name}`);
+    }
+}
+
+const total =
+    cases.length +
+    selCases.length +
+    reasonCases.length +
+    collapseCases.length +
+    hiddenGapCases.length;
 console.log(`\n${passed}/${total} passed, ${failures.length} failed`);
 if (failures.length) {
     console.log('FAILED:', failures.join('; '));

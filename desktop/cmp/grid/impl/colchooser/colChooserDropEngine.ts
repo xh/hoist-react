@@ -476,7 +476,13 @@ function viewInsertionIndex(
     }
     if (next != null) {
         for (let k = s; k < nc.length; k++) if (!dragChain.has(nc[k])) return runStart(nc[k]);
-        return idxOf(next);
+        // Anchor immediately before `next` only when the unit actually joins next's group (shares a
+        // divergent group) or there is no prev to fall back to. Otherwise the unit belongs to prev's
+        // branch, not next's: fall through so it lands beside prev, inside its own run. Never
+        // overshoot to next's raw master index, which can jump a run of hidden / other-bucket foreign
+        // columns and split the unit's group - e.g. dropping a subgroup below the last leaf of a
+        // sibling subgroup when a hidden group and a trailing column follow it in master.
+        if (prev == null || nc.slice(s).some(g => dragChain.has(g))) return idxOf(next);
     }
     if (prev != null) {
         for (let k = s; k < pc.length; k++) if (!dragChain.has(pc[k])) return runEnd(pc[k]);
