@@ -33,7 +33,14 @@ jobs:
         - uses: actions/checkout@v7
 
         - name: Setup Node.js
-          uses: actions/setup-node@v6
+          # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
+          # and its `cache: yarn` handling then runs `yarn cache dir`, which hard-errors if the var
+          # is unresolvable. setup-node v7 no longer exports a dummy value, so we supply one. The
+          # real token is scoped to the publish step alone, keeping it out of dependency lifecycle
+          # scripts during install.
+          env:
+              NODE_AUTH_TOKEN: 'unused-at-install-time'
+          uses: actions/setup-node@v7
           with:
               node-version-file: '.nvmrc'
               registry-url: 'https://registry.npmjs.org'
