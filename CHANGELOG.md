@@ -14,8 +14,9 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 
 ### 🎁 New Features
-* Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference
-  to its raw source data object after parsing, reducing memory usage on large stores where
+
+* Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
+  its raw source data object after parsing, reducing memory usage on large stores where
   `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
 
 ### ⚙️ Technical
