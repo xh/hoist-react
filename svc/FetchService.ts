@@ -23,9 +23,21 @@ import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {isDate, isFunction, isNil, isObject, isString, noop, omit, omitBy, truncate} from 'lodash';
+import {
+    isDate,
+    isEqual,
+    isFunction,
+    isNil,
+    isObject,
+    isString,
+    noop,
+    omit,
+    omitBy,
+    truncate
+} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 import ShortUniqueId from 'short-unique-id';
+import {StringInterner} from './impl/StringInterner';
 
 const defaultIdGenerator = new ShortUniqueId({length: 16});
 
@@ -79,6 +91,7 @@ export class FetchService extends HoistService {
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
     private _interceptors: FetchInterceptor[] = [];
+    private interners: Map<string, StringInterner> = new Map();
 
     /** Default timeout to be used for all requests made via this service */
     defaultTimeout: PromiseTimeoutSpec = 30 * SECONDS;
@@ -249,6 +262,17 @@ export class FetchService extends HoistService {
         aborter.abort();
         delete autoAborters[autoAbortKey];
         return true;
+    }
+
+    /**
+     * Clear all string-interning caches maintained for {@link FetchOptions.internStrings}.
+     *
+     * Interned strings referenced by live records remain retained by those records - this
+     * releases only the cache's own references. Useful after tearing down large views whose
+     * datasets will not be refetched.
+     */
+    clearInternCaches() {
+        this.interners.clear();
     }
 
     //-----------------------
@@ -484,9 +508,14 @@ export class FetchService extends HoistService {
         callCtx: CallContext
     ): Promise<any> {
         if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
-        return r.json().catchWhen('SyntaxError', e => {
+        const ret = await r.json().catchWhen('SyntaxError', e => {
             throw this.jsonParseException(opts, callCtx, e);
         });
+
+        const interner = this.getInterner(opts.internStrings);
+        interner?.intern(ret);
+        interner?.commit();
+        return ret;
     }
 
     private async safeResponseTextAsync(response: Response) {
@@ -625,10 +654,12 @@ export class FetchService extends HoistService {
         fetchPromise: Promise<Response>,
         onComplete: (err?: unknown) => void
     ): AsyncGenerator<PlainObject[]> {
+        const interner = this.getInterner(opts.internStrings);
         try {
             const response = await fetchPromise;
             try {
-                yield* this.ndjsonChunks(response);
+                yield* this.ndjsonChunks(response, interner);
+                interner?.commit();
             } catch (e) {
                 const ex =
                     e?.name === 'AbortError'
@@ -638,7 +669,10 @@ export class FetchService extends HoistService {
                 throw ex;
             }
         } finally {
-            onComplete(); // only finally blocks run if the consumer exits its loop early
+            // Only finally blocks run if the consumer exits its loop early. Discard any
+            // uncommitted interned values - no-op after a successful commit above.
+            interner?.abort();
+            onComplete();
         }
     }
 
@@ -648,7 +682,10 @@ export class FetchService extends HoistService {
      * lines are carried across chunk boundaries, and no more than one network chunk of raw text
      * is buffered.
      */
-    private async *ndjsonChunks(response: Response): AsyncGenerator<PlainObject[]> {
+    private async *ndjsonChunks(
+        response: Response,
+        interner: StringInterner
+    ): AsyncGenerator<PlainObject[]> {
         const reader = response.body.getReader(),
             decoder = new TextDecoder();
         let buffer = '';
@@ -660,11 +697,33 @@ export class FetchService extends HoistService {
             buffer += decoder.decode(value, {stream: true});
             const lines = buffer.split('\n');
             buffer = lines.pop(); // retain any partial trailing line for the next chunk
-            if (lines.length) yield lines.filter(Boolean).map(it => JSON.parse(it));
+            if (lines.length) {
+                const chunk = lines.filter(Boolean).map(it => JSON.parse(it));
+                yield interner ? interner.intern(chunk) : chunk;
+            }
         }
 
         buffer += decoder.decode();
-        if (buffer.trim()) yield [JSON.parse(buffer)];
+        if (buffer.trim()) {
+            const chunk = [JSON.parse(buffer)];
+            yield interner ? interner.intern(chunk) : chunk;
+        }
+    }
+
+    /**
+     * Get or create the {@link StringInterner} for the given spec's key, or null if interning
+     * was not requested. An existing interner is replaced (dropping its cached generation) if
+     * the spec has changed since it was created.
+     */
+    private getInterner(spec: InternStringsSpec): StringInterner {
+        if (!spec) return null;
+        const {interners} = this;
+        let ret = interners.get(spec.key);
+        if (!ret || !isEqual(ret.spec, spec)) {
+            ret = new StringInterner(spec);
+            interners.set(spec.key, ret);
+        }
+        return ret;
     }
 
     /**
@@ -918,6 +977,22 @@ export interface FetchOptions {
     autoAbortKey?: string;
 
     /**
+     * If set, intern string values in array-based JSON and NDJSON responses to reduce retained
+     * memory on large tabular datasets - each distinct string value is stored once and shared
+     * across all rows, rather than duplicated per row as produced by JSON parsing.
+     *
+     * Applies to string values at the root level of each object within an array response (or
+     * each NDJSON record). A single plain-object response is treated as a root record and
+     * processed likewise. Nested values are not processed, with the exception of recursion
+     * into child records via `childrenKey`. No-op for response payloads of any other shape.
+     *
+     * Interned values are additionally shared across successive responses with the same `key` -
+     * e.g. a polling refresh of the same grid - with cache retention bounded to the values
+     * present in the most recent complete response for each key.
+     */
+    internStrings?: InternStringsSpec;
+
+    /**
      * True to decode the HTTP response as JSON. Default false.
      */
     asJson?: boolean;
@@ -940,6 +1015,26 @@ export interface FetchOptions {
      * @internal
      */
     traceId?: string;
+}
+
+/**
+ * Spec for string-value interning of a fetch response.
+ * @see FetchOptions.internStrings
+ */
+export interface InternStringsSpec {
+    /**
+     * Identifies the logical dataset. Successive responses fetched with the same key share
+     * interned values across fetches, with cache retention bounded to the latest response.
+     * Cleared via {@link FetchService.clearInternCaches}.
+     */
+    key: string;
+
+    /**
+     * Property of each record containing nested child records to recurse into, for tree data -
+     * typically 'children'. Match to the consuming Store's `loadTreeDataFrom` config. Default
+     * null - no recursion.
+     */
+    childrenKey?: string;
 }
 
 /**

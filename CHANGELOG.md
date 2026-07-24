@@ -24,12 +24,20 @@
 * Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
   as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
   directly via `for await` for any streamed endpoint.
+* Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
+  JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
+  values are also shared across successive fetches of the same logical dataset, as identified by
+  a required app-provided key.
 
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
   onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
   have been updated so no app call-site changes are required.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
+* Field XSS protection now preserves the reference identity of string values that sanitization
+  does not modify (the common case). Previously every parsed string value was replaced with a
+  freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
+  upstream deduplication of repeated values.
 
 ### 📚 Libraries
 * react `18.2 → 19.2`
