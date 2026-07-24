@@ -38,7 +38,7 @@
     ]
   },
   "dependencies": {
-    "@auth0/auth0-spa-js": "~2.23.0",
+    "@auth0/auth0-spa-js": "~2.24.0",
     "@azure/msal-browser": "~5.17.0",
     "@blueprintjs/core": "^6.3.2",
     "@blueprintjs/datetime": "^6.0.6",
@@ -81,7 +81,7 @@
     "react-markdown": "~10.1.0",
     "react-onsenui": "~1.13.2",
     "react-select": "~5.10.2",
-    "react-window": "~2.2.7",
+    "react-window": "~2.3.0",
     "react-windowed-select": "~5.2.0",
     "remark-breaks": "~4.0.0",
     "remark-gfm": "~4.0.0",

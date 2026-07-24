@@ -3,15 +3,15 @@
 ## 87.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade.)
-* Hoist v87 updates to React 19. Applications may require minor adjustments and should be
-  carefully tested.
+
+* Hoist v87 updates to React 19. Apps may require minor adjustments and should be tested carefully.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
     * Both desktop and mobile `Popover` implementations now render on Floating UI, rather than
-      Popper.js, which is not React-19 compatible.  This changes the underlying DOM and CSS classes
+      Popper.js, which is not React-19 compatible. This changes the underlying DOM and CSS classes
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
-      any custom styling that targeted  Blueprint or Popper css classes (e.g. `bp6-minimal`).
-    * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
+      any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
+    * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 
 ### 🎁 New Features
 * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference
@@ -19,23 +19,29 @@
   `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
 
 ### ⚙️ Technical
-* Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
-  onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)
-  have been updated so no app call-site changes are required.
+
+* Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
+  Popper.js onto Floating UI for React 19 compatibility. The Hoist `Popover` components (mobile and
+  desktop) have been updated so no app call-site changes are required.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
 
 ### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.23 → 2.24`
 * react `18.2 → 19.2`
+* react-window `2.2 → 2.3`
 
 ## 86.4.0 - 2026-07-15
 
 ### 🎁 New Features
+
 * Added `PrefService.isSet()` to report whether the current user has an explicit value on file for a
   preference vs. receiving its server-side default - a distinction that cannot be reliably inferred
   by comparing the value to the default. Requires a hoist-core version that emits the backing
   `isSet` flag; against older servers all prefs report as unset.
 
 ### 🐞 Bug Fixes
+
 * `PrefService.unset()` now performs a true server-side unset, clearing the user's stored value so
   the preference reverts to its (possibly changing) default and `isSet()` reports `false`.
   Previously it persisted the current default as an explicit user value. Falls back to the legacy
@@ -51,13 +57,13 @@
   ensuring such values render with their proper label rather than falling back to the raw value.
 * `SegmentedControl` options (desktop and mobile) now accept a `testId`, emitted on the option's
   rendered button as `data-testid` for E2E targeting. If an option omits its own `testId` but the
-  control has one, an id is auto-derived as `${controlTestId}-${value}` - restoring parity with
-  the legacy `ButtonGroupInput` test-hook pattern for apps migrating between the two.
+  control has one, an id is auto-derived as `${controlTestId}-${value}` - restoring parity with the
+  legacy `ButtonGroupInput` test-hook pattern for apps migrating between the two.
 
 ### 🐞 Bug Fixes
 
-* Fixed grid columns configured as `hidden` becoming visible after being grouped and then
-  ungrouped. `GridModel` now re-asserts each column's configured visibility whenever `groupBy`
+* Fixed grid columns configured as `hidden` becoming visible after being grouped and then ungrouped.
+  `GridModel` now re-asserts each column's configured visibility whenever `groupBy`
   changes, keeping AG Grid's column state in sync with `columnState`.
 * Fixed `StoreFilterField` and grid Find so an active quick-filter or find query no longer returns
   different results when the grid's `groupBy` changes.
@@ -73,9 +79,9 @@
 * Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
   longer disappears when opened - it now always occupies its place in the layout, so surrounding
   elements no longer shift. Its clear and favorites controls also respond to a single click rather
-  than requiring the popover to be opened first. This mode is now enabled more naturally via
-  a new option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains
-  as a thin alias.
+  than requiring the popover to be opened first. This mode is now enabled more naturally via a new
+  option `filterChooser({popover: true})`, deprecating `PopoverFilterChooser`, which remains as a
+  thin alias.
 * Fixed "not a valid MIME type" console warnings from `FileChooser`. Accepted extensions are now
   passed under a dummy MIME type key, silencing the warnings while continuing to filter selected
   files by extension.
@@ -91,8 +97,8 @@
 ### 🤖 AI Docs + Tooling
 
 * Fixed the MCP server and `hoist-ts` CLI TypeScript symbol tools (`search`, `symbol`, `members`)
-  returning no results on Windows, where a path-separator mismatch left the symbol index empty.
-  Path handling is now normalized so the developer tools work on Windows as well as macOS/Linux.
+  returning no results on Windows, where a path-separator mismatch left the symbol index empty. Path
+  handling is now normalized so the developer tools work on Windows as well as macOS/Linux.
 
 ### 📚 Libraries
 
@@ -110,8 +116,8 @@
   button. For `readonly` inputs it defaults to true, so applications can bind directly to raw source
   values and drop their pre-formatting logic, simplifying call sites substantially.
 * Grid column filter specs now support a `sortValue` config, letting the Values tab of the filter
-  dialog sort its entries the same way the underlying grid column sorts them. When not provided,
-  the column's own `sortValue` is used.
+  dialog sort its entries the same way the underlying grid column sorts them. When not provided, the
+  column's own `sortValue` is used.
 * `GridModel.levelLabels` now accepts a partial array covering only the top levels of a tree or
   grouped grid. The "Expand to..." menu and `ExpandToLevelButton` offer one entry per labelled
   level, so deeper, unlabelled levels (e.g. system-managed) are no longer required and are omitted
@@ -172,11 +178,11 @@
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Updated `DynamicTabSwitcher` to properly apply `testId` passed down by `TabContainer`.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
-* Set an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure
-  that the `0` is not interpreted as a `0px` basis and that the container sizes as expected.
+* Set an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure that
+  the `0` is not interpreted as a `0px` basis and that the container sizes as expected.
     * ⚠️Apps that upgrade to `hoist-dev-utils v13.x` and use `flex: 1 1 0` or `flex-basis: 0` should
-      verify that their flex layouts continue to work as expected and add an explicit unit if
-      not (e.g. `flex: 1 1 0%` or `flex-basis: 0%`).
+      verify that their flex layouts continue to work as expected and add an explicit unit if not
+      (e.g. `flex: 1 1 0%` or `flex-basis: 0%`).
 
 ### ⚙️ Technical
 
@@ -226,9 +232,9 @@
 See [`docs/upgrade-notes/v86-upgrade-notes.md`](docs/upgrade-notes/v86-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-* Deprecated `HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields, in favor of
-  the `Runner` chain (`runner().span()`) and the new `CallContext` argument to fetch methods (see
-  below for more details). Both log a warning and are scheduled for removal in v88.
+* Deprecated `HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields, in favor of the
+  `Runner` chain (`runner().span()`) and the new `CallContext` argument to fetch methods (see below
+  for more details). Both log a warning and are scheduled for removal in v88.
 * Upgraded `CodeInput` to CodeMirror v6 (upgraded from v5).
     * Removed `editorProps` prop - most use cases now supported via first-class `CodeInput` props
       such as `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
@@ -250,16 +256,16 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
-* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
-  existed only to support the above.
-* Replaced the mobile `DateInput`'s picker with the browser's native `<input type="date">`,
-  dropping the abandoned `react-dates` dependency. Removed the obsolete `formatString`,
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which existed
+  only to support the above.
+* Replaced the mobile `DateInput`'s picker with the browser's native `<input type="date">`, dropping
+  the abandoned `react-dates` dependency. Removed the obsolete `formatString`,
   `initialMonth`, `placeholder`, and `singleDatePickerProps` props from `DateInputProps`.
 
 ### 🎁 New Features
 
-* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit,
-  fully customizable `emptyDisplay` / `fileDisplay` content, `onFileAccepted` / `onFileRejected`
+* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit, fully
+  customizable `emptyDisplay` / `fileDisplay` content, `onFileAccepted` / `onFileRejected`
   callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled` options, and a
   programmatic `openFileBrowser()` method. In multi-file mode a persistent drop target sits
   alongside the grid - placement set via the `dropTargetPlacement` prop (`left`, `top`, or
@@ -270,23 +276,23 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   now accept as an optional argument.
 * Added a client-side `MetricsService` (`XH.metricsService`) for recording timers and counters,
   batched to the server's Micrometer registry. Recording requires `hoist-core >= 40.0.1`.
-* Trace spans can now chain onto a remote `traceparent` received off-channel (e.g. a WebSocket,
-  SSE, or queue message), in addition to a local parent span.
-* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
-  defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
+* Trace spans can now chain onto a remote `traceparent` received off-channel (e.g. a WebSocket, SSE,
+  or queue message), in addition to a local parent span.
+* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to defer
+  parsing and value commit until blur, Enter, or picker selection. Useful when configuring
   `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
   where the eager default would reformat the user's text mid-typing.
 * `SegmentedControl` now supports a per-option `intent`, with an option's own intent taking
   precedence over the control-level default. Its control-level `intent` prop was widened from
-  `'none' | 'primary'` to `'none' | Intent`, now accepting `success` / `warning` / `danger` as
-  well (a backward-compatible widening).
+  `'none' | 'primary'` to `'none' | Intent`, now accepting `success` / `warning` / `danger` as well
+  (a backward-compatible widening).
 * Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
   concatenated through `persistOptions()`. Enables hierarchical namespacing of persistence so a
   parent model can scope all descendants (`@persist` properties, `markPersist` calls, child
   `GridModel` / `PanelModel` / etc.) under a single shared key in one backing store. See
   [`docs/persistence.md`](docs/persistence.md#hierarchical-namespacing-with-pathprefix).
-* Added exported `persistOptions()` function for merging one or more `PersistOptions` objects,
-  with later arguments overriding earlier ones. Replaces the now-deprecated
+* Added exported `persistOptions()` function for merging one or more `PersistOptions` objects, with
+  later arguments overriding earlier ones. Replaces the now-deprecated
   `PersistenceProvider.mergePersistOptions`.
 
 ### 🐞 Bug Fixes
@@ -295,8 +301,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   modern `chart.zooming.type` Highcharts option, in addition to the legacy `chart.zoomType`.
 * Improved desktop `Select` to no longer hijack `Home`/`End` keys, allowing native caret movement in
   the input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
-* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
-  for a `tags`-typed field with an active filter.
+* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened for
+  a `tags`-typed field with an active filter.
 * Fixed `RelativeTimestamp` ignoring an explicitly passed `model` prop when resolving its `bind`
   source - the prop is now honored, falling back to the context model only when unset.
 * Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
@@ -385,30 +391,30 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 Note that `hoist-core >= 39.0` is recommended (not required) to pair with the span-sampling and
 app-load span changes in this release.
 
-* `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
-  array of service classes plus the current phase's `InitContext`:
+* `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an array of
+  service classes plus the current phase's `InitContext`:
   ```ts
   // before
   await XH.installServicesAsync(MyServiceA, MyServiceB);
   // after
   await XH.installServicesAsync([MyServiceA, MyServiceB], ctx);
   ```
-  The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it
-  ensures service-init spans nest under the current phase's root span (e.g. `xh.client.appInit`
+  The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it ensures
+  service-init spans nest under the current phase's root span (e.g. `xh.client.appInit`
   for app-level services, `xh.client.hoistInit` for Hoist-internal services).
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` signatures now take an
-  `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
-  the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
+  `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` - the
+  upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
   into init-time fetch and async work.
 * `HoistBase.withSpan()` / `withSpanAsync()` have been removed in favor of the new
   `HoistBase.span()` builder. Replace `this.withSpanAsync(cfg, fn)` with
-  `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for
-  advanced use - now a single async method (the prior sync `withSpan` and async
+  `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for advanced
+  use - now a single async method (the prior sync `withSpan` and async
   `withSpanAsync` on `TraceService` have been merged).
 * `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
   for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
-  requiring full visibility into error spans for a particular set of errors should ensure they
-  are sampled via the existing rules.
+  requiring full visibility into error spans for a particular set of errors should ensure they are
+  sampled via the existing rules.
 * Removed several APIs that had been deprecated for one or more prior versions - including
   `loadModel` getters across model/service/store classes, static defaults setters on `GridModel`/
   `ChartModel`/`ExceptionHandler`/`FetchService`, and the legacy `withFilterByField`/
@@ -417,12 +423,11 @@ app-load span changes in this release.
 
 ### 🎁 New Features
 
-* Added `Span.setTag()`/`setTags()`. Span passed to spanned functions is now non-nullable,
-  matching the server-side API.
-* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via
-  loadAsync().
-  This span will be made available on the LoadSpec and automatically picked up by FetchService for
-  properly nesting fetch calls.
+* Added `Span.setTag()`/`setTags()`. Span passed to spanned functions is now non-nullable, matching
+  the server-side API.
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via loadAsync
+  (). This span will be made available on the LoadSpec and automatically picked up by FetchService
+  for properly nesting fetch calls.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
   argument carrying the current phase's `span`, so service init spans can nest under the caller's
   span. Pass it along to any `loadAsync()` calls via `LoadSpecConfig.span` to continue the chain.
@@ -439,15 +444,15 @@ app-load span changes in this release.
 
 ### 🐞 Bug Fixes
 
-* Updated `HoistBase.withSpan` to auto-populate `caller` with `this`, ensuring
-  emitted spans correctly stamp `code.namespace`.
+* Updated `HoistBase.withSpan` to auto-populate `caller` with `this`, ensuring emitted spans
+  correctly stamp `code.namespace`.
 * Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
 * Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
-  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were
-  not reachable from consumer tsconfigs with narrower `include` patterns.
-* Upgraded Swiper `11 → 12` to resolve CVE-2026-27212, a critical prototype pollution
-  vulnerability in `Swiper.extendDefaults()`. Apps consuming Swiper's own SCSS should update
-  imports from `swiper/scss` to `swiper/css` - Swiper 12 ships CSS sources only.
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were not
+  reachable from consumer tsconfigs with narrower `include` patterns.
+* Upgraded Swiper `11 → 12` to resolve CVE-2026-27212, a critical prototype pollution vulnerability
+  in `Swiper.extendDefaults()`. Apps consuming Swiper's own SCSS should update imports from
+  `swiper/scss` to `swiper/css` - Swiper 12 ships CSS sources only.
 
 ### 🤖 AI Docs + Tooling
 
@@ -455,8 +460,8 @@ app-load span changes in this release.
   (e.g. `"StoreRecord raw"`).
 * Expanded member-index coverage to every exported class and every exported `*Config` interface.
 * Added an `@mcpHint` JSDoc tag for attaching short hints to indexed classes/interfaces.
-* All MCP tools now expose structured output via `outputSchema` / `structuredContent`; matching
-  CLI subcommands gained a `--json` flag.
+* All MCP tools now expose structured output via `outputSchema` / `structuredContent`; matching CLI
+  subcommands gained a `--json` flag.
 * `hoist-get-members` surfaces `@param` and `@returns` JSDoc, including via `implements` fallback.
 * Added a disk-persisted index cache at `node_modules/.cache/hoist-mcp/`, dropping cold CLI search
   invocations from multi-second builds to sub-second loads. `HOIST_MCP_NO_CACHE=1` to bypass.
@@ -465,8 +470,8 @@ app-load span changes in this release.
 
 ### ⚙️ Technical
 
-* Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core
-  and easier tag-based sampling.
+* Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core and
+  easier tag-based sampling.
 * Suppressed `Trace ID` display in exception dialogs/toasts for routine or unsampled exceptions.
 
 ### 📚 Libraries
@@ -478,8 +483,8 @@ app-load span changes in this release.
 * resize-observer-polyfill `removed`
 
 Removed dependencies were obsolete or no longer used by hoist-react internals. No app impact
-expected - none were part of the public API surface. Apps that imported these directly (relying
-on them as transitive hoist-react dependencies) must add their own direct dependencies.
+expected - none were part of the public API surface. Apps that imported these directly (relying on
+them as transitive hoist-react dependencies) must add their own direct dependencies.
 
 ## 84.0.2 - 2026-05-13
 
@@ -487,16 +492,16 @@ on them as transitive hoist-react dependencies) must add their own direct depend
 
 * Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
   references to `assets.d.ts` from the files that import PNGs. The ambient declarations were not
-  reachable from consumer tsconfigs with narrower `include` patterns. Backport of the fix
-  originally shipped in v85.0.0.
+  reachable from consumer tsconfigs with narrower `include` patterns. Backport of the fix originally
+  shipped in v85.0.0.
 
 ## 84.0.1 - 2026-04-20
 
 ### 🐞 Bug Fixes
 
 * Fixed an unrecoverable crash when calling `XH.prompt()` (and any other `FormField` rendered
-  without an explicit `model` prop). `InstanceManager.registerModelWithTestId()` dereferenced a
-  null model when a `testId` was supplied, introduced by the v84 expansion of `testId` coverage on
+  without an explicit `model` prop). `InstanceManager.registerModelWithTestId()` dereferenced a null
+  model when a `testId` was supplied, introduced by the v84 expansion of `testId` coverage on
   built-in appcontainer components.
 
 ## 84.0.0 - 2026-04-15
@@ -507,8 +512,8 @@ See [`docs/upgrade-notes/v84-upgrade-notes.md`](docs/upgrade-notes/v84-upgrade-n
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Requires `hoist-core >= 38.0`.
-* Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no
-  remaining usages in the framework — the `className` spec field on `hoistCmp.factory()` /
+* Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no remaining
+  usages in the framework — the `className` spec field on `hoistCmp.factory()` /
   `hoistCmp.withFactory()` handles base class merging automatically.
 
 ### 🎁 New Features
@@ -516,46 +521,46 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
   icon library. All previously supported icons remain and no app changes should be required.
 * Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
-  themeable, and consistent with the rest of the icon system. The icon and weight can be
-  configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
-  available to preserve the original PNG appearance if desired.
+  themeable, and consistent with the rest of the icon system. The icon and weight can be configured
+  globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is available to
+  preserve the original PNG appearance if desired.
 * Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.sampleRules` at span
   creation, with child spans inheriting their parent's decision. The `traceparent` header now
   propagates the sampling flag to the server.
-* `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`.
-  When a string or config is provided, `FetchService` creates and manages the parent span
-  internally, simplifying a common tracing pattern for fetch calls.
+* `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`. When
+  a string or config is provided, `FetchService` creates and manages the parent span internally,
+  simplifying a common tracing pattern for fetch calls.
 
 ### 🤖 AI Docs + Tooling
 
-* Added JSDoc to ~60 exported Config/Spec interfaces and improved class-level docs on key
-  framework classes. Added README cross-references, when-to-use guidance, and `@see` navigation
-  links throughout.
+* Added JSDoc to ~60 exported Config/Spec interfaces and improved class-level docs on key framework
+  classes. Added README cross-references, when-to-use guidance, and `@see` navigation links
+  throughout.
 * Split Cube documentation into dedicated `data/cube/README.md` with expanded query patterns
   covering grand totals, leaf drill-down, dynamic updates, and `executeQuery()`.
 * Enhanced MCP/CLI symbol search to match JSDoc content with multi-word AND queries (e.g.
-  `"panel modal"` finds `ModalSupportModel`). Added disambiguation hints for duplicate symbol
-  names and fixed resolution of symbols shadowed by dynamics stubs.
+  `"panel modal"` finds `ModalSupportModel`). Added disambiguation hints for duplicate symbol names
+  and fixed resolution of symbols shadowed by dynamics stubs.
 
 ### ⚙️ Technical
 
-* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps
-  can override at bootstrap (e.g. `Button.defaults.minimal = false`). Instance props take
-  precedence. Added initial defaults to `Button`, `Panel`, `Spinner`, and `Toolbar`.
+* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps can
+  override at bootstrap (e.g. `Button.defaults.minimal = false`). Instance props take precedence.
+  Added initial defaults to `Button`, `Panel`, `Spinner`, and `Toolbar`.
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
   supporting the new hoist-core per-logger logging behavior overrides.
 * Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
   `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
 * Added hardcoded `xh-` prefixed `testId` props to all desktop and mobile appcontainer components
   for Playwright testing support.
-* Namespaced auto-installed `TraceService` span and metric tags with an `xh.` prefix, aligning
-  with OTEL semantic conventions.
+* Namespaced auto-installed `TraceService` span and metric tags with an `xh.` prefix, aligning with
+  OTEL semantic conventions.
 
 ### ✨ Styles
 
-* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
-  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
-  app-level customization of background, border, border-radius, padding, and max-width.
+* Improved default grid tooltip styling — long strings now wrap at a configurable max-width (`400px`
+  default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for app-level
+  customization of background, border, border-radius, padding, and max-width.
 
 ### 📚 Libraries
 
@@ -576,10 +581,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🤖 AI Docs + Tooling
 
-* Improved MCP/CLI TypeScript symbol tools to surface full JSDoc documentation in search results
-  and resolve a discoverability gap around component Props interfaces. `hoist-search-symbols`
-  now includes JSDoc snippets with each result. Props interfaces (e.g. `PanelProps`) without
-  their own JSDoc inherit documentation from their companion component via naming convention.
+* Improved MCP/CLI TypeScript symbol tools to surface full JSDoc documentation in search results and
+  resolve a discoverability gap around component Props interfaces. `hoist-search-symbols`
+  now includes JSDoc snippets with each result. Props interfaces (e.g. `PanelProps`) without their
+  own JSDoc inherit documentation from their companion component via naming convention.
   `hoist-get-symbol` now cross-references between Props interfaces and their components.
 
 ## 83.0.2 - 2026-03-30
@@ -603,13 +608,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 See [`docs/upgrade-notes/v83-upgrade-notes.md`](docs/upgrade-notes/v83-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-* Requires `hoist-core >= 37.0` (paired major release — tracing and metrics features depend on
-  new server-side infrastructure).
+* Requires `hoist-core >= 37.0` (paired major release — tracing and metrics features depend on new
+  server-side infrastructure).
 * Deprecated ad-hoc static properties on `GridModel`, `ChartModel`, `ExceptionHandler`, and
-  `FetchService` in favor of the new `static defaults` pattern. Old properties log warnings
-  and are scheduled for removal in v85.
-* Removed `downloadjs` dependency. Apps that imported `downloadjs` directly (relying on it
-  as a transitive hoist-react dependency) must replace those usages. Use the new
+  `FetchService` in favor of the new `static defaults` pattern. Old properties log warnings and are
+  scheduled for removal in v85.
+* Removed `downloadjs` dependency. Apps that imported `downloadjs` directly (relying on it as a
+  transitive hoist-react dependency) must replace those usages. Use the new
   `downloadBlob(blob, filename)` or `downloadViaUrl(url, filename?)`
   utilities from `@xh/hoist/utils/js` instead.
 
@@ -627,27 +632,27 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
   existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
   mobile versions for custom icon support.
-* Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
-  feature in `hoist-core >= 37.0`.
-* Added `activeFilterIcon` config to `GridFilterModel` to customize the icon displayed in
-  column headers when a filter is active. Accepts any `Icon` element, enabling use of a
-  different icon, prefix (e.g. solid), or intent (e.g. warning).
+* Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export feature
+  in `hoist-core >= 37.0`.
+* Added `activeFilterIcon` config to `GridFilterModel` to customize the icon displayed in column
+  headers when a filter is active. Accepts any `Icon` element, enabling use of a different icon,
+  prefix (e.g. solid), or intent (e.g. warning).
 
 ### ⚙️ Technical
 
 * Introduced a standard `static defaults` pattern for app configuration overrides across several
-  core models. `GridModel.defaults` is the prime example — see `GridModelDefaults` for the
-  full set of visual, behavioral, and structural props now available. Apps should review
-  available defaults and set them at startup to reduce per-instance boilerplate. Instance-level
-  config always takes precedence. Previous ad-hoc static properties (e.g.
+  core models. `GridModel.defaults` is the prime example — see `GridModelDefaults` for the full set
+  of visual, behavioral, and structural props now available. Apps should review available defaults
+  and set them at startup to reduce per-instance boilerplate. Instance-level config always takes
+  precedence. Previous ad-hoc static properties (e.g.
   `GridModel.DEFAULT_AUTOSIZE_MODE`) are deprecated — update to the new
   `ModelClassName.defaults.propName` form.
-* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use
-  as a `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
+* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
+  `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
 * Switched `sizingModeAppOption` and `themeAppOption` app option control presets to use new
   `SegmentedControl` and set new `refreshRequired: false` flag to avoid data refresh when changed.
-* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state
-  directly from a `DashCanvasItemState[]` array without wrapping as `PersistableState`.
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
+  from a `DashCanvasItemState[]` array without wrapping as `PersistableState`.
 * Updated `FieldFilter` to log console warning for any field not found in linked `Store`.
 
 ### 🤖 AI Docs + Tooling
@@ -669,9 +674,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   from offering a [blank] option.
 * Fixed `FilterChooser` `QueryEngine` to handle null values in suggestion generation without
   throwing. Added error logging so failures in `queryAsync` surface in the console rather than
-  silently killing the dropdown. The 'is' pseudo-operator is now listed in the e.g. operator
-  hints, and 'is blank' / 'is not blank' suggestions are offered when a field contains null
-  values.
+  silently killing the dropdown. The 'is' pseudo-operator is now listed in the e.g. operator hints,
+  and 'is blank' / 'is not blank' suggestions are offered when a field contains null values.
 
 ## 82.0.3 - 2026-03-02
 
@@ -714,21 +718,21 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Bootstrap` module to ensure correlation IDs are active from the very first request, including
   early hoist core init calls. Apps that configure these properties should update references from
   `XH.fetchService.<prop>` to `FetchService.<prop>`.
-* Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
-  Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
+* Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content. Apps
+  with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 * Removed the `xh-popup--framed` CSS class. Apps applying this class to popovers should remove it —
   popover borders are now themed globally via the `--xh-popup-border-color` CSS variable.
 
 ### 🎁 New Features
 
 * Added `DashCanvasWidgetChooser` component — a draggable widget well for adding views to a
-  `DashCanvas` via drag-and-drop from an external container. Added `allowsDrop`, `onDropDone`,
-  and `onDropDragOver` config options to `DashCanvasModel` to support this, along with
+  `DashCanvas` via drag-and-drop from an external container. Added `allowsDrop`, `onDropDone`, and
+  `onDropDragOver` config options to `DashCanvasModel` to support this, along with
   `showGridBackground` and `showAddViewButtonWhenEmpty` configs and a `'wrap'` compaction strategy.
-* Added `Picker` desktop input component — a popover-based option picker for
-  space-constrained areas like toolbars. Renders a trigger button that opens a dropdown
-  checklist, with support for single and multi-select modes, built-in filtering, custom option and
-  button renderers, and virtualized scrolling for large option lists.
+* Added `Picker` desktop input component — a popover-based option picker for space-constrained areas
+  like toolbars. Renders a trigger button that opens a dropdown checklist, with support for single
+  and multi-select modes, built-in filtering, custom option and button renderers, and virtualized
+  scrolling for large option lists.
 * Added new Admin Console Cluster > Metrics tab, providing a cluster-wide view of all registered
   Micrometer meters, part of Hoist's ongoing observability updates.
     * Feature requires `hoist-core >= 36.3`.
@@ -757,31 +761,31 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
   be updated without reloading the entire dashboard and owned views.
 * Fixed `GroupingChooser` to support multiple instances sharing the same `GroupingChooserModel`.
-  Transient UI state (e.g. editor open/closed, pending value) is now held per-component, so
-  opening one chooser no longer opens all others bound to the same model.
+  Transient UI state (e.g. editor open/closed, pending value) is now held per-component, so opening
+  one chooser no longer opens all others bound to the same model.
 
 ### ⚙️ Technical
 
 * Added instance methods to the `Filter` class hierarchy for removing child filters by type or
   field, plus a new `appendFilter()` utility for composing filters via AND. These replace the
-  standalone `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utilities, which
-  have been deprecated. Internal callers have been migrated to the new API.
-* Transitioned the hoist-react build itself to GitHub Actions (from our previous Teamcity build).
-  No change to library consumers - Hoist continues to be published to npm.
+  standalone `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utilities, which have
+  been deprecated. Internal callers have been migrated to the new API.
+* Transitioned the hoist-react build itself to GitHub Actions (from our previous Teamcity build). No
+  change to library consumers - Hoist continues to be published to npm.
 * Catches and logs an occasional, non-fatal race condition error on `DashContainer` state changes.
 
 ### 🤖 AI Docs + Tooling
 
 * Added an embedded MCP (Model Context Protocol) server that gives AI coding tools structured access
   to hoist-react documentation and TypeScript type information. Includes tools for keyword search
-  across docs, symbol lookup, and class/interface member inspection.
-  See [`mcp/README.md`](mcp/README.md) for setup and usage details.
+  across docs, symbol lookup, and class/interface member inspection. See [
+  `mcp/README.md`](mcp/README.md) for setup and usage details.
 
 ### ✨ Styles
 
 * Overrode Blueprint's hardcoded popover border and arrow colors to use Hoist's themed
-  `--xh-popup-border-color` CSS variable. Popover borders and arrows now match the rest of
-  the Hoist theme in both light and dark modes.
+  `--xh-popup-border-color` CSS variable. Popover borders and arrows now match the rest of the Hoist
+  theme in both light and dark modes.
 
 ### 📚 Libraries
 
@@ -803,9 +807,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `xh-panel__inner`. The `xh-panel__content` class is now used on the new inner frame wrapping
   content items (the target of `contentBoxProps`). Update any app CSS selectors targeting the old
   `xh-panel__content` class accordingly.
-* Changed the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
-  a `boolean`. For most apps this will require a trivial change to the signature of the
-  implementation of `HoistAuthModel.completeAuthAsync`.
+* Changed the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than a
+  `boolean`. For most apps this will require a trivial change to the signature of the implementation
+  of `HoistAuthModel.completeAuthAsync`.
 * Renamed Blueprint `Card` exports to `BpCard` and `bpCard`.
 
 ### 🎁 New Features
@@ -900,8 +904,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Applied the app-wide `--xh-font-family` to `input` elements. Previously these had continued to
   take a default font defined by the browser stylesheet.
     * Customize for inputs if needed via `--xh-input-font-family`.
-    * Note that the switch to Hoist's default Inter font w/tabular numbers might require some
-      inputs w/tight sizing to be made wider to avoid clipping (e.g. `DateInputs` sized to fit).
+    * Note that the switch to Hoist's default Inter font w/tabular numbers might require some inputs
+      w/tight sizing to be made wider to avoid clipping (e.g. `DateInputs` sized to fit).
 * Updated + added validation-related `FormField` CSS classes and variables to account for new `info`
   and `warning` validation levels. Additionally validation messages and the `info` text element no
   longer clip at a single line - they will wrap as needed.
@@ -942,8 +946,8 @@ this release, but is not strictly required.
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
   symmetry with `setColumnState()`.
     * The prior method remains as an alias but is deprecated and scheduled for removal in v82.
-* Moved `TabSwitcherProps` to `cmp/tab/Types.ts` but maintained export from `cmp/tab/index.ts`.
-  Some apps may need to update their imports.
+* Moved `TabSwitcherProps` to `cmp/tab/Types.ts` but maintained export from `cmp/tab/index.ts`. Some
+  apps may need to update their imports.
 * Repurposed `TabContainerConfig.switcher` to accept a `TabSwitcherConfig`. To pass
   `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
 * Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
@@ -1036,8 +1040,8 @@ See [`docs/upgrade-notes/v78-upgrade-notes.md`](docs/upgrade-notes/v78-upgrade-n
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
-  wholesale. Applications that were relying on the prior patching behavior will need to
-  call `GridModel.applyColumnStateChanges` instead.
+  wholesale. Applications that were relying on the prior patching behavior will need to call
+  `GridModel.applyColumnStateChanges` instead.
 * `GridModel.cleanColumnState` is now private (not expected to impact applications).
 
 ### 🎁 New Features
@@ -1102,8 +1106,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * Note: AG Grid v34+ no longer supports HTML markup in context menus. Applications setting the
       `text` or `secondaryText` properties of `RecordGridAction` to markup should be sure to use
       React nodes for formatting instead.
-* Fixed `AgGridModel.getExpandState()` not returning a full representation of expanded groups -
-  an issue that primarily affected linked tree map visualizations.
+* Fixed `AgGridModel.getExpandState()` not returning a full representation of expanded groups - an
+  issue that primarily affected linked tree map visualizations.
 
 ### ⚙️ Technical
 
@@ -1147,8 +1151,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       very minimal changes, although there are required adjustments to app-level `package.json` to
       install updated grid dependencies and `Bootstrap.ts` to import and register your licensed grid
       modules at their new import paths.
-    * Applications implementing `groupRowRenderer` should note that the `value` property passed
-      to this function is no longer stringified, but is instead the raw field value for the group.
+    * Applications implementing `groupRowRenderer` should note that the `value` property passed to
+      this function is no longer stringified, but is instead the raw field value for the group.
     * See AG's upgrade guides for more details:
         * [Upgrade to v32](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-32/)
         * [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
@@ -1187,8 +1191,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   its configured `initialViewSpec` function as expected in this case.
 * Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
   view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
-* Fixed bug where `GridModel.persistableColumnState` was not including default column `widths`.
-  This led to columns not being set to their expected widths when switching `ViewManager` views.
+* Fixed bug where `GridModel.persistableColumnState` was not including default column `widths`. This
+  led to columns not being set to their expected widths when switching `ViewManager` views.
 * Fixed bug where a `Grid` with managed autosizing was not triggering an autosize as expected when
   new column state was loaded (e.g. via `ViewManager`).
 
@@ -1224,8 +1228,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * The default grid context menu now supports a new item to allow users to expand/collapse out to
       a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
     * A new `ExpandToLevelButton` menu component is also available for both desktop and mobile.
-      Provides easier discoverability on desktop and supports this feature on mobile, where we
-      don't have context menus.
+      Provides easier discoverability on desktop and supports this feature on mobile, where we don't
+      have context menus.
 * Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
     * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
     * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
@@ -1281,9 +1285,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ✨ Styles
 
-* Upgraded the version of Hoist's default Inter UI font to a new major version, now v4.1. Note
-  that this brings slight differences to the font's appearance, including tweaks to internal
-  spacing and letterforms for tabular numbers. The name of the font face has also changed, from
+* Upgraded the version of Hoist's default Inter UI font to a new major version, now v4.1. Note that
+  this brings slight differences to the font's appearance, including tweaks to internal spacing and
+  letterforms for tabular numbers. The name of the font face has also changed, from
   `Inter Var` to `InterVariable`. The default value of the `--xh-font-family` CSS variable has been
   updated to match, making this change transparent for most applications.
 
@@ -1385,8 +1389,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   applicable. This did not previously have any effect, but is required now for the superclass to
   initialize a new `ViewManagerModel`.
     * [Here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
-* Requires call to `makeObservable(this)` in model constructors with `@bindable`. Note that there
-  is a new dev-only runtime check on `HoistBase` to warn if this call has not been made.
+* Requires call to `makeObservable(this)` in model constructors with `@bindable`. Note that there is
+  a new dev-only runtime check on `HoistBase` to warn if this call has not been made.
 
 ### 🎁 New Features
 
@@ -1430,10 +1434,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * The two versions *should* be the same, but in cases where a browser "restores" a tab and
       re-inits an app without reloading the code itself, the upgrade check would miss the fact that
       the client remained on an older version.
-    * ⚠️ NOTE that a misconfigured build - where the client version is not set to the same value
-      as the server - would result in a false positive for an upgrade. The two should always match.
-* Calls to `Promise.track()` that are rejected with an exception will be tracked with new
-  severity level of `TrackSeverity.ERROR`.
+    * ⚠️ NOTE that a misconfigured build - where the client version is not set to the same value as
+      the server - would result in a false positive for an upgrade. The two should always match.
+* Calls to `Promise.track()` that are rejected with an exception will be tracked with new severity
+  level of `TrackSeverity.ERROR`.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -1529,8 +1533,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 ### 🎁 New Features
 
 * Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
-  User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
-  to filter and match data using JSON Path expressions.
+  User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects to
+  filter and match data using JSON Path expressions.
     * ⚠️Requires `hoist-core >= 28.1` with new APIs for this (optional) feature to function.
 * Added new getters `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` to provide a
   more consistent API in the data package. The pre-existing `isModified` getters are retained as
@@ -1584,8 +1588,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 * `LoadingIndicator` is now cross-platform - update imports from
   `@xh/hoist/desktop/cmp/loadingindicator` or `@xh/hoist/mobile/cmp/loadingindicator` to
   `@xh/hoist/cmp/loadingindicator`.
-* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
-  Update imports from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
+* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications. Update
+  imports from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
 * Renamed `RefreshButton.model` prop to `target` for clarity and consistency.
 
 ### 🎁 New Features
@@ -1597,8 +1601,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
     * Improved handling of delete / update collisions.
     * New `ViewManagerModel.settleTime` config, to allow persisted components such as dashboards to
       fully resolve their rendered state before capturing a baseline for dirty checks.
-* Added `SessionStorageService` and associated persistence provider to support saving tab-local
-  data across reloads. Exact analog to `LocalStorageService`, but scoped to lifetime of current tab.
+* Added `SessionStorageService` and associated persistence provider to support saving tab-local data
+  across reloads. Exact analog to `LocalStorageService`, but scoped to lifetime of current tab.
 * Added `AuthZeroClientConfig.audience` config to support improved flow for Auth0 OAuth clients that
   request access tokens. Specify your access token audience here to allow the client to fetch both
   ID and access tokens in a single request and to use refresh tokens to maintain access without
@@ -1614,8 +1618,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 * Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
   positioned with `top` orientation.
 * Fixed styling of `ButtonGroup` in vertical orientations.
-* Improved handling of calls to `DashContainerModel.loadStateAsync()` when the component has yet
-  to be rendered. Requested state updates are no longer dropped, and will be applied as soon as the
+* Improved handling of calls to `DashContainerModel.loadStateAsync()` when the component has yet to
+  be rendered. Requested state updates are no longer dropped, and will be applied as soon as the
   component is ready to do so.
 
 ### ⚙️ Technical
@@ -1680,10 +1684,10 @@ build. That said, we *strongly* recommend taking these same changes into your ap
       its bound `Persistable` when changes are detected.
     * In its constructor, `PersistenceProvider` also stores the initial state of its bound
       `Persistable` and clears its persisted state when structurally equal to the initial state.
-* Updated persistable components to support specifying distinct `PersistOptions` for individual
-  bits of persisted state. E.g. you can now configure a `GroupingChooserModel` used within a
-  dashboard widget to persist its value to that particular widget's `DashViewModel` while saving the
-  user's favorites to a global preference.
+* Updated persistable components to support specifying distinct `PersistOptions` for individual bits
+  of persisted state. E.g. you can now configure a `GroupingChooserModel` used within a dashboard
+  widget to persist its value to that particular widget's `DashViewModel` while saving the user's
+  favorites to a global preference.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -1721,8 +1725,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
 
-* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and
-  new memory monitoring persistence.
+* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and new
+  memory monitoring persistence.
 * Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
 
 ### 🎁 New Features
@@ -1756,8 +1760,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 ### 🎁 New Features
 
-* `Markdown` now supports a `reactMarkdownOptions` prop to allow passing React Markdown
-  props to the underlying `reactMarkdown` instance.
+* `Markdown` now supports a `reactMarkdownOptions` prop to allow passing React Markdown props to the
+  underlying `reactMarkdown` instance.
 
 ### ⚙️ Technical
 
@@ -1804,19 +1808,19 @@ build. That said, we *strongly* recommend taking these same changes into your ap
     * Correlation IDs are assigned via:
         * `FetchOptions.correlationId` - specify an ID to be used on a particular request or `true`
           to use a UUID generated by Hoist (see `FetchService.genCorrelationId()`).
-        * `TrackOptions.correlationId` - specify an ID for a tracked activity, if not using the
-          new `FetchOptions.track` API (see below).
+        * `TrackOptions.correlationId` - specify an ID for a tracked activity, if not using the new
+          `FetchOptions.track` API (see below).
     * If set on a fetch request, Correlation IDs are passed through to downstream error reporting
       and are available for review in the Admin Console.
 * Added `FetchOptions.track` as streamlined syntax to track a request via Hoist activity tracking.
   Prefer this option (vs. a chained `.track()` call) to relay the request's `correlationId` and
   `loadSpec` automatically.
-* Added `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
-  Note that `FetchService` methods suffixed with `Json` will set this property automatically.
+* Added `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON. Note
+  that `FetchService` methods suffixed with `Json` will set this property automatically.
 * Added global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
-* Added bindable `AppContainerModel.intializingLoadMaskMessage` to allow apps to customize the
-  load mask message shown during app initialization.
+* Added bindable `AppContainerModel.intializingLoadMaskMessage` to allow apps to customize the load
+  mask message shown during app initialization.
 * Enhanced `select` component with new `emptyValue` prop, allowing for a custom value to be returned
   when the control is empty (vs `null`). Expected usage is `[]` when `enableMulti:true`.
 * Added `GroupingChooserModel.setDimensions()` API, to support updating available dimensions on an
@@ -1905,8 +1909,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor adjustments to client-side auth)
 
 * New `HoistAuthModel` exposes the client-side authentication lifecycle via a newly consolidated,
-  overridable API. This new API provides more easy customization of auth across all client-side
-  apps by being easily overrideable and specified via the `AppSpec` passed to `XH.renderApp()`.
+  overridable API. This new API provides more easy customization of auth across all client-side apps
+  by being easily overrideable and specified via the `AppSpec` passed to `XH.renderApp()`.
     * In most cases, upgrading should be a simple matter of moving code from `HoistAppModel` methods
       `preAuthInitAsync()` and `logoutAsync()` (removed by this change) to new `HoistAuthModel`
       methods `completeAuthAsync()` and `logoutAsync()`.
@@ -1919,9 +1923,9 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 ### 🐞 Bug Fixes
 
 * Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
-  `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave
-  an unexpected gap across the bottom of the screen. Includes fallback for secure client browsers
-  that don't support dynamic viewport units.
+  `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave an
+  unexpected gap across the bottom of the screen. Includes fallback for secure client browsers that
+  don't support dynamic viewport units.
 * Updated mobile `TabContainer` to flex properly within flexbox containers.
 * Fixed timing issue with missing validation for records added immediately to a new `Store`.
 * Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
@@ -1930,8 +1934,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
 
-* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
-  This should be a drop-in change for applications.
+* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets. This
+  should be a drop-in change for applications.
 * iOS < 16.4 is no longer supported, due to the use of complex RegExes in GFM parsing.
 
 ### 🎁 New Features
@@ -1940,8 +1944,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 ### ✨ Styles
 
-* Refactored CSS classnames applied to the primary application (☰) menu on desktop and mobile.
-  On both platforms the button itself now has an `xh-app-menu-button` class, the popover has
+* Refactored CSS classnames applied to the primary application (☰) menu on desktop and mobile. On
+  both platforms the button itself now has an `xh-app-menu-button` class, the popover has
   `xh-app-menu-popover`, and the menu itself has `xh-app-menu`.
 
 ### ⚙️ Technical
@@ -2049,27 +2053,27 @@ for more details.
 
 * Removed support for passing a plain object to the `model` prop of Hoist Components (previously
   deprecated back in v58). Use the `modelConfig` prop instead.
-* Removed the `multiFieldRenderer` utility function. This has been made internal and renamed
-  to `zoneGridRenderer` for exclusive use by the `ZoneGrid` component.
-* Updated CSS variables related to the `ZoneGrid` component - vars formerly prefixed
-  by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
+* Removed the `multiFieldRenderer` utility function. This has been made internal and renamed to
+  `zoneGridRenderer` for exclusive use by the `ZoneGrid` component.
+* Updated CSS variables related to the `ZoneGrid` component - vars formerly prefixed by
+  `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
   some defaults have changed.
 * Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
   and `AppSpec.enableLoginForm`. This should have no effect on the vast majority of apps which had
-  `isSSO` set to `true`. For apps where `isSSO` was set to `false`, the new flags should be
-  used to more clearly indicate the desired auth behavior.
+  `isSSO` set to `true`. For apps where `isSSO` was set to `false`, the new flags should be used to
+  more clearly indicate the desired auth behavior.
 
 ### 🎁 New Features
 
 * Improved mobile viewport handling to ensure that both standard pages and full screen dialogs
   respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
-  switcher at the bottom of the screen. Also set background letterboxing color (to black) when
-  in landscape mode for a more resolved-looking layout.
+  switcher at the bottom of the screen. Also set background letterboxing color (to black) when in
+  landscape mode for a more resolved-looking layout.
 * Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
   option is selected, rather than waiting for the user to click away from the cell.
 * Improved the display of Role details in the Admin Console. The detail panel for the selected role
-  now includes a sub-tab listing all other roles inherited by the selected role, something that
-  was previously accessible only via the linked graph visualization.
+  now includes a sub-tab listing all other roles inherited by the selected role, something that was
+  previously accessible only via the linked graph visualization.
 * Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
 * Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
 * Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
