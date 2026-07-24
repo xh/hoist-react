@@ -237,7 +237,9 @@ export class StoreRecord {
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
-        data.id = id;
+        // In adoptRawData mode the Store does not own `data` (it is the shared provider object), so
+        // we never write to it. The provider's id already matches - see StoreConfig.adoptRawData.
+        if (!store.adoptRawData) data.id = id;
 
         this.id = id;
         this.agId = 'ag_' + id.toString();
