@@ -28,15 +28,19 @@ import {
     resolveDrop as resolveDropEngine,
     isNoOpDrop as isNoOpDropEngine,
     isValidDragSelection,
+    dragSelectionRejectReason,
     collapseSelection,
     type DragSelectionRow
 } from './colChooserDropEngine';
 import {
     chooserDragAgOptions,
+    chooserDragText,
     chooserGridConfig,
     chooserNameColumn,
+    dragRejectHint,
     type ColumnChooserData,
     type ColumnChooserDropParticipant,
+    type DragHintReason,
     getChooserData
 } from './ColumnChooserUtils';
 
@@ -92,6 +96,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             // The action column reserves its width permanently (toggled by content, not presence),
             // so column layout never reflows - suppress ag-grid's slide animation for good measure.
             suppressColumnMoveAnimation: true,
+            rowDragText: (dragItem, count) =>
+                chooserDragText(this.parent.dragHint, dragItem, count),
             isRowValidDropPosition: params => this.getValidDropPosition(params),
             onRowDragEnd: event => this.handleRowDragEnd(event),
             onCellDoubleClicked: event => {
@@ -237,8 +243,17 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         // Invalidate any prior cache; only a successful resolution below re-arms it for the commit.
         this.pendingDrop = null;
 
-        const records = collapseSelection(getDragRecords(params.rows ?? [params.source]));
-        if (!this.isValidSelection(records)) return {allowed: false};
+        const records = collapseSelection(getDragRecords(params.rows ?? [params.source])),
+            selRows = this.buildSelectionRows(records),
+            lock = this.targetGridModel.lockColumnGroups;
+        if (selRows && !isValidDragSelection(selRows, lock)) {
+            // Target-independent refusal - the whole selection is incoherent. Explain it and bail.
+            this.publishDragHint(dragSelectionRejectReason(selRows, lock));
+            return {allowed: false};
+        }
+        // Past the selection gate: clear any stale hint. Only the locked-split path below re-sets one;
+        // every other refusal here (over the dragged row, a no-op) is benign and stays hint-free.
+        this.publishDragHint(null);
 
         const payload = buildDragPayload(records);
         let target = params.target,
@@ -289,14 +304,17 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         // with what the drop will do (splitting a locked group is rejected here and there). A drop
         // from the library unhides its columns, so resolve with makeVisible to gate it as the commit
         // will.
-        const {allowed, state} = this.resolveDrop(
+        const {allowed, state, reason} = this.resolveDrop(
             payload.leafColIds,
             payload.dragUnitGroupId,
             targetData,
             position,
             payload.fromLibrary
         );
-        if (!allowed || !state) return {allowed: false};
+        if (!allowed || !state) {
+            if (reason) this.publishDragHint(reason);
+            return {allowed: false};
+        }
 
         // Suppress the indicator when the drop leaves the chooser visually unchanged - including one
         // whose only effect is reordering a visible column past an adjacent hidden one (a "nothing
@@ -336,6 +354,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
     /** Handle intra-bucket drag end. */
     handleRowDragEnd(event: RowDragEndEvent) {
+        // onRowDragEnd fires on the drag's source grid for every drag (intra- or cross-bucket), so this
+        // reliably clears the hint once any drag concludes.
+        this.parent.setDragHint(null);
         const dropInfo = event.rowsDrop;
         if (!dropInfo || !dropInfo.allowed || dropInfo.position === 'none') return;
         this.applyPendingDrop(dropInfo);
@@ -401,20 +422,33 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     }
 
     /**
-     * Gate the whole drag by its selected rows (see {@link isValidDragSelection}) - an incoherent
-     * multi-select is refused up front rather than moving only part of it. Library drags are exempt:
-     * dragging hidden columns out to unhide isn't a group-locked reorder.
+     * The dragged rows as {@link DragSelectionRow}s for the selection gate, or null when the drag is
+     * exempt (a Column Library drag - dragging hidden columns out to unhide isn't a group-locked
+     * reorder). A null return means "no gate applies", i.e. always valid.
      */
-    private isValidSelection(records: ColumnChooserData[]): boolean {
-        if (records.some(r => r.fromLibrary)) return true;
-        const rows: DragSelectionRow[] = records.map(r => ({
+    private buildSelectionRows(records: ColumnChooserData[]): DragSelectionRow[] | null {
+        if (records.some(r => r.fromLibrary)) return null;
+        return records.map(r => ({
             isGroup: r.isGroup,
             movable: r.movable,
             parentGroupId: r.isGroup
                 ? null
                 : (this.parentChainMap.get(r.id)?.at(-1)?.groupId ?? null)
         }));
-        return isValidDragSelection(rows, this.targetGridModel.lockColumnGroups);
+    }
+
+    /**
+     * Gate the whole drag by its selected rows (see {@link isValidDragSelection}) - an incoherent
+     * multi-select is refused up front rather than moving only part of it.
+     */
+    private isValidSelection(records: ColumnChooserData[]): boolean {
+        const rows = this.buildSelectionRows(records);
+        return !rows || isValidDragSelection(rows, this.targetGridModel.lockColumnGroups);
+    }
+
+    /** Publish (or clear) the parent's explanatory drag hint for a refused drop. */
+    private publishDragHint(reason: DragHintReason | null) {
+        this.parent.setDragHint(reason ? dragRejectHint(reason) : null);
     }
 
     /**
@@ -581,7 +615,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
-    ): {allowed: boolean; state: ColumnState[] | null} {
+    ): ReturnType<typeof resolveDropEngine> {
         const displayed = this.parent.displayedLeafColIds;
         return resolveDropEngine({
             master: this.parent.currentState,

@@ -14,6 +14,34 @@ import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {type ReactNode, useEffect, useRef} from 'react';
 
+import type {DropRejectReason} from './colChooserDropEngine';
+
+/**
+ * A user-meaningful drag/drop refusal the chooser explains via an on-screen hint. Extends the drop
+ * engine's movement reasons with the library-only `notHideable` (dragging a non-hideable column onto
+ * the library to hide it).
+ */
+export type DragHintReason = DropRejectReason | 'notHideable';
+
+/**
+ * Concise status label for a refused drag/drop, shown in the drag ghost (see {@link chooserDragText})
+ * so the user understands *why* the `notAllowed` cursor is showing - especially the non-obvious
+ * locked-group rules. Kept to a short label (matching the framework's `movable`/`hideable` terms) to
+ * fit the single-line ghost pill.
+ */
+export function dragRejectHint(reason: DragHintReason): string {
+    switch (reason) {
+        case 'notMovable':
+            return 'Not Movable';
+        case 'notHideable':
+            return 'Not Hideable';
+        case 'groupDraggedWithOthers':
+        case 'multiGroupSelection':
+        case 'splitsLockedGroup':
+            return 'Column Groups Locked';
+    }
+}
+
 /** Shape of record data in the ColumnChooser's internal grids (buckets and library). */
 export interface ColumnChooserData {
     id: string;
@@ -59,16 +87,31 @@ export function getChooserData(node: any): ColumnChooserData | null {
     return node?.data?.data ?? null;
 }
 
+/** Default drag-ghost label: the dragged column's name, or "N columns" for a multi-row drag. */
+export function chooserDefaultDragText(dragItem: any, count: number): string {
+    return count > 1 ? `${count} columns` : (getChooserData(dragItem.rowNode)?.name ?? '');
+}
+
+/**
+ * Drag-ghost label getter used by every chooser drag-source grid. Shows the live refusal hint
+ * ({@link dragRejectHint}, published to `dragHint` by the hovered participant) when the current drop
+ * is refused, falling back to the default column-name label otherwise. ag-grid re-invokes this per
+ * drag-move, so the ghost text tracks the cursor.
+ */
+export function chooserDragText(dragHint: string | null, dragItem: any, count: number): string {
+    return dragHint ?? chooserDefaultDragText(dragItem, count);
+}
+
 /**
  * agOptions shared by every chooser drag-source grid (buckets + library): multi-row dragging with a
  * "N columns" / single-column-name drag label, plus suppression of ag-grid's built-in row move -
- * drops are applied by the chooser models, never by ag-grid.
+ * drops are applied by the chooser models, never by ag-grid. Each grid overrides `rowDragText` with
+ * {@link chooserDragText} to layer in the live refusal hint (it needs the model's `dragHint`).
  */
 export const chooserDragAgOptions: GridOptions = {
     suppressMoveWhenRowDragging: true,
     rowDragMultiRow: true,
-    rowDragText: (params, count) =>
-        count > 1 ? `${count} columns` : (getChooserData(params.rowNode)?.name ?? '')
+    rowDragText: chooserDefaultDragText
 };
 
 /** Base GridModel config shared by the chooser's bucket and library grids. */

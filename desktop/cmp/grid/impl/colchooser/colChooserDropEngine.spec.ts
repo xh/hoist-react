@@ -20,12 +20,14 @@ import type {ColumnState} from '@xh/hoist/cmp/grid';
 import type {HSide} from '@xh/hoist/core';
 import {
     collapseSelection,
+    dragSelectionRejectReason,
     invariantHolds,
     isNoOpDrop,
     isValidDragSelection,
     resolveDrop,
     type ChainOf,
     type DragSelectionRow,
+    type DropRejectReason,
     type DropTarget,
     type SelectionUnit
 } from './colChooserDropEngine';
@@ -130,6 +132,8 @@ interface Case {
         unpinned?: string[];
         right?: string[];
         noOp?: boolean;
+        /** Asserted against `resolveDrop`'s refusal reason (checked only when set). */
+        reason?: DropRejectReason;
         /** Targeted checks: return failure messages (empty = pass). */
         verify?: (st: ColumnState[]) => string[];
     };
@@ -263,7 +267,7 @@ const cases: Case[] = [
         guid: 'grp-account',
         target: 'symbol',
         position: 'below',
-        expect: {allowed: false}
+        expect: {allowed: false, reason: 'splitsLockedGroup'}
     },
 
     // --- intra-bucket leaf validity (spec §5) ---
@@ -273,7 +277,7 @@ const cases: Case[] = [
         moving: ['assetClass'],
         target: 'strategy',
         position: 'above',
-        expect: {allowed: false}
+        expect: {allowed: false, reason: 'splitsLockedGroup'}
     },
     {
         name: 'INTRA leaf within its group -> allowed',
@@ -348,6 +352,9 @@ for (const c of cases) {
 
     if (res.allowed !== c.expect.allowed)
         errs.push(`allowed: expected ${c.expect.allowed}, got ${res.allowed}`);
+
+    if (c.expect.reason != null && res.reason !== c.expect.reason)
+        errs.push(`reason: expected ${c.expect.reason}, got ${res.reason}`);
 
     if (res.allowed && res.state) {
         const st = res.state;
@@ -454,6 +461,53 @@ for (const c of selCases) {
 }
 
 //------------------
+// dragSelectionRejectReason: the reason the up-front gate refuses (drives the drag hint)
+//------------------
+interface ReasonCase {
+    name: string;
+    rows: DragSelectionRow[];
+    lock?: boolean; // default true
+    expect: DropRejectReason | null;
+}
+
+const reasonCases: ReasonCase[] = [
+    {name: 'REASON empty -> null (no drag to explain)', rows: [], expect: null},
+    {name: 'REASON valid single leaf -> null', rows: [leaf('grp-security')], expect: null},
+    {
+        name: 'REASON non-movable leaf -> notMovable',
+        rows: [leaf('grp-security', false)],
+        expect: 'notMovable'
+    },
+    {
+        name: 'REASON group mixed with a row -> groupDraggedWithOthers',
+        rows: [group(), leaf('grp-security')],
+        expect: 'groupDraggedWithOthers'
+    },
+    {
+        name: 'REASON locked non-siblings -> multiGroupSelection',
+        rows: [leaf('grp-security'), leaf('grp-account')],
+        expect: 'multiGroupSelection'
+    },
+    {
+        name: 'REASON unlocked non-siblings -> null',
+        rows: [leaf('grp-security'), leaf('grp-account')],
+        lock: false,
+        expect: null
+    }
+];
+
+for (const c of reasonCases) {
+    const got = dragSelectionRejectReason(c.rows, c.lock ?? true);
+    if (got === c.expect) {
+        passed++;
+        console.log(`✓ ${c.name}`);
+    } else {
+        failures.push(c.name);
+        console.log(`✗ ${c.name}\n    expected ${c.expect}, got ${got}`);
+    }
+}
+
+//------------------
 // collapseSelection: subsume rows contained in a selected group (redundant multi-select)
 //------------------
 /** Build a SelectionUnit from a fixture id - a group if it has member leaves, else a leaf. */
@@ -515,7 +569,7 @@ for (const c of collapseCases) {
     }
 }
 
-const total = cases.length + selCases.length + collapseCases.length;
+const total = cases.length + selCases.length + reasonCases.length + collapseCases.length;
 console.log(`\n${passed}/${total} passed, ${failures.length} failed`);
 if (failures.length) {
     console.log('FAILED:', failures.join('; '));

@@ -22,6 +22,16 @@ import {findLastIndex} from 'lodash';
 /** Maps a leaf colId to its group chain as groupIds, outermost (top-level) to innermost. */
 export type ChainOf = (colId: string) => string[];
 
+/**
+ * Why a drop (or the drag itself) is refused - the machine-readable reason the UI turns into an
+ * explanatory hint. Only the user-meaningful refusals are enumerated; benign rejections (hovering
+ * the dragged row, a no-op reorder) carry no reason. The three selection reasons are
+ * target-independent (see {@link dragSelectionRejectReason}); `splitsLockedGroup` is per-position
+ * (see {@link resolveDrop}).
+ */
+export type DropRejectReason =
+    'notMovable' | 'groupDraggedWithOthers' | 'multiGroupSelection' | 'splitsLockedGroup';
+
 /** The drop target: a leaf row (`isGroup:false`, `leafColIds:[self]`) or a group row. */
 export interface DropTarget {
     id: string;
@@ -61,6 +71,8 @@ export interface ResolveDropInput {
 export function resolveDrop(input: ResolveDropInput): {
     allowed: boolean;
     state: ColumnState[] | null;
+    /** Set only on a user-meaningful refusal - drives the explanatory drag hint. */
+    reason?: DropRejectReason;
 } {
     const {
         master,
@@ -114,7 +126,7 @@ export function resolveDrop(input: ResolveDropInput): {
         chainOf
     );
     if (boundGroup && !dropWithinGroup(master, chainOf, boundGroup, L, target, position)) {
-        return {allowed: false, state: null};
+        return {allowed: false, state: null, reason: 'splitsLockedGroup'};
     }
 
     // Move set (spec §7): start from the dragged leaves alone, escalate outward through their
@@ -186,16 +198,29 @@ export interface DragSelectionRow {
  *   different groups can't move together without splitting a group).
  */
 export function isValidDragSelection(rows: DragSelectionRow[], lockColumnGroups: boolean): boolean {
-    if (!rows.length || rows.some(r => !r.movable)) return false;
+    return !!rows.length && dragSelectionRejectReason(rows, lockColumnGroups) == null;
+}
+
+/**
+ * The user-meaningful reason {@link isValidDragSelection} would refuse a selection, or null if it is
+ * valid (or empty - no drag to explain). Companion to the boolean gate so the UI can explain *why* a
+ * multi-select is refused, without changing the gate's semantics. Same order of checks as the gate.
+ */
+export function dragSelectionRejectReason(
+    rows: DragSelectionRow[],
+    lockColumnGroups: boolean
+): DropRejectReason | null {
+    if (!rows.length) return null;
+    if (rows.some(r => !r.movable)) return 'notMovable';
 
     const groupCount = rows.filter(r => r.isGroup).length;
-    if (groupCount > 0) return rows.length === 1;
+    if (groupCount > 0) return rows.length === 1 ? null : 'groupDraggedWithOthers';
 
     if (lockColumnGroups) {
         const parents = new Set(rows.map(r => r.parentGroupId ?? null));
-        if (parents.size > 1) return false;
+        if (parents.size > 1) return 'multiGroupSelection';
     }
-    return true;
+    return null;
 }
 
 /**

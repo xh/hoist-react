@@ -65,6 +65,22 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @bindable filterText: string = null;
 
     //-----------------
+    // Drag state
+    //-----------------
+    /**
+     * Explanatory hint shown in the drag ghost while a drag is refused - e.g. a locked-group split -
+     * so the user understands the `notAllowed` cursor. Set by the hovered participant during the drag
+     * (via each grid's `rowDragText` getter, see {@link chooserDragText}) and cleared on drag end.
+     * Null when no drag is active or the current drop is allowed. See {@link dragRejectHint}.
+     */
+    @observable dragHint: string = null;
+
+    @action
+    setDragHint(hint: string) {
+        this.dragHint = hint;
+    }
+
+    //-----------------
     // Sub-models (one grid each)
     //-----------------
     @managed

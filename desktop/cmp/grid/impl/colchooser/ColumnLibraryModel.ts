@@ -13,8 +13,10 @@ import {isEmpty} from 'lodash';
 import type {ColChooserModel} from './ColChooserModel';
 import {
     chooserDragAgOptions,
+    chooserDragText,
     chooserGridConfig,
     chooserLibraryColumn,
+    dragRejectHint,
     type ColumnChooserDropParticipant,
     type ColumnLibraryData,
     getChooserData
@@ -47,7 +49,8 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
     get agOptions(): GridOptions {
         return {
             ...chooserDragAgOptions,
-            suppressGroupChangesColumnVisibility: true
+            suppressGroupChangesColumnVisibility: true,
+            rowDragText: (dragItem, count) => chooserDragText(this.parent.dragHint, dragItem, count)
         };
     }
 
@@ -120,8 +123,12 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
 
         // Refuse a drag with no hideable leaf - dropping it here would be a no-op. A partially
         // hideable group is still allowed, hiding only its hideable leaves (see handleCrossBucketDrop).
-        if (isEmpty(leafColIds)) return 'hide';
-        return leafColIds.some(id => targetGridModel.isColumnHideable(id)) ? 'hide' : 'notAllowed';
+        if (isEmpty(leafColIds) || leafColIds.some(id => targetGridModel.isColumnHideable(id))) {
+            this.parent.setDragHint(null);
+            return 'hide';
+        }
+        this.parent.setDragHint(dragRejectHint('notHideable'));
+        return 'notAllowed';
     }
 
     //-----------------
