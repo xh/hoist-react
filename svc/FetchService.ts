@@ -275,6 +275,19 @@ export class FetchService extends HoistService {
         this.interners.clear();
     }
 
+    /**
+     * Snapshot of string-interning stats for each active {@link FetchOptions.internStrings}
+     * key, covering the most recently completed response per key: total string values
+     * processed, distinct values retained (with % of processed - lower = more duplication
+     * removed), and values carried over from the prior generation (with % of retained -
+     * higher = more stability across refreshes).
+     *
+     * Convenient from the console via `console.table(XH.fetchService.getInternStats())`.
+     */
+    getInternStats(): PlainObject[] {
+        return Array.from(this.interners.values()).map(it => it.stats);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------

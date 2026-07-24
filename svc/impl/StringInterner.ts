@@ -6,7 +6,7 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {isArray, isPlainObject, isString} from 'lodash';
+import {isArray, isPlainObject, isString, round} from 'lodash';
 import type {InternStringsSpec} from '../FetchService';
 
 /**
@@ -32,9 +32,36 @@ export class StringInterner {
     private committed: Map<string, string> = new Map();
     private pending: Map<string, string> = null;
 
+    // Live counters for the in-progress cycle, snapshotted to lastStats on commit.
+    private processed = 0;
+    private carried = 0;
+    private lastStats: PlainObject = null;
+
     constructor(spec: InternStringsSpec) {
         this.spec = spec;
         this.childrenKey = spec.childrenKey;
+    }
+
+    /**
+     * Stats for the most recently committed cycle (i.e. response) - all zero if none committed:
+     *  - `processed` - total string values encountered.
+     *  - `retained` - distinct values held in the resulting generation, with `retainedPct` of
+     *     processed. Lower percentage = more duplication removed.
+     *  - `carried` - retained values already present in the previous generation, with
+     *    `carriedPct` of retained. Higher percentage = more stability across refreshes.
+     *
+     * Introspect from the console via `XH.fetchService.getInternStats()`.
+     */
+    get stats(): PlainObject {
+        const {processed = 0, retained = 0, carried = 0} = this.lastStats ?? {};
+        return {
+            key: this.spec.key,
+            processed,
+            retained,
+            retainedPct: processed ? round((100 * retained) / processed, 1) : 0,
+            carried,
+            carriedPct: retained ? round((100 * carried) / retained, 1) : 0
+        };
     }
 
     /**
@@ -56,14 +83,21 @@ export class StringInterner {
     /** Install pending values as the new committed generation, evicting values not re-seen. */
     commit() {
         if (this.pending) {
+            this.lastStats = {
+                processed: this.processed,
+                retained: this.pending.size,
+                carried: this.carried
+            };
             this.committed = this.pending;
             this.pending = null;
+            this.processed = this.carried = 0;
         }
     }
 
     /** Discard pending values without committing. No-op if already committed or aborted. */
     abort() {
         this.pending = null;
+        this.processed = this.carried = 0;
     }
 
     //------------------
@@ -74,9 +108,15 @@ export class StringInterner {
         for (const k in row) {
             const v = row[k];
             if (isString(v)) {
+                this.processed++;
                 let c = pending.get(v);
                 if (c === undefined) {
-                    c = committed.get(v) ?? v;
+                    c = committed.get(v);
+                    if (c !== undefined) {
+                        this.carried++;
+                    } else {
+                        c = v;
+                    }
                     pending.set(c, c);
                 }
                 row[k] = c;
