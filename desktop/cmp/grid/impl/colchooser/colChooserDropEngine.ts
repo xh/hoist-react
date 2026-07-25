@@ -23,14 +23,14 @@ import {findLastIndex} from 'lodash';
 export type ChainOf = (colId: string) => string[];
 
 /**
- * Why a drop (or the drag itself) is refused - the machine-readable reason the UI turns into an
- * explanatory hint. Only the user-meaningful refusals are enumerated; benign rejections (hovering
- * the dragged row, a no-op reorder) carry no reason. The three selection reasons are
- * target-independent (see {@link dragSelectionRejectReason}); `splitsLockedGroup` is per-position
- * (see {@link resolveDrop}).
+ * Why a drag is refused - the machine-readable reason the UI turns into an explanatory hint. Every
+ * reason is a target-independent SELECTION refusal (see {@link dragSelectionRejectReason}); benign
+ * rejections (hovering the dragged row, a no-op reorder) carry no reason. A drop that would split a
+ * locked group is no longer refused per-position - it is CLAMPED to the nearest legal spot within
+ * the dragged unit's bounding group (see {@link resolveDrop} / spec §5B), so there is no
+ * splitting-drop reason.
  */
-export type DropRejectReason =
-    'notMovable' | 'groupDraggedWithOthers' | 'multiGroupSelection' | 'splitsLockedGroup';
+export type DropRejectReason = 'notMovable' | 'groupDraggedWithOthers' | 'multiGroupSelection';
 
 /** The drop target: a leaf row (`isGroup:false`, `leafColIds:[self]`) or a group row. */
 export interface DropTarget {
@@ -71,8 +71,6 @@ export interface ResolveDropInput {
 export function resolveDrop(input: ResolveDropInput): {
     allowed: boolean;
     state: ColumnState[] | null;
-    /** Set only on a user-meaningful refusal - drives the explanatory drag hint. */
-    reason?: DropRejectReason;
 } {
     const {
         master,
@@ -83,7 +81,6 @@ export function resolveDrop(input: ResolveDropInput): {
         movingLeafColIds,
         dragUnitGroupId,
         target,
-        position,
         makeVisible = false
     } = input;
     const L = new Set(movingLeafColIds);
@@ -105,17 +102,18 @@ export function resolveDrop(input: ResolveDropInput): {
 
     // Unlocked: no group-contiguity constraint - re-pin the dragged leaves and splice at the drop.
     if (!lockColumnGroups) {
-        return {allowed: true, state: spliceMove(input, target, L, L)};
+        return {allowed: true, state: spliceMove(input, target, L, L, null)};
     }
 
     const dragLeaf = movingLeafColIds[0];
 
-    // Validity (spec §5): the drop must fall within the bounding group's run, else it is rejected.
-    // The bound is the innermost ancestor (including the dragged group's own level - §5A/2b) that
-    // still has a non-dragged member RENDERED in this bucket. Intra- and cross-bucket share this
-    // rule (this bucket is the target either way); counting only rendered members means a hidden
-    // same-bucket sibling never makes a full visible group's drag strict. Null bound → never
-    // rejected (relaxed - a fresh group relocates freely; a leaf's group auto-moves via §7).
+    // Bounding group (spec §5B): the innermost ancestor - including the dragged group's own level
+    // (§5A/2b) - that still has a non-dragged member RENDERED in this bucket. The dragged unit may
+    // only land within this group's run; a drop that would fall OUTSIDE it is CLAMPED to the run's
+    // near edge (see {@link spliceMove}), so an imprecise drag resolves to the nearest legal position
+    // rather than being refused. Counting only rendered members means a hidden same-bucket sibling
+    // never constrains a full visible group. Null bound → unconstrained: a top-level/fresh group
+    // relocates freely across the bucket, and a leaf's own group auto-moves via §7.
     const boundGroup = renderedAncestor(
         master,
         dragLeaf,
@@ -125,9 +123,6 @@ export function resolveDrop(input: ResolveDropInput): {
         L,
         chainOf
     );
-    if (boundGroup && !dropWithinGroup(master, chainOf, boundGroup, L, target, position)) {
-        return {allowed: false, state: null, reason: 'splitsLockedGroup'};
-    }
 
     // Move set (spec §7): start from the dragged leaves alone, escalate outward through their
     // ancestor groups, and stop at the first block whose relocation keeps every group contiguous.
@@ -137,7 +132,7 @@ export function resolveDrop(input: ResolveDropInput): {
         candidates.push(new Set(groupLeafIds(master, chain[d], chainOf)));
     }
     for (const moveSet of candidates) {
-        const state = spliceMove(input, target, moveSet, L);
+        const state = spliceMove(input, target, moveSet, L, boundGroup);
         if (invariantHolds(state, chainOf)) return {allowed: true, state};
     }
     return {allowed: false, state: null}; // unreachable: the root candidate always satisfies
@@ -276,13 +271,15 @@ export function invariantHolds(state: ColumnState[], chainOf: ChainOf): boolean 
 /**
  * Produce the master state that relocates `moveSet` to the drop point, re-pinning the dragged leaves
  * `pinLeaves` to this bucket (and unhiding them for a library drop). The insertion index is resolved
- * in the target bucket's rendered order when locked (§5A Rule A), or at the raw target when unlocked.
+ * in the target bucket's rendered order when locked (§5A Rule A), or at the raw target when unlocked,
+ * then - when locked - CLAMPED to `boundGroup`'s run so the block can never leave its bounding group.
  */
 function spliceMove(
     input: ResolveDropInput,
     target: DropTarget,
     moveSet: Set<string>,
-    pinLeaves: Set<string>
+    pinLeaves: Set<string>,
+    boundGroup: string | null
 ): ColumnState[] {
     const {
             master,
@@ -301,46 +298,26 @@ function spliceMove(
                     : {...cs}
             ),
         remaining = master.filter(cs => !moveSet.has(cs.colId)),
-        dragChain = new Set(chainOf([...pinLeaves][0])),
-        // Locked: resolve the landing in the target bucket's rendered order (§5A Rule A).
-        // Unlocked: no contiguity constraint, so splice at the raw target index (splits allowed).
-        at = lockColumnGroups
-            ? viewInsertionIndex(
-                  remaining,
-                  target,
-                  position,
-                  pinned,
-                  isDisplayed,
-                  dragChain,
-                  chainOf
-              )
-            : baseInsertionIndex(remaining, target, position);
+        dragChain = new Set(chainOf([...pinLeaves][0]));
+
+    // Locked: resolve the landing in the target bucket's rendered order (§5A Rule A).
+    // Unlocked: no contiguity constraint, so splice at the raw target index (splits allowed).
+    let at = lockColumnGroups
+        ? viewInsertionIndex(remaining, target, position, pinned, isDisplayed, dragChain, chainOf)
+        : baseInsertionIndex(remaining, target, position);
+
+    // Clamp to the bounding group's run (spec §5B): a drop that resolves past the run lands at the
+    // run's near edge, keeping the block inside its parent instead of relocating the whole parent.
+    if (lockColumnGroups && boundGroup) {
+        const lo = remaining.findIndex(cs => chainOf(cs.colId).includes(boundGroup));
+        if (lo >= 0) {
+            const hi = findLastIndex(remaining, cs => chainOf(cs.colId).includes(boundGroup)) + 1;
+            at = Math.min(Math.max(at, lo), hi);
+        }
+    }
 
     remaining.splice(at, 0, ...moving);
     return remaining;
-}
-
-/**
- * True if the drop target/position lands within the given bounding group's run - i.e. it is a legal
- * reorder among that group's children rather than one that would relocate the group.
- */
-function dropWithinGroup(
-    master: ColumnState[],
-    chainOf: ChainOf,
-    groupId: string,
-    L: Set<string>,
-    target: DropTarget,
-    position: RowDropTargetPosition
-): boolean {
-    const remaining = master.filter(cs => !L.has(cs.colId)),
-        runIdxs = remaining
-            .map((cs, i) => (chainOf(cs.colId).includes(groupId) ? i : -1))
-            .filter(i => i >= 0);
-    if (!runIdxs.length) return false;
-    const idx = baseInsertionIndex(remaining, target, position),
-        lo = Math.min(...runIdxs),
-        hi = Math.max(...runIdxs) + 1;
-    return idx >= lo && idx <= hi;
 }
 
 /** Leaf colIds (in master order) whose chain includes `groupId`. */
@@ -426,8 +403,9 @@ function baseInsertionIndex(
  * out of its own groups (it joins them), and any group it is foreign to is never split.
  *
  * Maps `(target, position)` to the gap between two rendered bucket leaves `prev`/`next`, then:
- * - a shared group of `prev`/`next` the unit is foreign to → snap to that group's near edge, chosen
- *   by which side of the gap holds more of its rendered members (the single-midpoint view flip);
+ * - a shared group of `prev`/`next` the unit is foreign to → collapse that group to a SINGLE row and
+ *   snap to its leading edge if the cursor is in the group's top half, its trailing edge if in the
+ *   bottom half - the group's vertical midpoint is the flip (spec §5B);
  * - else anchor before `next` (or after `prev` at a bucket edge), pushed out of the outermost group
  *   the unit is foreign to below the shared level - so a foreign group is never split, and when the
  *   unit belongs all the way down it lands right beside the neighbor, joining its own group.
@@ -469,9 +447,17 @@ function viewInsertionIndex(
 
     for (let k = 0; k < s; k++) {
         if (!dragChain.has(pc[k])) {
-            const before = bucketIds.slice(0, gp).filter(id => chainOf(id).includes(pc[k])).length,
-                after = bucketIds.slice(gp).filter(id => chainOf(id).includes(pc[k])).length;
-            return before <= after ? runStart(pc[k]) : runEnd(pc[k]);
+            // Collapse the foreign group to a single row (spec §5B): its whole rendered span is one
+            // drop unit, split at its vertical midpoint - top half → before the group, bottom half →
+            // after. `i` is the hovered member's index among the group's `n` rendered members and the
+            // `below` half adds a half-row, so `2i + below < n` puts the flip at the middle member's
+            // center (rows are uniform height). A group/edge target not among the members (i < 0)
+            // falls back to the plain above/below side.
+            const members = bucketIds.filter(id => chainOf(id).includes(pc[k])),
+                i = members.indexOf(target.id),
+                below = position === 'below' ? 1 : 0,
+                before = i < 0 ? below === 0 : 2 * i + below < members.length;
+            return before ? runStart(pc[k]) : runEnd(pc[k]);
         }
     }
     if (next != null) {

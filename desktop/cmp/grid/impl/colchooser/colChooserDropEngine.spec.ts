@@ -132,8 +132,6 @@ interface Case {
         unpinned?: string[];
         right?: string[];
         noOp?: boolean;
-        /** Asserted against `resolveDrop`'s refusal reason (checked only when set). */
-        reason?: DropRejectReason;
         /** Targeted checks: return failure messages (empty = pass). */
         verify?: (st: ColumnState[]) => string[];
     };
@@ -180,7 +178,10 @@ const cases: Case[] = [
         expect: {allowed: true, left: ['symbol', 'quantity', 'portfolio']}
     },
     {
-        name: 'FLIP between two members of a foreign group -> snap to near edge',
+        // Group-as-single-row (§5B): grp-security has 2 rendered members pinned left (symbol,
+        // assetClass); symbol is the top member, so its lower half is still the group's top half →
+        // before the group.
+        name: 'POS foreign group top member lower half (pinned) -> before the group',
         pins: {symbol: 'left', assetClass: 'left'},
         side: 'left',
         moving: ['quantity'],
@@ -260,24 +261,42 @@ const cases: Case[] = [
         }
     },
     {
-        name: 'C-SPAN outside own portion -> disallowed (strict)',
+        // Formerly disallowed. Now the drop clamps back into grp-account's run (§5A): dragging the
+        // pinned portion toward symbol (before the group) can't leave the group, so it rejoins at the
+        // group's leading edge and unpins.
+        name: 'C-SPAN outside own portion -> clamp back into own run (rejoin)',
         pins: {portfolio: 'left'},
         side: null,
         moving: ['portfolio'],
         guid: 'grp-account',
         target: 'symbol',
         position: 'below',
-        expect: {allowed: false, reason: 'splitsLockedGroup'}
+        expect: {
+            allowed: true,
+            left: [],
+            verify: st =>
+                groupView(st, 'grp-account').join() === 'portfolio,strategy,trader'
+                    ? []
+                    : [`account order ${groupView(st, 'grp-account')}`]
+        }
     },
 
-    // --- intra-bucket leaf validity (spec §5) ---
+    // --- intra-bucket leaf validity (spec §5A): clamp to the leaf's own group edge, never reject ---
     {
-        name: 'INTRA leaf out of its group -> disallowed',
+        // Formerly disallowed. Dragging assetClass down past its group clamps it to grp-security's
+        // trailing edge (its only legal region), rather than refusing the drop.
+        name: 'INTRA leaf out of its group -> clamp to own group edge',
         side: null,
         moving: ['assetClass'],
         target: 'strategy',
         position: 'above',
-        expect: {allowed: false, reason: 'splitsLockedGroup'}
+        expect: {
+            allowed: true,
+            verify: st =>
+                groupView(st, 'grp-security').join() === 'symbol,sector,ccy,side,assetClass'
+                    ? []
+                    : [`security order ${groupView(st, 'grp-security')}`]
+        }
     },
     {
         name: 'INTRA leaf within its group -> allowed',
@@ -286,6 +305,104 @@ const cases: Case[] = [
         target: 'sector',
         position: 'below',
         expect: {allowed: true}
+    },
+
+    // --- §5B group-as-single-row: a foreign locked group collapses to one drop unit split at its
+    // vertical midpoint - cursor in the top half → before the group, bottom half → after. grp-account
+    // has 3 rendered members (portfolio, strategy, trader), so the flip is at strategy's center.
+    // grp-pricing is dragged up from below grp-account, so both before/after are real moves. ---
+    {
+        // Above the midpoint (strategy's upper half) -> before the whole group.
+        name: 'POS foreign group above midpoint -> before the group',
+        side: null,
+        moving: ['quantity', 'price', 'priceLocal', 'fxRate'],
+        guid: 'grp-pricing',
+        target: 'strategy',
+        position: 'above',
+        expect: {
+            allowed: true,
+            verify: st => {
+                const uv = bucketView(st, null);
+                return uv.indexOf('portfolio') === uv.indexOf('price') + 1
+                    ? []
+                    : [`expected grp-pricing right before grp-account, got [${uv.slice(0, 10)}]`];
+            }
+        }
+    },
+    {
+        // Below the midpoint (strategy's lower half) -> after the whole group.
+        name: 'POS foreign group below midpoint -> after the group',
+        side: null,
+        moving: ['quantity', 'price', 'priceLocal', 'fxRate'],
+        guid: 'grp-pricing',
+        target: 'strategy',
+        position: 'below',
+        expect: {
+            allowed: true,
+            verify: st => {
+                const uv = bucketView(st, null);
+                return uv.indexOf('quantity') === uv.indexOf('trader') + 1
+                    ? []
+                    : [`expected grp-pricing right after grp-account, got [${uv.slice(0, 10)}]`];
+            }
+        }
+    },
+    {
+        // A member wholly in the top half (portfolio, first of 3) resolves to "before" even on its
+        // LOWER half - the whole member is above the group's midpoint.
+        name: 'POS foreign group top member lower half -> still before the group',
+        side: null,
+        moving: ['quantity', 'price', 'priceLocal', 'fxRate'],
+        guid: 'grp-pricing',
+        target: 'portfolio',
+        position: 'below',
+        expect: {
+            allowed: true,
+            verify: st => {
+                const uv = bucketView(st, null);
+                return uv.indexOf('portfolio') === uv.indexOf('price') + 1
+                    ? []
+                    : [`expected grp-pricing right before grp-account, got [${uv.slice(0, 10)}]`];
+            }
+        }
+    },
+    {
+        // Clamp to the bucket end: a top-level group dragged past the last row lands at the end of the
+        // bucket (the "empty space below the rows" / append case resolves to a real move, §5B).
+        name: 'CLAMP top-level group past the last row -> lands at bucket end',
+        side: null,
+        moving: ['symbol', 'underlyer', 'assetClass', 'sector', 'ccy', 'side'],
+        guid: 'grp-security',
+        target: 'cs01',
+        position: 'below',
+        expect: {
+            allowed: true,
+            verify: st => {
+                const uv = bucketView(st, null);
+                return uv.slice(-5).join() === 'symbol,assetClass,sector,ccy,side'
+                    ? []
+                    : [`expected grp-security at bucket end, got [${uv.slice(-6)}]`];
+            }
+        }
+    },
+    {
+        // Nested clamp-to-parent-edge: dragging the middle subgroup grp-rates up past grp-risk's start
+        // clamps it to grp-risk's leading edge (before grp-greeks) - it stays inside grp-risk rather
+        // than relocating the whole parent group. Without the clamp, escalation would move all of
+        // grp-risk to the front.
+        name: 'NEST subgroup up past parent start -> clamp to parent leading edge',
+        side: null,
+        moving: ['dv01', 'duration'],
+        guid: 'grp-rates',
+        target: 'symbol',
+        position: 'above',
+        expect: {
+            allowed: true,
+            verify: st =>
+                groupView(st, 'grp-risk').join() === 'dv01,delta,gamma,cs01'
+                    ? []
+                    : [`grp-risk order ${groupView(st, 'grp-risk')}`]
+        }
     },
 
     // --- full/fresh group drag stays relaxed (no other rendered member) ---
@@ -352,9 +469,6 @@ for (const c of cases) {
 
     if (res.allowed !== c.expect.allowed)
         errs.push(`allowed: expected ${c.expect.allowed}, got ${res.allowed}`);
-
-    if (c.expect.reason != null && res.reason !== c.expect.reason)
-        errs.push(`reason: expected ${c.expect.reason}, got ${res.reason}`);
 
     if (res.allowed && res.state) {
         const st = res.state;
@@ -693,6 +807,25 @@ const hiddenGapCases: HGCase[] = [
             'salary',
             'retain'
         ]
+    },
+    {
+        // §5B group-as-single-row for an UNGROUPED leaf: retain dragged UP into the Sales group's top
+        // half (above its 4-member midpoint) lands before the whole group. Sales has 4 rendered
+        // members, so projectedGross (index 1) sits in the top half → before.
+        name: 'C-HIDDEN-GAP ungrouped leaf into group top half -> before the group',
+        moving: ['retain'],
+        guid: null,
+        target: 'projectedGross',
+        position: 'above',
+        expectUnpinned: [
+            'state',
+            'salary',
+            'retain',
+            'projectedUnitsSold',
+            'projectedGross',
+            'actualUnitsSold',
+            'actualGross'
+        ]
     }
 ];
 
@@ -710,7 +843,7 @@ for (const c of hiddenGapCases) {
         position: c.position
     });
     if (!res.allowed || !res.state) {
-        errs.push(`allowed: expected true, got ${res.allowed} (reason ${res.reason})`);
+        errs.push(`allowed: expected true, got ${res.allowed}`);
     } else {
         if (!invariantHolds(res.state, chainOf2))
             errs.push('marryChildren invariant VIOLATED (would trigger #39)');

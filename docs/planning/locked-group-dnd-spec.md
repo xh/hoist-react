@@ -8,6 +8,10 @@ the ground-truth corpus is **§10A**. Where §6/§8 conflict with §5A/§10A, §
 **implemented**: Rule A as `viewInsertionIndex` (replacing the master-index base + nearest-boundary
 snap), Rule B as a per-bucket `isNoOpDrop`. Verified against the §10A corpus (C-F1…C-LIB) via the live
 `resolveDrop`/preview-commit path; awaiting a manual real-drag pass to confirm the indicator visuals.
+**§5B is now implemented** (clamp-not-reject + group-as-single-row snap): a locked drop is never
+refused for a group-split - it clamps to the bounding group's edge - and a foreign group collapses to
+a single row whose vertical midpoint splits before/after. Where §5/§9 say "disallowed" for a split,
+§5B wins.
 
 **Purpose:** the single reference for how the column chooser resolves drag-and-drop when the target
 grid has `lockColumnGroups` (ag-Grid `marryChildren`). It defines the data model, the invariant we
@@ -86,6 +90,10 @@ in the target bucket).
 
 ### Validity (when is a drop disallowed?)
 
+> ⚠️ **Superseded by §5B:** the "outside its run → disallowed" cases below are now **clamped** to the
+> bounding group's edge, not rejected. The section stands as the definition of the bounding run; only
+> the *reject* outcome is replaced by a *clamp*.
+
 - **Intra-bucket drag** (no pin change): disallowed if the drop would take the dragged unit **outside
   its parent group's run**. (A leaf's parent is its innermost group; a subgroup's parent is its
   enclosing group.) Reorder *within* the parent is allowed. To move a group, drag the group's row.
@@ -139,6 +147,48 @@ master when the views would not change.** The prior guard compared the *interlea
 which (a) missed real no-ops and silently churned master (e.g. moved a pinned member within its own
 run — invisible), and (b) that churn then **degraded the state**, wedging two pinned members at a
 group boundary and blocking subsequent legal reorders (the **C-N1 / C-GR bug**).
+
+## 5B. Clamp, don't reject; treat a foreign group as a single row (supersedes §5 validity rejects, §9 rows 3/5/7)
+
+Two refinements make locked reorders forgiving instead of pixel-precise. Both are implemented in
+`resolveDrop` / `viewInsertionIndex`; together they mean a locked drop is **never refused for a
+group-split** — the split reason (`splitsLockedGroup`) is retired.
+
+### Clamp to the bounding group's run (supersedes the "outside `R` → disallowed" rejects)
+
+The **bounding group** `B` is the innermost ancestor of the dragged unit still rendered in the target
+bucket (the old rendered-ancestor `R`, extended to the dragged group's own level per §5A/2b). Instead
+of rejecting a drop that resolves **outside** `B`'s run, **clamp** the insertion index to `B`'s run
+edge:
+
+- The dragged unit may only land within `B`'s run; a resolved index below the run snaps to `B`'s
+  trailing edge, above the run to its leading edge.
+- **Null `B`** (a top-level / fresh group, or an ungrouped leaf) → **unconstrained**: the block may
+  land anywhere in the bucket, clamped only to the bucket's own ends.
+- The clamp keeps the block **inside its parent** — it never escalates to relocating the whole parent
+  group. A lone leaf dragged past its group therefore snaps to its group's edge (a within-group
+  reorder), never leaving it.
+
+Consequence: the only non-committing outcome for a locked drop is a genuine **no-op** (§5A Rule B).
+Every reachable cursor position resolves to the nearest legal spot. This retires the E2 / E5 / matrix
+rows 3, 5, 7 rejections — they become clamps.
+
+### Group-as-single-row snap — a foreign locked group is one drop unit
+
+When the cursor sits **inside** a group the dragged unit is foreign to, treat that whole group as a
+**single row**: cursor in the group's **top half** → insert **before** the group; **bottom half** →
+**after**. The flip is the group's **vertical midpoint** — the centre of the middle rendered member
+for an odd member count, the boundary between the two central members for an even count. This mirrors
+ag-Grid's own single-row convention (above/below a row by its centre), scaled to the group's full
+height. Implemented per-member since chooser rows are uniform height: for the hovered member at index
+`i` among the group's `n` rendered members, with `below ∈ {0,1}` for the hovered half,
+`2·i + below < n` ⇒ before, else after.
+
+This supersedes the earlier **member-count midpoint** (`before ≤ after` counting members either side
+of the gap), which biased toward "before" and forced the cursor most of the way through the group
+before it read as "after". The only non-committing outcome is a genuine no-op — e.g. resolving to
+"before a group" the dragged unit already sits immediately before. Combined with the clamp, dragging
+past the last/first group holds at the bucket (or bounding-group) edge rather than refusing.
 
 ## 6. Universal rules (every drop, both modes)
 
@@ -220,6 +270,9 @@ Inputs: `master` (`ColumnState[]`), dragged leaves `L`, grab unit, target `T` + 
 place the indicator at the resolved `P`; the commit runs the same. Never diverge.
 
 ## 9. Case matrix (locked)
+
+> ⚠️ **Superseded by §5B:** rows 3, 5, 7 read "disallowed"; they now **clamp** the drop to the
+> bounding group's edge instead. No locked drop is refused for a group-split.
 
 | # | Grab unit | Drag | Rendered sibling in target? | Behavior |
 |---|-----------|------|------------------------------|----------|

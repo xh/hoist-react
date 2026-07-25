@@ -37,7 +37,6 @@ export function dragRejectHint(reason: DragHintReason): string {
             return 'Not Hideable';
         case 'groupDraggedWithOthers':
         case 'multiGroupSelection':
-        case 'splitsLockedGroup':
             return 'Column Groups Locked';
     }
 }

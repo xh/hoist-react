@@ -301,20 +301,17 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         }
 
         // Resolve the drop through the same engine the commit uses, so the indicator always agrees
-        // with what the drop will do (splitting a locked group is rejected here and there). A drop
-        // from the library unhides its columns, so resolve with makeVisible to gate it as the commit
-        // will.
-        const {allowed, state, reason} = this.resolveDrop(
+        // with what the drop will do (a drop that would split a locked group is clamped to the
+        // nearest legal spot, here and at commit). A drop from the library unhides its columns, so
+        // resolve with makeVisible to gate it as the commit will.
+        const {allowed, state} = this.resolveDrop(
             payload.leafColIds,
             payload.dragUnitGroupId,
             targetData,
             position,
             payload.fromLibrary
         );
-        if (!allowed || !state) {
-            if (reason) this.publishDragHint(reason);
-            return {allowed: false};
-        }
+        if (!allowed || !state) return {allowed: false};
 
         // Suppress the indicator when the drop leaves the chooser visually unchanged - including one
         // whose only effect is reordering a visible column past an adjacent hidden one (a "nothing
