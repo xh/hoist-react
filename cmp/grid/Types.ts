@@ -62,6 +62,12 @@ export type GridGroupSortFn = (
 ) => number;
 
 /**
+ * Where to position a row within the viewport when scrolling to make it visible.
+ * Null (default) will scroll the minimum amount required to bring the row into view.
+ */
+export type GridScrollPosition = 'top' | 'middle' | 'bottom';
+
+/**
  * Closure to generate CSS class names for a row.
  * @param record - the StoreRecord associated with the rendered row.
  * @returns CSS class(es) to apply to the row level.

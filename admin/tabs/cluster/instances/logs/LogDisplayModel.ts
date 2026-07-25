@@ -15,6 +15,9 @@ import {debounced} from '@xh/hoist/utils/js';
 import {escapeRegExp, maxBy} from 'lodash';
 import {LogViewerModel} from './LogViewerModel';
 
+/** Lines of context to show above the target line when viewing surrounding logs. */
+const SURROUNDING_LEAD_IN_LINES = 100;
+
 /**
  * @internal
  */
@@ -135,9 +138,29 @@ export class LogDisplayModel extends HoistModel {
         gridModel.agApi?.ensureNodeVisible(lastRecord);
     }
 
+    /**
+     * Clear any active filter and reload the log positioned around the given line, to show it in
+     * the context of its surrounding entries. The target line is re-selected once loaded.
+     */
+    viewSurroundingLines(rowNum: number) {
+        // Keep the target line within the loaded window, even if maxLines is small.
+        const leadIn = Math.min(SURROUNDING_LEAD_IN_LINES, Math.floor((this.maxLines - 1) / 2));
+
+        this.pendingSelectRowNum = rowNum;
+
+        // Order matters: the `tail` reaction below resets startLine, so flip tail off *first* and
+        // do not wrap these writes in an action - they must interleave with that reaction.
+        this.tail = false;
+        this.pattern = '';
+        this.startLine = Math.max(1, rowNum - leadIn);
+    }
+
     //---------------------------------
     // Implementation
     //---------------------------------
+    /** Line number to select on the next load, set by {@link viewSurroundingLines}. */
+    private pendingSelectRowNum: number = null;
+
     private createGridModel() {
         return new GridModel({
             selModel: 'multiple',
@@ -169,6 +192,13 @@ export class LogDisplayModel extends HoistModel {
             ],
             rowClassFn: () => 'xh-log-display__row',
             contextMenu: [
+                {
+                    text: 'View Surrounding Lines',
+                    icon: Icon.search(),
+                    recordsRequired: 1,
+                    actionFn: ({record}) => this.viewSurroundingLines(record.data.rowNum)
+                },
+                '-',
                 'copy',
                 '-',
                 {
@@ -200,7 +230,12 @@ export class LogDisplayModel extends HoistModel {
 
         gridModel.loadData(gridData);
 
-        if (tailActive) {
+        const {pendingSelectRowNum} = this;
+        if (pendingSelectRowNum != null) {
+            // Records are keyed by line number, so we can select the target line by its rowNum.
+            this.pendingSelectRowNum = null;
+            gridModel.selectAsync(pendingSelectRowNum, {ensureVisiblePosition: 'middle'});
+        } else if (tailActive) {
             this.scrollToTail();
         }
     }

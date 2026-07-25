@@ -13,6 +13,15 @@
       any custom styling that targeted  Blueprint or Popper css classes (e.g. `bp6-minimal`).
     * The `popperOptions` `popper.js` escape-hatch prop has been removed from the mobile `Popover`.
 
+### 🎁 New Features
+* Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
+  active filter and reloads the log around the selected line, then re-selects it and centers it in
+  the viewport - useful for examining the context around a hit found via filtering.
+* Added a `position` option to `GridModel.ensureRecordsVisibleAsync()` and
+  `ensureSelectionVisibleAsync()`, along with a matching `ensureVisiblePosition` option on
+  `selectAsync()`. Allows callers to request that a row be scrolled to the `top`, `middle`, or
+  `bottom` of the viewport, rather than the default of scrolling the minimum amount required.
+
 ### ⚙️ Technical
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped Popper.js
   onto Floating UI for React 19 compatibility. The hoist `Popover` components (mobile and desktop)

@@ -115,6 +115,7 @@ import {
     ColChooserConfig,
     ColumnState,
     GridModelPersistOptions,
+    GridScrollPosition,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn
@@ -850,13 +851,21 @@ export class GridModel extends HoistModel {
              * visible if it is within a collapsed node or outside of the visible scroll window.
              */
             ensureVisible?: boolean;
+            /**
+             * Where to position the selection within the viewport when scrolling it into view.
+             * Default of null scrolls the minimum amount required. Ignored if `ensureVisible`
+             * is false.
+             */
+            ensureVisiblePosition?: GridScrollPosition;
             /** True (default) to clear previous selection (rather than add to it). */
             clearSelection?: boolean;
         } = {}
     ) {
-        const {ensureVisible = true, clearSelection = true} = opts;
+        const {ensureVisible = true, ensureVisiblePosition = null, clearSelection = true} = opts;
         this.selModel.select(records, clearSelection);
-        if (ensureVisible) await this.ensureSelectionVisibleAsync();
+        if (ensureVisible) {
+            await this.ensureSelectionVisibleAsync({position: ensureVisiblePosition});
+        }
     }
 
     /**
@@ -920,12 +929,22 @@ export class GridModel extends HoistModel {
      *
      * Any selected records that are hidden because their parent rows are collapsed will first
      * be revealed by expanding their parent rows.
+     *
+     * @param opts - additional scrolling options
      */
-    async ensureSelectionVisibleAsync() {
+    async ensureSelectionVisibleAsync(
+        opts: {
+            /**
+             * Where to position the selection within the viewport. Default of null scrolls the
+             * minimum amount required to bring it into view.
+             */
+            position?: GridScrollPosition;
+        } = {}
+    ) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        return this.ensureRecordsVisibleAsync(this.selectedRecords);
+        return this.ensureRecordsVisibleAsync(this.selectedRecords, opts);
     }
 
     /**
@@ -939,8 +958,20 @@ export class GridModel extends HoistModel {
      * be revealed by expanding their parent rows.
      *
      * @param records - one or more record(s) for which to ensure visibility.
+     * @param opts - additional scrolling options
      */
-    async ensureRecordsVisibleAsync(records: Some<StoreRecord>) {
+    async ensureRecordsVisibleAsync(
+        records: Some<StoreRecord>,
+        opts: {
+            /**
+             * Where to position the record(s) within the viewport. Default of null scrolls the
+             * minimum amount required to bring them into view.
+             */
+            position?: GridScrollPosition;
+        } = {}
+    ) {
+        const {position = null} = opts;
+
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -978,10 +1009,10 @@ export class GridModel extends HoistModel {
         }
 
         if (indexCount === 1) {
-            agApi.ensureIndexVisible(indices[0]);
+            agApi.ensureIndexVisible(indices[0], position);
         } else if (indexCount > 1) {
-            agApi.ensureIndexVisible(max(indices));
-            agApi.ensureIndexVisible(min(indices));
+            agApi.ensureIndexVisible(max(indices), position);
+            agApi.ensureIndexVisible(min(indices), position);
         }
     }
 
