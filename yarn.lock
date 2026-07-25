@@ -3198,20 +3198,38 @@ ag-charts-types@13.3.1:
   resolved "https://registry.yarnpkg.com/ag-charts-types/-/ag-charts-types-13.3.1.tgz#c34aaed19847ed633fa468f39caa94bbffc363b3"
   integrity sha512-m37eUe4g//swvGh8PWMlYQH3gknjSsPeW4sQwBhM3/auGAHmN0wvxEWlrdAn98pBPg4HoKbtOy+yf7gPCYsnvQ==
 
-ag-grid-community@35.3.1, ag-grid-community@35.x:
+ag-charts-types@14.0.2:
+  version "14.0.2"
+  resolved "https://registry.yarnpkg.com/ag-charts-types/-/ag-charts-types-14.0.2.tgz#754de36cffcdebba9847318b169c002a8b8403a7"
+  integrity sha512-F7ZG0g8Y+iKhJi50AfZRwEyUM/TBsNyh2IoXB0JaDN97lnbemIK8GE5kF1eBtXtN4mcC+lPXK9oZUeVXwO9EWA==
+
+ag-grid-community@35.x:
   version "35.3.1"
   resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-35.3.1.tgz#b7920da3209e2c121e1e34df59dec812e65349f0"
   integrity sha512-Wmkd/xYTCbAApcZZO74nBggZCnd/oX753NY3MJ4zYARVpfBHRWWhIBJ2sFTFKbDWwHZOWsx3YT9+kkyeuyLKlw==
   dependencies:
     ag-charts-types "13.3.1"
 
-ag-grid-react@35.x:
-  version "35.3.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-35.3.1.tgz#0360eeb880f1ada988ee1420817609b59a9a06b1"
-  integrity sha512-M3ljCQyGL+qzoyPN0BYrn4eAlgZr6Ailcjd8+a7OcneSiVsMNSJb/gTkIMUwmYivkPLIA8EEJ4hTxxKSaya6mQ==
+ag-grid-community@36.0.2:
+  version "36.0.2"
+  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-36.0.2.tgz#a057cae93913956f343dd7a8ba3a950b8f0064aa"
+  integrity sha512-TINZfuFvMY2nc3JfQHiUWT7dNIxI89ZxS5XkXIPi/rYICoNupRqpaM41KVzGPPfSkM0AwhuzTFxAiF08zEkV1Q==
   dependencies:
-    ag-grid-community "35.3.1"
+    ag-charts-types "14.0.2"
+    ag-stack "36.0.2"
+
+ag-grid-react@36.x:
+  version "36.0.2"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-36.0.2.tgz#7ba329bc7dfd754d504f67dbdd38bd009b05a259"
+  integrity sha512-yVPmqdhx1zp06FLyZmwmIxIO57w4ko+qN64MXgPlBMJVL0MNA5hULqAY/+SoB4cd0bBHqz8okuuAbHHpu5QoHQ==
+  dependencies:
+    ag-grid-community "36.0.2"
     prop-types "^15.8.1"
+
+ag-stack@36.0.2:
+  version "36.0.2"
+  resolved "https://registry.yarnpkg.com/ag-stack/-/ag-stack-36.0.2.tgz#a92165fa2e9f618236a63370d9b0172bf0f6c18f"
+  integrity sha512-YuhQExQw5YsWK0wxrksRyYBAqOU0v08lJH5uxRsKx+49ko5vkDgnJuhX4yF995BBVdLY1LKlXukLEub+olKyuA==
 
 ajv-formats@^2.1.1:
   version "2.1.1"
