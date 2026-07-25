@@ -96,7 +96,10 @@ compile it via webpack during their own build. Webpack only processes files reac
 chains from app entry points. As long as no browser-targeted hoist code imports from `mcp/`, the
 MCP server's Node-only dependencies (`@modelcontextprotocol/sdk`, `ts-morph`, etc.) will never
 enter application bundles. The separate `tsconfig.json` provides an additional safety net at the
-type-checking level, and all MCP dependencies are `devDependencies` in the root `package.json`.
+type-checking level. Note that these packages are regular `dependencies`, not `devDependencies` --
+the published `hoist-mcp`, `hoist-docs`, and `hoist-ts` bins must resolve them from a consuming
+application's own install, and package managers do not install a dependency's `devDependencies`.
+Bundle isolation therefore rests on the import-chain boundary alone, not on dependency scope.
 
 **Tolerant doc-id resolution.** `data/doc-id-resolver.ts` accepts shortened or
 slightly-off doc IDs that agents naturally try (e.g. `grid` → `cmp/grid/README.md`,
