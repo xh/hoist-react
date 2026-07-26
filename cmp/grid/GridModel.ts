@@ -853,8 +853,8 @@ export class GridModel extends HoistModel {
             ensureVisible?: boolean;
             /**
              * Where to position the selection within the viewport when scrolling it into view.
-             * Default of null scrolls the minimum amount required. Ignored if `ensureVisible`
-             * is false.
+             * Default of null scrolls the minimum amount required. If multiple records are
+             * selected, applies to the first of them. Ignored if `ensureVisible` is false.
              */
             ensureVisiblePosition?: GridScrollPosition;
             /** True (default) to clear previous selection (rather than add to it). */
@@ -936,7 +936,8 @@ export class GridModel extends HoistModel {
         opts: {
             /**
              * Where to position the selection within the viewport. Default of null scrolls the
-             * minimum amount required to bring it into view.
+             * minimum amount required to bring it into view. If multiple records are selected,
+             * applies to the first of them.
              */
             position?: GridScrollPosition;
         } = {}
@@ -964,8 +965,9 @@ export class GridModel extends HoistModel {
         records: Some<StoreRecord>,
         opts: {
             /**
-             * Where to position the record(s) within the viewport. Default of null scrolls the
-             * minimum amount required to bring them into view.
+             * Where to position the record within the viewport. Default of null scrolls the
+             * minimum amount required to bring it into view. If multiple records are provided,
+             * applies to the first of them.
              */
             position?: GridScrollPosition;
         } = {}
@@ -1011,7 +1013,10 @@ export class GridModel extends HoistModel {
         if (indexCount === 1) {
             agApi.ensureIndexVisible(indices[0], position);
         } else if (indexCount > 1) {
-            agApi.ensureIndexVisible(max(indices), position);
+            // Scroll to the last record, then the first - showing the start of the range and as
+            // much of the rest as will fit. Any requested position applies to the first record,
+            // as that call lands last and wins.
+            agApi.ensureIndexVisible(max(indices));
             agApi.ensureIndexVisible(min(indices), position);
         }
     }

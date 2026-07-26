@@ -143,16 +143,25 @@ export class LogDisplayModel extends HoistModel {
      * the context of its surrounding entries. The target line is re-selected once loaded.
      */
     viewSurroundingLines(rowNum: number) {
-        // Keep the target line within the loaded window, even if maxLines is small.
-        const leadIn = Math.min(SURROUNDING_LEAD_IN_LINES, Math.floor((this.maxLines - 1) / 2));
+        // Keep the target line within the loaded window when maxLines is small. A cleared maxLines
+        // input defers to the server's (much larger) default window, so a full lead-in is safe.
+        const {maxLines} = this,
+            leadIn = maxLines
+                ? Math.min(SURROUNDING_LEAD_IN_LINES, Math.floor((maxLines - 1) / 2))
+                : SURROUNDING_LEAD_IN_LINES;
 
         this.pendingSelectRowNum = rowNum;
 
-        // Order matters: the `tail` reaction below resets startLine, so flip tail off *first* and
-        // do not wrap these writes in an action - they must interleave with that reaction.
+        // Order matters: the `tail` reaction in the constructor resets startLine, so flip tail off
+        // *first* and do not wrap these writes in an action - they must interleave with that
+        // reaction.
         this.tail = false;
         this.pattern = '';
         this.startLine = Math.max(1, rowNum - leadIn);
+
+        // Load directly, as the writes above can all be no-ops - e.g. when re-running this on a
+        // line we have already centered. Debounced, so collapses with any reaction-driven load.
+        this.loadLog();
     }
 
     //---------------------------------
