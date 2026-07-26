@@ -15,9 +15,6 @@ import {debounced} from '@xh/hoist/utils/js';
 import {escapeRegExp, maxBy} from 'lodash';
 import {LogViewerModel} from './LogViewerModel';
 
-/** Lines of context to show above the target line when viewing surrounding logs. */
-const SURROUNDING_LEAD_IN_LINES = 100;
-
 /**
  * @internal
  */
@@ -146,6 +143,8 @@ export class LogDisplayModel extends HoistModel {
         // Keep the target line within the loaded window when maxLines is small. A cleared maxLines
         // input defers to the server's (much larger) default window, so a full lead-in is safe.
         const {maxLines} = this,
+            /** Lines of context to show above the target line when viewing surrounding logs. */
+            SURROUNDING_LEAD_IN_LINES = 100,
             leadIn = maxLines
                 ? Math.min(SURROUNDING_LEAD_IN_LINES, Math.floor((maxLines - 1) / 2))
                 : SURROUNDING_LEAD_IN_LINES;
@@ -153,7 +152,7 @@ export class LogDisplayModel extends HoistModel {
         this.pendingSelectRowNum = rowNum;
 
         // Order matters: the `tail` reaction in the constructor resets startLine, so flip tail off
-        // *first* and do not wrap these writes in an action - they must interleave with that
+        // *first* and do not wrap writes in an action - they must interleave with that
         // reaction.
         this.tail = false;
         this.pattern = '';
