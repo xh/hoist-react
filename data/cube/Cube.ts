@@ -45,6 +45,9 @@ export interface CubeConfig {
     /** See {@link StoreConfig.processRawData} */
     processRawData?: (data: PlainObject) => PlainObject;
 
+    /** See {@link StoreConfig.retainRaw} */
+    retainRaw?: boolean;
+
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;
 
@@ -136,6 +139,7 @@ export class Cube extends HoistBase {
         data = [],
         idSpec = 'id',
         processRawData,
+        retainRaw,
         info = {},
         lockFn,
         bucketSpecFn,
@@ -147,6 +151,7 @@ export class Cube extends HoistBase {
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
             processRawData: processRawData,
+            retainRaw: retainRaw,
             freezeData: false,
             idEncodesTreePath: true
         });
