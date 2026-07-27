@@ -1360,15 +1360,16 @@ export class GridModel extends HoistModel {
         if (isEmpty(colStateChanges)) return;
 
         let columnState = cloneDeep(this.columnState);
+        const stateById = new Map(columnState.map(it => [it.colId, it]));
 
         throwIf(
-            colStateChanges.some(({colId}) => !find(columnState, {colId})),
+            colStateChanges.some(({colId}) => !stateById.has(colId)),
             'Invalid columns detected in column changes!'
         );
 
         // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
-            const col: ColumnState = find(columnState, {colId: change.colId});
+            const col = stateById.get(change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
@@ -1377,8 +1378,8 @@ export class GridModel extends HoistModel {
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
-        if (colStateChanges.length === this.getLeafColumns().length) {
-            columnState = colStateChanges.map(c => find(columnState, {colId: c.colId}));
+        if (colStateChanges.length === this.leafColumnMap.size) {
+            columnState = colStateChanges.map(c => stateById.get(c.colId));
         }
 
         if (!equal(this.columnState, columnState)) {
