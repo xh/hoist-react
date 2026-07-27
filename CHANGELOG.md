@@ -32,10 +32,10 @@
 * Added `Store.optimizeRecordData` config (default `false`) - an opt-in memory optimization for
   stores whose records populate 20 or more fields. Builds each record's `data` object by cloning a
   shared template rather than growing it field-by-field, keeping it out of V8's memory-hungry
-  "dictionary" mode - measured in Chrome at 4x smaller record data (231MB -> 58MB) and ~2.4x faster
-  record construction for a 100k-record store with 58 populated fields. Note records then carry an
-  own property for every field, so `Object.keys()`, spread, and `JSON.stringify()` of `data`
-  include default-valued fields; use `record.getValues()` or `record.getModifiedValues()` instead.
+  "dictionary" mode. Substantially reduces per-record memory, and speeds up record construction, on
+  large stores with wide, densely-populated records. Note records then carry an own property for
+  every field, so `Object.keys()`, spread, and `JSON.stringify()` of `data` include default-valued
+  fields; use `record.getValues()` or `record.getModifiedValues()` instead.
   See the data package README for when this pays and when it does not.
 
 ### ⚙️ Technical

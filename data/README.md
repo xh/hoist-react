@@ -806,8 +806,8 @@ memory. They stack, and all are opt-in:
 
 By default, Store builds each record's `data` by assigning parsed values one field at a time. Past
 about 20 assigned fields, V8 demotes the object to a hashtable ("dictionary mode"), which costs
-roughly 4x the memory of an equivalent object built from a template. Setting `optimizeRecordData`
-avoids that demotion:
+several times more memory per record than the same object built from a template. Setting
+`optimizeRecordData` avoids that demotion:
 
 ```typescript
 const store = new Store({
@@ -818,9 +818,8 @@ const store = new Store({
 
 **The criterion is a single number: do your records typically populate 20 or more fields?**
 
-- **Yes → enable it.** This holds at any field count. Measured in Chrome at 100k records: 231MB of
-  record data reduced to 58MB at 58 populated fields, and still a ~3x saving at 300 populated
-  fields. There is no upper limit at which it stops working.
+- **Yes → enable it.** This holds at any field count - there is no upper limit at which it stops
+  working, and the saving remains substantial even for very wide records.
 - **No → leave it off.** Below the threshold the default representation stays in V8's
   fast-properties mode and is never worse.
 
@@ -830,11 +829,11 @@ what matters:
 
 | Store shape | Effect of enabling |
 |---|---|
-| 10 fields, 10 populated | No change - both representations measure identically |
-| 25 fields, 25 populated | ~3.8x less memory |
-| 150 fields, 150 populated | ~3.0x less memory |
-| 150 fields, 25 populated | ~1.3x less memory |
-| 150 fields, **8 populated** | **~6.6x MORE memory** - do not enable |
+| 10 fields, 10 populated | No change - the two representations are equivalent |
+| 25 fields, 25 populated | Substantially less memory |
+| 150 fields, 150 populated | Substantially less memory |
+| 150 fields, 25 populated | Modestly less memory |
+| 150 fields, **8 populated** | **More memory** - do not enable |
 
 The last row is the case to watch: a wide store whose records populate only a handful of fields.
 The template pays for every *declared* field on every record, while the default representation
