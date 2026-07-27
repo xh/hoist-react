@@ -179,18 +179,17 @@ export interface StoreConfig {
      *
      * By default, Store builds each record's `data` by assigning parsed values one field at a
      * time. Past ~20 assigned fields V8 demotes the object to a hashtable ("dictionary mode"),
-     * costing roughly 4x the memory of an equivalent object. Set true to instead build each
-     * `data` object by cloning a shared, fully-populated template, avoiding that demotion.
+     * which costs substantially more memory per record. Set true to instead build each `data`
+     * object by cloning a shared, fully-populated template, avoiding that demotion.
      *
      * **Enable when records populate 20 or more fields.** That is the only criterion - it holds
-     * at any field count, including very wide (150+ field) records. Measured in Chrome at 100k
-     * records: 231MB -> 58MB at 58 populated fields, and still a ~3x saving at 300.
+     * at any field count, including very wide records.
      *
      * **Leave false otherwise.** Below ~20 populated fields the default representation stays in
-     * V8's fast-properties mode and is never worse: for narrow records the two are identical, and
-     * for records that populate only a few of many declared fields the default is dramatically
-     * cheaper (measured 6.6x at 150 declared / 8 populated), because it costs nothing per record
-     * for unpopulated fields while a template pays for every declared field on every record.
+     * V8's fast-properties mode and is never worse: for narrow records the two are equivalent,
+     * and for records that populate only a few of many declared fields the default is
+     * substantially cheaper, because it costs nothing per record for unpopulated fields while a
+     * template pays for every declared field on every record.
      *
      * One further trade-off to weigh: `data` gains an own property for every field, so
      * `Object.keys()`, spread and `JSON.stringify()` of `data` include default-valued fields.
