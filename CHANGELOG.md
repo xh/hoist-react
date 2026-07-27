@@ -15,6 +15,9 @@
 
 ### 🎁 New Features
 
+* Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
+  its raw source data object after parsing, reducing memory usage on large stores where
+  `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
 * Improved `Store` memory usage and read performance for record data. Records in stores with up to
   100 fields now build their `data` objects via a per-store compiled factory, keeping them in V8's
   optimized "fast properties" mode - measured 6-8x smaller at typical record widths, with faster

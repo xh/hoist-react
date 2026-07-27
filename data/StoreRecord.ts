@@ -36,7 +36,10 @@ export class StoreRecord {
     readonly isSummary: boolean;
     readonly treePath: StoreRecordId[];
 
-    /** Raw data loaded into via Store.loadData() or Store.updateData(). */
+    /**
+     * Raw data loaded via Store.loadData() or Store.updateData(). Null for locally-added records,
+     * or for all records if the parent Store was configured with `retainRaw: false`.
+     */
     readonly raw: PlainObject;
 
     /**
