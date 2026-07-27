@@ -5,10 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
+import type {Some} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
+import {StoreRecordId} from '@xh/hoist/data';
 import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {makeObservable} from '@xh/hoist/mobx';
-import {isEmpty} from 'lodash';
+import {castArray, isEmpty} from 'lodash';
 
 import type {ColChooserModel} from './ColChooserModel';
 import {
@@ -47,7 +49,12 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         return {
             ...chooserDragAgOptions,
             suppressGroupChangesColumnVisibility: true,
-            rowDragText: (dragItem, count) => chooserDragText(this.parent.dragHint, dragItem, count)
+            rowDragText: (dragItem, count) =>
+                chooserDragText(this.parent.dragHint, dragItem, count),
+            onCellDoubleClicked: event => {
+                const id = event.data?.data?.id;
+                if (id) this.toggleVisibility(id);
+            }
         };
     }
 
@@ -86,6 +93,27 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         // "Ungrouped" header would wrap an ungrouped grid.
         chooserGridModel.setGroupBy(grouped ? 'chooserGroup' : null);
         chooserGridModel.store.loadData(data);
+    }
+
+    /**
+     * Show the given (currently hidden) library rows in place - sets `hidden: false` on their
+     * underlying column state without repositioning them. They reappear wherever they already sit
+     * in the master order once routed back out of the library.
+     */
+    toggleVisibility(recordIds: Some<StoreRecordId>) {
+        const {store} = this.chooserGridModel,
+            colIds = new Set<string>();
+
+        castArray(recordIds).forEach(id => {
+            const record = store.getById(id);
+            record?.data.leafColIds.forEach((colId: string) => colIds.add(colId));
+        });
+        if (!colIds.size) return;
+
+        const newState = this.parent.currentState.map(cs =>
+            colIds.has(cs.colId) ? {...cs, hidden: false} : cs
+        );
+        this.parent.applyState(newState);
     }
 
     /** Handle a column dragged onto the library from a bucket - hide it, leaving its position. */
@@ -138,6 +166,16 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
             expandLevel: this.collapseGroups ? 0 : 1,
             sortBy: 'name',
             emptyText: 'No hidden columns',
+            onKeyDown: e => {
+                const {selectedRecords} = this.chooserGridModel;
+                if (isEmpty(selectedRecords)) return;
+
+                if (e.code === 'Space') {
+                    this.toggleVisibility(selectedRecords.map(rec => rec.id));
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            },
             store: {
                 fields: [
                     {name: 'name', type: 'string'},
