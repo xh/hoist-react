@@ -48,7 +48,6 @@ import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
-import {IRowNode} from 'ag-grid-community';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {type MouseEvent} from 'react';
@@ -642,8 +641,7 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
-    // Updates the pinned summary row data. Returns true if it was updated.
-    updatePinnedSummaryRowData(): boolean {
+    updatePinnedSummaryRowData() {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
@@ -664,15 +662,13 @@ export class GridLocalModel extends HoistModel {
             isEqual(pinnedTopRowData, agGridModel.getPinnedTopRowData()) &&
             isEqual(pinnedBottomRowData, agGridModel.getPinnedBottomRowData())
         ) {
-            return false;
+            return;
         }
 
         agApi.updateGridOptions({
             pinnedTopRowData,
             pinnedBottomRowData
         });
-
-        return true;
     }
 
     @logWithDebug
@@ -729,29 +725,18 @@ export class GridLocalModel extends HoistModel {
             agGridModel.applySortBy(model.sortBy);
         }
 
-        const summaryDataUpdated = this.updatePinnedSummaryRowData();
+        this.updatePinnedSummaryRowData();
 
-        if (transaction?.update || summaryDataUpdated) {
+        if (transaction?.update) {
             const visibleCols = model.getVisibleLeafColumns();
 
             // Refresh cells in columns with complex renderers
             const refreshCols = visibleCols.filter(c => c.rendererIsComplex);
             if (!isEmpty(refreshCols)) {
-                const rowNodes: IRowNode[] = transaction?.update
-                        ? transaction?.update
-                              .map(r => agApi.getRowNode(r.agId))
-                              .filter(n => n != null)
-                        : [],
+                const rowNodes = transaction.update
+                        .map(r => agApi.getRowNode(r.agId))
+                        .filter(n => n != null),
                     columns = refreshCols.map(c => c.colId);
-
-                if (summaryDataUpdated && !isEmpty(store.summaryRecords)) {
-                    rowNodes.push(
-                        ...store.summaryRecords
-                            .map(r => agGridModel.getPinnedRowNode(r.agId))
-                            .filter(n => n != null)
-                    );
-                }
-
                 agApi.refreshCells({rowNodes, columns, force: true});
             }
         }

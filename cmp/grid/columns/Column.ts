@@ -413,11 +413,6 @@ export interface ColumnSpec {
     actionsShowOnHoverOnly?: boolean;
 
     /**
-     * For action columns, also show the action on summary rows. Defaults to false.
-     */
-    actionsShowOnSummaryRow?: boolean;
-
-    /**
      * Callback when a cell within this column clicked.
      * See also {@link GridConfig.onCellClicked}, called when any cell within the grid is clicked.
      */
@@ -543,7 +538,6 @@ export class Column {
     getValueFn: ColumnGetValueFn;
     actions?: Array<RecordActionSpec | RecordAction>;
     actionsShowOnHoverOnly?: boolean;
-    actionsShowOnSummaryRow?: boolean;
     fieldSpec: FieldSpec;
     omit: Thunkable<boolean>;
     onCellClicked?: (e: CellClickedEvent) => void;
@@ -618,7 +612,6 @@ export class Column {
             getValueFn,
             enableDotSeparatedFieldPath,
             actionsShowOnHoverOnly,
-            actionsShowOnSummaryRow,
             actions,
             omit,
             onCellClicked,
@@ -729,7 +722,6 @@ export class Column {
 
         this.actions = actions;
         this.actionsShowOnHoverOnly = actionsShowOnHoverOnly ?? false;
-        this.actionsShowOnSummaryRow = actionsShowOnSummaryRow ?? false;
         this.onCellClicked = onCellClicked;
 
         this.gridModel = gridModel;
