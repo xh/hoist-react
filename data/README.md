@@ -789,6 +789,54 @@ const store = new Store({
 });
 ```
 
+### Tuning Memory for Large Datasets
+
+For stores holding tens of thousands of records or more, several independent knobs reduce retained
+memory. They stack, and are worth applying roughly in this order:
+
+| Knob | What it does | Cost |
+|------|--------------|------|
+| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | `StoreRecord.raw` becomes null; incompatible with `reuseRecords` |
+| `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Requires an app-provided cache key |
+| `experimental: {optimizeRecordData: true}` | Changes how record `data` objects are built (below) | Changes enumeration of `data`; see caveats |
+
+**`optimizeRecordData`** addresses the cost of the `data` object itself. By default, Store grows
+each record's `data` by assigning parsed values one field at a time. Past roughly 20 assignments
+V8 demotes the object to a hashtable ("dictionary mode"), which measures around 4x the memory of
+an equivalent object built all at once. Enabling this flag has Store clone a shared template that
+already carries every field, avoiding the demotion:
+
+```typescript
+const store = new Store({
+    fields: [...],
+    experimental: {optimizeRecordData: true}
+});
+```
+
+Measured in Chrome for a 100k-record store with 58 populated fields: **231MB of record data
+reduced to 58MB**, with record construction about 2.4x faster. May also be enabled app-wide via
+the `xhStoreExperimental` soft-config.
+
+**When it helps, and when it does not:**
+
+- Records must populate enough fields to cross the demotion threshold. Store samples the data on
+  first load and silently declines below ~20 populated fields per record, logging the decision at
+  debug level. Check `Store.recordDataMode` to see what a given Store settled on.
+- Below that threshold the default representation is genuinely cheaper - it costs nothing per
+  record for unpopulated fields, whereas the template pays for every *declared* field on every
+  record. A wide store whose records populate only a handful of fields is the worst case, and is
+  the reason for the automatic check.
+- Reads of a single field across many records (comparators, filters) get faster. Reads that sweep
+  *every* field of a record - `getValues()`, grid export - measure roughly 2x slower.
+- **`data` enumeration changes.** Records carry an own property for every field, so
+  `Object.keys()`, spread and `JSON.stringify()` of `data` include default-valued fields. Use
+  `record.getValues()` or `record.getModifiedValues()` instead of enumerating `data` directly.
+- The underlying effect is specific to V8 (Chrome, Edge, Electron). Safari and Firefox do not
+  demote objects at these field counts, so expect no benefit there.
+
+The flag is `experimental` because it depends on engine behavior that is not contracted API and
+could change. It is off by default and safe to leave off.
+
 ### Processing Raw Data with `processRawData`
 
 Transform data before it enters the Store:

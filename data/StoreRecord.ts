@@ -45,15 +45,15 @@ export class StoreRecord {
     /**
      * An object containing the current field values for this record.
      *
-     * For typical stores (up to ~100 fields), this object carries an explicit 'own' property for
-     * every field, with default values filled in - a representation optimized for V8 memory
-     * usage and property-read performance. For stores with very many fields, or in environments
-     * that disallow runtime code generation (strict CSP without 'unsafe-eval'), a sparse
-     * representation is used instead - 'own' properties only for fields that are not at their
-     * default values, with defaults present via the prototype.
+     * By default this object carries an explicit 'own' property only for fields that are *not* at
+     * their default value - defaults are present via the prototype. Stores that opt in to the
+     * `optimizeRecordData` experimental flag instead carry an own property for every field, with
+     * defaults filled in. See {@link Store.recordDataMode}.
      *
-     * Call {@link getValues} for an object providing an explicit enumeration of all field values
-     * regardless of representation.
+     * Reads are identical either way, but enumeration is not - `Object.keys()`, spread and
+     * `JSON.stringify()` include default-valued fields only in the latter case. Call
+     * {@link getValues} for an explicit enumeration of all field values regardless of
+     * representation, or {@link getModifiedValues} for locally-modified values only.
      */
     readonly data: PlainObject;
 
