@@ -188,6 +188,7 @@ interface LibraryColCellProps extends HoistProps, ICellRendererParams<StoreRecor
 /**
  * Cell renderer for a Column Library row: a drag handle beside the column name over an optional
  * wrapped, inline description (the row auto-heights to fit it).
+ * @internal
  */
 export const LibraryColCell = hoistCmp<LibraryColCellProps>(
     ({registerRowDragger, data: record}) => {
@@ -242,6 +243,7 @@ interface ChooserColNameProps extends HoistProps, ICellRendererParams<StoreRecor
  * Cell renderer for a bucket chooser name column - grip drag handle + column name, plus an on-demand
  * metadata info icon (see {@link columnMetaTooltip}). The name itself is a plain drag target: metadata
  * lives behind its own hit target so scanning the list never fires a tooltip by accident.
+ * @internal
  */
 export const ChooserColName = hoistCmp<ChooserColNameProps>(
     ({registerRowDragger, data: record}) => {

@@ -11,6 +11,9 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'lodash';
 import {GridFilterModel} from '@xh/hoist/cmp/grid';
 
+/**
+ * @internal
+ */
 export class ColumnHeaderFilterModel extends HoistModel {
     override xhImpl = true;
 

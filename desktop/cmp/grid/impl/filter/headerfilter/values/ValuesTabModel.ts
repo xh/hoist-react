@@ -28,6 +28,9 @@ import {
 } from 'lodash';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 
+/**
+ * @internal
+ */
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
 

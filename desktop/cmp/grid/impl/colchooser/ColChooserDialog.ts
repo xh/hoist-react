@@ -10,6 +10,9 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {ColChooserModalModel} from './ColChooserModalModel';
 import {colChooser} from './ColChooser';
 
+/**
+ * @internal
+ */
 export const colChooserDialog = hoistCmp.factory({
     model: uses(ColChooserModalModel),
     className: 'xh-col-chooser-dialog',

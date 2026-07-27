@@ -31,6 +31,7 @@ const UNGROUPED = 'Ungrouped';
  * columns (across every pinned side), grouped by `chooserGroup`. Acts as a cross-grid drag
  * participant: drag a column out onto a bucket to show + position it (handled by the receiving
  * bucket), or drag a bucket column onto the library to hide it (handled here, position untouched).
+ * @internal
  */
 export class ColLibraryModel extends HoistModel implements ColChooserDropParticipant {
     override xhImpl = true;

@@ -18,6 +18,9 @@ import {HeaderFilterModel} from '../HeaderFilterModel';
 
 import {CustomRowModel, usesMultiValueInput} from './CustomRowModel';
 
+/**
+ * @internal
+ */
 export class CustomTabModel extends HoistModel {
     override xhImpl = true;
 

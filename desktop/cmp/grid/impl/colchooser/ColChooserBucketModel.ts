@@ -57,6 +57,7 @@ export interface ColChooserBucketConfig {
  * Owns its slice of the target grid's columnState - building chooser records, validating and
  * handling drag/drop, and toggling visibility. The parent {@link ColChooserModel}
  * orchestrates the buckets, providing the target GridModel and the state commit chokepoint.
+ * @internal
  */
 export class ColChooserBucketModel extends HoistModel implements ColChooserDropParticipant {
     override xhImpl = true;

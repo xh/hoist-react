@@ -27,6 +27,7 @@ export interface ColChooserProps extends HoistProps<ColChooserModel>, LayoutProp
  * grids - pinned-left, unpinned, and pinned-right - with drag-and-drop supported both within and
  * across grids. Bound to a {@link ColChooserModel}, which is owned by the grid and shared across
  * the chooser's dialog, popover, and panel presentations.
+ * @internal
  */
 export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
     displayName: 'ColChooser',
