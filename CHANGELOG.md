@@ -12,6 +12,38 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
+* The desktop grid column chooser has been re-implemented (see New Features below). No API changes
+  are required, but its UX has changed substantially and should be reviewed.
+    * `Column.chooserGroup` now groups columns only within the new, opt-in Column Library. Enable
+      `colChooserModel: {columnLibrary: true}` to retain a grouped presentation of hidden columns.
+    * Custom app styling that targeted the chooser's former `LeftRightChooser`-based DOM must be
+      updated - the chooser now renders its own grids and CSS classes.
+
+### 🎁 New Features
+
+* Added a new desktop Column Chooser, supporting drag-and-drop re-ordering of columns.
+    * Presents columns in true grid order across three zones - pinned-left, unpinned, and
+      pinned-right. Drag within or across zones to reorder, pin, and unpin.
+    * Supports toggling visibility via checkbox, double-click, or the space key.
+    * Drags multiple selected rows, or an entire `ColumnGroup` row, in a single gesture.
+    * Respects `hideable`, `movable`, and `lockColumnGroups` - drops that would split a locked group
+      clamp to the nearest legal position, and refused drags explain themselves in the drag ghost.
+    * Adds an optional Column Library via `ColChooserConfig.columnLibrary` (customizable with
+      `ColLibraryConfig`) - a docked list of hidden columns grouped by `Column.chooserGroup`. Drag a
+      column out to show and position it; drag one in to hide it.
+    * Adds a new docked side panel presentation option that stays open alongside the grid, always
+      auto-committing. Enable via the new `GridConfig.colChooserPanelModel` config
+      (`ColChooserPanelConfig`) and open with `GridModel.showColChooserPanel()`, the new
+      `colChooserPanel` context-menu token, or a `colChooserButton` with `target: 'panel'`.
+    * Adds a `target` prop to `ColChooserButton` to select the presentation - `'popover'` (default),
+      `'dialog'`, or `'panel'`.
+    * Surfaces column descriptions via an on-demand info tooltip.
+    * Supports toggling display of column groups and the Column Library, persisted as a
+      browser-local user preference and live-synced across every chooser in the app.
+    * Protects pending edits in deferred-commit mode (`commitOnChange: false`) - an outside click no
+      longer dismisses the popover, and external column state changes prompt for resolution.
+* Added `GridModel.isColumnHideable()` and `GridModel.isColumnMovable()` to report whether the user
+  is permitted to hide or reorder a given column.
 
 ### ⚙️ Technical
 
@@ -19,6 +51,8 @@
   Popper.js onto Floating UI for React 19 compatibility. The Hoist `Popover` components (mobile and
   desktop) have been updated so no app call-site changes are required.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
+* Optimized `GridModel.getColumn()` and `updateColumnState()` with indexed lookups of leaf columns
+  and column state, replacing recursive tree walks and repeated linear scans.
 
 ### 📚 Libraries
 
