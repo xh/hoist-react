@@ -323,8 +323,9 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.workingState = newState;
         if (this.commitOnChange) {
             // The grid write's columnState reaction re-syncs the buckets (adopt -> syncBuckets)
-            // synchronously before paint, so no optimistic rebuild is needed here.
-            this.gridModel.setColumnState(newState);
+            // synchronously before paint, so no optimistic rebuild is needed here. Note we always
+            // pass a full, ordered leaf set, so the grid picks up the new ordering as well.
+            this.gridModel.updateColumnState(newState);
             this.autosizeIfNeeded();
         } else {
             // Deferred: no grid write fires the sync reaction, so reflect the working copy ourselves.
@@ -360,7 +361,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         // Advance the baseline before mutating the grid so the resulting sync reaction sees a clean
         // (non-dirty) state and adopts it, rather than treating our own commit as an external change.
         this.setBaseline(workingState);
-        gridModel.setColumnState(workingState);
+        gridModel.updateColumnState(workingState);
         await this.autosizeIfNeeded();
     }
 

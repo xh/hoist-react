@@ -1865,14 +1865,9 @@ export class GridModel extends HoistModel {
             if (!col.resizable || !state.manuallySized) state = omit(state, 'width');
             state = {...state, manuallySized: state.manuallySized ?? false};
 
-            // Strip metadata other than id, hidden, and pinned state from hidden columns to save
-            // space when storing user configs with large amounts of hidden fields. Pinned state is
-            // preserved so a column's pin survives being hidden and is restored when it is shown again.
-            if (state.hidden) {
-                state = state.pinned
-                    ? pick(state, 'colId', 'hidden', 'pinned')
-                    : pick(state, 'colId', 'hidden');
-            }
+            // Remove all metadata other than the id and the hidden state from hidden columns, to save
+            // on space when storing user configs with large amounts of hidden fields.
+            if (state.hidden) state = pick(state, 'colId', 'hidden');
 
             return state;
         });
