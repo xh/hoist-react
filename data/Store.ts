@@ -192,13 +192,14 @@ export interface StoreConfig {
      * cheaper (measured 6.6x at 150 declared / 8 populated), because it costs nothing per record
      * for unpopulated fields while a template pays for every declared field on every record.
      *
-     * Two further trade-offs to weigh:
-     * - `data` gains an own property for every field, so `Object.keys()`, spread and
-     *   `JSON.stringify()` of `data` include default-valued fields. Reads are unchanged. Use
-     *   {@link StoreRecord.getValues} or {@link StoreRecord.getModifiedValues} instead of
-     *   enumerating `data` directly.
-     * - Reads of a single field across many records get faster; reads that sweep *every* field of
-     *   a record (`getValues()`, grid export) measure ~2x slower.
+     * One further trade-off to weigh: `data` gains an own property for every field, so
+     * `Object.keys()`, spread and `JSON.stringify()` of `data` include default-valued fields.
+     * Reads return the same values either way - use {@link StoreRecord.getValues} or
+     * {@link StoreRecord.getModifiedValues} instead of enumerating `data` directly.
+     *
+     * Treat this as a memory optimization only - field reads are not measurably faster in
+     * practice, as much of the framework's data access runs through call sites shared across
+     * every Store in the app, which behave the same either way.
      *
      * Store checks this setting against its data on first load and logs guidance if it looks
      * wrong in either direction. The underlying effect is specific to V8 - expect no benefit in

@@ -842,15 +842,14 @@ costs nothing for unpopulated ones. Store checks your setting against its data a
 load and logs a warning if it looks wrong, but the setting is always honored - it is your call.
 `Store.recordDataMode` reports which representation a Store is using.
 
-**Two further trade-offs**, neither of which the framework can decide for you:
+**One further trade-off**, which the framework cannot decide for you: `data` gains an own
+property for every field, so `Object.keys()`, spread and `JSON.stringify()` of `data` include
+default-valued fields. Reads return the same values either way. Use `record.getValues()` or
+`record.getModifiedValues()` rather than enumerating `data` directly.
 
-- **`data` enumeration changes.** Records carry an own property for every field, so
-  `Object.keys()`, spread and `JSON.stringify()` of `data` include default-valued fields. Reads are
-  unchanged. Use `record.getValues()` or `record.getModifiedValues()` rather than enumerating
-  `data` directly.
-- **Reads shift.** Reading one field across many records (comparators, filters) gets faster.
-  Reading *every* field of a record through one call site - `getValues()`, grid export - measures
-  about 2x slower.
+Treat this as a **memory** optimization only. Field reads are not measurably faster in practice:
+much of the framework's data access runs through call sites shared across every Store in the app,
+and those behave the same regardless of how record data was built.
 
 Finally, the underlying effect is specific to V8 (Chrome, Edge, Electron). Safari and Firefox do
 not demote objects at these field counts, so expect no benefit there and no harm either.
