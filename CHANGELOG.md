@@ -18,11 +18,6 @@
 * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
   its raw source data object after parsing, reducing memory usage on large stores where
   `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
-
-### 🎁 New Features
-* Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference
-  to its raw source data object after parsing, reducing memory usage on large stores where
-  `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
 * Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
   async iterable yielding raw records or chunks. Creates records incrementally without buffering
   the complete raw dataset in memory, then installs them in a single transaction once the source

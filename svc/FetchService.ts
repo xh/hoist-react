@@ -1005,7 +1005,7 @@ export interface FetchOptions {
      * processed likewise. Nested values are not processed, with the exception of recursion
      * into child records via `childrenKey`. No-op for response payloads of any other shape.
      *
-     * Interned values are additionally shared across successive responses with the same `key` -
+     * Interned values are also optionally shared across successive responses with the same `key` -
      * e.g. a polling refresh of the same grid - with cache retention bounded to the values
      * present in the most recent complete response for each key.
      */
