@@ -306,6 +306,14 @@ export class XHApi {
     }
 
     /**
+     * Send an HTTP request and decode the response incrementally as NDJSON.
+     * @see FetchService.fetchNdjson
+     */
+    fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
+        return this.fetchService.fetchNdjson(opts, ctx);
+    }
+
+    /**
      * Send a POST request with a JSON body and decode the response as JSON.
      * @see FetchService.postJson
      */

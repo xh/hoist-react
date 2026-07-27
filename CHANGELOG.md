@@ -45,6 +45,23 @@
 * Added `GridModel.isColumnHideable()` and `GridModel.isColumnMovable()` to report whether the user
   is permitted to hide or reorder a given column.
 
+### 🎁 New Features
+
+* Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
+  its raw source data object after parsing, reducing memory usage on large stores where
+  `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
+* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
+  async iterable yielding raw records or chunks. Creates records incrementally without buffering
+  the complete raw dataset in memory, then installs them in a single transaction once the source
+  completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
+* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
+  as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
+  directly via `for await` for any streamed endpoint.
+* Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
+  JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
+  values are also shared across successive fetches of the same logical dataset, as identified by
+  a required app-provided key.
+
 ### ⚙️ Technical
 
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
@@ -53,6 +70,10 @@
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
 * Optimized `GridModel.getColumn()` and `updateColumnState()` with indexed lookups of leaf columns
   and column state, replacing recursive tree walks and repeated linear scans.
+* Field XSS protection now preserves the reference identity of string values that sanitization
+  does not modify (the common case). Previously every parsed string value was replaced with a
+  freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
+  upstream deduplication of repeated values.
 
 ### 📚 Libraries
 

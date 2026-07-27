@@ -23,7 +23,7 @@ import {
     ValidationResult
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -145,6 +145,17 @@ export interface StoreConfig {
      * Default false.
      */
     reuseRecords?: boolean;
+
+    /**
+     * True (default) to have each StoreRecord retain a reference to the raw data object from
+     * which it was created, exposed as `StoreRecord.raw`. May be set to false to reduce memory
+     * usage on large stores - raw data objects are then eligible for garbage collection after
+     * parsing, and `StoreRecord.raw` will be null.
+     *
+     * Not compatible with `reuseRecords`, which requires retained raw data for its
+     * reference-identity checks.
+     */
+    retainRaw?: boolean;
 
     /**
      * Set to true to always validate all uncommitted records on every change to
@@ -269,6 +280,7 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     reuseRecords: boolean;
+    retainRaw: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -325,12 +337,17 @@ export class Store
         freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
         reuseRecords = false,
+        retainRaw = true,
         validationIsComplex = false,
         experimental,
         data
     }: StoreConfig) {
         super();
         makeObservable(this);
+        throwIf(
+            reuseRecords && !retainRaw,
+            'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
+        );
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
@@ -343,6 +360,7 @@ export class Store
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
+        this.retainRaw = retainRaw;
         this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
@@ -404,6 +422,53 @@ export class Store
         this.rebuildFiltered();
 
         this.lastLoaded = this.lastUpdated = Date.now();
+    }
+
+    /**
+     * Load a new and complete dataset from a streaming source, replacing any/all pre-existing
+     * Records as needed - the streaming counterpart to {@link loadData}.
+     *
+     * Use to load very large datasets without buffering the complete raw dataset in a single
+     * array - e.g. rows streamed incrementally from the server. The source may be a sync or
+     * async iterable, yielding individual raw records or arrays (chunks) of records - see
+     * {@link FetchService.fetchNdjson} for the natural source when streaming NDJSON, e.g.
+     * `store.loadDataAsync(XH.fetchNdjson({url}))`.
+     *
+     * The Store is not modified until the source has been fully consumed - all records are then
+     * installed in a single observable transaction, exactly as with `loadData()`. If the source
+     * throws, the Store remains unchanged.
+     *
+     * Note this method does not accept summary data - a summary is an aggregate, unavailable
+     * until a stream completes. Any pre-existing summary records are cleared. Install summary
+     * data via `updateData({rawSummaryData})` after loading, if desired. Not supported for
+     * stores with `loadRootAsSummary` - such payloads nest all row data within a single root
+     * node and cannot be streamed.
+     *
+     * @param rawData - iterable yielding raw records, or chunks (arrays) of raw records.
+     */
+    async loadDataAsync(
+        rawData: AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>
+    ): Promise<void> {
+        throwIf(
+            this.loadRootAsSummary,
+            'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
+        );
+
+        const recordMap = new Map<StoreRecordId, StoreRecord>(),
+            summaryIds = new Set<StoreRecordId>();
+
+        for await (const chunk of rawData) {
+            for (const raw of castArray(chunk)) {
+                this.createRecords([raw], null, recordMap, summaryIds);
+            }
+        }
+
+        runInAction(() => {
+            this.summaryRecords = null;
+            this._committed = this._current = this._committed.withNewRecords(recordMap);
+            this.rebuildFiltered();
+            this.lastLoaded = this.lastUpdated = Date.now();
+        });
     }
 
     /**
@@ -1144,7 +1209,7 @@ export class Store
             }
         }
 
-        const {processRawData} = this;
+        const {processRawData, retainRaw} = this;
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
@@ -1158,7 +1223,7 @@ export class Store
         const ret = new StoreRecord({
             id,
             store: this,
-            raw,
+            raw: retainRaw ? raw : null,
             data,
             committedData: data,
             parent,
