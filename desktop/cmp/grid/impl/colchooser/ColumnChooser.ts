@@ -112,8 +112,9 @@ const chooserBody = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
 
 /**
  * The bucket zones in master order: pinned-left, the unpinned "Columns" divider + grid, pinned-right.
- * Takes a fixed width in the content-hugging overlays; flexes to fill the dock (beside the
- * fixed-width library) in the docked panel.
+ * Holds no observable state of its own - each zone re-renders independently off its own bucket. Takes
+ * a fixed width in the content-hugging overlays; flexes to fill the dock (beside the fixed-width
+ * library) in the docked panel.
  */
 const chooserBuckets = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
     vbox({
