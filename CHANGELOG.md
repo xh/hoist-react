@@ -12,8 +12,10 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
-* The desktop grid column chooser has been re-implemented (see New Features below). No API changes
-  are required, but its UX has changed substantially and should be reviewed.
+* The desktop grid column chooser has been re-implemented (see New Features below). Its UX has
+  changed substantially and should be reviewed.
+    * Apps that register an explicit list of ag-Grid modules (rather than `AllCommunityModule`) must
+      add `RowDragModule` - the chooser's drag-and-drop silently will not work without it.
     * `Column.chooserGroup` now groups columns only within the new, opt-in Column Library. Enable
       `colChooserModel: {columnLibrary: true}` to retain a grouped presentation of hidden columns.
     * Custom app styling that targeted the chooser's former `LeftRightChooser`-based DOM must be
