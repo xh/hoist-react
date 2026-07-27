@@ -203,11 +203,13 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         const records = collapseSelection(getDragRecords(params.rows ?? [params.source])),
             selRows = this.buildSelectionRows(records),
             lock = this.targetGridModel.lockColumnGroups;
+
         if (selRows && !isValidDragSelection(selRows, lock)) {
             // Target-independent refusal - the whole selection is incoherent. Explain it and bail.
             this.publishDragHint(dragSelectionRejectReason(selRows, lock));
             return {allowed: false};
         }
+
         // Past the selection gate: clear any stale hint. Only the locked-split path below re-sets one;
         // every other refusal here (over the dragged row, a no-op) is benign and stays hint-free.
         this.publishDragHint(null);
@@ -225,6 +227,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             const {agApi} = this.chooserGridModel,
                 firstRow = agApi?.getDisplayedRowAtIndex(0),
                 lastRow = this.getLastDisplayedRow();
+
             if (firstRow && lastRow) {
                 const contentMid = (firstRow.rowTop + lastRow.rowTop + lastRow.rowHeight) / 2;
                 target = params.y < contentMid ? firstRow : lastRow;

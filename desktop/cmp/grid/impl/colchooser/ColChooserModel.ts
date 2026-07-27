@@ -248,7 +248,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
         this.addReaction({
             track: () => [this.gridModel.columnState, this.gridModel.columns],
-            run: () => this.onGridStateChange(),
+            run: () => this.syncColumnState(),
             fireImmediately: true
         });
 
@@ -429,29 +429,29 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
     /** Adopt the current grid columnState as both working copy and baseline. */
     @action
-    private adopt(columnState: ColumnState[]) {
+    private adoptColumnState(columnState: ColumnState[]) {
         this.baseline = columnState;
         this.workingState = columnState;
         this.syncBuckets();
     }
 
     /** React to the grid's columnState changing - adopt, or (deferred + dirty) resolve a conflict. */
-    private onGridStateChange() {
-        const gs = this.gridModel.columnState;
+    private syncColumnState() {
+        const {columnState} = this.gridModel;
 
         // Auto-commit, no pending local edits, or mid restore-defaults: take the grid's state outright.
         if (this.commitOnChange || !this.isDirty || this.restoringDefaults) {
-            this.adopt(gs);
+            this.adoptColumnState(columnState);
             return;
         }
 
         // Deferred mode with pending edits - the grid changed out from under us.
-        if (this.hasStructuralChange(gs, this.baseline)) {
+        if (this.hasStructuralChange(columnState, this.baseline)) {
             // A real ordering / visibility / pinning change - prompt to resolve.
             this.resolveConflictAsync();
-        } else if (!isEqual(gs, this.baseline)) {
+        } else if (!isEqual(columnState, this.baseline)) {
             // Only cosmetic (width / manuallySized) changed - absorb silently, keeping pending edits.
-            this.absorbCosmeticChange(gs);
+            this.absorbCosmeticChange(columnState);
         }
     }
 
@@ -494,7 +494,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
         const gs = this.gridModel.columnState;
         if (loadNew) {
-            this.adopt(gs);
+            this.adoptColumnState(gs);
         } else {
             // Advance the baseline so we stop re-prompting; keep the user's working edits, which will
             // overwrite the external change on the next commit.
