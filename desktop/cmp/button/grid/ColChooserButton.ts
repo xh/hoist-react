@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {columnChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColumnChooser';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import {ColChooserModalModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModalModel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -99,7 +99,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                 items: [
                     div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
                     // Self-sizes to its buckets + library; no explicit width/height needed.
-                    columnChooser({model: modalModel})
+                    colChooser({model: modalModel})
                 ]
             }),
             onInteraction: willOpen => {

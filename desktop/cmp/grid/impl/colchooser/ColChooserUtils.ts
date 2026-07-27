@@ -41,8 +41,8 @@ export function dragRejectHint(reason: DragHintReason): string {
     }
 }
 
-/** Shape of record data in the ColumnChooser's internal grids (buckets and library). */
-export interface ColumnChooserData {
+/** Shape of record data in the ColChooser's internal grids (buckets and library). */
+export interface ColChooserData {
     id: string;
     name: string;
     description: string;
@@ -67,22 +67,22 @@ export interface ColumnChooserData {
 }
 
 /**
- * A grid that participates in cross-grid drag-and-drop within the ColumnChooser - the three
+ * A grid that participates in cross-grid drag-and-drop within the ColChooser - the three
  * pinned-side buckets and the optional Column Library. {@link ColChooserModel} wires drop zones
  * between every pair of participants.
  */
-export interface ColumnChooserDropParticipant {
+export interface ColChooserDropParticipant {
     chooserGridModel: GridModel;
     /** Handle a drop into this participant's grid, originating from `source`. */
-    handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant): void;
+    handleCrossBucketDrop(event: RowDragEndEvent, source: ColChooserDropParticipant): void;
     /** Drag-image icon name for a cross-grid drag hovering this participant's grid. */
     getCrossBucketDropIcon(draggingEvent: any): string;
     /** Flag a cross-bucket drag entering/leaving this participant (buckets only). */
     setDragOver?(over: boolean): void;
 }
 
-/** Extract ColumnChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
-export function getChooserData(node: any): ColumnChooserData | null {
+/** Extract ColChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
+export function getChooserData(node: any): ColChooserData | null {
     return node?.data?.data ?? null;
 }
 
@@ -125,7 +125,7 @@ export const chooserGridConfig: Partial<GridConfig> = {
 };
 
 /**
- * Base config for the chooser grids' name column - grip-handle + name via {@link ChooserColumnName}.
+ * Base config for the chooser grids' name column - grip-handle + name via {@link ChooserColName}.
  * Bucket grids render it as a tree column (via `innerRenderer`); the flat library grid renders it
  * directly.
  */
@@ -134,7 +134,7 @@ export function chooserNameColumn(tree: boolean): ColumnSpec {
         field: 'name',
         flex: 1,
         rendererIsComplex: true,
-        cellClass: 'xh-column-chooser__name-cell',
+        cellClass: 'xh-col-chooser__name-cell',
         ...(tree
             ? {
                   isTreeColumn: true,
@@ -143,16 +143,16 @@ export function chooserNameColumn(tree: boolean): ColumnSpec {
                           // Re-specify Hoist defaults — agOptions merges shallow
                           suppressCount: true,
                           suppressDoubleClickExpand: true,
-                          innerRenderer: ChooserColumnName
+                          innerRenderer: ChooserColName
                       }
                   }
               }
-            : {agOptions: {cellRenderer: ChooserColumnName}})
+            : {agOptions: {cellRenderer: ChooserColName}})
     };
 }
 
 /** Shape of leaf-column record data in the Column Library's internal grid. */
-export interface ColumnLibraryData {
+export interface ColLibraryData {
     id: string;
     name: string;
     description: string;
@@ -162,13 +162,13 @@ export interface ColumnLibraryData {
     isGroup: boolean;
     /** Always `[id]` - the leaves the receiving bucket should show on drop. */
     leafColIds: string[];
-    /** Always true - tells the receiving bucket to unhide on drop (see ColumnChooserBucketModel). */
+    /** Always true - tells the receiving bucket to unhide on drop (see ColChooserBucketModel). */
     fromLibrary: boolean;
 }
 
 /**
  * Column spec for the Column Library's flat grid - an auto-height row rendered by
- * {@link LibraryColumnCell}.
+ * {@link LibraryColCell}.
  */
 export function chooserLibraryColumn(): ColumnSpec {
     return {
@@ -176,20 +176,20 @@ export function chooserLibraryColumn(): ColumnSpec {
         flex: 1,
         rendererIsComplex: true,
         autoHeight: true,
-        cellClass: 'xh-column-chooser__lib-cell',
+        cellClass: 'xh-col-chooser__lib-cell',
         agOptions: {
-            cellRenderer: LibraryColumnCell
+            cellRenderer: LibraryColCell
         }
     };
 }
 
-interface LibraryColumnCellProps extends HoistProps, ICellRendererParams<StoreRecord> {}
+interface LibraryColCellProps extends HoistProps, ICellRendererParams<StoreRecord> {}
 
 /**
  * Cell renderer for a Column Library row: a drag handle beside the column name over an optional
  * wrapped, inline description (the row auto-heights to fit it).
  */
-export const LibraryColumnCell = hoistCmp<LibraryColumnCellProps>(
+export const LibraryColCell = hoistCmp<LibraryColCellProps>(
     ({registerRowDragger, data: record}) => {
         const ref = useRef<HTMLSpanElement>(null);
 
@@ -197,7 +197,7 @@ export const LibraryColumnCell = hoistCmp<LibraryColumnCellProps>(
             if (ref.current) registerRowDragger(ref.current);
         }, [registerRowDragger]);
 
-        const data = record?.data as ColumnLibraryData;
+        const data = record?.data as ColLibraryData;
         if (!data) return null;
 
         const {name, description, movable} = data,
@@ -206,26 +206,26 @@ export const LibraryColumnCell = hoistCmp<LibraryColumnCellProps>(
         const dragHandle = movable
             ? span({
                   ref,
-                  className: 'xh-column-chooser__name-cell__drag-handle',
+                  className: 'xh-col-chooser__name-cell__drag-handle',
                   item: Icon.grip({prefix: 'fas'})
               })
             : span({
-                  className: 'xh-column-chooser__name-cell__lock',
+                  className: 'xh-col-chooser__name-cell__lock',
                   item: Icon.lock()
               });
 
         return hframe({
-            className: 'xh-column-chooser__lib-cell__row',
+            className: 'xh-col-chooser__lib-cell__row',
             alignItems: 'center',
             items: [
                 dragHandle,
                 vframe({
-                    className: 'xh-column-chooser__lib-cell__body',
+                    className: 'xh-col-chooser__lib-cell__body',
                     items: [
-                        span({className: 'xh-column-chooser__lib-cell__name', item: name}),
+                        span({className: 'xh-col-chooser__lib-cell__name', item: name}),
                         hasDescription
                             ? div({
-                                  className: 'xh-column-chooser__lib-cell__desc',
+                                  className: 'xh-col-chooser__lib-cell__desc',
                                   item: description
                               })
                             : null
@@ -236,14 +236,14 @@ export const LibraryColumnCell = hoistCmp<LibraryColumnCellProps>(
     }
 );
 
-interface ChooserColumnNameProps extends HoistProps, ICellRendererParams<StoreRecord> {}
+interface ChooserColNameProps extends HoistProps, ICellRendererParams<StoreRecord> {}
 
 /**
  * Cell renderer for a bucket chooser name column - grip drag handle + column name, plus an on-demand
  * metadata info icon (see {@link columnMetaTooltip}). The name itself is a plain drag target: metadata
  * lives behind its own hit target so scanning the list never fires a tooltip by accident.
  */
-export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
+export const ChooserColName = hoistCmp<ChooserColNameProps>(
     ({registerRowDragger, data: record}) => {
         const ref = useRef<HTMLSpanElement>(null);
 
@@ -251,7 +251,7 @@ export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
             if (ref.current) registerRowDragger(ref.current);
         }, [registerRowDragger]);
 
-        const data = record?.data as ColumnChooserData;
+        const data = record?.data as ColChooserData;
         if (!data) return null;
 
         const {name, movable} = data;
@@ -261,14 +261,14 @@ export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
                 movable
                     ? span({
                           ref,
-                          className: 'xh-column-chooser__name-cell__drag-handle',
+                          className: 'xh-col-chooser__name-cell__drag-handle',
                           item: Icon.grip({prefix: 'fas'})
                       })
                     : span({
-                          className: 'xh-column-chooser__name-cell__lock',
+                          className: 'xh-col-chooser__name-cell__lock',
                           item: Icon.lock()
                       }),
-                span({className: 'xh-column-chooser__name-cell__name', item: name ?? ''}),
+                span({className: 'xh-col-chooser__name-cell__name', item: name ?? ''}),
                 columnMetaTooltip(data)
             ]
         });
@@ -281,34 +281,34 @@ export const ChooserColumnName = hoistCmp<ChooserColumnNameProps>(
  * signals "more info here". Content mirrors the library row treatment - name as title, group as a tag,
  * description as body copy - so both panels read as one system.
  */
-function columnMetaTooltip(data: ColumnChooserData): ReactNode {
+function columnMetaTooltip(data: ColChooserData): ReactNode {
     const {name, description, chooserGroup} = data,
         hasGroup = !isEmpty(chooserGroup),
         hasDesc = !isEmpty(description);
     if (!hasDesc) return null;
 
     return tooltip({
-        className: 'xh-column-chooser__name-cell__meta',
-        popoverClassName: 'xh-column-chooser__meta-popover',
+        className: 'xh-col-chooser__name-cell__meta',
+        popoverClassName: 'xh-col-chooser__meta-popover',
         minimal: true,
         item: Icon.info(),
         content: vbox({
-            className: 'xh-column-chooser__meta-tip',
+            className: 'xh-col-chooser__meta-tip',
             items: [
                 hbox({
-                    className: 'xh-column-chooser__meta-tip__header',
+                    className: 'xh-col-chooser__meta-tip__header',
                     items: [
-                        span({className: 'xh-column-chooser__meta-tip__title', item: name}),
+                        span({className: 'xh-col-chooser__meta-tip__title', item: name}),
                         hasGroup
                             ? span({
-                                  className: 'xh-column-chooser__meta-tip__group',
+                                  className: 'xh-col-chooser__meta-tip__group',
                                   item: chooserGroup
                               })
                             : null
                     ]
                 }),
                 hasDesc
-                    ? div({className: 'xh-column-chooser__meta-tip__desc', item: description})
+                    ? div({className: 'xh-col-chooser__meta-tip__desc', item: description})
                     : null
             ]
         })

@@ -19,20 +19,20 @@ import {
     chooserGridConfig,
     chooserLibraryColumn,
     dragRejectHint,
-    type ColumnChooserDropParticipant,
-    type ColumnLibraryData,
+    type ColChooserDropParticipant,
+    type ColLibraryData,
     getChooserData
-} from './ColumnChooserUtils';
+} from './ColChooserUtils';
 
 const UNGROUPED = 'Ungrouped';
 
 /**
- * Model backing the ColumnChooser's optional Column Library - a grid listing all currently hidden
+ * Model backing the ColChooser's optional Column Library - a grid listing all currently hidden
  * columns (across every pinned side), grouped by `chooserGroup`. Acts as a cross-grid drag
  * participant: drag a column out onto a bucket to show + position it (handled by the receiving
  * bucket), or drag a bucket column onto the library to hide it (handled here, position untouched).
  */
-export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropParticipant {
+export class ColLibraryModel extends HoistModel implements ColChooserDropParticipant {
     override xhImpl = true;
 
     readonly parent: ColChooserModel;
@@ -71,7 +71,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         const {targetGridModel, chooserGridModel} = this;
 
         let grouped = false;
-        const data: ColumnLibraryData[] = [];
+        const data: ColLibraryData[] = [];
         columnState.forEach(cs => {
             if (!cs.hidden) return;
             const col = targetGridModel.getColumn(cs.colId);
@@ -117,7 +117,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
     }
 
     /** Handle a column dragged onto the library from a bucket - hide it, leaving its position. */
-    handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant) {
+    handleCrossBucketDrop(event: RowDragEndEvent, source: ColChooserDropParticipant) {
         if (source === this) return;
 
         const {targetGridModel} = this,
@@ -188,7 +188,7 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
                 ]
             },
             rowClassRules: {
-                'xh-column-chooser__column-row': ({data: rec}) => rec && !rec.isSummary
+                'xh-col-chooser__column-row': ({data: rec}) => rec && !rec.isSummary
             },
             columns: [
                 chooserLibraryColumn(),

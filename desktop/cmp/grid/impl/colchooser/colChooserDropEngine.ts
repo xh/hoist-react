@@ -13,7 +13,7 @@ import {findLastIndex} from 'lodash';
  * Pure resolution engine for column-chooser drag-and-drop. All logic operates on plain
  * `ColumnState[]` master data plus a `chainOf` group-lookup - no ag-Grid, MobX, or model deps - so it
  * is unit-testable headless (see `colChooserDropEngine.spec.ts`) and free of the ag-Grid glue that
- * lives in {@link ColumnChooserBucketModel}. See `docs/planning/locked-group-dnd-spec.md` for the model (esp. §5A).
+ * lives in {@link ColChooserBucketModel}. See `docs/planning/locked-group-dnd-spec.md` for the model (esp. §5A).
  *
  * The `@xh/hoist` imports here are **type-only** (erased at runtime), so this module carries no
  * runtime dependency on the framework and runs under bare `tsx`.

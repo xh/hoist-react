@@ -8,7 +8,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {ColChooserModalModel} from './ColChooserModalModel';
-import {columnChooser} from './ColumnChooser';
+import {colChooser} from './ColChooser';
 
 export const colChooserDialog = hoistCmp.factory({
     model: uses(ColChooserModalModel),
@@ -22,7 +22,7 @@ export const colChooserDialog = hoistCmp.factory({
             title: 'Choose Columns',
             isOpen: true,
             onClose: () => model.close(),
-            item: columnChooser({model}),
+            item: colChooser({model}),
             className,
             // Hug the chooser's content - it sizes itself to the buckets plus the library when shown.
             style: {width: 'fit-content', maxWidth: '90vw'}

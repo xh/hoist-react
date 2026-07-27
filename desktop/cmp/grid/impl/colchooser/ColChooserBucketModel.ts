@@ -38,13 +38,13 @@ import {
     chooserGridConfig,
     chooserNameColumn,
     dragRejectHint,
-    type ColumnChooserData,
-    type ColumnChooserDropParticipant,
+    type ColChooserData,
+    type ColChooserDropParticipant,
     type DragHintReason,
     getChooserData
-} from './ColumnChooserUtils';
+} from './ColChooserUtils';
 
-export interface ColumnChooserBucketConfig {
+export interface ColChooserBucketConfig {
     parent: ColChooserModel;
     pinned: HSide | null;
     /** Label shown in the bucket's compact Panel header. */
@@ -58,7 +58,7 @@ export interface ColumnChooserBucketConfig {
  * handling drag/drop, and toggling visibility. The parent {@link ColChooserModel}
  * orchestrates the buckets, providing the target GridModel and the state commit chokepoint.
  */
-export class ColumnChooserBucketModel extends HoistModel implements ColumnChooserDropParticipant {
+export class ColChooserBucketModel extends HoistModel implements ColChooserDropParticipant {
     override xhImpl = true;
 
     readonly parent: ColChooserModel;
@@ -121,7 +121,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return aggregateVisibility(leaves.length, leaves.filter(cs => cs.hidden).length);
     }
 
-    constructor({parent, pinned, title, emptyText}: ColumnChooserBucketConfig) {
+    constructor({parent, pinned, title, emptyText}: ColChooserBucketConfig) {
         super();
         makeObservable(this);
         this.parent = parent;
@@ -237,6 +237,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
         const targetData = getChooserData(target);
         if (!payload || !targetData) return {allowed: false};
+
         // A row can't be dropped onto one of the dragged rows themselves - except a drop from the
         // Column Library onto the same column's inline (hidden) row, which unhides it in place.
         if (payload.recordIds.has(targetData.id) && !payload.fromLibrary) return {allowed: false};
@@ -310,7 +311,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * so a cross-bucket drop commits exactly what was previewed. Falls back to a pin-in-place append
      * only when there's no row under the cursor (empty bucket) and hence no cached preview.
      */
-    handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant) {
+    handleCrossBucketDrop(event: RowDragEndEvent, source: ColChooserDropParticipant) {
         if (source === this) return;
 
         const dropInfo = event.rowsDrop;
@@ -319,7 +320,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         }
 
         // No cached preview matched (empty bucket / no row under the cursor) - pin the dragged leaves
-        // in place (§6). A drop from the Column Library also unhides them (makeVisible).
+        // in place. A drop from the Column Library also unhides them (makeVisible).
         if (!event.overNode) {
             const records = collapseSelection(getDragRecords(event.nodes));
             if (!this.isValidSelection(records)) return;
@@ -423,7 +424,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * exempt (a Column Library drag - dragging hidden columns out to unhide isn't a group-locked
      * reorder). A null return means "no gate applies", i.e. always valid.
      */
-    private buildSelectionRows(records: ColumnChooserData[]): DragSelectionRow[] | null {
+    private buildSelectionRows(records: ColChooserData[]): DragSelectionRow[] | null {
         if (records.some(r => r.fromLibrary)) return null;
         return records.map(r => ({
             isGroup: r.isGroup,
@@ -438,7 +439,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * Gate the whole drag by its selected rows (see {@link isValidDragSelection}) - an incoherent
      * multi-select is refused up front rather than moving only part of it.
      */
-    private isValidSelection(records: ColumnChooserData[]): boolean {
+    private isValidSelection(records: ColChooserData[]): boolean {
         const rows = this.buildSelectionRows(records);
         return !rows || isValidDragSelection(rows, this.targetGridModel.lockColumnGroups);
     }
@@ -459,12 +460,12 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * Group records are created with empty leafColIds in the first pass — a second pass
      * populates them from actual children so split groups only contain their own leaves.
      */
-    private buildData(columnState: ColumnState[]): ColumnChooserData[] {
+    private buildData(columnState: ColumnState[]): ColChooserData[] {
         const {targetGridModel: gridModel, parentChainMap} = this,
             stateById = new Map(columnState.map(cs => [cs.colId, cs]));
 
         // 1) Walk columnState in order, creating leaf and group records
-        const data: ColumnChooserData[] = [],
+        const data: ColChooserData[] = [],
             groupInstanceCounts = new Map<string, number>(),
             activeGroups: (string | null)[] = [];
 
@@ -565,7 +566,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return data;
     }
 
-    private loadData(data: ColumnChooserData[], showGroups: boolean) {
+    private loadData(data: ColChooserData[], showGroups: boolean) {
         const {store} = this.chooserGridModel,
             leaves = data.filter(r => !r.isGroup),
             leafIdSet = new Set(leaves.map(r => r.id));
@@ -579,7 +580,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         const groups = data.filter(r => r.isGroup && r.leafColIds.some(id => leafIdSet.has(id))),
             groupIdSet = new Set(groups.map(r => r.id));
 
-        const childrenMap = new Map<string, ColumnChooserData[]>();
+        const childrenMap = new Map<string, ColChooserData[]>();
         [...groups, ...leaves].forEach(it => {
             if (it.parentId && groupIdSet.has(it.parentId)) {
                 if (!childrenMap.has(it.parentId)) childrenMap.set(it.parentId, []);
@@ -587,7 +588,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             }
         });
 
-        const buildNested = (r: ColumnChooserData): object => {
+        const buildNested = (r: ColChooserData): object => {
             const children = childrenMap.get(r.id);
             return children ? {...r, children: children.map(buildNested)} : {...r};
         };
@@ -609,7 +610,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     private resolveDrop(
         movingLeafColIds: string[],
         dragUnitGroupId: string | null,
-        targetData: ColumnChooserData | null,
+        targetData: ColChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ): ReturnType<typeof resolveDropEngine> {
@@ -641,7 +642,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     private moveColumns(
         movingLeafColIds: string[],
         dragUnitGroupId: string | null,
-        targetData: ColumnChooserData | null,
+        targetData: ColChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ) {
@@ -754,10 +755,10 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
 
         const arrow =
             pinned === 'left'
-                ? Icon.arrowToLeft({className: 'xh-column-chooser__drop-hint__arrow', size: 'sm'})
-                : Icon.arrowToRight({className: 'xh-column-chooser__drop-hint__arrow', size: 'sm'});
+                ? Icon.arrowToLeft({className: 'xh-col-chooser__drop-hint__arrow', size: 'sm'})
+                : Icon.arrowToRight({className: 'xh-col-chooser__drop-hint__arrow', size: 'sm'});
         return hbox({
-            className: 'xh-column-chooser__drop-hint',
+            className: 'xh-col-chooser__drop-hint',
             items: pinned === 'left' ? [arrow, span(text)] : [span(text), arrow]
         });
     }
@@ -799,8 +800,8 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                 ]
             },
             rowClassRules: {
-                'xh-column-chooser__column-row': () => true,
-                'xh-column-chooser__column-row--hidden': ({data: rec}) => rec.data.muted === true
+                'xh-col-chooser__column-row': () => true,
+                'xh-col-chooser__column-row--hidden': ({data: rec}) => rec.data.muted === true
             },
             columns: [
                 chooserNameColumn(true),
@@ -813,7 +814,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                             displayFn: ({record}) => {
                                 // Non-hideable columns always show a static lock - including in
                                 // library mode, where the grip stays live for reorder/re-pin but a
-                                // drop onto the library can't hide them (see ColumnLibraryModel).
+                                // drop onto the library can't hide them (see ColLibraryModel).
                                 if (!record.data.hideable) {
                                     return {
                                         icon: Icon.lock(),
@@ -885,12 +886,12 @@ interface DragPayload {
 }
 
 /** Extract the chooser records from the dragged ag-grid row nodes. */
-function getDragRecords(nodes: any[]): ColumnChooserData[] {
-    return (nodes ?? []).map(getChooserData).filter(Boolean) as ColumnChooserData[];
+function getDragRecords(nodes: any[]): ColChooserData[] {
+    return (nodes ?? []).map(getChooserData).filter(Boolean) as ColChooserData[];
 }
 
 /** Aggregate the dragged chooser records into a single {@link DragPayload}. */
-function buildDragPayload(records: ColumnChooserData[]): DragPayload | null {
+function buildDragPayload(records: ColChooserData[]): DragPayload | null {
     if (!records.length) return null;
 
     const leafColIds = new Set<string>(),
@@ -910,8 +911,8 @@ function buildDragPayload(records: ColumnChooserData[]): DragPayload | null {
 
 /** Recursively collect leaf colIds for a group from its actual children in the record set. */
 function collectLeafColIds(
-    group: ColumnChooserData,
-    recordMap: Map<string, ColumnChooserData>
+    group: ColChooserData,
+    recordMap: Map<string, ColChooserData>
 ): string[] {
     const ids: string[] = [];
     for (const rec of recordMap.values()) {

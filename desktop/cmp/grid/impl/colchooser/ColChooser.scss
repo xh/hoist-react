@@ -1,19 +1,19 @@
 // Readable secondary text (library + meta-tooltip descriptions). Muted (grey-500) fails WCAG AA on
 // the light background, so darken it there; grey-500 reads fine on the dark background. Scoped to
 // both roots since the meta tooltip is portaled to body, outside the chooser.
-.xh-column-chooser,
-.xh-column-chooser__meta-tip {
+.xh-col-chooser,
+.xh-col-chooser__meta-tip {
   --column-chooser-text-color-alt: color-mix(in srgb, var(--xh-gray) 60%, black);
 }
 
 .xh-dark {
-  .xh-column-chooser,
-  .xh-column-chooser__meta-tip {
+  .xh-col-chooser,
+  .xh-col-chooser__meta-tip {
     --column-chooser-text-color-alt: var(--xh-gray);
   }
 }
 
-.xh-column-chooser {
+.xh-col-chooser {
   background: var(--xh-bg);
 
   // Theme the ag-grid row drop indicator line with our primary intent color.
@@ -98,8 +98,8 @@
 
     // Match-zone alignment: drop the line segment on the side the label hugs, so left/center/right
     // placement doubles as a wayfinding cue atop the pin-direction arrow.
-    &--left > .xh-column-chooser__separator__line:first-child,
-    &--right .xh-column-chooser__separator__label + .xh-column-chooser__separator__line {
+    &--left > .xh-col-chooser__separator__line:first-child,
+    &--right .xh-col-chooser__separator__label + .xh-col-chooser__separator__line {
       display: none;
     }
   }
@@ -115,7 +115,7 @@
     min-height: 0;
 
     // Paired with `alwaysShowVerticalScroll` on this bucket's grid, which reserves the scrollbar
-    // gutter at all times (keeping a stable right edge - see ColumnChooser.ts). That option also
+    // gutter at all times (keeping a stable right edge - see ColChooser.ts). That option also
     // forces the fake scrollbar's track visible; override its viewport back to `auto` so the bar
     // paints only on real overflow while the reserved gutter width persists - no empty track.
     .ag-body-vertical-scroll-viewport {
@@ -168,7 +168,7 @@
     // Highlight the strip while a column is dragged over it, matching the drop-indicator color.
     // Override the grid's bg / empty-text vars (specificity-proof - the Hoist grid theme rules that
     // set these win on selector specificity, but a var set here cascades into them).
-    &.xh-column-chooser__bucket--drag-over {
+    &.xh-col-chooser__bucket--drag-over {
       --xh-grid-bg: var(--xh-intent-primary-trans1);
       --xh-grid-empty-text-color: var(--xh-intent-primary);
       border-color: var(--xh-intent-primary);
@@ -200,8 +200,8 @@
       min-height: 24px;
 
       // Row gap owns handle spacing - drop the shared name-cell margin.
-      .xh-column-chooser__name-cell__drag-handle,
-      .xh-column-chooser__name-cell__lock {
+      .xh-col-chooser__name-cell__drag-handle,
+      .xh-col-chooser__name-cell__lock {
         margin-right: 0;
         flex: none;
       }
@@ -271,15 +271,15 @@
 }
 
 // Column metadata tooltip - blueprint portals the popover to the document body, so these rules live
-// outside the .xh-column-chooser block. Styled as a compact card matching the library row treatment.
-.xh-column-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
+// outside the .xh-col-chooser block. Styled as a compact card matching the library row treatment.
+.xh-col-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
   padding: 0;
   background: var(--xh-bg);
   border: var(--xh-border-solid);
   border-radius: var(--xh-border-radius-px);
 }
 
-.xh-column-chooser__meta-tip {
+.xh-col-chooser__meta-tip {
   gap: var(--xh-pad-half-px);
   padding: var(--xh-pad-px);
   max-width: 280px;

@@ -15,15 +15,15 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEqual, isBoolean} from 'lodash';
 
-import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
-import {ColumnLibraryModel} from './ColumnLibraryModel';
-import type {ColumnChooserDropParticipant} from './ColumnChooserUtils';
+import {ColChooserBucketModel} from './ColChooserBucketModel';
+import {ColLibraryModel} from './ColLibraryModel';
+import type {ColChooserDropParticipant} from './ColChooserUtils';
 
 /**
  * Abstract base for the grid column chooser model, holding all presentation-agnostic state: the
- * three per-pinned-side {@link ColumnChooserBucketModel}s and the optional {@link ColumnLibraryModel}
+ * three per-pinned-side {@link ColChooserBucketModel}s and the optional {@link ColLibraryModel}
  * (synced from a working copy of the target grid's columnState), cross-bucket drag-and-drop wiring,
- * and commit of state changes back to the grid. All state is rendered by the {@link ColumnChooser}
+ * and commit of state changes back to the grid. All state is rendered by the {@link ColChooser}
  * component bound to this model.
  *
  * Concrete subclasses supply the presentation-open state: {@link ColChooserModalModel} (dialog and
@@ -54,17 +54,17 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     // Child-models
     //-----------------------
     @managed
-    readonly leftBucketModel: ColumnChooserBucketModel;
+    readonly leftBucketModel: ColChooserBucketModel;
 
     @managed
-    readonly unpinnedBucketModel: ColumnChooserBucketModel;
+    readonly unpinnedBucketModel: ColChooserBucketModel;
 
     @managed
-    readonly rightBucketModel: ColumnChooserBucketModel;
+    readonly rightBucketModel: ColChooserBucketModel;
 
     /** Library of hidden columns - rendered and wired only when {@link columnLibraryEnabled}. */
     @managed
-    readonly libraryModel: ColumnLibraryModel;
+    readonly libraryModel: ColLibraryModel;
 
     //-----------------------
     // Observable State
@@ -108,12 +108,12 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         return !!this.workingState && !isEqual(this.workingState, this.baseline);
     }
 
-    get bucketModels(): ColumnChooserBucketModel[] {
+    get bucketModels(): ColChooserBucketModel[] {
         return [this.leftBucketModel, this.unpinnedBucketModel, this.rightBucketModel];
     }
 
     /** Grids participating in cross-grid drag-and-drop - the buckets, plus the library if enabled. */
-    get dropParticipants(): ColumnChooserDropParticipant[] {
+    get dropParticipants(): ColChooserDropParticipant[] {
         return this.columnLibraryEnabled
             ? [...this.bucketModels, this.libraryModel]
             : this.bucketModels;
@@ -217,21 +217,21 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.libraryWidth = libraryConfig.libraryWidth ?? 250;
         this.filterMatchMode = filterMatchMode;
 
-        this.leftBucketModel = new ColumnChooserBucketModel({
+        this.leftBucketModel = new ColChooserBucketModel({
             parent: this,
             pinned: 'left',
             title: 'Pinned Left',
             emptyText: 'Drop a column here to pin left'
         });
 
-        this.unpinnedBucketModel = new ColumnChooserBucketModel({
+        this.unpinnedBucketModel = new ColChooserBucketModel({
             parent: this,
             pinned: null,
             title: 'Columns',
             emptyText: 'No columns'
         });
 
-        this.rightBucketModel = new ColumnChooserBucketModel({
+        this.rightBucketModel = new ColChooserBucketModel({
             parent: this,
             pinned: 'right',
             title: 'Pinned Right',
@@ -240,7 +240,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
         // Library backs an opt-in panel - build it only when enabled.
         if (this.columnLibraryEnabled) {
-            this.libraryModel = new ColumnLibraryModel({
+            this.libraryModel = new ColLibraryModel({
                 parent: this,
                 collapseGroups: !!libraryConfig.collapseGroups
             });

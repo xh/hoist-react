@@ -7,7 +7,7 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {ColChooserPanelModel} from './ColChooserPanelModel';
-import {columnChooser} from './ColumnChooser';
+import {colChooser} from './ColChooser';
 
 /**
  * Docked, non-modal side-panel column chooser, rendered alongside the grid as a resizable,
@@ -25,7 +25,7 @@ export const colChooserPanel = hoistCmp.factory({
         return panel({
             className: 'xh-col-chooser-panel',
             model: model.panelModel,
-            item: columnChooser({model})
+            item: colChooser({model})
         });
     }
 });

@@ -17,10 +17,10 @@ import classNames from 'classnames';
 import {ReactElement} from 'react';
 
 import {ColChooserModel} from './ColChooserModel';
-import './ColumnChooser.scss';
-import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
+import './ColChooser.scss';
+import {ColChooserBucketModel} from './ColChooserBucketModel';
 
-export interface ColumnChooserProps extends HoistProps<ColChooserModel>, LayoutProps {}
+export interface ColChooserProps extends HoistProps<ColChooserModel>, LayoutProps {}
 
 /**
  * A component for managing Grid column visibility, ordering, and pinning. Renders three internal
@@ -28,9 +28,9 @@ export interface ColumnChooserProps extends HoistProps<ColChooserModel>, LayoutP
  * across grids. Bound to a {@link ColChooserModel}, which is owned by the grid and shared across
  * the chooser's dialog, popover, and panel presentations.
  */
-export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooserProps>({
-    displayName: 'ColumnChooser',
-    className: 'xh-column-chooser',
+export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
+    displayName: 'ColChooser',
+    className: 'xh-col-chooser',
     model: uses(ColChooserModel),
 
     render({model, className, ...props}) {
@@ -61,7 +61,7 @@ interface ChooserSectionProps extends HoistProps {
  */
 const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
     toolbar({
-        className: 'xh-column-chooser__tbar',
+        className: 'xh-col-chooser__tbar',
         items: [
             storeFilterField({
                 flex: 1,
@@ -107,7 +107,7 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
 
 /** Library panel (when shown) beside the stack of bucket zones. */
 const chooserBody = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
-    hframe(columnLibraryPanel({chooserModel}), chooserBuckets({chooserModel}))
+    hframe(colLibraryPanel({chooserModel}), chooserBuckets({chooserModel}))
 );
 
 /**
@@ -134,7 +134,7 @@ const chooserBuckets = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
 );
 
 interface PinnedBucketZoneProps extends ChooserSectionProps {
-    bucketModel: ColumnChooserBucketModel;
+    bucketModel: ColChooserBucketModel;
     bucket: 'left' | 'right';
 }
 
@@ -218,7 +218,7 @@ interface ToggleBtnProps extends HoistProps {
 const toggleBtn = hoistCmp.factory<ToggleBtnProps>(({model, bind, icon, label}) => {
     const active = model[bind];
     return button({
-        className: 'xh-column-chooser__toggle',
+        className: 'xh-col-chooser__toggle',
         minimal: true,
         intent: active ? 'primary' : null,
         icon: icon({prefix: active ? 'far' : 'fat'}),
@@ -228,7 +228,7 @@ const toggleBtn = hoistCmp.factory<ToggleBtnProps>(({model, bind, icon, label}) 
 });
 
 interface BucketGridProps extends HoistProps {
-    bucketModel: ColumnChooserBucketModel;
+    bucketModel: ColChooserBucketModel;
     bucket: 'left' | 'right' | 'unpinned';
 }
 
@@ -244,10 +244,10 @@ const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucketModel, bucket}) => 
 
     return grid({
         className: classNames(
-            'xh-column-chooser__bucket',
-            `xh-column-chooser__bucket--${bucket}`,
-            empty ? 'xh-column-chooser__bucket--empty' : null,
-            empty && bucketModel.dragOver ? 'xh-column-chooser__bucket--drag-over' : null
+            'xh-col-chooser__bucket',
+            `xh-col-chooser__bucket--${bucket}`,
+            empty ? 'xh-col-chooser__bucket--empty' : null,
+            empty && bucketModel.dragOver ? 'xh-col-chooser__bucket--drag-over' : null
         ),
         model: bucketModel.chooserGridModel,
         // The unpinned bucket permanently reserves its vertical-scrollbar gutter so its action-column
@@ -264,7 +264,7 @@ const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucketModel, bucket}) => 
 
 interface BucketSeparatorProps extends HoistProps {
     chooserModel: ColChooserModel;
-    bucketModel: ColumnChooserBucketModel;
+    bucketModel: ColChooserBucketModel;
     bucket: 'left' | 'right' | 'unpinned';
 }
 
@@ -278,25 +278,25 @@ const bucketSeparator = hoistCmp.factory<BucketSeparatorProps>(
     ({chooserModel, bucketModel, bucket}) => {
         const arrow =
             bucket === 'left'
-                ? Icon.arrowToLeft({className: 'xh-column-chooser__separator__arrow'})
+                ? Icon.arrowToLeft({className: 'xh-col-chooser__separator__arrow'})
                 : bucket === 'right'
-                  ? Icon.arrowToRight({className: 'xh-column-chooser__separator__arrow'})
+                  ? Icon.arrowToRight({className: 'xh-col-chooser__separator__arrow'})
                   : null;
 
         return div({
             className: classNames(
-                'xh-column-chooser__separator',
-                `xh-column-chooser__separator--${bucket}`
+                'xh-col-chooser__separator',
+                `xh-col-chooser__separator--${bucket}`
             ),
             items: [
-                div({className: 'xh-column-chooser__separator__line'}),
+                div({className: 'xh-col-chooser__separator__line'}),
                 span({
-                    className: 'xh-column-chooser__separator__label',
+                    className: 'xh-col-chooser__separator__label',
                     // Arrow trails the label on the right rail, leads it on the left.
                     items:
                         bucket === 'right' ? [bucketModel.title, arrow] : [arrow, bucketModel.title]
                 }),
-                div({className: 'xh-column-chooser__separator__line'}),
+                div({className: 'xh-col-chooser__separator__line'}),
                 bucketVisibilityToggle({chooserModel, bucketModel})
             ]
         });
@@ -305,7 +305,7 @@ const bucketSeparator = hoistCmp.factory<BucketSeparatorProps>(
 
 interface BucketHeaderProps extends HoistProps {
     chooserModel: ColChooserModel;
-    bucketModel: ColumnChooserBucketModel;
+    bucketModel: ColChooserBucketModel;
 }
 
 /**
@@ -326,7 +326,7 @@ const bucketVisibilityToggle = hoistCmp.factory<BucketHeaderProps>(
                       : Icon.square();
 
         return button({
-            className: 'xh-column-chooser__separator__toggle',
+            className: 'xh-col-chooser__separator__toggle',
             icon,
             minimal: true,
             onClick: () => bucketModel.toggleBucketVisibility()
@@ -334,21 +334,21 @@ const bucketVisibilityToggle = hoistCmp.factory<BucketHeaderProps>(
     }
 );
 
-interface ColumnLibraryPanelProps extends HoistProps {
+interface ColLibraryPanelProps extends HoistProps {
     chooserModel: ColChooserModel;
 }
 
-const columnLibraryPanel = hoistCmp.factory<ColumnLibraryPanelProps>(({chooserModel}) => {
+const colLibraryPanel = hoistCmp.factory<ColLibraryPanelProps>(({chooserModel}) => {
     if (!chooserModel.isLibraryShown) return null;
     // A vbox (not vframe) for a fixed-width column: vframe forces `flex: auto`, which would let the
     // library grow into the buckets' space instead of the buckets flexing to fill the dock. The grid
     // takes `flex: 1` to fill the library's height.
     return vbox({
-        className: 'xh-column-chooser__library',
+        className: 'xh-col-chooser__library',
         flex: 'none',
         width: chooserModel.libraryWidth,
         item: grid({
-            className: 'xh-column-chooser__bucket xh-column-chooser__library-grid',
+            className: 'xh-col-chooser__bucket xh-col-chooser__library-grid',
             flex: 1,
             model: chooserModel.libraryModel.chooserGridModel,
             agOptions: chooserModel.libraryModel.agOptions
