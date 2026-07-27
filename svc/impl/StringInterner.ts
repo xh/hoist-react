@@ -7,7 +7,7 @@
 
 import {PlainObject} from '@xh/hoist/core';
 import {isArray, isPlainObject, isString, round} from 'lodash';
-import type {InternStringsSpec} from '../FetchService';
+import type {StringInternSpec} from '../FetchService';
 
 /**
  * Generational string-interning cache for a logical dataset, identified by an app-provided
@@ -17,7 +17,8 @@ import type {InternStringsSpec} from '../FetchService';
  * of an NDJSON stream), with lookups falling back to the previous committed generation, so
  * values repeated across successive fetches share a single canonical string. Calling `commit()`
  * installs the pending values as the new generation, bounding cache retention to the strings
- * present in the latest completed response.
+ * present in the latest completed response. This cross-fetch retention is optional - specs may
+ * opt out via `retainAcrossFetches: false` to intern within each response only.
  *
  * The pending map is opened lazily by `intern()`. A response that fails or is abandoned before
  * commit should be `abort()`ed to discard its pending values - the previously committed
@@ -26,7 +27,7 @@ import type {InternStringsSpec} from '../FetchService';
  * @internal
  */
 export class StringInterner {
-    readonly spec: InternStringsSpec;
+    readonly spec: StringInternSpec;
 
     private readonly childrenKey: string;
     private committed: Map<string, string> = new Map();
@@ -37,7 +38,7 @@ export class StringInterner {
     private carried = 0;
     private lastStats: PlainObject = null;
 
-    constructor(spec: InternStringsSpec) {
+    constructor(spec: StringInternSpec) {
         this.spec = spec;
         this.childrenKey = spec.childrenKey;
     }

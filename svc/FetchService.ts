@@ -273,7 +273,7 @@ export class FetchService extends HoistService {
      * datasets will not be refetched, where the cache would otherwise continue to retain the
      * last response's distinct values.
      *
-     * @param key - specific {@link InternStringsSpec.key} to clear, or omit to clear all.
+     * @param key - specific {@link StringInternSpec.key} to clear, or omit to clear all.
      */
     clearInternCaches(key?: string) {
         key ? this.interners.delete(key) : this.interners.clear();
@@ -734,7 +734,7 @@ export class FetchService extends HoistService {
      * was not requested. An existing interner is replaced (dropping its cached generation) if
      * the spec has changed since it was created.
      */
-    private getInterner(spec: InternStringsSpec): StringInterner {
+    private getInterner(spec: StringInternSpec): StringInterner {
         if (!spec) return null;
         const {interners} = this;
         let ret = interners.get(spec.key);
@@ -868,8 +868,7 @@ export class FetchService extends HoistService {
 
     private createException(attributes: PlainObject) {
         const {fetchOptions} = attributes;
-        // Prefer the header actually sent - fall back to the resolved option for exceptions
-        // created against pre-resolution options (e.g. streaming failures).
+        // Prefer the header actually sent, falling back to the option if pre-resolution.
         const correlationId: string =
             fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ??
             (isString(fetchOptions?.correlationId) ? fetchOptions.correlationId : null);
@@ -1009,7 +1008,7 @@ export interface FetchOptions {
      * e.g. a polling refresh of the same grid - with cache retention bounded to the values
      * present in the most recent complete response for each key.
      */
-    internStrings?: InternStringsSpec;
+    internStrings?: StringInternSpec;
 
     /**
      * True to decode the HTTP response as JSON. Default false.
@@ -1040,7 +1039,7 @@ export interface FetchOptions {
  * Spec for string-value interning of a fetch response.
  * @see FetchOptions.internStrings
  */
-export interface InternStringsSpec {
+export interface StringInternSpec {
     /**
      * Identifies the logical dataset. Successive responses fetched with the same key share
      * interned values across fetches, with cache retention bounded to the latest response.
