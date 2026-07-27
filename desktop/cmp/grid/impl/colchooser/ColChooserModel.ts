@@ -37,52 +37,22 @@ import type {ColumnChooserDropParticipant} from './ColumnChooserUtils';
 export abstract class ColChooserModel extends HoistModel implements IColChooserModel {
     override xhImpl = true;
 
+    //-----------------------
+    // Immutable Properties
+    //-----------------------
     readonly gridModel: GridModel;
+    readonly commitOnChange: boolean;
+    readonly showRestoreDefaults: boolean;
+    readonly autosizeOnCommit: boolean;
+    readonly width: string | number;
+    readonly height: string | number;
+    readonly libraryWidth: number;
+    readonly filterMatchMode: FilterMatchMode;
+    readonly columnLibraryEnabled: boolean;
 
-    //-----------------
-    // Config
-    //-----------------
-    @bindable commitOnChange: boolean;
-    @bindable showRestoreDefaults: boolean;
-    @bindable autosizeOnCommit: boolean;
-    @bindable width: string | number;
-    @bindable height: string | number;
-    @bindable libraryWidth: number;
-    @bindable filterMatchMode: FilterMatchMode;
-
-    // Stable config, deliberately not observable - toggled at runtime via the observable
-    // `showLibrary`, not this config.
-    columnLibraryEnabled: boolean;
-
-    //-----------------
-    // Filter state
-    //-----------------
-    /**
-     * Raw text of the single filter control (shared across all grids). Bound directly by the
-     * StoreFilterField; the derived match predicate is pushed to every grid store via
-     * {@link applyFilterTestFn}.
-     */
-    @bindable filterText: string = null;
-
-    //-----------------
-    // Drag state
-    //-----------------
-    /**
-     * Explanatory hint shown in the drag ghost while a drag is refused - e.g. a locked-group split -
-     * so the user understands the `notAllowed` cursor. Set by the hovered participant during the drag
-     * (via each grid's `rowDragText` getter, see {@link chooserDragText}) and cleared on drag end.
-     * Null when no drag is active or the current drop is allowed. See {@link dragRejectHint}.
-     */
-    @observable dragHint: string = null;
-
-    @action
-    setDragHint(hint: string) {
-        this.dragHint = hint;
-    }
-
-    //-----------------
-    // Sub-models (one grid each)
-    //-----------------
+    //-----------------------
+    // Child-models
+    //-----------------------
     @managed
     readonly leftBucketModel: ColumnChooserBucketModel;
 
@@ -96,31 +66,27 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @managed
     readonly libraryModel: ColumnLibraryModel;
 
+    //-----------------------
+    // Observable State
+    //-----------------------
+    /**
+     * Raw text of the single filter control (shared across all grids). Bound directly by the
+     * StoreFilterField; the derived match predicate is pushed to every grid store via
+     * {@link applyFilterTestFn}.
+     */
+    @bindable filterText: string = null;
+
+    /**
+     * Explanatory hint shown in the drag ghost while a drag is refused - e.g. a locked-group split -
+     * so the user understands the `notAllowed` cursor. Set by the hovered participant during the drag
+     * (via each grid's `rowDragText` getter, see {@link chooserDragText}) and cleared on drag end.
+     * Null when no drag is active or the current drop is allowed. See {@link dragRejectHint}.
+     */
+    @observable dragHint: string = null;
+
     /** Pending working copy of the grid's columnState - the source of truth for the bucket grids. */
     @observable.ref
     workingState: ColumnState[] = null;
-
-    /** Last grid columnState synced/committed against - the baseline for {@link isDirty}. */
-    @observable.ref
-    private baseline: ColumnState[] = null;
-
-    /** Guards against stacking resolve-conflict prompts while one is already open. */
-    private resolvingConflict = false;
-
-    /** True while a restore-defaults is in flight, so its resulting state change is adopted silently. */
-    private restoringDefaults = false;
-
-    /** Cache backing {@link parentChainMap}, keyed on the grid's `columns` ref. */
-    private parentChainCache: {cols: ColumnOrGroup[]; map: Map<string, ColumnGroup[]>} = null;
-
-    /** Cross-bucket drop zone registrations, retained for removal on bucket grid unmount. */
-    private dropZoneRegistrations: Array<{sourceApi: GridApi; params: RowDropZoneParams}> = [];
-
-    //-----------------
-    // Presentation contract (implemented by subclasses)
-    //-----------------
-    /** True when the chooser is currently shown in this model's presentation. */
-    abstract get isOpen(): boolean;
 
     /**
      * True when the chooser sizes itself to its content (the overlay presentations - popover and
@@ -131,27 +97,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         return true;
     }
 
-    /** Show the chooser in this model's presentation. */
-    abstract open(): void;
-
-    /** Hide the chooser - discarding any uncommitted edits, matching an explicit Cancel. */
-    close() {
-        this.hide();
-        this.discardPending();
-        this.clearFilter();
-    }
-
-    /** Show the chooser if hidden, hide it if shown. */
-    toggle() {
-        this.isOpen ? this.close() : this.open();
-    }
-
-    /** Subclass hook to clear presentation-open state. */
-    protected abstract hide(): void;
-
-    //-----------------
-    // Derived state
-    //-----------------
     /** Column state the chooser is currently displaying/operating on (pending working copy). */
     get currentState(): ColumnState[] {
         return this.workingState ?? this.gridModel.columnState;
@@ -186,13 +131,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             : this.unpinnedBucketModel.chooserGridModel.store;
     }
 
-    /** Grid models with a filterable store - the buckets, plus the library if enabled. */
-    private get filterableGridModels(): GridModel[] {
-        const models = this.bucketModels.map(b => b.chooserGridModel);
-        if (this.columnLibraryEnabled) models.push(this.libraryModel.chooserGridModel);
-        return models;
-    }
-
     /**
      * Leaf colIds currently rendered across the three bucket grids - respecting both routing to the
      * Column Library (the `showHidden` case) and any active Store filter. Backs the `isDisplayed`
@@ -206,19 +144,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             })
         );
         return ids;
-    }
-
-    /** Apply the shared match predicate (or clear it) across every present grid store. */
-    applyFilterTestFn(testFn: FilterTestFn | null) {
-        const filter = testFn ? {key: 'default', testFn} : null;
-        this.filterableGridModels.forEach(gm => gm.store.setFilter(filter));
-    }
-
-    /** Clear the filter text and remove the filter from every grid store. */
-    @action
-    clearFilter() {
-        this.filterText = null;
-        this.applyFilterTestFn(null);
     }
 
     /**
@@ -260,6 +185,10 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             this.parentChainCache = {cols, map: buildParentChainMap(cols)};
         }
         return this.parentChainCache.map;
+    }
+
+    get optionsModel(): ColChooserOptionsModel {
+        return XH.appContainerModel.colChooserOptionsModel;
     }
 
     constructor({
@@ -344,9 +273,46 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         });
     }
 
-    //-----------------
-    // Mutation chokepoint (shared by both commit modes)
-    //-----------------
+    //-----------------------
+    // Presentation contract
+    //-----------------------
+    /** True when the chooser is currently shown in this model's presentation. */
+    abstract get isOpen(): boolean;
+
+    /** Show the chooser in this model's presentation. */
+    abstract open(): void;
+
+    /** Subclass hook to clear presentation-open state. */
+    protected abstract hide(): void;
+
+    /** Hide the chooser - discarding any uncommitted edits, matching an explicit Cancel. */
+    close() {
+        this.hide();
+        this.discardPending();
+        this.clearFilter();
+    }
+
+    /** Show the chooser if hidden, hide it if shown. */
+    toggle() {
+        this.isOpen ? this.close() : this.open();
+    }
+
+    //-----------------------
+    // Public Methods
+    //-----------------------
+    /** Apply the shared match predicate (or clear it) across every present grid store. */
+    applyFilterTestFn(testFn: FilterTestFn | null) {
+        const filter = testFn ? {key: 'default', testFn} : null;
+        this.filterableGridModels.forEach(gm => gm.store.setFilter(filter));
+    }
+
+    /** Clear the filter text and remove the filter from every grid store. */
+    @action
+    clearFilter() {
+        this.filterText = null;
+        this.applyFilterTestFn(null);
+    }
+
     /**
      * Apply a new normalized full column state. The single chokepoint for bucket-driven reorders and
      * cross-bucket moves - updates the working copy and pushes it straight to the grid when
@@ -398,11 +364,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         await this.autosizeIfNeeded();
     }
 
-    /** Autosize the grid's columns after a commit if configured. Fire-and-forget in immediate mode. */
-    private autosizeIfNeeded(): Promise<void> {
-        return this.autosizeOnCommit ? this.gridModel.autosizeAsync({showMask: true}) : undefined;
-    }
-
     /** Discard pending edits, reverting the working copy to the last committed baseline. */
     @action
     discardPending() {
@@ -422,9 +383,36 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         }
     }
 
-    //-----------------
+    @action
+    setDragHint(hint: string) {
+        this.dragHint = hint;
+    }
+
+    //-----------------------
     // Implementation
-    //-----------------
+    //-----------------------
+    /** Last grid columnState synced/committed against - the baseline for {@link isDirty}. */
+    @observable.ref
+    private baseline: ColumnState[] = null;
+
+    /** Guards against stacking resolve-conflict prompts while one is already open. */
+    private resolvingConflict = false;
+
+    /** True while a restore-defaults is in flight, so its resulting state change is adopted silently. */
+    private restoringDefaults = false;
+
+    /** Cache backing {@link parentChainMap}, keyed on the grid's `columns` ref. */
+    private parentChainCache: {cols: ColumnOrGroup[]; map: Map<string, ColumnGroup[]>} = null;
+
+    /** Cross-bucket drop zone registrations, retained for removal on bucket grid unmount. */
+    private dropZoneRegistrations: Array<{sourceApi: GridApi; params: RowDropZoneParams}> = [];
+
+    /** Grid models with a filterable store - the buckets, plus the library if enabled. */
+    private get filterableGridModels(): GridModel[] {
+        const models = this.bucketModels.map(b => b.chooserGridModel);
+        if (this.columnLibraryEnabled) models.push(this.libraryModel.chooserGridModel);
+        return models;
+    }
 
     private get showGroups(): boolean {
         return this.optionsModel.showGroups;
@@ -434,8 +422,9 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         return this.optionsModel.showLibrary;
     }
 
-    get optionsModel(): ColChooserOptionsModel {
-        return XH.appContainerModel.colChooserOptionsModel;
+    /** Autosize the grid's columns after a commit if configured. Fire-and-forget in immediate mode. */
+    private autosizeIfNeeded(): Promise<void> {
+        return this.autosizeOnCommit ? this.gridModel.autosizeAsync({showMask: true}) : undefined;
     }
 
     /** Adopt the current grid columnState as both working copy and baseline. */

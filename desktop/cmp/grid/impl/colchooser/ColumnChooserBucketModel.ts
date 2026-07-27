@@ -72,18 +72,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     @bindable
     dragOver: boolean = false;
 
-    /**
-     * The state resolved by the most recent valid {@link getValidDropPosition}, applied verbatim on
-     * drop (see {@link applyPendingDrop}) so the commit never re-derives from the indicator anchor -
-     * which is a lossy proxy that can re-resolve differently when a group spans buckets. Keyed by the
-     * (target, position) we returned, i.e. the `event.rowsDrop` the drop handler receives.
-     */
-    private pendingDrop: {
-        targetId: string | null;
-        position: RowDropTargetPosition;
-        state: ColumnState[];
-    } = null;
-
     /** The target GridModel whose columns this bucket manages. */
     get targetGridModel(): GridModel {
         return this.parent.gridModel;
@@ -112,47 +100,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         };
     }
 
-    constructor({parent, pinned, title, emptyText}: ColumnChooserBucketConfig) {
-        super();
-        makeObservable(this);
-        this.parent = parent;
-        this.pinned = pinned;
-        this.title = title;
-
-        this.chooserGridModel = this.createGridModel(emptyText);
-    }
-
-    //-----------------
-    // Header state (rendered in the bucket's compact Panel header - see ColumnChooser view)
-    //-----------------
-    /** This bucket's slice of the current column state (columns pinned to this side). */
-    private get slice(): ColumnState[] {
-        return this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned);
-    }
-
-    /**
-     * Leaf colIds currently rendered in this bucket's grid - the rows the user can actually see. Both
-     * routing to the Column Library (showHidden) and any active Store filter narrow `store.records`,
-     * so every visibility control scopes to this and never counts or toggles an out-of-view column.
-     */
-    private get renderedLeafIds(): Set<string> {
-        const ids = new Set<string>();
-        this.chooserGridModel.store.records.forEach(rec => {
-            if (!rec.data.isGroup) ids.add(rec.id as string);
-        });
-        return ids;
-    }
-
-    /** Rendered hideable leaf columns - the columns the "toggle all" control acts on. */
-    private get hideableLeaves(): ColumnState[] {
-        const {targetGridModel: gridModel} = this,
-            rendered = this.renderedLeafIds;
-        return this.slice.filter(cs => {
-            const col = gridModel.getColumn(cs.colId);
-            return rendered.has(cs.colId) && col && !col.excludeFromChooser && col.hideable;
-        });
-    }
-
     /** True when this bucket holds any column the header toggle can show/hide. */
     get hasHideableColumns(): boolean {
         return !isEmpty(this.hideableLeaves);
@@ -172,6 +119,16 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     get aggregateVisible(): boolean | null {
         const leaves = this.hideableLeaves;
         return aggregateVisibility(leaves.length, leaves.filter(cs => cs.hidden).length);
+    }
+
+    constructor({parent, pinned, title, emptyText}: ColumnChooserBucketConfig) {
+        super();
+        makeObservable(this);
+        this.parent = parent;
+        this.pinned = pinned;
+        this.title = title;
+
+        this.chooserGridModel = this.createGridModel(emptyText);
     }
 
     /** Show or hide all hideable columns in this bucket (backs the header "toggle all" control). */
@@ -334,21 +291,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return highlight;
     }
 
-    /**
-     * Apply the state {@link getValidDropPosition} validated for exactly this drop (matched against
-     * `event.rowsDrop`), committing preview == commit by construction. Returns false if no cached
-     * drop matches (the caller then falls back to re-resolving).
-     */
-    private applyPendingDrop(dropInfo: RowDragEndEvent['rowsDrop']): boolean {
-        const pd = this.pendingDrop;
-        if (!pd) return false;
-        const targetId = getChooserData(dropInfo.target)?.id ?? null;
-        if (pd.targetId !== targetId || pd.position !== dropInfo.position) return false;
-        this.pendingDrop = null;
-        this.parent.applyState(pd.state);
-        return true;
-    }
-
     /** Handle intra-bucket drag end. */
     handleRowDragEnd(event: RowDragEndEvent) {
         // onRowDragEnd fires on the drag's source grid for every drag (intra- or cross-bucket), so this
@@ -410,9 +352,64 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return this.pinned ? 'pinned' : 'move';
     }
 
-    //-----------------
+    //-----------------------
     // Implementation
-    //-----------------
+    //-----------------------
+    /**
+     * The state resolved by the most recent valid {@link getValidDropPosition}, applied verbatim on
+     * drop (see {@link applyPendingDrop}) so the commit never re-derives from the indicator anchor -
+     * which is a lossy proxy that can re-resolve differently when a group spans buckets. Keyed by the
+     * (target, position) we returned, i.e. the `event.rowsDrop` the drop handler receives.
+     */
+    private pendingDrop: {
+        targetId: string | null;
+        position: RowDropTargetPosition;
+        state: ColumnState[];
+    } = null;
+
+    /** This bucket's slice of the current column state (columns pinned to this side). */
+    private get slice(): ColumnState[] {
+        return this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned);
+    }
+
+    /**
+     * Leaf colIds currently rendered in this bucket's grid - the rows the user can actually see. Both
+     * routing to the Column Library (showHidden) and any active Store filter narrow `store.records`,
+     * so every visibility control scopes to this and never counts or toggles an out-of-view column.
+     */
+    private get renderedLeafIds(): Set<string> {
+        const ids = new Set<string>();
+        this.chooserGridModel.store.records.forEach(rec => {
+            if (!rec.data.isGroup) ids.add(rec.id as string);
+        });
+        return ids;
+    }
+
+    /** Rendered hideable leaf columns - the columns the "toggle all" control acts on. */
+    private get hideableLeaves(): ColumnState[] {
+        const {targetGridModel: gridModel} = this,
+            rendered = this.renderedLeafIds;
+        return this.slice.filter(cs => {
+            const col = gridModel.getColumn(cs.colId);
+            return rendered.has(cs.colId) && col && !col.excludeFromChooser && col.hideable;
+        });
+    }
+
+    /**
+     * Apply the state {@link getValidDropPosition} validated for exactly this drop (matched against
+     * `event.rowsDrop`), committing preview == commit by construction. Returns false if no cached
+     * drop matches (the caller then falls back to re-resolving).
+     */
+    private applyPendingDrop(dropInfo: RowDragEndEvent['rowsDrop']): boolean {
+        const pd = this.pendingDrop;
+        if (!pd) return false;
+        const targetId = getChooserData(dropInfo.target)?.id ?? null;
+        if (pd.targetId !== targetId || pd.position !== dropInfo.position) return false;
+        this.pendingDrop = null;
+        this.parent.applyState(pd.state);
+        return true;
+    }
+
     /** Leaf colId → ancestor group chain, shared across buckets by the parent {@link ColChooserModel}. */
     private get parentChainMap(): Map<string, ColumnGroup[]> {
         return this.parent.parentChainMap;
@@ -846,10 +843,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         });
     }
 }
-
-//------------------
-// Pure helpers
-//------------------
 
 /**
  * Aggregate visibility over a set of hideable leaves: true (all shown) / false (none shown) /

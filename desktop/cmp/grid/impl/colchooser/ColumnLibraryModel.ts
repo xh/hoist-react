@@ -35,9 +35,6 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
 
     readonly parent: ColChooserModel;
 
-    /** Render `chooserGroup` groups collapsed by default (see {@link ColLibraryConfig}). */
-    private readonly collapseGroups: boolean;
-
     @managed
     chooserGridModel: GridModel;
 
@@ -131,9 +128,9 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         return 'notAllowed';
     }
 
-    //-----------------
-    // Implementation
-    //-----------------
+    /** Render `chooserGroup` groups collapsed by default (see {@link ColLibraryConfig}). */
+    private readonly collapseGroups: boolean;
+
     private createGridModel(): GridModel {
         return new GridModel({
             ...chooserGridConfig,
