@@ -45,8 +45,21 @@ import {
     values
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
-import {RecordDataFactory} from './impl/RecordDataFactory';
 import {RecordSet} from './impl/RecordSet';
+
+/**
+ * Minimum mean number of populated fields per record required to build record `data` objects via
+ * the optimized route - see `Store.initDataTemplate()`.
+ *
+ * Below this threshold the legacy sparse representation remains in V8's fast-properties mode and
+ * is the cheaper of the two, as it costs nothing per record for unpopulated fields. Records are
+ * demoted to V8's "dictionary" mode at ~20 keyed property assignments, which is the point at which
+ * the optimized route starts to pay. Note this is a V8 implementation detail, not contracted API.
+ */
+const MIN_POPULATED_FIELDS = 20;
+
+/** Max raw records sampled to estimate populated-field count when deciding on the above. */
+const DATA_TEMPLATE_SAMPLE_SIZE = 200;
 
 /**
  * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
@@ -167,6 +180,15 @@ export interface StoreConfig {
     /**
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API.
+     *
+     *  Supported flags:
+     *  - `optimizeRecordData` - true to build record `data` objects from a shared, fully-populated
+     *    template rather than growing them field-by-field, trading a fixed cost per *declared*
+     *    field for a large reduction in the per-record cost of *populated* fields. Intended for
+     *    large stores (tens of thousands of records) with wide, densely-populated records - see
+     *    {@link Store.recordDataMode} and the Store README for when this pays and when it does
+     *    not. Ignored, with a debug log, for stores whose records populate too few fields to
+     *    benefit. Defaults may also be set app-wide via the `xhStoreExperimental` soft-config.
      */
     experimental?: PlainObject;
 }
@@ -321,7 +343,8 @@ export class Store
     _filtered: RecordSet;
 
     private _dataDefaults = null;
-    private _dataFactory: RecordDataFactory = null;
+    private _dataTemplate: PlainObject = null;
+    private _dataTemplateInit = false;
     _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
@@ -371,7 +394,6 @@ export class Store
         this.validator = new StoreValidator({store: this});
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
-        this._dataFactory = RecordDataFactory.create(this.fields);
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -415,6 +437,9 @@ export class Store
             rawSummaryData = rawData[0];
             rawData = rawData[0].children ?? [];
         }
+
+        // Must run before any record is created - see initDataTemplate().
+        this.initDataTemplate(rawData);
 
         this.summaryRecords = rawSummaryData
             ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
@@ -482,6 +507,10 @@ export class Store
 
         const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
+
+        // Must run before any record is created - see initDataTemplate(). Prefer adds for the
+        // sample, as updates are often partial and would understate populated-field counts.
+        if (!this._dataTemplateInit) this.initDataTemplate(!isEmpty(add) ? add : update);
 
         // 1) Pre-process updates and adds into Records
         let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
@@ -594,10 +623,14 @@ export class Store
      */
     @action
     addRecords(data: Some<PlainObject>, parentId?: StoreRecordId) {
-        data = castArray(data);
-        if (isEmpty(data)) return;
+        const rawRecords = castArray(data);
+        if (isEmpty(rawRecords)) return;
 
-        const addRecs = data.map(it => {
+        // Must run before any record is created - see initDataTemplate(). Note this API
+        // deliberately bypasses processRawData, so the sample must not apply it either.
+        this.initDataTemplate(rawRecords, false);
+
+        const addRecs = rawRecords.map(it => {
             const {id} = it;
             throwIf(isNil(id), `Must provide 'id' property for new records.`);
             throwIf(this.getById(id), `Duplicate id '${id}' provided for new record.`);
@@ -776,6 +809,19 @@ export class Store
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
+    }
+
+    /**
+     * How this Store builds its record `data` objects.
+     *
+     * Returns 'optimized' if the `optimizeRecordData` experimental flag is enabled *and* this
+     * Store's data was found to populate enough fields per record for that to pay - see
+     * {@link StoreConfig.experimental}. Decided once, on first load, and fixed thereafter.
+     * Returns 'pending' before any data has been loaded.
+     */
+    get recordDataMode(): 'optimized' | 'default' | 'pending' {
+        if (!this._dataTemplateInit) return 'pending';
+        return this._dataTemplate ? 'optimized' : 'default';
     }
 
     /** Get a specific Field by name.*/
@@ -1139,6 +1185,11 @@ export class Store
             `Applications should not specify a field for the id of a record. An id property is created
             automatically for all records. See Store.idSpec for more info.`
         );
+        throwIf(
+            ret.some(it => it.name === '__proto__'),
+            `Applications must not specify a field named '__proto__' - assigning it would replace the
+            prototype of each record's data object rather than setting a value on it.`
+        );
         return ret;
     }
 
@@ -1223,24 +1274,28 @@ export class Store
     }
 
     private parseRaw(data: PlainObject): PlainObject {
-        // Optimized route - build the complete data object in a single literal, with an own
-        // property (default-valued or parsed) for every Field. Keeps record data objects in V8's
-        // memory/CPU-optimized "fast properties" mode - see RecordDataFactory for background.
-        const {_dataFactory} = this;
-        if (_dataFactory) {
-            const {fields, fieldIndices} = _dataFactory,
-                vals = _dataFactory.cloneDefaults();
+        // Optimized route - clone a shared template carrying an own property for every Field, then
+        // overwrite. Writing a property that already exists is not an "add", so the object is not
+        // demoted to V8's dictionary mode - see initDataTemplate() for background.
+        const {_dataTemplate} = this;
+        if (_dataTemplate) {
+            const {_fieldMap} = this,
+                ret = {..._dataTemplate};
             forIn(data, (raw, name) => {
-                const idx = fieldIndices.get(name);
-                if (idx !== undefined) {
-                    vals[idx] = fields[idx].parseVal(raw);
+                const field = _fieldMap.get(name);
+                if (field) {
+                    ret[name] = field.parseVal(raw);
                 }
             });
-            return _dataFactory.create(vals);
+            return ret;
         }
 
-        // Legacy sparse route, for wide stores and restricted (no 'unsafe-eval') environments -
-        // defaults held on a shared prototype, own properties for non-default values only.
+        // Default sparse route - defaults held on a shared prototype, own properties for
+        // non-default values only. Cheapest option for records that populate few fields.
+        // If we reached here without a template decision, lock one in now (as legacy) - a Store
+        // must never mix representations across its records.
+        if (!this._dataTemplateInit) this.initDataTemplate(null);
+
         // a) create/prepare the data object
         const ret = Object.create(this._dataDefaults);
 
@@ -1260,36 +1315,23 @@ export class Store
     }
 
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
-        // Optimized route - see parseRaw() above. Reads seed values off the existing data object
-        // (own or prototype props) and rebuilds via the factory, preserving the shared shape.
-        const {_dataFactory} = this;
-        if (_dataFactory) {
-            const {fields, fieldIndices} = _dataFactory,
-                len = fields.length,
-                vals = new Array(len);
-
-            // a) seed values from the existing data object
-            for (let idx = 0; idx < len; idx++) {
-                vals[idx] = data[fields[idx].name];
-            }
-
-            // b) apply changes
+        // Optimized route - clone the existing data object, preserving its shape (and its `id`,
+        // which the deep-equal checks in modifyRecords() require), then overwrite changed fields.
+        // No `delete` needed: defaults are real own properties on this route, so a value reverting
+        // to its default still leaves the object deep-equal to its committed counterpart.
+        if (this._dataTemplate) {
+            const {_fieldMap} = this,
+                ret = {...data};
             forIn(update, (raw, name) => {
-                const idx = fieldIndices.get(name);
-                if (idx !== undefined) {
-                    vals[idx] = fields[idx].parseVal(raw);
+                const field = _fieldMap.get(name);
+                if (field) {
+                    ret[name] = field.parseVal(raw);
                 }
             });
-
-            // c) carry over the record id - required for the deep-equal comparisons within
-            // modifyRecords() (no-op detection and revert-to-clean normalization), which run
-            // before the StoreRecord ctor installs the id. Shape-safe post-literal add.
-            const ret = _dataFactory.create(vals);
-            ret.id = data.id;
             return ret;
         }
 
-        // Legacy sparse route. Note the `delete` below drops the updated record data object into
+        // Default sparse route. Note the `delete` below drops the updated record data object into
         // V8 dictionary mode, but is required to keep reverted-to-default objects deep-equal to
         // their committed counterparts (which carry no own property for default values).
         const {_fieldMap} = this;
@@ -1311,6 +1353,95 @@ export class Store
             }
         });
 
+        return ret;
+    }
+
+    /**
+     * Decide once, on first data load, whether this Store builds record `data` objects via the
+     * optimized route. Sticky for the life of the Store - records within a Store must all share
+     * the same representation, both to keep their hidden class shared and to keep the deep-equal
+     * comparisons in `modifyRecords()` and `RecordSet` comparing like with like.
+     *
+     * Background: the default route grows each `data` object by assigning parsed values onto
+     * `Object.create(defaults)`. Those are *keyed* property assignments, which V8 demotes to a
+     * per-object hashtable ("dictionary mode") past ~20 added properties - measured at ~4x the
+     * memory of an equivalent fast-properties object, and slower to read field-by-field. Cloning
+     * a template that already carries every field avoids this, because overwriting an existing
+     * property is not an add.
+     *
+     * That trade only pays for records that populate enough fields to cross the demotion
+     * threshold. Below it, the sparse default route stays in fast-properties mode and costs
+     * nothing per record for unpopulated fields, so the template - which pays for every *declared*
+     * field on every record - is the more expensive of the two. Population is a property of the
+     * data, not of the field config, so it cannot be known at construction and is sampled here.
+     */
+    private initDataTemplate(rawRecords: PlainObject[], applyProcessRawData: boolean = true) {
+        if (this._dataTemplateInit) return;
+        this._dataTemplateInit = true;
+
+        if (!this.experimental.optimizeRecordData) return;
+
+        const {fields, _fieldMap} = this,
+            processRawData = applyProcessRawData ? this.processRawData : null,
+            sample = this.sampleRawRecords(rawRecords);
+
+        if (isEmpty(fields) || isEmpty(sample)) {
+            this.logDebug('optimizeRecordData declined - no sample data available on first load');
+            return;
+        }
+
+        let populated = 0;
+        sample.forEach(it => {
+            // Match the parse path, which applies processRawData before reading fields.
+            const raw = processRawData ? processRawData(it) : it;
+            forIn(raw, (val, name) => {
+                const field = _fieldMap.get(name);
+                if (field && val !== field.defaultValue) populated++;
+            });
+        });
+        const meanPopulated = populated / sample.length;
+
+        if (meanPopulated < MIN_POPULATED_FIELDS) {
+            this.logDebug(
+                `optimizeRecordData declined - records populate ~${Math.round(meanPopulated)} of ${fields.length} fields, below the ${MIN_POPULATED_FIELDS} needed for the optimized route to pay`
+            );
+            return;
+        }
+
+        // Spreading converts the defaults object (built by keyed assignment, and therefore itself
+        // in dictionary mode for wider stores) into fast-properties mode, so that per-record
+        // clones of it hit V8's fast clone path. Deliberately a distinct object from
+        // `_dataDefaults`, which is used as a prototype below - V8 declines the fast clone path
+        // for any object that has been used as a prototype.
+        this._dataTemplate = {...this._dataDefaults};
+        this.logDebug(
+            `optimizeRecordData enabled - records populate ~${Math.round(meanPopulated)} of ${fields.length} fields`
+        );
+    }
+
+    /**
+     * Collect a bounded sample of raw records, strided so that it spans the dataset rather than
+     * clustering at the head, and descending into children for tree stores (where parent rows are
+     * often less populated than the leaves that dominate by count).
+     */
+    private sampleRawRecords(rawRecords: PlainObject[]): PlainObject[] {
+        const {loadTreeData, loadTreeDataFrom} = this,
+            ret: PlainObject[] = [];
+
+        const visit = (recs: PlainObject[]) => {
+            if (!isArray(recs) || isEmpty(recs)) return;
+            const step = Math.max(1, Math.floor(recs.length / DATA_TEMPLATE_SAMPLE_SIZE));
+            for (let i = 0; i < recs.length; i += step) {
+                if (ret.length >= DATA_TEMPLATE_SAMPLE_SIZE) return;
+                let raw = recs[i];
+                if (!raw) continue;
+                if (isChildRawDataObject(raw)) raw = raw.rawData;
+                ret.push(raw);
+                if (loadTreeData) visit(raw[loadTreeDataFrom]);
+            }
+        };
+
+        visit(rawRecords);
         return ret;
     }
 
