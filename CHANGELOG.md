@@ -12,26 +12,32 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
-* On the optimized path described under New Features, `StoreRecord.data` now carries an own
-  property for every field, including those at their default value (previously held on a shared
-  prototype). Reads are unchanged, but `Object.keys()`, spread, and `JSON.stringify()` of `data`
-  now include default-valued fields - use `record.getValues()` or `record.getModifiedValues()`
-  instead. Stores that fall back to the prior representation are unaffected, so apps may see both
-  shapes.
 
 ### 🎁 New Features
 
 * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
   its raw source data object after parsing, reducing memory usage on large stores where
   `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
-* Improved `Store` memory usage and load times. Records in stores with up to 100 fields now build
-  their `data` objects via a per-store compiled factory, keeping them in V8's optimized "fast
-  properties" mode - measured in Chrome at 4-5x smaller data objects and 2-4x faster record
-  construction at typical grid widths, plus faster single-field reads for sorting and filtering.
-  Note reads that sweep every field of a record (e.g. `getValues()`, grid export) measure ~2x
-  slower. Wider stores, and those in environments that disallow runtime code generation (strict
-  CSP with no `unsafe-eval`), automatically continue to use the prior sparse-prototype
-  representation.
+* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
+  async iterable yielding raw records or chunks. Creates records incrementally without buffering
+  the complete raw dataset in memory, then installs them in a single transaction once the source
+  completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
+* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
+  as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
+  directly via `for await` for any streamed endpoint.
+* Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
+  JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
+  values are also shared across successive fetches of the same logical dataset, as identified by
+  a required app-provided key.
+* Added an opt-in `Store` memory optimization for large, densely-populated datasets. Set the
+  `optimizeRecordData` experimental flag to build record `data` objects by cloning a shared
+  template rather than growing them field-by-field, keeping them in V8's memory-efficient "fast
+  properties" mode - measured in Chrome at 4x smaller record data (231MB -> 58MB) and ~2.4x faster
+  record construction for a 100k-record store with 58 populated fields. Applied only to stores
+  whose records populate enough fields to benefit, sampled on first load - see
+  `Store.recordDataMode`. Note that records then carry an own property for every field, so
+  `Object.keys()`, spread, and `JSON.stringify()` of `data` include default-valued fields; use
+  `record.getValues()` or `record.getModifiedValues()` instead.
 
 ### ⚙️ Technical
 
@@ -39,6 +45,10 @@
   Popper.js onto Floating UI for React 19 compatibility. The Hoist `Popover` components (mobile and
   desktop) have been updated so no app call-site changes are required.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
+* Field XSS protection now preserves the reference identity of string values that sanitization
+  does not modify (the common case). Previously every parsed string value was replaced with a
+  freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
+  upstream deduplication of repeated values.
 
 ### 📚 Libraries
 

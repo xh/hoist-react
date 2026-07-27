@@ -145,13 +145,13 @@ export function parseFieldValue(
         case 'tags':
             val = castArray(val);
             val = val.map(v => {
-                v = !enableXssProtection || !isString(v) ? v : DOMPurify.sanitize(v);
+                v = !enableXssProtection || !isString(v) ? v : sanitizeVal(v);
                 return v.toString();
             });
             return val;
         case 'auto':
         case 'json':
-            return !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
+            return !enableXssProtection || !isString(val) ? val : sanitizeVal(val);
         case 'int':
             val = toNumber(val);
             return isFinite(val) ? Math.trunc(val) : null;
@@ -161,7 +161,7 @@ export function parseFieldValue(
             return !!val;
         case 'pwd':
         case 'string':
-            val = !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
+            val = !enableXssProtection || !isString(val) ? val : sanitizeVal(val);
             return val.toString();
         case 'date':
             return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
@@ -172,6 +172,18 @@ export function parseFieldValue(
     }
 
     throw XH.exception(`Unknown field type '${type}'`);
+}
+
+/**
+ * Sanitize via DOMPurify, preserving the reference identity of values it does not modify.
+ * DOMPurify allocates a fresh string on every call, even when sanitization is a no-op -
+ * returning the original in that case keeps values deduplicated upstream (e.g. via
+ * `FetchOptions.internStrings`) shared, and avoids retaining a second copy of every parsed
+ * string value alongside `StoreRecord.raw`.
+ */
+function sanitizeVal(val: string): string {
+    const ret = DOMPurify.sanitize(val);
+    return ret === val ? val : ret;
 }
 
 /** Data types for Fields used within Hoist Store Records and Cubes. */
