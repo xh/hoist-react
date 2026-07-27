@@ -12,21 +12,26 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
+* On the optimized path described under New Features, `StoreRecord.data` now carries an own
+  property for every field, including those at their default value (previously held on a shared
+  prototype). Reads are unchanged, but `Object.keys()`, spread, and `JSON.stringify()` of `data`
+  now include default-valued fields - use `record.getValues()` or `record.getModifiedValues()`
+  instead. Stores that fall back to the prior representation are unaffected, so apps may see both
+  shapes.
 
 ### 🎁 New Features
 
 * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
   its raw source data object after parsing, reducing memory usage on large stores where
   `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
-* Improved `Store` memory usage and read performance for record data. Records in stores with up to
-  100 fields now build their `data` objects via a per-store compiled factory, keeping them in V8's
-  optimized "fast properties" mode - measured 6-8x smaller at typical record widths, with faster
-  loads and faster downstream field reads (grid rendering, sorting, filtering, cube aggregation).
-  Wider stores and environments with a strict CSP (no `unsafe-eval`) continue to use the prior
-  sparse representation. Note `StoreRecord.data` objects now carry an own property for every field
-  (defaults included) on the optimized path - apps relying on `Object.keys(record.data)` or spread/
-  `JSON.stringify` of `data` returning only non-default fields should use
-  `record.getModifiedValues()` or `record.getValues()` as appropriate instead.
+* Improved `Store` memory usage and load times. Records in stores with up to 100 fields now build
+  their `data` objects via a per-store compiled factory, keeping them in V8's optimized "fast
+  properties" mode - measured in Chrome at 4-5x smaller data objects and 2-4x faster record
+  construction at typical grid widths, plus faster single-field reads for sorting and filtering.
+  Note reads that sweep every field of a record (e.g. `getValues()`, grid export) measure ~2x
+  slower. Wider stores, and those in environments that disallow runtime code generation (strict
+  CSP with no `unsafe-eval`), automatically continue to use the prior sparse-prototype
+  representation.
 
 ### ⚙️ Technical
 
