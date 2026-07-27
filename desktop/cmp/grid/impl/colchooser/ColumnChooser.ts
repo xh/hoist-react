@@ -86,19 +86,19 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
                 matchMode: chooserModel.filterMatchMode,
                 placeholder: 'Filter columns...'
             }),
-            viewToggle({
+            toggleBtn({
                 omit: !chooserModel.hasColumnGroups,
-                active: chooserModel.showGroups,
+                model: chooserModel.optionsModel,
+                bind: 'showGroups',
                 icon: Icon.treeList,
-                label: 'Column Groups',
-                onToggle: () => (chooserModel.showGroups = !chooserModel.showGroups)
+                label: 'Column Groups'
             }),
-            viewToggle({
+            toggleBtn({
                 omit: !chooserModel.columnLibraryEnabled,
-                active: chooserModel.showLibrary,
+                model: chooserModel.optionsModel,
+                bind: 'showLibrary',
                 icon: Icon.books,
-                label: 'Column Library',
-                onToggle: () => (chooserModel.showLibrary = !chooserModel.showLibrary)
+                label: 'Column Library'
             }),
             button({
                 omit: !chooserModel.showRestoreDefaults,
@@ -207,11 +207,10 @@ const chooserFooter = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => 
     );
 });
 
-interface ViewToggleProps extends HoistProps {
-    active: boolean;
+interface ToggleBtnProps extends HoistProps {
+    bind: string;
     icon: (p?: IconProps) => ReactElement;
     label: string;
-    onToggle: () => void;
 }
 
 /**
@@ -219,16 +218,17 @@ interface ViewToggleProps extends HoistProps {
  * muted gray when not. Tooltip reflects the action it will perform (`Show`/`Hide`) given the current
  * state.
  */
-const viewToggle = hoistCmp.factory<ViewToggleProps>(({active, icon, label, onToggle}) =>
-    button({
+const toggleBtn = hoistCmp.factory<ToggleBtnProps>(({model, bind, icon, label}) => {
+    const active = model[bind];
+    return button({
         className: 'xh-column-chooser__toggle',
         minimal: true,
         intent: active ? 'primary' : null,
         icon: icon({prefix: active ? 'far' : 'fat'}),
         tooltip: `${active ? 'Hide' : 'Show'} ${label}`,
-        onClick: onToggle
-    })
-);
+        onClick: () => model.setBindable(bind, !active)
+    });
+});
 
 interface BucketGridProps extends HoistProps {
     bucketModel: ColumnChooserBucketModel;

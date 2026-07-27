@@ -96,32 +96,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @managed
     readonly libraryModel: ColumnLibraryModel;
 
-    /**
-     * Display toggles delegate to a shared, persisted {@link ColChooserOptionsModel} singleton, so
-     * they roam across all choosers for the user on this device and live-sync between choosers open
-     * at once. A library-disabled chooser reads `showLibrary` but never writes it (no toggle UI).
-     */
-    get showGroups(): boolean {
-        return this.options.showGroups;
-    }
-
-    set showGroups(v: boolean) {
-        this.options.showGroups = v;
-    }
-
-    /** Show the Column Library panel (runtime toggle; only relevant when {@link columnLibraryEnabled}). */
-    get showLibrary(): boolean {
-        return this.options.showLibrary;
-    }
-
-    set showLibrary(v: boolean) {
-        this.options.showLibrary = v;
-    }
-
-    private get options(): ColChooserOptionsModel {
-        return XH.appContainerModel.colChooserOptionsModel;
-    }
-
     /** Pending working copy of the grid's columnState - the source of truth for the bucket grids. */
     @observable.ref
     workingState: ColumnState[] = null;
@@ -451,6 +425,19 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     //-----------------
     // Implementation
     //-----------------
+
+    private get showGroups(): boolean {
+        return this.optionsModel.showGroups;
+    }
+
+    private get showLibrary(): boolean {
+        return this.optionsModel.showLibrary;
+    }
+
+    get optionsModel(): ColChooserOptionsModel {
+        return XH.appContainerModel.colChooserOptionsModel;
+    }
+
     /** Adopt the current grid columnState as both working copy and baseline. */
     @action
     private adopt(columnState: ColumnState[]) {
