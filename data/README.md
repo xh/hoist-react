@@ -102,10 +102,12 @@ const store = new Store({
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
 | `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
+| `optimizeRecordData` | `boolean` | `false` | Build record data from a shared template - for records populating 20+ fields (memory) |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
-`Store.defaults` exposes `freezeData` for app-wide override — see `StoreDefaults` for details.
+`Store.defaults` exposes `freezeData` and `optimizeRecordData` for app-wide override — see
+`StoreDefaults` for details.
 
 ### Data Loading
 
@@ -791,51 +793,67 @@ const store = new Store({
 
 ### Tuning Memory for Large Datasets
 
-For stores holding tens of thousands of records or more, several independent knobs reduce retained
-memory. They stack, and are worth applying roughly in this order:
+For stores holding tens of thousands of records or more, three independent knobs reduce retained
+memory. They stack, and all are opt-in:
 
-| Knob | What it does | Cost |
-|------|--------------|------|
-| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | `StoreRecord.raw` becomes null; incompatible with `reuseRecords` |
-| `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Requires an app-provided cache key |
-| `experimental: {optimizeRecordData: true}` | Changes how record `data` objects are built (below) | Changes enumeration of `data`; see caveats |
+| Knob | What it does | When to use |
+|------|--------------|-------------|
+| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords` |
+| `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Your data has many repeated string values (categories, statuses, names) |
+| `optimizeRecordData: true` | Builds record `data` objects by cloning a shared template | **Your records populate 20 or more fields** - see below |
 
-**`optimizeRecordData`** addresses the cost of the `data` object itself. By default, Store grows
-each record's `data` by assigning parsed values one field at a time. Past roughly 20 assignments
-V8 demotes the object to a hashtable ("dictionary mode"), which measures around 4x the memory of
-an equivalent object built all at once. Enabling this flag has Store clone a shared template that
-already carries every field, avoiding the demotion:
+#### `optimizeRecordData`
+
+By default, Store builds each record's `data` by assigning parsed values one field at a time. Past
+about 20 assigned fields, V8 demotes the object to a hashtable ("dictionary mode"), which costs
+roughly 4x the memory of an equivalent object built from a template. Setting `optimizeRecordData`
+avoids that demotion:
 
 ```typescript
 const store = new Store({
     fields: [...],
-    experimental: {optimizeRecordData: true}
+    optimizeRecordData: true
 });
 ```
 
-Measured in Chrome for a 100k-record store with 58 populated fields: **231MB of record data
-reduced to 58MB**, with record construction about 2.4x faster. May also be enabled app-wide via
-the `xhStoreExperimental` soft-config.
+**The criterion is a single number: do your records typically populate 20 or more fields?**
 
-**When it helps, and when it does not:**
+- **Yes → enable it.** This holds at any field count. Measured in Chrome at 100k records: 231MB of
+  record data reduced to 58MB at 58 populated fields, and still a ~3x saving at 300 populated
+  fields. There is no upper limit at which it stops working.
+- **No → leave it off.** Below the threshold the default representation stays in V8's
+  fast-properties mode and is never worse.
 
-- Records must populate enough fields to cross the demotion threshold. Store samples the data on
-  first load and silently declines below ~20 populated fields per record, logging the decision at
-  debug level. Check `Store.recordDataMode` to see what a given Store settled on.
-- Below that threshold the default representation is genuinely cheaper - it costs nothing per
-  record for unpopulated fields, whereas the template pays for every *declared* field on every
-  record. A wide store whose records populate only a handful of fields is the worst case, and is
-  the reason for the automatic check.
-- Reads of a single field across many records (comparators, filters) get faster. Reads that sweep
-  *every* field of a record - `getValues()`, grid export - measure roughly 2x slower.
+Note "populated" means fields actually carrying a non-default value on a typical record - not the
+number of fields declared on the Store. The two differ for sparse data, and that distinction is
+what matters:
+
+| Store shape | Effect of enabling |
+|---|---|
+| 10 fields, 10 populated | No change - both representations measure identically |
+| 25 fields, 25 populated | ~3.8x less memory |
+| 150 fields, 150 populated | ~3.0x less memory |
+| 150 fields, 25 populated | ~1.3x less memory |
+| 150 fields, **8 populated** | **~6.6x MORE memory** - do not enable |
+
+The last row is the case to watch: a wide store whose records populate only a handful of fields.
+The template pays for every *declared* field on every record, while the default representation
+costs nothing for unpopulated ones. Store checks your setting against its data after the first
+load and logs a warning if it looks wrong, but the setting is always honored - it is your call.
+`Store.recordDataMode` reports which representation a Store is using.
+
+**Two further trade-offs**, neither of which the framework can decide for you:
+
 - **`data` enumeration changes.** Records carry an own property for every field, so
-  `Object.keys()`, spread and `JSON.stringify()` of `data` include default-valued fields. Use
-  `record.getValues()` or `record.getModifiedValues()` instead of enumerating `data` directly.
-- The underlying effect is specific to V8 (Chrome, Edge, Electron). Safari and Firefox do not
-  demote objects at these field counts, so expect no benefit there.
+  `Object.keys()`, spread and `JSON.stringify()` of `data` include default-valued fields. Reads are
+  unchanged. Use `record.getValues()` or `record.getModifiedValues()` rather than enumerating
+  `data` directly.
+- **Reads shift.** Reading one field across many records (comparators, filters) gets faster.
+  Reading *every* field of a record through one call site - `getValues()`, grid export - measures
+  about 2x slower.
 
-The flag is `experimental` because it depends on engine behavior that is not contracted API and
-could change. It is off by default and safe to leave off.
+Finally, the underlying effect is specific to V8 (Chrome, Edge, Electron). Safari and Firefox do
+not demote objects at these field counts, so expect no benefit there and no harm either.
 
 ### Processing Raw Data with `processRawData`
 

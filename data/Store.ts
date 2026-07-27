@@ -48,18 +48,15 @@ import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 
 /**
- * Minimum mean number of populated fields per record required to build record `data` objects via
- * the optimized route - see `Store.initDataTemplate()`.
- *
- * Below this threshold the legacy sparse representation remains in V8's fast-properties mode and
- * is the cheaper of the two, as it costs nothing per record for unpopulated fields. Records are
- * demoted to V8's "dictionary" mode at ~20 keyed property assignments, which is the point at which
- * the optimized route starts to pay. Note this is a V8 implementation detail, not contracted API.
+ * Populated fields per record at/above which `optimizeRecordData` pays - see that config. Records
+ * are demoted to V8's memory-hungry "dictionary" mode at ~20 assigned properties, which is exactly
+ * where the optimization starts to earn its cost. Used only to sanity-check a Store's setting
+ * against its actual data and log guidance; it never overrides the app's choice.
  */
-const MIN_POPULATED_FIELDS = 20;
+const OPTIMIZE_MIN_POPULATED_FIELDS = 20;
 
-/** Max raw records sampled to estimate populated-field count when deciding on the above. */
-const DATA_TEMPLATE_SAMPLE_SIZE = 200;
+/** Max records sampled when checking a Store's `optimizeRecordData` setting against its data. */
+const OPTIMIZE_CHECK_SAMPLE_SIZE = 100;
 
 /**
  * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
@@ -178,23 +175,47 @@ export interface StoreConfig {
     validationIsComplex?: boolean;
 
     /**
+     * Memory optimization for large stores with densely-populated records. Default false.
+     *
+     * By default, Store builds each record's `data` by assigning parsed values one field at a
+     * time. Past ~20 assigned fields V8 demotes the object to a hashtable ("dictionary mode"),
+     * costing roughly 4x the memory of an equivalent object. Set true to instead build each
+     * `data` object by cloning a shared, fully-populated template, avoiding that demotion.
+     *
+     * **Enable when records populate 20 or more fields.** That is the only criterion - it holds
+     * at any field count, including very wide (150+ field) records. Measured in Chrome at 100k
+     * records: 231MB -> 58MB at 58 populated fields, and still a ~3x saving at 300.
+     *
+     * **Leave false otherwise.** Below ~20 populated fields the default representation stays in
+     * V8's fast-properties mode and is never worse: for narrow records the two are identical, and
+     * for records that populate only a few of many declared fields the default is dramatically
+     * cheaper (measured 6.6x at 150 declared / 8 populated), because it costs nothing per record
+     * for unpopulated fields while a template pays for every declared field on every record.
+     *
+     * Two further trade-offs to weigh:
+     * - `data` gains an own property for every field, so `Object.keys()`, spread and
+     *   `JSON.stringify()` of `data` include default-valued fields. Reads are unchanged. Use
+     *   {@link StoreRecord.getValues} or {@link StoreRecord.getModifiedValues} instead of
+     *   enumerating `data` directly.
+     * - Reads of a single field across many records get faster; reads that sweep *every* field of
+     *   a record (`getValues()`, grid export) measure ~2x slower.
+     *
+     * Store checks this setting against its data on first load and logs guidance if it looks
+     * wrong in either direction. The underlying effect is specific to V8 - expect no benefit in
+     * Safari or Firefox. See {@link Store.recordDataMode} and the data package README.
+     */
+    optimizeRecordData?: boolean;
+
+    /**
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API.
-     *
-     *  Supported flags:
-     *  - `optimizeRecordData` - true to build record `data` objects from a shared, fully-populated
-     *    template rather than growing them field-by-field, trading a fixed cost per *declared*
-     *    field for a large reduction in the per-record cost of *populated* fields. Intended for
-     *    large stores (tens of thousands of records) with wide, densely-populated records - see
-     *    {@link Store.recordDataMode} and the Store README for when this pays and when it does
-     *    not. Ignored, with a debug log, for stores whose records populate too few fields to
-     *    benefit. Defaults may also be set app-wide via the `xhStoreExperimental` soft-config.
      */
     experimental?: PlainObject;
 }
 
 export interface StoreDefaults {
     freezeData?: boolean;
+    optimizeRecordData?: boolean;
 }
 
 /**
@@ -281,7 +302,8 @@ export class Store
 {
     /** App-level defaults for Store. Instance config takes precedence. */
     static defaults: StoreDefaults = {
-        freezeData: true
+        freezeData: true,
+        optimizeRecordData: false
     };
 
     static isStore(obj: unknown): obj is Store {
@@ -305,6 +327,7 @@ export class Store
     reuseRecords: boolean;
     retainRaw: boolean;
     validationIsComplex: boolean;
+    readonly optimizeRecordData: boolean;
 
     @observable.ref
     filter: Filter;
@@ -344,7 +367,7 @@ export class Store
 
     private _dataDefaults = null;
     private _dataTemplate: PlainObject = null;
-    private _dataTemplateInit = false;
+    private _optimizeChecked = false;
     _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
@@ -364,6 +387,7 @@ export class Store
         reuseRecords = false,
         retainRaw = true,
         validationIsComplex = false,
+        optimizeRecordData = Store.defaults.optimizeRecordData,
         experimental,
         data
     }: StoreConfig) {
@@ -387,6 +411,7 @@ export class Store
         this.reuseRecords = reuseRecords;
         this.retainRaw = retainRaw;
         this.validationIsComplex = validationIsComplex;
+        this.optimizeRecordData = optimizeRecordData;
         this.lastUpdated = Date.now();
 
         this.resetRecords();
@@ -394,6 +419,12 @@ export class Store
         this.validator = new StoreValidator({store: this});
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
+        // Spreading converts the defaults object (built by keyed assignment, and so itself in
+        // dictionary mode for wider stores) into V8 fast-properties mode, so that per-record
+        // clones of it hit the fast clone path. Deliberately a distinct object from
+        // `_dataDefaults`, which is used as a prototype on the default route - V8 declines the
+        // fast clone path for any object that has been used as a prototype.
+        this._dataTemplate = optimizeRecordData ? {...this._dataDefaults} : null;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -438,9 +469,6 @@ export class Store
             rawData = rawData[0].children ?? [];
         }
 
-        // Must run before any record is created - see initDataTemplate().
-        this.initDataTemplate(rawData);
-
         this.summaryRecords = rawSummaryData
             ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
             : null;
@@ -450,6 +478,7 @@ export class Store
         this.rebuildFiltered();
 
         this.lastLoaded = this.lastUpdated = Date.now();
+        this.checkOptimizeRecordData();
     }
 
     /**
@@ -485,34 +514,18 @@ export class Store
         const recordMap = new Map<StoreRecordId, StoreRecord>(),
             summaryIds = new Set<StoreRecordId>();
 
-        // Buffer a bounded prefix of the stream so the record data representation can be decided
-        // from a sample before any record is created - see initDataTemplate(). Capped at the
-        // sample size, so this does not reintroduce buffering of the complete dataset.
-        let sampleBuffer: PlainObject[] = this._dataTemplateInit ? null : [];
-        const flushSampleBuffer = () => {
-            const buffered = sampleBuffer;
-            sampleBuffer = null;
-            this.initDataTemplate(buffered);
-            buffered.forEach(raw => this.createRecords([raw], null, recordMap, summaryIds));
-        };
-
         for await (const chunk of rawData) {
             for (const raw of castArray(chunk)) {
-                if (sampleBuffer) {
-                    sampleBuffer.push(raw);
-                    if (sampleBuffer.length >= DATA_TEMPLATE_SAMPLE_SIZE) flushSampleBuffer();
-                } else {
-                    this.createRecords([raw], null, recordMap, summaryIds);
-                }
+                this.createRecords([raw], null, recordMap, summaryIds);
             }
         }
-        if (sampleBuffer) flushSampleBuffer();
 
         runInAction(() => {
             this.summaryRecords = null;
             this._committed = this._current = this._committed.withNewRecords(recordMap);
             this.rebuildFiltered();
             this.lastLoaded = this.lastUpdated = Date.now();
+            this.checkOptimizeRecordData();
         });
     }
 
@@ -571,10 +584,6 @@ export class Store
 
         const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
-
-        // Must run before any record is created - see initDataTemplate(). Prefer adds for the
-        // sample, as updates are often partial and would understate populated-field counts.
-        if (!this._dataTemplateInit) this.initDataTemplate(!isEmpty(add) ? add : update);
 
         // 1) Pre-process updates and adds into Records
         let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
@@ -689,10 +698,6 @@ export class Store
     addRecords(data: Some<PlainObject>, parentId?: StoreRecordId) {
         const rawRecords = castArray(data);
         if (isEmpty(rawRecords)) return;
-
-        // Must run before any record is created - see initDataTemplate(). Note this API
-        // deliberately bypasses processRawData, so the sample must not apply it either.
-        this.initDataTemplate(rawRecords, false);
 
         const addRecs = rawRecords.map(it => {
             const {id} = it;
@@ -876,15 +881,10 @@ export class Store
     }
 
     /**
-     * How this Store builds its record `data` objects.
-     *
-     * Returns 'optimized' if the `optimizeRecordData` experimental flag is enabled *and* this
-     * Store's data was found to populate enough fields per record for that to pay - see
-     * {@link StoreConfig.experimental}. Decided once, on first load, and fixed thereafter.
-     * Returns 'pending' before any data has been loaded.
+     * How this Store builds its record `data` objects - 'optimized' when
+     * {@link StoreConfig.optimizeRecordData} is enabled, otherwise 'default'.
      */
-    get recordDataMode(): 'optimized' | 'default' | 'pending' {
-        if (!this._dataTemplateInit) return 'pending';
+    get recordDataMode(): 'optimized' | 'default' {
         return this._dataTemplate ? 'optimized' : 'default';
     }
 
@@ -1340,7 +1340,7 @@ export class Store
     private parseRaw(data: PlainObject): PlainObject {
         // Optimized route - clone a shared template carrying an own property for every Field, then
         // overwrite. Writing a property that already exists is not an "add", so the object is not
-        // demoted to V8's dictionary mode - see initDataTemplate() for background.
+        // demoted to V8's dictionary mode - see StoreConfig.optimizeRecordData for background.
         const {_dataTemplate} = this;
         if (_dataTemplate) {
             const {_fieldMap} = this,
@@ -1356,10 +1356,6 @@ export class Store
 
         // Default sparse route - defaults held on a shared prototype, own properties for
         // non-default values only. Cheapest option for records that populate few fields.
-        // If we reached here without a template decision, lock one in now (as legacy) - a Store
-        // must never mix representations across its records.
-        if (!this._dataTemplateInit) this.initDataTemplate(null);
-
         // a) create/prepare the data object
         const ret = Object.create(this._dataDefaults);
 
@@ -1421,92 +1417,43 @@ export class Store
     }
 
     /**
-     * Decide once, on first data load, whether this Store builds record `data` objects via the
-     * optimized route. Sticky for the life of the Store - records within a Store must all share
-     * the same representation, both to keep their hidden class shared and to keep the deep-equal
-     * comparisons in `modifyRecords()` and `RecordSet` comparing like with like.
+     * Sanity-check this Store's `optimizeRecordData` setting against the data it actually holds,
+     * once, after its first load. Advisory only - the app's setting is always honored. The
+     * optimization pays only for records that populate enough fields to cross V8's dictionary-mode
+     * threshold; below that the default representation is equal or cheaper, so a mis-set flag is
+     * worth surfacing in either direction.
      *
-     * Background: the default route grows each `data` object by assigning parsed values onto
-     * `Object.create(defaults)`. Those are *keyed* property assignments, which V8 demotes to a
-     * per-object hashtable ("dictionary mode") past ~20 added properties - measured at ~4x the
-     * memory of an equivalent fast-properties object, and slower to read field-by-field. Cloning
-     * a template that already carries every field avoids this, because overwriting an existing
-     * property is not an add.
-     *
-     * That trade only pays for records that populate enough fields to cross the demotion
-     * threshold. Below it, the sparse default route stays in fast-properties mode and costs
-     * nothing per record for unpopulated fields, so the template - which pays for every *declared*
-     * field on every record - is the more expensive of the two. Population is a property of the
-     * data, not of the field config, so it cannot be known at construction and is sampled here.
+     * Counts own, non-default properties on already-parsed records, which is exact and free of the
+     * guesswork involved in inspecting raw data.
      */
-    private initDataTemplate(rawRecords: PlainObject[], applyProcessRawData: boolean = true) {
-        if (this._dataTemplateInit) return;
-        this._dataTemplateInit = true;
+    private checkOptimizeRecordData() {
+        if (this._optimizeChecked) return;
 
-        if (!this.experimental.optimizeRecordData) return;
+        const sample = this._committed.list.slice(0, OPTIMIZE_CHECK_SAMPLE_SIZE);
+        if (isEmpty(sample) || isEmpty(this.fields)) return;
+        this._optimizeChecked = true;
 
-        const {fields, _fieldMap} = this,
-            processRawData = applyProcessRawData ? this.processRawData : null,
-            sample = this.sampleRawRecords(rawRecords);
-
-        if (isEmpty(fields) || isEmpty(sample)) {
-            this.logDebug('optimizeRecordData declined - no sample data available on first load');
-            return;
-        }
-
+        const {_dataDefaults} = this;
         let populated = 0;
-        sample.forEach(it => {
-            // Match the parse path, which applies processRawData before reading fields.
-            const raw = processRawData ? processRawData(it) : it;
-            forIn(raw, (val, name) => {
-                const field = _fieldMap.get(name);
-                if (field && val !== field.defaultValue) populated++;
-            });
-        });
-        const meanPopulated = populated / sample.length;
-
-        if (meanPopulated < MIN_POPULATED_FIELDS) {
-            this.logDebug(
-                `optimizeRecordData declined - records populate ~${Math.round(meanPopulated)} of ${fields.length} fields, below the ${MIN_POPULATED_FIELDS} needed for the optimized route to pay`
-            );
-            return;
-        }
-
-        // Spreading converts the defaults object (built by keyed assignment, and therefore itself
-        // in dictionary mode for wider stores) into fast-properties mode, so that per-record
-        // clones of it hit V8's fast clone path. Deliberately a distinct object from
-        // `_dataDefaults`, which is used as a prototype below - V8 declines the fast clone path
-        // for any object that has been used as a prototype.
-        this._dataTemplate = {...this._dataDefaults};
-        this.logDebug(
-            `optimizeRecordData enabled - records populate ~${Math.round(meanPopulated)} of ${fields.length} fields`
-        );
-    }
-
-    /**
-     * Collect a bounded sample of raw records, strided so that it spans the dataset rather than
-     * clustering at the head, and descending into children for tree stores (where parent rows are
-     * often less populated than the leaves that dominate by count).
-     */
-    private sampleRawRecords(rawRecords: PlainObject[]): PlainObject[] {
-        const {loadTreeData, loadTreeDataFrom} = this,
-            ret: PlainObject[] = [];
-
-        const visit = (recs: PlainObject[]) => {
-            if (!isArray(recs) || isEmpty(recs)) return;
-            const step = Math.max(1, Math.floor(recs.length / DATA_TEMPLATE_SAMPLE_SIZE));
-            for (let i = 0; i < recs.length; i += step) {
-                if (ret.length >= DATA_TEMPLATE_SAMPLE_SIZE) return;
-                let raw = recs[i];
-                if (!raw) continue;
-                if (isChildRawDataObject(raw)) raw = raw.rawData;
-                ret.push(raw);
-                if (loadTreeData) visit(raw[loadTreeDataFrom]);
+        sample.forEach(rec => {
+            const {data} = rec;
+            for (const name in _dataDefaults) {
+                if (data[name] !== _dataDefaults[name]) populated++;
             }
-        };
+        });
 
-        visit(rawRecords);
-        return ret;
+        const mean = Math.round(populated / sample.length),
+            {length: fieldCount} = this.fields;
+
+        if (this.optimizeRecordData && mean < OPTIMIZE_MIN_POPULATED_FIELDS) {
+            this.logWarn(
+                `optimizeRecordData is enabled, but records populate only ~${mean} of ${fieldCount} fields - below the ~${OPTIMIZE_MIN_POPULATED_FIELDS} needed for it to pay. This likely *increases* memory use. Consider disabling it for this Store.`
+            );
+        } else if (!this.optimizeRecordData && mean >= OPTIMIZE_MIN_POPULATED_FIELDS) {
+            this.logDebug(
+                `Records populate ~${mean} of ${fieldCount} fields - this Store may benefit from optimizeRecordData. See StoreConfig.optimizeRecordData.`
+            );
+        }
     }
 
     private createDataDefaults() {

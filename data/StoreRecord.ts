@@ -46,8 +46,8 @@ export class StoreRecord {
      * An object containing the current field values for this record.
      *
      * By default this object carries an explicit 'own' property only for fields that are *not* at
-     * their default value - defaults are present via the prototype. Stores that opt in to the
-     * `optimizeRecordData` experimental flag instead carry an own property for every field, with
+     * their default value - defaults are present via the prototype. Stores configured with
+     * {@link StoreConfig.optimizeRecordData} instead carry an own property for every field, with
      * defaults filled in. See {@link Store.recordDataMode}.
      *
      * Reads are identical either way, but enumeration is not - `Object.keys()`, spread and
