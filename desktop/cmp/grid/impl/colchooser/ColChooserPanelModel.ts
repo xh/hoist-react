@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColChooserPanelConfig} from '@xh/hoist/cmp/grid';
-import {managed} from '@xh/hoist/core';
+import {HSide, managed} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isNumber} from 'lodash';
@@ -26,8 +26,8 @@ export class ColChooserPanelModel extends ColChooserModel {
     @managed
     readonly panelModel: PanelModel;
 
-    get side(): 'left' | 'right' {
-        return this.panelModel.side as 'left' | 'right';
+    get side(): HSide {
+        return this.panelModel.side as HSide;
     }
 
     // Outer panel governs the dock width; the library takes a fixed slice of it, buckets flex.
@@ -38,15 +38,16 @@ export class ColChooserPanelModel extends ColChooserModel {
     constructor(config: ColChooserPanelConfig) {
         super({...config, commitOnChange: true});
         makeObservable(this);
+
+        const {width, libraryWidth, isLibraryShown} = this;
+
         this.panelModel = new PanelModel({
             side: 'right',
             // Seed the dock wide enough to hold the buckets plus the library if it opens shown; the
             // toggle reaction keeps it in sync from there.
-            defaultSize: this.dockSizeFor(this.isLibraryShown),
+            defaultSize: isNumber(width) && isLibraryShown ? width + libraryWidth : width,
             minSize: 250,
             ...config.panelConfig,
-            // Open/close is driven by `isOpen` (panel rendered only when open), not collapse - the
-            // dock is purely resizable.
             collapsible: false,
             resizable: true
         });
@@ -63,11 +64,6 @@ export class ColChooserPanelModel extends ColChooserModel {
                 }
             }
         });
-    }
-
-    private dockSizeFor(libraryShown: boolean): number | string {
-        const {width, libraryWidth} = this;
-        return isNumber(width) && libraryShown ? width + libraryWidth : width;
     }
 
     @action
