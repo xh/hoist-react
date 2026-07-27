@@ -39,8 +39,6 @@ import {IStringifyOptions, stringify} from 'qs';
 import ShortUniqueId from 'short-unique-id';
 import {StringInterner} from './impl/StringInterner';
 
-const defaultIdGenerator = new ShortUniqueId({length: 16});
-
 export interface FetchServiceDefaults {
     autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
     correlationIdHeaderKey?: string;
@@ -77,7 +75,7 @@ export class FetchService extends HoistService {
     static defaults: FetchServiceDefaults = {
         autoGenCorrelationIds: false,
         correlationIdHeaderKey: 'X-Correlation-ID',
-        genCorrelationId: () => defaultIdGenerator.rnd()
+        genCorrelationId: () => FetchService.defaultIdGenerator.rnd()
     };
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
@@ -179,6 +177,9 @@ export class FetchService extends HoistService {
      * Tracing spans and `track` cover the full lifetime of the stream, through complete
      * consumption. Note that `timeout` covers the request phase only - no timeout applies while
      * the stream is being read.
+     *
+     * A stream truncated by a server-side failure surfaces as a 'Fetch Stream Failed' exception -
+     * hoist-core's `renderNdjson` guarantees such a stream ends with an unparseable line.
      */
     fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
         opts = this.withCorrelationId(opts);
@@ -295,6 +296,11 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
+    private static readonly defaultIdGenerator = new ShortUniqueId({length: 16});
+
+    /** Marker written by hoist-core's `renderNdjson` when a stream fails after committing. */
+    private static readonly NDJSON_POISON = '//xh-ndjson-stream-error';
+
     /**
      * @param forStreaming - true when called by fetchNdjson, which applies its own span and
      *      track across the full stream lifetime - suppresses both here.
@@ -698,6 +704,9 @@ export class FetchService extends HoistService {
      * they arrive off the network. Each line is parsed with native JSON.parse, partial trailing
      * lines are carried across chunk boundaries, and no more than one network chunk of raw text
      * is buffered.
+     *
+     * Note the final-buffer parse below doubles as truncation detection - a stream cut short by
+     * a server-side failure ends with an unparseable line (see fetchNdjson) and throws here.
      */
     private async *ndjsonChunks(
         response: Response,
@@ -723,6 +732,12 @@ export class FetchService extends HoistService {
 
         buffer += decoder.decode();
         if (buffer.trim()) {
+            if (buffer.trim() === FetchService.NDJSON_POISON) {
+                throw Exception.create({
+                    name: 'NDJSON Stream Error',
+                    message: 'NDJSON stream terminated by a server-side failure - see server logs.'
+                });
+            }
             const chunk = [JSON.parse(buffer)];
             interner?.intern(chunk);
             yield chunk;
