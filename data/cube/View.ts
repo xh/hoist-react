@@ -30,7 +30,7 @@ import {AggregationContext} from './aggregate/AggregationContext';
 import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
-import {LeafRow} from './row/LeafRow';
+import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
 
 /**
  * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally
@@ -69,7 +69,7 @@ export interface ViewResult {
      * that expose no leaves keep them as zero-copy references to Cube record data, which is not
      * safe to publish. Use {@link Cube.store} to read source records directly in that case.
      */
-    leafMap: Map<StoreRecordId, LeafRow>;
+    leafMap: Map<StoreRecordId, ExposedLeafRow>;
 }
 
 export interface DimensionValue {
@@ -299,10 +299,13 @@ export class View
     //------------------------
     // Implementation
     //------------------------
-    /** True if leaf rows can use cube record data directly - i.e. leaves not exposed on results. */
-    get useReferenceLeaves(): boolean {
+    /**
+     * True if leaf rows are exposed on results - i.e. Query sets includeLeaves or provideLeaves.
+     * @internal
+     */
+    get exposesLeaves(): boolean {
         const {includeLeaves, provideLeaves} = this.query;
-        return !includeLeaves && !provideLeaves;
+        return includeLeaves || provideLeaves;
     }
 
     @logWithDebug
@@ -350,8 +353,8 @@ export class View
         const {_leafMap, _rowDatas} = this;
         this.result = {
             rows: _rowDatas,
-            // Reference-mode leaves adopt Cube record data outright - never publish them.
-            leafMap: this.useReferenceLeaves ? null : _leafMap
+            // Hidden leaves adopt Cube record data outright - never publish them.
+            leafMap: this.exposesLeaves ? (_leafMap as Map<StoreRecordId, ExposedLeafRow>) : null
         };
         this.info = this.cube.info;
         this.cubeUpdated = this.cube.lastUpdated;
@@ -403,9 +406,14 @@ export class View
         const rootId = parentId + Cube.RECORD_ID_DELIMITER;
 
         if (!dimensions?.length) {
+            const {exposesLeaves} = this;
             return records.map(r => {
                 const id = rootId + r.id,
-                    leaf = this.cachedRow(id, null, () => new LeafRow(this, id, r));
+                    leaf = this.cachedRow(id, null, () =>
+                        exposesLeaves
+                            ? new ExposedLeafRow(this, id, r)
+                            : new HiddenLeafRow(this, id, r)
+                    );
                 leafMap.set(r.id, leaf);
                 return leaf;
             });

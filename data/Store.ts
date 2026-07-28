@@ -158,6 +158,21 @@ export interface StoreConfig {
     retainRaw?: boolean;
 
     /**
+     * True to use each incoming raw object *as* its record's `data`, by reference, rather than
+     * parsing and copying it. A zero-copy mode for already-parsed data - e.g. a connected Cube
+     * {@link View}, or a server endpoint returning data in its final client-side form.
+     *
+     * Raw data must already match what the Store's Fields would parse - `type`, `parseVal`, and
+     * `defaultValue` are not applied. The Store never modifies or freezes raw objects (regardless
+     * of `freezeData`); the provider may mutate rows in place but must then publish via
+     * `updateData()`, as `loadData()` would skip reference-equal objects as unchanged.
+     *
+     * `data` will carry every key on the raw object, not just declared Fields. Not compatible
+     * with `processRawData` or `reuseRecords`. Default false.
+     */
+    useRawAsData?: boolean;
+
+    /**
      * Set to true to always validate all uncommitted records on every change to
      * uncommitted records (add, modify, or remove). Default false.
      */
@@ -281,6 +296,7 @@ export class Store
     freezeData: boolean;
     reuseRecords: boolean;
     retainRaw: boolean;
+    useRawAsData: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -338,6 +354,7 @@ export class Store
         idEncodesTreePath = false,
         reuseRecords = false,
         retainRaw = true,
+        useRawAsData = false,
         validationIsComplex = false,
         experimental,
         data
@@ -348,6 +365,15 @@ export class Store
             reuseRecords && !retainRaw,
             'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
         );
+        throwIf(
+            useRawAsData && processRawData,
+            'Store.useRawAsData cannot be used with processRawData.'
+        );
+        throwIf(
+            useRawAsData && reuseRecords,
+            'Store.useRawAsData cannot be used with reuseRecords.'
+        );
+
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
@@ -361,6 +387,7 @@ export class Store
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
         this.retainRaw = retainRaw;
+        this.useRawAsData = useRawAsData;
         this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
@@ -1200,6 +1227,20 @@ export class Store
         isSummary: boolean = false
     ): StoreRecord {
         const id = this.idSpec(raw);
+
+        // Zero-copy - use the raw object as `data` by reference, with no parsing, no data.id
+        // write, and no freeze. The Store does not own this object - see StoreConfig.useRawAsData.
+        if (this.useRawAsData) {
+            return new StoreRecord({
+                id,
+                store: this,
+                raw,
+                data: raw,
+                committedData: raw,
+                parent,
+                isSummary
+            });
+        }
 
         // Potentially re-use existing record if raw data is reference equal and tree path identical
         if (this.reuseRecords) {

@@ -19,6 +19,9 @@ import {ViewRowData} from '../ViewRowData';
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class BucketRow extends BaseRow {
+    // Bucket rows always construct a full ViewRowData.
+    declare data: ViewRowData;
+
     override get isBucket() {
         return true;
     }
