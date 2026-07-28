@@ -12,6 +12,8 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
+* `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
+  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 * The desktop grid column chooser has been re-implemented (see New Features below). Its UX has
   changed substantially and should be reviewed.
     * Apps that register an explicit list of ag-Grid modules (rather than `AllCommunityModule`) must
@@ -46,9 +48,6 @@
       longer dismisses the popover, and external column state changes prompt for resolution.
 * Added `GridModel.isColumnHideable()` and `GridModel.isColumnMovable()` to report whether the user
   is permitted to hide or reorder a given column.
-
-### 🎁 New Features
-
 * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
   its raw source data object after parsing, reducing memory usage on large stores where
   `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
@@ -58,11 +57,21 @@
   completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
 * Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
   as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
-  directly via `for await` for any streamed endpoint.
+  directly via `for await` for any streamed endpoint. Optionally pairs with hoist-core v41's
+  `BaseController.renderNdjson()`.
 * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values are also shared across successive fetches of the same logical dataset, as identified by
   a required app-provided key.
+* Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
+  `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
+  per-View leaf data objects and speeding up view builds for aggregate-only views over large
+  datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+
+### 🐞 Bug Fixes
+
+* Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
+  values for each dimension.
 
 ### ⚙️ Technical
 
