@@ -61,6 +61,14 @@ export interface ViewConfig {
 
 export interface ViewResult {
     rows: ViewRowData[];
+
+    /**
+     * Leaf-level rows, keyed by the id of their source Cube record.
+     *
+     * Null unless the Query sets {@link Query.includeLeaves} or {@link Query.provideLeaves} - views
+     * that expose no leaves keep them as zero-copy references to Cube record data, which is not
+     * safe to publish. Use {@link Cube.store} to read source records directly in that case.
+     */
     leafMap: Map<StoreRecordId, LeafRow>;
 }
 
@@ -340,7 +348,11 @@ export class View
 
     private updateResults() {
         const {_leafMap, _rowDatas} = this;
-        this.result = {rows: _rowDatas, leafMap: _leafMap};
+        this.result = {
+            rows: _rowDatas,
+            // Reference-mode leaves adopt Cube record data outright - never publish them.
+            leafMap: this.useReferenceLeaves ? null : _leafMap
+        };
         this.info = this.cube.info;
         this.cubeUpdated = this.cube.lastUpdated;
         this.lastUpdated = Date.now();

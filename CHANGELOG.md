@@ -12,6 +12,8 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
+* `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
+  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 
 ### 🎁 New Features
 
@@ -33,8 +35,7 @@
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
-  datasets. Note leaf entries in `View.result.leafMap` now expose the cube record's own data object
-  as their `data` in this case.
+  datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
 
 ### 🐞 Bug Fixes
 
