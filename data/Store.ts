@@ -236,9 +236,15 @@ export interface StoreConfig {
     experimental?: PlainObject;
 }
 
+/**
+ * App-wide defaults for {@link Store}, applied to every Store constructed without an explicit
+ * value - including those Hoist itself creates internally.
+ *
+ * Deliberately narrow: only configs suitable for every Store in an app belong here. Configs whose
+ * suitability depends on the data a particular Store holds must be set per Store instead.
+ */
 export interface StoreDefaults {
     freezeData?: boolean;
-    useFixedDataShape?: boolean;
 }
 
 /**
@@ -325,8 +331,7 @@ export class Store
 {
     /** App-level defaults for Store. Instance config takes precedence. */
     static defaults: StoreDefaults = {
-        freezeData: true,
-        useFixedDataShape: false
+        freezeData: true
     };
 
     static isStore(obj: unknown): obj is Store {
@@ -412,7 +417,7 @@ export class Store
         retainRaw = true,
         useRawAsData = false,
         validationIsComplex = false,
-        useFixedDataShape = Store.defaults.useFixedDataShape,
+        useFixedDataShape = false,
         experimental,
         data
     }: StoreConfig) {
