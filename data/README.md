@@ -102,12 +102,12 @@ const store = new Store({
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
 | `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
-| `optimizeRecordData` | `boolean` | `false` | Build record data from a shared template - for records populating 20+ fields (memory) |
+| `useFixedDataShape` | `boolean` | `false` | Build record data from a shared template - for records populating 20+ fields (memory) |
 | `useRawAsData` | `boolean` | `false` | Use each raw object *as* its record's `data`, skipping the parse/copy (memory)        |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
-`Store.defaults` exposes `freezeData` and `optimizeRecordData` for app-wide override — see
+`Store.defaults` exposes `freezeData` and `useFixedDataShape` for app-wide override — see
 `StoreDefaults` for details.
 
 ### Data Loading
@@ -801,19 +801,23 @@ memory. They stack, and all are opt-in:
 |------|--------------|-------------|
 | `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords` |
 | `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Your data has many repeated string values (categories, statuses, names) |
-| `optimizeRecordData: true` | Builds record `data` objects by cloning a shared template | **Your records populate 20 or more fields** - see below |
+| `useFixedDataShape: true` | Builds record `data` objects by cloning a shared template | **Your records populate 20 or more fields** - see below |
 
-#### `optimizeRecordData`
+#### `useFixedDataShape`
 
-By default, Store builds each record's `data` by assigning parsed values one field at a time. Past
-about 20 assigned fields, V8 demotes the object to a hashtable ("dictionary mode"), which costs
-several times more memory per record than the same object built from a template. Setting
-`optimizeRecordData` avoids that demotion:
+By default, a record's `data` carries an own property only for fields holding a non-default value,
+with defaults reached through a shared prototype. Records therefore *differ in shape* depending on
+which of their fields are populated, and each is built by assigning values one field at a time. Past
+about 20 such assignments, V8 gives up tracking the object's shape and demotes it to a hashtable
+("dictionary mode"), costing several times more memory per record.
+
+Setting `useFixedDataShape` instead clones each `data` from a shared template carrying every field,
+so all records share one identical shape and none is demoted:
 
 ```typescript
 const store = new Store({
     fields: [...],
-    optimizeRecordData: true
+    useFixedDataShape: true
 });
 ```
 
@@ -837,10 +841,12 @@ what matters:
 | 150 fields, **8 populated** | **More memory** - do not enable |
 
 The last row is the case to watch: a wide store whose records populate only a handful of fields.
-The template pays for every *declared* field on every record, while the default representation
-costs nothing for unpopulated ones. Store checks your setting against its data after the first
-load and logs a warning if it looks wrong, but the setting is always honored - it is your call.
-`Store.recordDataMode` reports which representation a Store is using.
+A fixed shape pays for every *declared* field on every record, while the sparse default costs
+nothing for unpopulated ones. Store checks your setting against its data after the first load and
+logs a warning if it looks wrong, but the setting is always honored - it is your call.
+
+`Store.recordDataMode` reports which of the three representations a Store is using - `'sparse'`
+(the default), `'fixedShape'`, or `'raw'` when `useRawAsData` is set.
 
 **One further trade-off**, which the framework cannot decide for you: `data` gains an own
 property for every field, so `Object.keys()`, spread and `JSON.stringify()` of `data` include
@@ -850,7 +856,7 @@ default-valued fields. Reads return the same values either way. Use `record.getV
 Not combinable with `useRawAsData`, which adopts each raw object as its record's `data` and so
 leaves no data object for this to build - Store throws at construction if both are set. The two
 are alternatives, not complements: reach for `useRawAsData` when the incoming objects are already
-in their final shape, and `optimizeRecordData` when Store must parse and build them.
+in their final shape, and `useFixedDataShape` when Store must parse and build them.
 
 Treat this as a **memory** optimization only. Field reads are not measurably faster in practice:
 much of the framework's data access runs through call sites shared across every Store in the app,

@@ -32,14 +32,16 @@
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values are also shared across successive fetches of the same logical dataset, as identified by
   a required app-provided key.
-* Added `Store.optimizeRecordData` config (default `false`) - an opt-in memory optimization for
-  stores whose records populate 20 or more fields. Builds each record's `data` object by cloning a
-  shared template rather than growing it field-by-field, keeping it out of V8's memory-hungry
-  "dictionary" mode. Substantially reduces per-record memory on large stores with wide,
-  densely-populated records. Note records then carry an own property for every field, so
-  `Object.keys()`, spread, and `JSON.stringify()` of `data` include default-valued fields; use
-  `record.getValues()` or `record.getModifiedValues()` instead. See the data package README for
-  when this pays and when it does not.
+* Added `Store.useFixedDataShape` config (default `false`) - an opt-in memory optimization for
+  stores whose records populate 20 or more fields. Clones each record's `data` from a shared
+  template carrying every field, so all records share one shape, rather than growing each object
+  field-by-field into differing shapes and losing them to V8's memory-hungry "dictionary" mode.
+  Substantially reduces per-record memory on large stores with wide, densely-populated records.
+  Note records then carry an own property for every field, so `Object.keys()`, spread, and
+  `JSON.stringify()` of `data` include default-valued fields; use `record.getValues()` or
+  `record.getModifiedValues()` instead. Added `Store.recordDataMode` to report which representation
+  a Store is using - `'sparse'`, `'fixedShape'` or `'raw'`. See the data package README for when
+  this pays and when it does not.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large

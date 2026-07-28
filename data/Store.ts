@@ -48,15 +48,15 @@ import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 
 /**
- * Populated fields per record at/above which `optimizeRecordData` pays - see that config. Records
+ * Populated fields per record at/above which `useFixedDataShape` pays - see that config. Records
  * are demoted to V8's memory-hungry "dictionary" mode at ~20 assigned properties, which is exactly
  * where the optimization starts to earn its cost. Used only to sanity-check a Store's setting
  * against its actual data and log guidance; it never overrides the app's choice.
  */
-const OPTIMIZE_MIN_POPULATED_FIELDS = 20;
+const FIXED_SHAPE_MIN_POPULATED_FIELDS = 20;
 
-/** Max records sampled when checking a Store's `optimizeRecordData` setting against its data. */
-const OPTIMIZE_CHECK_SAMPLE_SIZE = 100;
+/** Max records sampled when checking a Store's `useFixedDataShape` setting against its data. */
+const FIXED_SHAPE_CHECK_SAMPLE_SIZE = 100;
 
 /**
  * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
@@ -190,21 +190,26 @@ export interface StoreConfig {
     validationIsComplex?: boolean;
 
     /**
-     * Memory optimization for large stores with densely-populated records. Default false.
+     * True to give every record's `data` object one identical shape, as a memory optimization for
+     * large stores with densely-populated records. Default false.
      *
-     * By default, Store builds each record's `data` by assigning parsed values one field at a
-     * time. Past ~20 assigned fields V8 demotes the object to a hashtable ("dictionary mode"),
-     * which costs substantially more memory per record. Set true to instead build each `data`
-     * object by cloning a shared, fully-populated template, avoiding that demotion.
+     * By default, `data` carries an own property only for fields holding a non-default value, with
+     * defaults reached through a shared prototype. Records therefore *differ* in shape according to
+     * which of their fields are populated, and each is built by assigning values one field at a
+     * time. Past ~20 such assignments V8 gives up on tracking the object's shape and demotes it to
+     * a hashtable ("dictionary mode"), which costs substantially more memory per record.
      *
-     * **Enable when records populate 20 or more fields.** That is the only criterion - it holds
-     * at any field count, including very wide records.
+     * Set true and Store instead clones each `data` from a shared template carrying every Field, so
+     * all records have the same fixed shape and none is demoted.
+     *
+     * **Enable when records populate 20 or more fields.** That is the only criterion - it holds at
+     * any field count, including very wide records.
      *
      * **Leave false otherwise.** Below ~20 populated fields the default representation stays in
-     * V8's fast-properties mode and is never worse: for narrow records the two are equivalent,
-     * and for records that populate only a few of many declared fields the default is
-     * substantially cheaper, because it costs nothing per record for unpopulated fields while a
-     * template pays for every declared field on every record.
+     * V8's fast-properties mode and is never worse: for narrow records the two are equivalent, and
+     * for records populating only a few of many declared fields the default is substantially
+     * cheaper, since it costs nothing per record for unpopulated fields while a fixed shape pays
+     * for every declared field on every record.
      *
      * One further trade-off to weigh: `data` gains an own property for every field, so
      * `Object.keys()`, spread and `JSON.stringify()` of `data` include default-valued fields.
@@ -220,9 +225,9 @@ export interface StoreConfig {
      * Safari or Firefox. See {@link Store.recordDataMode} and the data package README.
      *
      * Cannot be combined with {@link StoreConfig.useRawAsData}, which adopts each raw object as its
-     * record's `data` and so builds no data object for this to optimize.
+     * record's `data` and so leaves no data object for Store to shape.
      */
-    optimizeRecordData?: boolean;
+    useFixedDataShape?: boolean;
 
     /**
      *  Flags for experimental features. These features are designed for early client-access and
@@ -233,7 +238,7 @@ export interface StoreConfig {
 
 export interface StoreDefaults {
     freezeData?: boolean;
-    optimizeRecordData?: boolean;
+    useFixedDataShape?: boolean;
 }
 
 /**
@@ -321,7 +326,7 @@ export class Store
     /** App-level defaults for Store. Instance config takes precedence. */
     static defaults: StoreDefaults = {
         freezeData: true,
-        optimizeRecordData: false
+        useFixedDataShape: false
     };
 
     static isStore(obj: unknown): obj is Store {
@@ -346,7 +351,7 @@ export class Store
     retainRaw: boolean;
     useRawAsData: boolean;
     validationIsComplex: boolean;
-    readonly optimizeRecordData: boolean;
+    readonly useFixedDataShape: boolean;
 
     @observable.ref
     filter: Filter;
@@ -386,7 +391,7 @@ export class Store
 
     private _dataDefaults = null;
     private _dataTemplate: PlainObject = null;
-    private _optimizeChecked = false;
+    private _fixedShapeChecked = false;
     _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
@@ -407,7 +412,7 @@ export class Store
         retainRaw = true,
         useRawAsData = false,
         validationIsComplex = false,
-        optimizeRecordData = Store.defaults.optimizeRecordData,
+        useFixedDataShape = Store.defaults.useFixedDataShape,
         experimental,
         data
     }: StoreConfig) {
@@ -426,8 +431,8 @@ export class Store
             'Store.useRawAsData cannot be used with reuseRecords.'
         );
         throwIf(
-            useRawAsData && optimizeRecordData,
-            'Store.useRawAsData cannot be used with optimizeRecordData - records adopt their raw object as `data`, so there is no data object for the Store to build and the optimization would silently do nothing.'
+            useRawAsData && useFixedDataShape,
+            'Store.useRawAsData cannot be used with useFixedDataShape - records adopt their raw object as `data`, so there is no data object for the Store to build and the optimization would silently do nothing.'
         );
 
         this.experimental = this.parseExperimental(experimental);
@@ -445,7 +450,7 @@ export class Store
         this.retainRaw = retainRaw;
         this.useRawAsData = useRawAsData;
         this.validationIsComplex = validationIsComplex;
-        this.optimizeRecordData = optimizeRecordData;
+        this.useFixedDataShape = useFixedDataShape;
         this.lastUpdated = Date.now();
 
         this.resetRecords();
@@ -458,7 +463,7 @@ export class Store
         // clones of it hit the fast clone path. Deliberately a distinct object from
         // `_dataDefaults`, which is used as a prototype on the default route - V8 declines the
         // fast clone path for any object that has been used as a prototype.
-        this._dataTemplate = optimizeRecordData ? {...this._dataDefaults} : null;
+        this._dataTemplate = useFixedDataShape ? {...this._dataDefaults} : null;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -915,14 +920,20 @@ export class Store
     }
 
     /**
-     * How this Store builds its record `data` objects - 'raw' when
-     * {@link StoreConfig.useRawAsData} is enabled and each raw object is adopted as its record's
-     * `data`, 'optimized' when {@link StoreConfig.optimizeRecordData} is enabled and each `data` is
-     * cloned from a shared template, otherwise 'default'.
+     * Which representation this Store uses for its record `data` objects:
+     *
+     *  - 'raw' - each raw object is adopted as its record's `data`, per
+     *    {@link StoreConfig.useRawAsData}.
+     *  - 'fixedShape' - every `data` is cloned from a shared template and so carries an own property
+     *    for every Field, giving all records one identical shape, per
+     *    {@link StoreConfig.useFixedDataShape}.
+     *  - 'sparse' - the default. Own properties exist only for non-default values, with defaults
+     *    reached through a shared prototype, so records vary in shape according to which of their
+     *    fields are populated.
      */
-    get recordDataMode(): 'raw' | 'optimized' | 'default' {
+    get recordDataMode(): 'raw' | 'fixedShape' | 'sparse' {
         if (this.useRawAsData) return 'raw';
-        return this._dataTemplate ? 'optimized' : 'default';
+        return this._dataTemplate ? 'fixedShape' : 'sparse';
     }
 
     /** Get a specific Field by name.*/
@@ -1389,9 +1400,9 @@ export class Store
     }
 
     private parseRaw(data: PlainObject): PlainObject {
-        // Optimized route - clone a shared template carrying an own property for every Field, then
+        // Fixed-shape route - clone a shared template carrying an own property for every Field, then
         // overwrite. Writing a property that already exists is not an "add", so the object is not
-        // demoted to V8's dictionary mode - see StoreConfig.optimizeRecordData for background.
+        // demoted to V8's dictionary mode - see StoreConfig.useFixedDataShape for background.
         const {_dataTemplate} = this;
         if (_dataTemplate) {
             const {_fieldMap} = this,
@@ -1405,7 +1416,7 @@ export class Store
             return ret;
         }
 
-        // Default sparse route - defaults held on a shared prototype, own properties for
+        // Sparse route (default) - defaults held on a shared prototype, own properties for
         // non-default values only. Cheapest option for records that populate few fields.
         // a) create/prepare the data object
         const ret = Object.create(this._dataDefaults);
@@ -1426,7 +1437,7 @@ export class Store
     }
 
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
-        // Optimized route - clone the existing data object, preserving its shape (and its `id`,
+        // Fixed-shape route - clone the existing data object, preserving its shape (and its `id`,
         // which the deep-equal checks in modifyRecords() require), then overwrite changed fields.
         // No `delete` needed: defaults are real own properties on this route, so a value reverting
         // to its default still leaves the object deep-equal to its committed counterpart.
@@ -1442,7 +1453,7 @@ export class Store
             return ret;
         }
 
-        // Default sparse route. Note the `delete` below drops the updated record data object into
+        // Sparse route (default). Note the `delete` below drops the updated record data object into
         // V8 dictionary mode, but is required to keep reverted-to-default objects deep-equal to
         // their committed counterparts (which carry no own property for default values).
         const {_fieldMap} = this;
@@ -1468,7 +1479,7 @@ export class Store
     }
 
     /**
-     * Sanity-check this Store's `optimizeRecordData` setting against the data it actually holds,
+     * Sanity-check this Store's `useFixedDataShape` setting against the data it actually holds,
      * once, after its first load. Advisory only - the app's setting is always honored. The
      * optimization pays only for records that populate enough fields to cross V8's dictionary-mode
      * threshold; below that the default representation is equal or cheaper, so a mis-set flag is
@@ -1478,17 +1489,17 @@ export class Store
      * guesswork involved in inspecting raw data.
      */
     private checkOptimizeRecordData() {
-        if (this._optimizeChecked) return;
+        if (this._fixedShapeChecked) return;
 
         // Nothing to advise on when raw objects are adopted as `data` - the Store builds no data
-        // object, and enabling `optimizeRecordData` here would throw at construction rather than
-        // help. Without this the "may benefit from optimizeRecordData" hint below would fire on any
+        // object, and enabling `useFixedDataShape` here would throw at construction rather than
+        // help. Without this the "may benefit from useFixedDataShape" hint below would fire on any
         // sufficiently wide useRawAsData Store, recommending an illegal config.
         if (this.useRawAsData) return;
 
-        const sample = this._committed.list.slice(0, OPTIMIZE_CHECK_SAMPLE_SIZE);
+        const sample = this._committed.list.slice(0, FIXED_SHAPE_CHECK_SAMPLE_SIZE);
         if (isEmpty(sample) || isEmpty(this.fields)) return;
-        this._optimizeChecked = true;
+        this._fixedShapeChecked = true;
 
         const {_dataDefaults} = this;
         let populated = 0;
@@ -1502,13 +1513,13 @@ export class Store
         const mean = Math.round(populated / sample.length),
             {length: fieldCount} = this.fields;
 
-        if (this.optimizeRecordData && mean < OPTIMIZE_MIN_POPULATED_FIELDS) {
+        if (this.useFixedDataShape && mean < FIXED_SHAPE_MIN_POPULATED_FIELDS) {
             this.logWarn(
-                `optimizeRecordData is enabled, but records populate only ~${mean} of ${fieldCount} fields - below the ~${OPTIMIZE_MIN_POPULATED_FIELDS} needed for it to pay. This likely *increases* memory use. Consider disabling it for this Store.`
+                `useFixedDataShape is enabled, but records populate only ~${mean} of ${fieldCount} fields - below the ~${FIXED_SHAPE_MIN_POPULATED_FIELDS} needed for it to pay. This likely *increases* memory use. Consider disabling it for this Store.`
             );
-        } else if (!this.optimizeRecordData && mean >= OPTIMIZE_MIN_POPULATED_FIELDS) {
+        } else if (!this.useFixedDataShape && mean >= FIXED_SHAPE_MIN_POPULATED_FIELDS) {
             this.logDebug(
-                `Records populate ~${mean} of ${fieldCount} fields - this Store may benefit from optimizeRecordData. See StoreConfig.optimizeRecordData.`
+                `Records populate ~${mean} of ${fieldCount} fields - this Store may benefit from useFixedDataShape. See StoreConfig.useFixedDataShape.`
             );
         }
     }
