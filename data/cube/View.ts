@@ -236,7 +236,7 @@ export class View
 
         return fields.map(field => {
             const values = new Set();
-            _leafMap.forEach(leaf => values.add(leaf[field.name]));
+            _leafMap.forEach(leaf => values.add(leaf.data[field.name]));
             return {field, values};
         });
     }
@@ -291,6 +291,12 @@ export class View
     //------------------------
     // Implementation
     //------------------------
+    /** True if leaf rows can use cube record data directly - i.e. leaves not exposed on results. */
+    get useReferenceLeaves(): boolean {
+        const {includeLeaves, provideLeaves} = this.query;
+        return !includeLeaves && !provideLeaves;
+    }
+
     @logWithDebug
     private fullUpdate() {
         this.filterRecords();

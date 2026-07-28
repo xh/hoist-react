@@ -30,6 +30,16 @@
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values are also shared across successive fetches of the same logical dataset, as identified by
   a required app-provided key.
+* Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
+  `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
+  per-View leaf data objects and speeding up view builds for aggregate-only views over large
+  datasets. Note leaf entries in `View.result.leafMap` now expose the cube record's own data object
+  as their `data` in this case.
+
+### 🐞 Bug Fixes
+
+* Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
+  values for each dimension.
 
 ### ⚙️ Technical
 

@@ -20,9 +20,9 @@ import {RowUpdate} from './RowUpdate';
 export abstract class BaseRow {
     readonly view: View = null;
     readonly id: string = null;
-    readonly data: ViewRowData;
 
     // readonly, but set by subclasses
+    data: ViewRowData;
     parent: BaseRow = null;
     children: BaseRow[] = null;
     locked: boolean = false;
@@ -41,7 +41,6 @@ export abstract class BaseRow {
     constructor(view: View, id: string) {
         this.view = view;
         this.id = id;
-        this.data = new ViewRowData(id);
     }
 
     //-----------------------
