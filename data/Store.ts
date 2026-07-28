@@ -238,10 +238,8 @@ export interface StoreConfig {
 
 /**
  * App-wide defaults for {@link Store}, applied to every Store constructed without an explicit
- * value - including those Hoist itself creates internally.
- *
- * Deliberately narrow: only configs suitable for every Store in an app belong here. Configs whose
- * suitability depends on the data a particular Store holds must be set per Store instead.
+ * value - including those Hoist itself creates internally. Limited to configs appropriate for
+ * every Store in an app.
  */
 export interface StoreDefaults {
     freezeData?: boolean;

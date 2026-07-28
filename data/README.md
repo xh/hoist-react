@@ -107,9 +107,7 @@ const store = new Store({
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
-`Store.defaults` exposes `freezeData` for app-wide override — see `StoreDefaults` for details. It
-covers only configs suitable for every Store in an app; data-dependent configs such as
-`useFixedDataShape` are set per Store.
+`Store.defaults` exposes `freezeData` for app-wide override — see `StoreDefaults` for details.
 
 ### Data Loading
 
