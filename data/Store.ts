@@ -161,29 +161,18 @@ export interface StoreConfig {
      * True to use each incoming raw object *as* its record's `data`, by reference, rather than
      * re-parsing and copying it into a dedicated object. A zero-copy mode for projections of
      * already-parsed data - most notably a connected Cube {@link View} feeding a (tree) grid, or a
-     * server endpoint returning data already in its final client-side form. Halves per-row object
-     * count, with memory the headline win.
+     * server endpoint returning data already in its final client-side form.
      *
-     * Strict contract with the data provider:
-     * 1. Raw data must already be parsed, and parsed *identically* to what the Store's Field
-     *    definitions would produce - `parseRaw` is skipped, so Field `type` and `parseVal` are not
-     *    applied and Field `defaultValue` is not supplied for missing keys (a missing key reads as
-     *    `undefined`, not its default). Note that local edits via `modifyRecords()` *do* run
-     *    `Field.parseVal`, so raw data that does not already match its Field types will yield a
-     *    Store where edited and untouched records disagree on value type.
-     * 2. The Store never modifies or freezes a raw object - the provider stays authoritative and
-     *    retains the right to mutate its own rows in place. Note that `freezeData` therefore offers
-     *    app code no protection against writing to record data. Data objects the Store creates
-     *    itself, for local adds and edits, *are* owned and frozen per `freezeData` as usual.
-     * 3. When the provider does mutate a row in place, it must publish via `updateData()`, never
-     *    `loadData()`. `loadData()` reuses an existing record whenever its data is unchanged, and a
-     *    row mutated in place is reference-equal to what its record already holds - so the update
-     *    would be dropped and the grid would render stale values. `updateData()` always installs
-     *    the new record identity.
+     * Contract with the data provider:
+     * 1. Raw data must already be parsed as the Store's Field definitions would parse it - Field
+     *    `type`, `parseVal`, and `defaultValue` are not applied.
+     * 2. The Store never modifies or freezes a raw object (regardless of `freezeData`) - the
+     *    provider stays authoritative and may mutate its own rows in place.
+     * 3. A row mutated in place must be published via `updateData()`, not `loadData()`, which
+     *    would skip the reference-equal object as unchanged.
      *
-     * Note that `data` will carry every key present on the raw object, not just those declared as
-     * Fields, that rows may be shared by reference across connected stores (as a View does), and
-     * that `processRawData` and `reuseRecords` are rejected as incompatible.
+     * Note that `data` will carry every key present on the raw object, not just those declared
+     * as Fields. Not compatible with `processRawData` or `reuseRecords`.
      *
      * Default false.
      */
