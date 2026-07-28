@@ -8,6 +8,7 @@
 import {PlainObject} from '@xh/hoist/core';
 import {CubeField} from '../CubeField';
 import {View} from '../View';
+import {ViewRowData} from '../ViewRowData';
 import {BaseRow} from './BaseRow';
 
 /**
@@ -38,6 +39,7 @@ export class AggregateRow extends BaseRow {
 
         this.dim = dim;
         this.dimName = dimName;
+        this.data = new ViewRowData(id);
         this.data.cubeRowType = 'aggregate';
         this.data.cubeLabel = strVal;
         this.data.cubeDimension = dimName;

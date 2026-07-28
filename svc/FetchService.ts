@@ -23,11 +23,21 @@ import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
+import {
+    isDate,
+    isEqual,
+    isFunction,
+    isNil,
+    isObject,
+    isString,
+    noop,
+    omit,
+    omitBy,
+    truncate
+} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 import ShortUniqueId from 'short-unique-id';
-
-const defaultIdGenerator = new ShortUniqueId({length: 16});
+import {StringInterner} from './impl/StringInterner';
 
 export interface FetchServiceDefaults {
     autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
@@ -43,7 +53,8 @@ export interface FetchServiceDefaults {
  *
  * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
  * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,
- * `deleteJson`, `getJson`) that handle serialization and content-type headers automatically.
+ * `deleteJson`, `getJson`) that handle serialization and content-type headers automatically,
+ * plus `fetchNdjson` for consuming streamed NDJSON responses incrementally.
  *
  * Key features:
  * - Configurable timeouts (default 30s) via {@link FetchOptions.timeout}
@@ -64,7 +75,7 @@ export class FetchService extends HoistService {
     static defaults: FetchServiceDefaults = {
         autoGenCorrelationIds: false,
         correlationIdHeaderKey: 'X-Correlation-ID',
-        genCorrelationId: () => defaultIdGenerator.rnd()
+        genCorrelationId: () => FetchService.defaultIdGenerator.rnd()
     };
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
@@ -78,6 +89,7 @@ export class FetchService extends HoistService {
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
     private _interceptors: FetchInterceptor[] = [];
+    private interners: Map<string, StringInterner> = new Map();
 
     /** Default timeout to be used for all requests made via this service */
     defaultTimeout: PromiseTimeoutSpec = 30 * SECONDS;
@@ -153,6 +165,60 @@ export class FetchService extends HoistService {
     }
 
     /**
+     * Send an HTTP request and decode the response body incrementally as NDJSON - newline
+     * delimited JSON, aka JSON Lines / JSONL - yielding chunks (arrays) of parsed records as
+     * they arrive off the network. No more than one network chunk of raw text is buffered,
+     * making this suitable for consuming very large or long-running streamed responses.
+     *
+     * The natural source for {@link Store.loadDataAsync} - e.g.
+     * `store.loadDataAsync(XH.fetchNdjson({url}))` - or iterate directly via `for await` for
+     * non-Store streaming.
+     *
+     * Tracing spans and `track` cover the full lifetime of the stream, through complete
+     * consumption. Note that `timeout` covers the request phase only - no timeout applies while
+     * the stream is being read.
+     *
+     * A stream truncated by a server-side failure surfaces as a 'Fetch Stream Failed' exception -
+     * hoist-core's `renderNdjson` guarantees such a stream ends with an unparseable line.
+     */
+    fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
+        opts = this.withCorrelationId(opts);
+
+        let runner = this.runner(ctx);
+
+        // Configure special track and spanning across the async consumption.
+        const spanConfig = this.createSpanConfig(opts),
+            {track} = opts;
+        if (spanConfig) {
+            runner = runner.span(spanConfig);
+        }
+        if (track) {
+            const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
+            runner = runner.track({...trackOptions, correlationId: opts.correlationId as string});
+        }
+
+        // The runner will manage the lifecycle, but we won't await it here -- return
+        // the generator straight away. Don't produce unhandled exceptions from telemetry
+        // only. Generator will already produce them.
+        let ret: AsyncGenerator<PlainObject[]>;
+        runner
+            .run(async innerCtx => {
+                const fetchPromise = this.fetchInternalAsync(opts, innerCtx, true);
+
+                let onComplete: (err?: unknown) => void;
+                const streamPromise = new Promise<void>(
+                    (res, rej) => (onComplete = err => (err ? rej(err) : res()))
+                );
+                ret = this.streamNdjson(opts, innerCtx, fetchPromise, onComplete);
+
+                await fetchPromise;
+                await streamPromise;
+            })
+            .catch(noop);
+        return ret;
+    }
+
+    /**
      * Send a POST request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
@@ -199,10 +265,51 @@ export class FetchService extends HoistService {
         return true;
     }
 
+    /**
+     * Clear string-interning caches maintained for {@link FetchOptions.internStrings} - all of
+     * them, or just the cache for a single key.
+     *
+     * Interned strings referenced by live records remain retained by those records - this
+     * releases only the cache's own references. Useful after tearing down large views whose
+     * datasets will not be refetched, where the cache would otherwise continue to retain the
+     * last response's distinct values.
+     *
+     * @param key - specific {@link StringInternSpec.key} to clear, or omit to clear all.
+     */
+    clearInternCaches(key?: string) {
+        key ? this.interners.delete(key) : this.interners.clear();
+    }
+
+    /**
+     * Snapshot of string-interning stats for each active {@link FetchOptions.internStrings}
+     * key, covering the most recently completed response per key: total string values
+     * processed, distinct values retained (with % of processed - lower = more duplication
+     * removed), and values carried over from the prior generation (with % of retained -
+     * higher = more stability across refreshes).
+     *
+     * Convenient from the console via `console.table(XH.fetchService.getInternStats())`.
+     */
+    getInternStats(): PlainObject[] {
+        return Array.from(this.interners.values()).map(it => it.stats);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
-    private async fetchInternalAsync(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+    private static readonly defaultIdGenerator = new ShortUniqueId({length: 16});
+
+    /** Marker written by hoist-core's `renderNdjson` when a stream fails after committing. */
+    private static readonly NDJSON_POISON = '//xh-ndjson-stream-error';
+
+    /**
+     * @param forStreaming - true when called by fetchNdjson, which applies its own span and
+     *      track across the full stream lifetime - suppresses both here.
+     */
+    private async fetchInternalAsync(
+        opts: FetchOptions,
+        ctx?: CallContextLike,
+        forStreaming: boolean = false
+    ): Promise<any> {
         // Default to deprecated context
         ctx ??= {span: opts.span, loadSpec: opts.loadSpec as LoadSpec};
         apiDeprecated('FetchOptions.span', {
@@ -219,7 +326,7 @@ export class FetchService extends HoistService {
         });
         opts = omit(opts, 'span', 'loadSpec');
 
-        let spanConfig = this.createSpanConfig(opts),
+        let spanConfig = forStreaming ? null : this.createSpanConfig(opts),
             runner = spanConfig ? this.runner(ctx).span(spanConfig) : this.runner(ctx),
             ret = runner.run(ctx => {
                 opts = this.withCorrelationId(opts);
@@ -230,7 +337,7 @@ export class FetchService extends HoistService {
             });
 
         // 2) Apply tracking
-        if (opts.track) {
+        if (opts.track && !forStreaming) {
             const {correlationId, track} = opts;
             const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
             warnIf(
@@ -424,9 +531,14 @@ export class FetchService extends HoistService {
         callCtx: CallContext
     ): Promise<any> {
         if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
-        return r.json().catchWhen('SyntaxError', e => {
+        const ret = await r.json().catchWhen('SyntaxError', e => {
             throw this.jsonParseException(opts, callCtx, e);
         });
+
+        const interner = this.getInterner(opts.internStrings);
+        interner?.intern(ret);
+        interner?.commit();
+        return ret;
     }
 
     private async safeResponseTextAsync(response: Response) {
@@ -551,6 +663,104 @@ export class FetchService extends HoistService {
     }
 
     /**
+     * Await the pending request, then stream its body - wrapping any failure raised while
+     * reading or parsing the stream in an enriched FetchException.
+     *
+     * Reports the streaming phase's outcome via the `onComplete` callback - with any error on
+     * failure, and unconditionally on exit to cover early termination by the consumer.
+     * Request-phase failures propagate already-enriched and without an `onComplete` error - the
+     * caller observes them on the fetch promise directly.
+     */
+    private async *streamNdjson(
+        opts: FetchOptions,
+        ctx: CallContextLike,
+        fetchPromise: Promise<Response>,
+        onComplete: (err?: unknown) => void
+    ): AsyncGenerator<PlainObject[]> {
+        const interner = this.getInterner(opts.internStrings);
+        try {
+            const response = await fetchPromise;
+            try {
+                yield* this.ndjsonChunks(response, interner);
+                interner?.commit();
+            } catch (e) {
+                const ex =
+                    e?.name === 'AbortError'
+                        ? this.abortedException(opts, ctx, e)
+                        : this.streamFailedException(opts, ctx, response, e);
+                onComplete(ex);
+                throw ex;
+            }
+        } finally {
+            // Only finally blocks run if the consumer exits its loop early. Discard any
+            // uncommitted interned values - no-op after a successful commit above.
+            interner?.abort();
+            onComplete();
+        }
+    }
+
+    /**
+     * Read an NDJSON Response body incrementally, yielding chunks (arrays) of parsed records as
+     * they arrive off the network. Each line is parsed with native JSON.parse, partial trailing
+     * lines are carried across chunk boundaries, and no more than one network chunk of raw text
+     * is buffered.
+     *
+     * Note the final-buffer parse below doubles as truncation detection - a stream cut short by
+     * a server-side failure ends with an unparseable line (see fetchNdjson) and throws here.
+     */
+    private async *ndjsonChunks(
+        response: Response,
+        interner: StringInterner
+    ): AsyncGenerator<PlainObject[]> {
+        const reader = response.body.getReader(),
+            decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, {stream: true});
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // retain any partial trailing line for the next chunk
+            if (lines.length) {
+                const chunk = lines.filter(Boolean).map(it => JSON.parse(it));
+                interner?.intern(chunk);
+                yield chunk;
+            }
+        }
+
+        buffer += decoder.decode();
+        if (buffer.trim()) {
+            if (buffer.trim() === FetchService.NDJSON_POISON) {
+                throw Exception.create({
+                    name: 'NDJSON Stream Error',
+                    message: 'NDJSON stream terminated by a server-side failure - see server logs.'
+                });
+            }
+            const chunk = [JSON.parse(buffer)];
+            interner?.intern(chunk);
+            yield chunk;
+        }
+    }
+
+    /**
+     * Get or create the {@link StringInterner} for the given spec's key, or null if interning
+     * was not requested. An existing interner is replaced (dropping its cached generation) if
+     * the spec has changed since it was created.
+     */
+    private getInterner(spec: StringInternSpec): StringInterner {
+        if (!spec) return null;
+        const {interners} = this;
+        let ret = interners.get(spec.key);
+        if (!ret || !isEqual(ret.spec, spec)) {
+            ret = new StringInterner(spec);
+            interners.set(spec.key, ret);
+        }
+        return ret;
+    }
+
+    /**
      * Create an Error to throw when a fetchJson call encounters a SyntaxError.
      * @param fetchOptions - original options passed to FetchService.
      * @param cause - object thrown by native {@link response.json}.
@@ -578,7 +788,7 @@ export class FetchService extends HoistService {
      */
     private abortedException(
         fetchOptions: FetchOptions,
-        callContext: CallContext,
+        callContext: CallContextLike,
         cause: any
     ): FetchException {
         return this.createException({
@@ -620,6 +830,29 @@ export class FetchService extends HoistService {
     }
 
     /**
+     * Create an Error to throw when a fetch call fails while reading or parsing its streamed
+     * response body.
+     * @param fetchOptions - original options passed to FetchService.
+     * @param response - response whose body was being streamed.
+     * @param cause - underlying error raised while reading or parsing the stream.
+     */
+    private streamFailedException(
+        fetchOptions: FetchOptions,
+        callContext: CallContextLike,
+        response: Response,
+        cause: any
+    ): FetchException {
+        return this.createException({
+            name: 'Fetch Stream Failed',
+            message: `Failure while reading streamed response, url: "${fetchOptions.url}" - ${cause.message}`,
+            httpStatus: response.status,
+            fetchOptions,
+            callContext,
+            cause
+        });
+    }
+
+    /**
      * Create an Error for when the server called by fetch does not respond
      * @param fetchOptions - original options the app passed to FetchService.fetch
      * @param cause - object thrown by native fetch
@@ -650,8 +883,10 @@ export class FetchService extends HoistService {
 
     private createException(attributes: PlainObject) {
         const {fetchOptions} = attributes;
+        // Prefer the header actually sent, falling back to the option if pre-resolution.
         const correlationId: string =
-            fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ?? null;
+            fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ??
+            (isString(fetchOptions?.correlationId) ? fetchOptions.correlationId : null);
         const traceId: string = fetchOptions?.traceId ?? null;
 
         return Exception.create({
@@ -775,6 +1010,22 @@ export interface FetchOptions {
     autoAbortKey?: string;
 
     /**
+     * If set, intern string values in array-based JSON and NDJSON responses to reduce retained
+     * memory on large tabular datasets - each distinct string value is stored once and shared
+     * across all rows, rather than duplicated per row as produced by JSON parsing.
+     *
+     * Applies to string values at the root level of each object within an array response (or
+     * each NDJSON record). A single plain-object response is treated as a root record and
+     * processed likewise. Nested values are not processed, with the exception of recursion
+     * into child records via `childrenKey`. No-op for response payloads of any other shape.
+     *
+     * Interned values are also optionally shared across successive responses with the same `key` -
+     * e.g. a polling refresh of the same grid - with cache retention bounded to the values
+     * present in the most recent complete response for each key.
+     */
+    internStrings?: StringInternSpec;
+
+    /**
      * True to decode the HTTP response as JSON. Default false.
      */
     asJson?: boolean;
@@ -797,6 +1048,34 @@ export interface FetchOptions {
      * @internal
      */
     traceId?: string;
+}
+
+/**
+ * Spec for string-value interning of a fetch response.
+ * @see FetchOptions.internStrings
+ */
+export interface StringInternSpec {
+    /**
+     * Identifies the logical dataset. Successive responses fetched with the same key share
+     * interned values across fetches, with cache retention bounded to the latest response.
+     * Cleared via {@link FetchService.clearInternCaches}.
+     */
+    key: string;
+
+    /**
+     * Property of each record containing nested child records to recurse into, for tree data -
+     * typically 'children'. Match to the consuming Store's `loadTreeDataFrom` config. Default
+     * null - no recursion.
+     */
+    childrenKey?: string;
+
+    /**
+     * True (default) to hold each response's interned values for reuse by the next response
+     * with the same key. Set false to intern within each response only - appropriate for large
+     * one-shot datasets that will not be refetched, where a retained cache would pin the last
+     * response's distinct values for no future benefit.
+     */
+    retainAcrossFetches?: boolean;
 }
 
 /**
