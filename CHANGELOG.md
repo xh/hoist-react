@@ -35,9 +35,7 @@
   their `data` by reference rather than re-parsing and copying it, collapsing the usual two per-row
   objects to one and skipping the per-row parse on every load and update - a memory-focused
   optimization for large, high-frequency Cube-backed grids. This is a read-only mode - the local
-  edit/commit/revert APIs throw, `freezeData` is forced off, and the data provider must supply
-  pre-parsed values. See the `adoptRawData` config docs for the full contract. Default off,
-  non-breaking.
+  edit/commit/revert APIs throw. See the `adoptRawData` config docs for the full contract.
 
 ### ⚙️ Technical
 

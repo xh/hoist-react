@@ -237,8 +237,6 @@ export class StoreRecord {
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
-        // In adoptRawData mode the Store does not own `data` (it is the shared provider object), so
-        // we never write to it. The provider's id already matches - see StoreConfig.adoptRawData.
         if (!store.adoptRawData) data.id = id;
 
         this.id = id;
@@ -304,7 +302,8 @@ export class StoreRecord {
      * @internal
      */
     finalize() {
-        if (this.store.freezeData) {
+        const {store} = this;
+        if (store.freezeData && !store.adoptRawData) {
             Object.freeze(this.data);
         }
     }

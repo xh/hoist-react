@@ -158,38 +158,23 @@ export interface StoreConfig {
     retainRaw?: boolean;
 
     /**
-     * Zero-copy "turbo" mode for read-only projections of already-parsed data - most notably a
-     * connected Cube {@link View} feeding a (tree) grid.
+     * True to adopt each incoming raw object *as* its record's `data`, by reference, rather than
+     * re-parsing and copying it into a dedicated object. A zero-copy mode for read-only
+     * projections of already-parsed data - most notably a connected Cube {@link View} feeding a
+     * (tree) grid. Halves per-row object count, with memory the headline win.
      *
-     * When true, the Store adopts each incoming raw object **as** its record's `data`, by reference,
-     * rather than re-parsing and copying it into a dedicated object. This collapses the usual two
-     * per-row objects (the provider's row object + the Store's parsed copy) down to one, skipping
-     * the per-row `parseRaw` field loop on every load and update. The headline win is memory; a
-     * modest reduction in allocation/GC churn on high-frequency updates is a secondary benefit.
-     *
-     * This mode puts substantial trust in the data provider and comes with a strict contract:
-     *
-     * 1. **Raw data MUST already be parsed.** `parseRaw` is skipped, so Field `type`/`parseVal` are
-     *    NOT applied - Fields become pure metadata (sort/filter/columns/export) and `data` holds
-     *    exactly what the provider supplied. Always true for Cube/View data, which the Cube has
-     *    already parsed (typically via the same field instances).
-     * 2. **The Store does not own `data`.** It never reads or writes `data` internals (including
-     *    `data.id`) and never freezes it. The provider is authoritative and may mutate rows in place.
-     * 3. **Rows may be shared across connected stores.** A View feeds the same row objects to every
-     *    connected store; with by-reference adoption their records point at one object set. Do not
-     *    mutate these objects from app code.
+     * Strict contract with the data provider:
+     * 1. Raw data must already be parsed - `parseRaw` is skipped and Field `type`/`parseVal` are
+     *    NOT applied. (Always true for Cube/View data.)
+     * 2. The Store does not own, modify, or freeze `data` - the provider is authoritative and may
+     *    mutate rows in place.
+     * 3. Rows may be shared by reference across connected stores (as a View does) - do not mutate
+     *    them from app code.
      *
      * Consequences:
-     * - **Read-only.** The local edit/commit/revert APIs (`addRecords`, `removeRecords`,
-     *   `modifyRecords`, `revertRecords`, `revert`) throw - committed always equals current.
-     *   Data still flows in via `loadData`/`updateData` (the provider path).
-     * - **Summary records are adopted too.** The dedicated summary record(s) - whether supplied via
-     *   `rawSummaryData` or extracted from the root row under `loadRootAsSummary` (e.g. a Cube
-     *   View's `includeRoot` "Total" row) - adopt their raw object as `data` by the same rules:
-     *   shared by reference, not owned, not frozen, recreated on update.
-     * - `freezeData` is forced to `false` (a frozen shared object would throw on the provider's
-     *   next in-place mutation). Explicitly passing `freezeData: true` is rejected.
-     * - `processRawData` and `reuseRecords` are incompatible and rejected at construction.
+     * - Read-only: the local edit/commit/revert APIs throw. Data still flows in via
+     *   `loadData`/`updateData`. Summary records are adopted by the same rules.
+     * - `freezeData` is ignored (never frozen); `processRawData` and `reuseRecords` are rejected.
      *
      * Default false.
      */
@@ -363,51 +348,39 @@ export class Store
     private _fieldMap: Map<string, Field>;
     experimental: any;
 
-    constructor(config: StoreConfig) {
+    constructor({
+        fields,
+        fieldDefaults = {},
+        idSpec = 'id',
+        processRawData = null,
+        filter = null,
+        filterIncludesChildren = false,
+        loadTreeData = true,
+        loadTreeDataFrom = 'children',
+        loadRootAsSummary = false,
+        freezeData = Store.defaults.freezeData,
+        idEncodesTreePath = false,
+        reuseRecords = false,
+        retainRaw = true,
+        adoptRawData = false,
+        validationIsComplex = false,
+        experimental,
+        data
+    }: StoreConfig) {
         super();
         makeObservable(this);
-
-        const {
-            fields,
-            fieldDefaults = {},
-            idSpec = 'id',
-            processRawData = null,
-            filter = null,
-            filterIncludesChildren = false,
-            loadTreeData = true,
-            loadTreeDataFrom = 'children',
-            loadRootAsSummary = false,
-            idEncodesTreePath = false,
-            reuseRecords = false,
-            retainRaw = true,
-            adoptRawData = false,
-            validationIsComplex = false,
-            experimental,
-            data
-        } = config;
-        let freezeData = config.freezeData ?? Store.defaults.freezeData;
-
         throwIf(
             reuseRecords && !retainRaw,
             'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
         );
-
-        if (adoptRawData) {
-            // Fail fast on any config that expresses behavior this read-only, zero-copy mode cannot
-            // honor - surface the conflict rather than silently ignoring it and leaving the
-            // developer with a mistaken model of how the Store will behave. freezeData is only
-            // rejected when the developer explicitly opted in to it; the default is normalized off.
-            throwIf(
-                processRawData,
-                'Store.adoptRawData cannot be used with processRawData - the skipped parse would make it a silent no-op.'
-            );
-            throwIf(reuseRecords, 'Store.adoptRawData cannot be used with reuseRecords.');
-            throwIf(
-                config.freezeData === true,
-                'Store.adoptRawData cannot be used with freezeData: true - the provider mutates shared rows in place, so record data cannot be frozen.'
-            );
-            freezeData = false;
-        }
+        throwIf(
+            adoptRawData && processRawData,
+            'Store.adoptRawData cannot be used with processRawData.'
+        );
+        throwIf(
+            adoptRawData && reuseRecords,
+            'Store.adoptRawData cannot be used with reuseRecords.'
+        );
 
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
@@ -1277,9 +1250,8 @@ export class Store
 
         // Zero-copy adoption - adopt the (already-parsed) raw object as `data` by reference, minting
         // a fresh record identity so downstream grid transactions still fire. No processRawData,
-        // no parseRaw, no data.id write, no freeze - the Store does not own this object here.
-        // (No finalize() either - it only freezes, and freezeData is always false in this mode.)
-        // See StoreConfig.adoptRawData for the full contract.
+        // no parseRaw, no data.id write, no freeze (finalize skips it in this mode) - the Store
+        // does not own this object here. See StoreConfig.adoptRawData for the full contract.
         if (this.adoptRawData) {
             return new StoreRecord({
                 id,
