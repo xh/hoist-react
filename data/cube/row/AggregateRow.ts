@@ -17,6 +17,9 @@ import {BaseRow} from './BaseRow';
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class AggregateRow extends BaseRow {
+    // Aggregate rows always construct a full ViewRowData.
+    declare data: ViewRowData;
+
     override get isAggregate() {
         return true;
     }

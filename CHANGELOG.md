@@ -53,6 +53,12 @@
   freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
   upstream deduplication of repeated values.
 
+### ⚙️ Typescript API Adjustments
+
+* Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`, reflecting that custom `Aggregator`
+  implementations may only rely on queried field values - not `ViewRowData` metadata - when reading
+  row data. Use row-level getters such as `BaseRow.isLeaf` in place of `data.cubeRowType`.
+
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.23 → 2.24`
