@@ -38,8 +38,7 @@ export class LeafRow extends BaseRow {
         this.cubeRecordId = rawRecord.id;
 
         if (view.useReferenceLeaves) {
-            // Never exposed on results or stores - adopt the record's data outright
-            this.data = rawRecord.data as ViewRowData;
+            this.data = rawRecord.data as ViewRowData; // adopt the record's data outright!
         } else {
             const data = (this.data = new ViewRowData(id));
             data.cubeRowType = 'leaf';
