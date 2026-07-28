@@ -20,9 +20,9 @@ import {RowUpdate} from './RowUpdate';
 export abstract class BaseRow {
     readonly view: View = null;
     readonly id: string = null;
-    readonly data: ViewRowData;
 
     // readonly, but set by subclasses
+    data: ViewRowData;
     parent: BaseRow = null;
     children: BaseRow[] = null;
     locked: boolean = false;
@@ -41,13 +41,16 @@ export abstract class BaseRow {
     constructor(view: View, id: string) {
         this.view = view;
         this.id = id;
-        this.data = new ViewRowData(id);
     }
 
     //-----------------------
     // For all rows types
     //------------------------
     noteBucketed(bucketSpec: BucketSpec, bucketVal: any) {
+        // Reference-mode leaves share their cube record's data object - never mutate it. Such
+        // leaves are not exposed on results, so their bucket metadata has no consumer anyway.
+        if (this.isLeaf && this.view.useReferenceLeaves) return;
+
         this.data.cubeBuckets ??= {};
         this.data.cubeBuckets[bucketSpec.name] = bucketVal;
         this.children?.forEach(it => it.noteBucketed(bucketSpec, bucketVal));
