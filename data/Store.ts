@@ -158,27 +158,36 @@ export interface StoreConfig {
     retainRaw?: boolean;
 
     /**
-     * True to adopt each incoming raw object *as* its record's `data`, by reference, rather than
-     * re-parsing and copying it into a dedicated object. A zero-copy mode for read-only
-     * projections of already-parsed data - most notably a connected Cube {@link View} feeding a
-     * (tree) grid. Halves per-row object count, with memory the headline win.
+     * True to use each incoming raw object *as* its record's `data`, by reference, rather than
+     * re-parsing and copying it into a dedicated object. A zero-copy mode for projections of
+     * already-parsed data - most notably a connected Cube {@link View} feeding a (tree) grid, or a
+     * server endpoint returning data already in its final client-side form. Halves per-row object
+     * count, with memory the headline win.
      *
      * Strict contract with the data provider:
-     * 1. Raw data must already be parsed - `parseRaw` is skipped and Field `type`/`parseVal` are
-     *    NOT applied. (Always true for Cube/View data.)
-     * 2. The Store does not own, modify, or freeze `data` - the provider is authoritative and may
-     *    mutate rows in place.
-     * 3. Rows may be shared by reference across connected stores (as a View does) - do not mutate
-     *    them from app code.
+     * 1. Raw data must already be parsed, and parsed *identically* to what the Store's Field
+     *    definitions would produce - `parseRaw` is skipped, so Field `type` and `parseVal` are not
+     *    applied and Field `defaultValue` is not supplied for missing keys (a missing key reads as
+     *    `undefined`, not its default). Note that local edits via `modifyRecords()` *do* run
+     *    `Field.parseVal`, so raw data that does not already match its Field types will yield a
+     *    Store where edited and untouched records disagree on value type.
+     * 2. The Store never modifies or freezes a raw object - the provider stays authoritative and
+     *    retains the right to mutate its own rows in place. Note that `freezeData` therefore offers
+     *    app code no protection against writing to record data. Data objects the Store creates
+     *    itself, for local adds and edits, *are* owned and frozen per `freezeData` as usual.
+     * 3. When the provider does mutate a row in place, it must publish via `updateData()`, never
+     *    `loadData()`. `loadData()` reuses an existing record whenever its data is unchanged, and a
+     *    row mutated in place is reference-equal to what its record already holds - so the update
+     *    would be dropped and the grid would render stale values. `updateData()` always installs
+     *    the new record identity.
      *
-     * Consequences:
-     * - Read-only: the local edit/commit/revert APIs throw. Data still flows in via
-     *   `loadData`/`updateData`. Summary records are adopted by the same rules.
-     * - `freezeData` is ignored (never frozen); `processRawData` and `reuseRecords` are rejected.
+     * Note that `data` will carry every key present on the raw object, not just those declared as
+     * Fields, that rows may be shared by reference across connected stores (as a View does), and
+     * that `processRawData` and `reuseRecords` are rejected as incompatible.
      *
      * Default false.
      */
-    adoptRawData?: boolean;
+    useRawAsData?: boolean;
 
     /**
      * Set to true to always validate all uncommitted records on every change to
@@ -304,7 +313,7 @@ export class Store
     freezeData: boolean;
     reuseRecords: boolean;
     retainRaw: boolean;
-    adoptRawData: boolean;
+    useRawAsData: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -362,7 +371,7 @@ export class Store
         idEncodesTreePath = false,
         reuseRecords = false,
         retainRaw = true,
-        adoptRawData = false,
+        useRawAsData = false,
         validationIsComplex = false,
         experimental,
         data
@@ -374,12 +383,12 @@ export class Store
             'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
         );
         throwIf(
-            adoptRawData && processRawData,
-            'Store.adoptRawData cannot be used with processRawData.'
+            useRawAsData && processRawData,
+            'Store.useRawAsData cannot be used with processRawData.'
         );
         throwIf(
-            adoptRawData && reuseRecords,
-            'Store.adoptRawData cannot be used with reuseRecords.'
+            useRawAsData && reuseRecords,
+            'Store.useRawAsData cannot be used with reuseRecords.'
         );
 
         this.experimental = this.parseExperimental(experimental);
@@ -395,7 +404,7 @@ export class Store
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
         this.retainRaw = retainRaw;
-        this.adoptRawData = adoptRawData;
+        this.useRawAsData = useRawAsData;
         this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
@@ -673,7 +682,6 @@ export class Store
      */
     @action
     addRecords(data: Some<PlainObject>, parentId?: StoreRecordId) {
-        this.throwIfReadOnly('addRecords');
         data = castArray(data);
         if (isEmpty(data)) return;
 
@@ -710,7 +718,6 @@ export class Store
      */
     @action
     removeRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
-        this.throwIfReadOnly('removeRecords');
         records = castArray(records);
         if (isEmpty(records)) return;
 
@@ -740,7 +747,6 @@ export class Store
      */
     @action
     modifyRecords(modifications: Some<PlainObject>): StoreChangeLog {
-        this.throwIfReadOnly('modifyRecords');
         modifications = castArray(modifications);
         if (isEmpty(modifications)) return;
 
@@ -827,7 +833,6 @@ export class Store
      */
     @action
     revertRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
-        this.throwIfReadOnly('revertRecords');
         records = castArray(records);
         if (isEmpty(records)) return;
 
@@ -856,17 +861,9 @@ export class Store
      */
     @action
     revert() {
-        this.throwIfReadOnly('revert');
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
-    }
-
-    private throwIfReadOnly(op: string) {
-        throwIf(
-            this.adoptRawData,
-            `Store.${op}() is unsupported when adoptRawData is enabled - this is a read-only projection (committed always equals current). Data updates flow in via loadData/updateData.`
-        );
     }
 
     /** Get a specific Field by name.*/
@@ -1248,11 +1245,11 @@ export class Store
     ): StoreRecord {
         const id = this.idSpec(raw);
 
-        // Zero-copy adoption - adopt the (already-parsed) raw object as `data` by reference, minting
-        // a fresh record identity so downstream grid transactions still fire. No processRawData,
-        // no parseRaw, no data.id write, no freeze (finalize skips it in this mode) - the Store
-        // does not own this object here. See StoreConfig.adoptRawData for the full contract.
-        if (this.adoptRawData) {
+        // Zero-copy - use the (already-parsed) raw object as `data` by reference, minting a fresh
+        // record identity so downstream grid transactions still fire. No processRawData, no
+        // parseRaw, and (as `data === raw`) no data.id write and no freeze - the Store does not own
+        // this object. See StoreConfig.useRawAsData for the full contract.
+        if (this.useRawAsData) {
             return new StoreRecord({
                 id,
                 store: this,
