@@ -45,15 +45,20 @@ export class StoreRecord {
     /**
      * An object containing the current field values for this record.
      *
-     * By default this object carries an explicit 'own' property only for fields that are *not* at
-     * their default value - defaults are present via the prototype. Stores configured with
-     * {@link StoreConfig.useFixedDataShape} instead carry an own property for every field, with
-     * defaults filled in. See {@link Store.recordDataMode}.
+     * Its representation depends on the owning Store's config - see {@link Store.recordDataMode}:
      *
-     * Reads are identical either way, but enumeration is not - `Object.keys()`, spread and
-     * `JSON.stringify()` include default-valued fields only in the latter case. Call
-     * {@link getValues} for an explicit enumeration of all field values regardless of
-     * representation, or {@link getModifiedValues} for locally-modified values only.
+     *  - By default ('sparse'), this object carries an explicit 'own' property only for fields that
+     *    are *not* at their default value - defaults are present via the prototype.
+     *  - With {@link StoreConfig.useFixedDataShape} ('fixedShape'), it carries an own property for
+     *    every field, with defaults filled in.
+     *  - With {@link StoreConfig.useRawAsData} ('raw'), it *is* the raw source object. It therefore
+     *    carries every key present on that object rather than only declared Fields, is never frozen
+     *    regardless of `freezeData`, and has no `defaultValue` applied for missing keys.
+     *
+     * Reads by field name are identical across all three, but enumeration is not - `Object.keys()`,
+     * spread and `JSON.stringify()` see a different key set in each. Call {@link getValues} for an
+     * explicit enumeration of all declared field values regardless of representation, or
+     * {@link getModifiedValues} for locally-modified values only.
      */
     readonly data: PlainObject;
 
