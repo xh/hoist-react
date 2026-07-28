@@ -20,9 +20,10 @@ import {RowUpdate} from './RowUpdate';
 export abstract class BaseRow {
     readonly view: View = null;
     readonly id: string = null;
-    readonly data: ViewRowData;
 
-    // readonly, but set by subclasses
+    // readonly, but set by subclasses. A full ViewRowData for all rows except hidden leaves,
+    // which adopt their cube record's plain data object - see LeafRow and subclasses.
+    data: PlainObject;
     parent: BaseRow = null;
     children: BaseRow[] = null;
     locked: boolean = false;
@@ -41,7 +42,6 @@ export abstract class BaseRow {
     constructor(view: View, id: string) {
         this.view = view;
         this.id = id;
-        this.data = new ViewRowData(id);
     }
 
     //-----------------------
@@ -92,7 +92,7 @@ export abstract class BaseRow {
 
         // Wire up visible data children and leaves, as needed.
         data.children = dataChildren;
-        return data;
+        return data as ViewRowData;
     }
 
     private getChildrenDatas(): ViewRowData[] {
