@@ -159,22 +159,16 @@ export interface StoreConfig {
 
     /**
      * True to use each incoming raw object *as* its record's `data`, by reference, rather than
-     * re-parsing and copying it into a dedicated object. A zero-copy mode for projections of
-     * already-parsed data - most notably a connected Cube {@link View} feeding a (tree) grid, or a
-     * server endpoint returning data already in its final client-side form.
+     * parsing and copying it. A zero-copy mode for already-parsed data - e.g. a connected Cube
+     * {@link View}, or a server endpoint returning data in its final client-side form.
      *
-     * Contract with the data provider:
-     * 1. Raw data must already be parsed as the Store's Field definitions would parse it - Field
-     *    `type`, `parseVal`, and `defaultValue` are not applied.
-     * 2. The Store never modifies or freezes a raw object (regardless of `freezeData`) - the
-     *    provider stays authoritative and may mutate its own rows in place.
-     * 3. A row mutated in place must be published via `updateData()`, not `loadData()`, which
-     *    would skip the reference-equal object as unchanged.
+     * Raw data must already match what the Store's Fields would parse - `type`, `parseVal`, and
+     * `defaultValue` are not applied. The Store never modifies or freezes raw objects (regardless
+     * of `freezeData`); the provider may mutate rows in place but must then publish via
+     * `updateData()`, as `loadData()` would skip reference-equal objects as unchanged.
      *
-     * Note that `data` will carry every key present on the raw object, not just those declared
-     * as Fields. Not compatible with `processRawData` or `reuseRecords`.
-     *
-     * Default false.
+     * `data` will carry every key on the raw object, not just declared Fields. Not compatible
+     * with `processRawData` or `reuseRecords`. Default false.
      */
     useRawAsData?: boolean;
 
@@ -1234,10 +1228,8 @@ export class Store
     ): StoreRecord {
         const id = this.idSpec(raw);
 
-        // Zero-copy - use the (already-parsed) raw object as `data` by reference, minting a fresh
-        // record identity so downstream grid transactions still fire. No processRawData, no
-        // parseRaw, and (as `data === raw`) no data.id write and no freeze - the Store does not own
-        // this object. See StoreConfig.useRawAsData for the full contract.
+        // Zero-copy - use the raw object as `data` by reference, with no parsing, no data.id
+        // write, and no freeze. The Store does not own this object - see StoreConfig.useRawAsData.
         if (this.useRawAsData) {
             return new StoreRecord({
                 id,

@@ -92,18 +92,6 @@ export class StoreRecord {
         return this.committedData === this.data;
     }
 
-    /**
-     * True if this record's `data` object belongs to it alone, and can therefore be written to and
-     * frozen by the Store.
-     *
-     * False only when the Store is configured with `useRawAsData` *and* this record's data is the
-     * raw object supplied by the data provider - which the Store must leave untouched. Records
-     * added or modified locally get their own data object, and so own it even in that mode.
-     */
-    get ownsData(): boolean {
-        return this.data !== this.raw;
-    }
-
     get parent(): StoreRecord {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
@@ -305,6 +293,15 @@ export class StoreRecord {
     // --------------------------
     // Protected methods
     // --------------------------
+    /**
+     * True if this record's `data` object belongs to it alone and may be written to and frozen.
+     * False only for records holding a provider-owned raw object under `useRawAsData`.
+     * @internal
+     */
+    get ownsData(): boolean {
+        return this.data !== this.raw;
+    }
+
     /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
