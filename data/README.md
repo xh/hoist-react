@@ -103,6 +103,7 @@ const store = new Store({
 | `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
 | `optimizeRecordData` | `boolean` | `false` | Build record data from a shared template - for records populating 20+ fields (memory) |
+| `useRawAsData` | `boolean` | `false` | Use each raw object *as* its record's `data`, skipping the parse/copy (memory)        |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
@@ -845,6 +846,11 @@ load and logs a warning if it looks wrong, but the setting is always honored - i
 property for every field, so `Object.keys()`, spread and `JSON.stringify()` of `data` include
 default-valued fields. Reads return the same values either way. Use `record.getValues()` or
 `record.getModifiedValues()` rather than enumerating `data` directly.
+
+Not combinable with `useRawAsData`, which adopts each raw object as its record's `data` and so
+leaves no data object for this to build - Store throws at construction if both are set. The two
+are alternatives, not complements: reach for `useRawAsData` when the incoming objects are already
+in their final shape, and `optimizeRecordData` when Store must parse and build them.
 
 Treat this as a **memory** optimization only. Field reads are not measurably faster in practice:
 much of the framework's data access runs through call sites shared across every Store in the app,

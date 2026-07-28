@@ -169,6 +169,21 @@ export interface StoreConfig {
     retainRaw?: boolean;
 
     /**
+     * True to use each incoming raw object *as* its record's `data`, by reference, rather than
+     * parsing and copying it. A zero-copy mode for already-parsed data - e.g. a connected Cube
+     * {@link View}, or a server endpoint returning data in its final client-side form.
+     *
+     * Raw data must already match what the Store's Fields would parse - `type`, `parseVal`, and
+     * `defaultValue` are not applied. The Store never modifies or freezes raw objects (regardless
+     * of `freezeData`); the provider may mutate rows in place but must then publish via
+     * `updateData()`, as `loadData()` would skip reference-equal objects as unchanged.
+     *
+     * `data` will carry every key on the raw object, not just declared Fields. Not compatible
+     * with `processRawData` or `reuseRecords`. Default false.
+     */
+    useRawAsData?: boolean;
+
+    /**
      * Set to true to always validate all uncommitted records on every change to
      * uncommitted records (add, modify, or remove). Default false.
      */
@@ -203,6 +218,9 @@ export interface StoreConfig {
      * Store checks this setting against its data on first load and logs guidance if it looks
      * wrong in either direction. The underlying effect is specific to V8 - expect no benefit in
      * Safari or Firefox. See {@link Store.recordDataMode} and the data package README.
+     *
+     * Cannot be combined with {@link StoreConfig.useRawAsData}, which adopts each raw object as its
+     * record's `data` and so builds no data object for this to optimize.
      */
     optimizeRecordData?: boolean;
 
@@ -326,6 +344,7 @@ export class Store
     freezeData: boolean;
     reuseRecords: boolean;
     retainRaw: boolean;
+    useRawAsData: boolean;
     validationIsComplex: boolean;
     readonly optimizeRecordData: boolean;
 
@@ -386,6 +405,7 @@ export class Store
         idEncodesTreePath = false,
         reuseRecords = false,
         retainRaw = true,
+        useRawAsData = false,
         validationIsComplex = false,
         optimizeRecordData = Store.defaults.optimizeRecordData,
         experimental,
@@ -397,6 +417,19 @@ export class Store
             reuseRecords && !retainRaw,
             'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
         );
+        throwIf(
+            useRawAsData && processRawData,
+            'Store.useRawAsData cannot be used with processRawData.'
+        );
+        throwIf(
+            useRawAsData && reuseRecords,
+            'Store.useRawAsData cannot be used with reuseRecords.'
+        );
+        throwIf(
+            useRawAsData && optimizeRecordData,
+            'Store.useRawAsData cannot be used with optimizeRecordData - records adopt their raw object as `data`, so there is no data object for the Store to build and the optimization would silently do nothing.'
+        );
+
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
@@ -410,6 +443,7 @@ export class Store
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
         this.retainRaw = retainRaw;
+        this.useRawAsData = useRawAsData;
         this.validationIsComplex = validationIsComplex;
         this.optimizeRecordData = optimizeRecordData;
         this.lastUpdated = Date.now();
@@ -881,10 +915,13 @@ export class Store
     }
 
     /**
-     * How this Store builds its record `data` objects - 'optimized' when
-     * {@link StoreConfig.optimizeRecordData} is enabled, otherwise 'default'.
+     * How this Store builds its record `data` objects - 'raw' when
+     * {@link StoreConfig.useRawAsData} is enabled and each raw object is adopted as its record's
+     * `data`, 'optimized' when {@link StoreConfig.optimizeRecordData} is enabled and each `data` is
+     * cloned from a shared template, otherwise 'default'.
      */
-    get recordDataMode(): 'optimized' | 'default' {
+    get recordDataMode(): 'raw' | 'optimized' | 'default' {
+        if (this.useRawAsData) return 'raw';
         return this._dataTemplate ? 'optimized' : 'default';
     }
 
@@ -1272,6 +1309,20 @@ export class Store
     ): StoreRecord {
         const id = this.idSpec(raw);
 
+        // Zero-copy - use the raw object as `data` by reference, with no parsing, no data.id
+        // write, and no freeze. The Store does not own this object - see StoreConfig.useRawAsData.
+        if (this.useRawAsData) {
+            return new StoreRecord({
+                id,
+                store: this,
+                raw,
+                data: raw,
+                committedData: raw,
+                parent,
+                isSummary
+            });
+        }
+
         // Potentially re-use existing record if raw data is reference equal and tree path identical
         if (this.reuseRecords) {
             const cached = this._committed?.recordMap.get(id);
@@ -1428,6 +1479,12 @@ export class Store
      */
     private checkOptimizeRecordData() {
         if (this._optimizeChecked) return;
+
+        // Nothing to advise on when raw objects are adopted as `data` - the Store builds no data
+        // object, and enabling `optimizeRecordData` here would throw at construction rather than
+        // help. Without this the "may benefit from optimizeRecordData" hint below would fire on any
+        // sufficiently wide useRawAsData Store, recommending an illegal config.
+        if (this.useRawAsData) return;
 
         const sample = this._committed.list.slice(0, OPTIMIZE_CHECK_SAMPLE_SIZE);
         if (isEmpty(sample) || isEmpty(this.fields)) return;

@@ -21,8 +21,9 @@ export abstract class BaseRow {
     readonly view: View = null;
     readonly id: string = null;
 
-    // readonly, but set by subclasses
-    data: ViewRowData;
+    // readonly, but set by subclasses. A full ViewRowData for all rows except hidden leaves,
+    // which adopt their cube record's plain data object - see LeafRow and subclasses.
+    data: PlainObject;
     parent: BaseRow = null;
     children: BaseRow[] = null;
     locked: boolean = false;
@@ -47,10 +48,6 @@ export abstract class BaseRow {
     // For all rows types
     //------------------------
     noteBucketed(bucketSpec: BucketSpec, bucketVal: any) {
-        // Reference-mode leaves share their cube record's data object - never mutate it. Such
-        // leaves are not exposed on results, so their bucket metadata has no consumer anyway.
-        if (this.isLeaf && this.view.useReferenceLeaves) return;
-
         this.data.cubeBuckets ??= {};
         this.data.cubeBuckets[bucketSpec.name] = bucketVal;
         this.children?.forEach(it => it.noteBucketed(bucketSpec, bucketVal));
@@ -95,7 +92,7 @@ export abstract class BaseRow {
 
         // Wire up visible data children and leaves, as needed.
         data.children = dataChildren;
-        return data;
+        return data as ViewRowData;
     }
 
     private getChildrenDatas(): ViewRowData[] {

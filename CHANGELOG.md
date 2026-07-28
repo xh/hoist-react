@@ -13,7 +13,7 @@
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
-  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+     either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 
 ### 🎁 New Features
 
@@ -44,6 +44,12 @@
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
   datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+* Added an opt-in `Store.useRawAsData` config for projections of already-parsed data - most notably
+  a connected Cube `View` feeding a (tree) grid, or an endpoint returning data in its final
+  client-side form. Records use the provider's row object as their `data` by reference rather than
+  re-parsing and copying it, collapsing the usual two per-row objects to one and skipping the
+  per-row parse on every load and update. Requires that raw data already match the Store's Field
+  definitions - see the `useRawAsData` config docs for the full contract.
 
 ### 🐞 Bug Fixes
 
@@ -60,6 +66,12 @@
   does not modify (the common case). Previously every parsed string value was replaced with a
   freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
   upstream deduplication of repeated values.
+
+### ⚙️ Typescript API Adjustments
+
+* Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`, reflecting that custom `Aggregator`
+  implementations may only rely on queried field values - not `ViewRowData` metadata - when reading
+  row data. Use row-level getters such as `BaseRow.isLeaf` in place of `data.cubeRowType`.
 
 ### 📚 Libraries
 

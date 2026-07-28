@@ -242,7 +242,6 @@ export class StoreRecord {
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
-        data.id = id;
 
         this.id = id;
         this.agId = 'ag_' + id.toString();
@@ -258,6 +257,8 @@ export class StoreRecord {
          */
         this.treePath = parent ? [...parent.treePath, id.toString()] : [id.toString()];
         this.isSummary = isSummary;
+
+        if (this.ownsData) data.id = id;
     }
 
     /**
@@ -298,6 +299,15 @@ export class StoreRecord {
     // Protected methods
     // --------------------------
     /**
+     * True if this record's `data` object belongs to it alone and may be written to and frozen.
+     * False only for records holding a provider-owned raw object under `useRawAsData`.
+     * @internal
+     */
+    get ownsData(): boolean {
+        return this.data !== this.raw;
+    }
+
+    /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
      * We finalize the StoreRecord post-construction in RecordSet, only once we know that it is
@@ -307,7 +317,7 @@ export class StoreRecord {
      * @internal
      */
     finalize() {
-        if (this.store.freezeData) {
+        if (this.store.freezeData && this.ownsData) {
             Object.freeze(this.data);
         }
     }
