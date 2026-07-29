@@ -1193,18 +1193,33 @@ export class Store
      * Useful for any store (an alternative to threading `rawSummaryData` through
      * `loadData`/`updateData`), and the sanctioned path for a proxy store: the Store never
      * aggregates, so a proxy's post-filter summary cannot be auto-derived and must be fed by the
-     * app or View that computed it. A proxy instances the record(s) through its primary (which owns
-     * the Field parsing), so the summary data adopts the primary's parsing rules.
+     * app or View that computed it. Summary records are a proxy's own instanced state - never
+     * sourced from or pushed to its primary, and never cleared when the primary changes. Recompute
+     * them on any change to this store's filter or data.
      *
      * @param rawSummaryData - source data for the summary record(s), or null to clear.
      */
     @action
     setSummaryData(rawSummaryData: Some<PlainObject>) {
-        const owner = this.isProxy ? this.primaryStore : this;
-        this.summaryRecords = rawSummaryData
-            ? castArray(rawSummaryData).map(it => owner.createRecord(it, null, true))
+        const records = rawSummaryData
+            ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
             : null;
-        this.lastUpdated = Date.now();
+
+        // Summary records are resolved ahead of the record set by `getById`, so a collision would
+        // silently shadow a real record. Validate before installing, as `loadData` does via
+        // `createRecords`.
+        records?.forEach(({id}) =>
+            throwIf(
+                this._current.getById(id),
+                `Summary record ID ${id} is not unique - it collides with an existing record in this Store.`
+            )
+        );
+
+        this.summaryRecords = records;
+
+        // A proxy's `lastUpdated` mirrors the primary's data provenance - its own summary records
+        // are not part of that history.
+        if (!this.isProxy) this.lastUpdated = Date.now();
     }
 
     /** The count of the filtered records in the store. */
