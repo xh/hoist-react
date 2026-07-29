@@ -690,36 +690,71 @@ export class Store
     @action
     @logWithDebug
     updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
-        if (this.isProxy) return this.primaryStore.updateData(rawData);
         if (isEmpty(rawData)) return null;
 
+        const transaction = this.parseTransaction(rawData);
+        return this.isProxy
+            ? this.updateDataAsProxy(transaction)
+            : this.updateDataInternal(transaction);
+    }
+
+    /**
+     * Apply a transaction across the proxy/primary ownership boundary: summary data - pushed
+     * directly or as updates to our own summary records - is ours, while record adds, removes, and
+     * updates belong to the primary. Both stores can report summary changes, so union them.
+     */
+    @action
+    private updateDataAsProxy(transaction: StoreTransaction): StoreChangeLog {
+        const {update, add, remove, rawSummaryData, ...other} = transaction;
+        throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
+
+        const [ownUpdates, primaryUpdates] = this.partitionOwnSummaryData(update ?? [], it =>
+            this.idSpec(it)
+        );
+
+        const ownTx: StoreTransaction = {};
+        if (!isEmpty(ownUpdates)) ownTx.update = ownUpdates;
+        if (rawSummaryData) ownTx.rawSummaryData = rawSummaryData;
+
+        const primaryTx: StoreTransaction = {};
+        if (!isEmpty(primaryUpdates)) primaryTx.update = primaryUpdates;
+        if (!isEmpty(add)) primaryTx.add = add;
+        if (!isEmpty(remove)) primaryTx.remove = remove;
+
+        return this.mergeChangeLogs(
+            !isEmpty(ownTx) ? this.updateDataInternal(ownTx) : null,
+            !isEmpty(primaryTx) ? this.primaryStore.updateData(primaryTx) : null
+        );
+    }
+
+    /** Normalize a flat list of adds/updates into an explicit transaction. */
+    private parseTransaction(rawData: PlainObject[] | StoreTransaction): StoreTransaction {
+        if (!isArray(rawData)) return rawData;
+
+        const update = [],
+            add = [];
+        rawData.forEach(it => {
+            const isChildData = isChildRawDataObject(it),
+                recId = isChildData
+                    ? // The idSpec function does not support the {rawData,parentId} format
+                      this.idSpec(it.rawData)
+                    : this.idSpec(it);
+            if (this.getById(recId)) {
+                // The update array does not support the {rawData,parentId} format
+                update.push(isChildData ? it.rawData : it);
+            } else {
+                add.push(it);
+            }
+        });
+
+        return {update, add};
+    }
+
+    @action
+    private updateDataInternal(transaction: StoreTransaction): StoreChangeLog {
         const changeLog: StoreChangeLog = {};
 
-        // Build a transaction object out of a flat list of adds and updates
-        let rawTransaction: StoreTransaction;
-        if (isArray(rawData)) {
-            const update = [],
-                add = [];
-            rawData.forEach(it => {
-                const isChildData = isChildRawDataObject(it),
-                    recId = isChildData
-                        ? // The idSpec function does not support the {rawData,parentId} format
-                          this.idSpec(it.rawData)
-                        : this.idSpec(it);
-                if (this.getById(recId)) {
-                    // The update array does not support the {rawData,parentId} format
-                    update.push(isChildData ? it.rawData : it);
-                } else {
-                    add.push(it);
-                }
-            });
-
-            rawTransaction = {update, add};
-        } else {
-            rawTransaction = rawData;
-        }
-
-        const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
+        const {update, add, remove, rawSummaryData, ...other} = transaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
@@ -799,7 +834,8 @@ export class Store
             Object.assign(changeLog, rsTransaction);
         }
 
-        if (!isEmpty(changeLog)) {
+        // A proxy's stamps mirror the primary's data provenance - see `syncFromPrimary`.
+        if (!isEmpty(changeLog) && !this.isProxy) {
             this.lastUpdated = Date.now();
         }
 
@@ -900,10 +936,24 @@ export class Store
      */
     @action
     modifyRecords(modifications: Some<PlainObject>): StoreChangeLog {
-        if (this.isProxy) return this.primaryStore.modifyRecords(modifications);
-        modifications = castArray(modifications);
-        if (isEmpty(modifications)) return;
+        const mods = castArray(modifications);
+        if (isEmpty(mods)) return;
 
+        if (this.isProxy) {
+            // Modifications to our own summary records are ours to apply - the rest belong to the
+            // primary. Both stores can report summary changes, so union them in the merged log.
+            const [ownMods, primaryMods] = this.partitionOwnSummaryData(mods, it => it.id);
+            return this.mergeChangeLogs(
+                !isEmpty(ownMods) ? this.modifyRecordsInternal(ownMods) : null,
+                !isEmpty(primaryMods) ? this.primaryStore.modifyRecords(primaryMods) : null
+            );
+        }
+
+        return this.modifyRecordsInternal(mods);
+    }
+
+    @action
+    private modifyRecordsInternal(modifications: PlainObject[]): StoreChangeLog {
         // 1) Pre-process modifications into Records
         const updateMap = new Map<StoreRecordId, StoreRecord>();
         let hadDupes = false;
@@ -987,9 +1037,20 @@ export class Store
      */
     @action
     revertRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
-        if (this.isProxy) return this.primaryStore.revertRecords(records);
         records = castArray(records);
         if (isEmpty(records)) return;
+
+        if (this.isProxy) {
+            // Our own summary records are ours to revert - the rest are the primary's.
+            const recId = (it: StoreRecordOrId) => (it instanceof StoreRecord ? it.id : it),
+                [ownRecs, primaryRecs] = this.partitionOwnSummaryData(records, recId);
+
+            if (!isEmpty(ownRecs)) {
+                this.revertSummaryRecords(ownRecs.map(it => this.getOrThrow(recId(it))));
+            }
+            if (!isEmpty(primaryRecs)) this.primaryStore.revertRecords(primaryRecs);
+            return;
+        }
 
         const recs = records.map(it => (it instanceof StoreRecord ? it : this.getOrThrow(it))),
             [summaryRecsToRevert, recsToRevert] = partition(recs, 'isSummary');
@@ -1016,7 +1077,14 @@ export class Store
      */
     @action
     revert() {
-        if (this.isProxy) return this.primaryStore.revert();
+        // A proxy's record sets are the primary's - revert them there and sync will follow. The
+        // primary reverts its own summary records too, as with any other delegated mutation.
+        if (this.isProxy) {
+            if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
+            this.primaryStore.revert();
+            return;
+        }
+
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
@@ -1027,6 +1095,32 @@ export class Store
             this.isProxy,
             `Store.${op}() is unsupported on a proxy Store - it sources its records from its primaryStore and has no dataset of its own to replace. Load the primary instead.`
         );
+    }
+
+    /**
+     * Split incoming mutation targets into those addressing this store's own summary records and
+     * those addressing records owned by its primary. Proxy paths only - a non-proxy store owns
+     * everything it holds and never partitions.
+     */
+    private partitionOwnSummaryData<T>(
+        items: T[],
+        idFn: (it: T) => StoreRecordId
+    ): [own: T[], primary: T[]] {
+        const ownIds = this.summaryRecordIds;
+        return partition(items, it => ownIds.has(idFn(it)));
+    }
+
+    /**
+     * Merge a proxy's own change log into its primary's. Summary records are unioned - a single
+     * delegated call can modify this store's summary records *and* the primary's, and callers need
+     * to see both. `own` is produced by a summary-only transaction, so it carries no record changes.
+     */
+    private mergeChangeLogs(own: StoreChangeLog, primary: StoreChangeLog): StoreChangeLog {
+        const ret: StoreChangeLog = {...primary},
+            summaryRecords = [...(primary?.summaryRecords ?? []), ...(own?.summaryRecords ?? [])];
+
+        if (!isEmpty(summaryRecords)) ret.summaryRecords = summaryRecords;
+        return !isEmpty(ret) ? ret : null;
     }
 
     /** Get a specific Field by name.*/
