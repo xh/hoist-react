@@ -190,10 +190,12 @@ export interface StoreConfig {
      * - **Fixed at construction, immutable primary.** A proxy stays a proxy for its whole life and
      *   never re-targets a different primary (that would change fields, hence columns - build a new
      *   Store instead). The connection can be paused/resumed via {@link Store.proxyActive}.
-     * - **Flat data only.** The primary must be non-hierarchical (`maxDepth === 0`), re-checked on
-     *   each sync - a proxy filter applied after grouping would filter rows out from under their
-     *   totals, and shared records carry the primary's `store` back-pointer. For hierarchical data
-     *   use `Cube -> View -> Store` (with `useRawAsData` for the record-sharing win).
+     * - **Flat data only.** The primary must be configured `loadTreeData: false`, checked at
+     *   construction. Records are shared by reference, so the proxy's `_filtered` set is derived
+     *   from a `RecordSet` whose `store` back-pointer is the *primary* - meaning child-aware
+     *   filtering would silently resolve `filterIncludesChildren` against the primary rather than
+     *   this store. Inert for flat data, wrong for trees. For hierarchical data use
+     *   `Cube -> View -> Store` (with `useRawAsData` for the record-sharing win).
      * - **Nothing of its own to load.** `loadData`, `loadDataAsync`, and `clear` throw - a proxy
      *   sources its records from the primary and has no dataset of its own to replace. Loading
      *   through a proxy would also silently repoint the shared dataset for every sibling.
@@ -460,8 +462,8 @@ export class Store
             throwIf(reuseRecords, 'Store.primaryStore cannot be used with reuseRecords.');
             throwIf(useRawAsData, 'Store.primaryStore cannot be used with useRawAsData.');
             throwIf(
-                primaryStore.maxDepth > 0,
-                'Store.primaryStore must be flat (non-tree) - proxy mode does not support hierarchical data. Use Cube -> View -> Store for tree data.'
+                primaryStore.loadTreeData,
+                'Store.primaryStore must be a flat (non-tree) store - configure it with loadTreeData: false. Proxy mode does not support hierarchical data; use Cube -> View -> Store for tree data.'
             );
         }
 
@@ -544,10 +546,6 @@ export class Store
         if (!this.proxyActive) return;
 
         const {primaryStore} = this;
-        throwIf(
-            primaryStore.maxDepth > 0,
-            'Store.primaryStore must be flat (non-tree) - proxy mode does not support hierarchical data.'
-        );
 
         // Share the primary's record sets by reference (zero-copy). Sourcing `_committed` from the
         // primary too keeps `isDirty` (_current !== _committed) correct. Apply our own filter to

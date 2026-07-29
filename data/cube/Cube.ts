@@ -153,7 +153,10 @@ export class Cube extends HoistBase {
             processRawData: processRawData,
             retainRaw: retainRaw,
             freezeData: false,
-            idEncodesTreePath: true
+            idEncodesTreePath: true,
+            // A Cube wraps a flat store of leaf-level facts - any hierarchy is built by its Views.
+            // Declared so the store can serve as a `primaryStore` for proxy projections.
+            loadTreeData: false
         });
         this.store.loadData(data);
         this.info = info;
