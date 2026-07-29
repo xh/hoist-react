@@ -24,14 +24,14 @@
   async iterable yielding raw records or chunks. Creates records incrementally without buffering
   the complete raw dataset in memory, then installs them in a single transaction once the source
   completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
-* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
-  as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
-  directly via `for await` for any streamed endpoint. Optionally pairs with hoist-core v41's
-  `BaseController.renderNdjson()`.
+* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally.
+  Returns a `lines` async iterable of parsed records - the natural streaming source for
+  `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata record.
+  Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
 * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
-  values are also shared across successive fetches of the same logical dataset, as identified by
-  a required app-provided key.
+  values may also be shared across successive fetches of the same logical dataset, as identified
+  by a required app-provided key, per a configurable `retainMode`.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large

@@ -280,7 +280,7 @@ export class Cube extends HoistBase {
      *
      * May also be passed a streaming source - a sync or async iterable yielding raw records or
      * chunks of records - loaded via {@link Store.loadDataAsync}, e.g.
-     * `cube.loadDataAsync(XH.fetchNdjson({url}))`.
+     * `cube.loadDataAsync(XH.fetchNdjson({url}).lines)`.
      *
      * Note that this method will update its views asynchronously in order to avoid locking up the
      * browser when attached to multiple expensive views.

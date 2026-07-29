@@ -459,7 +459,7 @@ export class Store
      * array - e.g. rows streamed incrementally from the server. The source may be a sync or
      * async iterable, yielding individual raw records or arrays (chunks) of records - see
      * {@link FetchService.fetchNdjson} for the natural source when streaming NDJSON, e.g.
-     * `store.loadDataAsync(XH.fetchNdjson({url}))`.
+     * `store.loadDataAsync(XH.fetchNdjson({url}).lines)`.
      *
      * The Store is not modified until the source has been fully consumed - all records are then
      * installed in a single observable transaction, exactly as with `loadData()`. If the source

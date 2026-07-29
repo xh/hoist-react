@@ -155,7 +155,7 @@ from the server. Does not accept summary data (an aggregate cannot precede its s
 via `updateData({rawSummaryData})` after loading. Pair with `XH.fetchNdjson()` for NDJSON:
 
 ```typescript
-await store.loadDataAsync(XH.fetchNdjson({url: 'myRows'}));
+await store.loadDataAsync(XH.fetchNdjson({url: 'myRows'}).lines);
 ```
 
 The Store updates in a single transaction once the source completes, and remains unchanged if

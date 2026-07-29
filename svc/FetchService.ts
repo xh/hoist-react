@@ -23,20 +23,10 @@ import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {
-    isDate,
-    isEqual,
-    isFunction,
-    isNil,
-    isObject,
-    isString,
-    noop,
-    omit,
-    omitBy,
-    truncate
-} from 'lodash';
+import {isDate, isFunction, isNil, isObject, isString, noop, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 import ShortUniqueId from 'short-unique-id';
+import {NdjsonResultImpl} from './impl/NdjsonResultImpl';
 import {StringInterner} from './impl/StringInterner';
 
 export interface FetchServiceDefaults {
@@ -166,13 +156,19 @@ export class FetchService extends HoistService {
 
     /**
      * Send an HTTP request and decode the response body incrementally as NDJSON - newline
-     * delimited JSON, aka JSON Lines / JSONL - yielding chunks (arrays) of parsed records as
-     * they arrive off the network. No more than one network chunk of raw text is buffered,
-     * making this suitable for consuming very large or long-running streamed responses.
+     * delimited JSON, aka JSON Lines / JSONL. Returns an {@link NdjsonResult} whose `lines`
+     * generator yields chunks (arrays) of parsed records as they arrive off the network. No
+     * more than one network chunk of raw text is buffered, making this suitable for consuming
+     * very large or long-running streamed responses.
      *
      * The natural source for {@link Store.loadDataAsync} - e.g.
-     * `store.loadDataAsync(XH.fetchNdjson({url}))` - or iterate directly via `for await` for
-     * non-Store streaming.
+     * `store.loadDataAsync(XH.fetchNdjson({url}).lines)` - or iterate `lines` directly via
+     * `for await` for non-Store streaming.
+     *
+     * Set {@link NdjsonFetchOptions.firstLineIsMeta} to treat the first record in the stream as
+     * out-of-band metadata, delivered via the result's `meta` promise rather than `lines`. The
+     * promise resolves as soon as the record arrives - before `lines` is consumed - so callers
+     * can use it to decide how to process the balance of the stream.
      *
      * Tracing spans and `track` cover the full lifetime of the stream, through complete
      * consumption. Note that `timeout` covers the request phase only - no timeout applies while
@@ -181,7 +177,7 @@ export class FetchService extends HoistService {
      * A stream truncated by a server-side failure surfaces as a 'Fetch Stream Failed' exception -
      * hoist-core's `renderNdjson` guarantees such a stream ends with an unparseable line.
      */
-    fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
+    fetchNdjson(opts: NdjsonFetchOptions, ctx?: CallContextLike): NdjsonResult {
         opts = this.withCorrelationId(opts);
 
         let runner = this.runner(ctx);
@@ -198,21 +194,20 @@ export class FetchService extends HoistService {
         }
 
         // The runner will manage the lifecycle, but we won't await it here -- return
-        // the generator straight away. Don't produce unhandled exceptions from telemetry
-        // only. Generator will already produce them.
-        let ret: AsyncGenerator<PlainObject[]>;
+        // the result straight away. Also stifle telemetry exception. Stream already produces them.
+        let ret: NdjsonResultImpl;
         runner
             .run(async innerCtx => {
-                const fetchPromise = this.fetchInternalAsync(opts, innerCtx, true);
-
-                let onComplete: (err?: unknown) => void;
-                const streamPromise = new Promise<void>(
-                    (res, rej) => (onComplete = err => (err ? rej(err) : res()))
+                ret = new NdjsonResultImpl(
+                    this.fetchInternalAsync(opts, innerCtx, true),
+                    opts,
+                    this.getInterner(opts.internStrings),
+                    (cause, response) =>
+                        cause?.name === 'AbortError'
+                            ? this.abortedException(opts, innerCtx, cause)
+                            : this.streamFailedException(opts, innerCtx, response, cause)
                 );
-                ret = this.streamNdjson(opts, innerCtx, fetchPromise, onComplete);
-
-                await fetchPromise;
-                await streamPromise;
+                await ret.whenCompleteAsync();
             })
             .catch(noop);
         return ret;
@@ -297,9 +292,6 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private static readonly defaultIdGenerator = new ShortUniqueId({length: 16});
-
-    /** Marker written by hoist-core's `renderNdjson` when a stream fails after committing. */
-    private static readonly NDJSON_POISON = '//xh-ndjson-stream-error';
 
     /**
      * @param forStreaming - true when called by fetchNdjson, which applies its own span and
@@ -663,99 +655,19 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Await the pending request, then stream its body - wrapping any failure raised while
-     * reading or parsing the stream in an enriched FetchException.
-     *
-     * Reports the streaming phase's outcome via the `onComplete` callback - with any error on
-     * failure, and unconditionally on exit to cover early termination by the consumer.
-     * Request-phase failures propagate already-enriched and without an `onComplete` error - the
-     * caller observes them on the fetch promise directly.
-     */
-    private async *streamNdjson(
-        opts: FetchOptions,
-        ctx: CallContextLike,
-        fetchPromise: Promise<Response>,
-        onComplete: (err?: unknown) => void
-    ): AsyncGenerator<PlainObject[]> {
-        const interner = this.getInterner(opts.internStrings);
-        try {
-            const response = await fetchPromise;
-            try {
-                yield* this.ndjsonChunks(response, interner);
-                interner?.commit();
-            } catch (e) {
-                const ex =
-                    e?.name === 'AbortError'
-                        ? this.abortedException(opts, ctx, e)
-                        : this.streamFailedException(opts, ctx, response, e);
-                onComplete(ex);
-                throw ex;
-            }
-        } finally {
-            // Only finally blocks run if the consumer exits its loop early. Discard any
-            // uncommitted interned values - no-op after a successful commit above.
-            interner?.abort();
-            onComplete();
-        }
-    }
-
-    /**
-     * Read an NDJSON Response body incrementally, yielding chunks (arrays) of parsed records as
-     * they arrive off the network. Each line is parsed with native JSON.parse, partial trailing
-     * lines are carried across chunk boundaries, and no more than one network chunk of raw text
-     * is buffered.
-     *
-     * Note the final-buffer parse below doubles as truncation detection - a stream cut short by
-     * a server-side failure ends with an unparseable line (see fetchNdjson) and throws here.
-     */
-    private async *ndjsonChunks(
-        response: Response,
-        interner: StringInterner
-    ): AsyncGenerator<PlainObject[]> {
-        const reader = response.body.getReader(),
-            decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, {stream: true});
-            const lines = buffer.split('\n');
-            buffer = lines.pop(); // retain any partial trailing line for the next chunk
-            if (lines.length) {
-                const chunk = lines.filter(Boolean).map(it => JSON.parse(it));
-                interner?.intern(chunk);
-                yield chunk;
-            }
-        }
-
-        buffer += decoder.decode();
-        if (buffer.trim()) {
-            if (buffer.trim() === FetchService.NDJSON_POISON) {
-                throw Exception.create({
-                    name: 'NDJSON Stream Error',
-                    message: 'NDJSON stream terminated by a server-side failure - see server logs.'
-                });
-            }
-            const chunk = [JSON.parse(buffer)];
-            interner?.intern(chunk);
-            yield chunk;
-        }
-    }
-
-    /**
      * Get or create the {@link StringInterner} for the given spec's key, or null if interning
-     * was not requested. An existing interner is replaced (dropping its cached generation) if
-     * the spec has changed since it was created.
+     * was not requested. Interners are retained per key with the latest spec adopted on each
+     * call - see {@link clearInternCaches} to reset.
      */
     private getInterner(spec: StringInternSpec): StringInterner {
         if (!spec) return null;
         const {interners} = this;
         let ret = interners.get(spec.key);
-        if (!ret || !isEqual(ret.spec, spec)) {
+        if (!ret) {
             ret = new StringInterner(spec);
             interners.set(spec.key, ret);
+        } else {
+            ret.spec = spec;
         }
         return ret;
     }
@@ -1020,8 +932,9 @@ export interface FetchOptions {
      * into child records via `childrenKey`. No-op for response payloads of any other shape.
      *
      * Interned values are also optionally shared across successive responses with the same `key` -
-     * e.g. a polling refresh of the same grid - with cache retention bounded to the values
-     * present in the most recent complete response for each key.
+     * e.g. a polling refresh of the same grid - with cache retention per each key's
+     * {@link StringInternSpec.retainMode}, by default bounded to the values present in the most
+     * recent complete response.
      */
     internStrings?: StringInternSpec;
 
@@ -1050,6 +963,28 @@ export interface FetchOptions {
     traceId?: string;
 }
 
+/** Options for {@link FetchService.fetchNdjson}. */
+export interface NdjsonFetchOptions extends FetchOptions {
+    /**
+     * True to treat the first record in the stream as metadata, delivered via
+     * {@link NdjsonResult.meta} rather than yielded with the data records. Default false.
+     */
+    firstLineIsMeta?: boolean;
+}
+
+/** Streamed result returned by {@link FetchService.fetchNdjson}. */
+export interface NdjsonResult {
+    /** Parsed data records, yielded in chunks (arrays) as they arrive off the network. */
+    lines: AsyncGenerator<PlainObject[]>;
+
+    /**
+     * Leading metadata record - null unless requested via
+     * {@link NdjsonFetchOptions.firstLineIsMeta}. Resolves as soon as the record arrives,
+     * without requiring `lines` to be consumed - null if the stream was empty.
+     */
+    meta: Promise<PlainObject> | null;
+}
+
 /**
  * Spec for string-value interning of a fetch response.
  * @see FetchOptions.internStrings
@@ -1070,12 +1005,23 @@ export interface StringInternSpec {
     childrenKey?: string;
 
     /**
-     * True (default) to hold each response's interned values for reuse by the next response
-     * with the same key. Set false to intern within each response only - appropriate for large
-     * one-shot datasets that will not be refetched, where a retained cache would pin the last
-     * response's distinct values for no future benefit.
+     * How long interned values are held for reuse by later responses with the same key.
+     * Default 'nextCall'.
+     *
+     * - 'nextCall' (default) - hold the values in each committed response for reuse by the next.
+     *   Values not re-seen are evicted, bounding the cache to the latest response - the right
+     *   mode for polling/refresh of a comparable dataset.
+     * - 'always' - hold every value ever committed, until {@link FetchService.clearInternCaches}.
+     *   Useful when successive responses cover different slices of a dataset (e.g. paging, or
+     *   alternating filters), where 'nextCall' would evict values about to recur.
+     * - 'never' - intern within each response only. Appropriate for large one-shot datasets that
+     *   will not be refetched, where a retained cache would pin the last response's distinct
+     *   values for no future benefit.
+     *
+     * May be varied across calls sharing a key without resetting the cache - the mode governs
+     * only how each completing response's values are installed for reuse.
      */
-    retainAcrossFetches?: boolean;
+    retainMode?: 'never' | 'nextCall' | 'always';
 }
 
 /**
