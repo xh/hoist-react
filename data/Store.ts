@@ -218,6 +218,17 @@ export interface StoreConfig {
     primaryStore?: Store;
 
     /**
+     * For a proxy Store, whether its live connection to the `primaryStore` starts active
+     * (default true). Set false to construct a *paused* proxy: it holds no records until resumed
+     * via {@link Store.proxyActive}, skipping the initial filter pass. Useful when creating
+     * proxies for components that are not yet visible - note a grid bound to a paused proxy
+     * renders empty, not stale.
+     *
+     * No effect on a non-proxy store.
+     */
+    proxyActive?: boolean;
+
+    /**
      * Set to true to always validate all uncommitted records on every change to
      * uncommitted records (add, modify, or remove). Default false.
      */
@@ -235,7 +246,7 @@ export interface StoreConfig {
  * records from its primary and never loads or parses data of its own, so only its own local
  * projection state is configurable here. See {@link StoreConfig.primaryStore} for the contract.
  */
-export type StoreProxyConfig = Pick<StoreConfig, 'filter' | 'validationIsComplex'>;
+export type StoreProxyConfig = Pick<StoreConfig, 'filter' | 'proxyActive' | 'validationIsComplex'>;
 
 export interface StoreDefaults {
     freezeData?: boolean;
@@ -359,12 +370,12 @@ export class Store
 
     /**
      * For a proxy store, whether the live connection to the `primaryStore` is active (default
-     * true). Set to false to pause - the proxy stops observing the primary and retains its last
-     * synced snapshot, so the owning grid does not update its rows (e.g. while offscreen). Set
-     * back to true to resume, catching up to the primary's current state in a single rebuild.
-     * No effect on a non-proxy store.
+     * true, or as set via {@link StoreConfig.proxyActive}). Set to false to pause - the proxy stops
+     * observing the primary and retains its last synced snapshot, so the owning grid does not
+     * update its rows (e.g. while offscreen). Set back to true to resume, catching up to the
+     * primary's current state in a single rebuild. No effect on a non-proxy store.
      */
-    @bindable proxyActive: boolean = true;
+    @bindable proxyActive: boolean;
 
     @observable.ref
     filter: Filter;
@@ -424,6 +435,7 @@ export class Store
         useRawAsData = false,
         validationIsComplex = false,
         primaryStore = null,
+        proxyActive = true,
         experimental,
         data
     }: StoreConfig) {
@@ -472,6 +484,7 @@ export class Store
         // records by reference and never parses raw data itself, so Fields are pure metadata here
         // (sort/filter/columns/export). Fields in a proxy config are rejected above.
         this.primaryStore = primaryStore;
+        this.proxyActive = proxyActive;
         this.fields = primaryStore ? primaryStore.fields : this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
