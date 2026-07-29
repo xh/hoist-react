@@ -199,15 +199,19 @@ export interface StoreConfig {
      * - **Nothing of its own to load.** `loadData`, `loadDataAsync`, and `clear` throw - a proxy
      *   sources its records from the primary and has no dataset of its own to replace. Loading
      *   through a proxy would also silently repoint the shared dataset for every sibling.
-     * - **Record mutators delegate to the primary.** `updateData`, `addRecords`, `removeRecords`,
-     *   `modifyRecords`, `revert`, and `revertRecords` all forward to the primary, whose records
-     *   these are. The change then flows back to this proxy - and every sibling proxy - on the next
-     *   sync. This is already what grid inline editing does, as it routes through
-     *   {@link StoreRecord.store}; delegating keeps the Store API consistent with it. Callers are
-     *   trusted to know they are editing shared records, not private copies.
-     * - **Fields adopted from the primary; own filter/summary.** Specifying `fields` (or any other
-     *   config incompatible with a shared-record projection) is rejected at construction. Summary
-     *   records are supplied by the app/View via {@link Store.setSummaryData}.
+     * - **Mutations partition by owning store.** `updateData`, `modifyRecords`, and `revertRecords`
+     *   apply whatever targets this store's *own* summary records locally and delegate the rest to
+     *   the primary; `addRecords` and `removeRecords` delegate outright; `revert` reverts local
+     *   summary records and then delegates a full revert. Delegated changes flow back to this proxy
+     *   - and every sibling - on the next sync. This matches what grid inline editing already does,
+     *   as it routes through {@link StoreRecord.store}. Callers are trusted to know they are editing
+     *   shared records, not private copies.
+     * - **Fields adopted from the primary; filter and summary are its own.** Specifying `fields`
+     *   (or any other config incompatible with a shared-record projection) is rejected at
+     *   construction. Summary records are neither sourced from nor pushed to the primary, and are
+     *   not cleared when it changes - the Store never aggregates, so supply them via
+     *   {@link Store.setSummaryData} and recompute on any change to this store's filter or data
+     *   (react to {@link Store.lastUpdated}, which mirrors the primary's).
      *
      * Default null (not a proxy).
      *

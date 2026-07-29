@@ -105,6 +105,7 @@ const store = new Store({
 | `useRawAsData` | `boolean` | `false` | Use each raw object *as* its record's `data`, skipping the parse/copy (memory)        |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
+| `proxyActive` | `boolean` | `true` | Proxy stores only - whether the live connection to the primary starts active            |
 
 `Store.defaults` exposes `freezeData` for app-wide override — see `StoreDefaults` for details.
 
@@ -746,6 +747,57 @@ const gridModel = new GridModel({
 ```
 
 See `cmp/grid/GridModel.ts` for details on summary row rendering.
+
+## Proxy Stores (Shared Records)
+
+A **proxy** Store is a live projection of another Store - its *primary* - sharing the primary's
+records by reference rather than loading and owning a copy. Create one from the primary via
+`createProxy()`:
+
+```typescript
+const proxy = cube.store.createProxy({filter: {field: 'region', op: '=', value: 'US'}});
+const gridModel = new GridModel({store: proxy, columns: [...]});
+```
+
+This targets the fan-out case: one flat dataset displayed by several components, each needing its
+own filter, `StoreFilterField`, or summary over the *same* records. A conventional Store per
+component would duplicate the `RecordSet` and every `StoreRecord`, then rebuild them on every change
+to the source; a proxy shares the records and rebuilds only its own filtered projection.
+
+### What a Proxy Owns
+
+| State | Owner |
+|-------|-------|
+| Records (current + committed) | Primary — shared by reference |
+| Fields | Primary — adopted at construction |
+| Filter, filtered records, filter text | Proxy |
+| Summary records | Proxy |
+
+### Rules
+
+- **Create it from the primary.** `createProxy(config)` accepts a `StoreProxyConfig` (`filter`,
+  `proxyActive`, `validationIsComplex`). An inline `GridModel.store` config object cannot be used,
+  as `GridModel` injects column-derived `fields` into it — pass the instance instead.
+- **The primary must be flat**, i.e. configured `loadTreeData: false` — checked at construction.
+  `Cube.store` satisfies this. For hierarchical data use `Cube → View → Store`.
+- **A proxy has no data of its own to load.** `loadData()`, `loadDataAsync()`, and `clear()` throw.
+- **Mutations partition by owner.** Changes targeting the proxy's own summary records apply locally;
+  everything else delegates to the primary and flows back to every proxy on the next sync. Note this
+  means edits reach *shared* records — including grid inline edits, which route through
+  `StoreRecord.store`.
+- **Summary records belong to the proxy** and are never cleared when the primary changes. Store
+  never aggregates, so recompute them whenever the filter or the data changes:
+
+```typescript
+this.addReaction({
+    track: () => [proxy.lastUpdated, proxy.filter],
+    run: () => proxy.setSummaryData(computeTotals(proxy.records))
+});
+```
+
+- **The connection can be paused** by setting `proxyActive`, or started paused via
+  `createProxy({proxyActive: false})` — useful for components not yet visible. A paused proxy holds
+  no records until first resumed, so a bound grid renders empty rather than stale.
 
 ## Cube (Aggregation)
 

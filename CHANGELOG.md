@@ -14,6 +14,9 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* `Cube.store` is now configured `loadTreeData: false`, matching Cube's documented contract of
+  wrapping a flat store of leaf-level facts. Payloads with a nested `children` property are no
+  longer expanded into child records - flatten them before loading.
 
 ### 🎁 New Features
 
@@ -36,6 +39,12 @@
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
   datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+* Added an opt-in proxy mode for `Store`, created via `Store.createProxy()` - a live projection
+  sharing its primary's records by reference while keeping its own filter and summary records. Suits
+  one flat dataset filtered independently by several components, e.g. per-component views of a
+  Cube's leaf facts without a `View`. See `StoreConfig.primaryStore` for the full contract.
+* Added `Store.setSummaryData()` to install or clear a store's summary record(s) directly, rather
+  than threading `rawSummaryData` through `loadData()`/`updateData()`.
 * Added an opt-in `Store.useRawAsData` config for projections of already-parsed data - most notably
   a connected Cube `View` feeding a (tree) grid, or an endpoint returning data in its final
   client-side form. Records use the provider's row object as their `data` by reference rather than

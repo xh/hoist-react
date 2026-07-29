@@ -51,7 +51,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Observable data layer with Store, Field, filtering, validation, and tree data.",
-            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "processRawData"]
+            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "processRawData", "proxy store", "createProxy", "primaryStore", "summaryRecords"]
         },
         {
             "id": "data/cube/README.md",
