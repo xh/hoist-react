@@ -173,10 +173,10 @@ export interface StoreConfig {
     useRawAsData?: boolean;
 
     /**
-     * Source store for a read-only, shared-record "proxy" projection. When provided, this Store
-     * operates in proxy mode (see {@link Store.isProxy}): instead of loading and owning its own
-     * copy of the data, it sources its records **by reference** from the given primary and
-     * maintains only its own filter, filtered record set, summary records, and filter text.
+     * Source store for a shared-record "proxy" projection. When provided, this Store operates in
+     * proxy mode (see {@link Store.isProxy}): instead of loading and owning its own copy of the
+     * data, it sources its records **by reference** from the given primary and maintains only its
+     * own filter, filtered record set, summary records, and filter text.
      *
      * Targets the fan-out case - a single flat dataset displayed by several components, each needing
      * its own filter / `StoreFilterField` / summary over the **same** records (e.g. proxying a
@@ -194,11 +194,18 @@ export interface StoreConfig {
      *   each sync - a proxy filter applied after grouping would filter rows out from under their
      *   totals, and shared records carry the primary's `store` back-pointer. For hierarchical data
      *   use `Cube -> View -> Store` (with `useRawAsData` for the record-sharing win).
-     * - **Read-only.** `loadData`, `updateData`, `addRecords`, `modifyRecords`, `removeRecords`,
-     *   `revert`, `revertRecords` all throw. Data ownership stays with the primary.
+     * - **Nothing of its own to load.** `loadData`, `loadDataAsync`, and `clear` throw - a proxy
+     *   sources its records from the primary and has no dataset of its own to replace. Loading
+     *   through a proxy would also silently repoint the shared dataset for every sibling.
+     * - **Record mutators delegate to the primary.** `updateData`, `addRecords`, `removeRecords`,
+     *   `modifyRecords`, `revert`, and `revertRecords` all forward to the primary, whose records
+     *   these are. The change then flows back to this proxy - and every sibling proxy - on the next
+     *   sync. This is already what grid inline editing does, as it routes through
+     *   {@link StoreRecord.store}; delegating keeps the Store API consistent with it. Callers are
+     *   trusted to know they are editing shared records, not private copies.
      * - **Fields adopted from the primary; own filter/summary.** Specifying `fields` (or any other
-     *   config incompatible with a read-only shared-record projection) is rejected at construction.
-     *   Summary records are supplied by the app/View via {@link Store.setSummaryData}.
+     *   config incompatible with a shared-record projection) is rejected at construction. Summary
+     *   records are supplied by the app/View via {@link Store.setSummaryData}.
      *
      * Default null (not a proxy).
      */
@@ -423,9 +430,9 @@ export class Store
         );
 
         if (primaryStore) {
-            // Proxy mode: a read-only, shared-record projection sourced from `primaryStore`. Fail
-            // fast on any config that expresses behavior this mode cannot honor - the proxy adopts
-            // the primary's fields and never loads, parses, owns, or reuses record data of its own.
+            // Proxy mode: a shared-record projection sourced from `primaryStore`. Fail fast on any
+            // config that expresses behavior this mode cannot honor - the proxy adopts the primary's
+            // fields and never loads, parses, owns, or reuses record data of its own.
             // See StoreConfig.primaryStore for the full contract.
             throwIf(
                 !isEmpty(fields),
@@ -483,7 +490,7 @@ export class Store
     //------------------------
     // Proxy mode
     //------------------------
-    /** True if this store is a read-only, shared-record projection of a {@link primaryStore}. */
+    /** True if this store is a shared-record projection of a {@link primaryStore}. */
     get isProxy(): boolean {
         return !!this.primaryStore;
     }
@@ -526,6 +533,7 @@ export class Store
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
     @action
     clear() {
+        this.throwIfProxy('clear');
         this.loadData([]);
     }
 
@@ -600,6 +608,7 @@ export class Store
     async loadDataAsync(
         rawData: AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>
     ): Promise<void> {
+        this.throwIfProxy('loadDataAsync');
         throwIf(
             this.loadRootAsSummary,
             'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
@@ -647,7 +656,7 @@ export class Store
     @action
     @logWithDebug
     updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
-        this.throwIfProxy('updateData');
+        if (this.isProxy) return this.primaryStore.updateData(rawData);
         if (isEmpty(rawData)) return null;
 
         const changeLog: StoreChangeLog = {};
@@ -790,7 +799,7 @@ export class Store
      */
     @action
     addRecords(data: Some<PlainObject>, parentId?: StoreRecordId) {
-        this.throwIfProxy('addRecords');
+        if (this.isProxy) return this.primaryStore.addRecords(data, parentId);
         data = castArray(data);
         if (isEmpty(data)) return;
 
@@ -827,7 +836,7 @@ export class Store
      */
     @action
     removeRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
-        this.throwIfProxy('removeRecords');
+        if (this.isProxy) return this.primaryStore.removeRecords(records);
         records = castArray(records);
         if (isEmpty(records)) return;
 
@@ -857,7 +866,7 @@ export class Store
      */
     @action
     modifyRecords(modifications: Some<PlainObject>): StoreChangeLog {
-        this.throwIfProxy('modifyRecords');
+        if (this.isProxy) return this.primaryStore.modifyRecords(modifications);
         modifications = castArray(modifications);
         if (isEmpty(modifications)) return;
 
@@ -944,7 +953,7 @@ export class Store
      */
     @action
     revertRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
-        this.throwIfProxy('revertRecords');
+        if (this.isProxy) return this.primaryStore.revertRecords(records);
         records = castArray(records);
         if (isEmpty(records)) return;
 
@@ -973,7 +982,7 @@ export class Store
      */
     @action
     revert() {
-        this.throwIfProxy('revert');
+        if (this.isProxy) return this.primaryStore.revert();
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
@@ -982,7 +991,7 @@ export class Store
     private throwIfProxy(op: string) {
         throwIf(
             this.isProxy,
-            `Store.${op}() is unsupported on a proxy Store - it is a read-only, shared-record projection of its primaryStore. Mutate the primary instead.`
+            `Store.${op}() is unsupported on a proxy Store - it sources its records from its primaryStore and has no dataset of its own to replace. Load the primary instead.`
         );
     }
 
