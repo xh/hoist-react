@@ -555,7 +555,13 @@ export class Store
         this._committed = primaryStore._committed;
         this._current = primaryStore._current;
         this.rebuildFiltered();
-        this.lastUpdated = Date.now();
+
+        // Mirror both stamps rather than stamping `Date.now()` - a proxy's data provenance is the
+        // primary's, so it reports the primary's load/update history as its own. Both are required:
+        // callers compare `lastLoaded != lastUpdated` to detect an incremental update since the last
+        // full load, which a locally-stamped `lastUpdated` would make permanently true.
+        this.lastLoaded = primaryStore.lastLoaded;
+        this.lastUpdated = primaryStore.lastUpdated;
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
