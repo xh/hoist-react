@@ -208,6 +208,10 @@ export interface StoreConfig {
      *   records are supplied by the app/View via {@link Store.setSummaryData}.
      *
      * Default null (not a proxy).
+     *
+     * @internal - applications should use {@link Store.createProxy}. Constructing a proxy from a
+     *      config object is not supported: `GridModel` injects a column-derived `fields` entry into
+     *      any inline `store` config it is given, which a proxy rejects.
      */
     primaryStore?: Store;
 
@@ -223,6 +227,13 @@ export interface StoreConfig {
      */
     experimental?: PlainObject;
 }
+
+/**
+ * Config for a proxy Store, as created via {@link Store.createProxy}. A proxy adopts its fields and
+ * records from its primary and never loads or parses data of its own, so only its own local
+ * projection state is configurable here. See {@link StoreConfig.primaryStore} for the contract.
+ */
+export type StoreProxyConfig = Pick<StoreConfig, 'filter' | 'validationIsComplex'>;
 
 export interface StoreDefaults {
     freezeData?: boolean;
@@ -340,7 +351,7 @@ export class Store
 
     /**
      * Primary store this proxy sources its records from, or null if not a proxy. Fixed at
-     * construction. See {@link StoreConfig.primaryStore} and {@link isProxy}.
+     * construction. See {@link createProxy}, {@link StoreConfig.primaryStore}, and {@link isProxy}.
      */
     readonly primaryStore: Store = null;
 
@@ -436,7 +447,7 @@ export class Store
             // See StoreConfig.primaryStore for the full contract.
             throwIf(
                 !isEmpty(fields),
-                'Store.primaryStore cannot be used with fields - a proxy adopts its fields from the primary.'
+                'Store.primaryStore cannot be used with fields - a proxy adopts its fields from the primary. Note a proxy cannot be built from an inline GridModel.store config, as GridModel injects column-derived fields into it - pre-create one via primaryStore.createProxy() and pass the instance instead.'
             );
             throwIf(
                 data,
@@ -490,6 +501,23 @@ export class Store
     //------------------------
     // Proxy mode
     //------------------------
+    /**
+     * Create a new Store as a live, shared-record "proxy" projection of this Store - sourcing its
+     * records from this Store by reference while maintaining its own filter, filtered record set,
+     * and summary records. See {@link StoreConfig.primaryStore} for the full contract.
+     *
+     * This is the sanctioned way to build a proxy. Pass the returned instance to a component as an
+     * already-constructed Store (e.g. `new GridModel({columns, store: primary.createProxy()})`) -
+     * an inline `store` config object cannot be used, as `GridModel` would inject column-derived
+     * `fields` into it.
+     *
+     * The returned Store is an independent `HoistBase` and is not destroyed with this one - mark it
+     * `@managed` on whichever model owns it.
+     */
+    createProxy(config?: StoreProxyConfig): Store {
+        return new Store({...config, primaryStore: this});
+    }
+
     /** True if this store is a shared-record projection of a {@link primaryStore}. */
     get isProxy(): boolean {
         return !!this.primaryStore;
