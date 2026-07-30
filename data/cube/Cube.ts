@@ -5,10 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
+import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {defaultsDeep, isEmpty} from 'lodash';
+import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
@@ -44,6 +44,9 @@ export interface CubeConfig {
 
     /** See {@link StoreConfig.processRawData} */
     processRawData?: (data: PlainObject) => PlainObject;
+
+    /** See {@link StoreConfig.retainRaw} */
+    retainRaw?: boolean;
 
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;
@@ -136,6 +139,7 @@ export class Cube extends HoistBase {
         data = [],
         idSpec = 'id',
         processRawData,
+        retainRaw,
         info = {},
         lockFn,
         bucketSpecFn,
@@ -147,6 +151,7 @@ export class Cube extends HoistBase {
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
             processRawData: processRawData,
+            retainRaw: retainRaw,
             freezeData: false,
             idEncodesTreePath: true
         });
@@ -273,14 +278,25 @@ export class Cube extends HoistBase {
      * Populate this cube with a new dataset.
      * This method largely delegates to {@link Store.loadData} - see that method for more info.
      *
+     * May also be passed a streaming source - a sync or async iterable yielding raw records -
+     * loaded via {@link Store.loadDataAsync}, e.g.
+     * `cube.loadDataAsync(XH.fetchNdjson({url}).lines)`.
+     *
      * Note that this method will update its views asynchronously in order to avoid locking up the
      * browser when attached to multiple expensive views.
      *
-     * @param rawData - flat array of lowest/leaf level data rows.
+     * @param rawData - flat array of lowest/leaf level data rows, or a streaming source of same.
      * @param info - optional metadata to associate with this cube/dataset.
      */
-    async loadDataAsync(rawData: PlainObject[], info: PlainObject = {}): Promise<void> {
-        this.store.loadData(rawData);
+    async loadDataAsync(
+        rawData: PlainObject[] | AnyIterable<PlainObject>,
+        info: PlainObject = {}
+    ): Promise<void> {
+        if (isArray(rawData)) {
+            this.store.loadData(rawData);
+        } else {
+            await this.store.loadDataAsync(rawData);
+        }
         this.setInfo(info);
         await forEachAsync(this._connectedViews, v => v.noteCubeLoaded());
     }

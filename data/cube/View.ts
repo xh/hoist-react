@@ -30,7 +30,7 @@ import {AggregationContext} from './aggregate/AggregationContext';
 import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
-import {LeafRow} from './row/LeafRow';
+import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
 
 /**
  * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally
@@ -61,7 +61,15 @@ export interface ViewConfig {
 
 export interface ViewResult {
     rows: ViewRowData[];
-    leafMap: Map<StoreRecordId, LeafRow>;
+
+    /**
+     * Leaf-level rows, keyed by the id of their source Cube record.
+     *
+     * Null unless the Query sets {@link Query.includeLeaves} or {@link Query.provideLeaves} - views
+     * that expose no leaves keep them as zero-copy references to Cube record data, which is not
+     * safe to publish. Use {@link Cube.store} to read source records directly in that case.
+     */
+    leafMap: Map<StoreRecordId, ExposedLeafRow>;
 }
 
 export interface DimensionValue {
@@ -236,7 +244,7 @@ export class View
 
         return fields.map(field => {
             const values = new Set();
-            _leafMap.forEach(leaf => values.add(leaf[field.name]));
+            _leafMap.forEach(leaf => values.add(leaf.data[field.name]));
             return {field, values};
         });
     }
@@ -291,6 +299,15 @@ export class View
     //------------------------
     // Implementation
     //------------------------
+    /**
+     * True if leaf rows are exposed on results - i.e. Query sets includeLeaves or provideLeaves.
+     * @internal
+     */
+    get exposesLeaves(): boolean {
+        const {includeLeaves, provideLeaves} = this.query;
+        return includeLeaves || provideLeaves;
+    }
+
     @logWithDebug
     private fullUpdate() {
         this.filterRecords();
@@ -334,7 +351,11 @@ export class View
 
     private updateResults() {
         const {_leafMap, _rowDatas} = this;
-        this.result = {rows: _rowDatas, leafMap: _leafMap};
+        this.result = {
+            rows: _rowDatas,
+            // Hidden leaves adopt Cube record data outright - never publish them.
+            leafMap: this.exposesLeaves ? (_leafMap as Map<StoreRecordId, ExposedLeafRow>) : null
+        };
         this.info = this.cube.info;
         this.cubeUpdated = this.cube.lastUpdated;
         this.lastUpdated = Date.now();
@@ -385,9 +406,14 @@ export class View
         const rootId = parentId + Cube.RECORD_ID_DELIMITER;
 
         if (!dimensions?.length) {
+            const {exposesLeaves} = this;
             return records.map(r => {
                 const id = rootId + r.id,
-                    leaf = this.cachedRow(id, null, () => new LeafRow(this, id, r));
+                    leaf = this.cachedRow(id, null, () =>
+                        exposesLeaves
+                            ? new ExposedLeafRow(this, id, r)
+                            : new HiddenLeafRow(this, id, r)
+                    );
                 leafMap.set(r.id, leaf);
                 return leaf;
             });

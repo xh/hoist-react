@@ -8,6 +8,7 @@
 import {PlainObject} from '@xh/hoist/core';
 import {CubeField} from '../CubeField';
 import {View} from '../View';
+import {ViewRowData} from '../ViewRowData';
 import {BaseRow} from './BaseRow';
 
 /**
@@ -16,6 +17,9 @@ import {BaseRow} from './BaseRow';
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class AggregateRow extends BaseRow {
+    // Aggregate rows always construct a full ViewRowData.
+    declare data: ViewRowData;
+
     override get isAggregate() {
         return true;
     }
@@ -38,6 +42,7 @@ export class AggregateRow extends BaseRow {
 
         this.dim = dim;
         this.dimName = dimName;
+        this.data = new ViewRowData(id);
         this.data.cubeRowType = 'aggregate';
         this.data.cubeLabel = strVal;
         this.data.cubeDimension = dimName;
