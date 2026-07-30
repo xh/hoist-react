@@ -6,7 +6,7 @@
  */
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
-import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {AnyIterable, HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
 import {
     Field,
     FieldSpec,
@@ -234,10 +234,10 @@ export interface ChildRawData {
     parentId: string;
 
     /**
-     * Data for the child records to be added. Can include a `children` property to be processed
+     * Data for the child record to be added. Can include a `children` property to be processed
      * into new (grand)child records.
      */
-    rawData: PlainObject[];
+    rawData: PlainObject;
 }
 
 export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
@@ -457,9 +457,9 @@ export class Store
      *
      * Use to load very large datasets without buffering the complete raw dataset in a single
      * array - e.g. rows streamed incrementally from the server. The source may be a sync or
-     * async iterable, yielding individual raw records or arrays (chunks) of records - see
-     * {@link FetchService.fetchNdjson} for the natural source when streaming NDJSON, e.g.
-     * `store.loadDataAsync(XH.fetchNdjson({url}))`.
+     * async iterable yielding individual raw records - see {@link FetchService.fetchNdjson}
+     * for the natural source when streaming NDJSON, e.g.
+     * `store.loadDataAsync(XH.fetchNdjson({url}).lines)`.
      *
      * The Store is not modified until the source has been fully consumed - all records are then
      * installed in a single observable transaction, exactly as with `loadData()`. If the source
@@ -471,11 +471,9 @@ export class Store
      * stores with `loadRootAsSummary` - such payloads nest all row data within a single root
      * node and cannot be streamed.
      *
-     * @param rawData - iterable yielding raw records, or chunks (arrays) of raw records.
+     * @param rawData - iterable yielding raw records.
      */
-    async loadDataAsync(
-        rawData: AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>
-    ): Promise<void> {
+    async loadDataAsync(rawData: AnyIterable<PlainObject>): Promise<void> {
         throwIf(
             this.loadRootAsSummary,
             'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
@@ -484,10 +482,8 @@ export class Store
         const recordMap = new Map<StoreRecordId, StoreRecord>(),
             summaryIds = new Set<StoreRecordId>();
 
-        for await (const chunk of rawData) {
-            for (const raw of castArray(chunk)) {
-                this.createRecords([raw], null, recordMap, summaryIds);
-            }
+        for await (const raw of rawData) {
+            this.createRecordDeep(raw, null, recordMap, summaryIds);
         }
 
         runInAction(() => {
@@ -574,9 +570,9 @@ export class Store
                 if (isChildRawDataObject(it)) {
                     const {rawData, parentId} = it,
                         parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
-                    this.createRecords([rawData], parent, addRecs);
+                    this.createRecordDeep(rawData, parent, addRecs);
                 } else {
-                    this.createRecords([it], null, addRecs);
+                    this.createRecordDeep(it, null, addRecs);
                 }
             });
         }
@@ -1283,24 +1279,30 @@ export class Store
         recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
         summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
     ) {
-        const {loadTreeData, loadTreeDataFrom} = this;
-
-        rawData.forEach(raw => {
-            const rec = this.createRecord(raw, parent),
-                {id} = rec;
-
-            throwIf(
-                recordMap.has(id) || summaryRecordIds.has(id),
-                `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
-            );
-
-            recordMap.set(id, rec);
-
-            if (loadTreeData && raw[loadTreeDataFrom]) {
-                this.createRecords(raw[loadTreeDataFrom], rec, recordMap, summaryRecordIds);
-            }
-        });
+        rawData.forEach(raw => this.createRecordDeep(raw, parent, recordMap, summaryRecordIds));
         return recordMap;
+    }
+
+    // Create a record - and recursively records for its tree children - installing all in recordMap.
+    private createRecordDeep(
+        raw: PlainObject,
+        parent: StoreRecord,
+        recordMap: Map<StoreRecordId, StoreRecord>,
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+    ) {
+        const rec = this.createRecord(raw, parent),
+            {id} = rec;
+
+        throwIf(
+            recordMap.has(id) || summaryRecordIds.has(id),
+            `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
+        );
+
+        recordMap.set(id, rec);
+
+        if (this.loadTreeData && raw[this.loadTreeDataFrom]) {
+            this.createRecords(raw[this.loadTreeDataFrom], rec, recordMap, summaryRecordIds);
+        }
     }
 
     private get summaryRecordIds(): Set<StoreRecordId> {
