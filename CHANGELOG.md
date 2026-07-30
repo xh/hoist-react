@@ -36,15 +36,16 @@
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
   datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
-* Added opt-in `Store.skipDataCopy` and `Store.skipDataParsing` configs - orthogonal store
-  optimizations for large datasets. `skipDataCopy` uses each raw object *as* its record's `data`
-  by reference, parsed in place. This is most notably useful for a store loading data freshly created
-  from a FetchService.  `skipDataParsing` skips Field-level value parsing for data already in its
-  final client-side  form. See the config docs for the full contracts.  In the case of a
-  view-connected Store, both flags should typically be set to true. for optimum performance.
-* Improved `Store.processRawData` semantics implementations are now passed the Store-owned copy of the data
-  the each raw object, and are encouraged to mutate it directly, assuming they have
-  either left `skipDataCopy` set to false, or singularly own the raw data they are passed.
+* Added opt-in `Store.skipDataCopy` and `Store.skipDataParsing` configs - orthogonal performance
+  optimizations for large datasets. `skipDataCopy` uses each raw object *as* its record's `data`,
+  by reference and parsed in place - most useful for data freshly fetched via `FetchService`, with
+  no other owner. `skipDataParsing` skips Field-level value parsing for data already in its final
+  client-side form. See the config docs for the full contracts. Stores connected to a Cube `View`
+  should typically set both flags for optimal performance.
+* Improved `Store.processRawData` semantics - implementations are now passed a Store-owned shallow
+  clone of each raw object and may mutate and return it directly, with no defensive cloning needed.
+  (With `skipDataCopy` the raw object itself is passed - see that config for the ownership
+  contract.)
 
 ### 🐞 Bug Fixes
 
