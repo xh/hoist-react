@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, PlainObject} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {castArray, compact, remove, isEqual, union, map} from 'lodash';
+import {castArray, compact, remove, isEqual, union} from 'lodash';
 import {Store} from './Store';
-import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
+import {RecordId, StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
 /**
  * Configuration for a {@link StoreSelectionModel}. Typically passed via the `selModel` config
@@ -17,8 +17,11 @@ import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
  *
  * @see StoreSelectionModel
  */
-export interface StoreSelectionConfig {
-    store?: Store;
+export interface StoreSelectionConfig<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+> {
+    store?: Store<TData, TId>;
     mode?: 'single' | 'multiple' | 'disabled';
     /** @internal */
     xhImpl?: boolean;
@@ -39,8 +42,11 @@ export interface StoreSelectionConfig {
  *
  * @mcpHint selection state manager for Store, used by grids
  */
-export class StoreSelectionModel extends HoistModel {
-    readonly store: Store;
+export class StoreSelectionModel<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+> extends HoistModel {
+    readonly store: Store<TData, TId>;
     mode: 'single' | 'multiple' | 'disabled';
 
     @observable.ref
@@ -50,7 +56,7 @@ export class StoreSelectionModel extends HoistModel {
         return this.mode !== 'disabled';
     }
 
-    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig) {
+    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig<TData, TId>) {
         super();
         makeObservable(this);
 
@@ -61,13 +67,13 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     @computed.struct
-    get selectedRecords(): StoreRecord[] {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
     @computed.struct
-    get selectedIds(): StoreRecordId[] {
-        return map(this.selectedRecords, 'id');
+    get selectedIds(): TId[] {
+        return this.selectedRecords.map(it => it.id);
     }
 
     /**
@@ -77,7 +83,7 @@ export class StoreSelectionModel extends HoistModel {
      * due to store loading or editing.  Applications only interested in the *identity*
      * of the selection should use {@link selectedId} instead.
      */
-    get selectedRecord(): StoreRecord {
+    get selectedRecord(): StoreRecord<TData, TId> {
         const {selectedRecords} = this;
         return selectedRecords.length === 1 ? selectedRecords[0] : null;
     }
@@ -89,7 +95,7 @@ export class StoreSelectionModel extends HoistModel {
      * due to store loading or editing.  Applications also interested in the *contents* of the
      * selection should use the {@link selectedRecord} getter instead.
      */
-    get selectedId(): StoreRecordId {
+    get selectedId(): TId {
         const {selectedIds} = this;
         return selectedIds.length === 1 ? selectedIds[0] : null;
     }

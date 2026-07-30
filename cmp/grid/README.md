@@ -169,6 +169,34 @@ gridModel.selectedRecords;  // Array of records
 gridModel.hasSelection;     // Boolean
 ```
 
+### Typed Records
+
+Pass a data-shape interface as a type argument to `GridModel` to get typed access to
+`selectedRecord`, `store.records`, and `record.id`:
+
+```typescript
+interface Trade {
+    id: number;        // include `id` here to type record.id automatically
+    symbol: string;
+    quantity: number;
+}
+
+const gridModel = new GridModel<Trade>({
+    store: {fields: ['symbol', 'quantity']},
+    columns: [{field: 'symbol'}, {field: 'quantity', ...number}]
+});
+
+gridModel.selectedRecord?.data.symbol;     // string
+gridModel.selectedRecord?.id;              // number
+gridModel.store.records[0].data.quantity;  // number
+```
+
+This is fully opt-in - omitting the type argument leaves records typed exactly as before. Note that
+column renderer/editor callbacks (the `{record}` they receive) and `RecordAction` callbacks
+currently still provide an **untyped** `StoreRecord` - typed callback context is planned for a
+future release. See [Typing Records](../../data/README.md#typing-records) in the data package for
+full details, including how `record.id` is derived and the id-less interface case.
+
 ### Filtering
 
 ```typescript

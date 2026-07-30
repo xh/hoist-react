@@ -128,6 +128,11 @@
 
 ### ⚙️ Typescript API Adjustments
 
+* `Store`, `StoreRecord`, `StoreSelectionModel`, `GridModel`, `DataViewModel`, `ZoneGridModel`,
+  `RestGridModel`, and `RestStore` now accept optional generic type parameters `<TData, TId>` describing
+  a record's data shape and id type. Specify a shape (e.g. `new GridModel<MyRow>({...})`) to get
+  fully-typed `store.records`, `selectedRecord.data`, and `record.id`. Fully opt-in - untyped
+  usage is unchanged.
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 * Added the exported `HoistRoute` type - Router5's `Route` extended with Hoist's `omit` key - and
