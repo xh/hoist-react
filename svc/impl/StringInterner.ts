@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import {PlainObject, Some} from '@xh/hoist/core';
 import {isArray, isPlainObject, isString, round} from 'lodash';
 import type {StringInternSpec} from '../FetchService';
 
@@ -66,12 +66,8 @@ export class StringInterner {
 
     /**
      * Intern string values within the given data, mutating it in place.
-     *
-     * Accepts an array of records, or a single plain-object record - the latter treated as a
-     * root node, with its own string values interned and `childrenKey` recursion applying as
-     * usual. Values of any other shape are ignored.
      */
-    intern(data: PlainObject | PlainObject[]) {
+    intern(data: Some<PlainObject>) {
         this.pending ??= new Map();
         if (isArray(data)) {
             data.forEach(row => this.internRow(row));
