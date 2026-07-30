@@ -245,7 +245,10 @@ export class RecordSet {
         return (
             r1 === r2 ||
             (equal(r1.data, r2.data) &&
-                (this.store.idEncodesTreePath || equal(r1.treePath, r2.treePath)))
+                (this.store.idEncodesTreePath ||
+                    // Root records share an id here, so their paths are equal by construction.
+                    (r1.parentId == null && r2.parentId == null) ||
+                    equal(r1.treePath, r2.treePath)))
         );
     }
 
