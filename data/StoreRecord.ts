@@ -238,8 +238,9 @@ export class StoreRecord {
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
 
+        const idStr = id.toString();
         this.id = id;
-        this.agId = 'ag_' + id.toString();
+        this.agId = 'ag_' + idStr;
         this.store = store;
         this.data = data;
         this.raw = raw;
@@ -250,7 +251,7 @@ export class StoreRecord {
          * Each row's position in the hierarchy must be provided to the grid as an array of strings,
          * representing the path to the row.
          */
-        this.treePath = parent ? [...parent.treePath, id.toString()] : [id.toString()];
+        this.treePath = parent ? [...parent.treePath, idStr] : [idStr];
         this.isSummary = isSummary;
 
         if (this.ownsData) data.id = id;

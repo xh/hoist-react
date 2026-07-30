@@ -1293,10 +1293,11 @@ export class Store
         const rec = this.createRecord(raw, parent),
             {id} = rec;
 
-        throwIf(
-            recordMap.has(id) || summaryRecordIds.has(id),
-            `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
-        );
+        if (recordMap.has(id) || summaryRecordIds.has(id)) {
+            throw XH.exception(
+                `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
+            );
+        }
 
         recordMap.set(id, rec);
 
@@ -1315,15 +1316,15 @@ export class Store
 
         // b) apply parsed data as needed.
         const {_fieldMap} = this;
-        forIn(data, (raw, name) => {
+        for (const name in data) {
             const field = _fieldMap.get(name);
             if (field) {
-                const val = field.parseVal(raw);
+                const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
                     ret[name] = val;
                 }
             }
-        });
+        }
 
         return ret;
     }
@@ -1336,17 +1337,17 @@ export class Store
         Object.assign(ret, data);
 
         // b) apply changes
-        forIn(update, (raw, name) => {
+        for (const name in update) {
             const field = _fieldMap.get(name);
             if (field) {
-                const val = field.parseVal(raw);
+                const val = field.parseVal(update[name]);
                 if (val !== field.defaultValue) {
                     ret[name] = val;
                 } else {
                     delete ret[name];
                 }
             }
-        });
+        }
 
         return ret;
     }
@@ -1398,16 +1399,6 @@ export class Store
             ret.finalize();
             return ret;
         });
-    }
-}
-
-//---------------------------------------------------------------------
-// Iterate over the properties of a raw data/update  object.
-// Does *not* do ownProperty check, faster than lodash forIn/forOwn
-//-------------------------------------------------------------------
-function forIn(obj, fn) {
-    for (let key in obj) {
-        fn(obj[key], key);
     }
 }
 
