@@ -27,6 +27,8 @@ import {
     JsonBlobService,
     LocalStorageService,
     MetricsService,
+    NdjsonFetchOptions,
+    NdjsonResult,
     PrefService,
     SessionStorageService,
     TrackService,
@@ -309,7 +311,7 @@ export class XHApi {
      * Send an HTTP request and decode the response incrementally as NDJSON.
      * @see FetchService.fetchNdjson
      */
-    fetchNdjson(opts: FetchOptions, ctx?: CallContextLike): AsyncGenerator<PlainObject[]> {
+    fetchNdjson(opts: NdjsonFetchOptions, ctx?: CallContextLike): NdjsonResult {
         return this.fetchService.fetchNdjson(opts, ctx);
     }
 

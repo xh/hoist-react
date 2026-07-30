@@ -34,7 +34,6 @@ export class StoreRecord {
     readonly parentId: StoreRecordId;
     readonly store: Store;
     readonly isSummary: boolean;
-    readonly treePath: StoreRecordId[];
 
     /**
      * Raw data loaded via Store.loadData() or Store.updateData(). Null for locally-added records,
@@ -60,6 +59,8 @@ export class StoreRecord {
      */
     readonly committedData: PlainObject;
 
+    private _treePath: StoreRecordId[];
+
     /**
      * Unique ID for representing record within ag-Grid node API.
      *
@@ -67,6 +68,16 @@ export class StoreRecord {
      * locate the record using the ag-Grid callbacks and API.
      */
     readonly agId: string;
+
+    /**
+     * Path to this record within any tree hierarchy, as an array of string record IDs ending
+     * with this record's own. Required by ag-Grid to place rows within tree grids.
+     * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
+     */
+    get treePath(): StoreRecordId[] {
+        // Non-root tree paths are set in constructor.  Lazy here to avoid setting for flat stores.
+        return (this._treePath ??= [this.id.toString()]);
+    }
 
     get isRecord(): boolean {
         return true;
@@ -238,19 +249,16 @@ export class StoreRecord {
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
 
+        const idStr = id.toString();
         this.id = id;
-        this.agId = 'ag_' + id.toString();
+        this.agId = 'ag_' + idStr;
         this.store = store;
         this.data = data;
         this.raw = raw;
         this.committedData = committedData;
         this.parentId = parent?.id;
-        /*
-         * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
-         * Each row's position in the hierarchy must be provided to the grid as an array of strings,
-         * representing the path to the row.
-         */
-        this.treePath = parent ? [...parent.treePath, id.toString()] : [id.toString()];
+        // Root record paths are built lazily by the getter - we may never need for flat data.
+        this._treePath = parent ? [...parent.treePath, idStr] : null;
         this.isSummary = isSummary;
 
         if (this.ownsData) data.id = id;
