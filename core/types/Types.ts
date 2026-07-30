@@ -32,6 +32,9 @@ export type NonEmptyArray<T> = [T, ...T[]];
 export type Thunkable<T> = T | (() => T);
 export type Awaitable<T> = Promise<T> | T;
 
+/** Convenience type for accepting a sync or async iterable of Ts - e.g. a streaming source. */
+export type AnyIterable<T> = Iterable<T> | AsyncIterable<T>;
+
 /** Convenience type for a "plain", string-keyed object holding any kind of values. */
 export type PlainObject = Record<string, any>;
 

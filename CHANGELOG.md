@@ -21,17 +21,17 @@
   its raw source data object after parsing, reducing memory usage on large stores where
   `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
 * Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
-  async iterable yielding raw records or chunks. Creates records incrementally without buffering
+  async iterable yielding raw records. Creates records incrementally without buffering
   the complete raw dataset in memory, then installs them in a single transaction once the source
   completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
-* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
-  as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
-  directly via `for await` for any streamed endpoint. Optionally pairs with hoist-core v41's
-  `BaseController.renderNdjson()`.
+* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally.
+  Returns a `lines` async iterable of parsed records - the natural streaming source for
+  `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata record.
+  Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
 * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
-  values are also shared across successive fetches of the same logical dataset, as identified by
-  a required app-provided key.
+  values may also be shared across successive fetches of the same logical dataset, as identified
+  by a required app-provided key, per a configurable `retainMode`.
 * Added `Store.useFixedDataShape` config (default `false`) - an opt-in memory optimization for
   stores whose records populate 20 or more fields. Clones each record's `data` from a shared
   template carrying every field, so all records share one shape, rather than growing each object
@@ -74,6 +74,8 @@
 * Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`, reflecting that custom `Aggregator`
   implementations may only rely on queried field values - not `ViewRowData` metadata - when reading
   row data. Use row-level getters such as `BaseRow.isLeaf` in place of `data.cubeRowType`.
+* Corrected `ChildRawData.rawData` type from `PlainObject[]` to `PlainObject` - the runtime has
+  always expected a single raw record per object, and an array would throw on load.
 
 ### 📚 Libraries
 
