@@ -12,7 +12,7 @@ import type {FetchException, NdjsonFetchOptions, NdjsonResult} from '../FetchSer
 import {StringInterner} from './StringInterner';
 
 /**
- * Decodes a streamed NDJSON Response body into chunks of parsed records - implementation helper
+ * Decodes a streamed NDJSON Response body into parsed records - implementation helper
  * for {@link FetchService.fetchNdjson}, which remains the public entry point and injects all
  * service-level concerns via constructor arguments. Implements {@link NdjsonResult} and is
  * returned to callers directly.
@@ -24,7 +24,7 @@ export class NdjsonResultImpl implements NdjsonResult {
     private static readonly POISON = '//xh-ndjson-stream-error';
 
     /** Parsed data records - see {@link NdjsonResult.lines}. */
-    readonly lines: AsyncGenerator<PlainObject[]>;
+    readonly lines: AsyncGenerator<PlainObject>;
 
     /** Leading metadata record - see {@link NdjsonResult.meta}. */
     readonly meta: Promise<PlainObject> | null = null;
@@ -54,7 +54,7 @@ export class NdjsonResultImpl implements NdjsonResult {
             // `lines` to be consumed - callers typically need it up-front to decide how to
             // process the balance of the stream.
             const first = stream.next();
-            this.meta = first.then(({done, value}) => (done ? null : value[0]));
+            this.meta = first.then(({done, value}) => (done ? null : value));
 
             // Mark any rejection as observed - avoids unhandled-rejection noise
             this.meta.catch(noop);
@@ -79,17 +79,17 @@ export class NdjsonResultImpl implements NdjsonResult {
     // Implementation
     //-----------------------
     /**
-     * Await the pending request, then stream its body - wrapping any failure raised while
-     * reading or parsing the stream via the configured `enrichError`.
+     * Await the pending request, then stream its body one record at a time - wrapping any
+     * failure raised while reading or parsing the stream via the configured `enrichError`.
      *
      * Settles `completion` on exit - see that property for its exact semantics.
      */
-    private async *stream(): AsyncGenerator<PlainObject[]> {
+    private async *stream(): AsyncGenerator<PlainObject> {
         const {interner, enrichError, onComplete} = this;
         try {
             const response = await this.response;
             try {
-                yield* this.chunks(response);
+                yield* this.records(response);
                 interner?.commit();
             } catch (e) {
                 const ex = enrichError(e, response);
@@ -105,15 +105,15 @@ export class NdjsonResultImpl implements NdjsonResult {
     }
 
     /**
-     * Read an NDJSON Response body incrementally, yielding chunks (arrays) of parsed records as
-     * they arrive off the network. Each line is parsed with native JSON.parse, partial trailing
-     * lines are carried across chunk boundaries, and no more than one network chunk of raw text
-     * is buffered.
+     * Read an NDJSON Response body incrementally, yielding parsed records as they arrive off
+     * the network. Each line is parsed with native JSON.parse, partial trailing lines are
+     * carried across chunk boundaries, and no more than one network chunk of raw text is
+     * buffered.
      *
      * Note the final-buffer parse below doubles as truncation detection - a stream cut short by
      * a server-side failure ends with an unparseable line (see fetchNdjson) and throws here.
      */
-    private async *chunks(response: Response): AsyncGenerator<PlainObject[]> {
+    private async *records(response: Response): AsyncGenerator<PlainObject> {
         const {interner} = this,
             reader = response.body.getReader(),
             decoder = new TextDecoder();
@@ -126,10 +126,11 @@ export class NdjsonResultImpl implements NdjsonResult {
             buffer += decoder.decode(value, {stream: true});
             const lines = buffer.split('\n');
             buffer = lines.pop(); // retain any partial trailing line for the next chunk
-            const chunk = lines.filter(Boolean).map(it => JSON.parse(it));
-            if (chunk.length) {
-                interner?.intern(chunk);
-                yield chunk;
+            for (const line of lines) {
+                if (!line) continue;
+                const record = JSON.parse(line);
+                interner?.intern(record);
+                yield record;
             }
         }
 
@@ -141,25 +142,22 @@ export class NdjsonResultImpl implements NdjsonResult {
                     message: 'NDJSON stream terminated by a server-side failure - see server logs.'
                 });
             }
-            const chunk = [JSON.parse(buffer)];
-            interner?.intern(chunk);
-            yield chunk;
+            const record = JSON.parse(buffer);
+            interner?.intern(record);
+            yield record;
         }
     }
 
     /**
-     * Yield the balance of the eagerly-read first chunk, then delegate to the remaining stream.
+     * Delegate to the remaining stream once the eagerly-read meta record has settled.
      */
     private async *linesAfterMeta(
-        first: Promise<IteratorResult<PlainObject[]>>,
-        stream: AsyncGenerator<PlainObject[]>
-    ): AsyncGenerator<PlainObject[]> {
+        first: Promise<IteratorResult<PlainObject>>,
+        stream: AsyncGenerator<PlainObject>
+    ): AsyncGenerator<PlainObject> {
         try {
-            const {done, value} = await first; // rethrows any failure hit reading the meta record
-            if (!done) {
-                if (value.length > 1) yield value.slice(1);
-                yield* stream;
-            }
+            const {done} = await first; // rethrows any failure hit reading the meta record
+            if (!done) yield* stream;
         } finally {
             await stream.return(null); // ensure inner cleanup if the consumer exits early
         }

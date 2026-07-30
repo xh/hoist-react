@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
+import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
@@ -278,8 +278,8 @@ export class Cube extends HoistBase {
      * Populate this cube with a new dataset.
      * This method largely delegates to {@link Store.loadData} - see that method for more info.
      *
-     * May also be passed a streaming source - a sync or async iterable yielding raw records or
-     * chunks of records - loaded via {@link Store.loadDataAsync}, e.g.
+     * May also be passed a streaming source - a sync or async iterable yielding raw records -
+     * loaded via {@link Store.loadDataAsync}, e.g.
      * `cube.loadDataAsync(XH.fetchNdjson({url}).lines)`.
      *
      * Note that this method will update its views asynchronously in order to avoid locking up the
@@ -289,7 +289,7 @@ export class Cube extends HoistBase {
      * @param info - optional metadata to associate with this cube/dataset.
      */
     async loadDataAsync(
-        rawData: PlainObject[] | AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>,
+        rawData: PlainObject[] | AnyIterable<PlainObject>,
         info: PlainObject = {}
     ): Promise<void> {
         if (isArray(rawData)) {

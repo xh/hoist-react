@@ -157,8 +157,8 @@ export class FetchService extends HoistService {
     /**
      * Send an HTTP request and decode the response body incrementally as NDJSON - newline
      * delimited JSON, aka JSON Lines / JSONL. Returns an {@link NdjsonResult} whose `lines`
-     * generator yields chunks (arrays) of parsed records as they arrive off the network. No
-     * more than one network chunk of raw text is buffered, making this suitable for consuming
+     * generator yields parsed records one at a time as they arrive off the network. No more
+     * than one network chunk of raw text is buffered, making this suitable for consuming
      * very large or long-running streamed responses.
      *
      * The natural source for {@link Store.loadDataAsync} - e.g.
@@ -974,8 +974,8 @@ export interface NdjsonFetchOptions extends FetchOptions {
 
 /** Streamed result returned by {@link FetchService.fetchNdjson}. */
 export interface NdjsonResult {
-    /** Parsed data records, yielded in chunks (arrays) as they arrive off the network. */
-    lines: AsyncGenerator<PlainObject[]>;
+    /** Parsed data records, yielded individually as they arrive off the network. */
+    lines: AsyncGenerator<PlainObject>;
 
     /**
      * Leading metadata record - null unless requested via

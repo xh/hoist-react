@@ -73,10 +73,11 @@ export class StringInterner {
      */
     intern(data: PlainObject | PlainObject[]) {
         this.pending ??= new Map();
-        const rows = isArray(data) ? data : [data];
-        rows.forEach(row => {
-            if (isPlainObject(row)) this.internRow(row);
-        });
+        if (isArray(data)) {
+            data.forEach(row => this.internRow(row));
+        } else {
+            this.internRow(data);
+        }
     }
 
     /**
@@ -117,6 +118,8 @@ export class StringInterner {
     // Implementation
     //------------------
     private internRow(row: PlainObject) {
+        if (!isPlainObject(row)) return;
+
         const {pending, committed} = this,
             {childrenKey} = this.spec;
         for (const k in row) {
