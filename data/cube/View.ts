@@ -583,11 +583,30 @@ export class View
             'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
         );
 
+        // Views own and cache those same rows, sharing them across all connected stores --
+        // configs that would write to them are unsafe.
+        throwIf(
+            ret.some(s => s.skipDataCopy && !s.skipDataParsing),
+            'Store.skipDataCopy requires skipDataParsing on a Store that is connected to a Cube View - parsing in place would modify View-owned row data.'
+        );
+        if (ret.some(s => s.skipDataCopy && s.processRawData)) {
+            this.logWarn(
+                'Store.processRawData on a `skipDataCopy` Store connected to a Cube View is passed View-owned row data - it must return a replacement object rather than mutate the row it is given.'
+            );
+        }
+
         throwIf(
             ret.some(s => s.idEncodesTreePath) &&
                 (!isNil(this.cube.bucketSpecFn) || !isNil(this.cube.omitFn)),
             'Store.idEncodesTreePath cannot be used on a Store that is connected to a Cube with a `bucketSpecFn` or `omitFn`'
         );
+
+        // View row data is already parsed and owned by this View - recommend zero-copy configs
+        if (ret.some(s => !s.skipDataCopy || !s.skipDataParsing)) {
+            this.logWarn(
+                'Store(s) connected to a Cube View should set `skipDataCopy` and `skipDataParsing` for optimal performance - View rows are already parsed and can be used as record data directly.'
+            );
+        }
 
         return ret;
     }

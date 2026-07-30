@@ -102,7 +102,8 @@ const store = new Store({
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
 | `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
-| `useRawAsData` | `boolean` | `false` | Use each raw object *as* its record's `data`, skipping the parse/copy (memory)        |
+| `skipDataCopy` | `boolean` | `false` | Use each raw object *as* its record's `data`, by reference - zero-copy (memory)       |
+| `skipDataParsing` | `boolean` | `false` | Skip Field-level value parsing - data already in final client-side form (performance) |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
@@ -792,16 +793,18 @@ const store = new Store({
 
 ### Processing Raw Data with `processRawData`
 
-Transform data before it enters the Store:
+Transform data before it enters the Store. The function is handed a Store-owned shallow clone of
+each raw object - mutate it in place and return it (no defensive cloning needed), or return a
+replacement object:
 
 ```typescript
 const store = new Store({
     fields: ['fullName', 'salary'],
-    processRawData: raw => ({
-        ...raw,
-        fullName: `${raw.firstName} ${raw.lastName}`,
-        salary: raw.salary / 100  // Convert cents to dollars
-    })
+    processRawData: raw => {
+        raw.fullName = `${raw.firstName} ${raw.lastName}`;
+        raw.salary = raw.salary / 100; // Convert cents to dollars
+        return raw;
+    }
 });
 ```
 

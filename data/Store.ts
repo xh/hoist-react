@@ -88,8 +88,14 @@ export interface StoreConfig {
 
     /**
      * Function to run on each individual data object presented to `loadData()` prior to creating
-     * a `StoreRecord` from that object. This function must return an object, cloning the original
-     * object if edits are necessary.
+     * a `StoreRecord` from that object. Must return an object - either the object it was passed,
+     * edited in place, or a replacement.
+     *
+     * The Store passes this function its own shallow clone of each raw object, so top-level edits
+     * are safe and efficient - mutate and return it, no defensive cloning needed. (Nested values
+     * are still shared with the source object and should be replaced rather than mutated.) With
+     * `skipDataCopy` the raw object itself is passed and adopted - see that config for the
+     * ownership contract.
      */
     processRawData?: (data: PlainObject) => PlainObject;
 
@@ -159,18 +165,30 @@ export interface StoreConfig {
 
     /**
      * True to use each incoming raw object *as* its record's `data`, by reference, rather than
-     * parsing and copying it. A zero-copy mode for already-parsed data - e.g. a connected Cube
-     * {@link View}, or a server endpoint returning data in its final client-side form.
+     * copying it into a Store-owned object. A zero-copy mode for large datasets - e.g. a
+     * connected Cube {@link View}, or a server endpoint returning data in its final client-side
+     * form.
      *
-     * Raw data must already match what the Store's Fields would parse - `type`, `parseVal`, and
-     * `defaultValue` are not applied. The Store never modifies or freezes raw objects (regardless
-     * of `freezeData`); the provider may mutate rows in place but must then publish via
-     * `updateData()`, as `loadData()` would skip reference-equal objects as unchanged.
+     * Setting this flag hands ownership of raw objects to the Store: it installs its shared
+     * Field-defaults prototype on each adopted plain object (so missing Fields resolve to their
+     * `defaultValue` - objects with a custom prototype, e.g. class instances, are adopted with
+     * their prototype intact) and, unless `skipDataParsing` is also set, parses Field values in
+     * place, directly on the raw object. The Store never freezes adopted objects (regardless of
+     * `freezeData`) or writes `data.id`; the provider may mutate rows in place but must then
+     * publish via `updateData()`, as `loadData()` would skip reference-equal objects as unchanged.
      *
      * `data` will carry every key on the raw object, not just declared Fields. Not compatible
-     * with `processRawData` or `reuseRecords`. Default false.
+     * with `reuseRecords`. Default false.
      */
-    useRawAsData?: boolean;
+    skipDataCopy?: boolean;
+
+    /**
+     * True to skip Field-level parsing when creating or updating record data - values are taken
+     * as-is, with no {@link FieldType} coercion and no XSS sanitization. For data already in its
+     * final client-side form, where the per-value parse is unwanted overhead. Missing Fields
+     * still resolve to their `defaultValue`. Default false.
+     */
+    skipDataParsing?: boolean;
 
     /**
      * Set to true to always validate all uncommitted records on every change to
@@ -296,7 +314,8 @@ export class Store
     freezeData: boolean;
     reuseRecords: boolean;
     retainRaw: boolean;
-    useRawAsData: boolean;
+    skipDataCopy: boolean;
+    skipDataParsing: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -354,7 +373,8 @@ export class Store
         idEncodesTreePath = false,
         reuseRecords = false,
         retainRaw = true,
-        useRawAsData = false,
+        skipDataCopy = false,
+        skipDataParsing = false,
         validationIsComplex = false,
         experimental,
         data
@@ -366,12 +386,8 @@ export class Store
             'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
         );
         throwIf(
-            useRawAsData && processRawData,
-            'Store.useRawAsData cannot be used with processRawData.'
-        );
-        throwIf(
-            useRawAsData && reuseRecords,
-            'Store.useRawAsData cannot be used with reuseRecords.'
+            skipDataCopy && reuseRecords,
+            'Store.skipDataCopy cannot be used with reuseRecords.'
         );
 
         this.experimental = this.parseExperimental(experimental);
@@ -387,7 +403,8 @@ export class Store
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
         this.retainRaw = retainRaw;
-        this.useRawAsData = useRawAsData;
+        this.skipDataCopy = skipDataCopy;
+        this.skipDataParsing = skipDataParsing;
         this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
@@ -673,7 +690,7 @@ export class Store
             throwIf(isNil(id), `Must provide 'id' property for new records.`);
             throwIf(this.getById(id), `Duplicate id '${id}' provided for new record.`);
 
-            const parsedData = this.parseRaw(it),
+            const parsedData = this.parseData(it),
                 parent = this.getById(parentId);
 
             return new StoreRecord({
@@ -1228,20 +1245,6 @@ export class Store
     ): StoreRecord {
         const id = this.idSpec(raw);
 
-        // Zero-copy - use the raw object as `data` by reference, with no parsing, no data.id
-        // write, and no freeze. The Store does not own this object - see StoreConfig.useRawAsData.
-        if (this.useRawAsData) {
-            return new StoreRecord({
-                id,
-                store: this,
-                raw,
-                data: raw,
-                committedData: raw,
-                parent,
-                isSummary
-            });
-        }
-
         // Potentially re-use existing record if raw data is reference equal and tree path identical
         if (this.reuseRecords) {
             const cached = this._committed?.recordMap.get(id);
@@ -1250,17 +1253,15 @@ export class Store
             }
         }
 
-        const {processRawData, retainRaw} = this;
+        const {skipDataCopy, processRawData, retainRaw} = this;
         let data = raw;
         if (processRawData) {
-            data = processRawData(raw);
-            throwIf(
-                !data,
-                'Store.processRawData should return an object. If writing/editing, be sure to return a clone!'
-            );
+            // For efficiency hand processRawData the object it can typically mutate
+            data = processRawData(skipDataCopy ? raw : {...raw});
+            throwIf(!data, 'Store.processRawData should return an object.');
         }
 
-        data = this.parseRaw(data);
+        data = this.parseData(data);
         const ret = new StoreRecord({
             id,
             store: this,
@@ -1307,16 +1308,33 @@ export class Store
         return new Set(this.summaryRecords?.map(it => it.id) ?? []);
     }
 
+    /** Produce a StoreRecord's data object from source data, per this Store's copy/parse configs. */
+    private parseData(data: PlainObject): PlainObject {
+        const {skipDataCopy, skipDataParsing, _dataDefaults} = this;
+        if (skipDataCopy) {
+            // Install the shared defaults prototype on plain objects so missing Fields resolve
+            // to their defaultValue, as in copy mode. A single shared prototype keeps this cheap
+            // (V8 caches the transition per shape) and a no-op for re-adopted objects. Objects
+            // with a custom prototype (e.g. ViewRowData) are adopted with their prototype intact.
+            if (Object.getPrototypeOf(data) === Object.prototype) {
+                Object.setPrototypeOf(data, _dataDefaults);
+            }
+            if (!skipDataParsing) this.parseInPlace(data);
+            return data;
+        }
+        return this.parseRaw(data);
+    }
+
     private parseRaw(data: PlainObject): PlainObject {
         // a) create/prepare the data object
         const ret = Object.create(this._dataDefaults);
 
-        // b) apply parsed data as needed.
-        const {_fieldMap} = this;
+        // b) apply parsed (or with skipDataParsing, verbatim) data as needed.
+        const {_fieldMap, skipDataParsing} = this;
         forIn(data, (raw, name) => {
             const field = _fieldMap.get(name);
             if (field) {
-                const val = field.parseVal(raw);
+                const val = skipDataParsing ? (raw ?? field.defaultValue) : field.parseVal(raw);
                 if (val !== field.defaultValue) {
                     ret[name] = val;
                 }
@@ -1326,18 +1344,29 @@ export class Store
         return ret;
     }
 
+    // Parse Field values in place, directly onto the given object (see skipDataCopy). Iterates
+    // declared Fields rather than object keys - undeclared keys are left untouched. Writes only
+    // values changed by parsing - a no-op on already-parsed data, with missing Fields reading
+    // their defaultValue through the prototype installed by parseData.
+    private parseInPlace(data: PlainObject) {
+        this._fieldMap.forEach((field, name) => {
+            const cur = data[name],
+                val = field.parseVal(cur);
+            if (val !== cur) data[name] = val;
+        });
+    }
+
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
-        const {_fieldMap} = this;
+        const {_fieldMap, skipDataParsing} = this;
 
         // a) clone the existing object
-        const ret = Object.create(this._dataDefaults);
-        Object.assign(ret, data);
+        const ret = Object.assign(Object.create(this._dataDefaults), data);
 
-        // b) apply changes
+        // b) apply changes - null/undefined always reverts a Field to its defaultValue
         forIn(update, (raw, name) => {
             const field = _fieldMap.get(name);
             if (field) {
-                const val = field.parseVal(raw);
+                const val = skipDataParsing ? (raw ?? field.defaultValue) : field.parseVal(raw);
                 if (val !== field.defaultValue) {
                     ret[name] = val;
                 } else {

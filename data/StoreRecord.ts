@@ -295,11 +295,11 @@ export class StoreRecord {
     // --------------------------
     /**
      * True if this record's `data` object belongs to it alone and may be written to and frozen.
-     * False only for records holding a provider-owned raw object under `useRawAsData`.
+     * False for all records of a Store with `skipDataCopy`, which adopts provider-owned objects.
      * @internal
      */
     get ownsData(): boolean {
-        return this.data !== this.raw;
+        return !this.store.skipDataCopy;
     }
 
     /**
@@ -334,14 +334,15 @@ export interface StoreRecordConfig {
 
     /**
      * Data for this StoreRecord, pre-processed if applicable by `Store.processRawData()` and
-     * `Field.parseVal()`. Note this must be a new object dedicated to this StoreRecord.
-     * This object will be enhanced with an id and frozen.
+     * `Field.parseVal()`. Unless the Store is configured with `skipDataCopy`, this must be a new
+     * object dedicated to this StoreRecord, and will be enhanced with an id and frozen.
      */
     data: PlainObject;
 
     /**
-     * The original data for the StoreRecord, prior to any Store pre-processing.
-     * This data is for reference only and will not be altered by this object.
+     * The original data for the StoreRecord, prior to any Store pre-processing. For reference
+     * only and never altered by this object. Note that a Store with `skipDataCopy` adopts and
+     * parses raw objects in place - see that config for the ownership contract.
      */
     raw?: PlainObject;
 
