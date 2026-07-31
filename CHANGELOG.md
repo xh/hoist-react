@@ -29,7 +29,7 @@
   completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
 * Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally
   as an async iterable - the natural streaming source for `Store.loadDataAsync()`, and usable
-  directly via `for await` for any streamed endpoint. Optionally pairs with hoist-core v41's
+  directly via `for await` for any streamed endpoint. Optionally pairs with hoist-core v40.4's
   `BaseController.renderNdjson()`.
 * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
