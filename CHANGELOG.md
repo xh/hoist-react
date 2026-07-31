@@ -41,7 +41,7 @@
   `JSON.stringify()` of `data` include default-valued fields; use `record.getValues()` or
   `record.getModifiedValues()` instead. Added `Store.recordDataMode` to report which representation
   a Store is using - `'sparse'`, `'fixedShape'` or `'raw'`. See the data package README for when
-  this pays and when it does not.
+  this pays and when it does not. Also accepted as a `Cube` config, applied to its source store.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
