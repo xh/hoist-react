@@ -178,6 +178,7 @@ class CodeInputModel extends HoistInputModel {
 
     private themeCompartment = new Compartment();
     private editableCompartment = new Compartment();
+    private editorContainer: HTMLElement = null;
 
     get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
@@ -321,9 +322,33 @@ class CodeInputModel extends HoistInputModel {
         );
     }
 
-    createCodeEditor = async (container: HTMLElement) => {
+    /**
+     * Stable ref callback for the editor container - installs a fresh EditorView when attached and
+     * disposes of it when detached.
+     *
+     * Note this must remain a stable function instance: React re-invokes callback refs whose
+     * identity changes across renders, so an inline arrow here would tear down and rebuild the
+     * editor on every render. Wrapped to return void - React 19 treats a ref callback's return
+     * value as a cleanup fn.
+     */
+    editorContainerRef = (container: HTMLElement) => {
+        this.createCodeEditor(container);
+    };
+
+    private createCodeEditor = async (container: HTMLElement) => {
+        // Always dispose of any prior editor first - CodeMirror appends its own DOM to the
+        // container, so a retained EditorView would remain visible (and stale) under its
+        // replacement, in addition to leaking.
+        XH.safeDestroy(this.editor);
+        this.editor = null;
+
+        this.editorContainer = container;
         if (!container) return;
+
         const extensions = await this.getExtensionsAsync();
+
+        // Bail if the container was detached or replaced while awaiting async extension loading.
+        if (this.editorContainer !== container) return;
 
         const state = EditorState.create({doc: this.renderValue || '', extensions});
         this.editor = new EditorView({state, parent: container});
@@ -605,11 +630,8 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
-                // We pass the container via ref to createCodeEditor, which initializes the editor inside it.
-                // Wrapped to return void — React 19 treats a ref callback's return value as a cleanup fn.
-                ref: el => {
-                    model.createCodeEditor(el);
-                }
+                // Editor is created within this container - see model.editorContainerRef.
+                ref: model.editorContainerRef
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],
