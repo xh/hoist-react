@@ -533,7 +533,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .run(ctx => this.dataAccess.updateViewInfoAsync(view, updates, ctx));
     }
 
-    /** Apply the same metadata updates to multiple views. Requires hoist-core v41 or greater. */
+    /** Apply the same metadata updates to multiple views. Requires hoist-core v40.4 or greater. */
     async updateViewsInfoAsync(views: ViewInfo[], updates: ViewUpdateSpec): Promise<void> {
         return this.runner()
             .span('bulkUpdateInfo')
@@ -543,7 +543,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /**
      * Rename or re-parent a group, cascading to every view at or nested under the renamed path.
      * Groups are namespaced separately for global vs. user-owned views, so pass `isGlobal` to
-     * select which of the two to rename within. Requires hoist-core v41 or greater.
+     * select which of the two to rename within. Requires hoist-core v40.4 or greater.
      */
     async renameGroupAsync(from: string, to: string, isGlobal: boolean): Promise<void> {
         return this.runner()

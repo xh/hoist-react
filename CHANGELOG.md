@@ -2,8 +2,11 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade.)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade, hoist-core update.)
 
+* Requires `hoist-core >= 40.4.0` for the `ViewManager` group and bulk-editing APIs - the new
+  `xhView/renameGroup` and `xhView/bulkUpdateInfo` endpoints. Group renames and bulk view edits
+  will fail against earlier servers.
 * Hoist v87 updates to React 19. Apps may require minor adjustments and should be tested carefully.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
@@ -36,6 +39,13 @@
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
   datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+* `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus in the
+  ViewManager menu and as expandable tree grids in the Manage dialog. Groups and views now support
+  drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades to
+  every view nested beneath it. ⚠️ NOTE - this requires ag-Grid's `RowDragModule` to be registered
+  by the app in its `Bootstrap.ts` (alongside the other required community modules) - the drag
+  handles will not render without it. The `ViewManager` now supports bulk editing of views' pin and
+  visibility state.
 
 ### 🐞 Bug Fixes
 
@@ -67,12 +77,6 @@
   preference vs. receiving its server-side default - a distinction that cannot be reliably inferred
   by comparing the value to the default. Requires a hoist-core version that emits the backing
   `isSet` flag; against older servers all prefs report as unset.
-* `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus
-  in the ViewManager menu and as expandable tree grids in the Manage dialog (requires
-  hoist-core v41+). Groups and views now support drag-and-drop reorganization within the personal and
-  global tabs. ⚠️ NOTE - this requires ag-Grid's `RowDragModule` to be registered by the app in its
-  `Bootstrap.ts` (alongside the other required community modules) - the drag handles will not render
-  without it. The `ViewManager` now supports bulk editing of views' pin and visibility state.
 
 ### 🐞 Bug Fixes
 
