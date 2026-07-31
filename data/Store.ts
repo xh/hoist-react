@@ -1413,12 +1413,12 @@ export class Store
         if (_dataTemplate) {
             const {_fieldMap} = this,
                 ret = {..._dataTemplate};
-            forIn(data, (raw, name) => {
+            for (const name in data) {
                 const field = _fieldMap.get(name);
                 if (field) {
-                    ret[name] = field.parseVal(raw);
+                    ret[name] = field.parseVal(data[name]);
                 }
-            });
+            }
             return ret;
         }
 
@@ -1450,12 +1450,12 @@ export class Store
         if (this._dataTemplate) {
             const {_fieldMap} = this,
                 ret = {...data};
-            forIn(update, (raw, name) => {
+            for (const name in update) {
                 const field = _fieldMap.get(name);
                 if (field) {
-                    ret[name] = field.parseVal(raw);
+                    ret[name] = field.parseVal(update[name]);
                 }
-            });
+            }
             return ret;
         }
 
