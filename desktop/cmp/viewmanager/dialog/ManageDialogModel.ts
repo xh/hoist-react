@@ -320,27 +320,10 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async doRenameGroupAsync(from: string, to: string, isGlobal: boolean) {
-        await this.applyGroupRenameAsync(from, to, isGlobal);
+        await this.viewManagerModel.renameGroupAsync(from, to, isGlobal);
         await this.viewManagerModel.refreshAsync();
         await this.refreshAsync();
         await this.reselectGroupAsync(to, isGlobal);
-    }
-
-    /**
-     * Rename/re-parent a group by rewriting the group of an anchor view beneath it, with a
-     * server-side `groupRename` cascade covering all other views under the group. The cascade
-     * excludes the anchor view itself, so its own rewritten group is set in the same update.
-     */
-    private async applyGroupRenameAsync(from: string, to: string, isGlobal: boolean) {
-        const {viewManagerModel} = this,
-            views = isGlobal ? viewManagerModel.globalViews : viewManagerModel.ownedViews,
-            anchor = views.find(v => isGroupSameOrDescendant(v.group, from));
-        if (!anchor) return;
-
-        await viewManagerModel.updateViewInfoAsync(anchor, {
-            group: to + anchor.group.substring(from.length),
-            groupRename: {from, to}
-        });
     }
 
     /**
@@ -610,7 +593,7 @@ export class ManageDialogModel extends HoistModel {
             destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'the top level';
         let moved = false;
         try {
-            await this.applyGroupRenameAsync(from, to, isGlobal);
+            await this.viewManagerModel.renameGroupAsync(from, to, isGlobal);
             moved = true;
             XH.successToast({message: `Moved group "${leaf}" to ${destStr}.`, position: 'top'});
         } catch (e) {

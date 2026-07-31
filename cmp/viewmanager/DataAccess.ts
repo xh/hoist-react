@@ -140,6 +140,34 @@ export class DataAccess<T> {
             });
     }
 
+    /**
+     * Rename or re-parent a group, cascading to every view at or nested under the renamed path.
+     * Pass `isGlobal` to select which namespace to rename within - the global views, or those
+     * owned by the current user.
+     */
+    async renameGroupAsync(
+        from: string,
+        to: string,
+        isGlobal: boolean,
+        ctx: CallContext
+    ): Promise<void> {
+        const {model} = this;
+        throwIf(
+            isGlobal && !model.manageGlobal,
+            `Cannot rename a ${model.globalDisplayName} group - missing required permission.`
+        );
+        return model
+            .runner(ctx)
+            .postJson({
+                url: 'xhView/renameGroup',
+                params: {type: model.type},
+                body: {from, to, isGlobal}
+            })
+            .catch(e => {
+                throw XH.exception({message: `Unable to rename group "${from}"`, cause: e});
+            });
+    }
+
     /** Update a view's value. */
     async updateViewValueAsync(
         view: View<T>,

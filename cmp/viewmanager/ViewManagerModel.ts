@@ -49,15 +49,7 @@ export interface ViewCreateSpec {
     value: PlainObject;
 }
 
-export type ViewUpdateSpec = Partial<Omit<ViewCreateSpec, 'value'>> & {
-    /**
-     * Optional signal that the user has renamed or re-parented an entire group (as opposed to
-     * moving this single view into a different group). When provided, the server will rewrite the
-     * group on all other views of the same type and owner whose group equals or falls under the
-     * `from` path. Requires hoist-core v41+.
-     */
-    groupRename?: {from: string; to: string};
-};
+export type ViewUpdateSpec = Partial<Omit<ViewCreateSpec, 'value'>>;
 
 export interface ViewUserState {
     currentView?: string;
@@ -546,6 +538,17 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return this.runner()
             .span('bulkUpdateInfo')
             .run(ctx => this.dataAccess.updateViewsInfoAsync(views, updates, ctx));
+    }
+
+    /**
+     * Rename or re-parent a group, cascading to every view at or nested under the renamed path.
+     * Groups are namespaced separately for global vs. user-owned views, so pass `isGlobal` to
+     * select which of the two to rename within. Requires hoist-core v41 or greater.
+     */
+    async renameGroupAsync(from: string, to: string, isGlobal: boolean): Promise<void> {
+        return this.runner()
+            .span('renameGroup')
+            .run(ctx => this.dataAccess.renameGroupAsync(from, to, isGlobal, ctx));
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
