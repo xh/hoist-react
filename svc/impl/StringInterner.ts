@@ -28,8 +28,17 @@ import type {StringInternSpec} from '../FetchService';
  */
 export class StringInterner {
     /** Latest spec provided for this key - adopted on each call, so settings may vary. */
-    spec: StringInternSpec;
+    get spec(): StringInternSpec {
+        return this._spec;
+    }
 
+    set spec(spec: StringInternSpec) {
+        this._spec = spec;
+        this.excludeFields = spec.excludeFields?.length ? new Set(spec.excludeFields) : null;
+    }
+
+    private _spec: StringInternSpec;
+    private excludeFields: Set<string> = null;
     private committed: Map<string, string> = new Map();
     private pending: Map<string, string> = null;
 
@@ -116,11 +125,12 @@ export class StringInterner {
     private internRow(row: PlainObject) {
         if (!isPlainObject(row)) return;
 
-        const {pending, committed} = this,
+        const {pending, committed, excludeFields} = this,
             {childrenKey} = this.spec;
         for (const k in row) {
             const v = row[k];
             if (isString(v)) {
+                if (excludeFields?.has(k)) continue;
                 this.processed++;
                 let c = pending.get(v);
                 if (c === undefined) {
