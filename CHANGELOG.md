@@ -31,7 +31,8 @@
 * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values may also be shared across successive fetches of the same logical dataset, as identified
-  by a required app-provided key, per a configurable `retainMode`.
+  by a required app-provided key, per a configurable `retainMode`. Skip known high-cardinality
+  fields (e.g. UUID columns) via `excludeFields`.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
