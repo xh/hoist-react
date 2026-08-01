@@ -129,8 +129,7 @@ export class StringInterner {
             {childrenKey} = this.spec;
         for (const k in row) {
             const v = row[k];
-            if (isString(v)) {
-                if (excludeFields?.has(k)) continue;
+            if (isString(v) && !excludeFields?.has(k)) {
                 this.processed++;
                 let c = pending.get(v);
                 if (c === undefined) {
