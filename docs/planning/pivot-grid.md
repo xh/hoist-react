@@ -11,6 +11,47 @@ component, with a pivot data layer that is efficient enough for ticking data.
 This is a multi-session effort. Keep this document current: check off TODOs as they land, record
 decisions in the sections below as they are made, and append to the session log.
 
+## Terminology
+
+Settled. Use these terms in prose, in code, and in the public API. They replace the prototype's
+"summary" vocabulary, which collided with `Store.summaryRecord` and `GridModel.showSummary` —
+distinct framework concepts that the value-totals row happens to be *rendered* with, but is not
+otherwise related to.
+
+| Term                          | Meaning                                                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **grouping** / group dimension | Row dimensions — today's tree-grid `groupBy`. 1-3 typical, 6 the practical ceiling.                                |
+| **pivot dimension**           | Extra dimensions sliced into columns, hierarchically. 1 typical, 3 the ceiling.                                     |
+| **pivot path**                | One ordered tuple of pivot dimension values, e.g. `US >> Equity`. Maps to one column or column group.               |
+| **value field**               | The measure to aggregate. 1 typical, occasionally 2-3 related fields.                                               |
+| **value column**              | The rendered column for one (pivot path, value field) pair.                                                         |
+| **cell**                      | One (group row, pivot path, value field) intersection.                                                              |
+| **row totals**                | Per group row, per value field: the aggregate across *all* pivot paths. The docked "Total" column(s).               |
+| **pivot totals**              | Per group row, per value field: the aggregate within *one* pivot grouping — i.e. a subtotal at a parent pivot node. |
+| **value totals**              | Per pivot path, per value field: the aggregate down *all* group rows. The docked totals row.                        |
+
+Note the structure: **row totals are pivot totals at the root pivot level.** They are the same
+operation evaluated at different depths of the pivot tree, which is worth preserving in whatever
+shape the pivot data layer takes — it should not need two mechanisms.
+
+**Pivot totals do not exist in the prototype** and are net-new work; scope them in phase 3. They only
+appear with 2+ pivot dimensions, so the typical single-pivot-dimension config never shows them.
+
+Mapping from the prototype's names, all of which are to be renamed:
+
+| Prototype                    | New                                |
+| ---------------------------- | ---------------------------------- |
+| `showSummaryColumn`          | row totals — show/hide             |
+| `summaryColumnSide`          | row totals — side                  |
+| `extraSummaryColumnFields`   | row totals — extra fields          |
+| `showSummaryRow`             | value totals — show/hide           |
+| `summaryRowSide`             | value totals — side                |
+| `extraSummaryRowFields`      | value totals — extra fields        |
+| `SUMMARY_COL_ID_PREFIX`      | row-totals column id prefix        |
+
+Sections below that predate this decision may still use the old words; the checklists are the
+authority on what changes, and phase 3 carries the rename.
+
 ## Context
 
 `cmp/pivotgrid/` currently holds a working prototype written in a client app and imported wholesale.
@@ -104,12 +145,118 @@ Types worth keeping from the prototype, all needing refinement: `PivotField` / `
 
 Do this first. Without a baseline the later numbers have nothing to prove.
 
-- [ ] Define acceptance criteria up front: dataset shape (leaf count × pivot cardinality ×
-      measures), target full-build time, target per-tick time, target heap ceiling.
-- [ ] Build a pivot benchmark harness in Toolbox Admin — full build, repeated ticks, heap sampling.
-      For a precedent on shape, the `StoreProxyBench*` harness on Toolbox's `proxy-store` branch is
-      worth a look, but it is not on `develop` and should not be treated as a dependency.
-- [ ] Capture baseline numbers against the current `PivotDataModel`.
+- [x] Define acceptance criteria up front — see below.
+- [x] Build a pivot benchmark harness in Toolbox Admin — full build, repeated ticks, heap sampling.
+      Landed on Toolbox's `pivot-grid` branch at `client-app/src/admin/tests/pivot/`, reachable at
+      Admin › Tests › Pivot Bench. Modelled on the `StoreProxyBench*` harness from Toolbox's
+      `store-proxy-mode` branch.
+- [x] Capture baseline numbers against the current `PivotDataModel` — see below.
+
+### Acceptance criteria
+
+**The shape of real usage.** Pivot grids are summary grids: they slice data into a compact table
+that reads without horizontal scrolling. Pivot dimensions are therefore *low* cardinality by nature —
+`region` with 4-8 values is the canonical case — and pivoting is chosen precisely because a low
+cardinality dimension makes an inefficient tree grouping. The cardinality lives in the **groupings**,
+not the pivots. So the profiles below hold pivot paths and value fields near their realistic values
+and vary the group-row count, which is what actually scales.
+
+**Profiles.** Leaf counts are fixed per profile; the harness exposes them so they can be dialled.
+Every profile has a `+ Drill` variant whose final grouping is unique-per-leaf, adding leaf-level
+drill-down and pushing total row count to leaves + group rows.
+
+Row counts below are as measured, not estimated.
+
+| Profile      | Leaves | Groupings | Group rows | Pivot dims → paths | Value fields | Dense cells |
+| ------------ | -----: | --------: | ---------: | ------------------ | -----------: | ----------: |
+| **Typical**  |    35k |         3 |      2,210 | 1 → 8              |            1 |        17.7k |
+| Typical+Drill|    35k |         4 |     37,210 | 1 → 8              |            1 |         298k |
+| **Heavy**    |   100k |         3 |      4,212 | 2 → 24 (4×6)       |            3 |         303k |
+| Heavy+Drill  |   100k |         4 |    104,212 | 2 → 24             |            3 |         7.5M |
+| **Wide**     |    35k |         6 |     31,636 | 3 → 48 (4×4×3)     |            2 |         3.0M |
+| Wide+Drill   |    35k |         7 |     66,636 | 3 → 48             |            2 |         6.4M |
+
+"Dense cells" is `group rows × pivot paths × value fields` — the work the prototype does, since its
+`Cube` aggregation is dense over the synthetic fields. The rewrite's target is the *populated* subset,
+which is far smaller in every profile and smallest where the prototype is worst.
+
+**Gate — Typical.** These are the numbers the rewrite must hit; the other profiles are measured and
+tracked every run but are not pass/fail.
+
+| Metric                                       | Target  |
+| -------------------------------------------- | ------- |
+| Full build (cold, from raw data)             | ≤ 250ms |
+| Tick — 1% of leaves (350 recs), values-only  | ≤ 30ms  |
+| Pivot layer heap, over the loaded `Cube`     | ≤ 2×    |
+
+**Secondary gate — Typical+Drill**, since leaf drill-down is a normal ask rather than a stress case:
+full build ≤ 750ms, tick ≤ 50ms.
+
+If the phase 0 baseline shows the prototype already meets a target, tighten that target rather than
+declaring it satisfied — the point is to prove the new cost model, not to clear a low bar.
+
+**Pathological guard.** A separate opt-in run pivots on a near-unique dimension (~5,000 distinct
+values, so ~5,000 pivot paths). Phase 0 only *measures* where each implementation falls over. What
+the framework should actually do about it — hard cap and throw, soft cap and bucket the tail, or
+just document the cliff — is a phase 1 API decision, to be made with those numbers in hand.
+
+### Baseline — `PivotDataModel` as imported
+
+Captured 2026-08-01, headless Chromium on a Linux workstation, with `--expose-gc` and
+`--enable-precise-memory-info`. Treat these as a *relative* baseline for the rewrite to beat, not as
+an absolute spec — they will move on different hardware. Two consecutive full runs agreed to within
+a few percent, so the numbers are stable.
+
+- **Data ms** — `PivotDataModel.update()` alone.
+- **Grid ms** — end-to-end `PivotGridModel.loadData()`. Excludes the async `autosizeAsync()` the
+  prototype also fires.
+- **Tick ms** — median of 5 values-only ticks touching 1% of leaves. No dimension is perturbed, so
+  no new pivot path appears and the column structure is unchanged.
+- **Synth fields** — synthetic `(pivotPath, valueField)` fields the prototype widens each leaf with.
+- **Heap** — retained by the pivot layer over the generated leaves, after a forced GC.
+
+Measured with the harness's `Keep grid` toggle **off**, so the live grid is not mounted. Leaving it
+on adds ag-Grid render work to every measurement — roughly doubling Typical's tick, from 128ms to
+225ms. Comparable numbers need it off.
+
+| Profile       | Group rows | Dense cells | Synth fields | Data ms | Grid ms | Tick ms | Heap MB |
+| ------------- | ---------: | ----------: | -----------: | ------: | ------: | ------: | ------: |
+| Typical       |      2,210 |       17.7k |            8 |     138 |     124 |     128 |    21.8 |
+| Typical+Drill |     37,210 |        298k |            8 |     279 |     296 |     335 |    44.3 |
+| Heavy         |      4,212 |        303k |           84 |     743 |     771 |     836 |   120.2 |
+| Heavy+Drill   |    104,212 |        7.5M |           84 |   2,485 |   2,904 |   3,601 |   773.3 |
+| Wide          |     31,636 |        3.0M |          136 |   1,370 |   1,637 |   1,734 |   292.0 |
+| Wide+Drill    |     66,636 |        6.4M |          136 |   2,150 |   2,659 |   3,146 |   528.0 |
+| Pathological  |      2,210 |       11.1M |        4,996 |  27,011 |  28,465 |  27,327 |   469.1 |
+
+**Gate result: FAIL on Typical, on the tick metric alone.** Full build is 138ms against a 250ms
+target — comfortably inside. The tick is 128ms against a 30ms target, missing by 4.3×.
+Typical+Drill is the same story: build 279ms against 750ms (pass), tick 335ms against 50ms (miss by
+6.7×). The build target is *not* where the prototype is broken.
+
+What the numbers establish:
+
+1. **A tick costs a full rebuild — confirmed empirically, not just by reading the code.** Tick time
+   tracks end-to-end grid build within 0-25% on every profile. There is no cheap path, and no
+   dependence on how much data actually changed: perturbing 1% of leaves costs the same as building
+   from nothing. This single fact is the case for the phase 2 rewrite.
+2. **Synthetic fields are created at every pivot level, not just the leaf level.** Heavy's 84 =
+   (4 paths × 3 values) + (24 paths × 3 values); Wide's 136 = 8 + 32 + 96. The Cube then aggregates
+   all of them densely across every row. Wide is 31,636 rows × 136 fields ≈ 4.3M field-aggregations
+   for 3.0M dense cells.
+3. **Cost is not a clean function of dense cells.** Small profiles are floored by leaf parsing
+   (~35k leaves into a Cube costs >100ms before any pivoting), and Pathological manages only ~400
+   cells/ms against Wide's ~2,200 — so per-*field* overhead dominates once the field count is large,
+   independently of cell count. Both floors matter for the phase 2 design: the rewrite has to beat
+   the fixed parse cost as well as the aggregation cost.
+4. **Heap is the most alarming column.** 773MB retained for Heavy+Drill and 528MB for Wide+Drill —
+   and that is the *clean* figure, measured with teardown and a forced GC between runs. It does not
+   include the per-update Cube leak listed under the ticking blockers, which an app would accumulate
+   on every tick.
+5. **Pathological degrades rather than crashes.** 5,000 pivot paths gives a 27s build and 469MB, but
+   it completes. There is no hard cliff to defend against — which argues that the phase 1 guard can
+   be a soft cap or a warning rather than a thrown error, since no value of the dimension makes the
+   framework fail outright, only unusable.
 
 ## Phase 1 — Pivot data API contract
 
@@ -135,6 +282,9 @@ The gate for both phase 2 and phase 3. Design only, no implementation.
       constant, plus a decided answer for values containing the delimiter.
 - [ ] Interaction rules for `omitRedundantNodes`, `omitFn`, `lockFn`, and `bucketSpecFn` at pivot
       levels. Leaning toward disallowing bucketing on pivot dims in v1.
+- [ ] **Pivot cardinality guard.** Decide what happens when a user pivots on a near-unique dimension:
+      hard cap and throw, soft cap with an `(other)` bucket, or document the cliff and do nothing.
+      Make this call against the phase 0 pathological-run numbers, not in the abstract.
 - [ ] Where the new classes live and what is exported from `data/index.ts`.
 
 ## Phase 2 — Pivot data layer implementation
@@ -160,8 +310,16 @@ Parallel with phase 3 once phase 1 is settled. Class names below are placeholder
 Parallel with phase 2, except the final Toolbox items which need working pivot data.
 
 - [ ] **Decide the feature set.** The main client-specific surface still in place is
-      `extraSummaryRowFields` with its `colSpan` / `cellStyle` machinery. Settle this before working
-      the bug checklist, since some findings live in code that may be cut.
+      `extraSummaryRowFields` (extra value-total fields) with its `colSpan` / `cellStyle` machinery.
+      Settle this before working the bug checklist, since some findings live in code that may be cut.
+- [ ] **Adopt the settled [terminology](#terminology) across the public API** — rename the
+      `showSummaryColumn` / `showSummaryRow` / `extraSummary*Fields` / `summary*Side` config family
+      per the mapping table. Do this alongside the feature decision, before the bug checklist, so
+      findings are worked against final names.
+- [ ] **Pivot totals** (subtotal columns at parent pivot nodes) — net-new, absent from the prototype.
+      Decide whether v1 ships them. Cheap if the data layer computes row totals as pivot totals at
+      the root, since the aggregates already exist at every pivot depth; the work is column building
+      and config surface.
 - [ ] Add `Store.setFields()` to the framework, replacing the prototype's private-field pokes. Must
       enforce the no-`id`-field rule that direct assignment currently bypasses. Independent of
       everything else, so good parallel work.
@@ -270,3 +428,20 @@ Most are *(moot)* after the rewrite, but the renderer-path and column-rebuild it
 Append a line per working session: date, what landed, where to pick up.
 
 Starting point: the reviewed prototype as committed, with phase 0 and phase 1 as the next work.
+
+**2026-08-01 — Phase 0 complete.** Settled the [terminology](#terminology) (groupings / pivot
+dimensions / value fields, with row totals, pivot totals, value totals replacing the prototype's
+"summary" vocabulary) and recalibrated the profiles to real usage: pivots are low cardinality,
+groupings carry the cardinality. Wrote the acceptance criteria and gate. Built the benchmark harness
+in Toolbox Admin (`pivot-grid` branch, `client-app/src/admin/tests/pivot/`, Admin › Tests › Pivot
+Bench) and captured the [baseline](#baseline--pivotdatamodel-as-imported) across all seven profiles.
+Added `cmp/pivotgrid/index.ts` so the package is importable as `@xh/hoist/cmp/pivotgrid`.
+
+Headline: the prototype **passes the build target and fails the tick target by 4-7×**, because a
+tick is a full rebuild regardless of how little changed. Heap is worse than expected (773MB on
+Heavy+Drill, before the known per-update Cube leak). Pathological pivots degrade to 27s builds but
+do not crash, which should inform the phase 1 guard decision.
+
+Pick up at **phase 1** — the factoring decision and the open questions under
+[Not yet resolved](#not-yet-resolved). Note that phase 3's `Store.setFields()` item is independent
+of all of it and is good parallel work.
