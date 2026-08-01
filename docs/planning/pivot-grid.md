@@ -3,7 +3,9 @@
 **Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
 in Toolbox (also off `develop`) for the harness and example pages.
 
-**Status:** planning. Nothing implemented yet beyond the imported prototype.
+**Status:** phases 0 and 1 complete — baseline captured and the pivot data contract settled. Nothing
+implemented yet beyond the imported prototype; phases 2 and 3 are the next work and can run in
+parallel.
 
 **Goal:** promote a client-app `PivotGrid` component into hoist-react as a first-class framework
 component, with a pivot data layer that is efficient enough for ticking data.
@@ -49,6 +51,10 @@ Mapping from the prototype's names, all of which are to be renamed:
 | `extraSummaryRowFields`      | value totals — extra fields        |
 | `SUMMARY_COL_ID_PREFIX`      | row-totals column id prefix        |
 
+Type-level renames settled in phase 1: `PivotValue` → `PivotPath`, `cmp/pivotgrid`'s `PivotQuery` →
+the `data/cube` `PivotQuery`, and `PivotField` / `PivotFieldSpec` retired (see
+[Package location and exports](#package-location-and-exports)).
+
 Sections below that predate this decision may still use the old words; the checklists are the
 authority on what changes, and phase 3 carries the rename.
 
@@ -75,7 +81,8 @@ A full review of the prototype was completed. Its findings are carried forward a
 ## Goals
 
 - Pivot data layer that supports **connected, incremental updates** — viable for ticking data.
-- Cost proportional to the number of **populated** cells, not to `rowGroups × allPivotPaths`.
+- Cost proportional to the number of **populated** cells — precisely, `Σ_G populated(G)` over every
+  node of the row hierarchy — not to `rowGroups × allPivotPaths`.
 - Reuse the existing `data/cube` aggregation machinery rather than reimplementing aggregators.
 - Framework-grade component: conventions, docs, validation, persistence, no internals pokes.
 
@@ -85,61 +92,322 @@ A full review of the prototype was completed. Its findings are carried forward a
 - Mobile support (this is desktop-only in practice).
 - Preserving every feature of the prototype. Some were client-specific asks — see phase 3.
 
-## Potential approach
+## Pivot data design
 
-Nothing here is decided. The pivoting *strategy* below is the working direction that motivated
-replacing `PivotDataModel`; the class structure and query shape underneath it are open, and settling
-them is phase 1.
+**Settled in phase 1.** This section is the contract phases 2 and 3 build to. It supersedes the
+"innermost pivot dimensions plus projection" strategy sketched in phase 0 — see the correction
+immediately below, which is the finding that shaped everything else here.
 
-### Strategy: innermost pivot dimensions plus projection
+### Correction: pivot cells are not extra innermost dimensions
 
-**Pivot dimensions become innermost cube dimensions, and the pivot cells are projected out of the
-resulting row tree.** No synthetic fields. One Cube over the base fields, grouping on the row-group
-dimensions followed by the pivot dimensions, one long-lived connected View. The aggregate row at
-tree path `rowGroup >> pivotPath` *is* the cell, already computed.
+Phase 0's working direction was to make the pivot dimensions the innermost Cube dimensions and
+project the cells out of the resulting row tree. **That does not work.**
 
-Why this looks right:
+Grouping is hierarchical. With `dimensions: [fund, strategy, sector, region]`, a `region` node exists
+only *beneath a sector node*. There is no node for "fund F1, all strategies, region US", so every
+group row above the innermost level has nothing to project a cell from. Making the pivot dimensions
+outermost fails symmetrically: it materializes the value totals and loses the row totals.
 
-- Aggregation cost drops to `O(rows × baseFields)` over the populated combinations only.
-- Ticking works via the existing `View.dataOnlyUpdate` path, which already maintains the aggregate
-  network incrementally and pushes changed rows into connected stores.
-- A row group's own base-field aggregates *are* its row totals, so the "Total" columns come for free
-  and the totals-vs-cells invariant holds by construction.
+The row hierarchy and the pivot hierarchy are orthogonal, and their cross product has to be
+materialized. The corrected strategy:
 
-### Candidate: `PivotView extends View`, with `PivotQuery extends Query`
+**Every node of the row hierarchy carries its own pivot subtree.** Those subtrees are real rows in
+the aggregation network — so every aggregator works unmodified, and `View`'s existing incremental
+machinery maintains the cells on a tick. They are *not* part of the visible row tree and never reach
+a connected store.
 
-The leading candidate, but **not settled**. Arguments in favor:
+This also dissolves phase 0's main open question. Because the pivot subtrees are separate from
+`dimensions`, no concatenation happens anywhere: `PivotQuery.dimensions` keeps `Query.dimensions`'
+exact existing meaning — the ordered levels of the visible row hierarchy.
 
-- The result shape genuinely diverges, and folding it into `View` would make `View.result.rows` and
-  `loadStores` mean different things depending on config — two modes in one hot class that every
-  Hoist app depends on.
-- A subclass inherits the whole connect/update machinery unchanged: `Cube._connectedViews` is a
-  `Set<View>`, so `noteCubeLoaded` / `noteCubeUpdated` route to the subclass for free.
-- Putting `pivotBy` on the Query would make `hasDimOrBucketUpdates` automatically force a full
-  rebuild when a leaf's pivot dimension value changes, and gives `updateQuery` / `equals` / `clone`
-  for free.
+### The cell lattice
 
-It would need a seam in `View` — roughly a hook after row generation plus overridable publish steps
-for the full and incremental paths, and some `private` members widened to `protected`.
+Write `C(G, P)` for the cell at row-hierarchy node `G` and pivot path `P`. `G` ranges over every node
+of the row hierarchy, including the synthetic root when `includeRoot` is set, and any `BucketRow`.
+`P` ranges over every pivot path *and every prefix of one*. By definition `C(G, rootPath)` **is** `G`
+itself — which is what makes row totals and pivot totals one mechanism.
 
-### Not yet resolved
+Children, and therefore the decomposition:
 
-These are what keep the approach open. Work them in phase 1.
+| node                                    | children                                                    |
+| --------------------------------------- | ----------------------------------------------------------- |
+| `C(G, P)`, `G` not innermost            | `C(G′, P)` for each child node `G′` of `G` — **group** axis  |
+| `C(G, P)`, `G` innermost, `P` partial   | `C(G, P·v)` for each next pivot value `v` present in `G` — **pivot** axis |
+| `C(G, P)`, `G` innermost, `P` full path | the leaf rows in `G` on that path                           |
 
-- **Query shape vs. internal grouping.** A `PivotQuery` would naturally expose `dimensions` (the row
-  groups) and `pivotBy` separately, but row generation needs both concatenated as its grouping
-  dimensions. Whether that folding happens inside `PivotQuery`, inside `PivotView`, or requires
-  changing how `Query` / `View` treat `dimensions` is unclear, and it may force API or
-  implementation changes in `View` beyond a simple seam. Knock-on effects to check:
-  `hasDimOrBucketUpdates`, `getDimensionValues`, `Query.equals` / `clone`, and anything else reading
-  `query.dimensions`.
-- Whether a subclass, a fold-in, or a composition over `View` is actually the right factoring once
-  the above is understood.
-- Whether the incremental changed-rows information `View` needs to expose can be exposed cleanly
-  without leaking internals, whichever factoring wins.
+Each parent's children are a strict partition of its leaf set, so every aggregator is correct by
+construction: children-reading aggregators (`SUM`, `MIN`, `MAX`, `SUM_STRICT`, `LEAF_COUNT`) compose
+associatively down either axis, and leaf-reading ones (`AVG`, `AVG_STRICT`) reach exactly the right
+leaves via `forEachLeaf`. `CHILD_COUNT` on a cell counts *child groups carrying that path*, which is
+meaningful rather than broken. Group rows keep their existing children (child groups, or leaves)
+untouched, so non-pivot semantics — including `CHILD_COUNT` on a group row — are unchanged.
 
-Types worth keeping from the prototype, all needing refinement: `PivotField` / `PivotFieldSpec`,
-`PivotValue`, `PivotQuery`.
+Confining the pivot-axis decomposition to the innermost level is deliberate: it minimizes both the
+link count and the number of rows needing more than one parent. Two links per row suffice:
+
+- `parent` — the **group-axis** parent (and, for group rows and leaves, the existing row-tree parent).
+- `pivotParent` — the **pivot-axis** parent: the cell one pivot level shallower within the same `G`.
+  Null unless `G` is innermost *and* the path is at depth 2 or more, because `C(G, rootPath)` is `G`
+  itself, which already receives those updates directly from its own children.
+
+So a leaf's two parents are its innermost group row and `C(G, fullPath)`; with a single pivot
+dimension, leaves are the only rows with two. The update routes are disjoint — no node is reached
+twice by one leaf change, so there is no double counting.
+
+### Cost model
+
+Aggregation and memory are proportional to `Σ_G populated(G)` — the number of `(group node, pivot
+path)` pairs that actually contain data, summed over *all* levels of the row hierarchy. Estimates
+against the phase 0 profiles, alongside the dense figure the prototype pays:
+
+| Profile       | Dense cells | Est. cell rows | Ratio |
+| ------------- | ----------: | -------------: | ----: |
+| Typical       |       17.7k |          ~16k  | ~1.1× |
+| Typical+Drill |        298k |           ~51k |  ~6×  |
+| Wide          |        3.0M |          ~100k |  ~30× |
+| Pathological  |       11.1M |          ~104k | ~107× |
+
+Note what this does **not** claim: for Typical the populated set is essentially the dense set, because
+~17 leaves per innermost group spread over 8 regions populate nearly every path. Phase 0's assertion
+that the populated subset "is far smaller in every profile" was too strong. Typical's build win comes
+instead from not widening 35k leaves with synthetic fields and not building a fresh `Cube` per update;
+its **tick** win — the metric that actually fails the gate — comes from the update being incremental:
+~350 changed leaves propagate through ~8 `replace` calls each, versus a full rebuild.
+
+Two further multipliers apply everywhere: cell rows aggregate **only the value fields** (plus their
+declared dependencies), not the full query field set; and unpopulated cells are simply absent from
+row data, resolving to `null` through `Store`'s prototype-chained `_dataDefaults` rather than
+occupying a slot per row.
+
+### Factoring: `PivotView extends View`, `PivotQuery extends Query`
+
+Settled. The subclass inherits record filtering, group-tree generation, row caching, bucketing,
+visible-tree assembly, store loading, connect/disconnect, simple-update detection, and the
+incremental propagation core. `Cube._connectedViews` is a `Set<View>`, so `noteCubeLoaded` /
+`noteCubeUpdated` route to the subclass for free. What the subclass adds is cell generation, cell
+projection, and the extended result shape.
+
+Composition over `View` was rejected: it would still need a changed-rows signal and visible-tree
+control out of `View`, and would additionally have to rebuild its own copy of every group row on each
+full build. Folding pivot support into `View` itself was rejected as it makes `result.rows` and
+`loadStores` mean different things by config, in a class every Hoist app depends on.
+
+Note that some base-layer change is unavoidable regardless of factoring — the new row class,
+multi-parent support, and the per-row field set all live in `BaseRow`.
+
+### Changes required in `data/cube`
+
+Additions:
+
+- `PivotQuery extends Query`, `PivotView extends View`, `PivotPath`, `PivotCellRow extends BaseRow`.
+- `Cube.createPivotView({query, stores, connect})`, mirroring `createView`.
+- `CubeFieldSpec.dependsOn?: string[]` — other fields this field's aggregator reads. A no-op for
+  plain Views; `PivotView` uses it to expand the cell-row field set. Replaces the prototype's
+  `PivotFieldSpec.dependsOn`.
+
+Changes to existing classes, all mechanical, with no behavior change for non-pivot Views:
+
+- `View`: widen `private` members to `protected` — `generateRows`, `filterRecords`,
+  `createAggregationContext`, `loadStores`, `updateResults`, `dataOnlyUpdate`, `getSimpleUpdates`,
+  `hasDimOrBucketUpdates`, `cachedRow`, `bucketRows`, `groupAndInsertRecords`, `aggregatorsAreSimple`,
+  plus `_leafMap`, `_recordMap`, `_rowDatas`, `_bucketDependentFields`.
+- `View`: retain the generated root `BaseRow[]` (today only the projected `_rowDatas` survives
+  `generateRows`) so the subclass can walk the network. Build the result via a `protected
+  createResult()` so the subclass can extend it.
+- `BaseRow` / `LeafRow`: add the `pivotParent` link and propagate to it from `applyDataUpdate` /
+  `applyLeafDataUpdate`.
+- `BaseRow`: `initAggregate` / `computeAggregates` take an optional field list, defaulting to
+  `view.fields`. This is what lets cell rows aggregate only the value fields.
+- The incremental update collector becomes `Set<BaseRow>` rather than `Set<PlainObject>` (rename
+  `updatedRowDatas` → `updatedRows`), with `View.dataOnlyUpdate` mapping rows to datas for stores.
+  `PivotView` needs the rows themselves to tell cells from group rows. `HiddenLeafRow` continues to
+  register nothing.
+- `Query.clone` constructs via `new (this.constructor)(conf)` so subclasses inherit it.
+
+`PivotView` overrides `hasDimOrBucketUpdates` to include the pivot dimensions — a leaf changing its
+pivot dimension value is structural and must force a full rebuild.
+
+### Query interface
+
+```typescript
+interface PivotQueryConfig extends QueryConfig {
+    /** Pivot dimensions, outermost first. Empty to degenerate to a plain View. */
+    pivotDimensions?: string[] | CubeField[];
+
+    /** Measures to aggregate per cell. Must be aggregatable members of `fields`. */
+    valueFields: string[] | CubeField[];
+
+    /** Label for a null / blank pivot dimension value. Default '(empty)'. */
+    emptyPathLabel?: string;
+
+    /** Exclude records with a null / blank pivot dimension value entirely. Default false. */
+    excludeEmptyPivotValues?: boolean;
+
+    /** Throw if the discovered pivot path count exceeds this. Default 1000; null to disable. */
+    maxPivotPaths?: number;
+}
+```
+
+`dimensions` is unchanged and unconcatenated — the row hierarchy. `pivotDimensions` is deliberately
+named for symmetry with it, and parses the same way: config takes names or `CubeField`s, the instance
+exposes `pivotDimensions: CubeField[]` alongside `dimensions: CubeField[]` and `valueFields:
+CubeField[]`. `equalsExcludingFilter` and `clone` are extended to cover the new members, so
+`updateQuery` detects pivot changes and rebuilds (clearing the row cache) correctly.
+
+Validation at construction: every `valueFields` entry must be present in `fields`, carry an
+aggregator, and not be a dimension; `pivotDimensions` entries must be dimensions; `pivotDimensions`
+and `dimensions` must not overlap.
+
+### Result shape
+
+```typescript
+interface PivotViewResult extends ViewResult {
+    /** Pivot path tree, roots first. Identity-stable while the structure is unchanged. */
+    paths: PivotPath[];
+
+    /** One entry per (path, value field), including the root-path row totals. Identity-stable with `paths`. */
+    cellFields: PivotCellField[];
+}
+
+class PivotPath {
+    dimension: CubeField;   // the pivot dimension at this depth
+    value: any;             // raw dimension value
+    label: string;          // display string; `emptyPathLabel` when null / blank
+    key: string;            // escaped, delimiter-joined path key - '' for the root path
+    depth: number;
+    children: PivotPath[];
+}
+
+interface PivotCellField {
+    name: string;           // the synthetic field name written onto row data
+    path: PivotPath;
+    valueField: CubeField;  // source measure - supplies type / defaultValue for Store fields
+}
+```
+
+`rows` and `leafMap` keep their existing meaning: `rows` is the visible row hierarchy — group rows
+only, with leaves if `includeLeaves` — carrying the cell values as fields on its data. Cell rows are
+never published.
+
+Path order is a deterministic ascending sort by value at each level, with the empty segment last, so
+`paths` is stable across rebuilds and the default column order is sensible before any display-level
+sorting. Consumers must treat the tree as immutable (see the phase 3 finding on `sortPivotValues`).
+
+All three kinds of total fall out of the same mechanism, exactly as the terminology section requires:
+
+| total        | where it is                                                       |
+| ------------ | ----------------------------------------------------------------- |
+| row totals   | a group row's own aggregate of the value field — i.e. `C(G, rootPath)`, field name is the value field's own name |
+| pivot totals | `C(G, P)` for a partial `P`; materialized automatically with 2+ pivot dimensions |
+| value totals | the `includeRoot` root row's cells                                |
+
+### Cells on row data, and field naming
+
+Cell values are **copied onto the published row data as flat synthetic fields**. `PivotGridModel`
+declares a matching `Store` field per `cellFields` entry and value columns bind to them normally.
+
+The alternative — leave cells on the cell rows and read them through `Column.getValueFn` — was
+considered and rejected. It is appreciably leaner (no copies, no synthetic `Store` fields at all), and
+should be revisited if heap ever becomes the binding constraint, but it puts value columns outside the
+`Store` field model and so outside grid column filters, Excel export, and inline editing. The copy is
+not where the prototype's cost was: Typical writes ~16k properties per build and ~350 per tick.
+
+Field naming:
+
+- `cellFieldName(path, valueField)` = `` `${path.key}${DELIM}${valueField.name}` ``, or just
+  `valueField.name` when `path.key` is empty. So the row-totals column binds to the plain value field
+  — no synthetic name, and the totals-vs-cells invariant is structural.
+- One exported constant, `PivotView.PATH_DELIMITER`, default `'>>'`. It is *not* `Cube.RECORD_ID_DELIMITER`
+  despite sharing a value; the namespaces are unrelated and coupling them would be an accident.
+- Path segments escape `\` as `\\` and `>` as `\>` when building `key`. This guarantees the encoding is
+  injective, which is all that is required — **nothing ever parses a cell field name**; `PivotPath`
+  carries the raw values. This closes the prototype's break on values containing the delimiter.
+- Throw if a generated cell field name collides with a Cube field name.
+
+Cell row ids are `` `${groupRowId}#${path.key}` `` — internal only, used for `_rowCache` reuse, and
+distinct from the group id namespace.
+
+### Incremental contract
+
+**A values-only tick can never change the pivot structure**, and this is guaranteed rather than
+hoped for: `getSimpleUpdates` already fails to `fullUpdate` on any add or remove, and the overridden
+`hasDimOrBucketUpdates` fails on any change to a grouping *or pivot* dimension value. So
+`dataOnlyUpdate` implies `paths` and `cellFields` are unchanged, and `PivotView` republishes the same
+objects by identity. On a full update the path tree is recomputed and compared; if equal, the previous
+`paths` / `cellFields` objects are retained.
+
+That identity stability *is* the structural signal. `PivotGridModel` tracks `result.cellFields` to
+decide whether to re-declare `Store` fields and `result.paths` to decide whether to rebuild columns —
+which is what makes the common path skip both.
+
+The tick itself: propagation updates the affected cell rows and group rows through the existing
+`replace` machinery; `PivotView` then rewrites just the changed cells onto their owning group rows'
+data (each cell row holds a back-reference to its owning group row and its path), and pushes only
+group rows to connected stores.
+
+### Nulls, empties, and dense columns
+
+A null or blank pivot dimension value forms **its own path segment**, labelled `emptyPathLabel`
+(default `'(empty)'`). It is not dropped. This is the fix for the prototype's broken invariant, where
+such records vanished from the pivot axis while still counting toward the group row's aggregates, so
+the Total column did not equal the sum of the pivot columns.
+
+Apps that genuinely want those records gone set `excludeEmptyPivotValues: true`, which applies an
+implicit filter so the records leave the group aggregates too. Exclusion is a filter, not a
+pivot-axis quirk — that is the only formulation under which the invariant survives.
+
+The path tree is the **global union** across all group nodes, so columns are uniform; cells are
+materialized only where populated and read `null` elsewhere.
+
+### Interaction rules
+
+- `omitRedundantNodes`, `omitFn`, `lockFn` — group axis only, unchanged. Cell rows never enter the
+  visible tree, so `getVisibleDatas` never sees one and `PivotCellRow` deliberately does not extend
+  `AggregateRow`, keeping the `omitFn` / `lockFn` signatures untouched. Cells computed for a row that
+  is later omitted are harmless: its parent's cells already aggregate them.
+- `bucketSpecFn` — group axis only. A `BucketRow` is a legitimate visible row and therefore a group
+  node that carries its own pivot subtree. Bucketing *within* the pivot axis is not supported in v1.
+- `includeLeaves` / `provideLeaves` — supported and unchanged, which is a direct benefit of keeping
+  pivots out of `dimensions`. Exposed leaves receive cell values for their own path only (their own
+  value, `null` elsewhere); hidden leaves never do, as their data is a shared reference to Cube record
+  data.
+- Empty `pivotDimensions` — allowed, degenerating to plain View behavior with empty `paths` /
+  `cellFields`, so apps can toggle pivoting without swapping view objects.
+- No group dimensions — allowed; with `includeRoot` the result is a single value-totals row.
+
+### Pivot cardinality guard
+
+`maxPivotPaths`, default **1000**, checked during path discovery so it bails before building cells.
+Exceeding it throws, naming the dimension and the count. `null` disables the check.
+
+Made against the phase 0 pathological numbers: 5,000 paths gave the prototype a 27s build and no
+crash. The new cost model would cut the *data* cost roughly 100×, but 5,000 columns is a grid problem
+no data layer can fix, and it is never a legitimate result — it is a misconfiguration. Failing fast
+with an actionable message beats a multi-second freeze that reads as a hang.
+
+A soft cap bucketing the tail into `(other)` was rejected for v1: to keep the totals invariant the
+bucket has to genuinely *contain* the tail, which makes it a real feature (top-N plus other) worth
+designing deliberately rather than a guard. Recorded as possible future work.
+
+### Package location and exports
+
+New files sit alongside their base classes in `data/cube/`: `PivotQuery.ts`, `PivotView.ts`,
+`PivotPath.ts`, `row/PivotCellRow.ts`. Exported from `data/index.ts` next to the existing
+`cube/Query` / `cube/View` exports. `PivotCellRow` stays internal, like the other row classes.
+
+The split with `cmp/` is on data vs. presentation: `columnTemplate`, `enablePivot`, and `enableValue`
+are presentation concerns and stay in the grid layer, which retires the prototype's near-vestigial
+`PivotField` / `PivotFieldSpec` (see the phase 3 cleanup item). `PivotValue` is replaced by
+`PivotPath`; the prototype's `cmp/pivotgrid` `PivotQuery` is replaced by the `data/cube` one.
+
+### Verification vehicle
+
+hoist-react has no unit test framework — the two `mcp/*.spec.ts` files are self-contained `tsx`
+drivers, and `data/cube` cannot be imported standalone without pulling in `XH` and the wider
+framework. So phase 2's correctness suite runs **in the Toolbox harness** as an in-app test panel
+alongside the phase 0 bench: seeded deterministic data, a brute-force reference pivot, and assertions
+over full-build vs. tick-then-compare equivalence. Standing up a real test framework in hoist-react
+is out of scope here.
 
 ## Phase 0 — Baseline and harness
 
@@ -177,28 +445,34 @@ Row counts below are as measured, not estimated.
 | Wide+Drill   |    35k |         7 |     66,636 | 3 → 48             |            2 |         6.4M |
 
 "Dense cells" is `group rows × pivot paths × value fields` — the work the prototype does, since its
-`Cube` aggregation is dense over the synthetic fields. The rewrite's target is the *populated* subset,
-which is far smaller in every profile and smallest where the prototype is worst.
+`Cube` aggregation is dense over the synthetic fields. The rewrite's target is the *populated* subset.
+(Phase 1 quantified that: far smaller on the drill, wide, and pathological profiles, but essentially
+the same as dense on Typical — see [Cost model](#cost-model).)
 
 **Gate — Typical.** These are the numbers the rewrite must hit; the other profiles are measured and
 tracked every run but are not pass/fail.
 
-| Metric                                       | Target  |
-| -------------------------------------------- | ------- |
-| Full build (cold, from raw data)             | ≤ 250ms |
-| Tick — 1% of leaves (350 recs), values-only  | ≤ 30ms  |
-| Pivot layer heap, over the loaded `Cube`     | ≤ 2×    |
+| Metric                                       | Target  | Revised |
+| -------------------------------------------- | ------- | ------- |
+| Full build (cold, from raw data)             | ≤ 250ms | ≤ 140ms |
+| Tick — 1% of leaves (350 recs), values-only  | ≤ 30ms  | —       |
+| Pivot layer heap, over the loaded `Cube`     | ≤ 2×    | —       |
 
 **Secondary gate — Typical+Drill**, since leaf drill-down is a normal ask rather than a stress case:
-full build ≤ 750ms, tick ≤ 50ms.
+full build ≤ 750ms → **≤ 290ms**, tick ≤ 50ms.
 
 If the phase 0 baseline shows the prototype already meets a target, tighten that target rather than
-declaring it satisfied — the point is to prove the new cost model, not to clear a low bar.
+declaring it satisfied — the point is to prove the new cost model, not to clear a low bar. The
+baseline passed both build targets, so the **Revised** column applies that rule: the rewrite must not
+regress against the measured prototype builds (138ms / 279ms), rounded to 140ms and 290ms. Note both
+figures include a ~100ms floor for parsing 35k leaves into the `Cube`, which is common to either
+implementation and not pivot work — so the honest build headroom is smaller than it looks, and the
+build case is made on the larger profiles rather than on Typical.
 
 **Pathological guard.** A separate opt-in run pivots on a near-unique dimension (~5,000 distinct
 values, so ~5,000 pivot paths). Phase 0 only *measures* where each implementation falls over. What
-the framework should actually do about it — hard cap and throw, soft cap and bucket the tail, or
-just document the cliff — is a phase 1 API decision, to be made with those numbers in hand.
+the framework should actually do about it was left as a phase 1 API decision, now settled — see
+[Pivot cardinality guard](#pivot-cardinality-guard).
 
 ### Baseline — `PivotDataModel` as imported
 
@@ -260,49 +534,63 @@ What the numbers establish:
 
 ## Phase 1 — Pivot data API contract
 
-The gate for both phase 2 and phase 3. Design only, no implementation.
+The gate for both phase 2 and phase 3. Design only, no implementation. **Complete** — every decision
+is recorded under [Pivot data design](#pivot-data-design); the checklist below points into it.
 
-- [ ] **Decide the factoring**: subclass `View`, fold into `View`, or compose over it. Resolve the
-      [open questions](#not-yet-resolved) first — in particular how the row-group vs. pivot
-      dimension split reconciles with the single concatenated dimension list row generation needs,
-      and what that implies for `Query` / `View` themselves.
-- [ ] Query interface: how row-group dimensions, `pivotBy`, and `valueFields` are expressed, and
-      where the concatenation for grouping happens.
-- [ ] Result shape: row-group rows, the pivot value tree, leaf access.
-- [ ] Whatever seam or API change in `View` the chosen factoring requires.
-- [ ] **Incremental contract.** What a tick emits, and specifically how a *structural* change (a
-      tick introduces a new pivot path, i.e. a new column) is signalled distinctly from a
-      values-only change. This determines whether `PivotGridModel` can skip rebuilding columns on
-      the common path, which was one of the larger perf findings.
-- [ ] **Empty-cell and null-dimension semantics.** Whether a null pivot dim value becomes an
-      `(empty)` bucket or is excluded, and whether excluded records still count toward row totals.
-      Current prototype behavior is inconsistent.
-- [ ] **Field naming and the path delimiter.** The prototype hardcodes `>>`, which collides with
-      `Cube.RECORD_ID_DELIMITER` and breaks when a dimension value contains it. One exported
-      constant, plus a decided answer for values containing the delimiter.
-- [ ] Interaction rules for `omitRedundantNodes`, `omitFn`, `lockFn`, and `bucketSpecFn` at pivot
-      levels. Leaning toward disallowing bucketing on pivot dims in v1.
-- [ ] **Pivot cardinality guard.** Decide what happens when a user pivots on a near-unique dimension:
-      hard cap and throw, soft cap with an `(other)` bucket, or document the cliff and do nothing.
-      Make this call against the phase 0 pathological-run numbers, not in the abstract.
-- [ ] Where the new classes live and what is exported from `data/index.ts`.
+- [x] **Decide the factoring** — `PivotView extends View`, `PivotQuery extends Query`. The open
+      question about reconciling the row-group / pivot split with a single concatenated dimension list
+      dissolved: pivots are *not* extra dimensions at all, so nothing is concatenated and
+      `Query.dimensions` keeps its exact meaning. See
+      [Correction](#correction-pivot-cells-are-not-extra-innermost-dimensions) and
+      [Factoring](#factoring-pivotview-extends-view-pivotquery-extends-query).
+- [x] [Query interface](#query-interface) — `dimensions` (rows) plus `pivotDimensions`, `valueFields`,
+      `emptyPathLabel`, `excludeEmptyPivotValues`, `maxPivotPaths`.
+- [x] [Result shape](#result-shape) — `rows` unchanged, plus a `PivotPath` tree and `cellFields`.
+      Leaf access unchanged.
+- [x] [Changes required in `data/cube`](#changes-required-in-datacube) — visibility widening, a
+      retained root row list, `pivotParent`, a per-row aggregation field list, and `Set<BaseRow>`
+      update collection.
+- [x] [Incremental contract](#incremental-contract) — structure changes are impossible on the
+      `dataOnlyUpdate` path, and `paths` / `cellFields` identity stability is the signal.
+- [x] [Nulls, empties, and dense columns](#nulls-empties-and-dense-columns) — null pivot values get
+      their own `(empty)` segment; exclusion is expressed as a filter so the totals invariant holds.
+- [x] [Cells on row data, and field naming](#cells-on-row-data-and-field-naming) — one exported
+      `PivotView.PATH_DELIMITER`, injective escaping, and nothing ever parses a cell field name.
+- [x] [Interaction rules](#interaction-rules) — all four are group-axis only; no bucketing on the
+      pivot axis in v1; `includeLeaves` / `provideLeaves` work unchanged.
+- [x] [Pivot cardinality guard](#pivot-cardinality-guard) — `maxPivotPaths`, default 1000, throws.
+- [x] [Package location and exports](#package-location-and-exports) — `data/cube/`, exported from
+      `data/index.ts`.
+- [x] [Verification vehicle](#verification-vehicle) — correctness suite lives in the Toolbox harness,
+      since hoist-react has no test framework and `data/cube` is not standalone-importable.
 
 ## Phase 2 — Pivot data layer implementation
 
-Parallel with phase 3 once phase 1 is settled. Class names below are placeholders pending the phase
-1 factoring decision.
+Parallel with phase 3 now that phase 1 is settled. Work to the
+[pivot data design](#pivot-data-design); it names the classes and members.
 
 - [ ] Brute-force reference pivot implementation, for test assertions only.
-- [ ] Failing unit tests covering: multi-level pivots, multi-measure, sparse/absent cells, null
-      dimension values, every aggregator (especially `AverageStrict`, `SumStrict`, `Unique`),
-      totals invariants, and full-build vs. tick-then-compare equivalence.
-- [ ] `View` / `Query` changes per the phase 1 decision, with non-pivot behavior provably unchanged.
-- [ ] The pivot query, view, and result types.
-- [ ] Row-tree truncation so pivot-level nodes never reach a connected store. Note: truncating by
-      depth is fragile because `omitRedundantNodes`, `omitFn`, and bucketing all shift levels during
-      `getVisibleDatas` — prefer marking rows during generation.
-- [ ] Incremental projection driven off the changed-rows set.
-- [ ] Benchmark against phase 0 baseline; confirm acceptance criteria.
+- [ ] Failing tests (in the Toolbox harness, per the phase 1
+      [verification vehicle](#verification-vehicle)) covering: multi-level pivots, multi-measure,
+      sparse/absent cells, null dimension values, every aggregator (especially `AverageStrict`,
+      `SumStrict`, `Unique`, and `ChildCount` on both group rows and cells), the three totals
+      invariants, and full-build vs. tick-then-compare equivalence.
+- [ ] `View` / `BaseRow` / `Query` changes per
+      [Changes required in `data/cube`](#changes-required-in-datacube), with non-pivot behavior
+      provably unchanged.
+- [ ] `PivotQuery`, `PivotView`, `PivotPath`, `PivotCellRow`, and the result types.
+- [ ] Path discovery pre-pass: build the sorted global path tree, enforce `maxPivotPaths`, and stamp
+      each filtered record with its path index so cell generation partitions by index rather than by
+      rebuilt strings.
+- [ ] Cell generation: post-order walk of the final (post-bucketing) network, group-axis decomposition
+      above the innermost level, pivot-axis below it. No truncation step is needed — cell rows are
+      never in `children`, so they never reach `getVisibleDatas` or a connected store.
+- [ ] Cell projection onto group-row data, full-build and incremental, the latter driven off the
+      changed-rows set via each cell row's owning-group back-reference.
+- [ ] Consider sharing `canAggregate` maps across cell rows of identical shape — one small object per
+      cell row is a meaningful fraction of pivot-layer heap at these counts.
+- [ ] Benchmark against phase 0 baseline; confirm acceptance criteria including the revised build
+      targets.
 - [ ] Retire `PivotDataModel`.
 
 ## Phase 3 — PivotGridModel
@@ -315,15 +603,29 @@ Parallel with phase 2, except the final Toolbox items which need working pivot d
 - [ ] **Adopt the settled [terminology](#terminology) across the public API** — rename the
       `showSummaryColumn` / `showSummaryRow` / `extraSummary*Fields` / `summary*Side` config family
       per the mapping table. Do this alongside the feature decision, before the bug checklist, so
-      findings are worked against final names.
+      findings are worked against final names. Also decide whether `PivotGridConfig` keeps the
+      grid-idiomatic `groupBy` / `pivotBy` pair or follows the data layer's `dimensions` /
+      `pivotDimensions`. `GridModel.groupBy` argues for the former; either is defensible, but the
+      grid config should be internally consistent.
 - [ ] **Pivot totals** (subtotal columns at parent pivot nodes) — net-new, absent from the prototype.
-      Decide whether v1 ships them. Cheap if the data layer computes row totals as pivot totals at
-      the root, since the aggregates already exist at every pivot depth; the work is column building
-      and config surface.
+      Decide whether v1 ships them. Now confirmed cheap: the phase 1 design materializes `C(G, P)` for
+      every partial path, so with 2+ pivot dimensions the cell fields already exist. The remaining work
+      is column building and config surface.
 - [ ] Add `Store.setFields()` to the framework, replacing the prototype's private-field pokes. Must
       enforce the no-`id`-field rule that direct assignment currently bypasses. Independent of
       everything else, so good parallel work.
-- [ ] Rewire `PivotGridModel` onto the new pivot data API.
+- [ ] Rewire `PivotGridModel` onto the new pivot data API. What phase 1 hands it:
+      - Row-totals columns bind to the value field's own name — no synthetic field, no
+        `SUMMARY_COL_ID_PREFIX` games for the value fields themselves.
+      - `extraSummaryColumnFields` (extra row-total columns) reduces to including those fields in
+        `PivotQuery.fields`; their group-row aggregate *is* the row total.
+      - The value-totals row is `includeRoot: true` plus `Store.loadRootAsSummary` and
+        `GridModel.showSummary` — no separate summary data path, and no `'Total>>' + field`
+        `cubeDimension` hack.
+      - Column and `Store` field rebuilds key off `result.paths` / `result.cellFields` identity, which
+        is what fixes findings `PivotGridModel:276` and `:292`.
+      - `PivotPath` exposes raw `value` plus a plain `label`, so the grid layer renders labels itself
+        and the prototype's try/catch-a-cell-renderer hack goes away.
 - [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
       checklists for whatever survives the feature decision.
 - [ ] Refine public config and API: sorting, totals/summary rows and columns, column overrides, and
@@ -370,7 +672,8 @@ From the full review of the imported prototype. Items marked *(moot)* if the rew
 - [ ] `PivotDataModel:158` — dead re-assignment of line 130.
 - [ ] `PivotDataModel:236` — a null pivot dim value leaves the record with no pivoted fields while
       it still contributes to base-field aggregates, so the Total column does not equal the sum of
-      the pivot columns. Resolve via the phase 1 null-semantics decision.
+      the pivot columns. Resolved by design in phase 2 — see
+      [Nulls, empties, and dense columns](#nulls-empties-and-dense-columns).
 - [ ] Five `// TODO: Validate` sites in the `PivotGridModel` constructor. Bad field names currently
       surface as `undefined.name` TypeErrors deep in column building.
 
@@ -442,6 +745,36 @@ tick is a full rebuild regardless of how little changed. Heap is worse than expe
 Heavy+Drill, before the known per-update Cube leak). Pathological pivots degrade to 27s builds but
 do not crash, which should inform the phase 1 guard decision.
 
-Pick up at **phase 1** — the factoring decision and the open questions under
-[Not yet resolved](#not-yet-resolved). Note that phase 3's `Store.setFields()` item is independent
-of all of it and is good parallel work.
+Pick up at **phase 1** — the factoring decision and the open questions that were then still under a
+"Not yet resolved" heading (since replaced by [Pivot data design](#pivot-data-design)). Note that
+phase 3's `Store.setFields()` item is independent of all of it and is good parallel work.
+
+**2026-08-01 — Phase 1 complete.** Settled the whole pivot data contract; see
+[Pivot data design](#pivot-data-design). The headline is a correction to phase 0's working direction:
+**pivot cells cannot be extra innermost Cube dimensions.** Grouping is hierarchical, so a pivot
+dimension added at the end only materializes cells beneath the *innermost* group row — every group row
+above it has nothing to project from, and putting the pivot dimensions outermost loses the row totals
+instead. The row and pivot hierarchies are orthogonal and their cross product must be materialized, so
+the corrected model hangs a pivot subtree off *every* node of the row hierarchy, decomposed down the
+group axis above the innermost level and down the pivot axis below it. Those cells are real rows in the
+aggregation network, so every aggregator and the existing incremental `replace` machinery work
+unmodified, and they are never in `children` — which removes phase 2's row-truncation item entirely.
+
+Consequences worth knowing before starting phase 2:
+
+- The open question about concatenating row-group and pivot dimensions **dissolved** —
+  `Query.dimensions` keeps its exact existing meaning and nothing is concatenated anywhere.
+- Factoring is `PivotView extends View` / `PivotQuery extends Query`, with mechanical base-layer
+  changes: visibility widening, a retained root row list, a `pivotParent` link, a per-row aggregation
+  field list, and `Set<BaseRow>` update collection.
+- Row totals, pivot totals, and value totals are one mechanism at three depths, as the terminology
+  section demanded — pivot totals now confirmed near-free for phase 3.
+- Cost is `Σ_G populated(G)`, quantified per profile. Honest correction to a phase 0 claim: for
+  Typical, populated ≈ dense, so the build win there is modest; the tick win is the whole point.
+- Build targets tightened per phase 0's own rule (Typical 250 → 140ms, Typical+Drill 750 → 290ms),
+  since the prototype passed both.
+- Correctness tests will live in the Toolbox harness — hoist-react has no test framework and
+  `data/cube` is not standalone-importable.
+
+Pick up at **phase 2** and/or **phase 3**; they are now parallelizable. Phase 3's `Store.setFields()`
+item remains independent of both.
