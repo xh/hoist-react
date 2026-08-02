@@ -48,6 +48,10 @@ export interface ViewConfig {
     /**
      * Store(s) to be automatically (re)loaded with data from this view.
      * Optional - read {@link View.result} directly to use without a Store.
+     *
+     * Connected stores should generally set {@link StoreConfig.projectionOnly} - view rows are
+     * already parsed and owned by this View, so adopting them directly improves performance
+     * when no additional record parsing or local data modification is required.
      */
     stores?: Store[] | Store;
 
@@ -588,6 +592,13 @@ export class View
                 (!isNil(this.cube.bucketSpecFn) || !isNil(this.cube.omitFn)),
             'Store.idEncodesTreePath cannot be used on a Store that is connected to a Cube with a `bucketSpecFn` or `omitFn`'
         );
+
+        // View rows are already parsed and owned by this View - recommend adopting them directly.
+        if (ret.some(s => !s.projectionOnly && !s.processRawData)) {
+            this.logDebug(
+                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. See StoreConfig.projectionOnly.'
+            );
+        }
 
         return ret;
     }

@@ -102,8 +102,7 @@ const store = new Store({
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
 | `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
-| `useFixedDataShape` | `boolean` | `false` | Build record data from a shared template - for records populating 20+ fields (memory) |
-| `useRawAsData` | `boolean` | `false` | Use each raw object *as* its record's `data`, skipping the parse/copy (memory)        |
+| `projectionOnly` | `boolean` | `false` | Read-only projection of data parsed elsewhere - adopts raw objects as record `data`. Recommended for View-connected stores |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
@@ -793,76 +792,27 @@ const store = new Store({
 
 ### Tuning Memory for Large Datasets
 
-For stores holding tens of thousands of records or more, three independent knobs reduce retained
-memory. They stack, and all are opt-in:
+For stores holding tens of thousands of records or more, two independent knobs reduce retained
+memory. They stack, and both are opt-in:
 
 | Knob | What it does | When to use |
 |------|--------------|-------------|
 | `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords` |
 | `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Your data has many repeated string values (categories, statuses, names) |
-| `useFixedDataShape: true` | Builds record `data` objects by cloning a shared template | **Your records populate 20 or more fields** - see below |
 
-#### `useFixedDataShape`
+Record `data` objects themselves are built for memory efficiency out of the box: each is cloned
+from a shared per-Store template carrying every declared field, so all records in a Store share
+one identical, fixed shape. This keeps them in V8's compact "fast properties" representation -
+objects built instead by per-field property adds are demoted to a per-object hashtable past ~20
+adds, costing several times more memory per record.
 
-By default, a record's `data` carries an own property only for fields holding a non-default value,
-with defaults reached through a shared prototype. Records therefore *differ in shape* depending on
-which of their fields are populated, and each is built by assigning values one field at a time. Past
-about 20 such assignments, V8 gives up tracking the object's shape and demotes it to a hashtable
-("dictionary mode"), costing several times more memory per record.
+Two consequences of that fixed shape to be aware of:
 
-Setting `useFixedDataShape` instead clones each `data` from a shared template carrying every field,
-so all records share one identical shape and none is demoted:
-
-```typescript
-const store = new Store({
-    fields: [...],
-    useFixedDataShape: true
-});
-```
-
-**The criterion is a single number: do your records typically populate 20 or more fields?**
-
-- **Yes → enable it.** This holds at any field count - there is no upper limit at which it stops
-  working, and the saving remains substantial even for very wide records.
-- **No → leave it off.** Below the threshold the default representation stays in V8's
-  fast-properties mode and is never worse.
-
-Note "populated" means fields actually carrying a non-default value on a typical record - not the
-number of fields declared on the Store. The two differ for sparse data, and that distinction is
-what matters:
-
-| Store shape | Effect of enabling |
-|---|---|
-| 10 fields, 10 populated | No change - the two representations are equivalent |
-| 25 fields, 25 populated | Substantially less memory |
-| 150 fields, 150 populated | Substantially less memory |
-| 150 fields, 25 populated | Modestly less memory |
-| 150 fields, **8 populated** | **More memory** - do not enable |
-
-The last row is the case to watch: a wide store whose records populate only a handful of fields.
-A fixed shape pays for every *declared* field on every record, while the sparse default costs
-nothing for unpopulated ones. Store checks your setting against its data after the first load and
-logs a warning if it looks wrong, but the setting is always honored - it is your call.
-
-`Store.recordDataMode` reports which of the three representations a Store is using - `'sparse'`
-(the default), `'fixedShape'`, or `'raw'` when `useRawAsData` is set.
-
-**One further trade-off**, which the framework cannot decide for you: `data` gains an own
-property for every field, so `Object.keys()`, spread and `JSON.stringify()` of `data` include
-default-valued fields. Reads return the same values either way. Use `record.getValues()` or
-`record.getModifiedValues()` rather than enumerating `data` directly.
-
-Not combinable with `useRawAsData`, which adopts each raw object as its record's `data` and so
-leaves no data object for this to build - Store throws at construction if both are set. The two
-are alternatives, not complements: reach for `useRawAsData` when the incoming objects are already
-in their final shape, and `useFixedDataShape` when Store must parse and build them.
-
-Treat this as a **memory** optimization only. Field reads are not measurably faster in practice:
-much of the framework's data access runs through call sites shared across every Store in the app,
-and those behave the same regardless of how record data was built.
-
-Finally, the underlying effect is specific to V8 (Chrome, Edge, Electron). Safari and Firefox do
-not demote objects at these field counts, so expect no benefit there and no harm either.
+- `data` carries an own property for every declared field, so `Object.keys()`, spread and
+  `JSON.stringify()` of `data` include default-valued fields. Use `record.getValues()` or
+  `record.getModifiedValues()` rather than enumerating `data` directly.
+- Every record pays a small fixed cost (~8 bytes) per *declared* field, populated or not - so
+  avoid declaring large numbers of fields that your records rarely populate.
 
 ### Processing Raw Data with `processRawData`
 

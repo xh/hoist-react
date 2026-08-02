@@ -48,11 +48,8 @@ export interface CubeConfig {
     /** See {@link StoreConfig.retainRaw} */
     retainRaw?: boolean;
 
-    /** See {@link StoreConfig.useFixedDataShape} */
-    useFixedDataShape?: boolean;
-
-    /** See {@link StoreConfig.useRawAsData} */
-    useRawAsData?: boolean;
+    /** See {@link StoreConfig.projectionOnly} */
+    projectionOnly?: boolean;
 
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;
@@ -146,8 +143,7 @@ export class Cube extends HoistBase {
         idSpec = 'id',
         processRawData,
         retainRaw,
-        useFixedDataShape,
-        useRawAsData,
+        projectionOnly,
         info = {},
         lockFn,
         bucketSpecFn,
@@ -160,8 +156,7 @@ export class Cube extends HoistBase {
             idSpec,
             processRawData: processRawData,
             retainRaw: retainRaw,
-            useFixedDataShape: useFixedDataShape,
-            useRawAsData: useRawAsData,
+            projectionOnly: projectionOnly,
             freezeData: false,
             idEncodesTreePath: true
         });

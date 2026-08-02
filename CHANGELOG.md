@@ -14,6 +14,11 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* `StoreRecord.data` now carries an own, enumerable property for every `Field` declared on its
+  Store, with default values filled in - previously it held own properties only for fields with
+  non-default values, with defaults reachable via the prototype but excluded from enumeration.
+  Review any code that enumerates `data` via `Object.keys()`, spread, or `JSON.stringify()` - or
+  use `StoreRecord.getValues()` / `getModifiedValues()`, which are unchanged.
 
 ### 🎁 New Features
 
@@ -32,26 +37,23 @@
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values may also be shared across successive fetches of the same logical dataset, as identified
   by a required app-provided key, per a configurable `retainMode`.
-* Added `Store.useFixedDataShape` config (default `false`) - an opt-in memory optimization for
-  stores whose records populate 20 or more fields. Clones each record's `data` from a shared
-  template carrying every field, so all records share one shape, rather than growing each object
-  field-by-field into differing shapes and losing them to V8's memory-hungry "dictionary" mode.
-  Substantially reduces per-record memory on large stores with wide, densely-populated records.
-  Note records then carry an own property for every field, so `Object.keys()`, spread, and
-  `JSON.stringify()` of `data` include default-valued fields; use `record.getValues()` or
-  `record.getModifiedValues()` instead. Added `Store.recordDataMode` to report which representation
-  a Store is using - `'sparse'`, `'fixedShape'` or `'raw'`. See the data package README for when
-  this pays and when it does not. Also accepted as a `Cube` config, applied to its source store.
+* Improved `Store` memory efficiency - record `data` objects are now cloned from a shared
+  per-Store template carrying every declared field, so all records share one fixed shape and stay
+  in V8's compact "fast properties" representation. Substantially reduces per-record memory on
+  large stores whose records populate ~20 or more fields, where the previous field-by-field
+  construction dropped data objects into V8's memory-hungry "dictionary" mode. Note the related
+  `data` enumeration change under Breaking Changes.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
   datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
-* Added an opt-in `Store.useRawAsData` config for projections of already-parsed data - most notably
-  a connected Cube `View` feeding a (tree) grid, or an endpoint returning data in its final
-  client-side form. Records use the provider's row object as their `data` by reference rather than
-  re-parsing and copying it, collapsing the usual two per-row objects to one and skipping the
-  per-row parse on every load and update. Requires that raw data already match the Store's Field
-  definitions - see the `useRawAsData` config docs for the full contract.
+* Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
+  parsed and owned elsewhere - recommended for stores connected to a Cube `View`, or loaded from an
+  endpoint returning data in its final client-side form. Records use the provider's row object as
+  their `data` by reference rather than re-parsing and copying it, collapsing the usual two per-row
+  objects to one and skipping the per-row parse on every load and update. Local modification APIs
+  (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly` config docs for the full
+  contract.
 
 ### 🐞 Bug Fixes
 

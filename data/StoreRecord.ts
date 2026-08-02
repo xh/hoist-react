@@ -44,17 +44,15 @@ export class StoreRecord {
     /**
      * An object containing the current field values for this record.
      *
-     * Its representation depends on the owning Store's config - see {@link Store.recordDataMode}:
+     * Carries an own property for every Field declared on the owning Store, with `defaultValue`s
+     * filled in - each is cloned from a shared per-Store template so that all records share one
+     * fixed shape, keeping them in V8's compact fast-properties representation.
      *
-     *  - By default ('sparse'), this object carries an explicit 'own' property only for fields that
-     *    are *not* at their default value - defaults are present via the prototype.
-     *  - With {@link StoreConfig.useFixedDataShape} ('fixedShape'), it carries an own property for
-     *    every field, with defaults filled in.
-     *  - With {@link StoreConfig.useRawAsData} ('raw'), it *is* the raw source object. It therefore
-     *    carries every key present on that object rather than only declared Fields, is never frozen
-     *    regardless of `freezeData`, and has no `defaultValue` applied for missing keys.
+     * With {@link StoreConfig.projectionOnly}, this is instead the raw source object itself. It
+     * then carries every key present on that object rather than only declared Fields, is never
+     * frozen regardless of `freezeData`, and has no `defaultValue` applied for missing keys.
      *
-     * Reads by field name are identical across all three, but enumeration is not - `Object.keys()`,
+     * Reads by field name are identical either way, but enumeration is not - `Object.keys()`,
      * spread and `JSON.stringify()` see a different key set in each. Call {@link getValues} for an
      * explicit enumeration of all declared field values regardless of representation, or
      * {@link getModifiedValues} for locally-modified values only.
@@ -313,7 +311,7 @@ export class StoreRecord {
     // --------------------------
     /**
      * True if this record's `data` object belongs to it alone and may be written to and frozen.
-     * False only for records holding a provider-owned raw object under `useRawAsData`.
+     * False only for records holding a provider-owned raw object under `projectionOnly`.
      * @internal
      */
     get ownsData(): boolean {
