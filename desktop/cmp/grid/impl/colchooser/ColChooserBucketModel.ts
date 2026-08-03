@@ -201,10 +201,15 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             return {allowed: false};
         }
 
+        const payload = buildDragPayload(records);
+        if (payload && !this.canAccept(payload.leafColIds)) {
+            this.publishDragHint('pinningDisabled');
+            return {allowed: false};
+        }
+
         // Every refusal past the selection gate is benign (over the dragged row, a no-op), so no hint.
         this.publishDragHint(null);
 
-        const payload = buildDragPayload(records);
         let target = params.target,
             {position} = params;
 
@@ -297,7 +302,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             const records = collapseSelection(getDragRecords(event.nodes));
             if (!this.isValidSelection(records)) return;
             const payload = buildDragPayload(records);
-            if (!payload) return;
+            if (!payload || !this.canAccept(payload.leafColIds)) return;
             const makeVisible = source === this.parent.libraryModel;
             this.moveColumns(
                 payload.leafColIds,
@@ -321,6 +326,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         const node = draggingEvent?.dragItem?.rowNode ?? draggingEvent?.dragItem?.rowNodes?.[0],
             sourceData = getChooserData(node);
         if (!sourceData) return 'move';
+        if (!this.canAccept(sourceData.leafColIds)) return 'notAllowed';
         return this.pinned ? 'pinned' : 'move';
     }
 
@@ -352,6 +358,16 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             if (!rec.data.isGroup) ids.add(rec.id as string);
         });
         return ids;
+    }
+
+    /**
+     * True if this bucket can take the given leaves. With pinning disabled the rails still render any
+     * app-pinned columns for visibility and reorder, but a move across buckets would re-pin them.
+     */
+    private canAccept(leafColIds: string[]): boolean {
+        if (this.parent.columnPinningEnabled) return true;
+        const mine = new Set(this.slice.map(cs => cs.colId));
+        return leafColIds.every(id => mine.has(id));
     }
 
     /** Rendered hideable leaf columns - the columns the "toggle all" control acts on. */

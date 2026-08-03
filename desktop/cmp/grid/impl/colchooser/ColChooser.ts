@@ -134,11 +134,12 @@ interface PinnedBucketZoneProps extends ChooserSectionProps {
 /**
  * A pinned rail: its zone separator above its grid, emitted as siblings so both stay direct flex
  * children of the stack. Collapses to a bare drop strip (no separator) when empty - filtered or
- * genuinely. Omitted entirely when column pinning is disabled.
+ * genuinely. With pinning disabled the rail shows only if the app pinned columns into it - there is no
+ * drop strip to offer.
  */
 const pinnedBucket = hoistCmp.factory<PinnedBucketZoneProps>(
     ({chooserModel, bucketModel, bucket}) => {
-        if (!chooserModel.columnPinningEnabled) return null;
+        if (!chooserModel.columnPinningEnabled && bucketModel.columnCount === 0) return null;
         return fragment(
             bucketSeparator({
                 chooserModel,
@@ -158,10 +159,8 @@ const pinnedBucket = hoistCmp.factory<PinnedBucketZoneProps>(
  * tell it apart.
  */
 const columnsSeparator = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => {
-    const {columnPinningEnabled, leftBucketModel, rightBucketModel} = chooserModel,
-        show =
-            columnPinningEnabled &&
-            (leftBucketModel.columnCount > 0 || rightBucketModel.columnCount > 0);
+    const {leftBucketModel, rightBucketModel} = chooserModel,
+        show = leftBucketModel.columnCount > 0 || rightBucketModel.columnCount > 0;
     return show
         ? bucketSeparator({
               chooserModel,

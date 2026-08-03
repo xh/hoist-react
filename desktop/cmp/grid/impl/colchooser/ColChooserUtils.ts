@@ -18,9 +18,9 @@ import type {DropRejectReason} from './colChooserDropEngine';
 
 /**
  * A drag/drop refusal the chooser explains via an on-screen hint - the drop engine's reasons plus the
- * library-only `notHideable`.
+ * library-only `notHideable` and the bucket-only `pinningDisabled`.
  */
-export type DragHintReason = DropRejectReason | 'notHideable';
+export type DragHintReason = DropRejectReason | 'notHideable' | 'pinningDisabled';
 
 /**
  * Status label for a refused drag/drop, shown in the drag ghost. Keep these short enough for the
@@ -32,6 +32,8 @@ export function dragRejectHint(reason: DragHintReason): string {
             return 'Not Movable';
         case 'notHideable':
             return 'Not Hideable';
+        case 'pinningDisabled':
+            return 'Pinning Disabled';
         case 'groupDraggedWithOthers':
         case 'multiGroupSelection':
             return 'Column Groups Locked';
