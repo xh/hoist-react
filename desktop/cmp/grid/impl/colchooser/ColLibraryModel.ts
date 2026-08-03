@@ -27,10 +27,9 @@ import {
 const UNGROUPED = 'Ungrouped';
 
 /**
- * Model backing the ColChooser's optional Column Library - a grid listing all currently hidden
- * columns (across every pinned side), grouped by `chooserGroup`. Acts as a cross-grid drag
- * participant: drag a column out onto a bucket to show + position it (handled by the receiving
- * bucket), or drag a bucket column onto the library to hide it (handled here, position untouched).
+ * Model backing the ColChooser's optional Column Library - a grid of all currently hidden columns,
+ * grouped by `chooserGroup`. Dragging a column out onto a bucket shows and positions it (handled by the
+ * receiving bucket); dragging one in hides it, leaving its position untouched.
  * @internal
  */
 export class ColLibraryModel extends HoistModel implements ColChooserDropParticipant {
@@ -90,16 +89,15 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
             });
         });
 
-        // Only group when some hidden column actually declares a chooserGroup - otherwise a lone
-        // "Ungrouped" header would wrap an ungrouped grid.
+        // Group only when some hidden column declares a chooserGroup, else a lone "Ungrouped" header
+        // would wrap an ungrouped grid.
         chooserGridModel.setGroupBy(grouped ? 'chooserGroup' : null);
         chooserGridModel.store.loadData(data);
     }
 
     /**
-     * Show the given (currently hidden) library rows in place - sets `hidden: false` on their
-     * underlying column state without repositioning them. They reappear wherever they already sit
-     * in the master order once routed back out of the library.
+     * Show the given library rows in place, without repositioning them - they reappear wherever they
+     * already sit in the master order.
      */
     toggleVisibility(recordIds: Some<StoreRecordId>) {
         const {store} = this.chooserGridModel,
@@ -125,8 +123,7 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
             hideIds = new Set(
                 (event.nodes ?? [])
                     .flatMap(node => getChooserData(node)?.leafColIds ?? [])
-                    // A movable-but-locked column can be dragged here - never hide it. Dropping one
-                    // (or a group's locked leaves) is a no-op.
+                    // A movable-but-locked column can be dragged here - dropping it is a no-op.
                     .filter(colId => targetGridModel.isColumnHideable(colId))
             );
         if (!hideIds.size) return;
@@ -147,8 +144,8 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
                   : [],
             leafColIds: string[] = nodes.flatMap((n: any) => getChooserData(n)?.leafColIds ?? []);
 
-        // Refuse a drag with no hideable leaf - dropping it here would be a no-op. A partially
-        // hideable group is still allowed, hiding only its hideable leaves (see handleCrossBucketDrop).
+        // Refuse only a drag with no hideable leaf at all; a partially hideable group hides its
+        // hideable leaves.
         if (isEmpty(leafColIds) || leafColIds.some(id => targetGridModel.isColumnHideable(id))) {
             this.parent.setDragHint(null);
             return 'hide';
@@ -163,7 +160,6 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
     private createGridModel(): GridModel {
         return new GridModel({
             ...chooserGridConfig,
-            // 0 collapses groups by default; standard non-tree default of 1 expands them.
             expandLevel: this.collapseGroups ? 0 : 1,
             sortBy: 'name',
             emptyText: 'No hidden columns',

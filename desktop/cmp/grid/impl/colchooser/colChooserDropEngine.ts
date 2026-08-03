@@ -10,25 +10,21 @@ import type {RowDropTargetPosition} from '@xh/hoist/kit/ag-grid';
 import {findLastIndex} from 'lodash';
 
 /**
- * Pure resolution engine for column-chooser drag-and-drop. All logic operates on plain
- * `ColumnState[]` master data plus a `chainOf` group-lookup - no ag-Grid, MobX, or model deps - so it
- * is unit-testable headless (see `colChooserDropEngine.spec.ts`) and free of the ag-Grid glue that
- * lives in {@link ColChooserBucketModel}. See `docs/planning/locked-group-dnd-spec.md` for the model (esp. §5A).
+ * Pure resolution engine for column-chooser drag-and-drop - plain `ColumnState[]` master data plus a
+ * `chainOf` group lookup, with no ag-Grid, MobX, or model deps. Rules and worked cases:
+ * `docs/planning/locked-group-dnd-spec.md`.
  *
- * The `@xh/hoist` imports here are **type-only** (erased at runtime), so this module carries no
- * runtime dependency on the framework and runs under bare `tsx`.
+ * Keep every `@xh/hoist` import here type-only - a runtime import breaks bare-`tsx` execution of
+ * `colChooserDropEngine.spec.ts`.
  */
 
 /** Maps a leaf colId to its group chain as groupIds, outermost (top-level) to innermost. */
 export type ChainOf = (colId: string) => string[];
 
 /**
- * Why a drag is refused - the machine-readable reason the UI turns into an explanatory hint. Every
- * reason is a target-independent SELECTION refusal (see {@link dragSelectionRejectReason}); benign
- * rejections (hovering the dragged row, a no-op reorder) carry no reason. A drop that would split a
- * locked group is no longer refused per-position - it is CLAMPED to the nearest legal spot within
- * the dragged unit's bounding group (see {@link resolveDrop} / spec §5B), so there is no
- * splitting-drop reason.
+ * Why a drag is refused, as an explanatory hint. All reasons are target-independent selection
+ * refusals - a locked-group split is clamped rather than refused (§5B), and benign rejections
+ * (hovering the dragged row, a no-op reorder) carry no reason.
  */
 export type DropRejectReason = 'notMovable' | 'groupDraggedWithOthers' | 'multiGroupSelection';
 
@@ -46,9 +42,8 @@ export interface ResolveDropInput {
     /** The target (drop) bucket. */
     side: HSide | null;
     /**
-     * True if a leaf colId is currently rendered in its bucket. Unifies the two ways a column can be
-     * absent from a bucket's rendered rows: routed to the Column Library (the old `showHidden` case)
-     * or excluded by an active Store filter. Derived from each bucket store's `records`.
+     * True if a leaf colId is currently rendered in its bucket - false when routed to the Column
+     * Library or excluded by an active Store filter.
      */
     isDisplayed: (colId: string) => boolean;
     lockColumnGroups: boolean;
@@ -64,9 +59,8 @@ export interface ResolveDropInput {
 }
 
 /**
- * Resolve a proposed drop into `{allowed, state}` - the single source of truth for both the drag
- * preview and the commit. Operates on the single master array; buckets are views of it filtered by
- * pinned side. See `docs/planning/locked-group-dnd-spec.md` for the full model.
+ * Resolve a proposed drop - the single source of truth for both the drag preview and the commit.
+ * Operates on the one master array; buckets are views of it filtered by pinned side.
  */
 export function resolveDrop(input: ResolveDropInput): {
     allowed: boolean;
@@ -87,10 +81,8 @@ export function resolveDrop(input: ResolveDropInput): {
 
     if (!master.some(cs => L.has(cs.colId))) return {allowed: false, state: null};
 
-    // No in-bucket drop target (empty bucket, or an append with nothing under the cursor): pin in
-    // place per spec §6 - set the pin flag on the dragged leaves without moving them in master.
-    // Pinning is orthogonal to order (§1), so the group simply spans the boundary; the order is
-    // unchanged, so this can never split a group and is always allowed.
+    // No in-bucket target (empty bucket, or an append below the last row): pin in place, leaving
+    // master order untouched (§6).
     if (!target) {
         return {
             allowed: true,
@@ -107,13 +99,8 @@ export function resolveDrop(input: ResolveDropInput): {
 
     const dragLeaf = movingLeafColIds[0];
 
-    // Bounding group (spec §5B): the innermost ancestor - including the dragged group's own level
-    // (§5A/2b) - that still has a non-dragged member RENDERED in this bucket. The dragged unit may
-    // only land within this group's run; a drop that would fall OUTSIDE it is CLAMPED to the run's
-    // near edge (see {@link spliceMove}), so an imprecise drag resolves to the nearest legal position
-    // rather than being refused. Counting only rendered members means a hidden same-bucket sibling
-    // never constrains a full visible group. Null bound → unconstrained: a top-level/fresh group
-    // relocates freely across the bucket, and a leaf's own group auto-moves via §7.
+    // Bounding group (§5B): innermost ancestor still rendered in this bucket. A drop resolving outside
+    // its run is clamped to the near edge, never refused. Null = unconstrained.
     const boundGroup = renderedAncestor(
         master,
         dragLeaf,
@@ -147,13 +134,9 @@ export interface SelectionUnit {
 }
 
 /**
- * Drop rows subsumed by a selected group - the redundant part of a multi-select where a group is
- * dragged alongside its own descendants (its leaves, a nested subgroup, or its parent group).
- * Selecting a group already moves all its children, so a descendant adds nothing; collapsing to the
- * enclosing unit makes such a selection a coherent single-group drag rather than an incoherent mix.
- * A foreign row (not contained in any selected group) is retained, so a group + an unrelated
- * column/sibling-group still reads as multiple units (and is rejected by {@link isValidDragSelection}
- * when groups are locked). Input order is preserved.
+ * Drop rows subsumed by a selected group, so a group dragged alongside its own descendants collapses
+ * to a coherent single-group drag. Foreign rows are retained, and remain multiple units for
+ * {@link isValidDragSelection} to reject. Input order is preserved.
  */
 export function collapseSelection<T extends SelectionUnit>(rows: T[]): T[] {
     return rows.filter(
@@ -162,8 +145,8 @@ export function collapseSelection<T extends SelectionUnit>(rows: T[]): T[] {
                 if (j === i || !g.isGroup) return false;
                 const gLeaves = new Set(g.leafColIds);
                 if (!r.leafColIds.every(id => gLeaves.has(id))) return false;
-                // Equal leaf sets (degenerate - e.g. a single-column group and its child): keep the
-                // earlier row so the two never subsume each other into nothing.
+                // Equal leaf sets (e.g. a single-column group and its child): keep the earlier row,
+                // else the two subsume each other into nothing.
                 return g.leafColIds.length === r.leafColIds.length ? j < i : true;
             })
     );
@@ -180,26 +163,17 @@ export interface DragSelectionRow {
 }
 
 /**
- * Gate a drag by its selected rows alone (target-independent), so an incoherent multi-select is
- * refused up front - the drag shows `notAllowed` everywhere rather than silently moving only part of
- * the selection. A `movable:false` column still can't be dragged directly, but rides along freely
- * when a parent group moves (matching ag-Grid's `suppressMovable`), so movability is enforced only on
- * the rows the user grabbed, never on a group's passenger children.
- *
- * Rejects when:
- * - the selection is empty, or any selected row is not movable;
- * - a group row is mixed with any other row (a group is always dragged as a lone unit);
- * - groups are locked and the selected leaves don't all share one immediate parent (columns from
- *   different groups can't move together without splitting a group).
+ * Gate a drag by its selected rows alone, so an incoherent multi-select is refused up front rather
+ * than silently moving only part of it. Movability is enforced only on the rows the user grabbed: a
+ * `movable:false` column rides along when a parent group moves, per ag-Grid's `suppressMovable`.
  */
 export function isValidDragSelection(rows: DragSelectionRow[], lockColumnGroups: boolean): boolean {
     return !!rows.length && dragSelectionRejectReason(rows, lockColumnGroups) == null;
 }
 
 /**
- * The user-meaningful reason {@link isValidDragSelection} would refuse a selection, or null if it is
- * valid (or empty - no drag to explain). Companion to the boolean gate so the UI can explain *why* a
- * multi-select is refused, without changing the gate's semantics. Same order of checks as the gate.
+ * The reason {@link isValidDragSelection} would refuse a selection, or null if valid (or empty - no
+ * drag to explain). Companion to the boolean gate, so the UI can explain *why*.
  */
 export function dragSelectionRejectReason(
     rows: DragSelectionRow[],
@@ -219,12 +193,9 @@ export function dragSelectionRejectReason(
 }
 
 /**
- * True if committing `candidate` would leave the chooser visually unchanged (spec §5A Rule B): the
- * rendered column sequence of every bucket - left, unpinned, right - is identical, each compared
- * independently. Non-displayed columns (routed to the library or filtered out) are excluded via
- * `isDisplayed`. Comparing per bucket (not the interleaved master) is essential: a pinned column
- * reordering relative to an unpinned one in master is invisible - separate rails - so it counts as a
- * no-op and never commits a churn (see C-N1/C-GR).
+ * True if committing `candidate` leaves every bucket's rendered sequence unchanged (§5A Rule B).
+ * Compare per bucket, never on interleaved master: a pinned column reordering relative to an unpinned
+ * one is invisible to the user, and treating it as a change churns master for nothing (C-N1/C-GR).
  */
 export function isNoOpDrop(
     candidate: ColumnState[],
@@ -242,10 +213,9 @@ export function isNoOpDrop(
 }
 
 /**
- * The ag-grid `marryChildren` invariant: every group, at every nesting level, occupies a contiguous
- * index range in the flat master array (hidden columns included, pinning ignored). This is exactly
- * ag-grid's own `doesMovePassMarryChildren` (index spread within the group's leaf count); a state
- * that fails it triggers warning #39 on apply. Exported so tests can assert #39-freedom structurally.
+ * ag-grid's `marryChildren` invariant: every group, at every nesting level, occupies a contiguous
+ * index range in flat master (hidden columns included, pinning ignored) - mirroring ag-grid's own
+ * `doesMovePassMarryChildren`. A state that fails it triggers ag-grid warning #39 on apply.
  */
 export function invariantHolds(state: ColumnState[], chainOf: ChainOf): boolean {
     const first = new Map<string, number>(),
@@ -269,10 +239,9 @@ export function invariantHolds(state: ColumnState[], chainOf: ChainOf): boolean 
 //------------------
 
 /**
- * Produce the master state that relocates `moveSet` to the drop point, re-pinning the dragged leaves
- * `pinLeaves` to this bucket (and unhiding them for a library drop). The insertion index is resolved
- * in the target bucket's rendered order when locked (§5A Rule A), or at the raw target when unlocked,
- * then - when locked - CLAMPED to `boundGroup`'s run so the block can never leave its bounding group.
+ * Master state relocating `moveSet` to the drop point, re-pinning `pinLeaves` to this bucket (and
+ * unhiding them for a library drop). Locked drops resolve in the target bucket's rendered order
+ * (§5A Rule A) and clamp to `boundGroup`'s run; unlocked drops splice at the raw target index.
  */
 function spliceMove(
     input: ResolveDropInput,
@@ -300,14 +269,11 @@ function spliceMove(
         remaining = master.filter(cs => !moveSet.has(cs.colId)),
         dragChain = new Set(chainOf([...pinLeaves][0]));
 
-    // Locked: resolve the landing in the target bucket's rendered order (§5A Rule A).
-    // Unlocked: no contiguity constraint, so splice at the raw target index (splits allowed).
     let at = lockColumnGroups
         ? viewInsertionIndex(remaining, target, position, pinned, isDisplayed, dragChain, chainOf)
         : baseInsertionIndex(remaining, target, position);
 
-    // Clamp to the bounding group's run (spec §5B): a drop that resolves past the run lands at the
-    // run's near edge, keeping the block inside its parent instead of relocating the whole parent.
+    // Clamp keeps the block inside its parent, rather than escalating to relocate the parent (§5B).
     if (lockColumnGroups && boundGroup) {
         const lo = remaining.findIndex(cs => chainOf(cs.colId).includes(boundGroup));
         if (lo >= 0) {
@@ -344,12 +310,9 @@ function groupRenderedInBucket(
 }
 
 /**
- * Depth at which to start the ancestor search (the number of chain levels the dragged unit itself
- * occupies, so {@link renderedAncestor} scans from `depth - 1` down). For a leaf, that's the whole
- * chain. For a group, it INCLUDES the group's own level: a spanning group whose other members are
- * rendered in the target bucket must be constrained to its own run - dragging its row then behaves
- * like dragging its leaves (strict rejoin), not relaxed-moving the whole group. A full/fresh group
- * (no other rendered member) still resolves to a higher ancestor / relaxed.
+ * Chain depth the dragged unit itself occupies ({@link renderedAncestor} scans down from `depth - 1`).
+ * For a group this INCLUDES its own level, so a spanning group is bound to its own run (strict rejoin)
+ * while a full/fresh group resolves to a higher ancestor (§5A/2b).
  */
 function unitDepth(dragLeaf: string, dragUnitGroupId: string | null, chainOf: ChainOf): number {
     const chain = chainOf(dragLeaf);
@@ -357,8 +320,8 @@ function unitDepth(dragLeaf: string, dragUnitGroupId: string | null, chainOf: Ch
 }
 
 /**
- * Innermost ancestor (from the unit's own level outward) with a non-dragged member RENDERED in the
- * target bucket - the group whose run bounds the drop (outside which it is disallowed). Null if none.
+ * Innermost ancestor (from the unit's own level outward) with a non-dragged member rendered in the
+ * target bucket - the group whose run bounds the drop. Null if none.
  */
 function renderedAncestor(
     state: ColumnState[],
@@ -376,11 +339,7 @@ function renderedAncestor(
     return null;
 }
 
-/**
- * Base insertion index (a gap in the moving-excluded array) for a drop target/position. A drop with
- * no target is a pin-in-place handled by {@link resolveDrop} (spec §6), so a target is always present
- * here - we never partition the master array by pinned side (§1).
- */
+/** Insertion gap in `remaining` for a drop target/position, by raw master index (unlocked drops). */
 function baseInsertionIndex(
     remaining: ColumnState[],
     target: DropTarget,
@@ -397,18 +356,9 @@ function baseInsertionIndex(
 }
 
 /**
- * Master index (into `remaining`, the moving-excluded array) to splice the dragged block, resolving
- * the drop in the target bucket's rendered-leaf order (spec §5A Rule A) rather than raw master
- * indices. `dragChain` is the set of groupIds the dragged unit belongs to: its block is never snapped
- * out of its own groups (it joins them), and any group it is foreign to is never split.
- *
- * Maps `(target, position)` to the gap between two rendered bucket leaves `prev`/`next`, then:
- * - a shared group of `prev`/`next` the unit is foreign to → collapse that group to a SINGLE row and
- *   snap to its leading edge if the cursor is in the group's top half, its trailing edge if in the
- *   bottom half - the group's vertical midpoint is the flip (spec §5B);
- * - else anchor before `next` (or after `prev` at a bucket edge), pushed out of the outermost group
- *   the unit is foreign to below the shared level - so a foreign group is never split, and when the
- *   unit belongs all the way down it lands right beside the neighbor, joining its own group.
+ * Insertion gap in `remaining` resolved in the target bucket's rendered-leaf order (§5A Rule A) rather
+ * than raw master indices. `dragChain` is the groupIds the dragged unit belongs to: it is never
+ * snapped out of its own groups, and never splits a group it is foreign to (§5B).
  */
 function viewInsertionIndex(
     remaining: ColumnState[],
@@ -447,12 +397,9 @@ function viewInsertionIndex(
 
     for (let k = 0; k < s; k++) {
         if (!dragChain.has(pc[k])) {
-            // Collapse the foreign group to a single row (spec §5B): its whole rendered span is one
-            // drop unit, split at its vertical midpoint - top half → before the group, bottom half →
-            // after. `i` is the hovered member's index among the group's `n` rendered members and the
-            // `below` half adds a half-row, so `2i + below < n` puts the flip at the middle member's
-            // center (rows are uniform height). A group/edge target not among the members (i < 0)
-            // falls back to the plain above/below side.
+            // Foreign group collapses to one drop unit, flipping at its vertical midpoint (§5B):
+            // `i` = hovered member index among `members`, `below` adds a half-row. i < 0 for a
+            // group/edge target not among the members.
             const members = bucketIds.filter(id => chainOf(id).includes(pc[k])),
                 i = members.indexOf(target.id),
                 below = position === 'below' ? 1 : 0,
@@ -462,12 +409,9 @@ function viewInsertionIndex(
     }
     if (next != null) {
         for (let k = s; k < nc.length; k++) if (!dragChain.has(nc[k])) return runStart(nc[k]);
-        // Anchor immediately before `next` only when the unit actually joins next's group (shares a
-        // divergent group) or there is no prev to fall back to. Otherwise the unit belongs to prev's
-        // branch, not next's: fall through so it lands beside prev, inside its own run. Never
-        // overshoot to next's raw master index, which can jump a run of hidden / other-bucket foreign
-        // columns and split the unit's group - e.g. dropping a subgroup below the last leaf of a
-        // sibling subgroup when a hidden group and a trailing column follow it in master.
+        // Anchor before `next` only when the unit joins next's group, or there is no prev to fall back
+        // to: next's raw master index can sit across a run of hidden or other-bucket columns, which
+        // would split the unit's own group (C-HIDDEN-GAP).
         if (prev == null || nc.slice(s).some(g => dragChain.has(g))) return idxOf(next);
     }
     if (prev != null) {

@@ -23,10 +23,9 @@ import {ColChooserBucketModel} from './ColChooserBucketModel';
 export interface ColChooserProps extends HoistProps<ColChooserModel>, LayoutProps {}
 
 /**
- * A component for managing Grid column visibility, ordering, and pinning. Renders three internal
- * grids - pinned-left, unpinned, and pinned-right - with drag-and-drop supported both within and
- * across grids. Bound to a {@link ColChooserModel}, which is owned by the grid and shared across
- * the chooser's dialog, popover, and panel presentations.
+ * A component for managing Grid column visibility, ordering, and pinning. Renders three internal grids
+ * - pinned-left, unpinned, pinned-right - with drag-and-drop within and across them. Bound to a
+ * {@link ColChooserModel}, shared across the dialog, popover, and panel presentations.
  * @internal
  */
 export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
@@ -36,9 +35,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
 
     render({model, className, ...props}) {
         const [layoutProps] = splitLayoutProps(props);
-        // Overlays (popover/dialog) hug their content, so the root takes only a fixed height and its
-        // width follows the buckets + library below. The docked panel is sized by its outer
-        // PanelModel, so the root just fills it.
+        // Overlays hug their content, so the root fixes only height - width follows the buckets below.
         return vframe({
             className,
             height: model.sizeToContent ? model.height : null,
@@ -68,14 +65,11 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
                 flex: 1,
                 model: chooserModel,
                 bind: 'filterText',
-                // Bind a real store only to infer fields + suppress the control's fallback GridModel
-                // context-lookup; the predicate is applied to every grid via applyFilterTestFn.
                 store: chooserModel.filterFieldStore,
                 autoApply: false,
                 onFilterChange: (fn: FilterTestFn) => chooserModel.applyFilterTestFn(fn),
-                // Match only fields shown in the grids - name (buckets + library) and the library's
-                // chooserGroup header. Description is a bucket tooltip only, so matching it would
-                // surface rows on text the user can't see.
+                // Only fields actually shown in the grids - matching the tooltip-only `description`
+                // would surface rows on text the user can't see.
                 includeFields: ['name', 'chooserGroup'],
                 matchMode: chooserModel.filterMatchMode,
                 placeholder: 'Filter columns...'
@@ -113,9 +107,7 @@ const chooserBody = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
 
 /**
  * The bucket zones in master order: pinned-left, the unpinned "Columns" divider + grid, pinned-right.
- * Holds no observable state of its own - each zone re-renders independently off its own bucket. Takes
- * a fixed width in the content-hugging overlays; flexes to fill the dock (beside the fixed-width
- * library) in the docked panel.
+ * Each zone re-renders independently off its own bucket.
  */
 const chooserBuckets = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
     vbox({
@@ -140,11 +132,9 @@ interface PinnedBucketZoneProps extends ChooserSectionProps {
 }
 
 /**
- * A pinned rail: its zone separator (shown only when the rail holds rendered columns) above its
- * grid, emitted as siblings so both stay direct flex children of the stack. Scoped to a single
- * bucket's `columnCount`, so only this rail re-renders when its own membership changes - and it
- * collapses to a bare drop strip (no separator) when filtered empty, like a genuinely empty rail.
- * Omitted entirely when column pinning is disabled.
+ * A pinned rail: its zone separator above its grid, emitted as siblings so both stay direct flex
+ * children of the stack. Collapses to a bare drop strip (no separator) when empty - filtered or
+ * genuinely. Omitted entirely when column pinning is disabled.
  */
 const pinnedBucket = hoistCmp.factory<PinnedBucketZoneProps>(
     ({chooserModel, bucketModel, bucket}) => {
@@ -181,9 +171,7 @@ const columnsSeparator = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) 
         : null;
 });
 
-/**
- * Footer Save/Cancel actions. Absent when auto-committing.
- */
+/** Footer Save/Cancel actions. Absent when auto-committing. */
 const chooserFooter = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => {
     if (chooserModel.commitOnChange) return null;
     return toolbar(
@@ -213,8 +201,7 @@ interface ToggleBtnProps extends HoistProps {
 
 /**
  * Minimal icon-only display toggle riding the top bar - solid + primary intent when active, thin +
- * muted gray when not. Tooltip reflects the action it will perform (`Show`/`Hide`) given the current
- * state.
+ * muted when not.
  */
 const toggleBtn = hoistCmp.factory<ToggleBtnProps>(({model, bind, icon, label}) => {
     const active = model[bind];
@@ -234,10 +221,8 @@ interface BucketGridProps extends HoistProps {
 }
 
 /**
- * A single chooser bucket grid. The pinned (left/right) rails auto-height to their content via
- * `domLayout: 'autoHeight'` - growing/shrinking as columns are pinned. When a pinned side holds no
- * columns the grid collapses to a minimal 1-line drop strip (its emptyText, keyed to the pin
- * direction). The unpinned "Columns" bucket flexes to fill remaining space and scrolls internally.
+ * A single chooser bucket grid. Pinned rails auto-height to their content, collapsing to a 1-line drop
+ * strip when empty; the unpinned bucket flexes to fill remaining space and scrolls internally.
  */
 const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucketModel, bucket}) => {
     const pinned = bucket !== 'unpinned',
@@ -251,14 +236,11 @@ const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucketModel, bucket}) => 
             empty && bucketModel.dragOver ? 'xh-col-chooser__bucket--drag-over' : null
         ),
         model: bucketModel.chooserGridModel,
-        // The unpinned bucket permanently reserves its vertical-scrollbar gutter so its action-column
-        // checkboxes hold the same right edge as the pinned rails and separator toggles whether or not
-        // it overflows (SCSS suppresses the empty track when it doesn't). ag-grid otherwise collapses
-        // that gutter to 0 with no overflow. Pinned rails auto-height and never scroll.
+        // The unpinned bucket permanently reserves its scrollbar gutter, holding the same right edge as
+        // the pinned rails whether or not it overflows (SCSS suppresses the empty track when it doesn't).
         agOptions: pinned
             ? {...bucketModel.agOptions, domLayout: 'autoHeight'}
             : {...bucketModel.agOptions, alwaysShowVerticalScroll: true},
-        // Pinned rails size to their (auto-height) grid content; the unpinned bucket flexes.
         flex: pinned ? null : 1
     });
 });
@@ -272,8 +254,7 @@ interface BucketSeparatorProps extends HoistProps {
 /**
  * Zone divider - a lighter-weight label riding a hairline rule, deliberately distinct from a filled
  * column-group header bar so the eye reads "structural zone" not "group". Aligned to echo the zone's
- * position (left / center / right); pinned zones flank the label with a direction arrow. The bucket's
- * "toggle all visibility" control rides the far end (omitted when it has nothing to act on).
+ * position, with the bucket's "toggle all visibility" control riding the far end.
  */
 const bucketSeparator = hoistCmp.factory<BucketSeparatorProps>(
     ({chooserModel, bucketModel, bucket}) => {
@@ -310,9 +291,8 @@ interface BucketHeaderProps extends HoistProps {
 }
 
 /**
- * Bucket-scoped "toggle all visibility" control riding the end of a zone separator. Reflects the
- * aggregate all/none/mixed state; omitted while the Column Library is shown (columns are hidden by
- * dragging to the library then) or when the bucket has no hideable columns.
+ * Bucket-scoped "toggle all visibility" control riding the end of a zone separator, reflecting the
+ * aggregate all/none/mixed state. Omitted while the Library is shown - dragging hides then.
  */
 const bucketVisibilityToggle = hoistCmp.factory<BucketHeaderProps>(
     ({chooserModel, bucketModel}) => {
@@ -341,9 +321,7 @@ interface ColLibraryPanelProps extends HoistProps {
 
 const colLibraryPanel = hoistCmp.factory<ColLibraryPanelProps>(({chooserModel}) => {
     if (!chooserModel.isLibraryShown) return null;
-    // A vbox (not vframe) for a fixed-width column: vframe forces `flex: auto`, which would let the
-    // library grow into the buckets' space instead of the buckets flexing to fill the dock. The grid
-    // takes `flex: 1` to fill the library's height.
+    // vbox, not vframe - vframe's `flex: auto` would let the library grow into the buckets' space.
     return vbox({
         className: 'xh-col-chooser__library',
         flex: 'none',

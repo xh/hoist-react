@@ -8,13 +8,12 @@
  * Regression corpus for the column-chooser locked-group drop engine. Run with:
  *   npx tsx desktop/cmp/grid/impl/colchooser/colChooserDropEngine.spec.ts
  *
- * hoist-react has no general test framework configured, so (matching the mcp/data/*.spec.ts style)
- * this is a self-contained, exit-coded driver: it runs a table of cases against the pure
- * {@link resolveDrop} engine, prints pass/fail per case, and exits 1 on any failure.
+ * hoist-react has no general test framework configured, so (matching the mcp/data/*.spec.ts style) this
+ * is a self-contained, exit-coded driver: a table of cases against the pure {@link resolveDrop} engine,
+ * exiting 1 on any failure.
  *
- * Every case traces to `docs/planning/locked-group-dnd-spec.md` (§5A rules, §10A captured cases C-F1..C-SPAN). Each
- * allowed locked drop is additionally asserted #39-free via {@link invariantHolds} (ag-Grid's
- * marryChildren). Add a case here whenever a new drag scenario is captured. No browser/Toolbox needed.
+ * Every case traces to a rule or captured case in `docs/planning/locked-group-dnd-spec.md`. Add a case
+ * here whenever a new drag scenario is captured.
  */
 import type {ColumnState} from '@xh/hoist/cmp/grid';
 import type {HSide} from '@xh/hoist/core';
@@ -261,9 +260,8 @@ const cases: Case[] = [
         }
     },
     {
-        // Formerly disallowed. Now the drop clamps back into grp-account's run (§5A): dragging the
-        // pinned portion toward symbol (before the group) can't leave the group, so it rejoins at the
-        // group's leading edge and unpins.
+        // Dragging the pinned portion toward symbol (before the group) can't leave grp-account, so it
+        // rejoins at the group's leading edge and unpins (§5A).
         name: 'C-SPAN outside own portion -> clamp back into own run (rejoin)',
         pins: {portfolio: 'left'},
         side: null,
@@ -283,8 +281,8 @@ const cases: Case[] = [
 
     // --- intra-bucket leaf validity (spec §5A): clamp to the leaf's own group edge, never reject ---
     {
-        // Formerly disallowed. Dragging assetClass down past its group clamps it to grp-security's
-        // trailing edge (its only legal region), rather than refusing the drop.
+        // Dragging assetClass down past its group clamps to grp-security's trailing edge - its only
+        // legal region - rather than refusing the drop.
         name: 'INTRA leaf out of its group -> clamp to own group edge',
         side: null,
         moving: ['assetClass'],
@@ -307,10 +305,9 @@ const cases: Case[] = [
         expect: {allowed: true}
     },
 
-    // --- §5B group-as-single-row: a foreign locked group collapses to one drop unit split at its
-    // vertical midpoint - cursor in the top half → before the group, bottom half → after. grp-account
-    // has 3 rendered members (portfolio, strategy, trader), so the flip is at strategy's center.
-    // grp-pricing is dragged up from below grp-account, so both before/after are real moves. ---
+    // --- §5B group-as-single-row. grp-account has 3 rendered members (portfolio, strategy, trader), so
+    // the midpoint flip is at strategy's center; grp-pricing drags up from below, so both before and
+    // after are real moves. ---
     {
         // Above the midpoint (strategy's upper half) -> before the whole group.
         name: 'POS foreign group above midpoint -> before the group',
@@ -684,13 +681,11 @@ for (const c of collapseCases) {
 }
 
 //------------------
-// C-HIDDEN-GAP: a second fixture mirroring the Toolbox `columnChooser` example - a nested Sales
-// group (projected + actual subgroups) followed in master by an all-HIDDEN Compensation group and a
-// trailing ungrouped column (retain). The hidden foreign group between the Sales run and retain is
-// exactly what tripped `viewInsertionIndex`: dropping a subgroup below the last leaf of its sibling
-// subgroup must land it inside the Sales run (a minimal reorder), not overshoot retain's raw master
-// index across the hidden Compensation columns (which split Sales and forced the whole group to the
-// end). See `docs/planning/locked-group-dnd-spec.md` §5A.
+// C-HIDDEN-GAP: a second fixture mirroring the Toolbox `columnChooser` example - a nested Sales group
+// (projected + actual subgroups) followed in master by an all-HIDDEN Compensation group and a trailing
+// ungrouped column (retain). That hidden group between the Sales run and retain is what makes these
+// cases load-bearing: a drop resolved on raw master indices overshoots across it, splitting Sales.
+// See `docs/planning/locked-group-dnd-spec.md` §5A.
 //------------------
 const CHAIN2: Record<string, string[]> = {
     fullName: ['rep'],
@@ -750,9 +745,8 @@ interface HGCase {
 
 const hiddenGapCases: HGCase[] = [
     {
-        // The captured bug: Projected dropped below the last Actual leaf -> minimal reorder within
-        // Sales (Actual then Projected). Before the fix this relocated the whole Sales group past
-        // Retain.
+        // Projected dropped below the last Actual leaf -> a minimal reorder within Sales, not a
+        // relocation of the whole Sales group past Retain.
         name: 'C-HIDDEN-GAP subgroup below sibling subgroup last leaf -> reorder in place',
         moving: ['projectedUnitsSold', 'projectedGross'],
         guid: 'projected',
@@ -787,12 +781,8 @@ const hiddenGapCases: HGCase[] = [
         ]
     },
     {
-        // Foreign to BOTH rendered neighbors: an ungrouped column dropped below Actual Gross, whose
-        // rendered next (Retain) is separated from the Sales run by the hidden Compensation group.
-        // The drop anchors right after the preceding row (Actual Gross), NOT before Retain across the
-        // hidden gap: prefer the position immediately after the row before the indicator, and when it
-        // can't sit immediately before the next row (hidden columns or locked-group rules in the way),
-        // the nearest position after the preceding row is where it lands.
+        // Foreign to BOTH rendered neighbors, with the hidden Compensation group between Actual Gross
+        // and Retain: the drop anchors after the preceding row, never before Retain across the gap.
         name: 'C-HIDDEN-GAP ungrouped leaf below a group, hidden gap before next -> after preceding row',
         moving: ['salary'],
         guid: null,

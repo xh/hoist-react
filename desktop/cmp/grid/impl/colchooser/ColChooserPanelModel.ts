@@ -12,12 +12,9 @@ import {isNumber} from 'lodash';
 import {ColChooserModel} from './ColChooserModel';
 
 /**
- * Column chooser model for the docked, non-modal side-panel presentation. Owns the {@link PanelModel}
- * that governs the dock's user-resizable width. Open/close is tracked directly by {@link isOpen} -
- * the panel renders only while open, driven externally (e.g. a `ColChooserButton` with
- * `target: 'panel'`, or `GridModel.showColChooserPanel()`) rather than by panel collapse. Non-modal
- * display means changes always auto-commit and live-sync with external column state, so
- * `commitOnChange` is forced true.
+ * Column chooser model for the docked, non-modal side-panel presentation, owning the {@link PanelModel}
+ * that governs the dock's resizable width. The panel renders only while {@link isOpen}, driven
+ * externally rather than by panel collapse. Non-modal, so `commitOnChange` is forced true.
  * @internal
  */
 export class ColChooserPanelModel extends ColChooserModel {
@@ -30,7 +27,6 @@ export class ColChooserPanelModel extends ColChooserModel {
         return this.panelModel.side as HSide;
     }
 
-    // Outer panel governs the dock width; the library takes a fixed slice of it, buckets flex.
     override get sizeToContent(): boolean {
         return false;
     }
@@ -43,8 +39,6 @@ export class ColChooserPanelModel extends ColChooserModel {
 
         this.panelModel = new PanelModel({
             side: 'right',
-            // Seed the dock wide enough to hold the buckets plus the library if it opens shown; the
-            // toggle reaction keeps it in sync from there.
             defaultSize: isNumber(width) && isLibraryShown ? width + libraryWidth : width,
             minSize: 250,
             ...config.panelConfig,
@@ -52,9 +46,8 @@ export class ColChooserPanelModel extends ColChooserModel {
             resizable: true
         });
 
-        // Keep the buckets a constant width as the (roaming, shared) library toggles: grow the dock
-        // by the library width when it shows, shrink it back when it hides. Delta-based so any manual
-        // resize of the dock is preserved across toggles. Skips a non-numeric (percent) size.
+        // Keep the buckets a constant width as the library toggles. Delta-based, so a manual resize of
+        // the dock survives across toggles; a non-numeric (percent) size is skipped.
         this.addReaction({
             track: () => this.isLibraryShown,
             run: shown => {

@@ -10,10 +10,9 @@ import {ColChooserPanelModel} from './ColChooserPanelModel';
 import {colChooser} from './ColChooser';
 
 /**
- * Docked, non-modal side-panel column chooser, rendered alongside the grid as a resizable,
- * header-less chooser dock (shown only while open). Open/close is driven externally - e.g. a
- * `ColChooserButton` with `target: 'panel'`, or `GridModel.showColChooserPanel()`. Desktop only -
- * Grid mounts this within an `hframe` when a {@link ColChooserPanelModel} is configured.
+ * Docked, non-modal side-panel column chooser - a resizable, header-less dock rendered alongside the
+ * grid while open. Desktop only; Grid mounts this in an `hframe` when a {@link ColChooserPanelModel} is
+ * configured.
  * @internal
  */
 export const colChooserPanel = hoistCmp.factory({

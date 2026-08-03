@@ -20,18 +20,12 @@ import {ColLibraryModel} from './ColLibraryModel';
 import type {ColChooserDropParticipant} from './ColChooserUtils';
 
 /**
- * Abstract base for the grid column chooser model, holding all presentation-agnostic state: the
- * three per-pinned-side {@link ColChooserBucketModel}s and the optional {@link ColLibraryModel}
- * (synced from a working copy of the target grid's columnState), cross-bucket drag-and-drop wiring,
- * and commit of state changes back to the grid. All state is rendered by the {@link ColChooser}
- * component bound to this model.
+ * Abstract base for the grid column chooser model, holding all presentation-agnostic state: the three
+ * {@link ColChooserBucketModel}s, the optional {@link ColLibraryModel}, cross-bucket drag-and-drop
+ * wiring, and commit back to the grid. Rendered by {@link ColChooser}.
  *
- * Concrete subclasses supply the presentation-open state: {@link ColChooserModalModel} (dialog and
- * popover) and {@link ColChooserPanelModel} (docked side panel).
- *
- * When `commitOnChange` is false, mutations accumulate in {@link workingState} and are pushed to the
- * grid only via {@link commitPendingAsync} (Save); external changes to the grid's column state while
- * edits are pending trigger a resolve-conflict prompt. The docked panel forces `commitOnChange` true.
+ * With `commitOnChange` false, edits accumulate in {@link workingState} until Save, and an external
+ * column-state change meanwhile prompts to resolve the conflict.
  * @internal
  */
 export abstract class ColChooserModel extends HoistModel implements IColChooserModel {
@@ -69,18 +63,12 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     //-----------------------
     // Observable State
     //-----------------------
-    /**
-     * Raw text of the single filter control (shared across all grids). Bound directly by the
-     * StoreFilterField; the derived match predicate is pushed to every grid store via
-     * {@link applyFilterTestFn}.
-     */
+    /** Raw text of the single filter control, shared across all grids. */
     @bindable filterText: string = null;
 
     /**
-     * Explanatory hint shown in the drag ghost while a drag is refused - e.g. a locked-group split -
-     * so the user understands the `notAllowed` cursor. Set by the hovered participant during the drag
-     * (via each grid's `rowDragText` getter, see {@link chooserDragText}) and cleared on drag end.
-     * Null when no drag is active or the current drop is allowed. See {@link dragRejectHint}.
+     * Explanatory hint shown in the drag ghost while a drag is refused, so the user understands the
+     * `notAllowed` cursor. Set by the hovered participant, cleared on drag end.
      */
     @observable dragHint: string = null;
 
@@ -89,9 +77,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     workingState: ColumnState[] = null;
 
     /**
-     * True when the chooser sizes itself to its content (the overlay presentations - popover and
-     * dialog - hug their buckets + library). False when an outer container governs its size (the
-     * docked panel), where the buckets flex to fill and the library takes a fixed width.
+     * True when the chooser sizes itself to its content (the popover and dialog overlays). False when an
+     * outer container governs its size (the docked panel), where the buckets flex to fill instead.
      */
     get sizeToContent(): boolean {
         return true;
@@ -120,10 +107,9 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * Store bound to the shared filter control - used only for field inference (and to suppress the
-     * control's fallback GridModel context-lookup, which would otherwise latch onto the target grid).
-     * The derived predicate is applied to every grid via {@link applyFilterTestFn}. Prefer the library
-     * store when present - it carries `chooserGroup` on top of `name`/`description`.
+     * Store bound to the shared filter control, for field inference only - the derived predicate goes to
+     * every grid via {@link applyFilterTestFn}. Binding it also suppresses the control's fallback
+     * GridModel context-lookup, which would otherwise latch onto the target grid.
      */
     get filterFieldStore(): Store {
         return this.columnLibraryEnabled
@@ -132,9 +118,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * Leaf colIds currently rendered across the three bucket grids - respecting both routing to the
-     * Column Library (the `showHidden` case) and any active Store filter. Backs the `isDisplayed`
-     * predicate the drop engine consumes, so drag-and-drop resolves against what the user can see.
+     * Leaf colIds currently rendered across the three bucket grids - backs the drop engine's
+     * `isDisplayed`, so drag-and-drop resolves against what the user can actually see.
      */
     get displayedLeafColIds(): Set<string> {
         const ids = new Set<string>();
@@ -147,18 +132,15 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * True when the Column Library panel is on screen. The buckets hide their per-row visibility
-     * action in this state - columns are hidden by dragging them to the library instead.
+     * True when the Column Library panel is on screen. The buckets hide their per-row visibility action
+     * in this state - columns are hidden by dragging them to the library instead.
      */
     @computed
     get isLibraryShown(): boolean {
         return this.columnLibraryEnabled && this.showLibrary;
     }
 
-    /**
-     * Whether hidden columns are listed inline in the bucket grids. Automatic: they show inline
-     * unless the Column Library panel is on screen, where they live in the library instead.
-     */
+    /** Whether hidden columns list inline in the bucket grids, or in the Library panel when shown. */
     @computed
     get showHidden(): boolean {
         return !this.isLibraryShown;
@@ -175,9 +157,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * Leaf colId → ancestor group chain for the target grid, memoized on its `columns` ref. Shared by
-     * all three buckets and the drop engine, so the column tree is walked once per column set rather
-     * than once per bucket.
+     * Leaf colId → ancestor group chain, memoized on the grid's `columns` ref so the column tree is
+     * walked once per column set rather than once per bucket.
      */
     get parentChainMap(): Map<string, ColumnGroup[]> {
         const cols = this.gridModel.columns;
@@ -257,15 +238,13 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             run: () => this.syncBuckets()
         });
 
-        // Repaint the buckets' per-row action cells when the library toggles - they hide their
-        // control while the library is shown (see the action column's displayFn).
+        // Repaint the buckets' per-row action cells, which hide their control while the library shows.
         this.addReaction({
             track: () => this.isLibraryShown,
             run: () => this.bucketModels.forEach(it => it.refreshActionColumn())
         });
 
-        // Wire cross-grid drag-and-drop whenever the set of mounted participant grids changes.
-        // Stale registrations must be removed - ag-grid only auto-cleans drop zones when the
+        // Stale registrations must be removed by hand - ag-grid auto-cleans drop zones only when the
         // *source* grid is destroyed, leaving broken references to destroyed *target* grids.
         this.addReaction({
             track: () => this.dropParticipants.map(it => it.chooserGridModel.agApi),
@@ -314,17 +293,13 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * Apply a new normalized full column state. The single chokepoint for bucket-driven reorders and
-     * cross-bucket moves - updates the working copy and pushes it straight to the grid when
-     * auto-committing.
+     * Apply a new normalized full column state - the single chokepoint for bucket-driven reorders and
+     * cross-bucket moves. Always a full, ordered leaf set, so the grid picks up the new ordering too.
      */
     @action
     applyState(newState: ColumnState[]) {
         this.workingState = newState;
         if (this.commitOnChange) {
-            // The grid write's columnState reaction re-syncs the buckets (adopt -> syncBuckets)
-            // synchronously before paint, so no optimistic rebuild is needed here. Note we always
-            // pass a full, ordered leaf set, so the grid picks up the new ordering as well.
             this.gridModel.updateColumnState(newState);
             this.autosizeIfNeeded();
         } else {
@@ -333,10 +308,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         }
     }
 
-    /**
-     * Apply partial column-state changes (e.g. visibility toggles), merged into the working copy.
-     * Auto-commits via the grid's own partial update path when auto-committing.
-     */
+    /** Apply partial column-state changes (e.g. visibility toggles), merged into the working copy. */
     @action
     updateColumns(changes: Partial<ColumnState>[]) {
         if (!changes.length) return;
@@ -358,8 +330,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         const {gridModel, workingState} = this;
         if (!this.isDirty) return;
 
-        // Advance the baseline before mutating the grid so the resulting sync reaction sees a clean
-        // (non-dirty) state and adopts it, rather than treating our own commit as an external change.
+        // Advance the baseline first, else the sync reaction reads our own commit as an external change.
         this.setBaseline(workingState);
         gridModel.updateColumnState(workingState);
         await this.autosizeIfNeeded();
@@ -373,9 +344,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     async restoreDefaultsAsync() {
-        // Adopt the restored state silently (rather than treating it as an external conflict) - but
-        // only if the user confirms the restore. On cancel, restoreDefaultsAsync leaves the grid
-        // unchanged, no state-change reaction fires, and pending edits are preserved.
+        // Adopt the restored state silently rather than as an external conflict. On cancel the grid is
+        // left unchanged, so no reaction fires and pending edits survive.
         this.restoringDefaults = true;
         try {
             await this.gridModel.restoreDefaultsAsync();
@@ -440,7 +410,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     private syncColumnState() {
         const {columnState} = this.gridModel;
 
-        // Auto-commit, no pending local edits, or mid restore-defaults: take the grid's state outright.
         if (this.commitOnChange || !this.isDirty || this.restoringDefaults) {
             this.adoptColumnState(columnState);
             return;
@@ -448,10 +417,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
         // Deferred mode with pending edits - the grid changed out from under us.
         if (this.hasStructuralChange(columnState, this.baseline)) {
-            // A real ordering / visibility / pinning change - prompt to resolve.
             this.resolveConflictAsync();
         } else if (!isEqual(columnState, this.baseline)) {
-            // Only cosmetic (width / manuallySized) changed - absorb silently, keeping pending edits.
             this.absorbCosmeticChange(columnState);
         }
     }
@@ -464,9 +431,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * Fold a cosmetic-only grid change (column widths) into the pending working copy and advance the
-     * baseline to match, so a benign resize while edits are pending neither prompts the user nor is
-     * lost on the next commit.
+     * Fold a cosmetic-only grid change (column widths) into the working copy and advance the baseline, so
+     * a benign resize while edits are pending neither prompts the user nor is lost on the next commit.
      */
     @action
     private absorbCosmeticChange(gs: ColumnState[]) {
@@ -497,8 +463,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         if (loadNew) {
             this.adoptColumnState(gs);
         } else {
-            // Advance the baseline so we stop re-prompting; keep the user's working edits, which will
-            // overwrite the external change on the next commit.
+            // Advance the baseline so we stop re-prompting; the working edits will overwrite the
+            // external change on the next commit.
             this.setBaseline(gs);
         }
     }
@@ -552,10 +518,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
                 });
 
                 if (params) {
-                    // ag-grid hardcodes the external drop-zone drag icon to 'move'. Our params carry
-                    // fromGrid:true so they pass through verbatim - an injected getIconName overrides
-                    // that default, letting us flag drops the target would reject (e.g. a position
-                    // that splits a locked column group) with the 'notAllowed' icon.
+                    // ag-grid hardcodes the external drop-zone icon to 'move'; an injected getIconName
+                    // overrides that, letting us flag drops the target would reject.
                     (params as any).getIconName = (e: any) => target.getCrossBucketDropIcon(e);
                     sourceApi.addRowDropZone(params);
                     this.dropZoneRegistrations.push({sourceApi, params});

@@ -17,17 +17,14 @@ import {type ReactNode, useEffect, useRef} from 'react';
 import type {DropRejectReason} from './colChooserDropEngine';
 
 /**
- * A user-meaningful drag/drop refusal the chooser explains via an on-screen hint. Extends the drop
- * engine's movement reasons with the library-only `notHideable` (dragging a non-hideable column onto
- * the library to hide it).
+ * A drag/drop refusal the chooser explains via an on-screen hint - the drop engine's reasons plus the
+ * library-only `notHideable`.
  */
 export type DragHintReason = DropRejectReason | 'notHideable';
 
 /**
- * Concise status label for a refused drag/drop, shown in the drag ghost (see {@link chooserDragText})
- * so the user understands *why* the `notAllowed` cursor is showing - especially the non-obvious
- * locked-group rules. Kept to a short label (matching the framework's `movable`/`hideable` terms) to
- * fit the single-line ghost pill.
+ * Status label for a refused drag/drop, shown in the drag ghost. Keep these short enough for the
+ * single-line ghost pill, and worded to match the framework's `movable`/`hideable` terms.
  */
 export function dragRejectHint(reason: DragHintReason): string {
     switch (reason) {
@@ -51,9 +48,8 @@ export interface ColChooserData {
     /** true = all visible, false = none visible, null = indeterminate (mixed). */
     visible: boolean | null;
     /**
-     * Whether to dim this row. A leaf is muted when hidden; a group when all its rendered leaf
-     * children are hidden. Distinct from `visible`, which tracks only *hideable* leaves for the
-     * toggle control - a group of all-locked (visible) columns must not be muted.
+     * Whether to dim this row - a leaf when hidden, a group when all its rendered leaf children are.
+     * Distinct from `visible`, which counts only *hideable* leaves, so an all-locked group is not muted.
      */
     muted: boolean;
     isGroup: boolean;
@@ -67,9 +63,8 @@ export interface ColChooserData {
 }
 
 /**
- * A grid that participates in cross-grid drag-and-drop within the ColChooser - the three
- * pinned-side buckets and the optional Column Library. {@link ColChooserModel} wires drop zones
- * between every pair of participants.
+ * A grid participating in cross-grid drag-and-drop within the ColChooser - the three pinned-side
+ * buckets and the optional Column Library. {@link ColChooserModel} wires drop zones between each pair.
  */
 export interface ColChooserDropParticipant {
     chooserGridModel: GridModel;
@@ -92,20 +87,17 @@ export function chooserDefaultDragText(dragItem: any, count: number): string {
 }
 
 /**
- * Drag-ghost label getter used by every chooser drag-source grid. Shows the live refusal hint
- * ({@link dragRejectHint}, published to `dragHint` by the hovered participant) when the current drop
- * is refused, falling back to the default column-name label otherwise. ag-grid re-invokes this per
- * drag-move, so the ghost text tracks the cursor.
+ * Drag-ghost label for every chooser drag-source grid - the live refusal hint when the current drop is
+ * refused, else the default column-name label. ag-grid re-invokes this per drag-move.
  */
 export function chooserDragText(dragHint: string | null, dragItem: any, count: number): string {
     return dragHint ?? chooserDefaultDragText(dragItem, count);
 }
 
 /**
- * agOptions shared by every chooser drag-source grid (buckets + library): multi-row dragging with a
- * "N columns" / single-column-name drag label, plus suppression of ag-grid's built-in row move -
- * drops are applied by the chooser models, never by ag-grid. Each grid overrides `rowDragText` with
- * {@link chooserDragText} to layer in the live refusal hint (it needs the model's `dragHint`).
+ * agOptions shared by every chooser drag-source grid. Suppresses ag-grid's built-in row move - drops
+ * are applied by the chooser models. Each grid overrides `rowDragText` with {@link chooserDragText},
+ * which needs the model's `dragHint`.
  */
 export const chooserDragAgOptions: GridOptions = {
     suppressMoveWhenRowDragging: true,
@@ -125,9 +117,8 @@ export const chooserGridConfig: Partial<GridConfig> = {
 };
 
 /**
- * Base config for the chooser grids' name column - grip-handle + name via {@link ChooserColName}.
- * Bucket grids render it as a tree column (via `innerRenderer`); the flat library grid renders it
- * directly.
+ * Base config for the chooser grids' name column - grip-handle + name via {@link ChooserColName}. Bucket
+ * grids render it as a tree column via `innerRenderer`; the flat library grid renders it directly.
  */
 export function chooserNameColumn(tree: boolean): ColumnSpec {
     return {
@@ -166,10 +157,7 @@ export interface ColLibraryData {
     fromLibrary: boolean;
 }
 
-/**
- * Column spec for the Column Library's flat grid - an auto-height row rendered by
- * {@link LibraryColCell}.
- */
+/** Column spec for the Column Library's flat grid - auto-height rows via {@link LibraryColCell}. */
 export function chooserLibraryColumn(): ColumnSpec {
     return {
         field: 'name',
@@ -186,8 +174,8 @@ export function chooserLibraryColumn(): ColumnSpec {
 interface LibraryColCellProps extends HoistProps, ICellRendererParams<StoreRecord> {}
 
 /**
- * Cell renderer for a Column Library row: a drag handle beside the column name over an optional
- * wrapped, inline description (the row auto-heights to fit it).
+ * Cell renderer for a Column Library row - a drag handle beside the column name, over an optional
+ * wrapped inline description.
  * @internal
  */
 export const LibraryColCell = hoistCmp<LibraryColCellProps>(
@@ -241,8 +229,7 @@ interface ChooserColNameProps extends HoistProps, ICellRendererParams<StoreRecor
 
 /**
  * Cell renderer for a bucket chooser name column - grip drag handle + column name, plus an on-demand
- * metadata info icon (see {@link columnMetaTooltip}). The name itself is a plain drag target: metadata
- * lives behind its own hit target so scanning the list never fires a tooltip by accident.
+ * metadata icon. Metadata sits behind its own hit target, so scanning the list never fires a tooltip.
  * @internal
  */
 export const ChooserColName = hoistCmp<ChooserColNameProps>(
@@ -279,9 +266,7 @@ export const ChooserColName = hoistCmp<ChooserColNameProps>(
 
 /**
  * On-demand column metadata, revealed on hover of a small info icon trailing the name. Rendered only
- * when the column carries metadata worth surfacing (`chooserDescription`), so its mere presence
- * signals "more info here". Content mirrors the library row treatment - name as title, group as a tag,
- * description as body copy - so both panels read as one system.
+ * when the column has a `chooserDescription`, so the icon's presence itself signals "more info here".
  */
 function columnMetaTooltip(data: ColChooserData): ReactNode {
     const {name, description, chooserGroup} = data,

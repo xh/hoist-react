@@ -9,9 +9,8 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * Shared display options for the grid column chooser, held as a single {@link AppContainerModel}
- * singleton so a toggle in one open chooser live-syncs (via MobX) to any other chooser already on
- * screen. Persisted browser-local, so the options roam across every chooser for the user in this
- * app on this device.
+ * singleton so a toggle in one open chooser live-syncs to every other chooser on screen. Persisted
+ * browser-local.
  * @internal
  */
 export class ColChooserOptionsModel extends HoistModel {

@@ -1,6 +1,5 @@
-// Readable secondary text (library + meta-tooltip descriptions). Muted (grey-500) fails WCAG AA on
-// the light background, so darken it there; grey-500 reads fine on the dark background. Scoped to
-// both roots since the meta tooltip is portaled to body, outside the chooser.
+// Secondary text: grey-500 fails WCAG AA on the light background, so darken it there. Scoped to both
+// roots because the meta tooltip is portaled to body, outside the chooser.
 .xh-col-chooser,
 .xh-col-chooser__meta-tip {
   --column-chooser-text-color-alt: color-mix(in srgb, var(--xh-gray) 60%, black);
@@ -16,10 +15,9 @@
 .xh-col-chooser {
   background: var(--xh-bg);
 
-  // Theme the ag-grid row drop indicator line with our primary intent color.
   --ag-row-drag-indicator-color: var(--xh-intent-primary);
 
-  // Force drop indicator line to span the full row width, regardless of tree depth
+  // Force the drop indicator line to span the full row width, regardless of tree depth.
   .ag-row-highlight-indent::after {
     left: 1px;
     right: auto;
@@ -30,17 +28,13 @@
     background-color: var(--xh-bg);
   }
 
-  // Minimal display-toggle buttons in the top bar. Active state carries the primary intent from
-  // its `intent: 'primary'`; the neutral (inactive) state is muted gray. Override the button's
-  // neutral text-color var rather than its `color` - the primary state resolves a different var,
-  // so this leaves the active styling untouched while dodging a specificity fight with the
-  // high-specificity Hoist button rules.
+  // Override the neutral text-color var, not `color` - the active state resolves a different var, so
+  // this leaves it untouched and avoids a specificity fight with the Hoist button rules.
   &__toggle {
     --xh-button-text-color: var(--xh-gray);
   }
 
-  // Fixed-width library (width + `flex: none` set inline), divided from the buckets by a hairline
-  // rule - it is no longer a resizable splitter panel.
+  // Width and `flex: none` are set inline; this is only the divider from the buckets.
   &__library {
     border-right: var(--xh-border-width-px) solid var(--xh-border-color);
   }
@@ -51,8 +45,7 @@
     align-items: center;
     gap: var(--xh-pad-half-px);
     flex: none;
-    // Right edge reserves the scrollbar gutter (see below) so the toggle sits over the per-row
-    // action column; the label keeps a small left inset to echo the row content.
+    // Right padding reserves the scrollbar gutter, so the toggle sits over the per-row action column.
     margin: var(--xh-pad-px) 0 var(--xh-pad-half-px);
 
     padding: 0 var(--xh-scrollbar-size-px) 0 var(--xh-pad-half-px);
@@ -80,8 +73,7 @@
       color: var(--xh-orange-muted);
     }
 
-    // Bulk-visibility checkbox: sized and positioned to line up with the per-row action checkboxes -
-    // grid-sized glyph, and a fixed width matching the action column so its icon centers over them.
+    // Bulk-visibility checkbox, sized to line up with the per-row action checkboxes below it.
     &__toggle.xh-button {
       flex: none;
       width: 36px; // = calcActionColWidth(1): centers the glyph over the action column
@@ -89,50 +81,41 @@
       padding: 0;
       font-size: var(--xh-grid-font-size-px);
 
-      // Match the per-row action checkbox, which renders its checked state in the lighter primary
-      // tone for legibility on the dark grid bg - not the base tone the Icon `intent` prop applies.
+      // Match the per-row action checkbox, which uses the lighter primary tone - not the base tone the
+      // Icon `intent` prop applies.
       .xh-intent-primary {
         color: var(--xh-intent-primary-lighter);
       }
     }
 
-    // Match-zone alignment: drop the line segment on the side the label hugs, so left/center/right
-    // placement doubles as a wayfinding cue atop the pin-direction arrow.
+    // Drop the line segment on the side the label hugs, so its placement cues the pin direction.
     &--left > .xh-col-chooser__separator__line:first-child,
     &--right .xh-col-chooser__separator__label + .xh-col-chooser__separator__line {
       display: none;
     }
   }
 
-  // The grid's own container is a Frame with an inline `flex: auto`, so left to itself every bucket
-  // would grow evenly. Override it here (the role the removed Panel wrappers used to own): the
-  // unpinned bucket flexes to fill, the pinned rails size to their auto-height content.
-
-  // Unpinned bucket fills remaining space; min-height:0 lets it shrink below content so it scrolls
-  // internally rather than overflowing the column.
+  // The `!important` flex rules here and below beat the inline `flex: auto` on each grid's own Frame,
+  // which would otherwise grow every bucket evenly. min-height:0 lets this one scroll internally.
   &__bucket--unpinned {
     flex: 1 1 0 !important;
     min-height: 0;
 
-    // Paired with `alwaysShowVerticalScroll` on this bucket's grid, which reserves the scrollbar
-    // gutter at all times (keeping a stable right edge - see ColChooser.ts). That option also
-    // forces the fake scrollbar's track visible; override its viewport back to `auto` so the bar
-    // paints only on real overflow while the reserved gutter width persists - no empty track.
+    // `alwaysShowVerticalScroll` (see ColChooser.ts) also forces the fake scrollbar's track visible;
+    // reset the viewport to `auto` so the bar paints only on real overflow, gutter width intact.
     .ag-body-vertical-scroll-viewport {
       overflow-y: auto !important;
     }
   }
 
-  // Keep an empty pinned rail open as a minimal 1-line drop strip (an auto-height grid collapses
-  // to 0 rows). The grid's emptyText is the whole strip.
+  // min-height keeps an empty rail open as a 1-line drop strip; an auto-height grid collapses to 0 rows.
   &__bucket--left,
   &__bucket--right {
     flex: none !important;
     height: fit-content;
     min-height: 40px;
 
-    // Match the unpinned bucket's reserved scrollbar gutter (these auto-height rails never scroll),
-    // so their action-column checkboxes share the same right edge.
+    // Match the unpinned bucket's reserved gutter, so action-column checkboxes share a right edge.
     padding-right: var(--xh-scrollbar-size-px);
 
     // Override ag-grid's 50px auto-height viewport floor to match our compact drop strip.
@@ -141,9 +124,8 @@
     }
 
     .ag-overlay-no-rows-wrapper {
-      // ag-grid bakes an inline padding-top to vertically center the overlay, computed against a
-      // pre-layout (~0) auto-height viewport - stale until a resize recomputes it, which hides the
-      // text on first paint. Our strip is a fixed band, so drop the centering entirely.
+      // ag-grid's inline centering padding-top is computed against a pre-layout (~0) auto-height
+      // viewport, hiding the text until a resize recomputes it. Our strip is a fixed band anyway.
       padding-top: 0 !important;
       font-size: 12px;
       font-style: italic;
@@ -165,9 +147,8 @@
     border-top: var(--xh-border-width-px) dashed var(--xh-border-color);
     border-bottom: var(--xh-border-width-px) dashed var(--xh-border-color);
 
-    // Highlight the strip while a column is dragged over it, matching the drop-indicator color.
-    // Override the grid's bg / empty-text vars (specificity-proof - the Hoist grid theme rules that
-    // set these win on selector specificity, but a var set here cascades into them).
+    // Set vars rather than properties - the Hoist grid theme rules win on selector specificity, but a
+    // var set here cascades into them.
     &.xh-col-chooser__bucket--drag-over {
       --xh-grid-bg: var(--xh-intent-primary-trans1);
       --xh-grid-empty-text-color: var(--xh-intent-primary);
@@ -182,10 +163,8 @@
     }
   }
 
-  // Column Library row: drag handle beside the name over an optional wrapped inline description.
-  // The cell auto-heights (via Column.autoHeight) so the description can wrap freely.
+  // The row owns its vertical rhythm, so the cell can grow with wrapped description content.
   &__lib-cell.ag-cell {
-    // Row owns its vertical rhythm; let the cell grow with wrapped content.
     padding-top: 0;
     padding-bottom: 0;
     line-height: 1.4;
@@ -245,8 +224,7 @@
       cursor: not-allowed;
     }
 
-    // On-demand metadata target: a small, quiet info glyph trailing the name. Sized in px so it
-    // reads as a minor affordance rather than competing with the name; brightens on hover.
+    // Info glyph trailing the name - deliberately small, so it doesn't compete with the name itself.
     &__meta {
       margin-left: var(--xh-pad-half-px);
       font-size: 10px;
@@ -258,10 +236,8 @@
         cursor: pointer;
       }
 
-      // Center the glyph. Blueprint sets `span.bp6-popover-target { display: inline-block }` -
-      // element-qualified, so it outranks a lone class and defeats a plain flex rule, leaving the
-      // svg baseline-aligned in the row's tall line box (riding high). Chain the popover class to
-      // win specificity and make the wrapper an actual flex container.
+      // Blueprint's element-qualified `span.bp6-popover-target {display: inline-block}` outranks a lone
+      // class, so chain the popover class here to win and actually center the glyph.
       &.bp6-popover-target {
         display: inline-flex;
         align-items: center;
@@ -270,8 +246,7 @@
   }
 }
 
-// Column metadata tooltip - blueprint portals the popover to the document body, so these rules live
-// outside the .xh-col-chooser block. Styled as a compact card matching the library row treatment.
+// Blueprint portals the popover to the document body, so these rules must live outside .xh-col-chooser.
 .xh-col-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
   padding: 0;
   background: var(--xh-bg);

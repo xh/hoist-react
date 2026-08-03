@@ -53,10 +53,9 @@ export interface ColChooserBucketConfig {
 }
 
 /**
- * Per-bucket model backing a single chooser grid (pinned-left, unpinned, or pinned-right).
- * Owns its slice of the target grid's columnState - building chooser records, validating and
- * handling drag/drop, and toggling visibility. The parent {@link ColChooserModel}
- * orchestrates the buckets, providing the target GridModel and the state commit chokepoint.
+ * Per-bucket model backing a single chooser grid (pinned-left, unpinned, or pinned-right). Owns its
+ * slice of the target grid's columnState; the parent {@link ColChooserModel} supplies the target
+ * GridModel and the state commit chokepoint.
  * @internal
  */
 export class ColChooserBucketModel extends HoistModel implements ColChooserDropParticipant {
@@ -82,8 +81,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         return {
             ...chooserDragAgOptions,
             suppressGroupRowsSticky: true,
-            // The action column reserves its width permanently (toggled by content, not presence),
-            // so column layout never reflows - suppress ag-grid's slide animation for good measure.
             suppressColumnMoveAnimation: true,
             rowDragText: (dragItem, count) =>
                 chooserDragText(this.parent.dragHint, dragItem, count),
@@ -107,10 +104,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Count of this bucket's leaf columns as actually rendered - backs the view's empty-rail
-     * detection. Reflects routing to the Column Library (showHidden) and any active filter, so a
-     * pinned rail whose columns are all filtered out reads as empty - no separator, collapsed drop
-     * strip - exactly like a genuinely empty one.
+     * Count of this bucket's leaf columns as actually rendered, so a rail whose columns are all
+     * filtered out or routed to the Library reads as empty, like a genuinely empty one.
      */
     get columnCount(): number {
         return this.renderedLeafIds.size;
@@ -150,9 +145,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Rebuild this bucket's chooser records from the given (full) columnState. When `showHidden` is
-     * false, hidden columns are dropped from the display entirely - they live in the Column Library
-     * instead - and the per-row action becomes a hide-only control (see the action column below).
+     * Rebuild this bucket's chooser records from the given (full) columnState. With `showHidden` false,
+     * hidden columns are dropped from the display entirely - they live in the Column Library instead.
      */
     syncFromState(columnState: ColumnState[], showGroups: boolean, showHidden: boolean) {
         let slice = columnState.filter(cs => (cs.pinned ?? null) === this.pinned);
@@ -193,11 +187,9 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         this.parent.updateColumns(updates);
     }
 
-    /**
-     * Validate a proposed drop position during unmanaged row dragging within this bucket.
-     */
+    /** Validate a proposed drop position during unmanaged row dragging within this bucket. */
     getValidDropPosition(params: IsRowValidDropPositionParams): IsRowValidDropPositionResult {
-        // Invalidate any prior cache; only a successful resolution below re-arms it for the commit.
+        // Only a successful resolution below re-arms this for the commit.
         this.pendingDrop = null;
 
         const records = collapseSelection(getDragRecords(params.rows ?? [params.source])),
@@ -205,24 +197,20 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             lock = this.targetGridModel.lockColumnGroups;
 
         if (selRows && !isValidDragSelection(selRows, lock)) {
-            // Target-independent refusal - the whole selection is incoherent. Explain it and bail.
             this.publishDragHint(dragSelectionRejectReason(selRows, lock));
             return {allowed: false};
         }
 
-        // Past the selection gate: clear any stale hint. Only the locked-split path below re-sets one;
-        // every other refusal here (over the dragged row, a no-op) is benign and stays hint-free.
+        // Every refusal past the selection gate is benign (over the dragged row, a no-op), so no hint.
         this.publishDragHint(null);
 
         const payload = buildDragPayload(records);
         let target = params.target,
             {position} = params;
 
-        // No row under the cursor - it is above the first row or below the last (ag-grid also walks
-        // `target` up to an ancestor group here, misplacing the indicator). Anchor to the nearer end
-        // via `y` (0 = top of the first row, comparable to rowTop): above the content prepends, below
-        // it appends. Without the `y` check, dropping above the first row wrongly falls through to an
-        // append-at-end - which especially bites the top bucket, whose start sits at the top edge.
+        // No row under the cursor - above the first row or below the last. Anchor to the nearer end via
+        // `y` (0 = top of the first row, comparable to rowTop); ag-grid's own `target` walks up to an
+        // ancestor group here and misplaces the indicator.
         if (!params.overNode) {
             const {agApi} = this.chooserGridModel,
                 firstRow = agApi?.getDisplayedRowAtIndex(0),
@@ -243,28 +231,21 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         if (payload.recordIds.has(targetData.id) && !payload.fromLibrary) return {allowed: false};
 
         if (targetData.isGroup) {
-            // Normalize a group-row hover to "before the group" - resolveDrop anchors on the group's
-            // run. ag-grid otherwise uses the cursor's half over the group row to mean before vs.
-            // after, which differs between cursor-relative cross-bucket drags and in-bucket drags.
+            // Normalize to "before the group" - resolveDrop anchors on the group's run. ag-grid's own
+            // before/after read of the cursor half differs between cross-bucket and in-bucket drags.
             position = 'above';
         } else if (position === 'inside') {
             // Can't drop "inside" a leaf - treat as "below"
             position = 'below';
         }
 
-        // Prevent dropping onto the dragged leaves themselves. Gate on the dragged LEAVES, not on
-        // every descendant of a dragged group: when a group spans buckets, its members in ANOTHER
-        // bucket are valid rejoin targets, and blocking them wrongly stopped a spanning group's
-        // portion from being dropped among its other-bucket members (spec C-SPAN). Dropping a group
-        // onto its own node is still blocked by the recordIds check above.
+        // Gate on the dragged LEAVES, not every descendant of a dragged group: a spanning group's
+        // members in another bucket are valid rejoin targets (C-SPAN).
         if (!payload.fromLibrary && payload.leafColIds.includes(targetData.id)) {
             return {allowed: false};
         }
 
-        // Resolve the drop through the same engine the commit uses, so the indicator always agrees
-        // with what the drop will do (a drop that would split a locked group is clamped to the
-        // nearest legal spot, here and at commit). A drop from the library unhides its columns, so
-        // resolve with makeVisible to gate it as the commit will.
+        // Same engine the commit uses, so the indicator always agrees with what the drop will do.
         const {allowed, state} = this.resolveDrop(
             payload.leafColIds,
             payload.dragUnitGroupId,
@@ -274,18 +255,13 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         );
         if (!allowed || !state) return {allowed: false};
 
-        // Suppress the indicator when the drop leaves the chooser visually unchanged - including one
-        // whose only effect is reordering a visible column past an adjacent hidden one (a "nothing
-        // happened" no-op to the user that silently churns the master order). A library drop unhides
-        // its columns, so it always changes the rendered view and is never a no-op.
+        // A library drop always unhides, so it is never a no-op.
         if (!payload.fromLibrary && this.isNoOpDrop(state)) {
             return {allowed: false};
         }
 
-        // Cache the validated state for the commit to apply verbatim (see pendingDrop / handlers), so
-        // it never re-derives from the indicator anchor below. The anchor is a single canonical row
-        // for a clean line (see getDropHighlight), but re-resolving from it can diverge when a group
-        // spans buckets (its pinned member separates the run from the next visible row).
+        // Cache the state for the commit to apply verbatim - re-resolving from the indicator anchor can
+        // diverge when a group spans buckets.
         const highlight = this.getDropHighlight(state, payload.leafColIds);
         this.pendingDrop = {
             targetId: getChooserData(highlight.target)?.id ?? null,
@@ -297,8 +273,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
     /** Handle intra-bucket drag end. */
     handleRowDragEnd(event: RowDragEndEvent) {
-        // onRowDragEnd fires on the drag's source grid for every drag (intra- or cross-bucket), so this
-        // reliably clears the hint once any drag concludes.
+        // Fires on the source grid for every drag, intra- or cross-bucket, so any drag clears the hint.
         this.parent.setDragHint(null);
         const dropInfo = event.rowsDrop;
         if (!dropInfo || !dropInfo.allowed || dropInfo.position === 'none') return;
@@ -306,10 +281,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Handle a drop into this bucket from another bucket, via an ag-grid row drop zone. Applies the
-     * state {@link getValidDropPosition} already validated for the drag (matched via `event.rowsDrop`)
-     * so a cross-bucket drop commits exactly what was previewed. Falls back to a pin-in-place append
-     * only when there's no row under the cursor (empty bucket) and hence no cached preview.
+     * Handle a drop into this bucket from another, via an ag-grid row drop zone. Applies the state
+     * {@link getValidDropPosition} already validated for the drag, so the commit matches the preview.
      */
     handleCrossBucketDrop(event: RowDragEndEvent, source: ColChooserDropParticipant) {
         if (source === this) return;
@@ -319,8 +292,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             return;
         }
 
-        // No cached preview matched (empty bucket / no row under the cursor) - pin the dragged leaves
-        // in place. A drop from the Column Library also unhides them (makeVisible).
+        // No cached preview matched (empty bucket / no row under the cursor) - pin in place instead.
         if (!event.overNode) {
             const records = collapseSelection(getDragRecords(event.nodes));
             if (!this.isValidSelection(records)) return;
@@ -338,13 +310,9 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Drag-image icon name for a cross-bucket drag hovering this bucket's grid. ag-grid hardcodes
-     * the external drop-zone icon to 'move' regardless of `isRowValidDropPosition`; ColChooserModel
-     * injects this as the zone's getIconName. Shows 'notAllowed' when hovering an actual row at a
-     * position the drop would refuse (e.g. a locked-group split) - read from the resolved drop target
-     * ag-grid computes from our {@link getValidDropPosition}. A drop over empty space (no `overNode`)
-     * is an append and stays allowed. Otherwise a drop into a pinned bucket shows 'pinned', the
-     * unpinned bucket 'move'.
+     * Drag-image icon name for a cross-bucket drag hovering this bucket's grid - injected by
+     * ColChooserModel as the drop zone's getIconName, since ag-grid otherwise hardcodes external
+     * drop-zone icons to 'move' regardless of `isRowValidDropPosition`.
      */
     getCrossBucketDropIcon(draggingEvent: any): string {
         const dropTarget = draggingEvent?.dropTarget;
@@ -360,10 +328,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     // Implementation
     //-----------------------
     /**
-     * The state resolved by the most recent valid {@link getValidDropPosition}, applied verbatim on
-     * drop (see {@link applyPendingDrop}) so the commit never re-derives from the indicator anchor -
-     * which is a lossy proxy that can re-resolve differently when a group spans buckets. Keyed by the
-     * (target, position) we returned, i.e. the `event.rowsDrop` the drop handler receives.
+     * State resolved by the most recent valid {@link getValidDropPosition}, keyed by the (target,
+     * position) we returned - i.e. the `event.rowsDrop` the drop handler receives.
      */
     private pendingDrop: {
         targetId: string | null;
@@ -377,9 +343,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Leaf colIds currently rendered in this bucket's grid - the rows the user can actually see. Both
-     * routing to the Column Library (showHidden) and any active Store filter narrow `store.records`,
-     * so every visibility control scopes to this and never counts or toggles an out-of-view column.
+     * Leaf colIds currently rendered in this bucket's grid. Every visibility control scopes to this, so
+     * it never counts or toggles a column the user can't see.
      */
     private get renderedLeafIds(): Set<string> {
         const ids = new Set<string>();
@@ -400,9 +365,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Apply the state {@link getValidDropPosition} validated for exactly this drop (matched against
-     * `event.rowsDrop`), committing preview == commit by construction. Returns false if no cached
-     * drop matches (the caller then falls back to re-resolving).
+     * Apply the state validated for exactly this drop. Returns false if no cached drop matches, leaving
+     * the caller to fall back to re-resolving.
      */
     private applyPendingDrop(dropInfo: RowDragEndEvent['rowsDrop']): boolean {
         const pd = this.pendingDrop;
@@ -420,9 +384,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * The dragged rows as {@link DragSelectionRow}s for the selection gate, or null when the drag is
-     * exempt (a Column Library drag - dragging hidden columns out to unhide isn't a group-locked
-     * reorder). A null return means "no gate applies", i.e. always valid.
+     * The dragged rows as {@link DragSelectionRow}s, or null when no gate applies - a Library drag
+     * unhides rather than reorders, so it is exempt.
      */
     private buildSelectionRows(records: ColChooserData[]): DragSelectionRow[] | null {
         if (records.some(r => r.fromLibrary)) return null;
@@ -435,10 +398,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         }));
     }
 
-    /**
-     * Gate the whole drag by its selected rows (see {@link isValidDragSelection}) - an incoherent
-     * multi-select is refused up front rather than moving only part of it.
-     */
+    /** Gate the whole drag by its selected rows - see {@link isValidDragSelection}. */
     private isValidSelection(records: ColChooserData[]): boolean {
         const rows = this.buildSelectionRows(records);
         return !rows || isValidDragSelection(rows, this.targetGridModel.lockColumnGroups);
@@ -450,15 +410,9 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Build chooser records from a slice of columnState (this bucket's worth, in display order).
-     *
-     * Iterates the slice (source of truth for display order within the bucket), and for each
-     * leaf column looks up its parent group chain from the column definitions. Adjacent
-     * columns sharing the same group are merged under a single group node. Non-adjacent
-     * columns from the same group produce separate group instances (split groups).
-     *
-     * Group records are created with empty leafColIds in the first pass - a second pass
-     * populates them from actual children so split groups only contain their own leaves.
+     * Build chooser records from a slice of columnState, in display order. Adjacent columns sharing a
+     * group merge under one group node; non-adjacent ones produce separate group instances (split
+     * groups), so a second pass populates `leafColIds` from each instance's actual children.
      */
     private buildData(columnState: ColumnState[]): ColChooserData[] {
         const {targetGridModel: gridModel, parentChainMap} = this,
@@ -541,23 +495,19 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
             it.leafColIds = collectLeafColIds(it, columnDataMap);
 
-            // Aggregate visibility over the group's *hideable* leaves only - the toggle can only
-            // act on those, so a group whose sole visible member is locked must still read as "all
-            // hidden" (and toggle back to shown) rather than being stuck permanently "mixed".
+            // Hideable leaves only, else a group whose sole visible member is locked reads as
+            // permanently "mixed" and its toggle wedges.
             const hideableLeafIds = it.leafColIds.filter(id => gridModel.isColumnHideable(id)),
                 hiddenCount = hideableLeafIds.filter(id => stateById.get(id)?.hidden).length,
                 total = hideableLeafIds.length;
             it.visible = aggregateVisibility(total, hiddenCount);
             it.hideable = total > 0;
 
-            // Mute a group only when *every* rendered leaf child is hidden - independent of
-            // hideability, so an all-locked (visible) group reads as shown, not dimmed.
+            // Independent of hideability, so an all-locked (visible) group reads as shown, not dimmed.
             it.muted =
                 !isEmpty(it.leafColIds) && it.leafColIds.every(id => stateById.get(id)?.hidden);
 
-            // A group can be dragged as long as at least one child is movable - a movable:false
-            // child rides along when the group moves (ag-Grid suppressMovable semantics). Only an
-            // all-locked group is itself locked.
+            // One movable child is enough - the rest ride along, per ag-Grid's suppressMovable.
             it.movable = it.leafColIds.some(id => gridModel.isColumnMovable(id));
         });
 
@@ -574,7 +524,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             return;
         }
 
-        // Tree mode: build nested structure with groups as parents
         const groups = data.filter(r => r.isGroup && r.leafColIds.some(id => leafIdSet.has(id))),
             groupIdSet = new Set(groups.map(r => r.id));
 
@@ -599,11 +548,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Adapt this bucket's live state to the pure {@link resolveDropEngine} - the single source of
-     * truth for both the drag preview ({@link getValidDropPosition}) and the commit
-     * ({@link moveColumns}). See `colChooserDropEngine.ts` and `docs/planning/locked-group-dnd-spec.md`.
-     *
-     * `dragUnitGroupId` is the groupId of an explicitly dragged group row (null for a leaf drag).
+     * Adapt this bucket's live state to the pure {@link resolveDropEngine}, which backs both the drag
+     * preview and the commit. `dragUnitGroupId` is set only for an explicitly dragged group row.
      */
     private resolveDrop(
         movingLeafColIds: string[],
@@ -633,10 +579,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         });
     }
 
-    /**
-     * Move columns into this bucket at the given drop position, committing the resolved full state
-     * via the parent. No-ops if the drop is disallowed. See {@link resolveDrop}.
-     */
+    /** Move columns into this bucket at the given drop position. No-ops if the drop is disallowed. */
     private moveColumns(
         movingLeafColIds: string[],
         dragUnitGroupId: string | null,
@@ -667,13 +610,9 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Map a resolved drop `state` to a single canonical indicator row, so the drag line neither
-     * flickers between "below row N" / "above row N+1" nor sits at the raw cursor position. Anchors
-     * 'above' the first column that follows the moved block in the resolved order and has a rendered
-     * row in this bucket - climbing to a group header when that column heads a group the dragged unit
-     * is not part of, so "before the group" shows as one line above the header rather than above its
-     * first child. Falls to 'below' the last displayed row when the block lands at the bucket's end
-     * (or past all remaining hidden columns).
+     * Map a resolved drop `state` to a single canonical indicator row, so the drag line neither flickers
+     * between "below row N" / "above row N+1" nor sits at the raw cursor position. Anchors 'above' the
+     * first rendered column following the moved block, or 'below' the last row if none.
      */
     private getDropHighlight(
         state: ColumnState[],
@@ -693,13 +632,11 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         });
         if (startIdx < 0) return belowLast();
 
-        // First post-block column with a rendered row in this bucket - skips hidden columns (no
-        // displayed row when showHidden is off) so the anchor lands on a real line.
         let followingColId: string = null;
         for (let i = startIdx; i < bucket.length; i++) {
             const {colId} = bucket[i];
             if (movingIds.has(colId)) continue;
-            // respectFilter: a filtered-out row has no ag-grid line, so it's not a valid anchor.
+            // respectFilter: a filtered-out row has no ag-grid line, so it can't anchor the indicator.
             if (store.getById(colId, true)) {
                 followingColId = colId;
                 break;
@@ -707,8 +644,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         }
         if (followingColId == null) return belowLast();
 
-        // Groups the dragged unit belongs to - the climb stops short of these, keeping a within-group
-        // reorder above the first child rather than jumping to the group header.
         const dragGroupIds = new Set<string>();
         movingLeafColIds.forEach(id =>
             this.parentChainMap.get(id)?.forEach(g => dragGroupIds.add(g.groupId))
@@ -722,10 +657,9 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Resolve the row to anchor 'above' for an insertion that precedes `colId`. Climbs to the
-     * outermost enclosing group whose first leaf is `colId` (a true group boundary); otherwise
-     * returns the column's own record (a position within a group). Stops short of any group the
-     * dragged unit belongs to, so the anchor stays above that group's first child, not its header.
+     * Resolve the row to anchor 'above' for an insertion preceding `colId`. Climbs to the outermost
+     * enclosing group whose first leaf is `colId`, stopping short of any group in `dragGroupIds` - so a
+     * within-group reorder anchors above that group's first child, not its header.
      */
     private getGroupBoundaryRecord(colId: string, dragGroupIds: Set<string>): StoreRecord {
         const {store} = this.chooserGridModel,
@@ -743,9 +677,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /**
-     * Empty-bucket prompt. Pinned rails pair the text with a pin-direction arrow (leading on the
-     * left rail, trailing on the right) so the empty strip still signals which way it pins. The
-     * unpinned bucket has no direction, so its plain text stands alone.
+     * Empty-bucket prompt. Pinned rails pair the text with a pin-direction arrow, so the empty strip
+     * still signals which way it pins; the unpinned bucket has no direction and stands alone.
      */
     private emptyDropHint(text: string): ReactNode {
         const {pinned} = this;
@@ -810,9 +743,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                         {
                             icon: Icon.checkSquare(),
                             displayFn: ({record}) => {
-                                // Non-hideable columns always show a static lock - including in
-                                // library mode, where the grip stays live for reorder/re-pin but a
-                                // drop onto the library can't hide them (see ColLibraryModel).
+                                // A static lock even in library mode, where the grip stays live for
+                                // reorder/re-pin but a drop onto the library can't hide it.
                                 if (!record.data.hideable) {
                                     return {
                                         icon: Icon.lock(),
@@ -820,8 +752,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                                     };
                                 }
 
-                                // Hideable columns are hidden by dragging to the library instead -
-                                // keep the column's width to hold layout stable, but render no control.
+                                // Dragging to the library hides instead - but keep the column's width,
+                                // so the layout holds stable across the toggle.
                                 if (this.parent.isLibraryShown) return {hidden: true};
 
                                 const {visible} = record.data;
@@ -847,8 +779,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 }
 
 /**
- * Aggregate visibility over a set of hideable leaves: true (all shown) / false (none shown) /
- * null (mixed). No hideable leaves reads as false, so the toggle acts as "show".
+ * Aggregate visibility over hideable leaves: true (all shown) / false (none) / null (mixed). No
+ * hideable leaves reads as false, so the toggle acts as "show".
  */
 function aggregateVisibility(total: number, hiddenCount: number): boolean | null {
     if (total === 0) return false;
@@ -867,19 +799,15 @@ function getActiveGroupId(
     return count > 1 ? `${groupId}_${count}` : groupId;
 }
 
-/**
- * The columns being dragged, aggregated across one or more selected rows (a row may itself be a
- * group representing many leaves). The move/validation engine is driven entirely by `leafColIds`;
- * `recordIds`/`groupIds` gate the self-drop and group-inside-itself checks; `fromLibrary` flags a
- * drag out of the Column Library (which unhides on drop). `dragUnitGroupId` is the id of the single
- * group being dragged as a unit (null unless exactly one group is dragged), marking an explicit
- * group drag vs. a leaf drag for the resolve/move engine.
- */
+/** The columns being dragged, aggregated across one or more selected rows. */
 interface DragPayload {
+    /** Drives the move/validation engine; a single row may contribute many leaves. */
     leafColIds: string[];
     recordIds: Set<string>;
     groupIds: string[];
+    /** Set only when exactly one group is dragged, marking an explicit group drag over a leaf drag. */
     dragUnitGroupId: string | null;
+    /** A drag out of the Column Library, which unhides on drop. */
     fromLibrary: boolean;
 }
 

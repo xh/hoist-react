@@ -565,8 +565,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Index of leaf columns by colId, rebuilt in lockstep with `columns` (see {@link setColumns}) so
-     * {@link getColumn} is an O(1) lookup rather than a recursive tree walk. Observable so callers
-     * reading it stay reactive to column changes, exactly as they were when reading `columns`.
+     * {@link getColumn} is an O(1) lookup rather than a recursive tree walk.
      */
     @observable.ref private leafColumnMap: Map<string, Column> = new Map();
 
