@@ -170,7 +170,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
         castArray(recordIds).forEach(id => {
             const record = store.getById(id);
-            if (!record || !record.data.hideable) return;
+            if (!record || isVisibilityLocked(record.data as ColChooserData)) return;
 
             const hidden = record.data.visible !== false;
             record.data.leafColIds.forEach((colId: string) => {
@@ -761,7 +761,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                             displayFn: ({record}) => {
                                 // A static lock even in library mode, where the grip stays live for
                                 // reorder/re-pin but a drop onto the library can't hide it.
-                                if (!record.data.hideable) {
+                                if (isVisibilityLocked(record.data as ColChooserData)) {
                                     return {
                                         icon: Icon.lock(),
                                         disabled: true
@@ -792,6 +792,14 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             ]
         });
     }
+}
+
+/**
+ * True when a row's visibility can't be toggled - a non-hideable column that is currently shown. One
+ * that is already hidden stays togglable, else the user could never get it back.
+ */
+function isVisibilityLocked(data: ColChooserData): boolean {
+    return !data.hideable && !data.muted;
 }
 
 /**
