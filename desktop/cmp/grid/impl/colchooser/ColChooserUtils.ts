@@ -140,7 +140,7 @@ export function chooserNameColumn(tree: boolean): ColumnSpec {
                   isTreeColumn: true,
                   agOptions: {
                       cellRendererParams: {
-                          // Re-specify Hoist defaults — agOptions merges shallow
+                          // Re-specify Hoist defaults - agOptions merges shallow
                           suppressCount: true,
                           suppressDoubleClickExpand: true,
                           innerRenderer: ChooserColName

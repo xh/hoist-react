@@ -178,7 +178,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             const record = store.getById(id);
             if (!record || !record.data.hideable) return;
 
-            // Hide when fully or partially visible (true/null); show when fully hidden (false)
             const hidden = record.data.visible !== false;
             record.data.leafColIds.forEach((colId: string) => {
                 // Only act on leaves rendered in this bucket - a group toggle under an active filter
@@ -249,7 +248,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             // after, which differs between cursor-relative cross-bucket drags and in-bucket drags.
             position = 'above';
         } else if (position === 'inside') {
-            // Can't drop "inside" a leaf — treat as "below"
+            // Can't drop "inside" a leaf - treat as "below"
             position = 'below';
         }
 
@@ -458,7 +457,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
      * columns sharing the same group are merged under a single group node. Non-adjacent
      * columns from the same group produce separate group instances (split groups).
      *
-     * Group records are created with empty leafColIds in the first pass — a second pass
+     * Group records are created with empty leafColIds in the first pass - a second pass
      * populates them from actual children so split groups only contain their own leaves.
      */
     private buildData(columnState: ColumnState[]): ColChooserData[] {
@@ -468,6 +467,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         // 1) Walk columnState in order, creating leaf and group records
         const data: ColChooserData[] = [],
             groupInstanceCounts = new Map<string, number>(),
+            // Group instances open at the walk position - truncating this closes the ones that ended.
             activeGroups: (string | null)[] = [];
 
         columnState.forEach((state, idx) => {
@@ -476,7 +476,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
             const chain = parentChainMap.get(state.colId) ?? [];
 
-            // Determine how deep the shared active group chain extends
             let sharedDepth = 0;
             for (let d = 0; d < chain.length; d++) {
                 if (activeGroups[d] === chain[d].groupId) {
@@ -487,7 +486,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             }
             activeGroups.length = sharedDepth;
 
-            // Open new group instances for the rest of the chain
             for (let d = sharedDepth; d < chain.length; d++) {
                 const group = chain[d],
                     count = (groupInstanceCounts.get(group.groupId) ?? 0) + 1;
@@ -515,7 +513,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                 activeGroups[d] = group.groupId;
             }
 
-            // Add the leaf column chooser data
             const parentInstanceId =
                 chain.length > 0
                     ? getActiveGroupId(chain, chain.length - 1, groupInstanceCounts)

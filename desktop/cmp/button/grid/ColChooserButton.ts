@@ -70,7 +70,6 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             return button({icon, title, className, disabled: true, ...rest});
         }
 
-        // Dialog and panel: a plain button. The dialog opens; the docked panel toggles.
         if (target !== 'popover') {
             return button({
                 icon,
@@ -85,7 +84,6 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             });
         }
 
-        // Popover: render the chooser inline, driven by the modal model's popover-open state.
         const modalModel = chooserModel as ColChooserModalModel;
         return popover({
             popoverClassName: 'xh-col-chooser-popover',
@@ -105,9 +103,8 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             onInteraction: willOpen => {
                 if (willOpen) {
                     modalModel.openPopover();
+                    // Pending edits block dismiss-on-outside-click - Save/Cancel only.
                 } else if (!modalModel.isDirty) {
-                    // Block dismiss-on-outside-click while edits are pending (deferred-commit mode) -
-                    // the user must Save or Cancel explicitly, so an errant click can't discard them.
                     modalModel.close();
                 }
             }

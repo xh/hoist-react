@@ -171,7 +171,7 @@ export function collapseSelection<T extends SelectionUnit>(rows: T[]): T[] {
 
 /** A single dragged row, for {@link isValidDragSelection}. */
 export interface DragSelectionRow {
-    /** True for a column-group row (dragged as a unit); false for a leaf column. */
+    /** True for a column-group row, always dragged as a single unit. */
     isGroup: boolean;
     /** Whether this row may be dragged: a leaf's `movable`, or a group with any movable descendant. */
     movable: boolean;
