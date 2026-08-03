@@ -67,11 +67,12 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                     : `ColChooser not enabled on bound GridModel for target '${target}' - button will be disabled.`,
                 ColChooserButton
             );
-            return button({icon, title, className, disabled: true, ...rest});
+            return button({ref, icon, title, className, disabled: true, ...rest});
         }
 
         if (target !== 'popover') {
             return button({
+                ref,
                 icon,
                 title,
                 className,
