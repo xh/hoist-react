@@ -73,6 +73,9 @@
   does not modify (the common case). Previously every parsed string value was replaced with a
   freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
   upstream deduplication of repeated values.
+* Added experimental `Store` config `denseRecordThreshold` - the populated (non-default) field
+  count at/above which a record's `data` takes its fixed dense shape rather than the sparse form.
+  For testing/tuning only - set to e.g. `999` to restore the pre-v87 (all-sparse) behavior.
 
 ### ⚙️ Typescript API Adjustments
 

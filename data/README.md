@@ -812,6 +812,9 @@ One consequence to be aware of: enumeration of `data` (`Object.keys()`, spread,
 `JSON.stringify()`) sees own properties only, which vary with each record's density. Use
 `record.getValues()` or `record.getModifiedValues()` rather than enumerating `data` directly.
 
+The crossover is governed by the experimental `denseRecordThreshold` Store config, for testing
+and tuning only - e.g. set to `999` to restore the pre-v87 (all-sparse) behavior.
+
 ### Processing Raw Data with `processRawData`
 
 Transform data before it enters the Store:

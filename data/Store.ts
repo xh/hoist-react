@@ -48,18 +48,19 @@ import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 
 /**
- * Populated (non-default) field count at/below which a record's `data` takes the sparse
- * representation - own properties for non-default values only, defaults via a shared prototype.
- * Denser records are instead cloned from a shared template carrying every Field, giving them one
- * fixed shape. See `buildData()`.
+ * Populated (non-default) field count at/above which a record's `data` is considered dense and
+ * cloned from a shared template carrying every Field, giving all such records one fixed shape.
+ * Records below it take the sparse form - own properties for non-default values only, defaults
+ * via a shared prototype. See `buildData()`.
  *
  * The cutoff tracks V8's dictionary-mode demotion: objects built by keyed property adds are
  * demoted to a memory-hungry per-object hashtable at ~20 adds, as measured empirically - an
  * undocumented heuristic, so this sits comfortably below it, leaving room for the `id` property
- * later added to every record's data. Overridable via `experimental.sparseMaxFields` - 0 to
- * force the fixed shape for all records, a large value to force sparse (pre-v87 behavior).
+ * later added to every record's data. Overridable via `experimental.denseRecordThreshold` - set
+ * to e.g. 999 (above any field count) to force the sparse form for all records (the pre-v87
+ * behavior), or to 1 to force the fixed shape for all.
  */
-const SPARSE_MAX_POPULATED_FIELDS = 16;
+const DENSE_RECORD_THRESHOLD = 17;
 
 /**
  * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
@@ -281,6 +282,10 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
  * can be defined explicitly or inferred from GridModel columns. `Store.defaults` provides
  * app-wide configuration.
  *
+ * Record `data` objects are automatically memory-optimized - read them by field name and never
+ * enumerate them directly. See {@link StoreRecord.data}, and the experimental
+ * `denseRecordThreshold` config to adjust or disable the optimization for testing.
+ *
  * See the data package README (`data/README.md`) for full documentation including tree data,
  * filtering patterns, validation, and common pitfalls.
  *
@@ -360,7 +365,7 @@ export class Store
 
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
-    private _sparseMaxFields: number;
+    private _denseRecordThreshold: number;
 
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
@@ -433,7 +438,8 @@ export class Store
         // serves as the sparse form's prototype - V8 declines the fast clone path for any object
         // that has been used as a prototype.
         this._dataTemplate = {...this._dataDefaults};
-        this._sparseMaxFields = this.experimental.sparseMaxFields ?? SPARSE_MAX_POPULATED_FIELDS;
+        this._denseRecordThreshold =
+            this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -1403,11 +1409,11 @@ export class Store
      * Build a record `data` object from the non-default entries buffered in `_recordBuildData`,
      * choosing its representation by their count:
      *
-     *  - At or below `sparseMaxFields`, a sparse object - own properties for the buffered values
+     *  - Below `denseRecordThreshold`, a sparse object - own properties for the buffered values
      *    only, defaults reached through the shared `_dataDefaults` prototype. Costs nothing for
      *    unpopulated fields, and stays safely inside V8's fast-properties mode at these counts.
-     *  - Above it, a clone of the shared template carrying every Field. Wide objects built by
-     *    per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
+     *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
+     *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
      *    (overwriting an existing property is not an add), so all dense records share the
      *    template's one fixed shape.
      *
@@ -1418,9 +1424,9 @@ export class Store
     private buildData(): PlainObject {
         const {names, vals, n} = this._recordBuildData,
             ret =
-                n <= this._sparseMaxFields
-                    ? Object.create(this._dataDefaults)
-                    : {...this._dataTemplate};
+                n >= this._denseRecordThreshold
+                    ? {...this._dataTemplate}
+                    : Object.create(this._dataDefaults);
         for (let i = 0; i < n; i++) {
             ret[names[i]] = vals[i];
         }
