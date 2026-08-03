@@ -94,7 +94,7 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
                 intent: 'danger',
                 icon: Icon.reset(),
                 tooltip: 'Restore Defaults',
-                onClick: () => chooserModel.restoreDefaultsAsync()
+                onClick: () => chooserModel.restoreDefaultsAsync().catchDefault()
             }),
             button({
                 omit: !chooserModel.showCloseButton,
@@ -192,7 +192,7 @@ const chooserFooter = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => 
             intent: 'success',
             disabled: !chooserModel.isDirty,
             onClick: () => {
-                chooserModel.commitPendingAsync();
+                chooserModel.commitPendingAsync().catchDefault();
                 chooserModel.close();
             }
         })
