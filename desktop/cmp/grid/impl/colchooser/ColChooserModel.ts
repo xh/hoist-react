@@ -320,10 +320,11 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
      */
     @action
     applyState(newState: ColumnState[]) {
+        const showsOrHides = hasVisibilityChange(this.currentState, newState);
         this.workingState = newState;
         if (this.commitOnChange) {
             this.gridModel.updateColumnState(newState);
-            this.autosizeIfNeeded();
+            if (showsOrHides) this.autosizeIfNeeded();
         } else {
             // Deferred: no grid write fires the sync reaction, so reflect the working copy ourselves.
             this.syncBuckets();
@@ -335,19 +336,18 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     updateColumns(changes: Partial<ColumnState>[]) {
         if (!changes.length) return;
 
-        const byId = new Map(changes.map(c => [c.colId, c])),
+        const prior = this.currentState,
+            byId = new Map(changes.map(c => [c.colId, c])),
             // Deduped and in columnState order - a full-coverage change list is read by
             // GridModel.updateColumnState as a reorder.
-            orderedChanges = this.currentState
-                .filter(cs => byId.has(cs.colId))
-                .map(cs => byId.get(cs.colId));
+            orderedChanges = prior.filter(cs => byId.has(cs.colId)).map(cs => byId.get(cs.colId));
 
-        this.workingState = this.currentState.map(cs =>
+        this.workingState = prior.map(cs =>
             byId.has(cs.colId) ? {...cs, ...byId.get(cs.colId)} : cs
         );
         if (this.commitOnChange) {
             this.gridModel.updateColumnState(orderedChanges);
-            this.autosizeIfNeeded();
+            if (hasVisibilityChange(prior, this.workingState)) this.autosizeIfNeeded();
         } else {
             this.syncBuckets();
         }
@@ -572,6 +572,12 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             });
         });
     }
+}
+
+/** True if any column is shown or hidden between the two states - the only change worth autosizing for. */
+function hasVisibilityChange(a: ColumnState[], b: ColumnState[]): boolean {
+    const hiddenById = new Map(a.map(cs => [cs.colId, !!cs.hidden]));
+    return b.some(cs => hiddenById.get(cs.colId) !== !!cs.hidden);
 }
 
 /** Map each leaf colId to its parent group chain (outermost to innermost). */
