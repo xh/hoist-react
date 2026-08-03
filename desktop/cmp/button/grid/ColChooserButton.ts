@@ -103,9 +103,8 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             onInteraction: willOpen => {
                 if (willOpen) {
                     modalModel.openPopover();
-                    // Pending edits block dismiss-on-outside-click - Save/Cancel only.
-                } else if (!modalModel.isDirty) {
-                    modalModel.close();
+                } else {
+                    modalModel.closeConfirmAsync().catchDefault();
                 }
             }
         });

@@ -279,6 +279,20 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.clearFilter();
     }
 
+    /** Hide the chooser, confirming first when pending edits would be discarded. */
+    async closeConfirmAsync() {
+        if (this.isDirty) {
+            const discard = await XH.confirm({
+                title: 'Discard Changes?',
+                message: 'Your unsaved column changes will be lost.',
+                confirmProps: {text: 'Discard', intent: 'danger'},
+                cancelProps: {text: 'Keep Editing'}
+            });
+            if (!discard) return;
+        }
+        this.close();
+    }
+
     /** Show the chooser if hidden, hide it if shown. */
     toggle() {
         this.isOpen ? this.close() : this.open();
