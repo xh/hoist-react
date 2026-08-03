@@ -36,7 +36,8 @@
 * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values may also be shared across successive fetches of the same logical dataset, as identified
-  by a required app-provided key, per a configurable `retainMode`.
+  by a required app-provided key, per a configurable `retainMode`. Skip known high-cardinality
+  fields (e.g. UUID columns) via `excludeFields`.
 * Improved `Store` memory efficiency - record `data` objects now take one of two compact
   representations, chosen automatically per record by how many fields hold non-default values: the
   established sparse form for lightly-populated records, and a fixed shape cloned from a shared
