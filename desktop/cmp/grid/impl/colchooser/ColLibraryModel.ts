@@ -10,7 +10,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreRecordId} from '@xh/hoist/data';
 import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {makeObservable} from '@xh/hoist/mobx';
-import {castArray, isEmpty} from 'lodash';
+import {castArray} from 'lodash';
 
 import type {ColChooserModel} from './ColChooserModel';
 import {
@@ -18,6 +18,7 @@ import {
     chooserDragText,
     chooserGridConfig,
     chooserLibraryColumn,
+    chooserVisibilityKeyHandler,
     dragRejectHint,
     type ColChooserDropParticipant,
     type ColLibraryData,
@@ -162,16 +163,7 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
             expandLevel: this.collapseGroups ? 0 : 1,
             sortBy: 'name',
             emptyText: 'No hidden columns',
-            onKeyDown: e => {
-                const {selectedRecords} = this.chooserGridModel;
-                if (isEmpty(selectedRecords)) return;
-
-                if (e.code === 'Space') {
-                    this.toggleVisibility(selectedRecords.map(rec => rec.id));
-                    e.stopPropagation();
-                    e.preventDefault();
-                }
-            },
+            onKeyDown: chooserVisibilityKeyHandler(this),
             store: {
                 fields: [
                     {name: 'name', type: 'string'},

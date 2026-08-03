@@ -6,8 +6,8 @@
  */
 import {ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {div, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import {hoistCmp, HoistProps, type Some} from '@xh/hoist/core';
+import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import type {GridOptions, ICellRendererParams, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -106,6 +106,24 @@ export const chooserDragAgOptions: GridOptions = {
     rowDragMultiRow: true,
     rowDragText: chooserDefaultDragText
 };
+
+/**
+ * Space-bar visibility toggle over a chooser grid's selected rows, shared by the buckets and library.
+ * Reads its owner lazily - the handler is installed while the grid model is still being constructed.
+ */
+export function chooserVisibilityKeyHandler(owner: {
+    chooserGridModel: GridModel;
+    toggleVisibility(recordIds: Some<StoreRecordId>): void;
+}): (e: KeyboardEvent) => void {
+    return e => {
+        const {selectedRecords} = owner.chooserGridModel;
+        if (isEmpty(selectedRecords) || e.code !== 'Space') return;
+
+        owner.toggleVisibility(selectedRecords.map(rec => rec.id));
+        e.stopPropagation();
+        e.preventDefault();
+    };
+}
 
 /** Base GridModel config shared by the chooser's bucket and library grids. */
 export const chooserGridConfig: Partial<GridConfig> = {

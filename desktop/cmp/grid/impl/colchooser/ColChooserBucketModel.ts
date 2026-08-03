@@ -37,6 +37,7 @@ import {
     chooserDragText,
     chooserGridConfig,
     chooserNameColumn,
+    chooserVisibilityKeyHandler,
     dragRejectHint,
     type ColChooserData,
     type ColChooserDropParticipant,
@@ -736,16 +737,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             ...chooserGridConfig,
             sortBy: 'sortOrder',
             emptyText: this.emptyDropHint(emptyText),
-            onKeyDown: e => {
-                const {selectedRecords} = this.chooserGridModel;
-                if (isEmpty(selectedRecords)) return;
-
-                if (e.code === 'Space') {
-                    this.toggleVisibility(selectedRecords.map(rec => rec.id));
-                    e.stopPropagation();
-                    e.preventDefault();
-                }
-            },
+            onKeyDown: chooserVisibilityKeyHandler(this),
             store: {
                 // Matching a group header reveals its columns (leaf->ancestor is automatic).
                 filterIncludesChildren: true,
