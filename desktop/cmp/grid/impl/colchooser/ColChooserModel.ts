@@ -313,12 +313,18 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     updateColumns(changes: Partial<ColumnState>[]) {
         if (!changes.length) return;
 
-        const byId = new Map(changes.map(c => [c.colId, c]));
+        const byId = new Map(changes.map(c => [c.colId, c])),
+            // Deduped and in columnState order - a full-coverage change list is read by
+            // GridModel.updateColumnState as a reorder.
+            orderedChanges = this.currentState
+                .filter(cs => byId.has(cs.colId))
+                .map(cs => byId.get(cs.colId));
+
         this.workingState = this.currentState.map(cs =>
             byId.has(cs.colId) ? {...cs, ...byId.get(cs.colId)} : cs
         );
         if (this.commitOnChange) {
-            this.gridModel.updateColumnState(changes);
+            this.gridModel.updateColumnState(orderedChanges);
             this.autosizeIfNeeded();
         } else {
             this.syncBuckets();
