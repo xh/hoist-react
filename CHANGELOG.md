@@ -13,12 +13,15 @@
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
-     either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
-* `StoreRecord.data` should now be read by field name only.  Enumerating or spreading them
-  `JSON.stringify()` do not reliably see default field values. Review any code enumerating `data`
-   directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead.  This would
-   previously have been not reliable; avoiding it becomes even more critical with new memory
-   optimization in Hoist 87.
+  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* `ViewRowData.cubeLeaves` getter has been replaced by the exported `getCubeLeaves()` helper - update
+  any code reading `row.cubeLeaves` to call `getCubeLeaves(row)`.  This changes supports important
+  memory optimizations in this version.
+* `StoreRecord.data` should now be read by field name only as enumerating, spreading, of calling
+  `JSON.stringify()` on this object does not reliably see default field values. Review any code
+   enumerating `data` directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead.
+   This would previously have been not reliable; avoiding it becomes even more critical with new
+   memory optimizations in this version.
 
 ### 🎁 New Features
 
@@ -43,6 +46,9 @@
   established sparse form for lightly-populated records, and a fixed shape cloned from a shared
   per-Store template for more wide records. Avoids dropping into V8's memory-hungry "dictionary"
   mode, substantially reducing per-record memory on stores with wide records.
+* Improved Cube `View` memory efficiency - `ViewRowData` rows are now plain objects cloned from a
+  shared per-View template, so all rows in a View share one compact, fixed shape. Substantially
+  reduces per-row memory and speeds up view builds, especially for queries with many fields.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large

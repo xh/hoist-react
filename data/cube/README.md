@@ -126,7 +126,7 @@ const view = cube.createView({
 
 ```typescript
 // Like includeLeaves, but leaves are accessible programmatically via
-// ViewRowData.cubeLeaves rather than rendered as tree children.
+// the getCubeLeaves() helper rather than rendered as tree children.
 // Useful for showing detail in a separate panel on selection.
 const view = cube.createView({
     query: {

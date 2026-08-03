@@ -39,10 +39,10 @@ export class BucketRow extends BaseRow {
         super(view, id);
 
         this.bucketSpec = bucketSpec;
-        this.data = new ViewRowData(id);
-        this.data.cubeRowType = 'bucket';
-        this.data.cubeLabel = bucketSpec.labelFn(bucketVal);
-        this.data.cubeDimension = bucketSpec.name;
+        const data = (this.data = view.newRowData(id));
+        data.cubeRowType = 'bucket';
+        data.cubeLabel = bucketSpec.labelFn(bucketVal);
+        data.cubeDimension = bucketSpec.name;
 
         this.initAggregate(children, bucketSpec.name, bucketVal, appliedDimensions);
 

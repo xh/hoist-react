@@ -82,10 +82,10 @@ export class ExposedLeafRow extends LeafRow {
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id, rawRecord);
 
-        const data = (this.data = new ViewRowData(id));
+        const data = (this.data = view.newRowData(id));
         data.cubeRowType = 'leaf';
         data.cubeLabel = rawRecord.id.toString();
-        data.cubeDimension = null;
+        data.isCubeLeaf = true;
 
         view.fields.forEach(({name}) => {
             data[name] = rawRecord.data[name];

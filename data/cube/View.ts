@@ -141,6 +141,8 @@ export class View
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     private _bucketDependentFields = new Set<string>();
+    private _rowDataTemplate: ViewRowData = null;
+    _canAggregateTemplate: PlainObject = null;
     _aggContext: AggregationContext = null;
     _rowCache: Map<string, BaseRow> = null;
 
@@ -154,6 +156,7 @@ export class View
         this.query = query;
         this.stores = this.parseStores(stores);
         this._rowCache = new Map();
+        this.buildRowTemplates();
         this.fullUpdate();
 
         if (connect) {
@@ -213,6 +216,7 @@ export class View
         if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
+        this.buildRowTemplates();
 
         // If the cube is changing then we need to clear the row cache, and potentially disconnect
         // from the old cube and connect to the new one
@@ -310,6 +314,40 @@ export class View
     get exposesLeaves(): boolean {
         const {includeLeaves, provideLeaves} = this.query;
         return includeLeaves || provideLeaves;
+    }
+
+    /**
+     * Create a new row data object as a clone of this View's shared template, which carries a
+     * slot for every ViewRowData property and query field. Rows are only ever written via
+     * overwrites of these slots - never property adds - so all rows in a View share one fixed
+     * shape, keeping them in V8's compact fast-properties mode rather than "dictionary mode".
+     * @internal
+     */
+    newRowData(id: string): ViewRowData {
+        return {...this._rowDataTemplate, id};
+    }
+
+    // Templates depend on the query's field set - rebuilt on any query change.
+    private buildRowTemplates() {
+        const rowData: PlainObject = {
+            id: null,
+            cubeRowType: null,
+            cubeLabel: null,
+            cubeDimension: null,
+            cubeBuckets: null,
+            children: null,
+            isCubeLeaf: false,
+            _cubeLeafChildren: null
+        };
+        const canAggregate: PlainObject = {};
+        this.fields.forEach(({name}) => {
+            rowData[name] = null;
+            canAggregate[name] = false;
+        });
+
+        // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
+        this._rowDataTemplate = {...rowData} as ViewRowData;
+        this._canAggregateTemplate = {...canAggregate};
     }
 
     @logWithDebug

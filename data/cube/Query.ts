@@ -85,7 +85,7 @@ export interface QueryConfig {
     includeLeaves?: boolean;
 
     /**
-     * True to provide access to leaf nodes via the {@link ViewRowData.cubeLeaves} getter on the
+     * True to provide access to leaf nodes via the {@link getCubeLeaves} helper on the
      * lowest level of aggregated `dimensions`. This will allow programmatic access to the leaves
      * used to produce a given aggregation, without exposing them as `children` in a way that would
      * cause them to be rendered in a tree grid.

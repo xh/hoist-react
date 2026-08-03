@@ -8,7 +8,7 @@
 import {PlainObject, Some} from '@xh/hoist/core';
 import {BucketSpec} from '@xh/hoist/data/cube/BucketSpec';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
-import {compact, isEmpty, reduce} from 'lodash';
+import {compact, isEmpty} from 'lodash';
 import {View} from '../View';
 import {RowUpdate} from './RowUpdate';
 
@@ -142,28 +142,21 @@ export abstract class BaseRow {
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        view.fields.forEach(({name}) => (data[name] = null));
         Object.assign(data, appliedDimensions);
 
-        this.canAggregate = reduce(
-            view.fields,
-            (ret, field) => {
-                const {name} = field;
-                if (appliedDimensions.hasOwnProperty(name)) {
-                    ret[name] = false;
-                } else {
-                    const {aggregator, canAggregateFn} = field,
-                        ctx = view._aggContext;
-
-                    ret[name] =
-                        aggregator &&
-                        (!canAggregateFn ||
-                            canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
-                }
-                return ret;
-            },
-            {}
-        );
+        // Clone the per-View template (all fields false) for fixed shape, then overwrite.
+        const canAggregate = (this.canAggregate = {...view._canAggregateTemplate}),
+            ctx = view._aggContext;
+        view.fields.forEach(field => {
+            const {name} = field;
+            if (!appliedDimensions.hasOwnProperty(name)) {
+                const {aggregator, canAggregateFn} = field;
+                canAggregate[name] =
+                    aggregator &&
+                    (!canAggregateFn ||
+                        canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
+            }
+        });
 
         this.computeAggregates();
     }
