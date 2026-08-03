@@ -12,7 +12,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import type {
     GridOptions,
     IsRowValidDropPositionParams,
@@ -99,6 +99,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /** True when this bucket holds any column the header toggle can show/hide. */
+    @computed
     get hasHideableColumns(): boolean {
         return !isEmpty(this.hideableLeaves);
     }
@@ -107,11 +108,13 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
      * Count of this bucket's leaf columns as actually rendered, so a rail whose columns are all
      * filtered out or routed to the Library reads as empty, like a genuinely empty one.
      */
+    @computed
     get columnCount(): number {
         return this.renderedLeafIds.size;
     }
 
     /** Bucket-scoped aggregate visibility over hideable leaves: true (all) / false (none) / null (mixed). */
+    @computed
     get aggregateVisible(): boolean | null {
         const leaves = this.hideableLeaves;
         return aggregateVisibility(leaves.length, leaves.filter(cs => cs.hidden).length);
@@ -251,17 +254,20 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         }
 
         // Same engine the commit uses, so the indicator always agrees with what the drop will do.
-        const {allowed, state} = this.resolveDrop(
-            payload.leafColIds,
-            payload.dragUnitGroupId,
-            targetData,
-            position,
-            payload.fromLibrary
-        );
+        // Walking every bucket's records is not free, and ag-grid calls this on each drag-move.
+        const displayed = this.parent.displayedLeafColIds,
+            {allowed, state} = this.resolveDrop(
+                payload.leafColIds,
+                payload.dragUnitGroupId,
+                targetData,
+                position,
+                payload.fromLibrary,
+                displayed
+            );
         if (!allowed || !state) return {allowed: false};
 
         // A library drop always unhides, so it is never a no-op.
-        if (!payload.fromLibrary && this.isNoOpDrop(state)) {
+        if (!payload.fromLibrary && this.isNoOpDrop(state, displayed)) {
             return {allowed: false};
         }
 
@@ -344,6 +350,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     } = null;
 
     /** This bucket's slice of the current column state (columns pinned to this side). */
+    @computed
     private get slice(): ColumnState[] {
         return this.parent.currentState.filter(cs => (cs.pinned ?? null) === this.pinned);
     }
@@ -352,6 +359,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
      * Leaf colIds currently rendered in this bucket's grid. Every visibility control scopes to this, so
      * it never counts or toggles a column the user can't see.
      */
+    @computed
     private get renderedLeafIds(): Set<string> {
         const ids = new Set<string>();
         this.chooserGridModel.store.records.forEach(rec => {
@@ -371,6 +379,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /** Rendered hideable leaf columns - the columns the "toggle all" control acts on. */
+    @computed
     private get hideableLeaves(): ColumnState[] {
         const {targetGridModel: gridModel} = this,
             rendered = this.renderedLeafIds;
@@ -505,11 +514,17 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         });
 
         // 2) Populate group leafColIds and derive visibility from actual children
-        const columnDataMap = new Map(data.map(r => [r.id, r]));
+        const childrenByParent = new Map<string, ColChooserData[]>();
+        data.forEach(it => {
+            if (!it.parentId) return;
+            const siblings = childrenByParent.get(it.parentId);
+            siblings ? siblings.push(it) : childrenByParent.set(it.parentId, [it]);
+        });
+
         data.forEach(it => {
             if (!it.isGroup) return;
 
-            it.leafColIds = collectLeafColIds(it, columnDataMap);
+            it.leafColIds = collectLeafColIds(it, childrenByParent);
 
             // Hideable leaves only, else a group whose sole visible member is locked reads as
             // permanently "mixed" and its toggle wedges.
@@ -572,9 +587,9 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         dragUnitGroupId: string | null,
         targetData: ColChooserData | null,
         position: RowDropTargetPosition,
-        makeVisible: boolean = false
+        makeVisible: boolean = false,
+        displayed: Set<string> = this.parent.displayedLeafColIds
     ): ReturnType<typeof resolveDropEngine> {
-        const displayed = this.parent.displayedLeafColIds;
         return resolveDropEngine({
             master: this.parent.currentState,
             chainOf: colId => (this.parentChainMap.get(colId) ?? []).map(g => g.groupId),
@@ -620,8 +635,10 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     }
 
     /** True if committing `state` leaves every bucket's rendered view unchanged (spec §5A Rule B). */
-    private isNoOpDrop(state: ColumnState[]): boolean {
-        const displayed = this.parent.displayedLeafColIds;
+    private isNoOpDrop(
+        state: ColumnState[],
+        displayed: Set<string> = this.parent.displayedLeafColIds
+    ): boolean {
         return isNoOpDropEngine(state, this.parent.currentState, id => displayed.has(id));
     }
 
@@ -862,13 +879,12 @@ function buildDragPayload(records: ColChooserData[]): DragPayload | null {
 /** Recursively collect leaf colIds for a group from its actual children in the record set. */
 function collectLeafColIds(
     group: ColChooserData,
-    recordMap: Map<string, ColChooserData>
+    childrenByParent: Map<string, ColChooserData[]>
 ): string[] {
     const ids: string[] = [];
-    for (const rec of recordMap.values()) {
-        if (rec.parentId !== group.id) continue;
+    for (const rec of childrenByParent.get(group.id) ?? []) {
         if (rec.isGroup) {
-            ids.push(...collectLeafColIds(rec, recordMap));
+            ids.push(...collectLeafColIds(rec, childrenByParent));
         } else {
             ids.push(rec.id);
         }
