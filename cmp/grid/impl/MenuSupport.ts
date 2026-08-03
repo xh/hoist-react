@@ -142,8 +142,6 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
             });
         case 'colChooserPanel':
             return new RecordAction({
-                text: 'Open Columns Panel',
-                icon: Icon.gridPanel(),
                 hidden: !gridModel?.colChooserPanelModel,
                 displayFn: () => {
                     const isOpen = gridModel.colChooserPanelModel?.isOpen;
