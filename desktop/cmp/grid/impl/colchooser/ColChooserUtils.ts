@@ -314,9 +314,7 @@ function columnMetaTooltip(data: ColChooserData): ReactNode {
                             : null
                     ]
                 }),
-                hasDesc
-                    ? div({className: 'xh-col-chooser__meta-tip__desc', item: description})
-                    : null
+                div({className: 'xh-col-chooser__meta-tip__desc', item: description})
             ]
         })
     });
