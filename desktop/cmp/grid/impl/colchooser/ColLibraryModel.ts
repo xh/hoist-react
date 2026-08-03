@@ -144,9 +144,8 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
                   : [],
             leafColIds: string[] = nodes.flatMap((n: any) => getChooserData(n)?.leafColIds ?? []);
 
-        // Refuse only a drag with no hideable leaf at all; a partially hideable group hides its
-        // hideable leaves.
-        if (isEmpty(leafColIds) || leafColIds.some(id => targetGridModel.isColumnHideable(id))) {
+        // Refuse a drag with no hideable leaf; a partially hideable group hides its hideable leaves.
+        if (leafColIds.some(id => targetGridModel.isColumnHideable(id))) {
             this.parent.setDragHint(null);
             return 'hide';
         }
