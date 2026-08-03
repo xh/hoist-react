@@ -1160,7 +1160,9 @@ export class GridModel extends HoistModel {
             colIds = [];
         }
 
-        this.groupBy = colIds;
+        if (!equal(this.groupBy, colIds)) {
+            this.groupBy = colIds;
+        }
     }
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
