@@ -469,10 +469,27 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         if (loadNew) {
             this.adoptColumnState(gs);
         } else {
-            // Advance the baseline so we stop re-prompting; the working edits will overwrite the
-            // external change on the next commit.
-            this.setBaseline(gs);
+            this.keepPendingAgainst(gs);
         }
+    }
+
+    /**
+     * Keep pending edits across an external structural change, reconciling them against the new column
+     * set - a working copy still naming a removed column would throw on commit. Baseline advances to the
+     * grid state so we stop re-prompting; the edits overwrite it on the next commit.
+     */
+    @action
+    private keepPendingAgainst(gs: ColumnState[]) {
+        const gsById = new Map(gs.map(cs => [cs.colId, cs])),
+            workingIds = new Set(this.workingState.map(cs => cs.colId));
+
+        // Retain the user's ordering for surviving columns; new ones join at the end.
+        this.workingState = [
+            ...this.workingState.filter(cs => gsById.has(cs.colId)),
+            ...gs.filter(cs => !workingIds.has(cs.colId))
+        ];
+        this.baseline = gs;
+        this.syncBuckets();
     }
 
     @action
