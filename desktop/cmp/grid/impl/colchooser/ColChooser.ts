@@ -95,6 +95,13 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
                 icon: Icon.reset(),
                 tooltip: 'Restore Defaults',
                 onClick: () => chooserModel.restoreDefaultsAsync()
+            }),
+            button({
+                omit: !chooserModel.showCloseButton,
+                minimal: true,
+                icon: Icon.close(),
+                tooltip: 'Close',
+                onClick: () => chooserModel.close()
             })
         ]
     })

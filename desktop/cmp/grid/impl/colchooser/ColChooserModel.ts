@@ -84,6 +84,14 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         return true;
     }
 
+    /**
+     * True when the chooser supplies its own dismiss control. The overlays are dismissed by their own
+     * chrome (dialog header, popover outside-click); the header-less dock has none.
+     */
+    get showCloseButton(): boolean {
+        return false;
+    }
+
     /** Column state the chooser is currently displaying/operating on (pending working copy). */
     get currentState(): ColumnState[] {
         return this.workingState ?? this.gridModel.columnState;

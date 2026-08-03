@@ -31,6 +31,10 @@ export class ColChooserPanelModel extends ColChooserModel {
         return false;
     }
 
+    override get showCloseButton(): boolean {
+        return true;
+    }
+
     constructor(config: ColChooserPanelConfig) {
         super({...config, commitOnChange: true});
         makeObservable(this);
