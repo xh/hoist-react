@@ -13,7 +13,7 @@ import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEqual, isBoolean} from 'lodash';
+import {isEqual, isObject} from 'lodash';
 
 import {ColChooserBucketModel} from './ColChooserBucketModel';
 import {ColLibraryModel} from './ColLibraryModel';
@@ -191,7 +191,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
         this.autosizeOnCommit = autosizeOnCommit;
-        const libraryConfig = isBoolean(columnLibrary) ? {} : columnLibrary;
+        const libraryConfig = isObject(columnLibrary) ? columnLibrary : {};
         this.columnLibraryEnabled = !!columnLibrary;
         this.width = width;
         this.height = height;
