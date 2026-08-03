@@ -800,19 +800,17 @@ memory. They stack, and both are opt-in:
 | `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords` |
 | `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Your data has many repeated string values (categories, statuses, names) |
 
-Record `data` objects themselves are built for memory efficiency out of the box: each is cloned
-from a shared per-Store template carrying every declared field, so all records in a Store share
-one identical, fixed shape. This keeps them in V8's compact "fast properties" representation -
-objects built instead by per-field property adds are demoted to a per-object hashtable past ~20
-adds, costing several times more memory per record.
+Record `data` objects themselves are built for memory efficiency out of the box, with a
+representation chosen automatically per record: sparsely-populated records carry own properties
+only for fields holding non-default values (defaults reached via a shared prototype), while
+densely-populated records are cloned from a shared per-Store template carrying every declared
+field. Both forms stay in V8's compact "fast properties" mode - wide objects built instead by
+per-field property adds would be demoted to a per-object hashtable past ~20 adds, costing several
+times more memory per record.
 
-Two consequences of that fixed shape to be aware of:
-
-- `data` carries an own property for every declared field, so `Object.keys()`, spread and
-  `JSON.stringify()` of `data` include default-valued fields. Use `record.getValues()` or
-  `record.getModifiedValues()` rather than enumerating `data` directly.
-- Every record pays a small fixed cost (~8 bytes) per *declared* field, populated or not - so
-  avoid declaring large numbers of fields that your records rarely populate.
+One consequence to be aware of: enumeration of `data` (`Object.keys()`, spread,
+`JSON.stringify()`) sees own properties only, which vary with each record's density. Use
+`record.getValues()` or `record.getModifiedValues()` rather than enumerating `data` directly.
 
 ### Processing Raw Data with `processRawData`
 

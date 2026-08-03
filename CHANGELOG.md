@@ -14,11 +14,11 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
-* `StoreRecord.data` now carries an own, enumerable property for every `Field` declared on its
-  Store, with default values filled in - previously it held own properties only for fields with
-  non-default values, with defaults reachable via the prototype but excluded from enumeration.
-  Review any code that enumerates `data` via `Object.keys()`, spread, or `JSON.stringify()` - or
-  use `StoreRecord.getValues()` / `getModifiedValues()`, which are unchanged.
+* `StoreRecord.data` should now be read by field name only.  Enumerating or spreading them
+  `JSON.stringify()` do not reliably see default field values. Review any code enumerating `data`
+   directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead.  This would
+   previously have been not reliable; avoiding it becomes even more critical with new memory
+   optimization in Hoist 87.
 
 ### 🎁 New Features
 
@@ -37,12 +37,11 @@
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values may also be shared across successive fetches of the same logical dataset, as identified
   by a required app-provided key, per a configurable `retainMode`.
-* Improved `Store` memory efficiency - record `data` objects are now cloned from a shared
-  per-Store template carrying every declared field, so all records share one fixed shape and stay
-  in V8's compact "fast properties" representation. Substantially reduces per-record memory on
-  large stores whose records populate ~20 or more fields, where the previous field-by-field
-  construction dropped data objects into V8's memory-hungry "dictionary" mode. Note the related
-  `data` enumeration change under Breaking Changes.
+* Improved `Store` memory efficiency - record `data` objects now take one of two compact
+  representations, chosen automatically per record by how many fields hold non-default values: the
+  established sparse form for lightly-populated records, and a fixed shape cloned from a shared
+  per-Store template for more wide records. Avoids dropping into V8's memory-hungry "dictionary"
+  mode, substantially reducing per-record memory on stores with wide records.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
@@ -59,6 +58,9 @@
 
 * Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
   values for each dimension.
+* Fixed `StoreRecord.getModifiedValues()` omitting fields locally modified back to their default
+  value - it now reports every difference against committed data, regardless of how the record's
+  `data` object represents defaults.
 
 ### ⚙️ Technical
 

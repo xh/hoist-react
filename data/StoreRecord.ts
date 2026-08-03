@@ -7,7 +7,7 @@
 import {PlainObject} from '@xh/hoist/core';
 import {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
+import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
 import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
@@ -44,18 +44,13 @@ export class StoreRecord {
     /**
      * An object containing the current field values for this record.
      *
-     * Carries an own property for every Field declared on the owning Store, with `defaultValue`s
-     * filled in - each is cloned from a shared per-Store template so that all records share one
-     * fixed shape, keeping them in V8's compact fast-properties representation.
+     * Read values from this object by field name - but never enumerate it. Its internal
+     * representation is memory-optimized and varies, so `Object.keys()`, spread and
+     * `JSON.stringify()` do not reliably see every field. Call {@link getValues} for an explicit
+     * enumeration of all field values, or {@link getModifiedValues} for locally-modified values
+     * only.
      *
-     * With {@link StoreConfig.projectionOnly}, this is instead the raw source object itself. It
-     * then carries every key present on that object rather than only declared Fields, is never
-     * frozen regardless of `freezeData`, and has no `defaultValue` applied for missing keys.
-     *
-     * Reads by field name are identical either way, but enumeration is not - `Object.keys()`,
-     * spread and `JSON.stringify()` see a different key set in each. Call {@link getValues} for an
-     * explicit enumeration of all declared field values regardless of representation, or
-     * {@link getModifiedValues} for locally-modified values only.
+     * With {@link StoreConfig.projectionOnly}, this is the raw source object itself.
      */
     readonly data: PlainObject;
 
@@ -231,7 +226,11 @@ export class StoreRecord {
         if (!this.isModified) return null;
 
         const {data, committedData} = this,
-            ret = pickBy(data, (v, k) => !equal(v, committedData[k]));
+            ret: PlainObject = {};
+        this.fields.forEach(({name}) => {
+            const val = data[name];
+            if (!equal(val, committedData[name])) ret[name] = val;
+        });
         if (!isEmpty(ret)) {
             ret.id = this.id;
             return ret;

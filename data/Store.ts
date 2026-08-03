@@ -48,6 +48,20 @@ import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 
 /**
+ * Populated (non-default) field count at/below which a record's `data` takes the sparse
+ * representation - own properties for non-default values only, defaults via a shared prototype.
+ * Denser records are instead cloned from a shared template carrying every Field, giving them one
+ * fixed shape. See `buildData()`.
+ *
+ * The cutoff tracks V8's dictionary-mode demotion: objects built by keyed property adds are
+ * demoted to a memory-hungry per-object hashtable at ~20 adds, as measured empirically - an
+ * undocumented heuristic, so this sits comfortably below it, leaving room for the `id` property
+ * later added to every record's data. Overridable via `experimental.sparseMaxFields` - 0 to
+ * force the fixed shape for all records, a large value to force sparse (pre-v87 behavior).
+ */
+const SPARSE_MAX_POPULATED_FIELDS = 16;
+
+/**
  * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
  * from GridModel columns). Data can be supplied at construction via `data`, or loaded later
  * via `Store.loadData()`.
@@ -346,6 +360,13 @@ export class Store
 
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
+    private _sparseMaxFields: number;
+
+    // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
+    // name/value buffers are the current record's non-default fields, filled and fully consumed
+    // within a single call to avoid allocation during parsing. See buildData().
+    private _recordBuildData = {names: [] as string[], vals: [] as any[], n: 0};
+
     _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
@@ -405,13 +426,14 @@ export class Store
 
         this.validator = new StoreValidator({store: this});
         this._fieldMap = this.createFieldMap();
-        // Temporary escape hatch for A/B comparison against the pre-v87 "sparse" record data
-        // representation - see parseRaw(). To be removed along with that route.
-        if (this.experimental.sparseRecordData) {
-            this._dataDefaults = this.createDataDefaults();
-        } else {
-            this._dataTemplate = this.createDataTemplate();
-        }
+        this._dataDefaults = this.createDataDefaults();
+        // Spreading converts the defaults object (built by keyed assignment, and so itself in
+        // dictionary mode for wider stores) into V8 fast-properties mode, so per-record clones of
+        // it hit the fast clone path. Deliberately a distinct object from `_dataDefaults`, which
+        // serves as the sparse form's prototype - V8 declines the fast clone path for any object
+        // that has been used as a prototype.
+        this._dataTemplate = {...this._dataDefaults};
+        this._sparseMaxFields = this.experimental.sparseMaxFields ?? SPARSE_MAX_POPULATED_FIELDS;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -1337,68 +1359,70 @@ export class Store
     }
 
     private parseRaw(data: PlainObject): PlainObject {
-        // Clone a shared template carrying an own property for every Field, then overwrite.
-        // Writing a property that already exists is not an "add", so every record keeps the
-        // template's single fixed shape - see createDataTemplate() for background.
-        const {_dataTemplate, _fieldMap} = this;
-        if (_dataTemplate) {
-            const ret = {..._dataTemplate};
-            for (const name in data) {
-                const field = _fieldMap.get(name);
-                if (field) {
-                    ret[name] = field.parseVal(data[name]);
-                }
-            }
-            return ret;
-        }
-
-        // Temporary sparse route (the pre-v87 default), active only under the
-        // `experimental.sparseRecordData` flag for A/B comparison - defaults held on a shared
-        // prototype, own properties for non-default values only.
-        const ret = Object.create(this._dataDefaults);
+        // Single pass - buffer each declared field's parsed non-default value for buildData().
+        const {_fieldMap, _recordBuildData} = this,
+            {names, vals} = _recordBuildData;
+        let n = 0;
         for (const name in data) {
             const field = _fieldMap.get(name);
             if (field) {
                 const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
-                    ret[name] = val;
+                    names[n] = name;
+                    vals[n] = val;
+                    n++;
                 }
             }
         }
-        return ret;
+        _recordBuildData.n = n;
+        return this.buildData();
     }
 
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
-        // Clone the existing data object, preserving its shape (and its `id`, which the deep-equal
-        // checks in modifyRecords() require), then overwrite changed fields. Defaults are real own
-        // properties, so a value reverting to its default leaves the object deep-equal to its
-        // committed counterpart.
-        const {_dataTemplate, _fieldMap} = this;
-        if (_dataTemplate) {
-            const ret = {...data};
-            for (const name in update) {
-                const field = _fieldMap.get(name);
-                if (field) {
-                    ret[name] = field.parseVal(update[name]);
-                }
+        // Merge updated values over current ones, then rebuild exactly as parseRaw() would.
+        const {_recordBuildData} = this,
+            {names, vals} = _recordBuildData,
+            hasOwn = Object.prototype.hasOwnProperty;
+        let n = 0;
+        this.fields.forEach(field => {
+            const {name} = field,
+                val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
+            if (val !== field.defaultValue) {
+                names[n] = name;
+                vals[n] = val;
+                n++;
             }
-            return ret;
-        }
+        });
+        _recordBuildData.n = n;
+        const ret = this.buildData();
+        ret.id = data.id;
+        return ret;
+    }
 
-        // Temporary sparse route (see parseRaw). The `delete` keeps reverted-to-default objects
-        // deep-equal to their committed counterparts, which carry no own property for defaults.
-        const ret = Object.create(this._dataDefaults);
-        Object.assign(ret, data);
-        for (const name in update) {
-            const field = _fieldMap.get(name);
-            if (field) {
-                const val = field.parseVal(update[name]);
-                if (val !== field.defaultValue) {
-                    ret[name] = val;
-                } else {
-                    delete ret[name];
-                }
-            }
+    /**
+     * Build a record `data` object from the non-default entries buffered in `_recordBuildData`,
+     * choosing its representation by their count:
+     *
+     *  - At or below `sparseMaxFields`, a sparse object - own properties for the buffered values
+     *    only, defaults reached through the shared `_dataDefaults` prototype. Costs nothing for
+     *    unpopulated fields, and stays safely inside V8's fast-properties mode at these counts.
+     *  - Above it, a clone of the shared template carrying every Field. Wide objects built by
+     *    per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
+     *    (overwriting an existing property is not an add), so all dense records share the
+     *    template's one fixed shape.
+     *
+     * The representation is decided per record, from parsed content alone - records with equal
+     * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
+     * and RecordSet require.
+     */
+    private buildData(): PlainObject {
+        const {names, vals, n} = this._recordBuildData,
+            ret =
+                n <= this._sparseMaxFields
+                    ? Object.create(this._dataDefaults)
+                    : {...this._dataTemplate};
+        for (let i = 0; i < n; i++) {
+            ret[names[i]] = vals[i];
         }
         return ret;
     }
@@ -1417,13 +1441,6 @@ export class Store
      * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
      * past ~20 adds, costing several times more memory per record.
      */
-    private createDataTemplate() {
-        // Spread to convert the template itself (built by keyed assignment, and so in dictionary
-        // mode for wider stores) into fast-properties mode, so that per-record clones of it hit
-        // V8's fast clone path.
-        return {...this.createDataDefaults()};
-    }
-
     private createDataDefaults() {
         const ret = {};
         this.fields.forEach(({name, defaultValue}) => (ret[name] = defaultValue));
