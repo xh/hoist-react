@@ -13,23 +13,18 @@ export interface PivotFieldSpec extends CubeFieldSpec {
 
     // True if this field can be used as a pivot value field
     enableValue?: boolean;
-
-    // Other fields which this field depends on for aggregation
-    dependsOn?: string[];
 }
 
 export class PivotField extends CubeField {
     readonly columnTemplate?: Omit<ColumnSpec, 'field'>;
     readonly enablePivot: boolean = false;
     readonly enableValue: boolean = false;
-    readonly dependsOn: string[] = [];
 
-    constructor({columnTemplate, enablePivot, enableValue, dependsOn, ...rest}: PivotFieldSpec) {
+    constructor({columnTemplate, enablePivot, enableValue, ...rest}: PivotFieldSpec) {
         super(rest);
         this.columnTemplate = columnTemplate;
         this.enablePivot = enablePivot ?? false;
         this.enableValue = enableValue ?? false;
-        this.dependsOn = dependsOn ?? [];
     }
 }
 

@@ -9,8 +9,33 @@ import {PlainObject, Some} from '@xh/hoist/core';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {compact, isEmpty} from 'lodash';
+import {CubeField} from '../CubeField';
 import {View} from '../View';
 import {RowUpdate} from './RowUpdate';
+
+/**
+ * Send a set of updates up both aggregation routes.
+ *
+ * `applyDataUpdate` rewrites each {@link RowUpdate}'s `oldValue` / `newValue` in place as it walks,
+ * and `Aggregator.replace` reads them - so when a row has two parents the second must get its own
+ * copies, or it would apply the first route's aggregated delta instead of this row's.
+ *
+ * @internal
+ */
+export function propagateUpdate(
+    parent: BaseRow,
+    pivotParent: BaseRow,
+    updates: RowUpdate[],
+    updatedRows: Set<BaseRow>
+) {
+    if (parent && pivotParent) {
+        const forPivot = updates.map(u => new RowUpdate(u.field, u.oldValue, u.newValue));
+        parent.applyDataUpdate(updates, updatedRows);
+        pivotParent.applyDataUpdate(forPivot, updatedRows);
+    } else {
+        (parent ?? pivotParent)?.applyDataUpdate(updates, updatedRows);
+    }
+}
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
@@ -25,9 +50,19 @@ export abstract class BaseRow {
     // which adopt their cube record's plain data object - see LeafRow and subclasses.
     data: PlainObject;
     parent: BaseRow = null;
+    /**
+     * Second aggregation parent, used by pivot views to propagate up the pivot axis in addition to
+     * the group axis. Null for every row in a plain View.
+     *
+     * The two routes must reach disjoint sets of ancestors - see {@link PivotLatticeResult}.
+     */
+    pivotParent: BaseRow = null;
     children: BaseRow[] = null;
     locked: boolean = false;
     canAggregate: PlainObject;
+
+    /** Fields this row aggregates - the View's full set, or just the value fields for a cell row. */
+    protected aggFields: CubeField[] = null;
 
     get isLeaf() {
         return false;
@@ -143,23 +178,44 @@ export abstract class BaseRow {
     //-----------------------------------
     // Called by aggregates and buckets
     //----------------------------------
+    /**
+     * @param fields - fields to aggregate, defaulting to all of the View's fields. Pivot cell rows
+     *      pass only the query's value fields (plus their declared dependencies), which is what
+     *      keeps cell aggregation proportional to the measures rather than the full field set.
+     */
     protected initAggregate(
         children: BaseRow[],
         dimOrBucketName: string,
         val: any,
-        appliedDimensions: PlainObject
+        appliedDimensions: PlainObject,
+        fields: CubeField[] = this.view.fields
+    ) {
+        this.children = children;
+        children.forEach(it => (it.parent = this));
+        this.initAggregateData(dimOrBucketName, val, appliedDimensions, fields);
+    }
+
+    /**
+     * Compute this row's aggregates over its already-assigned `children`, without touching the
+     * children's parent links. Split out for pivot cell rows, whose children do not uniformly treat
+     * them as their group-axis parent.
+     */
+    protected initAggregateData(
+        dimOrBucketName: string,
+        val: any,
+        appliedDimensions: PlainObject,
+        fields: CubeField[] = this.view.fields
     ) {
         const {view, data} = this;
 
-        this.children = children;
-        children.forEach(it => (it.parent = this));
-
+        // No explicit nulling - `View.newRowData` clones a template carrying every field slot.
         Object.assign(data, appliedDimensions);
 
-        // Clone the per-View template (all fields false) for fixed shape, then overwrite.
+        // Clone the per-View template (all fields false) for fixed shape, then overwrite. Only
+        // `fields` is walked, so a cell row's non-value fields stay false as the template left them.
         const canAggregate = (this.canAggregate = {...view._canAggregateTemplate}),
             ctx = view._aggContext;
-        view.fields.forEach(field => {
+        fields.forEach(field => {
             const {name} = field;
             if (!appliedDimensions.hasOwnProperty(name)) {
                 const {aggregator, canAggregateFn} = field;
@@ -170,11 +226,13 @@ export abstract class BaseRow {
             }
         });
 
+        // Retained so RowCache's argless recompute-on-reuse aggregates this row's own field set.
+        this.aggFields = fields;
         this.computeAggregates();
     }
 
-    applyDataUpdate(childUpdates: RowUpdate[], updatedRowDatas: Set<PlainObject>) {
-        const {parent, canAggregate, data, children} = this,
+    applyDataUpdate(childUpdates: RowUpdate[], updatedRows: Set<BaseRow>) {
+        const {parent, pivotParent, canAggregate, data, children} = this,
             ctx = this.view._aggContext,
             myUpdates = [];
         childUpdates.forEach(update => {
@@ -191,8 +249,8 @@ export abstract class BaseRow {
         });
 
         if (!isEmpty(myUpdates)) {
-            updatedRowDatas.add(this.data);
-            if (parent) parent.applyDataUpdate(myUpdates, updatedRowDatas);
+            updatedRows.add(this);
+            propagateUpdate(parent, pivotParent, myUpdates, updatedRows);
         }
     }
 
@@ -204,7 +262,7 @@ export abstract class BaseRow {
         const {children, canAggregate, view, data} = this,
             ctx = view._aggContext;
         let changed = false;
-        view.fields.forEach(({aggregator, name}) => {
+        this.aggFields.forEach(({aggregator, name}) => {
             if (canAggregate[name]) {
                 const val = aggregator.aggregate(children, name, ctx);
                 if (data[name] !== val) {

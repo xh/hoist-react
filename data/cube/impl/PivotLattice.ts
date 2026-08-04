@@ -246,11 +246,11 @@ export function discoverPivotPaths(
  * totals-vs-cells relationship is structural rather than a naming convention.
  */
 export function pivotCellFieldName(
-    path: PivotPathSpec,
+    pathKey: string,
     valueFieldName: string,
     delimiter: string = PATH_DELIMITER
 ): string {
-    return path.key === '' ? valueFieldName : path.key + delimiter + valueFieldName;
+    return pathKey === '' ? valueFieldName : pathKey + delimiter + valueFieldName;
 }
 
 /**

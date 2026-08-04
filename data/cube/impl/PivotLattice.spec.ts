@@ -462,13 +462,13 @@ for (const s of SCENARIOS) {
         us = paths.find(p => p.label === 'US');
 
     if (root.key !== '') errs.push(`root key should be '', got "${root.key}"`);
-    if (pivotCellFieldName(root, 'pnl') !== 'pnl') {
+    if (pivotCellFieldName(root.key, 'pnl') !== 'pnl') {
         errs.push(
-            `root cell field should be the bare value field, got "${pivotCellFieldName(root, 'pnl')}"`
+            `root cell field should be the bare value field, got "${pivotCellFieldName(root.key, 'pnl')}"`
         );
     }
-    if (pivotCellFieldName(us, 'pnl') !== `US${PATH_DELIMITER}pnl`) {
-        errs.push(`got "${pivotCellFieldName(us, 'pnl')}"`);
+    if (pivotCellFieldName(us.key, 'pnl') !== `US${PATH_DELIMITER}pnl`) {
+        errs.push(`got "${pivotCellFieldName(us.key, 'pnl')}"`);
     }
     check('cell field naming: root path binds to the bare value field', errs);
 }
