@@ -14,6 +14,10 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* Grid columns newly added to the code are now initially hidden when column state is persisted to a
+  `ViewManagerModel` or `DashViewModel`, ensuring a software release does not add columns to views
+  users have curated and named. They remain available via the column chooser. Set the new
+  `GridModelPersistOptions.hideNewColumns` config to `false` to restore the prior behavior.
 
 ### 🎁 New Features
 
