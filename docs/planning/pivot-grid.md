@@ -3,9 +3,9 @@
 **Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
 in Toolbox (also off `develop`) for the harness and example pages.
 
-**Status:** phases 0 and 1 complete. Phase 2 underway: the pure lattice engine and its correctness
-suite have landed (`data/cube/impl/`), leaving the `data/cube` changes and `PivotView` itself. Phase 3
-can run in parallel; its `Store.setFields()` item is independent of both.
+**Status:** phases 0 and 1 complete. Phase 2 is functionally complete and verified correct, but does
+not yet clear its own gate - see [Result](#result--pivotview-measured-against-the-baseline) for the two
+remaining items. Phase 3 has not been started.
 
 **Goal:** promote a client-app `PivotGrid` component into hoist-react as a first-class framework
 component, with a pivot data layer that is efficient enough for ticking data.
@@ -573,23 +573,67 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 - [x] Lattice planning: the populated `(group, path)` set, CSR children, and the `parent` /
       `pivotParent` routes — group-axis decomposition above the innermost level, pivot-axis below it.
 - [x] Unit suite over both, mutation-tested. See [Verification vehicle](#verification-vehicle).
-- [ ] `View` / `BaseRow` / `Query` changes per
-      [Changes required in `data/cube`](#changes-required-in-datacube), with non-pivot behavior
-      provably unchanged.
-- [ ] `PivotQuery`, `PivotView`, `PivotPath`, `PivotCellRow`, and the result types. `PivotQuery` must
-      also reject `bucketSpecFn` + `includeLeaves` + pivots, per
-      [Interaction rules](#interaction-rules).
-- [ ] Cell projection onto group-row data, full-build and incremental, the latter driven off the
-      changed-rows set via each cell row's owning-group back-reference.
-- [ ] Aggregator coverage in the unit tier — `AverageStrict`, `SumStrict`, `Unique`, and `ChildCount`
-      over the lattice, on both group rows and cells, plus the three totals invariants.
-- [ ] Consider sharing `canAggregate` maps across cell rows of identical shape — one small object per
-      cell row is a meaningful fraction of pivot-layer heap at these counts.
-- [ ] Toolbox tier: full-build vs. reference and tick-then-compare equivalence against live `Cube`
-      data.
-- [ ] Benchmark against phase 0 baseline; confirm acceptance criteria including the revised build
-      targets.
+- [x] `View` / `BaseRow` / `Query` changes per
+      [Changes required in `data/cube`](#changes-required-in-datacube).
+- [x] `PivotQuery`, `PivotView`, `PivotPath`, `PivotCellRow`, and the result types, including the
+      `bucketSpecFn` + `includeLeaves` + pivots rejection per [Interaction rules](#interaction-rules).
+- [x] Cell projection onto group-row data, full-build and incremental. Exposed leaves also receive
+      their own path's value, so a drilled-down row is not blank across the pivot columns.
+- [x] Share `canAggregate` maps across cell rows of identical shape — one per pivot path.
+- [x] Toolbox tier: reference comparison, tick equivalence, and full-rebuild comparison. 74 checks,
+      ~567k values, worst relative drift 1e-13.
+- [x] Benchmark against phase 0 baseline — see [Result](#result--pivotview-measured-against-the-baseline).
+- [ ] **Close the drill-down build regression** — do not materialize single-leaf-path innermost cells.
+- [ ] **Restate the tick gate as a delta update**, per the Result section.
+- [ ] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount` on both
+      group rows and cells. The suite currently exercises `SUM` only, so aggregator-specific
+      `replace` behavior on the two-parent routing is unverified.
+- [ ] Investigate: Wide+Drill's tick did not complete after several minutes on a heap already loaded
+      by earlier profiles, and both drill profiles stalled the same way until a page reload. Could be
+      GC thrash from the benchmark itself rather than a pivot defect — but it is unexplained.
+- [ ] Non-pivot `View` behavior provably unchanged — the `data/cube` edits are mechanical and type-check
+      clean, but nothing yet exercises a plain `View` against its pre-change behavior.
 - [ ] Retire `PivotDataModel`.
+
+### Result — `PivotView` measured against the baseline
+
+Captured 2026-08-04, same workstation and harness data as the phase 0 baseline, via Admin › Tests ›
+Pivot View › Benchmark. `Build` is Cube load plus view creation, matching what
+`PivotDataModel.update()` did.
+
+| Profile       | Group rows | Cells | Build (base) |  Delta tick | Full tick (base) |
+| ------------- | ---------: | ----: | -----------: | ----------: | ---------------: |
+| Typical       |      2,211 | 15.9k |   166 (138)  |    **12.8** |        98.7 (128) |
+| Typical+Drill |     37,211 | 50.9k |   529 (279)  |    **12.1** |       102.4 (335) |
+| Heavy         |      4,213 | 85.8k |   814 (743)  |           - |       434 (836)   |
+| Heavy+Drill   |    104,213 |  286k | 2,496 (2485) |           - |      370 (3601)   |
+| Wide          |     31,637 |  269k | 1,388 (1370) |           - |      129 (1734)   |
+
+**The tick target is met — but only on the delta metric, and that distinction is the finding.**
+The baseline's "tick" resubmitted all 35k leaves, so ~95ms of it is `Store`-wide record diffing that
+no pivot implementation can influence. Measured that way the rewrite looks like a 1.3× win on
+Typical and the 30ms target is unreachable by construction. Submitting an explicit
+`{update: changed}` transaction isolates the pivot work: **12.8ms against the 30ms gate, and 12.1ms
+against Typical+Drill's 50ms** — and 10-13× reductions on the large profiles even on the full-array
+metric. **Restate the tick gate as a delta update**; the current wording measures the wrong thing.
+
+**The build target is missed, and Typical+Drill is a genuine ~1.9× regression** (529ms against a
+revised 290ms, and against the prototype's own 279ms). Typical misses marginally (166 vs 140), which
+is inside run-to-run noise of parity. Build is at parity or slightly better on Heavy and Wide, so the
+regression is specific to **a unique-per-leaf innermost grouping**: 35k of Typical+Drill's 51k cells
+are innermost cells holding a single leaf path, and each costs a `PivotCellRow`, a `data` object, an
+id string, and a `_rowCache` insert — where the prototype's dense Cube pass allocated no rows at all
+and only paid 298k cheap field-aggregations.
+
+Two allocation fixes were tried and are in place, but moved it far less than expected (577 → 562 →
+529ms): sorted arrays instead of a `Set` per group, and `canAggregate` shared per pivot path.
+
+**Next thing to try:** do not materialize a cell row for an innermost group whose cell holds exactly
+one leaf path — its value *is* the leaf's own, so it can be projected straight from the leaf and its
+parent cell can take the leaf as a child directly. That removes ~35k of the 51k cell rows on this
+profile and should close most of the gap. Until it does, the honest position is that the design wins
+decisively on ticking (the metric that actually failed) and on wide/heavy builds, and costs ~1.9× on
+drill-down builds.
 
 ## Phase 3 — PivotGridModel
 
@@ -713,6 +757,14 @@ so the corrected model hangs a pivot subtree off every node of the row hierarchy
 row-truncation item went away with it — cell rows are never in `children`. Build targets tightened
 per phase 0's own rule (Typical 250 → 140ms, Typical+Drill 750 → 290ms). Pick up at phase 2 and/or
 phase 3, which are parallelizable.
+
+**2026-08-04 — Phase 2 data layer working end to end.** `PivotView`, `PivotQuery`, `PivotPath`,
+`PivotCellRow` and the `data/cube` changes all landed and are verified against a reference in the
+Toolbox harness (74 checks, ~567k values). Benchmarked: see
+[Result](#result--pivotview-measured-against-the-baseline). Two headlines — the tick target is met but
+only once the metric excludes `Store`-wide record diffing, which the phase 0 wording did not; and
+drill-down builds regress ~1.9×, traced to per-cell-row allocation rather than to aggregation.
+Phase 3 not started. Pick up at the two bolded phase 2 items, then phase 3.
 
 **2026-08-04 — Phase 2 lattice engine.** Landed `data/cube/impl/` — the pure lattice module, the
 brute-force oracle, and a mutation-tested unit suite. Two corrections to the plan: the correctness
