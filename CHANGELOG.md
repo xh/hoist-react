@@ -25,46 +25,52 @@
 
 ### 🎁 New Features
 
-* Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
-  its raw source data object after parsing, reducing memory usage on large stores where
-  `StoreRecord.raw` is not needed. Not compatible with `reuseRecords: true`.
-* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
-  async iterable yielding raw records. Creates records incrementally without buffering
-  the complete raw dataset in memory, then installs them in a single transaction once the source
-  completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
-* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally.
-  Returns a `lines` async iterable of parsed records - the natural streaming source for
-  `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata record.
-  Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
-* Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
-  JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
-  values may also be shared across successive fetches of the same logical dataset, as identified
-  by a required app-provided key, per a configurable `retainMode`. Skip known high-cardinality
-  fields (e.g. UUID columns) via `excludeFields`.
-* Improved `Store` memory efficiency - record `data` objects now take one of two compact
-  representations, chosen automatically per record by how many fields hold non-default values: the
-  established sparse form for lightly-populated records, and a fixed shape cloned from a shared
-  per-Store template for more wide records. Avoids dropping into V8's memory-hungry "dictionary"
-  mode, substantially reducing per-record memory on stores with wide records.
-* Improved Cube `View` memory efficiency - `ViewRowData` rows are now plain objects cloned from a
-  shared per-View template, so all rows in a View share one compact, fixed shape. Substantially
-  reduces per-row memory and speeds up view builds, especially for queries with many fields.
-* Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
-  `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
-  per-View leaf data objects and speeding up view builds for aggregate-only views over large
-  datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
-* Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
-  parsed and owned elsewhere - recommended for stores connected to a Cube `View`, or loaded from an
-  endpoint returning data in its final client-side form. Records use the provider's row object as
-  their `data` by reference rather than re-parsing and copying it, collapsing the usual two per-row
-  objects to one and skipping the per-row parse on every load and update. Local modification APIs
-  (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly` config docs for the full
-  contract.
-* Enhanced `Store.reuseRecords` to also accept a version specification - a raw data property name
-  or a function deriving a version value - reusing the existing record whenever an incoming raw
-  object yields an unchanged version. Applies to both `loadData()` and `updateData()`, where
-  unchanged-version updates are dropped as no-ops. Recommended for stores connected to a Cube
-  `View` as `reuseRecords: 'cubeRowVersion'`.
+* Hoist v87 delivers a major round of performance work across `FetchService` and the `data` package, substantially
+  reducing memory footprint and load/update costs for apps working with large datasets. Records,
+  Cube `View` rows, and raw payloads all take leaner representations, joined by new opt-in configs
+  for zero-copy projection, version-based record reuse, and streaming loads:
+    * Improved `Store` memory efficiency - record `data` objects now take one of two compact
+      representations, chosen automatically per record by how many fields hold non-default values:
+      the established sparse form for lightly-populated records, and a fixed shape cloned from a
+      shared per-Store template for more wide records. Avoids dropping into V8's memory-hungry
+      "dictionary" mode, substantially reducing per-record memory on stores with wide records.
+    * Improved Cube `View` memory efficiency - `ViewRowData` rows are now plain objects cloned
+      from a shared per-View template, so all rows in a View share one compact, fixed shape.
+      Substantially reduces per-row memory and speeds up view builds, especially for queries with
+      many fields.
+    * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results
+      (neither `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube
+      records, eliminating per-View leaf data objects and speeding up view builds for
+      aggregate-only views over large datasets. Such views no longer publish a
+      `View.result.leafMap` - see Breaking Changes.
+    * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of
+      data parsed and owned elsewhere - recommended for stores connected to a Cube `View`, or
+      loaded from an endpoint returning data in its final client-side form. Records use the
+      provider's row object as their `data` by reference rather than re-parsing and copying it,
+      collapsing the usual two per-row objects to one and skipping the per-row parse on every
+      load and update. Local modification APIs (e.g. `modifyRecords`) throw in this mode - see
+      the `projectionOnly` config docs for the full contract.
+    * Enhanced `Store.reuseRecords` to also accept a version specification - a raw data property
+      name or a function deriving a version value - reusing the existing record whenever an
+      incoming raw object yields an unchanged version. Applies to both `loadData()` and
+      `updateData()`, where unchanged-version updates are dropped as no-ops. Recommended for
+      stores connected to a Cube `View` as `reuseRecords: 'cubeRowVersion'`.
+    * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's
+      reference to its raw source data object after parsing, reducing memory usage on large
+      stores where `StoreRecord.raw` is not needed. Not compatible with `reuseRecords: true`.
+    * Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync
+      or async iterable yielding raw records. Creates records incrementally without buffering the
+      complete raw dataset in memory, then installs them in a single transaction once the source
+      completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
+    * Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response
+      incrementally. Returns a `lines` async iterable of parsed records - the natural streaming
+      source for `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata
+      record. Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
+    * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within
+      large JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets.
+      Interned values may also be shared across successive fetches of the same logical dataset,
+      as identified by a required app-provided key, per a configurable `retainMode`. Skip known
+      high-cardinality fields (e.g. UUID columns) via `excludeFields`.
 
 ### 🐞 Bug Fixes
 
