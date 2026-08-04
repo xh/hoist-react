@@ -62,6 +62,9 @@ export class LogDisplayModel extends HoistModel {
     @bindable
     logRootPath: string;
 
+    // Line number to select on the next load
+    private pendingSelectRowNum: number = null;
+
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
     }
@@ -135,39 +138,26 @@ export class LogDisplayModel extends HoistModel {
         gridModel.agApi?.ensureNodeVisible(lastRecord);
     }
 
-    /**
-     * Clear any active filter and reload the log positioned around the given line, to show it in
-     * the context of its surrounding entries. The target line is re-selected once loaded.
-     */
-    viewSurroundingLines(rowNum: number) {
-        // Keep the target line within the loaded window when maxLines is small. A cleared maxLines
-        // input defers to the server's (much larger) default window, so a full lead-in is safe.
+    //---------------------------------
+    // Implementation
+    //---------------------------------
+    /** Clear any active filter and reload the log around the given line, re-selecting it. */
+    private viewSurroundingLines(rowNum: number) {
+        // Keep the target in the loaded window - a cleared maxLines defers to the server default.
         const {maxLines} = this,
-            /** Lines of context to show above the target line when viewing surrounding logs. */
-            SURROUNDING_LEAD_IN_LINES = 100,
-            leadIn = maxLines
-                ? Math.min(SURROUNDING_LEAD_IN_LINES, Math.floor((maxLines - 1) / 2))
-                : SURROUNDING_LEAD_IN_LINES;
+            WIN = 100,
+            leadIn = maxLines ? Math.min(WIN, Math.floor((maxLines - 1) / 2)) : WIN;
 
         this.pendingSelectRowNum = rowNum;
 
-        // Order matters: the `tail` reaction in the constructor resets startLine, so flip tail off
-        // *first* and do not wrap writes in an action - they must interleave with that
-        // reaction.
+        // The tail reaction resets startLine - flip tail off first, and not within an action.
         this.tail = false;
         this.pattern = '';
         this.startLine = Math.max(1, rowNum - leadIn);
 
-        // Load directly, as the writes above can all be no-ops - e.g. when re-running this on a
-        // line we have already centered. Debounced, so collapses with any reaction-driven load.
+        // Load directly, as the writes above can all be no-ops - debounce collapses any dupes.
         this.loadLog();
     }
-
-    //---------------------------------
-    // Implementation
-    //---------------------------------
-    /** Line number to select on the next load, set by {@link viewSurroundingLines}. */
-    private pendingSelectRowNum: number = null;
 
     private createGridModel() {
         return new GridModel({
@@ -240,7 +230,6 @@ export class LogDisplayModel extends HoistModel {
 
         const {pendingSelectRowNum} = this;
         if (pendingSelectRowNum != null) {
-            // Records are keyed by line number, so we can select the target line by its rowNum.
             this.pendingSelectRowNum = null;
             gridModel.selectAsync(pendingSelectRowNum, {ensureVisiblePosition: 'middle'});
         } else if (tailActive) {

@@ -52,10 +52,10 @@
 * Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
   active filter and reloads the log around the selected line, then re-selects it and centers it in
   the viewport - useful for examining the context around a hit found via filtering.
-* Added a `position` option to `GridModel.ensureRecordsVisibleAsync()` and
-  `ensureSelectionVisibleAsync()`, along with a matching `ensureVisiblePosition` option on
-  `selectAsync()`. Allows callers to request that a row be scrolled to the `top`, `middle`, or
-  `bottom` of the viewport, rather than the default of scrolling the minimum amount required.
+* Added a `position` option to `GridModel.ensureRecordsVisibleAsync()`,
+  `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
+  scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the
+  minimum amount required.
 
 ### 🐞 Bug Fixes
 

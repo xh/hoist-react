@@ -852,11 +852,7 @@ export class GridModel extends HoistModel {
              * visible if it is within a collapsed node or outside of the visible scroll window.
              */
             ensureVisible?: boolean;
-            /**
-             * Where to position the selection within the viewport when scrolling it into view.
-             * Default of null scrolls the minimum amount required. If multiple records are
-             * selected, applies to the first of them. Ignored if `ensureVisible` is false.
-             */
+            /** Position of the selection in the viewport - default null scrolls minimally. */
             ensureVisiblePosition?: GridScrollPosition;
             /** True (default) to clear previous selection (rather than add to it). */
             clearSelection?: boolean;
@@ -935,11 +931,7 @@ export class GridModel extends HoistModel {
      */
     async ensureSelectionVisibleAsync(
         opts: {
-            /**
-             * Where to position the selection within the viewport. Default of null scrolls the
-             * minimum amount required to bring it into view. If multiple records are selected,
-             * applies to the first of them.
-             */
+            /** Position of the selection in the viewport - default null scrolls minimally. */
             position?: GridScrollPosition;
         } = {}
     ) {
@@ -965,11 +957,7 @@ export class GridModel extends HoistModel {
     async ensureRecordsVisibleAsync(
         records: Some<StoreRecord>,
         opts: {
-            /**
-             * Where to position the record within the viewport. Default of null scrolls the
-             * minimum amount required to bring it into view. If multiple records are provided,
-             * applies to the first of them.
-             */
+            /** Position of the record in the viewport - default null scrolls minimally. */
             position?: GridScrollPosition;
         } = {}
     ) {
@@ -1014,9 +1002,7 @@ export class GridModel extends HoistModel {
         if (indexCount === 1) {
             agApi.ensureIndexVisible(indices[0], position);
         } else if (indexCount > 1) {
-            // Scroll to the last record, then the first - showing the start of the range and as
-            // much of the rest as will fit. Any requested position applies to the first record,
-            // as that call lands last and wins.
+            // Scroll to last then first to show the range start - position applies to the first.
             agApi.ensureIndexVisible(max(indices));
             agApi.ensureIndexVisible(min(indices), position);
         }

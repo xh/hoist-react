@@ -74,10 +74,7 @@ export type GridGroupSortFn = (
     }
 ) => number;
 
-/**
- * Where to position a row within the viewport when scrolling to make it visible.
- * Null (default) will scroll the minimum amount required to bring the row into view.
- */
+/** Position of a row in the viewport when scrolled into view - default null scrolls minimally. */
 export type GridScrollPosition = 'top' | 'middle' | 'bottom';
 
 /**
