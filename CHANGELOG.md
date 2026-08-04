@@ -44,8 +44,9 @@
     * Surfaces column descriptions via an on-demand info tooltip.
     * Supports toggling display of column groups and the Column Library, persisted as a
       browser-local user preference and live-synced across every chooser in the app.
-    * Protects pending edits in deferred-commit mode (`commitOnChange: false`) - an outside click no
-      longer dismisses the popover, and external column state changes prompt for resolution.
+    * Protects pending edits in deferred-commit mode (`commitOnChange: false`) - dismissing the
+      chooser with unsaved changes prompts before discarding them, as does an external column state
+      change.
 * Added `GridModel.isColumnHideable()` and `GridModel.isColumnMovable()` to report whether the user
   is permitted to hide or reorder a given column.
 * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
@@ -88,6 +89,8 @@
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
 * Optimized `GridModel.getColumn()` and `updateColumnState()` with indexed lookups of leaf columns
   and column state, replacing recursive tree walks and repeated linear scans.
+* `GridModel.setGroupBy()` now skips its write when the requested `colIds` match the current
+  `groupBy`, avoiding a redundant ag-Grid regroup and column-state reapply on every no-op call.
 * Field XSS protection now preserves the reference identity of string values that sanitization
   does not modify (the common case). Previously every parsed string value was replaced with a
   freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
