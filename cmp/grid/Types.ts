@@ -74,6 +74,9 @@ export type GridGroupSortFn = (
     }
 ) => number;
 
+/** Position of a row in the viewport when scrolled into view - default null scrolls minimally. */
+export type GridScrollPosition = 'top' | 'middle' | 'bottom';
+
 /**
  * Closure to generate CSS class names for a row.
  * @param record - the StoreRecord associated with the rendered row.
