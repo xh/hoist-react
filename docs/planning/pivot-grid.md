@@ -3,9 +3,9 @@
 **Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
 in Toolbox (also off `develop`) for the harness and example pages.
 
-**Status:** phases 0 and 1 complete. Nothing implemented yet beyond the imported prototype. Phases 2
-and 3 are the next work and can run in parallel; phase 3's `Store.setFields()` item is independent of
-both.
+**Status:** phases 0 and 1 complete. Phase 2 underway: the pure lattice engine and its correctness
+suite have landed (`data/cube/impl/`), leaving the `data/cube` changes and `PivotView` itself. Phase 3
+can run in parallel; its `Store.setFields()` item is independent of both.
 
 **Goal:** promote a client-app `PivotGrid` component into hoist-react as a first-class framework
 component, with a pivot data layer that is efficient enough for ticking data.
@@ -156,6 +156,12 @@ against the phase 0 profiles, alongside the dense figure the prototype pays:
 | Typical+Drill |        298k |           ~51k |  ~6×  |
 | Wide          |        3.0M |          ~100k |  ~30× |
 | Pathological  |       11.1M |          ~104k | ~107× |
+
+A synthetic run of the lattice module confirms Typical (15.0k cells against the ~16k estimate) but
+puts **Wide at ~205k, roughly 2× the estimate**. That run used uniformly random dimension values,
+which is the pessimistic bound — skew reduces the populated set — so the estimate may still hold for
+realistic data. Re-measure against the harness's own generator before treating either figure as
+settled; Wide is the profile where the cost argument is actually made.
 
 For Typical the populated set is essentially the dense set, because ~17 leaves per innermost group
 spread over 8 regions populate nearly every path. Typical's build win comes instead from not widening
@@ -353,6 +359,12 @@ materialized only where populated and read `null` elsewhere.
   is later omitted are harmless: its parent's cells already aggregate them.
 - `bucketSpecFn` — group axis only. A `BucketRow` is a legitimate visible row and therefore a group
   node that carries its own pivot subtree. Bucketing _within_ the pivot axis is not supported in v1.
+  **But a group node must decompose on exactly one axis**, and `bucketRows` can currently violate
+  that: with `includeLeaves` set it buckets leaves (`View.ts:458`), leaving the innermost aggregate
+  with a mix of `LeafRow` and `BucketRow` children. A mixed node gives a cell two update routes into
+  the same parent and double counts — worked through in the lattice module's rejection message, and
+  it is a genuine miscount, not a conservative refusal. `PivotQuery` must reject
+  `bucketSpecFn` + `includeLeaves` + non-empty `pivotDimensions` at construction.
 - `includeLeaves` / `provideLeaves` — supported and unchanged, which is a direct benefit of keeping
   pivots out of `dimensions`. Exposed leaves receive cell values for their own path only (their own
   value, `null` elsewhere); hidden leaves never do, as their data is a shared reference to Cube record
@@ -385,14 +397,53 @@ are presentation concerns and stay in the grid layer, which retires the prototyp
 `PivotField` / `PivotFieldSpec` (see the phase 3 cleanup item). `PivotValue` is replaced by
 `PivotPath`; the prototype's `cmp/pivotgrid` `PivotQuery` is replaced by the `data/cube` one.
 
+### Factoring: a pure lattice module under `PivotView`
+
+The pivot combinatorics live in `data/cube/impl/PivotLattice.ts`, a module with **no runtime
+framework dependency** — plain data and integer indices only. `PivotView` is the adapter that
+instantiates rows from its output and wires them into `View`'s lifecycle.
+
+The split is on stable-vs-churning, not just testability: the lattice math is finished once correct,
+while the `View` integration will churn through the perf work. Two rules keep the boundary real
+rather than nominal:
+
+- **Integer arrays in, integer arrays out.** Nothing crosses that isn't a number, a string, or a
+  typed array. If a `BaseRow` ever needs to cross it, the split has failed and folding the module
+  back into `PivotView` is the right call.
+- **No plan object per cell.** At 100k+ cells that allocation is exactly what the `canAggregate`
+  sharing item below is trying to claw back. Children are CSR-encoded (`childStart` / `childIdx`),
+  not arrays per cell.
+
+Module owns path discovery, key naming, the `(groupIdx, pathIdx)` lattice, and the update routing.
+`PivotView` owns `PivotCellRow` instantiation, `_rowCache` reuse, aggregation, projection onto row
+data, and store loading.
+
+Reuse outside `PivotView` is explicitly **not** a motivation — there is no second consumer, and
+designing an interface for a speculative one would widen it for nothing.
+
 ### Verification vehicle
 
-hoist-react has no unit test framework — the two `mcp/*.spec.ts` files are self-contained `tsx`
-drivers, and `data/cube` cannot be imported standalone without pulling in `XH` and the wider
-framework. So phase 2's correctness suite runs **in the Toolbox harness** as an in-app test panel
-alongside the phase 0 bench: seeded deterministic data, a brute-force reference pivot, and assertions
-over full-build vs. tick-then-compare equivalence. Standing up a real test framework in hoist-react
-is out of scope here.
+Two tiers, because hoist-react has no unit test framework and cannot get one cheaply — `data/cube`
+does not load outside a bundler. Two independent reasons, both verified: the `@xh/hoist/core` barrel
+reaches `XH` → `AppContainerModel` → the whole service layer, and Hoist's `@persist` reads
+`descriptor.initializer`, a **babel** legacy-decorator shape that esbuild/tsc do not emit. Anything
+importing `View` is therefore browser-only, and no amount of module stubbing fixes the decorator
+mismatch.
+
+- **Unit tier** — `npx tsx data/cube/impl/PivotLattice.spec.ts`, a self-contained exit-coded driver
+  in the style of `mcp/data/*.spec.ts`. Asserts the lattice against `PivotReference`, a brute-force
+  oracle computing each cell's leaf set from first principles. Covers the populated set, the
+  partition invariant down both axes, exactly-once propagation, path ordering, key injectivity, and
+  both guards. Aggregation is covered here too: the `Aggregator` classes import standalone under
+  `tsx` (no decorators, type-only framework imports) and run against duck-typed rows.
+- **Toolbox tier** — only what genuinely needs the framework: `PivotView`'s override wiring,
+  connected-store behavior, `paths` / `cellFields` identity stability as `PivotGridModel` observes
+  it, and the perf/heap gates.
+
+**Mutation-test any addition to the unit tier.** A green suite proves nothing on its own; the
+existing suite was validated by breaking the implementation six ways and confirming it caught them.
+The one mutant it missed was semantically equivalent, and chasing it surfaced a load-bearing
+invariant that had no assertion.
 
 ## Phase 0 — Baseline and harness
 
@@ -516,24 +567,26 @@ Complete. The contract is [Pivot data design](#pivot-data-design).
 
 Work to the [pivot data design](#pivot-data-design); it names the classes and members.
 
-- [ ] Brute-force reference pivot implementation, for test assertions only.
-- [ ] Failing tests, in the [Toolbox harness](#verification-vehicle), covering: multi-level pivots,
-      multi-measure, sparse/absent cells, null dimension values, every aggregator (especially
-      `AverageStrict`, `SumStrict`, `Unique`, and `ChildCount` on both group rows and cells), the
-      three totals invariants, and full-build vs. tick-then-compare equivalence.
+- [x] Brute-force reference pivot (`data/cube/impl/PivotReference.ts`), for test assertions only.
+- [x] Path discovery: sorted global path tree, `maxPivotPaths`, injective key escaping, and a path
+      index stamped per record so cell generation partitions by index rather than by rebuilt strings.
+- [x] Lattice planning: the populated `(group, path)` set, CSR children, and the `parent` /
+      `pivotParent` routes — group-axis decomposition above the innermost level, pivot-axis below it.
+- [x] Unit suite over both, mutation-tested. See [Verification vehicle](#verification-vehicle).
 - [ ] `View` / `BaseRow` / `Query` changes per
       [Changes required in `data/cube`](#changes-required-in-datacube), with non-pivot behavior
       provably unchanged.
-- [ ] `PivotQuery`, `PivotView`, `PivotPath`, `PivotCellRow`, and the result types.
-- [ ] Path discovery pre-pass: build the sorted global path tree, enforce `maxPivotPaths`, and stamp
-      each filtered record with its path index so cell generation partitions by index rather than by
-      rebuilt strings.
-- [ ] Cell generation: post-order walk of the final (post-bucketing) network, group-axis decomposition
-      above the innermost level, pivot-axis below it.
+- [ ] `PivotQuery`, `PivotView`, `PivotPath`, `PivotCellRow`, and the result types. `PivotQuery` must
+      also reject `bucketSpecFn` + `includeLeaves` + pivots, per
+      [Interaction rules](#interaction-rules).
 - [ ] Cell projection onto group-row data, full-build and incremental, the latter driven off the
       changed-rows set via each cell row's owning-group back-reference.
+- [ ] Aggregator coverage in the unit tier — `AverageStrict`, `SumStrict`, `Unique`, and `ChildCount`
+      over the lattice, on both group rows and cells, plus the three totals invariants.
 - [ ] Consider sharing `canAggregate` maps across cell rows of identical shape — one small object per
       cell row is a meaningful fraction of pivot-layer heap at these counts.
+- [ ] Toolbox tier: full-build vs. reference and tick-then-compare equivalence against live `Cube`
+      data.
 - [ ] Benchmark against phase 0 baseline; confirm acceptance criteria including the revised build
       targets.
 - [ ] Retire `PivotDataModel`.
@@ -660,6 +713,15 @@ so the corrected model hangs a pivot subtree off every node of the row hierarchy
 row-truncation item went away with it — cell rows are never in `children`. Build targets tightened
 per phase 0's own rule (Typical 250 → 140ms, Typical+Drill 750 → 290ms). Pick up at phase 2 and/or
 phase 3, which are parallelizable.
+
+**2026-08-04 — Phase 2 lattice engine.** Landed `data/cube/impl/` — the pure lattice module, the
+brute-force oracle, and a mutation-tested unit suite. Two corrections to the plan: the correctness
+suite is now a [two-tier arrangement](#verification-vehicle) rather than Toolbox-only, since the
+pivot combinatorics factor out cleanly and `data/cube`'s unloadability outside a bundler turns out to
+be a decorator-semantics problem that stubbing cannot fix; and a group node with both leaf and group
+children genuinely double counts, which `bucketSpecFn` + `includeLeaves` can produce today, so
+`PivotQuery` has to reject that combination. Also flagged the Wide cost estimate as possibly 2× low.
+Pick up at the `data/cube` mechanical changes.
 
 **2026-08-03 — Plan doc review.** No implementation. Rewrote this document against updated prose
 guidelines: collapsed facts repeated 3-5× to one home each, deleted the completed phase 0/1
