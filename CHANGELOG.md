@@ -49,13 +49,6 @@
   definitions - see the `useRawAsData` config docs for the full contract.
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
-
-### 🐞 Bug Fixes
-
-* Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
-  values for each dimension.
-
-### 🎁 New Features
 * Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
   active filter and reloads the log around the selected line, then re-selects it and centers it in
   the viewport - useful for examining the context around a hit found via filtering.
@@ -63,6 +56,11 @@
   `ensureSelectionVisibleAsync()`, along with a matching `ensureVisiblePosition` option on
   `selectAsync()`. Allows callers to request that a row be scrolled to the `top`, `middle`, or
   `bottom` of the viewport, rather than the default of scrolling the minimum amount required.
+
+### 🐞 Bug Fixes
+
+* Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
+  values for each dimension.
 
 ### ⚙️ Technical
 
