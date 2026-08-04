@@ -41,6 +41,19 @@ export interface ColumnState {
     pinned?: HSide;
 }
 
+/** Options for {@link GridModel.setColumnState}. */
+export interface ColumnStateOptions {
+    /**
+     * True to hide any columns missing from the provided state, regardless of their in-code
+     * `hidden` config. Default false, respecting that config.
+     *
+     * Columns configured with `hideable: false` or `excludeFromChooser: true` are never hidden by
+     * this option, as the app has indicated that they must be displayed and/or cannot be restored
+     * by the user.
+     */
+    hideNewColumns?: boolean;
+}
+
 /**
  * Comparator for custom grid group sorting, provided to GridModel.
  * @param groupAVal - first group value to be compared.
@@ -88,6 +101,23 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistSort?: boolean | PersistOptions;
     /** True (default) to include expanded level state or provide expanded level-specific PersistOptions.  */
     persistExpandToLevel?: boolean | PersistOptions;
+    /**
+     * True to force columns newly added to the code - and therefore missing from any previously
+     * persisted state - to be initially hidden, regardless of their in-code `hidden` config. False
+     * to respect that config, allowing new columns to appear automatically.
+     *
+     * Defaults to true when persisting to a user-curated, named view - i.e. a `ViewManagerModel`
+     * or `DashViewModel`, per the resolved `persistColumns` options - as a release should not add
+     * columns to views users have deliberately composed. Defaults to false for all other
+     * providers, where state records a user's last-used layout and new columns aid discovery of
+     * newly released data. The in-code default view of a `ViewManagerModel` always follows the
+     * code - set this config to true to force-hide new columns there as well.
+     *
+     * Affects initial visibility only - new columns are always added to state and remain available
+     * via the column chooser. Columns with `hideable: false` or `excludeFromChooser: true` are
+     * never force-hidden, as the app requires them shown and/or users could not restore them.
+     */
+    hideNewColumns?: boolean;
 }
 
 /**
