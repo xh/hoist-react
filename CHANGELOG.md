@@ -71,6 +71,8 @@
       Interned values may also be shared across successive fetches of the same logical dataset,
       as identified by a required app-provided key, per a configurable `retainMode`. Skip known
       high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+    * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
+      content is controlled by the new `--xh-badge-gap` CSS variable.
 
 ### 🐞 Bug Fixes
 
