@@ -114,6 +114,7 @@ import {managedRenderer} from './impl/Utils';
 import {
     ColChooserConfig,
     ColumnState,
+    ColumnStateOptions,
     GridModelPersistOptions,
     GridScrollPosition,
     GroupRowRenderer,
@@ -1280,6 +1281,15 @@ export class GridModel extends HoistModel {
         this.store.clear();
     }
 
+    /**
+     * Replace the columns for this grid, rebuilding all `Column` instances from the configs
+     * provided.
+     *
+     * Note this resets all column state - visibility, width, order, and pinning - to the defaults
+     * specified by the new configs. For a grid with persistence enabled, that reset is itself
+     * persisted, discarding any state the user had saved. Use {@link setColumnState} or
+     * {@link updateColumnState} to change how the *existing* columns are displayed.
+     */
     @action
     setColumns(colConfigs: ColumnOrGroupSpec[]) {
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
@@ -1291,8 +1301,15 @@ export class GridModel extends HoistModel {
         this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
     }
 
-    setColumnState(colState: ColumnState[]) {
-        this.columnState = this.cleanColumnState(colState);
+    /**
+     * Replace the current column state wholesale with the state provided.
+     *
+     * Note that any columns missing from `colState` will be restored to their in-code default
+     * state, or hidden if `opts.hideNewColumns` is set - this method does not patch the existing
+     * state. Use {@link updateColumnState} to apply targeted changes to particular columns.
+     */
+    setColumnState(colState: ColumnState[], opts?: ColumnStateOptions) {
+        this.columnState = this.cleanColumnState(colState, opts);
     }
 
     showColChooser() {
@@ -1830,7 +1847,7 @@ export class GridModel extends HoistModel {
         );
     }
 
-    private cleanColumnState(columnState) {
+    private cleanColumnState(columnState, opts?: ColumnStateOptions) {
         const gridCols = this.getLeafColumns();
 
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
@@ -1841,7 +1858,15 @@ export class GridModel extends HoistModel {
         // Insert these columns in position based on the index at which they are defined.
         gridCols.forEach((col, idx) => {
             if (!find(ret, {colId: col.colId})) {
-                ret.splice(idx, 0, this.getDefaultStateForColumn(col));
+                const state = this.getDefaultStateForColumn(col);
+
+                // Hide new columns if so requested - but never those the app requires to be shown,
+                // or that a user could not restore for themselves via the column chooser.
+                if (opts?.hideNewColumns && col.hideable && !col.excludeFromChooser) {
+                    state.hidden = true;
+                }
+
+                ret.splice(idx, 0, state);
             }
         });
 

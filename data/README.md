@@ -101,6 +101,8 @@ const store = new Store({
 | `loadRootAsSummary` | `boolean` | `false` | Treat root node as summary record                                                      |
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
 | `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
+| `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
+| `useRawAsData` | `boolean` | `false` | Use each raw object *as* its record's `data`, skipping the parse/copy (memory)        |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
@@ -145,6 +147,19 @@ store.updateData({
     remove: [2]
 });
 ```
+
+**`loadDataAsync(rawData)`** - Streaming counterpart to `loadData()`. Accepts a sync or async
+iterable yielding raw records, creating records incrementally
+without buffering the complete raw dataset in memory - useful for very large datasets streamed
+from the server. Does not accept summary data (an aggregate cannot precede its stream) - install
+via `updateData({rawSummaryData})` after loading. Pair with `XH.fetchNdjson()` for NDJSON:
+
+```typescript
+await store.loadDataAsync(XH.fetchNdjson({url: 'myRows'}).lines);
+```
+
+The Store updates in a single transaction once the source completes, and remains unchanged if
+the source throws.
 
 ### Local Modifications
 

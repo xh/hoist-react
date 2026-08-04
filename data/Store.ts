@@ -6,7 +6,7 @@
  */
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
-import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {AnyIterable, HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
 import {
     Field,
     FieldSpec,
@@ -23,7 +23,7 @@ import {
     ValidationResult
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -147,6 +147,32 @@ export interface StoreConfig {
     reuseRecords?: boolean;
 
     /**
+     * True (default) to have each StoreRecord retain a reference to the raw data object from
+     * which it was created, exposed as `StoreRecord.raw`. May be set to false to reduce memory
+     * usage on large stores - raw data objects are then eligible for garbage collection after
+     * parsing, and `StoreRecord.raw` will be null.
+     *
+     * Not compatible with `reuseRecords`, which requires retained raw data for its
+     * reference-identity checks.
+     */
+    retainRaw?: boolean;
+
+    /**
+     * True to use each incoming raw object *as* its record's `data`, by reference, rather than
+     * parsing and copying it. A zero-copy mode for already-parsed data - e.g. a connected Cube
+     * {@link View}, or a server endpoint returning data in its final client-side form.
+     *
+     * Raw data must already match what the Store's Fields would parse - `type`, `parseVal`, and
+     * `defaultValue` are not applied. The Store never modifies or freezes raw objects (regardless
+     * of `freezeData`); the provider may mutate rows in place but must then publish via
+     * `updateData()`, as `loadData()` would skip reference-equal objects as unchanged.
+     *
+     * `data` will carry every key on the raw object, not just declared Fields. Not compatible
+     * with `processRawData` or `reuseRecords`. Default false.
+     */
+    useRawAsData?: boolean;
+
+    /**
      * Set to true to always validate all uncommitted records on every change to
      * uncommitted records (add, modify, or remove). Default false.
      */
@@ -208,10 +234,10 @@ export interface ChildRawData {
     parentId: string;
 
     /**
-     * Data for the child records to be added. Can include a `children` property to be processed
+     * Data for the child record to be added. Can include a `children` property to be processed
      * into new (grand)child records.
      */
-    rawData: PlainObject[];
+    rawData: PlainObject;
 }
 
 export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
@@ -269,6 +295,8 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     reuseRecords: boolean;
+    retainRaw: boolean;
+    useRawAsData: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -325,12 +353,27 @@ export class Store
         freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
         reuseRecords = false,
+        retainRaw = true,
+        useRawAsData = false,
         validationIsComplex = false,
         experimental,
         data
     }: StoreConfig) {
         super();
         makeObservable(this);
+        throwIf(
+            reuseRecords && !retainRaw,
+            'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
+        );
+        throwIf(
+            useRawAsData && processRawData,
+            'Store.useRawAsData cannot be used with processRawData.'
+        );
+        throwIf(
+            useRawAsData && reuseRecords,
+            'Store.useRawAsData cannot be used with reuseRecords.'
+        );
+
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
@@ -343,6 +386,8 @@ export class Store
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
+        this.retainRaw = retainRaw;
+        this.useRawAsData = useRawAsData;
         this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
@@ -404,6 +449,49 @@ export class Store
         this.rebuildFiltered();
 
         this.lastLoaded = this.lastUpdated = Date.now();
+    }
+
+    /**
+     * Load a new and complete dataset from a streaming source, replacing any/all pre-existing
+     * Records as needed - the streaming counterpart to {@link loadData}.
+     *
+     * Use to load very large datasets without buffering the complete raw dataset in a single
+     * array - e.g. rows streamed incrementally from the server. The source may be a sync or
+     * async iterable yielding individual raw records - see {@link FetchService.fetchNdjson}
+     * for the natural source when streaming NDJSON, e.g.
+     * `store.loadDataAsync(XH.fetchNdjson({url}).lines)`.
+     *
+     * The Store is not modified until the source has been fully consumed - all records are then
+     * installed in a single observable transaction, exactly as with `loadData()`. If the source
+     * throws, the Store remains unchanged.
+     *
+     * Note this method does not accept summary data - a summary is an aggregate, unavailable
+     * until a stream completes. Any pre-existing summary records are cleared. Install summary
+     * data via `updateData({rawSummaryData})` after loading, if desired. Not supported for
+     * stores with `loadRootAsSummary` - such payloads nest all row data within a single root
+     * node and cannot be streamed.
+     *
+     * @param rawData - iterable yielding raw records.
+     */
+    async loadDataAsync(rawData: AnyIterable<PlainObject>): Promise<void> {
+        throwIf(
+            this.loadRootAsSummary,
+            'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
+        );
+
+        const recordMap = new Map<StoreRecordId, StoreRecord>(),
+            summaryIds = new Set<StoreRecordId>();
+
+        for await (const raw of rawData) {
+            this.createRecordDeep(raw, null, recordMap, summaryIds);
+        }
+
+        runInAction(() => {
+            this.summaryRecords = null;
+            this._committed = this._current = this._committed.withNewRecords(recordMap);
+            this.rebuildFiltered();
+            this.lastLoaded = this.lastUpdated = Date.now();
+        });
     }
 
     /**
@@ -482,9 +570,9 @@ export class Store
                 if (isChildRawDataObject(it)) {
                     const {rawData, parentId} = it,
                         parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
-                    this.createRecords([rawData], parent, addRecs);
+                    this.createRecordDeep(rawData, parent, addRecs);
                 } else {
-                    this.createRecords([it], null, addRecs);
+                    this.createRecordDeep(it, null, addRecs);
                 }
             });
         }
@@ -1136,6 +1224,20 @@ export class Store
     ): StoreRecord {
         const id = this.idSpec(raw);
 
+        // Zero-copy - use the raw object as `data` by reference, with no parsing, no data.id
+        // write, and no freeze. The Store does not own this object - see StoreConfig.useRawAsData.
+        if (this.useRawAsData) {
+            return new StoreRecord({
+                id,
+                store: this,
+                raw,
+                data: raw,
+                committedData: raw,
+                parent,
+                isSummary
+            });
+        }
+
         // Potentially re-use existing record if raw data is reference equal and tree path identical
         if (this.reuseRecords) {
             const cached = this._committed?.recordMap.get(id);
@@ -1144,7 +1246,7 @@ export class Store
             }
         }
 
-        const {processRawData} = this;
+        const {processRawData, retainRaw} = this;
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
@@ -1158,7 +1260,7 @@ export class Store
         const ret = new StoreRecord({
             id,
             store: this,
-            raw,
+            raw: retainRaw ? raw : null,
             data,
             committedData: data,
             parent,
@@ -1177,24 +1279,31 @@ export class Store
         recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
         summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
     ) {
-        const {loadTreeData, loadTreeDataFrom} = this;
+        rawData.forEach(raw => this.createRecordDeep(raw, parent, recordMap, summaryRecordIds));
+        return recordMap;
+    }
 
-        rawData.forEach(raw => {
-            const rec = this.createRecord(raw, parent),
-                {id} = rec;
+    // Create a record - and recursively records for its tree children - installing all in recordMap.
+    private createRecordDeep(
+        raw: PlainObject,
+        parent: StoreRecord,
+        recordMap: Map<StoreRecordId, StoreRecord>,
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+    ) {
+        const rec = this.createRecord(raw, parent),
+            {id} = rec;
 
-            throwIf(
-                recordMap.has(id) || summaryRecordIds.has(id),
+        if (recordMap.has(id) || summaryRecordIds.has(id)) {
+            throw XH.exception(
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
+        }
 
-            recordMap.set(id, rec);
+        recordMap.set(id, rec);
 
-            if (loadTreeData && raw[loadTreeDataFrom]) {
-                this.createRecords(raw[loadTreeDataFrom], rec, recordMap, summaryRecordIds);
-            }
-        });
-        return recordMap;
+        if (this.loadTreeData && raw[this.loadTreeDataFrom]) {
+            this.createRecords(raw[this.loadTreeDataFrom], rec, recordMap, summaryRecordIds);
+        }
     }
 
     private get summaryRecordIds(): Set<StoreRecordId> {
@@ -1207,15 +1316,15 @@ export class Store
 
         // b) apply parsed data as needed.
         const {_fieldMap} = this;
-        forIn(data, (raw, name) => {
+        for (const name in data) {
             const field = _fieldMap.get(name);
             if (field) {
-                const val = field.parseVal(raw);
+                const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
                     ret[name] = val;
                 }
             }
-        });
+        }
 
         return ret;
     }
@@ -1228,17 +1337,17 @@ export class Store
         Object.assign(ret, data);
 
         // b) apply changes
-        forIn(update, (raw, name) => {
+        for (const name in update) {
             const field = _fieldMap.get(name);
             if (field) {
-                const val = field.parseVal(raw);
+                const val = field.parseVal(update[name]);
                 if (val !== field.defaultValue) {
                     ret[name] = val;
                 } else {
                     delete ret[name];
                 }
             }
-        });
+        }
 
         return ret;
     }
@@ -1290,16 +1399,6 @@ export class Store
             ret.finalize();
             return ret;
         });
-    }
-}
-
-//---------------------------------------------------------------------
-// Iterate over the properties of a raw data/update  object.
-// Does *not* do ownProperty check, faster than lodash forIn/forOwn
-//-------------------------------------------------------------------
-function forIn(obj, fn) {
-    for (let key in obj) {
-        fn(obj[key], key);
     }
 }
 

@@ -225,6 +225,11 @@ addReaction({
 });
 ```
 
+Note that `leafMap` is populated only when the query sets `includeLeaves` or `provideLeaves`. Views
+that expose no leaves hold them as zero-copy references to the source `Cube` record data - a
+significant memory and build-time win on large datasets, but not safe to publish. Read source
+records from `cube.store` directly if you need them.
+
 **Update triggers:** View data updates when either:
 - The underlying Cube data changes (requires `connect: true`)
 - The `view.query` is modified via `view.updateQuery()`

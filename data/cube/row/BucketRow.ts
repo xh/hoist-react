@@ -9,6 +9,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {BaseRow} from './BaseRow';
 import {BucketSpec} from '../BucketSpec';
 import {View} from '../View';
+import {ViewRowData} from '../ViewRowData';
 
 /**
  *  Row within a dataset produced by a Cube / View representing aggregated data on a dimension that
@@ -18,6 +19,9 @@ import {View} from '../View';
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class BucketRow extends BaseRow {
+    // Bucket rows always construct a full ViewRowData.
+    declare data: ViewRowData;
+
     override get isBucket() {
         return true;
     }
@@ -35,6 +39,7 @@ export class BucketRow extends BaseRow {
         super(view, id);
 
         this.bucketSpec = bucketSpec;
+        this.data = new ViewRowData(id);
         this.data.cubeRowType = 'bucket';
         this.data.cubeLabel = bucketSpec.labelFn(bucketVal);
         this.data.cubeDimension = bucketSpec.name;

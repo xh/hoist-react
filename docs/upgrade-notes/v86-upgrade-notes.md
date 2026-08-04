@@ -75,12 +75,12 @@ After:
 "@xh/hoist-dev-utils": "13.x",   // in devDependencies
 ```
 
-> **Strongly recommended: pick up `@xh/hoist-dev-utils` 13.0.1.** v86 does not strictly require
-> v13 - hoist-react itself still runs on v12 - but a Hoist major upgrade is the natural time to
-> refresh build tooling, and 13.0.1 ships a fix worth taking: a `'process.env': '{}'` fallback in
-> the Webpack `DefinePlugin` that resolves a runtime crash in `DashCanvas` drag/resize (introduced
-> upstream by `react-draggable` 4.6.0, a transitive dep of `react-grid-layout`). The `13.x` range
-> resolves to 13.0.1 on a fresh install; if your lockfile pins an older `13.0.0`, update it.
+> **Pick up `@xh/hoist-dev-utils` 13.0.1 specifically.** v86 moves hoist-react's own
+> `hoist-dev-utils` devDependency from `12.x` to `13.x`, and apps should follow. Within the `13.x`
+> range, 13.0.1 ships a fix worth taking: a `'process.env': '{}'` fallback in the Webpack
+> `DefinePlugin` that resolves a runtime crash in `DashCanvas` drag/resize (introduced upstream by
+> `react-draggable` 4.6.0, a transitive dep of `react-grid-layout`). The `13.x` range resolves to
+> 13.0.1 on a fresh install; if your lockfile pins an older `13.0.0`, update it.
 >
 > v13's one breaking change is minor or N/A for most apps: `.md` imports now resolve to the file's
 > raw **text content** rather than a URL. This matches the `*.md` module declaration hoist-react
@@ -436,10 +436,10 @@ argument**.
 > `XH.fetchJson({url, loadSpec})`). Every such call now logs a deprecation warning. Migrate by
 > passing the `CallContext` as the fetch method's second argument instead.
 
-> **Note on v85 churn:** the v85 upgrade introduced `FetchOptions.span` and a
-> `HoistBase.span().run()` form. In v86 those are superseded - `HoistBase.span()` is replaced by
-> `runner().span()`, and `span` / `loadSpec` move off `FetchOptions` onto the `CallContext`
-> argument. If you adopted the v85 pattern, migrate now to avoid the v88 removal.
+> **Note on v85 churn:** the v85 upgrade introduced `FetchOptions.span` and promoted
+> `HoistBase.withSpan()` for wrapping init work. In v86 both are superseded - `withSpan()` is
+> replaced by the `runner()` chain, and `span` / `loadSpec` move off `FetchOptions` onto the
+> `CallContext` argument. If you adopted the v85 pattern, migrate now to avoid the v88 removal.
 
 **Find affected files:**
 ```bash

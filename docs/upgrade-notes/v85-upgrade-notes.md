@@ -120,9 +120,11 @@ Repeat for every `AppModel` in your project — typically one per client platfor
 
 ### 3. Update `XH.installServicesAsync()` Call Sites
 
-The spread-args form of `XH.installServicesAsync()` is no longer accepted. All call sites must
-pass an array of service classes plus the current phase's `InitContext`. The `ctx` comes from the
-enclosing `initAsync(ctx)` parameter.
+The spread-args form of `XH.installServicesAsync()` is no longer accepted - the signature is now
+`(serviceClasses: Some<HoistServiceClass>, ctx: InitContext)`. All call sites must pass the current
+phase's `InitContext` as a second argument, and any site installing more than one service must
+collect them into an array. (A single class still works unwrapped, but the array form shown below is
+consistent and safe.) The `ctx` comes from the enclosing `initAsync(ctx)` parameter.
 
 **Find affected files:**
 ```bash
@@ -192,9 +194,10 @@ children of the app load.
 
 #### 5a. Pass `ctx.span` to init-time `XH.fetchJson()` / `XH.postJson()` calls
 
-`FetchOptions.span` accepts an existing `Span`, a `SpanConfig` object, or simply a string name
-(v84 addition). When initializing a service, set `span` on the fetch call so the request is
-traced as a child of the service's init span.
+`FetchOptions.span` accepts a `Span` instance to serve as the parent for the request's own fetch
+span. (v84 briefly widened this to also accept a `SpanConfig` or string name; v85 narrows it back
+to `Span` only, so pass an actual span here.) When initializing a service, set `span` on the fetch
+call so the request is traced as a child of the service's init span.
 
 Before:
 ```typescript
@@ -212,20 +215,23 @@ override async initAsync(ctx: InitContext) {
 }
 ```
 
-After (named child span wrapping a group of calls):
+After (named child span wrapping a group of calls, via `HoistBase.withSpan()`):
 ```typescript
 override async initAsync(ctx: InitContext) {
-    await this.span({name: 'loadPortfolioRefData', parent: ctx.span}).run(async () => {
-        this.lookups = await XH.fetchJson({url: 'portfolio/lookups'});
-        this.symbols = await XH.fetchJson({url: 'portfolio/symbols'});
-    });
+    await this.withSpan(
+        {name: 'loadPortfolioRefData', parent: ctx.span, caller: this},
+        async span => {
+            this.lookups = await XH.fetchJson({url: 'portfolio/lookups', span});
+            this.symbols = await XH.fetchJson({url: 'portfolio/symbols', span});
+        }
+    );
 }
 ```
 
-The `span().run()` form is useful when init does several related calls — the wrapper span
-rolls them up into one phase in the timeline, and individual fetches nest beneath it
-automatically via the `FetchService` span. `HoistBase.span()` auto-populates `caller`
-with `this`, so the emitted span correctly carries `code.namespace`.
+The `withSpan()` form is useful when init does several related calls — the wrapper span rolls them
+up into one phase in the timeline. Note that spans do **not** propagate ambiently: pass the span
+supplied to the callback down to each fetch (as above) for the individual requests to nest beneath
+it. Set `caller: this` so the emitted span carries `code.namespace`.
 
 #### 5b. Pass `ctx.span` through to `AppModel` initialization work
 
@@ -249,43 +255,47 @@ override async initAsync(ctx: InitContext) {
     await this.lookupService.loadAsync({span: ctx.span});
 
     // Or wrap several related calls in a named child span
-    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async span => {
-        await this.eventService.loadAsync({span});
-    });
+    await this.withSpan(
+        {name: 'loadInitialClientData', parent: ctx.span, caller: this},
+        async span => {
+            await this.eventService.loadAsync({span});
+        }
+    );
 }
 ```
 
 #### Reference: how built-in Hoist services use `InitContext`
 
-The built-in services are the canonical examples. A few patterns worth noting:
+A few patterns worth noting from the built-in services:
 
-- **`ConfigService`** passes a named span with an explicit parent:
-  ```typescript
-  await XH.fetchJson({
-      url: 'xh/getConfig',
-      span: {name: 'xh.client.config.get', parent: ctx.span, caller: this}
-  });
-  ```
-
-- **`EnvironmentService`** passes `ctx.span` directly to name the fetch span after the HTTP
-  method:
+- **`EnvironmentService`** passes `ctx.span` directly as the parent of the fetch's own span:
   ```typescript
   await XH.fetchJson({url: 'xh/environment', span: ctx.span});
   ```
 
-- **`PrefService`** threads `ctx.span` into a private helper that then creates a named child
-  span — a good pattern when init delegates to an internal method:
+- **`PrefService`** threads `ctx.span` into a private helper — a good pattern when init delegates
+  to an internal method:
   ```typescript
   override async initAsync(ctx: InitContext) {
       return this.loadPrefsAsync(ctx.span);
   }
   private async loadPrefsAsync(span: Span) {
-      await XH.fetchJson({
-          url: 'xh/getPrefs',
-          span: {name: 'xh.client.prefs.get', parent: span, caller: this}
-      });
+      await XH.fetchJson({url: 'xh/getPrefs', span});
   }
   ```
+
+- To emit a **named** child span around a fetch, wrap it with `withSpan()`:
+  ```typescript
+  await this.withSpan(
+      {name: 'loadRefData', parent: ctx.span, caller: this},
+      span => XH.fetchJson({url: 'portfolio/refData', span})
+  );
+  ```
+
+> **Note:** `ConfigService` and `PrefService` do this naming via `runner().newSpan(...)` chains
+> rather than `withSpan()`. That `Runner` API is marked `@internal` and is an experimental beta
+> feature as of v85 — apps should use `withSpan()` and `FetchOptions.span` instead. (`Runner`
+> becomes the recommended public API in v86; see the v86 upgrade notes.)
 
 For application spans, prefer plain descriptive names (e.g. `loadPortfolioRefData`) — the
 `xh.*` naming convention is reserved for framework-owned spans.
@@ -357,4 +367,4 @@ After completing all steps:
 - [`/svc/README.md`](../../svc/README.md) — reference for `TraceService`, `FetchService`, and the
   `FetchOptions.span` API used in Step 5.
 - [`/core/README.md`](../../core/README.md) — reference for `HoistService`, `HoistAppModel`, and
-  the `HoistBase.span()` builder used in Step 5.
+  the `HoistBase.withSpan()` helper used in Step 5.
