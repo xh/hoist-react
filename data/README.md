@@ -100,7 +100,7 @@ const store = new Store({
 | `loadTreeDataFrom` | `string` | `'children'` | Property containing child records                                                      |
 | `loadRootAsSummary` | `boolean` | `false` | Treat root node as summary record                                                      |
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
-| `reuseRecords` | `boolean` | `false` | Cache records by ID and raw reference (performance)                                    |
+| `reuseRecords` | `boolean\|string\|fn` | `false` | Reuse records when raw data yields an unchanged version (performance)                  |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
 | `projectionOnly` | `boolean` | `false` | Read-only projection of data parsed elsewhere - adopts raw objects as record `data`. Recommended for View-connected stores |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
@@ -780,15 +780,29 @@ record1 === record3;  // false - new instance with updated data
 
 This preserves ag-Grid row state (expansion, selection) for unchanged records across data refreshes.
 
-**Optimization with `reuseRecords`:** For large datasets with immutable raw data objects, set
-`reuseRecords: true` to skip the fieldwise comparison. Records are reused when the raw data
-object itself is reference-identical, avoiding equality checks and record creation overhead:
+**Optimization with `reuseRecords`:** For large datasets whose provider can cheaply identify
+unchanged records, set `reuseRecords` to derive a *version* from each incoming raw object,
+snapshotted on the record when built. Records are reused when a later raw object yields an equal
+version, skipping parsing, comparison, and record creation for each hit. Applies to `updateData()`
+as well, where unchanged-version updates are dropped as no-ops. `loadData()` misses still fall
+back to the standard fieldwise comparison:
 
 ```typescript
 const store = new Store({
-    reuseRecords: true  // Use raw data identity instead of fieldwise comparison
+    reuseRecords: true  // version is the raw object itself - requires stable, immutable raws
+});
+
+const store = new Store({
+    reuseRecords: 'lastUpdated' // version is a raw property, e.g. a server-provided stamp
+});
+
+const store = new Store({
+    reuseRecords: raw => [raw.type, raw.seq] // or derived - compared via deep equality
 });
 ```
+
+For stores connected to a Cube `View`, use `reuseRecords: 'cubeRowVersion'` - a stamp the View
+maintains on every row it publishes.
 
 ### Tuning Memory for Large Datasets
 
@@ -797,7 +811,7 @@ memory. They stack, and both are opt-in:
 
 | Knob | What it does | When to use |
 |------|--------------|-------------|
-| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords` |
+| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords: true` |
 | `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Your data has many repeated string values (categories, statuses, names) |
 
 Record `data` objects themselves are built for memory efficiency out of the box, with a
@@ -822,13 +836,18 @@ Transform data before it enters the Store:
 ```typescript
 const store = new Store({
     fields: ['fullName', 'salary'],
-    processRawData: raw => ({
-        ...raw,
-        fullName: `${raw.firstName} ${raw.lastName}`,
-        salary: raw.salary / 100  // Convert cents to dollars
-    })
+    processRawData: raw => {
+        raw.fullName = `${raw.firstName} ${raw.lastName}`;
+        raw.salary = raw.salary / 100; // Convert cents to dollars
+        return raw;
+    }
 });
 ```
+
+For efficiency, prefer modifying and returning the raw object in place (as above) - typically the
+raw data is transient and there is no need to allocate a clone. If the app does cache, share, or
+otherwise re-use the raw data, be careful to return a modified clone instead. In-place edits will
+also be visible on `StoreRecord.raw`.
 
 ### Composite or Alternate IDs with `idSpec`
 

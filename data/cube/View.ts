@@ -142,6 +142,8 @@ export class View
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     private _bucketDependentFields = new Set<string>();
     private _rowDataTemplate: ViewRowData = null;
+    // Monotonic source for cubeRowVersion stamps - safe-integer headroom spans centuries of use.
+    private _rowVersion = 0;
     _canAggregateTemplate: PlainObject = null;
     _aggContext: AggregationContext = null;
     _rowCache: Map<string, BaseRow> = null;
@@ -324,7 +326,7 @@ export class View
      * @internal
      */
     newRowData(id: string): ViewRowData {
-        return {...this._rowDataTemplate, id};
+        return {...this._rowDataTemplate, id, cubeRowVersion: ++this._rowVersion};
     }
 
     // Templates depend on the query's field set - rebuilt on any query change.
@@ -337,6 +339,7 @@ export class View
             cubeBuckets: null,
             children: null,
             isCubeLeaf: false,
+            cubeRowVersion: null,
             _cubeLeafChildren: null
         };
         const canAggregate: PlainObject = {};
@@ -369,6 +372,8 @@ export class View
             const leaf = _leafMap.get(rec.id);
             leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
+
+        updatedRowDatas.forEach(rowData => (rowData.cubeRowVersion = ++this._rowVersion));
 
         this.createAggregationContext();
 
@@ -619,10 +624,10 @@ export class View
     private parseStores(stores: Some<Store>): Store[] {
         const ret = castArray(stores);
 
-        // Views mutate the rows they feed to connected stores  -- `reuseRecords` not appropriate
+        // Views mutate the rows, so reference identity cannot signal 'unchanged'.
         throwIf(
-            ret.some(s => s.reuseRecords),
-            'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
+            ret.some(s => s.reuseRecords === true),
+            "Store.reuseRecords: true cannot be used on a Store connected to a Cube View - configure `reuseRecords: 'cubeRowVersion'` instead."
         );
 
         throwIf(
@@ -631,10 +636,16 @@ export class View
             'Store.idEncodesTreePath cannot be used on a Store that is connected to a Cube with a `bucketSpecFn` or `omitFn`'
         );
 
-        // View rows are already parsed and owned by this View - recommend adopting them directly.
         if (ret.some(s => !s.projectionOnly && !s.processRawData)) {
             this.logDebug(
                 'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. See StoreConfig.projectionOnly.'
+            );
+        }
+
+        // Views re-publish unchanged row objects across many updates - recommend version reuse.
+        if (ret.some(s => !s.reuseRecords)) {
+            this.logDebug(
+                "Connected store(s) do not set `reuseRecords: 'cubeRowVersion'` - recommended to skip record rebuilds when this View republishes unchanged rows. See StoreConfig.reuseRecords."
             );
         }
 

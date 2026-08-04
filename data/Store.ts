@@ -102,9 +102,11 @@ export interface StoreConfig {
     data?: PlainObject[];
 
     /**
-     * Function to run on each individual data object presented to `loadData()` prior to creating
-     * a `StoreRecord` from that object. This function must return an object, cloning the original
-     * object if edits are necessary.
+     * Function to pre-process individual data objects presented to `loadData()` prior to creating
+     * a `StoreRecord` from that object. For efficiency, apps may mutate and return the passed
+     * object in place - typically the raw data is transient (e.g. freshly fetched) and there is
+     * no need to allocate a clone. If the app *does* cache, share, or otherwise
+     * re-use the raw data, be careful to return a modified clone instead.
      */
     processRawData?: (data: PlainObject) => PlainObject;
 
@@ -143,23 +145,36 @@ export interface StoreConfig {
     idEncodesTreePath?: boolean;
 
     /**
-     * Performance optimization for large datasets with immutable raw data objects.
+     * Performance optimization for large datasets whose provider can cheaply identify unchanged
+     * records across loads and updates.
      *
      * By default, Store reuses existing StoreRecord instances when new data is loaded with
-     * matching IDs and identical field values (determined via deep equality comparison). This
+     * matching IDs and identical field values (determined via equality comparison). This
      * preserves row state in grids for unchanged records.
      *
-     * When `reuseRecords` is true, the Store skips the fieldwise comparison and instead reuses
-     * records when the raw data object itself is **reference-identical** to the previously loaded
-     * object. This avoids equality checks, record creation, and raw data processing overhead.
+     * Set to instead derive a *version* from each incoming raw object, snapshotted on the record
+     * when built. A record is then reused whenever a later raw object for its id yields an equal
+     * version, skipping raw data processing, parsing, and construction entirely:
      *
-     * Only use this when your data source provides stable object references for unchanged records.
-     * Should not be used with a `processRawData` function that depends on external state, as that
-     * function will be bypassed on subsequent reloads of reference-identical data.
+     *   - `true` - the version is the raw object itself, compared by reference. Requires the
+     *     source to provide stable references for unchanged records and to never mutate them -
+     *     use a form below for sources that mutate rows in place.
+     *   - string - the version is the named raw property, e.g. a server-provided timestamp or
+     *     sequence number. Use `'cubeRowVersion'` for stores connected to a Cube {@link View} -
+     *     a stamp the View maintains on every row data object it creates or mutates.
+     *   - function - the version is the returned value, for nested or composite stamps. Compared
+     *     via deep equality, so tuples work - e.g. `raw => [raw.type, raw.seq]`. A null/undefined
+     *     version never matches.
+     *
+     * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged version
+     * is dropped from the transaction as a no-op.
+     *
+     * Should not be used with a `processRawData` function that depends on external state as that
+     * function will be bypassed for reused records.
      *
      * Default false.
      */
-    reuseRecords?: boolean;
+    reuseRecords?: boolean | string | ((raw: PlainObject) => unknown);
 
     /**
      * True (default) to have each StoreRecord retain a reference to the raw data object from
@@ -167,15 +182,17 @@ export interface StoreConfig {
      * usage on large stores - raw data objects are then eligible for garbage collection after
      * parsing, and `StoreRecord.raw` will be null.
      *
-     * Not compatible with `reuseRecords`, which requires retained raw data for its
-     * reference-identity checks.
+     * Setting to false is not compatible with `reuseRecords: true`, which requires retained raw
+     * data for its reference-identity check. The string and function `reuseRecords` forms may be
+     * used, however.
      */
     retainRaw?: boolean;
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Recommended for stores connected to a Cube {@link View} - for improved performance, when no
-     * additional record parsing or local data modification is required. Default false.
+     * Recommended for stores connected to a Cube {@link View} - typically paired with
+     * `reuseRecords: 'cubeRowVersion'` - for improved performance, when no additional record
+     * parsing or local data modification is required. Default false.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -184,10 +201,12 @@ export interface StoreConfig {
      * may mutate rows in place but must then publish via `updateData()`, as `loadData()` would
      * skip reference-equal objects as unchanged.
      *
-     * `data` will carry every key on the raw object, not just declared Fields. As a read-only
-     * projection, local modification APIs (`addRecords`, `modifyRecords`, `removeRecords`,
-     * `revertRecords`, and `revert`) throw - data updates flow in via `loadData()`/`updateData()`.
-     * Not compatible with `processRawData` or `reuseRecords`.
+     * `data` will carry every key on the raw object, not just declared Fields - but only declared
+     * Field values participate in the equality checks `loadData()` uses to detect unchanged
+     * records for reuse. As a read-only projection, local modification APIs (`addRecords`,
+     * `modifyRecords`, `removeRecords`, `revertRecords`, and `revert`) throw - data updates flow
+     * in via `loadData()`/`updateData()`.
+     * Not compatible with `processRawData`.
      */
     projectionOnly?: boolean;
 
@@ -322,7 +341,7 @@ export class Store
     loadRootAsSummary: boolean;
     idEncodesTreePath: boolean;
     freezeData: boolean;
-    reuseRecords: boolean;
+    reuseRecords: boolean | string | ((raw: PlainObject) => unknown);
     retainRaw: boolean;
     readonly projectionOnly: boolean;
     validationIsComplex: boolean;
@@ -366,6 +385,7 @@ export class Store
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
+    private _reuseVersionFn: (raw: PlainObject) => unknown;
 
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
@@ -398,16 +418,12 @@ export class Store
         super();
         makeObservable(this);
         throwIf(
-            reuseRecords && !retainRaw,
-            'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
+            reuseRecords === true && !retainRaw,
+            'Store cannot be configured with both `reuseRecords: true` and `retainRaw: false` - the reference-identity check requires retained raw data. Provide a string or function `reuseRecords` version to combine record reuse with `retainRaw: false`.'
         );
         throwIf(
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
-        );
-        throwIf(
-            projectionOnly && reuseRecords,
-            'Store.projectionOnly cannot be used with reuseRecords.'
         );
 
         this.experimental = this.parseExperimental(experimental);
@@ -431,13 +447,9 @@ export class Store
 
         this.validator = new StoreValidator({store: this});
         this._fieldMap = this.createFieldMap();
+        this._reuseVersionFn = this.createReuseFn();
         this._dataDefaults = this.createDataDefaults();
-        // Spreading converts the defaults object (built by keyed assignment, and so itself in
-        // dictionary mode for wider stores) into V8 fast-properties mode, so per-record clones of
-        // it hit the fast clone path. Deliberately a distinct object from `_dataDefaults`, which
-        // serves as the sparse form's prototype - V8 declines the fast clone path for any object
-        // that has been used as a prototype.
-        this._dataTemplate = {...this._dataDefaults};
+        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
         this._denseRecordThreshold =
             this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
@@ -597,15 +609,19 @@ export class Store
         // 1) Pre-process updates and adds into Records
         let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
         if (update) {
-            updateRecs = update.map(it => {
+            updateRecs = [];
+            update.forEach(it => {
                 const recId = this.idSpec(it),
                     rec = this.getOrThrow(
                         recId,
                         'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
                     ),
                     parent = rec.parent,
-                    isSummary = some(this.summaryRecords, {id: recId});
-                return this.createRecord(it, parent, isSummary);
+                    isSummary = some(this.summaryRecords, {id: recId}),
+                    newRec = this.createRecord(it, parent, isSummary);
+
+                // Reused records signal an unchanged version - drop such updates as no-ops.
+                if (newRec !== this._committed?.getById(recId)) updateRecs.push(newRec);
             });
         }
         if (add) {
@@ -1276,10 +1292,12 @@ export class Store
         parent: StoreRecord,
         isSummary: boolean = false
     ): StoreRecord {
-        const id = this.idSpec(raw);
+        const id = this.idSpec(raw),
+            reuseVersion = this._reuseVersionFn(raw),
+            cached = this.getReusableRecord(id, reuseVersion, parent);
+        if (cached) return cached;
 
-        // Zero-copy - use the raw object as `data` by reference, with no parsing, no data.id
-        // write, and no freeze. The Store does not own this object - see StoreConfig.projectionOnly.
+        // Projections can re-use raw data with no reparsing.
         if (this.projectionOnly) {
             return new StoreRecord({
                 id,
@@ -1288,26 +1306,16 @@ export class Store
                 data: raw,
                 committedData: raw,
                 parent,
-                isSummary
+                isSummary,
+                reuseVersion
             });
-        }
-
-        // Potentially re-use existing record if raw data is reference equal and tree path identical
-        if (this.reuseRecords) {
-            const cached = this._committed?.recordMap.get(id);
-            if (cached?.raw === raw && equal(cached.parent?.treePath, parent?.treePath)) {
-                return cached;
-            }
         }
 
         const {processRawData, retainRaw} = this;
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
-            throwIf(
-                !data,
-                'Store.processRawData should return an object. If writing/editing, be sure to return a clone!'
-            );
+            throwIf(!data, 'Store.processRawData must return an object.');
         }
 
         data = this.parseRaw(data);
@@ -1318,13 +1326,31 @@ export class Store
             data,
             committedData: data,
             parent,
-            isSummary
+            isSummary,
+            reuseVersion
         });
 
         // Finalize summary only.  Non-summary finalized by RecordSet
         if (isSummary) ret.finalize();
 
         return ret;
+    }
+
+    // Committed record to re-use for an incoming raw with matching version and tree position.
+    private getReusableRecord(
+        id: StoreRecordId,
+        version: unknown,
+        parent: StoreRecord
+    ): StoreRecord {
+        if (version == null) return null;
+        const cached = this._committed?.recordMap.get(id);
+        // Derived versions compare by deep equality, `reuseRecords: true` by reference only.
+        return cached &&
+            (cached._reuseVersion === version ||
+                (this.reuseRecords !== true && equal(cached._reuseVersion, version))) &&
+            (this.idEncodesTreePath || equal(cached.parent?.treePath, parent?.treePath))
+            ? cached
+            : null;
     }
 
     private createRecords(
@@ -1457,6 +1483,14 @@ export class Store
         const ret = new Map();
         this.fields.forEach(r => ret.set(r.name, r));
         return ret;
+    }
+
+    private createReuseFn(): (raw: PlainObject) => unknown {
+        const {reuseRecords} = this;
+        if (isFunction(reuseRecords)) return reuseRecords;
+        if (isString(reuseRecords)) return raw => raw[reuseRecords];
+        if (reuseRecords === true) return raw => raw;
+        return () => null;
     }
 
     private parseExperimental(experimental) {

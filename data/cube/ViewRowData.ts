@@ -46,6 +46,9 @@ export interface ViewRowData {
     /** True for leaf rows loaded into the cube (i.e. not a grouped aggregation). */
     isCubeLeaf: boolean;
 
+    /** Monotonic stamp updated on each create or mutation - see `StoreConfig.reuseRecords`. */
+    cubeRowVersion: number;
+
     /**
      * Support all other string keys for application fields in source data.
      */

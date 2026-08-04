@@ -27,7 +27,7 @@
 
 * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
   its raw source data object after parsing, reducing memory usage on large stores where
-  `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
+  `StoreRecord.raw` is not needed. Not compatible with `reuseRecords: true`.
 * Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
   async iterable yielding raw records. Creates records incrementally without buffering
   the complete raw dataset in memory, then installs them in a single transaction once the source
@@ -60,6 +60,11 @@
   objects to one and skipping the per-row parse on every load and update. Local modification APIs
   (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly` config docs for the full
   contract.
+* Enhanced `Store.reuseRecords` to also accept a version specification - a raw data property name
+  or a function deriving a version value - reusing the existing record whenever an incoming raw
+  object yields an unchanged version. Applies to both `loadData()` and `updateData()`, where
+  unchanged-version updates are dropped as no-ops. Recommended for stores connected to a Cube
+  `View` as `reuseRecords: 'cubeRowVersion'`.
 
 ### 🐞 Bug Fixes
 

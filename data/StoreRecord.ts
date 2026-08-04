@@ -64,6 +64,9 @@ export class StoreRecord {
 
     private _treePath: StoreRecordId[];
 
+    /** @internal - version snapshot for `StoreConfig.reuseRecords` comparisons. */
+    readonly _reuseVersion: unknown;
+
     /**
      * Unique ID for representing record within ag-Grid node API.
      *
@@ -250,7 +253,16 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {id, store, raw, data, committedData, parent, isSummary} = config;
+        const {
+            id,
+            store,
+            raw,
+            data,
+            committedData,
+            parent,
+            isSummary,
+            reuseVersion = null
+        } = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
@@ -266,6 +278,7 @@ export class StoreRecord {
         this.parentId = parent?.id;
         // Root record paths are built lazily by the getter - we may never need for flat data.
         this._treePath = parent ? [...parent.treePath, idStr] : null;
+        this._reuseVersion = reuseVersion;
         this.isSummary = isSummary;
 
         if (this.ownsData) data.id = id;
@@ -373,4 +386,7 @@ export interface StoreRecordConfig {
      * information in grids when enabled.
      */
     isSummary?: boolean;
+
+    /** @internal - version snapshot for `StoreConfig.reuseRecords` comparisons. */
+    reuseVersion?: unknown;
 }

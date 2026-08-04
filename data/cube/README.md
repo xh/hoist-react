@@ -195,10 +195,17 @@ There are two ways to consume View results:
 **Option 1: Connected stores (recommended for grids)**
 
 Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
-into them whenever the query results change:
+into them whenever the query results change. Configure connected stores with
+`projectionOnly: true` (adopt View rows as record data without re-parsing) and
+`reuseRecords: 'cubeRowVersion'` (skip record rebuilds for rows republished without change,
+tracked via a version stamp the View maintains on every row):
 
 ```typescript
-const store = new Store({fields: [...]});
+const store = new Store({
+    fields: [...],
+    projectionOnly: true,
+    reuseRecords: 'cubeRowVersion'
+});
 
 const view = cube.createView({
     query: {dimensions: ['region', 'product']},
