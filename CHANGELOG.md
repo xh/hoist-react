@@ -14,6 +14,10 @@
     * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* Grid columns newly added to the code are now initially hidden when column state is persisted to a
+  `ViewManagerModel` or `DashViewModel`, ensuring a software release does not add columns to views
+  users have curated and named. They remain available via the column chooser. Set the new
+  `GridModelPersistOptions.hideNewColumns` config to `false` to restore the prior behavior.
 
 ### 🎁 New Features
 
@@ -31,7 +35,8 @@
 * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
   JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
   values may also be shared across successive fetches of the same logical dataset, as identified
-  by a required app-provided key, per a configurable `retainMode`.
+  by a required app-provided key, per a configurable `retainMode`. Skip known high-cardinality
+  fields (e.g. UUID columns) via `excludeFields`.
 * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
   `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
   per-View leaf data objects and speeding up view builds for aggregate-only views over large
@@ -42,6 +47,15 @@
   re-parsing and copying it, collapsing the usual two per-row objects to one and skipping the
   per-row parse on every load and update. Requires that raw data already match the Store's Field
   definitions - see the `useRawAsData` config docs for the full contract.
+* Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
+  content is controlled by the new `--xh-badge-gap` CSS variable.
+* Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
+  active filter and reloads the log around the selected line, then re-selects it and centers it in
+  the viewport - useful for examining the context around a hit found via filtering.
+* Added a `position` option to `GridModel.ensureRecordsVisibleAsync()`,
+  `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
+  scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the
+  minimum amount required.
 
 ### 🐞 Bug Fixes
 

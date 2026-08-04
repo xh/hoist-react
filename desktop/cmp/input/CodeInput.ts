@@ -198,6 +198,7 @@ class CodeInputModel extends HoistInputModel {
 
     private themeCompartment = new Compartment();
     private editableCompartment = new Compartment();
+    private editorContainer: HTMLElement = null;
 
     get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
@@ -341,12 +342,24 @@ class CodeInputModel extends HoistInputModel {
         );
     }
 
-    createCodeEditor = async (container: HTMLElement) => {
-        if (!container) return;
-        const extensions = await this.getExtensionsAsync();
+    /**
+     * Ref callback for the editor container - disposes of any existing editor, then installs a
+     * fresh EditorView when attached. Must be a stable instance and return void, not a promise.
+     */
+    createCodeEditor = (container: HTMLElement) => {
+        XH.safeDestroy(this.editor);
+        this.editor = null;
 
-        const state = EditorState.create({doc: this.renderValue || '', extensions});
-        this.editor = new EditorView({state, parent: container});
+        this.editorContainer = container;
+        if (!container) return;
+
+        this.getExtensionsAsync().then(extensions => {
+            // Bail if the container was detached or replaced while loading extensions.
+            if (this.editorContainer !== container) return;
+
+            const state = EditorState.create({doc: this.renderValue || '', extensions});
+            this.editor = new EditorView({state, parent: container});
+        });
     };
 
     get autoFormat(): boolean {
@@ -658,11 +671,7 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
-                // We pass the container via ref to createCodeEditor, which initializes the editor inside it.
-                // Wrapped to return void — React 19 treats a ref callback's return value as a cleanup fn.
-                ref: el => {
-                    model.createCodeEditor(el);
-                }
+                ref: model.createCodeEditor
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],

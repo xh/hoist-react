@@ -1005,6 +1005,14 @@ export interface StringInternSpec {
     childrenKey?: string;
 
     /**
+     * Record properties to skip when interning. Use for fields whose values are known to be
+     * unique or nearly so - e.g. UUIDs, formatted timestamps, or free-text notes - where
+     * interning adds per-value lookup time and per-distinct-value cache entries with little or
+     * no deduplication benefit. Default null - all string-valued properties are interned.
+     */
+    excludeFields?: string[];
+
+    /**
      * How long interned values are held for reuse by later responses with the same key.
      * Default 'nextCall'.
      *
