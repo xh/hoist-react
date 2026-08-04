@@ -43,6 +43,8 @@
   re-parsing and copying it, collapsing the usual two per-row objects to one and skipping the
   per-row parse on every load and update. Requires that raw data already match the Store's Field
   definitions - see the `useRawAsData` config docs for the full contract.
+* Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
+  content is controlled by the new `--xh-badge-gap` CSS variable.
 
 ### 🐞 Bug Fixes
 
