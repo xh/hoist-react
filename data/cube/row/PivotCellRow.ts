@@ -24,6 +24,9 @@ import {BaseRow} from './BaseRow';
  *
  * This is an internal data structure.
  */
+/** Cells apply no dimension of their own; shared so each cell row does not allocate one. */
+const EMPTY_DIMS: PlainObject = Object.freeze({});
+
 export class PivotCellRow extends BaseRow {
     /** Group row this cell's value is projected onto. */
     readonly ownerRow: BaseRow;
@@ -40,7 +43,8 @@ export class PivotCellRow extends BaseRow {
         ownerRow: BaseRow,
         path: PivotPath,
         pathIdx: number,
-        valueFields: CubeField[]
+        valueFields: CubeField[],
+        canAggregate: PlainObject
     ) {
         super(view, id);
 
@@ -52,6 +56,12 @@ export class PivotCellRow extends BaseRow {
         // Children are wired here, but `parent` / `pivotParent` are assigned by PivotView from the
         // lattice - a cell's children do not uniformly treat it as their group-axis parent.
         this.children = children;
-        this.initAggregateData(path.dimension?.name, path.value, {}, valueFields);
+        this.initAggregateData(
+            path.dimension?.name,
+            path.value,
+            EMPTY_DIMS,
+            valueFields,
+            canAggregate
+        );
     }
 }

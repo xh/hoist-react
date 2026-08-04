@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
 import {
@@ -270,7 +271,8 @@ export class PivotView extends View {
         const {cellCount, cellGroup, cellPath, childStart, childIdx, cellChildKind} = lattice,
             {_allPaths} = this,
             valueFields = this.cellAggFields,
-            cellRows: PivotCellRow[] = new Array(cellCount);
+            cellRows: PivotCellRow[] = new Array(cellCount),
+            canAggregateOfPath: PlainObject[] = new Array(_allPaths.length);
 
         for (let c = cellCount - 1; c >= 0; c--) {
             const ownerRow = groups[cellGroup[c]],
@@ -283,11 +285,27 @@ export class PivotView extends View {
                 children.push(isLeafKind ? leafRows[childIdx[i]] : cellRows[childIdx[i]]);
             }
 
+            // One canAggregate map per path, shared by every cell on it.
+            const canAggregate = (canAggregateOfPath[pathIdx] ??= this.cellCanAggregate(
+                path,
+                valueFields
+            ));
+
             const id = `${ownerRow.id}#${path.key}`;
             cellRows[c] = this._rowCache.getOrCreate(
                 id,
                 children,
-                () => new PivotCellRow(this, id, children, ownerRow, path, pathIdx, valueFields)
+                () =>
+                    new PivotCellRow(
+                        this,
+                        id,
+                        children,
+                        ownerRow,
+                        path,
+                        pathIdx,
+                        valueFields,
+                        canAggregate
+                    )
             );
         }
 
@@ -305,6 +323,17 @@ export class PivotView extends View {
         }
 
         this._cellRows = cellRows;
+    }
+
+    private cellCanAggregate(path: PivotPath, valueFields: CubeField[]): PlainObject {
+        const ctx = this._aggContext;
+        return valueFields.reduce((ret, field) => {
+            const {aggregator, canAggregateFn} = field;
+            ret[field.name] =
+                aggregator &&
+                (!canAggregateFn || canAggregateFn(path.dimension?.name, path.value, {}, ctx));
+            return ret;
+        }, {} as PlainObject);
     }
 
     private projectCells(leafRows: LeafRow[]) {

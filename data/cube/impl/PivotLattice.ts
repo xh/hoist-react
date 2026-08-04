@@ -75,7 +75,13 @@ export interface PivotPathDiscoveryResult {
 
 export interface PivotLatticeSpec {
     groupCount: number;
-    /** Group-axis parent of each group node; -1 for a root node. */
+    /**
+     * Group-axis parent of each group node; -1 for a root node.
+     *
+     * Parents MUST precede their children - `parentOfGroup[g] < g`, which a DFS preorder walk gives
+     * for free. Enforced, because it is what lets the populated-path union and the cell build run as
+     * plain descending index scans rather than needing a depth sort.
+     */
     parentOfGroup: ArrayLike<number>;
     /** 1 where a group's children are leaf rows rather than further groups. */
     innermost: ArrayLike<number>;
@@ -281,6 +287,11 @@ export function buildPivotLattice(spec: PivotLatticeSpec): PivotLatticeResult {
         hasLeafChild = new Uint8Array(groupCount);
     for (let g = 0; g < groupCount; g++) {
         const p = parentOfGroup[g];
+        if (p >= g) {
+            throw new Error(
+                `Pivot group node ${g} has parent ${p}: parents must precede their children.`
+            );
+        }
         if (p >= 0) hasGroupChild[p] = 1;
     }
     for (let l = 0; l < leafCount; l++) hasLeafChild[leafOwnerGroup[l]] = 1;
@@ -296,26 +307,28 @@ export function buildPivotLattice(spec: PivotLatticeSpec): PivotLatticeResult {
         }
     }
 
-    // Populated paths per group: prefixes of each leaf's path, unioned up the group axis.
-    const populated: Set<number>[] = new Array(groupCount);
-    for (let g = 0; g < groupCount; g++) populated[g] = new Set();
+    // Populated paths per group: prefixes of each leaf's path, unioned up the group axis. Held as
+    // sorted arrays, allocated only where non-empty - a Set per group dominated build time on
+    // profiles with a unique-per-leaf innermost grouping, where there is one group per leaf.
+    //
+    // Descending index order is a valid bottom-up walk given the parents-before-children
+    // precondition, which also makes an explicit depth computation and sort unnecessary.
+    const populated: number[][] = new Array(groupCount);
     for (let l = 0; l < leafCount; l++) {
-        const set = populated[leafOwnerGroup[l]];
-        for (let p = leafPathIdx[l]; p > 0; p = pathParentIdx[p]) set.add(p);
+        const g = leafOwnerGroup[l],
+            arr = populated[g] ?? (populated[g] = []);
+        for (let p = leafPathIdx[l]; p > 0; p = pathParentIdx[p]) arr.push(p);
     }
 
-    const groupDepth = new Int32Array(groupCount);
-    for (let g = 0; g < groupCount; g++) {
-        let d = 0;
-        for (let cur = parentOfGroup[g]; cur >= 0; cur = parentOfGroup[cur]) d++;
-        groupDepth[g] = d;
-    }
-    const deepestFirst = Array.from({length: groupCount}, (_, i) => i).sort(
-        (a, b) => groupDepth[b] - groupDepth[a]
-    );
-    for (const g of deepestFirst) {
-        const p = parentOfGroup[g];
-        if (p >= 0) populated[g].forEach(v => populated[p].add(v));
+    for (let g = groupCount - 1; g >= 0; g--) {
+        const arr = populated[g];
+        if (!arr) continue;
+
+        const sorted = (populated[g] = sortedUnique(arr)),
+            pg = parentOfGroup[g];
+        if (pg >= 0) {
+            populated[pg] = populated[pg] ? mergeSorted(populated[pg], sorted) : sorted.slice();
+        }
     }
 
     // Cells, ordered by (group, path). Path indices are tree-ordered, so a cell always follows the
@@ -324,8 +337,9 @@ export function buildPivotLattice(spec: PivotLatticeSpec): PivotLatticeResult {
         cellPathArr: number[] = [],
         cellOfKey = new Map<number, number>();
     for (let g = 0; g < groupCount; g++) {
-        const sorted = Array.from(populated[g]).sort((a, b) => a - b);
-        for (const p of sorted) {
+        const paths = populated[g];
+        if (!paths) continue;
+        for (const p of paths) {
             cellOfKey.set(g * pathCount + p, cellGroupArr.length);
             cellGroupArr.push(g);
             cellPathArr.push(p);
@@ -423,6 +437,36 @@ export function buildPivotLattice(spec: PivotLatticeSpec): PivotLatticeResult {
 /** Injective, so distinct values can never produce the same path key. Nothing ever parses these. */
 function escapeSegment(value: string): string {
     return value.replace(/\\/g, '\\\\').replace(/>/g, '\\>');
+}
+
+function sortedUnique(values: number[]): number[] {
+    values.sort((a, b) => a - b);
+    let n = 0;
+    for (let i = 0; i < values.length; i++) {
+        if (i === 0 || values[i] !== values[i - 1]) values[n++] = values[i];
+    }
+    values.length = n;
+    return values;
+}
+
+/** Union of two ascending, duplicate-free arrays. */
+function mergeSorted(a: number[], b: number[]): number[] {
+    const ret: number[] = [];
+    let i = 0,
+        j = 0;
+    while (i < a.length && j < b.length) {
+        if (a[i] === b[j]) {
+            ret.push(a[i++]);
+            j++;
+        } else if (a[i] < b[j]) {
+            ret.push(a[i++]);
+        } else {
+            ret.push(b[j++]);
+        }
+    }
+    while (i < a.length) ret.push(a[i++]);
+    while (j < b.length) ret.push(b[j++]);
+    return ret;
 }
 
 function csrFromParents(

@@ -204,31 +204,51 @@ export abstract class BaseRow {
         dimOrBucketName: string,
         val: any,
         appliedDimensions: PlainObject,
-        fields: CubeField[] = this.view.fields
+        fields: CubeField[] = this.view.fields,
+        canAggregate?: PlainObject
     ) {
-        const {view, data} = this;
+        const {data} = this;
 
         // No explicit nulling - `View.newRowData` clones a template carrying every field slot.
         Object.assign(data, appliedDimensions);
 
+        this.canAggregate =
+            canAggregate ??
+            this.computeCanAggregate(dimOrBucketName, val, appliedDimensions, fields);
+
+        // Retained so RowCache's argless recompute-on-reuse aggregates this row's own field set.
+        this.aggFields = fields;
+        this.computeAggregates();
+    }
+
+    /**
+     * Build this row's `canAggregate` map. Callers may instead pass a precomputed map to
+     * `initAggregateData`, shared across rows of identical shape - pivot views pass one per pivot
+     * path, since an object plus a field walk per cell row is a real cost at these counts.
+     */
+    protected computeCanAggregate(
+        dimOrBucketName: string,
+        val: any,
+        appliedDimensions: PlainObject,
+        fields: CubeField[]
+    ): PlainObject {
         // Clone the per-View template (all fields false) for fixed shape, then overwrite. Only
         // `fields` is walked, so a cell row's non-value fields stay false as the template left them.
-        const canAggregate = (this.canAggregate = {...view._canAggregateTemplate}),
+        const {view} = this,
+            ret = {...view._canAggregateTemplate},
             ctx = view._aggContext;
+
         fields.forEach(field => {
             const {name} = field;
             if (!appliedDimensions.hasOwnProperty(name)) {
                 const {aggregator, canAggregateFn} = field;
-                canAggregate[name] =
+                ret[name] =
                     aggregator &&
                     (!canAggregateFn ||
                         canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
             }
         });
-
-        // Retained so RowCache's argless recompute-on-reuse aggregates this row's own field set.
-        this.aggFields = fields;
-        this.computeAggregates();
+        return ret;
     }
 
     applyDataUpdate(childUpdates: RowUpdate[], updatedRows: Set<BaseRow>) {
