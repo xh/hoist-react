@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
+import {castArray} from 'lodash';
 import type {ReactElement} from 'react';
 
 import {div} from '@xh/hoist/cmp/layout';
@@ -57,7 +58,7 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
         return div({
             ref,
             ...divProps,
-            items: [icon, children]
+            items: [icon, ...castArray(children)]
         });
     }
 });
