@@ -24,9 +24,6 @@ import {BaseRow} from './BaseRow';
  *
  * This is an internal data structure.
  */
-/** Cells apply no dimension of their own; shared so each cell row does not allocate one. */
-const EMPTY_DIMS: PlainObject = Object.freeze({});
-
 export class PivotCellRow extends BaseRow {
     /** Group row this cell's value is projected onto. */
     readonly ownerRow: BaseRow;
@@ -65,3 +62,6 @@ export class PivotCellRow extends BaseRow {
         );
     }
 }
+
+/** Cells apply no dimension of their own; shared so each cell row does not allocate one. */
+const EMPTY_DIMS: PlainObject = Object.freeze({});
