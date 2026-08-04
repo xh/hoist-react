@@ -126,12 +126,15 @@ export class PivotView extends View {
      * connected stores - cell rows are never published.
      */
     protected override loadUpdatedRows(updatedRows: Set<BaseRow>) {
-        const groupRows = new Set<BaseRow>();
+        const groupRows = new Set<BaseRow>(),
+            {exposesLeaves} = this;
+
         updatedRows.forEach(row => {
             if (row instanceof PivotCellRow) {
                 this.projectCell(row);
                 groupRows.add(row.ownerRow);
             } else {
+                if (exposesLeaves && row.isLeaf) this.projectLeaf(row as LeafRow);
                 groupRows.add(row);
             }
         });
@@ -194,7 +197,7 @@ export class PivotView extends View {
 
         this.syncPaths(discovery.paths);
         this.buildCellRows(lattice, groups, leafRows);
-        this.projectCells();
+        this.projectCells(leafRows);
     }
 
     /**
@@ -304,8 +307,27 @@ export class PivotView extends View {
         this._cellRows = cellRows;
     }
 
-    private projectCells() {
+    private projectCells(leafRows: LeafRow[]) {
         this._cellRows.forEach(cell => this.projectCell(cell));
+
+        // An exposed leaf carries a value for its own path only, so a drilled-down row reads as a
+        // single populated pivot column rather than a blank one. Hidden leaves are skipped - their
+        // data is a shared reference to Cube record data and must never be mutated.
+        if (this.exposesLeaves) leafRows.forEach(leaf => this.projectLeaf(leaf));
+    }
+
+    /** A leaf's own full-path cell is exactly its `pivotParent`, so no extra bookkeeping is needed. */
+    private projectLeaf(leaf: LeafRow) {
+        const cell = leaf.pivotParent as PivotCellRow;
+        if (!cell) return;
+
+        const names = this._cellFieldNames[cell.pathIdx],
+            {valueFields} = this.query,
+            {data} = leaf;
+
+        for (let i = 0; i < valueFields.length; i++) {
+            data[names[i]] = data[valueFields[i].name];
+        }
     }
 
     private projectCell(cell: PivotCellRow) {
