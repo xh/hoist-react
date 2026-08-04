@@ -71,6 +71,8 @@
       Interned values may also be shared across successive fetches of the same logical dataset,
       as identified by a required app-provided key, per a configurable `retainMode`. Skip known
       high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+    * Fixed Cube `View` forcing a full (rather than incremental) update on every data update when a
+      `BucketSpec.dependentFields` entry was not also included in the `Query`'s fields.
     * Fixed `Grid` retaining an extra generation of records in memory after reloads.
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.

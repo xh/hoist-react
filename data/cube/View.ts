@@ -584,7 +584,7 @@ export class View
 
         const fieldNames = uniq([...dimensions.map(it => it.name), ...bucketDependentFields]);
         for (const rec of update) {
-            const curRec = this._leafMap.get(rec.id);
+            const curRec = this._recordMap.get(rec.id);
             if (fieldNames.some(name => rec.data[name] !== curRec.data[name])) return true;
         }
 
