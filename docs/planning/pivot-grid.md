@@ -3,9 +3,10 @@
 **Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
 in Toolbox (also off `develop`) for the harness and example pages.
 
-**Status:** phases 0 and 1 complete. Phase 2 is functionally complete and verified correct, but does
-not yet clear its own gate - see [Result](#result--pivotview-measured-against-the-baseline) for the two
-remaining items. Phase 3 has not been started.
+**Status:** phases 0 and 1 complete. Phase 2 is functionally complete and correct against its
+reference suite, but does not yet clear its own gate — see the bolded items on the
+[phase 2 checklist](#phase-2--pivot-data-layer-implementation), starting with a re-measure. Phase 3
+has not been started.
 
 **Goal:** promote a client-app `PivotGrid` component into hoist-react as a first-class framework
 component, with a pivot data layer that is efficient enough for ticking data.
@@ -508,12 +509,37 @@ values, so ~5,000 pivot paths). Phase 0 only _measures_ where each implementatio
 the framework does about it is settled under
 [Pivot cardinality guard](#pivot-cardinality-guard).
 
+### How to measure
+
+Both harnesses live on Toolbox's `pivot-grid` branch under `client-app/src/admin/tests/pivot/`,
+modelled on the `StoreProxyBench*` harness from Toolbox's `store-proxy-mode` branch.
+
+**Start with `yarn startWithHoist` from `client-app`, not `yarn start`.** Plain `yarn start` resolves
+`@xh/hoist` to the published copy in `node_modules` and will happily benchmark code that is not on
+this branch. Confirm before trusting a number: Admin › General reports Hoist React as a bare
+`-SNAPSHOT` when inline, and `-SNAPSHOT.<timestamp>` when it is the published package.
+
+| Harness                | Panel                             | Measures                       | Heap |
+| ---------------------- | --------------------------------- | ------------------------------ | ---- |
+| `PivotBenchModel`      | Admin › Tests › **Pivot Bench**   | the prototype `PivotDataModel` | yes  |
+| `PivotViewBenchModel`  | Admin › Tests › **Pivot View** ▾  | `PivotView`                    | no   |
+
+`PivotViewBenchModel` hardcodes the phase 0 baseline as its `BASELINE` map and reports against it, so
+a `PivotView` re-measure needs only that panel. Re-running Pivot Bench is only for re-establishing
+the prototype baseline itself — on the same hardware, in the same session, or the comparison is
+meaningless.
+
+On Pivot Bench, set `Keep grid` **off** so the live grid is not mounted. Leaving it on adds ag-Grid
+render work to every measurement — roughly doubling Typical's tick, from 128ms to 225ms. The
+`PivotView` panel never mounts a grid, so it has no such toggle.
+
+Heap needs headless Chromium with `--expose-gc` and `--enable-precise-memory-info`; without them
+Pivot Bench reports `heapAvailable: false`. Timing runs do not need headless, but a headless number
+and a windowed number are not comparable — the phase 0 baseline is headless.
+
 ### Baseline — `PivotDataModel` as imported
 
-Captured 2026-08-01 by the benchmark harness on Toolbox's `pivot-grid` branch
-(`client-app/src/admin/tests/pivot/`, reachable at Admin › Tests › Pivot Bench, modelled on the
-`StoreProxyBench*` harness from Toolbox's `store-proxy-mode` branch). Headless Chromium on a Linux
-workstation, with `--expose-gc` and `--enable-precise-memory-info`. Treat these as a _relative_
+Captured 2026-08-01 on a Linux workstation, per the procedure above. Treat these as a _relative_
 baseline for the rewrite to beat, not as an absolute spec — they will move on different hardware.
 
 - **Data ms** — `PivotDataModel.update()` alone.
@@ -523,10 +549,6 @@ baseline for the rewrite to beat, not as an absolute spec — they will move on 
   no new pivot path appears and the column structure is unchanged.
 - **Synth fields** — synthetic `(pivotPath, valueField)` fields the prototype widens each leaf with.
 - **Heap** — retained by the pivot layer over the generated leaves, after a forced GC.
-
-Measured with the harness's `Keep grid` toggle **off**, so the live grid is not mounted. Leaving it
-on adds ag-Grid render work to every measurement — roughly doubling Typical's tick, from 128ms to
-225ms. Comparable numbers need it off.
 
 | Profile       | Group rows | Dense cells | Synth fields | Data ms | Grid ms | Tick ms | Heap MB |
 | ------------- | ---------: | ----------: | -----------: | ------: | ------: | ------: | ------: |
@@ -591,18 +613,34 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 - [x] Benchmark against phase 0 baseline — see [Result](#result--pivotview-measured-against-the-baseline).
 - [x] Review of the phase 2 changeset, with fixes — see the 2026-08-05 session log entry.
 - [ ] **Re-measure before optimizing** — the Result table predates `da632efb9`, which changed the
-      group-axis merge on the build path.
+      group-axis merge on the build path. Per [How to measure](#how-to-measure).
 - [ ] **Close the drill-down build regression** — do not materialize single-leaf-path innermost cells.
-- [ ] **Restate the tick gate as a delta update**, per the Result section.
+      Cause, what was already tried, and the proposed fix are in
+      [Result](#result--pivotview-measured-against-the-baseline). Settle on paper first what happens to
+      `pivotParent` routing and `projectLeaf` when a leaf becomes a direct child of its grandparent
+      cell, and whether the lattice suite's partition and exactly-once assertions still hold in that
+      shape — `CHILD_KIND_LEAF` already carries the machinery, but nothing has been reasoned through.
+- [ ] **Restate the tick gate as a delta update**, per the Result section. The open question is the
+      replacement number: 30ms was set against a metric that included `Store`-wide record diffing, and
+      the delta metric measured 12.8ms — so pick a target that is a real bar for the new metric.
 - [ ] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount` on both
       group rows and cells. The suite currently exercises `SUM` only, so aggregator-specific
-      `replace` behavior on the two-parent routing is unverified.
+      `replace` behavior on the two-parent routing is unverified. Aggregators themselves go in the
+      unit tier (they import standalone under `tsx`); the two-parent routing needs the Toolbox tier.
+- [ ] Heap gate unverified, and currently unverifiable — the criteria set `≤ 2×` over the loaded
+      `Cube`, but `PivotViewBenchModel` has no heap column. Port `PivotBenchModel`'s `sampleHeapAsync`
+      tooling across, or drop the gate deliberately.
 - [ ] Investigate: Wide+Drill's tick did not complete after several minutes on a heap already loaded
       by earlier profiles, and both drill profiles stalled the same way until a page reload. Could be
-      GC thrash from the benchmark itself rather than a pivot defect — but it is unexplained.
+      GC thrash from the benchmark itself rather than a pivot defect — but it is unexplained. Repro
+      needs the profiles run in sequence via `Run All`, not one profile in a fresh page.
 - [ ] Non-pivot `View` behavior provably unchanged — the `data/cube` edits are mechanical and type-check
-      clean, but nothing yet exercises a plain `View` against its pre-change behavior.
-- [ ] Retire `PivotDataModel`.
+      clean, but nothing yet exercises a plain `View` against its pre-change behavior. Cheapest route
+      is plain-`View` scenarios in the Toolbox correctness suite asserted against the same reference
+      accumulator: the oracle is independent of hoist-react, so passing it proves correctness without
+      needing a `develop` checkout to diff against. Toolbox's Cube test page drives a plain `View` but
+      asserts nothing.
+- [ ] Retire `PivotDataModel` — blocked on phase 3 rewiring `PivotGridModel` onto the new API.
 
 ### Result — `PivotView` measured against the baseline
 
