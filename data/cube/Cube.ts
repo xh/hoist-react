@@ -52,8 +52,8 @@ export interface CubeConfig {
     projectionOnly?: boolean;
 
     /**
-     * See {@link StoreConfig.reuseRecords}. Recommended for cubes reloaded wholesale when the
-     * source can supply a cheap per-row digest - preserves record identity for unchanged rows,
+     * See {@link StoreConfig.reuseRecords}. Recommended whenever the source can supply a cheap
+     * per-row digest - preserves record identity for unchanged rows across loads and updates,
      * allowing connected Views to reuse their generated rows and connected stores their records.
      */
     reuseRecords?: boolean | string | ((raw: PlainObject) => RecordDigest);

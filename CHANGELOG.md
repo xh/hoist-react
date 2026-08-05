@@ -63,8 +63,8 @@
       complex (non-`dependsOnChildrenOnly`) aggregators also reuse their rows, re-deriving all
       aggregations in place each generation and republishing only values that actually changed.
     * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store - lets a
-      versioned source preserve record identity across full `Cube.loadDataAsync()` reloads,
-      extending View row reuse to wholesale refreshes.
+      source supplying per-row digests preserve record identity across full `Cube.loadDataAsync()`
+      reloads, extending View row reuse to wholesale refreshes.
     * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's
       reference to its raw source data object after parsing, reducing memory usage on large
       stores where `StoreRecord.raw` is not needed. Not compatible with `reuseRecords: true`.
