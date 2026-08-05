@@ -73,12 +73,15 @@ export class ConfigPanelModel extends HoistModel {
                 url: 'rest/configAdmin',
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {enableXssProtection: false},
-                // Grid-facing value - resolved for typed configs, otherwise the raw stored value.
-                // A real store field so filtering/sorting/export all match the rendered cell.
+                // Grid-facing effective value - resolved for typed configs, else the instance
+                // override when present, else the raw stored value. A real store field so
+                // filtering/sorting/export all match the rendered cell.
                 processRawData: raw => ({
                     ...raw,
                     effectiveValue:
-                        raw.resolvedValue != null ? JSON.stringify(raw.resolvedValue) : raw.value
+                        raw.resolvedValue != null
+                            ? JSON.stringify(raw.resolvedValue)
+                            : (raw.overrideValue ?? raw.value)
                 }),
                 fields: [
                     {...(Col.name.field as FieldSpec), required},
@@ -190,7 +193,7 @@ export class ConfigPanelModel extends HoistModel {
                 return v.valueType === 'pwd'
                     ? '*****'
                     : !isNil(v.overrideValue)
-                      ? this.withOverrideWarning(v.value)
+                      ? this.withOverrideWarning(v.value, {strike: true})
                       : v.value;
             }
         });
@@ -205,16 +208,15 @@ export class ConfigPanelModel extends HoistModel {
 
     private valueRenderer = (value, {record}) => {
         value = this.fmtValue(value, record);
-        if (isNil(record.get('overrideValue'))) return value;
-        // Typed rows show their resolved value, which already reflects the override - flag it,
-        // but don't strike through the (effective) value shown.
-        return this.withOverrideWarning(value, {strike: isNil(record.get('resolvedValue'))});
+        return isNil(record.get('overrideValue')) ? value : this.withOverrideWarning(value);
     };
 
-    private valueTooltip = (value, {record}) =>
-        !isNil(record.get('overrideValue')) && isNil(record.get('resolvedValue'))
-            ? 'Overridden by instance config / env variable. Open to view effective value.'
-            : this.fmtValue(value, record);
+    private valueTooltip = (value, {record}) => {
+        const ret = this.fmtValue(value, record);
+        return isNil(record.get('overrideValue'))
+            ? ret
+            : `Overridden by instance config / env variable: ${ret}`;
+    };
 
     private fmtValue(value, record) {
         switch (record.data.valueType) {
@@ -227,7 +229,7 @@ export class ConfigPanelModel extends HoistModel {
         }
     }
 
-    private withOverrideWarning(value, {strike = true}: {strike?: boolean} = {}) {
+    private withOverrideWarning(value, {strike = false}: {strike?: boolean} = {}) {
         return hbox({
             alignItems: 'center',
             items: [
