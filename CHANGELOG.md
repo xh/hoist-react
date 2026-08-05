@@ -2,59 +2,58 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade.)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade)
 
-* Hoist v87 updates to React 19. Apps may require minor adjustments and should be tested carefully.
+* Hoist v87 updates to React 19. Apps may require minor adjustments - test carefully.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
     * Both desktop and mobile `Popover` implementations now render on Floating UI, rather than
       Popper.js, which is not React-19 compatible. This changes the underlying DOM and CSS classes
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
-    * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
+    * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
   either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
-* `ViewRowData.cubeLeaves` getter has been replaced by the exported `getCubeLeaves()` helper - update
-  any code reading `row.cubeLeaves` to call `getCubeLeaves(row)`.  This changes supports important
-  memory optimizations in this version.
-* `StoreRecord.data` should now be read by field name only as enumerating, spreading, of calling
-  `JSON.stringify()` on this object does not reliably see default field values. Review any code
-   enumerating `data` directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead.
-   This would previously have been not reliable; avoiding it becomes even more critical with new
-   memory optimizations in this version.
+* New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
+  important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
+  `getCubeLeaves(row)`.
+* Read `StoreRecord.data` by field name only - enumerating, spreading, or calling `JSON.stringify()`
+  on this object does not reliably see default field values. Review any code enumerating `data`
+  directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead. This never worked
+  reliably, but the new memory optimizations in this version make it far more likely to bite.
 
 ### 🎁 New Features
 
-* Hoist v87 delivers a major round of performance work across `FetchService` and the `data` package, substantially
-  reducing memory footprint and load/update costs for apps working with large datasets. Records,
-  Cube `View` rows, and raw payloads all take leaner representations, joined by new opt-in configs
-  for zero-copy projection, version-based record reuse, and streaming loads:
+* Hoist v87 delivers a major round of performance work across `FetchService` and the `data`
+  package, substantially reducing memory footprint and load/update costs for apps working with
+  large datasets. Records, Cube `View` rows, and raw payloads all take leaner representations,
+  alongside new opt-in configs for zero-copy projection, version-based record reuse, and streaming
+  loads:
     * Improved `Store` memory efficiency - record `data` objects now take one of two compact
-      representations, chosen automatically per record by how many fields hold non-default values:
+      representations, which `Store` picks per record by how many fields hold non-default values:
       the established sparse form for lightly-populated records, and a fixed shape cloned from a
-      shared per-Store template for more wide records. Avoids dropping into V8's memory-hungry
+      shared per-Store template for wider records. Avoids dropping into V8's memory-hungry
       "dictionary" mode, substantially reducing per-record memory on stores with wide records.
-    * Improved Cube `View` memory efficiency - `ViewRowData` rows are now plain objects cloned
-      from a shared per-View template, so all rows in a View share one compact, fixed shape.
-      Substantially reduces per-row memory and speeds up view builds, especially for queries with
-      many fields.
-    * Cube `View`s no longer copy leaf row data when leaves are not exposed on their results
-      (neither `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube
-      records, eliminating per-View leaf data objects and speeding up view builds for
-      aggregate-only views over large datasets. Such views no longer publish a
-      `View.result.leafMap` - see Breaking Changes.
+    * Improved Cube `View` memory efficiency - each `View` now clones its `ViewRowData` rows from a
+      shared template, so all rows in a View share one compact, fixed shape. Substantially reduces
+      per-row memory and speeds up view builds, especially for queries with many fields.
+    * Cube `View`s no longer copy leaf row data when their results do not expose leaves (neither
+      `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records,
+      eliminating per-View leaf data objects and speeding up view builds for aggregate-only views
+      over large datasets. Such views no longer publish a `View.result.leafMap` - see Breaking
+      Changes.
     * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of
-      data parsed and owned elsewhere - recommended for stores connected to a Cube `View`, or
-      loaded from an endpoint returning data in its final client-side form. Records use the
-      provider's row object as their `data` by reference rather than re-parsing and copying it,
-      collapsing the usual two per-row objects to one and skipping the per-row parse on every
-      load and update. Local modification APIs (e.g. `modifyRecords`) throw in this mode - see
-      the `projectionOnly` config docs for the full contract.
+      data that its provider parses and owns - use for stores connected to a Cube `View`, or fed by
+      an endpoint returning data in its final client-side form. Records use the provider's row
+      object as their `data` by reference rather than re-parsing and copying it, collapsing the
+      usual two per-row objects to one and skipping the per-row parse on every load and update.
+      Local modification APIs (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly`
+      config docs for the full contract.
     * Enhanced `Store.reuseRecords` to also accept a version specification - a raw data property
       name or a function deriving a version value - reusing the existing record whenever an
       incoming raw object yields an unchanged version. Applies to both `loadData()` and
-      `updateData()`, where unchanged-version updates are dropped as no-ops. Recommended for
-      stores connected to a Cube `View` as `reuseRecords: 'cubeRowVersion'`.
+      `updateData()`, where `Store` drops unchanged-version updates as no-ops. Use
+      `reuseRecords: 'cubeRowVersion'` for stores connected to a Cube `View`.
     * Enhanced Cube `View`s to reuse their generated rows across data updates and reloads.
       Unchanged rows - validated against their source records and child rows - retain their data
       objects and `cubeRowVersion` stamps, skipping re-aggregation for untouched subtrees and,
@@ -76,14 +75,11 @@
       record. Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
     * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within
       large JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets.
-      Interned values may also be shared across successive fetches of the same logical dataset,
-      as identified by a required app-provided key, per a configurable `retainMode`. Skip known
-      high-cardinality fields (e.g. UUID columns) via `excludeFields`.
-    * Fixed Cube `View` forcing a full (rather than incremental) update on every data update when a
-      `BucketSpec.dependentFields` entry was not also included in the `Query`'s fields.
-    * Fixed `Grid` retaining an extra generation of records in memory after reloads.
-* Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
-  content is controlled by the new `--xh-badge-gap` CSS variable.
+      `FetchService` can also share interned values across successive fetches of the same logical
+      dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
+      known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+* Added an `icon` prop to `Badge`, rendered before the badge's content. A new
+  `--xh-badge-gap` CSS variable controls spacing between the icon and content.
 
 ### 🐞 Bug Fixes
 
@@ -94,12 +90,17 @@
 * Fixed `StoreRecord.getModifiedValues()` omitting fields locally modified back to their default
   value - it now reports every difference against committed data, regardless of how the record's
   `data` object represents defaults.
+* Fixed Cube `View` forcing a full (rather than incremental) update on every data update when the
+  `Query`'s fields did not also include a `BucketSpec.dependentFields` entry.
+* Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
+  `rowData` pinned the record array from the last load into an empty grid, along with every
+  `StoreRecord`, `data`, and retained `raw` object in it.
 
 ### ⚙️ Technical
 
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
-  Popper.js onto Floating UI for React 19 compatibility. The Hoist `Popover` components (mobile and
-  desktop) have been updated so no app call-site changes are required.
+  Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
+  (mobile and desktop) so apps require no call-site changes.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
 * Field XSS protection now preserves the reference identity of string values that sanitization
   does not modify (the common case). Previously every parsed string value was replaced with a
