@@ -7,6 +7,7 @@
 
 import {PlainObject} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {
     buildPivotLattice,
@@ -355,7 +356,7 @@ export class PivotView extends View {
         const cell = leaf.pivotParent as PivotCellRow;
         if (!cell) return;
 
-        const names = this._cellFieldNames.get(cell.path),
+        const names = this.cellFieldNames(cell),
             {valueFields} = this.query,
             {data} = leaf;
 
@@ -365,7 +366,7 @@ export class PivotView extends View {
     }
 
     private projectCell(cell: PivotCellRow) {
-        const names = this._cellFieldNames.get(cell.path),
+        const names = this.cellFieldNames(cell),
             {data, ownerRow} = cell,
             ownerData = ownerRow.data,
             {valueFields} = this.query;
@@ -373,6 +374,13 @@ export class PivotView extends View {
         for (let i = 0; i < valueFields.length; i++) {
             ownerData[names[i]] = data[valueFields[i].name];
         }
+    }
+
+    /** A miss means a cached cell outlived its path - `buildCellRows` should have rebound it. */
+    private cellFieldNames(cell: PivotCellRow): string[] {
+        const ret = this._cellFieldNames.get(cell.path);
+        throwIf(!ret, 'No pivot cell fields for this cell path - stale cached cell row.');
+        return ret;
     }
 
     /**
