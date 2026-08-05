@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {appendFilter, FilterLike, parseFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {find, isEmpty, isEqual, isString} from 'lodash';
 import {CubeField} from './CubeField';
@@ -60,8 +61,13 @@ export class PivotQuery extends Query {
     readonly excludeEmptyPivotValues: boolean;
     readonly maxPivotPaths: number;
 
+    /** Pre-augmentation filter, so `clone` re-augments from it rather than compounding. */
+    private readonly _rawFilter: FilterLike;
+
     constructor(config: PivotQueryConfig) {
         super({...config, filter: PivotQuery.augmentFilter(config)});
+
+        this._rawFilter = config.filter;
 
         const {
             pivotDimensions,
@@ -107,6 +113,8 @@ export class PivotQuery extends Query {
             emptyPathLabel: this.emptyPathLabel,
             excludeEmptyPivotValues: this.excludeEmptyPivotValues,
             maxPivotPaths: this.maxPivotPaths,
+            // Before `overrides`, so an explicit filter still wins - super already applied them.
+            filter: this._rawFilter,
             ...overrides
         };
     }
@@ -172,17 +180,23 @@ export class PivotQuery extends Query {
         );
     }
 
-    /** Fold `excludeEmptyPivotValues` into the query filter, so exclusion is a real filter. */
-    private static augmentFilter(config: PivotQueryConfig) {
+    /**
+     * Fold `excludeEmptyPivotValues` into the query filter, so exclusion is a real filter.
+     *
+     * FieldFilters rather than a testFn: `FunctionFilter.equals` compares its `testFn` by reference,
+     * so a per-construction closure would make every clone unequal and defeat `View.updateQuery`'s
+     * no-op check. FieldFilter treats null / '' / [] alike as blank, matching the intent.
+     */
+    private static augmentFilter(config: PivotQueryConfig): FilterLike {
         const {filter, excludeEmptyPivotValues, pivotDimensions} = config;
         if (!excludeEmptyPivotValues || isEmpty(pivotDimensions)) return filter;
 
-        const names = (pivotDimensions as any[]).map(it => (isString(it) ? it : it.name)),
-            exclude = {
-                key: 'excludeEmptyPivotValues',
-                testFn: rec => names.every(name => rec.data[name] != null && rec.data[name] !== '')
-            };
+        const excludes = (pivotDimensions as any[]).map(it => ({
+            field: isString(it) ? it : it.name,
+            op: '!=' as const,
+            value: [null]
+        }));
 
-        return isEmpty(filter) ? exclude : [].concat(filter as any, exclude);
+        return appendFilter(parseFilter(filter), ...excludes);
     }
 }
