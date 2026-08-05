@@ -74,24 +74,25 @@ export class PivotView extends View {
     /** Keyed on path *identity*, so a cell can never resolve names for a path it no longer holds. */
     declare protected _cellFieldNames: Map<PivotPath, string[]>;
     declare protected _cellRows: PivotCellRow[];
-    declare protected _cellAggFields: CubeField[];
 
     /** @internal - applications should use {@link Cube.createPivotView} */
     constructor(config: ViewConfig) {
         super(config);
     }
 
-    /** Fields aggregated on cell rows - the value fields plus their declared dependencies. */
+    /**
+     * Fields aggregated on cell rows - the value fields plus their declared dependencies.
+     *
+     * Recomputed per call, not memoized - `updateQuery` can change `valueFields`, and this is read
+     * once per build.
+     */
     get cellAggFields(): CubeField[] {
-        if (!this._cellAggFields) {
-            const names = new Set<string>();
-            this.query.valueFields.forEach(f => {
-                names.add(f.name);
-                f.dependsOn?.forEach(n => names.add(n));
-            });
-            this._cellAggFields = this.fields.filter(f => names.has(f.name));
-        }
-        return this._cellAggFields;
+        const names = new Set<string>();
+        this.query.valueFields.forEach(f => {
+            names.add(f.name);
+            f.dependsOn?.forEach(n => names.add(n));
+        });
+        return this.fields.filter(f => names.has(f.name));
     }
 
     //------------------------
