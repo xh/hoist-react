@@ -239,8 +239,9 @@ export class View
             }
         }
 
-        // Must clear row cache if we have complex aggregates or more than filter changing.
-        if (!this.aggregatorsAreSimple || !oldQuery.equalsExcludingFilter(newQuery)) {
+        // Must clear row cache if more than the filter is changing - cached rows are shaped by
+        // the query's field set. Filter-only changes revalidate via RowCache as usual.
+        if (!oldQuery.equalsExcludingFilter(newQuery)) {
             this._rowCache.clear();
         }
 
@@ -280,7 +281,6 @@ export class View
     //-----------------------
     @action
     noteCubeLoaded() {
-        if (!this.aggregatorsAreSimple) this._rowCache.clear();
         this.fullUpdate();
     }
 
@@ -289,7 +289,6 @@ export class View
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
-            if (!this.aggregatorsAreSimple) this._rowCache.clear();
             this.fullUpdate();
         } else if (!isEmpty(simpleUpdates)) {
             this.dataOnlyUpdate(simpleUpdates);
@@ -626,7 +625,12 @@ export class View
         this._aggContext = new AggregationContext(this, Array.from(this._recordMap.values()));
     }
 
-    private get aggregatorsAreSimple() {
+    /**
+     * True if all aggregators depend only on child rows, allowing aggregate/bucket row reuse
+     * and incremental data-only updates - see {@link Aggregator.dependsOnChildrenOnly}.
+     * @internal
+     */
+    get aggregatorsAreSimple() {
         return this.fields.every(({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly);
     }
 

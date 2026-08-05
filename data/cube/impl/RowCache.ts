@@ -23,9 +23,10 @@ import type {View} from '../View';
  * `reuseRecords: 'cubeRowVersion'` skip record rebuilds for them.
  *
  * Reuse is gated on every input to a row's published data being intrinsic or re-derived:
- * aggregates declare that their inputs are their children
- * ({@link Aggregator.dependsOnChildrenOnly}), while bucket stamps, `lockFn` and `omitFn` are
- * re-evaluated for all rows on every generation (see `BaseRow.getVisibleDatas`) and so need no
+ * aggregate/bucket rows validate only when all of the View's aggregators declare
+ * {@link Aggregator.dependsOnChildrenOnly} - otherwise they are rebuilt every generation
+ * (their values may read the AggregationContext), while leaves continue to reuse. Bucket
+ * stamps, `lockFn` and `omitFn` are re-derived for all rows on every generation and need no
  * constraint. `canAggregateFn` runs only at row construction and must be pure in its inputs.
  *
  * Retention: entries not requested by a generation are retained for potential later reuse - e.g.
@@ -42,6 +43,10 @@ export class RowCache {
     private rows = new Map<string, BaseRow>();
     // Size after the last sweep/reset - growth beyond this signals unreusable entries piling up.
     private sweepBaseline = 0;
+    // Per-generation snapshot of View.aggregatorsAreSimple. Complex aggregators may read the
+    // AggregationContext (rebuilt each generation), so their aggregate/bucket rows never
+    // validate for reuse - leaves, whose data is aggregation-independent, still do.
+    private reuseAggregates = false;
 
     // Stats for the current generation, reset by noteGeneration.
     reused = 0;
@@ -77,7 +82,7 @@ export class RowCache {
             if (
                 ret.isLeaf
                     ? (ret as LeafRow).cubeRecord === record
-                    : shallowEqualArrays(ret.children, children)
+                    : this.reuseAggregates && shallowEqualArrays(ret.children, children)
             ) {
                 this.reused++;
                 return ret as T;
@@ -93,6 +98,7 @@ export class RowCache {
 
     /** Mark the start of a generation - resets stats and sweeps if the cache has grown stale. */
     noteGeneration() {
+        this.reuseAggregates = this.view.aggregatorsAreSimple;
         this.reused = this.rebuilt = this.created = 0;
 
         // Growth-triggered amortization: replaced records/rows overwrite their entries in place,
@@ -125,7 +131,8 @@ export class RowCache {
             if (ret === undefined) {
                 ret = row.isLeaf
                     ? store.getById((row as LeafRow).cubeRecordId) === (row as LeafRow).cubeRecord
-                    : !!row.children?.every(it => rows.get(it.id) === it && isRetained(it));
+                    : this.reuseAggregates &&
+                      !!row.children?.every(it => rows.get(it.id) === it && isRetained(it));
                 memo.set(row, ret);
             }
             return ret;

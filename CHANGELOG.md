@@ -58,7 +58,9 @@
       Unchanged rows - validated against their source records and child rows - retain their data
       objects and `cubeRowVersion` stamps, skipping re-aggregation for untouched subtrees and,
       with `reuseRecords: 'cubeRowVersion'`, record rebuilds in connected stores. Update costs
-      now scale with the size of the change rather than the size of the dataset.
+      now scale with the size of the change rather than the size of the dataset. Views with
+      complex (non-`dependsOnChildrenOnly`) aggregators re-derive all aggregations each
+      generation, but now reuse their leaf rows - the bulk of row-generation cost.
     * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store - lets a
       versioned source preserve record identity across full `Cube.loadDataAsync()` reloads,
       extending View row reuse to wholesale refreshes.
