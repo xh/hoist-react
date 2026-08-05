@@ -7,7 +7,7 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {br, fragment, hbox, hspacer} from '@xh/hoist/cmp/layout';
+import {br, fragment, hbox, hspacer, span} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
@@ -230,10 +230,19 @@ export class ConfigPanelModel extends HoistModel {
     private withOverrideWarning(value, {strike = true}: {strike?: boolean} = {}) {
         return hbox({
             alignItems: 'center',
-            items: [Icon.warning({intent: 'warning', prefix: 'fas'}), hspacer(), value],
+            items: [
+                Icon.warning({intent: 'warning', prefix: 'fas'}),
+                hspacer(),
+                // Clip long values cleanly - the flex row defeats the grid cell's own ellipsis.
+                span({
+                    item: value,
+                    style: {overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}
+                })
+            ],
+            // {} rather than null - a null style clobbers Box's own inline layout styles.
             style: strike
                 ? {color: 'var(--xh-text-color-muted)', textDecoration: 'line-through'}
-                : null
+                : {}
         });
     }
 }
