@@ -23,10 +23,10 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
+import {RowCache} from './impl/RowCache';
 import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
@@ -146,7 +146,7 @@ export class View
     private _rowVersion = 0;
     _canAggregateTemplate: PlainObject = null;
     _aggContext: AggregationContext = null;
-    _rowCache: Map<string, BaseRow> = null;
+    _rowCache: RowCache = null;
 
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
@@ -157,7 +157,7 @@ export class View
 
         this.query = query;
         this.stores = this.parseStores(stores);
-        this._rowCache = new Map();
+        this._rowCache = new RowCache(this);
         this.buildRowTemplates();
         this.fullUpdate();
 
@@ -280,7 +280,7 @@ export class View
     //-----------------------
     @action
     noteCubeLoaded() {
-        this._rowCache.clear();
+        if (!this.aggregatorsAreSimple) this._rowCache.clear();
         this.fullUpdate();
     }
 
@@ -289,7 +289,7 @@ export class View
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
-            this._rowCache.clear();
+            if (!this.aggregatorsAreSimple) this._rowCache.clear();
             this.fullUpdate();
         } else if (!isEmpty(simpleUpdates)) {
             this.dataOnlyUpdate(simpleUpdates);
@@ -327,6 +327,10 @@ export class View
      */
     newRowData(id: string): ViewRowData {
         return {...this._rowDataTemplate, id, cubeRowVersion: ++this._rowVersion};
+    }
+
+    noteRowDataMutated(data: PlainObject) {
+        data.cubeRowVersion = ++this._rowVersion;
     }
 
     // Templates depend on the query's field set - rebuilt on any query change.
@@ -373,7 +377,7 @@ export class View
             leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
 
-        updatedRowDatas.forEach(rowData => (rowData.cubeRowVersion = ++this._rowVersion));
+        updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
 
         this.createAggregationContext();
 
@@ -416,6 +420,9 @@ export class View
 
         this._bucketDependentFields.clear();
 
+        const rowCache = this._rowCache;
+        rowCache.noteGeneration();
+
         const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
@@ -423,7 +430,7 @@ export class View
 
         if (includeRoot) {
             newRows = [
-                this.cachedRow(
+                rowCache.getOrCreate(
                     rootId,
                     newRows,
                     () => new AggregateRow(this, rootId, newRows, null, 'Total', 'Total', {})
@@ -435,10 +442,18 @@ export class View
 
         this._leafMap = leafMap;
 
+        // Re-derive `cubeBuckets` stamps, which reused rows may need to update.
+        if (query.bucketSpecFn) newRows.forEach(row => row.syncBuckets(null));
+
         // This is the magic. We only actually reveal to API the network of *data* nodes.
         // This hides all the meta information, as well as unwanted leaves and skipped rows.
         // Underlying network still there and updates will flow up through it via the leaves.
         this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
+
+        this.logDebug(
+            `Generated rows: reused=${rowCache.reused} rebuilt=${rowCache.rebuilt} ` +
+                `created=${rowCache.created} cached=${rowCache.size}`
+        );
     }
 
     private groupAndInsertRecords(
@@ -456,10 +471,14 @@ export class View
             const {exposesLeaves} = this;
             return records.map(r => {
                 const id = rootId + r.id,
-                    leaf = this.cachedRow(id, null, () =>
-                        exposesLeaves
-                            ? new ExposedLeafRow(this, id, r)
-                            : new HiddenLeafRow(this, id, r)
+                    leaf = this._rowCache.getOrCreate(
+                        id,
+                        null,
+                        () =>
+                            exposesLeaves
+                                ? new ExposedLeafRow(this, id, r)
+                                : new HiddenLeafRow(this, id, r),
+                        r
                     );
                 leafMap.set(r.id, leaf);
                 return leaf;
@@ -486,7 +505,7 @@ export class View
             );
             children = this.bucketRows(children, id, appliedDimensions);
 
-            return this.cachedRow(
+            return this._rowCache.getOrCreate(
                 id,
                 children,
                 () => new AggregateRow(this, id, children, dim, val, strVal, appliedDimensions)
@@ -527,7 +546,7 @@ export class View
         // Create new rows for each bucket and add to the result
         forEach(buckets, (rows, bucketVal) => {
             const id = parentId + Cube.RECORD_ID_DELIMITER + `${bucketName}=[${bucketVal}]`;
-            const bucket = this.cachedRow(
+            const bucket = this._rowCache.getOrCreate(
                 id,
                 rows,
                 () => new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions)
@@ -589,16 +608,6 @@ export class View
         }
 
         return false;
-    }
-
-    private cachedRow<T extends BaseRow>(id: string, children: BaseRow[], fn: () => T): T {
-        let ret = this._rowCache.get(id);
-        if (ret && (ret.isLeaf || shallowEqualArrays(ret.children, children))) {
-            return ret as T;
-        }
-        ret = fn();
-        this._rowCache.set(id, ret);
-        return ret as T;
     }
 
     private filterRecords() {

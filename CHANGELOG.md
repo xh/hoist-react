@@ -55,6 +55,14 @@
       incoming raw object yields an unchanged version. Applies to both `loadData()` and
       `updateData()`, where unchanged-version updates are dropped as no-ops. Recommended for
       stores connected to a Cube `View` as `reuseRecords: 'cubeRowVersion'`.
+    * Enhanced Cube `View`s to reuse their generated rows across data updates and reloads.
+      Unchanged rows - validated against their source records and child rows - retain their data
+      objects and `cubeRowVersion` stamps, skipping re-aggregation for untouched subtrees and,
+      with `reuseRecords: 'cubeRowVersion'`, record rebuilds in connected stores. Update costs
+      now scale with the size of the change rather than the size of the dataset.
+    * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store - lets a
+      versioned source preserve record identity across full `Cube.loadDataAsync()` reloads,
+      extending View row reuse to wholesale refreshes.
     * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's
       reference to its raw source data object after parsing, reducing memory usage on large
       stores where `StoreRecord.raw` is not needed. Not compatible with `reuseRecords: true`.
@@ -81,6 +89,8 @@
 
 * Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
   values for each dimension.
+* Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates - bucket
+  assignments are now re-derived from each row's current position on every View generation.
 * Fixed `StoreRecord.getModifiedValues()` omitting fields locally modified back to their default
   value - it now reports every difference against committed data, regardless of how the record's
   `data` object represents defaults.

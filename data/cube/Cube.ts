@@ -51,6 +51,13 @@ export interface CubeConfig {
     /** See {@link StoreConfig.projectionOnly} */
     projectionOnly?: boolean;
 
+    /**
+     * See {@link StoreConfig.reuseRecords}. Recommended for cubes reloaded wholesale when the
+     * source can cheaply version rows - preserves record identity for unchanged rows, allowing
+     * connected Views to reuse their generated rows and connected stores their records.
+     */
+    reuseRecords?: boolean | string | ((raw: PlainObject) => unknown);
+
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;
 
@@ -144,6 +151,7 @@ export class Cube extends HoistBase {
         processRawData,
         retainRaw,
         projectionOnly,
+        reuseRecords,
         info = {},
         lockFn,
         bucketSpecFn,
@@ -157,6 +165,7 @@ export class Cube extends HoistBase {
             processRawData: processRawData,
             retainRaw: retainRaw,
             projectionOnly: projectionOnly,
+            reuseRecords: reuseRecords,
             freezeData: false,
             idEncodesTreePath: true
         });

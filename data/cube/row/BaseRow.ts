@@ -6,7 +6,6 @@
  */
 
 import {PlainObject, Some} from '@xh/hoist/core';
-import {BucketSpec} from '@xh/hoist/data/cube/BucketSpec';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {compact, isEmpty} from 'lodash';
 import {View} from '../View';
@@ -47,10 +46,17 @@ export abstract class BaseRow {
     //-----------------------
     // For all rows types
     //------------------------
-    noteBucketed(bucketSpec: BucketSpec, bucketVal: any) {
-        this.data.cubeBuckets ??= {};
-        this.data.cubeBuckets[bucketSpec.name] = bucketVal;
-        this.children?.forEach(it => it.noteBucketed(bucketSpec, bucketVal));
+    // Sync `cubeBuckets` on this row and all descendants from the current ancestor BucketRows.
+    syncBuckets(parentBuckets: PlainObject) {
+        const {data} = this,
+            buckets = this.extendBuckets(parentBuckets);
+
+        if (!bucketsEqual(data.cubeBuckets, buckets)) {
+            data.cubeBuckets = buckets;
+            this.view.noteRowDataMutated(data);
+        }
+
+        this.children?.forEach(it => it.syncBuckets(buckets));
     }
 
     // Determine what should be exposed as the actual children in the
@@ -115,6 +121,11 @@ export abstract class BaseRow {
         // Recurse
         const ret = compact(children.flatMap(it => it.getVisibleDatas()));
         return !isEmpty(ret) ? ret : null;
+    }
+
+    // Bucket context applying to this row and its descendants - BucketRow extends with own entry.
+    protected extendBuckets(parentBuckets: PlainObject): PlainObject {
+        return parentBuckets;
     }
 
     private isRedundantChild(parent: any, child: any) {
@@ -193,4 +204,12 @@ export abstract class BaseRow {
             }
         });
     }
+}
+
+function bucketsEqual(a: PlainObject, b: PlainObject): boolean {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    const aKeys = Object.keys(a),
+        bKeys = Object.keys(b);
+    return aKeys.length === bKeys.length && aKeys.every(k => a[k] === b[k]);
 }

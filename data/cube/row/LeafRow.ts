@@ -26,10 +26,20 @@ import {RowUpdate} from './RowUpdate';
  */
 export abstract class LeafRow extends BaseRow {
     /**
+     * The `StoreRecord` within the Cube from which this leaf row draws its data - current as of
+     * the last applied update. Records are immutable, so reference identity here signals that
+     * this row's data is unchanged - see {@link View.cachedRow}.
+     * @internal
+     */
+    cubeRecord: StoreRecord;
+
+    /**
      * ID of the `StoreRecord` within the Cube that was used to construct this leaf row.
      * Useful if you need to update this leaf's data via {@link Cube.updateDataAsync}.
      */
-    readonly cubeRecordId: StoreRecordId;
+    get cubeRecordId(): StoreRecordId {
+        return this.cubeRecord.id;
+    }
 
     override get isLeaf() {
         return true;
@@ -37,10 +47,11 @@ export abstract class LeafRow extends BaseRow {
 
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);
-        this.cubeRecordId = rawRecord.id;
+        this.cubeRecord = rawRecord;
     }
 
     applyLeafDataUpdate(newRec: StoreRecord, updatedRowDatas: Set<PlainObject>) {
+        this.cubeRecord = newRec;
         const {view, data} = this,
             newData = newRec.data,
             updates = [];
@@ -118,7 +129,7 @@ export class HiddenLeafRow extends LeafRow {
 
     // Never mutate shared record data. These leaves are not exposed on results, so their bucket
     // metadata would have no consumer anyway.
-    override noteBucketed() {}
+    override syncBuckets() {}
 
     protected override applyUpdatedData(updates: RowUpdate[], newData: PlainObject) {
         // Always swap reference to avoid retaining the old record. Never registered in
