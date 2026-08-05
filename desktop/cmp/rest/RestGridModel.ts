@@ -61,6 +61,12 @@ export interface RestGridConfig extends GridConfig {
     /** Called prior to passing the original record and cloned record to the editor form. */
     prepareCloneFn?: (input: {record: StoreRecord; clone: PlainObject}) => void;
 
+    /**
+     * Called after a successful save from the editor form, which closes on save by default.
+     * Use to customize post-save behavior - e.g. re-opening the form on the updated record.
+     */
+    postSaveFn?: (input: {record: StoreRecord; isAdd: boolean}) => void;
+
     /** Specifications for fields to be displayed in editor form. */
     editors?: RestGridEditor[];
 
@@ -122,6 +128,7 @@ export class RestGridModel extends HoistModel {
     formActions: Array<RecordAction | RecordActionSpec>;
     showRefreshButton: boolean;
     prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;
+    postSaveFn: (input: {record: StoreRecord; isAdd: boolean}) => void;
     unit: string;
     filterFields: string[] = null;
 
@@ -156,6 +163,7 @@ export class RestGridModel extends HoistModel {
         showRefreshButton = RestGridModel.defaults.showRefreshButton,
         actionWarning,
         prepareCloneFn,
+        postSaveFn,
         unit = RestGridModel.defaults.unit,
         filterFields,
         editors = [],
@@ -175,6 +183,7 @@ export class RestGridModel extends HoistModel {
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
 
         this.prepareCloneFn = prepareCloneFn;
+        this.postSaveFn = postSaveFn;
 
         this.unit = unit;
         this.filterFields = filterFields;

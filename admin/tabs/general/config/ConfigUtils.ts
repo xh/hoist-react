@@ -4,20 +4,20 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {isEqual} from 'lodash';
 
 export interface ResolvedConfigJson {
     /** Pretty-printed JSON text of the resolved value. */
     text: string;
-    /** 1-based line numbers whose key was explicitly set in the DB value (vs. a default). */
+    /** 1-based line numbers of the changed keys passed to `buildResolvedJson`. */
     highlightLines: number[];
 }
 
 /** Static helpers for the Admin Console config editor. */
 export class ConfigUtils {
     /**
-     * Dot-paths of every key present in a stored config value - i.e. the keys explicitly set (as
-     * opposed to supplied by typedClass defaults). Computed client-side from the raw DB value so no
-     * server round-trip is required. Recurses into nested objects; arrays are treated atomically.
+     * Dot-paths of every key present in a stored config value - i.e. the keys explicitly set,
+     * vs. supplied by typedClass defaults. Recurses into nested objects; arrays are atomic.
      */
     static changedKeysFromStored(stored: any): string[] {
         const out: string[] = [];
@@ -34,20 +34,49 @@ export class ConfigUtils {
     }
 
     /**
-     * Render a resolved typed-config value to pretty-printed JSON text, alongside the line numbers
-     * of the keys explicitly set in the stored value (`changedKeys`) - for display in a read-only
-     * code editor with those lines highlighted. Text + line numbers are produced together so the
-     * mapping is exact. Arrays are treated atomically, matching the server's changed-key computation.
+     * Dot-paths of the keys in a resolved typed-config value whose values differ from the code
+     * defaults. A parent key is included when any of its children differ; arrays are atomic.
+     */
+    static changedKeysFromDefaults(resolved: any, defaults: any): string[] {
+        const out: string[] = [],
+            isObj = (v: any) => v != null && typeof v === 'object' && !Array.isArray(v);
+        const walk = (res: any, def: any, prefix: string): boolean => {
+            let anyChanged = false;
+            for (const k of Object.keys(res)) {
+                const path = prefix ? `${prefix}.${k}` : k,
+                    rv = res[k],
+                    dv = def[k];
+                let changed: boolean;
+                if (isObj(rv)) {
+                    // A subtree with no corresponding default object is changed wholesale.
+                    changed = walk(rv, isObj(dv) ? dv : {}, path) || !isObj(dv);
+                } else {
+                    changed = !isEqual(rv, dv);
+                }
+                if (changed) {
+                    out.push(path);
+                    anyChanged = true;
+                }
+            }
+            return anyChanged;
+        };
+        if (isObj(resolved)) walk(resolved, isObj(defaults) ? defaults : {}, '');
+        return out;
+    }
+
+    /**
+     * Render a config value to pretty-printed JSON text alongside the line numbers of the given
+     * `changedKeys`, produced together so the mapping is exact. Output format matches
+     * `JSON.stringify(value, null, 2)`.
      */
     static buildResolvedJson(value: any, changedKeys: string[] = []): ResolvedConfigJson {
         const changedSet = new Set(changedKeys),
             lines: {text: string; changed: boolean}[] = [],
             indent = '  ';
 
-        // Emit the lines for a value. `changed` = whether the key introducing it is changed; this
-        // applies to ALL of the value's lines (opening, contents, closing bracket) so multi-line
-        // values are styled as a unit. `uniform` forces that status onto the whole subtree (arrays
-        // are atomic); otherwise nested object keys are re-evaluated individually against `changedSet`.
+        // `changed` applies to ALL of a value's lines (open/contents/close) so multi-line values
+        // style as a unit. `uniform` forces it onto the whole subtree (arrays are atomic);
+        // otherwise nested keys are re-evaluated against `changedSet`.
         const emit = (
             prefix: string,
             val: any,
@@ -87,7 +116,6 @@ export class ConfigUtils {
                     return;
                 }
                 lines.push({text: `${pad}${prefix}[`, changed});
-                // Arrays are atomic - the entire value inherits the key's status.
                 val.forEach((item, i) =>
                     emit('', item, depth + 1, path, changed, i < val.length - 1, true)
                 );

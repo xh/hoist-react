@@ -61,14 +61,21 @@
 
 * Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
   values for each dimension.
+* Routine server exceptions no longer append their internal cause to the client-facing message -
+  e.g. validation failures no longer include the raw Grails error dump.
 
 ### 🎁 New Features
 * Enhanced the Admin Console config editor: JSON configs backed by a typed class and/or an active
-  instance-config override now present a tabbed value editor - surfacing the resolved
-  (defaults-applied) value, the instance override, and the editable database value as applicable.
-  Plain configs are unchanged. Requires hoist-core v41+, but falls back to the standard editor against
-  older versions of Hoist Core.
-* Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based) lines.
+  instance-config override now present a tabbed value editor over the resolved, instance-override,
+  database, and code-default views of their value, muting entries that match the declared
+  defaults. The grid's Value column shows the resolved value for typed configs. Requires
+  hoist-core v41+, but falls back to the standard editor against older versions.
+* Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based)
+  lines - as static groups, or a function of the current document text.
+* `RestGrid` editor forms: added a `Revert` button, renamed `Save Changes` to `Save` and `Cancel`
+  to `Close`, and added client-side validation of `json`-type fields (via `isValidJson`, which now
+  treats null/empty values as valid). A new `RestGridConfig.postSaveFn` hook is called with the
+  updated record after a successful save.
 
 ### ⚙️ Technical
 

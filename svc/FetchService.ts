@@ -827,9 +827,9 @@ export class FetchService extends HoistService {
     ): string {
         let ret: string;
         if (parsedResp) {
-            // From parsed response, including cause if provided (e.g. ExternalHttpException)
+            // Append cause (e.g. ExternalHttpException) - not for routine, whose message is complete.
             ret = parsedResp.message;
-            if (isString(parsedResp.cause)) {
+            if (isString(parsedResp.cause) && !parsedResp.isRoutine) {
                 const cause = truncate(parsedResp.cause, {length: 255});
                 ret = ret ? `${ret} (Caused by: ${cause})` : cause;
             }

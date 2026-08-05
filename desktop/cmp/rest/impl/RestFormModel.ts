@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
-import {required} from '@xh/hoist/data';
+import {isValidJson, required} from '@xh/hoist/data';
 import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
@@ -170,7 +170,10 @@ export class RestFormModel extends HoistModel {
             saveFn = () => (isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record));
 
         return saveFn()
-            .then(() => this.close())
+            .then(record => {
+                this.close();
+                this.parent.postSaveFn?.({record, isAdd});
+            })
             .linkTo(this.loadObserver)
             .catchDefault();
     }
@@ -180,10 +183,21 @@ export class RestFormModel extends HoistModel {
             restField = this.getStoreField(name);
         throwIf(!restField, `Unknown field '${name}' in RestGrid.`);
 
+        const {typeField, type} = restField,
+            rules: any[] = restField.required ? [required] : [];
+
+        // Validate JSON content for json-type fields, incl. dynamically-typed fields.
+        if (type === 'json' || typeField) {
+            rules.push({
+                when: (fs, values) => (typeField ? values[typeField] : type) === 'json',
+                check: isValidJson
+            });
+        }
+
         return mergeDeep(
             {
                 name,
-                rules: restField.required ? [required] : [],
+                rules,
                 displayName: restField.displayName,
                 readonly:
                     restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd),

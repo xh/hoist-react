@@ -59,12 +59,9 @@ import './CodeInput.scss';
 import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
 
 /**
- * A group of (1-based) line numbers to decorate in a {@link CodeInput}, plus the CSS class(es) to
- * apply to each of those lines. Style the class(es) in your own SCSS - typically with Hoist theme
- * variables - for full control over the treatment (background, font-weight, color, etc.). A line may
- * appear in multiple groups, in which case their classes combine.
- *
- * Note: to override syntax-token text color, target descendant spans with `!important`, e.g.
+ * A group of (1-based) line numbers to decorate in a {@link CodeInput}, plus the CSS class(es)
+ * to apply to each. A line may appear in multiple groups - their classes combine. To override
+ * syntax-token text color, target descendant spans with `!important`, e.g.
  * `.cm-line.my-class, .cm-line.my-class span {color: var(--xh-text-color-muted) !important;}`.
  */
 export interface CodeInputLineStyles {
@@ -104,10 +101,11 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     highlightActiveLine?: boolean;
 
     /**
-     * One or more {@link CodeInputLineStyles} groups, each applying its CSS class(es) to a set of
-     * (1-based) lines.
+     * One or more {@link CodeInputLineStyles} groups - or a function of the current document text
+     * returning the same, re-evaluated whenever the document changes. Read once at editor
+     * creation - not reactive as a prop.
      */
-    lineStyles?: CodeInputLineStyles[];
+    lineStyles?: CodeInputLineStyles[] | ((text: string) => CodeInputLineStyles[]);
 
     /**
      * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
@@ -504,7 +502,7 @@ class CodeInputModel extends HoistInputModel {
         if (lineWrapping) {
             extensions.push(EditorView.lineWrapping);
         }
-        if (lineStyles?.length) {
+        if (lineStyles && (isFunction(lineStyles) || lineStyles.length)) {
             extensions.push(this.getLineStylesExtension(lineStyles));
         }
         if (highlightActiveLine) {
@@ -601,21 +599,28 @@ class CodeInputModel extends HoistInputModel {
     }
 
     /** Apply the specified CSS class(es) as per-line decorations for the given line groups. */
-    private getLineStylesExtension(groups: CodeInputLineStyles[]) {
+    private getLineStylesExtension(lineStyles: CodeInputProps['lineStyles']) {
         // A line may appear in multiple groups - combine their classes.
-        const classesByLine = new Map<number, Set<string>>();
-        groups.forEach(g =>
-            g.lines?.forEach(ln => {
-                if (!classesByLine.has(ln)) classesByLine.set(ln, new Set());
-                const classes = classesByLine.get(ln);
-                g.className?.split(/\s+/).forEach(cls => cls && classes.add(cls));
-            })
-        );
+        const classesByLine = (state: EditorState): Map<number, Set<string>> => {
+            const groups = isFunction(lineStyles)
+                    ? (lineStyles(state.doc.toString()) ?? [])
+                    : lineStyles,
+                ret = new Map<number, Set<string>>();
+            groups.forEach(g =>
+                g.lines?.forEach(ln => {
+                    if (!ret.has(ln)) ret.set(ln, new Set());
+                    const classes = ret.get(ln);
+                    g.className?.split(/\s+/).forEach(cls => cls && classes.add(cls));
+                })
+            );
+            return ret;
+        };
 
         const build = (state: EditorState): DecorationSet => {
-            const builder = new RangeSetBuilder<Decoration>();
-            for (let i = 1; i <= state.doc.lines; i++) {
-                const classes = classesByLine.get(i);
+            const lineClasses = classesByLine(state),
+                builder = new RangeSetBuilder<Decoration>();
+            for (let i = 1; i <= state.doc.lines && lineClasses.size; i++) {
+                const classes = lineClasses.get(i);
                 if (!classes?.size) continue;
                 const from = state.doc.line(i).from;
                 builder.add(from, from, Decoration.line({class: [...classes].join(' ')}));

@@ -54,7 +54,7 @@ export class ConfigPanelModel extends HoistModel {
             colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('configs')},
-            filterFields: ['name', 'value', 'groupName', 'note'],
+            filterFields: ['name', 'value', 'effectiveValue', 'groupName', 'note'],
             groupBy: 'groupName',
             persistWith: this.persistWith,
             prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
@@ -62,11 +62,24 @@ export class ConfigPanelModel extends HoistModel {
             selModel: 'multiple',
             sortBy: 'name',
             unit: 'config',
+            // Re-open the editor after saving a typed config, landing on its Resolved tab.
+            postSaveFn: ({record}) => {
+                if (record?.data.resolvedValue != null) {
+                    this.gridModel.formModel.openEdit(record);
+                }
+            },
             // Store + fields
             store: {
                 url: 'rest/configAdmin',
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {enableXssProtection: false},
+                // Grid-facing value - resolved for typed configs, otherwise the raw stored value.
+                // A real store field so filtering/sorting/export all match the rendered cell.
+                processRawData: raw => ({
+                    ...raw,
+                    effectiveValue:
+                        raw.resolvedValue != null ? JSON.stringify(raw.resolvedValue) : raw.value
+                }),
                 fields: [
                     {...(Col.name.field as FieldSpec), required},
                     {
@@ -92,9 +105,10 @@ export class ConfigPanelModel extends HoistModel {
                         editable: false
                     },
                     {name: 'resolvedValue', type: 'auto', editable: false},
+                    {name: 'defaultValue', type: 'auto', editable: false},
+                    {name: 'effectiveValue', type: 'auto', displayName: 'Value', editable: false},
 
-                    // Synthetic  read-only presentation slot for the value editor.
-                    // Actual edits flow through the `value` field, which the editor binds to.
+                    // Read-only presentation slot for the value editor - edits flow through `value`.
                     {name: 'valueDisplay', type: 'auto', editable: false}
                 ]
             },
@@ -105,6 +119,7 @@ export class ConfigPanelModel extends HoistModel {
                 {...Col.valueType},
                 {
                     ...Col.value,
+                    field: 'effectiveValue',
                     renderer: this.valueRenderer,
                     tooltip: this.valueTooltip,
                     rendererIsComplex: true
@@ -118,18 +133,26 @@ export class ConfigPanelModel extends HoistModel {
                 {field: 'name'},
                 {field: 'groupName'},
                 {field: 'valueType'},
-                // Use this readOnlyRenderer to effectively get a custom editor for value
+                // The readonlyRenderer effectively provides a custom editor for `value`.
+                // `omit: false` defeats the default omission of empty read-only fields on add.
                 {
                     field: 'valueDisplay',
+                    omit: false,
                     formField: {
                         label: 'Value',
+                        // Keyed by FormModel so each (re)opening mounts fresh tab state.
                         readonlyRenderer: (_v, model) =>
-                            configValue({formModel: model.formModel, height: 250})
+                            configValue({
+                                key: model.formModel.xhId,
+                                formModel: model.formModel,
+                                height: 250
+                            })
                     }
                 },
                 // Data/bind fields for the presentation above; never rendered directly.
                 {field: 'value', omit: true},
                 {field: 'resolvedValue', omit: true},
+                {field: 'defaultValue', omit: true},
                 {field: 'overrideValue', omit: true},
                 {field: 'note', formField: {item: textArea({height: 100})}},
                 {field: 'clientVisible'},
@@ -183,11 +206,13 @@ export class ConfigPanelModel extends HoistModel {
     private valueRenderer = (value, {record}) => {
         value = this.fmtValue(value, record);
         if (isNil(record.get('overrideValue'))) return value;
-        return this.withOverrideWarning(value);
+        // Typed rows show their resolved value, which already reflects the override - flag it,
+        // but don't strike through the (effective) value shown.
+        return this.withOverrideWarning(value, {strike: isNil(record.get('resolvedValue'))});
     };
 
     private valueTooltip = (value, {record}) =>
-        !isNil(record.get('overrideValue'))
+        !isNil(record.get('overrideValue')) && isNil(record.get('resolvedValue'))
             ? 'Overridden by instance config / env variable. Open to view effective value.'
             : this.fmtValue(value, record);
 
@@ -202,14 +227,13 @@ export class ConfigPanelModel extends HoistModel {
         }
     }
 
-    private withOverrideWarning(value) {
+    private withOverrideWarning(value, {strike = true}: {strike?: boolean} = {}) {
         return hbox({
             alignItems: 'center',
             items: [Icon.warning({intent: 'warning', prefix: 'fas'}), hspacer(), value],
-            style: {
-                color: 'var(--xh-text-color-muted)',
-                textDecoration: 'line-through'
-            }
+            style: strike
+                ? {color: 'var(--xh-text-color-muted)', textDecoration: 'line-through'}
+                : null
         });
     }
 }

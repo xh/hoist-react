@@ -8,20 +8,25 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {span} from '@xh/hoist/cmp/layout';
 import {tabContainer, TabContainerModel, TabConfig} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp, HoistModel, managed} from '@xh/hoist/core';
-import {jsonInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {
+    CodeInputLineStyles,
+    jsonInput,
+    numberInput,
+    select,
+    textInput
+} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
+import classNames from 'classnames';
 import {ReactElement} from 'react';
 import {ConfigUtils} from './ConfigUtils';
 import './ConfigValue.scss';
 
 /**
- * Presentation of a config's value within the Admin Console config editor, bound to the enclosing
- * RestForm's `value` field. Branches on the config:
- *  - Plain configs render a single editor for the value, by type.
- *  - Configs with a registered typedClass and/or an active instance-config override render a tab set
- *    surfacing the resolved, instance-override, and editable DB values as appropriate.
- * In both cases edits flow through the same `value` field.
+ * Presentation of a config's value within the config editor, bound to the enclosing RestForm's
+ * `value` field. Plain configs render a single editor by type; configs with a typedClass and/or
+ * an active instance-config override render a tab set over the applicable views of the value.
  */
 export const configValue = hoistCmp.factory<ConfigValueModel>({
     displayName: 'ConfigValue',
@@ -31,7 +36,7 @@ export const configValue = hoistCmp.factory<ConfigValueModel>({
     render({model, className}) {
         return model.usesTabs
             ? tabContainer({model: model.tabContainerModel, className})
-            : boundValueInput(model.valueType, model.valueField, model.height, className);
+            : valueFormField(model.valueType, model.height, model.defaultValue, className);
     }
 });
 
@@ -52,6 +57,9 @@ class ConfigValueModel extends HoistModel {
     get resolvedValue(): any {
         return this.formModel?.values?.resolvedValue;
     }
+    get defaultValue(): any {
+        return this.formModel?.values?.defaultValue;
+    }
     get overrideValue(): string {
         return this.formModel?.values?.overrideValue;
     }
@@ -59,10 +67,11 @@ class ConfigValueModel extends HoistModel {
         return this.formModel?.values?.valueType;
     }
 
-    // Tabbed presentation applies when there's more than one view of the value - i.e. a typedClass
-    // (resolved value) and/or an active instance-config override. Otherwise a single plain editor.
+    // Tabbed when there is more than one view of the value - a typedClass and/or an active override.
     get usesTabs(): boolean {
-        return this.resolvedValue != null || this.overrideValue != null;
+        return (
+            this.resolvedValue != null || this.defaultValue != null || this.overrideValue != null
+        );
     }
 
     constructor() {
@@ -75,24 +84,22 @@ class ConfigValueModel extends HoistModel {
     }
 
     private buildTabs() {
-        const {resolvedValue, overrideValue, valueType, valueField, height} = this,
+        const {resolvedValue, defaultValue, overrideValue, valueType, valueField, height} = this,
             hasOverride = overrideValue != null,
             hasResolved = resolvedValue != null,
+            hasDefaults = defaultValue != null,
             tabs: TabConfig[] = [];
 
-        // Resolved - effective value with typedClass defaults applied (typed configs only).
+        // Resolved - effective value with typedClass defaults applied.
         if (hasResolved) {
-            // Highlight the keys explicitly set in the effective value (override wins over DB).
-            const effective = parseValue(hasOverride ? overrideValue : valueField?.value),
-                {text, highlightLines} = ConfigUtils.buildResolvedJson(
-                    resolvedValue,
-                    ConfigUtils.changedKeysFromStored(effective)
-                ),
-                changed = new Set(highlightLines),
-                otherLines: number[] = [];
-            for (let i = 1; i <= text.split('\n').length; i++) {
-                if (!changed.has(i)) otherLines.push(i);
-            }
+            // Mute keys whose resolved values match the code defaults. Older hoist-core versions
+            // do not supply defaults - fall back to muting keys not set in the effective value.
+            const changedKeys = hasDefaults
+                    ? ConfigUtils.changedKeysFromDefaults(resolvedValue, defaultValue)
+                    : ConfigUtils.changedKeysFromStored(
+                          parseValue(hasOverride ? overrideValue : valueField?.value)
+                      ),
+                {text, highlightLines} = ConfigUtils.buildResolvedJson(resolvedValue, changedKeys);
             tabs.push({
                 id: 'resolved',
                 title: 'Resolved',
@@ -102,8 +109,7 @@ class ConfigValueModel extends HoistModel {
                         value: text,
                         readonly: true,
                         autoFormat: false,
-                        // Mute default/unchanged lines so explicitly-set keys stand out.
-                        lineStyles: [{lines: otherLines, className: 'xh-config-value__muted'}],
+                        lineStyles: mutedLineStyles(text, highlightLines),
                         enableSearch: true,
                         width: '100%',
                         height
@@ -111,31 +117,62 @@ class ConfigValueModel extends HoistModel {
             });
         }
 
-        // Instance Value - the raw instance-config override, read-only (when overridden).
+        // Instance Value - the raw instance-config override, read-only.
         if (hasOverride) {
             tabs.push({
                 id: 'instance',
                 title: 'Instance Value',
                 icon: Icon.warning({intent: 'warning'}),
-                content: () => readonlyValue(valueType, overrideValue, height)
+                content: () => readonlyValue(valueType, overrideValue, height, defaultValue)
             });
         }
 
-        // DB Value - the editable stored value. Struck through in the label when an instance value
-        // overrides it (mirrors the grid's overridden-value cue).
+        // DB Value - the editable stored value, struck through in the label when overridden.
         tabs.push({
             id: 'db',
             title: hasOverride
                 ? span({className: 'xh-config-value__overridden', item: 'DB Value'})
                 : 'DB Value',
-            icon: Icon.database(),
-            content: () => boundValueInput(valueType, valueField, height)
+            icon: Icon.edit(),
+            content: () => valueFormField(valueType, height, defaultValue)
         });
+
+        // Defaults - the typedClass defaults as declared in code, muted wholesale.
+        if (hasDefaults) {
+            tabs.push({
+                id: 'defaults',
+                title: 'Defaults',
+                icon: Icon.code(),
+                content: () =>
+                    jsonInput({
+                        value: JSON.stringify(defaultValue),
+                        readonly: true,
+                        autoFormat: true,
+                        enableSearch: true,
+                        className: 'xh-config-value__defaults',
+                        width: '100%',
+                        height
+                    })
+            });
+        }
 
         this.tabContainerModel = new TabContainerModel({defaultTabId: tabs[0].id, tabs});
 
-        // Editing the DB value only makes the Resolved view stale when there's no override - with an
-        // override active, the effective/resolved value is unaffected by DB edits.
+        // Allow clearing the DB value - normalized to '{}' on blur so it remains valid to save.
+        if (valueType === 'json') {
+            this.addReaction({
+                track: () => [valueField?.boundInput?.hasFocus, valueField?.value],
+                run: () => {
+                    if (!valueField) return;
+                    const {boundInput, value, isDirty} = valueField;
+                    if (!boundInput?.hasFocus && isDirty && !value?.trim()) {
+                        valueField.setValue('{}');
+                    }
+                }
+            });
+        }
+
+        // DB edits stale the Resolved view - but only when no override is active.
         if (hasResolved && !hasOverride) {
             this.addReaction({
                 track: () => valueField?.isDirty ?? false,
@@ -152,55 +189,116 @@ class ConfigValueModel extends HoistModel {
 //------------------------
 // Implementation
 //------------------------
-// Editable input for the value field, by config type, bound directly to the field. `className` is
-// passed by the plain (non-tabbed) branch so the full-width stretch rule applies (in the tab set
-// the container carries it instead).
-function boundValueInput(
+// Label-less FormField for the `value` field, bound via the enclosing Form context for standard
+// validation display and automatic read-only rendering. `className` is passed by the plain
+// (non-tabbed) branch to pick up the full-width stretch rule.
+function valueFormField(
     valueType: string,
-    field: any,
     height: number,
+    defaults?: any,
     className?: string
 ): ReactElement {
-    const bind = {model: field, bind: 'value', className};
+    return formField({
+        field: 'value',
+        label: null,
+        className: classNames('xh-config-value__field', className),
+        readonlyRenderer: v => readonlyValue(valueType, v, height, defaults),
+        item: valueInput(valueType, height, defaults)
+    });
+}
+
+// Editable input for a config value, by type. Bound by the enclosing FormField.
+function valueInput(valueType: string, height: number, defaults?: any): ReactElement {
     switch (valueType) {
         case 'json':
             return jsonInput({
-                ...bind,
+                autoFormat: true,
+                enableSearch: true,
+                lineStyles: defaults != null ? text => dbValueLineStyles(text, defaults) : null,
+                width: '100%',
+                height
+            });
+        case 'bool':
+            return select({options: [true, false], enableClear: false});
+        case 'int':
+            return numberInput({precision: 0});
+        case 'long':
+        case 'double':
+            return numberInput();
+        case 'pwd':
+            // `key` forces a fresh DOM input so Chrome stops offering password autofill here.
+            return textInput({type: 'password', key: '_pwd'});
+        default:
+            return textInput();
+    }
+}
+
+// Read-only display of a raw stored value, by type. JSON renders muted where it matches the code
+// defaults; pwd values are masked (the server sends a digest, but even that should not show).
+function readonlyValue(
+    valueType: string,
+    value: any,
+    height: number,
+    defaults?: any
+): ReactElement {
+    switch (valueType) {
+        case 'json': {
+            const parsed = defaults != null ? parseValue(value) : null;
+            if (parsed != null && typeof parsed === 'object') {
+                const {text, highlightLines} = ConfigUtils.buildResolvedJson(
+                    parsed,
+                    ConfigUtils.changedKeysFromDefaults(parsed, defaults)
+                );
+                return jsonInput({
+                    value: text,
+                    readonly: true,
+                    autoFormat: false,
+                    lineStyles: mutedLineStyles(text, highlightLines),
+                    enableSearch: true,
+                    width: '100%',
+                    height
+                });
+            }
+            return jsonInput({
+                value,
+                readonly: true,
                 autoFormat: true,
                 enableSearch: true,
                 width: '100%',
                 height
             });
-        case 'bool':
-            return select({...bind, options: [true, false], enableClear: false});
-        case 'int':
-            return numberInput({...bind, precision: 0});
-        case 'long':
-        case 'double':
-            return numberInput({...bind});
+        }
         case 'pwd':
-            // `key` forces a fresh DOM input so Chrome stops offering password autofill here.
-            return textInput({...bind, type: 'password', key: '_pwd'});
+            return textInput({value: value == null ? '' : '*****', disabled: true, width: '100%'});
         default:
-            return textInput({...bind});
+            return textInput({value: value?.toString() ?? '', disabled: true, width: '100%'});
     }
 }
 
-// Read-only display of a raw stored value string, by config type.
-function readonlyValue(valueType: string, value: string, height: number): ReactElement {
-    return valueType === 'json'
-        ? jsonInput({
-              value,
-              readonly: true,
-              autoFormat: true,
-              enableSearch: true,
-              width: '100%',
-              height
-          })
-        : textInput({value, disabled: true, width: '100%'});
+// Muting styles for pre-rendered JSON `text` - every line NOT in `highlightLines`.
+function mutedLineStyles(text: string, highlightLines: number[]): CodeInputLineStyles[] {
+    const changed = new Set(highlightLines),
+        lineCount = text.split('\n').length,
+        muted: number[] = [];
+    for (let i = 1; i <= lineCount; i++) {
+        if (!changed.has(i)) muted.push(i);
+    }
+    return [{lines: muted, className: 'xh-config-value__muted'}];
 }
 
-// The stored config value arrives as a JSON string - parse it (null on failure).
+// Muting styles for the editable DB editor, re-evaluated as the document changes. Muting only
+// applies while the text is in canonical autoFormat form, where the line mapping is reliable.
+function dbValueLineStyles(text: string, defaults: any): CodeInputLineStyles[] {
+    const parsed = parseValue(text);
+    if (parsed == null || typeof parsed !== 'object') return [];
+    const {text: canonical, highlightLines} = ConfigUtils.buildResolvedJson(
+        parsed,
+        ConfigUtils.changedKeysFromDefaults(parsed, defaults)
+    );
+    return text === canonical ? mutedLineStyles(text, highlightLines) : [];
+}
+
+// Parse a stored JSON string (null on failure).
 function parseValue(v: any): any {
     if (typeof v !== 'string') return v;
     try {

@@ -13,18 +13,34 @@
     color: var(--xh-text-color-muted);
   }
 
-  // Resolved-tab: mute default/unchanged lines so explicitly-set keys stand out. The text-color
-  // override must beat syntax-token colors on descendant spans.
+  // Mute default-matching lines (Resolved/DB/Instance) and the Defaults tab wholesale. The
+  // text-color override must beat syntax-token colors on descendant spans.
   .cm-line.xh-config-value__muted,
-  .cm-line.xh-config-value__muted span {
+  .cm-line.xh-config-value__muted span,
+  &__defaults .cm-line,
+  &__defaults .cm-line span {
     color: var(--xh-text-color-muted) !important;
   }
 }
 
-// The read-only wrapper FormField injects is a flex item that otherwise shrinks to the editor's
-// content width - make it (and thus our content) fill the full field width.
-.xh-form-field__readonly-display:has(> .xh-config-value) {
+// FormField's read-only wrapper otherwise shrinks to the editor's content width.
+.xh-form-field__readonly-display:has(.xh-config-value) {
   flex: 1;
   width: 100%;
   min-width: 0;
+}
+
+// Top-align the enclosing field's label, as for a json-input field.
+.xh-form-field--inline:has(.xh-config-value) {
+  align-items: start;
+}
+
+// Nested FormField hosting the value input - a bare, full-width slot. The doubled selector out-
+// ranks RestForm's per-field margin-bottom, which would make this tab taller than its siblings.
+.xh-config-value__field,
+.xh-rest-form .xh-config-value__field.xh-form-field {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
