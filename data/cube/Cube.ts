@@ -9,7 +9,7 @@ import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
-import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {RecordDigest, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
@@ -53,10 +53,10 @@ export interface CubeConfig {
 
     /**
      * See {@link StoreConfig.reuseRecords}. Recommended for cubes reloaded wholesale when the
-     * source can cheaply version rows - preserves record identity for unchanged rows, allowing
-     * connected Views to reuse their generated rows and connected stores their records.
+     * source can supply a cheap per-row digest - preserves record identity for unchanged rows,
+     * allowing connected Views to reuse their generated rows and connected stores their records.
      */
-    reuseRecords?: boolean | string | ((raw: PlainObject) => unknown);
+    reuseRecords?: boolean | string | ((raw: PlainObject) => RecordDigest);
 
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;

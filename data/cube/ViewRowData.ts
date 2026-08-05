@@ -46,8 +46,11 @@ export interface ViewRowData {
     /** True for leaf rows loaded into the cube (i.e. not a grouped aggregation). */
     isCubeLeaf: boolean;
 
-    /** Monotonic stamp updated on each create or mutation - see `StoreConfig.reuseRecords`. */
-    cubeRowVersion: number;
+    /**
+     * Monotonic stamp updated on each create or mutation - read as the record-reuse digest by
+     * stores connected to this row's View. See `StoreConfig.reuseRecords`.
+     */
+    cubeRowDigest: number;
 
     /**
      * Support all other string keys for application fields in source data.

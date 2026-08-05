@@ -196,15 +196,14 @@ There are two ways to consume View results:
 
 Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
 into them whenever the query results change. Configure connected stores with
-`projectionOnly: true` (adopt View rows as record data without re-parsing) and
-`reuseRecords: 'cubeRowVersion'` (skip record rebuilds for rows republished without change,
-tracked via a version stamp the View maintains on every row):
+`projectionOnly: true` (adopt View rows as record data without re-parsing). Record reuse is
+automatic - the View installs a `reuseRecords` digest on each connected store, so rows
+republished without change skip record rebuilds:
 
 ```typescript
 const store = new Store({
     fields: [...],
-    projectionOnly: true,
-    reuseRecords: 'cubeRowVersion'
+    projectionOnly: true
 });
 
 const view = cube.createView({

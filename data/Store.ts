@@ -63,6 +63,12 @@ import {RecordSet} from './impl/RecordSet';
 const DENSE_RECORD_THRESHOLD = 17;
 
 /**
+ * Digest identifying a version of a raw data record for `StoreConfig.reuseRecords` - a primitive
+ * value, compared via `===`. Build composite keys as strings, e.g. `raw.type + '|' + raw.seq`.
+ */
+export type RecordDigest = string | number;
+
+/**
  * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
  * from GridModel columns). Data can be supplied at construction via `data`, or loaded later
  * via `Store.loadData()`.
@@ -152,29 +158,33 @@ export interface StoreConfig {
      * matching IDs and identical field values (determined via equality comparison). This
      * preserves row state in grids for unchanged records.
      *
-     * Set to instead derive a *version* from each incoming raw object, snapshotted on the record
+     * Set to instead derive a *digest* from each incoming raw object, snapshotted on the record
      * when built. A record is then reused whenever a later raw object for its id yields an equal
-     * version, skipping raw data processing, parsing, and construction entirely:
+     * digest, skipping raw data processing, parsing, and construction entirely:
      *
-     *   - `true` - the version is the raw object itself, compared by reference. Requires the
-     *     source to provide stable references for unchanged records and to never mutate them -
-     *     use a form below for sources that mutate rows in place.
-     *   - string - the version is the named raw property, e.g. a server-provided timestamp or
-     *     sequence number. Use `'cubeRowVersion'` for stores connected to a Cube {@link View} -
-     *     a stamp the View maintains on every row data object it creates or mutates.
-     *   - function - the version is the returned value, for nested or composite stamps. Compared
-     *     via deep equality, so tuples work - e.g. `raw => [raw.type, raw.seq]`. A null/undefined
-     *     version never matches.
+     *   - `true` - reuse on raw object identity: a record is reused when a later raw object for
+     *     its id is the very same object, by reference. Requires the source to provide stable
+     *     references for unchanged records and to never mutate them - use a form below for
+     *     sources that mutate rows in place.
+     *   - string - the digest is the named raw property, e.g. a server-provided timestamp or
+     *     sequence number.
+     *   - function - the digest is the returned value. Digests must be primitives, compared
+     *     via `===` - build composite keys as strings, e.g. `raw => raw.type + '|' + raw.seq`.
+     *     A null/undefined digest never matches.
      *
-     * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged version
+     * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged digest
      * is dropped from the transaction as a no-op.
+     *
+     * Stores connected to a Cube {@link View} must leave this config unset - the View manages
+     * reuse automatically, installing a digest that reads the stamp it maintains on every row
+     * it publishes. Any explicit value throws at connection.
      *
      * Should not be used with a `processRawData` function that depends on external state as that
      * function will be bypassed for reused records.
      *
-     * Default false.
+     * Default null.
      */
-    reuseRecords?: boolean | string | ((raw: PlainObject) => unknown);
+    reuseRecords?: boolean | string | ((raw: PlainObject) => RecordDigest);
 
     /**
      * True (default) to have each StoreRecord retain a reference to the raw data object from
@@ -190,9 +200,8 @@ export interface StoreConfig {
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Recommended for stores connected to a Cube {@link View} - typically paired with
-     * `reuseRecords: 'cubeRowVersion'` - for improved performance, when no additional record
-     * parsing or local data modification is required. Default false.
+     * Recommended for stores connected to a Cube {@link View} for improved performance, when no
+     * additional record parsing or local data modification is required. Default false.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -341,7 +350,7 @@ export class Store
     loadRootAsSummary: boolean;
     idEncodesTreePath: boolean;
     freezeData: boolean;
-    reuseRecords: boolean | string | ((raw: PlainObject) => unknown);
+    reuseRecords: boolean | string | ((raw: PlainObject) => RecordDigest);
     retainRaw: boolean;
     readonly projectionOnly: boolean;
     validationIsComplex: boolean;
@@ -385,7 +394,7 @@ export class Store
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
-    private _reuseVersionFn: (raw: PlainObject) => unknown;
+    private _digestFn: (raw: PlainObject) => RecordDigest;
 
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
@@ -408,7 +417,7 @@ export class Store
         loadRootAsSummary = false,
         freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
-        reuseRecords = false,
+        reuseRecords = null,
         retainRaw = true,
         projectionOnly = false,
         validationIsComplex = false,
@@ -419,7 +428,7 @@ export class Store
         makeObservable(this);
         throwIf(
             reuseRecords === true && !retainRaw,
-            'Store cannot be configured with both `reuseRecords: true` and `retainRaw: false` - the reference-identity check requires retained raw data. Provide a string or function `reuseRecords` version to combine record reuse with `retainRaw: false`.'
+            'Store cannot be configured with both `reuseRecords: true` and `retainRaw: false` - the reference-identity check requires retained raw data. Provide a string or function `reuseRecords` digest to combine record reuse with `retainRaw: false`.'
         );
         throwIf(
             projectionOnly && processRawData,
@@ -447,7 +456,7 @@ export class Store
 
         this.validator = new StoreValidator({store: this});
         this._fieldMap = this.createFieldMap();
-        this._reuseVersionFn = this.createReuseFn();
+        this._digestFn = this.createDigestFn();
         this._dataDefaults = this.createDataDefaults();
         this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
         this._denseRecordThreshold =
@@ -455,6 +464,15 @@ export class Store
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
+    }
+
+    /**
+     * Install a digest fn for record reuse, overriding any configured `reuseRecords` spec.
+     * @internal - called by a Cube {@link View} on its connected stores, letting the View manage
+     * reuse via the stamp it maintains on every row it publishes.
+     */
+    setDigestFn(fn: (raw: PlainObject) => RecordDigest) {
+        this._digestFn = fn;
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -620,7 +638,7 @@ export class Store
                     isSummary = some(this.summaryRecords, {id: recId}),
                     newRec = this.createRecord(it, parent, isSummary);
 
-                // Reused records signal an unchanged version - drop such updates as no-ops.
+                // Reused records signal an unchanged digest - drop such updates as no-ops.
                 if (newRec !== this._committed?.getById(recId)) updateRecs.push(newRec);
             });
         }
@@ -1293,8 +1311,8 @@ export class Store
         isSummary: boolean = false
     ): StoreRecord {
         const id = this.idSpec(raw),
-            reuseVersion = this._reuseVersionFn(raw),
-            cached = this.getReusableRecord(id, reuseVersion, parent);
+            digest = this._digestFn(raw),
+            cached = this.getReusableRecord(id, raw, digest, parent);
         if (cached) return cached;
 
         // Projections can re-use raw data with no reparsing.
@@ -1307,7 +1325,7 @@ export class Store
                 committedData: raw,
                 parent,
                 isSummary,
-                reuseVersion
+                digest
             });
         }
 
@@ -1327,7 +1345,7 @@ export class Store
             committedData: data,
             parent,
             isSummary,
-            reuseVersion
+            digest
         });
 
         // Finalize summary only.  Non-summary finalized by RecordSet
@@ -1336,18 +1354,19 @@ export class Store
         return ret;
     }
 
-    // Committed record to re-use for an incoming raw with matching version and tree position.
+    // Committed record to re-use for an incoming raw with matching digest and tree position.
+    // `reuseRecords: true` matches on raw object identity instead - no digest involved.
     private getReusableRecord(
         id: StoreRecordId,
-        version: unknown,
+        raw: PlainObject,
+        digest: RecordDigest,
         parent: StoreRecord
     ): StoreRecord {
-        if (version == null) return null;
+        const refMode = this.reuseRecords === true;
+        if (!refMode && digest == null) return null;
         const cached = this._committed?.recordMap.get(id);
-        // Derived versions compare by deep equality, `reuseRecords: true` by reference only.
         return cached &&
-            (cached._reuseVersion === version ||
-                (this.reuseRecords !== true && equal(cached._reuseVersion, version))) &&
+            (refMode ? cached.raw === raw : cached.digest === digest) &&
             (this.idEncodesTreePath || equal(cached.parent?.treePath, parent?.treePath))
             ? cached
             : null;
@@ -1485,11 +1504,12 @@ export class Store
         return ret;
     }
 
-    private createReuseFn(): (raw: PlainObject) => unknown {
+    // For string/fn digest forms only - `reuseRecords: true` needs no digest, matching on raw
+    // object identity in getReusableRecord() instead.
+    private createDigestFn(): (raw: PlainObject) => RecordDigest {
         const {reuseRecords} = this;
         if (isFunction(reuseRecords)) return reuseRecords;
         if (isString(reuseRecords)) return raw => raw[reuseRecords];
-        if (reuseRecords === true) return raw => raw;
         return () => null;
     }
 

@@ -142,8 +142,8 @@ export class View
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     private _bucketDependentFields = new Set<string>();
     private _rowDataTemplate: ViewRowData = null;
-    // Monotonic source for cubeRowVersion stamps - safe-integer headroom spans centuries of use.
-    private _rowVersion = 0;
+    // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
+    private _rowDigest = 0;
     _canAggregateTemplate: PlainObject = null;
     _aggContext: AggregationContext = null;
     _rowCache: RowCache = null;
@@ -324,11 +324,11 @@ export class View
      * @internal
      */
     newRowData(id: string): ViewRowData {
-        return {...this._rowDataTemplate, id, cubeRowVersion: ++this._rowVersion};
+        return {...this._rowDataTemplate, id, cubeRowDigest: ++this._rowDigest};
     }
 
     noteRowDataMutated(data: PlainObject) {
-        data.cubeRowVersion = ++this._rowVersion;
+        data.cubeRowDigest = ++this._rowDigest;
     }
 
     // Templates depend on the query's field set - rebuilt on any query change.
@@ -341,7 +341,7 @@ export class View
             cubeBuckets: null,
             children: null,
             isCubeLeaf: false,
-            cubeRowVersion: null,
+            cubeRowDigest: null,
             _cubeLeafChildren: null
         };
         const canAggregate: PlainObject = {};
@@ -635,11 +635,11 @@ export class View
     private parseStores(stores: Some<Store>): Store[] {
         const ret = castArray(stores);
 
-        // Views mutate the rows, so reference identity cannot signal 'unchanged'.
         throwIf(
-            ret.some(s => s.reuseRecords === true),
-            "Store.reuseRecords: true cannot be used on a Store connected to a Cube View - configure `reuseRecords: 'cubeRowVersion'` instead."
+            ret.some(s => s.reuseRecords != null),
+            '`Store.reuseRecords` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
         );
+        ret.forEach(s => s.setDigestFn(row => row.cubeRowDigest));
 
         throwIf(
             ret.some(s => s.idEncodesTreePath) &&
@@ -650,13 +650,6 @@ export class View
         if (ret.some(s => !s.projectionOnly && !s.processRawData)) {
             this.logDebug(
                 'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. See StoreConfig.projectionOnly.'
-            );
-        }
-
-        // Views re-publish unchanged row objects across many updates - recommend version reuse.
-        if (ret.some(s => !s.reuseRecords)) {
-            this.logDebug(
-                "Connected store(s) do not set `reuseRecords: 'cubeRowVersion'` - recommended to skip record rebuilds when this View republishes unchanged rows. See StoreConfig.reuseRecords."
             );
         }
 

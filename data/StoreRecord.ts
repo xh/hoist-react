@@ -8,7 +8,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
-import {Store} from './Store';
+import {RecordDigest, Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
@@ -62,10 +62,15 @@ export class StoreRecord {
      */
     readonly committedData: PlainObject;
 
-    private _treePath: StoreRecordId[];
+    /**
+     * Digest snapshotted from this record's raw data at creation, used by
+     * {@link StoreConfig.reuseRecords} to detect unchanged records across loads. Null when no
+     * string/function digest is configured - including with `reuseRecords: true`, which matches
+     * on raw object identity instead.
+     */
+    readonly digest: RecordDigest;
 
-    /** @internal - version snapshot for `StoreConfig.reuseRecords` comparisons. */
-    readonly _reuseVersion: unknown;
+    private _treePath: StoreRecordId[];
 
     /**
      * Unique ID for representing record within ag-Grid node API.
@@ -253,16 +258,7 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {
-            id,
-            store,
-            raw,
-            data,
-            committedData,
-            parent,
-            isSummary,
-            reuseVersion = null
-        } = config;
+        const {id, store, raw, data, committedData, parent, isSummary, digest = null} = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
@@ -278,7 +274,7 @@ export class StoreRecord {
         this.parentId = parent?.id;
         // Root record paths are built lazily by the getter - we may never need for flat data.
         this._treePath = parent ? [...parent.treePath, idStr] : null;
-        this._reuseVersion = reuseVersion;
+        this.digest = digest;
         this.isSummary = isSummary;
 
         if (this.ownsData) data.id = id;
@@ -387,6 +383,6 @@ export interface StoreRecordConfig {
      */
     isSummary?: boolean;
 
-    /** @internal - version snapshot for `StoreConfig.reuseRecords` comparisons. */
-    reuseVersion?: unknown;
+    /** See {@link StoreRecord.digest}. */
+    digest?: RecordDigest;
 }

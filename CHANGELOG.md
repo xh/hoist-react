@@ -27,7 +27,7 @@
 * Hoist v87 delivers a major round of performance work across `FetchService` and the `data`
   package, substantially reducing memory footprint and load/update costs for apps working with
   large datasets. Records, Cube `View` rows, and raw payloads all take leaner representations,
-  alongside new opt-in configs for zero-copy projection, version-based record reuse, and streaming
+  alongside new opt-in configs for zero-copy projection, digest-based record reuse, and streaming
   loads:
     * Improved `Store` memory efficiency - record `data` objects now take one of two compact
       representations, which `Store` picks per record by how many fields hold non-default values:
@@ -49,15 +49,16 @@
       usual two per-row objects to one and skipping the per-row parse on every load and update.
       Local modification APIs (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly`
       config docs for the full contract.
-    * Enhanced `Store.reuseRecords` to also accept a version specification - a raw data property
-      name or a function deriving a version value - reusing the existing record whenever an
-      incoming raw object yields an unchanged version. Applies to both `loadData()` and
-      `updateData()`, where `Store` drops unchanged-version updates as no-ops. Use
-      `reuseRecords: 'cubeRowVersion'` for stores connected to a Cube `View`.
+    * Enhanced `Store.reuseRecords` to also accept a digest specification - a raw data property
+      name or a function deriving a digest value - reusing the existing record whenever an
+      incoming raw object yields an unchanged digest. Applies to both `loadData()` and
+      `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted
+      digests are exposed as `StoreRecord.digest`. Stores connected to a Cube `View` get a
+      suitable digest installed automatically.
     * Enhanced Cube `View`s to reuse their generated rows across data updates and reloads.
       Unchanged rows - validated against their source records and child rows - retain their data
-      objects and `cubeRowVersion` stamps, skipping re-aggregation for untouched subtrees and,
-      with `reuseRecords: 'cubeRowVersion'`, record rebuilds in connected stores. Update costs
+      objects and reuse digests, skipping re-aggregation for untouched subtrees and record
+      rebuilds in connected stores. Update costs
       now scale with the size of the change rather than the size of the dataset. Views with
       complex (non-`dependsOnChildrenOnly`) aggregators also reuse their rows, re-deriving all
       aggregations in place each generation and republishing only values that actually changed.
