@@ -41,20 +41,14 @@ import type {View} from '../View';
 export class RowCache {
     private view: View;
     private rows = new Map<string, BaseRow>();
-    // Size after the last sweep/reset - growth beyond this signals unreusable entries piling up.
     private sweepBaseline = 0;
-    // Per-generation snapshot of !View.aggregatorsAreSimple. Complex aggregators may read the
-    // AggregationContext (rebuilt each generation), so reused aggregate/bucket rows recompute
-    // their values in place, republishing only actual changes - see getOrCreate.
-    private recomputeAggs = false;
+    private simpleAggs = false;
 
-    // Stats for the current generation, reset by noteGeneration.
+    // Stats for the current generation
     reused = 0;
     rebuilt = 0;
     created = 0;
     recomputed = 0;
-    // Entries dropped by the most recent sweep.
-    swept = 0;
 
     constructor(view: View) {
         this.view = view;
@@ -80,12 +74,13 @@ export class RowCache {
     ): T {
         let ret = this.rows.get(id);
         if (ret) {
-            if (
-                ret.isLeaf
-                    ? (ret as LeafRow).cubeRecord === record
-                    : shallowEqualArrays(ret.children, children)
-            ) {
-                if (this.recomputeAggs && !ret.isLeaf) {
+            if (ret.isLeaf) {
+                if ((ret as LeafRow).cubeRecord === record) {
+                    this.reused++;
+                    return ret as T;
+                }
+            } else if (shallowEqualArrays(ret.children, children)) {
+                if (!this.simpleAggs) {
                     this.recomputed++;
                     if (ret.computeAggregates()) this.view.noteRowDataMutated(ret.data);
                 }
@@ -103,11 +98,10 @@ export class RowCache {
 
     /** Mark the start of a generation - resets stats and sweeps if the cache has grown stale. */
     noteGeneration() {
-        this.recomputeAggs = !this.view.aggregatorsAreSimple;
+        this.simpleAggs = this.view.aggregatorsAreSimple;
         this.reused = this.rebuilt = this.created = this.recomputed = 0;
 
-        // Growth-triggered amortization: replaced records/rows overwrite their entries in place,
-        // so size grows only as ids/paths disappear from results. Steady-state views never sweep.
+        // Growth-triggered amortization: Steady-state views never sweep.
         const {size, sweepBaseline} = this;
         if (!sweepBaseline) {
             this.sweepBaseline = size;
@@ -146,7 +140,9 @@ export class RowCache {
             if (!isRetained(row)) rows.delete(id);
         });
 
-        this.swept = startSize - rows.size;
+        this.view.logDebug(
+            `Swept row cache: dropped ${startSize - rows.size}, retained ${rows.size}`
+        );
         this.sweepBaseline = rows.size;
     }
 }

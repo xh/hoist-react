@@ -7,6 +7,7 @@
 
 import {PlainObject, Some} from '@xh/hoist/core';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
+import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {compact, isEmpty} from 'lodash';
 import {View} from '../View';
 import {RowUpdate} from './RowUpdate';
@@ -51,7 +52,7 @@ export abstract class BaseRow {
         const {data} = this,
             buckets = this.extendBuckets(parentBuckets);
 
-        if (!bucketsEqual(data.cubeBuckets, buckets)) {
+        if (!shallowEqualObjects(data.cubeBuckets, buckets)) {
             data.cubeBuckets = buckets;
             this.view.noteRowDataMutated(data);
         }
@@ -214,12 +215,4 @@ export abstract class BaseRow {
         });
         return changed;
     }
-}
-
-function bucketsEqual(a: PlainObject, b: PlainObject): boolean {
-    if (a === b) return true;
-    if (!a || !b) return false;
-    const aKeys = Object.keys(a),
-        bKeys = Object.keys(b);
-    return aKeys.length === bKeys.length && aKeys.every(k => a[k] === b[k]);
 }

@@ -26,16 +26,12 @@ import {RowUpdate} from './RowUpdate';
  */
 export abstract class LeafRow extends BaseRow {
     /**
-     * The `StoreRecord` within the Cube from which this leaf row draws its data - current as of
-     * the last applied update. Records are immutable, so reference identity here signals that
-     * this row's data is unchanged - see `RowCache.getOrCreate`.
-     * @internal
+     * Source `StoreRecord` in the Cube, current as of the last applied update.
      */
     cubeRecord: StoreRecord;
 
     /**
      * ID of the `StoreRecord` within the Cube that was used to construct this leaf row.
-     * Useful if you need to update this leaf's data via {@link Cube.updateDataAsync}.
      */
     get cubeRecordId(): StoreRecordId {
         return this.cubeRecord.id;

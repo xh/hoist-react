@@ -239,8 +239,7 @@ export class View
             }
         }
 
-        // Must clear row cache if more than the filter is changing - cached rows are shaped by
-        // the query's field set. Filter-only changes revalidate via RowCache as usual.
+        // Clear row cache if more than the filter is changing - rows are shaped by field set.
         if (!oldQuery.equalsExcludingFilter(newQuery)) {
             this._rowCache.clear();
         }
@@ -441,7 +440,6 @@ export class View
 
         this._leafMap = leafMap;
 
-        // Re-derive `cubeBuckets` stamps, which reused rows may need to update.
         if (query.bucketSpecFn) newRows.forEach(row => row.syncBuckets(null));
 
         // This is the magic. We only actually reveal to API the network of *data* nodes.
