@@ -20,7 +20,7 @@ import {
 } from './impl/PivotLattice';
 import {CubeField} from './CubeField';
 import {PivotCellField, PivotPath} from './PivotPath';
-import {PivotQuery} from './PivotQuery';
+import {PivotQuery, PivotQueryConfig} from './PivotQuery';
 import {BaseRow} from './row/BaseRow';
 import {LeafRow} from './row/LeafRow';
 import {PivotCellRow} from './row/PivotCellRow';
@@ -93,6 +93,15 @@ export class PivotView extends View {
             f.dependsOn?.forEach(n => names.add(n));
         });
         return this.fields.filter(f => names.has(f.name));
+    }
+
+    /**
+     * As per {@link View.updateQuery}, widened to the pivot members - without this override
+     * `pivotDimensions` and `valueFields` are unreachable from an object literal, including the
+     * documented case of emptying `pivotDimensions` to degenerate to plain View behavior.
+     */
+    override updateQuery(overrides: Partial<PivotQueryConfig>) {
+        super.updateQuery(overrides);
     }
 
     //------------------------
