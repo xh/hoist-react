@@ -22,12 +22,12 @@ import type {View} from '../View';
  * misses and is rebuilt. Reused rows keep their `cubeRowVersion`, letting connected stores with
  * `reuseRecords: 'cubeRowVersion'` skip record rebuilds for them.
  *
- * Reuse is gated on every input to a row's published data being intrinsic or re-derived:
- * aggregate/bucket rows validate only when all of the View's aggregators declare
- * {@link Aggregator.dependsOnChildrenOnly} - otherwise they are rebuilt every generation
- * (their values may read the AggregationContext), while leaves continue to reuse. Bucket
- * stamps, `lockFn` and `omitFn` are re-derived for all rows on every generation and need no
- * constraint. `canAggregateFn` runs only at row construction and must be pure in its inputs.
+ * Reuse is gated on every input to a row's published data being intrinsic or re-derived. In
+ * Views with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly} - and so
+ * may read the per-generation AggregationContext - reused aggregate/bucket rows recompute their
+ * values in place each generation, with versions bumped only for values that actually changed.
+ * Bucket stamps, `lockFn` and `omitFn` are re-derived for all rows on every generation and need
+ * no constraint. `canAggregateFn` runs only at row construction and must be pure in its inputs.
  *
  * Retention: entries not requested by a generation are retained for potential later reuse - e.g.
  * leaves for records currently excluded by filter, ready should the filter widen again. To bound
@@ -43,15 +43,16 @@ export class RowCache {
     private rows = new Map<string, BaseRow>();
     // Size after the last sweep/reset - growth beyond this signals unreusable entries piling up.
     private sweepBaseline = 0;
-    // Per-generation snapshot of View.aggregatorsAreSimple. Complex aggregators may read the
-    // AggregationContext (rebuilt each generation), so their aggregate/bucket rows never
-    // validate for reuse - leaves, whose data is aggregation-independent, still do.
-    private reuseAggregates = false;
+    // Per-generation snapshot of !View.aggregatorsAreSimple. Complex aggregators may read the
+    // AggregationContext (rebuilt each generation), so reused aggregate/bucket rows recompute
+    // their values in place, republishing only actual changes - see getOrCreate.
+    private recomputeAggs = false;
 
     // Stats for the current generation, reset by noteGeneration.
     reused = 0;
     rebuilt = 0;
     created = 0;
+    recomputed = 0;
     // Entries dropped by the most recent sweep.
     swept = 0;
 
@@ -82,8 +83,12 @@ export class RowCache {
             if (
                 ret.isLeaf
                     ? (ret as LeafRow).cubeRecord === record
-                    : this.reuseAggregates && shallowEqualArrays(ret.children, children)
+                    : shallowEqualArrays(ret.children, children)
             ) {
+                if (this.recomputeAggs && !ret.isLeaf) {
+                    this.recomputed++;
+                    if (ret.computeAggregates()) this.view.noteRowDataMutated(ret.data);
+                }
                 this.reused++;
                 return ret as T;
             }
@@ -98,8 +103,8 @@ export class RowCache {
 
     /** Mark the start of a generation - resets stats and sweeps if the cache has grown stale. */
     noteGeneration() {
-        this.reuseAggregates = this.view.aggregatorsAreSimple;
-        this.reused = this.rebuilt = this.created = 0;
+        this.recomputeAggs = !this.view.aggregatorsAreSimple;
+        this.reused = this.rebuilt = this.created = this.recomputed = 0;
 
         // Growth-triggered amortization: replaced records/rows overwrite their entries in place,
         // so size grows only as ids/paths disappear from results. Steady-state views never sweep.
@@ -131,8 +136,7 @@ export class RowCache {
             if (ret === undefined) {
                 ret = row.isLeaf
                     ? store.getById((row as LeafRow).cubeRecordId) === (row as LeafRow).cubeRecord
-                    : this.reuseAggregates &&
-                      !!row.children?.every(it => rows.get(it.id) === it && isRetained(it));
+                    : !!row.children?.every(it => rows.get(it.id) === it && isRetained(it));
                 memo.set(row, ret);
             }
             return ret;

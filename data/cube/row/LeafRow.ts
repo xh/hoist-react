@@ -28,7 +28,7 @@ export abstract class LeafRow extends BaseRow {
     /**
      * The `StoreRecord` within the Cube from which this leaf row draws its data - current as of
      * the last applied update. Records are immutable, so reference identity here signals that
-     * this row's data is unchanged - see {@link View.cachedRow}.
+     * this row's data is unchanged - see `RowCache.getOrCreate`.
      * @internal
      */
     cubeRecord: StoreRecord;

@@ -450,8 +450,8 @@ export class View
         this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
 
         this.logDebug(
-            `Generated rows: reused=${rowCache.reused} rebuilt=${rowCache.rebuilt} ` +
-                `created=${rowCache.created} cached=${rowCache.size}`
+            `Generated rows: reused=${rowCache.reused} recomputed=${rowCache.recomputed} ` +
+                `rebuilt=${rowCache.rebuilt} created=${rowCache.created} cached=${rowCache.size}`
         );
     }
 

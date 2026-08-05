@@ -195,14 +195,24 @@ export abstract class BaseRow {
         }
     }
 
-    protected computeAggregates() {
+    /**
+     * (Re)compute aggregated values in place, returning true if any value changed. Called on
+     * construction, and again on each reuse in Views with complex aggregators - see RowCache.
+     */
+    computeAggregates(): boolean {
         const {children, canAggregate, view, data} = this,
             ctx = view._aggContext;
+        let changed = false;
         view.fields.forEach(({aggregator, name}) => {
             if (canAggregate[name]) {
-                data[name] = aggregator.aggregate(children, name, ctx);
+                const val = aggregator.aggregate(children, name, ctx);
+                if (data[name] !== val) {
+                    data[name] = val;
+                    changed = true;
+                }
             }
         });
+        return changed;
     }
 }
 

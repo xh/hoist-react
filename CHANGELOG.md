@@ -59,8 +59,8 @@
       objects and `cubeRowVersion` stamps, skipping re-aggregation for untouched subtrees and,
       with `reuseRecords: 'cubeRowVersion'`, record rebuilds in connected stores. Update costs
       now scale with the size of the change rather than the size of the dataset. Views with
-      complex (non-`dependsOnChildrenOnly`) aggregators re-derive all aggregations each
-      generation, but now reuse their leaf rows - the bulk of row-generation cost.
+      complex (non-`dependsOnChildrenOnly`) aggregators also reuse their rows, re-deriving all
+      aggregations in place each generation and republishing only values that actually changed.
     * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store - lets a
       versioned source preserve record identity across full `Cube.loadDataAsync()` reloads,
       extending View row reuse to wholesale refreshes.
