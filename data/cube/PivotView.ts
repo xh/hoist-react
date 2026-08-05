@@ -53,8 +53,6 @@ export interface PivotViewResult extends ViewResult {
  * every aggregator works unmodified and ticks propagate incrementally, but they never enter the
  * visible tree or reach a connected Store.
  *
- * See the Cube package README (`data/cube/README.md`) for pivot patterns.
- *
  * @see PivotQuery
  * @mcpHint live or snapshot pivoted view of aggregated Cube data
  */

@@ -18,8 +18,6 @@ import {Query, QueryConfig} from './Query';
  * `dimensions` keeps its exact existing meaning: the ordered levels of the visible row hierarchy.
  * The two axes are orthogonal and nothing is concatenated.
  *
- * See the Cube package README (`data/cube/README.md`) for pivot patterns.
- *
  * @see PivotQuery
  * @see PivotView
  */
