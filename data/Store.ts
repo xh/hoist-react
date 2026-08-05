@@ -1354,8 +1354,7 @@ export class Store
         return ret;
     }
 
-    // Committed record to re-use for an incoming raw with matching digest and tree position.
-    // `reuseRecords: true` matches on raw object identity instead - no digest involved.
+    // Committed record to re-use for an incoming raw with matching digest or ref and tree position.
     private getReusableRecord(
         id: StoreRecordId,
         raw: PlainObject,
