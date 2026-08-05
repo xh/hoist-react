@@ -320,14 +320,19 @@ export function buildPivotLattice(spec: PivotLatticeSpec): PivotLatticeResult {
         for (let p = leafPathIdx[l]; p > 0; p = pathParentIdx[p]) arr.push(p);
     }
 
+    // Normalize the raw pushes up front, so every `mergeSorted` argument satisfies its precondition -
+    // a group's own array is otherwise still raw when a child merges into it.
+    for (let g = 0; g < groupCount; g++) {
+        if (populated[g]) sortedUnique(populated[g]);
+    }
+
     for (let g = groupCount - 1; g >= 0; g--) {
         const arr = populated[g];
         if (!arr) continue;
 
-        const sorted = (populated[g] = sortedUnique(arr)),
-            pg = parentOfGroup[g];
+        const pg = parentOfGroup[g];
         if (pg >= 0) {
-            populated[pg] = populated[pg] ? mergeSorted(populated[pg], sorted) : sorted.slice();
+            populated[pg] = populated[pg] ? mergeSorted(populated[pg], arr) : arr.slice();
         }
     }
 
