@@ -438,12 +438,18 @@ mismatch.
   `tsx` (no decorators, type-only framework imports) and run against duck-typed rows.
 - **Toolbox tier** — only what genuinely needs the framework: `PivotView`'s override wiring,
   connected-store behavior, `paths` / `cellFields` identity stability as `PivotGridModel` observes
-  it, and the perf/heap gates.
+  it, query transitions through `updateQuery` / `setFilter`, and the perf/heap gates.
 
-**Mutation-test any addition to the unit tier.** A green suite proves nothing on its own; the
-existing suite was validated by breaking the implementation six ways and confirming it caught them.
-The one mutant it missed was semantically equivalent, and chasing it surfaced a load-bearing
-invariant that had no assertion.
+**Mutation-test any addition to either tier.** A green suite proves nothing on its own. The lattice
+suite was validated by breaking the implementation six ways; the one mutant it missed was
+semantically equivalent, and chasing it surfaced a load-bearing invariant that had no assertion. Each
+Toolbox assertion added since is validated by reverting the fix it was written for and confirming it
+goes red.
+
+**Cover query transitions, not just steady states.** A filter-only change with simple aggregators is
+the one path where `View.updateQuery` retains `_rowCache` (`View.ts:234`), so cached rows survive
+into a rebuild that mints new owner rows and a new path tree. Every bug the phase 2 review found
+lived there, and none of it was reachable from a suite that only builds a view and ticks it.
 
 ## Phase 0 — Baseline and harness
 
@@ -580,9 +586,12 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 - [x] Cell projection onto group-row data, full-build and incremental. Exposed leaves also receive
       their own path's value, so a drilled-down row is not blank across the pivot columns.
 - [x] Share `canAggregate` maps across cell rows of identical shape — one per pivot path.
-- [x] Toolbox tier: reference comparison, tick equivalence, and full-rebuild comparison. 74 checks,
-      ~567k values, worst relative drift 1e-13.
+- [x] Toolbox tier: reference comparison, tick equivalence, full-rebuild comparison, filter
+      transitions, and query identity. 99 checks, worst relative drift 1e-13.
 - [x] Benchmark against phase 0 baseline — see [Result](#result--pivotview-measured-against-the-baseline).
+- [x] Review of the phase 2 changeset, with fixes — see the 2026-08-05 session log entry.
+- [ ] **Re-measure before optimizing** — the Result table predates `da632efb9`, which changed the
+      group-axis merge on the build path.
 - [ ] **Close the drill-down build regression** — do not materialize single-leaf-path innermost cells.
 - [ ] **Restate the tick gate as a delta update**, per the Result section.
 - [ ] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount` on both
@@ -599,7 +608,8 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 
 Captured 2026-08-04, same workstation and harness data as the phase 0 baseline, via Admin › Tests ›
 Pivot View › Benchmark. `Build` is Cube load plus view creation, matching what
-`PivotDataModel.update()` did.
+`PivotDataModel.update()` did. **Superseded by `da632efb9`** — re-measure before acting on the build
+gap below.
 
 | Profile       | Group rows | Cells | Build (base) |  Delta tick | Full tick (base) |
 | ------------- | ---------: | ----: | -----------: | ----------: | ---------------: |
@@ -781,3 +791,17 @@ checklists and the prototype-only findings that the rewrite resolves, and cut pr
 confirmed the design was correct. Fixed a real defect: baseline finding 5 argued for a soft cap or
 warning on pivot cardinality, contradicting phase 1's settled decision to throw. Pick up unchanged
 at phase 2 and/or phase 3.
+
+**2026-08-05 — Phase 2 review, and the harness gap it exposed.** Reviewed the phase 2 changeset and
+fixed seven things (`7116572c6`..`0d333722d`). The headline is a class of bug rather than any one of
+them: `PivotCellRow` encoded its owner and path in its cache-key id while also holding pointers to
+what those strings name. Plain `View` never had that duplication, which is why it never hit this. The
+resulting constraint lives on `PivotCellRow`'s class comment, where anyone adding state to it will
+read it. Two filed findings were walked back — a stale `pivotParent` is not reachable, and the
+`mergeSorted` precondition claim did not survive mutation testing (committed anyway as a modest
+cleanup). Started closing the harness gap: the Toolbox suite now covers filter transitions and query
+identity, 74 → 99 checks, mutation-tested by reverting each fix and confirming the new checks go red
+— seven failures and five, with every pre-existing check staying green, which is the measure of how
+wide the gap was. That reaches the three bugs on the `_rowCache` path; `7873d3ff2` and `da632efb9`
+still have no coverage written for them. Pick up at re-measuring the benchmark, then the two bolded
+phase 2 items.
