@@ -70,7 +70,8 @@ export class PivotView extends View {
     declare protected _pathKeys: string[];
     declare protected _paths: PivotPath[];
     declare protected _cellFields: PivotCellField[];
-    declare protected _cellFieldNames: string[][];
+    /** Keyed on path *identity*, so a cell can never resolve names for a path it no longer holds. */
+    declare protected _cellFieldNames: Map<PivotPath, string[]>;
     declare protected _cellRows: PivotCellRow[];
     declare protected _cellAggFields: CubeField[];
 
@@ -153,7 +154,7 @@ export class PivotView extends View {
         this._pathKeys = [];
         this._paths = [];
         this._cellFields = [];
-        this._cellFieldNames = [];
+        this._cellFieldNames = new Map();
         this._cellRows = [];
     }
 
@@ -227,10 +228,10 @@ export class PivotView extends View {
         });
 
         const cellFields: PivotCellField[] = [],
-            cellFieldNames: string[][] = [];
+            cellFieldNames = new Map<PivotPath, string[]>();
         all.forEach(path => {
             const names = valueFields.map(vf => pivotCellFieldName(path.key, vf.name));
-            cellFieldNames.push(names);
+            cellFieldNames.set(path, names);
             valueFields.forEach((valueField, i) => {
                 cellFields.push({name: names[i], path, valueField});
             });
@@ -291,22 +292,26 @@ export class PivotView extends View {
                 valueFields
             ));
 
-            const id = `${ownerRow.id}#${path.key}`;
-            cellRows[c] = this._rowCache.getOrCreate(
-                id,
-                children,
-                () =>
-                    new PivotCellRow(
-                        this,
-                        id,
-                        children,
-                        ownerRow,
-                        path,
-                        pathIdx,
-                        valueFields,
-                        canAggregate
-                    )
-            );
+            const id = `${ownerRow.id}#${path.key}`,
+                row = (cellRows[c] = this._rowCache.getOrCreate(
+                    id,
+                    children,
+                    () =>
+                        new PivotCellRow(
+                            this,
+                            id,
+                            children,
+                            ownerRow,
+                            path,
+                            valueFields,
+                            canAggregate
+                        )
+                ));
+
+            // A cache hit means the id and the children match - not that the objects they name are
+            // the same instances. Rebind, or a reused cell projects onto a discarded owner row.
+            row.ownerRow = ownerRow;
+            row.path = path;
         }
 
         for (let c = 0; c < cellCount; c++) {
@@ -350,7 +355,7 @@ export class PivotView extends View {
         const cell = leaf.pivotParent as PivotCellRow;
         if (!cell) return;
 
-        const names = this._cellFieldNames[cell.pathIdx],
+        const names = this._cellFieldNames.get(cell.path),
             {valueFields} = this.query,
             {data} = leaf;
 
@@ -360,7 +365,7 @@ export class PivotView extends View {
     }
 
     private projectCell(cell: PivotCellRow) {
-        const names = this._cellFieldNames[cell.pathIdx],
+        const names = this._cellFieldNames.get(cell.path),
             {data, ownerRow} = cell,
             ownerData = ownerRow.data,
             {valueFields} = this.query;

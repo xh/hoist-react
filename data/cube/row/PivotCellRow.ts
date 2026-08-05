@@ -25,13 +25,12 @@ import {BaseRow} from './BaseRow';
  * This is an internal data structure.
  */
 export class PivotCellRow extends BaseRow {
+    // Both are rebound on every reuse from `_rowCache` - the id pins what they *name*, not which
+    // object names it, and PivotView mints fresh owners and paths on each rebuild. Any state added
+    // here must be in the id, a function of `children`, or reassigned by `PivotView.buildCellRows`.
     /** Group row this cell's value is projected onto. */
-    readonly ownerRow: BaseRow;
-
-    readonly path: PivotPath;
-
-    /** Index of `path` within the view's flat path list - keys into its cached field names. */
-    readonly pathIdx: number;
+    ownerRow: BaseRow;
+    path: PivotPath;
 
     constructor(
         view: View,
@@ -39,7 +38,6 @@ export class PivotCellRow extends BaseRow {
         children: BaseRow[],
         ownerRow: BaseRow,
         path: PivotPath,
-        pathIdx: number,
         valueFields: CubeField[],
         canAggregate: PlainObject
     ) {
@@ -48,7 +46,6 @@ export class PivotCellRow extends BaseRow {
         this.data = {} as PlainObject;
         this.ownerRow = ownerRow;
         this.path = path;
-        this.pathIdx = pathIdx;
 
         // Children are wired here, but `parent` / `pivotParent` are assigned by PivotView from the
         // lattice - a cell's children do not uniformly treat it as their group-axis parent.
