@@ -117,7 +117,6 @@ class ConfigValueModel extends HoistModel {
             });
         }
 
-        // Instance Value - the raw instance-config override, read-only.
         if (hasOverride) {
             tabs.push({
                 id: 'instance',
@@ -127,7 +126,6 @@ class ConfigValueModel extends HoistModel {
             });
         }
 
-        // DB Value - the editable stored value, struck through in the label when overridden.
         tabs.push({
             id: 'db',
             title: hasOverride
@@ -137,7 +135,7 @@ class ConfigValueModel extends HoistModel {
             content: () => valueFormField(valueType, height, defaultValue)
         });
 
-        // Defaults - the typedClass defaults as declared in code, muted wholesale.
+        // Defaults - the typedClass defaults as declared in code.
         if (hasDefaults) {
             tabs.push({
                 id: 'defaults',
@@ -189,9 +187,8 @@ class ConfigValueModel extends HoistModel {
 //------------------------
 // Implementation
 //------------------------
-// Label-less FormField for the `value` field, bound via the enclosing Form context for standard
-// validation display and automatic read-only rendering. `className` is passed by the plain
-// (non-tabbed) branch to pick up the full-width stretch rule.
+// Label-less FormField for `value`, bound via the enclosing Form context for standard validation
+// display and read-only rendering. The plain branch passes `className` for the full-width rule.
 function valueFormField(
     valueType: string,
     height: number,
@@ -233,8 +230,8 @@ function valueInput(valueType: string, height: number, defaults?: any): ReactEle
     }
 }
 
-// Read-only display of a raw stored value, by type. JSON renders muted where it matches the code
-// defaults; pwd values are masked (the server sends a digest, but even that should not show).
+// Read-only display of a raw stored value, by type. Mutes JSON matching the code defaults;
+// masks pwd.
 function readonlyValue(
     valueType: string,
     value: any,
@@ -298,7 +295,6 @@ function dbValueLineStyles(text: string, defaults: any): CodeInputLineStyles[] {
     return text === canonical ? mutedLineStyles(text, highlightLines) : [];
 }
 
-// Parse a stored JSON string (null on failure).
 function parseValue(v: any): any {
     if (typeof v !== 'string') return v;
     try {

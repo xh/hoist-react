@@ -74,9 +74,8 @@ export class ConfigUtils {
             lines: {text: string; changed: boolean}[] = [],
             indent = '  ';
 
-        // `changed` applies to ALL of a value's lines (open/contents/close) so multi-line values
-        // style as a unit. `uniform` forces it onto the whole subtree (arrays are atomic);
-        // otherwise nested keys are re-evaluated against `changedSet`.
+        // `changed` styles ALL of a value's lines as a unit. `uniform` forces it onto the whole
+        // subtree (arrays are atomic); otherwise nested keys re-evaluate against `changedSet`.
         const emit = (
             prefix: string,
             val: any,

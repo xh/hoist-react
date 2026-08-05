@@ -60,9 +60,8 @@ import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
 
 /**
  * A group of (1-based) line numbers to decorate in a {@link CodeInput}, plus the CSS class(es)
- * to apply to each. A line may appear in multiple groups - their classes combine. To override
- * syntax-token text color, target descendant spans with `!important`, e.g.
- * `.cm-line.my-class, .cm-line.my-class span {color: var(--xh-text-color-muted) !important;}`.
+ * to apply to each. A line may appear in multiple groups - their classes combine. Target
+ * descendant spans with `!important` to override syntax-token text color.
  */
 export interface CodeInputLineStyles {
     lines: number[];
@@ -101,9 +100,8 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     highlightActiveLine?: boolean;
 
     /**
-     * One or more {@link CodeInputLineStyles} groups - or a function of the current document text
-     * returning the same, re-evaluated whenever the document changes. Read once at editor
-     * creation - not reactive as a prop.
+     * One or more {@link CodeInputLineStyles} groups - or a function of the current document
+     * text, re-evaluated as it changes. Read once at editor creation - not reactive as a prop.
      */
     lineStyles?: CodeInputLineStyles[] | ((text: string) => CodeInputLineStyles[]);
 
@@ -600,7 +598,6 @@ class CodeInputModel extends HoistInputModel {
 
     /** Apply the specified CSS class(es) as per-line decorations for the given line groups. */
     private getLineStylesExtension(lineStyles: CodeInputProps['lineStyles']) {
-        // A line may appear in multiple groups - combine their classes.
         const classesByLine = (state: EditorState): Map<number, Set<string>> => {
             const groups = isFunction(lineStyles)
                     ? (lineStyles(state.doc.toString()) ?? [])

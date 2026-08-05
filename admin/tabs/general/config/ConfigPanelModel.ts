@@ -73,9 +73,8 @@ export class ConfigPanelModel extends HoistModel {
                 url: 'rest/configAdmin',
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {enableXssProtection: false},
-                // Grid-facing effective value - resolved for typed configs, else the instance
-                // override when present, else the raw stored value. A real store field so
-                // filtering/sorting/export all match the rendered cell.
+                // Effective value for display/filter/sort/export - resolved, else override,
+                // else stored.
                 processRawData: raw => ({
                     ...raw,
                     effectiveValue:
