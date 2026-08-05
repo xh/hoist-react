@@ -3,10 +3,10 @@
 **Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
 in Toolbox (also off `develop`) for the harness and example pages.
 
-**Status:** phases 0 and 1 complete. Phase 2 is functionally complete and correct against its
-reference suite, but does not yet clear its own gate — see the bolded items on the
-[phase 2 checklist](#phase-2--pivot-data-layer-implementation), starting with a re-measure. Phase 3
-has not been started.
+**Status:** phases 0 and 1 complete. Phase 2 is functionally complete, correct against its reference
+suite, and clears every performance gate it can currently measure — what remains is coverage and
+cleanup, on the [phase 2 checklist](#phase-2--pivot-data-layer-implementation). Phase 3 has not been
+started.
 
 **Goal:** promote a client-app `PivotGrid` component into hoist-react as a first-class framework
 component, with a pivot data layer that is efficient enough for ticking data.
@@ -537,6 +537,14 @@ Heap needs headless Chromium with `--expose-gc` and `--enable-precise-memory-inf
 Pivot Bench reports `heapAvailable: false`. Timing runs do not need headless, but a headless number
 and a windowed number are not comparable — the phase 0 baseline is headless.
 
+**The tab must stay foreground and unoccluded for the whole run, and every number from a run where
+it did not is garbage.** Both harnesses `await wait(50)` between reps; Chrome throttles that chained
+timer to 1/sec in a hidden tab and 1/min after five minutes hidden, and `whileAsync` additionally
+swaps to its synchronous fallback once `XH.pageIsVisible` goes false. A hidden run does not fail
+loudly — it inflates every figure and eventually looks like an indefinite hang with the main thread
+measurably idle. Assert `document.visibilityState === 'visible'` before trusting a run, and register
+a `visibilitychange` tripwire to void one that went hidden partway.
+
 ### Baseline — `PivotDataModel` as imported
 
 Captured 2026-08-01 on a Linux workstation, per the procedure above. Treat these as a _relative_
@@ -612,17 +620,14 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       transitions, and query identity. 99 checks, worst relative drift 1e-13.
 - [x] Benchmark against phase 0 baseline — see [Result](#result--pivotview-measured-against-the-baseline).
 - [x] Review of the phase 2 changeset, with fixes — see the 2026-08-05 session log entry.
-- [ ] **Re-measure before optimizing** — the Result table predates `da632efb9`, which changed the
-      group-axis merge on the build path. Per [How to measure](#how-to-measure).
-- [ ] **Close the drill-down build regression** — do not materialize single-leaf-path innermost cells.
-      Cause, what was already tried, and the proposed fix are in
-      [Result](#result--pivotview-measured-against-the-baseline). Settle on paper first what happens to
-      `pivotParent` routing and `projectLeaf` when a leaf becomes a direct child of its grandparent
-      cell, and whether the lattice suite's partition and exactly-once assertions still hold in that
-      shape — `CHILD_KIND_LEAF` already carries the machinery, but nothing has been reasoned through.
-- [ ] **Restate the tick gate as a delta update**, per the Result section. The open question is the
-      replacement number: 30ms was set against a metric that included `Store`-wide record diffing, and
-      the delta metric measured 12.8ms — so pick a target that is a real bar for the new metric.
+- [x] Re-measured post-`da632efb9`, and the drill-down build regression turned out not to exist — see
+      [Result](#result--pivotview-measured-against-the-baseline). Cancels the cell-row elision work
+      this item was gating.
+- [ ] **Restate the tick gate as a delta update**, per the Result section. Delta tick now measures
+      7.6ms on Typical and 8.3ms on Typical+Drill against gates of 30 and 50, so the replacement
+      numbers should be a real bar rather than a formality — the large profiles sit at 27ms, which is
+      the figure to calibrate against. Also repoint `PivotViewBenchModel`'s pass/fail column at
+      `deltaTickMs`; it still gates on the full-array tick and reports red on passing profiles.
 - [ ] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount` on both
       group rows and cells. The suite currently exercises `SUM` only, so aggregator-specific
       `replace` behavior on the two-parent routing is unverified. Aggregators themselves go in the
@@ -630,10 +635,9 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 - [ ] Heap gate unverified, and currently unverifiable — the criteria set `≤ 2×` over the loaded
       `Cube`, but `PivotViewBenchModel` has no heap column. Port `PivotBenchModel`'s `sampleHeapAsync`
       tooling across, or drop the gate deliberately.
-- [ ] Investigate: Wide+Drill's tick did not complete after several minutes on a heap already loaded
-      by earlier profiles, and both drill profiles stalled the same way until a page reload. Could be
-      GC thrash from the benchmark itself rather than a pivot defect — but it is unexplained. Repro
-      needs the profiles run in sequence via `Run All`, not one profile in a fresh page.
+- [x] The drill-profile tick stall was background-tab timer throttling, not GC thrash and not a pivot
+      defect. `Run All` now completes all six profiles in ~20s foreground. See
+      [How to measure](#how-to-measure).
 - [ ] Non-pivot `View` behavior provably unchanged — the `data/cube` edits are mechanical and type-check
       clean, but nothing yet exercises a plain `View` against its pre-change behavior. Cheapest route
       is plain-`View` scenarios in the Toolbox correctness suite asserted against the same reference
@@ -644,44 +648,44 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 
 ### Result — `PivotView` measured against the baseline
 
-Captured 2026-08-04, same workstation and harness data as the phase 0 baseline, via Admin › Tests ›
+Captured 2026-08-05, same workstation and harness data as the phase 0 baseline, via Admin › Tests ›
 Pivot View › Benchmark. `Build` is Cube load plus view creation, matching what
-`PivotDataModel.update()` did. **Superseded by `da632efb9`** — re-measure before acting on the build
-gap below.
+`PivotDataModel.update()` did.
 
-| Profile       | Group rows | Cells | Build (base) |  Delta tick | Full tick (base) |
-| ------------- | ---------: | ----: | -----------: | ----------: | ---------------: |
-| Typical       |      2,211 | 15.9k |   166 (138)  |    **12.8** |        98.7 (128) |
-| Typical+Drill |     37,211 | 50.9k |   529 (279)  |    **12.1** |       102.4 (335) |
-| Heavy         |      4,213 | 85.8k |   814 (743)  |           - |       434 (836)   |
-| Heavy+Drill   |    104,213 |  286k | 2,496 (2485) |           - |      370 (3601)   |
-| Wide          |     31,637 |  269k | 1,388 (1370) |           - |      129 (1734)   |
+| Profile       | Group rows | Cells | Build (base) | Delta tick | Full tick (base) |
+| ------------- | ---------: | ----: | -----------: | ---------: | ---------------: |
+| Typical       |      2,211 | 15.9k |    115 (138) |    **7.6** |       67.8 (128) |
+| Typical+Drill |     37,211 | 50.9k |    269 (279) |    **8.3** |       64.1 (335) |
+| Heavy         |      4,213 | 85.8k |    429 (743) |       27.0 |      196.6 (836) |
+| Heavy+Drill   |    104,213 |  286k | 1,139 (2485) |       27.1 |     211.1 (3601) |
+| Wide          |     31,637 |  269k |    608 (1370) |      13.7 |      81.2 (1734) |
+| Wide+Drill    |     66,637 |  374k |    897 (2150) |      11.7 |      78.4 (3146) |
 
-**The tick target is met — but only on the delta metric, and that distinction is the finding.**
-The baseline's "tick" resubmitted all 35k leaves, so ~95ms of it is `Store`-wide record diffing that
-no pivot implementation can influence. Measured that way the rewrite looks like a 1.3× win on
-Typical and the 30ms target is unreachable by construction. Submitting an explicit
-`{update: changed}` transaction isolates the pivot work: **12.8ms against the 30ms gate, and 12.1ms
-against Typical+Drill's 50ms** — and 10-13× reductions on the large profiles even on the full-array
-metric. **Restate the tick gate as a delta update**; the current wording measures the wrong thing.
+**Both build gates pass and the delta-tick gate passes with 3-4× of headroom. The rewrite beats the
+prototype on every profile and every metric.** Second consecutive run agreed within 5% on all
+profiles except Wide+Drill (897 → 1,065, ~19%), so treat Wide+Drill's build as the one noisy figure.
 
-**The build target is missed, and Typical+Drill is a genuine ~1.9× regression** (529ms against a
-revised 290ms, and against the prototype's own 279ms). Typical misses marginally (166 vs 140), which
-is inside run-to-run noise of parity. Build is at parity or slightly better on Heavy and Wide, so the
-regression is specific to **a unique-per-leaf innermost grouping**: 35k of Typical+Drill's 51k cells
-are innermost cells holding a single leaf path, and each costs a `PivotCellRow`, a `data` object, an
-id string, and a `_rowCache` insert — where the prototype's dense Cube pass allocated no rows at all
-and only paid 298k cheap field-aggregations.
+**Restate the tick gate as a delta update.** The baseline's "tick" resubmitted all 35k leaves, so
+much of it is `Store`-wide record diffing that no pivot implementation can influence. An explicit
+`{update: changed}` transaction isolates the pivot work: 7.6ms against the 30ms gate, 8.3ms against
+Typical+Drill's 50ms. The full-array metric also beats the baseline everywhere (1.9× on Typical,
+17-40× on the large profiles), but it is measuring the wrong thing and the harness's own pass/fail
+column still keys off it — which is why Typical shows a red gate at a 115ms build and a 7.6ms delta.
 
-Two allocation fixes were tried and are in place, but moved it far less than expected (577 → 562 →
-529ms): sorted arrays instead of a `Set` per group, and `canAggregate` shared per pivot path.
+**The 2026-08-04 table was a measurement artifact; there is no drill-down build regression.** It
+recorded 529ms for Typical+Drill and a ~1.9× regression, and none of that reproduces. Checking
+`data/cube` out at `7116572c6~1` — the exact code that table was measured against — and re-running
+gives 97 / 266 / 413 / 1,140 / 615 / 907, statistically indistinguishable from HEAD. So the five
+commits since are perf-neutral (including `da632efb9`, which prompted this re-measure), and the
+earlier figures came from the environment, not the code. Near-certainly a hidden tab: the
+reproduction attempt for this re-measure hit exactly that and inflated Typical+Drill from 269 to
+465-493ms before degrading into an apparent hang. See [How to measure](#how-to-measure).
 
-**Next thing to try:** do not materialize a cell row for an innermost group whose cell holds exactly
-one leaf path — its value *is* the leaf's own, so it can be projected straight from the leaf and its
-parent cell can take the leaf as a child directly. That removes ~35k of the 51k cell rows on this
-profile and should close most of the gap. Until it does, the honest position is that the design wins
-decisively on ticking (the metric that actually failed) and on wide/heavy builds, and costs ~1.9× on
-drill-down builds.
+The lesson generalizes past this table: a wrong benchmark cost a plausible, fully-reasoned
+optimization plan — cell-row elision for single-leaf-path innermost groups, with an allocation
+argument behind it — that would have bought nothing. Re-measure before optimizing, and A/B against
+the old code rather than against a recorded number whenever a figure moves more than the change
+plausibly explains.
 
 ## Phase 3 — PivotGridModel
 
@@ -843,3 +847,13 @@ identity, 74 → 99 checks, mutation-tested by reverting each fix and confirming
 wide the gap was. That reaches the three bugs on the `_rowCache` path; `7873d3ff2` and `da632efb9`
 still have no coverage written for them. Pick up at re-measuring the benchmark, then the two bolded
 phase 2 items.
+
+**2026-08-05 — Re-measure, and the benchmark was lying.** Phase 2 clears both build gates and the
+delta-tick gate on every profile, beating the prototype everywhere; the new
+[Result](#result--pivotview-measured-against-the-baseline) supersedes 2026-08-04 outright. The
+drill-down build regression does not exist — A/B'd by checking `data/cube` out at `7116572c6~1` and
+re-running, which reproduces HEAD's numbers, not the recorded ones. That kills the cell-row elision
+item and, separately, explains the drill-profile tick stall: background-tab timer throttling. Both
+failures trace to one cause, now documented under [How to measure](#how-to-measure) — a hidden tab
+silently inflates every figure instead of erroring. Pick up at restating the tick gate, then the
+remaining coverage items (aggregators beyond `SUM`, heap, plain-`View` regression).
