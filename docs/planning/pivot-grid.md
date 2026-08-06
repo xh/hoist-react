@@ -1,7 +1,9 @@
 # PivotGrid
 
 **Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
-in Toolbox (also off `develop`) for the harness and example pages.
+in Toolbox (also off `develop`) for the harness and example pages. `pivot-grid-store-simple` in both
+repos is the same work rebased onto `store-simple` — verified, and the base to build phase 3 on once
+`store-simple` merges. See [Rebase onto `store-simple`](#rebase-onto-store-simple).
 
 **Status:** phases 0 and 1 complete. Phase 2 is functionally complete, correct against its reference
 suite, and clears every performance gate it still carries. What remains is one gate number to set, a
@@ -755,6 +757,61 @@ optimization plan — cell-row elision for single-leaf-path innermost groups, wi
 argument behind it — that would have bought nothing. Re-measure before optimizing, and A/B against
 the old code rather than against a recorded number whenever a figure moves more than the change
 plausibly explains.
+
+## Rebase onto `store-simple`
+
+`store-simple` reworks Cube View row and record reuse — the exact machinery phase 2 builds on — and
+lands in `develop` shortly. **The rebase is done and verified** on `pivot-grid-store-simple` (both
+repos); `pivot-grid` is untouched, so either can be the base. All 25 commits replayed; conflicts hit
+only `View.ts`, `BaseRow.ts`, `LeafRow.ts`, and `PivotView.ts`.
+
+Verified on the rebased branches: 211/211 Toolbox checks, 49/49 unit checks, `tsc` clean, both build
+gates and the delta-tick gate pass.
+
+What the integration required, all of it load-bearing:
+
+- **`cachedRow` is gone**, replaced by `RowCache.getOrCreate(id, children, fn, record?)`. Its reuse
+  invariant validates a leaf against `cubeRecord` identity and everything else against an identical
+  children array — still identity of *names*, not of the objects named, so
+  [the cell-row rebinding](#session-log) fix remains necessary and is retained.
+- **`BaseRow.aggFields`** now holds the row's own field set. `RowCache` recomputes reused rows in
+  place by calling `computeAggregates()` with no arguments, which would otherwise aggregate every
+  view field on a cell row rather than just its measures.
+- **`PivotView.loadUpdatedRows` restamps digests** on every owner group row it projected onto.
+  Connected stores now skip record rebuilds by comparing `cubeRowDigest`, the base class stamps
+  digests *before* `loadUpdatedRows` runs, and an owner whose own aggregates happened to hold is
+  never in `updatedRows` at all — so without the restamp a changed cell renders stale.
+- `View.parseStores` composes cleanly with their rewrite; `reuseRecords` is now View-managed via
+  `setDigestFn`, and our null-tolerance fix survives.
+- Toolbox: `ViewRowData` is a plain fixed-shape interface, so the `cubeLeaves` getter became the
+  exported `getCubeLeaves(row)`.
+
+### Open decision: fixed-shape rows vs sparse cells
+
+**This is the one real design conflict and it wants a deliberate answer.** `store-simple` keeps every
+row's data in V8 fast-properties mode by cloning a per-View template that carries a slot for every
+field — rows are only ever written by *overwriting* slots, never by adding properties. Cell projection
+writes synthetic cell fields onto group-row data, which are property **adds**, so pivoted group rows
+drop into dictionary mode.
+
+Warm builds run ~5-8% slower rebased (Typical 131 vs 118-123, Typical+Drill 285 vs 273-278, against
+gates of 140 and 290). Dictionary-mode group rows are the leading hypothesis, unproven — A/B it before
+acting, per the lesson this branch already learned once.
+
+The obvious fix is to put cell field names in the row template, and it contradicts
+[Cells on row data](#cells-on-row-data-and-field-naming) head on: that section deliberately leaves
+unpopulated cells *absent* from row data, resolving to null through `Store`'s prototype-chained
+`_dataDefaults` rather than occupying a slot per row. Templating them makes every group row carry
+every cell slot — on Wide that is 31,637 × 138 ≈ 4.4M slots, which is the dense memory the whole cost
+model exists to avoid. Cell names are also only discovered during `generateCells`, after the
+constructor builds templates, so the first build cannot template them anyway.
+
+Three ways out, in rough order of appeal: accept dictionary mode for pivoted group rows and drop the
+fixed-shape guarantee there deliberately; template only the cell fields and pay the dense memory,
+which is defensible if `maxPivotPaths` keeps path counts genuinely low; or revisit
+`Column.getValueFn` and keep cells on cell rows, already recorded as rejected but explicitly
+revisitable "if heap becomes the binding constraint". **Typical+Drill has only 5ms of margin against
+its 290ms build gate, so this cannot be left to drift.**
 
 ## Phase 3 — PivotGridModel
 
