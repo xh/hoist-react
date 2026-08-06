@@ -5,15 +5,21 @@ example pages. Both sit on current `develop`, which now carries the Store rework
 `pivot-grid-pre-store-simple` in each repo is the pre-rework history, kept only until this is bedded in.
 See [Rebase onto the Store rework](#rebase-onto-the-store-rework-store-simple).
 
-**Status: phases 0-2 complete and verified, and phase 3's design decisions are settled.** The data
-layer is correct against its reference suite (262 Toolbox checks, 49 unit checks, both
+**Toolbox commits on this branch need `--no-verify`.** Its pre-commit hook runs `yarn lint:types`,
+which resolves `@xh/hoist` against the published `node_modules` copy, so every file touching the pivot
+API fails on missing exports. To typecheck for real, uncomment the `paths` block in
+`client-app/tsconfig.json`, run `tsc`, then re-comment it — that block must not be committed enabled.
+
+**Status: phases 0-2 complete and verified; phase 3's store plumbing is in and the grid model is
+next.** The data layer is correct against its reference suite (279 Toolbox checks, 49 unit checks, both
 mutation-tested), rebased onto the `develop` that carries the Store rework, and clears every gate it
 still carries. Only `PivotDataModel`'s retirement is left in phase 2, and phase 3 is what unblocks it.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
-the settled contract phase 3 builds to, and it moves all query config off the grid model. Then start at
-the [checklist](#phase-3--pivotgridmodel). One decision stays open and phase 3 will meet it while
-building columns: [fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
+the settled contract phase 3 builds to, and it moves all query config off the grid model. Then pick up
+at the first unchecked [checklist](#phase-3--pivotgridmodel) item, which is the `PivotGridModel`
+rewire. One decision stays open and phase 3 will meet it while building columns:
+[fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
 
 **To see the data layer's output before touching it**, open Admin › Tests › **Pivot Inspect** — eight
 records with hand-checkable values, and the query, raw records, `result.rows`, `result.paths`,
@@ -1024,16 +1030,26 @@ from every store field at each recursion level, so it is `O(groups × fields)` i
 `setColumns`. A pivot grid rebuilds nested column groups over hundreds of cell fields on every
 structural change, which is exactly that shape. Fix it before rewiring, not opportunistically.
 
-- [ ] Fix the `enhanceColConfigsFromStore` prerequisite above.
-- [ ] `Store.setFields()`, replacing the prototype's `_fieldMap` / `_dataDefaults` pokes. Replace-all;
+- [x] Fix the `enhanceColConfigsFromStore` prerequisite above. Store fields resolve once and are
+      passed down the recursion; col-level `field` config objects stay scoped to their own level, with
+      the shared map copied only when a level contributes one.
+- [x] `Store.setFields()`, replacing the prototype's `_fieldMap` / `_dataDefaults` pokes. Replace-all;
       rebuild both `_fieldMap` and `_dataDefaults`; retain records when `projectionOnly` and drop them
       otherwise, per [What fields do](#what-fields-do-under-projectiononly). Public, but marked
       `@internal` in JSDoc for now — the pivot store is not app-configurable and a general `setFields`
-      reopens that door. `parseFields` already throws on an `id` field.
-- [ ] `PivotView.createStore({connect})` and `disconnectStore()`, per
-      [the factory contract](#pivotviewcreatestore).
-- [ ] `PivotView` syncs cell fields onto connected stores before `loadStores()`, and sets
-      `loadRootAsSummary` from `query.includeRoot`.
+      reopens that door. `parseFields` already throws on an `id` field. Retains the configured
+      `fieldDefaults`, which the constructor previously discarded.
+- [x] `PivotView.createStore({connect})` and `disconnectStore()`, per
+      [the factory contract](#pivotviewcreatestore). Takes the full `StoreConfig` surface, defaulting
+      `loadTreeData` and `projectionOnly` to true — the correctness suite needs to opt out of the
+      latter. Declares `VIEW_ROW_DATA_FIELDS` (new, in `ViewRowData.ts` so it cannot drift from the
+      interface) plus the query fields, then defers to the sync below for cells.
+- [x] `PivotView` syncs cell fields onto connected stores before `loadStores()`, and sets
+      `loadRootAsSummary` from `query.includeRoot`. Keyed on `result.cellFields` *identity* per store
+      in a `WeakMap`, so the steady state does no work; that map must be `declare`d and lazily
+      initialized, since a field initializer on a `View` subclass runs after `super()`'s
+      constructor-time `fullUpdate`. `View.loadStores` gained a per-store `loadStore` so the factory
+      can load a non-connected store once, and `parseStores` widened to `protected`.
 - [ ] Rewire `PivotGridModel`: take a `PivotView`, drop every query-mirroring `@bindable`, mint and own
       the store, rebuild columns on `result.paths` identity, disconnect the store in `destroy()`. What
       the data layer hands it:
@@ -1117,6 +1133,26 @@ which `PivotQuery` already validates at construction.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-06 — Phase 3 store plumbing.** The first four checklist items landed: the
+`enhanceColConfigsFromStore` fix, `Store.setFields`, `PivotView.createStore` / `disconnectStore`, and
+the pre-`loadStores` cell-field sync. 262 → 279 Toolbox checks, green, and every one of five mutants
+killed by the check written for it — including the ordering claim this whole design rests on (syncing
+*after* `loadStores` kills 16 checks, and not only in the new scenario: it also wipes the app-declared
+stores of the pre-existing ones, because `setFields` on a non-projection store drops the records the
+base class just loaded).
+
+Two things worth knowing next time. **A `View` subclass cannot use field initializers** for state its
+overrides touch — `super()` runs `fullUpdate` first, so the initializer wipes it. `PivotView` already
+documented this for its cell state; the new `WeakMap` had to follow. And **the new scenario's own guard
+caught the harness, not the framework**: the first run failed `disconnectStore: stops further loads`
+with "the tick was a no-op", because the mixed measures are a pure function of a generation counter and
+`tickAsync` hardcoded generation 1, so a second tick within one scenario moved nothing. That is the
+anti-vacuity rule paying for itself — a control leg that asserts the tick was real.
+
+Left for the next session: the `PivotGridModel` rewire onward. The
+[open fixed-shape decision](#open-decision-fixed-shape-rows-vs-sparse-cells) is untouched and still
+wants a build measurement on a quiet machine.
 
 **2026-08-06 — Phase 3 decisions settled, no implementation.** The whole grid integration contract is
 now in [Grid integration design](#grid-integration-design). The load-bearing find is an ordering fact:
