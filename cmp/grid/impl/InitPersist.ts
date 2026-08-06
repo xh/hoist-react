@@ -4,7 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PersistableState, PersistenceProvider, persistOptions} from '@xh/hoist/core';
+import {
+    DashViewProvider,
+    PersistableState,
+    PersistenceProvider,
+    persistOptions,
+    PersistOptions,
+    ViewManagerProvider
+} from '@xh/hoist/core';
 import {isEqual, isObject} from 'lodash';
 import {runInAction} from 'mobx';
 import {GridModel} from '../GridModel';
@@ -21,23 +28,31 @@ export function initPersist(
         persistGrouping = true,
         persistSort = true,
         persistExpandToLevel = true,
+        hideNewColumns,
         path = 'grid',
         ...rootPersistWith
     }: GridModelPersistOptions
 ) {
     if (persistColumns) {
+        const colPersistOptions = persistOptions(
+            {path: `${path}.columns`},
+            rootPersistWith,
+            isObject(persistColumns) ? persistColumns : null
+        );
+
         PersistenceProvider.create({
-            persistOptions: persistOptions(
-                {path: `${path}.columns`},
-                rootPersistWith,
-                isObject(persistColumns) ? persistColumns : null
-            ),
+            persistOptions: colPersistOptions,
             target: {
                 getPersistableState: () =>
                     new PersistableColumnState(gridModel.persistableColumnState),
                 setPersistableState: ({value}) =>
                     runInAction(() => {
-                        gridModel.setColumnState(value);
+                        gridModel.setColumnState(value, {
+                            // Resolved on each read, as the answer can change with the current
+                            // ViewManager view.
+                            hideNewColumns:
+                                hideNewColumns ?? persistsToCuratedView(colPersistOptions)
+                        });
                         if (gridModel.autosizeOptions.mode === 'managed') {
                             const columns = gridModel.columnState
                                 .filter(it => !it.manuallySized)
@@ -95,6 +110,29 @@ export function initPersist(
             owner: gridModel
         });
     }
+}
+
+/**
+ * Is the state described by these options persisted as part of a user-curated, named view - i.e.
+ * a ViewManager view or a dashboard widget? Users compose these views deliberately, in contrast to
+ * providers such as prefs or localStorage, where persisted state is an implicit record of a user's
+ * last-used layout.
+ *
+ * Note the special "default" view of a ViewManager is *not* considered curated - it represents the
+ * in-code state active when no saved view is selected.
+ */
+function persistsToCuratedView(opts: PersistOptions): boolean {
+    const providerClass = PersistenceProvider.parseProviderClass(opts);
+    if (isSubclassOf(providerClass, DashViewProvider)) return true;
+    if (isSubclassOf(providerClass, ViewManagerProvider)) {
+        // Note view can be null if still initializing - treat as curated, the safer assumption.
+        return !opts.viewManagerModel.view?.isDefault;
+    }
+    return false;
+}
+
+function isSubclassOf(cls: any, base: any): boolean {
+    return cls === base || cls.prototype instanceof base;
 }
 
 class PersistableColumnState extends PersistableState<ColumnState[]> {

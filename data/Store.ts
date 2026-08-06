@@ -6,7 +6,7 @@
  */
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
-import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {AnyIterable, HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
 import {
     Field,
     FieldSpec,
@@ -48,6 +48,27 @@ import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 
 /**
+ * Populated (non-default) field count at/above which a record's `data` is considered dense and
+ * cloned from a shared template carrying every Field, giving all such records one fixed shape.
+ * Records below it take the sparse form - own properties for non-default values only, defaults
+ * via a shared prototype. See `buildData()`.
+ *
+ * The cutoff tracks V8's dictionary-mode demotion: objects built by keyed property adds are
+ * demoted to a memory-hungry per-object hashtable at ~20 adds, as measured empirically - an
+ * undocumented heuristic, so this sits comfortably below it, leaving room for the `id` property
+ * later added to every record's data. Overridable via `experimental.denseRecordThreshold` - set
+ * to e.g. 999 (above any field count) to force the sparse form for all records (the pre-v87
+ * behavior), or to 1 to force the fixed shape for all.
+ */
+const DENSE_RECORD_THRESHOLD = 17;
+
+/**
+ * Digest identifying a version of a raw data record for `StoreConfig.reuseRecords` - a primitive
+ * value, compared via `===`. Build composite keys as strings, e.g. `raw.type + '|' + raw.seq`.
+ */
+export type RecordDigest = string | number;
+
+/**
  * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
  * from GridModel columns). Data can be supplied at construction via `data`, or loaded later
  * via `Store.loadData()`.
@@ -87,9 +108,11 @@ export interface StoreConfig {
     data?: PlainObject[];
 
     /**
-     * Function to run on each individual data object presented to `loadData()` prior to creating
-     * a `StoreRecord` from that object. This function must return an object, cloning the original
-     * object if edits are necessary.
+     * Function to pre-process individual data objects presented to `loadData()` prior to creating
+     * a `StoreRecord` from that object. For efficiency, apps may mutate and return the passed
+     * object in place - typically the raw data is transient (e.g. freshly fetched) and there is
+     * no need to allocate a clone. If the app *does* cache, share, or otherwise
+     * re-use the raw data, be careful to return a modified clone instead.
      */
     processRawData?: (data: PlainObject) => PlainObject;
 
@@ -128,23 +151,40 @@ export interface StoreConfig {
     idEncodesTreePath?: boolean;
 
     /**
-     * Performance optimization for large datasets with immutable raw data objects.
+     * Performance optimization for large datasets whose provider can cheaply identify unchanged
+     * records across loads and updates.
      *
      * By default, Store reuses existing StoreRecord instances when new data is loaded with
-     * matching IDs and identical field values (determined via deep equality comparison). This
+     * matching IDs and identical field values (determined via equality comparison). This
      * preserves row state in grids for unchanged records.
      *
-     * When `reuseRecords` is true, the Store skips the fieldwise comparison and instead reuses
-     * records when the raw data object itself is **reference-identical** to the previously loaded
-     * object. This avoids equality checks, record creation, and raw data processing overhead.
+     * Set to instead derive a *digest* from each incoming raw object, snapshotted on the record
+     * when built. A record is then reused whenever a later raw object for its id yields an equal
+     * digest, skipping raw data processing, parsing, and construction entirely:
      *
-     * Only use this when your data source provides stable object references for unchanged records.
-     * Should not be used with a `processRawData` function that depends on external state, as that
-     * function will be bypassed on subsequent reloads of reference-identical data.
+     *   - `true` - reuse on raw object identity: a record is reused when a later raw object for
+     *     its id is the very same object, by reference. Requires the source to provide stable
+     *     references for unchanged records and to never mutate them - use a form below for
+     *     sources that mutate rows in place.
+     *   - string - the digest is the named raw property, e.g. a server-provided timestamp or
+     *     sequence number.
+     *   - function - the digest is the returned value. Digests must be primitives, compared
+     *     via `===` - build composite keys as strings, e.g. `raw => raw.type + '|' + raw.seq`.
+     *     A null/undefined digest never matches.
      *
-     * Default false.
+     * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged digest
+     * is dropped from the transaction as a no-op.
+     *
+     * Stores connected to a Cube {@link View} must leave this config unset - the View manages
+     * reuse automatically, installing a digest that reads the stamp it maintains on every row
+     * it publishes. Any explicit value throws at connection.
+     *
+     * Should not be used with a `processRawData` function that depends on external state as that
+     * function will be bypassed for reused records.
+     *
+     * Default null.
      */
-    reuseRecords?: boolean;
+    reuseRecords?: boolean | string | ((raw: PlainObject) => RecordDigest);
 
     /**
      * True (default) to have each StoreRecord retain a reference to the raw data object from
@@ -152,10 +192,32 @@ export interface StoreConfig {
      * usage on large stores - raw data objects are then eligible for garbage collection after
      * parsing, and `StoreRecord.raw` will be null.
      *
-     * Not compatible with `reuseRecords`, which requires retained raw data for its
-     * reference-identity checks.
+     * Setting to false is not compatible with `reuseRecords: true`, which requires retained raw
+     * data for its reference-identity check. The string and function `reuseRecords` forms may be
+     * used, however.
      */
     retainRaw?: boolean;
+
+    /**
+     * True to mark this store as a read-only projection of data owned and parsed elsewhere.
+     * Recommended for stores connected to a Cube {@link View} for improved performance, when no
+     * additional record parsing or local data modification is required. Default false.
+     *
+     * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
+     * per-record parse and copy on every load and update. Raw data must already match what the
+     * Store's Fields would parse - `type`, `parseVal`, and `defaultValue` are not applied. The
+     * Store never modifies or freezes these objects (regardless of `freezeData`); the provider
+     * may mutate rows in place but must then publish via `updateData()`, as `loadData()` would
+     * skip reference-equal objects as unchanged.
+     *
+     * `data` will carry every key on the raw object, not just declared Fields - but only declared
+     * Field values participate in the equality checks `loadData()` uses to detect unchanged
+     * records for reuse. As a read-only projection, local modification APIs (`addRecords`,
+     * `modifyRecords`, `removeRecords`, `revertRecords`, and `revert`) throw - data updates flow
+     * in via `loadData()`/`updateData()`.
+     * Not compatible with `processRawData`.
+     */
+    projectionOnly?: boolean;
 
     /**
      * Set to true to always validate all uncommitted records on every change to
@@ -170,6 +232,11 @@ export interface StoreConfig {
     experimental?: PlainObject;
 }
 
+/**
+ * App-wide defaults for {@link Store}, applied to every Store constructed without an explicit
+ * value - including those Hoist itself creates internally. Limited to configs appropriate for
+ * every Store in an app.
+ */
 export interface StoreDefaults {
     freezeData?: boolean;
 }
@@ -219,10 +286,10 @@ export interface ChildRawData {
     parentId: string;
 
     /**
-     * Data for the child records to be added. Can include a `children` property to be processed
+     * Data for the child record to be added. Can include a `children` property to be processed
      * into new (grand)child records.
      */
-    rawData: PlainObject[];
+    rawData: PlainObject;
 }
 
 export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
@@ -242,6 +309,10 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
  * Data is loaded via `loadData()` (full replacement) or `updateData()` (transactional). Fields
  * can be defined explicitly or inferred from GridModel columns. `Store.defaults` provides
  * app-wide configuration.
+ *
+ * Record `data` objects are automatically memory-optimized - read them by field name and never
+ * enumerate them directly. See {@link StoreRecord.data}, and the experimental
+ * `denseRecordThreshold` config to adjust or disable the optimization for testing.
  *
  * See the data package README (`data/README.md`) for full documentation including tree data,
  * filtering patterns, validation, and common pitfalls.
@@ -279,8 +350,9 @@ export class Store
     loadRootAsSummary: boolean;
     idEncodesTreePath: boolean;
     freezeData: boolean;
-    reuseRecords: boolean;
+    reuseRecords: boolean | string | ((raw: PlainObject) => RecordDigest);
     retainRaw: boolean;
+    readonly projectionOnly: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -319,7 +391,20 @@ export class Store
     @observable.ref
     _filtered: RecordSet;
 
-    private _dataDefaults = null;
+    private _dataTemplate: PlainObject = null;
+    private _dataDefaults: PlainObject = null;
+    private _denseRecordThreshold: number;
+    private _digestFn: (raw: PlainObject) => RecordDigest;
+
+    // Last parent pair verified position-equal by positionUnchanged().
+    private _verifiedCachedParent: StoreRecord = null;
+    private _verifiedNewParent: StoreRecord = null;
+
+    // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
+    // name/value buffers are the current record's non-default fields, filled and fully consumed
+    // within a single call to avoid allocation during parsing. See buildData().
+    private _recordBuildData = {names: [] as string[], vals: [] as any[], n: 0};
+
     _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
@@ -336,8 +421,9 @@ export class Store
         loadRootAsSummary = false,
         freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
-        reuseRecords = false,
+        reuseRecords = null,
         retainRaw = true,
+        projectionOnly = false,
         validationIsComplex = false,
         experimental,
         data
@@ -345,9 +431,14 @@ export class Store
         super();
         makeObservable(this);
         throwIf(
-            reuseRecords && !retainRaw,
-            'Store cannot be configured with both `reuseRecords` and `retainRaw: false` - record reuse requires retained raw data references.'
+            reuseRecords === true && !retainRaw,
+            'Store cannot be configured with both `reuseRecords: true` and `retainRaw: false` - the reference-identity check requires retained raw data. Provide a string or function `reuseRecords` digest to combine record reuse with `retainRaw: false`.'
         );
+        throwIf(
+            projectionOnly && processRawData,
+            'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
+        );
+
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
@@ -361,17 +452,31 @@ export class Store
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
         this.retainRaw = retainRaw;
+        this.projectionOnly = projectionOnly;
         this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
+        this._digestFn = this.createDigestFn();
+        this._dataDefaults = this.createDataDefaults();
+        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this._denseRecordThreshold =
+            this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
+    }
+
+    /**
+     * Install a digest fn for record reuse, overriding any configured `reuseRecords` spec.
+     * @internal - called by a Cube {@link View} on its connected stores, letting the View manage
+     * reuse via the stamp it maintains on every row it publishes.
+     */
+    setDigestFn(fn: (raw: PlainObject) => RecordDigest) {
+        this._digestFn = fn;
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -430,9 +535,9 @@ export class Store
      *
      * Use to load very large datasets without buffering the complete raw dataset in a single
      * array - e.g. rows streamed incrementally from the server. The source may be a sync or
-     * async iterable, yielding individual raw records or arrays (chunks) of records - see
-     * {@link FetchService.fetchNdjson} for the natural source when streaming NDJSON, e.g.
-     * `store.loadDataAsync(XH.fetchNdjson({url}))`.
+     * async iterable yielding individual raw records - see {@link FetchService.fetchNdjson}
+     * for the natural source when streaming NDJSON, e.g.
+     * `store.loadDataAsync(XH.fetchNdjson({url}).lines)`.
      *
      * The Store is not modified until the source has been fully consumed - all records are then
      * installed in a single observable transaction, exactly as with `loadData()`. If the source
@@ -444,11 +549,9 @@ export class Store
      * stores with `loadRootAsSummary` - such payloads nest all row data within a single root
      * node and cannot be streamed.
      *
-     * @param rawData - iterable yielding raw records, or chunks (arrays) of raw records.
+     * @param rawData - iterable yielding raw records.
      */
-    async loadDataAsync(
-        rawData: AsyncIterable<Some<PlainObject>> | Iterable<Some<PlainObject>>
-    ): Promise<void> {
+    async loadDataAsync(rawData: AnyIterable<PlainObject>): Promise<void> {
         throwIf(
             this.loadRootAsSummary,
             'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
@@ -457,10 +560,8 @@ export class Store
         const recordMap = new Map<StoreRecordId, StoreRecord>(),
             summaryIds = new Set<StoreRecordId>();
 
-        for await (const chunk of rawData) {
-            for (const raw of castArray(chunk)) {
-                this.createRecords([raw], null, recordMap, summaryIds);
-            }
+        for await (const raw of rawData) {
+            this.createRecordDeep(raw, null, recordMap, summaryIds);
         }
 
         runInAction(() => {
@@ -530,15 +631,19 @@ export class Store
         // 1) Pre-process updates and adds into Records
         let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
         if (update) {
-            updateRecs = update.map(it => {
+            updateRecs = [];
+            update.forEach(it => {
                 const recId = this.idSpec(it),
                     rec = this.getOrThrow(
                         recId,
                         'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
                     ),
                     parent = rec.parent,
-                    isSummary = some(this.summaryRecords, {id: recId});
-                return this.createRecord(it, parent, isSummary);
+                    isSummary = some(this.summaryRecords, {id: recId}),
+                    newRec = this.createRecord(it, parent, isSummary);
+
+                // Reused records signal an unchanged digest - drop such updates as no-ops.
+                if (newRec !== this._committed?.getById(recId)) updateRecs.push(newRec);
             });
         }
         if (add) {
@@ -547,9 +652,9 @@ export class Store
                 if (isChildRawDataObject(it)) {
                     const {rawData, parentId} = it,
                         parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
-                    this.createRecords([rawData], parent, addRecs);
+                    this.createRecordDeep(rawData, parent, addRecs);
                 } else {
-                    this.createRecords([it], null, addRecs);
+                    this.createRecordDeep(it, null, addRecs);
                 }
             });
         }
@@ -638,10 +743,11 @@ export class Store
      */
     @action
     addRecords(data: Some<PlainObject>, parentId?: StoreRecordId) {
-        data = castArray(data);
-        if (isEmpty(data)) return;
+        this.throwIfProjectionOnly('addRecords');
+        const rawRecords = castArray(data);
+        if (isEmpty(rawRecords)) return;
 
-        const addRecs = data.map(it => {
+        const addRecs = rawRecords.map(it => {
             const {id} = it;
             throwIf(isNil(id), `Must provide 'id' property for new records.`);
             throwIf(this.getById(id), `Duplicate id '${id}' provided for new record.`);
@@ -674,6 +780,7 @@ export class Store
      */
     @action
     removeRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
+        this.throwIfProjectionOnly('removeRecords');
         records = castArray(records);
         if (isEmpty(records)) return;
 
@@ -703,6 +810,7 @@ export class Store
      */
     @action
     modifyRecords(modifications: Some<PlainObject>): StoreChangeLog {
+        this.throwIfProjectionOnly('modifyRecords');
         modifications = castArray(modifications);
         if (isEmpty(modifications)) return;
 
@@ -789,6 +897,7 @@ export class Store
      */
     @action
     revertRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
+        this.throwIfProjectionOnly('revertRecords');
         records = castArray(records);
         if (isEmpty(records)) return;
 
@@ -817,6 +926,7 @@ export class Store
      */
     @action
     revert() {
+        this.throwIfProjectionOnly('revert');
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
@@ -1183,6 +1293,11 @@ export class Store
             `Applications should not specify a field for the id of a record. An id property is created
             automatically for all records. See Store.idSpec for more info.`
         );
+        throwIf(
+            ret.some(it => it.name === '__proto__'),
+            `Applications must not specify a field named '__proto__' - assigning it would replace the
+            prototype of each record's data object rather than setting a value on it.`
+        );
         return ret;
     }
 
@@ -1199,24 +1314,30 @@ export class Store
         parent: StoreRecord,
         isSummary: boolean = false
     ): StoreRecord {
-        const id = this.idSpec(raw);
+        const id = this.idSpec(raw),
+            digest = this._digestFn(raw),
+            cached = this.getReusableRecord(id, raw, digest, parent);
+        if (cached) return cached;
 
-        // Potentially re-use existing record if raw data is reference equal and tree path identical
-        if (this.reuseRecords) {
-            const cached = this._committed?.recordMap.get(id);
-            if (cached?.raw === raw && equal(cached.parent?.treePath, parent?.treePath)) {
-                return cached;
-            }
+        // Projections can re-use raw data with no reparsing.
+        if (this.projectionOnly) {
+            return new StoreRecord({
+                id,
+                store: this,
+                raw,
+                data: raw,
+                committedData: raw,
+                parent,
+                isSummary,
+                digest
+            });
         }
 
         const {processRawData, retainRaw} = this;
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
-            throwIf(
-                !data,
-                'Store.processRawData should return an object. If writing/editing, be sure to return a clone!'
-            );
+            throwIf(!data, 'Store.processRawData must return an object.');
         }
 
         data = this.parseRaw(data);
@@ -1227,7 +1348,8 @@ export class Store
             data,
             committedData: data,
             parent,
-            isSummary
+            isSummary,
+            digest
         });
 
         // Finalize summary only.  Non-summary finalized by RecordSet
@@ -1236,30 +1358,69 @@ export class Store
         return ret;
     }
 
+    // Committed record to re-use for an incoming raw with matching digest or ref and tree position.
+    private getReusableRecord(
+        id: StoreRecordId,
+        raw: PlainObject,
+        digest: RecordDigest,
+        parent: StoreRecord
+    ): StoreRecord {
+        const refMode = this.reuseRecords === true;
+        if (!refMode && digest == null) return null;
+        const cached = this._committed?.recordMap.get(id);
+        return cached &&
+            (refMode ? cached.raw === raw : cached.digest === digest) &&
+            this.positionUnchanged(cached.parent, parent)
+            ? cached
+            : null;
+    }
+
+    // True if a record cached under `cachedParent` sits at the same tree position under `parent`.
+    // Siblings repeat the identical comparison - memoize the last verified pair, valid forever
+    // since treePaths are fixed at construction. Mirrors RecordSet.positionUnchanged.
+    private positionUnchanged(cachedParent: StoreRecord, parent: StoreRecord): boolean {
+        if (this.idEncodesTreePath) return true;
+        if (cachedParent === parent) return true;
+        if (cachedParent === this._verifiedCachedParent && parent === this._verifiedNewParent) {
+            return true;
+        }
+        if (!equal(cachedParent?.treePath, parent?.treePath)) return false;
+        this._verifiedCachedParent = cachedParent;
+        this._verifiedNewParent = parent;
+        return true;
+    }
+
     private createRecords(
         rawData: PlainObject[],
         parent: StoreRecord,
         recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
         summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
     ) {
-        const {loadTreeData, loadTreeDataFrom} = this;
+        rawData.forEach(raw => this.createRecordDeep(raw, parent, recordMap, summaryRecordIds));
+        return recordMap;
+    }
 
-        rawData.forEach(raw => {
-            const rec = this.createRecord(raw, parent),
-                {id} = rec;
+    // Create a record - and recursively records for its tree children - installing all in recordMap.
+    private createRecordDeep(
+        raw: PlainObject,
+        parent: StoreRecord,
+        recordMap: Map<StoreRecordId, StoreRecord>,
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+    ) {
+        const rec = this.createRecord(raw, parent),
+            {id} = rec;
 
-            throwIf(
-                recordMap.has(id) || summaryRecordIds.has(id),
+        if (recordMap.has(id) || summaryRecordIds.has(id)) {
+            throw XH.exception(
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
+        }
 
-            recordMap.set(id, rec);
+        recordMap.set(id, rec);
 
-            if (loadTreeData && raw[loadTreeDataFrom]) {
-                this.createRecords(raw[loadTreeDataFrom], rec, recordMap, summaryRecordIds);
-            }
-        });
-        return recordMap;
+        if (this.loadTreeData && raw[this.loadTreeDataFrom]) {
+            this.createRecords(raw[this.loadTreeDataFrom], rec, recordMap, summaryRecordIds);
+        }
     }
 
     private get summaryRecordIds(): Set<StoreRecordId> {
@@ -1267,47 +1428,88 @@ export class Store
     }
 
     private parseRaw(data: PlainObject): PlainObject {
-        // a) create/prepare the data object
-        const ret = Object.create(this._dataDefaults);
-
-        // b) apply parsed data as needed.
-        const {_fieldMap} = this;
-        forIn(data, (raw, name) => {
+        // Single pass - buffer each declared field's parsed non-default value for buildData().
+        const {_fieldMap, _recordBuildData} = this,
+            {names, vals} = _recordBuildData;
+        let n = 0;
+        for (const name in data) {
             const field = _fieldMap.get(name);
             if (field) {
-                const val = field.parseVal(raw);
+                const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
-                    ret[name] = val;
+                    names[n] = name;
+                    vals[n] = val;
+                    n++;
                 }
             }
-        });
-
-        return ret;
+        }
+        _recordBuildData.n = n;
+        return this.buildData();
     }
 
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
-        const {_fieldMap} = this;
-
-        // a) clone the existing object
-        const ret = Object.create(this._dataDefaults);
-        Object.assign(ret, data);
-
-        // b) apply changes
-        forIn(update, (raw, name) => {
-            const field = _fieldMap.get(name);
-            if (field) {
-                const val = field.parseVal(raw);
-                if (val !== field.defaultValue) {
-                    ret[name] = val;
-                } else {
-                    delete ret[name];
-                }
+        // Merge updated values over current ones, then rebuild exactly as parseRaw() would.
+        const {_recordBuildData} = this,
+            {names, vals} = _recordBuildData,
+            hasOwn = Object.prototype.hasOwnProperty;
+        let n = 0;
+        this.fields.forEach(field => {
+            const {name} = field,
+                val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
+            if (val !== field.defaultValue) {
+                names[n] = name;
+                vals[n] = val;
+                n++;
             }
         });
-
+        _recordBuildData.n = n;
+        const ret = this.buildData();
+        ret.id = data.id;
         return ret;
     }
 
+    /**
+     * Build a record `data` object from the non-default entries buffered in `_recordBuildData`,
+     * choosing its representation by their count:
+     *
+     *  - Below `denseRecordThreshold`, a sparse object - own properties for the buffered values
+     *    only, defaults reached through the shared `_dataDefaults` prototype. Costs nothing for
+     *    unpopulated fields, and stays safely inside V8's fast-properties mode at these counts.
+     *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
+     *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
+     *    (overwriting an existing property is not an add), so all dense records share the
+     *    template's one fixed shape.
+     *
+     * The representation is decided per record, from parsed content alone - records with equal
+     * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
+     * and RecordSet require.
+     */
+    private buildData(): PlainObject {
+        const {names, vals, n} = this._recordBuildData,
+            ret =
+                n >= this._denseRecordThreshold
+                    ? {...this._dataTemplate}
+                    : Object.create(this._dataDefaults);
+        for (let i = 0; i < n; i++) {
+            ret[names[i]] = vals[i];
+        }
+        return ret;
+    }
+
+    private throwIfProjectionOnly(op: string) {
+        throwIf(
+            this.projectionOnly,
+            `Store.${op}() is not supported with 'projectionOnly' - this store is a read-only projection of data owned by its provider. Data updates flow in via loadData()/updateData().`
+        );
+    }
+
+    /**
+     * Shared template for record `data` objects - an own property for every Field, holding its
+     * defaultValue. `parseRaw()` clones it per record, so all records in a Store share one
+     * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
+     * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
+     * past ~20 adds, costing several times more memory per record.
+     */
     private createDataDefaults() {
         const ret = {};
         this.fields.forEach(({name, defaultValue}) => (ret[name] = defaultValue));
@@ -1318,6 +1520,15 @@ export class Store
         const ret = new Map();
         this.fields.forEach(r => ret.set(r.name, r));
         return ret;
+    }
+
+    // For string/fn digest forms only - `reuseRecords: true` needs no digest, matching on raw
+    // object identity in getReusableRecord() instead.
+    private createDigestFn(): (raw: PlainObject) => RecordDigest {
+        const {reuseRecords} = this;
+        if (isFunction(reuseRecords)) return reuseRecords;
+        if (isString(reuseRecords)) return raw => raw[reuseRecords];
+        return () => null;
     }
 
     private parseExperimental(experimental) {
@@ -1355,16 +1566,6 @@ export class Store
             ret.finalize();
             return ret;
         });
-    }
-}
-
-//---------------------------------------------------------------------
-// Iterate over the properties of a raw data/update  object.
-// Does *not* do ownProperty check, faster than lodash forIn/forOwn
-//-------------------------------------------------------------------
-function forIn(obj, fn) {
-    for (let key in obj) {
-        fn(obj[key], key);
     }
 }
 

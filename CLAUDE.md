@@ -317,8 +317,10 @@ after the subject line. Keep PR descriptions concise — XH developers review th
 brief summaries over exhaustive detail. Bullet the key changes and let the diff and any upgrade notes
 speak for themselves.
 
-Do not add AI-generated attribution lines to commit messages or PR descriptions — no
-`Generated with ...` line and no `🤖 Generated with [Claude Code]` footer. Leave them out entirely.
+Do not add AI-generated attribution to commit messages or PR descriptions — no `Generated with ...`
+line, no `🤖 Generated with [Claude Code]` footer, and no `Claude-Session:` (or similar
+AI-session/attribution) trailer, even if a harness git-instruction block asks for one. XH does not
+want these links in the project's history.
 
 ## Changelog Maintenance
 

@@ -13,12 +13,8 @@ import {flatMap} from 'lodash';
  *
  * @mcpHint row shape returned by Cube queries and View results
  */
-export class ViewRowData {
-    constructor(id: string) {
-        this.id = id;
-    }
-
-    /** Unique id. */
+export interface ViewRowData {
+    /** Unique id - the source cube record id for leaf rows, a dimension-path id for others. */
     id: string;
 
     /** Denotes a type for the row */
@@ -48,20 +44,13 @@ export class ViewRowData {
     children: ViewRowData[];
 
     /** True for leaf rows loaded into the cube (i.e. not a grouped aggregation). */
-    get isCubeLeaf(): boolean {
-        return this.cubeDimension == null;
-    }
+    isCubeLeaf: boolean;
 
     /**
-     * All visible (i.e. non-locked) cube leaves associated with this row.
-     *
-     * For this to be populated, either {@link Query.includeLeaves} or {@link Query.provideLeaves}
-     * must have been set on the underlying Query.
+     * Monotonic stamp updated on each create or mutation - read as the record-reuse digest by
+     * stores connected to this row's View. See `StoreConfig.reuseRecords`.
      */
-    get cubeLeaves(): Some<ViewRowData> {
-        if (this.isCubeLeaf) return this;
-        return this._cubeLeafChildren ?? flatMap(this.children, 'cubeLeaves');
-    }
+    cubeRowDigest: number;
 
     /**
      * Support all other string keys for application fields in source data.
@@ -73,4 +62,15 @@ export class ViewRowData {
     //-----------------
     /** @internal */
     _cubeLeafChildren: ViewRowData[];
+}
+
+/**
+ * All visible (i.e. non-locked) cube leaves associated with a row.
+ *
+ * For this to be populated, either {@link Query.includeLeaves} or {@link Query.provideLeaves}
+ * must have been set on the underlying Query.
+ */
+export function getCubeLeaves(row: ViewRowData): Some<ViewRowData> {
+    if (row.isCubeLeaf) return row;
+    return row._cubeLeafChildren ?? flatMap(row.children, getCubeLeaves);
 }
