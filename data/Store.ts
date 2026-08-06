@@ -391,6 +391,7 @@ export class Store
     @observable.ref
     _filtered: RecordSet;
 
+    private _fieldDefaults: Omit<FieldSpec, 'name'>;
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
@@ -436,6 +437,7 @@ export class Store
         );
 
         this.experimental = this.parseExperimental(experimental);
+        this._fieldDefaults = fieldDefaults;
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
@@ -926,6 +928,28 @@ export class Store
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
+    }
+
+    /**
+     * Replace this Store's fields wholesale, rebuilding the derived field map and data defaults.
+     * Any configured `fieldDefaults` are re-applied to the incoming specs.
+     *
+     * Records are retained when `projectionOnly`, since their data is owned by the provider and
+     * unaffected by the declared field set - and a projection's provider reloads immediately after
+     * a field change, needing the committed records present to reuse them. Records are dropped
+     * otherwise, as their existing `data` objects were built against the outgoing defaults.
+     *
+     * @internal - supports {@link PivotView}, whose cell fields are only discoverable from data.
+     *      Not an app-facing API for reshaping a Store.
+     */
+    @action
+    setFields(fields: Array<string | FieldSpec | Field>) {
+        this.fields = this.parseFields(fields, this._fieldDefaults);
+        this._fieldMap = this.createFieldMap();
+        this._dataDefaults = this.createDataDefaults();
+        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+
+        if (!this.projectionOnly) this.resetRecords();
     }
 
     /** Get a specific Field by name.*/
