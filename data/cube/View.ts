@@ -643,7 +643,8 @@ export class View
     }
 
     private parseStores(stores: Some<Store>): Store[] {
-        const ret = castArray(stores);
+        // `castArray(null)` yields `[null]` - null is a legitimate "no stores" here.
+        const ret = isNil(stores) ? [] : castArray(stores);
 
         throwIf(
             ret.some(s => s.reuseRecords != null),
