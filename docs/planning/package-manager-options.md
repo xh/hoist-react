@@ -404,7 +404,48 @@ fallback recommendation - same Phase 0 prerequisite, smaller retraining, weaker 
   `require.resolve` + realpath'd includes (the approach CRA/react-scripts and webpack-encore
   took).
 
-## Appendix B - Empirical test summary
+## Appendix B - Install-speed and file-count measurements
+
+Measured on the same miniature reproduction (156 packages, Node 22.22, Linux, fast local storage -
+ratios transfer to slower filesystems, absolute times do not; a real Hoist app resolves ~1,240
+packages, so scale absolute numbers up accordingly).
+
+**Warm-cache full reinstall** (`node_modules` deleted, package-manager cache/store intact - the
+"branch switch / fresh checkout / broken node_modules" case):
+
+| Manager | Time | vs yarn1 |
+|---|---|---|
+| Bun 1.3 | 0.1s | ~27x faster |
+| pnpm (hoisted or isolated) | 0.9-1.0s | ~3x faster |
+| Yarn 4 (node-modules linker) | 2.6s | ~parity |
+| npm 10 | 2.5s | ~parity |
+| Yarn 1.22.22 | 2.7s | baseline |
+
+**No-op install** (lockfile unchanged, `node_modules` present - what Toolbox's `start` script runs
+on every launch): all managers 0.3-0.7s; Bun ~0.03s. Not a differentiator.
+
+Cold-cache (first-ever download) times are network-bound and broadly similar; the differentiator
+there is that pnpm's store makes *re*-downloads never happen again across projects and branches
+(relevant to the FontAwesome bandwidth cap).
+
+**Project file counts for the identical dependency tree** - the key result for environments where
+filesystem operations are expensive (VDI, roaming profiles, aggressive antivirus):
+
+| Layout | Files in project | Notes |
+|---|---|---|
+| yarn1 / npm / Bun / Yarn 4 (nm) / pnpm hoisted | ~5,728 | flat copies |
+| pnpm isolated | ~5,775 + 400 symlinks | **hard links are still directory entries** - same file count, but file *content* is not copied (metadata-only links when store and project share a filesystem; silently falls back to copying across volumes) |
+| **Yarn 4 Plug'n'Play** | **166** (157 zips + `.pnp.cjs`) | **~34x fewer files** - no `node_modules` at all; but **breaks the current Hoist build** (verified): dev-utils' physical `node_modules/@xh/hoist` paths and raw-TS babel include don't exist under PnP, and native-binary deps (e.g. `sass-embedded`) get "unplugged" to disk anyway. Adopting PnP is a real dev-utils redesign, not the Phase-0 hardening. |
+
+Implications for slow/virtualized filesystems: pnpm reduces bytes written (links, not copies) and
+eliminates repeat registry downloads, but does *not* reduce the number of filesystem entries an
+antivirus scan or file enumeration must walk. Only PnP does that. If VDI file-count pain becomes a
+priority driver, PnP is the endgame option to design toward - after the Phase-0/pnpm work, and
+priced as its own project. Practical VDI mitigations that apply today regardless of manager:
+point the package-manager store/cache at a local non-roaming volume (noting the pnpm same-volume
+hardlink constraint) and exclude it from real-time AV scanning where policy allows.
+
+## Appendix C - Empirical test summary
 
 Miniature reproduction (Node 22.22.2, Linux, Aug 2026): `fake-hoist` (raw `.ts` source +
 `static/polyfills.js`, mirrors `@xh/hoist` packaging), `fake-dev-utils` (declares
