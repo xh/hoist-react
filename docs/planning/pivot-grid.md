@@ -33,41 +33,45 @@ the sections below, and append to the session log.
 
 ## Terminology
 
-Settled. Use these terms in prose, in code, and in the public API. They replace the prototype's
-"summary" vocabulary, which collided with `Store.summaryRecord` and `GridModel.showSummary` —
-distinct framework concepts that the value-totals row happens to be _rendered_ with, but is not
-otherwise related to.
+Settled. Use these terms in prose, in code, and in the public API.
 
-| Term                           | Meaning                                                                                                            |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| **grouping** / group dimension | Row dimensions — today's tree-grid `groupBy`. 1-3 typical, 6 the practical ceiling.                                 |
-| **pivot dimension**            | Extra dimensions sliced into columns, hierarchically. 1 typical, 3 the ceiling.                                     |
-| **pivot path**                 | One ordered tuple of pivot dimension values, e.g. `US >> Equity`. Maps to one column or column group.               |
-| **value field**                | The measure to aggregate. 1 typical, occasionally 2-3 related fields.                                               |
-| **value column**               | The rendered column for one (pivot path, value field) pair.                                                         |
-| **cell**                       | One (group row, pivot path, value field) intersection.                                                              |
-| **row totals**                 | Per group row, per value field: the aggregate across _all_ pivot paths. The docked "Total" column(s).               |
-| **pivot totals**               | Per group row, per value field: the aggregate within _one_ pivot grouping — i.e. a subtotal at a parent pivot node. |
-| **value totals**               | Per pivot path, per value field: the aggregate down _all_ group rows. The docked totals row.                        |
+**Revised 2026-08-06 back to "summary".** Phase 0 moved to "totals" because "summary" collided with
+`Store.summaryRecords` and `GridModel.showSummary`. The collision was really ambiguity about *which*
+aggregate was meant, and the row / pivot / value qualifiers below fix that on their own — so the word
+"summary" is free to stay, and consistency with the framework's own vocabulary wins. `valueSummary`
+in particular maps straight onto `GridModel.showSummary`.
 
-**Row totals are pivot totals at the root pivot level** — the same operation at different depths of
-the pivot tree, so one mechanism serves both.
+| Term                           | Meaning                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **grouping** / group dimension | Row dimensions — today's tree-grid `groupBy`. 1-3 typical, 6 the practical ceiling.                                  |
+| **pivot dimension**            | Extra dimensions sliced into columns, hierarchically. 1 typical, 3 the ceiling.                                      |
+| **pivot path**                 | One ordered tuple of pivot dimension values, e.g. `US >> Equity`. Maps to one column or column group.                |
+| **value field**                | The measure to aggregate. 1 typical, occasionally 2-3 related fields.                                                |
+| **value column**               | The rendered column for one (pivot path, value field) pair.                                                          |
+| **cell**                       | One (group row, pivot path, value field) intersection.                                                               |
+| **row summary**                | Per group row, per value field: the aggregate across _all_ pivot paths. The docked "Total" column(s).                |
+| **pivot summary**              | Per group row, per value field: the aggregate within _one_ pivot grouping — i.e. a subtotal at a parent pivot node.  |
+| **value summary**              | Per pivot path, per value field: the aggregate down _all_ group rows. The docked summary row.                        |
 
-**Pivot totals do not exist in the prototype** and are net-new work. They only appear with 2+ pivot
+**Row summaries are pivot summaries at the root pivot level** — the same operation at different depths
+of the pivot tree, so one mechanism serves both.
+
+**Pivot summaries do not exist in the prototype** and are net-new work. They only appear with 2+ pivot
 dimensions, so the typical single-pivot-dimension config never shows them.
 
-Mapping from the prototype's names. Pivot totals are net-new and have no prototype counterpart.
+Each config pairs visibility and placement into one member, as `GridModel.showSummary` does: `true`
+takes a default side, an explicit side places it, `false` omits it.
 
-| Prototype                  | New                                                                      |
-| -------------------------- | ------------------------------------------------------------------------ |
-| `showSummaryColumn`        | `showRowTotals`                                                          |
-| `summaryColumnSide`        | `rowTotalsSide`                                                          |
-| `extraSummaryColumnFields` | **cut** — see [Feature set](#feature-set-and-config-surface)              |
-| `showSummaryRow`           | `showValueTotals`                                                        |
-| `summaryRowSide`           | `valueTotalsSide`                                                        |
-| `extraSummaryRowFields`    | **cut** — see [Feature set](#feature-set-and-config-surface)              |
-| `SUMMARY_COL_ID_PREFIX`    | gone — `colId` is the cell field name                                    |
-| —                          | `showPivotTotals` / `pivotTotalsSide`, net-new                            |
+| Prototype                  | New                                                          |
+| -------------------------- | ------------------------------------------------------------ |
+| `showSummaryColumn`        | `rowSummary: boolean \| HSide` — true means 'right'          |
+| `summaryColumnSide`        | folded into `rowSummary`                                     |
+| `showSummaryRow`           | `valueSummary: boolean \| VSide` — true means 'top'          |
+| `summaryRowSide`           | folded into `valueSummary`                                   |
+| `extraSummaryColumnFields` | **cut** — see [Feature set](#feature-set-and-config-surface) |
+| `extraSummaryRowFields`    | **cut** — see [Feature set](#feature-set-and-config-surface) |
+| `SUMMARY_COL_ID_PREFIX`    | gone — `colId` is the cell field name                        |
+| —                          | `pivotSummary: boolean \| HSide`, net-new                    |
 
 Type-level renames settled in phase 1: `PivotValue` → `PivotPath`, `cmp/pivotgrid`'s `PivotQuery` →
 the `data/cube` `PivotQuery`, and `PivotField` / `PivotFieldSpec` retired (see
@@ -113,7 +117,7 @@ project the cells out of the resulting row tree. **That does not work.**
 Grouping is hierarchical. With `dimensions: [fund, strategy, sector, region]`, a `region` node exists
 only _beneath a sector node_. There is no node for "fund F1, all strategies, region US", so every
 group row above the innermost level has nothing to project a cell from. Making the pivot dimensions
-outermost fails symmetrically: it materializes the value totals and loses the row totals.
+outermost fails symmetrically: it materializes the value summaries and loses the row summaries.
 
 The row hierarchy and the pivot hierarchy are orthogonal, and their cross product has to be
 materialized. The corrected strategy:
@@ -132,7 +136,7 @@ visible row hierarchy.
 Write `C(G, P)` for the cell at row-hierarchy node `G` and pivot path `P`. `G` ranges over every node
 of the row hierarchy, including the synthetic root when `includeRoot` is set, and any `BucketRow`.
 `P` ranges over every pivot path _and every prefix of one_. By definition `C(G, rootPath)` **is** `G`
-itself — which is what makes row totals and pivot totals one mechanism.
+itself — which is what makes row summaries and pivot summaries one mechanism.
 
 Children, and therefore the decomposition:
 
@@ -273,7 +277,7 @@ interface PivotViewResult extends ViewResult {
     /** Pivot path tree, roots first. Identity-stable while the structure is unchanged. */
     paths: PivotPath[];
 
-    /** One entry per (path, value field), including the root-path row totals. Identity-stable with `paths`. */
+    /** One entry per (path, value field), including the root-path row summaries. Identity-stable with `paths`. */
     cellFields: PivotCellField[];
 }
 
@@ -305,9 +309,9 @@ All three kinds of total fall out of the same mechanism:
 
 | total        | where it is                                                                                                       |
 | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| row totals   | a group row's own aggregate of the value field — i.e. `C(G, rootPath)`, field name is the value field's own name   |
-| pivot totals | `C(G, P)` for a partial `P`; materialized automatically with 2+ pivot dimensions                                  |
-| value totals | the `includeRoot` root row's cells                                                                                |
+| row summary   | a group row's own aggregate of the value field — i.e. `C(G, rootPath)`, field name is the value field's own name  |
+| pivot summary | `C(G, P)` for a partial `P`; materialized automatically with 2+ pivot dimensions                                 |
+| value summary | the `includeRoot` root row's cells                                                                               |
 
 ### Cells on row data, and field naming
 
@@ -323,7 +327,7 @@ per tick on Typical.
 Field naming:
 
 - `cellFieldName(path, valueField)` = `` `${path.key}${DELIM}${valueField.name}` ``, or just
-  `valueField.name` when `path.key` is empty. So the row-totals column binds to the plain value field
+  `valueField.name` when `path.key` is empty. So the row-summary column binds to the plain value field
   — no synthetic name, and the totals-vs-cells invariant is structural.
 - One exported constant, `PivotView.PATH_DELIMITER`, default `'>>'`. It is _not_ `Cube.RECORD_ID_DELIMITER`
   despite sharing a value; the namespaces are unrelated and coupling them would be an accident.
@@ -387,7 +391,7 @@ materialized only where populated and read `null` elsewhere.
   data.
 - Empty `pivotDimensions` — allowed, degenerating to plain View behavior with empty `paths` /
   `cellFields`, so apps can toggle pivoting without swapping view objects.
-- No group dimensions — allowed; with `includeRoot` the result is a single value-totals row.
+- No group dimensions — allowed; with `includeRoot` the result is a single value-summary row.
 
 ### Pivot cardinality guard
 
@@ -579,7 +583,7 @@ half of **Pivot View**. `PivotInspectModel` is Admin › Tests › **Pivot Inspe
 eight records with values 10, 20, ... 80 and every stage dumped as readonly JSON: the resolved
 `PivotQuery`, the raw records, `result.rows` verbatim, `result.paths`, `result.cellFields`, and the
 records read back out of a connected `Store`. Toggles cover a second pivot dimension (which
-materializes pivot totals), sparse data (an unpopulated cell), `includeRoot` / `includeLeaves`, and a
+materializes pivot summaries), sparse data (an unpopulated cell), `includeRoot` / `includeLeaves`, and a
 tick that adds 100 to one record. **Reach for it first when reasoning about the data contract** — the
 suite proves correctness but this is what makes it legible.
 
@@ -881,8 +885,8 @@ is bound to it for life, and owns everything downstream.
 
 `PivotGridModel` carries **no query config**. `dimensions`, `pivotDimensions`, `valueFields`,
 `includeRoot` and the rest live only on `PivotQuery`; apps reconfigure by calling `view.updateQuery()`
-and the grid follows. The grid model's own config is purely presentational — totals visibility and
-side, pivot sort, `persistWith`. The view is not swappable after construction:
+and the grid follows. The grid model's own config is purely presentational — the three summaries,
+pivot sort, `persistWith`. The view is not swappable after construction:
 swapping means re-declaring fields, columns and column state, which is the same work as constructing a
 new model.
 
@@ -901,7 +905,7 @@ at construction while cell fields are discovered from data.
 So `PivotView` syncs cell fields onto its connected stores before `loadStores()`, touching only the
 fields named by `result.cellFields` and leaving the app's own alone. It also sets
 `Store.loadRootAsSummary` from `query.includeRoot` — `Store.loadData` wants exactly one root node
-carrying `children`, which is what `loadStores` already publishes — so the app's remaining value-totals
+carrying `children`, which is what `loadStores` already publishes — so the app's remaining value-summary
 wiring is just `GridModel.showSummary`.
 
 Columns are the opposite case and stay in the grid layer: `PivotGridModel` reacts on `result.paths`
@@ -988,10 +992,15 @@ Nothing is actually lost: any field in `PivotQuery.fields` is already aggregated
 so an app that wants a totals column for a non-value field can bind one. Reinstating the config is
 therefore cheap if the need arises — it names which fields to build columns for and nothing else.
 
-**Pivot totals ship in v1**, config-gated and default off. `showRowTotals` / `rowTotalsSide` and
-`showPivotTotals` / `pivotTotalsSide` stay separate config pairs even though row totals are pivot
-totals at the root path and share an implementation — most users only ever see the `Total` column and
-will not reason about it as a pivot subtotal. Unifying them later is a breaking change.
+**Pivot summaries ship in v1**, config-gated and default off. `rowSummary` and `pivotSummary` stay
+separate configs even though row summaries are pivot summaries at the root path and share an
+implementation — most users only ever see the `Total` column and will not reason about it as a pivot
+subtotal. Unifying them later is a breaking change.
+
+Each summary config carries its own placement rather than taking a paired `*Side` member:
+`boolean | HSide` (or `VSide` for the row), mirroring `GridModel.showSummary`. **There is no autosize
+config** — `gridConfig.autosizeOptions.mode: 'managed'` already autosizes on every data load, which is
+exactly when a pivot grid's columns change.
 
 **`labelColumnOverrides` and `valueColumnOverrides` are dropped for the initial implementation.** Add
 them back if consistency across value columns turns out to need a dedicated hook.
@@ -1040,7 +1049,7 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       the data layer hands it:
       - Row-totals columns bind the value field's own name — no synthetic field, no prefix games. One
         per value field, full stop.
-      - The value-totals row is `includeRoot: true` plus `GridModel.showSummary` — no separate summary
+      - The value-summary row is `includeRoot: true` plus `GridModel.showSummary` — no separate summary
         data path, and no `'Total>>' + field` `cubeDimension` hack.
       - `PivotPath` exposes raw `value` plus a plain `label`, so the grid layer renders labels itself
         and the prototype's try/catch-a-cell-renderer hack goes away.
@@ -1053,8 +1062,8 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       field name. It has to live somewhere: formatting a currency measure is impossible without it, and
       it is presentation, so it does not go back on a `CubeField`.
 - [x] Adopt the settled [terminology](#terminology) across the public API.
-- [x] Pivot totals: column building and config surface. One method builds row and pivot totals, since
-      row totals are the pivot totals at the root path.
+- [x] Pivot summaries: column building and config surface. One method builds row and pivot summaries,
+      since row summaries are the pivot summaries at the root path.
 - [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
       checklists. `sortPivotValues`, the `headerName` thunk, the `[Component, factory]` pair, the
       `ag-grid-community` import, copyright headers, `PivotSort`, the hardcoded autosize and the
@@ -1134,6 +1143,14 @@ which `PivotQuery` already validates at construction.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-06 — PivotGridModel review.** Config surface revised on review: back to "summary" from
+"totals", and visibility folded into placement — `rowSummary` / `pivotSummary` / `valueSummary`, each
+`boolean | Side`. See the revision note under [Terminology](#terminology) for why the original
+collision argument does not hold. `autosizeColumns` is gone: `autosizeOptions.mode: 'managed'`
+already autosizes on every data load. Comment density cut hard across the model, per updated user
+guidelines. 293 → 294 checks — the added one covers side placement and the `true` → default-side
+resolution, which nothing had exercised.
 
 **2026-08-06 — PivotDataModel retired, phase 2 closed.** The prototype engine, `PivotFieldSpec`,
 `PivotValue`, the `cmp/pivotgrid` `PivotQuery`, and Toolbox's whole Pivot Bench harness are gone, along
