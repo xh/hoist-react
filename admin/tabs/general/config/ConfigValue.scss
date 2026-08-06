@@ -7,38 +7,37 @@
 .xh-config-value {
   width: 100%;
 
-  // "Database" tab label when an instance value overrides it.
+  // Database tab label when an instance value overrides it.
   &__overridden {
     text-decoration: line-through;
     color: var(--xh-text-color-muted);
   }
 
-  // Mute the Defaults tab wholesale. Nested here (rather than self-contained) is fine - the
-  // `&__defaults` class lives on the input's own wrapper, which stays within this ancestor even
-  // when the input is displayed in a modal dialog.
+  // Mute all text in the Defaults tab.
   &__defaults .cm-line,
   &__defaults .cm-line span {
     color: var(--xh-text-color-muted) !important;
   }
 }
 
-// Mute default-matching lines (Resolved/Instance/Database). Kept self-contained, not nested under
-// .xh-config-value - these classes are applied via CodeMirror `lineStyles` directly on the
-// `.cm-line` elements, which get relocated into a dialog detached from the `.xh-config-value`
-// ancestor; nesting here would break the muting once fullscreen.
+// Mute default-matching lines in the Resolved/Instance/Database tabs. Classes are applied via
+// CodeMirror `lineStyles` directly on the `.cm-line` elements. Kept self-contained, not nested
+// under .xh-config-value, to preserve styles in the modal display.
 .cm-line.xh-config-value__muted,
 .cm-line.xh-config-value__muted span {
   color: var(--xh-text-color-muted) !important;
 }
 
-// FormField's read-only wrapper otherwise shrinks to the editor's content width. Covers both the
-// outer valueDisplay field (wrapping the whole tab container) and the Database tab's own nested
-// `value` FormField (whose readonly-display wraps a bare jsonInput, not a `.xh-config-value`).
+// FormField's readonly wrapper shrinks to content width and adds vertical padding - both meant
+// for its generic plain-text renderer, not our own fully-styled readonly inputs. Covers the outer
+// valueDisplay field (wrapping the whole tab container) and the Database tab's own nested `value`
+// field (whose readonly-display wraps a bare jsonInput, not a `.xh-config-value`).
 .xh-form-field__readonly-display:has(.xh-config-value),
 .xh-config-value__field .xh-form-field__readonly-display {
   flex: 1;
   width: 100%;
   min-width: 0;
+  padding: 0;
 }
 
 // Top-align the enclosing field's label, as for a json-input field.
@@ -57,17 +56,12 @@
 }
 
 // FormField's json-input + readonly styling frames the readonly display with its own background/
-// border/padding, and adds its own top/bottom padding on the readonly-display wrapper - both
-// intended for the generic plain-text readonly renderer. Our readonlyRenderer supplies its own
-// fully-framed jsonInput instead, so undo both here. Scoped to the json-input case only, so other
-// readonly value types (pwd, string) in this tab keep FormField's normal readonly spacing.
-.xh-config-value__field.xh-form-field--json-input.xh-form-field--readonly
-  .xh-form-field__inner--flex {
-  background-color: transparent;
-  border: none;
-  padding: 0;
-
-  .xh-form-field__readonly-display {
+// border - intended for the generic plain-text readonly renderer. Our readonlyRenderer supplies
+// its own fully-framed jsonInput instead, so undo the double frame here.
+.xh-config-value__field {
+  &.xh-form-field--json-input.xh-form-field--readonly .xh-form-field__inner--flex {
+    background-color: transparent;
+    border: none;
     padding: 0;
   }
 }
