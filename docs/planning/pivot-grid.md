@@ -4,8 +4,9 @@
 in Toolbox (also off `develop`) for the harness and example pages.
 
 **Status:** phases 0 and 1 complete. Phase 2 is functionally complete, correct against its reference
-suite, and clears every performance gate it can currently measure — what remains is coverage and
-cleanup, on the [phase 2 checklist](#phase-2--pivot-data-layer-implementation). Phase 3 has not been
+suite, and clears every performance gate it still carries. What remains is one gate number to set, a
+browser verification pass over newly-written coverage, and the `PivotDataModel` retirement that phase
+3 gates — see the [phase 2 checklist](#phase-2--pivot-data-layer-implementation). Phase 3 has not been
 started.
 
 **Goal:** promote a client-app `PivotGrid` component into hoist-react as a first-class framework
@@ -439,13 +440,38 @@ mismatch.
   `tsx` (no decorators, type-only framework imports) and run against duck-typed rows.
 - **Toolbox tier** — only what genuinely needs the framework: `PivotView`'s override wiring,
   connected-store behavior, `paths` / `cellFields` identity stability as `PivotGridModel` observes
-  it, query transitions through `updateQuery` / `setFilter`, and the perf/heap gates.
+  it, query transitions through `updateQuery` / `setFilter`, and the perf gates.
+
+**Assert that a tick took the incremental path, not just that its values are right.** A full rebuild
+produces correct values and republishes identical `paths` / `cellFields` by identity, so every
+value-level and identity assertion stays green if `dataOnlyUpdate` silently stops being reached. That
+makes the entire aggregator-`replace` surface fake-passable. The check is
+`result !== resultBefore && result.rows === rowsBefore`: any update mints a new `result`, but
+`result.rows` survives only the incremental path.
+
+**A check that compares a row against itself proves nothing.** The original exposed-leaf check read
+the projected cell field and the source field off the *same* row, so a stale leaf `data` agreed with a
+stale cell and passed. Compare against the raw source record instead. Same class as the
+`PivotCellRow` id/pointer duplication from the phase 2 review.
+
+**Zero comparisons is a failure, not a pass.** Every check reports what it compared; several passed
+vacuously with `checked: 0` on scenarios that could not populate them.
+
+The reference oracle's key encoding must be injective on *emptiness* as well as on boundaries — a
+dimension value equal to the empty label must not be able to impersonate an empty. Encode empties
+with a length no real segment can produce rather than with a sentinel string. A NUL-byte sentinel
+does achieve this, but it makes the file binary to git and every diff of it unreviewable; do not.
 
 **Mutation-test any addition to either tier.** A green suite proves nothing on its own. The lattice
 suite was validated by breaking the implementation six ways; the one mutant it missed was
 semantically equivalent, and chasing it surfaced a load-bearing invariant that had no assertion. Each
 Toolbox assertion added since is validated by reverting the fix it was written for and confirming it
 goes red.
+
+That equivalence class recurs and is not a coverage gap: **the strict aggregators' null short-circuits
+in `replace` are unkillable**, because falling through re-aggregates to the same answer. What makes
+them safe is now asserted directly — a strict aggregate is null exactly when a leaf beneath it is
+null — which is the right response to an unkillable mutant.
 
 **Cover query transitions, not just steady states.** A filter-only change with simple aggregators is
 the one path where `View.updateQuery` retains `_rowCache` (`View.ts:234`), so cached rows survive
@@ -487,14 +513,25 @@ quantified under [Cost model](#cost-model).
 **Gate — Typical.** These are the numbers the rewrite must hit; the other profiles are measured and
 tracked every run but are not pass/fail.
 
-| Metric                                      | Target  | Revised |
-| ------------------------------------------- | ------- | ------- |
-| Full build (cold, from raw data)            | ≤ 250ms | ≤ 140ms |
-| Tick — 1% of leaves (350 recs), values-only | ≤ 30ms  | —       |
-| Pivot layer heap, over the loaded `Cube`    | ≤ 2×    | —       |
+| Metric                                            | Target  | Revised |
+| ------------------------------------------------- | ------- | ------- |
+| Full build (cold, from raw data)                  | ≤ 250ms | ≤ 140ms |
+| Delta tick — 1% of leaves (350 recs), values-only | ≤ 30ms  | ≤ 15ms  |
+| Pivot layer heap, over the loaded `Cube`          | ≤ 2×    | dropped |
+
+The tick gate is on the **delta** tick — an explicit `{update: changed}` transaction. The full-array
+tick is still reported for baseline comparison but is not gated; see the
+[Result](#result--pivotview-measured-against-the-baseline) section for why. `PivotViewBenchModel`'s
+`GATES` map is the single place both thresholds live.
+
+**The heap gate is dropped deliberately**, not unverified: `≤ 2×` over the loaded `Cube` was never
+measurable from `PivotViewBenchModel`, and porting `PivotBenchModel`'s `sampleHeapAsync` tooling was
+judged not worth it against a rewrite that already beats the prototype's heap on every profile by
+construction — it holds no per-update `Cube`. Revisit only if heap becomes the binding constraint, at
+which point [Cells on row data](#cells-on-row-data-and-field-naming) is the design lever.
 
 **Secondary gate — Typical+Drill**, since leaf drill-down is a normal ask rather than a stress case:
-full build ≤ 750ms → **≤ 290ms**, tick ≤ 50ms.
+full build ≤ 750ms → **≤ 290ms**, delta tick ≤ 50ms → **≤ 15ms**.
 
 If the phase 0 baseline shows the prototype already meets a target, tighten that target rather than
 declaring it satisfied — the point is to prove the new cost model, not to clear a low bar. The
@@ -617,33 +654,46 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       their own path's value, so a drilled-down row is not blank across the pivot columns.
 - [x] Share `canAggregate` maps across cell rows of identical shape — one per pivot path.
 - [x] Toolbox tier: reference comparison, tick equivalence, full-rebuild comparison, filter
-      transitions, and query identity. 99 checks, worst relative drift 1e-13.
+      transitions, and query identity. 99 checks, now **211** with the aggregator, plain-`View`, and
+      pivot-dimension-change scenarios below.
 - [x] Benchmark against phase 0 baseline — see [Result](#result--pivotview-measured-against-the-baseline).
 - [x] Review of the phase 2 changeset, with fixes — see the 2026-08-05 session log entry.
 - [x] Re-measured post-`da632efb9`, and the drill-down build regression turned out not to exist — see
       [Result](#result--pivotview-measured-against-the-baseline). Cancels the cell-row elision work
       this item was gating.
-- [ ] **Restate the tick gate as a delta update**, per the Result section. Delta tick now measures
-      7.6ms on Typical and 8.3ms on Typical+Drill against gates of 30 and 50, so the replacement
-      numbers should be a real bar rather than a formality — the large profiles sit at 27ms, which is
-      the figure to calibrate against. Also repoint `PivotViewBenchModel`'s pass/fail column at
-      `deltaTickMs`; it still gates on the full-array tick and reports red on passing profiles.
-- [ ] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount` on both
-      group rows and cells. The suite currently exercises `SUM` only, so aggregator-specific
-      `replace` behavior on the two-parent routing is unverified. Aggregators themselves go in the
-      unit tier (they import standalone under `tsx`); the two-parent routing needs the Toolbox tier.
-- [ ] Heap gate unverified, and currently unverifiable — the criteria set `≤ 2×` over the loaded
-      `Cube`, but `PivotViewBenchModel` has no heap column. Port `PivotBenchModel`'s `sampleHeapAsync`
-      tooling across, or drop the gate deliberately.
+- [x] Repointed `PivotViewBenchModel`'s pass/fail column at `deltaTickMs` and collapsed both
+      thresholds into one `GATES` map. The full-array tick stays a reported column.
+- [x] Delta-tick gate set to **15ms for both** Typical and Typical+Drill, builds unchanged at
+      140/290. Measured 7.6 / 8.3 with sub-5% run-to-run agreement, so 15 is ~2× headroom while
+      sitting well below the 27ms the large profiles pay — any drift of the small profiles toward
+      large-profile cost trips it. One number for both because the delta metric barely moves across a
+      17× row-count difference (8.3 vs 7.6), which is why the inherited 30/50 split was retired.
+- [x] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount`, plus
+      lenient controls. Unit tier green and mutation-tested (28 → 49 checks, 19/23 aggregator mutants
+      and 4/4 lattice mutants killed; the 4 survivors are documented equivalences). Toolbox tier green
+      in the 211-check run.
+- [x] Heap gate dropped deliberately — see [acceptance criteria](#acceptance-criteria).
 - [x] The drill-profile tick stall was background-tab timer throttling, not GC thrash and not a pivot
       defect. `Run All` now completes all six profiles in ~20s foreground. See
       [How to measure](#how-to-measure).
-- [ ] Non-pivot `View` behavior provably unchanged — the `data/cube` edits are mechanical and type-check
-      clean, but nothing yet exercises a plain `View` against its pre-change behavior. Cheapest route
-      is plain-`View` scenarios in the Toolbox correctness suite asserted against the same reference
-      accumulator: the oracle is independent of hoist-react, so passing it proves correctness without
-      needing a `develop` checkout to diff against. Toolbox's Cube test page drives a plain `View` but
-      asserts nothing.
+- [x] Non-pivot `View` behavior provably unchanged — five plain-`View` scenarios plus a plain-`Query`
+      scenario in the Toolbox suite, against the same reference accumulator. Covers connected stores,
+      `includeLeaves` / `provideLeaves`, `includeRoot`, bucketing with `dependentFields`, dimension-value
+      changes, and `Query.clone` with every member set away from its default. Green.
+- [x] `View.parseStores` now treats `null` as "no stores". `castArray(null)` yields `[null]`, and the
+      `stores = []` default at construction only covers `undefined`, so `createView({stores: null})`
+      threw on `s.reuseRecords`. `null` is Hoist's no-value sentinel, so this was a latent framework
+      bug rather than a caller error — the new plain-`View` scenarios are what surfaced it.
+- [x] Toolbox suite run and green: **211/211**, worst drift 8.6e-14, no vacuous checks (a zero
+      comparison count is a hard failure). Verified in a foreground unoccluded tab with a
+      `visibilitychange` tripwire armed.
+- [x] Pivot-dimension change coverage, mutation-tested. Gutting `PivotView.hasDimOrBucketUpdates`'s
+      pivot branch kills 21 of 211 checks. **The failure mode it catches is the dangerous one:** row
+      totals stay correct *and* still equal the sum of their pivot cells, because the leaf values never
+      moved — only which path owns them. Only the per-path breakdown is wrong, so a grid looks right
+      and is wrong. Perturb non-empty pivot values on already-non-empty records only; the reference's
+      `excludeEmptyPivotValues` filter is a snapshot, and moving a record across that boundary stales
+      it rather than testing anything.
 - [ ] Retire `PivotDataModel` — blocked on phase 3 rewiring `PivotGridModel` onto the new API.
 
 ### Result — `PivotView` measured against the baseline
@@ -669,8 +719,27 @@ profiles except Wide+Drill (897 → 1,065, ~19%), so treat Wide+Drill's build as
 much of it is `Store`-wide record diffing that no pivot implementation can influence. An explicit
 `{update: changed}` transaction isolates the pivot work: 7.6ms against the 30ms gate, 8.3ms against
 Typical+Drill's 50ms. The full-array metric also beats the baseline everywhere (1.9× on Typical,
-17-40× on the large profiles), but it is measuring the wrong thing and the harness's own pass/fail
-column still keys off it — which is why Typical shows a red gate at a 115ms build and a 7.6ms delta.
+17-40× on the large profiles), but it is measuring the wrong thing, so it is now reported rather than
+gated.
+
+**Re-verified 2026-08-05 across three consecutive runs**, and both gated profiles pass. Builds:
+Typical 138 / 118 / 123, Typical+Drill 295 / 278 / 273, Heavy 454 / 435 / 417, Heavy+Drill 1190 /
+1231 / 1155, Wide 616 / 666 / 617, Wide+Drill 974 / 996 / 975. Delta ticks: 7.7-8.3, 8.6-9.6,
+25.2-27.2, 26.8-30.5, 11.1-12.0, 12.2-13.3.
+
+Two things to know from that spread. **The first run of a session is the slowest** — Typical's build
+ran 138 cold against 118-123 warm, so a single cold number is not a regression signal. And
+**Typical+Drill's build gate has almost no headroom**: 273-295 against 290, so the cold run exceeds
+it. Either widen that gate or always discard the first run; do not read one red cold build as a
+regression.
+
+**The red gate was never about the metric.** The earlier note blamed the harness gating on the
+full-array tick, but `passed` was not a declared `Store` field — `GridModel` infers store fields from
+columns and no column binds `passed`, so `record.data.passed` was always `undefined` and the Gate
+renderer took its failure branch unconditionally. The repoint at `deltaTickMs` was still right and
+still needed; it just was not what made the column red. The renderer also emitted `Icon(asHtml)`
+markup that rendered as escaped text, so the cell was illegible either way — now plain glyphs, as
+`PivotBenchModel` already did it.
 
 **The 2026-08-04 table was a measurement artifact; there is no drill-down build regression.** It
 recorded 529ms for Typical+Drill and a ~1.9× regression, and none of that reproduces. Checking
@@ -767,6 +836,13 @@ From the full review of the imported prototype. Scoped to code that survives the
 
 ### Framework gaps worth fixing on their own
 
+- [ ] **`SumAggregator.replace` returns `0` where `aggregate` returns `null`.** Once the last non-null
+      constituent goes null, `if (oldValue != null) currAgg -= oldValue` runs and the `newValue == null`
+      case has no branch, so the accumulator lands on `0` while a rebuild reports `null`. `SUM_STRICT`
+      and `AVG` both handle it; only the lenient default diverges. Predates the pivot work — a plain
+      tree `View` shows the same tick-vs-rebuild disagreement, and pivot cells inherit it. The unit
+      suite characterizes the divergence and excludes exactly that transition via a
+      `lenientSumZeroesOut` predicate; delete both when this is fixed.
 - [ ] `Store.getField` (`Store.ts:849`) is a linear `find` over `fields` while `_fieldMap` sits
       right there.
 - [ ] `GridModel.enhanceColConfigsFromStore` (`GridModel.ts:1833`) rebuilds `fieldsByName` from all
@@ -847,6 +923,27 @@ identity, 74 → 99 checks, mutation-tested by reverting each fix and confirming
 wide the gap was. That reaches the three bugs on the `_rowCache` path; `7873d3ff2` and `da632efb9`
 still have no coverage written for them. Pick up at re-measuring the benchmark, then the two bolded
 phase 2 items.
+
+**2026-08-05 — Phase 2 coverage closed and verified.** Every actionable phase 2 item is done; only
+retiring `PivotDataModel` remains, and it is blocked on phase 3. Unit tier 28 → 49 checks, Toolbox tier
+99 → **211**, both green, both mutation-tested for real (19/23 aggregator mutants, 4/4 lattice mutants,
+and the pivot-dim mutant kills 21 checks). Benchmark re-verified over three runs; both gated profiles
+pass and the delta-tick gate is set at 15ms.
+
+Findings that outlast this session. **`SumAggregator.replace` diverges from `aggregate`** when the last
+non-null constituent goes null — incremental 0 against a rebuilt null, in the framework's default
+aggregator, independent of pivoting; filed under
+[framework gaps](#framework-gaps-worth-fixing-on-their-own) and still unfixed. **The suite could have
+faked its own aggregator coverage**, because a silent fall back to full rebuild produces correct values
+and identical result identity; asserting the incremental path was taken is now a standing rule under
+[Verification vehicle](#verification-vehicle), with two sibling anti-vacuity rules. **Coverage the plan
+claimed but did not have**: no scenario had ever connected a `Store`, exercised `provideLeaves`, or
+bucketed. Two harness bugs made green and red both meaningless — an undeclared `passed` store field
+pinned the Gate column to red, and `View.parseStores` threw on `stores: null` (fixed in the framework;
+`null` is Hoist's no-value sentinel).
+
+Pick up at phase 3, and at the `store-simple` rebase — see the note under
+[Rebase onto `store-simple`](#rebase-onto-store-simple).
 
 **2026-08-05 — Re-measure, and the benchmark was lying.** Phase 2 clears both build gates and the
 delta-tick gate on every profile, beating the prototype everywhere; the new
