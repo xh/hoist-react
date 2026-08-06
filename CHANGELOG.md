@@ -22,6 +22,10 @@
 * New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
   important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
   `getCubeLeaves(row)`.
+* `CubeField.canAggregateFn` is now evaluated only when an aggregate row is built - rows reused
+  across view updates retain their results. Ensure any such function is a pure function of its
+  dimension, value, and applied-dimension arguments, without depending on per-generation
+  `AggregationContext` state.
 * Read `StoreRecord.data` by field name only - enumerating, spreading, or calling `JSON.stringify()`
   on this object does not reliably see default field values. Review any code enumerating `data`
   directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead. This never worked
