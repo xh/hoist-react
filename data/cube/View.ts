@@ -657,9 +657,9 @@ export class View
             '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
         );
 
-        if (ret.some(s => !s.projectionOnly && !s.processRawData)) {
-            this.logDebug(
-                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. See StoreConfig.projectionOnly.'
+        if (ret.some(s => s.projectionOnly == null && !s.processRawData)) {
+            this.logWarn(
+                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. Set explicitly to false to opt out and silence this warning.'
             );
         }
 

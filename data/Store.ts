@@ -203,7 +203,9 @@ export interface StoreConfig {
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
      * Recommended for stores connected to a Cube {@link View} for improved performance, when no
-     * additional record parsing or local data modification is required. Default false.
+     * additional record parsing or local data modification is required. Default null - a View
+     * logs a warning when its connected stores leave this unset. Set explicitly to `false` to
+     * opt out and silence the warning.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -426,7 +428,7 @@ export class Store
         idEncodesTreePath = false,
         reuseRecords = null,
         retainRaw = true,
-        projectionOnly = false,
+        projectionOnly = null,
         validationIsComplex = false,
         experimental,
         data
