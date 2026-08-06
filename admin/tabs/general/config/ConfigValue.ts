@@ -111,7 +111,6 @@ class ConfigValueModel extends HoistModel {
                         autoFormat: false,
                         lineStyles: mutedLineStyles(text, highlightLines),
                         enableSearch: true,
-                        width: '100%',
                         height
                     })
             });
@@ -120,7 +119,7 @@ class ConfigValueModel extends HoistModel {
         if (hasOverride) {
             tabs.push({
                 id: 'instance',
-                title: 'Instance Value',
+                title: 'Instance',
                 icon: Icon.warning({intent: 'warning'}),
                 content: () => readonlyValue(valueType, overrideValue, height, defaultValue)
             });
@@ -129,8 +128,8 @@ class ConfigValueModel extends HoistModel {
         tabs.push({
             id: 'db',
             title: hasOverride
-                ? span({className: 'xh-config-value__overridden', item: 'DB Value'})
-                : 'DB Value',
+                ? span({className: 'xh-config-value__overridden', item: 'Database'})
+                : 'Database',
             icon: Icon.edit(),
             content: () => valueFormField(valueType, height, defaultValue)
         });
@@ -148,7 +147,6 @@ class ConfigValueModel extends HoistModel {
                         autoFormat: true,
                         enableSearch: true,
                         className: 'xh-config-value__defaults',
-                        width: '100%',
                         height
                     })
             });
@@ -212,7 +210,6 @@ function valueInput(valueType: string, height: number, defaults?: any): ReactEle
                 autoFormat: true,
                 enableSearch: true,
                 lineStyles: defaults != null ? text => dbValueLineStyles(text, defaults) : null,
-                width: '100%',
                 height
             });
         case 'bool':
@@ -252,7 +249,7 @@ function readonlyValue(
                     autoFormat: false,
                     lineStyles: mutedLineStyles(text, highlightLines),
                     enableSearch: true,
-                    width: '100%',
+                    width: null,
                     height
                 });
             }
@@ -261,14 +258,14 @@ function readonlyValue(
                 readonly: true,
                 autoFormat: true,
                 enableSearch: true,
-                width: '100%',
+                width: null,
                 height
             });
         }
         case 'pwd':
-            return textInput({value: value == null ? '' : '*****', disabled: true, width: '100%'});
+            return textInput({value: value == null ? '' : '*****', disabled: true});
         default:
-            return textInput({value: value?.toString() ?? '', disabled: true, width: '100%'});
+            return textInput({value: value?.toString() ?? '', disabled: true});
     }
 }
 
