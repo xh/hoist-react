@@ -1,0 +1,15 @@
+# pnpm configuration - pnpm reads its settings from this file, even for single-package repos.
+# See https://pnpm.io/settings for all supported options.
+
+# Use a flat, npm-style node_modules layout. This repo's tooling (eslint, stylelint, tsc, MCP
+# server) does not require it, but it matches the layout recommended for Hoist application
+# builds and keeps behavior consistent across Hoist repos. Can be removed later to adopt
+# pnpm's default isolated (symlinked) layout for stricter dependency isolation.
+nodeLinker: hoisted
+
+# Supply-chain protection: refuse to install package versions published less than 24 hours ago,
+# giving the ecosystem time to catch compromised releases. Exclude XH's own packages so freshly
+# published hoist snapshots/releases remain immediately installable.
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@xh/*'

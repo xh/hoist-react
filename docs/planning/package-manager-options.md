@@ -369,6 +369,25 @@ imports it surfaces.
 compatibility unsatisfying, Yarn Berry v4 (`nodeLinker: node-modules`, bundled `yarnPath`) is the
 fallback recommendation - same Phase 0 prerequisite, smaller retraining, weaker security defaults.
 
+### Implementation branches (August 2026)
+
+The Phase 0 and Phase 1 changes are staged on the following branches for review:
+
+- **hoist-dev-utils** `claude/layout-agnostic-module-resolution` - the Phase 0
+  `configureWebpack.js` hardening (validated end-to-end under pnpm isolated + yarn 1 flat).
+- **hoist-react** `claude/build-package-manager-review-7r98m6` (this branch) - pnpm conversion of
+  the repo's own tooling: `packageManager` pin, `pnpm-workspace.yaml` (hoisted linker +
+  `minimumReleaseAge` with `@xh/*` excluded), scripts, CI workflows, docs.
+- **toolbox** `claude/pnpm-migration` - pnpm conversion of `client-app` and its CI workflows.
+
+**Required follow-up before merging the hoist-react and toolbox branches:** `pnpm-lock.yaml` could
+not be generated in the sandbox where these branches were prepared, because `pnpm import` needs
+FontAwesome Pro registry credentials to fetch package metadata. A developer (or CI) with the FA
+token must run `pnpm import && pnpm install` in each repo (hoist-react root; toolbox
+`client-app/`), verify, commit the resulting `pnpm-lock.yaml`, and delete `yarn.lock` in the same
+commit. `yarn.lock` has been intentionally left in place on both branches as the version-pinning
+source for that import. CI installs (`--frozen-lockfile`) will fail until this is done.
+
 ---
 
 ## Appendix A - Key facts and sources

@@ -51,6 +51,9 @@
 
 ### ⚙️ Technical
 
+* Converted this repo's own development tooling from Yarn Classic to pnpm - `pnpm install` /
+  `pnpm lint` replace their yarn equivalents for library developers. No impact on applications,
+  which continue to choose their own package manager when consuming `@xh/hoist` from npm.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
   Popper.js onto Floating UI for React 19 compatibility. The Hoist `Popover` components (mobile and
   desktop) have been updated so no app call-site changes are required.

@@ -12,7 +12,7 @@ as `@xh/hoist` and consumed by Hoist application projects. The server-side count
 
 - **Language**: TypeScript
 - **Framework**: React with MobX for reactive state management
-- **Package manager**: Yarn
+- **Package manager**: pnpm
 
 ## Hoist Developer Tools and Documentation
 
@@ -102,10 +102,10 @@ enable it for Claude Code.
 ## Build Commands
 
 ```bash
-yarn install                     # Install dependencies
-yarn lint                        # Lint all code (JS/TS + SCSS)
-yarn lint:code                   # Lint JavaScript/TypeScript only
-yarn lint:styles                 # Lint SCSS only
+pnpm install                     # Install dependencies
+pnpm lint                        # Lint all code (JS/TS + SCSS)
+pnpm lint:code                   # Lint JavaScript/TypeScript only
+pnpm lint:styles                 # Lint SCSS only
 npx tsc --noEmit                 # Type check (declarations only, no emit)
 ```
 

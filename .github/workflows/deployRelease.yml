@@ -49,10 +49,15 @@ jobs:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
 
+        # Installs the pnpm version pinned via the `packageManager` field in package.json.
+        # Must run before setup-node so its `cache: pnpm` handling can find the pnpm store.
+        - name: Setup pnpm
+          uses: pnpm/action-setup@v4
+
         - name: Setup Node.js
           # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
-          # and its `cache: yarn` handling then runs `yarn cache dir`, which hard-errors if the var
-          # is unresolvable. setup-node v7 no longer exports a dummy value, so we supply one. The
+          # and its `cache: pnpm` handling then invokes pnpm, which hard-errors if the var is
+          # unresolvable. setup-node v7 no longer exports a dummy value, so we supply one. The
           # real token is scoped to the publish step alone, keeping it out of dependency lifecycle
           # scripts during install.
           env:
@@ -61,7 +66,7 @@ jobs:
           with:
               node-version-file: '.nvmrc'
               registry-url: 'https://registry.npmjs.org'
-              cache: 'yarn'
+              cache: 'pnpm'
 
         - name: Configure Font Awesome registry auth
           env:
@@ -69,10 +74,10 @@ jobs:
           run: echo "//npm.fontawesome.com/:_authToken=$FONTAWESOME_PACKAGE_TOKEN" >> .npmrc
 
         - name: Install dependencies
-          run: yarn install --frozen-lockfile
+          run: pnpm install --frozen-lockfile
 
-        - name: Yarn lint
-          run: yarn lint:all
+        - name: Lint
+          run: pnpm lint:all
 
         - name: Set release version in package.json
           env:

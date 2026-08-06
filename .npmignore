@@ -23,6 +23,8 @@ scripts
 .yarnrc
 context7.json
 eslint.config.js
+pnpm-lock.yaml
+pnpm-workspace.yaml
 tsconfig.tsbuildinfo
 webpack.config.intellij.js
 yarn.lock
