@@ -163,7 +163,7 @@ CHANGELOG or upgrade notes for details on what each recommended version enables.
 
 Some hoist-react upgrades also require a corresponding hoist-dev-utils upgrade (e.g. v62 requires
 hoist-dev-utils >= v8, v65 requires >= v9). These are build-time dependencies, so failures appear
-during `yarn start` or `yarn build` rather than at runtime.
+during the client dev-server startup or webpack build rather than at runtime.
 
 ### Upgrading hoist-core without upgrading hoist-react
 

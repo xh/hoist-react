@@ -1,6 +1,6 @@
-yarn run lint-staged
+pnpm exec lint-staged
 
 # Only run TypeScript compiler if TS/JS/TSX/JSX files or package files are staged
-if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '\.(ts|tsx|js|jsx)$|package\.json$|package-lock\.json$|yarn\.lock$|tsconfig.*\.json$'; then
-  yarn run tsc
+if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '\.(ts|tsx|js|jsx)$|package\.json$|package-lock\.json$|pnpm-lock\.yaml$|tsconfig.*\.json$'; then
+  pnpm exec tsc
 fi

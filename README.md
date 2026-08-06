@@ -43,6 +43,8 @@ Install hoist-react as a dependency:
 ```bash
 npm install @xh/hoist
 # or
+pnpm add @xh/hoist
+# or
 yarn add @xh/hoist
 ```
 
