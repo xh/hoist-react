@@ -213,7 +213,18 @@ export abstract class PersistenceProvider<S = any> {
         return null;
     }
 
-    private static parseProviderClass<S>(
+    /**
+     * Resolve the PersistenceProvider class that the given options would produce, applying the
+     * same precedence used by {@link create}. Throws if the options do not resolve to a known
+     * provider.
+     *
+     * Useful for callers that must adapt their behavior to the kind of backing store in play -
+     * e.g. {@link GridModel} treats state persisted to a user-curated view differently from state
+     * persisted as an implicit record of a user's last-used layout.
+     *
+     * @internal - not intended for application use.
+     */
+    static parseProviderClass<S>(
         opts: PersistOptions
     ): Class<PersistenceProvider<S>, [PersistenceProviderConfig<S>]> {
         // 1) Recognize shortcut form

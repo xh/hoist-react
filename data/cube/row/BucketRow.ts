@@ -19,11 +19,15 @@ import {ViewRowData} from '../ViewRowData';
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class BucketRow extends BaseRow {
+    // Bucket rows always construct a full ViewRowData.
+    declare data: ViewRowData;
+
     override get isBucket() {
         return true;
     }
 
     readonly bucketSpec: BucketSpec = null;
+    readonly bucketVal: any = null;
 
     constructor(
         view: View,
@@ -36,13 +40,16 @@ export class BucketRow extends BaseRow {
         super(view, id);
 
         this.bucketSpec = bucketSpec;
-        this.data = new ViewRowData(id);
-        this.data.cubeRowType = 'bucket';
-        this.data.cubeLabel = bucketSpec.labelFn(bucketVal);
-        this.data.cubeDimension = bucketSpec.name;
+        this.bucketVal = bucketVal;
+        const data = (this.data = view.newRowData(id));
+        data.cubeRowType = 'bucket';
+        data.cubeLabel = bucketSpec.labelFn(bucketVal);
+        data.cubeDimension = bucketSpec.name;
 
         this.initAggregate(children, bucketSpec.name, bucketVal, appliedDimensions);
+    }
 
-        this.noteBucketed(bucketSpec, bucketVal);
+    protected override extendBuckets(parentBuckets: PlainObject): PlainObject {
+        return {...parentBuckets, [this.bucketSpec.name]: this.bucketVal};
     }
 }

@@ -17,6 +17,9 @@ import {BaseRow} from './BaseRow';
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class AggregateRow extends BaseRow {
+    // Aggregate rows always construct a full ViewRowData.
+    declare data: ViewRowData;
+
     override get isAggregate() {
         return true;
     }
@@ -39,10 +42,10 @@ export class AggregateRow extends BaseRow {
 
         this.dim = dim;
         this.dimName = dimName;
-        this.data = new ViewRowData(id);
-        this.data.cubeRowType = 'aggregate';
-        this.data.cubeLabel = strVal;
-        this.data.cubeDimension = dimName;
+        const data = (this.data = view.newRowData(id));
+        data.cubeRowType = 'aggregate';
+        data.cubeLabel = strVal;
+        data.cubeDimension = dimName;
 
         this.initAggregate(children, dimName, val, appliedDimensions);
     }

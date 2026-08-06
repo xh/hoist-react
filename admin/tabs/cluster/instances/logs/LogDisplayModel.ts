@@ -62,6 +62,9 @@ export class LogDisplayModel extends HoistModel {
     @bindable
     logRootPath: string;
 
+    // Line number to select on the next load
+    private pendingSelectRowNum: number = null;
+
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
     }
@@ -138,6 +141,24 @@ export class LogDisplayModel extends HoistModel {
     //---------------------------------
     // Implementation
     //---------------------------------
+    /** Clear any active filter and reload the log around the given line, re-selecting it. */
+    private viewSurroundingLines(rowNum: number) {
+        // Keep the target in the loaded window - a cleared maxLines defers to the server default.
+        const {maxLines} = this,
+            WIN = 100,
+            leadIn = maxLines ? Math.min(WIN, Math.floor((maxLines - 1) / 2)) : WIN;
+
+        this.pendingSelectRowNum = rowNum;
+
+        // The tail reaction resets startLine - flip tail off first, and not within an action.
+        this.tail = false;
+        this.pattern = '';
+        this.startLine = Math.max(1, rowNum - leadIn);
+
+        // Load directly, as the writes above can all be no-ops - debounce collapses any dupes.
+        this.loadLog();
+    }
+
     private createGridModel() {
         return new GridModel({
             selModel: 'multiple',
@@ -169,6 +190,13 @@ export class LogDisplayModel extends HoistModel {
             ],
             rowClassFn: () => 'xh-log-display__row',
             contextMenu: [
+                {
+                    text: 'View Surrounding Lines',
+                    icon: Icon.search(),
+                    recordsRequired: 1,
+                    actionFn: ({record}) => this.viewSurroundingLines(record.data.rowNum)
+                },
+                '-',
                 'copy',
                 '-',
                 {
@@ -200,7 +228,11 @@ export class LogDisplayModel extends HoistModel {
 
         gridModel.loadData(gridData);
 
-        if (tailActive) {
+        const {pendingSelectRowNum} = this;
+        if (pendingSelectRowNum != null) {
+            this.pendingSelectRowNum = null;
+            gridModel.selectAsync(pendingSelectRowNum, {ensureVisiblePosition: 'middle'});
+        } else if (tailActive) {
             this.scrollToTail();
         }
     }
