@@ -1882,18 +1882,28 @@ export class GridModel extends HoistModel {
         storeOrConfig?: Store | StoreConfig
     ): ColumnOrGroupSpec[] {
         const store = storeOrConfig || this.store,
-            storeFields = store?.fields,
-            fieldsByName: Record<string, Field | FieldSpec> = {};
+            storeFieldsByName: Record<string, Field | FieldSpec> = {};
 
         // Extract field definitions in all supported forms: pull Field instances/configs from
         // storeFields first...
-        storeFields?.forEach(sf => {
+        store?.fields?.forEach(sf => {
             if (sf && !isString(sf)) {
-                fieldsByName[sf.name] = sf;
+                storeFieldsByName[sf.name] = sf;
             }
         });
 
-        // Then fill in with any col-level `field` config objects.
+        return this.enhanceColConfigs(colConfigs, storeFieldsByName);
+    }
+
+    // Store fields are resolved once and shared across the recursion - rebuilding them per column
+    // group made this O(groups x fields), which a pivot grid hits hard.
+    private enhanceColConfigs(
+        colConfigs: ColumnOrGroupSpec[],
+        storeFieldsByName: Record<string, Field | FieldSpec>
+    ): ColumnOrGroupSpec[] {
+        // Then fill in with any col-level `field` config objects, which remain scoped to their own
+        // level. Copy-on-write so the common case shares the store's map outright.
+        let fieldsByName = storeFieldsByName;
         colConfigs.forEach(cc => {
             if (
                 isColumnSpec(cc) &&
@@ -1901,6 +1911,7 @@ export class GridModel extends HoistModel {
                 !isString(cc.field) &&
                 !fieldsByName[cc.field.name]
             ) {
+                if (fieldsByName === storeFieldsByName) fieldsByName = {...storeFieldsByName};
                 fieldsByName[cc.field.name] = cc.field;
             }
         });
@@ -1915,7 +1926,7 @@ export class GridModel extends HoistModel {
             if (!isColumnSpec(col)) {
                 return {
                     ...col,
-                    children: this.enhanceColConfigsFromStore(col.children, storeOrConfig)
+                    children: this.enhanceColConfigs(col.children, storeFieldsByName)
                 };
             }
 
