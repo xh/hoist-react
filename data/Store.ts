@@ -55,12 +55,12 @@ import {RecordSet} from './impl/RecordSet';
  *
  * The cutoff tracks V8's dictionary-mode demotion: objects built by keyed property adds are
  * demoted to a memory-hungry per-object hashtable at ~20 adds, as measured empirically - an
- * undocumented heuristic, so this sits comfortably below it, leaving room for the `id` property
+ * undocumented heuristic, so this sits just below it, leaving room for the `id` property
  * later added to every record's data. Overridable via `experimental.denseRecordThreshold` - set
  * to e.g. 999 (above any field count) to force the sparse form for all records (the pre-v87
  * behavior), or to 1 to force the fixed shape for all.
  */
-const DENSE_RECORD_THRESHOLD = 17;
+const DENSE_RECORD_THRESHOLD = 20;
 
 /**
  * Digest identifying a version of a raw data record for `StoreConfig.reuseRecords` - a primitive
@@ -173,7 +173,9 @@ export interface StoreConfig {
      *     A null/undefined digest never matches.
      *
      * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged digest
-     * is dropped from the transaction as a no-op.
+     * is dropped from the transaction as a no-op. Note this assumes records are not locally
+     * modified: such an update is dropped even for a record carrying uncommitted local
+     * modifications, which are left in place.
      *
      * Stores connected to a Cube {@link View} must leave this config unset - the View manages
      * reuse automatically, installing a digest that reads the stamp it maintains on every row
@@ -402,7 +404,8 @@ export class Store
 
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
-    // within a single call to avoid allocation during parsing. See buildData().
+    // within a single call to avoid allocation during parsing. See buildData(). Not reentrant -
+    // an app-supplied `Field.parseVal` must not trigger record builds on this same Store.
     private _recordBuildData = {names: [] as string[], vals: [] as any[], n: 0};
 
     _created = Date.now();
