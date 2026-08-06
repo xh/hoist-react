@@ -244,21 +244,33 @@ export class RecordSet {
     private areRecordsEqual(r1: StoreRecord, r2: StoreRecord): boolean {
         if (r1 === r2) return true;
 
-        const {store} = this,
-            d1 = r1.data,
-            d2 = r2.data;
+        const {store} = this;
 
-        // Projection data carries arbitrary provider keys - compare declared field values only.
-        const dataEqual = store.projectionOnly
-            ? d1 === d2 || store.fields.every(({name}) => equal(d1[name], d2[name]))
-            : equal(d1, d2);
+        // Version check: equal digests certify equal data - compare values directly only for
+        // digest-less records. In-place data mutations bump digests while leaving data equal.
+        if (r1.digest !== r2.digest) return false;
+        if (r1.digest == null) {
+            const d1 = r1.data,
+                d2 = r2.data;
+            // Projection data carries arbitrary provider keys - compare declared fields only.
+            const dataEqual = store.projectionOnly
+                ? d1 === d2 || store.fields.every(({name}) => equal(d1[name], d2[name]))
+                : equal(d1, d2);
+            if (!dataEqual) return false;
+        }
 
+        return this.positionUnchanged(r1, r2);
+    }
+
+    // True if two same-id records from successive loads occupy the same tree position. Compares
+    // the records' own (constructor-fixed) treePaths - `StoreRecord.parent` resolves against the
+    // pre-swap RecordSet here and cannot be trusted. Mirrors Store.positionUnchanged.
+    private positionUnchanged(r1: StoreRecord, r2: StoreRecord): boolean {
         return (
-            dataEqual &&
-            (store.idEncodesTreePath ||
-                // Root records share an id here, so their paths are equal by construction.
-                (r1.parentId == null && r2.parentId == null) ||
-                equal(r1.treePath, r2.treePath))
+            this.store.idEncodesTreePath ||
+            // Root records share an id here, so their paths are equal by construction.
+            (r1.parentId == null && r2.parentId == null) ||
+            equal(r1.treePath, r2.treePath)
         );
     }
 

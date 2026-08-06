@@ -8,7 +8,7 @@
 import type {StoreRecord} from '@xh/hoist/data';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import type {BaseRow} from '../row/BaseRow';
-import type {LeafRow} from '../row/LeafRow';
+import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
 import type {View} from '../View';
 
 /**
@@ -16,8 +16,8 @@ import type {View} from '../View';
  * objects and `cubeRowDigest` stamps - to be reused across regenerations of the View's results.
  *
  * Reuse invariant: a cached row is returned only when it would be recreated identically - a leaf
- * must be backed by the same (immutable) cube StoreRecord, an aggregate/bucket by an identical
- * array of child rows. Any data change therefore rebuilds the changed row and its ancestor chain
+ * must be backed by the same (immutable) cube StoreRecord and match the view's current
+ * exposed/hidden leaf class, an aggregate/bucket by an identical array of child rows. Any data change therefore rebuilds the changed row and its ancestor chain
  * while all other rows carry over, and a stale entry can never serve stale data - at worst it
  * misses and is rebuilt. Reused rows keep their `cubeRowDigest`, letting connected stores -
  * which read that stamp via a View-installed reuse digest - skip record rebuilds for them.
@@ -42,6 +42,7 @@ export class RowCache {
     private view: View;
     private rows = new Map<string, BaseRow>();
     private simpleAggs = false;
+    private exposedLeaves = false;
     private sweptAsOf: number = null;
 
     // Stats for the current generation - logged by endGeneration()
@@ -77,7 +78,10 @@ export class RowCache {
         let ret = this.rows.get(id);
         if (ret) {
             if (ret.isLeaf) {
-                if ((ret as LeafRow).cubeRecord === record) {
+                if (
+                    (ret as LeafRow).cubeRecord === record &&
+                    ret instanceof ExposedLeafRow === this.exposedLeaves
+                ) {
                     this.reused++;
                     return ret as T;
                 }
@@ -100,6 +104,7 @@ export class RowCache {
 
     beginGeneration() {
         this.simpleAggs = this.view.aggregatorsAreSimple;
+        this.exposedLeaves = this.view.exposesLeaves;
         this.reused = this.rebuilt = this.created = this.recomputed = 0;
         this.removed = this.sweepTime = 0;
     }
@@ -116,6 +121,12 @@ export class RowCache {
 
     clear() {
         this.rows.clear();
+    }
+
+    clearAggregates() {
+        this.rows.forEach((row, id) => {
+            if (!row.isLeaf) this.rows.delete(id);
+        });
     }
 
     // Drop rows whose underlying cube records have been removed or replaced. Skipped unless the

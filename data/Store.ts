@@ -396,6 +396,10 @@ export class Store
     private _denseRecordThreshold: number;
     private _digestFn: (raw: PlainObject) => RecordDigest;
 
+    // Last parent pair verified position-equal by positionUnchanged().
+    private _verifiedCachedParent: StoreRecord = null;
+    private _verifiedNewParent: StoreRecord = null;
+
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
     // within a single call to avoid allocation during parsing. See buildData().
@@ -1366,9 +1370,24 @@ export class Store
         const cached = this._committed?.recordMap.get(id);
         return cached &&
             (refMode ? cached.raw === raw : cached.digest === digest) &&
-            (this.idEncodesTreePath || equal(cached.parent?.treePath, parent?.treePath))
+            this.positionUnchanged(cached.parent, parent)
             ? cached
             : null;
+    }
+
+    // True if a record cached under `cachedParent` sits at the same tree position under `parent`.
+    // Siblings repeat the identical comparison - memoize the last verified pair, valid forever
+    // since treePaths are fixed at construction. Mirrors RecordSet.positionUnchanged.
+    private positionUnchanged(cachedParent: StoreRecord, parent: StoreRecord): boolean {
+        if (this.idEncodesTreePath) return true;
+        if (cachedParent === parent) return true;
+        if (cachedParent === this._verifiedCachedParent && parent === this._verifiedNewParent) {
+            return true;
+        }
+        if (!equal(cachedParent?.treePath, parent?.treePath)) return false;
+        this._verifiedCachedParent = cachedParent;
+        this._verifiedNewParent = parent;
+        return true;
     }
 
     private createRecords(
