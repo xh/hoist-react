@@ -7,8 +7,8 @@
 import {PlainObject} from '@xh/hoist/core';
 import {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
-import {Store} from './Store';
+import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
+import {RecordDigest, Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
@@ -44,10 +44,13 @@ export class StoreRecord {
     /**
      * An object containing the current field values for this record.
      *
-     * Note that this object will only contain explicit 'own' properties for fields that are
-     * not at their default values - default values will be present via the prototype.
+     * Read values from this object by field name - but never enumerate it. Its internal
+     * representation is memory-optimized and varies, so `Object.keys()`, spread and
+     * `JSON.stringify()` do not reliably see every field. Call {@link getValues} for an explicit
+     * enumeration of all field values, or {@link getModifiedValues} for locally-modified values
+     * only.
      *
-     * Call {@link getValues} for an object providing an explicit enumeration of all field values.
+     * With {@link StoreConfig.projectionOnly}, this is the raw source object itself.
      */
     readonly data: PlainObject;
 
@@ -58,6 +61,14 @@ export class StoreRecord {
      * property will point to the same object as `data`.
      */
     readonly committedData: PlainObject;
+
+    /**
+     * Digest snapshotted from this record's raw data at creation, used by
+     * {@link StoreConfig.reuseRecords} to detect unchanged records across loads. Null when no
+     * string/function digest is configured - including with `reuseRecords: true`, which matches
+     * on raw object identity instead.
+     */
+    readonly digest: RecordDigest;
 
     private _treePath: StoreRecordId[];
 
@@ -223,7 +234,11 @@ export class StoreRecord {
         if (!this.isModified) return null;
 
         const {data, committedData} = this,
-            ret = pickBy(data, (v, k) => !equal(v, committedData[k]));
+            ret: PlainObject = {};
+        this.fields.forEach(({name}) => {
+            const val = data[name];
+            if (!equal(val, committedData[name])) ret[name] = val;
+        });
         if (!isEmpty(ret)) {
             ret.id = this.id;
             return ret;
@@ -243,7 +258,7 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {id, store, raw, data, committedData, parent, isSummary} = config;
+        const {id, store, raw, data, committedData, parent, isSummary, digest = null} = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
@@ -259,6 +274,7 @@ export class StoreRecord {
         this.parentId = parent?.id;
         // Root record paths are built lazily by the getter - we may never need for flat data.
         this._treePath = parent ? [...parent.treePath, idStr] : null;
+        this.digest = digest;
         this.isSummary = isSummary;
 
         if (this.ownsData) data.id = id;
@@ -303,7 +319,7 @@ export class StoreRecord {
     // --------------------------
     /**
      * True if this record's `data` object belongs to it alone and may be written to and frozen.
-     * False only for records holding a provider-owned raw object under `useRawAsData`.
+     * False only for records holding a provider-owned raw object under `projectionOnly`.
      * @internal
      */
     get ownsData(): boolean {
@@ -366,4 +382,7 @@ export interface StoreRecordConfig {
      * information in grids when enabled.
      */
     isSummary?: boolean;
+
+    /** See {@link StoreRecord.digest}. */
+    digest?: RecordDigest;
 }

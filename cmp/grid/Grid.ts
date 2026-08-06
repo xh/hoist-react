@@ -706,18 +706,12 @@ export class GridLocalModel extends HoistModel {
         const {model} = this,
             {agGridModel, store, agApi} = model,
             newRs = store._filtered,
-            prevRs = this.prevRs,
-            prevCount = prevRs ? prevRs.count : 0;
+            prevRs = this.prevRs;
 
-        let transaction = null;
-        if (prevCount !== 0) {
-            transaction = this.genTransaction(newRs, prevRs);
-            if (!this.transactionIsEmpty(transaction)) {
-                this.logDebug(...this.genTxnLogMsgs(transaction));
-                agApi.applyTransaction(transaction);
-            }
-        } else {
-            agApi.updateGridOptions({rowData: newRs.list});
+        const transaction = this.genTransaction(newRs, prevRs);
+        if (!this.transactionIsEmpty(transaction)) {
+            this.logDebug(...this.genTxnLogMsgs(transaction));
+            agApi.applyTransaction(transaction);
         }
 
         if (model.externalSort) {
@@ -726,7 +720,7 @@ export class GridLocalModel extends HoistModel {
 
         this.updatePinnedSummaryRowData();
 
-        if (transaction?.update) {
+        if (transaction.update) {
             const visibleCols = model.getVisibleLeafColumns();
 
             // Refresh cells in columns with complex renderers
@@ -740,7 +734,7 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        if (!transaction || transaction.add || transaction.remove) {
+        if (transaction.add || transaction.remove) {
             wait().then(() => this.syncSelection());
         }
 

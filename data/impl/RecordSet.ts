@@ -242,13 +242,23 @@ export class RecordSet {
     // Implementation
     //------------------------
     private areRecordsEqual(r1: StoreRecord, r2: StoreRecord): boolean {
+        if (r1 === r2) return true;
+
+        const {store} = this,
+            d1 = r1.data,
+            d2 = r2.data;
+
+        // Projection data carries arbitrary provider keys - compare declared field values only.
+        const dataEqual = store.projectionOnly
+            ? d1 === d2 || store.fields.every(({name}) => equal(d1[name], d2[name]))
+            : equal(d1, d2);
+
         return (
-            r1 === r2 ||
-            (equal(r1.data, r2.data) &&
-                (this.store.idEncodesTreePath ||
-                    // Root records share an id here, so their paths are equal by construction.
-                    (r1.parentId == null && r2.parentId == null) ||
-                    equal(r1.treePath, r2.treePath)))
+            dataEqual &&
+            (store.idEncodesTreePath ||
+                // Root records share an id here, so their paths are equal by construction.
+                (r1.parentId == null && r2.parentId == null) ||
+                equal(r1.treePath, r2.treePath))
         );
     }
 

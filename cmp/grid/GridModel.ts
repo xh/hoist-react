@@ -118,7 +118,9 @@ import {
     ColChooserConfig,
     ColChooserPanelConfig,
     ColumnState,
+    ColumnStateOptions,
     GridModelPersistOptions,
+    GridScrollPosition,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn
@@ -873,13 +875,17 @@ export class GridModel extends HoistModel {
              * visible if it is within a collapsed node or outside of the visible scroll window.
              */
             ensureVisible?: boolean;
+            /** Position of the selection in the viewport - default null scrolls minimally. */
+            ensureVisiblePosition?: GridScrollPosition;
             /** True (default) to clear previous selection (rather than add to it). */
             clearSelection?: boolean;
         } = {}
     ) {
-        const {ensureVisible = true, clearSelection = true} = opts;
+        const {ensureVisible = true, ensureVisiblePosition = null, clearSelection = true} = opts;
         this.selModel.select(records, clearSelection);
-        if (ensureVisible) await this.ensureSelectionVisibleAsync();
+        if (ensureVisible) {
+            await this.ensureSelectionVisibleAsync({position: ensureVisiblePosition});
+        }
     }
 
     /**
@@ -943,12 +949,19 @@ export class GridModel extends HoistModel {
      *
      * Any selected records that are hidden because their parent rows are collapsed will first
      * be revealed by expanding their parent rows.
+     *
+     * @param opts - additional scrolling options
      */
-    async ensureSelectionVisibleAsync() {
+    async ensureSelectionVisibleAsync(
+        opts: {
+            /** Position of the selection in the viewport - default null scrolls minimally. */
+            position?: GridScrollPosition;
+        } = {}
+    ) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        return this.ensureRecordsVisibleAsync(this.selectedRecords);
+        return this.ensureRecordsVisibleAsync(this.selectedRecords, opts);
     }
 
     /**
@@ -962,8 +975,17 @@ export class GridModel extends HoistModel {
      * be revealed by expanding their parent rows.
      *
      * @param records - one or more record(s) for which to ensure visibility.
+     * @param opts - additional scrolling options
      */
-    async ensureRecordsVisibleAsync(records: Some<StoreRecord>) {
+    async ensureRecordsVisibleAsync(
+        records: Some<StoreRecord>,
+        opts: {
+            /** Position of the record in the viewport - default null scrolls minimally. */
+            position?: GridScrollPosition;
+        } = {}
+    ) {
+        const {position = null} = opts;
+
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -1001,10 +1023,11 @@ export class GridModel extends HoistModel {
         }
 
         if (indexCount === 1) {
-            agApi.ensureIndexVisible(indices[0]);
+            agApi.ensureIndexVisible(indices[0], position);
         } else if (indexCount > 1) {
+            // Scroll to last then first to show the range start - position applies to the first.
             agApi.ensureIndexVisible(max(indices));
-            agApi.ensureIndexVisible(min(indices));
+            agApi.ensureIndexVisible(min(indices), position);
         }
     }
 
@@ -1269,6 +1292,15 @@ export class GridModel extends HoistModel {
         this.store.clear();
     }
 
+    /**
+     * Replace the columns for this grid, rebuilding all `Column` instances from the configs
+     * provided.
+     *
+     * Note this resets all column state - visibility, width, order, and pinning - to the defaults
+     * specified by the new configs. For a grid with persistence enabled, that reset is itself
+     * persisted, discarding any state the user had saved. Use {@link setColumnState} or
+     * {@link updateColumnState} to change how the *existing* columns are displayed.
+     */
     @action
     setColumns(colConfigs: ColumnOrGroupSpec[]) {
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
@@ -1282,9 +1314,16 @@ export class GridModel extends HoistModel {
         this.columnState = leaves.map(it => this.getDefaultStateForColumn(it));
     }
 
+    /**
+     * Replace the current column state wholesale with the state provided.
+     *
+     * Note that any columns missing from `colState` will be restored to their in-code default
+     * state, or hidden if `opts.hideNewColumns` is set - this method does not patch the existing
+     * state. Use {@link updateColumnState} to apply targeted changes to particular columns.
+     */
     @action
-    setColumnState(colState: ColumnState[]) {
-        this.columnState = this.cleanColumnState(colState);
+    setColumnState(colState: ColumnState[], opts?: ColumnStateOptions) {
+        this.columnState = this.cleanColumnState(colState, opts);
     }
 
     showColChooser() {
@@ -1843,18 +1882,27 @@ export class GridModel extends HoistModel {
         );
     }
 
-    private cleanColumnState(columnState) {
+    private cleanColumnState(columnState, opts?: ColumnStateOptions) {
+        const gridCols = this.getLeafColumns();
+
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
         // under a prior release of the app and have since been removed from the code.
         let ret = columnState.filter(({colId}) => this.getColumn(colId));
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
-        const gridCols = this.getLeafColumns(),
-            retColIds = new Set(ret.map(s => s.colId));
+        const retColIds = new Set(ret.map(s => s.colId));
         gridCols.forEach((col, idx) => {
             if (!retColIds.has(col.colId)) {
-                ret.splice(idx, 0, this.getDefaultStateForColumn(col));
+                const state = this.getDefaultStateForColumn(col);
+
+                // Hide new columns if so requested - but never those the app requires to be shown,
+                // or that a user could not restore for themselves via the column chooser.
+                if (opts?.hideNewColumns && col.hideable && !col.excludeFromChooser) {
+                    state.hidden = true;
+                }
+
+                ret.splice(idx, 0, state);
             }
         });
 

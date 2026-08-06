@@ -27,6 +27,7 @@ export class BucketRow extends BaseRow {
     }
 
     readonly bucketSpec: BucketSpec = null;
+    readonly bucketVal: any = null;
 
     constructor(
         view: View,
@@ -39,13 +40,16 @@ export class BucketRow extends BaseRow {
         super(view, id);
 
         this.bucketSpec = bucketSpec;
-        this.data = new ViewRowData(id);
-        this.data.cubeRowType = 'bucket';
-        this.data.cubeLabel = bucketSpec.labelFn(bucketVal);
-        this.data.cubeDimension = bucketSpec.name;
+        this.bucketVal = bucketVal;
+        const data = (this.data = view.newRowData(id));
+        data.cubeRowType = 'bucket';
+        data.cubeLabel = bucketSpec.labelFn(bucketVal);
+        data.cubeDimension = bucketSpec.name;
 
         this.initAggregate(children, bucketSpec.name, bucketVal, appliedDimensions);
+    }
 
-        this.noteBucketed(bucketSpec, bucketVal);
+    protected override extendBuckets(parentBuckets: PlainObject): PlainObject {
+        return {...parentBuckets, [this.bucketSpec.name]: this.bucketVal};
     }
 }

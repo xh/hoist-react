@@ -55,8 +55,8 @@ grep -rE "isLoadSupport|removeAllFiles|setDefaultHeaders|setDefaultTimeout|logou
 |---|---|
 | `LoadSupport.isLoadSupport` | No direct replacement needed — this was a type-check utility rarely used by apps |
 | `FileChooserModel.removeAllFiles` | Use `FileChooserModel.clear()` |
-| `FetchService.setDefaultHeaders` | Set `FetchService.defaults.headers` directly |
-| `FetchService.setDefaultTimeout` | Set `FetchService.defaults.timeout` directly |
+| `FetchService.setDefaultHeaders` | Use `XH.fetchService.addDefaultHeaders({...})` |
+| `FetchService.setDefaultTimeout` | Set `XH.fetchService.defaultTimeout` directly |
 | `IdentityService.logoutAsync` | Use `XH.logoutAsync()` |
 
 ### 3. Check for Cube View Row Data Changes
