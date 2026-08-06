@@ -220,19 +220,57 @@ The most sophisticated built-in persistence, with four independently configurabl
 | `persistGrouping` | `grid.groupBy` | Row grouping columns |
 | `persistExpandToLevel` | `grid.expandLevel` | Expand level for grouped/tree data |
 
-Each aspect can be `true` (use root `persistWith`), `false` (skip), or a `PersistOptions` object
-to override the provider for that aspect:
+Each aspect is specified within the grid's `persistWith` config - a `GridModelPersistOptions` - and
+can be `true` (use the root options), `false` (skip), or a `PersistOptions` object to override the
+provider for that aspect:
 
 ```typescript
 new GridModel({
-    persistWith: {viewManagerModel: myViewManager},
-    persistColumns: true,           // Use viewManagerModel (the default)
-    persistSort: false,             // Do not persist - default sort should always be restored
-    persistGrouping: true,          // Use viewManagerModel
-    persistExpandToLevel: {localStorageKey: 'orderGridExpandLevel'},  // Override: use localStorage
+    persistWith: {
+        viewManagerModel: myViewManager,
+        persistColumns: true,       // Use viewManagerModel (the default)
+        persistSort: false,         // Do not persist - default sort should always be restored
+        persistGrouping: true,      // Use viewManagerModel
+        persistExpandToLevel: {localStorageKey: 'orderGridExpandLevel'}  // Override: localStorage
+    },
     columns: [...]
 });
 ```
+
+#### Newly Added Columns
+
+Columns added to the code after a user's state was saved are always added to that state, in the
+position at which they are defined. Whether they are initially *visible* depends on the backing
+store, via the `hideNewColumns` option:
+
+- **`viewManager` and `dashView`** - defaults to `true`, so new columns are hidden. Persisted state
+  here is a named view the user curated deliberately, often to capture a specific report, and a
+  release should not add columns to it.
+- **All other providers** - defaults to `false`, so new columns follow their in-code `hidden`
+  config. Persisted state here is an implicit record of the user's last-used layout, and surfacing
+  new columns helps users discover data added by a release.
+
+Set `hideNewColumns` explicitly to override:
+
+```typescript
+persistWith: {
+    viewManagerModel: myViewManager,
+    hideNewColumns: false       // Opt in to legacy behavior - new columns appear in saved views
+}
+```
+
+Two exceptions apply in all cases, as the app has indicated these columns must be displayed and/or
+could not be restored by a user: columns configured with `hideable: false` (which includes tree
+columns by default) or `excludeFromChooser: true` are never force-hidden.
+
+Note also that the ViewManager "default" view - the in-code state active when no saved view is
+selected - always follows the columns as defined in code, as it is not a curated artifact. Apps
+that disable that view in favor of a globally-shared default get the curated behavior throughout,
+with new columns surfacing only when an admin adds and saves them. Set `hideNewColumns: true`
+explicitly to force-hide new columns in the default view as well.
+
+Hidden or not, new columns remain available to users via the column chooser. Newly hidden columns
+also do not mark a saved view as dirty, so users are not prompted to save a change they cannot see.
 
 ### FormModel
 

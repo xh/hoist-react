@@ -13,7 +13,7 @@
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
-  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+     either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 * New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
   important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
   `getCubeLeaves(row)`.
@@ -21,6 +21,10 @@
   on this object does not reliably see default field values. Review any code enumerating `data`
   directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead. This never worked
   reliably, but the new memory optimizations in this version make it far more likely to bite.
+* Grid columns newly added to the code are now initially hidden when column state is persisted to a
+  `ViewManagerModel` or `DashViewModel`, ensuring a software release does not add columns to views
+  users have curated and named. They remain available via the column chooser. Set the new
+  `GridModelPersistOptions.hideNewColumns` config to `false` to restore the prior behavior.
 
 ### 🎁 New Features
 
@@ -81,8 +85,16 @@
       `FetchService` can also share interned values across successive fetches of the same logical
       dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
       known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
-* Added an `icon` prop to `Badge`, rendered before the badge's content. A new
-  `--xh-badge-gap` CSS variable controls spacing between the icon and content.
+
+* Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
+  content is controlled by the new `--xh-badge-gap` CSS variable.
+* Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
+  active filter and reloads the log around the selected line, then re-selects it and centers it in
+  the viewport - useful for examining the context around a hit found via filtering.
+* Added a `position` option to `GridModel.ensureRecordsVisibleAsync()`,
+  `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
+  scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the
+  minimum amount required.
 
 ### 🐞 Bug Fixes
 
