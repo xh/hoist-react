@@ -15,7 +15,7 @@ import {flatMap} from 'lodash';
  * @mcpHint row shape returned by Cube queries and View results
  */
 export interface ViewRowData {
-    /** Unique id. */
+    /** Unique id - the source cube record id for leaf rows, a dimension-path id for others. */
     id: string;
 
     /** Denotes a type for the row */

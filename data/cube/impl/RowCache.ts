@@ -8,7 +8,7 @@
 import type {StoreRecord} from '@xh/hoist/data';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import type {BaseRow} from '../row/BaseRow';
-import type {LeafRow} from '../row/LeafRow';
+import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
 import type {View} from '../View';
 
 /**
@@ -16,18 +16,18 @@ import type {View} from '../View';
  * objects and `cubeRowDigest` stamps - to be reused across regenerations of the View's results.
  *
  * Reuse invariant: a cached row is returned only when it would be recreated identically - a leaf
- * must be backed by the same (immutable) cube StoreRecord, an aggregate/bucket by an identical
- * array of child rows. Any data change therefore rebuilds the changed row and its ancestor chain
+ * must be backed by the same (immutable) cube StoreRecord and match the view's current
+ * exposed/hidden leaf class, an aggregate/bucket by an identical array of child rows. Any data change therefore rebuilds the changed row and its ancestor chain
  * while all other rows carry over, and a stale entry can never serve stale data - at worst it
  * misses and is rebuilt. Reused rows keep their `cubeRowDigest`, letting connected stores -
  * which read that stamp via a View-installed reuse digest - skip record rebuilds for them.
  *
  * Reuse is gated on every input to a row's published data being intrinsic or re-derived. In
  * Views with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly} - and so
- * may read the per-generation AggregationContext - reused aggregate/bucket rows recompute their
- * values in place each generation, with digests bumped only for values that actually changed.
- * Bucket stamps, `lockFn` and `omitFn` are re-derived for all rows on every generation and need
- * no constraint. `canAggregateFn` runs only at row construction and must be pure in its inputs.
+ * may read the per-generation AggregationContext - reused aggregate/bucket rows recompute
+ * exactly those complex fields in place each generation, with digests bumped only for values
+ * that actually changed. Bucket stamps, `lockFn` and `omitFn` are re-derived for all rows on
+ * every generation and need no constraint.
  *
  * Retention: entries not requested by a generation are retained for potential later reuse - e.g.
  * leaves for records currently excluded by filter, ready should the filter widen again. To bound
@@ -42,6 +42,7 @@ export class RowCache {
     private view: View;
     private rows = new Map<string, BaseRow>();
     private simpleAggs = false;
+    private exposedLeaves = false;
     private sweptAsOf: number = null;
 
     // Stats for the current generation - logged by endGeneration()
@@ -77,14 +78,17 @@ export class RowCache {
         let ret = this.rows.get(id);
         if (ret) {
             if (ret.isLeaf) {
-                if ((ret as LeafRow).cubeRecord === record) {
+                if (
+                    (ret as LeafRow).cubeRecord === record &&
+                    ret instanceof ExposedLeafRow === this.exposedLeaves
+                ) {
                     this.reused++;
                     return ret as T;
                 }
             } else if (shallowEqualArrays(ret.children, children)) {
                 if (!this.simpleAggs) {
                     this.recomputed++;
-                    if (ret.computeAggregates()) this.view.noteRowDataMutated(ret.data);
+                    if (ret.recomputeComplexAggregates()) this.view.noteRowDataMutated(ret.data);
                 }
                 this.reused++;
                 return ret as T;
@@ -100,6 +104,7 @@ export class RowCache {
 
     beginGeneration() {
         this.simpleAggs = this.view.aggregatorsAreSimple;
+        this.exposedLeaves = this.view.exposesLeaves;
         this.reused = this.rebuilt = this.created = this.recomputed = 0;
         this.removed = this.sweepTime = 0;
     }
@@ -116,6 +121,12 @@ export class RowCache {
 
     clear() {
         this.rows.clear();
+    }
+
+    clearAggregates() {
+        this.rows.forEach((row, id) => {
+            if (!row.isLeaf) this.rows.delete(id);
+        });
     }
 
     // Drop rows whose underlying cube records have been removed or replaced. Skipped unless the

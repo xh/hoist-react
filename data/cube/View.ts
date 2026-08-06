@@ -24,7 +24,7 @@ import {
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
+import {castArray, find, forEach, groupBy, isEmpty, isEqual, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {AggregateRow} from './row/AggregateRow';
@@ -222,8 +222,7 @@ export class View
         this.query = newQuery;
         this.buildRowTemplates();
 
-        // If the cube is changing then we need to clear the row cache, and potentially disconnect
-        // from the old cube and connect to the new one
+        // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
             {cube: newCube} = newQuery;
 
@@ -235,16 +234,11 @@ export class View
             if (oldCube.viewIsConnected(this)) {
                 oldCube.disconnectView(this);
                 newCube.connectView(this);
-
-                // Connecting to the new cube will have triggered a full update so we early out
-                return;
+                return; // Connecting triggers a full update so we early out
             }
         }
 
-        // Clear row cache if more than the filter is changing - rows are shaped by field set.
-        if (!oldQuery.equalsExcludingFilter(newQuery)) {
-            this._rowCache.clear();
-        }
+        this.pruneCacheForQueryChange(oldQuery, newQuery);
 
         this.fullUpdate();
     }
@@ -355,6 +349,26 @@ export class View
         // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
         this._rowDataTemplate = {...rowData} as ViewRowData;
         this._canAggregateTemplate = {...canAggregate};
+    }
+
+    // Selectively invalidate cached rows on a query change.
+    private pruneCacheForQueryChange(oldQuery: Query, newQuery: Query) {
+        // 0) Filter change only is a no-op - great for fast filter toggling
+        if (oldQuery.equalsExcludingFilter(newQuery)) return;
+
+        // 1) If fields/leaves are changing, just blow everything away
+        const cache = this._rowCache,
+            oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
+            newExposed = newQuery.includeLeaves || newQuery.provideLeaves,
+            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields);
+        if (oldExposed !== newExposed || (newExposed && fieldsChanged)) {
+            cache.clear();
+            return;
+        }
+
+        // 2) Otherwise, blow away aggregates (they are not worth saving). Surviving leaves that
+        // moved to new tree positions are detected by connected stores' treePath checks.
+        cache.clearAggregates();
     }
 
     @logWithDebug
@@ -478,12 +492,11 @@ export class View
     ): BaseRow[] {
         if (!records?.length) return [];
 
-        const rootId = parentId + Cube.RECORD_ID_DELIMITER;
-
         if (!dimensions?.length) {
             const {exposesLeaves} = this;
             return records.map(r => {
-                const id = rootId + r.id,
+                // Leaves are keyed by stable record id, supporting reuse across grouping changes.
+                const id = r.id.toString(),
                     leaf = this._rowCache.getOrCreate(
                         id,
                         null,
@@ -498,7 +511,8 @@ export class View
             });
         }
 
-        const dim = dimensions[0],
+        const rootId = parentId + Cube.RECORD_ID_DELIMITER,
+            dim = dimensions[0],
             dimName = dim.name,
             groups = groupBy(records, it => it.data[dimName]);
 
@@ -659,14 +673,13 @@ export class View
         ret.forEach(s => s.setDigestFn(row => row.cubeRowDigest));
 
         throwIf(
-            ret.some(s => s.idEncodesTreePath) &&
-                (!isNil(this.cube.bucketSpecFn) || !isNil(this.cube.omitFn)),
-            'Store.idEncodesTreePath cannot be used on a Store that is connected to a Cube with a `bucketSpecFn` or `omitFn`'
+            ret.some(s => s.idEncodesTreePath),
+            '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
         );
 
-        if (ret.some(s => !s.projectionOnly && !s.processRawData)) {
-            this.logDebug(
-                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. See StoreConfig.projectionOnly.'
+        if (ret.some(s => s.projectionOnly == null && !s.processRawData)) {
+            this.logWarn(
+                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. Set explicitly to false to opt out and silence this warning.'
             );
         }
 
