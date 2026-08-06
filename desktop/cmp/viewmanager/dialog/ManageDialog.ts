@@ -20,6 +20,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {capitalize} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
+import {topLevelDropStrip} from './TopLevelDropStrip';
 import {renameGroupDialog} from './editpanels/RenameGroupDialog';
 import {viewMultiPanel} from './editpanels/ViewMultiPanel';
 import {viewPanel} from './editpanels/ViewPanel';
@@ -93,35 +94,35 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
     render({model, helpText, helpIcon}) {
         const dialogModel = useContextModel(ManageDialogModel);
         return vframe({
-            paddingTop: 5,
             className: classNames({
-                // Green indicator when a drag is pending a drop onto the top level - outside
-                // all groups, there is no target row to highlight, so decorate the grid body.
-                'xh-view-manager__manage-dialog__grid--drop-target':
-                    dialogModel?.isTopLevelDropTarget(model),
                 // Grays + disables the drag handles while the selection cannot be dragged.
                 'xh-view-manager__manage-dialog__grid--drag-disabled':
                     dialogModel?.isDragDisabled(model)
             }),
             items: [
-                grid({
-                    model,
-                    agOptions: {
-                        // Groups render as open/closed folders rather than the default carets.
-                        // Icon size is controlled via --xh-grid-tree-icon-px in ViewManager.scss.
-                        icons: {
-                            groupExpanded: Icon.folderOpen({
-                                asHtml: true,
-                                className: 'ag-group-expanded'
-                            }),
-                            groupContracted: Icon.folder({
-                                asHtml: true,
-                                className: 'ag-group-contracted'
-                            })
-                        },
-                        // Drag-and-drop of views/groups, where supported by the grid + user.
-                        ...dialogModel?.getRowDragAgOptions(model)
-                    }
+                vframe({
+                    className: 'xh-view-manager__manage-dialog__grid-wrapper',
+                    items: [
+                        topLevelDropStrip({model}),
+                        grid({
+                            model,
+                            agOptions: {
+                                // Icon size is set via --xh-grid-tree-icon-px in ViewManager.scss.
+                                icons: {
+                                    groupExpanded: Icon.folderOpen({
+                                        asHtml: true,
+                                        className: 'ag-group-expanded'
+                                    }),
+                                    groupContracted: Icon.folder({
+                                        asHtml: true,
+                                        className: 'ag-group-contracted'
+                                    })
+                                },
+                                // Drag-and-drop of views/groups, where supported by the grid+user.
+                                ...dialogModel?.getRowDragAgOptions(model)
+                            }
+                        })
+                    ]
                 }),
                 card({
                     title: 'Help',

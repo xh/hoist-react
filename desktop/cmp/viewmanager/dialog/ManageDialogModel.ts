@@ -24,7 +24,7 @@ import {FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
-import {GridOptions} from '@xh/hoist/kit/ag-grid';
+import {GridOptions, RowDropZoneEvents} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, isEqual, keys, some, startCase, uniqBy} from 'lodash';
@@ -43,6 +43,18 @@ interface DropTarget {
     id: string;
     path: string;
 }
+
+/** The top-level strip's drop target - always the sentinel id, outside all groups. */
+const TOP_LEVEL_TARGET: DropTarget = {id: TOP_LEVEL_DROP_ID, path: null};
+
+/** Dragged/selected payload - a single group path, or a deduped set of views. */
+interface DragPayload {
+    group?: string;
+    views?: ViewInfo[];
+}
+
+/** Display mode for the top-level drop strip within one grid's pane. */
+type StripMode = 'rest' | 'armed' | 'hot' | 'blocked';
 
 /**
  * Backing model for ManageDialog
@@ -67,8 +79,15 @@ export class ManageDialogModel extends HoistModel {
     /** Pending row-drag drop target within one of the grids, for highlighting. */
     @observable.ref private dropTarget: {type: GridType; id: string} = null;
 
-    /** Cleanup for the one-shot drop listener armed by dragging out past the top of a grid. */
-    private outsideDropCleanup: () => void = null;
+    /**
+     * Row(s)/group currently mid-drag, tagged by originating grid - drives the top-level strip's
+     * armed/hot/blocked display. Cleared on every drag-ending gesture, wherever it ends.
+     */
+    @observable.ref private drag: {type: GridType; payload: DragPayload} = null;
+
+    /** Reversing action for the most recently applied move, backing the toast's Undo button. */
+    private lastMove: {undo: () => Promise<void>} = null;
+    private lastMoveTimer: ReturnType<typeof setTimeout> = null;
 
     readonly updateTask = TaskObserver.trackLast();
 
@@ -138,7 +157,8 @@ export class ManageDialogModel extends HoistModel {
     @action
     close() {
         this.isOpen = false;
-        this.disarmOutsideDrop();
+        this.drag = null;
+        this.dropTarget = null;
         if (this.renameGroupDialogModel) this.renameGroupDialogModel.isRenameDialogOpen = false;
     }
 
@@ -206,13 +226,13 @@ export class ManageDialogModel extends HoistModel {
 
     /**
      * Row-drag GridOptions for one of this dialog's grids, applied via the grid's agOptions.
-     * Drops move the dragged views/group immediately - no save step, with a confirm only when
-     * the move affects any global view. Empty on grids that do not support drag-and-drop.
+     * Drops move the dragged views/group immediately - no save step, applied optimistically with
+     * a toast + Undo rather than a confirm. Empty on grids that do not support drag-and-drop.
      * Requires ag-Grid's `RowDragModule` to be registered.
      */
     getRowDragAgOptions(gridModel: GridModel): GridOptions {
         const type = this.gridTypeFor(gridModel);
-        if (!this.dragDropEnabled(type)) return {};
+        if (!this.supportsDragDrop(gridModel)) return {};
 
         const {typeDisplayName} = this.viewManagerModel;
         return {
@@ -227,15 +247,23 @@ export class ManageDialogModel extends HoistModel {
                     ? `${capitalize(typeDisplayName)} "${rec?.data.name}"`
                     : pluralize(typeDisplayName, dragItemCount, true);
             },
-            onRowDragEnter: () => this.disarmOutsideDrop(),
+            onRowDragEnter: e => this.onRowDragEnter(type, e),
             onRowDragMove: e => this.onRowDragMove(type, e),
-            onRowDragLeave: e => this.onRowDragLeave(type, e),
-            onRowDragCancel: () => {
-                this.disarmOutsideDrop();
-                this.setDropTarget(type, null);
-            },
-            onRowDragEnd: e => this.onRowDragEnd(type, e)
+            onRowDragLeave: () => this.setDropTarget(type, null),
+            onRowDragEnd: e => this.onRowDragEnd(type, e),
+            // Generic (not row-drag-specific) events that fire for every drag-ending gesture,
+            // regardless of where it ends - the only reliable place to clear pending state for a
+            // release outside any drop target (grid body, top-level strip, or elsewhere), which
+            // otherwise triggers no row-drag event at all. Replaces the old manual Escape/outside
+            // -release handling, both now covered by ag-Grid's own global drag lifecycle.
+            onDragStopped: () => this.onDragGestureEnded(type),
+            onDragCancelled: () => this.onDragGestureEnded(type)
         };
+    }
+
+    /** True if `gridModel`'s pane supports drag-and-drop, and therefore the top-level strip. */
+    supportsDragDrop(gridModel: GridModel): boolean {
+        return this.dragDropEnabled(this.gridTypeFor(gridModel));
     }
 
     /** True when a drag within `gridModel` is pending a drop onto the top level. */
@@ -256,6 +284,64 @@ export class ManageDialogModel extends HoistModel {
     isDragDisabled(gridModel: GridModel): boolean {
         const recs = gridModel.selectedRecords;
         return recs.length > 1 && recs.some(r => r.data.isGroupRow);
+    }
+
+    /**
+     * Display state for `gridModel`'s top-level drop strip - rest/armed/hot/blocked, matching
+     * the in-flight drag (if it originated in this grid) or, at rest, the current selection.
+     */
+    stripState(gridModel: GridModel): {mode: StripMode; hint: string} {
+        const type = this.gridTypeFor(gridModel),
+            payload = this.drag?.type === type ? this.drag.payload : null;
+
+        if (!payload) {
+            const hasSelection = gridModel.hasSelection && !this.isDragDisabled(gridModel);
+            return {
+                mode: 'rest',
+                hint: hasSelection ? 'Click to move the selection to the top level' : ''
+            };
+        }
+
+        const name = this.dragPayloadName(payload);
+        if (!this.isValidDrop(payload, TOP_LEVEL_TARGET)) {
+            return {mode: 'blocked', hint: `${name} is already at top level`};
+        }
+        return this.isTopLevelDropTarget(gridModel)
+            ? {mode: 'hot', hint: `Release to move ${name}`}
+            : {mode: 'armed', hint: 'Drop here to move out of all groups'};
+    }
+
+    /**
+     * ag-Grid `RowDropZoneEvents` for the top-level strip within one grid's pane - registered by
+     * the strip component as an external drop zone via `gridModel.agApi.addRowDropZone()`. The
+     * strip's target is always the top level, regardless of where the pointer sits within it, so
+     * unlike the in-grid handlers above there is no need to track a continuously-updating target.
+     */
+    getTopLevelDropZoneEvents(gridModel: GridModel): RowDropZoneEvents {
+        const type = this.gridTypeFor(gridModel);
+        return {
+            onDragEnter: () => this.setDropTarget(type, TOP_LEVEL_TARGET),
+            onDragLeave: () => this.setDropTarget(type, null),
+            onDragStop: () => {
+                const payload = this.drag?.type === type ? this.drag.payload : null;
+                if (payload && this.isValidDrop(payload, TOP_LEVEL_TARGET)) {
+                    this.doRowDragDropAsync(type, payload, TOP_LEVEL_TARGET).catchDefault();
+                }
+            }
+        };
+    }
+
+    /**
+     * Click-to-move path for the top-level strip - moves the grid's current selection to the top
+     * level via the same code path as a drop, covering keyboard/trackpad users and long lists
+     * where dragging from a deep row would require an auto-scrolling drag. No-op without a
+     * (draggable) selection, or if the selection is already at the top level.
+     */
+    async moveSelectionToTopLevelAsync(gridModel: GridModel): Promise<void> {
+        const type = this.gridTypeFor(gridModel),
+            payload = this.getSelectionPayload(gridModel);
+        if (!payload || !this.isValidDrop(payload, TOP_LEVEL_TARGET)) return;
+        return this.doRowDragDropAsync(type, payload, TOP_LEVEL_TARGET);
     }
 
     //------------------------
@@ -362,6 +448,11 @@ export class ManageDialogModel extends HoistModel {
         return type === 'owned' || (type === 'global' && this.viewManagerModel.manageGlobal);
     }
 
+    private onRowDragEnter(type: GridType, e: any) {
+        if (this.isDragDisabled(this.gridModelFor(type))) return;
+        this.drag = {type, payload: this.getDragPayload(e)};
+    }
+
     private onRowDragMove(type: GridType, e: any) {
         if (this.isDragDisabled(this.gridModelFor(type))) return;
 
@@ -371,8 +462,6 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private onRowDragEnd(type: GridType, e: any) {
-        this.disarmOutsideDrop();
-        this.setDropTarget(type, null);
         if (this.isDragDisabled(this.gridModelFor(type))) return;
 
         const payload = this.getDragPayload(e),
@@ -382,119 +471,23 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Dragging out past the top of the grid targets the top level, symmetric with the empty
-     * space below the last row - arm a one-shot drop completing on release outside the grid
-     * (ag-Grid fires no end event out there). Any other exit simply clears the pending target,
-     * and re-entering the grid disarms.
+     * Clears any pending drag/drop-target state for `type`'s grid - fires on every gesture that
+     * ends a drag (a completed drop wherever it landed, an Escape cancel, or a release outside
+     * any registered drop target), via the generic `dragStopped`/`dragCancelled` grid events
+     * rather than the row-drag-specific ones, since those alone never fire for a release outside
+     * every target.
      */
-    private onRowDragLeave(type: GridType, e: any) {
-        if (this.isDragDisabled(this.gridModelFor(type))) return;
-
-        const payload = this.getDragPayload(e),
-            target: DropTarget = {id: TOP_LEVEL_DROP_ID, path: null};
-
-        if (this.didExitGridTop(type, e) && this.isValidDrop(payload, target)) {
-            this.setDropTarget(type, target);
-            this.armOutsideDrop(type, payload, target);
-        } else {
-            this.setDropTarget(type, null);
-        }
+    private onDragGestureEnded(type: GridType) {
+        if (this.drag?.type === type) this.drag = null;
+        this.setDropTarget(type, null);
     }
 
-    /** True if the drag left the grid past its top edge. */
-    private didExitGridTop(type: GridType, e: any): boolean {
-        const clientY = e.event?.clientY,
-            gridId = this.gridModelFor(type)?.agApi?.getGridId(),
-            gridEl = gridId
-                ? document.querySelector(`.ag-root-wrapper[grid-id="${gridId}"]`)
-                : null;
-        return gridEl != null && clientY != null && clientY <= gridEl.getBoundingClientRect().top;
-    }
-
-    private armOutsideDrop(
-        type: GridType,
-        payload: {group?: string; views?: ViewInfo[]},
-        target: DropTarget
-    ) {
-        this.disarmOutsideDrop();
-        const onMouseUp = () => {
-            this.disarmOutsideDrop();
-            this.setDropTarget(type, null);
-            this.doRowDragDropAsync(type, payload, target).catchDefault();
-        };
-        // ag-Grid does not observe Escape while the drag is outside the grid - cancel here.
-        const onKeyDown = (ev: KeyboardEvent) => {
-            if (ev.key === 'Escape') {
-                this.disarmOutsideDrop();
-                this.setDropTarget(type, null);
-            }
-        };
-        document.addEventListener('mouseup', onMouseUp, {capture: true});
-        document.addEventListener('keydown', onKeyDown, {capture: true});
-        this.outsideDropCleanup = () => {
-            document.removeEventListener('mouseup', onMouseUp, {capture: true});
-            document.removeEventListener('keydown', onKeyDown, {capture: true});
-            this.outsideDropCleanup = null;
-        };
-    }
-
-    private disarmOutsideDrop() {
-        this.outsideDropCleanup?.();
-    }
-
-    private async doRowDragDropAsync(
-        type: GridType,
-        payload: {group?: string; views?: ViewInfo[]},
-        target: DropTarget
-    ) {
+    private doRowDragDropAsync(type: GridType, payload: DragPayload, target: DropTarget) {
         const isGlobal = type === 'global',
             {group, views} = payload;
-
-        if (!(await this.confirmGlobalDropAsync(payload, isGlobal))) return;
-
         return group != null
             ? this.dropMoveGroupAsync(group, target.path, isGlobal).linkTo(this.updateTask)
             : this.dropMoveViewsAsync(views, target.path).linkTo(this.updateTask);
-    }
-
-    /**
-     * Confirm before a drop that moves any global view - such moves re-group the view within
-     * every user's menu, not just the current user's.
-     */
-    private async confirmGlobalDropAsync(
-        payload: {group?: string; views?: ViewInfo[]},
-        isGlobal: boolean
-    ): Promise<boolean> {
-        const {viewManagerModel} = this,
-            {globalDisplayName, typeDisplayName} = viewManagerModel,
-            affected =
-                payload.group != null
-                    ? (isGlobal
-                          ? viewManagerModel.globalViews
-                          : viewManagerModel.ownedViews
-                      ).filter(v => isGroupSameOrDescendant(v.group, payload.group))
-                    : payload.views,
-            globalViews = affected.filter(v => v.isGlobal);
-
-        if (!globalViews.length) return true;
-
-        const countStr = pluralize(
-            `${globalDisplayName} ${typeDisplayName}`,
-            globalViews.length,
-            true
-        );
-        return XH.confirm({
-            message: fragment(
-                p(`This will move ${countStr} for all other ${XH.appName} users.`),
-                p(strong('Are you sure you want to proceed?'))
-            ),
-            confirmProps: {
-                text: 'Yes, move',
-                outlined: true,
-                autoFocus: false,
-                intent: 'primary'
-            }
-        });
     }
 
     /**
@@ -502,7 +495,7 @@ export class ManageDialogModel extends HoistModel {
      * selected rows are ignored - groups move one at a time), else the deduped views across all
      * dragged leaf rows.
      */
-    private getDragPayload(e: any): {group?: string; views?: ViewInfo[]} {
+    private getDragPayload(e: any): DragPayload {
         const origin = e.node?.data as StoreRecord;
         if (origin?.data.isGroupRow) return {group: origin.data.group};
 
@@ -512,6 +505,33 @@ export class ManageDialogModel extends HoistModel {
                 .filter(rec => rec && !rec.data.isGroupRow)
                 .map(rec => rec.data.view as ViewInfo);
         return {views: uniqBy(compact(views), 'token')};
+    }
+
+    /**
+     * Selection-driven payload for the top-level strip's click-to-move path, mirroring the rules
+     * that gate a drag: null when there is no selection, or when it mixes a group row with any
+     * other row (per {@link isDragDisabled}); a lone selected group row moves as a group; any
+     * other selection moves its (group-expanded) views as a flat batch.
+     */
+    private getSelectionPayload(gridModel: GridModel): DragPayload {
+        const recs = gridModel.selectedRecords;
+        if (!recs.length || this.isDragDisabled(gridModel)) return null;
+
+        if (recs.length === 1 && recs[0].data.isGroupRow) return {group: recs[0].data.group};
+
+        const views = recs.flatMap(r =>
+            r.data.isGroupRow ? r.descendants.map(d => d.data.view) : [r.data.view]
+        );
+        return {views: uniqBy(compact(views), 'token')};
+    }
+
+    /** Quoted/pluralized display name for a drag/selection payload, for the strip's hint text. */
+    private dragPayloadName(payload: DragPayload): string {
+        const {group, views} = payload;
+        if (group != null) return `"${getGroupLeaf(group)}"`;
+        return views.length === 1
+            ? `"${views[0].name}"`
+            : pluralize(this.viewManagerModel.typeDisplayName, views.length, true);
     }
 
     /**
@@ -529,7 +549,7 @@ export class ManageDialogModel extends HoistModel {
             : {id: TOP_LEVEL_DROP_ID, path: null};
     }
 
-    private isValidDrop(payload: {group?: string; views?: ViewInfo[]}, target: DropTarget) {
+    private isValidDrop(payload: DragPayload, target: DropTarget) {
         if (!target) return false;
         const {group, views} = payload,
             targetPath = target.path;
@@ -565,14 +585,25 @@ export class ManageDialogModel extends HoistModel {
         if (rowNodes.length) agApi.redrawRows({rowNodes});
     }
 
-    /** Drop-driven flat move of views into a group (or the top level). */
+    /**
+     * Drop-driven flat move of views into a group (or the top level). Applied immediately, with
+     * a toast + Undo rather than a confirm - reorganizing views (especially globals, shared
+     * across every user's menu) is often a rapid multi-drop task, and a confirm on every drop
+     * trains people to click straight through the one that matters.
+     */
     private async dropMoveViewsAsync(views: ViewInfo[], targetPath: string) {
         const {viewManagerModel} = this,
-            countStr = pluralize(viewManagerModel.typeDisplayName, views.length, true),
-            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'the top level';
+            {typeDisplayName} = viewManagerModel,
+            countStr = pluralize(typeDisplayName, views.length, true),
+            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'top level',
+            prevGroups = new Map(views.map(v => [v, v.group ?? null]));
         try {
             await viewManagerModel.updateViewsInfoAsync(views, {group: targetPath});
-            XH.successToast({message: `Moved ${countStr} to ${destStr}.`, position: 'top'});
+            const message =
+                views.length === 1
+                    ? `${capitalize(typeDisplayName)} "${views[0].name}" moved to ${destStr}.`
+                    : `Moved ${countStr} to ${destStr}.`;
+            this.showMoveToast(message, () => this.restoreViewGroupsAsync(prevGroups));
         } catch (e) {
             XH.handleException(e, {showAlert: false});
             XH.dangerToast({
@@ -586,16 +617,21 @@ export class ManageDialogModel extends HoistModel {
         }
     }
 
-    /** Drop-driven re-parenting of a group and its full subtree. */
+    /** Drop-driven re-parenting of a group and its full subtree - same immediate/toast pattern. */
     private async dropMoveGroupAsync(from: string, targetPath: string, isGlobal: boolean) {
         const leaf = getGroupLeaf(from),
             to = composeGroupPath(targetPath, leaf),
-            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'the top level';
+            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'top level';
         let moved = false;
         try {
             await this.viewManagerModel.renameGroupAsync(from, to, isGlobal);
             moved = true;
-            XH.successToast({message: `Moved group "${leaf}" to ${destStr}.`, position: 'top'});
+            this.showMoveToast(`Group "${leaf}" moved to ${destStr}.`, async () => {
+                await this.viewManagerModel.renameGroupAsync(to, from, isGlobal);
+                await this.viewManagerModel.refreshAsync();
+                await this.refreshAsync();
+                await this.reselectGroupAsync(from, isGlobal);
+            });
         } catch (e) {
             XH.handleException(e, {showAlert: false});
             XH.dangerToast({
@@ -607,6 +643,57 @@ export class ManageDialogModel extends HoistModel {
             await this.refreshAsync();
         }
         if (moved) await this.reselectGroupAsync(to, isGlobal);
+    }
+
+    /**
+     * Show a success toast for an applied move, with an Undo action reversing it. Only the most
+     * recently shown move can be undone - a new move clears any prior one still pending.
+     */
+    private showMoveToast(message: string, undo: () => Promise<void>) {
+        clearTimeout(this.lastMoveTimer);
+        this.lastMove = {undo};
+        this.lastMoveTimer = setTimeout(() => (this.lastMove = null), 5000);
+        XH.successToast({
+            message,
+            position: 'top',
+            timeout: 5000,
+            actionButtonProps: {text: 'Undo', onClick: () => this.undoLastMoveAsync()}
+        });
+    }
+
+    private async undoLastMoveAsync() {
+        const move = this.lastMove;
+        if (!move) return;
+        this.lastMove = null;
+        clearTimeout(this.lastMoveTimer);
+        try {
+            await move.undo();
+        } catch (e) {
+            XH.handleException(e, {showAlert: false});
+            XH.dangerToast({message: 'Unable to undo the move.', position: 'top'});
+        }
+    }
+
+    /**
+     * Restore each view's previous group from a snapshot taken before a flat move, batched by
+     * distinct prior group so views that came from different groups (a multi-select drop/click)
+     * each land back where they started.
+     */
+    private async restoreViewGroupsAsync(prevGroups: Map<ViewInfo, string>) {
+        const {viewManagerModel} = this,
+            entries = Array.from(prevGroups, ([view, group]) => ({view, group})),
+            byGroup = groupBy(entries, entry => entry.group ?? '');
+
+        for (const key in byGroup) {
+            await viewManagerModel.updateViewsInfoAsync(
+                byGroup[key].map(({view}) => view),
+                {
+                    group: key || null
+                }
+            );
+        }
+        await viewManagerModel.refreshAsync();
+        await this.refreshAsync();
     }
 
     private async doDeleteAsync(views: ViewInfo[], groupName?: string) {

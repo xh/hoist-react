@@ -18,21 +18,13 @@
       margin-left: 0 !important;
     }
 
-    // Diff-style "addition" green for the drag-and-drop target highlights below.
-    --drop-target-green: 46, 160, 67;
-
     // Row of the group targeted by an in-flight row drag - drop here to move the dragged items
-    // into the group. Important required to beat the grid's own row background rules
-    // (clear-background, tree highlights).
+    // into the group. Primary intent, matching the top-level strip below - not success green,
+    // which in Hoist's intent vocabulary belongs to the confirmation toast once a move lands.
+    // Important required to beat the grid's own row background rules (clear-background, tree
+    // highlights).
     .ag-row.xh-view-manager__drop-target {
-      background-color: rgba(var(--drop-target-green), 0.3) !important;
-    }
-
-    // Top-level drop pending (dragged over empty space/a top-level view) - no target rows to
-    // highlight, so indicate on the grid body itself. Important required to beat the theme's
-    // own ag-root-wrapper border reset.
-    &__grid--drop-target .ag-root-wrapper {
-      border: 2px solid rgb(var(--drop-target-green)) !important;
+      background-color: var(--xh-intent-primary-trans2) !important;
     }
 
     // Dragging is disabled while the selection cannot be dragged (a group row combined with
@@ -41,6 +33,83 @@
       color: var(--xh-text-color-muted);
       opacity: 0.2;
       pointer-events: none;
+    }
+
+    // Thin border enclosing the top-level drop strip and the grid, presenting the two as a
+    // single drop surface and setting them apart from the tab bar above and Help card below.
+    &__grid-wrapper {
+      margin: var(--xh-pad-half-px);
+      border: var(--xh-border-solid);
+      border-radius: var(--xh-border-radius-px);
+      // Clips the grid's square corners to the rounded border.
+      overflow: hidden;
+    }
+
+    // Always-present strip between the tab bar and the grid, registered as an external ag-Grid
+    // row-drop-zone accepting drops that move a view/group out of all groups. Height matches a
+    // grid row so it does not perceptibly enlarge the dialog.
+    &__top-level-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 26px;
+      margin: var(--xh-pad-half-px);
+      padding: 0 var(--xh-pad-half-px);
+      border: 1px dashed var(--xh-border-color);
+      border-radius: var(--xh-border-radius-px);
+      color: var(--xh-text-color-muted);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition:
+        background 140ms,
+        border-color 140ms,
+        color 140ms;
+
+      &__icon {
+        flex: none;
+        width: 14px;
+        text-align: center;
+      }
+
+      &__hint {
+        font-size: 11px;
+        opacity: 0.75;
+      }
+
+      // Armed - a drag is in flight over the dialog, dragged row not already top level.
+      &--armed {
+        border-style: dashed;
+        border-color: var(--xh-intent-primary);
+        background: var(--xh-intent-primary-trans1);
+        color: var(--xh-intent-primary-text-color);
+      }
+
+      // Hot - as armed, plus the pointer is over the strip.
+      &--hot {
+        border-style: solid;
+        border-color: var(--xh-intent-primary);
+        background: var(--xh-intent-primary-trans2);
+        color: var(--xh-intent-primary-text-color);
+        font-weight: 600;
+      }
+
+      // Blocked - a drag is in flight but the dragged row is already at the top level.
+      &--blocked {
+        opacity: 0.7;
+        cursor: no-drop;
+      }
+
+      &--armed &__hint,
+      &--hot &__hint,
+      &--blocked &__hint {
+        opacity: 1;
+      }
+
+      // Hint stays regular weight even as the label bolds in the hot state.
+      &--hot &__hint {
+        font-weight: 400;
+      }
     }
 
     // Compact, non-expanding header for the multi-view edit panel - mirrors the muted styling
