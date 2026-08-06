@@ -1075,7 +1075,11 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       `cmp/pivotgrid` `PivotQuery` with it, plus Toolbox's whole Pivot Bench harness and the recorded
       baseline columns on the `PivotView` benchmark — comparing against a deleted implementation is
       unverifiable. The [baseline table](#baseline--pivotdatamodel-as-imported) is now its only record.
-- [ ] Toolbox Admin test page (evolve the phase 0 harness).
+- [~] Toolbox Admin test page — Admin › Tests › **Pivot Grid**, a live `PivotGrid` with the query on
+      one toolbar and the presentation on the other, plus tick / new-pivot-value / blank-value buttons.
+      Renders correctly and the summary invariant checks by eye. **Verification incomplete** — pivot
+      summaries, the tick and structural buttons, blank values and display sort are all still
+      unexercised in the browser.
 - [ ] Toolbox example page.
 
 ## Phase 4 — Docs and packaging
@@ -1121,24 +1125,27 @@ which `PivotQuery` already validates at construction.
       tree `View` shows the same tick-vs-rebuild disagreement, and pivot cells inherit it. The unit
       suite characterizes the divergence and excludes exactly that transition via a
       `lenientSumZeroesOut` predicate; delete both when this is fixed.
-- [ ] `Store.getField` (`Store.ts:849`) is a linear `find` over `fields` while `_fieldMap` sits
-      right there.
+- [x] `Store.getField` was a linear `find` over `fields` — now goes through `_fieldMap`, which the
+      pivot label column's per-row `sortValue` lookup made hot.
 - [ ] Consider exposing `useRawAsData` on `CubeConfig` (currently only `retainRaw`).
 
 `GridModel.enhanceColConfigsFromStore` was filed here and is now a
 [phase 3 prerequisite](#phase-3--pivotgridmodel).
 
+### Follow-ups filed while building
+
+- [ ] **Driving the Toolbox tab from Chrome automation steals desktop focus.** Clicking into the tab
+      activates it, and on Hyprland that raises and focuses the Chrome window mid-session. Not a Hoist
+      issue, but it makes browser-driven verification hostile to work in parallel with — worth
+      understanding before the next verification pass. Until then, ask before driving the browser.
+- [ ] `PivotGrid` had no `LayoutProps` / `TestSupportProps` — added on first real use, per the
+      `ZoneGrid` precedent. Check the other `cmp/` wrappers for the same omission.
+
 ### Framework conventions and cleanup
 
-- [ ] No XH copyright header on any of the files.
-- [ ] `PivotGrid` exports factory only; library components export a `[Component, factory]` pair via
-      `hoistCmp.withFactory`.
-- [ ] `GridOptions` in `PivotGrid.ts` should come from `@xh/hoist/kit/ag-grid`, not
-      `ag-grid-community`.
-- [ ] `//` comments on public interface members; framework config props need `/** */` JSDoc so IDEs
-      and the `hoist-ts` / MCP symbol tools surface them.
-- [ ] `headerName: () => label` (`PivotGridModel:402`) — a thunk returning a constant.
-- [ ] `PivotSort = 'asc' | 'desc' | any[] | null` needs a real type.
+All done with the phase 3 rewire: copyright headers, the `[Component, factory]` pair via
+`hoistCmp.withFactory`, `GridOptions` from `@xh/hoist/kit/ag-grid`, JSDoc on every public config
+member, the constant `headerName` thunk, and a documented `PivotSort`.
 
 ## Session log
 
