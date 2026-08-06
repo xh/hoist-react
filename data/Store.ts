@@ -173,9 +173,9 @@ export interface StoreConfig {
      *     A null/undefined digest never matches.
      *
      * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged digest
-     * is dropped from the transaction as a no-op. Note this assumes records are not locally
-     * modified: such an update is dropped even for a record carrying uncommitted local
-     * modifications, which are left in place.
+     * is dropped from the transaction as a no-op, intentionally preserving any uncommitted local
+     * modifications on the record. An update with a changed digest builds a new record and
+     * overwrites local modifications, as updates otherwise always do.
      *
      * Stores connected to a Cube {@link View} must leave this config unset - the View manages
      * reuse automatically, installing a digest that reads the stamp it maintains on every row
