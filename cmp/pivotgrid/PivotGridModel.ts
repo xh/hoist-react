@@ -170,12 +170,17 @@ export class PivotGridModel extends HoistModel {
      * Rebuild columns when the pivot structure changes, or when a config that shapes them does.
      *
      * Tracks `result.paths` by identity - the data layer republishes the same object whenever the
-     * structure held, so a values-only tick does no column work. Running after the view has already
-     * loaded the store is harmless: `noteCubeLoaded` / `noteCubeUpdated` are `@action`, so the load
-     * and this `setColumns` land in one batch with no intermediate paint.
+     * structure held, so a values-only tick does no column work. `equals: 'shallow'` is load-bearing
+     * for that: the track fn allocates a fresh array per run, so the default identity comparer would
+     * see a change on every single view update.
+     *
+     * Running after the view has already loaded the store is harmless: `noteCubeLoaded` /
+     * `noteCubeUpdated` are `@action`, so the load and this `setColumns` land in one batch with no
+     * intermediate paint.
      */
     private columnsReaction(): ReactionSpec {
         return {
+            equals: 'shallow',
             track: () => [
                 this.view.result.paths,
                 this.showRowTotals,
