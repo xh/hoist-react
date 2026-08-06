@@ -5,16 +5,15 @@ example pages. Both sit on current `develop`, which now carries the Store rework
 `pivot-grid-pre-store-simple` in each repo is the pre-rework history, kept only until this is bedded in.
 See [Rebase onto the Store rework](#rebase-onto-the-store-rework-store-simple).
 
-**Status: phases 0-2 complete and verified. Phase 3 is next and nothing blocks it.** The data layer is
-correct against its reference suite (262 Toolbox checks, 49 unit checks, both mutation-tested), rebased
-onto the `develop` that carries the Store rework, and clears every gate it still carries. Only
-`PivotDataModel`'s retirement is left in phase 2, and phase 3 is what unblocks it.
+**Status: phases 0-2 complete and verified, and phase 3's design decisions are settled.** The data
+layer is correct against its reference suite (262 Toolbox checks, 49 unit checks, both
+mutation-tested), rebased onto the `develop` that carries the Store rework, and clears every gate it
+still carries. Only `PivotDataModel`'s retirement is left in phase 2, and phase 3 is what unblocks it.
 
-**Start phase 3 at the [checklist](#phase-3--pivotgridmodel)**, whose first two items — the feature-set
-decision and the terminology rename — deliberately come before the bug work. Two decisions are already
-settled and recorded there: `projectionOnly` on the grid's Store, and the cell-field declaration
-contract. One is open and phase 3 will meet it while building columns:
-[fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
+**Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
+the settled contract phase 3 builds to, and it moves all query config off the grid model. Then start at
+the [checklist](#phase-3--pivotgridmodel). One decision stays open and phase 3 will meet it while
+building columns: [fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
 
 **To see the data layer's output before touching it**, open Admin › Tests › **Pivot Inspect** — eight
 records with hand-checkable values, and the query, raw records, `result.rows`, `result.paths`,
@@ -51,17 +50,18 @@ the pivot tree, so one mechanism serves both.
 **Pivot totals do not exist in the prototype** and are net-new work. They only appear with 2+ pivot
 dimensions, so the typical single-pivot-dimension config never shows them.
 
-Mapping from the prototype's names, all of which are to be renamed:
+Mapping from the prototype's names. Pivot totals are net-new and have no prototype counterpart.
 
-| Prototype                  | New                         |
-| -------------------------- | --------------------------- |
-| `showSummaryColumn`        | row totals — show/hide      |
-| `summaryColumnSide`        | row totals — side           |
-| `extraSummaryColumnFields` | row totals — extra fields   |
-| `showSummaryRow`           | value totals — show/hide    |
-| `summaryRowSide`           | value totals — side         |
-| `extraSummaryRowFields`    | value totals — extra fields |
-| `SUMMARY_COL_ID_PREFIX`    | row-totals column id prefix |
+| Prototype                  | New                                                                      |
+| -------------------------- | ------------------------------------------------------------------------ |
+| `showSummaryColumn`        | `showRowTotals`                                                          |
+| `summaryColumnSide`        | `rowTotalsSide`                                                          |
+| `extraSummaryColumnFields` | **cut** — see [Feature set](#feature-set-and-config-surface)              |
+| `showSummaryRow`           | `showValueTotals`                                                        |
+| `summaryRowSide`           | `valueTotalsSide`                                                        |
+| `extraSummaryRowFields`    | **cut** — see [Feature set](#feature-set-and-config-surface)              |
+| `SUMMARY_COL_ID_PREFIX`    | gone — `colId` is the cell field name                                    |
+| —                          | `showPivotTotals` / `pivotTotalsSide`, net-new                            |
 
 Type-level renames settled in phase 1: `PivotValue` → `PivotPath`, `cmp/pivotgrid`'s `PivotQuery` →
 the `data/cube` `PivotQuery`, and `PivotField` / `PivotFieldSpec` retired (see
@@ -725,7 +725,9 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       and is wrong. Perturb non-empty pivot values on already-non-empty records only; the reference's
       `excludeEmptyPivotValues` filter is a snapshot, and moving a record across that boundary stales
       it rather than testing anything.
-- [ ] Retire `PivotDataModel` — blocked on phase 3 rewiring `PivotGridModel` onto the new API.
+Retiring `PivotDataModel` is the one phase 2 item left. It is blocked on phase 3 rewiring
+`PivotGridModel` onto the new API, so it is tracked in the
+[phase 3 checklist](#phase-3--pivotgridmodel).
 
 ### Result — `PivotView` measured against the baseline
 
@@ -856,6 +858,13 @@ every cell slot — on Wide that is 31,637 × 138 ≈ 4.4M slots, which is the d
 model exists to avoid. Cell names are also only discovered during `generateCells`, after the
 constructor builds templates, so the first build cannot template them anyway.
 
+**A second consequence surfaced in phase 3, and it is a correctness one.** Under the grid store's
+`projectionOnly`, a record's data _is_ the row data object, so an unpopulated cell reads `undefined`
+rather than the `null` phase 2 proved through `Store`'s own defaults. Templating cell fields would
+restore `null`; the sparse model would not. That does not decide the question — `== null` covers both
+and no consumer is known to care — but it is now a second thing on templating's side of the ledger,
+and it must be documented if the sparse model stands.
+
 Three ways out, in rough order of appeal: accept dictionary mode for pivoted group rows and drop the
 fixed-shape guarantee there deliberately; template only the cell fields and pay the dense memory,
 which is defensible if `maxPivotPaths` keeps path counts genuinely low; or revisit
@@ -864,68 +873,182 @@ revisitable "if heap becomes the binding constraint". Pick between them on a tru
 measurement, not on the design argument alone — the sparse-cell model is the incumbent and templating
 cell fields is the change that has to earn its cost.
 
+## Grid integration design
+
+**Settled.** This section is to phase 3 what [Pivot data design](#pivot-data-design) is to phase 2.
+
+### Ownership
+
+The app owns the `Cube` and the `PivotView`. `PivotGridModel` takes a view in its constructor config,
+is bound to it for life, and owns everything downstream.
+
+| artifact            | owner             | lifecycle                                                                                            |
+| ------------------- | ----------------- | ---------------------------------------------------------------------------------------------------- |
+| `Cube`, `PivotView` | app               | `PivotGridModel` must **not** `@managed` the view — the app's view outlives any grid bound to it      |
+| grid `Store`        | `PivotGridModel`  | minted via `PivotView.createStore()`, `@managed`, and disconnected from the view in `destroy()`       |
+| `GridModel`         | `PivotGridModel`  | receives the store as an instance, so `GridModel` never `markManaged`s it (`GridModel.ts:1803`)        |
+
+`PivotGridModel` carries **no query config**. `dimensions`, `pivotDimensions`, `valueFields`,
+`includeRoot` and the rest live only on `PivotQuery`; apps reconfigure by calling `view.updateQuery()`
+and the grid follows. The grid model's own config is purely presentational — totals visibility and
+side, pivot sort, `persistWith`. The view is not swappable after construction:
+swapping means re-declaring fields, columns and column state, which is the same work as constructing a
+new model.
+
+Two `PivotGridModel`s may bind to one view. Each mints its own store; column state and selection are
+already per-`GridModel`.
+
+### Why the view pushes rather than the model reacting
+
+`View.fullUpdate` (`View.ts:361`) runs `generateRows` → `endGeneration` → `loadStores` →
+`updateResults`, assigning `result` last. **A MobX reaction on `result` therefore cannot declare the
+store's cell fields in time** — the load has already run against the old field set, and under
+`projectionOnly` that builds records with the wrong declared-field set rather than merely rendering
+late. Pivot needs this and plain `View` does not, because a plain view's field set is static and known
+at construction while cell fields are discovered from data.
+
+So `PivotView` syncs cell fields onto its connected stores before `loadStores()`, touching only the
+fields named by `result.cellFields` and leaving the app's own alone. It also sets
+`Store.loadRootAsSummary` from `query.includeRoot` — `Store.loadData` wants exactly one root node
+carrying `children`, which is what `loadStores` already publishes — so the app's remaining value-totals
+wiring is just `GridModel.showSummary`.
+
+Columns are the opposite case and stay in the grid layer: `PivotGridModel` reacts on `result.paths`
+identity and rebuilds. Rebuilding after the load is harmless, since a store carrying fields no column
+references is fine, and there is no intermediate paint — `noteCubeLoaded` / `noteCubeUpdated` are
+`@action`, so the load and the reaction's `setColumns` land in one batch.
+
+Rejected: a `pivotGridModels` registry on `PivotView`. It diagnoses the ordering problem correctly but
+inverts the layering — `data/cube` would import from `cmp/pivotgrid`, making `data/cube` unloadable
+without the grid layer.
+
+### `PivotView.createStore()`
+
+Mirrors `Cube.createView` — a convenience factory with an optional `connect`, not a claim of ownership.
+
+- `connect: true` registers the store into `view.stores`; the view loads it from then on.
+- `connect: false` declares fields and loads once from the current result, then never again.
+- The view may not have run yet. If it has, the factory declares and loads immediately; if not, the
+  store stays empty until the first update. Getting this wrong shows up as a grid that fills one tick
+  late.
+
+**The caller disconnects.** `View` self-unregisters on destroy (`View.ts:672`) because the registered
+object is the owned object; a store's owner is `PivotGridModel`, so it calls `view.disconnectStore()`
+in its own `destroy()`. Say so on `createStore`'s JSDoc, or the asymmetry reads as an oversight and
+gets "fixed" by teaching `Store` about views. Do **not** make `loadStores` skip destroyed stores
+defensively — that converts a loud failure into a silent leak.
+
+### The grid Store: `projectionOnly`
+
+Settled. It is what `View` recommends for a connected store, and it skips a per-record parse and copy
+on every load and tick. Three consequences to build to.
+
+Records hold the view's row data object **by reference** — the same object `projectCell` mutates in
+place — so values can never be stale. What `cubeRowDigest` governs is whether the record is rebuilt at
+all, which is what makes the grid repaint. Every cell owner is already stamped (see the
+[rebase note](#rebase-onto-the-store-rework-store-simple)), but this is the one place a missed stamp
+shows up as a grid that silently fails to repaint, and nothing tests that. Relatedly, `loadData()`
+skips reference-equal rows as unchanged — updates must arrive via `updateData()`.
+
+`type` / `parseVal` / `defaultValue` are **not** applied, so cell values must already be grid-ready as
+the aggregators leave them.
+
+Do **not** set `projectionOnly` on the Toolbox correctness suite's store: with `data` held by
+reference, `checkCellStore` would compare a row against itself and pass vacuously.
+
+### What fields do under `projectionOnly`
+
+Nothing, to a record. `createRecord` (`Store.ts:1319`) returns `data: raw` before any parsing;
+`buildData` — the only consumer of `_dataDefaults` / `_dataTemplate` — is on the non-projection path;
+and `getReusableRecord` (`Store.ts:1358`) compares id, digest and tree path with no field involvement.
+Declaring a field per `cellFields` entry is still required, but for columns, filters and export — not,
+as an earlier note here claimed, for the record-reuse equality check.
+
+Two consequences:
+
+- **`setFields` must retain records when `projectionOnly`.** A structural change is followed
+  immediately by `loadStores()`, whose only reuse path is the digest comparison against
+  `_committed.recordMap`. Dropping records guarantees a full rebuild on the next line — 37k allocations
+  on Typical+Drill every time a new pivot value appears. For a non-projection store dropping is
+  correct, since existing `data` objects were built against the old `_dataDefaults`.
+- **Unpopulated cells read `undefined`, not `null`.** Phase 2 proved `null` via `_dataDefaults`
+  (sparse) and the cloned template (dense), both non-projection paths. The correctness suite cannot
+  catch the divergence, since it must not set `projectionOnly`. Benign under `== null` testing, but
+  undocumented — and [templating cell fields](#open-decision-fixed-shape-rows-vs-sparse-cells) would
+  remove it.
+
+### Feature set and config surface
+
+**`extraSummaryRowFields` is cut.** The prototype's extra value-total rows (`PivotDataModel.ts:158`)
+clone the root row data once per extra field, blank the other value fields, and stamp a `summaryField`
+marker — N synthetic summary records from one root row, driving the `colSpan` / `cellStyle` machinery
+in `buildValueColumn`. The grid layer cannot rebuild it: `View.loadStores` calls `store.loadData()`, a
+full replace that also nulls `summaryRecords`, so any record the grid injected is wiped on the next
+load. An app that needs it sets pinned row data on the `GridModel` — the aggregates are already on the
+root row, so this is a rendering concern, not a data one. Reinstating it as a framework feature means
+`PivotView` minting multiple root rows, which is a display concept wearing a data-layer costume; do
+that only if a second client asks.
+
+The cut retires findings `PivotGridModel:466,469`, `:463` and `:498,455` outright, along with
+`isSummaryColumn` and `SUMMARY_COL_ID_PREFIX`.
+
+**`extraSummaryColumnFields` goes with it.** Row totals are one column per value field, full stop.
+Nothing is actually lost: any field in `PivotQuery.fields` is already aggregated onto every group row,
+so an app that wants a totals column for a non-value field can bind one. Reinstating the config is
+therefore cheap if the need arises — it names which fields to build columns for and nothing else.
+
+**Pivot totals ship in v1**, config-gated and default off. `showRowTotals` / `rowTotalsSide` and
+`showPivotTotals` / `pivotTotalsSide` stay separate config pairs even though row totals are pivot
+totals at the root path and share an implementation — most users only ever see the `Total` column and
+will not reason about it as a pivot subtotal. Unifying them later is a breaking change.
+
+**`labelColumnOverrides` and `valueColumnOverrides` are dropped for the initial implementation.** Add
+them back if consistency across value columns turns out to need a dedicated hook.
+
+**Column ids are cell field names.** Row totals bind the plain value field name, cells bind
+`` `${path.key}${DELIM}${valueField.name}` ``, and no prefix namespace survives. Settle any change to
+this before persistence lands: `colId` keys persisted column state, and pivot values are data-derived,
+so a scheme that shifts when the data shifts discards state silently.
+
+**Package location stays `cmp/pivotgrid`.** `ZoneGridModel` and `ZoneGrid` live in `cmp/zoneGrid/` with
+only desktop-specific chrome under `desktop/cmp/zoneGrid/impl/`, and ZoneGrid is desktop-only in
+practice too — so "desktop-only" is not what drives this. Nothing in `PivotGrid` is platform-specific.
+
 ## Phase 3 — PivotGridModel
 
-Parallel with phase 2, except the final Toolbox items which need working pivot data.
+Build to [Grid integration design](#grid-integration-design), which settles the decisions that used to
+head this list.
 
-- [ ] **Decide the feature set.** The main client-specific surface still in place is
-      `extraSummaryRowFields` (extra value-total fields) with its `colSpan` / `cellStyle` machinery.
-      Settle this before working the bug checklist, since some findings live in code that may be cut.
-- [ ] **Adopt the settled [terminology](#terminology) across the public API** — rename the
-      `showSummaryColumn` / `showSummaryRow` / `extraSummary*Fields` / `summary*Side` config family
-      per the mapping table. Do this alongside the feature decision, before the bug checklist, so
-      findings are worked against final names. Also decide whether `PivotGridConfig` keeps the
-      grid-idiomatic `groupBy` / `pivotBy` pair or follows the data layer's `dimensions` /
-      `pivotDimensions`. `GridModel.groupBy` argues for the former; either is defensible, but the
-      grid config should be internally consistent.
-- [ ] **Pivot totals** (subtotal columns at parent pivot nodes) — net-new, absent from the prototype.
-      Decide whether v1 ships them. Cheap, since the design materializes `C(G, P)` for every partial
-      path: with 2+ pivot dimensions the cell fields already exist, and the remaining work is column
-      building and config surface.
-- [ ] Add `Store.setFields()` to the framework, replacing the prototype's private-field pokes. Must
-      enforce the no-`id`-field rule that direct assignment currently bypasses.
-- [ ] Rewire `PivotGridModel` onto the new pivot data API. What phase 1 hands it:
-      - Row-totals columns bind to the value field's own name — no synthetic field, no
-        `SUMMARY_COL_ID_PREFIX` games for the value fields themselves.
-      - `extraSummaryColumnFields` (extra row-total columns) reduces to including those fields in
-        `PivotQuery.fields`; their group-row aggregate _is_ the row total.
-      - The value-totals row is `includeRoot: true` plus `Store.loadRootAsSummary` and
-        `GridModel.showSummary` — no separate summary data path, and no `'Total>>' + field`
-        `cubeDimension` hack.
-      - Column and `Store` field rebuilds key off `result.paths` / `result.cellFields` identity, which
-        is what fixes findings `PivotGridModel:276` and `:292`.
+**Prerequisite.** `GridModel.enhanceColConfigsFromStore` (`GridModel.ts:1833`) rebuilds `fieldsByName`
+from every store field at each recursion level, so it is `O(groups × fields)` inside every
+`setColumns`. A pivot grid rebuilds nested column groups over hundreds of cell fields on every
+structural change, which is exactly that shape. Fix it before rewiring, not opportunistically.
+
+- [ ] Fix the `enhanceColConfigsFromStore` prerequisite above.
+- [ ] `Store.setFields()`, replacing the prototype's `_fieldMap` / `_dataDefaults` pokes. Replace-all;
+      rebuild both `_fieldMap` and `_dataDefaults`; retain records when `projectionOnly` and drop them
+      otherwise, per [What fields do](#what-fields-do-under-projectiononly). Public, but marked
+      `@internal` in JSDoc for now — the pivot store is not app-configurable and a general `setFields`
+      reopens that door. `parseFields` already throws on an `id` field.
+- [ ] `PivotView.createStore({connect})` and `disconnectStore()`, per
+      [the factory contract](#pivotviewcreatestore).
+- [ ] `PivotView` syncs cell fields onto connected stores before `loadStores()`, and sets
+      `loadRootAsSummary` from `query.includeRoot`.
+- [ ] Rewire `PivotGridModel`: take a `PivotView`, drop every query-mirroring `@bindable`, mint and own
+      the store, rebuild columns on `result.paths` identity, disconnect the store in `destroy()`. What
+      the data layer hands it:
+      - Row-totals columns bind the value field's own name — no synthetic field, no prefix games. One
+        per value field, full stop.
+      - The value-totals row is `includeRoot: true` plus `GridModel.showSummary` — no separate summary
+        data path, and no `'Total>>' + field` `cubeDimension` hack.
       - `PivotPath` exposes raw `value` plus a plain `label`, so the grid layer renders labels itself
         and the prototype's try/catch-a-cell-renderer hack goes away.
-- [ ] **`PivotGridModel`'s Store sets `projectionOnly`.** Settled: it is what `View` recommends for a
-      connected store, and it skips a per-record parse and copy on every load and tick. Three
-      consequences to build to.
-
-      Records use the view's row data object *by reference* — the same object `projectCell` mutates in
-      place. Values therefore can never be stale; what the `cubeRowDigest` governs is whether the record
-      is rebuilt at all, which is what makes the grid repaint. Every cell owner is already stamped, so
-      this works (see the [rebase note](#rebase-onto-the-store-rework-store-simple)), but it is the one
-      place a missed stamp shows up as a grid that silently fails to repaint, and nothing tests that.
-      Relatedly, `loadData()` skips reference-equal rows as unchanged — updates must arrive via
-      `updateData()`.
-
-      `type` / `parseVal` / `defaultValue` are **not** applied, so cell values must already be
-      grid-ready as the aggregators leave them.
-
-      **Cell field names do not exist until a view has run**, so the Store's fields cannot be declared
-      at construction: observe `result.cellFields`, declare from it, and re-declare whenever its
-      identity changes — which is what the `Store.setFields()` item above is for. `PivotInspectModel`
-      demonstrates that ordering with a throwaway probe view; a connected grid needs `setFields`
-      instead. Declaring a field per entry stays necessary even under `projectionOnly` — for columns,
-      filters and export, and because only declared fields take part in the record-reuse equality check.
-
-      Do **not** set `projectionOnly` on the Toolbox correctness suite's store: with `data` held by
-      reference, `checkCellStore` would compare a row against itself and pass vacuously.
+- [ ] Adopt the settled [terminology](#terminology) across the public API.
+- [ ] Pivot totals: column building and config surface.
 - [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
-      checklists for whatever survives the feature decision.
-- [ ] Refine public config and API: sorting, totals/summary rows and columns, column overrides, and
-      persistence via `persistWith`.
-- [ ] Decide package location: `cmp/pivotgrid` vs `desktop/cmp/pivotgrid`. Desktop-only in practice;
-      decide deliberately rather than by inheritance from where the prototype was dropped.
+      checklists.
+- [ ] Persistence: `persistWith` / `PersistOptions`, per `ZoneGridModel`.
+- [ ] Retire `PivotDataModel`, closing the last phase 2 item.
 - [ ] Toolbox Admin test page (evolve the phase 0 harness).
 - [ ] Toolbox example page.
 
@@ -945,19 +1068,16 @@ From the full review of the imported prototype. Scoped to code that survives the
 
 ### Correctness bugs
 
-- [ ] `PivotGridModel:466,469` — `field.columnTemplate.renderer` is unguarded; any value field
-      without a `columnTemplate` throws in the renderer.
 - [ ] `PivotGridModel:512` — `sortPivotValues` copies the top-level array but then assigns
-      `it.children` in place, so building columns mutates the data model's observable state.
-- [ ] Five `// TODO: Validate` sites in the `PivotGridModel` constructor. Bad field names currently
-      surface as `undefined.name` TypeErrors deep in column building.
+      `it.children` in place. Sharper now that `result.paths` is immutable and identity-stable: display
+      sorting must build a parallel structure, never touch the tree.
+
+Resolved by the phase 3 design rather than by a fix: `:466,469`, `:463` and `:498,455` are cut with
+`extraSummaryRowFields`; the five `// TODO: Validate` sites go with the query config they validate,
+which `PivotQuery` already validates at construction.
 
 ### Performance — prototype hot spots
 
-- [ ] `PivotGridModel:498,455` — `summaryColumnCount` calls `agApi.getColumns()` and filters all
-      columns **from inside a cell renderer**. `O(cols)` per cell, and throws if `agApi` is null.
-- [ ] `PivotGridModel:463` — the summary renderer calls `getField()` per cell, which in the
-      prototype allocates a spread array and linear-scans thousands of fields.
 - [ ] `PivotGridModel:276` — `setColumns` runs on every data load, rebuilding every `Column` and
       resetting `columnState`, even when the pivot structure is unchanged. Depends on the phase 1
       structural-change signal.
@@ -977,10 +1097,10 @@ From the full review of the imported prototype. Scoped to code that survives the
       `lenientSumZeroesOut` predicate; delete both when this is fixed.
 - [ ] `Store.getField` (`Store.ts:849`) is a linear `find` over `fields` while `_fieldMap` sits
       right there.
-- [ ] `GridModel.enhanceColConfigsFromStore` (`GridModel.ts:1833`) rebuilds `fieldsByName` from all
-      store fields at every recursion level for column groups — `O(groups × fields)` inside every
-      `setColumns`.
 - [ ] Consider exposing `useRawAsData` on `CubeConfig` (currently only `retainRaw`).
+
+`GridModel.enhanceColConfigsFromStore` was filed here and is now a
+[phase 3 prerequisite](#phase-3--pivotgridmodel).
 
 ### Framework conventions and cleanup
 
@@ -991,16 +1111,40 @@ From the full review of the imported prototype. Scoped to code that survives the
       `ag-grid-community`.
 - [ ] `//` comments on public interface members; framework config props need `/** */` JSDoc so IDEs
       and the `hoist-ts` / MCP symbol tools surface them.
-- [ ] Add persistence: `persistWith` / `PersistOptions`, per `ZoneGridModel`.
-- [ ] `PivotField` is nearly vestigial: constructed only to feed the Cube, and nothing reads
-      `columnTemplate` / `enableValue` back off the cube's fields. Make one
-      `Map<string, PivotFieldSpec>` the authority.
 - [ ] `headerName: () => label` (`PivotGridModel:402`) — a thunk returning a constant.
 - [ ] `PivotSort = 'asc' | 'desc' | any[] | null` needs a real type.
 
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-06 — Phase 3 decisions settled, no implementation.** The whole grid integration contract is
+now in [Grid integration design](#grid-integration-design). The load-bearing find is an ordering fact:
+`View.fullUpdate` assigns `result` _after_ `loadStores`, so a reaction on `result` can never declare
+the store's cell fields in time, and under `projectionOnly` that builds records against the wrong
+declared-field set rather than just rendering late. That is why `PivotView` has to sync fields itself
+instead of the grid model reacting — and why a `pivotGridModels` registry on the view, which diagnoses
+the same problem, is still the wrong fix: it inverts the `data/cube` → `cmp/` layering.
+
+Ownership settled around it: app owns `Cube` and `PivotView`, `PivotGridModel` takes a view and mints
+its own store via `PivotView.createStore()`, and **all query config leaves the grid model**. Two
+lifecycle traps turned out to be pre-solved — `GridModel` only `markManaged`s a store it constructs
+itself, and `View` already models caller-owned registration.
+
+Four feature decisions: both `extraSummary*Fields` configs cut (pinned rows are the app-side answer for
+the rows, and the grid layer could not rebuild them anyway since `loadStores` full-replaces; the
+columns are a config over data that is already there, so reinstating is cheap), pivot totals ship
+default-off with configs separate from row totals, `Store.setFields` replaces all and retains records
+only under `projectionOnly`, and the package stays at `cmp/pivotgrid` on the `cmp/zoneGrid` precedent.
+
+Two corrections to this document. A prior note claimed declared fields take part in the record-reuse
+equality check — they do not; `getReusableRecord` compares id, digest and tree path. And
+`projectionOnly` silently changes unpopulated cells from `null` to `undefined`, which the correctness
+suite structurally cannot catch, so it is now recorded against the
+[open fixed-shape decision](#open-decision-fixed-shape-rows-vs-sparse-cells).
+
+Pick up at the phase 3 [checklist](#phase-3--pivotgridmodel), whose first item is the
+`enhanceColConfigsFromStore` prerequisite.
 
 **2026-08-01 — Phase 0 complete.** Settled the [terminology](#terminology), recalibrated the profiles
 to real usage, wrote the [acceptance criteria](#acceptance-criteria), built the Toolbox benchmark
