@@ -10,15 +10,15 @@ which resolves `@xh/hoist` against the published `node_modules` copy, so every f
 API fails on missing exports. To typecheck for real, uncomment the `paths` block in
 `client-app/tsconfig.json`, run `tsc`, then re-comment it — that block must not be committed enabled.
 
-**Status: phases 0-2 complete and verified; phase 3's store plumbing is in and the grid model is
-next.** The data layer is correct against its reference suite (279 Toolbox checks, 49 unit checks, both
+**Status: phases 0-2 complete and verified; phase 3's store plumbing and the `PivotGridModel` rewire
+are in.** The data layer is correct against its reference suite (293 Toolbox checks, 49 unit checks, both
 mutation-tested), rebased onto the `develop` that carries the Store rework, and clears every gate it
 still carries. Only `PivotDataModel`'s retirement is left in phase 2, and phase 3 is what unblocks it.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
-the settled contract phase 3 builds to, and it moves all query config off the grid model. Then pick up
-at the first unchecked [checklist](#phase-3--pivotgridmodel) item, which is the `PivotGridModel`
-rewire. One decision stays open and phase 3 will meet it while building columns:
+the settled contract phase 3 built to. Then pick up at retiring `PivotDataModel` in the
+[checklist](#phase-3--pivotgridmodel), which the rewire has made forced rather than optional and which
+wants a decision. One further decision stays open and phase 3 will meet it while building columns:
 [fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
 
 **To see the data layer's output before touching it**, open Admin › Tests › **Pivot Inspect** — eight
@@ -1050,7 +1050,7 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       initialized, since a field initializer on a `View` subclass runs after `super()`'s
       constructor-time `fullUpdate`. `View.loadStores` gained a per-store `loadStore` so the factory
       can load a non-connected store once, and `parseStores` widened to `protected`.
-- [ ] Rewire `PivotGridModel`: take a `PivotView`, drop every query-mirroring `@bindable`, mint and own
+- [x] Rewire `PivotGridModel`: take a `PivotView`, drop every query-mirroring `@bindable`, mint and own
       the store, rebuild columns on `result.paths` identity, disconnect the store in `destroy()`. What
       the data layer hands it:
       - Row-totals columns bind the value field's own name — no synthetic field, no prefix games. One
@@ -1059,12 +1059,29 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
         data path, and no `'Total>>' + field` `cubeDimension` hack.
       - `PivotPath` exposes raw `value` plus a plain `label`, so the grid layer renders labels itself
         and the prototype's try/catch-a-cell-renderer hack goes away.
-- [ ] Adopt the settled [terminology](#terminology) across the public API.
-- [ ] Pivot totals: column building and config surface.
+
+      **`equals: 'shallow'` on the columns reaction is load-bearing.** `addReaction` defaults to
+      identity comparison and a track fn returning an array allocates a fresh one per run, so the
+      default rebuilds columns — and resets column state — on every tick.
+
+      The prototype's per-value-field `columnTemplate` returns as `valueColumnSpecs`, keyed by value
+      field name. It has to live somewhere: formatting a currency measure is impossible without it, and
+      it is presentation, so it does not go back on a `CubeField`.
+- [x] Adopt the settled [terminology](#terminology) across the public API.
+- [x] Pivot totals: column building and config surface. One method builds row and pivot totals, since
+      row totals are the pivot totals at the root path.
 - [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
-      checklists.
+      checklists. `sortPivotValues`, the `headerName` thunk, the `[Component, factory]` pair, the
+      `ag-grid-community` import, copyright headers, `PivotSort`, the hardcoded autosize and the
+      `setColumns`-per-load and `new Field()`-per-update hot spots all went with the rewire. Left:
+      `Store.getField` is done, so the remaining framework gap is `SumAggregator.replace`, plus
+      `useRawAsData` on `CubeConfig`.
 - [ ] Persistence: `persistWith` / `PersistOptions`, per `ZoneGridModel`.
-- [ ] Retire `PivotDataModel`, closing the last phase 2 item.
+- [ ] Retire `PivotDataModel`, closing the last phase 2 item. **Now forced rather than optional:** the
+      rewire changed `PivotGridModel`'s constructor and removed `loadData`, so Toolbox's `PivotBenchModel`
+      no longer compiles. Either retire both — the phase 0 baseline is already recorded in this document
+      and is only re-runnable on the same hardware in the same session anyway — or keep `PivotDataModel`
+      and cut `PivotBenchModel` back to measuring it directly, which loses the `Grid ms` column.
 - [ ] Toolbox Admin test page (evolve the phase 0 harness).
 - [ ] Toolbox example page.
 
@@ -1133,6 +1150,28 @@ which `PivotQuery` already validates at construction.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-06 — Phase 3 PivotGridModel rewire.** The model now takes a `PivotView`, carries no query
+config, mints and owns its store, and builds the whole column hierarchy including pivot totals. 279 →
+293 Toolbox checks, green, mutants killed. Most of the carried-forward cleanup went with it.
+
+**Two bugs, and neither was found by reading the code.** `addReaction` defaults to *identity*
+comparison, so the columns reaction — whose `track` returns an array — fired on every view update and
+rebuilt columns per tick, discarding column state each time. Its own new check caught that on the first
+run. And reviewing the reaction's tracking exposed a phase 2 defect: `syncPaths` guarded its early-out
+on path keys alone, so `updateQuery` could change `valueFields` (which moves no key) or
+`emptyPathLabel` (an empty segment's key is a fixed sentinel) and the view would keep publishing cell
+fields and labels for a query it no longer had. Query transitions, again.
+
+The strong assertion to keep: **with both totals on, the value columns are exactly the published
+`cellFields`** — every path at every depth including the root. One set comparison pins naming,
+coverage and placement, and the scenario's data carries pivot values containing the path delimiter and
+escape char, so a grid reconstructing names from raw labels rather than reading `cellFields` binds
+columns nothing writes to.
+
+Pick up at retiring `PivotDataModel`, which the rewire has made **forced rather than optional** —
+Toolbox's `PivotBenchModel` no longer compiles against the new constructor. See that checklist item for
+the two ways out; it wants a decision, not a default.
 
 **2026-08-06 — Phase 3 store plumbing.** The first four checklist items landed: the
 `enhanceColConfigsFromStore` fix, `Store.setFields`, `PivotView.createStore` / `disconnectStore`, and
