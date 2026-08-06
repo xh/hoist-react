@@ -42,10 +42,10 @@ export class AggregateRow extends BaseRow {
 
         this.dim = dim;
         this.dimName = dimName;
-        this.data = new ViewRowData(id);
-        this.data.cubeRowType = 'aggregate';
-        this.data.cubeLabel = strVal;
-        this.data.cubeDimension = dimName;
+        const data = (this.data = view.newRowData(id));
+        data.cubeRowType = 'aggregate';
+        data.cubeLabel = strVal;
+        data.cubeDimension = dimName;
 
         this.initAggregate(children, dimName, val, appliedDimensions);
     }

@@ -126,7 +126,7 @@ const view = cube.createView({
 
 ```typescript
 // Like includeLeaves, but leaves are accessible programmatically via
-// ViewRowData.cubeLeaves rather than rendered as tree children.
+// the getCubeLeaves() helper rather than rendered as tree children.
 // Useful for showing detail in a separate panel on selection.
 const view = cube.createView({
     query: {
@@ -195,10 +195,16 @@ There are two ways to consume View results:
 **Option 1: Connected stores (recommended for grids)**
 
 Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
-into them whenever the query results change:
+into them whenever the query results change. Configure connected stores with
+`projectionOnly: true` (adopt View rows as record data without re-parsing). Record reuse is
+automatic - the View installs a `reuseRecords` digest on each connected store, so rows
+republished without change skip record rebuilds:
 
 ```typescript
-const store = new Store({fields: [...]});
+const store = new Store({
+    fields: [...],
+    projectionOnly: true
+});
 
 const view = cube.createView({
     query: {dimensions: ['region', 'product']},
