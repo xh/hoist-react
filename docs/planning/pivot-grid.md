@@ -5,11 +5,20 @@ example pages. Both sit on current `develop`, which now carries the Store rework
 `pivot-grid-pre-store-simple` in each repo is the pre-rework history, kept only until this is bedded in.
 See [Rebase onto the Store rework](#rebase-onto-the-store-rework-store-simple).
 
-**Status:** phases 0 and 1 complete. Phase 2 is functionally complete, correct against its reference
-suite, and clears every performance gate it still carries. What remains is one gate number to set, a
-browser verification pass over newly-written coverage, and the `PivotDataModel` retirement that phase
-3 gates — see the [phase 2 checklist](#phase-2--pivot-data-layer-implementation). Phase 3 has not been
-started.
+**Status: phases 0-2 complete and verified. Phase 3 is next and nothing blocks it.** The data layer is
+correct against its reference suite (262 Toolbox checks, 49 unit checks, both mutation-tested), rebased
+onto the `develop` that carries the Store rework, and clears every gate it still carries. Only
+`PivotDataModel`'s retirement is left in phase 2, and phase 3 is what unblocks it.
+
+**Start phase 3 at the [checklist](#phase-3--pivotgridmodel)**, whose first two items — the feature-set
+decision and the terminology rename — deliberately come before the bug work. Two decisions are already
+settled and recorded there: `projectionOnly` on the grid's Store, and the cell-field declaration
+contract. One is open and phase 3 will meet it while building columns:
+[fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
+
+**To see the data layer's output before touching it**, open Admin › Tests › **Pivot Inspect** — eight
+records with hand-checkable values, and the query, raw records, `result.rows`, `result.paths`,
+`result.cellFields` and the resulting `Store` records all dumped as JSON.
 
 **Goal:** promote a client-app `PivotGrid` component into hoist-react as a first-class framework
 component, with a pivot data layer that is efficient enough for ticking data.
@@ -558,10 +567,19 @@ modelled on the `StoreProxyBench*` harness from Toolbox's `store-proxy-mode` bra
 this branch. Confirm before trusting a number: Admin › General reports Hoist React as a bare
 `-SNAPSHOT` when inline, and `-SNAPSHOT.<timestamp>` when it is the published package.
 
-| Harness                | Panel                             | Measures                       | Heap |
-| ---------------------- | --------------------------------- | ------------------------------ | ---- |
-| `PivotBenchModel`      | Admin › Tests › **Pivot Bench**   | the prototype `PivotDataModel` | yes  |
-| `PivotViewBenchModel`  | Admin › Tests › **Pivot View** ▾  | `PivotView`                    | no   |
+| Harness               | Panel                            | Measures                       | Heap |
+| --------------------- | -------------------------------- | ------------------------------ | ---- |
+| `PivotBenchModel`     | Admin › Tests › **Pivot Bench**  | the prototype `PivotDataModel` | yes  |
+| `PivotViewBenchModel` | Admin › Tests › **Pivot View** ▾ | `PivotView`                    | no   |
+
+Two non-benchmark panels sit alongside them. `PivotViewTestModel` is the correctness suite, in the top
+half of **Pivot View**. `PivotInspectModel` is Admin › Tests › **Pivot Inspect** — no assertions, just
+eight records with values 10, 20, ... 80 and every stage dumped as readonly JSON: the resolved
+`PivotQuery`, the raw records, `result.rows` verbatim, `result.paths`, `result.cellFields`, and the
+records read back out of a connected `Store`. Toggles cover a second pivot dimension (which
+materializes pivot totals), sparse data (an unpopulated cell), `includeRoot` / `includeLeaves`, and a
+tick that adds 100 to one record. **Reach for it first when reasoning about the data contract** — the
+suite proves correctness but this is what makes it legible.
 
 `PivotViewBenchModel` hardcodes the phase 0 baseline as its `BASELINE` map and reports against it, so
 a `PivotView` re-measure needs only that panel. Re-running Pivot Bench is only for re-establishing
@@ -656,7 +674,7 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       their own path's value, so a drilled-down row is not blank across the pivot columns.
 - [x] Share `canAggregate` maps across cell rows of identical shape — one per pivot path.
 - [x] Toolbox tier: reference comparison, tick equivalence, full-rebuild comparison, filter
-      transitions, and query identity. 99 checks, now **211** with the aggregator, plain-`View`, and
+      transitions, and query identity. 99 checks, now **262** with the aggregator, plain-`View`,
       pivot-dimension-change scenarios below.
 - [x] Benchmark against phase 0 baseline — see [Result](#result--pivotview-measured-against-the-baseline).
 - [x] Review of the phase 2 changeset, with fixes — see the 2026-08-05 session log entry.
@@ -673,7 +691,7 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 - [x] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount`, plus
       lenient controls. Unit tier green and mutation-tested (28 → 49 checks, 19/23 aggregator mutants
       and 4/4 lattice mutants killed; the 4 survivors are documented equivalences). Toolbox tier green
-      in the 211-check run.
+      in the 262-check run.
 - [x] Heap gate dropped deliberately — see [acceptance criteria](#acceptance-criteria).
 - [x] The drill-profile tick stall was background-tab timer throttling, not GC thrash and not a pivot
       defect. `Run All` now completes all six profiles in ~20s foreground. See
@@ -697,11 +715,11 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       `stores = []` default at construction only covers `undefined`, so `createView({stores: null})`
       threw on `s.reuseRecords`. `null` is Hoist's no-value sentinel, so this was a latent framework
       bug rather than a caller error — the new plain-`View` scenarios are what surfaced it.
-- [x] Toolbox suite run and green: **211/211**, worst drift 8.6e-14, no vacuous checks (a zero
+- [x] Toolbox suite run and green: **262/262**, worst drift 8.6e-14, no vacuous checks (a zero
       comparison count is a hard failure). Verified in a foreground unoccluded tab with a
       `visibilitychange` tripwire armed.
 - [x] Pivot-dimension change coverage, mutation-tested. Gutting `PivotView.hasDimOrBucketUpdates`'s
-      pivot branch kills 21 of 211 checks. **The failure mode it catches is the dangerous one:** row
+      pivot branch kills 21 of 262 checks. **The failure mode it catches is the dangerous one:** row
       totals stay correct *and* still equal the sum of their pivot cells, because the leaf values never
       moved — only which path owns them. Only the per-path breakdown is wrong, so a grid looks right
       and is wrong. Perturb non-empty pivot values on already-non-empty records only; the reference's
@@ -773,7 +791,7 @@ plausibly explains.
 
 The Store rework reworked Cube View row and record reuse — the exact machinery phase 2 builds on — and
 **merged into `develop` as `d61321545` (#4534), squashed**, so its own commits are not in develop's
-history. Our 25 commits are rebased onto `develop` and verified there: 211/211 Toolbox checks, 49/49
+history. Our commits are rebased onto `develop` and verified there: 262/262 Toolbox checks, 49/49
 unit checks, `tsc` clean. Replay was conflict-free, because our patches touch different regions of
 `View.ts` than the rework does.
 
@@ -879,16 +897,29 @@ Parallel with phase 2, except the final Toolbox items which need working pivot d
       - `PivotPath` exposes raw `value` plus a plain `label`, so the grid layer renders labels itself
         and the prototype's try/catch-a-cell-renderer hack goes away.
 - [ ] **`PivotGridModel`'s Store sets `projectionOnly`.** Settled: it is what `View` recommends for a
-      connected store, and it skips a per-record parse and copy on every load and tick. Two
-      consequences to build to. Records then use the view's row data object *by reference*, which is
-      the same object `projectCell` mutates in place — so correctness rests entirely on the digest
-      restamp in `PivotView.loadUpdatedRows`, and `loadData()` would skip these rows as unchanged;
-      updates must arrive via `updateData()`. And `type` / `parseVal` / `defaultValue` are not applied,
-      so cell values must already be grid-ready as the aggregators leave them. Declaring a `Store`
-      field per `cellFields` entry is still required — for columns, filters and export, and because
-      only declared fields participate in the record-reuse equality check.
-      Do **not** set it on the Toolbox correctness suite's store: with `data` held by reference,
-      `checkStore` compares a row against itself and passes vacuously.
+      connected store, and it skips a per-record parse and copy on every load and tick. Three
+      consequences to build to.
+
+      Records use the view's row data object *by reference* — the same object `projectCell` mutates in
+      place. Values therefore can never be stale; what the `cubeRowDigest` governs is whether the record
+      is rebuilt at all, which is what makes the grid repaint. Every cell owner is already stamped, so
+      this works (see the [rebase note](#rebase-onto-the-store-rework-store-simple)), but it is the one
+      place a missed stamp shows up as a grid that silently fails to repaint, and nothing tests that.
+      Relatedly, `loadData()` skips reference-equal rows as unchanged — updates must arrive via
+      `updateData()`.
+
+      `type` / `parseVal` / `defaultValue` are **not** applied, so cell values must already be
+      grid-ready as the aggregators leave them.
+
+      **Cell field names do not exist until a view has run**, so the Store's fields cannot be declared
+      at construction: observe `result.cellFields`, declare from it, and re-declare whenever its
+      identity changes — which is what the `Store.setFields()` item above is for. `PivotInspectModel`
+      demonstrates that ordering with a throwaway probe view; a connected grid needs `setFields`
+      instead. Declaring a field per entry stays necessary even under `projectionOnly` — for columns,
+      filters and export, and because only declared fields take part in the record-reuse equality check.
+
+      Do **not** set `projectionOnly` on the Toolbox correctness suite's store: with `data` held by
+      reference, `checkCellStore` would compare a row against itself and pass vacuously.
 - [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
       checklists for whatever survives the feature decision.
 - [ ] Refine public config and API: sorting, totals/summary rows and columns, column overrides, and
@@ -1025,9 +1056,32 @@ wide the gap was. That reaches the three bugs on the `_rowCache` path; `7873d3ff
 still have no coverage written for them. Pick up at re-measuring the benchmark, then the two bolded
 phase 2 items.
 
+**2026-08-06 — On `develop`, cells proven Store-loadable, phase 2 closed.** The Store rework merged
+(squashed as `d61321545`), so both branches are rebased onto `develop` and renamed `pivot-grid`, with
+the pre-rework history kept as `pivot-grid-pre-store-simple`. Review had changed `RowCache` after the
+`store-simple` tip, which needed one real fix: `endGeneration()` now closes from `fullUpdate` rather
+than inside `generateRows`, because a subclass generating further rows in its override otherwise leaves
+them uncounted — on Typical+Drill that put 123,128 cached rows against a live count of 72,211, tripping
+the sweep on every build.
+
+**Cells now provably load into a `Store`** — the claim the whole cells-on-row-data decision rests on,
+and it had no coverage: the store scenarios declared only `valueFields`, so they proved row totals load
+and nothing else. 211 → 262 checks, covering every cell through a declared field, unpopulated cells
+reading `null` in both of `Store`'s record representations, and a new pivot value minting fields that
+get re-declared and reloaded. Added Admin › Tests › **Pivot Inspect** for reading the whole pipeline by
+eye; see [How to measure](#how-to-measure).
+
+Two retractions, both mine. **The digest restamp added during the rebase is dead code** and the
+rationale recorded for it was wrong — `applyDataUpdate` pushes an update per aggregatable field without
+testing whether the value moved, so every ancestor is always stamped already; kept as insurance with a
+corrected comment. And **no build regression has ever been established**: the sweep hypothesis died
+under instrumentation (`willSweep=false` every generation), and Typical+Drill has since measured 275 to
+341 across six runs against a 290ms gate, which is too noisy to call. Do not ascribe a cost to row
+shape until that is measured on a quiet machine. Pick up at phase 3.
+
 **2026-08-05 — Phase 2 coverage closed and verified.** Every actionable phase 2 item is done; only
 retiring `PivotDataModel` remains, and it is blocked on phase 3. Unit tier 28 → 49 checks, Toolbox tier
-99 → **211**, both green, both mutation-tested for real (19/23 aggregator mutants, 4/4 lattice mutants,
+99 → **262**, both green, both mutation-tested for real (19/23 aggregator mutants, 4/4 lattice mutants,
 and the pivot-dim mutant kills 21 checks). Benchmark re-verified over three runs; both gated profiles
 pass and the delta-tick gate is set at 15ms.
 
