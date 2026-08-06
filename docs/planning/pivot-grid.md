@@ -1,10 +1,9 @@
 # PivotGrid
 
-**Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
-in Toolbox (also off `develop`) for the harness and example pages. `pivot-grid-store-simple` in both
-repos is the same work rebased onto current `develop`, which now carries the Store rework — verified,
-and the base to build phase 3 on. See
-[Rebase onto the Store rework](#rebase-onto-the-store-rework-store-simple).
+**Branches:** `pivot-grid` in hoist-react, plus a matching `pivot-grid` in Toolbox for the harness and
+example pages. Both sit on current `develop`, which now carries the Store rework — build phase 3 here.
+`pivot-grid-pre-store-simple` in each repo is the pre-rework history, kept only until this is bedded in.
+See [Rebase onto the Store rework](#rebase-onto-the-store-rework-store-simple).
 
 **Status:** phases 0 and 1 complete. Phase 2 is functionally complete, correct against its reference
 suite, and clears every performance gate it still carries. What remains is one gate number to set, a
