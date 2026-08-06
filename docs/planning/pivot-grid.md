@@ -1075,11 +1075,12 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       `cmp/pivotgrid` `PivotQuery` with it, plus Toolbox's whole Pivot Bench harness and the recorded
       baseline columns on the `PivotView` benchmark — comparing against a deleted implementation is
       unverifiable. The [baseline table](#baseline--pivotdatamodel-as-imported) is now its only record.
-- [~] Toolbox Admin test page — Admin › Tests › **Pivot Grid**, a live `PivotGrid` with the query on
+- [x] Toolbox Admin test page — Admin › Tests › **Pivot Grid**, a live `PivotGrid` with the query on
       one toolbar and the presentation on the other, plus tick / new-pivot-value / blank-value buttons.
-      Renders correctly and the summary invariant checks by eye. **Verification incomplete** — pivot
-      summaries, the tick and structural buttons, blank values and display sort are all still
-      unexercised in the browser.
+      Verified in the browser: nested column groups, pivot summaries placed within their group, docked
+      row summaries on either side, the floating value-summary row, `(empty)` rendering and sorting
+      last, `includeLeaves` drill-down, and a new pivot value re-declaring fields and columns
+      unaided. Summary invariants check by eye to display precision.
 - [ ] Toolbox example page.
 
 ## Phase 4 — Docs and packaging
@@ -1134,10 +1135,11 @@ which `PivotQuery` already validates at construction.
 
 ### Follow-ups filed while building
 
-- [ ] **Driving the Toolbox tab from Chrome automation steals desktop focus.** Clicking into the tab
-      activates it, and on Hyprland that raises and focuses the Chrome window mid-session. Not a Hoist
-      issue, but it makes browser-driven verification hostile to work in parallel with — worth
-      understanding before the next verification pass. Until then, ask before driving the browser.
+- [ ] **Real clicks via Chrome automation steal desktop focus** - they activate the tab, and on
+      Hyprland that raises the Chrome window mid-session. Screenshots and `javascript_tool` do *not*:
+      driving the panel with `element.click()` and reading the DOM kept `visibilityState: 'hidden'`
+      throughout a full verification pass. Prefer that. `react-select` is the one control that
+      ignores synthetic mousedown - change a default and reload instead of fighting it.
 - [ ] `PivotGrid` had no `LayoutProps` / `TestSupportProps` — added on first real use, per the
       `ZoneGrid` precedent. Check the other `cmp/` wrappers for the same omission.
 
