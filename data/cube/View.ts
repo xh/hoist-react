@@ -362,6 +362,10 @@ export class View
         this.filterRecords();
         this.createAggregationContext();
         this.generateRows();
+        // Closed here, not inside generateRows - a subclass generating further rows in its override
+        // must land inside the generation, or its rows are uncounted and the sweep sees the cache as
+        // having outgrown a live count that never included them.
+        this._rowCache.endGeneration();
         this.loadStores();
         this.updateResults();
     }
@@ -459,8 +463,6 @@ export class View
         // This hides all the meta information, as well as unwanted leaves and skipped rows.
         // Underlying network still there and updates will flow up through it via the leaves.
         this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
-
-        rowCache.endGeneration();
     }
 
     protected groupAndInsertRecords(
