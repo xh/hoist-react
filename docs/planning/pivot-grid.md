@@ -863,6 +863,17 @@ Parallel with phase 2, except the final Toolbox items which need working pivot d
         is what fixes findings `PivotGridModel:276` and `:292`.
       - `PivotPath` exposes raw `value` plus a plain `label`, so the grid layer renders labels itself
         and the prototype's try/catch-a-cell-renderer hack goes away.
+- [ ] **`PivotGridModel`'s Store sets `projectionOnly`.** Settled: it is what `View` recommends for a
+      connected store, and it skips a per-record parse and copy on every load and tick. Two
+      consequences to build to. Records then use the view's row data object *by reference*, which is
+      the same object `projectCell` mutates in place — so correctness rests entirely on the digest
+      restamp in `PivotView.loadUpdatedRows`, and `loadData()` would skip these rows as unchanged;
+      updates must arrive via `updateData()`. And `type` / `parseVal` / `defaultValue` are not applied,
+      so cell values must already be grid-ready as the aggregators leave them. Declaring a `Store`
+      field per `cellFields` entry is still required — for columns, filters and export, and because
+      only declared fields participate in the record-reuse equality check.
+      Do **not** set it on the Toolbox correctness suite's store: with `data` held by reference,
+      `checkStore` compares a row against itself and passes vacuously.
 - [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
       checklists for whatever survives the feature decision.
 - [ ] Refine public config and API: sorting, totals/summary rows and columns, column overrides, and
