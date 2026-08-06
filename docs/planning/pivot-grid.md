@@ -11,15 +11,19 @@ API fails on missing exports. To typecheck for real, uncomment the `paths` block
 `client-app/tsconfig.json`, run `tsc`, then re-comment it — that block must not be committed enabled.
 
 **Status: phases 0-2 complete and verified; phase 3's store plumbing and the `PivotGridModel` rewire
-are in.** The data layer is correct against its reference suite (293 Toolbox checks, 49 unit checks, both
-mutation-tested), rebased onto the `develop` that carries the Store rework, and clears every gate it
-still carries. Phase 2 is now closed outright: `PivotDataModel` is retired.
+are in, and the component renders.** The data layer is correct against its reference suite (294
+Toolbox checks, 49 unit checks, both mutation-tested), rebased onto the `develop` that carries the
+Store rework, and clears every gate it still carries. Phase 2 is closed outright: `PivotDataModel` is
+retired.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
-the settled contract phase 3 built to. Then pick up at persistence in the
-[checklist](#phase-3--pivotgridmodel). One decision stays open, and it needs a build measurement on a
-quiet machine rather than more argument:
-[fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
+the settled contract phase 3 built to. **Pick up at the re-measure**, the one thing left in phase 3 and
+the gate for leaving it: it resolves
+[fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells) and produces the
+first heap figure the rewrite will have.
+
+Everything deliberately deferred is collected under
+[Extras and Nice-to-Haves](#extras-and-nice-to-haves); phase 4 decides day-1 vs follow-up for each.
 
 **To see the data layer's output before touching it**, open Admin › Tests › **Pivot Inspect** — eight
 records with hand-checkable values, and the query, raw records, `result.rows`, `result.paths`,
@@ -402,7 +406,8 @@ Exceeding it throws, naming the dimension and the count. `null` disables the che
 problem no data layer can fix. Failing fast with an actionable message beats a multi-second freeze
 that reads as a hang.
 
-A soft cap bucketing the tail into `(other)` was rejected for v1: to keep the totals invariant the
+A soft cap bucketing the tail into `(other)` was rejected for v1 (see
+[Extras](#extras-and-nice-to-haves)): to keep the totals invariant the
 bucket has to genuinely _contain_ the tail, which makes it a real feature (top-N plus other) worth
 designing deliberately rather than a guard. Recorded as possible future work.
 
@@ -866,7 +871,8 @@ which is defensible if `maxPivotPaths` keeps path counts genuinely low; or revis
 `Column.getValueFn` and keep cells on cell rows, already recorded as rejected but explicitly
 revisitable "if heap becomes the binding constraint". Pick between them on a trustworthy build
 measurement, not on the design argument alone — the sparse-cell model is the incumbent and templating
-cell fields is the change that has to earn its cost.
+cell fields is the change that has to earn its cost. That measurement is now the
+[phase 3 re-measure](#phase-3--pivotgridmodel), which is also where the missing heap figure comes from.
 
 ## Grid integration design
 
@@ -1002,7 +1008,8 @@ Each summary config carries its own placement rather than taking a paired `*Side
 config** — `gridConfig.autosizeOptions.mode: 'managed'` already autosizes on every data load, which is
 exactly when a pivot grid's columns change.
 
-**`labelColumnOverrides` and `valueColumnOverrides` are dropped for the initial implementation.** Add
+**`labelColumnOverrides` and `valueColumnOverrides` are dropped for the initial implementation** (see
+[Extras](#extras-and-nice-to-haves)). Add
 them back if consistency across value columns turns out to need a dedicated hook.
 
 **Column ids are cell field names.** Row totals bind the plain value field name, cells bind
@@ -1067,10 +1074,17 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
 - [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
       checklists. `sortPivotValues`, the `headerName` thunk, the `[Component, factory]` pair, the
       `ag-grid-community` import, copyright headers, `PivotSort`, the hardcoded autosize and the
-      `setColumns`-per-load and `new Field()`-per-update hot spots all went with the rewire. Left:
-      `Store.getField` is done, so the remaining framework gap is `SumAggregator.replace`, plus
-      `useRawAsData` on `CubeConfig`.
-- [ ] Persistence: `persistWith` / `PersistOptions`, per `ZoneGridModel`.
+      `setColumns`-per-load and `new Field()`-per-update hot spots all went with the rewire. What is
+      left is only the two independent
+      [framework gaps](#framework-gaps-worth-fixing-on-their-own).
+- [ ] **Re-measure build, tick and heap on a quiet machine — the gate for leaving phase 3.** Nothing
+      since the phase 2 numbers has been measured, and two open questions are blocked on it:
+      [fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells), which wants
+      a build figure the benchmark has never been quiet enough to resolve; and heap, which has no
+      figure at all. **Heap needs tooling written first** — `sampleHeapAsync` went with
+      `PivotBenchModel`, so `PivotViewBenchModel` reports none. Grid-layer cost is also unmeasured:
+      every figure to date is `PivotView` alone, and `PivotGridModel` adds a column rebuild plus a
+      `Store` load per structural change.
 - [x] Retire `PivotDataModel`, closing the last phase 2 item. Took `PivotFieldSpec`, `PivotValue` and the
       `cmp/pivotgrid` `PivotQuery` with it, plus Toolbox's whole Pivot Bench harness and the recorded
       baseline columns on the `PivotView` benchmark — comparing against a deleted implementation is
@@ -1081,16 +1095,76 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       row summaries on either side, the floating value-summary row, `(empty)` rendering and sorting
       last, `includeLeaves` drill-down, and a new pivot value re-declaring fields and columns
       unaided. Summary invariants check by eye to display precision.
+
+## Phase 4 — Wrap-up and packaging
+
 - [ ] Toolbox example page.
-
-## Phase 4 — Docs and packaging
-
+- [ ] **Decide day-1 vs follow-up for everything under
+      [Extras and Nice-to-Haves](#extras-and-nice-to-haves).** This is the phase's real work, not a
+      formality — several of those items are cheap now and breaking later.
 - [ ] `cmp/pivotgrid/README.md`.
 - [ ] `data/cube/README.md` section on the pivot view (belongs with phase 2, not deferred to the
       end).
 - [ ] Doc registry + roadmap index entries (`xh-update-doc-links`).
 - [ ] CHANGELOG entry; upgrade notes if the `Query` / `View` changes are breaking.
 - [ ] Export from the appropriate package index.
+
+## Extras and Nice-to-Haves
+
+Deliberately deferred, with the condition that would pull each one forward. **Phase 4 decides day-1 vs
+follow-up for each.** The bar is not "would this be nice" but "is this cheap now and breaking later" —
+anything that shapes a config name, a `colId`, or persisted state belongs on day 1.
+
+**Column state persistence.** Nothing on `PivotGridModel` is user state, so it needs no `persistWith`
+of its own — apps reach `GridModel`'s via `gridConfig.persistWith`, and app-level toggles bound to
+`rowSummary` and friends are the app's to persist. What is missing is that column state does not
+survive a structural rebuild: `setColumns` resets `columnState`, `rebuildColumns` restores only the
+label column, and with persistence on, `PersistenceProvider`'s reaction writes the loss through to
+storage. Two things go with it:
+
+- **A manually set pivot column order is worth persisting** and users will expect it for a
+  low-cardinality, stable dimension like `region`. That is the strongest argument for taking this on.
+- **`hideNewColumns` must not reach value columns.** `initPersist` defaults it on for a curated
+  ViewManager view and `cleanColumnState` hides any new `hideable` column, so a brand-new pivot value
+  would arrive invisible. For an ordinary grid a new column is a new feature; here it is new *data*.
+
+Stale `colId`s are the unavoidable cost of data-derived ids and are not a bug to fix: widths persisted
+for `APAC>>pnl` are dropped when APAC leaves the data and return as defaults if it comes back.
+
+**Extra value-summary rows** (`extraSummaryRowFields`). Needs `PivotView` minting multiple root rows,
+which is a display concept in data-layer clothing — see
+[Feature set](#feature-set-and-config-surface). Apps wanting it today set pinned row data on the
+`GridModel`. Pull forward only if a second client asks.
+
+**Extra row-summary columns** (`extraSummaryColumnFields`). Names which non-value fields get a totals
+column; every `PivotQuery.fields` entry is already aggregated onto every group row, so an app can bind
+one itself. Cheap to reinstate, and purely additive.
+
+**A `PivotQuery` config panel component.** All query config lives on the query and apps drive it
+through `view.updateQuery()`, so a reusable control for dimensions / pivot dimensions / value fields is
+the obvious next component. Admin › Tests › **Pivot Grid** is a working sketch of one; a real version
+needs to own dimension-pool disjointness and the empty-`valueFields` guard, both of which that panel
+currently hand-rolls.
+
+**Global value-column overrides** (`labelColumnOverrides` / `valueColumnOverrides`). `valueColumnSpecs`
+covers per-value-field config; what is absent is one spec applied across *all* value columns. Add if
+enforcing consistency turns out to need a dedicated hook.
+
+**Top-N plus `(other)` on the pivot axis.** Rejected as a soft cap for `maxPivotPaths` because keeping
+the summary invariant means the bucket must genuinely *contain* the tail — which makes it a real
+feature worth designing rather than a guard. See
+[Pivot cardinality guard](#pivot-cardinality-guard).
+
+**Bucketing within the pivot axis.** Not supported; `bucketSpecFn` is group-axis only. See
+[Interaction rules](#interaction-rules).
+
+**Unifying `rowSummary` and `pivotSummary`.** They share an implementation and row summaries *are*
+pivot summaries at the root path, but they stay separate configs because most users only ever see the
+`Total` column. Listed only to record that merging them later is breaking.
+
+**`useRawAsData` on `CubeConfig`** (currently only `retainRaw`), and **`SumAggregator.replace`
+diverging from `aggregate`** — both under
+[framework gaps](#framework-gaps-worth-fixing-on-their-own), both independent of pivoting.
 
 ## Carried-forward review findings
 
@@ -1152,6 +1226,22 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-06 — Scope split for the run-in.** No implementation. Persistence came off phase 3 after
+walking the machinery: nothing on `PivotGridModel` is user state, so it needs no `persistWith` — but
+column state does not survive a structural rebuild, and with the app's own `gridConfig.persistWith` set,
+`PersistenceProvider`'s reaction writes that loss through to storage. Two things ride along: a manually
+set pivot column order is worth persisting for a stable low-cardinality dimension, and `hideNewColumns`
+would make a brand-new pivot value's columns arrive invisible.
+
+Everything deferred is now collected under [Extras and Nice-to-Haves](#extras-and-nice-to-haves) with
+the condition that would pull each one forward, and phase 4 owns the day-1-vs-follow-up call. Phase 4
+also takes the Toolbox example page, as packaging rather than construction.
+
+**Phase 3 now ends on a re-measure**, which is the gate rather than a formality: it resolves the open
+fixed-shape decision and is the first heap figure the rewrite will have. Note the cost of retiring
+`PivotBenchModel` lands here — `sampleHeapAsync` went with it, so heap needs tooling written before it
+needs measuring. Grid-layer cost is unmeasured too; every figure so far is `PivotView` alone.
 
 **2026-08-06 — PivotGridModel review.** Config surface revised on review: back to "summary" from
 "totals", and visibility folded into placement — `rowSummary` / `pivotSummary` / `valueSummary`, each
