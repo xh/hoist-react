@@ -682,6 +682,17 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       scenario in the Toolbox suite, against the same reference accumulator. Covers connected stores,
       `includeLeaves` / `provideLeaves`, `includeRoot`, bucketing with `dependentFields`, dimension-value
       changes, and `Query.clone` with every member set away from its default. Green.
+- [x] **Cells load into a `Store`.** The claim behind
+      [Cells on row data](#cells-on-row-data-and-field-naming) — value columns are ordinary `Store`
+      fields, hence usable with column filters, export and editing — had no coverage: the store
+      scenarios declared only `valueFields`, so they proved row totals load and nothing more. Now a
+      `Store` field is declared per `result.cellFields` entry, taking `type` from each entry's
+      `valueField`, and every cell is read back out of a record: ~2,900 comparisons per pass, plus
+      ~900 asserting an **unpopulated cell reads `null`** rather than `undefined`. Covered in both of
+      `Store`'s record representations, since they resolve a default by different mechanisms — sparse
+      via the shared `_dataDefaults` prototype, dense via a cloned template, selected by
+      `denseRecordThreshold`. A structural change is covered too: a brand-new pivot value mints new
+      cell fields, which are re-declared and reloaded.
 - [x] `View.parseStores` now treats `null` as "no stores". `castArray(null)` yields `[null]`, and the
       `stores = []` default at construction only covers `undefined`, so `createView({stores: null})`
       threw on `s.reuseRecords`. `null` is Hoist's no-value sentinel, so this was a latent framework
@@ -785,10 +796,15 @@ What the integration required, all of it load-bearing:
   the generation. Cells therefore counted toward `size` while absent from `live`. On Typical+Drill that
   is 72,211 live against a 123,128-row cache, i.e. 1.7× past the 1.5× trigger, so a steady-state pivot
   view swept on **every** build. Relocated, `size == live == 123,128` and it does not sweep.
-- **`PivotView.loadUpdatedRows` restamps digests** on every owner group row it projected onto.
-  Connected stores now skip record rebuilds by comparing `cubeRowDigest`, the base class stamps
-  digests *before* `loadUpdatedRows` runs, and an owner whose own aggregates happened to hold is
-  never in `updatedRows` at all — so without the restamp a changed cell renders stale.
+- **`PivotView.loadUpdatedRows` restamps digests** on every owner group row it projected onto, since
+  connected stores now skip record rebuilds by comparing `cubeRowDigest` and the base class stamps
+  before `loadUpdatedRows` runs. **It is dead code, and the justification first recorded here was
+  wrong.** The claim was that an owner whose own aggregates held is absent from `updatedRows`; in fact
+  `BaseRow.applyDataUpdate` pushes an update per aggregatable field without testing whether the value
+  moved, so every group-axis ancestor of a changed leaf — every cell's owner included — is always
+  present and already stamped. Deleting the restamp leaves the suite green, including 2,886 post-tick
+  cell values read back out of a `Store`. Kept as insurance should that propagation ever become
+  conditional; delete it deliberately if a dead line is not worth carrying.
 - `View.parseStores` composes cleanly with their rewrite; `reuseRecords` is now View-managed via
   `setDigestFn`, and our null-tolerance fix survives.
 - Toolbox: `ViewRowData` is a plain fixed-shape interface, so the `cubeLeaves` getter became the

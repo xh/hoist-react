@@ -150,9 +150,11 @@ export class PivotView extends View {
             }
         });
 
-        // Projection mutates owner data after the base class has stamped digests, and an owner whose
-        // own aggregates held is never in `updatedRows` - restamp, or connected stores read an
-        // unchanged digest and skip the record rebuild, leaving stale cells in the grid.
+        // Projection mutates owner data after the base class stamped digests. Currently belt-and-
+        // braces: `applyDataUpdate` pushes an update per aggregatable field without testing whether
+        // the value moved, so every group-axis ancestor of a changed leaf - including every cell's
+        // owner - is already in `updatedRows`. Keep this if that ever becomes conditional, since a
+        // missed stamp has a connected store serve a stale cell.
         groupRows.forEach(row => this.noteRowDataMutated(row.data));
 
         super.loadUpdatedRows(groupRows);
