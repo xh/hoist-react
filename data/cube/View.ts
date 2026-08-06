@@ -419,7 +419,7 @@ export class View
         this._bucketDependentFields.clear();
 
         const rowCache = this._rowCache;
-        rowCache.noteGeneration();
+        rowCache.beginGeneration();
 
         const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
@@ -447,10 +447,7 @@ export class View
         // Underlying network still there and updates will flow up through it via the leaves.
         this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
 
-        this.logDebug(
-            `Generated rows: reused=${rowCache.reused} recomputed=${rowCache.recomputed} ` +
-                `rebuilt=${rowCache.rebuilt} created=${rowCache.created} cached=${rowCache.size}`
-        );
+        rowCache.endGeneration();
     }
 
     private groupAndInsertRecords(

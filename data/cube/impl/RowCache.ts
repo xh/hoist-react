@@ -31,24 +31,26 @@ import type {View} from '../View';
  *
  * Retention: entries not requested by a generation are retained for potential later reuse - e.g.
  * leaves for records currently excluded by filter, ready should the filter widen again. To bound
- * memory, the cache sweeps when it grows well past its post-sweep baseline, dropping exactly the
- * entries that can no longer satisfy the reuse invariant. Since a live cache entry only ever
- * references records also retained by its View and Cube, this delays record collection by at
- * most one sweep cycle.
+ * memory, the cache sweeps at the end of a generation when it has outgrown the rows in current
+ * use by 50%+, dropping exactly the rows whose underlying cube records have been removed or
+ * replaced. Dead entries - and the replaced records they pin - are therefore bounded by a
+ * fraction of the view's working set.
  *
  * @internal
  */
 export class RowCache {
     private view: View;
     private rows = new Map<string, BaseRow>();
-    private sweepBaseline = 0;
     private simpleAggs = false;
+    private sweptAsOf: number = null;
 
-    // Stats for the current generation
-    reused = 0;
-    rebuilt = 0;
-    created = 0;
-    recomputed = 0;
+    // Stats for the current generation - logged by endGeneration()
+    private reused = 0;
+    private rebuilt = 0;
+    private created = 0;
+    private recomputed = 0;
+    private removed = 0;
+    private sweepTime = 0;
 
     constructor(view: View) {
         this.view = view;
@@ -96,31 +98,36 @@ export class RowCache {
         return ret as T;
     }
 
-    /** Mark the start of a generation - resets stats and sweeps if the cache has grown stale. */
-    noteGeneration() {
+    beginGeneration() {
         this.simpleAggs = this.view.aggregatorsAreSimple;
         this.reused = this.rebuilt = this.created = this.recomputed = 0;
+        this.removed = this.sweepTime = 0;
+    }
 
-        // Growth-triggered amortization: Steady-state views never sweep.
-        const {size, sweepBaseline} = this;
-        if (!sweepBaseline) {
-            this.sweepBaseline = size;
-        } else if (size > 1.5 * sweepBaseline + 1000) {
-            this.sweep();
-        }
+    endGeneration() {
+        this.sweep();
+        this.view.logDebug(
+            `Generated rows: reused=${this.reused} recomputed=${this.recomputed} ` +
+                `rebuilt=${this.rebuilt} created=${this.created} ` +
+                `cached=${this.size} removed=${this.removed} ` +
+                `sweepTime=${this.sweepTime.toFixed(1)}ms`
+        );
     }
 
     clear() {
         this.rows.clear();
-        this.sweepBaseline = 0;
     }
 
-    // Drop entries that can no longer satisfy the reuse invariant, evaluated transitively: a
-    // leaf whose source record is gone from the cube can never validate again, nor can any row
-    // with a dropped/replaced descendant. Rows over intact subtrees are retained - e.g. groups
-    // currently filtered out in full, reusable verbatim (aggregation skipped) on filter widen.
+    // Drop rows whose underlying cube records have been removed or replaced. Skipped unless the
+    // cache has outgrown the generation's live rows by 50%+ and cube data has changed since the
+    // last sweep - rows can only die with their records.
     private sweep() {
-        const {rows} = this,
+        const live = this.reused + this.rebuilt + this.created,
+            asOf = this.view.cube.lastUpdated;
+        if (asOf === this.sweptAsOf || this.size <= 1.5 * live) return;
+
+        const start = performance.now(),
+            {rows} = this,
             {store} = this.view.cube,
             memo = new Map<BaseRow, boolean>(),
             startSize = rows.size;
@@ -140,9 +147,8 @@ export class RowCache {
             if (!isRetained(row)) rows.delete(id);
         });
 
-        this.view.logDebug(
-            `Swept row cache: dropped ${startSize - rows.size}, retained ${rows.size}`
-        );
-        this.sweepBaseline = rows.size;
+        this.sweptAsOf = asOf;
+        this.removed = startSize - rows.size;
+        this.sweepTime = performance.now() - start;
     }
 }
