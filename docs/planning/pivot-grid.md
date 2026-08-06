@@ -13,12 +13,12 @@ API fails on missing exports. To typecheck for real, uncomment the `paths` block
 **Status: phases 0-2 complete and verified; phase 3's store plumbing and the `PivotGridModel` rewire
 are in.** The data layer is correct against its reference suite (293 Toolbox checks, 49 unit checks, both
 mutation-tested), rebased onto the `develop` that carries the Store rework, and clears every gate it
-still carries. Only `PivotDataModel`'s retirement is left in phase 2, and phase 3 is what unblocks it.
+still carries. Phase 2 is now closed outright: `PivotDataModel` is retired.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
-the settled contract phase 3 built to. Then pick up at retiring `PivotDataModel` in the
-[checklist](#phase-3--pivotgridmodel), which the rewire has made forced rather than optional and which
-wants a decision. One further decision stays open and phase 3 will meet it while building columns:
+the settled contract phase 3 built to. Then pick up at persistence in the
+[checklist](#phase-3--pivotgridmodel). One decision stays open, and it needs a build measurement on a
+quiet machine rather than more argument:
 [fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells).
 
 **To see the data layer's output before touching it**, open Admin › Tests › **Pivot Inspect** — eight
@@ -75,20 +75,17 @@ the `data/cube` `PivotQuery`, and `PivotField` / `PivotFieldSpec` retired (see
 
 ## Context
 
-`cmp/pivotgrid/` currently holds a working prototype written in a client app and imported wholesale.
-It was built to be self-contained (no references outside hoist-react), but it carries app-code
-patterns, a handful of latent bugs, and a pivot data layer that cannot support ticking data.
+`cmp/pivotgrid/` began as a working prototype written in a client app and imported wholesale. All
+three of its parts are now gone: `PivotDataModel` retired in favor of `PivotView`, `PivotGridModel`
+rewired onto it, `PivotGrid` brought up to framework conventions.
 
-The prototype has three parts:
-
-- **`PivotDataModel`** — the pivoting engine. Widens each leaf record with a synthetic field per
-  `(pivotPath, valueField)` pair, then builds a `Cube` over the widened rows so the existing
-  aggregators produce the pivot cells. The cost model is wrong: `Cube` aggregation is dense over
-  fields while the widened data is sparse over fields, so every aggregate row computes every
-  synthetic field. **To be replaced.**
-- **`PivotGridModel`** — builds the grid's column hierarchy from the pivot value tree, manages
-  summary rows/columns and sorting. Fundamentally sound; needs cleanup and an API refresh.
-- **`PivotGrid`** — thin component wrapper. Needs framework conventions.
+The one thing worth keeping from it is why the engine had to be replaced rather than tuned.
+`PivotDataModel` widened each leaf record with a synthetic field per `(pivotPath, valueField)` pair,
+then built a `Cube` over the widened rows so the existing aggregators produced the pivot cells. **That
+cost model is wrong by construction**: `Cube` aggregation is dense over fields while the widened data
+is sparse over fields, so every aggregate row computed every synthetic field — and a fresh `Cube` per
+update meant a tick cost a full rebuild no matter how little changed. See the
+[baseline](#baseline--pivotdatamodel-as-imported).
 
 ## Goals
 
@@ -542,9 +539,9 @@ tick is still reported for baseline comparison but is not gated; see the
 `GATES` map is the single place both thresholds live.
 
 **The heap gate is dropped deliberately**, not unverified: `≤ 2×` over the loaded `Cube` was never
-measurable from `PivotViewBenchModel`, and porting `PivotBenchModel`'s `sampleHeapAsync` tooling was
-judged not worth it against a rewrite that already beats the prototype's heap on every profile by
-construction — it holds no per-update `Cube`. Revisit only if heap becomes the binding constraint, at
+measurable from `PivotViewBenchModel`, and the prototype harness that had the `sampleHeapAsync` tooling
+is now retired, so reinstating heap measurement means writing it from scratch — judged not worth it
+against a rewrite that beats the prototype's heap on every profile by construction — it holds no per-update `Cube`. Revisit only if heap becomes the binding constraint, at
 which point [Cells on row data](#cells-on-row-data-and-field-naming) is the design lever.
 
 **Secondary gate — Typical+Drill**, since leaf drill-down is a normal ask rather than a stress case:
@@ -573,12 +570,11 @@ modelled on the `StoreProxyBench*` harness from Toolbox's `store-proxy-mode` bra
 this branch. Confirm before trusting a number: Admin › General reports Hoist React as a bare
 `-SNAPSHOT` when inline, and `-SNAPSHOT.<timestamp>` when it is the published package.
 
-| Harness               | Panel                            | Measures                       | Heap |
-| --------------------- | -------------------------------- | ------------------------------ | ---- |
-| `PivotBenchModel`     | Admin › Tests › **Pivot Bench**  | the prototype `PivotDataModel` | yes  |
-| `PivotViewBenchModel` | Admin › Tests › **Pivot View** ▾ | `PivotView`                    | no   |
+`PivotViewBenchModel` is the one benchmark, in the lower half of Admin › Tests › **Pivot View**. It
+measures `PivotView` against the [gates](#acceptance-criteria) and reports no heap. The prototype's
+own harness is gone with it — see [Baseline](#baseline--pivotdatamodel-as-imported).
 
-Two non-benchmark panels sit alongside them. `PivotViewTestModel` is the correctness suite, in the top
+Two non-benchmark panels sit alongside it. `PivotViewTestModel` is the correctness suite, in the top
 half of **Pivot View**. `PivotInspectModel` is Admin › Tests › **Pivot Inspect** — no assertions, just
 eight records with values 10, 20, ... 80 and every stage dumped as readonly JSON: the resolved
 `PivotQuery`, the raw records, `result.rows` verbatim, `result.paths`, `result.cellFields`, and the
@@ -587,21 +583,11 @@ materializes pivot totals), sparse data (an unpopulated cell), `includeRoot` / `
 tick that adds 100 to one record. **Reach for it first when reasoning about the data contract** — the
 suite proves correctness but this is what makes it legible.
 
-`PivotViewBenchModel` hardcodes the phase 0 baseline as its `BASELINE` map and reports against it, so
-a `PivotView` re-measure needs only that panel. Re-running Pivot Bench is only for re-establishing
-the prototype baseline itself — on the same hardware, in the same session, or the comparison is
-meaningless.
-
-On Pivot Bench, set `Keep grid` **off** so the live grid is not mounted. Leaving it on adds ag-Grid
-render work to every measurement — roughly doubling Typical's tick, from 128ms to 225ms. The
-`PivotView` panel never mounts a grid, so it has no such toggle.
-
-Heap needs headless Chromium with `--expose-gc` and `--enable-precise-memory-info`; without them
-Pivot Bench reports `heapAvailable: false`. Timing runs do not need headless, but a headless number
-and a windowed number are not comparable — the phase 0 baseline is headless.
+The `PivotView` panel never mounts a grid, so its numbers carry no ag-Grid render cost. A headless
+number and a windowed one are not comparable, and the recorded figures below are headless.
 
 **The tab must stay foreground and unoccluded for the whole run, and every number from a run where
-it did not is garbage.** Both harnesses `await wait(50)` between reps; Chrome throttles that chained
+it did not is garbage.** The harness `await wait(50)`s between reps; Chrome throttles that chained
 timer to 1/sec in a hidden tab and 1/min after five minutes hidden, and `whileAsync` additionally
 swaps to its synchronous fallback once `XH.pageIsVisible` goes false. A hidden run does not fail
 loudly — it inflates every figure and eventually looks like an indefinite hang with the main thread
@@ -610,8 +596,9 @@ a `visibilitychange` tripwire to void one that went hidden partway.
 
 ### Baseline — `PivotDataModel` as imported
 
-Captured 2026-08-01 on a Linux workstation, per the procedure above. Treat these as a _relative_
-baseline for the rewrite to beat, not as an absolute spec — they will move on different hardware.
+Captured 2026-08-01 on a Linux workstation. **This table is now the only record of it** — the
+prototype and its harness are retired, so nothing can reproduce these. Kept because the case for the
+rewrite rests on them, not because they are re-measurable.
 
 - **Data ms** — `PivotDataModel.update()` alone.
 - **Grid ms** — end-to-end `PivotGridModel.loadData()`. Excludes the async `autosizeAsync()` the
@@ -731,9 +718,8 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       and is wrong. Perturb non-empty pivot values on already-non-empty records only; the reference's
       `excludeEmptyPivotValues` filter is a snapshot, and moving a record across that boundary stales
       it rather than testing anything.
-Retiring `PivotDataModel` is the one phase 2 item left. It is blocked on phase 3 rewiring
-`PivotGridModel` onto the new API, so it is tracked in the
-[phase 3 checklist](#phase-3--pivotgridmodel).
+`PivotDataModel` is retired, closing this phase. See the
+[phase 3 checklist](#phase-3--pivotgridmodel) item.
 
 ### Result — `PivotView` measured against the baseline
 
@@ -777,8 +763,7 @@ full-array tick, but `passed` was not a declared `Store` field — `GridModel` i
 columns and no column binds `passed`, so `record.data.passed` was always `undefined` and the Gate
 renderer took its failure branch unconditionally. The repoint at `deltaTickMs` was still right and
 still needed; it just was not what made the column red. The renderer also emitted `Icon(asHtml)`
-markup that rendered as escaped text, so the cell was illegible either way — now plain glyphs, as
-`PivotBenchModel` already did it.
+markup that rendered as escaped text, so the cell was illegible either way — now plain glyphs.
 
 **The 2026-08-04 table was a measurement artifact; there is no drill-down build regression.** It
 recorded 529ms for Typical+Drill and a ~1.9× regression, and none of that reproduces. Checking
@@ -1077,11 +1062,10 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       `Store.getField` is done, so the remaining framework gap is `SumAggregator.replace`, plus
       `useRawAsData` on `CubeConfig`.
 - [ ] Persistence: `persistWith` / `PersistOptions`, per `ZoneGridModel`.
-- [ ] Retire `PivotDataModel`, closing the last phase 2 item. **Now forced rather than optional:** the
-      rewire changed `PivotGridModel`'s constructor and removed `loadData`, so Toolbox's `PivotBenchModel`
-      no longer compiles. Either retire both — the phase 0 baseline is already recorded in this document
-      and is only re-runnable on the same hardware in the same session anyway — or keep `PivotDataModel`
-      and cut `PivotBenchModel` back to measuring it directly, which loses the `Grid ms` column.
+- [x] Retire `PivotDataModel`, closing the last phase 2 item. Took `PivotFieldSpec`, `PivotValue` and the
+      `cmp/pivotgrid` `PivotQuery` with it, plus Toolbox's whole Pivot Bench harness and the recorded
+      baseline columns on the `PivotView` benchmark — comparing against a deleted implementation is
+      unverifiable. The [baseline table](#baseline--pivotdatamodel-as-imported) is now its only record.
 - [ ] Toolbox Admin test page (evolve the phase 0 harness).
 - [ ] Toolbox example page.
 
@@ -1151,6 +1135,16 @@ which `PivotQuery` already validates at construction.
 
 One entry per working session: date, what landed, where to pick up.
 
+**2026-08-06 — PivotDataModel retired, phase 2 closed.** The prototype engine, `PivotFieldSpec`,
+`PivotValue`, the `cmp/pivotgrid` `PivotQuery`, and Toolbox's whole Pivot Bench harness are gone, along
+with the recorded baseline columns on the `PivotView` benchmark — a comparison against a deleted
+implementation cannot be verified, and the figures live in this document. Suite still 293/293 green;
+the benchmark, Pivot Inspect and the Tests nav all still work.
+
+Consequences to know. The [baseline table](#baseline--pivotdatamodel-as-imported) is now the *only*
+record of the prototype's numbers and nothing can reproduce them. And reinstating heap measurement
+means writing it from scratch: `sampleHeapAsync` went with `PivotBenchModel`.
+
 **2026-08-06 — Phase 3 PivotGridModel rewire.** The model now takes a `PivotView`, carries no query
 config, mints and owns its store, and builds the whole column hierarchy including pivot totals. 279 →
 293 Toolbox checks, green, mutants killed. Most of the carried-forward cleanup went with it.
@@ -1169,9 +1163,9 @@ coverage and placement, and the scenario's data carries pivot values containing 
 escape char, so a grid reconstructing names from raw labels rather than reading `cellFields` binds
 columns nothing writes to.
 
-Pick up at retiring `PivotDataModel`, which the rewire has made **forced rather than optional** —
-Toolbox's `PivotBenchModel` no longer compiles against the new constructor. See that checklist item for
-the two ways out; it wants a decision, not a default.
+`PivotDataModel` and Toolbox's Pivot Bench harness are retired in the same session — the rewire forced
+the question by changing the constructor `PivotBenchModel` drove. Phase 2 is closed. Pick up at
+persistence.
 
 **2026-08-06 — Phase 3 store plumbing.** The first four checklist items landed: the
 `enhanceColConfigsFromStore` fix, `Store.setFields`, `PivotView.createStore` / `disconnectStore`, and
