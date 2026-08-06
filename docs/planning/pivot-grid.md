@@ -2,8 +2,9 @@
 
 **Branches:** `pivot-grid` in hoist-react (based on `develop`), plus a matching `pivot-grid` branch
 in Toolbox (also off `develop`) for the harness and example pages. `pivot-grid-store-simple` in both
-repos is the same work rebased onto `store-simple` — verified, and the base to build phase 3 on once
-`store-simple` merges. See [Rebase onto `store-simple`](#rebase-onto-store-simple).
+repos is the same work rebased onto current `develop`, which now carries the Store rework — verified,
+and the base to build phase 3 on. See
+[Rebase onto the Store rework](#rebase-onto-the-store-rework-store-simple).
 
 **Status:** phases 0 and 1 complete. Phase 2 is functionally complete, correct against its reference
 suite, and clears every performance gate it still carries. What remains is one gate number to set, a
@@ -758,15 +759,17 @@ argument behind it — that would have bought nothing. Re-measure before optimiz
 the old code rather than against a recorded number whenever a figure moves more than the change
 plausibly explains.
 
-## Rebase onto `store-simple`
+## Rebase onto the Store rework (`store-simple`)
 
-`store-simple` reworks Cube View row and record reuse — the exact machinery phase 2 builds on — and
-lands in `develop` shortly. **The rebase is done and verified** on `pivot-grid-store-simple` (both
-repos); `pivot-grid` is untouched, so either can be the base. All 25 commits replayed; conflicts hit
-only `View.ts`, `BaseRow.ts`, `LeafRow.ts`, and `PivotView.ts`.
+The Store rework reworked Cube View row and record reuse — the exact machinery phase 2 builds on — and
+**merged into `develop` as `d61321545` (#4534), squashed**, so its own commits are not in develop's
+history. Our 25 commits are rebased onto `develop` and verified there: 211/211 Toolbox checks, 49/49
+unit checks, `tsc` clean. Replay was conflict-free, because our patches touch different regions of
+`View.ts` than the rework does.
 
-Verified on the rebased branches: 211/211 Toolbox checks, 49/49 unit checks, `tsc` clean, both build
-gates and the delta-tick gate pass.
+**Review changed the integration surface between `store-simple` and the merge** — re-read
+`RowCache.ts` before trusting any note written against the pre-merge branch. `noteGeneration()` became
+`beginGeneration()`, a new `endGeneration()` was added, and the cache sweep moved into it.
 
 What the integration required, all of it load-bearing:
 
@@ -777,6 +780,12 @@ What the integration required, all of it load-bearing:
 - **`BaseRow.aggFields`** now holds the row's own field set. `RowCache` recomputes reused rows in
   place by calling `computeAggregates()` with no arguments, which would otherwise aggregate every
   view field on a cell row rather than just its measures.
+- **`View` closes the row-cache generation in `fullUpdate`, not at the end of `generateRows`.** The
+  sweep trigger compares cache `size` against a `live` count accumulated during the generation, and
+  `PivotView` generates its cells in its `generateRows` override — after the base method used to close
+  the generation. Cells therefore counted toward `size` while absent from `live`. On Typical+Drill that
+  is 72,211 live against a 123,128-row cache, i.e. 1.7× past the 1.5× trigger, so a steady-state pivot
+  view swept on **every** build. Relocated, `size == live == 123,128` and it does not sweep.
 - **`PivotView.loadUpdatedRows` restamps digests** on every owner group row it projected onto.
   Connected stores now skip record rebuilds by comparing `cubeRowDigest`, the base class stamps
   digests *before* `loadUpdatedRows` runs, and an owner whose own aggregates happened to hold is
@@ -794,9 +803,17 @@ field — rows are only ever written by *overwriting* slots, never by adding pro
 writes synthetic cell fields onto group-row data, which are property **adds**, so pivoted group rows
 drop into dictionary mode.
 
-Warm builds run ~5-8% slower rebased (Typical 131 vs 118-123, Typical+Drill 285 vs 273-278, against
-gates of 140 and 290). Dictionary-mode group rows are the leading hypothesis, unproven — A/B it before
-acting, per the lesson this branch already learned once.
+**No build cost has been attributed to this — do not treat one as measured.** An earlier note here
+claimed ~5-8%, then blamed the row-cache sweep on the strength of an A/B that appeared to separate
+cleanly. Instrumenting the guard disproved it: `willSweep=false` on every generation, so the sweep body
+never ran and could not have cost anything. The apparent separation came from a page reload sitting
+between the two groups.
+
+What that leaves is a benchmark too noisy to resolve a difference this size. Typical+Drill measured
+275, 281, 307, 310, 318 and 341 across six runs on one machine against a 290ms gate — the gate result
+is **inconclusive**, not failing. Resolve it on a quiet machine (close the browser's other windows,
+nothing else building) before ascribing a cost to row shape or anything else. Delta ticks are
+unaffected and unambiguous throughout: 7.8-9.6 against a 15ms gate.
 
 The obvious fix is to put cell field names in the row template, and it contradicts
 [Cells on row data](#cells-on-row-data-and-field-naming) head on: that section deliberately leaves
@@ -810,8 +827,9 @@ Three ways out, in rough order of appeal: accept dictionary mode for pivoted gro
 fixed-shape guarantee there deliberately; template only the cell fields and pay the dense memory,
 which is defensible if `maxPivotPaths` keeps path counts genuinely low; or revisit
 `Column.getValueFn` and keep cells on cell rows, already recorded as rejected but explicitly
-revisitable "if heap becomes the binding constraint". **Typical+Drill has only 5ms of margin against
-its 290ms build gate, so this cannot be left to drift.**
+revisitable "if heap becomes the binding constraint". Pick between them on a trustworthy build
+measurement, not on the design argument alone — the sparse-cell model is the incumbent and templating
+cell fields is the change that has to earn its cost.
 
 ## Phase 3 — PivotGridModel
 
@@ -1000,7 +1018,7 @@ pinned the Gate column to red, and `View.parseStores` threw on `stores: null` (f
 `null` is Hoist's no-value sentinel).
 
 Pick up at phase 3, and at the `store-simple` rebase — see the note under
-[Rebase onto `store-simple`](#rebase-onto-store-simple).
+[Rebase onto the Store rework](#rebase-onto-the-store-rework-store-simple).
 
 **2026-08-05 — Re-measure, and the benchmark was lying.** Phase 2 clears both build gates and the
 delta-tick gate on every profile, beating the prototype everywhere; the new
