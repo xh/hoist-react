@@ -401,12 +401,16 @@ export class View
     }
 
     protected loadStores() {
+        this.stores.forEach(s => this.loadStore(s));
+    }
+
+    /** Load a single store from the current row data, if any has been generated. */
+    protected loadStore(store: Store) {
         const {_leafMap, _rowDatas} = this;
         if (!_leafMap || !_rowDatas) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
-        const storeRows = _leafMap.size !== 0 ? _rowDatas : [];
-        this.stores.forEach(s => s.loadData(storeRows));
+        store.loadData(_leafMap.size !== 0 ? _rowDatas : []);
     }
 
     protected updateResults() {
@@ -644,7 +648,7 @@ export class View
         return this.fields.every(({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly);
     }
 
-    private parseStores(stores: Some<Store>): Store[] {
+    protected parseStores(stores: Some<Store>): Store[] {
         // `castArray(null)` yields `[null]` - null is a legitimate "no stores" here.
         const ret = isNil(stores) ? [] : castArray(stores);
 

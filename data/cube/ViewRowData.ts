@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Some} from '@xh/hoist/core';
+import type {FieldSpec} from '@xh/hoist/data';
 import {flatMap} from 'lodash';
 
 /**
@@ -63,6 +64,21 @@ export interface ViewRowData {
     /** @internal */
     _cubeLeafChildren: ViewRowData[];
 }
+
+/**
+ * Store Field specs for the non-implementation members of {@link ViewRowData} - what a Store loaded
+ * from a View needs declared to render or filter on them. Excludes `id` and `children`, which Store
+ * consumes structurally, and `cubeRowDigest`, which it reads as a digest rather than as a field.
+ *
+ * @internal
+ */
+export const VIEW_ROW_DATA_FIELDS: FieldSpec[] = [
+    {name: 'cubeRowType', type: 'string'},
+    {name: 'cubeLabel', type: 'string'},
+    {name: 'cubeDimension', type: 'string'},
+    {name: 'cubeBuckets', type: 'auto'},
+    {name: 'isCubeLeaf', type: 'bool'}
+];
 
 /**
  * All visible (i.e. non-locked) cube leaves associated with a row.

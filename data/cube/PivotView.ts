@@ -6,9 +6,10 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import {Field, Store, StoreConfig, StoreRecord} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
+import {VIEW_ROW_DATA_FIELDS} from './ViewRowData';
 import {
     buildPivotLattice,
     CHILD_KIND_LEAF,
@@ -38,6 +39,19 @@ export interface PivotViewResult extends ViewResult {
      * `paths` - track it to decide whether to re-declare Store fields.
      */
     cellFields: PivotCellField[];
+}
+
+/**
+ * Configuration for {@link PivotView.createStore}. Accepts the full {@link StoreConfig} surface,
+ * defaulting `loadTreeData` and `projectionOnly` to true.
+ */
+export interface PivotViewStoreConfig extends StoreConfig {
+    /**
+     * True to register the new Store for live updates from this view. The *caller* owns the store
+     * and must call {@link PivotView.disconnectStore} when done with it. False (default) to declare
+     * fields and load once from the current result, then never again.
+     */
+    connect?: boolean;
 }
 
 /**
@@ -72,6 +86,8 @@ export class PivotView extends View {
     /** Keyed on path *identity*, so a cell can never resolve names for a path it no longer holds. */
     declare protected _cellFieldNames: Map<PivotPath, string[]>;
     declare protected _cellRows: PivotCellRow[];
+    /** Cell fields last declared on each store, by identity - the structural-change signal. */
+    declare protected _syncedCellFields: WeakMap<Store, PivotCellField[]>;
 
     /** @internal - applications should use {@link Cube.createPivotView} */
     constructor(config: ViewConfig) {
@@ -102,6 +118,39 @@ export class PivotView extends View {
         super.updateQuery(overrides);
     }
 
+    /**
+     * Create a Store shaped for this view's results - a Field per {@link ViewRowData} member, per
+     * query field, and per {@link PivotViewResult.cellFields} entry, kept in sync as the pivot
+     * structure changes.
+     *
+     * A convenience factory, not a claim of ownership: the *caller* owns the returned Store, and a
+     * caller passing `connect: true` must call {@link disconnectStore} from its own `destroy()`.
+     * (`View.destroy` unregisters itself from its Cube only because there the registered object is
+     * the owned one.)
+     */
+    createStore(config?: PivotViewStoreConfig): Store {
+        const {connect = false, fields = [], ...rest} = config ?? {};
+
+        const store = new Store({
+            loadTreeData: true,
+            projectionOnly: true,
+            ...rest,
+            fields: [...VIEW_ROW_DATA_FIELDS, ...this.fields, ...fields]
+        });
+
+        if (connect) this.stores = this.parseStores([...this.stores, store]);
+
+        this.syncStore(store);
+        this.loadStore(store);
+
+        return store;
+    }
+
+    /** Stop loading the given Store from this view. Callers of {@link createStore} own this call. */
+    disconnectStore(store: Store) {
+        this.stores = this.stores.filter(it => it !== store);
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -116,6 +165,54 @@ export class PivotView extends View {
             paths: this._paths ?? [],
             cellFields: this._cellFields ?? []
         };
+    }
+
+    protected override loadStores() {
+        this.stores.forEach(store => this.syncStore(store));
+        super.loadStores();
+    }
+
+    /**
+     * Declare a Field on `store` for every current cell field, and mirror `includeRoot` onto its
+     * `loadRootAsSummary` - `loadStores` publishes exactly the one root node carrying `children`
+     * that flag expects.
+     *
+     * Done here rather than from a consumer's reaction on `result` because `fullUpdate` assigns
+     * `result` *last*: a reaction cannot declare fields until after the load has already run against
+     * the outgoing set, which under `projectionOnly` builds records against the wrong declared
+     * fields rather than merely rendering late. Plain Views need none of this - their field set is
+     * static and known at construction, while cell fields are discovered from data.
+     */
+    private syncStore(store: Store) {
+        store.setLoadRootAsSummary(this.query.includeRoot);
+
+        const cellFields = this._cellFields ?? [],
+            synced = (this._syncedCellFields ??= new WeakMap()),
+            prior = synced.get(store);
+
+        // `clearCells` mints a fresh empty array per build, so identity alone is not enough to keep
+        // a degenerate (unpivoted) view from re-declaring fields on every one.
+        if (prior === cellFields || (isEmpty(prior) && isEmpty(cellFields))) return;
+
+        // Touch only the fields this view declared last time round, leaving the app's own alone.
+        // Root-path entries are the value fields themselves, so they fall out as already present.
+        const stale = new Set(prior?.map(it => it.name) ?? []),
+            retained = store.fields.filter(f => !stale.has(f.name)),
+            retainedNames = new Set(retained.map(f => f.name)),
+            added = cellFields
+                .filter(it => !retainedNames.has(it.name))
+                .map(
+                    ({name, valueField}) =>
+                        new Field({
+                            name,
+                            type: valueField.type,
+                            displayName: valueField.displayName,
+                            defaultValue: valueField.defaultValue
+                        })
+                );
+
+        store.setFields([...retained, ...added]);
+        synced.set(store, cellFields);
     }
 
     /** A change to a *pivot* dimension value restructures the columns - force a full rebuild. */
