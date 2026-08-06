@@ -166,7 +166,8 @@ export class Cube extends HoistBase {
             retainRaw: retainRaw,
             projectionOnly: projectionOnly,
             reuseRecords: reuseRecords,
-            freezeData: false
+            freezeData: false,
+            idEncodesTreePath: true
         });
         this.store.loadData(data);
         this.info = info;
