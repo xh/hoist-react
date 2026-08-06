@@ -2,18 +2,34 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade.)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade)
 
-* Hoist v87 updates to React 19. Apps may require minor adjustments and should be tested carefully.
+* Hoist v87 updates to React 19. Apps may require minor adjustments - test carefully.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
     * Both desktop and mobile `Popover` implementations now render on Floating UI, rather than
       Popper.js, which is not React-19 compatible. This changes the underlying DOM and CSS classes
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
-    * The `popperOptions` escape-hatch prop has been removed from the mobile `Popover`.
+    * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* Leaf rows published by Cube `View`s now use their source cube record's id as their row/record
+  id, rather than a generated id encoding the row's full dimension path. Review any code that
+  parses leaf row ids - aggregate and bucket row ids are unchanged. `Store.idEncodesTreePath` may
+  no longer be configured on a connected store -- it is now supplanted by more effective
+  performance optimzations.
+* New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
+  important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
+  `getCubeLeaves(row)`.
+* `CubeField.canAggregateFn` is now evaluated only when an aggregate row is built - rows reused
+  across view updates retain their results. Ensure any such function is a pure function of its
+  dimension, value, and applied-dimension arguments, without depending on per-generation
+  `AggregationContext` state.
+* Read `StoreRecord.data` by field name only - enumerating, spreading, or calling `JSON.stringify()`
+  on this object does not reliably see default field values. Review any code enumerating `data`
+  directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead. This never worked
+  reliably, but the new memory optimizations in this version make it far more likely to bite.
 * Grid columns newly added to the code are now initially hidden when column state is persisted to a
   `ViewManagerModel` or `DashViewModel`, ensuring a software release does not add columns to views
   users have curated and named. They remain available via the column chooser. Set the new
@@ -21,32 +37,64 @@
 
 ### 🎁 New Features
 
-* Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's reference to
-  its raw source data object after parsing, reducing memory usage on large stores where
-  `StoreRecord.raw` is not needed. Not compatible with `reuseRecords`.
-* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or
-  async iterable yielding raw records. Creates records incrementally without buffering
-  the complete raw dataset in memory, then installs them in a single transaction once the source
-  completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
-* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally.
-  Returns a `lines` async iterable of parsed records - the natural streaming source for
-  `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata record.
-  Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
-* Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
-  JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets. Interned
-  values may also be shared across successive fetches of the same logical dataset, as identified
-  by a required app-provided key, per a configurable `retainMode`. Skip known high-cardinality
-  fields (e.g. UUID columns) via `excludeFields`.
-* Cube `View`s no longer copy leaf row data when leaves are not exposed on their results (neither
-  `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records, eliminating
-  per-View leaf data objects and speeding up view builds for aggregate-only views over large
-  datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
-* Added an opt-in `Store.useRawAsData` config for projections of already-parsed data - most notably
-  a connected Cube `View` feeding a (tree) grid, or an endpoint returning data in its final
-  client-side form. Records use the provider's row object as their `data` by reference rather than
-  re-parsing and copying it, collapsing the usual two per-row objects to one and skipping the
-  per-row parse on every load and update. Requires that raw data already match the Store's Field
-  definitions - see the `useRawAsData` config docs for the full contract.
+* Hoist v87 delivers a major round of performance work across `FetchService` and the `data`
+  package, substantially reducing memory footprint and load/update costs for apps working with
+  large datasets. Records, Cube `View` rows, and raw payloads all take leaner representations,
+  alongside new opt-in configs for zero-copy projection, digest-based record reuse, and streaming
+  loads:
+    * Improved `Store` memory efficiency - record `data` objects now take one of two compact
+      representations, which `Store` picks per record by how many fields hold non-default values:
+      the established sparse form for lightly-populated records, and a fixed shape cloned from a
+      shared per-Store template for wider records. Avoids dropping into V8's memory-hungry
+      "dictionary" mode, substantially reducing per-record memory on stores with wide records.
+    * Improved Cube `View` memory efficiency - each `View` now clones its `ViewRowData` rows from a
+      shared template, so all rows in a View share one compact, fixed shape. Substantially reduces
+      per-row memory and speeds up view builds, especially for queries with many fields.
+    * Cube `View`s no longer copy leaf row data when their results do not expose leaves (neither
+      `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records,
+      eliminating per-View leaf data objects and speeding up view builds for aggregate-only views
+      over large datasets. Such views no longer publish a `View.result.leafMap` - see Breaking
+      Changes.
+    * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of
+      data that its provider parses and owns - use for stores connected to a Cube `View`, or fed by
+      an endpoint returning data in its final client-side form. Records use the provider's row
+      object as their `data` by reference rather than re-parsing and copying it, collapsing the
+      usual two per-row objects to one and skipping the per-row parse on every load and update.
+      Local modification APIs (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly`
+      config docs for the full contract.
+    * Enhanced `Store.reuseRecords` to also accept a digest specification - a raw data property
+      name or a function deriving a digest value - reusing the existing record whenever an
+      incoming raw object yields an unchanged digest. Applies to both `loadData()` and
+      `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted
+      digests are exposed as `StoreRecord.digest`. Stores connected to a Cube `View` get a
+      suitable digest installed automatically.
+    * Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, and
+      regrouping/filtering. Unchanged rows - validated against their source records and child
+      rows - retain their data objects and reuse digests, skipping re-aggregation for untouched
+      subtrees and record rebuilds in connected stores. Update costs now scale with the size of
+      the change rather than the size of the dataset. Complex (non-`dependsOnChildrenOnly`)
+      aggregators also reuse their rows, re-deriving all aggregations in place each generation
+      and republishing only values that actually changed.
+    * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store - lets a
+      source supplying per-row digests preserve record identity across full `Cube.loadDataAsync()`
+      reloads, extending View row reuse to wholesale refreshes.
+    * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's
+      reference to its raw source data object after parsing, reducing memory usage on large
+      stores where `StoreRecord.raw` is not needed. Not compatible with `reuseRecords: true`.
+    * Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync
+      or async iterable yielding raw records. Creates records incrementally without buffering the
+      complete raw dataset in memory, then installs them in a single transaction once the source
+      completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
+    * Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response
+      incrementally. Returns a `lines` async iterable of parsed records - the natural streaming
+      source for `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata
+      record. Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
+    * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within
+      large JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets.
+      `FetchService` can also share interned values across successive fetches of the same logical
+      dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
+      known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
 * Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
@@ -56,15 +104,6 @@
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the
   minimum amount required.
-
-### 🐞 Bug Fixes
-
-* Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
-  values for each dimension.
-* Routine server exceptions no longer append their internal cause to the client-facing message -
-  e.g. validation failures no longer include the raw Grails error dump.
-
-### 🎁 New Features
 * Enhanced the Admin Console config editor: JSON configs backed by a typed class and/or an active
   instance-config override now present a tabbed value editor over the resolved, instance-override,
   database, and code-default views of their value, muting entries that match the declared
@@ -78,16 +117,34 @@
   treats null/empty values as valid). A new `RestGridConfig.postSaveFn` hook is called with the
   updated record after a successful save.
 
+### 🐞 Bug Fixes
+
+* Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
+  values for each dimension.
+* Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates - bucket
+  assignments are now re-derived from each row's current position on every View generation.
+* Fixed `StoreRecord.getModifiedValues()` omitting fields locally modified back to their default
+  value - it now reports every difference against committed data, regardless of how the record's
+  `data` object represents defaults.
+* Fixed Cube `View` forcing a full (rather than incremental) update on every data update when the
+  `Query`'s fields did not also include a `BucketSpec.dependentFields` entry.
+* Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
+  `rowData` pinned the record array from the last load into an empty grid, along with every
+  `StoreRecord`, `data`, and retained `raw` object in it.
+
 ### ⚙️ Technical
 
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
-  Popper.js onto Floating UI for React 19 compatibility. The Hoist `Popover` components (mobile and
-  desktop) have been updated so no app call-site changes are required.
+  Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
+  (mobile and desktop) so apps require no call-site changes.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
 * Field XSS protection now preserves the reference identity of string values that sanitization
   does not modify (the common case). Previously every parsed string value was replaced with a
   freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
   upstream deduplication of repeated values.
+* Added experimental `Store` config `denseRecordThreshold` - the populated (non-default) field
+  count at/above which a record's `data` takes its fixed dense shape rather than the sparse form.
+  For testing/tuning only - set to e.g. `999` to restore the pre-v87 (all-sparse) behavior.
 
 ### ⚙️ Typescript API Adjustments
 

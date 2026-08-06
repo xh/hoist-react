@@ -23,10 +23,10 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
+import {castArray, find, forEach, groupBy, isEmpty, isEqual, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
+import {RowCache} from './impl/RowCache';
 import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
@@ -48,6 +48,10 @@ export interface ViewConfig {
     /**
      * Store(s) to be automatically (re)loaded with data from this view.
      * Optional - read {@link View.result} directly to use without a Store.
+     *
+     * Connected stores should generally set {@link StoreConfig.projectionOnly} - view rows are
+     * already parsed and owned by this View, so adopting them directly improves performance
+     * when no additional record parsing or local data modification is required.
      */
     stores?: Store[] | Store;
 
@@ -137,8 +141,12 @@ export class View
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     private _bucketDependentFields = new Set<string>();
+    private _rowDataTemplate: ViewRowData = null;
+    // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
+    private _rowDigest = 0;
+    _canAggregateTemplate: PlainObject = null;
     _aggContext: AggregationContext = null;
-    _rowCache: Map<string, BaseRow> = null;
+    _rowCache: RowCache = null;
 
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
@@ -149,7 +157,8 @@ export class View
 
         this.query = query;
         this.stores = this.parseStores(stores);
-        this._rowCache = new Map();
+        this._rowCache = new RowCache(this);
+        this.buildRowTemplates();
         this.fullUpdate();
 
         if (connect) {
@@ -209,9 +218,9 @@ export class View
         if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
+        this.buildRowTemplates();
 
-        // If the cube is changing then we need to clear the row cache, and potentially disconnect
-        // from the old cube and connect to the new one
+        // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
             {cube: newCube} = newQuery;
 
@@ -223,16 +232,11 @@ export class View
             if (oldCube.viewIsConnected(this)) {
                 oldCube.disconnectView(this);
                 newCube.connectView(this);
-
-                // Connecting to the new cube will have triggered a full update so we early out
-                return;
+                return; // Connecting triggers a full update so we early out
             }
         }
 
-        // Must clear row cache if we have complex aggregates or more than filter changing.
-        if (!this.aggregatorsAreSimple || !oldQuery.equalsExcludingFilter(newQuery)) {
-            this._rowCache.clear();
-        }
+        this.pruneCacheForQueryChange(oldQuery, newQuery);
 
         this.fullUpdate();
     }
@@ -270,7 +274,6 @@ export class View
     //-----------------------
     @action
     noteCubeLoaded() {
-        this._rowCache.clear();
         this.fullUpdate();
     }
 
@@ -279,7 +282,6 @@ export class View
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
-            this._rowCache.clear();
             this.fullUpdate();
         } else if (!isEmpty(simpleUpdates)) {
             this.dataOnlyUpdate(simpleUpdates);
@@ -308,6 +310,65 @@ export class View
         return includeLeaves || provideLeaves;
     }
 
+    /**
+     * Create a new row data object as a clone of this View's shared template, which carries a
+     * slot for every ViewRowData property and query field. Rows are only ever written via
+     * overwrites of these slots - never property adds - so all rows in a View share one fixed
+     * shape, keeping them in V8's compact fast-properties mode rather than "dictionary mode".
+     * @internal
+     */
+    newRowData(id: string): ViewRowData {
+        return {...this._rowDataTemplate, id, cubeRowDigest: ++this._rowDigest};
+    }
+
+    noteRowDataMutated(data: PlainObject) {
+        data.cubeRowDigest = ++this._rowDigest;
+    }
+
+    // Templates depend on the query's field set - rebuilt on any query change.
+    private buildRowTemplates() {
+        const rowData: PlainObject = {
+            id: null,
+            cubeRowType: null,
+            cubeLabel: null,
+            cubeDimension: null,
+            cubeBuckets: null,
+            children: null,
+            isCubeLeaf: false,
+            cubeRowDigest: null,
+            _cubeLeafChildren: null
+        };
+        const canAggregate: PlainObject = {};
+        this.fields.forEach(({name}) => {
+            rowData[name] = null;
+            canAggregate[name] = false;
+        });
+
+        // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
+        this._rowDataTemplate = {...rowData} as ViewRowData;
+        this._canAggregateTemplate = {...canAggregate};
+    }
+
+    // Selectively invalidate cached rows on a query change.
+    private pruneCacheForQueryChange(oldQuery: Query, newQuery: Query) {
+        // 0) Filter change only is a no-op - great for fast filter toggling
+        if (oldQuery.equalsExcludingFilter(newQuery)) return;
+
+        // 1) If fields/leaves are changing, just blow everything away
+        const cache = this._rowCache,
+            oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
+            newExposed = newQuery.includeLeaves || newQuery.provideLeaves,
+            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields);
+        if (oldExposed !== newExposed || (newExposed && fieldsChanged)) {
+            cache.clear();
+            return;
+        }
+
+        // 2) Otherwise, blow away aggregates (they are not worth saving). Surviving leaves that
+        // moved to new tree positions are detected by connected stores' treePath checks.
+        cache.clearAggregates();
+    }
+
     @logWithDebug
     private fullUpdate() {
         this.filterRecords();
@@ -327,6 +388,8 @@ export class View
             const leaf = _leafMap.get(rec.id);
             leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
+
+        updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
 
         this.createAggregationContext();
 
@@ -369,6 +432,9 @@ export class View
 
         this._bucketDependentFields.clear();
 
+        const rowCache = this._rowCache;
+        rowCache.beginGeneration();
+
         const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
@@ -376,7 +442,7 @@ export class View
 
         if (includeRoot) {
             newRows = [
-                this.cachedRow(
+                rowCache.getOrCreate(
                     rootId,
                     newRows,
                     () => new AggregateRow(this, rootId, newRows, null, 'Total', 'Total', {})
@@ -388,10 +454,14 @@ export class View
 
         this._leafMap = leafMap;
 
+        if (query.bucketSpecFn) newRows.forEach(row => row.syncBuckets(null));
+
         // This is the magic. We only actually reveal to API the network of *data* nodes.
         // This hides all the meta information, as well as unwanted leaves and skipped rows.
         // Underlying network still there and updates will flow up through it via the leaves.
         this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
+
+        rowCache.endGeneration();
     }
 
     private groupAndInsertRecords(
@@ -403,23 +473,27 @@ export class View
     ): BaseRow[] {
         if (!records?.length) return [];
 
-        const rootId = parentId + Cube.RECORD_ID_DELIMITER;
-
         if (!dimensions?.length) {
             const {exposesLeaves} = this;
             return records.map(r => {
-                const id = rootId + r.id,
-                    leaf = this.cachedRow(id, null, () =>
-                        exposesLeaves
-                            ? new ExposedLeafRow(this, id, r)
-                            : new HiddenLeafRow(this, id, r)
+                // Leaves are keyed by stable record id, supporting reuse across grouping changes.
+                const id = r.id.toString(),
+                    leaf = this._rowCache.getOrCreate(
+                        id,
+                        null,
+                        () =>
+                            exposesLeaves
+                                ? new ExposedLeafRow(this, id, r)
+                                : new HiddenLeafRow(this, id, r),
+                        r
                     );
                 leafMap.set(r.id, leaf);
                 return leaf;
             });
         }
 
-        const dim = dimensions[0],
+        const rootId = parentId + Cube.RECORD_ID_DELIMITER,
+            dim = dimensions[0],
             dimName = dim.name,
             groups = groupBy(records, it => it.data[dimName]);
 
@@ -439,7 +513,7 @@ export class View
             );
             children = this.bucketRows(children, id, appliedDimensions);
 
-            return this.cachedRow(
+            return this._rowCache.getOrCreate(
                 id,
                 children,
                 () => new AggregateRow(this, id, children, dim, val, strVal, appliedDimensions)
@@ -480,7 +554,7 @@ export class View
         // Create new rows for each bucket and add to the result
         forEach(buckets, (rows, bucketVal) => {
             const id = parentId + Cube.RECORD_ID_DELIMITER + `${bucketName}=[${bucketVal}]`;
-            const bucket = this.cachedRow(
+            const bucket = this._rowCache.getOrCreate(
                 id,
                 rows,
                 () => new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions)
@@ -537,21 +611,11 @@ export class View
 
         const fieldNames = uniq([...dimensions.map(it => it.name), ...bucketDependentFields]);
         for (const rec of update) {
-            const curRec = this._leafMap.get(rec.id);
+            const curRec = this._recordMap.get(rec.id);
             if (fieldNames.some(name => rec.data[name] !== curRec.data[name])) return true;
         }
 
         return false;
-    }
-
-    private cachedRow<T extends BaseRow>(id: string, children: BaseRow[], fn: () => T): T {
-        let ret = this._rowCache.get(id);
-        if (ret && (ret.isLeaf || shallowEqualArrays(ret.children, children))) {
-            return ret as T;
-        }
-        ret = fn();
-        this._rowCache.set(id, ret);
-        return ret as T;
     }
 
     private filterRecords() {
@@ -570,24 +634,34 @@ export class View
         this._aggContext = new AggregationContext(this, Array.from(this._recordMap.values()));
     }
 
-    private get aggregatorsAreSimple() {
+    /**
+     * True if all aggregators depend only on child rows, allowing aggregate/bucket row reuse
+     * and incremental data-only updates - see {@link Aggregator.dependsOnChildrenOnly}.
+     * @internal
+     */
+    get aggregatorsAreSimple() {
         return this.fields.every(({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly);
     }
 
     private parseStores(stores: Some<Store>): Store[] {
         const ret = castArray(stores);
 
-        // Views mutate the rows they feed to connected stores  -- `reuseRecords` not appropriate
         throwIf(
-            ret.some(s => s.reuseRecords),
-            'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
+            ret.some(s => s.reuseRecords != null),
+            '`Store.reuseRecords` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
         );
+        ret.forEach(s => s.setDigestFn(row => row.cubeRowDigest));
 
         throwIf(
-            ret.some(s => s.idEncodesTreePath) &&
-                (!isNil(this.cube.bucketSpecFn) || !isNil(this.cube.omitFn)),
-            'Store.idEncodesTreePath cannot be used on a Store that is connected to a Cube with a `bucketSpecFn` or `omitFn`'
+            ret.some(s => s.idEncodesTreePath),
+            '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
         );
+
+        if (ret.some(s => s.projectionOnly == null && !s.processRawData)) {
+            this.logWarn(
+                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. Set explicitly to false to opt out and silence this warning.'
+            );
+        }
 
         return ret;
     }

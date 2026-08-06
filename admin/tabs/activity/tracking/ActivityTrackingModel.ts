@@ -26,7 +26,7 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec, ViewRowData} from '@xh/hoist/data';
+import {Cube, CubeFieldSpec, FieldSpec, getCubeLeaves, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -166,7 +166,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             {
                 track: () => this.gridModel.selectedRecords,
                 run: recs =>
-                    (this.trackLogs = recs.flatMap(r => (r.raw as ViewRowData).cubeLeaves)),
+                    (this.trackLogs = recs.flatMap(r => getCubeLeaves(r.raw as ViewRowData))),
                 debounce: 100
             }
         );

@@ -26,10 +26,16 @@ import {RowUpdate} from './RowUpdate';
  */
 export abstract class LeafRow extends BaseRow {
     /**
-     * ID of the `StoreRecord` within the Cube that was used to construct this leaf row.
-     * Useful if you need to update this leaf's data via {@link Cube.updateDataAsync}.
+     * Source `StoreRecord` in the Cube, current as of the last applied update.
      */
-    readonly cubeRecordId: StoreRecordId;
+    cubeRecord: StoreRecord;
+
+    /**
+     * ID of the `StoreRecord` within the Cube that was used to construct this leaf row.
+     */
+    get cubeRecordId(): StoreRecordId {
+        return this.cubeRecord.id;
+    }
 
     override get isLeaf() {
         return true;
@@ -37,10 +43,11 @@ export abstract class LeafRow extends BaseRow {
 
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);
-        this.cubeRecordId = rawRecord.id;
+        this.cubeRecord = rawRecord;
     }
 
     applyLeafDataUpdate(newRec: StoreRecord, updatedRowDatas: Set<PlainObject>) {
+        this.cubeRecord = newRec;
         const {view, data} = this,
             newData = newRec.data,
             updates = [];
@@ -82,10 +89,10 @@ export class ExposedLeafRow extends LeafRow {
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id, rawRecord);
 
-        const data = (this.data = new ViewRowData(id));
+        const data = (this.data = view.newRowData(id));
         data.cubeRowType = 'leaf';
         data.cubeLabel = rawRecord.id.toString();
-        data.cubeDimension = null;
+        data.isCubeLeaf = true;
 
         view.fields.forEach(({name}) => {
             data[name] = rawRecord.data[name];
@@ -118,7 +125,7 @@ export class HiddenLeafRow extends LeafRow {
 
     // Never mutate shared record data. These leaves are not exposed on results, so their bucket
     // metadata would have no consumer anyway.
-    override noteBucketed() {}
+    override syncBuckets() {}
 
     protected override applyUpdatedData(updates: RowUpdate[], newData: PlainObject) {
         // Always swap reference to avoid retaining the old record. Never registered in
