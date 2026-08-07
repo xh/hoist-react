@@ -12,8 +12,8 @@ API fails on missing exports. To typecheck for real, uncomment the `paths` block
 
 **Status: phases 0-2 complete and verified; phase 3's store plumbing and the `PivotGridModel` rewire
 are in, and the component renders.** The data layer is correct against its reference suite (294
-Toolbox checks, 49 unit checks, both mutation-tested), rebased onto the `develop` that carries the
-Store rework, and clears every gate it still carries. Phase 2 is closed outright: `PivotDataModel` is
+Toolbox checks with one deliberately red, 49 unit checks, both mutation-tested), merged up to current
+`develop`, and clears every gate it still carries. Phase 2 is closed outright: `PivotDataModel` is
 retired.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
@@ -1077,6 +1077,24 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       `setColumns`-per-load and `new Field()`-per-update hot spots all went with the rewire. What is
       left is only the two independent
       [framework gaps](#framework-gaps-worth-fixing-on-their-own).
+- [ ] **Reevaluate digest handling and row reuse against the current `Store` / `View` / `Cube`, once
+      measured.** Those three moved underneath this work the whole time it was in flight, and most of
+      it arrives free through `PivotView extends View` — but three things want checking rather than
+      assuming:
+      - **Do cell rows get the reuse the changelog promises for group rows?** They live in the same
+        `_rowCache` and are validated by their children arrays, so they should; nothing has measured
+        it. Note `pruneCacheForQueryChange` wipes every non-leaf row on a query change, cells
+        included, while a filter-only change now retains everything.
+      - **`PivotView.loadUpdatedRows`' digest restamp.** Documented as dead-code insurance, it now has
+        a real cost if ever live: a bumped digest mints a new `StoreRecord` outright. Delete it or
+        justify it on measured numbers.
+      - **Whether `Store.setFields` should still retain records under `projectionOnly`.** Its stated
+        reason — the provider reloads immediately and reuse hinges on digests matching committed
+        records — no longer holds if the digests have moved anyway. If so, drop the branch and the
+        rationale together.
+
+      `canAggregateFn` is now evaluated only at row construction, which is the same purity constraint
+      `PivotView` already relies on to share one `canAggregate` map per pivot path.
 - [ ] **Re-measure build, tick and heap on a quiet machine — the gate for leaving phase 3.** Nothing
       since the phase 2 numbers has been measured, and two open questions are blocked on it:
       [fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells), which wants
@@ -1095,6 +1113,12 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       row summaries on either side, the floating value-summary row, `(empty)` rendering and sorting
       last, `includeLeaves` drill-down, and a new pivot value re-declaring fields and columns
       unaided. Summary invariants check by eye to display precision.
+- [ ] **One known-red check, deliberately left red:** `structural change: a projectionOnly store
+      retains its records`, at 0 of 1778 reused. Not a merge defect and not a correctness problem —
+      `RecordSet.areRecordsEqual` now treats any digest difference as inequality, by design, so a
+      bumped digest mints a new record even when every declared value is identical. The check asserts
+      instance identity, which is an implementation detail rather than an outcome; retarget or delete
+      it once the re-measure says whether the churn costs anything.
 
 ## Phase 4 — Wrap-up and packaging
 
@@ -1226,6 +1250,22 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-06 — Merged up to current `develop`.** Eight commits, all landing on the machinery this
+work sits on. One conflict in `BaseRow` and, more dangerously, one **silent** mis-merge: develop split
+`computeAggregates` into an initial compute plus `recomputeComplexAggregates`, and git auto-took
+develop's `view.fields` in the half it saw no conflict in. Left alone that puts every view field back
+on every pivot cell row — correct values, quietly wrong cost, and nothing would have failed. Both walk
+`aggFields` now, with develop's `!dependsOnChildrenOnly` gate composing with `RowCache`'s existing
+`simpleAggs` short-circuit.
+
+**One check is now deliberately red.** `RecordSet.areRecordsEqual` treats any digest difference as
+inequality by design, so a bumped digest mints a new `StoreRecord` even when every declared value is
+identical — and the pivot store therefore rebuilds ~every record on a structural change. Isolated by
+reverting that one file, which turns the suite green. Not a correctness issue: selection and expand
+state key off ids, and the tick path is untouched. Left red rather than retargeted, because adapting an
+assertion to match new behavior is how a real regression gets buried. Its resolution is folded into the
+re-measure, along with a wider audit of what to adopt from the parallel `Store` / `View` / `Cube` work.
 
 **2026-08-06 — Scope split for the run-in.** No implementation. Persistence came off phase 3 after
 walking the machinery: nothing on `PivotGridModel` is user state, so it needs no `persistWith` — but
