@@ -77,7 +77,7 @@ const tbar = hoistCmp.factory<RestFormModel>(({model}) => {
         filler(),
         button({
             text: 'Close',
-            onClick: () => model.close()
+            onClick: () => model.confirmClose()
         }),
         button({
             text: 'Revert',

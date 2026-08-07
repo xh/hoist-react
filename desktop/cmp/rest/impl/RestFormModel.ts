@@ -80,6 +80,18 @@ export class RestFormModel extends HoistModel {
         XH.safeDestroy(this.formModel);
     }
 
+    confirmClose() {
+        if (!this.formModel.isDirty) {
+            this.close();
+            return;
+        }
+
+        XH.confirm({
+            message: 'You have unsaved changes. Are you sure you want to proceed?',
+            onConfirm: () => this.close()
+        });
+    }
+
     @action
     openAdd() {
         this.readonly = false;
