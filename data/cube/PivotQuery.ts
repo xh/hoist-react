@@ -7,7 +7,7 @@
 
 import {appendFilter, FilterLike, parseFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find, isEmpty, isEqual, isString} from 'lodash';
+import {compact, find, isEmpty, isEqual, isString, uniq} from 'lodash';
 import {CubeField} from './CubeField';
 import {Query, QueryConfig} from './Query';
 
@@ -28,8 +28,22 @@ export interface PivotQueryConfig extends QueryConfig {
      */
     pivotDimensions?: string[] | CubeField[];
 
-    /** Measures to aggregate per cell. Must be aggregatable members of `fields`. */
+    /**
+     * Measures to aggregate per cell. Must specify an aggregator, and must not also be a grouping
+     * `dimension`. Derived into `fields` along with their `dependsOn` - see `fields`.
+     */
     valueFields: string[] | CubeField[];
+
+    /**
+     * *Additional* fields or field names to aggregate, beyond the derived baseline.
+     *
+     * Unlike {@link QueryConfig.fields}, leaving this unspecified does *not* pull in all
+     * {@link Cube.fields}: `dimensions`, `pivotDimensions`, `valueFields`, and the `dependsOn` of
+     * those value fields are always derived in, and are all a pivot needs. Each extra aggregatable
+     * field named here is aggregated on every row of the hierarchy, so name only what the UI will
+     * actually show. Pass `cube.fields` for the plain-Query behavior.
+     */
+    fields?: string[] | CubeField[];
 
     /** Label for a null / blank pivot dimension value. Default '(empty)'. */
     emptyPathLabel?: string;
@@ -59,12 +73,18 @@ export class PivotQuery extends Query {
     readonly excludeEmptyPivotValues: boolean;
     readonly maxPivotPaths: number;
 
-    /** Pre-augmentation filter, so `clone` re-augments from it rather than compounding. */
+    /** Pre-augmentation config, so `clone` re-augments from these rather than compounding. */
+    private readonly _rawFields: string[] | CubeField[];
     private readonly _rawFilter: FilterLike;
 
     constructor(config: PivotQueryConfig) {
-        super({...config, filter: PivotQuery.augmentFilter(config)});
+        super({
+            ...config,
+            fields: PivotQuery.augmentFields(config),
+            filter: PivotQuery.augmentFilter(config)
+        });
 
+        this._rawFields = config.fields;
         this._rawFilter = config.filter;
 
         const {
@@ -111,7 +131,10 @@ export class PivotQuery extends Query {
             emptyPathLabel: this.emptyPathLabel,
             excludeEmptyPivotValues: this.excludeEmptyPivotValues,
             maxPivotPaths: this.maxPivotPaths,
-            // Before `overrides`, so an explicit filter still wins - super already applied them.
+            // Raw, not derived: re-deriving from `this.fields` would strand the fields of value
+            // fields an override is *replacing*, so a measure picker would accumulate dead
+            // aggregations. Before `overrides`, so explicit values still win - super applied them.
+            fields: this._rawFields,
             filter: this._rawFilter,
             ...overrides
         };
@@ -148,16 +171,11 @@ export class PivotQuery extends Query {
     }
 
     private validate() {
-        const {fields, dimensions, pivotDimensions, valueFields} = this,
-            fieldNames = fields.map(it => it.name),
+        const {dimensions, pivotDimensions, valueFields} = this,
             dimNames = (dimensions ?? []).map(it => it.name);
 
         valueFields.forEach(field => {
             const {name} = field;
-            throwIf(
-                !fieldNames.includes(name),
-                `Value field '${name}' must be included in the query's \`fields\`.`
-            );
             throwIf(!field.aggregator, `Value field '${name}' must specify an aggregator.`);
             // The root path's cell field *is* the bare value field name, so its projection would
             // overwrite the group label a grouping dimension puts in that same slot.
@@ -184,6 +202,30 @@ export class PivotQuery extends Query {
     }
 
     /**
+     * Derive the query's full field set - the caller's `fields` plus the pivot dimensions, the value
+     * fields, and each value field's `dependsOn`. `Query` folds in `dimensions` on top of this.
+     *
+     * Note this deliberately does *not* fall back to all `cube.fields` when `fields` is unspecified,
+     * as {@link Query} does - see {@link PivotQueryConfig.fields}.
+     *
+     * Resolved to CubeFields, not names: `Query.parseFields` passes a CubeField[] straight through
+     * but re-orders a string[] into Cube field order, which would make the re-augmented `clone`
+     * config unequal to its source and defeat `View.updateQuery`'s no-op check. Unknown names are
+     * dropped as they are by `parseFields` - `parseValueFields` and `parsePivotDimensions` raise
+     * the targeted error.
+     */
+    private static augmentFields(config: PivotQueryConfig): CubeField[] {
+        const {cube, fields, pivotDimensions, valueFields} = config,
+            names = [...fieldNames(fields), ...fieldNames(pivotDimensions)];
+
+        fieldNames(valueFields).forEach(name => {
+            names.push(name, ...(cube.getField(name)?.dependsOn ?? []));
+        });
+
+        return compact(uniq(names).map(name => cube.getField(name)));
+    }
+
+    /**
      * Fold `excludeEmptyPivotValues` into the query filter, so exclusion is a real filter.
      *
      * FieldFilters rather than a testFn: `FunctionFilter.equals` compares its `testFn` by reference,
@@ -194,12 +236,19 @@ export class PivotQuery extends Query {
         const {filter, excludeEmptyPivotValues, pivotDimensions} = config;
         if (!excludeEmptyPivotValues || isEmpty(pivotDimensions)) return filter;
 
-        const excludes = (pivotDimensions as any[]).map(it => ({
-            field: isString(it) ? it : it.name,
+        const excludes = fieldNames(pivotDimensions).map(field => ({
+            field,
             op: '!=' as const,
             value: [null]
         }));
 
         return appendFilter(parseFilter(filter), ...excludes);
     }
+}
+
+//------------------------
+// Implementation
+//------------------------
+function fieldNames(raw: string[] | CubeField[]): string[] {
+    return (raw ?? []).map((it: string | CubeField) => (isString(it) ? it : it.name));
 }

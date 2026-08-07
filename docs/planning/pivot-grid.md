@@ -255,7 +255,7 @@ interface PivotQueryConfig extends QueryConfig {
     /** Pivot dimensions, outermost first. Empty to degenerate to a plain View. */
     pivotDimensions?: string[] | CubeField[];
 
-    /** Measures to aggregate per cell. Must be aggregatable members of `fields`. */
+    /** Measures to aggregate per cell. Must be aggregatable. */
     valueFields: string[] | CubeField[];
 
     /** Label for a null / blank pivot dimension value. Default '(empty)'. */
@@ -275,9 +275,32 @@ exposes `pivotDimensions: CubeField[]` alongside `dimensions: CubeField[]` and `
 CubeField[]`. `equalsExcludingFilter` and `clone` are extended to cover the new members, so
 `updateQuery` detects pivot changes and rebuilds (clearing the row cache) correctly.
 
-Validation at construction: every `valueFields` entry must be present in `fields`, carry an
-aggregator, and not be a dimension; `pivotDimensions` entries must be dimensions; `pivotDimensions`
-and `dimensions` must not overlap.
+`fields` is derived and purely additive, and this is the one place `PivotQueryConfig` deliberately
+breaks from `QueryConfig`. `dimensions`, `pivotDimensions`, `valueFields`, and the `dependsOn` of
+those value fields are unioned in at construction; an unspecified `fields` therefore yields *that
+baseline only*, not all `Cube.fields`. Two reasons the inherited all-fields default is wrong here:
+
+- Deriving is the only way to be correct. `PivotView.cellAggFields` draws solely on declared
+  `fields`, so a query narrowing them would otherwise silently lose a value field's dependencies and
+  aggregate wrong numbers with no error.
+- Deriving-only is the only sane default. Every aggregatable field in `fields` is aggregated on every
+  row of the hierarchy (`BaseRow.initAggregate` defaults `aggFields` to `view.fields`), so
+  inheriting all `Cube.fields` silently pays for measures the pivot will never display. Apps wanting
+  the plain-Query behavior pass `cube.fields` explicitly.
+
+Two constraints on the derivation, both easy to regress:
+
+- It resolves to `CubeField`s rather than names, so that `clone` re-deriving from its own output
+  lands on an identical array. Names would be re-ordered into Cube field order by
+  `Query.parseFields` (which passes a `CubeField[]` through untouched), breaking
+  `equalsExcludingFilter` and with it `updateQuery`'s no-op check.
+- `cloneConfig` passes the *raw* pre-derivation `fields`, as it already does for `filter`. Re-deriving
+  from `this.fields` would strand the fields of value fields an override is replacing, so a UI
+  measure picker would accumulate dead aggregations with every change.
+
+Validation at construction: every `valueFields` entry must carry an aggregator and not be a
+dimension; `pivotDimensions` entries must be dimensions; `pivotDimensions` and `dimensions` must not
+overlap.
 
 ### Result shape
 
