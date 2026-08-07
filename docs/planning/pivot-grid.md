@@ -792,45 +792,54 @@ plausibly explains.
 
 Captured 2026-08-07 via Admin › Tests › **Pivot Perf**, in a Brave instance launched with
 `--enable-precise-memory-info --js-flags=--expose-gc`, tab foreground throughout (every row carries a
-`visibleThroughout` tripwire and all passed). One baseline swept along each axis independently; every
-config measured twice, data layer alone and with a `PivotGridModel` bound. 100k leaves unless noted.
+`visibleThroughout` tripwire; all passed). One baseline swept along each axis independently; every
+config measured twice, data layer alone and with a **mounted** grid. 100k leaves unless noted.
 
-| Config                            | Cube ms | View ms | Grid ms | tick 5% | tick 50% | Heap view | Heap +grid |
-| --------------------------------- | ------: | ------: | ------: | ------: | -------: | --------: | ---------: |
-| **Baseline** 3 grp / 2 piv / 1 val |      94 |     416 |       9 |      60 |      292 |    42.4MB |      1.0MB |
-| **Plain View control**, 25 fields  |     249 |     270 |       5 |      59 |      320 |    16.1MB |      0.9MB |
-| 1 pivot dim (5 cell fields)        |      93 |     247 |       6 |      46 |      220 |    19.0MB |      1.0MB |
-| 3 pivot dims (101 cell fields)     |     103 |     654 |       8 |      68 |      378 |    78.2MB |      1.1MB |
-| 3 value fields (87 cell fields)    |      97 |     403 |       8 |      58 |      294 |    47.2MB |      1.1MB |
-| 2 group dims (313 rows)            |      98 |     220 |       3 |      45 |      215 |    15.8MB |      0.2MB |
-| 4 group dims, drill (104k rows)    |      97 |   1,360 |      67 |      89 |      469 |   159.4MB |     20.7MB |
-| 25k leaves                         |      24 |     139 |       7 |      11 |       54 |    20.5MB |      1.0MB |
-| 250k leaves                        |     253 |     880 |       7 |     133 |      748 |    70.4MB |      1.1MB |
+**Read the `grid` mode as data layer *plus* grid, not grid alone.** `Mount` is ag-Grid instantiation
+through first paint; the tick and structural columns in grid mode include ag-Grid's transaction,
+applied synchronously by `Grid.dataReaction` before the update resolves.
 
-**The grid layer is free.** 3-9ms to build, `setColumns` 0.1-1.2ms, ~1MB heap, against a 400-900ms
-data layer. A structural change costs it 12-34ms end to end — record rebuild, column rebuild and store
-load together, ~6% of the operation. Only leaf drill-down is visible at all (67ms, 20.7MB for 104k
-rows). This was the never-measured layer and it turns out not to matter, which is what retires the
-digest-churn concern.
+| Config                            | Cube | View | Model | **Mount** | tick 5% (data → grid) | tick 50% (data → grid) | New pivot val (data → grid) | View heap |
+| --------------------------------- | ---: | ---: | ----: | --------: | --------------------: | ---------------------: | --------------------------: | --------: |
+| **Baseline** 3 grp / 2 piv / 1 val |   92 |  427 |     9 |       117 |          57.9 → 83.5  |          284 → 331     |                  360 → 442  |    42.0MB |
+| **Plain View control**, 25 fields  |  262 |  227 |     5 |        60 |          52.4 → 79.7  |          321 → 342     |                       — → — |    13.9MB |
+| 1 pivot dim (5 cell fields)        |   91 |  176 |     7 |        69 |          42.5 → 70.8  |          219 → 236     |                  202 → 244  |    15.4MB |
+| 3 pivot dims (101 cell fields)     |   98 |  580 |     8 |       212 |          68.4 → 108.5 |          392 → 420     |                  472 → 685  |    74.7MB |
+| 3 value fields (87 cell fields)    |   90 |  336 |     7 |       220 |          55.8 → 86.8  |          319 → 330     |                  321 → 481  |    37.8MB |
+| 2 group dims (313 rows)            |   92 |  197 |     4 |        88 |          40.5 → 51.0  |          218 → 241     |                  206 → 255  |    13.3MB |
+| 4 group dims, drill (104k rows)    |   94 | 1310 |    71 |   **582** |          70.4 → 348.2 |          411 → 909     |                 753 → 1455  |   137.3MB |
+| 25k leaves                         |   23 |  137 |     6 |       115 |          11.1 → 31.4  |           52 → 81      |                  107 → 176  |    16.3MB |
+| 250k leaves                        |  245 | 1041 |     6 |       123 |         135.5 → 184.4 |          771 → 820     |                  748 → 830  |    66.1MB |
 
-**Pivoting costs about what a wide plain grid costs.** Total build 510ms against the control's 519ms,
-and ticks are indistinguishable (60.4 vs 58.8 at 5%). The split differs — pivot pays less to parse
-(94 vs 249, far fewer query fields) and more to aggregate (416 vs 270). Heap is the real premium:
-60.6MB against 40MB, ~1.5×.
+**Mounting is the expensive part of the grid layer, and it is not optional.** Model construction
+(Store records + `Column` objects) is 4-9ms; *mounting* is 60-582ms. `setColumns` really is cheap at
+0.2-1.2ms even over 74 columns — that one holds.
 
-**Value fields are cheap; pivot dimensions are not.** 1 → 3 value fields tripled cell fields (29 → 87)
-for *no* build cost (416 → 403ms) and +11% heap. 1 → 3 pivot dimensions cost 2.6× build and 4× heap.
-Cells per row are nearly free; cell *rows* are what scale — exactly what the
-[cost model](#cost-model) predicts, now measured rather than argued.
+**A mounted grid multiplies tick cost by 1.4-5x.** Baseline 57.9 → 83.5ms; drill-down 70.4 → 348.2ms.
+The multiplier tracks row count, not cell count: the 3-pivot config (101 cell fields, 4,213 rows) only
+pays 1.6x, while drill-down (29 cell fields, 104k rows) pays 4.9x. Consistent with phase 0, which saw
+mounting roughly double Typical's tick.
 
-**No regression against phase 2.** The 1-pivot-dim config scales to ~120ms at 35k leaves against the
-115ms recorded then.
+**Pivoting still costs about what a wide plain grid costs.** Total build 519ms vs the control's 489ms;
+mounted ticks 83.5 vs 79.7ms at 5%. The split differs — pivot parses less (92 vs 262, far fewer query
+fields) and aggregates more (427 vs 227).
 
-Two caveats. The machine was not fully quiet — a webpack dev server and this tooling were running — so
-treat these as relative, not absolute. And the structural transitions are expensive in absolute terms
-(group-dim change 190ms, pivot-dim change 205ms, filter 265ms, new pivot value 347ms at baseline); a
-filter-only change retains the whole row cache but still re-walks every record, so it is cheaper than a
-full build by only ~36%.
+**Value fields are cheap in the data layer, not in the grid.** 1 → 3 value fields costs nothing to
+build (427 → 336ms) and +7MB heap, but mount goes 117 → 220ms and a new pivot value 442 → 481ms,
+because each value field multiplies *columns*. Pivot dimensions remain the expensive axis in both
+layers.
+
+**Grid heap is unmeasured, and the harness says so.** The `+Grid` deltas come out negative on 7 of 10
+configs (down to -202MB), which is not a result — sampling after the mount collects transient garbage
+the post-view sample still held, so the two are not differenceable. Only the *view* heap column above
+is trustworthy. Isolating grid heap needs separate mounted and unmounted runs compared on total heap,
+not a delta within one run.
+
+Two further caveats. The machine was not quiet — dev server and tooling running — so treat these as
+relative. And structural transitions are expensive in absolute terms even before the grid: group-dim
+change 191ms, pivot-dim change 212ms, filter 261ms, new pivot value 360ms at baseline. A filter-only
+change retains the whole row cache but still re-walks every record, so it beats a full build by only
+about a third.
 
 ## Rebase onto the Store rework (`store-simple`)
 
@@ -914,13 +923,16 @@ which is defensible if `maxPivotPaths` keeps path counts genuinely low; or revis
 `Column.getValueFn` and keep cells on cell rows, already recorded as rejected but explicitly
 revisitable "if heap becomes the binding constraint".
 
-**Resolved 2026-08-07 in favour of the incumbent sparse-cell model.** The
-[matrix](#result--the-phase-3-matrix) leaves templating nothing to beat: the grid layer costs ~1MB of
-heap and 3-9ms to build, so dictionary-mode row data is not showing up as a cost worth the dense
-memory templating would spend — on Wide that is 31,637 × 138 slots. Heap does scale with cell *rows*
-(19 → 42 → 78MB across 1 → 2 → 3 pivot dimensions), which is the axis to attack if heap ever binds,
-and templating makes that axis worse rather than better. Revisit only if a profile appears where row
-shape is measurably the constraint.
+**Resolved 2026-08-07 against templating, on the view-heap argument alone.** *View* heap scales
+squarely with cell rows — 15.4 → 42.0 → 74.7MB across 1 → 2 → 3 pivot dimensions
+([matrix](#result--the-phase-3-matrix)) — and templating cell fields makes exactly that axis worse,
+since every group row would carry every cell slot: on Wide, 31,637 × 138. Nothing in the measured
+build times suggests dictionary-mode row data is costing enough to buy that back.
+
+**What this does *not* rest on:** an A/B of templating itself, which was never run. The claim is that
+templating is unattractive, not that dictionary mode is free. If it is ever revisited, the honest test
+is implementing the template and comparing build and view heap directly — the same trap as the
+earlier grid measurement, where a plausible number turned out to be measuring the wrong thing.
 
 ## Grid integration design
 
@@ -1126,10 +1138,16 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       left is only the two independent
       [framework gaps](#framework-gaps-worth-fixing-on-their-own).
 - [x] **Reevaluate digest handling and row reuse against the current `Store` / `View` / `Cube`, once
-      measured.** Done, and both guards went - see
-      [Result: the phase 3 matrix](#result--the-phase-3-matrix). Cell-row reuse is inherited and
-      needs nothing; the `loadUpdatedRows` restamp and `Store.setFields`' record retention were both
-      justified by reasoning the numbers contradict, so both are deleted.
+      measured.** Done; both guards went. The load-bearing reason is *observational, not
+      performance*: `Store.setFields`' retention preserved **0 of 1778** records across a structural
+      change, because a bumped digest mints a new record regardless — so the branch never did
+      anything. Likewise `loadUpdatedRows`' restamp was already dead, every owner being stamped by
+      `applyDataUpdate` before it ran. Cell-row reuse is inherited from `View` and needs nothing.
+
+      **Do not re-derive this from "the grid layer is cheap" — that was measured wrong.** With a
+      mounted grid a structural change costs the grid layer +82ms at baseline and +702ms on
+      drill-down, so record churn is not obviously negligible. It is simply not what these two guards
+      were affecting.
 
       Original notes, kept for the reasoning: Those three moved underneath this work the whole time it was in flight, and most of
       it arrives free through `PivotView extends View` — but three things want checking rather than
@@ -1312,26 +1330,39 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 
 One entry per working session: date, what landed, where to pick up.
 
-**2026-08-07 — Measured, and phase 3 closed.** Full matrix in
+**2026-08-07 — Measured, corrected, and phase 3 closed.** Full matrix in
 [Result](#result--the-phase-3-matrix), captured with the heap instrument actually validated first -
 `gc()` present, the same allocation reporting 21.74MB twice running and reclaiming exactly that. Worth
 insisting on: before the flags, that identical allocation reported +17.9MB once and -0.21MB the next
 time, so any heap number taken then would have been fiction.
 
-**The grid layer turned out to be free** - 3-9ms and ~1MB against a 400-900ms data layer - which
-settles three things at once. The [fixed-shape decision](#open-decision-fixed-shape-rows-vs-sparse-cells)
-resolves for the incumbent sparse model, since templating would spend dense memory to fix a cost that
-does not appear. `Store.setFields`' record retention and `PivotView.loadUpdatedRows`' digest restamp
-both go, their rationales contradicted by measurement. And the red record-identity check goes with
-them - it asserted an implementation detail the framework deliberately stopped guaranteeing.
+**The first run of this matrix measured the grid layer wrong, and reported it as free.** The harness
+built `PivotGridModel` / `GridModel` but never rendered them, and ag-Grid does not exist until a
+`grid()` component mounts - so "3-9ms and ~1MB" was model construction with zero ag-Grid work in it.
+The tell was there and I missed it: phase 0 had already recorded that mounting roughly doubles
+Typical's tick, which a "free" grid layer flatly contradicts. Caught on review, harness fixed to mount
+the grid under test, matrix re-run. Corrected numbers in [Result](#result--the-phase-3-matrix): mount
+is 60-582ms and a mounted grid multiplies tick cost by 1.4-5x.
+
+The lesson generalises past this instance, and it is the same one the 2026-08-05 benchmark taught:
+**a number that contradicts a recorded finding is a bug in the measurement until proven otherwise.**
+
+What survives the correction: `Store.setFields`' record retention and `PivotView.loadUpdatedRows`'
+digest restamp both still go, but on the observation that neither ever did anything - retention
+preserved 0 of 1778 records - not on the grid being cheap. The red record-identity check goes with
+them. The [fixed-shape decision](#open-decision-fixed-shape-rows-vs-sparse-cells) still resolves
+against templating, but on *view* heap, which the bug did not touch.
 
 The finding worth carrying: **cells per row are nearly free, cell rows are what scale.** Tripling value
 fields cost nothing; tripling pivot dimensions cost 2.6x build and 4x heap. That is the
 [cost model](#cost-model) measured rather than argued, and it is the axis to attack if heap ever binds.
 
-Two process notes. Editing either repo's source while a run is in flight triggers HMR and silently
-aborts it - the first matrix run died that way. And the harness now records `visibleThroughout` per
-row, because a hidden tab inflates figures without failing.
+Three process notes. Editing either repo's source while a run is in flight triggers HMR and silently
+aborts it - the first matrix run died that way. The harness records `visibleThroughout` per row,
+because a hidden tab inflates figures without failing. And **grid heap is still unmeasured**: the
+`+Grid` deltas come out negative on 7 of 10 configs, since sampling after the mount collects transient
+garbage the post-view sample still held. Isolating it needs mounted and unmounted runs compared on
+total heap, not a delta within one run.
 
 **2026-08-06 — Merged up to current `develop`.** Eight commits, all landing on the machinery this
 work sits on. One conflict in `BaseRow` and, more dangerously, one **silent** mis-merge: develop split
