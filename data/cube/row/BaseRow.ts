@@ -10,7 +10,7 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {compact, isEmpty} from 'lodash';
 import {View} from '../View';
-import {RowUpdate} from './RowUpdate';
+import type {ParentRow} from './ParentRow';
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
@@ -24,10 +24,8 @@ export abstract class BaseRow {
     // readonly, but set by subclasses. A full ViewRowData for all rows except hidden leaves,
     // which adopt their cube record's plain data object - see LeafRow and subclasses.
     data: PlainObject;
-    parent: BaseRow = null;
+    parent: ParentRow = null;
     children: BaseRow[] = null;
-    locked: boolean = false;
-    canAggregate: PlainObject;
 
     get isLeaf() {
         return false;
@@ -113,9 +111,9 @@ export abstract class BaseRow {
             return null;
         }
 
-        // Skip all children in a locked node
+        // Skip all children in a locked node - only parent rows can get this far.
         if (query.lockFn?.(this as any)) {
-            this.locked = true;
+            (this as unknown as ParentRow).locked = true;
             return null;
         }
 
@@ -138,91 +136,5 @@ export abstract class BaseRow {
             childDim.parentDimension === parentDim.name &&
             child.data[childDim.name] === parent.data[parentDim.name]
         );
-    }
-
-    //-----------------------------------
-    // Called by aggregates and buckets
-    //----------------------------------
-    protected initAggregate(
-        children: BaseRow[],
-        dimOrBucketName: string,
-        val: any,
-        appliedDimensions: PlainObject
-    ) {
-        const {view, data} = this;
-
-        this.children = children;
-        children.forEach(it => (it.parent = this));
-
-        Object.assign(data, appliedDimensions);
-
-        // Clone the per-View template (all fields false) for fixed shape, then overwrite..
-        const canAggregate = (this.canAggregate = {...view._canAggregateTemplate}),
-            ctx = view._aggContext;
-        view.fields.forEach(field => {
-            const {name} = field;
-            if (!appliedDimensions.hasOwnProperty(name)) {
-                const {aggregator, canAggregateFn} = field;
-                canAggregate[name] =
-                    aggregator &&
-                    (!canAggregateFn ||
-                        canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
-            }
-        });
-
-        this.computeAggregates();
-    }
-
-    applyDataUpdate(childUpdates: RowUpdate[], updatedRowDatas: Set<PlainObject>) {
-        const {parent, canAggregate, data, children} = this,
-            ctx = this.view._aggContext,
-            myUpdates = [];
-        childUpdates.forEach(update => {
-            const {field} = update,
-                {name} = field;
-            if (canAggregate[name]) {
-                const oldValue = data[name],
-                    newValue = field.aggregator.replace(children, oldValue, update, ctx);
-                update.oldValue = oldValue;
-                update.newValue = newValue;
-                myUpdates.push(update);
-                data[name] = newValue;
-            }
-        });
-
-        if (!isEmpty(myUpdates)) {
-            updatedRowDatas.add(this.data);
-            if (parent) parent.applyDataUpdate(myUpdates, updatedRowDatas);
-        }
-    }
-
-    /**
-     * Compute aggregated values in place for all eligible fields.
-     */
-    computeAggregates() {
-        const {children, canAggregate, view, data} = this,
-            ctx = view._aggContext;
-        view.fields.forEach(({aggregator, name}) => {
-            if (canAggregate[name]) {
-                data[name] = aggregator.aggregate(children, name, ctx);
-            }
-        });
-    }
-
-    /** Recompute complex-aggregator fields on a reused row, returning true if any changed. */
-    recomputeComplexAggregates(): boolean {
-        const {children, canAggregate, view, data} = this,
-            ctx = view._aggContext;
-        let changed = false;
-        view.fields.forEach(({aggregator, name}) => {
-            if (canAggregate[name] && !aggregator.dependsOnChildrenOnly) {
-                const val = aggregator.aggregate(children, name, ctx);
-                if (data[name] !== val) {
-                    data[name] = val;
-                    changed = true;
-                }
-            }
-        });
-        return changed;
     }
 }

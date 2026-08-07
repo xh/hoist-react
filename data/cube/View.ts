@@ -27,10 +27,9 @@ import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isEqual, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
-import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
-import {BucketRow} from './row/BucketRow';
 import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
+import {AggregateRow, BucketRow} from './row/ParentRow';
 
 /**
  * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally
@@ -144,7 +143,8 @@ export class View
     private _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     private _rowDigest = 0;
-    _canAggregateTemplate: PlainObject = null;
+    _canAggregateFnFields: CubeField[] = null;
+    _complexAggFields: CubeField[] = null;
     _aggContext: AggregationContext = null;
     _rowCache: RowCache = null;
 
@@ -338,15 +338,19 @@ export class View
             cubeRowDigest: null,
             _cubeLeafChildren: null
         };
-        const canAggregate: PlainObject = {};
-        this.fields.forEach(({name}) => {
+        const canAggregateFnFields: CubeField[] = [],
+            complexAggFields: CubeField[] = [];
+        this.fields.forEach(field => {
+            const {name, aggregator, canAggregateFn} = field;
             rowData[name] = null;
-            canAggregate[name] = false;
+            if (aggregator && canAggregateFn) canAggregateFnFields.push(field);
+            if (aggregator && !aggregator.dependsOnChildrenOnly) complexAggFields.push(field);
         });
 
         // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
         this._rowDataTemplate = {...rowData} as ViewRowData;
-        this._canAggregateTemplate = {...canAggregate};
+        this._canAggregateFnFields = canAggregateFnFields;
+        this._complexAggFields = complexAggFields;
     }
 
     // Selectively invalidate cached rows on a query change.
@@ -445,7 +449,7 @@ export class View
                 rowCache.getOrCreate(
                     rootId,
                     newRows,
-                    () => new AggregateRow(this, rootId, newRows, null, 'Total', 'Total', {})
+                    () => new AggregateRow(this, rootId, newRows, null, 'Total', {})
                 )
             ];
         } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
@@ -497,26 +501,25 @@ export class View
             dimName = dim.name,
             groups = groupBy(records, it => it.data[dimName]);
 
-        appliedDimensions = {...appliedDimensions};
         return map(groups, (groupRecords, strVal) => {
             const val = groupRecords[0].data[dimName],
-                id = rootId + `${dimName}=[${strVal}]`;
-
-            appliedDimensions[dimName] = val;
+                id = rootId + `${dimName}=[${strVal}]`,
+                // Fresh object per group - rows retain it to re-derive `canAggregate`.
+                groupDimensions = {...appliedDimensions, [dimName]: val};
 
             let children = this.groupAndInsertRecords(
                 groupRecords,
                 dimensions.slice(1),
                 id,
-                appliedDimensions,
+                groupDimensions,
                 leafMap
             );
-            children = this.bucketRows(children, id, appliedDimensions);
+            children = this.bucketRows(children, id, groupDimensions);
 
             return this._rowCache.getOrCreate(
                 id,
                 children,
-                () => new AggregateRow(this, id, children, dim, val, strVal, appliedDimensions)
+                () => new AggregateRow(this, id, children, dim, strVal, groupDimensions)
             );
         });
     }
@@ -640,7 +643,7 @@ export class View
      * @internal
      */
     get aggregatorsAreSimple() {
-        return this.fields.every(({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly);
+        return isEmpty(this._complexAggFields);
     }
 
     private parseStores(stores: Some<Store>): Store[] {
