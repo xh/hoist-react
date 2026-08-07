@@ -14,6 +14,11 @@
     * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* Leaf rows published by Cube `View`s now use their source cube record's id as their row/record
+  id, rather than a generated id encoding the row's full dimension path. Review any code that
+  parses leaf row ids - aggregate and bucket row ids are unchanged. `Store.idEncodesTreePath` may
+  no longer be configured on a connected store -- it is now supplanted by more effective
+  performance optimzations.
 * New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
   important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
   `getCubeLeaves(row)`.
@@ -67,13 +72,13 @@
       `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted
       digests are exposed as `StoreRecord.digest`. Stores connected to a Cube `View` get a
       suitable digest installed automatically.
-    * Enhanced Cube `View`s to reuse their generated rows across data updates and reloads.
-      Unchanged rows - validated against their source records and child rows - retain their data
-      objects and reuse digests, skipping re-aggregation for untouched subtrees and record
-      rebuilds in connected stores. Update costs
-      now scale with the size of the change rather than the size of the dataset. Views with
-      complex (non-`dependsOnChildrenOnly`) aggregators also reuse their rows, re-deriving all
-      aggregations in place each generation and republishing only values that actually changed.
+    * Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, and
+      regrouping/filtering. Unchanged rows - validated against their source records and child
+      rows - retain their data objects and reuse digests, skipping re-aggregation for untouched
+      subtrees and record rebuilds in connected stores. Update costs now scale with the size of
+      the change rather than the size of the dataset. Complex (non-`dependsOnChildrenOnly`)
+      aggregators also reuse their rows, re-deriving all aggregations in place each generation
+      and republishing only values that actually changed.
     * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store - lets a
       source supplying per-row digests preserve record identity across full `Cube.loadDataAsync()`
       reloads, extending View row reuse to wholesale refreshes.

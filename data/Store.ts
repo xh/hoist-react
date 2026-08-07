@@ -55,12 +55,12 @@ import {RecordSet} from './impl/RecordSet';
  *
  * The cutoff tracks V8's dictionary-mode demotion: objects built by keyed property adds are
  * demoted to a memory-hungry per-object hashtable at ~20 adds, as measured empirically - an
- * undocumented heuristic, so this sits comfortably below it, leaving room for the `id` property
+ * undocumented heuristic, so this sits just below it, leaving room for the `id` property
  * later added to every record's data. Overridable via `experimental.denseRecordThreshold` - set
  * to e.g. 999 (above any field count) to force the sparse form for all records (the pre-v87
  * behavior), or to 1 to force the fixed shape for all.
  */
-const DENSE_RECORD_THRESHOLD = 17;
+const DENSE_RECORD_THRESHOLD = 20;
 
 /**
  * Digest identifying a version of a raw data record for `StoreConfig.reuseRecords` - a primitive
@@ -173,7 +173,9 @@ export interface StoreConfig {
      *     A null/undefined digest never matches.
      *
      * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged digest
-     * is dropped from the transaction as a no-op.
+     * is dropped from the transaction as a no-op, intentionally preserving any uncommitted local
+     * modifications on the record. An update with a changed digest builds a new record and
+     * overwrites local modifications, as updates otherwise always do.
      *
      * Stores connected to a Cube {@link View} must leave this config unset - the View manages
      * reuse automatically, installing a digest that reads the stamp it maintains on every row
@@ -201,7 +203,9 @@ export interface StoreConfig {
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
      * Recommended for stores connected to a Cube {@link View} for improved performance, when no
-     * additional record parsing or local data modification is required. Default false.
+     * additional record parsing or local data modification is required. Default null - a View
+     * logs a warning when its connected stores leave this unset. Set explicitly to `false` to
+     * opt out and silence the warning.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -396,9 +400,14 @@ export class Store
     private _denseRecordThreshold: number;
     private _digestFn: (raw: PlainObject) => RecordDigest;
 
+    // Last parent pair verified position-equal by positionUnchanged().
+    private _verifiedCachedParent: StoreRecord = null;
+    private _verifiedNewParent: StoreRecord = null;
+
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
-    // within a single call to avoid allocation during parsing. See buildData().
+    // within a single call to avoid allocation during parsing. See buildData(). Not reentrant -
+    // an app-supplied `Field.parseVal` must not trigger record builds on this same Store.
     private _recordBuildData = {names: [] as string[], vals: [] as any[], n: 0};
 
     _created = Date.now();
@@ -419,7 +428,7 @@ export class Store
         idEncodesTreePath = false,
         reuseRecords = null,
         retainRaw = true,
-        projectionOnly = false,
+        projectionOnly = null,
         validationIsComplex = false,
         experimental,
         data
@@ -1366,9 +1375,24 @@ export class Store
         const cached = this._committed?.recordMap.get(id);
         return cached &&
             (refMode ? cached.raw === raw : cached.digest === digest) &&
-            (this.idEncodesTreePath || equal(cached.parent?.treePath, parent?.treePath))
+            this.positionUnchanged(cached.parent, parent)
             ? cached
             : null;
+    }
+
+    // True if a record cached under `cachedParent` sits at the same tree position under `parent`.
+    // Siblings repeat the identical comparison - memoize the last verified pair, valid forever
+    // since treePaths are fixed at construction. Mirrors RecordSet.positionUnchanged.
+    private positionUnchanged(cachedParent: StoreRecord, parent: StoreRecord): boolean {
+        if (this.idEncodesTreePath) return true;
+        if (cachedParent === parent) return true;
+        if (cachedParent === this._verifiedCachedParent && parent === this._verifiedNewParent) {
+            return true;
+        }
+        if (!equal(cachedParent?.treePath, parent?.treePath)) return false;
+        this._verifiedCachedParent = cachedParent;
+        this._verifiedNewParent = parent;
+        return true;
     }
 
     private createRecords(
