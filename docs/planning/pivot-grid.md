@@ -1176,7 +1176,10 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
 
 ## Phase 4 — Wrap-up and packaging
 
-- [ ] Toolbox example page.
+- [x] Toolbox example page — Grids › **Pivot Grid**, alongside Zone Grid. Real portfolio data via
+      `getPricedRawPositionsAsync`, grouped by fund/trader and pivoted on region/sector. Demonstrates
+      the ownership split: the page owns the `Cube` and `PivotView` and reconfigures through
+      `view.updateQuery()`, never through the grid model.
 - [ ] **Decide day-1 vs follow-up for everything under
       [Extras and Nice-to-Haves](#extras-and-nice-to-haves).** This is the phase's real work, not a
       formality — several of those items are cheap now and breaking later.
@@ -1224,9 +1227,13 @@ the obvious next component. Admin › Tests › **Pivot Grid** is a working sket
 needs to own dimension-pool disjointness and the empty-`valueFields` guard, both of which that panel
 currently hand-rolls.
 
-**Global value-column overrides** (`labelColumnOverrides` / `valueColumnOverrides`). `valueColumnSpecs`
-covers per-value-field config; what is absent is one spec applied across *all* value columns. Add if
-enforcing consistency turns out to need a dedicated hook.
+**Label-column and global value-column config** (`labelColumnOverrides` / `valueColumnOverrides`).
+`valueColumnSpecs` covers per-value-field config; absent are one spec across *all* value columns, and
+any hook at all on the tree/label column. **The example page hit the second one immediately** - its
+label column truncated fund names with no way to widen it, worked around with
+`autosizeOptions.mode: 'managed'`. That workaround is legitimate and arguably the better default, but
+an app wanting a fixed width, a custom renderer for leaf rows, or a different empty-value label
+currently cannot get one. Weigh that when deciding day-1 vs follow-up.
 
 **Top-N plus `(other)` on the pivot axis.** Rejected as a soft cap for `maxPivotPaths` because keeping
 the summary invariant means the bucket must genuinely *contain* the tail — which makes it a real
