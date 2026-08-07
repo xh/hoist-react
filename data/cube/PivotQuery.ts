@@ -149,7 +149,8 @@ export class PivotQuery extends Query {
 
     private validate() {
         const {fields, dimensions, pivotDimensions, valueFields} = this,
-            fieldNames = fields.map(it => it.name);
+            fieldNames = fields.map(it => it.name),
+            dimNames = (dimensions ?? []).map(it => it.name);
 
         valueFields.forEach(field => {
             const {name} = field;
@@ -158,11 +159,15 @@ export class PivotQuery extends Query {
                 `Value field '${name}' must be included in the query's \`fields\`.`
             );
             throwIf(!field.aggregator, `Value field '${name}' must specify an aggregator.`);
-            throwIf(field.isDimension, `Value field '${name}' cannot be a dimension.`);
+            // The root path's cell field *is* the bare value field name, so its projection would
+            // overwrite the group label a grouping dimension puts in that same slot.
+            throwIf(
+                dimNames.includes(name),
+                `Value field '${name}' cannot also be a grouping dimension of this query.`
+            );
         });
 
-        const dimNames = (dimensions ?? []).map(it => it.name),
-            overlap = pivotDimensions.filter(it => dimNames.includes(it.name));
+        const overlap = pivotDimensions.filter(it => dimNames.includes(it.name));
         throwIf(
             !isEmpty(overlap),
             `Field(s) '${overlap.map(it => it.name)}' cannot be both a grouping and a pivot dimension.`
