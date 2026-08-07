@@ -9,6 +9,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {
     composeGroupPath,
     getAllGroupPaths,
+    getGroupLeaf,
     splitGroupPath,
     VIEW_GROUP_DELIMITER,
     ViewManagerModel
@@ -76,6 +77,12 @@ export class GroupFieldModel extends HoistModel {
 
     /** Raw `group` value selected when create mode was entered, restored on cancel. */
     private priorValue: string = null;
+
+    /**
+     * Latest typeahead query on the select, seeding the name input when a fruitless search is
+     * followed into the create option. Captured from the select's filter callback.
+     */
+    private query: string = null;
 
     /** True when the field's views span multiple groups, with no single value to display. */
     @observable isMixed: boolean = false;
@@ -165,17 +172,32 @@ export class GroupFieldModel extends HoistModel {
         this.formModel.fields.newGroupName.init(null);
     }
 
+    /** Record the select's live typeahead query - see {@link query}. */
+    noteQuery(query: string) {
+        this.query = query;
+    }
+
+    /**
+     * Handle a commit from the select. The create option is a command rather than a value, so it
+     * enters create mode and rolls its own selection back, leaving `priorValue` as the parent.
+     */
+    @action
+    onSelectCommit(value: string, priorValue: string) {
+        value === NEW_GROUP_VALUE ? this.startCreate(priorValue) : (this.query = null);
+    }
+
     /**
      * Swap to the create face, naming a new group under `parent` - the value selected immediately
-     * before the create option was picked. That selection is rolled back, as the option is a
-     * command rather than a value.
+     * before the create option was picked. Any query typed in the select carries over as the new
+     * group's name, so a search that found nothing does not have to be typed a second time.
      */
     @action
     startCreate(parent: string) {
         this.priorValue = parent;
         this.parentPath = normalizeGroupValue(parent);
         this.formModel.fields.group.setValue(parent);
-        this.formModel.fields.newGroupName.setValue(null);
+        this.formModel.fields.newGroupName.setValue(getGroupLeaf(this.query) || null);
+        this.query = null;
         this.mode = 'create';
     }
 
@@ -199,6 +221,7 @@ export class GroupFieldModel extends HoistModel {
     private exitCreate() {
         this.mode = 'select';
         this.parentPath = null;
+        this.query = null;
         this.formModel.fields.newGroupName.setValue(null);
     }
 

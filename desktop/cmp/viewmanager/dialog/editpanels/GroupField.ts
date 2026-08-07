@@ -56,19 +56,17 @@ const selectFace = hoistCmp.factory<GroupFieldProps>({
                 options,
                 optionRenderer: (opt: GroupPathOption) => optionDisplay(opt, value),
                 valueRenderer: (opt: GroupPathOption) => groupValueDisplay(opt.value, true),
-                // Match on the full path, so "coast" finds "Africa/Sub-Saharan/Coastal". The
-                // create option is a command, not a value - always offered, whatever the query.
-                filterFn: (opt, query) =>
-                    opt.value === NEW_GROUP_VALUE ||
-                    opt.label.toLowerCase().includes(query.toLowerCase()),
+                filterFn: (opt, query) => {
+                    model.noteQuery(query);
+                    return (
+                        opt.value === NEW_GROUP_VALUE ||
+                        opt.label.toLowerCase().includes(query.toLowerCase())
+                    );
+                },
                 enableFilter: true,
                 enableClear: true,
                 placeholder,
-                // Selecting the create option enters create mode instead of committing a value -
-                // the prior selection becomes the new group's parent, and is rolled back here.
-                onCommit: (v, prev) => {
-                    if (v === NEW_GROUP_VALUE) model.startCreate(prev);
-                }
+                onCommit: (v, prev) => model.onSelectCommit(v, prev)
             }),
             readonlyRenderer: v => groupValueDisplay(v)
         });
