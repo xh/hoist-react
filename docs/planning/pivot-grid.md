@@ -10,17 +10,16 @@ which resolves `@xh/hoist` against the published `node_modules` copy, so every f
 API fails on missing exports. To typecheck for real, uncomment the `paths` block in
 `client-app/tsconfig.json`, run `tsc`, then re-comment it — that block must not be committed enabled.
 
-**Status: phases 0-2 complete and verified; phase 3's store plumbing and the `PivotGridModel` rewire
-are in, and the component renders.** The data layer is correct against its reference suite (294
-Toolbox checks with one deliberately red, 49 unit checks, both mutation-tested), merged up to current
-`develop`, and clears every gate it still carries. Phase 2 is closed outright: `PivotDataModel` is
-retired.
+**Status: phases 0-3 complete, measured and verified.** Correct against its reference suite (293
+Toolbox checks, 49 unit checks, both mutation-tested), merged up to current `develop`, rendering as a
+real grid, and measured across a full matrix - see
+[Result: the phase 3 matrix](#result--the-phase-3-matrix). Phase 2 closed with `PivotDataModel`'s
+retirement; phase 3 closed with the re-measure, which also resolved the last open design decision and
+retired two guards the numbers did not support. Only phase 4 remains.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
-the settled contract phase 3 built to. **Pick up at the re-measure**, the one thing left in phase 3 and
-the gate for leaving it: it resolves
-[fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells) and produces the
-first heap figure the rewrite will have.
+the settled contract phase 3 built to. **Phase 3 is complete.** Pick up at phase 4, whose real work is
+deciding day-1 vs follow-up for [Extras and Nice-to-Haves](#extras-and-nice-to-haves).
 
 Everything deliberately deferred is collected under
 [Extras and Nice-to-Haves](#extras-and-nice-to-haves); phase 4 decides day-1 vs follow-up for each.
@@ -789,6 +788,50 @@ argument behind it — that would have bought nothing. Re-measure before optimiz
 the old code rather than against a recorded number whenever a figure moves more than the change
 plausibly explains.
 
+### Result — the phase 3 matrix
+
+Captured 2026-08-07 via Admin › Tests › **Pivot Perf**, in a Brave instance launched with
+`--enable-precise-memory-info --js-flags=--expose-gc`, tab foreground throughout (every row carries a
+`visibleThroughout` tripwire and all passed). One baseline swept along each axis independently; every
+config measured twice, data layer alone and with a `PivotGridModel` bound. 100k leaves unless noted.
+
+| Config                            | Cube ms | View ms | Grid ms | tick 5% | tick 50% | Heap view | Heap +grid |
+| --------------------------------- | ------: | ------: | ------: | ------: | -------: | --------: | ---------: |
+| **Baseline** 3 grp / 2 piv / 1 val |      94 |     416 |       9 |      60 |      292 |    42.4MB |      1.0MB |
+| **Plain View control**, 25 fields  |     249 |     270 |       5 |      59 |      320 |    16.1MB |      0.9MB |
+| 1 pivot dim (5 cell fields)        |      93 |     247 |       6 |      46 |      220 |    19.0MB |      1.0MB |
+| 3 pivot dims (101 cell fields)     |     103 |     654 |       8 |      68 |      378 |    78.2MB |      1.1MB |
+| 3 value fields (87 cell fields)    |      97 |     403 |       8 |      58 |      294 |    47.2MB |      1.1MB |
+| 2 group dims (313 rows)            |      98 |     220 |       3 |      45 |      215 |    15.8MB |      0.2MB |
+| 4 group dims, drill (104k rows)    |      97 |   1,360 |      67 |      89 |      469 |   159.4MB |     20.7MB |
+| 25k leaves                         |      24 |     139 |       7 |      11 |       54 |    20.5MB |      1.0MB |
+| 250k leaves                        |     253 |     880 |       7 |     133 |      748 |    70.4MB |      1.1MB |
+
+**The grid layer is free.** 3-9ms to build, `setColumns` 0.1-1.2ms, ~1MB heap, against a 400-900ms
+data layer. A structural change costs it 12-34ms end to end — record rebuild, column rebuild and store
+load together, ~6% of the operation. Only leaf drill-down is visible at all (67ms, 20.7MB for 104k
+rows). This was the never-measured layer and it turns out not to matter, which is what retires the
+digest-churn concern.
+
+**Pivoting costs about what a wide plain grid costs.** Total build 510ms against the control's 519ms,
+and ticks are indistinguishable (60.4 vs 58.8 at 5%). The split differs — pivot pays less to parse
+(94 vs 249, far fewer query fields) and more to aggregate (416 vs 270). Heap is the real premium:
+60.6MB against 40MB, ~1.5×.
+
+**Value fields are cheap; pivot dimensions are not.** 1 → 3 value fields tripled cell fields (29 → 87)
+for *no* build cost (416 → 403ms) and +11% heap. 1 → 3 pivot dimensions cost 2.6× build and 4× heap.
+Cells per row are nearly free; cell *rows* are what scale — exactly what the
+[cost model](#cost-model) predicts, now measured rather than argued.
+
+**No regression against phase 2.** The 1-pivot-dim config scales to ~120ms at 35k leaves against the
+115ms recorded then.
+
+Two caveats. The machine was not fully quiet — a webpack dev server and this tooling were running — so
+treat these as relative, not absolute. And the structural transitions are expensive in absolute terms
+(group-dim change 190ms, pivot-dim change 205ms, filter 265ms, new pivot value 347ms at baseline); a
+filter-only change retains the whole row cache but still re-walks every record, so it is cheaper than a
+full build by only ~36%.
+
 ## Rebase onto the Store rework (`store-simple`)
 
 The Store rework reworked Cube View row and record reuse — the exact machinery phase 2 builds on — and
@@ -869,10 +912,15 @@ Three ways out, in rough order of appeal: accept dictionary mode for pivoted gro
 fixed-shape guarantee there deliberately; template only the cell fields and pay the dense memory,
 which is defensible if `maxPivotPaths` keeps path counts genuinely low; or revisit
 `Column.getValueFn` and keep cells on cell rows, already recorded as rejected but explicitly
-revisitable "if heap becomes the binding constraint". Pick between them on a trustworthy build
-measurement, not on the design argument alone — the sparse-cell model is the incumbent and templating
-cell fields is the change that has to earn its cost. That measurement is now the
-[phase 3 re-measure](#phase-3--pivotgridmodel), which is also where the missing heap figure comes from.
+revisitable "if heap becomes the binding constraint".
+
+**Resolved 2026-08-07 in favour of the incumbent sparse-cell model.** The
+[matrix](#result--the-phase-3-matrix) leaves templating nothing to beat: the grid layer costs ~1MB of
+heap and 3-9ms to build, so dictionary-mode row data is not showing up as a cost worth the dense
+memory templating would spend — on Wide that is 31,637 × 138 slots. Heap does scale with cell *rows*
+(19 → 42 → 78MB across 1 → 2 → 3 pivot dimensions), which is the axis to attack if heap ever binds,
+and templating makes that axis worse rather than better. Revisit only if a profile appears where row
+shape is measurably the constraint.
 
 ## Grid integration design
 
@@ -1077,8 +1125,13 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       `setColumns`-per-load and `new Field()`-per-update hot spots all went with the rewire. What is
       left is only the two independent
       [framework gaps](#framework-gaps-worth-fixing-on-their-own).
-- [ ] **Reevaluate digest handling and row reuse against the current `Store` / `View` / `Cube`, once
-      measured.** Those three moved underneath this work the whole time it was in flight, and most of
+- [x] **Reevaluate digest handling and row reuse against the current `Store` / `View` / `Cube`, once
+      measured.** Done, and both guards went - see
+      [Result: the phase 3 matrix](#result--the-phase-3-matrix). Cell-row reuse is inherited and
+      needs nothing; the `loadUpdatedRows` restamp and `Store.setFields`' record retention were both
+      justified by reasoning the numbers contradict, so both are deleted.
+
+      Original notes, kept for the reasoning: Those three moved underneath this work the whole time it was in flight, and most of
       it arrives free through `PivotView extends View` — but three things want checking rather than
       assuming:
       - **Do cell rows get the reuse the changelog promises for group rows?** They live in the same
@@ -1095,7 +1148,8 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
 
       `canAggregateFn` is now evaluated only at row construction, which is the same purity constraint
       `PivotView` already relies on to share one `canAggregate` map per pivot path.
-- [ ] **Re-measure build, tick and heap on a quiet machine — the gate for leaving phase 3.** Nothing
+- [x] **Re-measure build, tick and heap — the gate for leaving phase 3.** See
+      [Result: the phase 3 matrix](#result--the-phase-3-matrix). Original scope: Nothing
       since the phase 2 numbers has been measured, and two open questions are blocked on it:
       [fixed-shape rows vs sparse cells](#open-decision-fixed-shape-rows-vs-sparse-cells), which wants
       a build figure the benchmark has never been quiet enough to resolve; and heap, which has no
@@ -1250,6 +1304,27 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-07 — Measured, and phase 3 closed.** Full matrix in
+[Result](#result--the-phase-3-matrix), captured with the heap instrument actually validated first -
+`gc()` present, the same allocation reporting 21.74MB twice running and reclaiming exactly that. Worth
+insisting on: before the flags, that identical allocation reported +17.9MB once and -0.21MB the next
+time, so any heap number taken then would have been fiction.
+
+**The grid layer turned out to be free** - 3-9ms and ~1MB against a 400-900ms data layer - which
+settles three things at once. The [fixed-shape decision](#open-decision-fixed-shape-rows-vs-sparse-cells)
+resolves for the incumbent sparse model, since templating would spend dense memory to fix a cost that
+does not appear. `Store.setFields`' record retention and `PivotView.loadUpdatedRows`' digest restamp
+both go, their rationales contradicted by measurement. And the red record-identity check goes with
+them - it asserted an implementation detail the framework deliberately stopped guaranteeing.
+
+The finding worth carrying: **cells per row are nearly free, cell rows are what scale.** Tripling value
+fields cost nothing; tripling pivot dimensions cost 2.6x build and 4x heap. That is the
+[cost model](#cost-model) measured rather than argued, and it is the axis to attack if heap ever binds.
+
+Two process notes. Editing either repo's source while a run is in flight triggers HMR and silently
+aborts it - the first matrix run died that way. And the harness now records `visibleThroughout` per
+row, because a hidden tab inflates figures without failing.
 
 **2026-08-06 — Merged up to current `develop`.** Eight commits, all landing on the machinery this
 work sits on. One conflict in `BaseRow` and, more dangerously, one **silent** mis-merge: develop split
