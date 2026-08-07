@@ -19,13 +19,15 @@ export class SumAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        const {oldValue, newValue} = update;
-
-        // A delta cannot tell "sums to zero" from "nothing left to sum", so hand a contributor
-        // going null back to `aggregate` - which reports null for an all-null set, as a rebuild does.
-        if (newValue == null) return this.aggregate(rows, update.field.name);
-
+        const {oldValue, newValue, field} = update;
         if (oldValue != null) currAgg -= oldValue;
-        return currAgg + newValue;
+        if (newValue != null) return currAgg + newValue;
+
+        // A delta cannot tell "sums to zero" from "nothing left to sum".
+        const {name} = field;
+        for (const row of rows) {
+            if (row.data[name] != null) return currAgg;
+        }
+        return null;
     }
 }
