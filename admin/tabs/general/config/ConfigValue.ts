@@ -19,8 +19,9 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
+import {isPlainObject} from 'lodash';
 import {ReactElement} from 'react';
-import {ConfigUtils} from './ConfigUtils';
+import {buildResolvedJson, changedKeysFromDefaults, changedKeysFromStored} from './ConfigUtils';
 import './ConfigValue.scss';
 
 /**
@@ -80,6 +81,20 @@ class ConfigValueModel extends HoistModel {
     }
 
     override onLinked() {
+        // Allow clearing the DB value of a json config - normalized to '{}' on blur so it remains
+        // valid to save. (Note `valueType` is editable while adding a new config.)
+        this.addReaction({
+            track: () => [this.valueField?.boundInput?.hasFocus, this.valueField?.value],
+            run: () => {
+                const {valueField} = this;
+                if (!valueField || this.valueType !== 'json') return;
+                const {boundInput, value, isDirty} = valueField;
+                if (!boundInput?.hasFocus && isDirty && !value?.trim()) {
+                    valueField.setValue('{}');
+                }
+            }
+        });
+
         if (this.usesTabs) this.buildTabs();
     }
 
@@ -95,11 +110,11 @@ class ConfigValueModel extends HoistModel {
             // Mute keys whose resolved values match the code defaults. Older hoist-core versions
             // do not supply defaults - fall back to muting keys not set in the effective value.
             const changedKeys = hasDefaults
-                    ? ConfigUtils.changedKeysFromDefaults(resolvedValue, defaultValue)
-                    : ConfigUtils.changedKeysFromStored(
+                    ? changedKeysFromDefaults(resolvedValue, defaultValue)
+                    : changedKeysFromStored(
                           parseValue(hasOverride ? overrideValue : valueField?.value)
                       ),
-                {text, highlightLines} = ConfigUtils.buildResolvedJson(resolvedValue, changedKeys);
+                {text, highlightLines} = buildResolvedJson(resolvedValue, changedKeys);
             tabs.push({
                 id: 'resolved',
                 title: 'Resolved',
@@ -109,7 +124,9 @@ class ConfigValueModel extends HoistModel {
                         value: text,
                         readonly: true,
                         autoFormat: false,
-                        lineStyles: mutedLineStyles(text, highlightLines),
+                        lineStyles: isPlainObject(resolvedValue)
+                            ? mutedLineStyles(text, highlightLines)
+                            : null,
                         enableSearch: true,
                         height
                     })
@@ -153,20 +170,6 @@ class ConfigValueModel extends HoistModel {
         }
 
         this.tabContainerModel = new TabContainerModel({defaultTabId: tabs[0].id, tabs});
-
-        // Allow clearing the DB value - normalized to '{}' on blur so it remains valid to save.
-        if (valueType === 'json') {
-            this.addReaction({
-                track: () => [valueField?.boundInput?.hasFocus, valueField?.value],
-                run: () => {
-                    if (!valueField) return;
-                    const {boundInput, value, isDirty} = valueField;
-                    if (!boundInput?.hasFocus && isDirty && !value?.trim()) {
-                        valueField.setValue('{}');
-                    }
-                }
-            });
-        }
 
         // DB edits stale the Resolved view - but only when no override is active.
         if (hasResolved && !hasOverride) {
@@ -237,11 +240,12 @@ function readonlyValue(
 ): ReactElement {
     switch (valueType) {
         case 'json': {
+            // Muting is keyed on nested objects - a top-level array renders plain.
             const parsed = defaults != null ? parseValue(value) : null;
-            if (parsed != null && typeof parsed === 'object') {
-                const {text, highlightLines} = ConfigUtils.buildResolvedJson(
+            if (isPlainObject(parsed)) {
+                const {text, highlightLines} = buildResolvedJson(
                     parsed,
-                    ConfigUtils.changedKeysFromDefaults(parsed, defaults)
+                    changedKeysFromDefaults(parsed, defaults)
                 );
                 return jsonInput({
                     value: text,
@@ -284,10 +288,10 @@ function mutedLineStyles(text: string, highlightLines: number[]): CodeInputLineS
 // applies while the text is in canonical autoFormat form, where the line mapping is reliable.
 function dbValueLineStyles(text: string, defaults: any): CodeInputLineStyles[] {
     const parsed = parseValue(text);
-    if (parsed == null || typeof parsed !== 'object') return [];
-    const {text: canonical, highlightLines} = ConfigUtils.buildResolvedJson(
+    if (!isPlainObject(parsed)) return [];
+    const {text: canonical, highlightLines} = buildResolvedJson(
         parsed,
-        ConfigUtils.changedKeysFromDefaults(parsed, defaults)
+        changedKeysFromDefaults(parsed, defaults)
     );
     return text === canonical ? mutedLineStyles(text, highlightLines) : [];
 }

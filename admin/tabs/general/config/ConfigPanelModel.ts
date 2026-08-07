@@ -62,10 +62,10 @@ export class ConfigPanelModel extends HoistModel {
             selModel: 'multiple',
             sortBy: 'name',
             unit: 'config',
-            // Re-open the editor after saving a typed config, landing on its Resolved tab.
-            postSaveFn: ({record}) => {
-                if (record?.data.resolvedValue != null) {
-                    this.gridModel.formModel.openEdit(record);
+            // Re-open the editor after editing a typed config, landing on its Resolved tab.
+            postSaveFn: ({record, isAdd}) => {
+                if (!isAdd && record?.data.resolvedValue != null) {
+                    this.gridModel.editRecord(record);
                 }
             },
             // Store + fields

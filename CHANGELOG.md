@@ -112,10 +112,8 @@
   older versions.
 * Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based)
   lines - as static groups, or a function of the current document text.
-* `RestGrid` editor forms: added a `Revert` button, renamed `Save Changes` to `Save` and `Cancel`
-  to `Close`, and added client-side validation of `json`-type fields (via `isValidJson`, which now
-  treats null/empty values as valid). A new `RestGridConfig.postSaveFn` hook is called with the
-  updated record after a successful save.
+* General improvements to `RestGrid` editor forms: improved UI and validation, as well as a new
+  `postSaveFn` hook
 
 ### 🐞 Bug Fixes
 
@@ -131,6 +129,10 @@
 * Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
   `rowData` pinned the record array from the last load into an empty grid, along with every
   `StoreRecord`, `data`, and retained `raw` object in it.
+* Fixed `FetchService` appending a `(Caused by: ...)` suffix to exceptions flagged `isRoutine` by
+  the server - such exceptions carry a complete, user-facing message of their own.
+* Fixed `isValidJson` failing on blank values - null and empty now defer to `required`, as with
+  Hoist's other constraints. Pair with `required` if a value must be present.
 
 ### ⚙️ Technical
 
