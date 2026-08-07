@@ -119,6 +119,9 @@
 * Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
   `rowData` pinned the record array from the last load into an empty grid, along with every
   `StoreRecord`, `data`, and retained `raw` object in it.
+* Fixed `SumAggregator.replace` reporting `0` instead of `null` once the last non-null contributor
+  to an aggregate went null, leaving an incremental Cube `View` update disagreeing with a full
+  rebuild over the same data.
 
 ### ⚙️ Technical
 
