@@ -143,8 +143,13 @@ export class View
     private _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     private _rowDigest = 0;
-    _canAggregateFnFields: CubeField[] = null;
-    _complexAggFields: CubeField[] = null;
+    // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
+    // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
+    // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
+    _aggFieldsByDepth: CubeField[][] = null;
+    _aggFieldNamesByDepth: Set<string>[] = null;
+    _canAggregateFnFieldsByDepth: CubeField[][] = null;
+    _complexAggFieldsByDepth: CubeField[][] = null;
     _aggContext: AggregationContext = null;
     _rowCache: RowCache = null;
 
@@ -338,19 +343,33 @@ export class View
             cubeRowDigest: null,
             _cubeLeafChildren: null
         };
-        const canAggregateFnFields: CubeField[] = [],
-            complexAggFields: CubeField[] = [];
-        this.fields.forEach(field => {
-            const {name, aggregator, canAggregateFn} = field;
-            rowData[name] = null;
-            if (aggregator && canAggregateFn) canAggregateFnFields.push(field);
-            if (aggregator && !aggregator.dependsOnChildrenOnly) complexAggFields.push(field);
-        });
+        this.fields.forEach(({name}) => (rowData[name] = null));
 
         // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
         this._rowDataTemplate = {...rowData} as ViewRowData;
-        this._canAggregateFnFields = canAggregateFnFields;
-        this._complexAggFields = complexAggFields;
+
+        // Aggregation eligibility is a function of level alone - dimensions apply in order, and
+        // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
+        // dimensions, and so holds the unfiltered superset of each list.
+        const {dimensions} = this.query,
+            aggFields = this.fields.filter(it => it.aggregator),
+            appliedDimNames = dimensions.map(
+                (v, idx) => new Set(dimensions.slice(0, idx + 1).map(it => it.name))
+            );
+        appliedDimNames.unshift(new Set());
+
+        this._aggFieldsByDepth = appliedDimNames.map(names =>
+            aggFields.filter(it => !names.has(it.name))
+        );
+        this._aggFieldNamesByDepth = this._aggFieldsByDepth.map(
+            fields => new Set(fields.map(it => it.name))
+        );
+        this._canAggregateFnFieldsByDepth = this._aggFieldsByDepth.map(fields =>
+            fields.filter(it => it.canAggregateFn)
+        );
+        this._complexAggFieldsByDepth = this._aggFieldsByDepth.map(fields =>
+            fields.filter(it => !it.aggregator.dependsOnChildrenOnly)
+        );
     }
 
     // Selectively invalidate cached rows on a query change.
@@ -441,15 +460,15 @@ export class View
 
         const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
-        let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
-        newRows = this.bucketRows(newRows, rootId, {});
+        let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, 0, leafMap);
+        newRows = this.bucketRows(newRows, rootId, {}, 0);
 
         if (includeRoot) {
             newRows = [
                 rowCache.getOrCreate(
                     rootId,
                     newRows,
-                    () => new AggregateRow(this, rootId, newRows, null, 'Total', {})
+                    () => new AggregateRow(this, rootId, newRows, null, 'Total', {}, 0)
                 )
             ];
         } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
@@ -473,6 +492,7 @@ export class View
         dimensions: CubeField[],
         parentId: string,
         appliedDimensions: PlainObject,
+        depth: number,
         leafMap: Map<StoreRecordId, LeafRow>
     ): BaseRow[] {
         if (!records?.length) return [];
@@ -501,25 +521,28 @@ export class View
             dimName = dim.name,
             groups = groupBy(records, it => it.data[dimName]);
 
+        // Bucket rows share the level of the aggregate row above them - see `_appliedDimNames`.
+        // Note this object is mutated as we move across groups - rows must clone to retain it.
+        const groupDepth = depth + 1,
+            groupDimensions = {...appliedDimensions};
         return map(groups, (groupRecords, strVal) => {
-            const val = groupRecords[0].data[dimName],
-                id = rootId + `${dimName}=[${strVal}]`,
-                // Fresh object per group - rows retain it to re-derive `canAggregate`.
-                groupDimensions = {...appliedDimensions, [dimName]: val};
+            const id = rootId + `${dimName}=[${strVal}]`;
+            groupDimensions[dimName] = groupRecords[0].data[dimName];
 
             let children = this.groupAndInsertRecords(
                 groupRecords,
                 dimensions.slice(1),
                 id,
                 groupDimensions,
+                groupDepth,
                 leafMap
             );
-            children = this.bucketRows(children, id, groupDimensions);
+            children = this.bucketRows(children, id, groupDimensions, groupDepth);
 
             return this._rowCache.getOrCreate(
                 id,
                 children,
-                () => new AggregateRow(this, id, children, dim, strVal, groupDimensions)
+                () => new AggregateRow(this, id, children, dim, strVal, groupDimensions, groupDepth)
             );
         });
     }
@@ -527,7 +550,8 @@ export class View
     private bucketRows(
         rows: BaseRow[],
         parentId: string,
-        appliedDimensions: PlainObject
+        appliedDimensions: PlainObject,
+        depth: number
     ): BaseRow[] {
         const {query} = this;
 
@@ -560,7 +584,7 @@ export class View
             const bucket = this._rowCache.getOrCreate(
                 id,
                 rows,
-                () => new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions)
+                () => new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions, depth)
             );
             ret.push(bucket);
         });
@@ -643,7 +667,7 @@ export class View
      * @internal
      */
     get aggregatorsAreSimple() {
-        return isEmpty(this._complexAggFields);
+        return isEmpty(this._complexAggFieldsByDepth[0]);
     }
 
     private parseStores(stores: Some<Store>): Store[] {

@@ -111,7 +111,8 @@ export class RowCache {
 
     beginGeneration() {
         const {view} = this;
-        this.recomputeAggs = !view.aggregatorsAreSimple || !isEmpty(view._canAggregateFnFields);
+        this.recomputeAggs =
+            !view.aggregatorsAreSimple || !isEmpty(view._canAggregateFnFieldsByDepth[0]);
         this.exposedLeaves = view.exposesLeaves;
         this.reused = this.rebuilt = this.created = this.recomputed = 0;
         this.removed = this.sweepTime = 0;
