@@ -29,8 +29,8 @@ lm.utils.copy( lm.items.Root.prototype, {
 
 	setSize: function( width, height ) {
 		var containerNode = this._containerElement;
-		width = ( typeof width === 'undefined' ) ? containerNode.clientWidth : width;
-		height = ( typeof height === 'undefined' ) ? containerNode.clientHeight : height;
+		width = ( typeof width === 'undefined' ) ? lm.utils.contentWidth( containerNode ) : width;
+		height = ( typeof height === 'undefined' ) ? lm.utils.contentHeight( containerNode ) : height;
 
 		this.element.style.width = width + 'px';
 		this.element.style.height = height + 'px';
