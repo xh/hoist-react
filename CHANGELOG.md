@@ -119,6 +119,9 @@
 * Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
   `rowData` pinned the record array from the last load into an empty grid, along with every
   `StoreRecord`, `data`, and retained `raw` object in it.
+* Fixed `View.updateQuery()` rebuilding (and potentially clearing its row cache) for a functionally
+  identical `Query` - `Query.fields` is now sorted by name, so naming a field that is also a
+  `dimension` no longer defeats the equality check.
 
 ### ⚙️ Technical
 

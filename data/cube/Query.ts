@@ -16,7 +16,7 @@ import {
     StoreRecord
 } from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual, uniq} from 'lodash';
+import {find, isEqual, sortBy, uniq} from 'lodash';
 import {Cube} from './Cube';
 import {CubeField} from './CubeField';
 
@@ -136,6 +136,7 @@ export interface QueryConfig {
  * @mcpHint query spec against a Cube, produced by executeQuery / createView
  */
 export class Query {
+    /** Queried fields, sorted by name. Includes `dimensions`, added here if not already present. */
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];
     readonly filter: Filter;
@@ -166,7 +167,11 @@ export class Query {
     }: QueryConfig) {
         this.cube = cube;
         this.dimensions = this.parseDimensions(dimensions);
-        this.fields = uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]);
+        // Ensure canonical field order so equivalent queries compare equal
+        this.fields = sortBy(
+            uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]),
+            'name'
+        );
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
         this.provideLeaves = provideLeaves;
