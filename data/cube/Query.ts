@@ -149,6 +149,7 @@ export class Query {
     readonly bucketSpecFn: BucketSpecFn;
     readonly omitFn: OmitFn;
 
+    private readonly _rawFields: string[] | CubeField[];
     private readonly _testFn: FilterTestFn;
 
     constructor({
@@ -165,6 +166,7 @@ export class Query {
         omitFn = cube.omitFn
     }: QueryConfig) {
         this.cube = cube;
+        this._rawFields = fields;
         this.dimensions = this.parseDimensions(dimensions);
         this.fields = uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]);
         this.includeRoot = includeRoot;
@@ -183,7 +185,8 @@ export class Query {
     clone(overrides: Partial<QueryConfig>) {
         const conf = {
             dimensions: this.dimensions,
-            fields: this.fields,
+            // use the un-augmented fields list to drop potentially stale dimensions
+            fields: this._rawFields,
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
