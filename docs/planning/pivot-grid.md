@@ -19,7 +19,13 @@ retired two guards the numbers did not support. Only phase 4 remains.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
 the settled contract phase 3 built to. **Phase 3 is complete.** Pick up at phase 4, whose real work is
-deciding day-1 vs follow-up for [Extras and Nice-to-Haves](#extras-and-nice-to-haves).
+deciding day-1 vs follow-up for [Extras and Nice-to-Haves](#extras-and-nice-to-haves); the rest is docs
+and a CHANGELOG entry.
+
+**In flight, uncommitted in Toolbox:** `PivotPerfModel` gains a total-heap column measured against a
+settled baseline, so grid heap comes out as one config's grid row minus its data row. That is the
+[matrix caveat](#result--the-phase-3-matrix)'s own prescription. Unrun — either run and record it, or
+drop it.
 
 Everything deliberately deferred is collected under
 [Extras and Nice-to-Haves](#extras-and-nice-to-haves); phase 4 decides day-1 vs follow-up for each.
@@ -1027,11 +1033,11 @@ as an earlier note here claimed, for the record-reuse equality check.
 
 Two consequences:
 
-- **`setFields` must retain records when `projectionOnly`.** A structural change is followed
-  immediately by `loadStores()`, whose only reuse path is the digest comparison against
-  `_committed.recordMap`. Dropping records guarantees a full rebuild on the next line — 37k allocations
-  on Typical+Drill every time a new pivot value appears. For a non-projection store dropping is
-  correct, since existing `data` objects were built against the old `_dataDefaults`.
+- **`setFields` drops records unconditionally, and retaining them under `projectionOnly` is pointless.**
+  The retention branch was built and then removed: a structural change bumps digests, and
+  `RecordSet.areRecordsEqual` treats any digest difference as inequality, so the immediately-following
+  `loadStores()` rebuilds every record anyway — retention preserved **0 of 1778**. Do not reinstate it
+  without first showing a digest that survives the transition.
 - **Unpopulated cells read `undefined`, not `null`.** Phase 2 proved `null` via `_dataDefaults`
   (sparse) and the cloned template (dense), both non-projection paths. The correctness suite cannot
   catch the divergence, since it must not set `projectionOnly`. Benign under `== null` testing, but
@@ -1080,6 +1086,9 @@ so a scheme that shifts when the data shifts discards state silently.
 **Package location stays `cmp/pivotgrid`.** `ZoneGridModel` and `ZoneGrid` live in `cmp/zoneGrid/` with
 only desktop-specific chrome under `desktop/cmp/zoneGrid/impl/`, and ZoneGrid is desktop-only in
 practice too — so "desktop-only" is not what drives this. Nothing in `PivotGrid` is platform-specific.
+The all-lowercase spelling is deliberate and follows the `cmp/` majority (`loadingindicator`,
+`relativetimestamp`, `dataview`); `zoneGrid` is the outlier. Settle it now — the import path is public
+API, so recasing after release is breaking.
 
 ## Phase 3 — PivotGridModel
 
@@ -1095,8 +1104,8 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       passed down the recursion; col-level `field` config objects stay scoped to their own level, with
       the shared map copied only when a level contributes one.
 - [x] `Store.setFields()`, replacing the prototype's `_fieldMap` / `_dataDefaults` pokes. Replace-all;
-      rebuild both `_fieldMap` and `_dataDefaults`; retain records when `projectionOnly` and drop them
-      otherwise, per [What fields do](#what-fields-do-under-projectiononly). Public, but marked
+      rebuild both `_fieldMap` and `_dataDefaults`; drop records, per
+      [What fields do](#what-fields-do-under-projectiononly). Public, but marked
       `@internal` in JSDoc for now — the pivot store is not app-configurable and a general `setFields`
       reopens that door. `parseFields` already throws on an `id` field. Retains the configured
       `fieldDefaults`, which the constructor previously discarded.
@@ -1131,11 +1140,11 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
 - [x] Adopt the settled [terminology](#terminology) across the public API.
 - [x] Pivot summaries: column building and config surface. One method builds row and pivot summaries,
       since row summaries are the pivot summaries at the root path.
-- [ ] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
+- [x] Work the [correctness](#correctness-bugs) and [cleanup](#framework-conventions-and-cleanup)
       checklists. `sortPivotValues`, the `headerName` thunk, the `[Component, factory]` pair, the
       `ag-grid-community` import, copyright headers, `PivotSort`, the hardcoded autosize and the
-      `setColumns`-per-load and `new Field()`-per-update hot spots all went with the rewire. What is
-      left is only the two independent
+      `setColumns`-per-load and `new Field()`-per-update hot spots all went with the rewire. All that
+      survives is `useRawAsData`, a "consider" item independent of pivoting — see
       [framework gaps](#framework-gaps-worth-fixing-on-their-own).
 - [x] **Reevaluate digest handling and row reuse against the current `Store` / `View` / `Cube`, once
       measured.** Done; both guards went. The load-bearing reason is *observational, not
@@ -1185,12 +1194,11 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       row summaries on either side, the floating value-summary row, `(empty)` rendering and sorting
       last, `includeLeaves` drill-down, and a new pivot value re-declaring fields and columns
       unaided. Summary invariants check by eye to display precision.
-- [ ] **One known-red check, deliberately left red:** `structural change: a projectionOnly store
-      retains its records`, at 0 of 1778 reused. Not a merge defect and not a correctness problem —
-      `RecordSet.areRecordsEqual` now treats any digest difference as inequality, by design, so a
-      bumped digest mints a new record even when every declared value is identical. The check asserts
-      instance identity, which is an implementation detail rather than an outcome; retarget or delete
-      it once the re-measure says whether the churn costs anything.
+- [x] The deliberately-red `structural change: a projectionOnly store retains its records` check is
+      **deleted**, along with the `Store.setFields` retention branch it asserted. `RecordSet.areRecordsEqual`
+      treats any digest difference as inequality by design, so a bumped digest mints a new record even
+      when every declared value is identical — the branch preserved 0 of 1778 records and the check
+      asserted an implementation detail rather than an outcome.
 
 ## Phase 4 — Wrap-up and packaging
 
@@ -1205,8 +1213,14 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
 - [ ] `data/cube/README.md` section on the pivot view (belongs with phase 2, not deferred to the
       end).
 - [ ] Doc registry + roadmap index entries (`xh-update-doc-links`).
-- [ ] CHANGELOG entry; upgrade notes if the `Query` / `View` changes are breaking.
-- [ ] Export from the appropriate package index.
+- [ ] CHANGELOG entry; upgrade notes if the `Query` / `View` changes are breaking. The
+      `SumAggregator.replace` fix already has its own entry under 🐞 Bug Fixes — do not duplicate it.
+      `Store.setFields` is `@internal`, so the candidates are the `View` / `BaseRow` protected-member
+      widening and `Query.clone`'s construction via `this.constructor`.
+- [x] Exports are in place: `data/index.ts` covers `PivotPath` / `PivotQuery` / `PivotView` and with
+      them `PivotCellField`, `PivotViewResult` and `PivotViewStoreConfig`; `cmp/pivotgrid/index.ts` covers
+      the `PivotGrid` / `PivotGridModel` pair, and `PivotCellRow` stays internal by design. There is no
+      central barrel to add to — `cmp/zoneGrid` is likewise reached only by subpath.
 
 ## Extras and Nice-to-Haves
 
@@ -1265,9 +1279,9 @@ feature worth designing rather than a guard. See
 pivot summaries at the root path, but they stay separate configs because most users only ever see the
 `Total` column. Listed only to record that merging them later is breaking.
 
-**`useRawAsData` on `CubeConfig`** (currently only `retainRaw`), and **`SumAggregator.replace`
-diverging from `aggregate`** — both under
-[framework gaps](#framework-gaps-worth-fixing-on-their-own), both independent of pivoting.
+**`useRawAsData` on `CubeConfig`** (currently only `retainRaw`) — filed under
+[framework gaps](#framework-gaps-worth-fixing-on-their-own), independent of pivoting and the only one
+of those still open.
 
 ## Carried-forward review findings
 
@@ -1276,33 +1290,29 @@ From the full review of the imported prototype. Scoped to code that survives the
 
 ### Correctness bugs
 
-- [ ] `PivotGridModel:512` — `sortPivotValues` copies the top-level array but then assigns
-      `it.children` in place. Sharper now that `result.paths` is immutable and identity-stable: display
-      sorting must build a parallel structure, never touch the tree.
-
-Resolved by the phase 3 design rather than by a fix: `:466,469`, `:463` and `:498,455` are cut with
-`extraSummaryRowFields`; the five `// TODO: Validate` sites go with the query config they validate,
-which `PivotQuery` already validates at construction.
+All resolved. `sortPivotValues` (`:512`, which mutated `paths.children` in place) went with the phase 3
+rewire — display sorting now builds a parallel structure, which the immutable, identity-stable
+`result.paths` requires. Resolved by design rather than by a fix: `:466,469`, `:463` and `:498,455` are
+cut with `extraSummaryRowFields`; the five `// TODO: Validate` sites go with the query config they
+validate, which `PivotQuery` already validates at construction.
 
 ### Performance — prototype hot spots
 
-- [ ] `PivotGridModel:276` — `setColumns` runs on every data load, rebuilding every `Column` and
-      resetting `columnState`, even when the pivot structure is unchanged. Depends on the phase 1
-      structural-change signal.
-- [ ] `PivotGridModel:292` — thousands of `new Field()` per update; cache when structure is
-      unchanged.
-- [ ] `PivotGridModel:208,258` — unconditional `autosizeAsync()` plus hardcoded `autosizeOptions`
-      with `includeHiddenColumns: true`. Expensive over many columns; make both configurable.
+All three went with the phase 3 rewire: `setColumns`-per-load (`:276`) is now gated on `result.paths`
+identity with `equals: 'shallow'`, the `new Field()`-per-update churn (`:292`) is gone with
+`PivotView`'s cell-field sync, and the unconditional `autosizeAsync()` plus hardcoded
+`autosizeOptions` (`:208,258`) are replaced by `autosizeOptions.mode: 'managed'` on the app's own
+`gridConfig`.
 
 ### Framework gaps worth fixing on their own
 
-- [ ] **`SumAggregator.replace` returns `0` where `aggregate` returns `null`.** Once the last non-null
-      constituent goes null, `if (oldValue != null) currAgg -= oldValue` runs and the `newValue == null`
-      case has no branch, so the accumulator lands on `0` while a rebuild reports `null`. `SUM_STRICT`
-      and `AVG` both handle it; only the lenient default diverges. Predates the pivot work — a plain
-      tree `View` shows the same tick-vs-rebuild disagreement, and pivot cells inherit it. The unit
-      suite characterizes the divergence and excludes exactly that transition via a
-      `lenientSumZeroesOut` predicate; delete both when this is fixed.
+- [x] **`SumAggregator.replace` returned `0` where `aggregate` returns `null`** — fixed on its own
+      branch (`9a55e035e`), with its own CHANGELOG entry, since it predates the pivot work and a plain
+      tree `View` showed the same tick-vs-rebuild disagreement. A delta cannot distinguish "sums to
+      zero" from "nothing left to sum", so a contributor going null now hands back to `aggregate`; a
+      genuine zero sum still deltas. The unit suite's `lenientSumZeroesOut` exclusion and its
+      characterization check are deleted — the previously-excluded transitions pass on their merits,
+      and reverting the aggregator kills three checks.
 - [x] `Store.getField` was a linear `find` over `fields` — now goes through `_fieldMap`, which the
       pivot label column's per-row `sortValue` lookup made hot.
 - [ ] Consider exposing `useRawAsData` on `CubeConfig` (currently only `retainRaw`).
@@ -1312,13 +1322,15 @@ which `PivotQuery` already validates at construction.
 
 ### Follow-ups filed while building
 
-- [ ] **Real clicks via Chrome automation steal desktop focus** - they activate the tab, and on
-      Hyprland that raises the Chrome window mid-session. Screenshots and `javascript_tool` do *not*:
-      driving the panel with `element.click()` and reading the DOM kept `visibilityState: 'hidden'`
-      throughout a full verification pass. Prefer that. `react-select` is the one control that
-      ignores synthetic mousedown - change a default and reload instead of fighting it.
-- [ ] `PivotGrid` had no `LayoutProps` / `TestSupportProps` — added on first real use, per the
-      `ZoneGrid` precedent. Check the other `cmp/` wrappers for the same omission.
+**Real clicks via Chrome automation steal desktop focus** - they activate the tab, and on Hyprland that
+raises the Chrome window mid-session. Screenshots and `javascript_tool` do *not*: driving the panel with
+`element.click()` and reading the DOM kept `visibilityState: 'hidden'` throughout a full verification
+pass. Prefer that. `react-select` is the one control that ignores synthetic mousedown - change a default
+and reload instead of fighting it.
+
+- [ ] **Audit the other `cmp/` wrappers for missing `LayoutProps` / `TestSupportProps`.** `PivotGrid`
+      had neither until its first real use; the `ZoneGrid` precedent says it should have. Independent of
+      pivoting.
 
 ### Framework conventions and cleanup
 
@@ -1329,6 +1341,17 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-07 — Doc bookkeeping.** No implementation. Reconciled the checklists against the code, which
+had drifted: `SumAggregator.replace` is fixed and carries its own CHANGELOG entry, the deliberately-red
+record-identity check and the `Store.setFields` retention branch are both deleted, and every
+carried-forward correctness bug and prototype hot spot went with the phase 3 rewire. Two sections still
+*prescribed* the deleted retention branch, so
+[What fields do](#what-fields-do-under-projectiononly) now says the opposite and says why. Only
+`useRawAsData` survives the carried-forward findings. Phase 4's export item closes as already done —
+there is no central barrel, and `cmp/pivotgrid`'s lowercase spelling is now recorded as deliberate,
+since an import path is public API. Pick up at the day-1-vs-follow-up call on
+[Extras](#extras-and-nice-to-haves).
 
 **2026-08-07 — Measured, corrected, and phase 3 closed.** Full matrix in
 [Result](#result--the-phase-3-matrix), captured with the heap instrument actually validated first -
