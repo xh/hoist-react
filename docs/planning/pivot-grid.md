@@ -1267,6 +1267,15 @@ label column truncated fund names with no way to widen it, worked around with
 an app wanting a fixed width, a custom renderer for leaf rows, or a different empty-value label
 currently cannot get one. Weigh that when deciding day-1 vs follow-up.
 
+**A toggle for the single-value-field column collapse** (`hideSingleValuePivotCols` or similar - the
+name should say "collapse the group", not "hide the column", since nothing is hidden). With one value
+field a leaf pivot path renders as a single column headed by the path label rather than a one-child
+group, because a group of one reads as a duplicate header (`PivotGridModel.buildPathColumn`). Summary
+columns collapse the same way (`buildSummaryColumn`) - a toggle has to cover both or the two headers
+disagree. Purely additive and safe to defer: the collapse only drops the group wrapper, so `colId`s
+and persisted column state are identical either way. Pull it forward if an app wants the value field's
+name visible under every path, or needs the group header for its own reasons.
+
 **Top-N plus `(other)` on the pivot axis.** Rejected as a soft cap for `maxPivotPaths` because keeping
 the summary invariant means the bucket must genuinely *contain* the tail — which makes it a real
 feature worth designing rather than a guard. See
