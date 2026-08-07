@@ -51,8 +51,7 @@ export class ViewPanelModel extends HoistModel {
         this.formModel = this.createFormModel();
         this.groupFieldModel = new GroupFieldModel({
             formModel: this.formModel,
-            viewManagerModel: parent.viewManagerModel,
-            context: 'single'
+            viewManagerModel: parent.viewManagerModel
         });
 
         this.addReaction({

@@ -7,7 +7,7 @@
 
 import {badge} from '@xh/hoist/cmp/badge';
 import {dateTimeCol, GridAutosizeMode, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
-import {br, fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
+import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
     buildViewGroupTree,
@@ -20,7 +20,15 @@ import {
     ViewManagerModel,
     ViewUpdateSpec
 } from '@xh/hoist/cmp/viewmanager';
-import {HoistModel, LoadSpec, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
+import {
+    HoistModel,
+    LoadSpec,
+    managed,
+    PlainObject,
+    TaskObserver,
+    ToastSpec,
+    XH
+} from '@xh/hoist/core';
 import {FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
@@ -29,9 +37,8 @@ import {GridOptions, RowDropZoneEvents} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, isEqual, keys, some, startCase, uniqBy} from 'lodash';
-import {ReactNode} from 'react';
+import {createRef, ReactNode} from 'react';
 import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
-import {topLevelLabel} from './Utils';
 import {RenameGroupDialogModel} from './editpanels/RenameGroupDialogModel';
 import {ViewMultiPanelModel} from './editpanels/ViewMultiPanelModel';
 import {ViewPanelModel} from './editpanels/ViewPanelModel';
@@ -78,6 +85,9 @@ export class ManageDialogModel extends HoistModel {
     @managed tabContainerModel: TabContainerModel;
 
     @bindable.ref filter: FilterTestFn;
+
+    /** Anchors this dialog's toasts within it, rather than along the edge of the document. */
+    readonly dialogRef = createRef<HTMLElement>();
 
     /** Pending row-drag drop target within one of the grids, for highlighting. */
     @observable.ref private dropTarget: {type: GridType; id: string} = null;
@@ -598,7 +608,7 @@ export class ManageDialogModel extends HoistModel {
         const {viewManagerModel} = this,
             {typeDisplayName} = viewManagerModel,
             countStr = pluralize(typeDisplayName, views.length, true),
-            dest = this.groupDisplay(targetPath),
+            dest = this.toastGroupDisplay(targetPath),
             prevGroups = new Map(views.map(v => [v, v.group ?? null]));
         try {
             await viewManagerModel.updateViewsInfoAsync(views, {group: targetPath});
@@ -615,7 +625,7 @@ export class ManageDialogModel extends HoistModel {
             XH.handleException(e, {showAlert: false});
             XH.dangerToast({
                 message: fragment(`Unable to move ${countStr} to `, dest, '.'),
-                position: 'top'
+                ...this.toastOpts
             });
         } finally {
             // Refresh even on failure - bulk updates apply per-view and can partially succeed.
@@ -628,14 +638,14 @@ export class ManageDialogModel extends HoistModel {
     private async dropMoveGroupAsync(from: string, targetPath: string, isGlobal: boolean) {
         const leaf = getGroupLeaf(from),
             to = composeGroupPath(targetPath, leaf),
-            dest = this.groupDisplay(targetPath);
+            dest = this.toastGroupDisplay(targetPath);
         let moved = false;
         try {
             await this.viewManagerModel.renameGroupAsync(from, to, isGlobal);
             moved = true;
             const message = fragment(
                 'Group ',
-                groupPathBreadcrumb({path: from}),
+                this.toastGroupDisplay(from),
                 ' moved to ',
                 dest,
                 '.'
@@ -651,12 +661,12 @@ export class ManageDialogModel extends HoistModel {
             XH.dangerToast({
                 message: fragment(
                     'Unable to move group ',
-                    groupPathBreadcrumb({path: from}),
+                    this.toastGroupDisplay(from),
                     ' to ',
                     dest,
                     '.'
                 ),
-                position: 'top'
+                ...this.toastOpts
             });
         } finally {
             await this.viewManagerModel.refreshAsync();
@@ -675,7 +685,7 @@ export class ManageDialogModel extends HoistModel {
         this.lastMoveTimer = setTimeout(() => (this.lastMove = null), 5000);
         XH.successToast({
             message,
-            position: 'top',
+            ...this.toastOpts,
             timeout: 5000,
             actionButtonProps: {text: 'Undo', onClick: () => this.undoLastMoveAsync()}
         });
@@ -690,7 +700,7 @@ export class ManageDialogModel extends HoistModel {
             await move.undo();
         } catch (e) {
             XH.handleException(e, {showAlert: false});
-            XH.dangerToast({message: 'Unable to undo the move.', position: 'top'});
+            XH.dangerToast({message: 'Unable to undo the move.', ...this.toastOpts});
         }
     }
 
@@ -780,16 +790,12 @@ export class ManageDialogModel extends HoistModel {
 
         let message: ReactNode = deleted;
         if (removed.length === 1) {
-            message = fragment(
-                `${deleted} Group `,
-                groupPathBreadcrumb({path: removed[0]}),
-                noneRemain
-            );
+            message = fragment(`${deleted} Group `, this.toastGroupDisplay(removed[0]), noneRemain);
         } else if (removed.length > 1) {
             message = `${deleted} ${removed.length} groups${noneRemain}`;
         }
 
-        XH.successToast({message, position: 'top'});
+        XH.successToast({message, ...this.toastOpts});
     }
 
     /** All group paths within the global or owned views, which namespace their groups separately. */
@@ -798,9 +804,19 @@ export class ManageDialogModel extends HoistModel {
         return getAllGroupPaths(isGlobal ? vmm.globalViews : vmm.ownedViews);
     }
 
-    /** A group path for display within a message - breadcrumb, or the top-level label. */
-    private groupDisplay(path: string): ReactNode {
-        return path ? groupPathBreadcrumb({path}) : topLevelLabel();
+    /**
+     * A group path for display within a toast - quoted, as one value within a sentence, and
+     * taking the toast's own text color rather than the standard (dark) breadcrumb colors.
+     */
+    private toastGroupDisplay(path: string): ReactNode {
+        return path
+            ? fragment('"', groupPathBreadcrumb({path, inheritColor: true}), '"')
+            : 'top level';
+    }
+
+    /** Show this dialog's toasts within it, rather than along the edge of the document. */
+    private get toastOpts(): Pick<ToastSpec, 'position' | 'containerRef'> {
+        return {position: 'top', containerRef: this.dialogRef.current};
     }
 
     private async selectViewAsync(view: ViewInfo) {
@@ -989,21 +1005,16 @@ export class ManageDialogModel extends HoistModel {
                     content: viewsGrid({
                         model: this.ownedGridModel,
                         helpIcon: Icon.user(),
-                        helpText: fragment(
+                        helpText: [
                             `This tab shows ${views} you have created.`,
-                            br(),
                             `Pin ${views} to your menu for quick access.`,
-                            br(),
-                            `Use groups to nest them under unlimited depth sub-menus.`,
-                            br(),
-                            `Groups exist as long as they contain ${views}. Create one by assigning a ${view} to it.`,
+                            `Use groups to nest them under unlimited depth sub-menus - a group exists as long as it contains ${views}, so create one by assigning a ${view} to it.`,
                             ...(enableSharing
                                 ? [
-                                      br(),
                                       `Opt-in to sharing any of your ${views} to make them discoverable by other users.`
                                   ]
-                                : [''])
-                        )
+                                : [])
+                        ].join(' ')
                     })
                 }
             ];
@@ -1015,11 +1026,7 @@ export class ManageDialogModel extends HoistModel {
                 content: viewsGrid({
                     model: this.globalGridModel,
                     helpIcon: Icon.globe(),
-                    helpText: fragment(
-                        `This tab shows ${globalViews} available to everyone.`,
-                        br(),
-                        `${capitalize(globalViews)} appear by default in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
-                    )
+                    helpText: `This tab shows ${globalViews} available to everyone. ${capitalize(globalViews)} appear by default in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
                 })
             });
         }
@@ -1031,11 +1038,7 @@ export class ManageDialogModel extends HoistModel {
                 content: viewsGrid({
                     model: this.sharedGridModel,
                     helpIcon: Icon.users(),
-                    helpText: fragment(
-                        `This tab shows ${views} shared by other ${XH.appName} users.`,
-                        br(),
-                        `You can pin these ${views} to your menu for quick access. Only the owner will be able to save changes to a shared ${view}, but you can save a copy to make it your own.`
-                    )
+                    helpText: `This tab shows ${views} shared by other ${XH.appName} users. You can pin these ${views} to your menu for quick access. Only the owner will be able to save changes to a shared ${view}, but you can save a copy to make it your own.`
                 })
             });
         }

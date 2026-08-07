@@ -6,7 +6,7 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {br, div, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {div, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select} from '@xh/hoist/desktop/cmp/input';
@@ -16,12 +16,12 @@ import {isEmpty} from 'lodash';
 import {CSSProperties} from 'react';
 import {getVisibilityInfo, getVisibilityOptions} from '../Utils';
 import {formButtons} from './FormButtons';
-import {groupField} from './GroupField';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
 
 /**
- * Form to bulk-edit group and visibility across multiple selected views within the ViewManager
- * manage dialog, along with bulk pin/unpin and delete actions.
+ * Form to bulk-edit visibility across multiple selected views within the ViewManager manage
+ * dialog, along with bulk pin/unpin and delete actions. Group is not editable here - views and
+ * whole groups are moved by dragging them within the grids.
  */
 export const viewMultiPanel = hoistCmp.factory({
     model: uses(ViewMultiPanelModel),
@@ -32,7 +32,6 @@ export const viewMultiPanel = hoistCmp.factory({
         if (isEmpty(views)) return null;
 
         const visibility = formModel.values.visibility,
-            {typeDisplayName} = viewManagerModel,
             visOptions = getVisibilityOptions(viewManagerModel),
             visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
@@ -67,19 +66,6 @@ export const viewMultiPanel = hoistCmp.factory({
                             ]
                         }),
                         fragment(
-                            groupField({
-                                model: model.groupFieldModel,
-                                omit: !allEditable,
-                                info: fragment(
-                                    `Leave blank to keep each ${typeDisplayName} in its current group.`,
-                                    ...(model.isMixedGroup
-                                        ? [
-                                              br(),
-                                              `Moving flattens the selection into one group - any nested groups beneath it are discarded.`
-                                          ]
-                                        : [])
-                                )
-                            }),
                             formField({
                                 field: 'visibility',
                                 omit: !allEditable || visOptions.length === 1,

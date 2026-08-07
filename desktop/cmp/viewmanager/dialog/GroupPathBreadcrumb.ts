@@ -29,6 +29,12 @@ export interface GroupPathBreadcrumbProps extends HoistProps {
     muted?: boolean;
 
     /**
+     * True to take the color of the surrounding text rather than the standard text colors - for
+     * use against a non-standard background, e.g. within an intent-colored toast.
+     */
+    inheritColor?: boolean;
+
+    /**
      * Length in chars beyond which the middle segments collapse to an ellipsis, with the full
      * path moved to a tooltip. Default 44.
      */
@@ -46,7 +52,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
     className: 'xh-view-manager__group-path',
     model: false,
 
-    render({path, emphasizeLeaf, muted, maxChars = 44, className}) {
+    render({path, emphasizeLeaf, muted, inheritColor, maxChars = 44, className}) {
         const segments = splitGroupPath(path);
         if (isEmpty(segments)) return null;
 
@@ -88,7 +94,8 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
             className: classNames(
                 className,
                 emphasizeLeaf && 'xh-view-manager__group-path--emph',
-                muted && 'xh-view-manager__group-path--muted'
+                muted && 'xh-view-manager__group-path--muted',
+                inheritColor && 'xh-view-manager__group-path--inherit'
             ),
             title: collapse ? fullText : null,
             items

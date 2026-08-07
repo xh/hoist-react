@@ -232,6 +232,17 @@
       color: var(--xh-text-color-muted);
     }
 
+    // Against a non-standard background - an intent-colored toast - where the standard text
+    // colors have no contrast. Separators stay distinct via opacity instead.
+    &--inherit,
+    &--inherit &__separator {
+      color: inherit;
+    }
+
+    &--inherit &__separator {
+      opacity: 0.7;
+    }
+
     // The final segment is the subject - its ancestors are the context leading to it.
     &--emph &__segment {
       color: var(--xh-text-color-muted);

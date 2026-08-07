@@ -64,6 +64,8 @@ export const manageDialog = hoistCmp.factory({
                             bbar: bbar()
                         })
                     ),
+                    // Anchors this dialog's toasts within it - see ManageDialogModel.toastOpts.
+                    ref: model.dialogRef,
                     mask: [updateTask, loadTask]
                 })
             }),

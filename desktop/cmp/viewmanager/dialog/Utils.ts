@@ -49,14 +49,12 @@ export function topLevelLabel(): ReactNode {
 
 /**
  * Confirm a bulk visibility change across one or more views, with wording appropriate to the
- * target visibility. Pass `hasOtherChanges` when the same save carries additional updates, to
- * broaden the confirm button text accordingly.
+ * target visibility.
  */
 export async function confirmVisibilityChangeAsync(
     vmm: ViewManagerModel,
     views: ViewInfo[],
-    visibility: Visibility,
-    hasOtherChanges: boolean
+    visibility: Visibility
 ): Promise<boolean> {
     const countStr = pluralize(vmm.typeDisplayName, views.length, true),
         msgs: ReactNode[] = [strong('Are you sure you want to proceed?')];
@@ -84,7 +82,7 @@ export async function confirmVisibilityChangeAsync(
     return XH.confirm({
         message: fragment(msgs.map(m => p(m))),
         confirmProps: {
-            text: hasOtherChanges ? 'Yes, save changes' : 'Yes, update visibility',
+            text: 'Yes, update visibility',
             outlined: true,
             autoFocus: false,
             intent: 'primary'

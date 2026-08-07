@@ -34,8 +34,7 @@ export class SaveAsDialogModel extends HoistModel {
         this.formModel = this.createFormModel();
         this.groupFieldModel = new GroupFieldModel({
             formModel: this.formModel,
-            viewManagerModel: parent,
-            context: 'single'
+            viewManagerModel: parent
         });
     }
 

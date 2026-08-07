@@ -25,19 +25,10 @@ import {
     TOP_LEVEL_GROUP_VALUE
 } from '../Utils';
 
-/**
- * Semantics of an empty group field, which differ by what is being edited:
- *  - `single` - top level. There is one current value, so no ambiguity.
- *  - `bulk` - no change. Leave each view in the group it is already in - moving a multi-selection
- *    to the top level is an intentional act, made by picking the explicit `Top Level` option.
- */
-export type GroupFieldContext = 'single' | 'bulk';
-
 export interface GroupFieldModelConfig {
     /** Owning form - must contain a `group` field and {@link newGroupNameField}. */
     formModel: FormModel;
     viewManagerModel: ViewManagerModel;
-    context: GroupFieldContext;
 }
 
 /**
@@ -67,7 +58,6 @@ export function newGroupNameField() {
 export class GroupFieldModel extends HoistModel {
     readonly formModel: FormModel;
     readonly viewManagerModel: ViewManagerModel;
-    readonly context: GroupFieldContext;
 
     /** Which face of the control is showing. */
     @observable mode: 'select' | 'create' = 'select';
@@ -83,9 +73,6 @@ export class GroupFieldModel extends HoistModel {
      * followed into the create option. Captured from the select's filter callback.
      */
     private query: string = null;
-
-    /** True when the field's views span multiple groups, with no single value to display. */
-    @observable isMixed: boolean = false;
 
     get value(): string {
         return this.formModel.values.group;
@@ -133,18 +120,16 @@ export class GroupFieldModel extends HoistModel {
         return `That group already exists. ${capitalize(pluralize(viewManagerModel.typeDisplayName))} will be added to it.`;
     }
 
-    /** Placeholder for an empty field, spelling out what empty means in this context. */
+    /** An empty field is the top level - the one unambiguous alternative to a named group. */
     get placeholder(): string {
-        if (this.context === 'single') return 'Top Level';
-        return this.isMixed ? 'Mixed' : 'No change';
+        return 'Top Level';
     }
 
-    constructor({formModel, viewManagerModel, context}: GroupFieldModelConfig) {
+    constructor({formModel, viewManagerModel}: GroupFieldModelConfig) {
         super();
         makeObservable(this);
         this.formModel = formModel;
         this.viewManagerModel = viewManagerModel;
-        this.context = context;
 
         // Compose the typed name onto its parent and write it straight to the bound `group` field,
         // so what the form will save is never a step behind what the control shows. An empty name
@@ -163,12 +148,9 @@ export class GroupFieldModel extends HoistModel {
 
     /** Init the bound `group` field, returning the control to its select face. */
     @action
-    init(group: string, isMixed: boolean = false) {
-        this.isMixed = isMixed;
+    init(group: string) {
         this.exitCreate();
-        this.formModel.fields.group.init(
-            isMixed ? null : (normalizeGroupValue(group) ?? TOP_LEVEL_GROUP_VALUE)
-        );
+        this.formModel.fields.group.init(normalizeGroupValue(group) ?? TOP_LEVEL_GROUP_VALUE);
         this.formModel.fields.newGroupName.init(null);
     }
 

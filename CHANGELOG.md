@@ -113,14 +113,12 @@
   to every view nested beneath it. ⚠️ NOTE - this requires ag-Grid's `RowDragModule` to be
   registered by the app in its `Bootstrap.ts` (alongside the other required community modules) -
   the drag handles will not render without it. The `ViewManager` also supports bulk editing of
-  views' group, pin, and visibility state.
+  views' pin and visibility state.
     * Group paths display as breadcrumbs (`Africa › Sub-Saharan`) everywhere they appear - the
       slash delimiter within the persisted group string no longer surfaces in the UI at all.
-    * Choosing a destination group is now a single searchable combobox with an explicit
-      `Top Level` option and a persistent option that swaps the control in place into an input
-      naming a new group. Replaces the prior select + "Sub Group" button + subgroup input.
-    * An empty group field in a bulk edit means "no change", leaving each view in its current
-      group. Moving a multi-selection to the top level requires picking `Top Level` explicitly.
+    * A view's group is chosen with a single searchable combobox, offering an explicit `Top Level`
+      option and a persistent option that swaps the control in place into an input naming a new
+      group. Replaces the prior select + "Sub Group" button + subgroup input.
     * Deleting the last view in a group toasts that the group went with it - groups exist only as
       long as they contain views.
 * `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within
