@@ -44,6 +44,12 @@ export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
 
+    /**
+     * Element to display inline on the left side of the input. Unlike `leftIcon`, the input's
+     * padding tracks this element's width, so it can hold wider content. Use one or the other.
+     */
+    leftElement?: ReactNode;
+
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
 
@@ -131,6 +137,7 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
                 inputRef: composeRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
+                leftElement: props.leftElement as ReactElement,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
                 rightElement:

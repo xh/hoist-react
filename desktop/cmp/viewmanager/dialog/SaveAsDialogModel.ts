@@ -7,14 +7,14 @@
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
-import {
-    composeGroupPath,
-    normalizeGroupPath,
-    VIEW_GROUP_DELIMITER,
-    ViewManagerModel
-} from '@xh/hoist/cmp/viewmanager';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {
+    GroupFieldModel,
+    newGroupNameField
+} from '@xh/hoist/desktop/cmp/viewmanager/dialog/editpanels/GroupFieldModel';
+import {normalizeGroupValue} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {some} from 'lodash';
 
 /**
@@ -24,16 +24,19 @@ export class SaveAsDialogModel extends HoistModel {
     readonly parent: ViewManagerModel;
 
     @managed readonly formModel: FormModel;
+    @managed readonly groupFieldModel: GroupFieldModel;
     @observable isOpen: boolean = false;
-
-    /** True to show the text input naming a new group to create under the selected group. */
-    @bindable isAddingSubgroup: boolean = false;
 
     constructor(parent: ViewManagerModel) {
         super();
         makeObservable(this);
         this.parent = parent;
         this.formModel = this.createFormModel();
+        this.groupFieldModel = new GroupFieldModel({
+            formModel: this.formModel,
+            viewManagerModel: parent,
+            context: 'single'
+        });
     }
 
     @action
@@ -44,15 +47,14 @@ export class SaveAsDialogModel extends HoistModel {
 
         formModel.init({
             name,
-            group: src.group,
-            subgroup: null,
+            newGroupName: null,
             // Do not copy description or visibility from source view
             description: null,
             visibility: 'private',
             isPinned: !!src.info?.isPinned
         });
+        this.groupFieldModel.init(src.group);
 
-        this.isAddingSubgroup = false;
         this.isOpen = true;
     }
 
@@ -88,16 +90,7 @@ export class SaveAsDialogModel extends HoistModel {
                     ]
                 },
                 {name: 'group'},
-                {
-                    name: 'subgroup',
-                    displayName: 'Sub Group',
-                    rules: [
-                        ({value}) =>
-                            value?.includes(VIEW_GROUP_DELIMITER)
-                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
-                                : null
-                    ]
-                },
+                newGroupNameField(),
                 {name: 'description'},
                 {name: 'visibility'}
             ]
@@ -107,7 +100,7 @@ export class SaveAsDialogModel extends HoistModel {
     private async doSaveAsAsync() {
         let {formModel, parent} = this,
             {typeDisplayName, globalDisplayName} = parent,
-            {name, group, subgroup, description, visibility} = formModel.getData(),
+            {name, group, description, visibility} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             isGlobal = visibility === 'global',
             isShared = visibility === 'shared';
@@ -132,12 +125,9 @@ export class SaveAsDialogModel extends HoistModel {
             if (!confirmed) return;
         }
 
-        const base = normalizeGroupPath(group),
-            trimmedSubgroup = subgroup?.trim();
-
         await parent.saveAsAsync({
             name: name.trim(),
-            group: trimmedSubgroup ? composeGroupPath(base, trimmedSubgroup) : base,
+            group: normalizeGroupValue(group),
             description: description?.trim(),
             isGlobal,
             isShared,

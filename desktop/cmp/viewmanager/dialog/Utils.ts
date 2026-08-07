@@ -5,95 +5,46 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {div, fragment, hbox, p, span, strong} from '@xh/hoist/cmp/layout';
-import {
-    getAllGroupPaths,
-    getGroupLeaf,
-    splitGroupPath,
-    VIEW_GROUP_DELIMITER,
-    ViewInfo,
-    ViewManagerModel
-} from '@xh/hoist/cmp/viewmanager';
+import {fragment, p, span, strong} from '@xh/hoist/cmp/layout';
+import {normalizeGroupPath, ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {SelectOption, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, every, startCase} from 'lodash';
 import {ReactNode} from 'react';
+import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
 
 /**
- * Sentinel value for a group select whose bound views span multiple groups. Displayed via a
- * generated "[mixed]" option and never a legitimate save target - any real selection (or a clear
- * to empty, meaning top level) differs from this value and marks the field dirty.
+ * Sentinel value for the explicit "Top Level" option in a group select - distinct from an empty
+ * field, which means top level in a single-view edit but "leave each view where it is" in a bulk
+ * edit. Normalized to a null group path on save via {@link normalizeGroupValue}.
  */
-export const MIXED_GROUP_VALUE = 'xh-mixed-group-value';
+export const TOP_LEVEL_GROUP_VALUE = 'xh-top-level-group';
 
-/** SelectOption for a group path, with depth for indented hierarchical rendering. */
+/** Sentinel value for the group select's persistent "New group..." option. */
+export const NEW_GROUP_VALUE = 'xh-new-group';
+
+/** SelectOption for a group path. */
 export interface GroupPathOption extends SelectOption {
-    /** Full delimited group path. */
+    /** Full delimited group path, or one of the sentinel values above. */
     value: string;
-    /**
-     * Leaf segment of the path, displayed in the select's value container (and matched when
-     * filtering). The full path is shown via the menu's indented hierarchy and the group field's
-     * companion path display.
-     */
+    /** Full delimited path, for filtering and screen readers - displayed as a breadcrumb. */
     label: string;
-    /** 0-based nesting depth, for indentation. */
-    depth: number;
 }
 
-/**
- * Options for all existing group paths across the relevant views, including implied ancestor
- * paths, in depth-first order suitable for display as an indented hierarchy via
- * {@link groupPathOptionRenderer}.
- */
-export function getGroupPathOptions(vmm: ViewManagerModel, isGlobal: boolean): GroupPathOption[] {
-    const views = isGlobal ? vmm.globalViews : vmm.ownedViews;
-    return getAllGroupPaths(views).map(path => ({
-        value: path,
-        label: getGroupLeaf(path),
-        depth: splitGroupPath(path).length - 1
-    }));
+/** Resolve a group select value to the group path to persist - sentinel/empty both mean null. */
+export function normalizeGroupValue(value: string): string {
+    return !value || value === TOP_LEVEL_GROUP_VALUE ? null : normalizeGroupPath(value);
 }
 
-/** Display a group path as a delimiter-prefixed absolute path, or an empty string when null. */
-export function groupPathDisplay(path: string): ReactNode {
-    if (!path) return '';
-    return VIEW_GROUP_DELIMITER + path;
+/** Display a committed group select value - a breadcrumb, or the italic-muted top-level label. */
+export function groupValueDisplay(value: string, emphasizeLeaf: boolean = false): ReactNode {
+    const path = normalizeGroupValue(value);
+    return path ? groupPathBreadcrumb({path, emphasizeLeaf}) : topLevelLabel();
 }
 
-/**
- * Factory for a menu renderer displaying a {@link GroupPathOption} as its leaf name, indented
- * per depth. Mirrors the default Select renderer's left gutter, with a check marking the option
- * matching `selectedValue` - pass the select's currently committed value from the caller's
- * render, as custom option renderers do not otherwise receive the selection.
- */
-export function groupPathOptionRenderer(
-    selectedValue: string
-): (opt: GroupPathOption) => ReactNode {
-    return opt => {
-        const {value, depth} = opt;
-
-        return hbox({
-            alignItems: 'center',
-            items: [
-                div({
-                    style: {minWidth: 25, textAlign: 'center'},
-                    item: value === selectedValue ? Icon.check({size: 'sm'}) : null
-                }),
-                hbox({
-                    alignItems: 'center',
-                    paddingLeft: (depth ?? 0) * 15,
-                    items: [
-                        Icon.folder(),
-                        span({
-                            item: getGroupLeaf(value),
-                            style: {marginLeft: 5}
-                        })
-                    ]
-                })
-            ]
-        });
-    };
+/** Italic-muted *Top Level* - the standard signal for a value that is not a literal group name. */
+export function topLevelLabel(): ReactNode {
+    return span({className: 'xh-view-manager__group-path--sentinel', item: 'Top Level'});
 }
 
 /**

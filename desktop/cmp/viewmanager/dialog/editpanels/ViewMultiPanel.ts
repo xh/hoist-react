@@ -6,7 +6,7 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {div, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {br, div, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select} from '@xh/hoist/desktop/cmp/input';
@@ -14,12 +14,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {CSSProperties} from 'react';
-import {
-    getGroupPathOptions,
-    getVisibilityInfo,
-    getVisibilityOptions,
-    MIXED_GROUP_VALUE
-} from '../Utils';
+import {getVisibilityInfo, getVisibilityOptions} from '../Utils';
 import {formButtons} from './FormButtons';
 import {groupField} from './GroupField';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
@@ -37,8 +32,7 @@ export const viewMultiPanel = hoistCmp.factory({
         if (isEmpty(views)) return null;
 
         const visibility = formModel.values.visibility,
-            isGlobal = visibility === 'global',
-            isMixedGroup = formModel.values.group === MIXED_GROUP_VALUE,
+            {typeDisplayName} = viewManagerModel,
             visOptions = getVisibilityOptions(viewManagerModel),
             visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
@@ -74,11 +68,17 @@ export const viewMultiPanel = hoistCmp.factory({
                         }),
                         fragment(
                             groupField({
-                                model,
-                                // Omitted when the selected views span multiple groups - there
-                                // is no meaningful single group value to display or edit.
-                                omit: !allEditable || isMixedGroup,
-                                options: getGroupPathOptions(viewManagerModel, isGlobal)
+                                model: model.groupFieldModel,
+                                omit: !allEditable,
+                                info: fragment(
+                                    `Leave blank to keep each ${typeDisplayName} in its current group.`,
+                                    ...(model.isMixedGroup
+                                        ? [
+                                              br(),
+                                              `Moving flattens the selection into one group - any nested groups beneath it are discarded.`
+                                          ]
+                                        : [])
+                                )
                             }),
                             formField({
                                 field: 'visibility',
@@ -86,7 +86,7 @@ export const viewMultiPanel = hoistCmp.factory({
                                 item: select({
                                     options: visOptions,
                                     enableFilter: false,
-                                    placeholder: '(Mixed)'
+                                    placeholder: 'Mixed'
                                 }),
                                 info: visInfo
                             }),

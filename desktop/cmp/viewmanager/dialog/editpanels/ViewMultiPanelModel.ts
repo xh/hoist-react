@@ -6,18 +6,13 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
-import {
-    composeGroupPath,
-    normalizeGroupPath,
-    VIEW_GROUP_DELIMITER,
-    ViewInfo,
-    ViewUpdateSpec
-} from '@xh/hoist/cmp/viewmanager';
+import {ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {computed, makeObservable} from '@xh/hoist/mobx';
 import {every, isEmpty, uniq} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
-import {confirmVisibilityChangeAsync, MIXED_GROUP_VALUE, Visibility} from '../Utils';
+import {confirmVisibilityChangeAsync, normalizeGroupValue, Visibility} from '../Utils';
+import {GroupFieldModel, newGroupNameField} from './GroupFieldModel';
 
 /**
  * Backing model for bulk editing of multiple selected views.
@@ -26,9 +21,7 @@ export class ViewMultiPanelModel extends HoistModel {
     parent: ManageDialogModel;
 
     @managed formModel: FormModel;
-
-    /** True to show the text input naming a new group to create under the selected group. */
-    @bindable isAddingSubgroup: boolean = false;
+    @managed groupFieldModel: GroupFieldModel;
 
     get views(): ViewInfo[] {
         return this.parent.selectedViews;
@@ -38,26 +31,24 @@ export class ViewMultiPanelModel extends HoistModel {
         return every(this.views, 'isEditable');
     }
 
+    /** True when the selected views span multiple groups - there is no single value to show. */
+    @computed
+    get isMixedGroup(): boolean {
+        return uniq(this.views.map(v => v.group ?? null)).length > 1;
+    }
+
     constructor(parent: ManageDialogModel) {
         super();
         makeObservable(this);
 
         this.parent = parent;
         this.formModel = new FormModel({
-            fields: [
-                {name: 'group'},
-                {
-                    name: 'subgroup',
-                    displayName: 'Sub Group',
-                    rules: [
-                        ({value}) =>
-                            value?.includes(VIEW_GROUP_DELIMITER)
-                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
-                                : null
-                    ]
-                },
-                {name: 'visibility'}
-            ]
+            fields: [{name: 'group'}, newGroupNameField(), {name: 'visibility'}]
+        });
+        this.groupFieldModel = new GroupFieldModel({
+            formModel: this.formModel,
+            viewManagerModel: parent.viewManagerModel,
+            context: 'bulk'
         });
 
         this.addReaction({
@@ -67,15 +58,13 @@ export class ViewMultiPanelModel extends HoistModel {
                     vals = uniq(
                         views.map(v => (v.isShared ? 'shared' : v.isGlobal ? 'global' : 'private'))
                     );
-                this.isAddingSubgroup = false;
-                // Group inits to the views' common group when uniform (empty meaning top level,
-                // as in the single-view panel), else to the displayed-only mixed sentinel.
-                const groups = uniq(views.map(v => v.group ?? null));
                 formModel.init({
-                    group: groups.length === 1 ? groups[0] : MIXED_GROUP_VALUE,
-                    subgroup: null,
+                    newGroupName: null,
                     visibility: vals.length === 1 ? vals[0] : null
                 });
+                // Empty on a mixed selection, where it reads as "no change" - never as a move to
+                // the top level, which the user must choose explicitly.
+                this.groupFieldModel.init(views[0]?.group, this.isMixedGroup);
                 formModel.readonly = !this.allEditable;
             },
             fireImmediately: true
@@ -84,7 +73,7 @@ export class ViewMultiPanelModel extends HoistModel {
 
     reset() {
         this.formModel.reset();
-        this.isAddingSubgroup = false;
+        this.groupFieldModel.reset();
     }
 
     async saveAsync() {
@@ -93,12 +82,11 @@ export class ViewMultiPanelModel extends HoistModel {
             updates: ViewUpdateSpec = {};
 
         if (!formModel.isDirty || isEmpty(views)) return;
+        if (!(await formModel.validateAsync())) return;
 
-        const subgroup = formModel.values.subgroup?.trim(),
-            groupValue = groupField.value;
-        if (groupField.isDirty || (subgroup && groupValue !== MIXED_GROUP_VALUE)) {
-            const base = normalizeGroupPath(groupValue);
-            updates.group = subgroup ? composeGroupPath(base, subgroup) : base;
+        // An empty group leaves every view where it is - only a real selection moves anything.
+        if (groupField.isDirty && groupField.value) {
+            updates.group = normalizeGroupValue(groupField.value);
         }
 
         if (visibilityField.isDirty) {

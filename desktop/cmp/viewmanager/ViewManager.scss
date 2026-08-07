@@ -209,24 +209,86 @@
   }
 
   //------------------------
+  // Group paths
+  //------------------------
+  // The single rendering of a group path wherever one is displayed - the slash delimiter within
+  // the persisted string never surfaces. Inline-flex so it reads within a sentence as well as
+  // within a form control or menu row.
+  &__group-path {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--xh-pad-half-px);
+    min-width: 0;
+    white-space: nowrap;
+    color: var(--xh-text-color);
+
+    &__separator,
+    &__segment--collapsed {
+      color: var(--xh-text-color-muted);
+    }
+
+    // Context rather than subject - must follow the base rule to win on source order.
+    &--muted {
+      color: var(--xh-text-color-muted);
+    }
+
+    // The final segment is the subject - its ancestors are the context leading to it.
+    &--emph &__segment {
+      color: var(--xh-text-color-muted);
+    }
+
+    &--emph &__segment--leaf {
+      color: var(--xh-text-color);
+      font-weight: 600;
+    }
+
+    // Not a literal value, and so cannot collide with a name a user typed.
+    &--sentinel {
+      font-style: italic;
+      color: var(--xh-text-color-muted);
+    }
+  }
+
+  //------------------------
   // Edit panel group field
   //------------------------
   &__group-field {
-    margin-bottom: var(--xh-pad-px);
+    // An empty field is never a literal name - match the Top Level option's presentation.
+    .xh-select__placeholder {
+      font-style: italic;
+      color: var(--xh-text-color-muted);
+    }
 
-    .view-group-delimiter {
-      font-size: 28px;
-      font-weight: 100;
+    // Blueprint pins the input's left container to the top of the field with auto height, sized
+    // for a 16px icon. Stretch it to the full height so wider content centers on the input text.
+    .bp6-input-left-container {
+      display: flex;
+      align-items: center;
+      bottom: 0;
     }
-    .xh-form-field {
-      margin-bottom: 0;
+
+    // Parent of a group being created - static context within the field, not an editable segment.
+    // Blueprint sets the input's left padding to this element's width, so its right padding is
+    // what separates the trailing separator from the name being typed.
+    &__parent {
+      align-items: center;
+      gap: var(--xh-pad-half-px);
+      padding-left: var(--xh-pad-px);
+      padding-right: var(--xh-pad-half-px);
     }
-    // Mirror the standard FormField info-msg styling for the full-width info line.
-    &__info {
-      padding-left: var(--xh-form-field-padding);
-      font-size: var(--xh-form-field-msg-font-size);
-      line-height: var(--xh-form-field-msg-line-height);
-      text-transform: var(--xh-form-field-msg-text-transform);
+
+    // Creation as a first-class option rather than a separate button, set off from the paths
+    // above it by a rule. Select.scss puts the option's padding on this element, so the border
+    // spans the full width of the menu.
+    &__create-option {
+      gap: var(--xh-pad-half-px);
+      border-top: 1px solid var(--xh-border-color);
+      color: var(--xh-intent-primary-text-color);
+    }
+
+    // Non-blocking - the blocking "/" error renders via the field's own validation message.
+    &__warning {
+      color: var(--xh-intent-warning-text-color);
     }
   }
 }

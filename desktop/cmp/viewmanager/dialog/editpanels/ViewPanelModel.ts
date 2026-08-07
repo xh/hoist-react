@@ -8,16 +8,13 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable} from '@xh/hoist/mobx';
 import {capitalize, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from '../ManageDialogModel';
-import {
-    composeGroupPath,
-    normalizeGroupPath,
-    VIEW_GROUP_DELIMITER,
-    ViewInfo
-} from '@xh/hoist/cmp/viewmanager';
+import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {normalizeGroupValue} from '../Utils';
+import {GroupFieldModel, newGroupNameField} from './GroupFieldModel';
 
 /**
  * Backing model for EditForm
@@ -26,9 +23,7 @@ export class ViewPanelModel extends HoistModel {
     parent: ManageDialogModel;
 
     @managed formModel: FormModel;
-
-    /** True to show the text input naming a subgroup to create under the selected group. */
-    @bindable isAddingSubgroup: boolean = false;
+    @managed groupFieldModel: GroupFieldModel;
 
     get view(): ViewInfo {
         return this.parent.selectedView;
@@ -54,19 +49,24 @@ export class ViewPanelModel extends HoistModel {
 
         this.parent = parent;
         this.formModel = this.createFormModel();
+        this.groupFieldModel = new GroupFieldModel({
+            formModel: this.formModel,
+            viewManagerModel: parent.viewManagerModel,
+            context: 'single'
+        });
 
         this.addReaction({
             track: () => this.view,
             run: view => {
-                this.isAddingSubgroup = false;
                 if (view) {
                     const {formModel} = this;
                     formModel.init({
                         ...view,
                         visibility: view.isShared ? 'shared' : view.isGlobal ? 'global' : 'private',
                         owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName),
-                        subgroup: null
+                        newGroupName: null
                     });
+                    this.groupFieldModel.init(view.group);
                     formModel.readonly = !view.isEditable;
                 }
             },
@@ -76,7 +76,7 @@ export class ViewPanelModel extends HoistModel {
 
     reset() {
         this.formModel.reset();
-        this.isAddingSubgroup = false;
+        this.groupFieldModel.reset();
     }
 
     async saveAsync() {
@@ -88,14 +88,12 @@ export class ViewPanelModel extends HoistModel {
 
         if (!isValid || !isDirty) return;
 
-        const subgroup = formModel.values.subgroup?.trim();
-        if (updates.hasOwnProperty('group') || subgroup) {
-            const base = normalizeGroupPath(formModel.values.group);
-            updates.group = subgroup ? composeGroupPath(base, subgroup) : base;
+        if (updates.hasOwnProperty('group')) {
+            updates.group = normalizeGroupValue(formModel.values.group);
         }
-        delete updates.subgroup;
+        delete updates.newGroupName;
 
-        // A whitespace-only subgroup can dirty the form without producing any real updates.
+        // An abandoned new-group name can dirty the form without producing any real updates.
         if (isEmpty(updates)) return;
 
         if (visibilityField.isDirty) {
@@ -160,16 +158,7 @@ export class ViewPanelModel extends HoistModel {
                 },
                 {name: 'owner'},
                 {name: 'group'},
-                {
-                    name: 'subgroup',
-                    displayName: 'Sub Group',
-                    rules: [
-                        ({value}) =>
-                            value?.includes(VIEW_GROUP_DELIMITER)
-                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
-                                : null
-                    ]
-                },
+                newGroupNameField(),
                 {name: 'description'},
                 {name: 'visibility'}
             ]

@@ -12,6 +12,7 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
     buildViewGroupTree,
     composeGroupPath,
+    getAllGroupPaths,
     getGroupLeaf,
     isGroupSameOrDescendant,
     ViewGroupNode,
@@ -29,6 +30,8 @@ import {action, bindable, computed, makeObservable, observable, runInAction} fro
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, isEqual, keys, some, startCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
+import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
+import {topLevelLabel} from './Utils';
 import {RenameGroupDialogModel} from './editpanels/RenameGroupDialogModel';
 import {ViewMultiPanelModel} from './editpanels/ViewMultiPanelModel';
 import {ViewPanelModel} from './editpanels/ViewPanelModel';
@@ -595,19 +598,23 @@ export class ManageDialogModel extends HoistModel {
         const {viewManagerModel} = this,
             {typeDisplayName} = viewManagerModel,
             countStr = pluralize(typeDisplayName, views.length, true),
-            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'top level',
+            dest = this.groupDisplay(targetPath),
             prevGroups = new Map(views.map(v => [v, v.group ?? null]));
         try {
             await viewManagerModel.updateViewsInfoAsync(views, {group: targetPath});
             const message =
                 views.length === 1
-                    ? `${capitalize(typeDisplayName)} "${views[0].name}" moved to ${destStr}.`
-                    : `Moved ${countStr} to ${destStr}.`;
+                    ? fragment(
+                          `${capitalize(typeDisplayName)} "${views[0].name}" moved to `,
+                          dest,
+                          '.'
+                      )
+                    : fragment(`Moved ${countStr} to `, dest, '.');
             this.showMoveToast(message, () => this.restoreViewGroupsAsync(prevGroups));
         } catch (e) {
             XH.handleException(e, {showAlert: false});
             XH.dangerToast({
-                message: `Unable to move ${countStr} to ${destStr}.`,
+                message: fragment(`Unable to move ${countStr} to `, dest, '.'),
                 position: 'top'
             });
         } finally {
@@ -621,12 +628,19 @@ export class ManageDialogModel extends HoistModel {
     private async dropMoveGroupAsync(from: string, targetPath: string, isGlobal: boolean) {
         const leaf = getGroupLeaf(from),
             to = composeGroupPath(targetPath, leaf),
-            destStr = targetPath ? `"${getGroupLeaf(targetPath)}"` : 'top level';
+            dest = this.groupDisplay(targetPath);
         let moved = false;
         try {
             await this.viewManagerModel.renameGroupAsync(from, to, isGlobal);
             moved = true;
-            this.showMoveToast(`Group "${leaf}" moved to ${destStr}.`, async () => {
+            const message = fragment(
+                'Group ',
+                groupPathBreadcrumb({path: from}),
+                ' moved to ',
+                dest,
+                '.'
+            );
+            this.showMoveToast(message, async () => {
                 await this.viewManagerModel.renameGroupAsync(to, from, isGlobal);
                 await this.viewManagerModel.refreshAsync();
                 await this.refreshAsync();
@@ -635,7 +649,13 @@ export class ManageDialogModel extends HoistModel {
         } catch (e) {
             XH.handleException(e, {showAlert: false});
             XH.dangerToast({
-                message: `Unable to move group "${leaf}" to ${destStr}.`,
+                message: fragment(
+                    'Unable to move group ',
+                    groupPathBreadcrumb({path: from}),
+                    ' to ',
+                    dest,
+                    '.'
+                ),
                 position: 'top'
             });
         } finally {
@@ -649,7 +669,7 @@ export class ManageDialogModel extends HoistModel {
      * Show a success toast for an applied move, with an Undo action reversing it. Only the most
      * recently shown move can be undone - a new move clears any prior one still pending.
      */
-    private showMoveToast(message: string, undo: () => Promise<void>) {
+    private showMoveToast(message: ReactNode, undo: () => Promise<void>) {
         clearTimeout(this.lastMoveTimer);
         this.lastMove = {undo};
         this.lastMoveTimer = setTimeout(() => (this.lastMove = null), 5000);
@@ -703,12 +723,16 @@ export class ManageDialogModel extends HoistModel {
 
         if (!count) return;
 
-        const confirmStr = groupName
-            ? `group "${groupName}" and its ${count} nested ${pluralize(typeDisplayName, count)}`
+        const confirmStr: ReactNode = groupName
+            ? fragment(
+                  'group ',
+                  groupPathBreadcrumb({path: groupName}),
+                  ` and its ${count} nested ${pluralize(typeDisplayName, count)}`
+              )
             : count > 1
               ? pluralize(typeDisplayName, count, true)
               : views[0].typedName;
-        const msgs: ReactNode[] = [`Are you sure you want to delete ${confirmStr}?`];
+        const msgs: ReactNode[] = [fragment('Are you sure you want to delete ', confirmStr, '?')];
         if (some(views, v => v.isGlobal || v.isShared)) {
             count > 1
                 ? msgs.push(
@@ -734,7 +758,49 @@ export class ManageDialogModel extends HoistModel {
         });
         if (!confirmed) return;
 
-        return viewManagerModel.deleteViewsAsync(views).finally(() => this.refreshAsync());
+        // Groups are derived from the paths on their views, so deleting the last view in one
+        // takes the group with it - a consequence worth naming as it happens.
+        const isGlobalScope = views[0].isGlobal,
+            groupsBefore = this.scopedGroupPaths(isGlobalScope);
+        try {
+            await viewManagerModel.deleteViewsAsync(views);
+            this.showDeleteToast(count, groupsBefore, isGlobalScope);
+        } finally {
+            await this.refreshAsync();
+        }
+    }
+
+    /** Confirm the delete, naming any groups that ceased to exist along with their last views. */
+    private showDeleteToast(count: number, groupsBefore: string[], isGlobal: boolean) {
+        const {typeDisplayName} = this.viewManagerModel,
+            deleted = `Deleted ${pluralize(typeDisplayName, count, true)}.`,
+            remaining = new Set(this.scopedGroupPaths(isGlobal)),
+            removed = groupsBefore.filter(path => !remaining.has(path)),
+            noneRemain = ` removed — no ${pluralize(typeDisplayName)} remain.`;
+
+        let message: ReactNode = deleted;
+        if (removed.length === 1) {
+            message = fragment(
+                `${deleted} Group `,
+                groupPathBreadcrumb({path: removed[0]}),
+                noneRemain
+            );
+        } else if (removed.length > 1) {
+            message = `${deleted} ${removed.length} groups${noneRemain}`;
+        }
+
+        XH.successToast({message, position: 'top'});
+    }
+
+    /** All group paths within the global or owned views, which namespace their groups separately. */
+    private scopedGroupPaths(isGlobal: boolean): string[] {
+        const {viewManagerModel: vmm} = this;
+        return getAllGroupPaths(isGlobal ? vmm.globalViews : vmm.ownedViews);
+    }
+
+    /** A group path for display within a message - breadcrumb, or the top-level label. */
+    private groupDisplay(path: string): ReactNode {
+        return path ? groupPathBreadcrumb({path}) : topLevelLabel();
     }
 
     private async selectViewAsync(view: ViewInfo) {
@@ -929,6 +995,8 @@ export class ManageDialogModel extends HoistModel {
                             `Pin ${views} to your menu for quick access.`,
                             br(),
                             `Use groups to nest them under unlimited depth sub-menus.`,
+                            br(),
+                            `Groups exist as long as they contain ${views}. Create one by assigning a ${view} to it.`,
                             ...(enableSharing
                                 ? [
                                       br(),

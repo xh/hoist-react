@@ -13,7 +13,6 @@ import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/editpanels/ViewPanelModel';
 import {
-    getGroupPathOptions,
     getVisibilityInfo,
     getVisibilityOptions
 } from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
@@ -34,7 +33,6 @@ export const viewPanel = hoistCmp.factory({
 
         const {lastUpdated, lastUpdatedBy, isEditable} = view,
             visibility = formModel.values.visibility,
-            isGlobal = visibility === 'global',
             visOptions = getVisibilityOptions(viewManagerModel),
             visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
@@ -55,12 +53,7 @@ export const viewPanel = hoistCmp.factory({
                             field: 'owner',
                             omit: isEditable
                         }),
-                        groupField({
-                            model,
-                            // No explicit top-level option - an empty select reads as top level,
-                            // with clear removing the view from its group.
-                            options: getGroupPathOptions(viewManagerModel, isGlobal)
-                        }),
+                        groupField({model: model.groupFieldModel}),
                         formField({
                             field: 'description',
                             item: textArea({

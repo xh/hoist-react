@@ -17,7 +17,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 import {groupField} from './editpanels/GroupField';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
-import {getGroupPathOptions, getVisibilityOptions, getVisibilityInfo} from './Utils';
+import {getVisibilityOptions, getVisibilityInfo} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -46,8 +46,6 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
         const {parent, formModel} = model,
             {visibility} = formModel.values,
-            isGlobal = visibility === 'global',
-            groupOptions = getGroupPathOptions(parent, isGlobal),
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
 
@@ -71,10 +69,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 }
                             })
                         }),
-                        groupField({
-                            model,
-                            options: groupOptions
-                        }),
+                        groupField({model: model.groupFieldModel}),
                         formField({
                             field: 'description',
                             item: textArea({

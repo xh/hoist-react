@@ -22,6 +22,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {partition} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
+import {groupPathBreadcrumb} from '../GroupPathBreadcrumb';
 
 /**
  * Backing model for the RenameGroupDialog - rename/re-nest a single selected group in place,
@@ -145,7 +146,7 @@ export class RenameGroupDialogModel extends HoistModel {
 
         return XH.confirm({
             message: fragment(
-                p(`Group "${to}" already exists.`),
+                p(fragment('Group ', groupPathBreadcrumb({path: to}), ' already exists.')),
                 p(
                     `You will be adding ${pluralize(viewManagerModel.typeDisplayName, movingViews.length, true)} to this group.`
                 )
@@ -169,7 +170,7 @@ export class RenameGroupDialogModel extends HoistModel {
                         required,
                         ({value}) =>
                             value?.includes(VIEW_GROUP_DELIMITER)
-                                ? `Group name may not contain "${VIEW_GROUP_DELIMITER}".`
+                                ? `Group names can't contain "${VIEW_GROUP_DELIMITER}".`
                                 : null
                     ]
                 }
