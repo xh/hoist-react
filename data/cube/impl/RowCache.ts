@@ -24,10 +24,10 @@ import type {View} from '../View';
  *
  * Reuse is gated on every input to a row's published data being intrinsic or re-derived. In
  * Views with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly} - and so
- * may read the per-generation AggregationContext - reused aggregate/bucket rows recompute their
- * values in place each generation, with digests bumped only for values that actually changed.
- * Bucket stamps, `lockFn` and `omitFn` are re-derived for all rows on every generation and need
- * no constraint. `canAggregateFn` runs only at row construction and must be pure in its inputs.
+ * may read the per-generation AggregationContext - reused aggregate/bucket rows recompute
+ * exactly those complex fields in place each generation, with digests bumped only for values
+ * that actually changed. Bucket stamps, `lockFn` and `omitFn` are re-derived for all rows on
+ * every generation and need no constraint.
  *
  * Retention: entries not requested by a generation are retained for potential later reuse - e.g.
  * leaves for records currently excluded by filter, ready should the filter widen again. To bound
@@ -88,7 +88,7 @@ export class RowCache {
             } else if (shallowEqualArrays(ret.children, children)) {
                 if (!this.simpleAggs) {
                     this.recomputed++;
-                    if (ret.computeAggregates()) this.view.noteRowDataMutated(ret.data);
+                    if (ret.recomputeComplexAggregates()) this.view.noteRowDataMutated(ret.data);
                 }
                 this.reused++;
                 return ret as T;

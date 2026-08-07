@@ -29,7 +29,13 @@ export interface CubeFieldSpec extends FieldSpec {
     /** Instance of a Hoist Cube {@link Aggregator} or string token alias for one. */
     aggregator?: Aggregator | AggregatorToken;
 
-    /** Function to determine if aggregation should be performed at a given level of a query result. */
+    /**
+     * Function to determine if aggregation should be performed at a given level of a query result.
+     *
+     * Evaluated when an aggregate row is built and not re-invoked when that row is reused across
+     * view updates (e.g. on changes to child data). Should therefore be a pure function of its
+     * first three arguments, without depending on per-generation {@link AggregationContext} state.
+     */
     canAggregateFn?: CanAggregateFn;
 
     /** True if any further groupings below this dimension would be derivative (have only one member). */
