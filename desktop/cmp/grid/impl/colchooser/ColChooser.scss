@@ -1,0 +1,294 @@
+// Secondary text: grey-500 fails WCAG AA on the light background, so darken it there. Scoped to both
+// roots because the meta tooltip is portaled to body, outside the chooser.
+.xh-col-chooser,
+.xh-col-chooser__meta-tip {
+  --column-chooser-text-color-alt: color-mix(in srgb, var(--xh-gray) 60%, black);
+}
+
+.xh-dark {
+  .xh-col-chooser,
+  .xh-col-chooser__meta-tip {
+    --column-chooser-text-color-alt: var(--xh-gray);
+  }
+}
+
+.xh-col-chooser {
+  background: var(--xh-bg);
+
+  --ag-row-drag-indicator-color: var(--xh-intent-primary);
+
+  // Force the drop indicator line to span the full row width, regardless of tree depth.
+  .ag-row-highlight-indent::after {
+    left: 1px;
+    right: auto;
+    width: calc(100% - 1px);
+  }
+
+  &__tbar {
+    background-color: var(--xh-bg);
+  }
+
+  // Override the neutral text-color var, not `color` - the active state resolves a different var, so
+  // this leaves it untouched and avoids a specificity fight with the Hoist button rules.
+  &__toggle {
+    --xh-button-text-color: var(--xh-gray);
+  }
+
+  // Width and `flex: none` are set inline; this is only the divider from the buckets.
+  &__library {
+    border-right: var(--xh-border-width-px) solid var(--xh-border-color);
+  }
+
+  // Zone divider: a low-weight label riding a hairline rule, deliberately unlike a group-header bar.
+  &__separator {
+    display: flex;
+    align-items: center;
+    gap: var(--xh-pad-half-px);
+    flex: none;
+    // Right padding reserves the scrollbar gutter, so the toggle sits over the per-row action column.
+    margin: var(--xh-pad-px) 0 var(--xh-pad-half-px);
+
+    padding: 0 var(--xh-scrollbar-size-px) 0 var(--xh-pad-half-px);
+
+    &__line {
+      flex: 1;
+      height: 0;
+      border-top: var(--xh-border-width-px) solid var(--xh-border-color);
+    }
+
+    &__label {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--xh-pad-half-px);
+      white-space: nowrap;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--xh-blue-gray);
+    }
+
+    &__arrow {
+      color: var(--xh-orange-muted);
+    }
+
+    // Bulk-visibility checkbox, sized to line up with the per-row action checkboxes below it.
+    &__toggle.xh-button {
+      flex: none;
+      width: 36px; // = calcActionColWidth(1): centers the glyph over the action column
+      min-height: 0;
+      padding: 0;
+      font-size: var(--xh-grid-font-size-px);
+
+      // Match the per-row action checkbox, which uses the lighter primary tone - not the base tone the
+      // Icon `intent` prop applies.
+      .xh-intent-primary {
+        color: var(--xh-intent-primary-lighter);
+      }
+    }
+
+    // Drop the line segment on the side the label hugs, so its placement cues the pin direction.
+    &--left > .xh-col-chooser__separator__line:first-child,
+    &--right .xh-col-chooser__separator__label + .xh-col-chooser__separator__line {
+      display: none;
+    }
+  }
+
+  // The `!important` flex rules here and below beat the inline `flex: auto` on each grid's own Frame,
+  // which would otherwise grow every bucket evenly. min-height:0 lets this one scroll internally.
+  &__bucket--unpinned {
+    flex: 1 1 0 !important;
+    min-height: 0;
+
+    // `alwaysShowVerticalScroll` (see ColChooser.ts) also forces the fake scrollbar's track visible;
+    // reset the viewport to `auto` so the bar paints only on real overflow, gutter width intact.
+    .ag-body-vertical-scroll-viewport {
+      overflow-y: auto !important;
+    }
+  }
+
+  // min-height keeps an empty rail open as a 1-line drop strip; an auto-height grid collapses to 0 rows.
+  &__bucket--left,
+  &__bucket--right {
+    flex: none !important;
+    height: fit-content;
+    min-height: 40px;
+
+    // Match the unpinned bucket's reserved gutter, so action-column checkboxes share a right edge.
+    padding-right: var(--xh-scrollbar-size-px);
+
+    // Override ag-grid's 50px auto-height viewport floor to match our compact drop strip.
+    .ag-layout-auto-height .ag-center-cols-viewport {
+      min-height: 40px;
+    }
+
+    .ag-overlay-no-rows-wrapper {
+      // ag-grid's inline centering padding-top is computed against a pre-layout (~0) auto-height
+      // viewport, hiding the text until a resize recomputes it. Our strip is a fixed band anyway.
+      padding-top: 0 !important;
+      font-size: 12px;
+      font-style: italic;
+    }
+  }
+
+  // Empty pinned-rail drop hint: pin-direction arrow beside the prompt, centered in the strip.
+  &__drop-hint {
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    &__arrow {
+      color: var(--xh-orange-muted);
+    }
+  }
+
+  &__bucket--empty {
+    border-top: var(--xh-border-width-px) dashed var(--xh-border-color);
+    border-bottom: var(--xh-border-width-px) dashed var(--xh-border-color);
+
+    // Set vars rather than properties - the Hoist grid theme rules win on selector specificity, but a
+    // var set here cascades into them.
+    &.xh-col-chooser__bucket--drag-over {
+      --xh-grid-bg: var(--xh-intent-primary-trans1);
+      --xh-grid-empty-text-color: var(--xh-intent-primary);
+      border-color: var(--xh-intent-primary);
+    }
+  }
+
+  &__column-row {
+    // Dim the cell content, not the row - opacity on the row dims its drop-indicator ::after too.
+    &--hidden .ag-cell {
+      opacity: 0.5;
+    }
+  }
+
+  // The row owns its vertical rhythm, so the cell can grow with wrapped description content.
+  &__lib-cell.ag-cell {
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 1.4;
+    white-space: normal;
+  }
+
+  &__lib-cell {
+    &__row {
+      gap: var(--xh-pad-px);
+      padding: var(--xh-pad-half-px) 0;
+      width: 100%;
+      min-height: 24px;
+
+      // Row gap owns handle spacing - drop the shared name-cell margin.
+      .xh-col-chooser__name-cell__drag-handle,
+      .xh-col-chooser__name-cell__lock {
+        margin-right: 0;
+        flex: none;
+      }
+    }
+
+    &__body {
+      flex: 1;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    &__name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__desc {
+      font-size: var(--xh-font-size-small-px);
+      line-height: 1.4;
+      color: var(--column-chooser-text-color-alt);
+    }
+  }
+
+  &__name-cell {
+    &__drag-handle,
+    &__lock {
+      margin-right: var(--xh-pad-half-px);
+      color: var(--xh-text-color-muted);
+    }
+
+    &__drag-handle {
+      cursor: grab;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+
+    &__lock {
+      cursor: not-allowed;
+    }
+
+    // Info glyph trailing the name - deliberately small, so it doesn't compete with the name itself.
+    &__meta {
+      margin-left: var(--xh-pad-half-px);
+      font-size: 10px;
+      cursor: default;
+      color: var(--column-chooser-text-color-alt);
+
+      &:hover {
+        color: var(--xh-orange-muted);
+        cursor: pointer;
+      }
+
+      // Blueprint's element-qualified `span.bp6-popover-target {display: inline-block}` outranks a lone
+      // class, so chain the popover class here to win and actually center the glyph.
+      &.bp6-popover-target {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+  }
+}
+
+// Blueprint portals the popover to the document body, so these rules must live outside .xh-col-chooser.
+.xh-col-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
+  padding: 0;
+  background: var(--xh-bg);
+  border: var(--xh-border-solid);
+  border-radius: var(--xh-border-radius-px);
+}
+
+.xh-col-chooser__meta-tip {
+  gap: var(--xh-pad-half-px);
+  padding: var(--xh-pad-px);
+  max-width: 280px;
+
+  &__header {
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--xh-pad-px);
+
+    // Divider below the header only when a description follows it.
+    &:not(:last-child) {
+      padding-bottom: var(--xh-pad-half-px);
+      margin-bottom: var(--xh-pad-half-px);
+      border-bottom: var(--xh-border-width-px) solid var(--xh-border-color);
+    }
+  }
+
+  &__title {
+    color: var(--xh-text-color);
+  }
+
+  &__group {
+    flex: none;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--xh-text-color-muted);
+    background: var(--xh-intent-neutral-trans2);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  &__desc {
+    font-size: var(--xh-font-size-small-px);
+    line-height: 1.4;
+    color: var(--column-chooser-text-color-alt);
+  }
+}

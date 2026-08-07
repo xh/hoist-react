@@ -49,7 +49,10 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
+import {
+    ColChooserModalModel as DesktopColChooserModalModel,
+    ColChooserPanelModel as DesktopColChooserPanelModel
+} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -113,6 +116,7 @@ import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
     ColChooserConfig,
+    ColChooserPanelConfig,
     ColumnState,
     ColumnStateOptions,
     GridModelPersistOptions,
@@ -157,8 +161,16 @@ export interface GridConfig {
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
     filterModel?: GridFilterModelConfig | boolean;
 
-    /** Config with which to create a ColChooserModel, or boolean `true` to enable default.*/
+    /**
+     * Config for the modal (dialog/popover) column chooser, or boolean `true` to enable default.
+     */
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean;
+
+    /**
+     * Config for the docked, non-modal side-panel column chooser, or boolean `true` to enable
+     * default. Desktop only - ignored on mobile.
+     */
+    colChooserPanelModel?: Omit<ColChooserPanelConfig, 'gridModel'> | boolean;
 
     /**
      * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
@@ -409,6 +421,7 @@ export interface GridModelDefaults {
     cellBorders?: boolean;
     clicksToExpand?: number | null;
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean | null;
+    colChooserPanelModel?: Omit<ColChooserPanelConfig, 'gridModel'> | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
@@ -455,6 +468,7 @@ export class GridModel extends HoistModel {
         cellBorders: false,
         clicksToExpand: null,
         colChooserModel: null,
+        colChooserPanelModel: null,
         colDefaults: null,
         contextMenu: [
             'filter',
@@ -502,6 +516,7 @@ export class GridModel extends HoistModel {
     selModel: StoreSelectionModel;
     treeMode: boolean;
     colChooserModel: IColChooserModel;
+    colChooserPanelModel: IColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
@@ -549,6 +564,12 @@ export class GridModel extends HoistModel {
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
+
+    /**
+     * Index of leaf columns by colId, rebuilt in lockstep with `columns` (see {@link setColumns}) so
+     * {@link getColumn} is an O(1) lookup rather than a recursive tree walk.
+     */
+    @observable.ref private leafColumnMap: Map<string, Column> = new Map();
 
     @computed.struct
     get persistableColumnState(): ColumnState[] {
@@ -613,6 +634,7 @@ export class GridModel extends HoistModel {
             selModel,
             filterModel,
             colChooserModel = GridModel.defaults.colChooserModel,
+            colChooserPanelModel = GridModel.defaults.colChooserPanelModel,
             emptyText = GridModel.defaults.emptyText,
             hideEmptyTextBeforeLoad = true,
             sortBy = [],
@@ -738,6 +760,7 @@ export class GridModel extends HoistModel {
         });
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
+        this.colChooserPanelModel = this.parsePanelChooserModel(colChooserPanelModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
         if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
@@ -1151,7 +1174,7 @@ export class GridModel extends HoistModel {
     setGroupBy(colIds: Some<string>) {
         colIds = isNil(colIds) ? [] : castArray(colIds);
 
-        const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
+        const invalidColIds = colIds.filter(it => !this.getColumn(it));
         if (invalidColIds.length) {
             this.logWarn(
                 'Unknown colId specified in groupBy - grid will not be grouped.',
@@ -1160,7 +1183,9 @@ export class GridModel extends HoistModel {
             colIds = [];
         }
 
-        this.groupBy = colIds;
+        if (!equal(this.groupBy, colIds)) {
+            this.groupBy = colIds;
+        }
     }
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
@@ -1237,7 +1262,7 @@ export class GridModel extends HoistModel {
 
         // Allow sorts associated with Hoist columns as well as ag-Grid dynamic grouping columns
         const invalidSorters = newSorters.filter(
-            it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId)
+            it => !it.colId?.startsWith('ag-Grid') && !this.getColumn(it.colId)
         );
         if (invalidSorters.length) {
             this.logWarn('GridSorter colId not found in grid columns', invalidSorters);
@@ -1284,7 +1309,9 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
+        const leaves = this.getLeafColumns();
+        this.leafColumnMap = new Map(leaves.map(it => [it.colId, it]));
+        this.columnState = leaves.map(it => this.getDefaultStateForColumn(it));
     }
 
     /**
@@ -1294,6 +1321,7 @@ export class GridModel extends HoistModel {
      * state, or hidden if `opts.hideNewColumns` is set - this method does not patch the existing
      * state. Use {@link updateColumnState} to apply targeted changes to particular columns.
      */
+    @action
     setColumnState(colState: ColumnState[], opts?: ColumnStateOptions) {
         this.columnState = this.cleanColumnState(colState, opts);
     }
@@ -1302,10 +1330,14 @@ export class GridModel extends HoistModel {
         this.colChooserModel?.open();
     }
 
+    showColChooserPanel() {
+        this.colChooserPanelModel?.open();
+    }
+
     noteAgColumnStateChanged(agColState: AgColumnState[]) {
         const colStateChanges: Partial<ColumnState>[] = agColState.map(
             ({colId, width, hide, pinned}) => {
-                const col = this.findColumn(this.columns, colId);
+                const col = this.getColumn(colId);
                 if (!col) return null;
                 return {
                     colId,
@@ -1345,7 +1377,7 @@ export class GridModel extends HoistModel {
     }
 
     noteColumnManuallySized(colId, width) {
-        const col = this.findColumn(this.columns, colId);
+        const col = this.getColumn(colId);
         if (!width || !col || col.flex) return;
         const colStateChanges = [{colId, width, manuallySized: true}];
         this.updateColumnState(colStateChanges);
@@ -1368,15 +1400,16 @@ export class GridModel extends HoistModel {
         if (isEmpty(colStateChanges)) return;
 
         let columnState = cloneDeep(this.columnState);
+        const stateById = new Map(columnState.map(it => [it.colId, it]));
 
         throwIf(
-            colStateChanges.some(({colId}) => !find(columnState, {colId})),
+            colStateChanges.some(({colId}) => !stateById.has(colId)),
             'Invalid columns detected in column changes!'
         );
 
         // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
-            const col: ColumnState = find(columnState, {colId: change.colId});
+            const col = stateById.get(change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
@@ -1385,8 +1418,8 @@ export class GridModel extends HoistModel {
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
-        if (colStateChanges.length === this.getLeafColumns().length) {
-            columnState = colStateChanges.map(c => find(columnState, {colId: c.colId}));
+        if (colStateChanges.length === this.leafColumnMap.size) {
+            columnState = colStateChanges.map(c => stateById.get(c.colId));
         }
 
         if (!equal(this.columnState, columnState)) {
@@ -1395,11 +1428,27 @@ export class GridModel extends HoistModel {
     }
 
     getColumn(colId: string): Column {
-        return this.findColumn(this.columns, colId);
+        return this.leafColumnMap.get(colId) ?? null;
     }
 
     getColumnGroup(groupId: string): ColumnGroup {
         return this.findColumnGroup(this.columns, groupId);
+    }
+
+    /**
+     * True if the given leaf-level column is configured to allow the user to hide it (i.e. its
+     * `hideable` flag). Returns false if the colId does not resolve to a column.
+     */
+    isColumnHideable(colId: string): boolean {
+        return this.getColumn(colId)?.hideable ?? false;
+    }
+
+    /**
+     * True if the given leaf-level column is configured to allow the user to reorder it (i.e. its
+     * `movable` flag). Returns false if the colId does not resolve to a column.
+     */
+    isColumnMovable(colId: string): boolean {
+        return this.getColumn(colId)?.movable ?? false;
     }
 
     /** Return all leaf-level columns - i.e. excluding column groups. */
@@ -1838,12 +1887,13 @@ export class GridModel extends HoistModel {
 
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
         // under a prior release of the app and have since been removed from the code.
-        let ret = columnState.filter(({colId}) => this.findColumn(gridCols, colId));
+        let ret = columnState.filter(({colId}) => this.getColumn(colId));
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
+        const retColIds = new Set(ret.map(s => s.colId));
         gridCols.forEach((col, idx) => {
-            if (!find(ret, {colId: col.colId})) {
+            if (!retColIds.has(col.colId)) {
                 const state = this.getDefaultStateForColumn(col);
 
                 // Hide new columns if so requested - but never those the app requires to be shown,
@@ -1857,7 +1907,7 @@ export class GridModel extends HoistModel {
         });
 
         ret = ret.map(state => {
-            const col = this.findColumn(gridCols, state.colId);
+            const col = this.getColumn(state.colId);
 
             // Remove the width from any non-resizable column - we don't want to track those widths as
             // they are set programmatically (e.g. fixed / action columns), and saved state should not
@@ -2048,9 +2098,21 @@ export class GridModel extends HoistModel {
     private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
-        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
+        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModalModel;
         chooserModel = chooserModel === true ? {} : chooserModel;
         return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
+    }
+
+    // Docked side-panel chooser is a desktop-only, non-modal presentation - never built on mobile.
+    private parsePanelChooserModel(
+        chooserModel: GridConfig['colChooserPanelModel']
+    ): IColChooserModel {
+        if (XH.isMobileApp || !chooserModel) return null;
+
+        chooserModel = chooserModel === true ? {} : chooserModel;
+        return this.markManaged(
+            new DesktopColChooserPanelModel({...chooserModel, gridModel: this})
+        );
     }
 
     private isGroupSpec(col: ColumnOrGroupSpec): col is ColumnGroupSpec {

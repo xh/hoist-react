@@ -140,6 +140,18 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 hidden: !gridModel?.colChooserModel,
                 actionFn: () => gridModel.colChooserModel?.open()
             });
+        case 'colChooserPanel':
+            return new RecordAction({
+                hidden: !gridModel?.colChooserPanelModel,
+                displayFn: () => {
+                    const isOpen = gridModel.colChooserPanelModel?.isOpen;
+                    return {
+                        icon: isOpen ? Icon.cross() : Icon.gridPanel(),
+                        text: `${isOpen ? 'Close' : 'Open'} Columns Panel`
+                    };
+                },
+                actionFn: () => gridModel.colChooserPanelModel?.toggle()
+            });
         case 'expandCollapseAll': // For backward compatibility
         case 'expandCollapse':
             return createExpandCollapseItem(gridModel);
