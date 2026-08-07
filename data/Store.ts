@@ -944,10 +944,8 @@ export class Store
      * Replace this Store's fields wholesale, rebuilding the derived field map and data defaults.
      * Any configured `fieldDefaults` are re-applied to the incoming specs.
      *
-     * Records are retained when `projectionOnly`, since their data is owned by the provider and
-     * unaffected by the declared field set - and a projection's provider reloads immediately after
-     * a field change, needing the committed records present to reuse them. Records are dropped
-     * otherwise, as their existing `data` objects were built against the outgoing defaults.
+     * Drops all records - existing `data` objects were built against the outgoing defaults, and
+     * callers reload immediately.
      *
      * @internal - supports {@link PivotView}, whose cell fields are only discoverable from data.
      *      Not an app-facing API for reshaping a Store.
@@ -959,7 +957,7 @@ export class Store
         this._dataDefaults = this.createDataDefaults();
         this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
 
-        if (!this.projectionOnly) this.resetRecords();
+        this.resetRecords();
     }
 
     /** Get a specific Field by name.*/
