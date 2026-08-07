@@ -81,20 +81,6 @@ class ConfigValueModel extends HoistModel {
     }
 
     override onLinked() {
-        // Allow clearing the DB value of a json config - normalized to '{}' on blur so it remains
-        // valid to save. (Note `valueType` is editable while adding a new config.)
-        this.addReaction({
-            track: () => [this.valueField?.boundInput?.hasFocus, this.valueField?.value],
-            run: () => {
-                const {valueField} = this;
-                if (!valueField || this.valueType !== 'json') return;
-                const {boundInput, value, isDirty} = valueField;
-                if (!boundInput?.hasFocus && isDirty && !value?.trim()) {
-                    valueField.setValue('{}');
-                }
-            }
-        });
-
         if (this.usesTabs) this.buildTabs();
     }
 
