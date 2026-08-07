@@ -797,14 +797,6 @@ function valEq(a: any, b: any): boolean {
 //------------------
 // Replace semantics - the path an incremental tick drives
 //------------------
-/**
- * Lenient `SumAggregator.replace` deltas down to 0 where `aggregate` reports null, once the last
- * non-null value goes null. Pre-existing and out of scope here - characterized on its own below.
- */
-function lenientSumZeroesOut(agg: Aggregator, pre: any[], post: any[]): boolean {
-    return agg === SUM && post.every(v => v == null) && pre.some(v => v != null);
-}
-
 /** Apply `newVal` at `idx`, then hold both `replace` and a fresh `aggregate` to the oracle. */
 function replaceCase(agg: Aggregator, pre: any[], idx: number, newVal: any): string[] {
     const oracle = ORACLE.get(agg),
@@ -814,8 +806,6 @@ function replaceCase(agg: Aggregator, pre: any[], idx: number, newVal: any): str
         want = oracle(post),
         errs: string[] = [],
         label = `${AGG_NAME.get(agg)} ${JSON.stringify(pre)} #${idx} -> ${JSON.stringify(newVal)}`;
-
-    if (lenientSumZeroesOut(agg, pre, post)) return errs;
 
     if (!valEq(currAgg, oracle(pre))) {
         errs.push(`${label}: pre-aggregate ${currAgg} != ${oracle(pre)}`);
@@ -869,8 +859,7 @@ function replaceCase(agg: Aggregator, pre: any[], idx: number, newVal: any): str
 }
 
 {
-    // Characterizes the divergence `lenientSumZeroesOut` excludes above: on the incremental path a
-    // fully-nulled child set reads 0, on a rebuild null. Delete this check once SUM is fixed.
+    // The transition that used to delta down to 0 where a rebuild reported null.
     const errs: string[] = [],
         rows = [leafOf(1), leafOf(null)],
         currAgg = runAggregate(SUM, rows);
@@ -879,11 +868,17 @@ function replaceCase(agg: Aggregator, pre: any[], idx: number, newVal: any): str
     const got = runReplace(SUM, rows, currAgg, 1, null);
 
     if (runAggregate(SUM, rows) !== null) errs.push('an all-null child set must aggregate to null');
-    if (got !== 0) errs.push(`expected the known 0, got ${got} - SUM may have been fixed`);
-    if (runReplace(SUM_STRICT, rows, null, 1, null) !== null) {
-        errs.push('SUM_STRICT must not share the divergence');
+    if (got !== null) errs.push(`replace returned ${got}, expected null to match a rebuild`);
+
+    // The zero must still survive when it is a real sum rather than an emptied set.
+    const held = [leafOf(5), leafOf(2)],
+        heldAgg = runAggregate(SUM, held);
+    held[1].data[VF] = -5;
+    if (runReplace(SUM, held, heldAgg, 2, -5) !== 0) {
+        errs.push('a genuine zero sum must stay 0, not null');
     }
-    check('replace: lenient SUM zeroes out where aggregate nulls out (known divergence)', errs);
+
+    check('replace: lenient SUM nulls out exactly when aggregate does', errs);
 }
 
 {
@@ -933,8 +928,6 @@ function nestedReplaceCase(
         want = LEAF_DOMAIN.has(agg) ? oracle(post.flat()) : oracle(post.map(g => oracle(g))),
         errs: string[] = [],
         label = `${AGG_NAME.get(agg)} ${JSON.stringify(groups)} g${gIdx}/l${lIdx} -> ${JSON.stringify(newVal)}`;
-
-    if (lenientSumZeroesOut(agg, groups[gIdx], post[gIdx])) return errs;
 
     const oldChild = childRows[gIdx].data[VF];
     leafRows[gIdx][lIdx].data[VF] = newVal;
