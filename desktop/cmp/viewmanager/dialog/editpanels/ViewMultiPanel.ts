@@ -62,7 +62,7 @@ export const viewMultiPanel = hoistCmp.factory({
                                     )
                                 }),
                                 span(
-                                    `Configuring ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
+                                    `Editing ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
                                 )
                             ]
                         }),

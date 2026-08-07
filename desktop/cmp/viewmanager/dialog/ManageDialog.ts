@@ -142,7 +142,7 @@ const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return placeholder(
             Icon.gears(),
-            `Select a ${model.viewManagerModel.typeDisplayName} or group`
+            `Select ${pluralize(model.viewManagerModel.typeDisplayName)}, or a single group, to edit`
         );
     }
 });
