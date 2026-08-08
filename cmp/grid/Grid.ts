@@ -712,6 +712,11 @@ export class GridLocalModel extends HoistModel {
         if (!this.transactionIsEmpty(transaction)) {
             this.logDebug(...this.genTxnLogMsgs(transaction));
             agApi.applyTransaction(transaction);
+        } else if (!prevRs) {
+            // First sync with an empty store yields an empty transaction, but AG Grid must still
+            // be handed rowData to exit its initial loading state - otherwise a grid mounted over
+            // an empty store shows its loading overlay indefinitely instead of `emptyText`.
+            agApi.updateGridOptions({rowData: []});
         }
 
         if (model.externalSort) {
