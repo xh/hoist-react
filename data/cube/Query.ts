@@ -166,7 +166,8 @@ export class Query {
         omitFn = cube.omitFn
     }: QueryConfig) {
         this.cube = cube;
-        this._rawFields = fields;
+        // Retained for the life of this Query and its clones - copy to insulate from the caller.
+        this._rawFields = fields?.slice();
         this.dimensions = this.parseDimensions(dimensions);
         this.fields = uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]);
         this.includeRoot = includeRoot;
@@ -248,7 +249,8 @@ export class Query {
 
     private parseDimensions(raw: CubeField[] | string[]): CubeField[] {
         if (!raw) return null;
-        if (raw[0] instanceof CubeField) return raw as CubeField[];
+        // Copy - `dimensions` is public and passed back through here by `clone()`.
+        if (raw[0] instanceof CubeField) return (raw as CubeField[]).slice();
         const {fields} = this.cube;
         return raw.map(name => {
             const field = find(fields, {name});
