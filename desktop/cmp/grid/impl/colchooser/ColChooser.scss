@@ -157,9 +157,15 @@
   }
 
   &__column-row {
-    // Dim the cell content, not the row - opacity on the row dims its drop-indicator ::after too.
-    &--hidden .ag-cell {
+    // Dim the content, not the cell - opacity on the cell would dim the filter-match tint too.
+    &--hidden .ag-cell > *,
+    &--filter-miss .ag-cell > * {
       opacity: 0.5;
+    }
+
+    // Tint the cells, not the row - ag-grid's stripe/hover/selection rules own the row background.
+    &--filter-match .ag-cell {
+      background-color: var(--xh-bg-highlight);
     }
   }
 

@@ -107,7 +107,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
     /**
      * Count of this bucket's leaf columns as actually rendered, so a rail whose columns are all
-     * filtered out or routed to the Library reads as empty, like a genuinely empty one.
+     * routed to the Library reads as empty, like a genuinely empty one.
      */
     @computed
     get columnCount(): number {
@@ -166,6 +166,18 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         this.chooserGridModel.agApi?.refreshCells({columns: [actionCol.colId], force: true});
     }
 
+    refreshFilterHighlight() {
+        const {agApi, rowClassRules} = this.chooserGridModel;
+        // Re-setting the unchanged object is what makes ag-grid re-run its row class rules.
+        agApi?.setGridOption('rowClassRules', rowClassRules);
+    }
+
+    scrollToFilterMatches() {
+        const {chooserGridModel: gridModel} = this,
+            matches = gridModel.store.records.filter(rec => this.parent.isMatchedColumn(rec));
+        if (!isEmpty(matches)) gridModel.ensureRecordsVisibleAsync(matches);
+    }
+
     toggleVisibility(recordIds: Some<StoreRecordId>) {
         const {targetGridModel: gridModel} = this,
             {store} = this.chooserGridModel,
@@ -178,8 +190,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
             const hidden = record.data.visible !== false;
             record.data.leafColIds.forEach((colId: string) => {
-                // Only act on leaves rendered in this bucket - a group toggle under an active filter
-                // must not flip the visibility of columns the user can't currently see.
+                // Skip leaves routed to the Library - never flip what the user can't see.
                 if (!rendered.has(colId)) return;
                 // A group's aggregate hideable can be true while it contains a locked leaf - never
                 // hide such a leaf. Showing it is a no-op (a non-hideable column stays visible).
@@ -652,8 +663,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         state: ColumnState[],
         movingLeafColIds: string[]
     ): IsRowValidDropPositionResult {
-        const {pinned} = this,
-            {agApi, store} = this.chooserGridModel,
+        const {pinned, renderedLeafIds} = this,
+            {agApi} = this.chooserGridModel,
             movingIds = new Set(movingLeafColIds),
             bucket = state.filter(cs => (cs.pinned ?? null) === pinned),
             startIdx = bucket.findIndex(cs => movingIds.has(cs.colId));
@@ -670,8 +681,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         for (let i = startIdx; i < bucket.length; i++) {
             const {colId} = bucket[i];
             if (movingIds.has(colId)) continue;
-            // respectFilter: a filtered-out row has no ag-grid line, so it can't anchor the indicator.
-            if (store.getById(colId, true)) {
+            if (renderedLeafIds.has(colId)) {
                 followingColId = colId;
                 break;
             }
@@ -698,10 +708,10 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     private getGroupBoundaryRecord(colId: string, dragGroupIds: Set<string>): StoreRecord {
         const {store} = this.chooserGridModel,
             chain = this.parentChainMap.get(colId) ?? [];
-        let rec = store.getById(colId, true),
+        let rec = store.getById(colId),
             depth = chain.length - 1; // innermost group enclosing colId; climbs outward
         while (rec?.data.parentId && depth >= 0) {
-            const parent = store.getById(rec.data.parentId, true);
+            const parent = store.getById(rec.data.parentId);
             if (!parent || parent.data.leafColIds[0] !== colId) break;
             if (dragGroupIds.has(chain[depth].groupId)) break;
             rec = parent;
@@ -739,8 +749,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             emptyText: this.emptyDropHint(emptyText),
             onKeyDown: chooserVisibilityKeyHandler(this),
             store: {
-                // Matching a group header reveals its columns (leaf->ancestor is automatic).
-                filterIncludesChildren: true,
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'description', type: 'string'},
@@ -757,7 +765,11 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             },
             rowClassRules: {
                 'xh-col-chooser__column-row': () => true,
-                'xh-col-chooser__column-row--hidden': ({data: rec}) => rec.data.muted === true
+                'xh-col-chooser__column-row--hidden': ({data: rec}) => rec.data.muted === true,
+                'xh-col-chooser__column-row--filter-match': ({data: rec}) =>
+                    this.parent.isMatchedColumn(rec),
+                'xh-col-chooser__column-row--filter-miss': ({data: rec}) =>
+                    this.parent.isLibraryShown && this.parent.shouldDimRow(rec)
             },
             columns: [
                 chooserNameColumn(true),

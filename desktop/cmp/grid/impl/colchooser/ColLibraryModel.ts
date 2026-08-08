@@ -6,7 +6,7 @@
  */
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import type {Some} from '@xh/hoist/core';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed} from '@xh/hoist/core';
 import {StoreRecordId} from '@xh/hoist/data';
 import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {makeObservable} from '@xh/hoist/mobx';
@@ -20,9 +20,9 @@ import {
     chooserLibraryColumn,
     chooserVisibilityKeyHandler,
     dragRejectHint,
+    getChooserData,
     type ColChooserDropParticipant,
-    type ColLibraryData,
-    getChooserData
+    type ColLibraryData
 } from './ColChooserUtils';
 
 const UNGROUPED = 'Ungrouped';
@@ -37,6 +37,8 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
     override xhImpl = true;
 
     readonly parent: ColChooserModel;
+
+    private readonly collapseGroups: boolean;
 
     @managed
     chooserGridModel: GridModel;
@@ -154,15 +156,22 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
         return 'notAllowed';
     }
 
-    /** Render `chooserGroup` groups collapsed by default (see {@link ColLibraryConfig}). */
-    private readonly collapseGroups: boolean;
+    private get emptyText() {
+        if (this.parent.filterTestFn) {
+            return 'No columns found matching the filter';
+        }
+
+        return 'No hidden columns';
+    }
+
+    private libraryEmptyText = hoistCmp.factory(() => this.emptyText);
 
     private createGridModel(): GridModel {
         return new GridModel({
             ...chooserGridConfig,
             expandLevel: this.collapseGroups ? 0 : 1,
             sortBy: 'name',
-            emptyText: 'No hidden columns',
+            emptyText: this.libraryEmptyText(),
             onKeyDown: chooserVisibilityKeyHandler(this),
             store: {
                 fields: [

@@ -41,9 +41,9 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
             height: model.sizeToContent ? model.height : null,
             ...layoutProps,
             items: [
-                chooserTopBar({chooserModel: model}),
-                chooserBody({chooserModel: model}),
-                chooserFooter({chooserModel: model})
+                tbar({chooserModel: model}),
+                contents({chooserModel: model}),
+                bbar({chooserModel: model})
             ]
         });
     }
@@ -57,7 +57,7 @@ interface ChooserSectionProps extends HoistProps {
  * Single toolbar spanning the library and the buckets, holding the shared filter control and the
  * minimal display-toggle / restore-defaults buttons.
  */
-const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
+const tbar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
     toolbar({
         className: 'xh-col-chooser__tbar',
         items: [
@@ -68,11 +68,11 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
                 store: chooserModel.filterFieldStore,
                 autoApply: false,
                 onFilterChange: (fn: FilterTestFn) => chooserModel.applyFilterTestFn(fn),
-                // Only fields actually shown in the grids - matching the tooltip-only `description`
-                // would surface rows on text the user can't see.
-                includeFields: ['name', 'chooserGroup'],
+                includeFields: ['name'],
                 matchMode: chooserModel.filterMatchMode,
-                placeholder: 'Filter columns...'
+                leftIcon: Icon.search(),
+                placeholder: 'Search columns...',
+                autoFocus: true
             }),
             toggleBtn({
                 omit: !chooserModel.hasColumnGroups,
@@ -108,7 +108,7 @@ const chooserTopBar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
 );
 
 /** Library panel (when shown) beside the stack of bucket zones. */
-const chooserBody = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
+const contents = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
     hframe(colLibraryPanel({chooserModel}), chooserBuckets({chooserModel}))
 );
 
@@ -178,7 +178,7 @@ const columnsSeparator = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) 
 });
 
 /** Footer Save/Cancel actions. Absent when auto-committing. */
-const chooserFooter = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => {
+const bbar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) => {
     if (chooserModel.commitOnChange) return null;
     return toolbar(
         filler(),

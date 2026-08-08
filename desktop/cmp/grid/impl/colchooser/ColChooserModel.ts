@@ -9,7 +9,7 @@ import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsMo
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
+import type {FilterMatchMode, FilterTestFn, Store, StoreRecord} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -66,6 +66,10 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     /** Raw text of the single filter control, shared across all grids. */
     @bindable filterText: string = null;
 
+    /** Active match predicate from the filter control - null when unfiltered. */
+    @observable.ref
+    filterTestFn: FilterTestFn = null;
+
     /**
      * Explanatory hint shown in the drag ghost while a drag is refused, so the user understands the
      * `notAllowed` cursor. Set by the hovered participant, cleared on drag end.
@@ -115,9 +119,9 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * Store bound to the shared filter control, for field inference only - the derived predicate goes to
-     * every grid via {@link applyFilterTestFn}. Binding it also suppresses the control's fallback
-     * GridModel context-lookup, which would otherwise latch onto the target grid.
+     * Store bound to the shared filter control, for field inference only - the derived predicate is
+     * routed by {@link applyFilterTestFn}. Binding it also suppresses the control's fallback GridModel
+     * context-lookup, which would otherwise latch onto the target grid.
      */
     get filterFieldStore(): Store {
         return this.columnLibraryEnabled
@@ -246,10 +250,22 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             run: () => this.syncBuckets()
         });
 
-        // Repaint the buckets' per-row action cells, which hide their control while the library shows.
+        // Neither the action cells nor the row classes repaint on their own when this flips.
         this.addReaction({
             track: () => this.isLibraryShown,
-            run: () => this.bucketModels.forEach(it => it.refreshActionColumn())
+            run: () =>
+                this.bucketModels.forEach(it => {
+                    it.refreshActionColumn();
+                    it.refreshFilterHighlight();
+                })
+        });
+
+        this.addReaction({
+            track: () => this.filterTestFn,
+            run: () => {
+                this.bucketModels.forEach(it => it.refreshFilterHighlight());
+                this.unpinnedBucketModel.scrollToFilterMatches();
+            }
         });
 
         // Stale registrations must be removed by hand - ag-grid auto-cleans drop zones only when the
@@ -301,13 +317,29 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     //-----------------------
     // Public Methods
     //-----------------------
-    /** Apply the shared match predicate (or clear it) across every present grid store. */
+    /**
+     * Adopt the shared match predicate (or clear it). Only the Library filters its rows on it - the
+     * buckets keep their full column list and highlight matches instead.
+     */
+    @action
     applyFilterTestFn(testFn: FilterTestFn | null) {
-        const filter = testFn ? {key: 'default', testFn} : null;
-        this.filterableGridModels.forEach(gm => gm.store.setFilter(filter));
+        this.filterTestFn = testFn;
+        if (this.columnLibraryEnabled) {
+            const filter = testFn ? {key: 'default', testFn} : null;
+            this.libraryModel.chooserGridModel.store.setFilter(filter);
+        }
     }
 
-    /** Clear the filter text and remove the filter from every grid store. */
+    isMatchedColumn(record: StoreRecord): boolean {
+        return this.isFilterCandidate(record) && this.filterTestFn(record);
+    }
+
+    /** True for a group row as well as a non-matching column - neither can match the filter. */
+    shouldDimRow(record: StoreRecord): boolean {
+        if (!this.filterTestFn) return false;
+        return !this.isFilterCandidate(record) || !this.filterTestFn(record);
+    }
+
     @action
     clearFilter() {
         this.filterText = null;
@@ -406,11 +438,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     /** Cross-bucket drop zone registrations, retained for removal on bucket grid unmount. */
     private dropZoneRegistrations: Array<{sourceApi: GridApi; params: RowDropZoneParams}> = [];
 
-    /** Grid models with a filterable store - the buckets, plus the library if enabled. */
-    private get filterableGridModels(): GridModel[] {
-        const models = this.bucketModels.map(b => b.chooserGridModel);
-        if (this.columnLibraryEnabled) models.push(this.libraryModel.chooserGridModel);
-        return models;
+    private isFilterCandidate(record: StoreRecord): boolean {
+        return !!this.filterTestFn && !!record && !record.data.isGroup;
     }
 
     private get showGroups(): boolean {
