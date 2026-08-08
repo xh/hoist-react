@@ -20,17 +20,17 @@
     dpop "^2.1.1"
     es-cookie "~1.3.2"
 
-"@azure/msal-browser@~5.17.0":
-  version "5.17.3"
-  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.17.3.tgz#6d6be357ba83f7bd214609549b40d1c15efe670f"
-  integrity sha512-qMabD7Xrm/UgRhs+/IVyCTZRjUl8Qb+uGsRrCkaKNWsiTwRaeyStJbChE7/ySNTNYtiWo7khfF7vUDd0wGMnLw==
+"@azure/msal-browser@~5.18.0":
+  version "5.18.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.18.0.tgz#446b9b42678a220419ef43054fdfc13855a12c2e"
+  integrity sha512-SPTeHYZghdEdRddJzNjhH+CI5MSQtquNYwGJnYXfOHIBRXCmrWimBS85OhwXpXFIlrCtNTbBPm5mPAWRNEoktA==
   dependencies:
-    "@azure/msal-common" "16.11.3"
+    "@azure/msal-common" "16.12.0"
 
-"@azure/msal-common@16.11.3":
-  version "16.11.3"
-  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.11.3.tgz#d1474e1f903c3fc813d67355208f0a159b73b8d5"
-  integrity sha512-VeXOW+t3Rdd9XGX6lVyIg3DhtjMR1JD8ARKcsnGbJFUWwAmF3sHL7GwZc/ZjEUfHESResAonETRYCuG06OBT7A==
+"@azure/msal-common@16.12.0":
+  version "16.12.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.12.0.tgz#5cbd58db91948f92382e8c628f34a57f469d3a74"
+  integrity sha512-hgLgfRdbG2AmhXPygebf1KYJEvse86+ZZLWufdiTKaGRYEUqOzHdlf6AS1IiuUCHWbynkgbHc451jSNkbfhWlg==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.29.7":
   version "7.29.7"
@@ -1344,9 +1344,9 @@
     "@marijn/find-cluster-break" "^1.0.0"
 
 "@codemirror/view@^6.0.0", "@codemirror/view@^6.17.0", "@codemirror/view@^6.23.0", "@codemirror/view@^6.27.0", "@codemirror/view@^6.42.0", "@codemirror/view@^6.43.0":
-  version "6.43.7"
-  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.43.7.tgz#21fd71e9b395af6fe8282a6ef8624258ff508467"
-  integrity sha512-FZsExxkoxnAN+d9TgqXLg5g4A1oQwzX9WlkOT5i2PKkcW7xx3Bmu0vs90g6fo9Mpdsb/l96dnAraQ8932aO4/g==
+  version "6.43.8"
+  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.43.8.tgz#c211dc77aca139ecc51aff7712c0c4a32cc5f74a"
+  integrity sha512-qtItTDssZ/5GFfi94hrILu9j/VUeFPDPkhovEfmWFj2ipTxnzPB8DdHgfbb8HYTzLTYhrndKmyQxXUz/PDLenw==
   dependencies:
     "@codemirror/state" "^6.7.0"
     crelt "^1.0.6"
@@ -8884,9 +8884,9 @@ tslib@~2.6.2:
   integrity sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==
 
 tsx@^4.21.0:
-  version "4.23.5"
-  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.23.5.tgz#fbf78241ff3e616c5dc96e6113200b0e6899e7dc"
-  integrity sha512-rw55FUaqOoI7RvlQwLbhO4nSDApnQ4/CykPuiQ/EPvtrX3WA9Ig55jIt9VvbBJbzJuj12ueRu4PMZ2SxPVbihg==
+  version "4.23.6"
+  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.23.6.tgz#e979f40025286c2243178215b8703702a71a3465"
+  integrity sha512-D/YYGUDqKlLvXhM5fBBbiENaGICxLfU4viHnZEkgmgplnDFa+Kczy34VV7AmLJgdzisv0I/J3zitfC26JH3GXg==
   dependencies:
     esbuild "~0.28.0"
   optionalDependencies:
