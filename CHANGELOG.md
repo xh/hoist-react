@@ -118,6 +118,8 @@
 * Fixed `Query.clone()` retaining dimensions dropped by a dimension-only update within its `fields`.
   Cube `View`s changing dimensions via `updateQuery()` accumulated these stale fields, aggregating
   each one on every aggregate row despite nothing having requested or displayed them.
+* Fixed `SumAggregator`, `MinAggregator`, and `MaxAggregator` mishandling incoming `null` values on
+  incremental Cube `View` updates, leaving aggregates disagreeing with a full rebuild.
 
 ### ⚙️ Technical
 

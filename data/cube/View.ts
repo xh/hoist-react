@@ -350,8 +350,10 @@ export class View
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
-        // dimensions, and so holds the unfiltered superset of each list.
-        const {dimensions} = this.query,
+        // dimensions, and so holds the unfiltered superset of each list. Queries need not specify
+        // dimensions at all (e.g. a leaves-only or root-total-only query) - Query.dimensions is
+        // null in that case, leaving only the depth-0 entry below.
+        const dimensions = this.query.dimensions ?? [],
             aggFields = this.fields.filter(it => it.aggregator),
             appliedDimNames = dimensions.map(
                 (v, idx) => new Set(dimensions.slice(0, idx + 1).map(it => it.name))
