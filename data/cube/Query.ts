@@ -166,7 +166,6 @@ export class Query {
         omitFn = cube.omitFn
     }: QueryConfig) {
         this.cube = cube;
-        // Retained for the life of this Query and its clones - copy to insulate from the caller.
         this._rawFields = fields?.slice();
         this.dimensions = this.parseDimensions(dimensions);
         this.fields = uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]);
@@ -186,8 +185,7 @@ export class Query {
     clone(overrides: Partial<QueryConfig>) {
         const conf = {
             dimensions: this.dimensions,
-            // use the un-augmented fields list to drop potentially stale dimensions
-            fields: this._rawFields,
+            fields: this._rawFields, // NOT this.fields - would retain stale dimensions
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
@@ -249,8 +247,7 @@ export class Query {
 
     private parseDimensions(raw: CubeField[] | string[]): CubeField[] {
         if (!raw) return null;
-        // Copy - `dimensions` is public and passed back through here by `clone()`.
-        if (raw[0] instanceof CubeField) return (raw as CubeField[]).slice();
+        if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
         const {fields} = this.cube;
         return raw.map(name => {
             const field = find(fields, {name});
