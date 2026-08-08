@@ -780,8 +780,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                         {
                             icon: Icon.checkSquare(),
                             displayFn: ({record}) => {
-                                // A static lock even in library mode, where the grip stays live for
-                                // reorder/re-pin but a drop onto the library can't hide it.
                                 if (isVisibilityLocked(record.data as ColChooserData)) {
                                     return {
                                         icon: Icon.lock(),
@@ -789,9 +787,15 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                                     };
                                 }
 
-                                // Dragging to the library hides instead - but keep the column's width,
-                                // so the layout holds stable across the toggle.
-                                if (this.parent.isLibraryShown) return {hidden: true};
+                                if (this.parent.isLibraryShown) {
+                                    return {
+                                        icon: Icon.cross({
+                                            className: 'xh-gray',
+                                            size: 'sm',
+                                            title: 'Hide Column'
+                                        })
+                                    };
+                                }
 
                                 const {visible} = record.data;
                                 if (visible === null) {
