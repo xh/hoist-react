@@ -67,7 +67,7 @@ const tbar = hoistCmp.factory<ChooserSectionProps>(({chooserModel}) =>
                 bind: 'filterText',
                 store: chooserModel.filterFieldStore,
                 autoApply: false,
-                onFilterChange: (fn: FilterTestFn) => chooserModel.applyFilterTestFn(fn),
+                onFilterChange: (fn: FilterTestFn) => (chooserModel.filterTestFn = fn),
                 includeFields: ['name'],
                 matchMode: chooserModel.filterMatchMode,
                 leftIcon: Icon.search(),

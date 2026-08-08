@@ -67,6 +67,12 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
         this.parent = parent;
         this.collapseGroups = collapseGroups;
         this.chooserGridModel = this.createGridModel();
+
+        this.addReaction({
+            track: () => this.parent.filterTestFn,
+            run: testFn =>
+                this.chooserGridModel.store.setFilter(testFn ? {key: 'default', testFn} : null)
+        });
     }
 
     /** Reload the library with the currently hidden, non-excluded columns. groupBy does the rest. */

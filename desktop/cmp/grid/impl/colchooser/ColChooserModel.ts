@@ -67,7 +67,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @bindable filterText: string = null;
 
     /** Active match predicate from the filter control - null when unfiltered. */
-    @observable.ref
+    @bindable.ref
     filterTestFn: FilterTestFn = null;
 
     /**
@@ -119,8 +119,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /**
-     * Store bound to the shared filter control, for field inference only - the derived predicate is
-     * routed by {@link applyFilterTestFn}. Binding it also suppresses the control's fallback GridModel
+     * Store bound to the shared filter control, for field inference only - the derived predicate
+     * lands on {@link filterTestFn}. Binding it also suppresses the control's fallback GridModel
      * context-lookup, which would otherwise latch onto the target grid.
      */
     get filterFieldStore(): Store {
@@ -317,19 +317,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     //-----------------------
     // Public Methods
     //-----------------------
-    /**
-     * Adopt the shared match predicate (or clear it). Only the Library filters its rows on it - the
-     * buckets keep their full column list and highlight matches instead.
-     */
-    @action
-    applyFilterTestFn(testFn: FilterTestFn | null) {
-        this.filterTestFn = testFn;
-        if (this.columnLibraryEnabled) {
-            const filter = testFn ? {key: 'default', testFn} : null;
-            this.libraryModel.chooserGridModel.store.setFilter(filter);
-        }
-    }
-
     isMatchedColumn(record: StoreRecord): boolean {
         return this.isFilterCandidate(record) && this.filterTestFn(record);
     }
@@ -343,7 +330,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @action
     clearFilter() {
         this.filterText = null;
-        this.applyFilterTestFn(null);
+        this.filterTestFn = null;
     }
 
     /**
