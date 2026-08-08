@@ -149,6 +149,7 @@ export class Query {
     readonly bucketSpecFn: BucketSpecFn;
     readonly omitFn: OmitFn;
 
+    private readonly _rawFields: string[] | CubeField[];
     private readonly _testFn: FilterTestFn;
 
     constructor({
@@ -165,6 +166,7 @@ export class Query {
         omitFn = cube.omitFn
     }: QueryConfig) {
         this.cube = cube;
+        this._rawFields = fields?.slice();
         this.dimensions = this.parseDimensions(dimensions);
         this.fields = uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]);
         this.includeRoot = includeRoot;
@@ -183,7 +185,7 @@ export class Query {
     clone(overrides: Partial<QueryConfig>) {
         const conf = {
             dimensions: this.dimensions,
-            fields: this.fields,
+            fields: this._rawFields, // NOT this.fields - would retain stale dimensions
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
@@ -245,7 +247,7 @@ export class Query {
 
     private parseDimensions(raw: CubeField[] | string[]): CubeField[] {
         if (!raw) return null;
-        if (raw[0] instanceof CubeField) return raw as CubeField[];
+        if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
         const {fields} = this.cube;
         return raw.map(name => {
             const field = find(fields, {name});
