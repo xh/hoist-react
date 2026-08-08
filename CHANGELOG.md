@@ -12,6 +12,10 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
+* Requires `@xh/hoist-dev-utils >= 14.0`, the build-tooling release paired and tested with v87.
+  It ships the matching `@types/react` 19.x and adds support for pnpm as the app package manager
+  (optional - yarn classic and npm remain fully supported). See
+  [Version Compatibility](docs/version-compatibility.md).
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 * Leaf rows published by Cube `View`s now use their source cube record's id as their row/record

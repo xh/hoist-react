@@ -62,7 +62,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
-| Check hoist-react / hoist-core version compatibility | [Version Compatibility](./version-compatibility.md)                                                                 |
+| Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes)                                                                                     |
 
 ## Package Documentation
@@ -118,7 +118,7 @@ Cross-cutting documentation that spans multiple packages:
 | [Telemetry & Observability](./telemetry.md) | Client-side tracing, metrics, activity tracking, and timed logging composed via the Runner chain | Runner, CallContext, TraceService, MetricsService, span, traceparent, sampling, telemetryPrefix, metrics, activity tracking |
 | [Test Automation](./test-automation.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
 | [Coding Conventions](./coding-conventions.md) | Coding conventions for imports, naming, class structure, component patterns, null handling, async, error handling, logging, and CSS | conventions, code style, imports, naming, TypeScript, class structure, hoistCmp, exports, async, error handling, logging, CSS, BEM |
-| [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core versions | version matrix, hoist-core pairing, upgrade requirements, compatibility |
+| [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core and hoist-dev-utils versions | version matrix, hoist-core pairing, hoist-dev-utils pairing, node version, upgrade requirements, compatibility |
 
 ### Supporting Packages
 
