@@ -88,7 +88,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             isRowValidDropPosition: params => this.getValidDropPosition(params),
             onRowDragEnd: event => this.handleRowDragEnd(event),
             onCellDoubleClicked: event => {
-                // Only toggle from the name column, and not from the tree expand/collapse caret
                 if (event.column?.getColId() !== 'name') return;
                 const target = event.event?.target as HTMLElement;
                 if (target?.closest('.ag-group-expanded, .ag-group-contracted')) return;
@@ -255,7 +254,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
             // before/after read of the cursor half differs between cross-bucket and in-bucket drags.
             position = 'above';
         } else if (position === 'inside') {
-            // Can't drop "inside" a leaf - treat as "below"
             position = 'below';
         }
 

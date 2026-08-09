@@ -565,10 +565,7 @@ export class GridModel extends HoistModel {
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
 
-    /**
-     * Index of leaf columns by colId, rebuilt in lockstep with `columns` (see {@link setColumns}) so
-     * {@link getColumn} is an O(1) lookup rather than a recursive tree walk.
-     */
+    // Must be rebuilt in lockstep with `columns` - see setColumns.
     @observable.ref private leafColumnMap: Map<string, Column> = new Map();
 
     @computed.struct
@@ -2092,7 +2089,6 @@ export class GridModel extends HoistModel {
         return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
     }
 
-    // Docked side-panel chooser is a desktop-only, non-modal presentation - never built on mobile.
     private parsePanelChooserModel(
         chooserModel: GridConfig['colChooserPanelModel']
     ): IColChooserModel {

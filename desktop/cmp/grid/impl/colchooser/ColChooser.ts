@@ -217,7 +217,6 @@ const bucketSeparator = hoistCmp.factory<BucketSeparatorProps>(({bucketModel, bu
             div({className: 'xh-col-chooser__separator__line'}),
             span({
                 className: 'xh-col-chooser__separator__label',
-                // Arrow trails the label on the right rail, leads it on the left.
                 items: bucket === 'right' ? [bucketModel.title, arrow] : [arrow, bucketModel.title]
             }),
             div({className: 'xh-col-chooser__separator__line'}),

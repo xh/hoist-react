@@ -231,7 +231,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             emptyText: 'Drop a column here to pin right'
         });
 
-        // Library backs an opt-in panel - build it only when enabled.
         if (this.columnLibraryEnabled) {
             this.libraryModel = new ColLibraryModel({
                 parent: this,

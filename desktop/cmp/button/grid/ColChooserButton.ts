@@ -58,8 +58,8 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             target === 'panel' ? 'Toggle column panel' : 'Choose grid columns...'
         );
 
-        // Validate bound model available and suitable for use. Render a plain disabled button
-        // (no popover) when unusable - the popover config below dereferences chooserModel.
+        // Return a plain disabled button rather than falling through - the popover config below
+        // dereferences chooserModel.
         if (!gridModel || !chooserModel) {
             logError(
                 !gridModel
@@ -97,7 +97,6 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                 onDoubleClick: stopPropagation,
                 items: [
                     div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
-                    // Self-sizes to its buckets + library; no explicit width/height needed.
                     colChooser({model: modalModel})
                 ]
             }),

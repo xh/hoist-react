@@ -84,8 +84,8 @@ const HIDDEN = new Set([
 
 const chainOf: ChainOf = colId => CHAIN[colId] ?? [];
 
-// Displayed predicate equivalent to the old `showHidden: false` - hidden columns are routed to the
-// library, so not rendered in a bucket. (No Store filter is exercised here; that path is covered live.)
+// Hidden columns are routed to the library, so not rendered in a bucket. (No Store filter is
+// exercised here; that path is covered live.)
 const isDisplayed = (colId: string) => !HIDDEN.has(colId);
 
 function buildMaster(pins: Record<string, HSide> = {}): ColumnState[] {

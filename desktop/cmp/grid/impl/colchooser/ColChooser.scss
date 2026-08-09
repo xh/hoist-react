@@ -39,15 +39,14 @@
     border-right: var(--xh-border-width-px) solid var(--xh-border-color);
   }
 
-  // Zone divider: a low-weight label riding a hairline rule, deliberately unlike a group-header bar.
   &__separator {
     display: flex;
     align-items: center;
     gap: var(--xh-pad-half-px);
     flex: none;
-    // Right padding reserves the scrollbar gutter, so the toggle sits over the per-row action column.
     margin: var(--xh-pad-px) 0 var(--xh-pad-half-px);
 
+    // Right padding reserves the scrollbar gutter, so the toggle sits over the per-row action column.
     padding: 0 var(--xh-scrollbar-size-px) 0 var(--xh-pad-half-px);
 
     &__line {
@@ -132,7 +131,6 @@
     }
   }
 
-  // Empty pinned-rail drop hint: pin-direction arrow beside the prompt, centered in the strip.
   &__drop-hint {
     align-items: center;
     justify-content: center;
@@ -230,7 +228,6 @@
       cursor: not-allowed;
     }
 
-    // Info glyph trailing the name - deliberately small, so it doesn't compete with the name itself.
     &__meta {
       margin-left: var(--xh-pad-half-px);
       font-size: 10px;
