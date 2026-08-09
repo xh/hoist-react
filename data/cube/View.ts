@@ -390,9 +390,9 @@ export class View
             return;
         }
 
-        // 2) Otherwise, blow away aggregates (they are not worth saving). Surviving leaves that
+        // 2) Otherwise, blow away parent rows (they are not worth saving). Surviving leaves that
         // moved to new tree positions are detected by connected stores' treePath checks.
-        cache.clearAggregates();
+        cache.removeParentRows();
     }
 
     @logWithDebug
