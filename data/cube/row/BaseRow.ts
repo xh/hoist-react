@@ -74,8 +74,7 @@ export abstract class BaseRow {
                 data._cubeLeafChildren = dataChildren;
             }
             dataChildren = null;
-        } else if (data._cubeLeafChildren) {
-            // Reused row no longer exposing leaf children (e.g. newly locked) - clear stale ref.
+        } else {
             data._cubeLeafChildren = null;
         }
 
