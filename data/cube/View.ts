@@ -500,7 +500,8 @@ export class View
     ): BaseRow[] {
         if (!records?.length) return [];
 
-        if (!dimensions?.length) {
+        // `depth` counts the dimensions applied so far - the next to apply is dimensions[depth].
+        if (!dimensions || depth === dimensions.length) {
             const {exposesLeaves} = this;
             return records.map(r => {
                 // Leaves are keyed by stable record id, supporting reuse across grouping changes.
@@ -520,7 +521,7 @@ export class View
         }
 
         const rootId = parentId + Cube.RECORD_ID_DELIMITER,
-            dim = dimensions[0],
+            dim = dimensions[depth],
             dimName = dim.name,
             groups = groupBy(records, it => it.data[dimName]);
 
@@ -534,7 +535,7 @@ export class View
 
             let children = this.groupAndInsertRecords(
                 groupRecords,
-                dimensions.slice(1),
+                dimensions,
                 id,
                 groupDimensions,
                 groupDepth,
