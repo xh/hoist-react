@@ -379,12 +379,13 @@ export class View
         // 0) Filter change only is a no-op - great for fast filter toggling
         if (oldQuery.equalsExcludingFilter(newQuery)) return;
 
-        // 1) If fields/leaves are changing, just blow everything away
+        // 1) If fields/leaves or buckets are changing, just blow everything away.
         const cache = this._rowCache,
             oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
             newExposed = newQuery.includeLeaves || newQuery.provideLeaves,
-            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields);
-        if (oldExposed !== newExposed || (newExposed && fieldsChanged)) {
+            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields),
+            bucketsRemoved = oldQuery.bucketSpecFn && !newQuery.bucketSpecFn;
+        if (oldExposed !== newExposed || (newExposed && fieldsChanged) || bucketsRemoved) {
             cache.clear();
             return;
         }
