@@ -7,7 +7,8 @@ and npm publishing. All workflow definitions live in `.github/workflows/`.
 
 Runs automatically on pushes and pull requests to `develop`. Includes two independent jobs:
 
-- **Lint** — installs dependencies via `yarn install --frozen-lockfile` and runs `yarn lint`.
+- **Lint** — installs dependencies via `pnpm install --frozen-lockfile` and runs `pnpm lint`.
+  Also gates on a clean production-dependency audit (`pnpm audit --prod --audit-level high`).
   Skipped on scheduled runs.
 - **CodeQL** — runs GitHub's CodeQL security analysis for JavaScript/TypeScript. Runs on push, PR,
   and on a weekly schedule.

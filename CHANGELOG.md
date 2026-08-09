@@ -138,6 +138,23 @@
 * Added experimental `Store` config `denseRecordThreshold` - the populated (non-default) field
   count at/above which a record's `data` takes its fixed dense shape rather than the sparse form.
   For testing/tuning only - set to e.g. `999` to restore the pre-v87 (all-sparse) behavior.
+* Migrated this repo's own package management from yarn classic to pnpm 11 - `pnpm-lock.yaml`
+  replaces `yarn.lock`, the pnpm version is pinned via the `packageManager` field for corepack,
+  and all scripts, CI, and publish workflows now run on pnpm.
+    * No change is required for apps consuming the published `@xh/hoist` package - pnpm, yarn
+      classic, and npm all remain fully supported app package managers. Apps that wish to adopt
+      pnpm themselves must take `@xh/hoist-dev-utils` v14+ and declare every package they import
+      directly - see the hoist-dev-utils CHANGELOG for detailed migration guidance.
+    * Developers building an app against a local hoist-react checkout (`inlineHoist`) now need
+      pnpm available to install this repo's dependencies (`corepack enable pnpm`, then
+      `pnpm install`) - the app itself may remain on yarn or npm. Update any `startWithHoist`-style
+      app scripts that run an install within the sibling checkout to use `pnpm install` there.
+* Declared several previously-phantom packages that this library imports directly but that had
+  only resolved via yarn's flat hoisting of transitive dependencies: `sass-material-colors`
+  (imported by shipped SCSS), `@azure/msal-common` and `unified` (type-only imports, now declared
+  as dependencies), plus dev-time `@types/lodash`, `@xh/eslint-config`, `globals`, and
+  `stylelint-config-recommended-scss` (the config actually extended by `.stylelintrc` - replaces
+  the declared-but-unused `stylelint-config-standard-scss`).
 
 ### ⚙️ Typescript API Adjustments
 

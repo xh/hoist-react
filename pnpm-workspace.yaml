@@ -1,0 +1,33 @@
+# pnpm settings (pnpm 11+ reads these from this file, not from a `pnpm` field in package.json).
+# This is a single-package repo - the file exists for settings only, not to define a workspace.
+
+# Dependency build scripts do not run unless reviewed here; unreviewed scripts are a hard error
+# in CI. esbuild (via tsx, which powers the bin/hoist-* CLI tools) is allowed so its platform
+# binary install is guaranteed. The rest are declined: @parcel/watcher (via dev-utils' sass
+# watch-mode support, unused here) has a native build with prebuilt binaries shipped as optional
+# platform deps, browser-tabs-lock (via auth0-spa-js) ships prebuilt dist, and core-js's
+# postinstall only prints a funding message.
+allowBuilds:
+  '@parcel/watcher': false
+  browser-tabs-lock: false
+  core-js: false
+  esbuild: true
+
+# pnpm's minimum-release-age gate refuses freshly published versions as supply-chain protection.
+# Exempt XH's own packages - hoist-dev-utils SNAPSHOTs may be consumed minutes after publish.
+minimumReleaseAgeExclude:
+  - '@xh/*'
+
+# Force single versions of these packages across the whole tree (previously yarn `resolutions`).
+overrides:
+  '@types/react': 19.x
+  '@types/react-dom': 19.x
+  core-js: 3.x
+
+# Several transitive deps (react-popper, react-onsenui, react-windowed-select) still declare
+# react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
+# rather than surfacing unmet-peer warnings on every install.
+peerDependencyRules:
+  allowedVersions:
+    react: '19'
+    react-dom: '19'

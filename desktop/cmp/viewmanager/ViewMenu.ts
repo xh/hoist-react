@@ -12,7 +12,6 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators, parseMenuItems} from '@xh/hoist/utils/impl';
-import {Dictionary} from 'express-serve-static-core';
 import {each, filter, groupBy, isEmpty, isFunction, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
@@ -132,7 +131,7 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
 }
 
 function getGroupedMenuItems(
-    byGroup: Dictionary<ViewInfo[]>,
+    byGroup: Record<string, ViewInfo[]>,
     model: ViewManagerModel
 ): ReactNode[] {
     // Create grouped tree...
