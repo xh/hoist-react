@@ -27,7 +27,11 @@ jobs:
 
         # Installs the pnpm version pinned via the packageManager field in package.json.
         - name: Setup pnpm
-          uses: pnpm/action-setup@v6
+          uses: pnpm/setup@v2
+          with:
+              # `install: false` - this workflow runs its own install step below, after
+              # Font Awesome registry auth, and with --frozen-lockfile.
+              install: false
 
         - name: Setup Node.js
           uses: actions/setup-node@v7
