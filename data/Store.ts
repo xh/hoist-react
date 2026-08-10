@@ -1293,9 +1293,6 @@ export class Store
 
     @action
     private resetRecords() {
-        // The two RecordSet classes share their full (public) API but are structurally
-        // incompatible to TS via their private members - safe to unify here, the single
-        // construction point, as a Store's record sets are always homogeneous.
         const cls = this.experimental.patchableRecordSet ? PatchableRecordSet : RecordSet;
         this._committed = this._current = this._filtered = new cls(this) as unknown as RecordSet;
         this.summaryRecords = null;
