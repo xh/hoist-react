@@ -9,11 +9,31 @@ import equal from 'fast-deep-equal';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
-import {Store} from '../Store';
+import {RecordTransaction, Store} from '../Store';
 import {Filter} from '../filter/Filter';
 
 type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
+
+// Monotonic source for RecordSet.xhId - identifies instances for delta linkage.
+let nextXhId = 0;
+
+// Attach a load delta (see withNewRecords) only when reuse dominates - a large delta costs
+// consumers more to apply than their full-rebuild fallbacks.
+const MAX_LOAD_DELTA_RATIO = 0.25;
+
+/**
+ * Changes applied to a source RecordSet (identified by `prevId`) to produce a derived one.
+ * Unlike a RecordTransaction used to *specify* changes, `remove` here holds the full expanded
+ * set of removed ids, including cascaded descendants - consumers apply it verbatim.
+ * @internal
+ */
+export interface RecordSetDelta extends RecordTransaction {
+    prevId: number;
+    update: StoreRecord[];
+    add: StoreRecord[];
+    remove: StoreRecordId[];
+}
 
 /**
  * Internal container for StoreRecord management within a Store.
@@ -27,16 +47,28 @@ export class RecordSet {
     count: number;
     rootCount: number;
 
+    /** Unique instance id, identifying this set as the source of derived sets' `delta`s. */
+    readonly xhId: number = ++nextXhId;
+
+    /**
+     * Changes that produced this RecordSet from the instance identified by `delta.prevId` -
+     * populated when derived via `withTransaction` or an incremental filter patch, null when
+     * built any other way (full load, full filter). Lets consumers (e.g. Grid) sync small
+     * changes without a full-list diff.
+     */
+    readonly delta: RecordSetDelta = null;
+
     private _childrenMap: ChildRecordMap; // children by parentId
     private _list: StoreRecord[]; // all records.
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
 
-    constructor(store: Store, recordMap: StoreRecordMap = new Map()) {
+    constructor(store: Store, recordMap: StoreRecordMap = new Map(), delta: RecordSetDelta = null) {
         this.store = store;
         this.recordMap = recordMap;
         this.count = recordMap.size;
         this.rootCount = this.countRoots(recordMap);
+        this.delta = delta;
     }
 
     get empty(): boolean {
@@ -161,31 +193,47 @@ export class RecordSet {
         // Reuse existing StoreRecord object instances where possible.  See Store.loadData().
         // Be sure to finalize any new records that are accepted.
         if (this.empty) {
+            if (!recordMap.size) return this;
             recordMap.forEach(r => r.finalize());
-        } else {
-            recordMap.forEach((newRec, id) => {
-                const currRec = this.getById(id);
-                if (currRec && this.areRecordsEqual(currRec, newRec)) {
-                    recordMap.set(id, currRec);
-                } else {
-                    newRec.finalize();
-                }
-            });
+            return new RecordSet(this.store, recordMap);
         }
 
-        return new RecordSet(this.store, recordMap);
+        // Classify against the incumbents while reusing - reused records are no-ops, the rest
+        // form this set's delta from its predecessor.
+        const delta: RecordSetDelta = {prevId: this.xhId, update: [], add: [], remove: []};
+        recordMap.forEach((newRec, id) => {
+            const currRec = this.getById(id);
+            if (currRec && this.areRecordsEqual(currRec, newRec)) {
+                recordMap.set(id, currRec);
+            } else {
+                newRec.finalize();
+                (currRec ? delta.update : delta.add).push(newRec);
+            }
+        });
+
+        // Reload changed nothing - preserve instance identity outright, letting the Store skip
+        // its refilter and downstream consumers skip all sync. Common in polling apps.
+        const removedCount = this.count - (recordMap.size - delta.add.length);
+        if (!removedCount && !delta.update.length && !delta.add.length) return this;
+
+        if (removedCount) {
+            for (const id of this.recordMap.keys()) {
+                if (!recordMap.has(id)) delta.remove.push(id);
+            }
+        }
+
+        const changes = delta.update.length + delta.add.length + delta.remove.length,
+            attachDelta = changes <= MAX_LOAD_DELTA_RATIO * recordMap.size;
+        return new RecordSet(this.store, recordMap, attachDelta ? delta : null);
     }
 
-    withTransaction(t: {
-        update?: StoreRecord[];
-        add?: StoreRecord[];
-        remove?: StoreRecordId[];
-    }): RecordSet {
+    withTransaction(t: RecordTransaction): RecordSet {
         const {update, add, remove} = t;
 
         // Be sure to finalize any new records that are accepted.
         const {recordMap} = this,
-            newRecords = new Map(recordMap);
+            newRecords = new Map(recordMap),
+            delta: RecordSetDelta = {prevId: this.xhId, update: [], add: [], remove: []};
 
         let missingRemoves = 0,
             missingUpdates = 0;
@@ -203,6 +251,7 @@ export class RecordSet {
                 this.gatherDescendantIds(id, allRemoves);
             });
             allRemoves.forEach(it => newRecords.delete(it));
+            delta.remove = Array.from(allRemoves);
         }
 
         // 1) Updates
@@ -217,6 +266,7 @@ export class RecordSet {
                 }
                 newRecords.set(id, rec);
                 rec.finalize();
+                delta.update.push(rec);
             });
         }
 
@@ -227,6 +277,7 @@ export class RecordSet {
                 throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
                 newRecords.set(id, rec);
                 rec.finalize();
+                delta.add.push(rec);
             });
         }
 
@@ -235,7 +286,63 @@ export class RecordSet {
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
-        return new RecordSet(this.store, newRecords);
+        return new RecordSet(this.store, newRecords, delta);
+    }
+
+    /**
+     * Filtered projection of this RecordSet, built by patching the previous filtered set with
+     * this set's delta rather than re-testing every record. Applicable only when this set was
+     * derived from `prevFiltered`'s source (identified by `prevSourceId`) via a single
+     * transaction, and both states are flat - hierarchy-aware marking (ancestors of passing
+     * records, optionally their children) requires the full `withFilter` pass.
+     *
+     * Returns `prevFiltered` itself when the changes turn out not to touch the filtered set at
+     * all (e.g. updates only to filtered-out records), and null when not applicable - callers
+     * must then fall back to `withFilter`.
+     */
+    withFilterIncremental(
+        filter: Filter,
+        prevFiltered: RecordSet,
+        prevSourceId: number
+    ): RecordSet {
+        const {delta, store} = this;
+        if (
+            !delta ||
+            delta.prevId !== prevSourceId ||
+            this.count !== this.rootCount ||
+            prevFiltered.count !== prevFiltered.rootCount
+        ) {
+            return null;
+        }
+
+        const test = filter.getTestFn(store),
+            newMap = new Map(prevFiltered.recordMap),
+            fDelta: RecordSetDelta = {prevId: prevFiltered.xhId, update: [], add: [], remove: []};
+
+        delta.remove.forEach(id => {
+            if (newMap.delete(id)) fDelta.remove.push(id);
+        });
+        delta.update.forEach(rec => {
+            const {id} = rec,
+                present = newMap.has(id);
+            if (test(rec)) {
+                newMap.set(id, rec);
+                (present ? fDelta.update : fDelta.add).push(rec);
+            } else if (present) {
+                newMap.delete(id);
+                fDelta.remove.push(id);
+            }
+        });
+        delta.add.forEach(rec => {
+            if (test(rec)) {
+                newMap.set(rec.id, rec);
+                fDelta.add.push(rec);
+            }
+        });
+
+        return fDelta.update.length || fDelta.add.length || fDelta.remove.length
+            ? new RecordSet(store, newMap, fDelta)
+            : prevFiltered;
     }
 
     //------------------------

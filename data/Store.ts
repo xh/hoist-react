@@ -275,13 +275,22 @@ export interface StoreTransaction {
 }
 
 /**
- * Collection of changes made to a Store's RecordSet. Unlike `StoreTransaction` which is used to
- * specify changes, this object is used to report the actual changes made in a single transaction.
+ * A set of record-level changes to a Store's RecordSet - the shared shape of
+ * {@link StoreChangeLog}, RecordSet transactions, and the internal deltas RecordSets record
+ * about their own derivation. Contrast with {@link StoreTransaction}, which specifies changes
+ * as *raw* data.
  */
-export interface StoreChangeLog {
+export interface RecordTransaction {
     update?: StoreRecord[];
     add?: StoreRecord[];
     remove?: StoreRecordId[];
+}
+
+/**
+ * Collection of changes made to a Store's RecordSet. Unlike `StoreTransaction` which is used to
+ * specify changes, this object is used to report the actual changes made in a single transaction.
+ */
+export interface StoreChangeLog extends RecordTransaction {
     summaryRecords?: StoreRecord[];
 }
 
@@ -403,6 +412,10 @@ export class Store
     // Last parent pair verified position-equal by positionUnchanged().
     private _verifiedCachedParent: StoreRecord = null;
     private _verifiedNewParent: StoreRecord = null;
+
+    // xhId of the _current RecordSet from which _filtered was last built - the delta linkage
+    // gating incremental refiltering. See rebuildFiltered().
+    private _filteredSourceId: number = null;
 
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
@@ -527,9 +540,16 @@ export class Store
             ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
             : null;
 
-        const records = this.createRecords(rawData, null);
-        this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
+        const records = this.createRecords(rawData, null),
+            {_committed} = this,
+            newCommitted = _committed.withNewRecords(records);
+
+        // withNewRecords returns the same instance when a reload changes nothing - common in
+        // polling apps. Skip the swap + refilter entirely, unless discarding local mods.
+        if (newCommitted !== _committed || this._current !== _committed) {
+            this._committed = this._current = newCommitted;
+            this.rebuildFiltered();
+        }
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -571,8 +591,12 @@ export class Store
 
         runInAction(() => {
             this.summaryRecords = null;
-            this._committed = this._current = this._committed.withNewRecords(recordMap);
-            this.rebuildFiltered();
+            const {_committed} = this,
+                newCommitted = _committed.withNewRecords(recordMap);
+            if (newCommitted !== _committed || this._current !== _committed) {
+                this._committed = this._current = newCommitted;
+                this.rebuildFiltered();
+            }
             this.lastLoaded = this.lastUpdated = Date.now();
         });
     }
@@ -683,11 +707,7 @@ export class Store
         }
 
         // 3) Apply changes
-        let rsTransaction: {
-            update?: StoreRecord[];
-            add?: StoreRecord[];
-            remove?: StoreRecordId[];
-        } = {};
+        let rsTransaction: RecordTransaction = {};
         if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
@@ -1305,7 +1325,18 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter);
+        const {filter, _current, _filtered} = this;
+
+        // Patch the previous filtered set incrementally when possible - a full refilter tests
+        // every record on every transaction, however small. The delta linkage check within
+        // ensures this only applies when _current was derived from _filtered's source by a
+        // single transaction with this same filter - any other path (new/changed filter,
+        // refreshFilter(), full loads) falls through to the full pass.
+        const patched = filter
+            ? _current.withFilterIncremental(filter, _filtered, this._filteredSourceId)
+            : null;
+        this._filtered = patched ?? _current.withFilter(filter);
+        this._filteredSourceId = _current.xhId;
     }
 
     //---------------------------------------

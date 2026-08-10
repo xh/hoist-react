@@ -127,6 +127,11 @@
 
 ### ⚙️ Technical
 
+* Improved `Store` performance for incremental changes to large datasets. Transactions and
+  reloads now record the record-level changes they apply, letting a filtered Store re-test only
+  the changed records (flat data) and letting bound grids sync ag-Grid without a full-list diff.
+  Reloads found to change nothing preserve the Store's record collections outright, skipping all
+  downstream work - a common case for apps that poll for data on a timer.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
   Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
   (mobile and desktop) so apps require no call-site changes.
@@ -141,6 +146,8 @@
 
 ### ⚙️ Typescript API Adjustments
 
+* Added the exported `RecordTransaction` interface - the record-level counterpart to the raw-data
+  `StoreTransaction`. `StoreChangeLog` now extends it, with no change to its shape.
 * Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`, reflecting that custom `Aggregator`
   implementations may only rely on queried field values - not `ViewRowData` metadata - when reading
   row data. Use row-level getters such as `BaseRow.isLeaf` in place of `data.cubeRowType`.

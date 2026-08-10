@@ -658,6 +658,21 @@ export class GridLocalModel extends HoistModel {
     genTransaction(newRs, prevRs) {
         if (!prevRs) return {add: newRs.list};
 
+        // Fast path - a RecordSet derived directly from prevRs carries its own delta, avoiding
+        // the full-list diff below on (typically small) incremental transactions. Any other
+        // derivation (full loads, filter changes, multi-step) falls through to the full diff.
+        const {delta} = newRs;
+        if (delta && delta.prevId === prevRs.xhId) {
+            const ret: any = {};
+            if (!isEmpty(delta.update)) ret.update = delta.update;
+            if (!isEmpty(delta.add)) ret.add = delta.add;
+            if (!isEmpty(delta.remove)) {
+                const remove = delta.remove.map(id => prevRs.getById(id)).filter(r => r != null);
+                if (!isEmpty(remove)) ret.remove = remove;
+            }
+            return ret;
+        }
+
         const newList = newRs.list,
             prevList = prevRs.list;
 
