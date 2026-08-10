@@ -190,16 +190,10 @@ export class RecordSet {
     }
 
     withNewRecords(recordMap: StoreRecordMap): RecordSet {
-        // Reuse existing StoreRecord object instances where possible.  See Store.loadData().
+        // Reuse existing StoreRecord object instances where possible.
+        // If reload changed nothing - preserve instance identity outright,
         // Be sure to finalize any new records that are accepted.
-        if (this.empty) {
-            if (!recordMap.size) return this;
-            recordMap.forEach(r => r.finalize());
-            return new RecordSet(this.store, recordMap);
-        }
-
-        // Classify against the incumbents while reusing - reused records are no-ops, the rest
-        // form this set's delta from its predecessor.
+        // Non-reused records are classified as they pass, forming this set's delta.
         const delta: RecordSetDelta = {prevId: this.xhId, update: [], add: [], remove: []};
         recordMap.forEach((newRec, id) => {
             const currRec = this.getById(id);
@@ -211,8 +205,6 @@ export class RecordSet {
             }
         });
 
-        // Reload changed nothing - preserve instance identity outright, letting the Store skip
-        // its refilter and downstream consumers skip all sync. Common in polling apps.
         const removedCount = this.count - (recordMap.size - delta.add.length);
         if (!removedCount && !delta.update.length && !delta.add.length) return this;
 
@@ -222,6 +214,8 @@ export class RecordSet {
             }
         }
 
+        // Attach the delta only when reuse dominates - a large delta costs consumers more to
+        // apply than their full-rebuild fallbacks.
         const changes = delta.update.length + delta.add.length + delta.remove.length,
             attachDelta = changes <= MAX_LOAD_DELTA_RATIO * recordMap.size;
         return new RecordSet(this.store, recordMap, attachDelta ? delta : null);

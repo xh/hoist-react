@@ -540,14 +540,13 @@ export class Store
             ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
             : null;
 
-        const records = this.createRecords(rawData, null),
-            {_committed} = this,
-            newCommitted = _committed.withNewRecords(records);
+        const {_committed, _current} = this,
+            records = this.createRecords(rawData, null),
+            updated = _committed.withNewRecords(records);
 
-        // withNewRecords returns the same instance when a reload changes nothing - common in
-        // polling apps. Skip the swap + refilter entirely, unless discarding local mods.
-        if (newCommitted !== _committed || this._current !== _committed) {
-            this._committed = this._current = newCommitted;
+        // Skip downstream work on no-change reloads, unless local mods are being discarded.
+        if (updated !== _committed || updated !== _current) {
+            this._committed = this._current = updated;
             this.rebuildFiltered();
         }
 
@@ -591,10 +590,10 @@ export class Store
 
         runInAction(() => {
             this.summaryRecords = null;
-            const {_committed} = this,
-                newCommitted = _committed.withNewRecords(recordMap);
-            if (newCommitted !== _committed || this._current !== _committed) {
-                this._committed = this._current = newCommitted;
+            const {_committed, _current} = this,
+                updated = _committed.withNewRecords(recordMap);
+            if (updated !== _committed || updated !== _current) {
+                this._committed = this._current = updated;
                 this.rebuildFiltered();
             }
             this.lastLoaded = this.lastUpdated = Date.now();

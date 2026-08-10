@@ -94,6 +94,8 @@
       `FetchService` can also share interned values across successive fetches of the same logical
       dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
       known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+    * `Store.loadData()` calls found to change nothing now preserve the Store's record collections
+       outright, skipping all downstream work.
 
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
@@ -130,8 +132,6 @@
 * Improved `Store` performance for incremental changes to large datasets. Transactions and
   reloads now record the record-level changes they apply, letting a filtered Store re-test only
   the changed records (flat data) and letting bound grids sync ag-Grid without a full-list diff.
-  Reloads found to change nothing preserve the Store's record collections outright, skipping all
-  downstream work - a common case for apps that poll for data on a timer.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
   Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
   (mobile and desktop) so apps require no call-site changes.
