@@ -129,9 +129,13 @@
 
 ### ⚙️ Technical
 
-* Improved `Store` performance for incremental changes to large datasets. Transactions and
-  reloads now record the record-level changes they apply, letting a filtered Store re-test only
-  the changed records (flat data) and letting bound grids sync ag-Grid without a full-list diff.
+* Substantially improved `Store` performance for incremental changes to large datasets. Record
+  collections are now persistent structures - a shared, never-mutated base map plus a small patch
+  of changes - so transaction cost scales with the size of the change rather than the size of the
+  store. Filtered stores re-test only the changed records (flat data) and bound grids sync ag-Grid
+  from the same derived delta, without a full-list diff.
+* Improved `Store` validation bookkeeping to skip an all-records scan previously run on every data
+  change - now short-circuited for the common case of a store with no uncommitted records.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
   Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
   (mobile and desktop) so apps require no call-site changes.
