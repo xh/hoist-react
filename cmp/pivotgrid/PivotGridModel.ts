@@ -8,7 +8,7 @@ import {ColumnGroupSpec, ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/
 import {HoistModel, HSide, managed, ReactionSpec, VSide} from '@xh/hoist/core';
 import {CubeField, PivotCellField, PivotPath, PivotView, Store} from '@xh/hoist/data';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
-import {isArray, isEmpty, orderBy, sortBy} from 'lodash';
+import {isArray, isEmpty, mapValues, omit, orderBy, sortBy} from 'lodash';
 
 /**
  * Display sort for the pivot values at one level of the path tree.
@@ -19,8 +19,34 @@ import {isArray, isEmpty, orderBy, sortBy} from 'lodash';
  */
 export type PivotSort = 'asc' | 'desc' | any[] | null;
 
-/** Presentational config for a pivot value column. @see PivotGridConfig.valueColumnSpecs */
-export type PivotValueColumnSpec = Omit<ColumnSpec, 'colId' | 'field' | 'hidden' | 'hideable'>;
+/**
+ * {@link ColumnSpec} keys managed by {@link PivotGridModel} and stripped from any
+ * {@link PivotGridConfig.valueColumnSpecs} entry - column identity is derived from the pivot path,
+ * and the rest are reserved for this model's own use.
+ */
+export const RESERVED_VALUE_COLUMN_KEYS = [
+    'colId',
+    'field',
+    'isTreeColumn',
+    'hidden',
+    'hideable',
+    'enableDotSeparatedFieldPath',
+    'omit',
+    'pinned',
+    'editable',
+    'editor',
+    'setValueFn',
+    'getValueFn',
+    'sortValue',
+    'agOptions'
+] as const;
+
+/**
+ * Config for a pivot value column. A spec shared with a non-pivot grid still assigns cleanly, as
+ * TypeScript checks excess properties on inline literals only - {@link RESERVED_VALUE_COLUMN_KEYS}
+ * are an error to write out here, but are stripped silently when they arrive on a shared spec.
+ */
+export type PivotValueColumnSpec = Omit<ColumnSpec, (typeof RESERVED_VALUE_COLUMN_KEYS)[number]>;
 
 /**
  * Configuration for a {@link PivotGridModel}.
@@ -67,8 +93,9 @@ export interface PivotGridConfig {
      * Column config applied to every column built for the named value field - renderer, width,
      * align, and so on. Keyed by value field name.
      *
-     * Identity and visibility are managed by this model and cannot be set here - value columns are
-     * always shown, and are dropped from the grid by dropping the field from the query.
+     * Specs are expected to be shared with non-pivot grids, so {@link RESERVED_VALUE_COLUMN_KEYS}
+     * are stripped rather than rejected. Note in particular that value columns are always shown -
+     * drop the field from the query to remove one.
      */
     valueColumnSpecs?: Record<string, PivotValueColumnSpec>;
 
@@ -99,7 +126,7 @@ export class PivotGridModel extends HoistModel {
     @bindable pivotSummary: boolean | HSide;
     @bindable valueSummary: boolean | VSide;
     @bindable.ref pivotSortBy: PivotSort[];
-    @bindable.ref valueColumnSpecs: Record<string, ColumnSpec>;
+    @bindable.ref valueColumnSpecs: Record<string, PivotValueColumnSpec>;
 
     //------------------------
     // Child Models
@@ -183,8 +210,8 @@ export class PivotGridModel extends HoistModel {
             ...config,
             colDefaults: {
                 ...config?.colDefaults,
-                // Field names are derived from data values.
-                enableDotSeparatedFieldPath: false
+                enableDotSeparatedFieldPath: false, // Field names are derived from data values.
+                hideable: false // Hiding pivot columns should be done via the valueFields and filter in the PivotQuery
             },
             store: this.store,
             treeMode: true,
@@ -204,6 +231,12 @@ export class PivotGridModel extends HoistModel {
         const {paths, cellFields} = this.view.result;
 
         this.indexCellFields(cellFields);
+
+        // Stripped once per rebuild - `buildValueColumn` runs per path *and* value field.
+        this._valueSpecs = mapValues(this.valueColumnSpecs, it =>
+            omit(it, RESERVED_VALUE_COLUMN_KEYS)
+        );
+
         const label = this.buildLabelColumn();
 
         // Unpivoted, so the value fields are just measures - shown regardless of `rowSummary`, which
@@ -289,16 +322,12 @@ export class PivotGridModel extends HoistModel {
         return this.query.valueFields.map(field => this.buildValueColumn(path, field));
     }
 
-    // Never hideable - a measure is dropped from the grid by dropping it from the query, and the
-    // chooser cannot express that ("hide this measure everywhere" is one toggle per path). Note this
-    // leaves the column movable and pinnable, in the chooser and via its header.
     private buildValueColumn(path: PivotPath, field: CubeField): ColumnSpec {
         const name = this.cellFieldName(path, field);
         return {
-            ...this.valueColumnSpecs[field.name],
+            ...this._valueSpecs[field.name],
             colId: name,
-            field: name,
-            hideable: false
+            field: name
         };
     }
 
@@ -334,6 +363,7 @@ export class PivotGridModel extends HoistModel {
 
     private _cellFieldNames: Map<PivotPath, Map<string, string>> = new Map();
     private _rootPath: PivotPath = null;
+    private _valueSpecs: Record<string, PivotValueColumnSpec> = {};
 
     override destroy() {
         // The view registered this store rather than owning it, and outlives any grid bound to it.
