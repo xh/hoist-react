@@ -210,6 +210,11 @@ export class PatchableRecordSet {
         return {update, add, remove};
     }
 
+    /** As `diffFrom`, but only when answerable at O(patch) - null on unrelated instances. */
+    deltaFrom(prev: PatchableRecordSet): RecordSetDelta {
+        return prev && prev.base === this.base ? this.diffFrom(prev) : null;
+    }
+
     //----------------------------------------------------------
     // Lazy getters
     // Avoid memory allocation and work -- in many cases
@@ -446,18 +451,17 @@ export class PatchableRecordSet {
         filter: Filter,
         prevFiltered: PatchableRecordSet
     ): PatchableRecordSet {
-        const prevSource = prevFiltered?._filterSource;
         if (
-            !prevSource ||
-            prevSource.base !== this.base ||
+            !prevFiltered ||
             this.count !== this.rootCount ||
             prevFiltered.count !== prevFiltered.rootCount
         ) {
             return null;
         }
+        const delta = this.deltaFrom(prevFiltered._filterSource);
+        if (!delta) return null;
 
-        const delta = this.diffFrom(prevSource),
-            {store} = this,
+        const {store} = this,
             test = filter.getTestFn(store),
             fBase = prevFiltered.base,
             newPatch: PatchMap = prevFiltered.patch ? new Map(prevFiltered.patch) : new Map();
