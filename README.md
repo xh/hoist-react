@@ -41,6 +41,8 @@ Copilot, and similar tools) can consult [AGENTS.md](AGENTS.md) for coding conven
 Install hoist-react as a dependency:
 
 ```bash
+pnpm add @xh/hoist
+# or
 npm install @xh/hoist
 # or
 yarn add @xh/hoist
@@ -52,6 +54,13 @@ Hoist React requires **React ~18.2** and **React DOM ~18.2** as peer dependencie
 patterns and components and is the best starting point for new developers. See
 [docs/development-environment.md](docs/development-environment.md) for full local development setup,
 and the [Hoist Core README](https://github.com/xh/hoist-core) for server-side configuration.
+
+This repo itself is managed with [pnpm](https://pnpm.io) - run `pnpm install` to install its
+dependencies when developing hoist-react locally. The required pnpm version is pinned via the
+`packageManager` field in `package.json` and can be provisioned automatically by
+[corepack](https://nodejs.org/api/corepack.html) (`corepack enable pnpm`) or a standalone pnpm
+install of v10+. Applications consuming the published `@xh/hoist` package are free to use pnpm,
+yarn, or npm.
 
 ## Documentation
 

@@ -28,23 +28,31 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
+        # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
+        # which every subsequent npm/pnpm invocation reads - pnpm warns when the var is
+        # unresolvable, so supply a job-wide placeholder to keep logs clean. The real token is
+        # provided to the publish step alone (step env overrides job env), keeping it out of
+        # dependency lifecycle scripts during install.
+        env:
+            NODE_AUTH_TOKEN: 'unused-outside-publish'
 
         steps:
         - uses: actions/checkout@v7
 
+        # Installs the pnpm version pinned via the packageManager field in package.json.
+        - name: Setup pnpm
+          uses: pnpm/setup@v2
+          with:
+              # `install: false` - this workflow runs its own install step below, after
+              # Font Awesome registry auth, and with --frozen-lockfile.
+              install: false
+
         - name: Setup Node.js
-          # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
-          # and its `cache: yarn` handling then runs `yarn cache dir`, which hard-errors if the var
-          # is unresolvable. setup-node v7 no longer exports a dummy value, so we supply one. The
-          # real token is scoped to the publish step alone, keeping it out of dependency lifecycle
-          # scripts during install.
-          env:
-              NODE_AUTH_TOKEN: 'unused-at-install-time'
           uses: actions/setup-node@v7
           with:
               node-version-file: '.nvmrc'
               registry-url: 'https://registry.npmjs.org'
-              cache: 'yarn'
+              cache: 'pnpm'
 
         - name: Configure Font Awesome registry auth
           env:
@@ -52,10 +60,10 @@ jobs:
           run: echo "//npm.fontawesome.com/:_authToken=$FONTAWESOME_PACKAGE_TOKEN" >> .npmrc
 
         - name: Install dependencies
-          run: yarn install --frozen-lockfile
+          run: pnpm install --frozen-lockfile
 
-        - name: Yarn lint
-          run: yarn lint:all
+        - name: Lint
+          run: pnpm lint:all
 
         - name: Prepare snapshot version
           id: snapshot
