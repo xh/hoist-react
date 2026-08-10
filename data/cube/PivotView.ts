@@ -148,9 +148,9 @@ export class PivotView extends View {
     //------------------------
     // Implementation
     //------------------------
-    protected override generateRows() {
-        super.generateRows();
-        this.generateCells();
+    protected override generateRows(records: StoreRecord[]) {
+        super.generateRows(records);
+        this.generateCells(records);
     }
 
     protected override createResult(): PivotViewResult {
@@ -255,18 +255,17 @@ export class PivotView extends View {
         this._cellRows = [];
     }
 
-    private generateCells() {
+    private generateCells(records: StoreRecord[]) {
         const {query, _rootRows} = this;
         if (!query.isPivoted || isEmpty(_rootRows)) return this.clearCells();
 
         const {groups, parentOfGroup, innermost, groupIdxOf} = this.enumerateGroups();
         if (isEmpty(groups)) return this.clearCells();
 
-        const records = this._aggContext.filteredRecords,
-            discovery = discoverPivotPaths(records, query.pivotDimensionNames, {
-                emptyPathLabel: query.emptyPathLabel,
-                maxPivotPaths: query.maxPivotPaths
-            });
+        const discovery = discoverPivotPaths(records, query.pivotDimensionNames, {
+            emptyPathLabel: query.emptyPathLabel,
+            maxPivotPaths: query.maxPivotPaths
+        });
 
         // Leaves, aligned to the record order discovery used so path indices carry across.
         const leafRows: LeafRow[] = [],
