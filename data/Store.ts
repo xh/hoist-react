@@ -46,6 +46,7 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
+import {PatchableRecordSet} from './impl/PatchableRecordSet';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -231,7 +232,10 @@ export interface StoreConfig {
 
     /**
      *  Flags for experimental features. These features are designed for early client-access and
-     *  testing, but are not yet part of the Hoist API.
+     *  testing, but are not yet part of the Hoist API. Currently includes
+     *  `patchableRecordSet: true` to enable {@link PatchableRecordSet} - incremental record
+     *  collections that make transaction cost scale with the size of the change rather than the
+     *  size of the store.
      */
     experimental?: PlainObject;
 }
@@ -275,22 +279,13 @@ export interface StoreTransaction {
 }
 
 /**
- * A set of record-level changes to a Store's RecordSet - the shared shape of
- * {@link StoreChangeLog}, RecordSet transactions, and the internal deltas RecordSets record
- * about their own derivation. Contrast with {@link StoreTransaction}, which specifies changes
- * as *raw* data.
- */
-export interface RecordTransaction {
-    update?: StoreRecord[];
-    add?: StoreRecord[];
-    remove?: StoreRecordId[];
-}
-
-/**
  * Collection of changes made to a Store's RecordSet. Unlike `StoreTransaction` which is used to
  * specify changes, this object is used to report the actual changes made in a single transaction.
  */
-export interface StoreChangeLog extends RecordTransaction {
+export interface StoreChangeLog {
+    update?: StoreRecord[];
+    add?: StoreRecord[];
+    remove?: StoreRecordId[];
     summaryRecords?: StoreRecord[];
 }
 
@@ -706,7 +701,11 @@ export class Store
         }
 
         // 3) Apply changes
-        let rsTransaction: RecordTransaction = {};
+        let rsTransaction: {
+            update?: StoreRecord[];
+            add?: StoreRecord[];
+            remove?: StoreRecordId[];
+        } = {};
         if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
@@ -1289,7 +1288,11 @@ export class Store
 
     @action
     private resetRecords() {
-        this._committed = this._current = this._filtered = new RecordSet(this);
+        // The two RecordSet classes share their full (public) API but are structurally
+        // incompatible to TS via their private members - safe to unify here, the single
+        // construction point, as a Store's record sets are always homogeneous.
+        const cls = this.experimental.patchableRecordSet ? PatchableRecordSet : RecordSet;
+        this._committed = this._current = this._filtered = new cls(this) as unknown as RecordSet;
         this._filteredSource = null;
         this.summaryRecords = null;
     }

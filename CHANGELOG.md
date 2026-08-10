@@ -128,11 +128,13 @@
 
 ### ⚙️ Technical
 
-* Substantially improved `Store` performance for incremental changes to large datasets. Record
-  collections are now persistent structures - a shared, never-mutated base map plus a small patch
-  of changes - so transaction cost scales with the size of the change rather than the size of the
-  store. Filtered stores re-test only the changed records (flat data) and bound grids sync ag-Grid
-  from the same derived delta, without a full-list diff.
+* Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
+  incremental changes to large datasets. Record collections become persistent structures - a
+  shared, never-mutated base map plus a small patch of changes - so transaction cost scales with
+  the size of the change rather than the size of the store. Filtered stores re-test only the
+  changed records (flat data) and bound grids sync ag-Grid from the same derived delta, without a
+  full-list diff. Enable via `Store` config `experimental: {patchableRecordSet: true}`, or
+  app-wide via the `xhStoreExperimental` soft-config.
 * Improved `Store` validation bookkeeping to skip an all-records scan previously run on every data
   change - now short-circuited for the common case of a store with no uncommitted records.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
@@ -149,8 +151,6 @@
 
 ### ⚙️ Typescript API Adjustments
 
-* Added the exported `RecordTransaction` interface - the record-level counterpart to the raw-data
-  `StoreTransaction`. `StoreChangeLog` now extends it, with no change to its shape.
 * Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`, reflecting that custom `Aggregator`
   implementations may only rely on queried field values - not `ViewRowData` metadata - when reading
   row data. Use row-level getters such as `BaseRow.isLeaf` in place of `data.cubeRowType`.
