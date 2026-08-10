@@ -19,6 +19,9 @@ import {isArray, isEmpty, orderBy, sortBy} from 'lodash';
  */
 export type PivotSort = 'asc' | 'desc' | any[] | null;
 
+/** Presentational config for a pivot value column. @see PivotGridConfig.valueColumnSpecs */
+export type PivotValueColumnSpec = Omit<ColumnSpec, 'colId' | 'field' | 'hidden' | 'hideable'>;
+
 /**
  * Configuration for a {@link PivotGridModel}.
  *
@@ -63,8 +66,11 @@ export interface PivotGridConfig {
     /**
      * Column config applied to every column built for the named value field - renderer, width,
      * align, and so on. Keyed by value field name.
+     *
+     * Identity and visibility are managed by this model and cannot be set here - value columns are
+     * always shown, and are dropped from the grid by dropping the field from the query.
      */
-    valueColumnSpecs?: Record<string, ColumnSpec>;
+    valueColumnSpecs?: Record<string, PivotValueColumnSpec>;
 
     /**
      * Config for the underlying GridModel. `store`, `treeMode` and `showSummary` are managed by
@@ -283,12 +289,16 @@ export class PivotGridModel extends HoistModel {
         return this.query.valueFields.map(field => this.buildValueColumn(path, field));
     }
 
+    // Never hideable - a measure is dropped from the grid by dropping it from the query, and the
+    // chooser cannot express that ("hide this measure everywhere" is one toggle per path). Note this
+    // leaves the column movable and pinnable, in the chooser and via its header.
     private buildValueColumn(path: PivotPath, field: CubeField): ColumnSpec {
         const name = this.cellFieldName(path, field);
         return {
             ...this.valueColumnSpecs[field.name],
             colId: name,
-            field: name
+            field: name,
+            hideable: false
         };
     }
 
