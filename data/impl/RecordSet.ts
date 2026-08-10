@@ -116,6 +116,16 @@ export class RecordSet {
         return {update, add, remove};
     }
 
+    /**
+     * Changes deriving this RecordSet from `prev` when cheaply derivable, null otherwise -
+     * directing consumers to their full fallback paths. Contrast with `diffFrom`, which always
+     * answers, at full-scan cost if needed. Implementations sharing structure across related
+     * instances can answer at O(changes).
+     */
+    deltaFrom(prev: RecordSet): RecordSetDelta {
+        return null;
+    }
+
     //----------------------------------------------------------
     // Lazy getters
     // Avoid memory allocation and work -- in many cases

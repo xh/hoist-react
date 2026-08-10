@@ -28,6 +28,7 @@ import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
+    compact,
     defaultsDeep,
     differenceBy,
     first,
@@ -281,7 +282,8 @@ export interface StoreTransaction {
 export interface StoreChangeLog {
     update?: StoreRecord[];
     add?: StoreRecord[];
-    remove?: StoreRecordId[];
+    /** Removed records as they existed prior to removal - no longer resolvable by id. */
+    remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
 }
 
@@ -703,6 +705,11 @@ export class Store
         if (!isEmpty(remove)) rsTransaction.remove = remove;
 
         if (!isEmpty(rsTransaction)) {
+            // Resolve removed records for the changelog up front - unresolvable post-removal.
+            const removeRecs = rsTransaction.remove
+                ? compact(rsTransaction.remove.map(id => this.getById(id)))
+                : null;
+
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
             this._committed = this._committed.withTransaction(rsTransaction);
@@ -721,7 +728,7 @@ export class Store
             }
 
             this.rebuildFiltered();
-            Object.assign(changeLog, rsTransaction);
+            Object.assign(changeLog, rsTransaction, removeRecs ? {remove: removeRecs} : null);
         }
 
         if (!isEmpty(changeLog)) {

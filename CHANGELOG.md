@@ -34,6 +34,9 @@
   `ViewManagerModel` or `DashViewModel`, ensuring a software release does not add columns to views
   users have curated and named. They remain available via the column chooser. Set the new
   `GridModelPersistOptions.hideNewColumns` config to `false` to restore the prior behavior.
+* `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
+  rather than their ids - removed records cannot be resolved against the Store after the fact,
+  making the records themselves the more useful report. Read `record.id` where ids are needed.
 
 ### 🎁 New Features
 
