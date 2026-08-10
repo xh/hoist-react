@@ -614,9 +614,13 @@ Public APIs use TSDoc comments (`/** ... */`). TSDoc syntax is checked by ESLint
  */
 loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) { ... }
 ```
-Match the existing comment density and style in the file. Comments should describe intent for a
-future reader who has no knowledge of any particular edit, or the history of the code in question.
-Rarely should comments reference what changed, what was removed, or what's new.
+Default to fewer comments. A comment earns its place by saying something the code cannot - a
+constraint, a workaround, a gotcha that will bite the next reader. Restating what a line does, or
+justifying a choice that is already correct, adds noise that buries the parts worth reading.
+
+Comments should describe intent for a future reader who has no knowledge of any particular edit, or
+the history of the code in question. Rarely should comments reference what changed, what was
+removed, or what's new.
 
 Generally, class- and method-level (TSDoc) comments should focus on the **public API surface** -
 what a caller needs to know to use the component, model, service, or method correctly - rather
