@@ -278,17 +278,11 @@ export class View
     //-----------------------
     // Entry point for cube
     //-----------------------
-    /** Full rebuild against current cube data. @internal - called by this View's Cube. */
     @action
     noteCubeLoaded() {
         this.fullUpdate();
     }
 
-    /**
-     * Incremental sync from a report of record-level changes, or null to sync `info` and
-     * timestamps alone.
-     * @internal - called by this View's Cube.
-     */
     @action
     noteCubeUpdated(changes: RecordSetDelta) {
         const simpleUpdates = this.getSimpleUpdates(changes);

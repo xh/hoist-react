@@ -340,11 +340,6 @@ export class Cube extends HoistBase {
         rawData: PlainObject[] | StoreTransaction,
         infoUpdates: PlainObject = {}
     ): Promise<void> {
-        throwIf(
-            !isArray(rawData) && rawData.rawSummaryData,
-            'Cubes do not support summary records - remove rawSummaryData from this transaction.'
-        );
-
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 
