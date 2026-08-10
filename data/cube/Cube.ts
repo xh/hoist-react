@@ -314,8 +314,7 @@ export class Cube extends HoistBase {
         }
         this.setInfo(info);
 
-        // Loads found to change nothing preserve the store's record collections outright -
-        // sync each view's info/timestamp only, skipping the full regeneration of its rows.
+        // No-change loads need only an info/timestamp sync on views - skip row regeneration.
         const unchanged = store._filtered === prevRecords;
         await forEachAsync(this._connectedViews, v =>
             unchanged ? v.noteCubeUpdated(null) : v.noteCubeLoaded()
