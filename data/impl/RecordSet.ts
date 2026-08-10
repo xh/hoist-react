@@ -18,7 +18,8 @@ type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 /**
  * Changes deriving one RecordSet from another, as computed by {@link RecordSet.diffFrom}.
  * Unlike a transaction used to *specify* changes, `remove` here holds the full set of removed
- * ids, including cascaded descendants - consumers apply it verbatim.
+ * ids, including cascaded descendants - consumers apply it verbatim. Every removed id is
+ * guaranteed present in the diffed-from instance, an invariant any implementation must uphold.
  * @internal
  */
 export interface RecordSetDelta {

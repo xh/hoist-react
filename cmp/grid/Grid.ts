@@ -662,10 +662,7 @@ export class GridLocalModel extends HoistModel {
         const ret: any = {};
         if (!isEmpty(add)) ret.add = add;
         if (!isEmpty(update)) ret.update = update;
-        if (!isEmpty(remove)) {
-            const removeRecs = remove.map(id => prevRs.getById(id)).filter(r => r != null);
-            if (!isEmpty(removeRecs)) ret.remove = removeRecs;
-        }
+        if (!isEmpty(remove)) ret.remove = remove.map(id => prevRs.getById(id));
         return ret;
     }
 
