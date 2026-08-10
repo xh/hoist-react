@@ -248,14 +248,15 @@ export class View
 
     /** Gather all unique values for each dimension field in the query. */
     getDimensionValues(): DimensionValue[] {
-        const {_leafMap} = this,
-            fields = this.query.fields.filter(it => it.isDimension);
+        const ret = this.query.fields
+            .filter(it => it.isDimension)
+            .map(field => ({field, values: new Set<any>()}));
 
-        return fields.map(field => {
-            const values = new Set();
-            _leafMap.forEach(leaf => values.add(leaf.data[field.name]));
-            return {field, values};
+        this._leafMap.forEach(leaf => {
+            ret.forEach(({field, values}) => values.add(leaf.data[field.name]));
         });
+
+        return ret;
     }
 
     /** Get a specific Field by name.*/
