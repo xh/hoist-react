@@ -17,7 +17,6 @@ import {
     Query,
     QueryConfig,
     Store,
-    StoreChangeLog,
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
@@ -30,6 +29,7 @@ import {RowCache} from './impl/RowCache';
 import {BaseRow} from './row/BaseRow';
 import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
+import {RecordSetDelta} from '../impl/RecordSet';
 
 /**
  * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally
@@ -278,14 +278,20 @@ export class View
     //-----------------------
     // Entry point for cube
     //-----------------------
+    /** Full rebuild against current cube data. @internal - called by this View's Cube. */
     @action
     noteCubeLoaded() {
         this.fullUpdate();
     }
 
+    /**
+     * Incremental sync from a report of record-level changes, or null to sync `info` and
+     * timestamps alone.
+     * @internal - called by this View's Cube.
+     */
     @action
-    noteCubeUpdated(changeLog: StoreChangeLog) {
-        const simpleUpdates = this.getSimpleUpdates(changeLog);
+    noteCubeUpdated(changes: RecordSetDelta) {
+        const simpleUpdates = this.getSimpleUpdates(changes);
 
         if (!simpleUpdates) {
             this.fullUpdate();
@@ -598,7 +604,7 @@ export class View
 
     // return a list of simple data updates we can apply to leaves.
     // false if leaf population changing, or aggregations are complex
-    private getSimpleUpdates(t: StoreChangeLog): StoreRecord[] | false {
+    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | false {
         if (!t) return [];
         if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
@@ -613,7 +619,7 @@ export class View
         // 2) Examine, accounting for filter
         // 2a) Relevant adds or removes fail us
         if (t.add?.some(rec => query.test(rec))) return false;
-        if (t.remove?.some(r => _leafMap.has(r.id))) return false;
+        if (t.remove?.some(rec => _leafMap.has(rec.id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];

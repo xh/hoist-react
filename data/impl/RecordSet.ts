@@ -117,8 +117,8 @@ export class RecordSet {
     }
 
     /**
-     * As `diffFrom`, but null unless cheaply derivable (i.e. without a full scan) - directing
-     * consumers to their full fallback paths. Always null for this implementation.
+     * As `diffFrom`, but only provided if cheaply derivable (i.e. without a full scan).
+     * Always null for this implementation.
      */
     deltaFrom(prev: RecordSet): RecordSetDelta {
         return null;
