@@ -158,22 +158,22 @@ export class RecordSet {
     }
 
     withNewRecords(recordMap: StoreRecordMap): RecordSet {
-        // Reuse existing StoreRecord object instances where possible.  See Store.loadData().
+        // Reuse existing StoreRecord object instances where possible.
+        // If reload changed nothing - preserve instance identity outright,
         // Be sure to finalize any new records that are accepted.
-        if (this.empty) {
-            recordMap.forEach(r => r.finalize());
-        } else {
-            recordMap.forEach((newRec, id) => {
-                const currRec = this.getById(id);
-                if (currRec && this.areRecordsEqual(currRec, newRec)) {
-                    recordMap.set(id, currRec);
-                } else {
-                    newRec.finalize();
-                }
-            });
-        }
-
-        return new RecordSet(this.store, recordMap);
+        let reused = 0;
+        recordMap.forEach((newRec, id) => {
+            const currRec = this.getById(id);
+            if (currRec && this.areRecordsEqual(currRec, newRec)) {
+                recordMap.set(id, currRec);
+                reused++;
+            } else {
+                newRec.finalize();
+            }
+        });
+        return reused === recordMap.size && reused === this.count
+            ? this
+            : new RecordSet(this.store, recordMap);
     }
 
     withTransaction(t: {

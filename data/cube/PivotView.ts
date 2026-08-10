@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
 import {Field, Store, StoreConfig, StoreRecord} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -92,24 +91,16 @@ export class PivotView extends View {
     /** Cell fields last declared on each store, by identity - the structural-change signal. */
     declare protected _syncedCellFields: WeakMap<Store, PivotCellField[]>;
 
+    // Aggregation field lists for cell rows, in the shape View maintains per depth for group rows -
+    // see PivotCellRow. Derived on each build, as `updateQuery` can change `valueFields`.
+    declare _cellAggFields: CubeField[];
+    declare _cellAggFieldNames: Set<string>;
+    declare _cellCanAggregateFnFields: CubeField[];
+    declare _cellComplexAggFields: CubeField[];
+
     /** @internal - applications should use {@link Cube.createPivotView} */
     constructor(config: ViewConfig) {
         super(config);
-    }
-
-    /**
-     * Fields aggregated on cell rows - the value fields plus their declared dependencies.
-     *
-     * Recomputed per call, not memoized - `updateQuery` can change `valueFields`, and this is read
-     * once per build.
-     */
-    get cellAggFields(): CubeField[] {
-        const names = new Set<string>();
-        this.query.valueFields.forEach(f => {
-            names.add(f.name);
-            f.dependsOn?.forEach(n => names.add(n));
-        });
-        return this.fields.filter(f => names.has(f.name));
     }
 
     /**
@@ -157,9 +148,9 @@ export class PivotView extends View {
     //------------------------
     // Implementation
     //------------------------
-    protected override generateRows() {
-        super.generateRows();
-        this.generateCells();
+    protected override generateRows(records: StoreRecord[]) {
+        super.generateRows(records);
+        this.generateCells(records);
     }
 
     protected override createResult(): PivotViewResult {
@@ -264,18 +255,17 @@ export class PivotView extends View {
         this._cellRows = [];
     }
 
-    private generateCells() {
+    private generateCells(records: StoreRecord[]) {
         const {query, _rootRows} = this;
         if (!query.isPivoted || isEmpty(_rootRows)) return this.clearCells();
 
         const {groups, parentOfGroup, innermost, groupIdxOf} = this.enumerateGroups();
         if (isEmpty(groups)) return this.clearCells();
 
-        const records = this._aggContext.filteredRecords,
-            discovery = discoverPivotPaths(records, query.pivotDimensionNames, {
-                emptyPathLabel: query.emptyPathLabel,
-                maxPivotPaths: query.maxPivotPaths
-            });
+        const discovery = discoverPivotPaths(records, query.pivotDimensionNames, {
+            emptyPathLabel: query.emptyPathLabel,
+            maxPivotPaths: query.maxPivotPaths
+        });
 
         // Leaves, aligned to the record order discovery used so path indices carry across.
         const leafRows: LeafRow[] = [],
@@ -390,11 +380,11 @@ export class PivotView extends View {
      * *lower* index than it does - so reverse order is a valid bottom-up build for both axes.
      */
     private buildCellRows(lattice: PivotLatticeResult, groups: BaseRow[], leafRows: LeafRow[]) {
+        this.buildCellAggFields();
+
         const {cellCount, cellGroup, cellPath, childStart, childIdx, cellChildKind} = lattice,
             {_allPaths} = this,
-            valueFields = this.cellAggFields,
-            cellRows: PivotCellRow[] = new Array(cellCount),
-            canAggregateOfPath: PlainObject[] = new Array(_allPaths.length);
+            cellRows: PivotCellRow[] = new Array(cellCount);
 
         for (let c = cellCount - 1; c >= 0; c--) {
             const ownerRow = groups[cellGroup[c]],
@@ -407,26 +397,11 @@ export class PivotView extends View {
                 children.push(isLeafKind ? leafRows[childIdx[i]] : cellRows[childIdx[i]]);
             }
 
-            // One canAggregate map per path, shared by every cell on it.
-            const canAggregate = (canAggregateOfPath[pathIdx] ??= this.cellCanAggregate(
-                path,
-                valueFields
-            ));
-
             const id = `${ownerRow.id}#${path.key}`,
                 row = (cellRows[c] = this._rowCache.getOrCreate(
                     id,
                     children,
-                    () =>
-                        new PivotCellRow(
-                            this,
-                            id,
-                            children,
-                            ownerRow,
-                            path,
-                            valueFields,
-                            canAggregate
-                        )
+                    () => new PivotCellRow(this, id, children, ownerRow, path)
                 ));
 
             // A cache hit means the id and the children match - not that the objects they name are
@@ -451,15 +426,19 @@ export class PivotView extends View {
         this._cellRows = cellRows;
     }
 
-    private cellCanAggregate(path: PivotPath, valueFields: CubeField[]): PlainObject {
-        const ctx = this._aggContext;
-        return valueFields.reduce((ret, field) => {
-            const {aggregator, canAggregateFn} = field;
-            ret[field.name] =
-                aggregator &&
-                (!canAggregateFn || canAggregateFn(path.dimension?.name, path.value, {}, ctx));
-            return ret;
-        }, {} as PlainObject);
+    // Cells aggregate the query's value fields, plus any fields those declare a dependence on.
+    private buildCellAggFields() {
+        const names = new Set<string>();
+        this.query.valueFields.forEach(f => {
+            names.add(f.name);
+            f.dependsOn?.forEach(n => names.add(n));
+        });
+
+        const fields = this.fields.filter(f => f.aggregator && names.has(f.name));
+        this._cellAggFields = fields;
+        this._cellAggFieldNames = new Set(fields.map(f => f.name));
+        this._cellCanAggregateFnFields = fields.filter(f => f.canAggregateFn);
+        this._cellComplexAggFields = fields.filter(f => !f.aggregator.dependsOnChildrenOnly);
     }
 
     private projectCells(leafRows: LeafRow[]) {

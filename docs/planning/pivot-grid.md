@@ -237,8 +237,9 @@ Changes to existing classes, all mechanical, with no behavior change for non-piv
 createResult()` so the subclass can extend it.
 - `BaseRow` / `LeafRow`: add the `pivotParent` link and propagate to it from `applyDataUpdate` /
   `applyLeafDataUpdate`.
-- `BaseRow`: `initAggregate` / `computeAggregates` take an optional field list, defaulting to
-  `view.fields`. This is what lets cell rows aggregate only the value fields.
+- `ParentRow`: reads its aggregation field lists through protected getters, defaulting to the
+  View's per-depth lists. `PivotCellRow` overrides them with the cell lists, which is what lets
+  cell rows aggregate only the value fields.
 - The incremental update collector becomes `Set<BaseRow>` rather than `Set<PlainObject>` (rename
   `updatedRowDatas` → `updatedRows`), with `View.dataOnlyUpdate` mapping rows to datas for stores.
   `PivotView` needs the rows themselves to tell cells from group rows. `HiddenLeafRow` continues to
@@ -255,7 +256,7 @@ interface PivotQueryConfig extends QueryConfig {
     /** Pivot dimensions, outermost first. Empty to degenerate to a plain View. */
     pivotDimensions?: string[] | CubeField[];
 
-    /** Measures to aggregate per cell. Must be aggregatable members of `fields`. */
+    /** Measures to aggregate per cell. Must be aggregatable. */
     valueFields: string[] | CubeField[];
 
     /** Label for a null / blank pivot dimension value. Default '(empty)'. */
@@ -275,9 +276,32 @@ exposes `pivotDimensions: CubeField[]` alongside `dimensions: CubeField[]` and `
 CubeField[]`. `equalsExcludingFilter` and `clone` are extended to cover the new members, so
 `updateQuery` detects pivot changes and rebuilds (clearing the row cache) correctly.
 
-Validation at construction: every `valueFields` entry must be present in `fields`, carry an
-aggregator, and not be a dimension; `pivotDimensions` entries must be dimensions; `pivotDimensions`
-and `dimensions` must not overlap.
+`fields` is derived and purely additive, and this is the one place `PivotQueryConfig` deliberately
+breaks from `QueryConfig`. `dimensions`, `pivotDimensions`, `valueFields`, and the `dependsOn` of
+those value fields are unioned in at construction; an unspecified `fields` therefore yields *that
+baseline only*, not all `Cube.fields`. Two reasons the inherited all-fields default is wrong here:
+
+- Deriving is the only way to be correct. `PivotView`'s cell aggregation fields draw solely on
+  declared `fields`, so a query narrowing them would otherwise silently lose a value field's
+  dependencies and aggregate wrong numbers with no error.
+- Deriving-only is the only sane default. Every aggregatable field in `fields` is aggregated on every
+  row of the hierarchy (`ParentRow` defaults to the View's per-depth field lists), so
+  inheriting all `Cube.fields` silently pays for measures the pivot will never display. Apps wanting
+  the plain-Query behavior pass `cube.fields` explicitly.
+
+Two constraints on the derivation, both easy to regress:
+
+- It resolves to `CubeField`s rather than names, so that `clone` re-deriving from its own output
+  lands on an identical array. Names would be re-ordered into Cube field order by
+  `Query.parseFields` (which passes a `CubeField[]` through untouched), breaking
+  `equalsExcludingFilter` and with it `updateQuery`'s no-op check.
+- `cloneConfig` passes the *raw* pre-derivation `fields`, as it already does for `filter`. Re-deriving
+  from `this.fields` would strand the fields of value fields an override is replacing, so a UI
+  measure picker would accumulate dead aggregations with every change.
+
+Validation at construction: every `valueFields` entry must carry an aggregator and not be a
+dimension; `pivotDimensions` entries must be dimensions; `pivotDimensions` and `dimensions` must not
+overlap.
 
 ### Result shape
 
@@ -1267,6 +1291,15 @@ label column truncated fund names with no way to widen it, worked around with
 an app wanting a fixed width, a custom renderer for leaf rows, or a different empty-value label
 currently cannot get one. Weigh that when deciding day-1 vs follow-up.
 
+**A toggle for the single-value-field column collapse** (`hideSingleValuePivotCols` or similar - the
+name should say "collapse the group", not "hide the column", since nothing is hidden). With one value
+field a leaf pivot path renders as a single column headed by the path label rather than a one-child
+group, because a group of one reads as a duplicate header (`PivotGridModel.buildPathColumn`). Summary
+columns collapse the same way (`buildSummaryColumn`) - a toggle has to cover both or the two headers
+disagree. Purely additive and safe to defer: the collapse only drops the group wrapper, so `colId`s
+and persisted column state are identical either way. Pull it forward if an app wants the value field's
+name visible under every path, or needs the group header for its own reasons.
+
 **Top-N plus `(other)` on the pivot axis.** Rejected as a soft cap for `maxPivotPaths` because keeping
 the summary invariant means the bucket must genuinely *contain* the tail — which makes it a real
 feature worth designing rather than a guard. See
@@ -1341,6 +1374,20 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-10 — Merged up to current `develop`.** Seventeen commits, again landing squarely on the
+aggregation machinery. Develop split `ParentRow` out of `BaseRow` and moved aggregation eligibility
+off a per-row `canAggregate` map onto per-depth field lists on the `View`, re-deriving any
+`canAggregateFn` on row reuse. Cells have no depth, so `ParentRow` now reads its four field lists
+through protected getters and `PivotCellRow` — which becomes a `ParentRow` — overrides them with
+`PivotView`'s cell lists. That deletes our per-path shared `canAggregate` maps outright: develop
+only materializes results for fields that actually declare a `canAggregateFn`. Also a silent
+collision to watch for in the next merge-up: develop added `Query._rawFields` for the same reason
+we had added ours, and two `private` fields of one name make `PivotQuery` structurally *not* a
+`Query` — ours is now `_preAugmentFields`. Both aggregation routes survive: `applyDataUpdate` still
+collects `Set<BaseRow>` and still fans out through `propagateUpdate`. Unit tier green at 49/49.
+Pick up at the day-1-vs-follow-up call on [Extras](#extras-and-nice-to-haves), and re-run the
+Toolbox tier before anything else — develop's row-reuse and aggregator fixes are unexercised here.
 
 **2026-08-07 — Doc bookkeeping.** No implementation. Reconciled the checklists against the code, which
 had drifted: `SumAggregator.replace` is fixed and carries its own CHANGELOG entry, the deliberately-red
