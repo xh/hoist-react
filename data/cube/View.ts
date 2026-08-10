@@ -138,7 +138,7 @@ export class View
     // Implementation
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
-    private _recordMap: Map<StoreRecordId, StoreRecord> = null;
+    _recordMap: Map<StoreRecordId, StoreRecord> = null;
     private _bucketDependentFields = new Set<string>();
     private _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
@@ -398,9 +398,9 @@ export class View
 
     @logWithDebug
     private fullUpdate() {
-        this.filterRecords();
+        const records = this.filterRecords();
         this.createAggregationContext();
-        this.generateRows();
+        this.generateRows(records);
         this.loadStores();
         this.updateResults();
     }
@@ -451,8 +451,8 @@ export class View
         this.lastUpdated = Date.now();
     }
 
-    // Generate a new full data representation
-    private generateRows() {
+    // Generate a new full data representation from the filtered records
+    private generateRows(records: StoreRecord[]) {
         const {query} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
@@ -462,7 +462,6 @@ export class View
         const rowCache = this._rowCache;
         rowCache.beginGeneration();
 
-        const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, 0, leafMap);
         newRows = this.bucketRows(newRows, rootId, {}, 0);
@@ -650,20 +649,25 @@ export class View
         return false;
     }
 
-    private filterRecords() {
+    private filterRecords(): StoreRecord[] {
         const {query, cube} = this,
             {hasFilter} = query,
-            ret = new Map();
+            recordMap = new Map(),
+            records = [];
 
-        cube.store.records.forEach(r => {
-            if (!hasFilter || query.test(r)) ret.set(r.id, r);
-        });
+        for (const r of cube.store.records) {
+            if (!hasFilter || query.test(r)) {
+                recordMap.set(r.id, r);
+                records.push(r);
+            }
+        }
 
-        this._recordMap = ret;
+        this._recordMap = recordMap;
+        return records;
     }
 
     private createAggregationContext() {
-        this._aggContext = new AggregationContext(this, Array.from(this._recordMap.values()));
+        this._aggContext = new AggregationContext(this);
     }
 
     /**
