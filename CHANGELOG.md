@@ -248,6 +248,10 @@
 * Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
   when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
   `7,100,100` rather than collapsing to `7.10m`).
+* `GridCountLabel` and `StoreCountLabel` support a new `includeMode` prop
+  (`'roots'` | `'all'` | `'leaves'`) controlling which records are counted. The `'leaves'` mode
+  excludes parent records, useful for tree grids. Deprecates the `includeChildren` prop.
+* Added `Store.leafCount` and `StoreRecord.isLeaf`, reflecting records with no (filtered) children.
 
 ### 🐞 Bug Fixes
 
