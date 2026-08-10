@@ -278,11 +278,11 @@ export interface StoreTransaction {
 /**
  * Collection of changes made to a Store's RecordSet. Unlike `StoreTransaction` which is used to
  * specify changes, this object is used to report the actual changes made in a single transaction.
+ * Removed records are as they existed prior to removal - no longer resolvable by id.
  */
 export interface StoreChangeLog {
     update?: StoreRecord[];
     add?: StoreRecord[];
-    /** Removed records as they existed prior to removal - no longer resolvable by id. */
     remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
 }
@@ -705,10 +705,11 @@ export class Store
         if (!isEmpty(remove)) rsTransaction.remove = remove;
 
         if (!isEmpty(rsTransaction)) {
-            // Resolve removed records for the changelog up front - unresolvable post-removal.
-            const removeRecs = rsTransaction.remove
-                ? compact(rsTransaction.remove.map(id => this.getById(id)))
-                : null;
+            // Prepare changelog up front - removed records are unresolvable post-removal.
+            const {update, add, remove: removeIds} = rsTransaction;
+            if (update) changeLog.update = update;
+            if (add) changeLog.add = add;
+            if (removeIds) changeLog.remove = compact(removeIds.map(id => this.getById(id)));
 
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
@@ -728,7 +729,6 @@ export class Store
             }
 
             this.rebuildFiltered();
-            Object.assign(changeLog, rsTransaction, removeRecs ? {remove: removeRecs} : null);
         }
 
         if (!isEmpty(changeLog)) {
