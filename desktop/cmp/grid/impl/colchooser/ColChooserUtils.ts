@@ -133,7 +133,7 @@ export const chooserGridConfig: Partial<GridConfig> = {
     rowBorders: true,
     stripeRows: false,
     showHover: true,
-    contextMenu: false
+    contextMenu: ['expandCollapse']
 };
 
 /**

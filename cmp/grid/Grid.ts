@@ -143,8 +143,8 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             ref: composeRefs(impl.viewRef, model.viewRef, ref)
         });
 
-        // Wrap alongside the docked side-panel chooser, ordered by side so it sits on the correct grid
-        // edge. Desktop-only - the model is never created on mobile.
+        // Safe to use the desktop component unconditionally - GridModel never creates this model
+        // on mobile.
         let content = gridContainer;
         if (colChooserPanelModel) {
             const chooser = desktopColChooserPanel({model: colChooserPanelModel}),

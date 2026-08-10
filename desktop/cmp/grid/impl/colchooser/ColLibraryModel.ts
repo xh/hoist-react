@@ -6,9 +6,10 @@
  */
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import type {Some} from '@xh/hoist/core';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed} from '@xh/hoist/core';
+import type {Filter} from '@xh/hoist/data';
 import {StoreRecordId} from '@xh/hoist/data';
-import type {GridOptions, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
+import type {GridOptions, IRowNode, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {makeObservable} from '@xh/hoist/mobx';
 import {castArray} from 'lodash';
 
@@ -20,9 +21,9 @@ import {
     chooserLibraryColumn,
     chooserVisibilityKeyHandler,
     dragRejectHint,
+    getChooserData,
     type ColChooserDropParticipant,
-    type ColLibraryData,
-    getChooserData
+    type ColLibraryData
 } from './ColChooserUtils';
 
 const UNGROUPED = 'Ungrouped';
@@ -37,6 +38,16 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
     override xhImpl = true;
 
     readonly parent: ColChooserModel;
+
+    private readonly collapseGroups: boolean;
+
+    private readonly autoExpandOnFilter: number;
+
+    private preFilterExpanded: Set<string> = null;
+
+    private lastFilter: Filter = null;
+
+    private seenGroupKeys = new Set<string>();
 
     @managed
     chooserGridModel: GridModel;
@@ -59,12 +70,38 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
         };
     }
 
-    constructor({parent, collapseGroups}: {parent: ColChooserModel; collapseGroups: boolean}) {
+    constructor({
+        parent,
+        collapseGroups,
+        autoExpandOnFilter
+    }: {
+        parent: ColChooserModel;
+        collapseGroups: boolean;
+        autoExpandOnFilter: number;
+    }) {
         super();
         makeObservable(this);
         this.parent = parent;
         this.collapseGroups = collapseGroups;
+        this.autoExpandOnFilter = autoExpandOnFilter;
         this.chooserGridModel = this.createGridModel();
+
+        this.addReaction({
+            track: () => this.parent.filterTestFn,
+            run: testFn =>
+                this.chooserGridModel.store.setFilter(testFn ? {key: 'default', testFn} : null)
+        });
+
+        // Debounced a tick to run after the Grid's own dataReaction pushes filtered records into
+        // ag-grid - registered first, this would otherwise read a stale set of group nodes.
+        this.addReaction({
+            track: () => {
+                const {agApi, store, expandState} = this.chooserGridModel;
+                return [agApi, store.records, store.filter, expandState];
+            },
+            run: () => this.syncGroupExpandState(),
+            debounce: 0
+        });
     }
 
     /** Reload the library with the currently hidden, non-excluded columns. groupBy does the rest. */
@@ -154,15 +191,84 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
         return 'notAllowed';
     }
 
-    /** Render `chooserGroup` groups collapsed by default (see {@link ColLibraryConfig}). */
-    private readonly collapseGroups: boolean;
+    private get emptyText() {
+        if (this.parent.filterTestFn) {
+            return 'No columns found matching the filter';
+        }
+
+        return 'No hidden columns';
+    }
+
+    private libraryEmptyText = hoistCmp.factory(() => this.emptyText);
+
+    private syncGroupExpandState() {
+        const {autoExpandOnFilter, chooserGridModel} = this,
+            {agApi, store} = chooserGridModel;
+        if (!autoExpandOnFilter) return;
+
+        // Grid unmounted (library hidden / chooser closed) - drop our bookkeeping so the next open
+        // starts from the configured default rather than restoring a prior session's expansions.
+        if (!agApi || agApi.isDestroyed()) {
+            this.preFilterExpanded = null;
+            this.lastFilter = null;
+            this.seenGroupKeys = new Set();
+            return;
+        }
+
+        const groups: IRowNode[] = [];
+        agApi.forEachNode(node => {
+            if (node.group) groups.push(node);
+        });
+
+        const {filter} = store,
+            filterChanged = filter !== this.lastFilter;
+        this.lastFilter = filter;
+
+        if (!filter) {
+            // Unfiltered - restore the user's own expansions on the way out of a filter, then keep
+            // tracking them (the reaction watches expandState) as the baseline for the next one.
+            const restore = this.preFilterExpanded;
+            if (filterChanged && restore) {
+                this.setGroupsExpanded(groups, node => restore.has(node.key));
+            }
+            this.preFilterExpanded = new Set(
+                groups.filter(node => node.expanded).map(node => node.key)
+            );
+        } else {
+            // Rows are filtered out of the Store, not by ag-grid, so allChildrenCount is post-filter.
+            this.setGroupsExpanded(groups, node =>
+                this.shouldReDerive(node, filterChanged)
+                    ? node.allChildrenCount <= autoExpandOnFilter
+                    : node.expanded
+            );
+        }
+
+        this.seenGroupKeys = new Set(groups.map(node => node.key));
+    }
+
+    private shouldReDerive(node: IRowNode, filterChanged: boolean): boolean {
+        return filterChanged || !this.seenGroupKeys.has(node.key);
+    }
+
+    private setGroupsExpanded(groups: IRowNode[], expandedFn: (node: IRowNode) => boolean) {
+        let changed = false;
+        groups.forEach(node => {
+            const expanded = expandedFn(node);
+            if (node.expanded !== expanded) {
+                node.expanded = expanded;
+                changed = true;
+            }
+        });
+        // Called on every library data resync - skip the repaint when nothing moved.
+        if (changed) this.chooserGridModel.agApi.onGroupExpandedOrCollapsed();
+    }
 
     private createGridModel(): GridModel {
         return new GridModel({
             ...chooserGridConfig,
             expandLevel: this.collapseGroups ? 0 : 1,
             sortBy: 'name',
-            emptyText: 'No hidden columns',
+            emptyText: this.libraryEmptyText(),
             onKeyDown: chooserVisibilityKeyHandler(this),
             store: {
                 fields: [

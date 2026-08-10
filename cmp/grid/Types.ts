@@ -244,16 +244,18 @@ export interface ColChooserConfig {
 export interface ColLibraryConfig {
     /**
      * Render the library's `chooserGroup` groups collapsed by default (default false). Recommended
-     * for large column sets - lets users scan group headers before expanding one. This is a starting
-     * state, not a lock: groups the user expands stay expanded across resyncs, and every fresh open
-     * starts collapsed again.
+     * for large column sets.
      */
     collapseGroups?: boolean;
 
     /**
-     * Fixed width of the Column Library panel (default 250). Added to the chooser's
-     * {@link ColChooserConfig.width} whenever the library is shown - so the buckets keep a constant
-     * width regardless of library visibility. Desktop only.
+     * Max number of matching columns for a library group to be expanded while the chooser's filter
+     * is active (default 5). Set to 0 to disable.
+     */
+    autoExpandOnFilter?: number;
+
+    /**
+     * Fixed width of the Column Library panel (default 250).
      */
     libraryWidth?: number;
 }
