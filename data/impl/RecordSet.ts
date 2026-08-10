@@ -117,10 +117,8 @@ export class RecordSet {
     }
 
     /**
-     * Changes deriving this RecordSet from `prev` when cheaply derivable, null otherwise -
-     * directing consumers to their full fallback paths. Contrast with `diffFrom`, which always
-     * answers, at full-scan cost if needed. Implementations sharing structure across related
-     * instances can answer at O(changes).
+     * As `diffFrom`, but null unless cheaply derivable (i.e. without a full scan) - directing
+     * consumers to their full fallback paths. Always null for this implementation.
      */
     deltaFrom(prev: RecordSet): RecordSetDelta {
         return null;
