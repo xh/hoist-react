@@ -125,9 +125,6 @@ export class StoreValidator extends HoistBase {
     // Implementation
     //---------------------------------------
     private get uncommittedRecords() {
-        // A clean store holds committed records only - answer without touching the (potentially
-        // very large) record list. Keeps the tracking reaction O(1) per transaction for the
-        // common case of a read-only store.
         const {store} = this;
         return store.isDirty ? store.allRecords.filter(it => !it.isCommitted) : [];
     }
