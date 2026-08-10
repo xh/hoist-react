@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {appendFilter, FilterLike, parseFilter} from '@xh/hoist/data';
+import {appendFilter, Filter, FilterLike, parseFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {compact, find, isEmpty, isEqual, isString, uniq} from 'lodash';
 import {CubeField} from './CubeField';
@@ -75,7 +75,7 @@ export class PivotQuery extends Query {
 
     /** Pre-augmentation config, so `clone` re-augments from these rather than compounding. */
     private readonly _preAugmentFields: string[] | CubeField[];
-    private readonly _preAugmentFilter: FilterLike;
+    private readonly _preAugmentFilter: Filter;
 
     constructor(config: PivotQueryConfig) {
         super({
@@ -84,8 +84,8 @@ export class PivotQuery extends Query {
             filter: PivotQuery.augmentFilter(config)
         });
 
-        this._preAugmentFields = config.fields;
-        this._preAugmentFilter = config.filter;
+        this._preAugmentFields = config.fields?.slice();
+        this._preAugmentFilter = parseFilter(config.filter);
 
         const {
             pivotDimensions,
@@ -145,7 +145,7 @@ export class PivotQuery extends Query {
     //------------------------
     private parsePivotDimensions(raw: CubeField[] | string[]): CubeField[] {
         if (isEmpty(raw)) return [];
-        if (raw[0] instanceof CubeField) return raw as CubeField[];
+        if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
 
         const {fields} = this.cube;
         return (raw as string[]).map(name => {
@@ -160,7 +160,7 @@ export class PivotQuery extends Query {
 
     private parseValueFields(raw: CubeField[] | string[]): CubeField[] {
         throwIf(isEmpty(raw), 'PivotQuery requires at least one entry in `valueFields`.');
-        if (raw[0] instanceof CubeField) return raw as CubeField[];
+        if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
 
         const {fields} = this.cube;
         return (raw as string[]).map(name => {
