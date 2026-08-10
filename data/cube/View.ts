@@ -138,7 +138,7 @@ export class View
     // Implementation
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
-    private _recordMap: Map<StoreRecordId, StoreRecord> = null;
+    _recordMap: Map<StoreRecordId, StoreRecord> = null;
     private _bucketDependentFields = new Set<string>();
     private _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
@@ -248,14 +248,15 @@ export class View
 
     /** Gather all unique values for each dimension field in the query. */
     getDimensionValues(): DimensionValue[] {
-        const {_leafMap} = this,
-            fields = this.query.fields.filter(it => it.isDimension);
+        const ret = this.query.fields
+            .filter(it => it.isDimension)
+            .map(field => ({field, values: new Set<any>()}));
 
-        return fields.map(field => {
-            const values = new Set();
-            _leafMap.forEach(leaf => values.add(leaf.data[field.name]));
-            return {field, values};
+        this._leafMap.forEach(leaf => {
+            ret.forEach(({field, values}) => values.add(leaf.data[field.name]));
         });
+
+        return ret;
     }
 
     /** Get a specific Field by name.*/
@@ -379,26 +380,27 @@ export class View
         // 0) Filter change only is a no-op - great for fast filter toggling
         if (oldQuery.equalsExcludingFilter(newQuery)) return;
 
-        // 1) If fields/leaves are changing, just blow everything away
+        // 1) If fields/leaves or buckets are changing, just blow everything away.
         const cache = this._rowCache,
             oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
             newExposed = newQuery.includeLeaves || newQuery.provideLeaves,
-            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields);
-        if (oldExposed !== newExposed || (newExposed && fieldsChanged)) {
+            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields),
+            bucketsRemoved = oldQuery.bucketSpecFn && !newQuery.bucketSpecFn;
+        if (oldExposed !== newExposed || (newExposed && fieldsChanged) || bucketsRemoved) {
             cache.clear();
             return;
         }
 
-        // 2) Otherwise, blow away aggregates (they are not worth saving). Surviving leaves that
+        // 2) Otherwise, blow away parent rows (they are not worth saving). Surviving leaves that
         // moved to new tree positions are detected by connected stores' treePath checks.
-        cache.clearAggregates();
+        cache.removeParentRows();
     }
 
     @logWithDebug
     private fullUpdate() {
-        this.filterRecords();
+        const records = this.filterRecords();
         this.createAggregationContext();
-        this.generateRows();
+        this.generateRows(records);
         this.loadStores();
         this.updateResults();
     }
@@ -449,8 +451,8 @@ export class View
         this.lastUpdated = Date.now();
     }
 
-    // Generate a new full data representation
-    private generateRows() {
+    // Generate a new full data representation from the filtered records
+    private generateRows(records: StoreRecord[]) {
         const {query} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
@@ -460,7 +462,6 @@ export class View
         const rowCache = this._rowCache;
         rowCache.beginGeneration();
 
-        const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, 0, leafMap);
         newRows = this.bucketRows(newRows, rootId, {}, 0);
@@ -499,7 +500,8 @@ export class View
     ): BaseRow[] {
         if (!records?.length) return [];
 
-        if (!dimensions?.length) {
+        // `depth` counts the dimensions applied so far - the next to apply is dimensions[depth].
+        if (!dimensions || depth === dimensions.length) {
             const {exposesLeaves} = this;
             return records.map(r => {
                 // Leaves are keyed by stable record id, supporting reuse across grouping changes.
@@ -519,7 +521,7 @@ export class View
         }
 
         const rootId = parentId + Cube.RECORD_ID_DELIMITER,
-            dim = dimensions[0],
+            dim = dimensions[depth],
             dimName = dim.name,
             groups = groupBy(records, it => it.data[dimName]);
 
@@ -533,7 +535,7 @@ export class View
 
             let children = this.groupAndInsertRecords(
                 groupRecords,
-                dimensions.slice(1),
+                dimensions,
                 id,
                 groupDimensions,
                 groupDepth,
@@ -647,20 +649,25 @@ export class View
         return false;
     }
 
-    private filterRecords() {
+    private filterRecords(): StoreRecord[] {
         const {query, cube} = this,
             {hasFilter} = query,
-            ret = new Map();
+            recordMap = new Map(),
+            records = [];
 
-        cube.store.records.forEach(r => {
-            if (!hasFilter || query.test(r)) ret.set(r.id, r);
-        });
+        for (const r of cube.store.records) {
+            if (!hasFilter || query.test(r)) {
+                recordMap.set(r.id, r);
+                records.push(r);
+            }
+        }
 
-        this._recordMap = ret;
+        this._recordMap = recordMap;
+        return records;
     }
 
     private createAggregationContext() {
-        this._aggContext = new AggregationContext(this, Array.from(this._recordMap.values()));
+        this._aggContext = new AggregationContext(this);
     }
 
     /**
