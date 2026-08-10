@@ -18,14 +18,14 @@ type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 /**
  * Changes deriving one RecordSet from another, as computed by {@link RecordSet.diffFrom}.
  * Unlike a transaction used to *specify* changes, `remove` here holds the full set of removed
- * ids, including cascaded descendants - consumers apply it verbatim. Every removed id is
- * guaranteed present in the diffed-from instance, an invariant any implementation must uphold.
+ * records (as they exist in the diffed-from instance), including cascaded descendants -
+ * consumers apply it verbatim.
  * @internal
  */
 export interface RecordSetDelta {
     update: StoreRecord[];
     add: StoreRecord[];
-    remove: StoreRecordId[];
+    remove: StoreRecord[];
 }
 
 /**
@@ -111,7 +111,7 @@ export class RecordSet {
 
         if (this.count !== prev.count + add.length) {
             prev._recordMap.forEach((rec, id) => {
-                if (!this.getById(id)) remove.push(id);
+                if (!this.getById(id)) remove.push(rec);
             });
         }
 
