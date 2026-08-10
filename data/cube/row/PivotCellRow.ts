@@ -8,8 +8,9 @@
 import {PlainObject} from '@xh/hoist/core';
 import {CubeField} from '../CubeField';
 import {PivotPath} from '../PivotPath';
-import {View} from '../View';
+import {PivotView} from '../PivotView';
 import {BaseRow} from './BaseRow';
+import {ParentRow} from './ParentRow';
 
 /**
  * Row representing one `(group node, pivot path)` cell in a {@link PivotView}.
@@ -24,7 +25,9 @@ import {BaseRow} from './BaseRow';
  *
  * This is an internal data structure.
  */
-export class PivotCellRow extends BaseRow {
+export class PivotCellRow extends ParentRow {
+    declare readonly view: PivotView;
+
     // Both are rebound on every reuse from `_rowCache` - the id pins what they *name*, not which
     // object names it, and PivotView mints fresh owners and paths on each rebuild. Any state added
     // here must be in the id, a function of `children`, or reassigned by `PivotView.buildCellRows`.
@@ -32,31 +35,46 @@ export class PivotCellRow extends BaseRow {
     ownerRow: BaseRow;
     path: PivotPath;
 
+    protected get dimOrBucketName(): string {
+        return this.path.dimension?.name;
+    }
+
+    protected get dimOrBucketVal(): any {
+        return this.path.value;
+    }
+
+    // Cells aggregate the query's value fields alone, which is what keeps cell aggregation
+    // proportional to the measures rather than the full field set.
+    protected override get aggFields(): CubeField[] {
+        return this.view._cellAggFields;
+    }
+    protected override get aggFieldNames(): Set<string> {
+        return this.view._cellAggFieldNames;
+    }
+    protected override get canAggregateFnFields(): CubeField[] {
+        return this.view._cellCanAggregateFnFields;
+    }
+    protected override get complexAggFields(): CubeField[] {
+        return this.view._cellComplexAggFields;
+    }
+
     constructor(
-        view: View,
+        view: PivotView,
         id: string,
         children: BaseRow[],
         ownerRow: BaseRow,
-        path: PivotPath,
-        valueFields: CubeField[],
-        canAggregate: PlainObject
+        path: PivotPath
     ) {
         super(view, id);
 
-        this.data = {} as PlainObject;
+        this.data = {};
         this.ownerRow = ownerRow;
         this.path = path;
 
         // Children are wired here, but `parent` / `pivotParent` are assigned by PivotView from the
         // lattice - a cell's children do not uniformly treat it as their group-axis parent.
         this.children = children;
-        this.initAggregateData(
-            path.dimension?.name,
-            path.value,
-            EMPTY_DIMS,
-            valueFields,
-            canAggregate
-        );
+        this.initData(EMPTY_DIMS, null);
     }
 }
 

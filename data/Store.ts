@@ -1191,11 +1191,8 @@ export class Store
      */
     getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord {
         if (isNil(id)) return null;
-        const summaryRecord = this.summaryRecords?.find(it => it.id === id);
-        if (summaryRecord) return summaryRecord;
-
         const rs = respectFilter ? this._filtered : this._current;
-        return rs.getById(id);
+        return rs.getById(id) ?? this.summaryRecords?.find(it => it.id === id);
     }
 
     /**

@@ -74,8 +74,8 @@ export class PivotQuery extends Query {
     readonly maxPivotPaths: number;
 
     /** Pre-augmentation config, so `clone` re-augments from these rather than compounding. */
-    private readonly _rawFields: string[] | CubeField[];
-    private readonly _rawFilter: FilterLike;
+    private readonly _preAugmentFields: string[] | CubeField[];
+    private readonly _preAugmentFilter: FilterLike;
 
     constructor(config: PivotQueryConfig) {
         super({
@@ -84,8 +84,8 @@ export class PivotQuery extends Query {
             filter: PivotQuery.augmentFilter(config)
         });
 
-        this._rawFields = config.fields;
-        this._rawFilter = config.filter;
+        this._preAugmentFields = config.fields;
+        this._preAugmentFilter = config.filter;
 
         const {
             pivotDimensions,
@@ -134,8 +134,8 @@ export class PivotQuery extends Query {
             // Raw, not derived: re-deriving from `this.fields` would strand the fields of value
             // fields an override is *replacing*, so a measure picker would accumulate dead
             // aggregations. Before `overrides`, so explicit values still win - super applied them.
-            fields: this._rawFields,
-            filter: this._rawFilter,
+            fields: this._preAugmentFields,
+            filter: this._preAugmentFilter,
             ...overrides
         };
     }

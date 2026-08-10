@@ -16,9 +16,8 @@ import {CubeField, CubeFieldSpec} from './CubeField';
 import {PivotQuery, PivotQueryConfig} from './PivotQuery';
 import {PivotView} from './PivotView';
 import {Query, QueryConfig} from './Query';
-import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
-import {BucketRow} from './row/BucketRow';
+import {AggregateRow, BucketRow} from './row/ParentRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
