@@ -89,9 +89,7 @@ export class RecordSet {
 
     /**
      * Changes that would derive this RecordSet from `prev` - the delta contract consumed by
-     * Grid to sync ag-Grid transactionally and by incremental refiltering. Computed here by a
-     * full scan of both sets - implementations with knowledge of their own derivation may
-     * answer far more cheaply.
+     * Grid to sync ag-Grid transactionally.
      */
     diffFrom(prev: RecordSet): RecordSetDelta {
         const update = [],
@@ -157,15 +155,8 @@ export class RecordSet {
         return this.isEqual(target) ? target : this;
     }
 
-    /**
-     * Filtered projection of this RecordSet.
-     *
-     * The optional previous filtered state - `prevFiltered` (the last filtered projection) and
-     * `prevSource` (the instance it was projected from) - is unused by this full-pass
-     * implementation, but lets implementations that can diff themselves against `prevSource`
-     * derive the new filtered set incrementally.
-     */
-    withFilter(filter: Filter, prevFiltered?: RecordSet, prevSource?: RecordSet): RecordSet {
+    withFilter(filter: Filter, prevFiltered: RecordSet): RecordSet {
+        // `prevFiltered` (the previous projection) is unused by this full-pass implementation.
         if (!filter) return this;
         const {store} = this,
             includeChildren = store.filterIncludesChildren,
