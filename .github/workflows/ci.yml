@@ -50,6 +50,13 @@ jobs:
         - name: Lint
           run: pnpm lint
 
+        # A separate concern from linting, not a lint rule: ESLint is configured type-aware, but
+        # that only powers its own rules and never reports compiler diagnostics, so a genuine type
+        # error passes `pnpm lint`. The deploy workflows need no equivalent step - `npm publish`
+        # type-checks via `prepack` / `tsc --build`.
+        - name: Type check
+          run: pnpm typecheck
+
         # Gates merges on a clean production-dependency audit for high and
         # critical advisories. The first, un-gated run prints lower-severity
         # findings in the step log for visibility without failing the build -

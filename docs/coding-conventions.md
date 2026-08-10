@@ -83,7 +83,8 @@ in code reviews or conventions discussions — the tooling handles them:
 - **`.stylelintrc.json`** — SCSS linting (if present)
 
 Run `pnpm lint` to check all rules. Run `pnpm lint:code` for JS/TS only or `pnpm lint:styles`
-for SCSS only.
+for SCSS only. Type-checking is a separate gate — run `pnpm typecheck` (`tsc --noEmit`), which
+reports the TypeScript compiler errors that linting does not.
 
 ## Imports
 
