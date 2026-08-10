@@ -15,21 +15,25 @@ import {Filter} from '../filter/Filter';
 type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 
-// Monotonic source for RecordSet.xhId - identifies instances for delta linkage.
-let nextXhId = 0;
+/** Patch-layer entry marking a base record as removed. */
+const TOMBSTONE = {} as StoreRecord;
+type PatchMap = Map<StoreRecordId, StoreRecord>;
 
-// Attach a load delta (see withNewRecords) only when reuse dominates - a large delta costs
-// consumers more to apply than their full-rebuild fallbacks.
-const MAX_LOAD_DELTA_RATIO = 0.25;
+// Flatten a patched set into a fresh base when its patch grows beyond this fraction of the
+// base - keeps the per-transaction patch copy small while amortizing full-map rebuilds.
+const FLATTEN_RATIO = 0.1;
+
+// Express a reload (withNewRecords) as a patch over the incumbent base only when reuse
+// dominates - a large patch costs consumers more to apply than their full-rebuild fallbacks.
+const MAX_LOAD_PATCH_RATIO = 0.25;
 
 /**
- * Changes applied to a source RecordSet (identified by `prevId`) to produce a derived one.
- * Unlike a RecordTransaction used to *specify* changes, `remove` here holds the full expanded
- * set of removed ids, including cascaded descendants - consumers apply it verbatim.
+ * Changes deriving one RecordSet from another, as computed by `diffFrom`. Unlike a
+ * RecordTransaction used to *specify* changes, `remove` here holds the full expanded set of
+ * removed ids, including cascaded descendants - consumers apply it verbatim.
  * @internal
  */
 export interface RecordSetDelta extends RecordTransaction {
-    prevId: number;
     update: StoreRecord[];
     add: StoreRecord[];
     remove: StoreRecordId[];
@@ -39,44 +43,85 @@ export interface RecordSetDelta extends RecordTransaction {
  * Internal container for StoreRecord management within a Store.
  * Note this is an immutable object; its update and filtering APIs return new instances as required.
  *
+ * A persistent (structurally shared) collection: each instance holds a `base` map - shared with
+ * related instances and never mutated - plus an optional small `patch` layer of changed entries
+ * (updated/added records, or TOMBSTONEs marking removals). Transactions merge patches at
+ * O(patch) cost rather than copying the full map, and two instances sharing a base can derive
+ * the exact delta between them at O(patch) via `diffFrom` - the basis for incremental filtering
+ * and grid transaction sync. Patches are capped at one layer deep: deriving from a patched set
+ * merges into a new single patch, and a patch grown past FLATTEN_RATIO is flattened into a
+ * fresh base (amortized O(n)).
+ *
  * @internal
  */
 export class RecordSet {
     store: Store;
-    recordMap: StoreRecordMap; // Map of all Records by id
     count: number;
     rootCount: number;
 
-    /** Unique instance id, identifying this set as the source of derived sets' `delta`s. */
-    readonly xhId: number = ++nextXhId;
-
-    /**
-     * Changes that produced this RecordSet from the instance identified by `delta.prevId` -
-     * populated when derived via `withTransaction` or an incremental filter patch, null when
-     * built any other way (full load, full filter). Lets consumers (e.g. Grid) sync small
-     * changes without a full-list diff.
-     */
-    readonly delta: RecordSetDelta = null;
+    /** Shared base map - never mutated once installed in a RecordSet. */
+    readonly base: StoreRecordMap;
+    /** Changed entries relative to `base` (TOMBSTONE = removed), or null for a flat set. */
+    readonly patch: PatchMap;
 
     private _childrenMap: ChildRecordMap; // children by parentId
     private _list: StoreRecord[]; // all records.
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
+    private _merged: StoreRecordMap; // lazy patch-applied form of base, for recordMap getter
 
-    constructor(store: Store, recordMap: StoreRecordMap = new Map(), delta: RecordSetDelta = null) {
+    constructor(
+        store: Store,
+        recordMap: StoreRecordMap = new Map(),
+        patch: PatchMap = null,
+        count: number = -1,
+        rootCount: number = -1
+    ) {
         this.store = store;
-        this.recordMap = recordMap;
-        this.count = recordMap.size;
-        this.rootCount = this.countRoots(recordMap);
-        this.delta = delta;
+        this.base = recordMap;
+        this.patch = patch;
+        this.count = count >= 0 ? count : recordMap.size;
+        this.rootCount = rootCount >= 0 ? rootCount : this.countRoots(recordMap);
     }
 
     get empty(): boolean {
         return this.count === 0;
     }
 
+    /**
+     * All records by id, as a single map. Materialized (once) on patched instances - prefer
+     * `getById`/`forEachRecord`, which read through the patch without allocation.
+     */
+    get recordMap(): StoreRecordMap {
+        const {base, patch} = this;
+        if (!patch) return base;
+        return (this._merged ??= RecordSet.applyPatch(base, patch));
+    }
+
     getById(id: StoreRecordId): StoreRecord {
-        return this.recordMap.get(id);
+        const {patch} = this;
+        if (patch) {
+            const v = patch.get(id);
+            if (v !== undefined) return v === TOMBSTONE ? undefined : v;
+        }
+        return this.base.get(id);
+    }
+
+    /** Iterate all records, reading through any patch layer without materializing a map. */
+    forEachRecord(fn: (rec: StoreRecord, id: StoreRecordId) => void) {
+        const {base, patch} = this;
+        if (!patch) {
+            base.forEach(fn);
+            return;
+        }
+        base.forEach((rec, id) => {
+            const v = patch.get(id);
+            if (v === undefined) fn(rec, id);
+            else if (v !== TOMBSTONE) fn(v, id);
+        });
+        patch.forEach((v, id) => {
+            if (v !== TOMBSTONE && !base.has(id)) fn(v, id);
+        });
     }
 
     getDescendantsById(id: StoreRecordId): StoreRecord[] {
@@ -99,11 +144,73 @@ export class RecordSet {
     isEqual(other: RecordSet): boolean {
         if (this.count !== other.count) return false;
 
-        for (const [id, rec] of this.recordMap) {
-            if (rec !== other.recordMap.get(id)) return false;
+        // Sharing a base, equality is answerable from the patches alone.
+        if (this.base === other.base) {
+            const delta = this.diffFrom(other);
+            return !delta.update.length && !delta.add.length && !delta.remove.length;
         }
 
-        return true;
+        let ret = true;
+        this.forEachRecord((rec, id) => {
+            if (rec !== other.getById(id)) ret = false;
+        });
+        return ret;
+    }
+
+    /**
+     * Changes that would derive this RecordSet from `prev`, computed by comparing patch layers -
+     * O(patch) when both instances share a base map, null (caller must full-diff) when they
+     * don't. An empty delta means the two are identical in content.
+     */
+    diffFrom(prev: RecordSet): RecordSetDelta {
+        if (!prev || prev.base !== this.base) return null;
+
+        const {base, patch} = this,
+            prevPatch = prev.patch,
+            update = [],
+            add = [],
+            remove = [];
+
+        if (patch !== prevPatch) {
+            const prevEff = (id: StoreRecordId): StoreRecord => {
+                if (prevPatch) {
+                    const v = prevPatch.get(id);
+                    if (v !== undefined) return v === TOMBSTONE ? undefined : v;
+                }
+                return base.get(id);
+            };
+
+            patch?.forEach((v, id) => {
+                const curr = v === TOMBSTONE ? undefined : v,
+                    prevRec = prevEff(id);
+                if (curr === prevRec) return;
+                if (!curr) {
+                    if (prevRec) remove.push(id);
+                } else if (prevRec) {
+                    update.push(curr);
+                } else {
+                    add.push(curr);
+                }
+            });
+
+            // Entries patched only in prev (possible when diffing non-derived siblings) - their
+            // effective value here comes straight from base.
+            prevPatch?.forEach((v, id) => {
+                if (patch?.has(id)) return;
+                const curr = base.get(id),
+                    prevRec = v === TOMBSTONE ? undefined : v;
+                if (curr === prevRec) return;
+                if (!curr) {
+                    if (prevRec) remove.push(id);
+                } else if (prevRec) {
+                    update.push(curr);
+                } else {
+                    add.push(curr);
+                }
+            });
+        }
+
+        return {update, add, remove};
     }
 
     //----------------------------------------------------------
@@ -112,12 +219,16 @@ export class RecordSet {
     // clients will never ask for list or tree representations.
     //----------------------------------------------------------
     get childrenMap(): ChildRecordMap {
-        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap(this.recordMap);
+        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap();
         return this._childrenMap;
     }
 
     get list(): StoreRecord[] {
-        if (!this._list) this._list = Array.from(this.recordMap.values());
+        if (!this._list) {
+            const list = [];
+            this.forEachRecord(rec => list.push(rec));
+            this._list = list;
+        }
         return this._list;
     }
 
@@ -169,7 +280,7 @@ export class RecordSet {
                 });
             };
         }
-        this.recordMap.forEach(rec => {
+        this.forEachRecord(rec => {
             if (!isMarked(rec) && test(rec)) {
                 mark(rec);
                 if (includeChildren) markChildren(rec);
@@ -191,76 +302,103 @@ export class RecordSet {
 
     withNewRecords(recordMap: StoreRecordMap): RecordSet {
         // Reuse existing StoreRecord object instances where possible.
-        // If reload changed nothing - preserve instance identity outright,
+        // If reload changed nothing - preserve instance identity outright.
         // Be sure to finalize any new records that are accepted.
-        // Non-reused records are classified as they pass, forming this set's delta.
-        const delta: RecordSetDelta = {prevId: this.xhId, update: [], add: [], remove: []};
+        const changed: StoreRecord[] = []; // accepted new instances - updates and adds
+        let adds = 0,
+            rootCount = 0;
         recordMap.forEach((newRec, id) => {
             const currRec = this.getById(id);
             if (currRec && this.areRecordsEqual(currRec, newRec)) {
                 recordMap.set(id, currRec);
+                if (currRec.parentId == null) rootCount++;
             } else {
                 newRec.finalize();
-                (currRec ? delta.update : delta.add).push(newRec);
+                if (!currRec) adds++;
+                changed.push(newRec);
+                if (newRec.parentId == null) rootCount++;
             }
         });
 
-        const removedCount = this.count - (recordMap.size - delta.add.length);
-        if (!removedCount && !delta.update.length && !delta.add.length) return this;
+        const count = recordMap.size,
+            removedCount = this.count - (count - adds);
+        if (!removedCount && !changed.length) return this;
 
-        if (removedCount) {
-            for (const id of this.recordMap.keys()) {
-                if (!recordMap.has(id)) delta.remove.push(id);
+        // When reuse dominates, express the new set as a patch over the incumbent base -
+        // preserving base identity so consumers can derive the (small) reload delta. Otherwise
+        // the incoming map simply becomes a fresh base.
+        const {base, patch} = this,
+            changes = changed.length + removedCount;
+        if (changes <= MAX_LOAD_PATCH_RATIO * count) {
+            const newPatch: PatchMap = patch ? new Map(patch) : new Map();
+            changed.forEach(rec => newPatch.set(rec.id, rec));
+            if (removedCount) {
+                this.forEachRecord((rec, id) => {
+                    if (!recordMap.has(id)) RecordSet.patchRemove(newPatch, base, id);
+                });
+            }
+            if (newPatch.size <= MAX_LOAD_PATCH_RATIO * base.size) {
+                return new RecordSet(this.store, base, newPatch, count, rootCount);
             }
         }
 
-        // Attach the delta only when reuse dominates - a large delta costs consumers more to
-        // apply than their full-rebuild fallbacks.
-        const changes = delta.update.length + delta.add.length + delta.remove.length,
-            attachDelta = changes <= MAX_LOAD_DELTA_RATIO * recordMap.size;
-        return new RecordSet(this.store, recordMap, attachDelta ? delta : null);
+        return new RecordSet(this.store, recordMap, null, count, rootCount);
     }
 
     withTransaction(t: RecordTransaction): RecordSet {
-        const {update, add, remove} = t;
+        const {update, add, remove} = t,
+            {base, patch} = this;
 
+        // Merge into a copy of the current patch - O(patch), not O(all records).
         // Be sure to finalize any new records that are accepted.
-        const {recordMap} = this,
-            newRecords = new Map(recordMap),
-            delta: RecordSetDelta = {prevId: this.xhId, update: [], add: [], remove: []};
-
-        let missingRemoves = 0,
+        const newPatch: PatchMap = patch ? new Map(patch) : new Map();
+        let {count, rootCount} = this,
+            missingRemoves = 0,
             missingUpdates = 0;
+
+        // Effective record as of this point in the transaction.
+        const eff = (id: StoreRecordId): StoreRecord => {
+            const v = newPatch.get(id);
+            if (v !== undefined) return v === TOMBSTONE ? undefined : v;
+            return base.get(id);
+        };
 
         // 0) Removes - process first to allow delete-then-add-elsewhere-in-tree.
         if (remove) {
-            const allRemoves = new Set<StoreRecordId>();
+            const isTree = this.count !== this.rootCount,
+                allRemoves = new Set<StoreRecordId>();
             remove.forEach(id => {
-                if (!newRecords.has(id)) {
+                if (!eff(id)) {
                     missingRemoves++;
                     this.store.logDebug(`Attempted to remove non-existent record: ${id}`);
                     return;
                 }
                 allRemoves.add(id);
-                this.gatherDescendantIds(id, allRemoves);
+                if (isTree) this.gatherDescendantIds(id, allRemoves);
             });
-            allRemoves.forEach(it => newRecords.delete(it));
-            delta.remove = Array.from(allRemoves);
+            allRemoves.forEach(id => {
+                const rec = eff(id);
+                if (!rec) return;
+                count--;
+                if (rec.parentId == null) rootCount--;
+                RecordSet.patchRemove(newPatch, base, id);
+            });
         }
 
         // 1) Updates
         if (update) {
             update.forEach(rec => {
                 const {id} = rec,
-                    existing = newRecords.get(id);
+                    existing = eff(id);
                 if (!existing) {
                     missingUpdates++;
                     this.store.logDebug(`Attempted to update non-existent record: ${id}`);
                     return;
                 }
-                newRecords.set(id, rec);
+                newPatch.set(id, rec);
                 rec.finalize();
-                delta.update.push(rec);
+                if (existing.parentId == null) rootCount--;
+                if (rec.parentId == null) rootCount++;
             });
         }
 
@@ -268,10 +406,11 @@ export class RecordSet {
         if (add) {
             add.forEach(rec => {
                 const {id} = rec;
-                throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
-                newRecords.set(id, rec);
+                throwIf(eff(id), `Attempted to insert duplicate record: ${id}`);
+                newPatch.set(id, rec);
                 rec.finalize();
-                delta.add.push(rec);
+                count++;
+                if (rec.parentId == null) rootCount++;
             });
         }
 
@@ -280,15 +419,15 @@ export class RecordSet {
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
-        return new RecordSet(this.store, newRecords, delta);
+        return RecordSet.create(this.store, base, newPatch, count, rootCount);
     }
 
     /**
      * Filtered projection of this RecordSet, built by patching the previous filtered set with
-     * this set's delta rather than re-testing every record. Applicable only when this set was
-     * derived from `prevFiltered`'s source (identified by `prevSourceId`) via a single
-     * transaction, and both states are flat - hierarchy-aware marking (ancestors of passing
-     * records, optionally their children) requires the full `withFilter` pass.
+     * the delta derived from `prevSource` (the instance `prevFiltered` was built from), rather
+     * than re-testing every record. Applicable only when this set still shares `prevSource`'s
+     * base and both states are flat - hierarchy-aware marking (ancestors of passing records,
+     * optionally their children) requires the full `withFilter` pass.
      *
      * Returns `prevFiltered` itself when the changes turn out not to touch the filtered set at
      * all (e.g. updates only to filtered-out records), and null when not applicable - callers
@@ -297,51 +436,86 @@ export class RecordSet {
     withFilterIncremental(
         filter: Filter,
         prevFiltered: RecordSet,
-        prevSourceId: number
+        prevSource: RecordSet
     ): RecordSet {
-        const {delta, store} = this;
-        if (
-            !delta ||
-            delta.prevId !== prevSourceId ||
-            this.count !== this.rootCount ||
-            prevFiltered.count !== prevFiltered.rootCount
-        ) {
+        if (this.count !== this.rootCount || prevFiltered.count !== prevFiltered.rootCount) {
             return null;
         }
+        const delta = prevSource ? this.diffFrom(prevSource) : null;
+        if (!delta) return null;
 
-        const test = filter.getTestFn(store),
-            newMap = new Map(prevFiltered.recordMap),
-            fDelta: RecordSetDelta = {prevId: prevFiltered.xhId, update: [], add: [], remove: []};
+        const {store} = this,
+            test = filter.getTestFn(store),
+            fBase = prevFiltered.base,
+            newPatch: PatchMap = prevFiltered.patch ? new Map(prevFiltered.patch) : new Map();
+        let count = prevFiltered.count,
+            changes = 0;
 
         delta.remove.forEach(id => {
-            if (newMap.delete(id)) fDelta.remove.push(id);
+            if (prevFiltered.getById(id)) {
+                RecordSet.patchRemove(newPatch, fBase, id);
+                count--;
+                changes++;
+            }
         });
         delta.update.forEach(rec => {
             const {id} = rec,
-                present = newMap.has(id);
+                present = !!prevFiltered.getById(id);
             if (test(rec)) {
-                newMap.set(id, rec);
-                (present ? fDelta.update : fDelta.add).push(rec);
+                newPatch.set(id, rec);
+                if (!present) count++;
+                changes++;
             } else if (present) {
-                newMap.delete(id);
-                fDelta.remove.push(id);
+                RecordSet.patchRemove(newPatch, fBase, id);
+                count--;
+                changes++;
             }
         });
         delta.add.forEach(rec => {
             if (test(rec)) {
-                newMap.set(rec.id, rec);
-                fDelta.add.push(rec);
+                newPatch.set(rec.id, rec);
+                count++;
+                changes++;
             }
         });
 
-        return fDelta.update.length || fDelta.add.length || fDelta.remove.length
-            ? new RecordSet(store, newMap, fDelta)
-            : prevFiltered;
+        return changes ? RecordSet.create(store, fBase, newPatch, count, count) : prevFiltered;
     }
 
     //------------------------
     // Implementation
     //------------------------
+    /** Construct over a base + patch, flattening into a fresh base when the patch has grown. */
+    private static create(
+        store: Store,
+        base: StoreRecordMap,
+        patch: PatchMap,
+        count: number,
+        rootCount: number
+    ): RecordSet {
+        return patch.size > FLATTEN_RATIO * base.size
+            ? new RecordSet(store, RecordSet.applyPatch(base, patch), null, count, rootCount)
+            : new RecordSet(store, base, patch, count, rootCount);
+    }
+
+    /** Record a removal in a patch: tombstone base entries, drop patch-only adds outright. */
+    private static patchRemove(patch: PatchMap, base: StoreRecordMap, id: StoreRecordId) {
+        base.has(id) ? patch.set(id, TOMBSTONE) : patch.delete(id);
+    }
+
+    private static applyPatch(base: StoreRecordMap, patch: PatchMap): StoreRecordMap {
+        const ret = new Map();
+        base.forEach((rec, id) => {
+            const v = patch.get(id);
+            if (v === undefined) ret.set(id, rec);
+            else if (v !== TOMBSTONE) ret.set(id, v);
+        });
+        patch.forEach((v, id) => {
+            if (v !== TOMBSTONE && !base.has(id)) ret.set(id, v);
+        });
+        return ret;
+    }
+
     private areRecordsEqual(r1: StoreRecord, r2: StoreRecord): boolean {
         if (r1 === r2) return true;
 
@@ -375,9 +549,9 @@ export class RecordSet {
         );
     }
 
-    private computeChildrenMap(recordMap: StoreRecordMap): ChildRecordMap {
+    private computeChildrenMap(): ChildRecordMap {
         const ret = new Map();
-        recordMap.forEach(r => {
+        this.forEachRecord(r => {
             const {parent} = r;
             if (parent) {
                 const children = ret.get(parent.id);

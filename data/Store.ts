@@ -413,9 +413,9 @@ export class Store
     private _verifiedCachedParent: StoreRecord = null;
     private _verifiedNewParent: StoreRecord = null;
 
-    // xhId of the _current RecordSet from which _filtered was last built - the delta linkage
-    // gating incremental refiltering. See rebuildFiltered().
-    private _filteredSourceId: number = null;
+    // The _current RecordSet from which _filtered was last built - diffed against on the next
+    // rebuild to gate incremental refiltering. See rebuildFiltered().
+    private _filteredSource: RecordSet = null;
 
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
@@ -1290,6 +1290,7 @@ export class Store
     @action
     private resetRecords() {
         this._committed = this._current = this._filtered = new RecordSet(this);
+        this._filteredSource = null;
         this.summaryRecords = null;
     }
 
@@ -1327,15 +1328,15 @@ export class Store
         const {filter, _current, _filtered} = this;
 
         // Patch the previous filtered set incrementally when possible - a full refilter tests
-        // every record on every transaction, however small. The delta linkage check within
-        // ensures this only applies when _current was derived from _filtered's source by a
-        // single transaction with this same filter - any other path (new/changed filter,
-        // refreshFilter(), full loads) falls through to the full pass.
+        // every record on every transaction, however small. Applies only when _current still
+        // shares a base map with _filtered's source, letting the delta be derived at O(patch) -
+        // any other path (new/changed filter, refreshFilter(), flattening loads) falls through
+        // to the full pass.
         const patched = filter
-            ? _current.withFilterIncremental(filter, _filtered, this._filteredSourceId)
+            ? _current.withFilterIncremental(filter, _filtered, this._filteredSource)
             : null;
         this._filtered = patched ?? _current.withFilter(filter);
-        this._filteredSourceId = _current.xhId;
+        this._filteredSource = _current;
     }
 
     //---------------------------------------
@@ -1399,7 +1400,7 @@ export class Store
     ): StoreRecord {
         const refMode = this.reuseRecords === true;
         if (!refMode && digest == null) return null;
-        const cached = this._committed?.recordMap.get(id);
+        const cached = this._committed?.getById(id);
         return cached &&
             (refMode ? cached.raw === raw : cached.digest === digest) &&
             this.positionUnchanged(cached.parent, parent)
