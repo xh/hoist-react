@@ -98,6 +98,12 @@
       dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
       known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
     * `Store.loadData()` and `Cube.loadDataAsync` calls have been optimized to skip all downstream work.
+    * Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
+      incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
+      the size of the change rather than the size of the store. Enable via `Store` config
+      `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental`
+      soft-config.
+
 
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
@@ -131,16 +137,6 @@
 
 ### ⚙️ Technical
 
-* Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
-  incremental changes to large datasets. Record collections become persistent structures - a
-  shared, never-mutated base map plus a small patch of changes - so transaction cost scales with
-  the size of the change rather than the size of the store. Filtered stores re-test only the
-  changed records (flat data) and bound grids sync ag-Grid from the same derived delta, without a
-  full-list diff. Enable via `Store` config `experimental: {patchableRecordSet: true}` - tune via
-  companion flag `patchRecordsMaxRatio` (max patch size as a fraction of the store, default 0.1) -
-  or app-wide via the `xhStoreExperimental` soft-config.
-* Improved `Store` validation bookkeeping to skip an all-records scan previously run on every data
-  change - now short-circuited for the common case of a store with no uncommitted records.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
   Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
   (mobile and desktop) so apps require no call-site changes.
