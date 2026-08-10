@@ -20,9 +20,9 @@ type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 const TOMBSTONE = {} as StoreRecord;
 type PatchMap = Map<StoreRecordId, StoreRecord>;
 
-// Default cap on patch size as a fraction of base, when the enabling flag is simply `true` -
-// see `StoreConfig.experimental.patchableRecordSet`, whose numeric form overrides this.
-const DEFAULT_PATCH_RATIO = 0.1;
+// Default cap on patch size as a fraction of base - overridable via
+// `StoreConfig.experimental.patchRecordsMaxRatio`.
+const DEFAULT_PATCH_RECORDS_MAX_RATIO = 0.1;
 
 /**
  * Experimental drop-in alternative to {@link RecordSet}, enabled per-Store via
@@ -37,7 +37,7 @@ const DEFAULT_PATCH_RATIO = 0.1;
  * the exact delta between them at O(patch) via `diffFrom` - the basis for incremental filtering
  * and grid transaction sync. Patches are capped at one layer deep: deriving from a patched set
  * merges into a new single patch, and one invariant governs all paths - a patch never exceeds
- * the configured fraction of its base (the enabling flag's numeric value, default 10%).
+ * the configured fraction of its base (`experimental.patchRecordsMaxRatio`, default 0.1).
  * Transactions crossing the cap flatten into a fresh base (amortized O(n)); reloads changing
  * more than it simply adopt the incoming map as a new base.
  *
@@ -520,10 +520,9 @@ export class PatchableRecordSet {
             : new PatchableRecordSet(store, base, patch, count, rootCount);
     }
 
-    /** Max patch size as a fraction of base - the enabling flag's numeric value. */
+    /** Max patch size as a fraction of base - see `experimental.patchRecordsMaxRatio`. */
     private static patchRatio(store: Store): number {
-        const r = store.experimental.patchableRecordSet;
-        return r === true ? DEFAULT_PATCH_RATIO : r;
+        return store.experimental.patchRecordsMaxRatio ?? DEFAULT_PATCH_RECORDS_MAX_RATIO;
     }
 
     /** Record a removal in a patch: tombstone base entries, drop patch-only adds outright. */

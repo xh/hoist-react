@@ -133,9 +133,9 @@
   shared, never-mutated base map plus a small patch of changes - so transaction cost scales with
   the size of the change rather than the size of the store. Filtered stores re-test only the
   changed records (flat data) and bound grids sync ag-Grid from the same derived delta, without a
-  full-list diff. Enable via `Store` config `experimental: {patchableRecordSet: true}` (or a
-  number, to also tune the max patch-size ratio - default 0.1), or app-wide via the
-  `xhStoreExperimental` soft-config.
+  full-list diff. Enable via `Store` config `experimental: {patchableRecordSet: true}` - tune via
+  companion flag `patchRecordsMaxRatio` (max patch size as a fraction of the store, default 0.1) -
+  or app-wide via the `xhStoreExperimental` soft-config.
 * Improved `Store` validation bookkeeping to skip an all-records scan previously run on every data
   change - now short-circuited for the common case of a store with no uncommitted records.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
