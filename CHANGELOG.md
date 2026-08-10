@@ -129,6 +129,11 @@
 
 ### ⚙️ Technical
 
+* Improved `Cube.loadDataAsync()` to skip regenerating rows on connected `View`s when a reload is
+  found to change no records - views sync their `info` and timestamps only, making polled reloads
+  of unchanged cube data near-free.
+* Improved `Store` validation bookkeeping to skip an all-records scan previously run on every data
+  change - now short-circuited for the common case of a store with no uncommitted records.
 * Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
   Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
   (mobile and desktop) so apps require no call-site changes.
