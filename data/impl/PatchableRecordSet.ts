@@ -59,7 +59,7 @@ export class PatchableRecordSet {
     private _list: StoreRecord[]; // all records.
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
-    private _merged: StoreRecordMap; // lazy patch-applied form of base, for recordMap getter
+    private _filterSource: PatchableRecordSet = null; // source a filtered projection was built from
 
     constructor(
         store: Store,
@@ -77,16 +77,6 @@ export class PatchableRecordSet {
 
     get empty(): boolean {
         return this.count === 0;
-    }
-
-    /**
-     * All records by id, as a single map. Materialized (once) on patched instances - prefer
-     * `getById`/`forEachRecord`, which read through the patch without allocation.
-     */
-    get recordMap(): StoreRecordMap {
-        const {base, patch} = this;
-        if (!patch) return base;
-        return (this._merged ??= PatchableRecordSet.applyPatch(base, patch));
     }
 
     getById(id: StoreRecordId): StoreRecord {
@@ -149,18 +139,36 @@ export class PatchableRecordSet {
     }
 
     /**
-     * Changes that would derive this RecordSet from `prev`, computed by comparing patch layers -
-     * O(patch) when both instances share a base map, null (caller must full-diff) when they
-     * don't. An empty delta means the two are identical in content.
+     * Changes that would derive this RecordSet from `prev` - computed by comparing patch
+     * layers at O(patch) when both instances share a base map, by a full scan of both sets
+     * otherwise (flattens, fresh-base reloads). An empty delta means identical content.
      */
     diffFrom(prev: PatchableRecordSet): RecordSetDelta {
-        if (!prev || prev.base !== this.base) return null;
-
-        const {base, patch} = this,
-            prevPatch = prev.patch,
-            update = [],
+        const update = [],
             add = [],
             remove = [];
+
+        if (!prev) return {update, add: this.list, remove};
+
+        const {base, patch} = this,
+            prevPatch = prev.patch;
+
+        if (prev.base !== base) {
+            this.forEachRecord((rec, id) => {
+                const existing = prev.getById(id);
+                if (!existing) {
+                    add.push(rec);
+                } else if (existing !== rec) {
+                    update.push(rec);
+                }
+            });
+            if (this.count !== prev.count + add.length) {
+                prev.forEachRecord((rec, id) => {
+                    if (!this.getById(id)) remove.push(rec);
+                });
+            }
+            return {update, add, remove};
+        }
 
         if (patch !== prevPatch) {
             const prevEff = (id: StoreRecordId): StoreRecord => {
@@ -176,7 +184,7 @@ export class PatchableRecordSet {
                     prevRec = prevEff(id);
                 if (curr === prevRec) return;
                 if (!curr) {
-                    if (prevRec) remove.push(id);
+                    if (prevRec) remove.push(prevRec);
                 } else if (prevRec) {
                     update.push(curr);
                 } else {
@@ -192,7 +200,7 @@ export class PatchableRecordSet {
                     prevRec = v === TOMBSTONE ? undefined : v;
                 if (curr === prevRec) return;
                 if (!curr) {
-                    if (prevRec) remove.push(id);
+                    if (prevRec) remove.push(prevRec);
                 } else if (prevRec) {
                     update.push(curr);
                 } else {
@@ -247,8 +255,24 @@ export class PatchableRecordSet {
         return this.isEqual(target) ? target : this;
     }
 
-    withFilter(filter: Filter): PatchableRecordSet {
+    /**
+     * Filtered projection of this RecordSet, derived incrementally when possible: each
+     * projection is stamped with the source it was built from, and when this instance still
+     * shares that source's base (and both states are flat - hierarchy-aware marking needs the
+     * full pass), `prevFiltered` is patched with the (typically small) derived delta rather
+     * than re-testing every record. Changes that don't touch the filtered set at all return
+     * `prevFiltered` itself - its older stamp deliberately retained, keeping later diffs
+     * cumulative. Any other lineage falls through to the full pass.
+     */
+    withFilter(filter: Filter, prevFiltered?: PatchableRecordSet): PatchableRecordSet {
         if (!filter) return this;
+
+        const ret = this.withFilterIncremental(filter, prevFiltered) ?? this.withFilterFull(filter);
+        if (ret !== prevFiltered) ret._filterSource = this;
+        return ret;
+    }
+
+    private withFilterFull(filter: Filter): PatchableRecordSet {
         const {store} = this,
             includeChildren = store.filterIncludesChildren,
             test = filter.getTestFn(store),
@@ -417,36 +441,32 @@ export class PatchableRecordSet {
         return PatchableRecordSet.create(this.store, base, newPatch, count, rootCount);
     }
 
-    /**
-     * Filtered projection of this RecordSet, built by patching the previous filtered set with
-     * the delta derived from `prevSource` (the instance `prevFiltered` was built from), rather
-     * than re-testing every record. Applicable only when this set still shares `prevSource`'s
-     * base and both states are flat - hierarchy-aware marking (ancestors of passing records,
-     * optionally their children) requires the full `withFilter` pass.
-     *
-     * Returns `prevFiltered` itself when the changes turn out not to touch the filtered set at
-     * all (e.g. updates only to filtered-out records), and null when not applicable - callers
-     * must then fall back to `withFilter`.
-     */
-    withFilterIncremental(
+    // Incremental arm of withFilter - null when not applicable, directing the caller to the
+    // full pass. See withFilter docs for the applicability conditions.
+    private withFilterIncremental(
         filter: Filter,
-        prevFiltered: PatchableRecordSet,
-        prevSource: PatchableRecordSet
+        prevFiltered: PatchableRecordSet
     ): PatchableRecordSet {
-        if (this.count !== this.rootCount || prevFiltered.count !== prevFiltered.rootCount) {
+        const prevSource = prevFiltered?._filterSource;
+        if (
+            !prevSource ||
+            prevSource.base !== this.base ||
+            this.count !== this.rootCount ||
+            prevFiltered.count !== prevFiltered.rootCount
+        ) {
             return null;
         }
-        const delta = prevSource ? this.diffFrom(prevSource) : null;
-        if (!delta) return null;
 
-        const {store} = this,
+        const delta = this.diffFrom(prevSource),
+            {store} = this,
             test = filter.getTestFn(store),
             fBase = prevFiltered.base,
             newPatch: PatchMap = prevFiltered.patch ? new Map(prevFiltered.patch) : new Map();
         let count = prevFiltered.count,
             changes = 0;
 
-        delta.remove.forEach(id => {
+        delta.remove.forEach(rec => {
+            const {id} = rec;
             if (prevFiltered.getById(id)) {
                 PatchableRecordSet.patchRemove(newPatch, fBase, id);
                 count--;

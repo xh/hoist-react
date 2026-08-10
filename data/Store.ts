@@ -408,10 +408,6 @@ export class Store
     private _verifiedCachedParent: StoreRecord = null;
     private _verifiedNewParent: StoreRecord = null;
 
-    // The _current RecordSet from which _filtered was last built - diffed against on the next
-    // rebuild to gate incremental refiltering. See rebuildFiltered().
-    private _filteredSource: RecordSet = null;
-
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
     // within a single call to avoid allocation during parsing. See buildData(). Not reentrant -
@@ -1293,7 +1289,6 @@ export class Store
         // construction point, as a Store's record sets are always homogeneous.
         const cls = this.experimental.patchableRecordSet ? PatchableRecordSet : RecordSet;
         this._committed = this._current = this._filtered = new cls(this) as unknown as RecordSet;
-        this._filteredSource = null;
         this.summaryRecords = null;
     }
 
@@ -1328,18 +1323,7 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        const {filter, _current, _filtered} = this;
-
-        // Patch the previous filtered set incrementally when possible - a full refilter tests
-        // every record on every transaction, however small. Applies only when _current still
-        // shares a base map with _filtered's source, letting the delta be derived at O(patch) -
-        // any other path (new/changed filter, refreshFilter(), flattening loads) falls through
-        // to the full pass.
-        const patched = filter
-            ? _current.withFilterIncremental(filter, _filtered, this._filteredSource)
-            : null;
-        this._filtered = patched ?? _current.withFilter(filter);
-        this._filteredSource = _current;
+        this._filtered = this._current.withFilter(this.filter, this._filtered);
     }
 
     //---------------------------------------
