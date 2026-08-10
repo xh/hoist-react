@@ -233,9 +233,10 @@ export interface StoreConfig {
     /**
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API. Currently includes
-     *  `patchableRecordSet: true` to enable {@link PatchableRecordSet} - incremental record
+     *  `patchableRecordSet` to enable {@link PatchableRecordSet} - incremental record
      *  collections that make transaction cost scale with the size of the change rather than the
-     *  size of the store.
+     *  size of the store. Set `true` to enable, or a number to also tune its core threshold -
+     *  the max patch size as a fraction of total records (default 0.1). Zero/omitted disables.
      */
     experimental?: PlainObject;
 }

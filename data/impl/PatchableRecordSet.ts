@@ -20,13 +20,9 @@ type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 const TOMBSTONE = {} as StoreRecord;
 type PatchMap = Map<StoreRecordId, StoreRecord>;
 
-// Flatten a patched set into a fresh base when its patch grows beyond this fraction of the
-// base - keeps the per-transaction patch copy small while amortizing full-map rebuilds.
-const FLATTEN_RATIO = 0.1;
-
-// Express a reload (withNewRecords) as a patch over the incumbent base only when reuse
-// dominates - a large patch costs consumers more to apply than their full-rebuild fallbacks.
-const MAX_LOAD_PATCH_RATIO = 0.25;
+// Default cap on patch size as a fraction of base, when the enabling flag is simply `true` -
+// see `StoreConfig.experimental.patchableRecordSet`, whose numeric form overrides this.
+const DEFAULT_PATCH_RATIO = 0.1;
 
 /**
  * Experimental drop-in alternative to {@link RecordSet}, enabled per-Store via
@@ -40,8 +36,10 @@ const MAX_LOAD_PATCH_RATIO = 0.25;
  * O(patch) cost rather than copying the full map, and two instances sharing a base can derive
  * the exact delta between them at O(patch) via `diffFrom` - the basis for incremental filtering
  * and grid transaction sync. Patches are capped at one layer deep: deriving from a patched set
- * merges into a new single patch, and a patch grown past FLATTEN_RATIO is flattened into a
- * fresh base (amortized O(n)).
+ * merges into a new single patch, and one invariant governs all paths - a patch never exceeds
+ * the configured fraction of its base (the enabling flag's numeric value, default 10%).
+ * Transactions crossing the cap flatten into a fresh base (amortized O(n)); reloads changing
+ * more than it simply adopt the incoming map as a new base.
  *
  * @internal
  */
@@ -343,8 +341,9 @@ export class PatchableRecordSet {
         // preserving base identity so consumers can derive the (small) reload delta. Otherwise
         // the incoming map simply becomes a fresh base.
         const {base, patch} = this,
+            ratio = PatchableRecordSet.patchRatio(this.store),
             changes = changed.length + removedCount;
-        if (changes <= MAX_LOAD_PATCH_RATIO * count) {
+        if (changes <= ratio * count) {
             const newPatch: PatchMap = patch ? new Map(patch) : new Map();
             changed.forEach(rec => newPatch.set(rec.id, rec));
             if (removedCount) {
@@ -352,7 +351,7 @@ export class PatchableRecordSet {
                     if (!recordMap.has(id)) PatchableRecordSet.patchRemove(newPatch, base, id);
                 });
             }
-            if (newPatch.size <= MAX_LOAD_PATCH_RATIO * base.size) {
+            if (newPatch.size <= ratio * base.size) {
                 return new PatchableRecordSet(this.store, base, newPatch, count, rootCount);
             }
         }
@@ -510,7 +509,7 @@ export class PatchableRecordSet {
         count: number,
         rootCount: number
     ): PatchableRecordSet {
-        return patch.size > FLATTEN_RATIO * base.size
+        return patch.size > PatchableRecordSet.patchRatio(store) * base.size
             ? new PatchableRecordSet(
                   store,
                   PatchableRecordSet.applyPatch(base, patch),
@@ -519,6 +518,12 @@ export class PatchableRecordSet {
                   rootCount
               )
             : new PatchableRecordSet(store, base, patch, count, rootCount);
+    }
+
+    /** Max patch size as a fraction of base - the enabling flag's numeric value. */
+    private static patchRatio(store: Store): number {
+        const r = store.experimental.patchableRecordSet;
+        return r === true ? DEFAULT_PATCH_RATIO : r;
     }
 
     /** Record a removal in a patch: tombstone base entries, drop patch-only adds outright. */
