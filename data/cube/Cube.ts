@@ -8,8 +8,10 @@
 import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {RecordDigest, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {RecordSetDelta} from '../impl/RecordSet';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
@@ -314,10 +316,12 @@ export class Cube extends HoistBase {
         }
         this.setInfo(info);
 
-        // No-change loads need only an info/timestamp sync on views - skip row regeneration.
-        const unchanged = store._filtered === prevRecords;
+        // Sync views incrementally on no-change loads and cheaply derivable deltas - see deltaFrom.
+        const {_filtered} = store,
+            unchanged = _filtered === prevRecords,
+            delta = unchanged ? null : _filtered.deltaFrom(prevRecords);
         await forEachAsync(this._connectedViews, v =>
-            unchanged ? v.noteCubeUpdated(null) : v.noteCubeLoaded()
+            unchanged || delta ? v.noteCubeUpdated(delta) : v.noteCubeLoaded()
         );
     }
 
@@ -345,7 +349,9 @@ export class Cube extends HoistBase {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
-            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+            await forEachAsync(this._connectedViews, v =>
+                v.noteCubeUpdated(changeLog as RecordSetDelta)
+            );
         }
     }
 
@@ -365,7 +371,9 @@ export class Cube extends HoistBase {
         const changeLog = this.store.modifyRecords(modifications);
 
         if (changeLog) {
-            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+            await forEachAsync(this._connectedViews, v =>
+                v.noteCubeUpdated(changeLog as RecordSetDelta)
+            );
         }
     }
 
