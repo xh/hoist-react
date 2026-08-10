@@ -18,11 +18,13 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@xh/*'
 
-# Force single versions of these packages across the whole tree (previously yarn `resolutions`).
-overrides:
-  '@types/react': 19.x
-  '@types/react-dom': 19.x
-  core-js: 3.x
+# Adding an `overrides` entry for a package that is also a direct dep? Put its version in a
+# `catalog:` entry and point both `package.json` and the override at `catalog:`. pnpm validates a
+# lockfile against the override but `pnpm update` writes the raw package.json specifier, so if the
+# two strings differ, `pnpm update` emits a lockfile that `pnpm install --frozen-lockfile` rejects
+# (ERR_PNPM_OUTDATED_LOCKFILE) - visible only in CI, since a local install with node_modules
+# present skips the check and reports "Already up to date". Note also that an override must name
+# the dep's exact range to dedupe it; restating a broader range does nothing.
 
 # Several transitive deps (react-popper, react-onsenui, react-windowed-select) still declare
 # react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
