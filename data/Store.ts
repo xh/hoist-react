@@ -404,6 +404,11 @@ export class Store
     private _verifiedCachedParent: StoreRecord = null;
     private _verifiedNewParent: StoreRecord = null;
 
+    // The _current RecordSet from which _filtered was last built - passed as the previous-state
+    // hint on the next rebuild, letting RecordSet implementations refilter incrementally.
+    // See rebuildFiltered().
+    private _filteredSource: RecordSet = null;
+
     // Scratch state shared by parseRaw/parseUpdate - the first `n` entries of the parallel
     // name/value buffers are the current record's non-default fields, filled and fully consumed
     // within a single call to avoid allocation during parsing. See buildData(). Not reentrant -
@@ -1281,6 +1286,7 @@ export class Store
     @action
     private resetRecords() {
         this._committed = this._current = this._filtered = new RecordSet(this);
+        this._filteredSource = null;
         this.summaryRecords = null;
     }
 
@@ -1315,7 +1321,9 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter);
+        const {filter, _current, _filtered} = this;
+        this._filtered = _current.withFilter(filter, _filtered, this._filteredSource);
+        this._filteredSource = _current;
     }
 
     //---------------------------------------
@@ -1379,7 +1387,7 @@ export class Store
     ): StoreRecord {
         const refMode = this.reuseRecords === true;
         if (!refMode && digest == null) return null;
-        const cached = this._committed?.recordMap.get(id);
+        const cached = this._committed?.getById(id);
         return cached &&
             (refMode ? cached.raw === raw : cached.digest === digest) &&
             this.positionUnchanged(cached.parent, parent)

@@ -656,32 +656,16 @@ export class GridLocalModel extends HoistModel {
 
     @logWithDebug
     genTransaction(newRs, prevRs) {
-        if (!prevRs) return {add: newRs.list};
-
-        const newList = newRs.list,
-            prevList = prevRs.list;
-
-        let add = [],
-            update = [],
-            remove = [];
-        newList.forEach(rec => {
-            const existing = prevRs.getById(rec.id);
-            if (!existing) {
-                add.push(rec);
-            } else if (existing !== rec) {
-                update.push(rec);
-            }
-        });
-
-        if (newList.length !== prevList.length + add.length) {
-            remove = prevList.filter(rec => !newRs.getById(rec.id));
-        }
+        const {update, add, remove} = newRs.diffFrom(prevRs);
 
         // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
         const ret: any = {};
         if (!isEmpty(add)) ret.add = add;
         if (!isEmpty(update)) ret.update = update;
-        if (!isEmpty(remove)) ret.remove = remove;
+        if (!isEmpty(remove)) {
+            const removeRecs = remove.map(id => prevRs.getById(id)).filter(r => r != null);
+            if (!isEmpty(removeRecs)) ret.remove = removeRecs;
+        }
         return ret;
     }
 
