@@ -116,7 +116,7 @@
     "eslint": "10.x",
     "eslint-config-prettier": "10.x",
     "eslint-plugin-tsdoc": "0.x",
-    "globals": "16.x",
+    "globals": "17.x",
     "husky": "9.x",
     "lint-staged": "17.x",
     "postcss": "8.x",
