@@ -160,6 +160,20 @@ lm.utils.getUniqueId = function() {
 };
 
 /**
+ * Content-box dimensions - equivalent to jQuery's .width()/.height(),
+ * which the pre-fork code used. clientWidth/Height include CSS padding.
+ */
+lm.utils.contentWidth = function( node ) {
+	var style = getComputedStyle( node );
+	return node.clientWidth - parseFloat( style.paddingLeft ) - parseFloat( style.paddingRight );
+};
+
+lm.utils.contentHeight = function( node ) {
+	var style = getComputedStyle( node );
+	return node.clientHeight - parseFloat( style.paddingTop ) - parseFloat( style.paddingBottom );
+};
+
+/**
  * A basic XSS filter. It is ultimately up to the
  * implementing developer to make sure their particular
  * applications and usecases are save from cross site scripting attacks
