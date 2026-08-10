@@ -527,9 +527,15 @@ export class Store
             ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
             : null;
 
-        const records = this.createRecords(rawData, null);
-        this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
+        const {_committed, _current} = this,
+            records = this.createRecords(rawData, null),
+            updated = _committed.withNewRecords(records);
+
+        // Skip downstream work on no-change reloads, unless local mods are being discarded.
+        if (updated !== _committed || updated !== _current) {
+            this._committed = this._current = updated;
+            this.rebuildFiltered();
+        }
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -571,8 +577,12 @@ export class Store
 
         runInAction(() => {
             this.summaryRecords = null;
-            this._committed = this._current = this._committed.withNewRecords(recordMap);
-            this.rebuildFiltered();
+            const {_committed, _current} = this,
+                updated = _committed.withNewRecords(recordMap);
+            if (updated !== _committed || updated !== _current) {
+                this._committed = this._current = updated;
+                this.rebuildFiltered();
+            }
             this.lastLoaded = this.lastUpdated = Date.now();
         });
     }

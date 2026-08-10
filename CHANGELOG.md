@@ -94,6 +94,8 @@
       `FetchService` can also share interned values across successive fetches of the same logical
       dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
       known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+    * `Store.loadData()` calls found to change nothing now preserve the Store's record collections
+       outright, skipping all downstream work.
 
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
