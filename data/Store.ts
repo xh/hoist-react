@@ -1315,7 +1315,7 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter);
+        this._filtered = this._current.withFilter(this.filter, this._filtered);
     }
 
     //---------------------------------------
@@ -1379,7 +1379,7 @@ export class Store
     ): StoreRecord {
         const refMode = this.reuseRecords === true;
         if (!refMode && digest == null) return null;
-        const cached = this._committed?.recordMap.get(id);
+        const cached = this._committed?.getById(id);
         return cached &&
             (refMode ? cached.raw === raw : cached.digest === digest) &&
             this.positionUnchanged(cached.parent, parent)

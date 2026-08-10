@@ -47,7 +47,18 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {
+    compact,
+    debounce,
+    isBoolean,
+    isEmpty,
+    isEqual,
+    isNil,
+    max,
+    maxBy,
+    merge,
+    omitBy
+} from 'lodash';
 import {type MouseEvent} from 'react';
 import {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -656,33 +667,8 @@ export class GridLocalModel extends HoistModel {
 
     @logWithDebug
     genTransaction(newRs, prevRs) {
-        if (!prevRs) return {add: newRs.list};
-
-        const newList = newRs.list,
-            prevList = prevRs.list;
-
-        let add = [],
-            update = [],
-            remove = [];
-        newList.forEach(rec => {
-            const existing = prevRs.getById(rec.id);
-            if (!existing) {
-                add.push(rec);
-            } else if (existing !== rec) {
-                update.push(rec);
-            }
-        });
-
-        if (newList.length !== prevList.length + add.length) {
-            remove = prevList.filter(rec => !newRs.getById(rec.id));
-        }
-
-        // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
-        const ret: any = {};
-        if (!isEmpty(add)) ret.add = add;
-        if (!isEmpty(update)) ret.update = update;
-        if (!isEmpty(remove)) ret.remove = remove;
-        return ret;
+        // Skip empty props -- ag-grid is not internally optimized
+        return omitBy(newRs.diffFrom(prevRs), isEmpty);
     }
 
     @logWithDebug
