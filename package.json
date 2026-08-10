@@ -16,11 +16,12 @@
     "hoist-ts": "bin/hoist-ts.mjs"
   },
   "scripts": {
-    "lint": "yarn lint:all",
-    "lint:all": "yarn lint:code && yarn lint:styles",
+    "lint": "pnpm lint:all",
+    "lint:all": "pnpm lint:code && pnpm lint:styles",
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
+    "typecheck": "tsc --noEmit",
     "prepack": "tsc --build",
     "prepare": "husky"
   },
@@ -40,6 +41,7 @@
   "dependencies": {
     "@auth0/auth0-spa-js": "~2.24.0",
     "@azure/msal-browser": "~5.17.0",
+    "@azure/msal-common": "~16.11.3",
     "@blueprintjs/core": "^6.3.2",
     "@blueprintjs/datetime": "^6.0.6",
     "@codemirror/commands": "^6.10.3",
@@ -87,6 +89,7 @@
     "remark-gfm": "~4.0.0",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
+    "sass-material-colors": "~0.0.5",
     "semver": "~7.8.0",
     "short-unique-id": "~5.3.2",
     "store2": "~2.14.3",
@@ -94,6 +97,7 @@
     "ts-morph": "^27.0.2",
     "tsx": "^4.21.0",
     "ua-parser-js": "~2.0.4",
+    "unified": "~11.0.5",
     "zod": "^4.3.6"
   },
   "peerDependencies": {
@@ -101,15 +105,18 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@types/lodash": "4.x",
     "@types/react": "19.x",
     "@types/react-dom": "19.x",
-    "@xh/hoist-dev-utils": "13.x",
+    "@xh/eslint-config": "7.x",
+    "@xh/hoist-dev-utils": "^14.0.0",
     "ag-grid-community": "35.x",
     "ag-grid-react": "35.x",
     "csstype": "3.x",
     "eslint": "10.x",
     "eslint-config-prettier": "10.x",
     "eslint-plugin-tsdoc": "0.x",
+    "globals": "17.x",
     "husky": "9.x",
     "lint-staged": "17.x",
     "postcss": "8.x",
@@ -117,14 +124,9 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "stylelint": "17.x",
-    "stylelint-config-standard-scss": "17.x",
+    "stylelint-config-recommended-scss": "17.x",
     "type-fest": "5.x",
     "typescript": "~5.9.3"
   },
-  "resolutions": {
-    "@types/react": "19.x",
-    "@types/react-dom": "19.x",
-    "core-js": "3.x"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1"
 }
