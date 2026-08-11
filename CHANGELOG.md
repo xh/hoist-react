@@ -1,13 +1,17 @@
 # Changelog
 
-## 86.4.1 - 2026-08-07
+## 86.4.1 - 2026-08-11
 
 ### 🐞 Bug Fixes
 
 * Fixed `DashContainer` sizing regression introduced with the golden-layout fork in v86.0.0. CSS
   padding applied to the container element was incorrectly counted as available layout space,
   causing dashboard content to render oversized and cut off.
-* Revert swiper library to previous version.
+* Revert swiper library to previous version to address swiping regressions (#4559)
+
+### 📚 Libraries
+* swiper  `12.1 -> 14.0`
+
 
 ## 86.4.0 - 2026-07-15
 
