@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {span} from '@xh/hoist/cmp/layout';
+import {placeholder, span} from '@xh/hoist/cmp/layout';
 import {tabContainer, TabContainerModel, TabConfig} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp, HoistModel, managed} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -19,9 +19,9 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {isPlainObject} from 'lodash';
+import {isPlainObject, last, union} from 'lodash';
 import {ReactElement} from 'react';
-import {buildResolvedJson, changedKeysFromDefaults, changedKeysFromStored} from './ConfigUtils';
+import {buildResolvedJson, changedKeysFromStored} from './ConfigUtils';
 import './ConfigValue.scss';
 
 /**
@@ -75,6 +75,10 @@ class ConfigValueModel extends HoistModel {
         );
     }
 
+    get resolvedIsStale(): boolean {
+        return this.overrideValue == null && (this.valueField?.isDirty ?? false);
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -93,29 +97,21 @@ class ConfigValueModel extends HoistModel {
 
         // Resolved - effective value with typedClass defaults applied.
         if (hasResolved) {
-            // Mute keys whose resolved values match the code defaults. Older hoist-core versions
-            // do not supply defaults - fall back to muting keys not set in the effective value.
-            const changedKeys = hasDefaults
-                    ? changedKeysFromDefaults(resolvedValue, defaultValue)
-                    : changedKeysFromStored(
-                          parseValue(hasOverride ? overrideValue : valueField?.value)
-                      ),
-                {text, highlightLines} = buildResolvedJson(resolvedValue, changedKeys);
+            // Highlight keys explicitly set in the database value or an instance override - all
+            // other entries come from the typedClass defaults and are muted.
+            const setKeys = union(
+                    changedKeysFromStored(parseValue(valueField?.value)),
+                    changedKeysFromStored(parseValue(overrideValue))
+                ),
+                {text, highlightLines} = buildResolvedJson(resolvedValue, setKeys),
+                lineStyles = isPlainObject(resolvedValue)
+                    ? mutedLineStyles(text, highlightLines)
+                    : null;
             tabs.push({
                 id: 'resolved',
                 title: 'Resolved',
                 icon: Icon.bolt(),
-                content: () =>
-                    jsonInput({
-                        value: text,
-                        readonly: true,
-                        autoFormat: false,
-                        lineStyles: isPlainObject(resolvedValue)
-                            ? mutedLineStyles(text, highlightLines)
-                            : null,
-                        enableSearch: true,
-                        height
-                    })
+                content: () => resolvedTab({text, lineStyles, height})
             });
         }
 
@@ -124,7 +120,7 @@ class ConfigValueModel extends HoistModel {
                 id: 'instance',
                 title: 'Instance',
                 icon: Icon.warning({intent: 'warning'}),
-                content: () => readonlyValue(valueType, overrideValue, height, defaultValue)
+                content: () => readonlyValue(valueType, overrideValue, height)
             });
         }
 
@@ -155,25 +151,35 @@ class ConfigValueModel extends HoistModel {
             });
         }
 
-        this.tabContainerModel = new TabContainerModel({defaultTabId: tabs[0].id, tabs});
-
-        // DB edits stale the Resolved view - but only when no override is active.
-        if (hasResolved && !hasOverride) {
-            this.addReaction({
-                track: () => valueField?.isDirty ?? false,
-                run: dirty => {
-                    this.tabContainerModel.findTab('resolved')?.setDisabled(dirty);
-                    if (dirty) this.tabContainerModel.activateTab('db');
-                },
-                fireImmediately: true
-            });
-        }
+        // Built most- to least-derived above, but displayed the other way round - opening on the
+        // last tab, i.e. the most derived view available.
+        tabs.reverse();
+        this.tabContainerModel = new TabContainerModel({defaultTabId: last(tabs).id, tabs});
     }
 }
 
 //------------------------
 // Implementation
 //------------------------
+// Resolved value, or a prompt to save when unsaved DB edits have left it stale. Remaining props
+// include the `flex` that Tab injects into its content - must pass through to size correctly.
+const resolvedTab = hoistCmp.factory<ConfigValueModel>(({model, text, lineStyles, ...rest}) =>
+    model.resolvedIsStale
+        ? placeholder({
+              ...rest,
+              className: 'xh-config-value__stale',
+              items: [Icon.bolt(), 'Update pending. Save or revert to recompute.']
+          })
+        : jsonInput({
+              value: text,
+              readonly: true,
+              autoFormat: false,
+              lineStyles,
+              enableSearch: true,
+              ...rest
+          })
+);
+
 // Label-less FormField for `value`, bound via the enclosing Form context for standard validation
 // display and read-only rendering. The plain branch passes `className` for the full-width rule.
 function valueFormField(valueType: string, height: number, className?: string): ReactElement {
@@ -210,33 +216,10 @@ function valueInput(valueType: string, height: number): ReactElement {
     }
 }
 
-// Read-only display of a raw stored value, by type. Mutes JSON matching the code defaults;
-// masks pwd.
-function readonlyValue(
-    valueType: string,
-    value: any,
-    height: number,
-    defaults?: any
-): ReactElement {
+// Read-only display of a raw stored value, by type. Masks pwd.
+function readonlyValue(valueType: string, value: any, height: number): ReactElement {
     switch (valueType) {
-        case 'json': {
-            // Muting is keyed on nested objects - a top-level array renders plain.
-            const parsed = defaults != null ? parseValue(value) : null;
-            if (isPlainObject(parsed)) {
-                const {text, highlightLines} = buildResolvedJson(
-                    parsed,
-                    changedKeysFromDefaults(parsed, defaults)
-                );
-                return jsonInput({
-                    value: text,
-                    readonly: true,
-                    autoFormat: false,
-                    lineStyles: mutedLineStyles(text, highlightLines),
-                    enableSearch: true,
-                    width: null,
-                    height
-                });
-            }
+        case 'json':
             return jsonInput({
                 value,
                 readonly: true,
@@ -245,7 +228,6 @@ function readonlyValue(
                 width: null,
                 height
             });
-        }
         case 'pwd':
             return textInput({value: value == null ? '' : '*****', disabled: true});
         default:

@@ -110,10 +110,9 @@
   minimum amount required.
 * Enhanced the Admin Console config editor: JSON configs backed by a typed class and/or an active
   instance-config override now present a tabbed value editor over the resolved, instance-override,
-  database, and code-default views of their value, muting entries that match the declared
-  defaults. The grid's Value column shows the effective value - resolved and/or honoring any
-  instance override. The resolved and code-default views require hoist-core v41+; against earlier
-  versions the editor degrades gracefully.
+  database, and code-default views of their value, muting resolved entries not explicitly set. The
+  grid's Value column shows the effective value - resolved and/or honoring any instance override.
+  Requires hoist-core v41+; against earlier versions the editor degrades gracefully.
 * Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based)
   lines - as static groups, or a function of the current document text.
 * Added a `RestGrid.formBbar` prop to replace the record editor form's default toolbar.

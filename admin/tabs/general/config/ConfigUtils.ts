@@ -4,8 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {isEqual} from 'lodash';
-
 export interface ResolvedConfigJson {
     /** Pretty-printed JSON text of the resolved value. */
     text: string;
@@ -28,37 +26,6 @@ export function changedKeysFromStored(stored: any): string[] {
         }
     };
     walk(stored, '');
-    return out;
-}
-
-/**
- * Dot-paths of the keys in a resolved typed-config value whose values differ from the code
- * defaults. A parent key is included when any of its children differ; arrays are atomic.
- */
-export function changedKeysFromDefaults(resolved: any, defaults: any): string[] {
-    const out: string[] = [],
-        isObj = (v: any) => v != null && typeof v === 'object' && !Array.isArray(v),
-        walk = (res: any, def: any, prefix: string): boolean => {
-            let anyChanged = false;
-            for (const k of Object.keys(res)) {
-                const path = prefix ? `${prefix}.${k}` : k,
-                    rv = res[k],
-                    dv = def[k];
-                let changed: boolean;
-                if (isObj(rv)) {
-                    // A subtree with no corresponding default object is changed wholesale.
-                    changed = walk(rv, isObj(dv) ? dv : {}, path) || !isObj(dv);
-                } else {
-                    changed = !isEqual(rv, dv);
-                }
-                if (changed) {
-                    out.push(path);
-                    anyChanged = true;
-                }
-            }
-            return anyChanged;
-        };
-    if (isObj(resolved)) walk(resolved, isObj(defaults) ? defaults : {}, '');
     return out;
 }
 

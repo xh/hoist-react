@@ -20,7 +20,19 @@
   }
 }
 
-// Mute default-matching lines in the Resolved/Instance/Database tabs. Classes are applied via
+// Stale-resolved-value prompt - framed as an input surface, standing in for the readonly editor.
+.xh-placeholder.xh-config-value__stale {
+  border: var(--xh-border-solid);
+  border-radius: var(--xh-border-radius-px);
+  background-color: var(--xh-input-bg);
+
+  // Dial back Placeholder's own 4em icon. Doubled class above to out-rank it.
+  > .xh-icon:first-child {
+    font-size: 2.5em;
+  }
+}
+
+// Mute not-explicitly-set lines in the Resolved tab. Classes are applied via
 // CodeMirror `lineStyles` directly on the `.cm-line` elements. Kept self-contained, not nested
 // under .xh-config-value, to preserve styles in the modal display.
 .cm-line.xh-config-value__muted,
