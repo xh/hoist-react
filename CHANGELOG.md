@@ -42,6 +42,8 @@
       `colChooserModel: {columnLibrary: true}` to retain a grouped presentation of hidden columns.
     * Custom app styling that targeted the chooser's former `LeftRightChooser`-based DOM must be
       updated - the chooser now renders its own grids and CSS classes.
+    * The cross-platform `IColChooserModel` interface requires a new `toggle()` method. Apps
+      supplying their own chooser implementation must add it.
 * `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
   rather than their ids - removed records cannot be resolved against the Store after the fact,
   making the records themselves the more useful report. Read `record.id` where ids are needed.
@@ -171,6 +173,8 @@
   each one on every aggregate row despite nothing having requested or displayed them.
 * Fixed `SumAggregator`, `MinAggregator`, and `MaxAggregator` mishandling incoming `null` values on
   incremental Cube `View` updates, leaving aggregates disagreeing with a full rebuild.
+* Fixed `GridModel.setColumnState()` missing an `@action` annotation, leaving its update to
+  `columnState` outside of a MobX action.
 * Fixed default display of `Routine` exceptions -- do not display underlying cause.
 * Fixed `isValidJson` failing on blank values - null and empty now defer to `required`, as with
   Hoist's other constraints. Pair with `required` if a value must be present.
