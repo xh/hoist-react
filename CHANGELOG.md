@@ -10,7 +10,7 @@
 * Revert swiper library to previous version to address swiping regressions (#4559)
 
 ### 📚 Libraries
-* swiper  `12.1 -> 14.0`
+* swiper  `14.0 -> 12.1`
 
 
 ## 86.4.0 - 2026-07-15
