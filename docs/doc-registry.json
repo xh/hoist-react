@@ -340,8 +340,8 @@
             "title": "Version Compatibility",
             "mcpCategory": "concept",
             "viewerCategory": "upgrade",
-            "description": "Reference mapping hoist-react releases to required/recommended hoist-core versions.",
-            "keywords": ["version", "compatibility", "hoist-core", "upgrade", "minimum", "required", "recommended", "matrix", "pairing", "hoist-dev-utils", "reverse lookup"]
+            "description": "Reference mapping hoist-react releases to required/recommended hoist-core and hoist-dev-utils versions, with reverse lookups and Node version floors.",
+            "keywords": ["version", "compatibility", "hoist-core", "upgrade", "minimum", "required", "recommended", "matrix", "pairing", "hoist-dev-utils", "reverse lookup", "node version", "pnpm", "build tooling"]
         },
         {
             "id": "docs/build-and-publish.md",
@@ -365,7 +365,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "Local development environment setup for Hoist and app developers.",
-            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
+            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "pnpm", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
         },
         {
             "id": "docs/compilation-notes.md",

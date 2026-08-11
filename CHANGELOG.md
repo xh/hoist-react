@@ -12,6 +12,10 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
+* Requires `@xh/hoist-dev-utils >= 14.0`, the build-tooling release paired and tested with v87.
+  It ships the matching `@types/react` 19.x and adds support for pnpm as the app package manager
+  (optional - yarn classic and npm remain fully supported). See
+  [Version Compatibility](docs/version-compatibility.md).
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 * Leaf rows published by Cube `View`s now use their source cube record's id as their row/record
@@ -38,6 +42,9 @@
       `colChooserModel: {columnLibrary: true}` to retain a grouped presentation of hidden columns.
     * Custom app styling that targeted the chooser's former `LeftRightChooser`-based DOM must be
       updated - the chooser now renders its own grids and CSS classes.
+* `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
+  rather than their ids - removed records cannot be resolved against the Store after the fact,
+  making the records themselves the more useful report. Read `record.id` where ids are needed.
 
 ### 🎁 New Features
 
@@ -98,6 +105,7 @@
       `FetchService` can also share interned values across successive fetches of the same logical
       dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
       known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+    * `Store.loadData()` and `Cube.loadDataAsync` calls have been optimized to skip all downstream work.
 
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
@@ -171,6 +179,19 @@
 * Added experimental `Store` config `denseRecordThreshold` - the populated (non-default) field
   count at/above which a record's `data` takes its fixed dense shape rather than the sparse form.
   For testing/tuning only - set to e.g. `999` to restore the pre-v87 (all-sparse) behavior.
+* Migrated this repo's own package management from yarn classic to pnpm 11 - `pnpm-lock.yaml`
+  replaces `yarn.lock`, and all scripts, CI, and publish workflows now run on pnpm.
+    * No change is required for apps consuming the published `@xh/hoist` package - pnpm, yarn
+      classic, and npm all remain fully supported. Apps adopting pnpm themselves need
+      `@xh/hoist-dev-utils` v14+ and must declare every package they import directly - see the
+      hoist-dev-utils CHANGELOG for migration guidance.
+    * Developers building against a local hoist-react checkout (`inlineHoist`) now need pnpm to
+      install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`) - the app
+      itself may remain on yarn or npm. Update any `startWithHoist`-style app scripts that run an
+      install within the sibling checkout.
+* Declared several packages this library imports directly but that had resolved only via yarn's
+  flat hoisting of transitive dependencies, most notably `sass-material-colors` (imported by
+  shipped SCSS).
 
 ### ⚙️ Typescript API Adjustments
 

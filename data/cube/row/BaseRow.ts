@@ -74,6 +74,8 @@ export abstract class BaseRow {
                 data._cubeLeafChildren = dataChildren;
             }
             dataChildren = null;
+        } else {
+            data._cubeLeafChildren = null;
         }
 
         // 2) If omitting ourselves, we are done, return visible children.
@@ -112,9 +114,10 @@ export abstract class BaseRow {
         }
 
         // Skip all children in a locked node - only parent rows can get this far.
-        if (query.lockFn?.(this as any)) {
-            (this as unknown as ParentRow).locked = true;
-            return null;
+        if (query.lockFn) {
+            const row = this as unknown as ParentRow;
+            row.locked = query.lockFn(row as any);
+            if (row.locked) return null;
         }
 
         // Recurse
