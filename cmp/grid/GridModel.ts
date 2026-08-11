@@ -565,8 +565,11 @@ export class GridModel extends HoistModel {
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
 
-    // Must be rebuilt in lockstep with `columns` - see setColumns.
-    @observable.ref private leafColumnMap: Map<string, Column> = new Map();
+    // Kept alive, as the primary reader `getColumn()` is often called outside of a reaction.
+    @computed({keepAlive: true})
+    private get leafColumnMap(): Map<string, Column> {
+        return new Map(this.getLeafColumns().map(it => [it.colId, it]));
+    }
 
     @computed.struct
     get persistableColumnState(): ColumnState[] {
@@ -1306,9 +1309,7 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        const leaves = this.getLeafColumns();
-        this.leafColumnMap = new Map(leaves.map(it => [it.colId, it]));
-        this.columnState = leaves.map(it => this.getDefaultStateForColumn(it));
+        this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
     }
 
     /**
