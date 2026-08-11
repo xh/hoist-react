@@ -7,6 +7,7 @@
 * Fixed `DashContainer` sizing regression introduced with the golden-layout fork in v86.0.0. CSS
   padding applied to the container element was incorrectly counted as available layout space,
   causing dashboard content to render oversized and cut off.
+* Revert swiper library to previous version.
 
 ## 86.4.0 - 2026-07-15
 
