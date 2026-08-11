@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {div, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {div, fragment, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, type Some} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
@@ -14,6 +14,7 @@ import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {type ReactNode, useEffect, useRef} from 'react';
 
+import type {ColChooserModel} from './ColChooserModel';
 import type {DropRejectReason} from './colChooserDropEngine';
 
 /**
@@ -132,7 +133,7 @@ export const chooserGridConfig: Partial<GridConfig> = {
     hideHeaders: true,
     rowBorders: true,
     stripeRows: false,
-    showHover: true,
+    showHover: false,
     contextMenu: ['expandCollapse']
 };
 
@@ -140,7 +141,7 @@ export const chooserGridConfig: Partial<GridConfig> = {
  * Base config for the chooser grids' name column - grip-handle + name via {@link ChooserColName}. Bucket
  * grids render it as a tree column via `innerRenderer`; the flat library grid renders it directly.
  */
-export function chooserNameColumn(tree: boolean): ColumnSpec {
+export function chooserNameColumn(tree: boolean, chooserModel: ColChooserModel): ColumnSpec {
     return {
         field: 'name',
         flex: 1,
@@ -154,11 +155,12 @@ export function chooserNameColumn(tree: boolean): ColumnSpec {
                           // Re-specify Hoist defaults - agOptions merges shallow
                           suppressCount: true,
                           suppressDoubleClickExpand: true,
-                          innerRenderer: ChooserColName
+                          innerRenderer: ChooserColName,
+                          innerRendererParams: {chooserModel}
                       }
                   }
               }
-            : {agOptions: {cellRenderer: ChooserColName}})
+            : {agOptions: {cellRenderer: ChooserColName, cellRendererParams: {chooserModel}}})
     };
 }
 
@@ -178,7 +180,7 @@ export interface ColLibraryData {
 }
 
 /** Column spec for the Column Library's flat grid - auto-height rows via {@link LibraryColCell}. */
-export function chooserLibraryColumn(): ColumnSpec {
+export function chooserLibraryColumn(chooserModel: ColChooserModel): ColumnSpec {
     return {
         field: 'name',
         flex: 1,
@@ -186,20 +188,24 @@ export function chooserLibraryColumn(): ColumnSpec {
         autoHeight: true,
         cellClass: 'xh-col-chooser__lib-cell',
         agOptions: {
-            cellRenderer: LibraryColCell
+            cellRenderer: LibraryColCell,
+            cellRendererParams: {chooserModel}
         }
     };
 }
 
-interface LibraryColCellProps extends HoistProps, ICellRendererParams<StoreRecord> {}
+interface ChooserCellProps extends HoistProps, ICellRendererParams<StoreRecord> {
+    /** Supplied via cellRendererParams - backs filter-match highlighting of the column name. */
+    chooserModel: ColChooserModel;
+}
 
 /**
  * Cell renderer for a Column Library row - a drag handle beside the column name, over an optional
  * wrapped inline description.
  * @internal
  */
-export const LibraryColCell = hoistCmp<LibraryColCellProps>(
-    ({registerRowDragger, data: record}) => {
+export const LibraryColCell = hoistCmp<ChooserCellProps>(
+    ({registerRowDragger, data: record, chooserModel}) => {
         const ref = useRef<HTMLSpanElement>(null);
 
         useEffect(() => {
@@ -231,7 +237,10 @@ export const LibraryColCell = hoistCmp<LibraryColCellProps>(
                 vframe({
                     className: 'xh-col-chooser__lib-cell__body',
                     items: [
-                        span({className: 'xh-col-chooser__lib-cell__name', item: name}),
+                        span({
+                            className: 'xh-col-chooser__lib-cell__name',
+                            item: highlightFilterMatch(name, chooserModel)
+                        }),
                         hasDescription
                             ? div({
                                   className: 'xh-col-chooser__lib-cell__desc',
@@ -245,15 +254,13 @@ export const LibraryColCell = hoistCmp<LibraryColCellProps>(
     }
 );
 
-interface ChooserColNameProps extends HoistProps, ICellRendererParams<StoreRecord> {}
-
 /**
  * Cell renderer for a bucket chooser name column - grip drag handle + column name, plus an on-demand
  * metadata icon. Metadata sits behind its own hit target, so scanning the list never fires a tooltip.
  * @internal
  */
-export const ChooserColName = hoistCmp<ChooserColNameProps>(
-    ({registerRowDragger, data: record}) => {
+export const ChooserColName = hoistCmp<ChooserCellProps>(
+    ({registerRowDragger, data: record, chooserModel}) => {
         const ref = useRef<HTMLSpanElement>(null);
 
         useEffect(() => {
@@ -263,7 +270,7 @@ export const ChooserColName = hoistCmp<ChooserColNameProps>(
         const data = record?.data as ColChooserData;
         if (!data) return null;
 
-        const {name, movable} = data;
+        const {name, movable, isGroup} = data;
         return hbox({
             alignItems: 'center',
             items: [
@@ -277,16 +284,37 @@ export const ChooserColName = hoistCmp<ChooserColNameProps>(
                           className: 'xh-col-chooser__name-cell__lock',
                           item: Icon.lock()
                       }),
-                span({className: 'xh-col-chooser__name-cell__name', item: name ?? ''}),
+                span({
+                    className: 'xh-col-chooser__name-cell__name',
+                    item: isGroup ? name : highlightFilterMatch(name ?? '', chooserModel)
+                }),
                 columnMetaTooltip(data)
             ]
         });
     }
 );
 
+function highlightFilterMatch(name: string, chooserModel: ColChooserModel): ReactNode {
+    const ranges = chooserModel?.getMatchRanges(name);
+    if (isEmpty(ranges)) return name;
+
+    const items: ReactNode[] = [];
+    let cursor = 0;
+    for (const [start, end] of ranges) {
+        items.push(
+            name.slice(cursor, start),
+            span({className: 'xh-col-chooser__highlight', item: name.slice(start, end)})
+        );
+        cursor = end;
+    }
+    items.push(name.slice(cursor));
+
+    return fragment(...items);
+}
+
 /**
- * On-demand column metadata, revealed on hover of a small info icon trailing the name. Rendered only
- * when the column has a `chooserDescription`, so the icon's presence itself signals "more info here".
+ * On-demand column metadata behind an info icon trailing the name - the icon itself is revealed on
+ * row hover or selection (see ColChooser.scss).
  */
 function columnMetaTooltip(data: ColChooserData): ReactNode {
     const {name, description, chooserGroup} = data,
