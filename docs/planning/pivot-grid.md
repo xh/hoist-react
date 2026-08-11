@@ -19,13 +19,9 @@ retired two guards the numbers did not support. Only phase 4 remains.
 
 **Read [Grid integration design](#grid-integration-design) before touching `PivotGridModel`** — it is
 the settled contract phase 3 built to. **Phase 3 is complete.** Pick up at phase 4, whose real work is
-deciding day-1 vs follow-up for [Extras and Nice-to-Haves](#extras-and-nice-to-haves); the rest is docs
-and a CHANGELOG entry.
-
-**In flight, uncommitted in Toolbox:** `PivotPerfModel` gains a total-heap column measured against a
-settled baseline, so grid heap comes out as one config's grid row minus its data row. That is the
-[matrix caveat](#result--the-phase-3-matrix)'s own prescription. Unrun — either run and record it, or
-drop it.
+now **building the day-1 set** triaged out of
+[Extras and Nice-to-Haves](#extras-and-nice-to-haves) — twelve items, two of them framework-level —
+followed by a code review and walkthrough, then docs and a CHANGELOG entry.
 
 Everything deliberately deferred is collected under
 [Extras and Nice-to-Haves](#extras-and-nice-to-haves); phase 4 decides day-1 vs follow-up for each.
@@ -1230,9 +1226,25 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       `getPricedRawPositionsAsync`, grouped by fund/trader and pivoted on region/sector. Demonstrates
       the ownership split: the page owns the `Cube` and `PivotView` and reconfigures through
       `view.updateQuery()`, never through the grid model.
-- [ ] **Decide day-1 vs follow-up for everything under
-      [Extras and Nice-to-Haves](#extras-and-nice-to-haves).** This is the phase's real work, not a
-      formality — several of those items are cheap now and breaking later.
+- [x] **Decided day-1 vs follow-up for everything under
+      [Extras and Nice-to-Haves](#extras-and-nice-to-haves)**, which is now split into those two
+      groups. Day 1 came out substantially larger than this item anticipated - twelve items, several
+      of them framework-level.
+- [ ] **Build the day-1 set.** See [Extras](#extras-and-nice-to-haves) for each. Rough dependency
+      order, since several interlock:
+      1. Framework first: `columnGroupShow` on `ColumnSpec` / `ColumnGroupSpec`, and column group
+         expand/collapse as persisted `GridModel` state.
+      2. Column plumbing: `labelColumn`, `pivotGroupSpec`, qualified `exportName`, filter `fieldSpecs`
+         and cell-field `displayName`, the `PivotSort` comparator, the single-value collapse toggle.
+      3. Layout: `columnLayout: 'path' | 'value'` and group expand/collapse, which share the summary
+         semantics ("a collapsed group always shows its summary").
+      4. State: synced value column order/width, then persistence - which depends on the synced model
+         for its path-independent representation, and on 1 for collapse state.
+      5. `maxPivotPaths` fail-soft and `buildPivotValuePath`, both independent of the rest.
+- [ ] **Full code review of the changeset, and a walkthrough of `PivotView` and `PivotLattice` with
+      John, before any doc work.** The docs are written from that shared understanding, not ahead of
+      it — a README written off the design sections would document what was designed rather than what
+      shipped. Sequenced after the day-1 build, since that work still changes the code.
 - [ ] `cmp/pivotgrid/README.md`.
 - [ ] `data/cube/README.md` section on the pivot view (belongs with phase 2, not deferred to the
       end).
@@ -1248,73 +1260,223 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
 
 ## Extras and Nice-to-Haves
 
-Deliberately deferred, with the condition that would pull each one forward. **Phase 4 decides day-1 vs
-follow-up for each.** The bar is not "would this be nice" but "is this cheap now and breaking later" —
-anything that shapes a config name, a `colId`, or persisted state belongs on day 1.
+Triaged 2026-08-10 with John. The bar was not "would this be nice" but "is this cheap now and breaking
+later" - anything shaping a config name, a `colId`, or persisted state is day 1.
 
-**Column state persistence.** Nothing on `PivotGridModel` is user state, so it needs no `persistWith`
-of its own — apps reach `GridModel`'s via `gridConfig.persistWith`, and app-level toggles bound to
-`rowSummary` and friends are the app's to persist. What is missing is that column state does not
-survive a structural rebuild: `setColumns` resets `columnState`, `rebuildColumns` restores only the
-label column, and with persistence on, `PersistenceProvider`'s reaction writes the loss through to
-storage. Two things go with it:
+### Day 1
 
-- **A manually set pivot column order is worth persisting** and users will expect it for a
-  low-cardinality, stable dimension like `region`. That is the strongest argument for taking this on.
-- **`hideNewColumns` must not reach value columns.** `initPersist` defaults it on for a curated
-  ViewManager view and `cleanColumnState` hides any new `hideable` column, so a brand-new pivot value
-  would arrive invisible. For an ordinary grid a new column is a new feature; here it is new *data*.
+**Column state persistence.** User-requested, and important to the client that prompted this work.
+`PivotGridModel` **does** need its own `persistWith`, reversing this section's earlier claim that
+nothing on it is user state: `GridModel`'s own column persistence can only store a flat list of
+data-dependent `colId`s, which cannot express "value field order" or "width per value field" and which
+breaks outright if the path delimiter or encoding ever changes. Persist instead, all unrolled:
+
+- Value field order and per-value-field width, both path-independent (see the sync item below).
+- Pivot path order, keyed by unrolled path *values* rather than by `colId`.
+- `sortBy`, likewise unrolled to `{valueField, pivotValues}` and re-resolved against the current paths
+  on restore.
+- Column group expand/collapse state.
+- A query fingerprint - `pivotDimensions` and `valueFields` by name - discarding saved state wholesale
+  on mismatch. Not `dimensions`, which shapes only the single label column. The query itself is never
+  persisted here; the app owns it, and the fingerprint exists only to prove the saved state still
+  describes the same columns.
+
+Widths need no autosize accommodation. Managed autosize already skips `manuallySized` columns
+(`Grid.ts:747`), and both `cleanColumnState` and `InitPersist` strip width from any state lacking the
+flag (`GridModel.ts:1912`, `InitPersist.ts:58`) - so persisted widths are exactly the manual ones.
+
+`hideNewColumns` was filed here as a second hazard and **is already neutralized**: `cleanColumnState`
+hides a new column only if it is `hideable` (`GridModel.ts:1898`), and this model forces
+`hideable: false` through `colDefaults` after spreading the app's own.
 
 Stale `colId`s are the unavoidable cost of data-derived ids and are not a bug to fix: widths persisted
 for `APAC>>pnl` are dropped when APAC leaves the data and return as defaults if it comes back.
 
+**Synced value column order across pivot groups.** Reordering value columns within one group applies to
+every group. The generalization is the useful part: **value columns are configured per value field, not
+per (path, value field)** - which is also what makes the persisted state path-independent. Flags control
+what syncs, order defaulting on and width defaulting off, since a one-off resize to fit a long label is
+a legitimately local action. Seeing one measure across all paths is what the value-major layout is for,
+not what column dragging is for.
+
+Driven from ag-Grid's move / resize events through `gridConfig.agOptions`, which must **compose with**
+the app's own handlers rather than overwrite them, and must act only on a finished user-drag source or
+our own normalization re-enters the handler. A resize fans `{colId, width, manuallySized: true}` across
+the value field's columns - the shape `GridModel.ts:1379` already emits for one.
+
+**Value-major column layout.** Invert the column nesting so each value field is a top-level group with
+the pivot paths as its children, rather than path groups with value fields as leaves. The use case is
+comparing one measure across every path side by side, instead of comparing measures within a path.
+Nothing changes in the data layer - `cellFields` already enumerates the same (path, value field) pairs,
+so this is purely the grouping order `PivotGridModel` builds columns in, and `colId`s are identical
+under either layout. The config names the *outer* axis (`columnLayout: 'path' | 'value'`) rather than
+reading as a boolean flag.
+
+**It does not need to widen `rowSummary`.** Define both summary configs as a side within the outermost
+grouping axis, which is what `pivotSummary` already documents ("within their group"). Path-major's
+outermost axis is the grid, so `rowSummary` reads as docked; value-major's is the value group, so the
+same config places each value field's total inside its own group. Adding a `'docked'` member to the
+union later is additive.
+
+Value-major also *always* collapses a leaf path to a single column, since each value group has one
+measure - so it subsumes the collapse toggle below rather than colliding with it, and `buildPathColumn`
+parameterizes on one value field instead of iterating them.
+
+**Column group expand/collapse.** Standard pivot behavior and ag-Grid's default, which shows a group's
+totals *only* while it is collapsed. Adopt those semantics: a collapsed group always shows its summary
+column, and `pivotSummary` governs whether it also shows while expanded. Implementable by always
+building the summary column and setting `columnGroupShow: 'closed'` on it when `pivotSummary` is off.
+
+Two constraints. **Hoist has no `columnGroupShow` at all** - not on `ColumnSpec`, not on
+`ColumnGroupSpec` - and `agOptions` is reserved on value columns, so apps cannot reach it either; see
+the framework item below. And **collapse is only meaningful where a summary exists**: parent pivot
+groups (showing pivot summaries) and, under value-major, the top-level value group (showing its row
+summary). A single pivot dimension in path-major layout has no collapsible groups at all. Say so, or it
+reads as broken.
+
+**`labelColumn`.** Not "overrides" - it is the spec for a column that has no other config surface.
+Reserve `field`, `colId` and `isTreeColumn` only; `colId` because `rebuildColumns` restores state by
+looking up `'cubeLabel'`. Note **`pinned` must stay open**, unlike on value columns - the label column
+is exactly the one an app wants pinned left, and it is currently forced to `pinned: false`. So this
+needs its own reserved set and its own spec type rather than reusing `PivotValueColumnSpec`.
+
+`headerName`, `renderer` and `sortValue` become app-replaceable defaults, which is the point: the
+example page's truncated fund names and a custom leaf-row renderer both live there. Install the default
+as a named export (`pivotGridLabelColRenderer` or similar) so an app can compose rather than reimplement
+it, and source its blank text from `query.emptyPathLabel` - today the label column hardcodes `'(empty)'`
+unrelated to the query, so the row axis and pivot axis can disagree on what a blank reads as.
+
+**Column filtering.** The grid `Store` is post-pivot and filters like any other, but the defaults are
+currently unusable and one of them is a hard failure:
+
+- `GridFilterModel.parseFieldSpecs` includes **all** store fields when none are given, so the filter UI
+  offers every cell field plus the `ViewRowData` plumbing fields. Default `fieldSpecs` to the value and
+  cell fields only.
+- `PivotView.syncStore` stamps `displayName: valueField.displayName` on *every* cell field
+  (`PivotView.ts:203`), so all 48 cell fields for `pnl` read "P&L" and are indistinguishable. Qualify
+  the field `displayName` (`US › Equity › P&L`) and set an explicit short `headerName` on value columns,
+  which today derive their header *from* that displayName.
+
+**The two filters mean different things and the docs must say so.** A grid column filter on a cell field
+filters group rows by their aggregate, post-pivot, with no re-aggregation - the same caveat ag-Grid
+documents. `PivotQuery.filter` / `view.setFilter()` filters pre-pivot leaf records and re-aggregates
+everything, moving paths and totals. The internal `GridFilterModel` must never bind to the `PivotView`;
+that cannot work. Post-pivot `FilterChooser` support is **follow-up**: its `fieldSpecs` would have to be
+dynamic, which they are not - `Store` fields were never dynamic until this work made them so, and
+`FilterChooserModel` needs reworking to match.
+
+**Export names.** Export is leaf-columns-only (`GridExportService.ts:268`) with no `ColumnGroup`
+awareness, so the group header row is lost and every value column exports under its own short header.
+That is not merely lossy: `GridExportService.ts:339` rejects duplicate headers outright, since Excel
+tables require unique ones. Set a qualified `exportName` per value column - it defaults to
+`headerName || colId` (`Column.ts:701`), which is exactly the duplicate.
+
+**`pivotGroupSpec` - a hook on generated path column groups.** ag-Grid's
+`processPivotResultColGroupDef`, in Hoist's shape: a function returning a partial spec rather than a
+mutation callback, taking a single params object per the `ColumnHeaderNameFn` / `ColumnEditableFn`
+convention (`Types.ts:407,420`).
+
+```typescript
+type PivotGroupSpecFn = (params: {
+    path: PivotPath;
+    pivotGridModel: PivotGridModel;
+    gridModel: GridModel;
+}) => Partial<ColumnGroupSpec>;   // reserved: groupId, children
+```
+
+Covers `headerName`, `headerClass`, `headerAlign`, `headerTooltip`, `borders` - per-region colouring,
+custom header text, tooltips. `PivotPath` already carries `value`, `label` and `depth`, so one function
+can switch on level. **Records and leaves are deliberately absent**: a `PivotPath` is the global union
+across all group nodes, so "the records for this path" means every leaf on it across every group, which
+this model does not hold and would have to walk the view for.
+
+**A comparator on `PivotSort`.** Today `'asc' | 'desc' | any[] | null`. Widen with
+`(a: PivotPath, b: PivotPath) => number` - additive, a two-line change in `sortPaths`, and typed over
+`PivotPath` rather than raw values so it can reach `label` and `depth` too.
+
+**A toggle for the single-value-field column collapse.** With one value field a leaf pivot path renders
+as a single column headed by the path label rather than a one-child group, because a group of one reads
+as a duplicate header (`PivotGridModel.buildPathColumn`). Summary columns collapse the same way
+(`buildSummaryColumn`) and the two must move together or the headers disagree. `colId`s are identical
+either way, so it is persistence-neutral. The name should say "collapse the group", not "hide the
+column", since nothing is hidden. Only meaningful in path-major layout. ag-Grid exposes the same thing
+as `removePivotHeaderRowWhenSingleValueColumn`.
+
+**`maxPivotPaths` fails soft rather than throwing.** Degrade to the degenerate unpivoted result - empty
+`paths` and `cellFields`, group rows and row summaries intact - which is the `pivotDimensions: []` path
+the design already supports and tests, so the totals invariant survives trivially. Pair with an
+`onMaxPivotPathsExceeded` callback so the app can surface it; `null` still disables the guard. Note the
+guard counts *paths* while ag-Grid's `pivotMaxGeneratedColumns` counts columns, so our 1000 is their
+1000 × value fields.
+
+**A `buildPivotValuePath(valueField, pivotValues)` util.** Apps setting a default sort or targeting a
+cell must not hand-build `'US>>pnl'`: path segments escape `\` as `\\` and `>` as `\>`, so any hardcoded
+key breaks on a dimension value containing the delimiter. A pure function, taking pivot *values*
+outermost-first - not dimension names. It must match the key builder's encoding of an empty segment
+exactly (raw null vs resolved `emptyPathLabel`); confirm which when building it. Resolving a path
+against the current `result` is a separate, later utility - YAGNI for now.
+
+**Framework work this pulls in**, all of it useful beyond pivoting:
+
+- `columnGroupShow` on `ColumnSpec` / `ColumnGroupSpec`, plus a default-expanded depth
+  (ag-Grid's `pivotDefaultExpanded`).
+- Column group expand/collapse tracked as `GridModel` state, persisted, and surviving `setColumns` on a
+  structural rebuild - the problem `rebuildColumns` currently solves for `cubeLabel` alone. ag-Grid
+  keeps this in `columnGroupState`, separate from `columnState`, and Hoist manages neither.
+
+### Follow-up
+
+**`valueColumnOverrides` is dropped rather than deferred** - `gridConfig.colDefaults` already reaches
+every leaf column including value columns, and `labelColumn` closes the one gap by letting an app
+differentiate the label column back out (`GridModel` merges `defaultsDeep({}, config, colDefaults)`, so
+explicit spec keys win). Per-value-field repetition would be worse regardless: value fields come from the
+query, so an app adding a measure through `view.updateQuery()` would silently miss one. Reinstate only if
+value-only defaults plus differing label config prove awkward to express. Caveat worth documenting:
+`colDefaults` is not filtered by `RESERVED_VALUE_COLUMN_KEYS`, so `colDefaults: {pinned: 'left'}` pins
+everything.
+
+**Post-pivot `FilterChooser`.** Needs `FilterChooserModel.fieldSpecs` to become dynamic - see the
+filtering item above.
+
 **Extra value-summary rows** (`extraSummaryRowFields`). Needs `PivotView` minting multiple root rows,
-which is a display concept in data-layer clothing — see
+which is a display concept in data-layer clothing - see
 [Feature set](#feature-set-and-config-surface). Apps wanting it today set pinned row data on the
 `GridModel`. Pull forward only if a second client asks.
 
 **Extra row-summary columns** (`extraSummaryColumnFields`). Names which non-value fields get a totals
 column; every `PivotQuery.fields` entry is already aggregated onto every group row, so an app can bind
-one itself. Cheap to reinstate, and purely additive.
+one itself. A totals column for a non-value field binds that field's own plain name, which is already
+the root-path naming convention, so there is no `colId` collision to design around. Cheap to reinstate
+and purely additive.
 
 **A `PivotQuery` config panel component.** All query config lives on the query and apps drive it
 through `view.updateQuery()`, so a reusable control for dimensions / pivot dimensions / value fields is
-the obvious next component. Admin › Tests › **Pivot Grid** is a working sketch of one; a real version
-needs to own dimension-pool disjointness and the empty-`valueFields` guard, both of which that panel
-currently hand-rolls.
+the obvious next component - ag-Grid's pivot panel and its `enablePivot` / `enableValue` column flags
+are the same territory. Admin › Tests › **Pivot Grid** is a working sketch of one; a real version needs
+to own dimension-pool disjointness and the empty-`valueFields` guard, both of which that panel currently
+hand-rolls.
 
-**Label-column and global value-column config** (`labelColumnOverrides` / `valueColumnOverrides`).
-`valueColumnSpecs` covers per-value-field config; absent are one spec across *all* value columns, and
-any hook at all on the tree/label column. **The example page hit the second one immediately** - its
-label column truncated fund names with no way to widen it, worked around with
-`autosizeOptions.mode: 'managed'`. That workaround is legitimate and arguably the better default, but
-an app wanting a fixed width, a custom renderer for leaf rows, or a different empty-value label
-currently cannot get one. Weigh that when deciding day-1 vs follow-up.
+**Top-N plus `(other)` on the pivot axis.** Much cheaper to build than this section previously assumed:
+`PivotLattice` stamps `pathIdxOfRecord` at discovery (`PivotLattice.ts:236`) and everything below is
+pure integer indices, so routing overflow records to one reserved index yields a bucket that genuinely
+*contains* the tail, with no change beneath discovery and the totals invariant intact.
 
-**A toggle for the single-value-field column collapse** (`hideSingleValuePivotCols` or similar - the
-name should say "collapse the group", not "hide the column", since nothing is hidden). With one value
-field a leaf pivot path renders as a single column headed by the path label rather than a one-child
-group, because a group of one reads as a duplicate header (`PivotGridModel.buildPathColumn`). Summary
-columns collapse the same way (`buildSummaryColumn`) - a toggle has to cover both or the two headers
-disagree. Purely additive and safe to defer: the collapse only drops the group wrapper, so `colId`s
-and persisted column state are identical either way. Pull it forward if an app wants the value field's
-name visible under every path, or needs the group header for its own reasons.
-
-**Top-N plus `(other)` on the pivot axis.** Rejected as a soft cap for `maxPivotPaths` because keeping
-the summary invariant means the bucket must genuinely *contain* the tail — which makes it a real
-feature worth designing rather than a guard. See
-[Pivot cardinality guard](#pivot-cardinality-guard).
+It is nonetheless wrong as a `maxPivotPaths` soft cap, which is why the guard fails soft instead.
+Retention would be alphabetical, since ascending value order is the only ordering the data layer knows -
+so `(other)` collects whatever sorts last rather than whatever matters; at guard scale you still have
+1000 columns; and bucket membership would shift silently with the data, which no query fingerprint
+catches. As a real feature it wants a small N and retention by measure, which means a pre-pass aggregate
+per path, and it wants a retention rule the app controls - awkward today, since `pivotSortBy` is
+display-level on `PivotGridModel` while discovery is data-level on `PivotView`.
 
 **Bucketing within the pivot axis.** Not supported; `bucketSpecFn` is group-axis only. See
-[Interaction rules](#interaction-rules).
+[Interaction rules](#interaction-rules). ag-Grid's `groupHierarchy` covers similar ground for date parts.
 
 **Unifying `rowSummary` and `pivotSummary`.** They share an implementation and row summaries *are*
 pivot summaries at the root path, but they stay separate configs because most users only ever see the
-`Total` column. Listed only to record that merging them later is breaking.
-
-**`useRawAsData` on `CubeConfig`** (currently only `retainRaw`) — filed under
-[framework gaps](#framework-gaps-worth-fixing-on-their-own), independent of pivoting and the only one
-of those still open.
+`Total` column. The "side within the outermost grouping axis" framing adopted for value-major makes them
+look more alike than before; the user-visibility argument for keeping them apart is unchanged. Listed
+only to record that merging them later is breaking.
 
 ## Carried-forward review findings
 
@@ -1348,7 +1510,9 @@ identity with `equals: 'shallow'`, the `new Field()`-per-update churn (`:292`) i
       and reverting the aggregator kills three checks.
 - [x] `Store.getField` was a linear `find` over `fields` — now goes through `_fieldMap`, which the
       pivot label column's per-row `sortValue` lookup made hot.
-- [ ] Consider exposing `useRawAsData` on `CubeConfig` (currently only `retainRaw`).
+
+All findings here are closed. `useRawAsData` on `CubeConfig` was dropped rather than fixed —
+`projectionOnly` covers the need.
 
 `GridModel.enhanceColConfigsFromStore` was filed here and is now a
 [phase 3 prerequisite](#phase-3--pivotgridmodel).
@@ -1361,10 +1525,6 @@ raises the Chrome window mid-session. Screenshots and `javascript_tool` do *not*
 pass. Prefer that. `react-select` is the one control that ignores synthetic mousedown - change a default
 and reload instead of fighting it.
 
-- [ ] **Audit the other `cmp/` wrappers for missing `LayoutProps` / `TestSupportProps`.** `PivotGrid`
-      had neither until its first real use; the `ZoneGrid` precedent says it should have. Independent of
-      pivoting.
-
 ### Framework conventions and cleanup
 
 All done with the phase 3 rewire: copyright headers, the `[Component, factory]` pair via
@@ -1374,6 +1534,42 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-08-10 — Day-1 triage, and phase 4 got much bigger.** No implementation.
+[Extras](#extras-and-nice-to-haves) is now split day-1 / follow-up, with twelve items on day 1 - two
+of them framework-level (`columnGroupShow`, persisted column group state), which is the reason the
+phase grew rather than closed.
+
+Audited ag-Grid's four pivot doc pages against our surface. We match or beat them nearly everywhere -
+`pivotSortBy` beats `pivotComparator`, `rowSummary` beats `pivotRowTotals`, and real `Store` fields
+beat their number-filter-only pivot result columns. Genuine gaps were `autoGroupColumnDef`
+(→ `labelColumn`), `processPivotResultColGroupDef` (→ `pivotGroupSpec`), `pivotDefaultExpanded` /
+expandable groups, and `removePivotHeaderRowWhenSingleValueColumn` (→ the collapse toggle we had
+already filed). Nothing they do made us want something we had not already considered.
+
+Four defects surfaced by reading rather than running, all day 1:
+
+- **Filtering is unusable by default.** `GridFilterModel.parseFieldSpecs` takes all store fields when
+  given none, and `PivotView.syncStore` stamps the same `displayName` on every cell field
+  (`PivotView.ts:203`) - so a filter chooser lists "P&L" once per path, indistinguishably, next to the
+  `ViewRowData` plumbing fields.
+- **Export duplicate headers are a hard failure**, not a cosmetic loss: export is leaf-columns-only with
+  no group awareness, and `GridExportService.ts:339` rejects duplicate headers because Excel tables
+  require unique ones.
+- The label column hardcodes `'(empty)'` unrelated to `query.emptyPathLabel`, so the row and pivot axes
+  can disagree on what a blank reads as.
+- `PivotSort` has no comparator.
+
+Two things I got wrong and checked rather than assumed. **Managed autosize does not fight persisted
+widths** - it already skips `manuallySized` columns (`Grid.ts:747`) and state strips width without the
+flag, so the two coexist by design. And **an `(other)` overflow bucket is cheap**, not invasive:
+`pathIdxOfRecord` is stamped at discovery and everything below is integer indices. It stays rejected as
+a `maxPivotPaths` soft cap on semantics alone - alphabetical retention buckets the wrong records - not
+on cost, which is a correction to the earlier rationale.
+
+Also dropped `valueColumnOverrides` as covered by `gridConfig.colDefaults` + `labelColumn` rather than
+deferred. Pick up at **building the day-1 set**; the code review and walkthrough now sit after it,
+since that work still changes the code.
 
 **2026-08-10 — Merged up to current `develop`.** Seventeen commits, again landing squarely on the
 aggregation machinery. Develop split `ParentRow` out of `BaseRow` and moved aggregation eligibility
@@ -1385,9 +1581,11 @@ only materializes results for fields that actually declare a `canAggregateFn`. A
 collision to watch for in the next merge-up: develop added `Query._rawFields` for the same reason
 we had added ours, and two `private` fields of one name make `PivotQuery` structurally *not* a
 `Query` — ours is now `_preAugmentFields`. Both aggregation routes survive: `applyDataUpdate` still
-collects `Set<BaseRow>` and still fans out through `propagateUpdate`. Unit tier green at 49/49.
-Pick up at the day-1-vs-follow-up call on [Extras](#extras-and-nice-to-haves), and re-run the
-Toolbox tier before anything else — develop's row-reuse and aggregator fixes are unexercised here.
+collects `Set<BaseRow>` and still fans out through `propagateUpdate`. Both tiers green post-merge:
+unit 49/49, Toolbox 262/262. Loose threads closed with it — the unrun total-heap instrument is
+dropped (grid heap stays unmeasured), `useRawAsData` is moot under `projectionOnly`, and the
+`cmp/` `LayoutProps` audit is out of scope. Pick up at the day-1-vs-follow-up call on
+[Extras](#extras-and-nice-to-haves).
 
 **2026-08-07 — Doc bookkeeping.** No implementation. Reconciled the checklists against the code, which
 had drifted: `SumAggregator.replace` is fixed and carries its own CHANGELOG entry, the deliberately-red

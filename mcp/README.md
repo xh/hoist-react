@@ -262,10 +262,10 @@ The repository includes a `.mcp.json` file that Claude Code reads automatically:
 No manual setup is needed -- Claude Code discovers and starts the server when you open a session
 in the hoist-react directory.
 
-**Method 2: yarn script**
+**Method 2: pnpm exec (from the hoist-react repo)**
 
 ```bash
-yarn hoist-mcp
+pnpm exec hoist-mcp
 ```
 
 **Method 3: npx (from installed package)**

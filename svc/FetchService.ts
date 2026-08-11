@@ -585,12 +585,16 @@ export class FetchService extends HoistService {
 
         try {
             const parsed = new URL(raw, window.location.origin);
-            // Redact values of query params that commonly carry secrets.
+            // Redact values of query params that commonly carry secrets. Collect keys via
+            // forEach (declared in base lib.dom, unlike the iterator methods) so this shipped
+            // source type-checks in apps without dom.iterable or @types/node in their program.
             const sensitive =
                 /^(token|access_token|id_token|password|pwd|secret|api[_-]?key|auth|session|sig|signature)$/i;
-            for (const key of Array.from(parsed.searchParams.keys())) {
+            const keys: string[] = [];
+            parsed.searchParams.forEach((_v, key) => keys.push(key));
+            keys.forEach(key => {
                 if (sensitive.test(key)) parsed.searchParams.set(key, 'REDACTED');
-            }
+            });
             return parsed.toString();
         } catch {
             return raw;
@@ -827,9 +831,9 @@ export class FetchService extends HoistService {
     ): string {
         let ret: string;
         if (parsedResp) {
-            // From parsed response, including cause if provided (e.g. ExternalHttpException)
+            // Append cause (e.g. ExternalHttpException) - not for routine, whose message is complete.
             ret = parsedResp.message;
-            if (isString(parsedResp.cause)) {
+            if (isString(parsedResp.cause) && !parsedResp.isRoutine) {
                 const cause = truncate(parsedResp.cause, {length: 255});
                 ret = ret ? `${ret} (Caused by: ${cause})` : cause;
             }
