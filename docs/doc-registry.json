@@ -365,7 +365,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "Local development environment setup for Hoist and app developers.",
-            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
+            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "pnpm", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
         },
         {
             "id": "docs/compilation-notes.md",
