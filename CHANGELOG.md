@@ -17,7 +17,7 @@
   (optional - yarn classic and npm remain fully supported). See
   [Version Compatibility](docs/version-compatibility.md).
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
-     either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 * Leaf rows published by Cube `View`s now use their source cube record's id as their row/record
   id, rather than a generated id encoding the row's full dimension path. Review any code that
   parses leaf row ids - aggregate and bucket row ids are unchanged. `Store.idEncodesTreePath` may
@@ -229,7 +229,10 @@
 * Fixed `DashContainer` sizing regression introduced with the golden-layout fork in v86.0.0. CSS
   padding applied to the container element was incorrectly counted as available layout space,
   causing dashboard content to render oversized and cut off.
-* Revert swiper library to previous version.
+* Revert swiper library to previous version to address swiping regressions (#4559)
+
+### 📚 Libraries
+* swiper  `14.0 -> 12.1`
 
 ## 86.4.0 - 2026-07-15
 
