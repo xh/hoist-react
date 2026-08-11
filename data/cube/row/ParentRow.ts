@@ -11,7 +11,7 @@ import {BucketSpec} from '../BucketSpec';
 import {CubeField} from '../CubeField';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
-import {BaseRow} from './BaseRow';
+import {BaseRow, propagateUpdate} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
@@ -19,20 +19,18 @@ import {RowUpdate} from './RowUpdate';
  * all aggregation state and machinery, keeping it off the far more numerous {@link LeafRow}.
  *
  * The concrete subclasses {@link AggregateRow} and {@link BucketRow} group their children by a
- * dimension value and a dynamic bucket, respectively.
+ * dimension value and a dynamic bucket, respectively, while {@link PivotCellRow} aggregates one
+ * cell of a {@link PivotView}.
  *
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export abstract class ParentRow extends BaseRow {
-    // Parent rows always construct a full ViewRowData.
-    declare data: ViewRowData;
-
     // `canAggregateFn` results by field name - null unless the view has such fields.
     private canAggResults: PlainObject = null;
 
     // Level of this row within the query's dimensions - bucket rows share the level of the
     // aggregate row above them. Keys the View's per-level field lists.
-    private depth: number = null;
+    protected depth: number = null;
 
     // Values of the dimensions applied at this row, retained only to hand to a `canAggregateFn`.
     private appliedDimensions: PlainObject = null;
@@ -44,27 +42,48 @@ export abstract class ParentRow extends BaseRow {
     protected abstract get dimOrBucketName(): string;
     protected abstract get dimOrBucketVal(): any;
 
-    protected init(children: BaseRow[], appliedDimensions: PlainObject, depth: number) {
-        const {view} = this;
+    // Fields this row aggregates, and the subsets needing re-derivation - by default the View's
+    // lists for this row's depth. Pivot cell rows override with their own, narrower lists.
+    protected get aggFields(): CubeField[] {
+        return this.view._aggFieldsByDepth[this.depth];
+    }
+    protected get aggFieldNames(): Set<string> {
+        return this.view._aggFieldNamesByDepth[this.depth];
+    }
+    protected get canAggregateFnFields(): CubeField[] {
+        return this.view._canAggregateFnFieldsByDepth[this.depth];
+    }
+    protected get complexAggFields(): CubeField[] {
+        return this.view._complexAggFieldsByDepth[this.depth];
+    }
 
+    protected init(children: BaseRow[], appliedDimensions: PlainObject, depth: number) {
         this.children = children;
         children.forEach(it => (it.parent = this));
+        this.initData(appliedDimensions, depth);
+    }
 
+    /**
+     * Compute this row's aggregates over its already-assigned `children`, without touching the
+     * children's parent links. Split out for pivot cell rows, whose children do not uniformly treat
+     * them as their group-axis parent.
+     */
+    protected initData(appliedDimensions: PlainObject, depth: number) {
         Object.assign(this.data, appliedDimensions);
         this.depth = depth;
 
         // Needed to re-evaluate any `canAggregateFn` - clone, as the View mutates its copy as it
         // moves across sibling groups.
-        if (!isEmpty(view._canAggregateFnFieldsByDepth[depth])) {
+        if (!isEmpty(this.canAggregateFnFields)) {
             this.appliedDimensions = {...appliedDimensions};
         }
 
         this.recomputeCanAggregate();
 
         // initial computation of aggregates
-        const {data, canAggResults} = this,
-            ctx = view._aggContext;
-        view._aggFieldsByDepth[this.depth].forEach(({aggregator, name}) => {
+        const {children, data, canAggResults} = this,
+            ctx = this.view._aggContext;
+        this.aggFields.forEach(({aggregator, name}) => {
             if (canAggResults?.[name] !== false) {
                 data[name] = aggregator.aggregate(children, name, ctx);
             }
@@ -74,10 +93,9 @@ export abstract class ParentRow extends BaseRow {
     // -----------
     // Data
     //-------------
-    applyDataUpdate(childUpdates: RowUpdate[], updatedRowDatas: Set<PlainObject>) {
-        const {parent, data, children, canAggResults, view} = this,
+    applyDataUpdate(childUpdates: RowUpdate[], updatedRows: Set<BaseRow>) {
+        const {parent, pivotParent, data, children, canAggResults, aggFieldNames, view} = this,
             ctx = view._aggContext,
-            aggFieldNames = view._aggFieldNamesByDepth[this.depth],
             myUpdates = [];
         childUpdates.forEach(update => {
             const {field} = update,
@@ -93,8 +111,8 @@ export abstract class ParentRow extends BaseRow {
         });
 
         if (!isEmpty(myUpdates)) {
-            updatedRowDatas.add(this.data);
-            if (parent) parent.applyDataUpdate(myUpdates, updatedRowDatas);
+            updatedRows.add(this);
+            propagateUpdate(parent, pivotParent, myUpdates, updatedRows);
         }
     }
 
@@ -104,7 +122,7 @@ export abstract class ParentRow extends BaseRow {
     /** Re-evaluate this row's `canAggregateFn` fields, returning any that changed - else null. */
     recomputeCanAggregate(): string[] {
         let changes = null;
-        this.view._canAggregateFnFieldsByDepth[this.depth].forEach(field => {
+        this.canAggregateFnFields.forEach(field => {
             const {name} = field,
                 can = this.evalCanAggregate(field),
                 results = (this.canAggResults ??= {});
@@ -121,7 +139,7 @@ export abstract class ParentRow extends BaseRow {
         let changed = false;
 
         // 1) All complex aggregators need to be recomputed.
-        view._complexAggFieldsByDepth[this.depth].forEach(field => {
+        this.complexAggFields.forEach(field => {
             if (this.recomputeAggregate(field)) changed = true;
         });
 
@@ -169,6 +187,8 @@ export abstract class ParentRow extends BaseRow {
  * Parent row aggregating data for a single value of a dimension.
  */
 export class AggregateRow extends ParentRow {
+    declare data: ViewRowData;
+
     override get isAggregate() {
         return true;
     }
@@ -214,6 +234,8 @@ export class AggregateRow extends ParentRow {
  * dimension-level {@link AggregateRow}, as produced by a specified {@link BucketSpecFn}.
  */
 export class BucketRow extends ParentRow {
+    declare data: ViewRowData;
+
     override get isBucket() {
         return true;
     }

@@ -187,8 +187,13 @@ export class Query {
         this.hasFilter = this._testFn != null;
     }
 
-    clone(overrides: Partial<QueryConfig>) {
-        const conf = {
+    clone(overrides: Partial<QueryConfig>): this {
+        return new (this.constructor as any)(this.cloneConfig(overrides));
+    }
+
+    /** Config for `clone`. Subclasses extend to carry their own members across. */
+    protected cloneConfig(overrides: Partial<QueryConfig>): QueryConfig {
+        return {
             dimensions: this.dimensions,
             fields: this._rawFields, // NOT this.fields - would retain stale dimensions
             filter: this.filter,
@@ -202,8 +207,6 @@ export class Query {
             cube: this.cube,
             ...overrides
         };
-
-        return new Query(conf);
     }
 
     test(record: StoreRecord): boolean {

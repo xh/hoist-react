@@ -136,11 +136,13 @@ export class View
     lastUpdated: number;
 
     // Implementation
-    private _rowDatas: ViewRowData[] = null;
-    private _leafMap: Map<StoreRecordId, LeafRow> = null;
+    protected _rowDatas: ViewRowData[] = null;
+    /** Generated root rows, retained so subclasses can walk the full aggregation network. */
+    protected _rootRows: BaseRow[] = null;
+    protected _leafMap: Map<StoreRecordId, LeafRow> = null;
     _recordMap: Map<StoreRecordId, StoreRecord> = null;
-    private _bucketDependentFields = new Set<string>();
-    private _rowDataTemplate: ViewRowData = null;
+    protected _bucketDependentFields = new Set<string>();
+    protected _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     private _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
@@ -397,62 +399,80 @@ export class View
     }
 
     @logWithDebug
-    private fullUpdate() {
+    protected fullUpdate() {
         const records = this.filterRecords();
         this.createAggregationContext();
         this.generateRows(records);
+        // Closed here, not inside generateRows - a subclass generating further rows in its override
+        // must land inside the generation, or its rows are uncounted and the sweep sees the cache as
+        // having outgrown a live count that never included them.
+        this._rowCache.endGeneration();
         this.loadStores();
         this.updateResults();
     }
 
     @logWithDebug
-    private dataOnlyUpdate(updates: StoreRecord[]) {
-        const {_leafMap, _recordMap, stores} = this,
-            updatedRowDatas = new Set<PlainObject>();
+    protected dataOnlyUpdate(updates: StoreRecord[]) {
+        const {_leafMap, _recordMap} = this,
+            updatedRows = new Set<BaseRow>();
 
         updates.forEach(rec => {
             _recordMap.set(rec.id, rec);
             const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
+            leaf?.applyLeafDataUpdate(rec, updatedRows);
         });
 
-        updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
+        updatedRows.forEach(row => this.noteRowDataMutated(row.data));
 
         this.createAggregationContext();
-
-        stores.forEach(store => {
-            const recordUpdates = [];
-            updatedRowDatas.forEach(rowData => {
-                if (store.getById(rowData.id)) recordUpdates.push(rowData);
-            });
-            store.updateData({update: recordUpdates});
-        });
+        this.loadUpdatedRows(updatedRows);
         this.updateResults();
     }
 
-    private loadStores() {
+    /** Push the rows touched by an incremental update into any connected stores. */
+    protected loadUpdatedRows(updatedRows: Set<BaseRow>) {
+        this.stores.forEach(store => {
+            const recordUpdates = [];
+            updatedRows.forEach(row => {
+                const {data} = row;
+                if (store.getById(data.id)) recordUpdates.push(data);
+            });
+            store.updateData({update: recordUpdates});
+        });
+    }
+
+    protected loadStores() {
+        this.stores.forEach(s => this.loadStore(s));
+    }
+
+    /** Load a single store from the current row data, if any has been generated. */
+    protected loadStore(store: Store) {
         const {_leafMap, _rowDatas} = this;
         if (!_leafMap || !_rowDatas) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
-        const storeRows = _leafMap.size !== 0 ? _rowDatas : [];
-        this.stores.forEach(s => s.loadData(storeRows));
+        store.loadData(_leafMap.size !== 0 ? _rowDatas : []);
     }
 
-    private updateResults() {
-        const {_leafMap, _rowDatas} = this;
-        this.result = {
-            rows: _rowDatas,
-            // Hidden leaves adopt Cube record data outright - never publish them.
-            leafMap: this.exposesLeaves ? (_leafMap as Map<StoreRecordId, ExposedLeafRow>) : null
-        };
+    protected updateResults() {
+        this.result = this.createResult();
         this.info = this.cube.info;
         this.cubeUpdated = this.cube.lastUpdated;
         this.lastUpdated = Date.now();
     }
 
+    /** Assemble the published result. Subclasses extend to add their own members. */
+    protected createResult(): ViewResult {
+        const {_leafMap, _rowDatas} = this;
+        return {
+            rows: _rowDatas,
+            // Hidden leaves adopt Cube record data outright - never publish them.
+            leafMap: this.exposesLeaves ? (_leafMap as Map<StoreRecordId, ExposedLeafRow>) : null
+        };
+    }
+
     // Generate a new full data representation from the filtered records
-    private generateRows(records: StoreRecord[]) {
+    protected generateRows(records: StoreRecord[]) {
         const {query} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
@@ -479,6 +499,7 @@ export class View
         }
 
         this._leafMap = leafMap;
+        this._rootRows = newRows;
 
         if (query.bucketSpecFn) newRows.forEach(row => row.syncBuckets(null));
 
@@ -486,11 +507,9 @@ export class View
         // This hides all the meta information, as well as unwanted leaves and skipped rows.
         // Underlying network still there and updates will flow up through it via the leaves.
         this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
-
-        rowCache.endGeneration();
     }
 
-    private groupAndInsertRecords(
+    protected groupAndInsertRecords(
         records: StoreRecord[],
         dimensions: CubeField[],
         parentId: string,
@@ -551,7 +570,7 @@ export class View
         });
     }
 
-    private bucketRows(
+    protected bucketRows(
         rows: BaseRow[],
         parentId: string,
         appliedDimensions: PlainObject,
@@ -598,7 +617,7 @@ export class View
 
     // return a list of simple data updates we can apply to leaves.
     // false if leaf population changing, or aggregations are complex
-    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | false {
+    protected getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | false {
         if (!t) return [];
         if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
@@ -634,7 +653,7 @@ export class View
         return ret;
     }
 
-    private hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
+    protected hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
         const {dimensions} = this.query,
             bucketDependentFields = Array.from(this._bucketDependentFields);
 
@@ -649,7 +668,7 @@ export class View
         return false;
     }
 
-    private filterRecords(): StoreRecord[] {
+    protected filterRecords(): StoreRecord[] {
         const {query, cube} = this,
             {hasFilter} = query,
             recordMap = new Map(),
@@ -666,7 +685,7 @@ export class View
         return records;
     }
 
-    private createAggregationContext() {
+    protected createAggregationContext() {
         this._aggContext = new AggregationContext(this);
     }
 
@@ -679,8 +698,9 @@ export class View
         return isEmpty(this._complexAggFieldsByDepth[0]);
     }
 
-    private parseStores(stores: Some<Store>): Store[] {
-        const ret = castArray(stores);
+    protected parseStores(stores: Some<Store>): Store[] {
+        // `castArray(null)` yields `[null]` - null is a legitimate "no stores" here.
+        const ret = isNil(stores) ? [] : castArray(stores);
 
         throwIf(
             ret.some(s => s.reuseRecords != null),

@@ -397,6 +397,7 @@ export class Store
     @observable.ref
     _filtered: RecordSet;
 
+    private _fieldDefaults: Omit<FieldSpec, 'name'>;
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
@@ -447,7 +448,10 @@ export class Store
         );
 
         this.experimental = this.parseExperimental(experimental);
+        this._fieldDefaults = fieldDefaults;
         this.fields = this.parseFields(fields, fieldDefaults);
+        // Immediately after `fields` - `getField()` reads it, and construction below can reach that.
+        this._fieldMap = this.createFieldMap();
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
@@ -466,7 +470,6 @@ export class Store
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._fieldMap = this.createFieldMap();
         this._digestFn = this.createDigestFn();
         this._dataDefaults = this.createDataDefaults();
         this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
@@ -954,9 +957,29 @@ export class Store
         this.rebuildFiltered();
     }
 
+    /**
+     * Replace this Store's fields wholesale, rebuilding the derived field map and data defaults.
+     * Any configured `fieldDefaults` are re-applied to the incoming specs.
+     *
+     * Drops all records - existing `data` objects were built against the outgoing defaults, and
+     * callers reload immediately.
+     *
+     * @internal - supports {@link PivotView}, whose cell fields are only discoverable from data.
+     *      Not an app-facing API for reshaping a Store.
+     */
+    @action
+    setFields(fields: Array<string | FieldSpec | Field>) {
+        this.fields = this.parseFields(fields, this._fieldDefaults);
+        this._fieldMap = this.createFieldMap();
+        this._dataDefaults = this.createDataDefaults();
+        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+
+        this.resetRecords();
+    }
+
     /** Get a specific Field by name.*/
     getField(name: string): Field {
-        return this.fields.find(it => it.name === name);
+        return this._fieldMap.get(name);
     }
 
     get fieldNames(): string[] {

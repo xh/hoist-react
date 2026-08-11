@@ -133,7 +133,7 @@ export class RowCache {
     }
 
     /**
-     * Remove all parent (aggregate/bucket) rows, and null the parent pointers of the retained
+     * Remove all parent (aggregate/bucket/cell) rows, and null the parent pointers of the retained
      * leaves - every pointer is dead once all parents are dropped, and would otherwise pin the
      * dead chains in memory.
      */
@@ -141,7 +141,7 @@ export class RowCache {
         const {rows} = this;
         rows.forEach((row, id) => {
             if (row.isLeaf) {
-                row.parent = null;
+                row.parent = row.pivotParent = null;
             } else {
                 rows.delete(id);
             }
