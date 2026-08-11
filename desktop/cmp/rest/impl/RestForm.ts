@@ -15,7 +15,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import './RestForm.scss';
-import {startCase} from 'lodash';
+import {isArray, startCase} from 'lodash';
 import {restFormField} from './RestFormField';
 
 /**
@@ -26,7 +26,7 @@ export const restForm = hoistCmp.factory({
     model: uses(RestFormModel),
     className: 'xh-rest-form',
 
-    render({model, className, testId}) {
+    render({model, className, formBbar, testId}) {
         const {isAdd, readonly, isOpen, dialogRef} = model;
         if (!isOpen) return null;
 
@@ -39,7 +39,7 @@ export const restForm = hoistCmp.factory({
             isCloseButtonShown: false,
             item: panel({
                 item: formDisplay({testId}),
-                bbar: tbar(),
+                bbar: isArray(formBbar) ? toolbar(formBbar) : (formBbar ?? tbar()),
                 ref: dialogRef,
                 mask: 'onLoad'
             })
@@ -76,22 +76,15 @@ const tbar = hoistCmp.factory<RestFormModel>(({model}) => {
         }),
         filler(),
         button({
-            text: 'Close',
-            onClick: () => model.confirmClose()
+            text: formModel.readonly ? 'Close' : 'Cancel',
+            onClick: () => model.close()
         }),
         button({
-            text: 'Revert',
-            icon: Icon.reset(),
-            onClick: () => formModel.reset(),
-            disabled: !formModel.isDirty,
-            omit: formModel.readonly
-        }),
-        button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
             outlined: true,
-            disabled: !model.isAdd && !formModel.isDirty,
+            disabled: (!model.isAdd && !formModel.isDirty) || !formModel.isValid,
             onClick: () => model.validateAndSaveAsync(),
             omit: formModel.readonly
         })

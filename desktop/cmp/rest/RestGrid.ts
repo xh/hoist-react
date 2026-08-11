@@ -39,6 +39,14 @@ export interface RestGridProps
     formClassName?: string;
 
     /**
+     * A custom toolbar for the record editor form. Note that this supersedes the form's default
+     * toolbar, including its record actions and Cancel/Save buttons. Rendered within the form,
+     * so components created by element factories will resolve its `RestFormModel` from context.
+     * If specified as an array, will be passed as children to a Toolbar component.
+     */
+    formBbar?: ReactNode;
+
+    /**
      * Mask to render on this Component. Defaults to true, which renders a standard Hoist mask.
      * Set to null/false for no mask, or pass a fully customized mask element.
      */
@@ -76,6 +84,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
                 mask = true,
                 agOptions,
                 formClassName,
+                formBbar,
                 testId,
                 ...restProps
             } = props,
@@ -92,6 +101,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
             restForm({
                 model: formModel,
                 className: formClassName,
+                formBbar,
                 testId: getTestId(testId, 'form')
             })
         );

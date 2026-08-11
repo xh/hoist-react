@@ -196,6 +196,9 @@ class CodeInputModel extends HoistInputModel {
     private editableCompartment = new Compartment();
     private editorContainer: HTMLElement = null;
 
+    // True while pushing the bound value into the editor - such edits are not user input.
+    private syncingFromValue = false;
+
     get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
     }
@@ -306,9 +309,14 @@ class CodeInputModel extends HoistInputModel {
                 run: val => {
                     const {editor} = this;
                     if (editor && editor.state.doc.toString() !== val) {
-                        editor.dispatch({
-                            changes: {from: 0, to: editor.state.doc.length, insert: val ?? ''}
-                        });
+                        this.syncingFromValue = true;
+                        try {
+                            editor.dispatch({
+                                changes: {from: 0, to: editor.state.doc.length, insert: val ?? ''}
+                            });
+                        } finally {
+                            this.syncingFromValue = false;
+                        }
                     }
                 }
             },
@@ -462,7 +470,12 @@ class CodeInputModel extends HoistInputModel {
                 // - Clears custom search results when document changes.
                 EditorView.updateListener.of((update: ViewUpdate) => {
                     if (update.docChanged) {
-                        this.noteValueChange(update.state.doc.toString());
+                        // Skip write-back when syncing the bound value in: with `autoFormat` the
+                        // synced text is reformatted, and committing it would leave the field
+                        // dirty against its own initial value.
+                        if (!this.syncingFromValue) {
+                            this.noteValueChange(update.state.doc.toString());
+                        }
                         this.clearSearchResults();
                     }
                 }),

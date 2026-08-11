@@ -116,12 +116,9 @@
   versions the editor degrades gracefully.
 * Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based)
   lines - as static groups, or a function of the current document text.
-* Enhanced `RestGrid` editor forms: added a `Revert` button, a confirmation prompt when closing
-  with unsaved changes, and JSON validation for `json`-type fields (incl. those dynamically typed
-  via `typeField`). Streamlined the toolbar - `Cancel`/`Close` consolidated, `Save Changes` now
-  `Save`.
-* Added a `RestGridModel.postSaveFn` hook, called after a successful save from the editor form -
-  use to customize post-save behavior, e.g. re-opening the form on the updated record.
+* Added a `RestGrid.formBbar` prop to replace the record editor form's default toolbar.
+* Added JSON validation to `RestGrid` editor forms for `json`-type fields, including those
+  dynamically typed via a `typeField`.
 
 ### 🐞 Bug Fixes
 
@@ -142,10 +139,11 @@
   each one on every aggregate row despite nothing having requested or displayed them.
 * Fixed `SumAggregator`, `MinAggregator`, and `MaxAggregator` mishandling incoming `null` values on
   incremental Cube `View` updates, leaving aggregates disagreeing with a full rebuild.
-* Fixed `FetchService` appending a `(Caused by: ...)` suffix to exceptions flagged `isRoutine` by
-  the server - such exceptions carry a complete, user-facing message of their own.
+* Fixed default display of `Routine` exceptions -- do not display underlying cause.
 * Fixed `isValidJson` failing on blank values - null and empty now defer to `required`, as with
   Hoist's other constraints. Pair with `required` if a value must be present.
+* Fixed `CodeInput` with `autoFormat` committing reformatted text back to its bound value, leaving
+  forms dirty after a reset.
 
 ### ⚙️ Technical
 

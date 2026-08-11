@@ -80,18 +80,6 @@ export class RestFormModel extends HoistModel {
         XH.safeDestroy(this.formModel);
     }
 
-    confirmClose() {
-        if (!this.formModel.isDirty) {
-            this.close();
-            return;
-        }
-
-        XH.confirm({
-            message: 'You have unsaved changes. Are you sure you want to proceed?',
-            onConfirm: () => this.close()
-        });
-    }
-
     @action
     openAdd() {
         this.readonly = false;
@@ -182,10 +170,7 @@ export class RestFormModel extends HoistModel {
             saveFn = () => (isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record));
 
         return saveFn()
-            .then(record => {
-                this.close();
-                this.parent.postSaveFn?.({record, isAdd});
-            })
+            .then(() => this.close())
             .linkTo(this.loadObserver)
             .catchDefault();
     }
