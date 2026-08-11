@@ -32,9 +32,9 @@ export interface CubeFieldSpec extends FieldSpec {
     /**
      * Function to determine if aggregation should be performed at a given level of a query result.
      *
-     * Evaluated when an aggregate row is built and not re-invoked when that row is reused across
-     * view updates (e.g. on changes to child data). Should therefore be a pure function of its
-     * first three arguments, without depending on per-generation {@link AggregationContext} state.
+     * Evaluated when a row is built and re-evaluated on each subsequent query result for rows
+     * that are reused - so may depend on the current {@link AggregationContext} as well as on its
+     * first three args. Values are recomputed for any field whose eligibility changes as a result.
      */
     canAggregateFn?: CanAggregateFn;
 

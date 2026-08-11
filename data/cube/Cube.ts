@@ -14,9 +14,8 @@ import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
 import {Query, QueryConfig} from './Query';
-import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
-import {BucketRow} from './row/BucketRow';
+import {AggregateRow, BucketRow} from './row/ParentRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
@@ -306,13 +305,20 @@ export class Cube extends HoistBase {
         rawData: PlainObject[] | AnyIterable<PlainObject>,
         info: PlainObject = {}
     ): Promise<void> {
+        const {store} = this,
+            prevRecords = store._filtered;
         if (isArray(rawData)) {
-            this.store.loadData(rawData);
+            store.loadData(rawData);
         } else {
-            await this.store.loadDataAsync(rawData);
+            await store.loadDataAsync(rawData);
         }
         this.setInfo(info);
-        await forEachAsync(this._connectedViews, v => v.noteCubeLoaded());
+
+        // No-change loads need only an info/timestamp sync on views - skip row regeneration.
+        const unchanged = store._filtered === prevRecords;
+        await forEachAsync(this._connectedViews, v =>
+            unchanged ? v.noteCubeUpdated(null) : v.noteCubeLoaded()
+        );
     }
 
     /**

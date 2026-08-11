@@ -527,9 +527,15 @@ export class Store
             ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
             : null;
 
-        const records = this.createRecords(rawData, null);
-        this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
+        const {_committed, _current} = this,
+            records = this.createRecords(rawData, null),
+            updated = _committed.withNewRecords(records);
+
+        // Skip downstream work on no-change reloads, unless local mods are being discarded.
+        if (updated !== _committed || updated !== _current) {
+            this._committed = this._current = updated;
+            this.rebuildFiltered();
+        }
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -571,8 +577,12 @@ export class Store
 
         runInAction(() => {
             this.summaryRecords = null;
-            this._committed = this._current = this._committed.withNewRecords(recordMap);
-            this.rebuildFiltered();
+            const {_committed, _current} = this,
+                updated = _committed.withNewRecords(recordMap);
+            if (updated !== _committed || updated !== _current) {
+                this._committed = this._current = updated;
+                this.rebuildFiltered();
+            }
             this.lastLoaded = this.lastUpdated = Date.now();
         });
     }
@@ -1168,11 +1178,8 @@ export class Store
      */
     getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord {
         if (isNil(id)) return null;
-        const summaryRecord = this.summaryRecords?.find(it => it.id === id);
-        if (summaryRecord) return summaryRecord;
-
         const rs = respectFilter ? this._filtered : this._current;
-        return rs.getById(id);
+        return rs.getById(id) ?? this.summaryRecords?.find(it => it.id === id);
     }
 
     /**
@@ -1308,7 +1315,7 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter);
+        this._filtered = this._current.withFilter(this.filter, this._filtered);
     }
 
     //---------------------------------------
@@ -1372,7 +1379,7 @@ export class Store
     ): StoreRecord {
         const refMode = this.reuseRecords === true;
         if (!refMode && digest == null) return null;
-        const cached = this._committed?.recordMap.get(id);
+        const cached = this._committed?.getById(id);
         return cached &&
             (refMode ? cached.raw === raw : cached.digest === digest) &&
             this.positionUnchanged(cached.parent, parent)

@@ -495,6 +495,14 @@ export class DashCanvasModel
      * Note this applies full replace (not patch) semantics, at both levels: views not present in
      * the given state are removed, and entries fully replace each matched view's state - omitted
      * properties (e.g. `title`, `state`) reset to their defaults.
+     *
+     * Views are matched to incoming state by their generated ids, which encode position (spec id
+     * plus instance index - see {@link DashModel.genViewId}), not identity. Matched view models
+     * are reused rather than rebuilt: their content components stay mounted and any models owned
+     * by that content remain live, with the incoming state pushed into them. This holds for any
+     * state loaded here, including state saved from a logically different dashboard (e.g. a
+     * saved-view switch driven by a ViewManager-linked provider). Call {@link clear} immediately
+     * beforehand to instead force a full teardown and remount of all views.
      */
     @action
     loadState(state: DashCanvasItemState[]) {

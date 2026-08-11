@@ -12,6 +12,10 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
+* Requires `@xh/hoist-dev-utils >= 14.0`, the build-tooling release paired and tested with v87.
+  It ships the matching `@types/react` 19.x and adds support for pnpm as the app package manager
+  (optional - yarn classic and npm remain fully supported). See
+  [Version Compatibility](docs/version-compatibility.md).
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
      either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 * Leaf rows published by Cube `View`s now use their source cube record's id as their row/record
@@ -22,10 +26,6 @@
 * New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
   important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
   `getCubeLeaves(row)`.
-* `CubeField.canAggregateFn` is now evaluated only when an aggregate row is built - rows reused
-  across view updates retain their results. Ensure any such function is a pure function of its
-  dimension, value, and applied-dimension arguments, without depending on per-generation
-  `AggregationContext` state.
 * Read `StoreRecord.data` by field name only - enumerating, spreading, or calling `JSON.stringify()`
   on this object does not reliably see default field values. Review any code enumerating `data`
   directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead. This never worked
@@ -94,6 +94,7 @@
       `FetchService` can also share interned values across successive fetches of the same logical
       dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
       known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+    * `Store.loadData()` and `Cube.loadDataAsync` calls have been optimized to skip all downstream work.
 
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
@@ -129,10 +130,16 @@
 * Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
   `rowData` pinned the record array from the last load into an empty grid, along with every
   `StoreRecord`, `data`, and retained `raw` object in it.
+* Fixed `Query.clone()` retaining dimensions dropped by a dimension-only update within its `fields`.
+  Cube `View`s changing dimensions via `updateQuery()` accumulated these stale fields, aggregating
+  each one on every aggregate row despite nothing having requested or displayed them.
+* Fixed `SumAggregator`, `MinAggregator`, and `MaxAggregator` mishandling incoming `null` values on
+  incremental Cube `View` updates, leaving aggregates disagreeing with a full rebuild.
 * Fixed `FetchService` appending a `(Caused by: ...)` suffix to exceptions flagged `isRoutine` by
   the server - such exceptions carry a complete, user-facing message of their own.
 * Fixed `isValidJson` failing on blank values - null and empty now defer to `required`, as with
   Hoist's other constraints. Pair with `required` if a value must be present.
+
 
 ### ⚙️ Technical
 
