@@ -116,6 +116,14 @@ export class RecordSet {
         return {update, add, remove};
     }
 
+    /**
+     * As `diffFrom`, but only provided if cheaply derivable (i.e. without a full scan).
+     * Always null for this implementation.
+     */
+    deltaFrom(prev: RecordSet): RecordSetDelta {
+        return null;
+    }
+
     //----------------------------------------------------------
     // Lazy getters
     // Avoid memory allocation and work -- in many cases

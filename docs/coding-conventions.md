@@ -82,8 +82,9 @@ in code reviews or conventions discussions — the tooling handles them:
   `useDefineForClassFields`, `moduleResolution: "bundler"`, ES2022 target
 - **`.stylelintrc.json`** — SCSS linting (if present)
 
-Run `yarn lint` to check all rules. Run `yarn lint:code` for JS/TS only or `yarn lint:styles`
-for SCSS only.
+Run `pnpm lint` to check all rules. Run `pnpm lint:code` for JS/TS only or `pnpm lint:styles`
+for SCSS only. Type-checking is a separate gate — run `pnpm typecheck` (`tsc --noEmit`), which
+reports the TypeScript compiler errors that linting does not.
 
 ## Imports
 

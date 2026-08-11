@@ -1,6 +1,8 @@
-yarn run lint-staged
+pnpm exec lint-staged
 
-# Only run TypeScript compiler if TS/JS/TSX/JSX files or package files are staged
-if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '\.(ts|tsx|js|jsx)$|package\.json$|package-lock\.json$|yarn\.lock$|tsconfig.*\.json$'; then
-  yarn run tsc
+# Only type-check if TS/JS/TSX/JSX files or package files are staged. Uses the `typecheck` script
+# (`tsc --noEmit`) rather than a bare `tsc`, which would emit declarations into build/ as a side
+# effect of the check - this repo's tsconfig sets `composite` + `emitDeclarationOnly`.
+if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '\.(ts|tsx|js|jsx)$|package\.json$|pnpm-(lock|workspace)\.yaml$|tsconfig.*\.json$'; then
+  pnpm typecheck
 fi

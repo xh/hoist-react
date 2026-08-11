@@ -1,0 +1,35 @@
+# pnpm settings (pnpm 11+ reads these from this file, not from a `pnpm` field in package.json).
+# This is a single-package repo - the file exists for settings only, not to define a workspace.
+
+# Dependency build scripts do not run unless reviewed here; unreviewed scripts are a hard error
+# in CI. esbuild (via tsx, which powers the bin/hoist-* CLI tools) is allowed so its platform
+# binary install is guaranteed. The rest are declined: @parcel/watcher (via dev-utils' sass
+# watch-mode support, unused here) has a native build with prebuilt binaries shipped as optional
+# platform deps, browser-tabs-lock (via auth0-spa-js) ships prebuilt dist, and core-js's
+# postinstall only prints a funding message.
+allowBuilds:
+  '@parcel/watcher': false
+  browser-tabs-lock: false
+  core-js: false
+  esbuild: true
+
+# pnpm's minimum-release-age gate refuses freshly published versions as supply-chain protection.
+# Exempt XH's own packages - hoist-dev-utils SNAPSHOTs may be consumed minutes after publish.
+minimumReleaseAgeExclude:
+  - '@xh/*'
+
+# Adding an `overrides` entry for a package that is also a direct dep? Put its version in a
+# `catalog:` entry and point both `package.json` and the override at `catalog:`. pnpm validates a
+# lockfile against the override but `pnpm update` writes the raw package.json specifier, so if the
+# two strings differ, `pnpm update` emits a lockfile that `pnpm install --frozen-lockfile` rejects
+# (ERR_PNPM_OUTDATED_LOCKFILE) - visible only in CI, since a local install with node_modules
+# present skips the check and reports "Already up to date". Note also that an override must name
+# the dep's exact range to dedupe it; restating a broader range does nothing.
+
+# Several transitive deps (react-popper, react-onsenui, react-windowed-select) still declare
+# react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
+# rather than surfacing unmet-peer warnings on every install.
+peerDependencyRules:
+  allowedVersions:
+    react: '19'
+    react-dom: '19'
