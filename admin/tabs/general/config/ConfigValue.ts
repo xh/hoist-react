@@ -37,7 +37,7 @@ export const configValue = hoistCmp.factory<ConfigValueModel>({
     render({model, className}) {
         return model.usesTabs
             ? tabContainer({model: model.tabContainerModel, className})
-            : valueFormField(model.valueType, model.height, model.defaultValue, className);
+            : valueFormField(model.valueType, model.height, className);
     }
 });
 
@@ -134,7 +134,7 @@ class ConfigValueModel extends HoistModel {
                 ? span({className: 'xh-config-value__overridden', item: 'Database'})
                 : 'Database',
             icon: Icon.edit(),
-            content: () => valueFormField(valueType, height, defaultValue)
+            content: () => valueFormField(valueType, height)
         });
 
         // Defaults - the typedClass defaults as declared in code.
@@ -176,29 +176,23 @@ class ConfigValueModel extends HoistModel {
 //------------------------
 // Label-less FormField for `value`, bound via the enclosing Form context for standard validation
 // display and read-only rendering. The plain branch passes `className` for the full-width rule.
-function valueFormField(
-    valueType: string,
-    height: number,
-    defaults?: any,
-    className?: string
-): ReactElement {
+function valueFormField(valueType: string, height: number, className?: string): ReactElement {
     return formField({
         field: 'value',
         label: null,
         className: classNames('xh-config-value__field', className),
-        readonlyRenderer: v => readonlyValue(valueType, v, height, defaults),
-        item: valueInput(valueType, height, defaults)
+        readonlyRenderer: v => readonlyValue(valueType, v, height),
+        item: valueInput(valueType, height)
     });
 }
 
 // Editable input for a config value, by type. Bound by the enclosing FormField.
-function valueInput(valueType: string, height: number, defaults?: any): ReactElement {
+function valueInput(valueType: string, height: number): ReactElement {
     switch (valueType) {
         case 'json':
             return jsonInput({
                 autoFormat: true,
                 enableSearch: true,
-                lineStyles: defaults != null ? text => dbValueLineStyles(text, defaults) : null,
                 height
             });
         case 'bool':
@@ -268,18 +262,6 @@ function mutedLineStyles(text: string, highlightLines: number[]): CodeInputLineS
         if (!changed.has(i)) muted.push(i);
     }
     return [{lines: muted, className: 'xh-config-value__muted'}];
-}
-
-// Muting styles for the editable DB editor, re-evaluated as the document changes. Muting only
-// applies while the text is in canonical autoFormat form, where the line mapping is reliable.
-function dbValueLineStyles(text: string, defaults: any): CodeInputLineStyles[] {
-    const parsed = parseValue(text);
-    if (!isPlainObject(parsed)) return [];
-    const {text: canonical, highlightLines} = buildResolvedJson(
-        parsed,
-        changedKeysFromDefaults(parsed, defaults)
-    );
-    return text === canonical ? mutedLineStyles(text, highlightLines) : [];
 }
 
 function parseValue(v: any): any {
