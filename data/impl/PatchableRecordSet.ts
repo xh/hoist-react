@@ -58,6 +58,7 @@ export class PatchableRecordSet {
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
     private _filterSource: PatchableRecordSet = null; // source a filtered projection was built from
+    private _filter: Filter = null; // filter a projection was built with
 
     constructor(
         store: Store,
@@ -258,20 +259,14 @@ export class PatchableRecordSet {
         return this.isEqual(target) ? target : this;
     }
 
-    /**
-     * Filtered projection of this RecordSet, derived incrementally when possible: each
-     * projection is stamped with the source it was built from, and when this instance still
-     * shares that source's base (and both states are flat - hierarchy-aware marking needs the
-     * full pass), `prevFiltered` is patched with the (typically small) derived delta rather
-     * than re-testing every record. Changes that don't touch the filtered set at all return
-     * `prevFiltered` itself - its older stamp deliberately retained, keeping later diffs
-     * cumulative. Any other lineage falls through to the full pass.
-     */
     withFilter(filter: Filter, prevFiltered?: PatchableRecordSet): PatchableRecordSet {
         if (!filter) return this;
 
         const ret = this.withFilterIncremental(filter, prevFiltered) ?? this.withFilterFull(filter);
-        if (ret !== prevFiltered) ret._filterSource = this;
+        if (ret !== prevFiltered) {
+            ret._filterSource = this;
+            ret._filter = filter;
+        }
         return ret;
     }
 
@@ -453,6 +448,7 @@ export class PatchableRecordSet {
     ): PatchableRecordSet {
         if (
             !prevFiltered ||
+            !this.isSameFilter(filter, prevFiltered._filter) ||
             this.count !== this.rootCount ||
             prevFiltered.count !== prevFiltered.rootCount
         ) {
@@ -522,6 +518,10 @@ export class PatchableRecordSet {
                   rootCount
               )
             : new PatchableRecordSet(store, base, patch, count, rootCount);
+    }
+
+    private isSameFilter(f1: Filter, f2: Filter): boolean {
+        return f1 === f2 || f1?.equals(f2);
     }
 
     /** Max patch size as a fraction of base - see `experimental.patchRecordsMaxRatio`. */
