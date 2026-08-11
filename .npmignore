@@ -9,6 +9,8 @@ scripts
 
 # Development configuration
 *.log
+*.spec.ts
+*.spec.d.ts
 *.tgz
 .DS_Store
 .editorconfig

@@ -293,8 +293,9 @@ export interface ColumnSpec {
     chooserName?: string;
 
     /**
-     * Group name to display within the column chooser component.  Chooser will automatically group
-     * its "available columns" grid if any cols provide.
+     * Group name for organizing this column within the column chooser's Column Library panel
+     * (see {@link ColChooserConfig.columnLibrary}). Not used by the chooser's main list, which
+     * groups by actual {@link ColumnGroup} structure instead.
      */
     chooserGroup?: string;
 
@@ -779,7 +780,10 @@ export class Column {
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
-                lockVisible: !this.hideable || !gridModel.colChooserModel || XH.isMobileApp,
+                lockVisible:
+                    !this.hideable ||
+                    (!gridModel.colChooserModel && !gridModel.colChooserPanelModel) ||
+                    XH.isMobileApp,
                 headerComponentParams: {xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
