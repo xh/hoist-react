@@ -109,12 +109,16 @@
   instance-config override now present a tabbed value editor over the resolved, instance-override,
   database, and code-default views of their value, muting entries that match the declared
   defaults. The grid's Value column shows the effective value - resolved and/or honoring any
-  instance override. Requires hoist-core v41+, but falls back to the standard editor against
-  older versions.
+  instance override. The resolved and code-default views require hoist-core v41+; against earlier
+  versions the editor degrades gracefully.
 * Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based)
   lines - as static groups, or a function of the current document text.
-* General improvements to `RestGrid` editor forms: improved UI and validation, as well as a new
-  `postSaveFn` hook
+* Enhanced `RestGrid` editor forms: added a `Revert` button, a confirmation prompt when closing
+  with unsaved changes, and JSON validation for `json`-type fields (incl. those dynamically typed
+  via `typeField`). Streamlined the toolbar - `Cancel`/`Close` consolidated, `Save Changes` now
+  `Save`.
+* Added a `RestGridModel.postSaveFn` hook, called after a successful save from the editor form -
+  use to customize post-save behavior, e.g. re-opening the form on the updated record.
 
 ### 🐞 Bug Fixes
 
@@ -139,7 +143,6 @@
   the server - such exceptions carry a complete, user-facing message of their own.
 * Fixed `isValidJson` failing on blank values - null and empty now defer to `required`, as with
   Hoist's other constraints. Pair with `required` if a value must be present.
-
 
 ### ⚙️ Technical
 
