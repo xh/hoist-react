@@ -116,6 +116,16 @@
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the
   minimum amount required.
+* Enhanced the Admin Console config editor: JSON configs backed by a typed class and/or an active
+  instance-config override now present a tabbed value editor over the resolved, instance-override,
+  database, and code-default views of their value, muting resolved entries not explicitly set. The
+  grid's Value column shows the effective value - resolved and/or honoring any instance override.
+  Requires hoist-core v41+; against earlier versions the editor degrades gracefully.
+* Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based)
+  lines - as static groups, or a function of the current document text.
+* Added a `RestGrid.formBbar` prop to replace the record editor form's default toolbar.
+* Added JSON validation to `RestGrid` editor forms for `json`-type fields, including those
+  dynamically typed via a `typeField`.
 * Added a new desktop Column Chooser, supporting drag-and-drop re-ordering of columns.
     * Presents columns in true grid order across three zones - pinned-left, unpinned, and
       pinned-right. Drag within or across zones to reorder, pin, and unpin.
@@ -161,6 +171,11 @@
   each one on every aggregate row despite nothing having requested or displayed them.
 * Fixed `SumAggregator`, `MinAggregator`, and `MaxAggregator` mishandling incoming `null` values on
   incremental Cube `View` updates, leaving aggregates disagreeing with a full rebuild.
+* Fixed default display of `Routine` exceptions -- do not display underlying cause.
+* Fixed `isValidJson` failing on blank values - null and empty now defer to `required`, as with
+  Hoist's other constraints. Pair with `required` if a value must be present.
+* Fixed `CodeInput` with `autoFormat` committing reformatted text back to its bound value, leaving
+  forms dirty after a reset.
 
 ### ⚙️ Technical
 
