@@ -73,10 +73,14 @@ jobs:
           with:
               version: ${{ inputs.version }}
 
+        # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
+        # snapshots publish from develop rather than pnpm's expected master/main (which prompts
+        # interactively, hanging a non-TTY runner), and the shallow checkout above reads as
+        # out-of-date against the remote.
         - name: Publish snapshot to npm
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          run: npm publish --tag next
+          run: pnpm publish --no-git-checks --tag next
 
         - name: Write job summary
           # Best-effort only - a summary glitch must never fail an otherwise-good publish.
@@ -90,6 +94,8 @@ jobs:
                 echo "Version: [\`$SNAPSHOT_VERSION\`](https://www.npmjs.com/package/@xh/hoist/v/$SNAPSHOT_VERSION)"
 
                 # Pack stats are a nice-to-have - skip the table silently if anything throws.
+                # Deliberately `npm pack`, not `pnpm pack`: pnpm's --json output is a different
+                # shape and reports no entryCount / size / unpackedSize.
                 if STATS=$(npm pack --dry-run --json 2>/dev/null | node -e "
                     const [p] = JSON.parse(require('fs').readFileSync(0, 'utf8'));
                     const mb = b => (b / 1048576).toFixed(1) + ' MB';

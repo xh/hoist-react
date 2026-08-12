@@ -82,11 +82,21 @@ jobs:
         - name: Lint
           run: pnpm lint:all
 
+        # Note the version is passed positionally. The legacy `--new-version` flag is no longer
+        # recognized by npm/pnpm and warns as an unknown config - it only appeared to work because
+        # the value fell through to the positional arg. If a future npm consumed it as the flag's
+        # value instead, `version` would run with no args, silently leave package.json untouched,
+        # and publish a SNAPSHOT build as a release.
         - name: Set release version in package.json
           env:
               VERSION: ${{ inputs.version }}
-          run: npm version --no-git-tag-version --new-version "$VERSION"
+          run: pnpm version --no-git-tag-version "$VERSION"
 
+        # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
+        # the version bump above leaves the working tree dirty, and hotfix releases run from a
+        # branch other than master/main (which prompts interactively, hanging a non-TTY runner).
+        # Release safety is enforced instead by the job-level `if:` guard and the
+        # validate-release-version action above.
         - name: Publish release to npm
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -96,7 +106,7 @@ jobs:
               if [ "$IS_HOTFIX" = "true" ]; then
                   TAG_ARGS=(--tag hotfix)
               fi
-              npm publish "${TAG_ARGS[@]}"
+              pnpm publish --no-git-checks "${TAG_ARGS[@]}"
 
         # Note: The tag intentionally points to a commit where package.json still has the
         # SNAPSHOT version. We chose not to commit the version change back to the repo to
@@ -123,6 +133,8 @@ jobs:
                 echo "Version: [\`$VERSION\`](https://www.npmjs.com/package/@xh/hoist/v/$VERSION)"
 
                 # Pack stats are a nice-to-have - skip the table silently if anything throws.
+                # Deliberately `npm pack`, not `pnpm pack`: pnpm's --json output is a different
+                # shape and reports no entryCount / size / unpackedSize.
                 if STATS=$(npm pack --dry-run --json 2>/dev/null | node -e "
                     const [p] = JSON.parse(require('fs').readFileSync(0, 'utf8'));
                     const mb = b => (b / 1048576).toFixed(1) + ' MB';
