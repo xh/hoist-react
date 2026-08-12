@@ -80,6 +80,22 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableTooltips?: boolean;
 
     /**
+     * True to enforce that the control's value is always present in the current `options`.
+     * When either the value or the `options` list changes, any selected value not found in
+     * `options` is automatically removed - cleared to `emptyValue`, or filtered out of the
+     * array when `enableMulti` is true.
+     *
+     * Useful to avoid stale selections when options are reloaded, replacing app-level reactions
+     * that manually reconcile the value against the options.
+     *
+     * Not supported with `enableCreate` or `queryFn`, where values may legitimately fall outside
+     * `options` (will throw if combined). Note also that a value set before `options` are loaded
+     * will be removed - do not use when relying on `generateOptionFn` to render not-yet-loaded
+     * values.
+     */
+    enforceValueInOptions?: boolean;
+
+    /**
      * True to use react-windowed-select for improved performance on large option lists.
      * See https://github.com/jacobworrel/react-windowed-select/.
      *
@@ -312,6 +328,18 @@ class SelectInputModel extends HoistInputModel {
             },
             fireImmediately: true
         });
+
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
     }
 
     reactSelectRef = createObservableRef<any>();
@@ -471,6 +499,20 @@ class SelectInputModel extends HoistInputModel {
 
         // Value not among options - let the app generate an option for it, else synthesize one.
         return this.componentProps.generateOptionFn?.(value) ?? this.valueToOption(value);
+    }
+
+    // Enforce `enforceValueInOptions` - drop any current value not present in internalOptions.
+    private pruneValueToOptions() {
+        const {externalValue, multiMode, emptyValue} = this;
+        if (isNil(externalValue) || isEqual(externalValue, emptyValue)) return;
+
+        if (multiMode) {
+            const curr = castArray(externalValue),
+                keptOpts = curr.map(v => this.findOption(v, false)).filter(Boolean);
+            if (keptOpts.length !== curr.length) this.noteValueChange(keptOpts);
+        } else if (!this.findOption(externalValue, false)) {
+            this.noteValueChange(null);
+        }
     }
 
     override toExternal(internal) {

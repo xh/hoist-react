@@ -57,6 +57,21 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableFullscreen?: boolean;
 
     /**
+     * True to enforce that the control's value is always present in the current `options`.
+     * When either the value or the `options` list changes, any selected value not found in
+     * `options` is automatically removed (cleared to null).
+     *
+     * Useful to avoid stale selections when options are reloaded, replacing app-level reactions
+     * that manually reconcile the value against the options.
+     *
+     * Not supported with `enableCreate` or `queryFn`, where values may legitimately fall outside
+     * `options` (will throw if combined). Note also that a value set before `options` are loaded
+     * will be removed - do not use when relying on `generateOptionFn` to render not-yet-loaded
+     * values.
+     */
+    enforceValueInOptions?: boolean;
+
+    /**
      * Optional override for fullscreen z-index. Useful for enabling fullscreen from
      * within components that have a higher z-index.
      */
@@ -251,9 +266,28 @@ class SelectInputModel extends HoistInputModel {
             fireImmediately: true
         });
 
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
+
         if (this.fullscreenMode) {
             this.addReaction(this.fullscreenReaction());
         }
+    }
+
+    // Enforce `enforceValueInOptions` - clear any current value not present in internalOptions.
+    private pruneValueToOptions() {
+        const {externalValue} = this;
+        if (isNil(externalValue)) return;
+        if (!this.findOption(externalValue, false)) this.noteValueChange(null);
     }
 
     reactSelectRef = createObservableRef<any>();
