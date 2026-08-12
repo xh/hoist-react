@@ -10,7 +10,7 @@ import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -27,11 +27,13 @@ import {
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {
     colChooser as desktopColChooser,
+    colChooserPanel as desktopColChooserPanel,
     gridFilterDialog,
     ModalSupportModel,
     DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
+import type {ColChooserPanelModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserPanelModel';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
@@ -47,7 +49,18 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {
+    compact,
+    debounce,
+    isBoolean,
+    isEmpty,
+    isEqual,
+    isNil,
+    max,
+    maxBy,
+    merge,
+    omitBy
+} from 'lodash';
 import {type MouseEvent} from 'react';
 import {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -104,6 +117,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 treeStyle,
                 highlightRowOnClick,
                 colChooserModel,
+                colChooserPanelModel,
                 filterModel,
                 enableFullWidthScroll
             } = model,
@@ -121,25 +135,38 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
+        const gridContainer = container({
+            className,
+            items: [
+                agGrid({
+                    model: model.agGridModel,
+                    ...getLayoutProps(props),
+                    ...impl.agOptions
+                }),
+                gridHScrollbar({
+                    omit: !enableFullWidthScroll,
+                    gridLocalModel: impl
+                })
+            ],
+            testId,
+            onKeyDown: impl.onKeyDown,
+            onMouseDown: impl.onViewMouseDown,
+            ref: composeRefs(impl.viewRef, model.viewRef, ref)
+        });
+
+        // Safe to use the desktop component unconditionally - GridModel never creates this model
+        // on mobile.
+        let content = gridContainer;
+        if (colChooserPanelModel) {
+            const chooser = desktopColChooserPanel({model: colChooserPanelModel}),
+                {side} = colChooserPanelModel as ColChooserPanelModel;
+
+            content =
+                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser);
+        }
+
         return fragment(
-            container({
-                className,
-                items: [
-                    agGrid({
-                        model: model.agGridModel,
-                        ...getLayoutProps(props),
-                        ...impl.agOptions
-                    }),
-                    gridHScrollbar({
-                        omit: !enableFullWidthScroll,
-                        gridLocalModel: impl
-                    })
-                ],
-                testId,
-                onKeyDown: impl.onKeyDown,
-                onMouseDown: impl.onViewMouseDown,
-                ref: composeRefs(impl.viewRef, model.viewRef, ref)
-            }),
+            content,
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
             filterModel ? gridFilterDialog({model: filterModel}) : null
         );
@@ -656,33 +683,8 @@ export class GridLocalModel extends HoistModel {
 
     @logWithDebug
     genTransaction(newRs, prevRs) {
-        if (!prevRs) return {add: newRs.list};
-
-        const newList = newRs.list,
-            prevList = prevRs.list;
-
-        let add = [],
-            update = [],
-            remove = [];
-        newList.forEach(rec => {
-            const existing = prevRs.getById(rec.id);
-            if (!existing) {
-                add.push(rec);
-            } else if (existing !== rec) {
-                update.push(rec);
-            }
-        });
-
-        if (newList.length !== prevList.length + add.length) {
-            remove = prevList.filter(rec => !newRs.getById(rec.id));
-        }
-
-        // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
-        const ret: any = {};
-        if (!isEmpty(add)) ret.add = add;
-        if (!isEmpty(update)) ret.update = update;
-        if (!isEmpty(remove)) ret.remove = remove;
-        return ret;
+        // Skip empty props -- ag-grid is not internally optimized
+        return omitBy(newRs.diffFrom(prevRs), isEmpty);
     }
 
     @logWithDebug
@@ -696,6 +698,11 @@ export class GridLocalModel extends HoistModel {
         if (!this.transactionIsEmpty(transaction)) {
             this.logDebug(...this.genTxnLogMsgs(transaction));
             agApi.applyTransaction(transaction);
+        } else if (!prevRs) {
+            // First sync with an empty store yields an empty transaction, but AG Grid must still
+            // be handed rowData to exit its initial loading state - otherwise a grid mounted over
+            // an empty store shows its loading overlay indefinitely instead of `emptyText`.
+            agApi.updateGridOptions({rowData: []});
         }
 
         if (model.externalSort) {

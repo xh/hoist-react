@@ -10,13 +10,13 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {RecordDigest, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {RecordSetDelta} from '../impl/RecordSet';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
 import {Query, QueryConfig} from './Query';
-import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
-import {BucketRow} from './row/BucketRow';
+import {AggregateRow, BucketRow} from './row/ParentRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
@@ -306,13 +306,22 @@ export class Cube extends HoistBase {
         rawData: PlainObject[] | AnyIterable<PlainObject>,
         info: PlainObject = {}
     ): Promise<void> {
+        const {store} = this,
+            prevRecords = store._filtered;
         if (isArray(rawData)) {
-            this.store.loadData(rawData);
+            store.loadData(rawData);
         } else {
-            await this.store.loadDataAsync(rawData);
+            await store.loadDataAsync(rawData);
         }
         this.setInfo(info);
-        await forEachAsync(this._connectedViews, v => v.noteCubeLoaded());
+
+        // Sync views incrementally on no-change loads and cheaply derivable deltas - see deltaFrom.
+        const {_filtered} = store,
+            unchanged = _filtered === prevRecords,
+            delta = unchanged ? null : _filtered.deltaFrom(prevRecords);
+        await forEachAsync(this._connectedViews, v =>
+            unchanged || delta ? v.noteCubeUpdated(delta) : v.noteCubeLoaded()
+        );
     }
 
     /**
@@ -339,7 +348,9 @@ export class Cube extends HoistBase {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
-            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+            await forEachAsync(this._connectedViews, v =>
+                v.noteCubeUpdated(changeLog as RecordSetDelta)
+            );
         }
     }
 
@@ -359,7 +370,9 @@ export class Cube extends HoistBase {
         const changeLog = this.store.modifyRecords(modifications);
 
         if (changeLog) {
-            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+            await forEachAsync(this._connectedViews, v =>
+                v.noteCubeUpdated(changeLog as RecordSetDelta)
+            );
         }
     }
 

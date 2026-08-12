@@ -224,8 +224,9 @@ export function stringExcludes(...excludeVals: string[]): Constraint<string> {
     };
 }
 
-/** Validate that a value is JSON. */
+/** Validate that a value is JSON. Note that null or empty values are considered valid. */
 export const isValidJson: Constraint = ({value, displayName}) => {
+    if (isNil(value) || (isString(value) && value.trim().length === 0)) return null;
     try {
         JSON.parse(value);
     } catch {

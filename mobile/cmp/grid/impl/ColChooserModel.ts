@@ -78,6 +78,10 @@ export class ColChooserModel extends HoistModel implements IColChooserModel {
         this.isOpen = false;
     }
 
+    toggle() {
+        this.isOpen ? this.close() : this.open();
+    }
+
     @action
     updatePinnedColumn() {
         // Loop through and, if applicable, pin the first

@@ -7,7 +7,7 @@
 * Requires `hoist-core >= 40.4.0` for the `ViewManager` group and bulk-editing APIs - the new
   `xhView/renameGroup` and `xhView/bulkUpdateInfo` endpoints. Group renames and bulk view edits
   will fail against earlier servers.
-* Hoist v87 updates to React 19. Apps may require minor adjustments and should be tested carefully.
+* Hoist v87 updates to React 19. Apps may require minor adjustments - test carefully.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
     * Both desktop and mobile `Popover` implementations now render on Floating UI, rather than
@@ -15,8 +15,12 @@
       for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
       any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
     * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
+* Requires `@xh/hoist-dev-utils >= 14.0`, the build-tooling release paired and tested with v87.
+  It ships the matching `@types/react` 19.x and adds support for pnpm as the app package manager
+  (optional - yarn classic and npm remain fully supported). See
+  [Version Compatibility](docs/version-compatibility.md).
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
-     either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
 * Leaf rows published by Cube `View`s now use their source cube record's id as their row/record
   id, rather than a generated id encoding the row's full dimension path. Review any code that
   parses leaf row ids - aggregate and bucket row ids are unchanged. `Store.idEncodesTreePath` may
@@ -25,10 +29,6 @@
 * New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
   important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
   `getCubeLeaves(row)`.
-* `CubeField.canAggregateFn` is now evaluated only when an aggregate row is built - rows reused
-  across view updates retain their results. Ensure any such function is a pure function of its
-  dimension, value, and applied-dimension arguments, without depending on per-generation
-  `AggregationContext` state.
 * Read `StoreRecord.data` by field name only - enumerating, spreading, or calling `JSON.stringify()`
   on this object does not reliably see default field values. Review any code enumerating `data`
   directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead. This never worked
@@ -37,6 +37,17 @@
   `ViewManagerModel` or `DashViewModel`, ensuring a software release does not add columns to views
   users have curated and named. They remain available via the column chooser. Set the new
   `GridModelPersistOptions.hideNewColumns` config to `false` to restore the prior behavior.
+* The desktop grid column chooser has been re-implemented (see New Features below). Its UX has
+  changed substantially and should be reviewed.
+    * Apps that register an explicit list of ag-Grid modules (rather than `AllCommunityModule`) must
+      add `RowDragModule` - the chooser's drag-and-drop silently will not work without it.
+    * `Column.chooserGroup` now groups columns only within the new, opt-in Column Library. Enable
+      `colChooserModel: {columnLibrary: true}` to retain a grouped presentation of hidden columns.
+    * Custom app styling that targeted the chooser's former `LeftRightChooser`-based DOM must be
+      updated - the chooser now renders its own grids and CSS classes.
+* `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
+  rather than their ids - removed records cannot be resolved against the Store after the fact,
+  making the records themselves the more useful report. Read `record.id` where ids are needed.
 
 ### 🎁 New Features
 
@@ -97,6 +108,7 @@
       `FetchService` can also share interned values across successive fetches of the same logical
       dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
       known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+    * `Store.loadData()` and `Cube.loadDataAsync` calls have been optimized to skip all downstream work.
 
 * Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
   content is controlled by the new `--xh-badge-gap` CSS variable.
@@ -107,6 +119,41 @@
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the
   minimum amount required.
+* Enhanced the Admin Console config editor: JSON configs backed by a typed class and/or an active
+  instance-config override now present a tabbed value editor over the resolved, instance-override,
+  database, and code-default views of their value, muting resolved entries not explicitly set. The
+  grid's Value column shows the effective value - resolved and/or honoring any instance override.
+  Requires hoist-core v41+; against earlier versions the editor degrades gracefully.
+* Added a `CodeInput.lineStyles` prop for applying custom CSS class(es) to specific (1-based)
+  lines - as static groups, or a function of the current document text.
+* Added a `RestGrid.formBbar` prop to replace the record editor form's default toolbar.
+* Added JSON validation to `RestGrid` editor forms for `json`-type fields, including those
+  dynamically typed via a `typeField`.
+* Added a new desktop Column Chooser, supporting drag-and-drop re-ordering of columns.
+    * Presents columns in true grid order across three zones - pinned-left, unpinned, and
+      pinned-right. Drag within or across zones to reorder, pin, and unpin.
+    * Supports toggling visibility via checkbox, double-click, or the space key.
+    * Drags multiple selected rows, or an entire `ColumnGroup` row, in a single gesture.
+    * Respects `hideable`, `movable`, and `lockColumnGroups` - drops that would split a locked group
+      clamp to the nearest legal position, and refused drags explain themselves in the drag ghost.
+    * Adds an optional Column Library via `ColChooserConfig.columnLibrary` (customizable with
+      `ColLibraryConfig`) - a docked list of hidden columns grouped by `Column.chooserGroup`. Drag a
+      column out to show and position it; drag one in to hide it.
+    * Adds a new docked side panel presentation option that stays open alongside the grid, always
+      auto-committing. Enable via the new `GridConfig.colChooserPanelModel` config
+      (`ColChooserPanelConfig`) and open with `GridModel.showColChooserPanel()`, the new
+      `colChooserPanel` context-menu token, or a `colChooserButton` with `target: 'panel'`.
+    * Adds a `target` prop to `ColChooserButton` to select the presentation - `'popover'` (default),
+      `'dialog'`, or `'panel'`.
+    * Surfaces column descriptions via an on-demand info tooltip.
+    * Supports toggling display of column groups and the Column Library, persisted as a
+      browser-local user preference and live-synced across every chooser in the app.
+    * Protects pending edits in deferred-commit mode (`commitOnChange: false`) - dismissing the
+      chooser with unsaved changes prompts before discarding them, as does an external column state
+      change.
+
+* Added `GridModel.isColumnHideable()` and `GridModel.isColumnMovable()` to report whether the user
+  is permitted to hide or reorder a given column.
 * `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus in the
   ViewManager menu and as expandable tree grids in the Manage dialog. Groups and views support
   drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades
@@ -140,6 +187,16 @@
 * Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
   `rowData` pinned the record array from the last load into an empty grid, along with every
   `StoreRecord`, `data`, and retained `raw` object in it.
+* Fixed `Query.clone()` retaining dimensions dropped by a dimension-only update within its `fields`.
+  Cube `View`s changing dimensions via `updateQuery()` accumulated these stale fields, aggregating
+  each one on every aggregate row despite nothing having requested or displayed them.
+* Fixed `SumAggregator`, `MinAggregator`, and `MaxAggregator` mishandling incoming `null` values on
+  incremental Cube `View` updates, leaving aggregates disagreeing with a full rebuild.
+* Fixed default display of `Routine` exceptions -- do not display underlying cause.
+* Fixed `isValidJson` failing on blank values - null and empty now defer to `required`, as with
+  Hoist's other constraints. Pair with `required` if a value must be present.
+* Fixed `CodeInput` with `autoFormat` committing reformatted text back to its bound value, leaving
+  forms dirty after a reset.
 
 ### ⚙️ Technical
 
@@ -147,6 +204,10 @@
   Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
   (mobile and desktop) so apps require no call-site changes.
 * Applied type adjustments to meet React 19's stricter `@types/react` typing.
+* Optimized `GridModel.getColumn()` and `updateColumnState()` with indexed lookups of leaf columns
+  and column state, replacing recursive tree walks and repeated linear scans.
+* `GridModel.setGroupBy()` now skips its write when the requested `colIds` match the current
+  `groupBy`, avoiding a redundant ag-Grid regroup and column-state reapply on every no-op call.
 * Field XSS protection now preserves the reference identity of string values that sanitization
   does not modify (the common case). Previously every parsed string value was replaced with a
   freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
@@ -154,6 +215,19 @@
 * Added experimental `Store` config `denseRecordThreshold` - the populated (non-default) field
   count at/above which a record's `data` takes its fixed dense shape rather than the sparse form.
   For testing/tuning only - set to e.g. `999` to restore the pre-v87 (all-sparse) behavior.
+* Migrated this repo's own package management from yarn classic to pnpm 11 - `pnpm-lock.yaml`
+  replaces `yarn.lock`, and all scripts, CI, and publish workflows now run on pnpm.
+    * No change is required for apps consuming the published `@xh/hoist` package - pnpm, yarn
+      classic, and npm all remain fully supported. Apps adopting pnpm themselves need
+      `@xh/hoist-dev-utils` v14+ and must declare every package they import directly - see the
+      hoist-dev-utils CHANGELOG for migration guidance.
+    * Developers building against a local hoist-react checkout (`inlineHoist`) now need pnpm to
+      install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`) - the app
+      itself may remain on yarn or npm. Update any `startWithHoist`-style app scripts that run an
+      install within the sibling checkout.
+* Declared several packages this library imports directly but that had resolved only via yarn's
+  flat hoisting of transitive dependencies, most notably `sass-material-colors` (imported by
+  shipped SCSS).
 
 ### ⚙️ Typescript API Adjustments
 
@@ -168,6 +242,18 @@
 * @auth0/auth0-spa-js `2.23 → 2.24`
 * react `18.2 → 19.2`
 * react-window `2.2 → 2.3`
+
+## 86.4.1 - 2026-08-11
+
+### 🐞 Bug Fixes
+
+* Fixed `DashContainer` sizing regression introduced with the golden-layout fork in v86.0.0. CSS
+  padding applied to the container element was incorrectly counted as available layout space,
+  causing dashboard content to render oversized and cut off.
+* Revert swiper library to previous version to address swiping regressions (#4559)
+
+### 📚 Libraries
+* swiper  `14.0 -> 12.1`
 
 ## 86.4.0 - 2026-07-15
 

@@ -7,8 +7,10 @@
 
 import type {StoreRecord} from '@xh/hoist/data';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
+import {isEmpty} from 'lodash';
 import type {BaseRow} from '../row/BaseRow';
 import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
+import type {ParentRow} from '../row/ParentRow';
 import type {View} from '../View';
 
 /**
@@ -22,12 +24,13 @@ import type {View} from '../View';
  * misses and is rebuilt. Reused rows keep their `cubeRowDigest`, letting connected stores -
  * which read that stamp via a View-installed reuse digest - skip record rebuilds for them.
  *
- * Reuse is gated on every input to a row's published data being intrinsic or re-derived. In
- * Views with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly} - and so
- * may read the per-generation AggregationContext - reused aggregate/bucket rows recompute
- * exactly those complex fields in place each generation, with digests bumped only for values
- * that actually changed. Bucket stamps, `lockFn` and `omitFn` are re-derived for all rows on
- * every generation and need no constraint.
+ * Reuse is gated on every input to a row's published data being intrinsic or re-derived. Views
+ * with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly}, or with fields
+ * that define a `canAggregateFn` - both of which may read the per-generation AggregationContext -
+ * have their reused parent rows re-evaluate that fn and recompute exactly the affected fields in
+ * place each generation, with digests bumped only for values that actually changed. Bucket
+ * stamps, `lockFn` and `omitFn` are re-derived for all rows on every generation and need no
+ * constraint.
  *
  * Retention: entries not requested by a generation are retained for potential later reuse - e.g.
  * leaves for records currently excluded by filter, ready should the filter widen again. To bound
@@ -41,7 +44,7 @@ import type {View} from '../View';
 export class RowCache {
     private view: View;
     private rows = new Map<string, BaseRow>();
-    private simpleAggs = false;
+    private recomputeAggs = false;
     private exposedLeaves = false;
     private sweptAsOf: number = null;
 
@@ -86,9 +89,13 @@ export class RowCache {
                     return ret as T;
                 }
             } else if (shallowEqualArrays(ret.children, children)) {
-                if (!this.simpleAggs) {
+                if (this.recomputeAggs) {
+                    const parentRow = ret as ParentRow;
                     this.recomputed++;
-                    if (ret.recomputeComplexAggregates()) this.view.noteRowDataMutated(ret.data);
+                    const force = parentRow.recomputeCanAggregate();
+                    if (parentRow.recomputeAggregatesForContextChange(force)) {
+                        this.view.noteRowDataMutated(parentRow.data);
+                    }
                 }
                 this.reused++;
                 return ret as T;
@@ -103,8 +110,10 @@ export class RowCache {
     }
 
     beginGeneration() {
-        this.simpleAggs = this.view.aggregatorsAreSimple;
-        this.exposedLeaves = this.view.exposesLeaves;
+        const {view} = this;
+        this.recomputeAggs =
+            !view.aggregatorsAreSimple || !isEmpty(view._canAggregateFnFieldsByDepth[0]);
+        this.exposedLeaves = view.exposesLeaves;
         this.reused = this.rebuilt = this.created = this.recomputed = 0;
         this.removed = this.sweepTime = 0;
     }
@@ -123,9 +132,19 @@ export class RowCache {
         this.rows.clear();
     }
 
-    clearAggregates() {
-        this.rows.forEach((row, id) => {
-            if (!row.isLeaf) this.rows.delete(id);
+    /**
+     * Remove all parent (aggregate/bucket) rows, and null the parent pointers of the retained
+     * leaves - every pointer is dead once all parents are dropped, and would otherwise pin the
+     * dead chains in memory.
+     */
+    removeParentRows() {
+        const {rows} = this;
+        rows.forEach((row, id) => {
+            if (row.isLeaf) {
+                row.parent = null;
+            } else {
+                rows.delete(id);
+            }
         });
     }
 

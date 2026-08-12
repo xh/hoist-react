@@ -28,6 +28,7 @@ import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
+    compact,
     defaultsDeep,
     differenceBy,
     first,
@@ -277,11 +278,12 @@ export interface StoreTransaction {
 /**
  * Collection of changes made to a Store's RecordSet. Unlike `StoreTransaction` which is used to
  * specify changes, this object is used to report the actual changes made in a single transaction.
+ * Removed records are as they existed prior to removal - no longer resolvable by id.
  */
 export interface StoreChangeLog {
     update?: StoreRecord[];
     add?: StoreRecord[];
-    remove?: StoreRecordId[];
+    remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
 }
 
@@ -527,9 +529,15 @@ export class Store
             ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
             : null;
 
-        const records = this.createRecords(rawData, null);
-        this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
+        const {_committed, _current} = this,
+            records = this.createRecords(rawData, null),
+            updated = _committed.withNewRecords(records);
+
+        // Skip downstream work on no-change reloads, unless local mods are being discarded.
+        if (updated !== _committed || updated !== _current) {
+            this._committed = this._current = updated;
+            this.rebuildFiltered();
+        }
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -571,8 +579,12 @@ export class Store
 
         runInAction(() => {
             this.summaryRecords = null;
-            this._committed = this._current = this._committed.withNewRecords(recordMap);
-            this.rebuildFiltered();
+            const {_committed, _current} = this,
+                updated = _committed.withNewRecords(recordMap);
+            if (updated !== _committed || updated !== _current) {
+                this._committed = this._current = updated;
+                this.rebuildFiltered();
+            }
             this.lastLoaded = this.lastUpdated = Date.now();
         });
     }
@@ -693,6 +705,12 @@ export class Store
         if (!isEmpty(remove)) rsTransaction.remove = remove;
 
         if (!isEmpty(rsTransaction)) {
+            // Prepare changelog up front - removed records are unresolvable post-removal.
+            const {update, add, remove: removeIds} = rsTransaction;
+            if (update) changeLog.update = update;
+            if (add) changeLog.add = add;
+            if (removeIds) changeLog.remove = compact(removeIds.map(id => this.getById(id)));
+
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
             this._committed = this._committed.withTransaction(rsTransaction);
@@ -711,7 +729,6 @@ export class Store
             }
 
             this.rebuildFiltered();
-            Object.assign(changeLog, rsTransaction);
         }
 
         if (!isEmpty(changeLog)) {
@@ -1168,11 +1185,8 @@ export class Store
      */
     getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord {
         if (isNil(id)) return null;
-        const summaryRecord = this.summaryRecords?.find(it => it.id === id);
-        if (summaryRecord) return summaryRecord;
-
         const rs = respectFilter ? this._filtered : this._current;
-        return rs.getById(id);
+        return rs.getById(id) ?? this.summaryRecords?.find(it => it.id === id);
     }
 
     /**
@@ -1308,7 +1322,7 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter);
+        this._filtered = this._current.withFilter(this.filter, this._filtered);
     }
 
     //---------------------------------------
@@ -1372,7 +1386,7 @@ export class Store
     ): StoreRecord {
         const refMode = this.reuseRecords === true;
         if (!refMode && digest == null) return null;
-        const cached = this._committed?.recordMap.get(id);
+        const cached = this._committed?.getById(id);
         return cached &&
             (refMode ? cached.raw === raw : cached.digest === digest) &&
             this.positionUnchanged(cached.parent, parent)

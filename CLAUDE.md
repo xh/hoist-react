@@ -12,7 +12,7 @@ as `@xh/hoist` and consumed by Hoist application projects. The server-side count
 
 - **Language**: TypeScript
 - **Framework**: React with MobX for reactive state management
-- **Package manager**: Yarn
+- **Package manager**: pnpm (version pinned via the `packageManager` field in `package.json`)
 
 ## Hoist Developer Tools and Documentation
 
@@ -102,12 +102,16 @@ enable it for Claude Code.
 ## Build Commands
 
 ```bash
-yarn install                     # Install dependencies
-yarn lint                        # Lint all code (JS/TS + SCSS)
-yarn lint:code                   # Lint JavaScript/TypeScript only
-yarn lint:styles                 # Lint SCSS only
-npx tsc --noEmit                 # Type check (declarations only, no emit)
+pnpm install                     # Install dependencies
+pnpm lint                        # Lint all code (JS/TS + SCSS)
+pnpm lint:code                   # Lint JavaScript/TypeScript only
+pnpm lint:styles                 # Lint SCSS only
+pnpm typecheck                   # Type check (tsc --noEmit)
 ```
+
+Linting and type-checking are separate concerns, and neither subsumes the other — run both. ESLint
+is configured type-aware, but that only powers its own rules; it never reports TypeScript compiler
+errors, so a genuine type error passes `pnpm lint`. CI runs the two as distinct steps.
 
 This is a library — it has no dev server or standalone build. To run locally, use a wrapper
 application project (e.g., Toolbox) that includes `@xh/hoist` as a dependency.

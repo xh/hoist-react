@@ -6,6 +6,7 @@
  */
 
 import type {HoistModel, HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {PanelConfig} from '@xh/hoist/desktop/cmp/panel';
 import type {
     FilterBindTarget,
     FilterMatchMode,
@@ -181,6 +182,7 @@ export interface IColChooserModel extends HoistModel {
     readonly isOpen: boolean;
     open(): void;
     close(): void;
+    toggle(): void;
 }
 
 /**
@@ -212,7 +214,12 @@ export interface ColChooserConfig {
      */
     autosizeOnCommit?: boolean;
 
-    /** Chooser width for popover and dialog. Desktop only. */
+    /**
+     * Width of the chooser's bucket column - the always-present part, excluding the optional Column
+     * Library (see {@link ColLibraryConfig.libraryWidth}). In the popover and dialog the overlay
+     * sizes to fit this plus the library when shown; in the docked panel it is the initial dock width
+     * (grown by the library width while shown). Desktop only.
+     */
     width?: string | number;
 
     /** Chooser height for popover and dialog. Desktop only. */
@@ -220,6 +227,53 @@ export interface ColChooserConfig {
 
     /** Mode to use when filtering (default 'startWord'). Desktop only. */
     filterMatchMode?: FilterMatchMode;
+
+    /**
+     * Enable the Column Library - a docked panel listing hidden columns (grouped by `chooserGroup`)
+     * that users drag onto the chooser's bucket grids to show, and onto which they drag columns to
+     * hide. When enabled, hidden columns are removed from the buckets by default. Default false.
+     * Pass `true` for defaults, or a {@link ColLibraryConfig} to customize. Desktop only.
+     */
+    columnLibrary?: boolean | ColLibraryConfig;
+}
+
+/**
+ * Configuration for the ColumnChooser's optional Column Library, passed via
+ * {@link ColChooserConfig.columnLibrary}. Desktop only.
+ */
+export interface ColLibraryConfig {
+    /**
+     * Render the library's `chooserGroup` groups collapsed by default (default false). Recommended
+     * for large column sets.
+     */
+    collapseGroups?: boolean;
+
+    /**
+     * Max number of matching columns for a library group to be expanded while the chooser's filter
+     * is active (default 5). Set to 0 to disable.
+     */
+    autoExpandOnFilter?: number;
+
+    /**
+     * Fixed width of the Column Library panel (default 250).
+     */
+    libraryWidth?: number;
+}
+
+/**
+ * Configuration for a docked, non-modal column chooser - the model backing the side-panel chooser
+ * presentation. Passed via the `colChooserPanelModel` config on {@link GridConfig}. Extends
+ * {@link ColChooserConfig}; changes always auto-commit and stay in sync with external column state
+ * (i.e. `commitOnChange` is forced true). Desktop only.
+ */
+export interface ColChooserPanelConfig extends Omit<ColChooserConfig, 'commitOnChange'> {
+    /**
+     * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
+     * horizontally, so `side` is limited to 'left'/'right' (default 'right'). The dock is resize-only
+     * (open/close is driven externally - e.g. a `ColChooserButton` with `target: 'panel'`, or
+     * `GridModel.showColChooserPanel()`), so `collapsible` is omitted.
+     */
+    panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;

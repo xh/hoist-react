@@ -19,18 +19,21 @@ export class AggregationContext {
     /** View being aggregated. */
     view: View;
 
-    /** All records currently meeting the filter for this view.*/
-    filteredRecords: StoreRecord[];
-
     /**
      * Custom aggregators may use to store pre-computed values.  Custom aggregators should
      * take care to appropriately namespace any data stored within this object.
      */
     appData: any;
 
-    constructor(view: View, filteredRecords: StoreRecord[]) {
+    private _records: StoreRecord[] = null;
+
+    /** All records currently meeting the filter for this view. Materialized lazily on first read.*/
+    get filteredRecords(): StoreRecord[] {
+        return (this._records ??= Array.from(this.view._recordMap.values()));
+    }
+
+    constructor(view: View) {
         this.view = view;
-        this.filteredRecords = filteredRecords;
         this.appData = {};
     }
 }
