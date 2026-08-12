@@ -52,8 +52,8 @@ export const manageDialog = hoistCmp.factory({
                     item: hframe(
                         selectorPanel(),
                         panel({
-                            // A sole-selected group row edits its encompassed views in bulk via
-                            // the multi panel - the group itself is renamed via its context menu.
+                            // A sole-selected group row bulk-edits its views via the multi panel -
+                            // the group itself is renamed via its context menu.
                             item: model.selectedGroupRecord
                                 ? viewMultiPanel({defaultViewIcon})
                                 : count == 0 || model.hasGroupRowsSelected
@@ -97,7 +97,6 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
         const dialogModel = useContextModel(ManageDialogModel);
         return vframe({
             className: classNames({
-                // Grays + disables the drag handles while the selection cannot be dragged.
                 'xh-view-manager__manage-dialog__grid--drag-disabled':
                     dialogModel?.isDragDisabled(model)
             }),
@@ -120,7 +119,6 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                                         className: 'ag-group-contracted'
                                     })
                                 },
-                                // Drag-and-drop of views/groups, where supported by the grid+user.
                                 ...dialogModel?.getRowDragAgOptions(model)
                             }
                         })

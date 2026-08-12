@@ -148,8 +148,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     optionRenderer?: (opt: SelectOption) => ReactNode;
 
     /**
-     * Function to render the selected value within the control itself. Called with the option
-     * matching the current value. Defaults to displaying the option's `label`.
+     * Renderer for the selected value within the control itself, called with the option matching
+     * the current value. Defaults to displaying the option's `label`.
      */
     valueRenderer?: (opt: SelectOption) => ReactNode;
 
@@ -559,8 +559,7 @@ class SelectInputModel extends HoistInputModel {
     // Option Rendering
     //----------------------
     formatOptionLabel = (opt, params) => {
-        // Display the standard label string in the value container (context == 'value'), unless
-        // a custom valueRenderer has been provided.
+        // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
             const {valueRenderer} = this.componentProps;
             return valueRenderer ? valueRenderer(opt) : opt.label;

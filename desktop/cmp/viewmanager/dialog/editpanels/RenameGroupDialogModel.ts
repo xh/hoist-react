@@ -23,8 +23,8 @@ import {ManageDialogModel} from '../ManageDialogModel';
 import {confirmGroupMergeIfExistsAsync} from '../Utils';
 
 /**
- * Backing model for the RenameGroupDialog - rename/re-nest a single selected group in place,
- * cascading to all views within it. Opened via the grids' "Rename Group" context-menu item.
+ * Backing model for the RenameGroupDialog - renames the selected group in place, cascading to all
+ * views within it.
  */
 export class RenameGroupDialogModel extends HoistModel {
     parent: ManageDialogModel;
@@ -96,10 +96,7 @@ export class RenameGroupDialogModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    /**
-     * Confirm before renaming a global group - the rename re-groups global views within every
-     * user's menu, not just the current user's.
-     */
+    /** Confirm renaming a global group - it re-groups views within every user's menu. */
     private async confirmGlobalRenameAsync(): Promise<boolean> {
         const {isGlobal, group, parent} = this;
         if (!isGlobal) return true;

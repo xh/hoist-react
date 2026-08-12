@@ -30,8 +30,7 @@ export const renameGroupDialog = hoistCmp.factory({
             if (await model.saveAsync()) model.isRenameDialogOpen = false;
         };
 
-        // Cancelling discards any pending edit - it would otherwise linger in the form and
-        // resurface if the dialog were reopened on the same group.
+        // Discard any pending edit, which would otherwise resurface on reopening.
         const cancel = () => {
             model.reset();
             model.isRenameDialogOpen = false;

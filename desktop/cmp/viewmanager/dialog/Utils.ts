@@ -21,8 +21,7 @@ import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
 
 /**
  * Sentinel value for the explicit "Top Level" option in a group select - distinct from an empty
- * field, which means top level in a single-view edit but "leave each view where it is" in a bulk
- * edit. Normalized to a null group path on save via {@link normalizeGroupValue}.
+ * field, which means "leave each view where it is" in a bulk edit.
  */
 export const TOP_LEVEL_GROUP_VALUE = 'xh-top-level-group';
 
@@ -48,7 +47,7 @@ export function groupValueDisplay(value: string, emphasizeLeaf: boolean = false)
     return path ? groupPathBreadcrumb({path, emphasizeLeaf}) : topLevelLabel();
 }
 
-/** Italic-muted *Top Level* - the standard signal for a value that is not a literal group name. */
+/** Italic-muted *Top Level*, signalling a value that is not a literal group name. */
 export function topLevelLabel(): ReactNode {
     return span({className: 'xh-view-manager__group-path--sentinel', item: 'Top Level'});
 }
@@ -84,10 +83,7 @@ export async function confirmGroupMergeIfExistsAsync(
     });
 }
 
-/**
- * Confirm a bulk visibility change across one or more views, with wording appropriate to the
- * target visibility.
- */
+/** Confirm a bulk visibility change, with wording appropriate to the target visibility. */
 export async function confirmVisibilityChangeAsync(
     vmm: ViewManagerModel,
     views: ViewInfo[],

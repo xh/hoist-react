@@ -104,10 +104,7 @@ export class ManageDialogModel extends HoistModel {
     /** Pending row-drag drop target within one of the grids, for highlighting. */
     @observable.ref private dropTarget: {type: GridType; id: string} = null;
 
-    /**
-     * Row(s)/group currently mid-drag, tagged by originating grid - drives the top-level strip's
-     * armed/hot/blocked display. Cleared on every drag-ending gesture, wherever it ends.
-     */
+    /** Row(s)/group currently mid-drag, tagged by originating grid. */
     @observable.ref private drag: {type: GridType; payload: DragPayload} = null;
 
     /** Reversing action for the most recently applied move, backing the toast's Undo button. */
@@ -137,7 +134,7 @@ export class ManageDialogModel extends HoistModel {
 
     @computed
     get selectedView(): ViewInfo {
-        // Null unless the selection resolves to exactly one view — directly or via a single-view group row
+        // Null unless the selection resolves to exactly one view, directly or via a group row.
         return (
             this.gridModel.selectedRecord?.data.view ??
             (this.selectedViews.length === 1 ? this.selectedViews[0] : null)
@@ -246,9 +243,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Row-drag GridOptions for one of this dialog's grids, applied via the grid's agOptions.
-     * Drops move the dragged views/group immediately - no save step, applied optimistically with
-     * a toast + Undo rather than a confirm. Empty on grids that do not support drag-and-drop.
+     * Row-drag GridOptions for one of this dialog's grids - drops move the dragged views/group
+     * immediately, with no save step. Empty on grids that do not support drag-and-drop.
      * Requires ag-Grid's `RowDragModule` to be registered.
      */
     getRowDragAgOptions(gridModel: GridModel): GridOptions {
@@ -257,8 +253,8 @@ export class ManageDialogModel extends HoistModel {
 
         const {typeDisplayName} = this.viewManagerModel;
         return {
-            // Sticky group rows overlay the top of the grid while scrolled, where they capture
-            // hovers/drops not intended for them - confusing during drag-and-drop.
+            // Sticky group rows overlay the grid while scrolled, capturing hovers/drops not
+            // intended for them.
             suppressGroupRowsSticky: true,
             rowDragMultiRow: true,
             rowDragText: (params, dragItemCount) => {
@@ -272,11 +268,7 @@ export class ManageDialogModel extends HoistModel {
             onRowDragMove: e => this.onRowDragMove(type, e),
             onRowDragLeave: () => this.setDropTarget(type, null),
             onRowDragEnd: e => this.onRowDragEnd(type, e),
-            // Generic (not row-drag-specific) events that fire for every drag-ending gesture,
-            // regardless of where it ends - the only reliable place to clear pending state for a
-            // release outside any drop target (grid body, top-level strip, or elsewhere), which
-            // otherwise triggers no row-drag event at all. Replaces the old manual Escape/outside
-            // -release handling, both now covered by ag-Grid's own global drag lifecycle.
+            // Generic (not row-drag-specific) events - see onDragGestureEnded.
             onDragStopped: () => this.onDragGestureEnded(type),
             onDragCancelled: () => this.onDragGestureEnded(type)
         };
@@ -298,9 +290,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * True when the grid's current selection cannot be dragged - a group row can only move on
-     * its own, so any selection combining a group with other rows (more groups or views)
-     * disables drag-and-drop across the grid.
+     * True when the grid's current selection cannot be dragged - groups move one at a time, so any
+     * selection combining a group with other rows disables drag-and-drop across the grid.
      */
     isDragDisabled(gridModel: GridModel): boolean {
         const recs = gridModel.selectedRecords;
@@ -333,10 +324,9 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * ag-Grid `RowDropZoneEvents` for the top-level strip within one grid's pane - registered by
-     * the strip component as an external drop zone via `gridModel.agApi.addRowDropZone()`. The
-     * strip's target is always the top level, regardless of where the pointer sits within it, so
-     * unlike the in-grid handlers above there is no need to track a continuously-updating target.
+     * ag-Grid `RowDropZoneEvents` for the top-level strip within one grid's pane, registered by the
+     * strip component via `gridModel.agApi.addRowDropZone()`. The strip's target is always the top
+     * level, so unlike the in-grid handlers above there is no target to track as the pointer moves.
      */
     getTopLevelDropZoneEvents(gridModel: GridModel): RowDropZoneEvents {
         const type = this.gridTypeFor(gridModel);
@@ -353,10 +343,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Click-to-move path for the top-level strip - moves the grid's current selection to the top
-     * level via the same code path as a drop, covering keyboard/trackpad users and long lists
-     * where dragging from a deep row would require an auto-scrolling drag. No-op without a
-     * (draggable) selection, or if the selection is already at the top level.
+     * Move the grid's current selection to the top level, as clicked on its top-level strip. No-op
+     * without a draggable selection, or if the selection is already at the top level.
      */
     async moveSelectionToTopLevelAsync(gridModel: GridModel): Promise<void> {
         const type = this.gridTypeFor(gridModel),
@@ -422,8 +410,7 @@ export class ManageDialogModel extends HoistModel {
             // Refresh even on failure - bulk updates apply per-view and can partially succeed.
             await viewManagerModel.refreshAsync();
             await this.refreshAsync();
-            // Views can land in a group that is new to the grid they moved to, which returns
-            // from a refresh collapsed.
+            // Views can land in a group new to their grid, which returns from refresh collapsed.
             this.expandAllGrids();
             await this.reselectViewsAsync(views);
         }
@@ -431,8 +418,7 @@ export class ManageDialogModel extends HoistModel {
 
     /**
      * Reselect views after a bulk update, following them to their new tab when they all landed in
-     * the same one - a visibility change moves the entire batch together, while a group change
-     * leaves every view where it was.
+     * the same one.
      */
     private async reselectViewsAsync(views: ViewInfo[]) {
         const tokens = views.map(it => it.token),
@@ -522,11 +508,9 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Clears any pending drag/drop-target state for `type`'s grid - fires on every gesture that
-     * ends a drag (a completed drop wherever it landed, an Escape cancel, or a release outside
-     * any registered drop target), via the generic `dragStopped`/`dragCancelled` grid events
-     * rather than the row-drag-specific ones, since those alone never fire for a release outside
-     * every target.
+     * Clear any pending drag/drop-target state for `type`'s grid. Wired to the generic
+     * `dragStopped`/`dragCancelled` events rather than the row-drag-specific ones, as only those
+     * fire for a release outside every registered drop target.
      */
     private onDragGestureEnded(type: GridType) {
         if (this.drag?.type === type) this.drag = null;
@@ -543,8 +527,7 @@ export class ManageDialogModel extends HoistModel {
 
     /**
      * Dragged payload - a single group path when the drag originates on a group row (any other
-     * selected rows are ignored - groups move one at a time), else the deduped views across all
-     * dragged leaf rows.
+     * selected rows ignored), else the deduped views across all dragged leaf rows.
      */
     private getDragPayload(e: any): DragPayload {
         const origin = e.node?.data as StoreRecord;
@@ -559,10 +542,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Selection-driven payload for the top-level strip's click-to-move path, mirroring the rules
-     * that gate a drag: null when there is no selection, or when it mixes a group row with any
-     * other row (per {@link isDragDisabled}); a lone selected group row moves as a group; any
-     * other selection moves its (group-expanded) views as a flat batch.
+     * As {@link getDragPayload}, but driven by the grid's selection - for the top-level strip's
+     * click-to-move. Null when the selection is empty or undraggable.
      */
     private getSelectionPayload(gridModel: GridModel): DragPayload {
         const recs = gridModel.selectedRecords;
@@ -637,10 +618,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Drop-driven flat move of views into a group (or the top level). Applied immediately, with
-     * a toast + Undo rather than a confirm - reorganizing views (especially globals, shared
-     * across every user's menu) is often a rapid multi-drop task, and a confirm on every drop
-     * trains people to click straight through the one that matters.
+     * Drop-driven flat move of views into a group (or the top level). Applied immediately with a
+     * toast + Undo rather than a confirm - reorganizing views is often a rapid multi-drop task.
      */
     private async dropMoveViewsAsync(views: ViewInfo[], targetPath: string) {
         const {viewManagerModel} = this,
@@ -679,8 +658,7 @@ export class ManageDialogModel extends HoistModel {
             to = composeGroupPath(targetPath, leaf),
             dest = this.toastGroupDisplay(targetPath);
 
-        // The one drop worth interrupting - merging into an existing group folds two libraries
-        // together, which Undo can reverse but a glance at the grid will not reveal.
+        // The one drop worth interrupting - a merge is not evident from a glance at the grid.
         if (!(await confirmGroupMergeIfExistsAsync(viewManagerModel, from, to, isGlobal))) return;
 
         // Undo per view - a reverse rename would also move views already at the destination.
@@ -749,8 +727,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Snapshot the current group path of every view at or nested beneath `path`, within the
-     * global or owned namespace - the set a group move rewrites, captured for a precise undo.
+     * Snapshot the current group of every view at or nested beneath `path` - the set a group move
+     * rewrites, captured for a precise undo.
      */
     private snapshotGroupViews(path: string, isGlobal: boolean): Map<ViewInfo, string> {
         const views = this.scopedViews(isGlobal).filter(v =>
@@ -760,9 +738,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Restore each view's previous group from a snapshot taken before a move, batched by distinct
-     * prior group so views that came from different groups (a multi-select drop/click, or a moved
-     * group's nested subtree) each land back where they started.
+     * Restore each view's group from a snapshot taken before a move, batched by distinct prior
+     * group so views that came from different groups each land back where they started.
      */
     private async restoreViewGroupsAsync(prevGroups: Map<ViewInfo, string>) {
         const {viewManagerModel} = this,
@@ -779,7 +756,7 @@ export class ManageDialogModel extends HoistModel {
         }
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
-        // A group emptied by the move ceased to exist, and returns from this refresh collapsed.
+        // Groups re-created by the restore return from this refresh collapsed.
         this.expandAllGrids();
     }
 
@@ -825,8 +802,7 @@ export class ManageDialogModel extends HoistModel {
         });
         if (!confirmed) return;
 
-        // Groups are derived from the paths on their views, so deleting the last view in one
-        // takes the group with it - a consequence worth naming as it happens.
+        // Groups are derived from their views, so deleting the last view in one takes it with it.
         const isGlobalScope = views[0].isGlobal,
             groupsBefore = this.scopedGroupPaths(isGlobalScope);
         try {
@@ -837,7 +813,7 @@ export class ManageDialogModel extends HoistModel {
         }
     }
 
-    /** Confirm the delete, naming any groups that ceased to exist along with their last views. */
+    /** Toast the delete, naming any groups that ceased to exist along with their last views. */
     private showDeleteToast(count: number, groupsBefore: string[], isGlobal: boolean) {
         const {typeDisplayName} = this.viewManagerModel,
             deleted = `Deleted ${pluralize(typeDisplayName, count, true)}.`,
@@ -866,10 +842,7 @@ export class ManageDialogModel extends HoistModel {
         return getAllGroupPaths(this.scopedViews(isGlobal));
     }
 
-    /**
-     * A group path for display within a toast - quoted, as one value within a sentence, and
-     * taking the toast's own text color rather than the standard (dark) breadcrumb colors.
-     */
+    /** A group path for display within a toast - quoted, and taking the toast's own text color. */
     private toastGroupDisplay(path: string): ReactNode {
         return path
             ? fragment('"', groupPathBreadcrumb({path, inheritColor: true}), '"')
@@ -889,8 +862,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Convert views into hierarchical store data, with synthetic rows for their groups (nested to
-     * any depth via slash-delimited group names) and, when `byOwner` (shared tab), for each owner.
+     * Convert views into hierarchical store data, with synthetic rows for their nested groups and,
+     * when `byOwner` (shared tab), for each owner.
      */
     private buildTreeData(views: ViewInfo[], byOwner: boolean = false): PlainObject[] {
         if (byOwner) {
@@ -902,8 +875,8 @@ export class ManageDialogModel extends HoistModel {
                     name: owner,
                     owner,
                     isGroupRow: true,
-                    // Prefix group row ids by owner at every depth - the same group path can
-                    // exist under multiple owners, and store record ids must be unique.
+                    // Prefix group row ids by owner at every depth - the same path can exist
+                    // under multiple owners, and record ids must be unique.
                     children: this.buildTreeData(viewsByOwner[owner]).map(child =>
                         this.applyIdPrefix(child, `owner:${owner}|`)
                     )

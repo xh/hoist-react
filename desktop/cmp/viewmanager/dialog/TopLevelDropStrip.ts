@@ -15,20 +15,14 @@ import {KeyboardEvent} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
 
 /**
- * Always-present strip rendered between the tab bar and the tree grid within one tab of the
- * ViewManager's Manage dialog. Registered with ag-Grid as an external row-drop-zone accepting
- * drops that move a view/group out of all groups, to the top level - replacing the old,
- * undiscoverable "drag past the top edge of the grid and release outside" gesture. Also
- * clickable, to move the current selection without a drag at all - the path that makes this
- * work for keyboard/trackpad users, and for long lists where dragging from a deep row would
- * otherwise require an auto-scrolling drag.
+ * Strip rendered above the tree grid within one tab of the ViewManager's Manage dialog, registered
+ * with ag-Grid as an external row-drop-zone accepting drops that move a view/group out of all
+ * groups. Also clickable, to move the current selection without a drag.
  *
- * Deliberately not a grid row - a synthetic row would need special-casing in the tree data and
- * would conflict with a sticky group-row header, which otherwise captures hovers/drops meant for
- * rows beneath it. This strip sits entirely outside the grid's own scrolling viewport.
+ * Deliberately not a grid row - it sits outside the grid's scrolling viewport, so it needs no
+ * special-casing in the tree data and cannot be occluded by a sticky group-row header.
  *
- * Renders null for a grid that does not support drag-and-drop - see
- * {@link ManageDialogModel.supportsDragDrop}.
+ * Renders null for a grid that does not support drag-and-drop.
  */
 export const topLevelDropStrip = hoistCmp.factory<GridModel>({
     displayName: 'TopLevelDropStrip',
@@ -73,11 +67,9 @@ export const topLevelDropStrip = hoistCmp.factory<GridModel>({
 // Implementation
 //------------------------
 /**
- * Registers the strip's rendered DOM element with ag-Grid as an external row-drop-zone, once
- * both the element and the grid's `agApi` are available (mount order between the strip and its
- * grid is not guaranteed), and tears the registration down on unmount. The actual drag-event
- * handling lives on {@link ManageDialogModel} - this model exists solely to bridge the DOM ref
- * and ag-Grid API lifecycles, neither of which a model can otherwise observe on its own.
+ * Registers the strip's DOM element with ag-Grid as an external row-drop-zone, once both the
+ * element and the grid's `agApi` are available - mount order between the two is not guaranteed.
+ * Drag-event handling itself lives on {@link ManageDialogModel}.
  */
 class TopLevelDropStripLocalModel extends HoistModel {
     override xhImpl = true;

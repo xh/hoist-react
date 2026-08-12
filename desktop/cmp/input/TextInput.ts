@@ -46,7 +46,7 @@ export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps
 
     /**
      * Element to display inline on the left side of the input. Unlike `leftIcon`, the input's
-     * padding tracks this element's width, so it can hold wider content. Use one or the other.
+     * padding tracks its width, so it can hold wider content. Use one or the other, not both.
      */
     leftElement?: ReactNode;
 

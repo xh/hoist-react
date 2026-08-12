@@ -33,9 +33,8 @@ export interface GroupFieldModelConfig {
 
 /**
  * Spec for the transient field holding the name of a group being created within a
- * {@link groupField} - include in the fields of any form hosting one. The name is composed onto
- * its parent path and written to the form's `group` field as the user types, so this field's own
- * value is never saved. Its one rule blocks a save that would silently create nesting.
+ * {@link groupField} - include in the fields of any form hosting one. Its value is never saved,
+ * being composed onto the parent path and written to the form's `group` field as the user types.
  */
 export function newGroupNameField() {
     return {
@@ -50,11 +49,7 @@ export function newGroupNameField() {
     };
 }
 
-/**
- * Backing model for the shared {@link groupField} - a single searchable select over all existing
- * group paths, with a persistent option that swaps the control in place into a name input for
- * creating a new group beneath the selected one.
- */
+/** Backing model for the shared {@link groupField}. */
 export class GroupFieldModel extends HoistModel {
     readonly formModel: FormModel;
     readonly viewManagerModel: ViewManagerModel;
@@ -62,16 +57,13 @@ export class GroupFieldModel extends HoistModel {
     /** Which face of the control is showing. */
     @observable mode: 'select' | 'create' = 'select';
 
-    /** Parent path for a group being created - frozen on entering create mode, null for top level. */
+    /** Parent path for a group being created - frozen on entering create mode. */
     @observable parentPath: string = null;
 
     /** Raw `group` value selected when create mode was entered, restored on cancel. */
     private priorValue: string = null;
 
-    /**
-     * Latest typeahead query on the select, seeding the name input when a fruitless search is
-     * followed into the create option. Captured from the select's filter callback.
-     */
+    /** Latest typeahead query on the select, captured from its filter callback. */
     private query: string = null;
 
     get value(): string {
@@ -114,13 +106,12 @@ export class GroupFieldModel extends HoistModel {
     @computed
     get newNameWarning(): string {
         const {newName, composedPath, existingPaths, viewManagerModel} = this;
-        // Nothing typed yet composes to the parent path, which exists by definition - wait for a
-        // name before claiming a collision.
+        // An empty name composes to the parent path, which exists by definition.
         if (!newName || !existingPaths.includes(composedPath)) return null;
         return `That group already exists. ${capitalize(pluralize(viewManagerModel.typeDisplayName))} will be added to it.`;
     }
 
-    /** An empty field is the top level - the one unambiguous alternative to a named group. */
+    /** An empty field means the top level. */
     get placeholder(): string {
         return 'Top Level';
     }
@@ -131,11 +122,9 @@ export class GroupFieldModel extends HoistModel {
         this.formModel = formModel;
         this.viewManagerModel = viewManagerModel;
 
-        // Compose the typed name onto its parent and write it straight to the bound `group` field,
-        // so what the form will save is never a step behind what the control shows. An empty name
-        // holds the value selected on entering create mode rather than composing to the bare
-        // parent - stepping into create mode is not itself an edit, while a group picked before
-        // doing so remains a pending move in its own right.
+        // Write the composed path to the bound `group` field as the name is typed, so what the form
+        // will save is never a step behind what the control shows. An empty name holds `priorValue`
+        // instead - stepping into create mode is not itself an edit.
         this.addReaction({
             track: () => [this.mode, this.newName],
             run: () => {
@@ -154,14 +143,14 @@ export class GroupFieldModel extends HoistModel {
         this.formModel.fields.newGroupName.init(null);
     }
 
-    /** Record the select's live typeahead query - see {@link query}. */
+    /** Record the select's live typeahead query, to seed the name input on entering create mode. */
     noteQuery(query: string) {
         this.query = query;
     }
 
     /**
      * Handle a commit from the select. The create option is a command rather than a value, so it
-     * enters create mode and rolls its own selection back, leaving `priorValue` as the parent.
+     * rolls its own selection back, leaving `priorValue` as the new group's parent.
      */
     @action
     onSelectCommit(value: string, priorValue: string) {
@@ -169,9 +158,8 @@ export class GroupFieldModel extends HoistModel {
     }
 
     /**
-     * Swap to the create face, naming a new group under `parent` - the value selected immediately
-     * before the create option was picked. Any query typed in the select carries over as the new
-     * group's name, so a search that found nothing does not have to be typed a second time.
+     * Swap to the create face, naming a new group under `parent`. Any query typed in the select
+     * carries over as the new group's name, so a fruitless search need not be retyped.
      */
     @action
     startCreate(parent: string) {
@@ -183,7 +171,7 @@ export class GroupFieldModel extends HoistModel {
         this.mode = 'create';
     }
 
-    /** Discard the in-progress name, restoring the value held before create mode was entered. */
+    /** Discard the in-progress name, restoring the value held before create mode. */
     @action
     cancelCreate() {
         this.formModel.fields.group.setValue(this.priorValue);
@@ -207,7 +195,7 @@ export class GroupFieldModel extends HoistModel {
         this.formModel.fields.newGroupName.setValue(null);
     }
 
-    /** Label for the persistent create option, naming the group the new one will nest under. */
+    /** Label for the create option, naming the group the new one will nest under. */
     private get newGroupOptionLabel(): string {
         const path = normalizeGroupValue(this.value);
         return path

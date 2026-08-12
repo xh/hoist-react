@@ -5,49 +5,39 @@
   // Dialogs
   //------------------------
   &__manage-dialog {
-    // Enlarge the folder expand/collapse icons in the group tree grids. Icon width is pinned
-    // by AgGrid.scss to this variable - FontAwesome size props have no effect there.
+    // Tree icon width is pinned by AgGrid.scss to this var - FontAwesome size props do not apply.
     --xh-grid-tree-icon-px: 14px;
     --xh-grid-tree-indent: 1.5em;
 
-    // Remove the extra leaf indent (a full tree-indent step) the framework adds to align leaf
-    // text with parent group labels. With views and groups as siblings at every level here, it
-    // reads as an additional level of nesting - align each view with the folder icons of its
-    // sibling groups instead. Important to beat the framework rule's per-level specificity.
+    // Views and groups are siblings at every level here, so the framework's extra leaf indent
+    // reads as another level of nesting. Important to beat its per-level specificity.
     .ag-ltr .ag-row-group-leaf-indent {
       margin-left: 0 !important;
     }
 
-    // Row of the group targeted by an in-flight row drag - drop here to move the dragged items
-    // into the group. Primary intent, matching the top-level strip below - not success green,
-    // which in Hoist's intent vocabulary belongs to the confirmation toast once a move lands.
-    // Important required to beat the grid's own row background rules (clear-background, tree
-    // highlights).
+    // Group row targeted by an in-flight row drag. Important to beat the grid's own row
+    // background rules (clear-background, tree highlights).
     .ag-row.xh-view-manager__drop-target {
       background-color: var(--xh-intent-primary-trans2) !important;
     }
 
-    // Dragging is disabled while the selection cannot be dragged (a group row combined with
-    // any other rows) - gray out the handles and block drag initiation.
+    // Gray out the drag handles and block drag initiation for an undraggable selection.
     &__grid--drag-disabled .ag-drag-handle {
       color: var(--xh-text-color-muted);
       opacity: 0.2;
       pointer-events: none;
     }
 
-    // Thin border enclosing the top-level drop strip and the grid, presenting the two as a
-    // single drop surface and setting them apart from the tab bar above and Help card below.
+    // Encloses the top-level drop strip and the grid, presenting the two as a single drop surface.
     &__grid-wrapper {
       margin: var(--xh-pad-half-px);
       border: var(--xh-border-solid);
       border-radius: var(--xh-border-radius-px);
-      // Clips the grid's square corners to the rounded border.
+      // Clip the grid's square corners to the rounded border.
       overflow: hidden;
     }
 
-    // Always-present strip between the tab bar and the grid, registered as an external ag-Grid
-    // row-drop-zone accepting drops that move a view/group out of all groups. Height matches a
-    // grid row so it does not perceptibly enlarge the dialog.
+    // Height matches a grid row, so the strip does not perceptibly enlarge the dialog.
     &__top-level-strip {
       display: flex;
       align-items: center;
@@ -77,7 +67,7 @@
         opacity: 0.75;
       }
 
-      // Armed - a drag is in flight over the dialog, dragged row not already top level.
+      // A drag is in flight over the dialog, dragged row not already top level.
       &--armed {
         border-style: dashed;
         border-color: var(--xh-intent-primary);
@@ -85,7 +75,7 @@
         color: var(--xh-intent-primary-text-color);
       }
 
-      // Hot - as armed, plus the pointer is over the strip.
+      // As armed, plus the pointer is over the strip.
       &--hot {
         border-style: solid;
         border-color: var(--xh-intent-primary);
@@ -94,7 +84,7 @@
         font-weight: 600;
       }
 
-      // Blocked - a drag is in flight but the dragged row is already at the top level.
+      // A drag is in flight, but the dragged row is already at the top level.
       &--blocked {
         opacity: 0.7;
         cursor: no-drop;
@@ -106,14 +96,13 @@
         opacity: 1;
       }
 
-      // Hint stays regular weight even as the label bolds in the hot state.
+      // Hint stays regular weight as the label bolds.
       &--hot &__hint {
         font-weight: 400;
       }
     }
 
-    // Compact, non-expanding header for the multi-view edit panel - mirrors the muted styling
-    // of a Placeholder without growing to fill the panel.
+    // Mirrors the muted styling of a Placeholder, without growing to fill the panel.
     &__multi-header {
       display: flex;
       flex-direction: column;
@@ -123,15 +112,14 @@
       padding: var(--xh-pad-px);
       color: var(--xh-text-color-muted);
 
-      // One icon per selected view, fanned out like a hand of cards. Each card's rotation
-      // derives from its index (--card-i) and the total count (--card-n), both set inline -
-      // offset from the hand's center, times a per-card angle that shrinks as the hand grows,
-      // clamping the total spread. Pivot sits below the icons so rotation also arcs them.
+      // One icon per selected view, fanned out like a hand of cards. Rotation derives from each
+      // card's index (--card-i) and the total count (--card-n), both set inline, about a pivot
+      // below the icons so the hand also arcs.
       &__fan {
         --card-w: 1.4em;
 
         display: flex;
-        // Full width of the header, giving the %-based card margins below a stable basis.
+        // Stable basis for the %-based card margins below.
         align-self: stretch;
         justify-content: center;
         font-size: 2.5em;
@@ -140,9 +128,8 @@
         > * {
           --card-angle: min(16deg, 72deg / max(var(--card-n) - 1, 1));
 
-          // Fixed overlap between neighboring cards, tightening once the hand would overflow
-          // the header - the inner min() arg solves for the margin at which the hand's visible
-          // span fills 80% of the available width, and the max() floor stops at a full stack.
+          // Fixed overlap between neighboring cards, tightening to hold the hand's visible span
+          // within 80% of the header, with a floor at a full stack.
           --card-mx: max(
             min(-0.52em, ((80% - var(--card-w)) / max(var(--card-n) - 1, 1) - var(--card-w)) / 2),
             var(--card-w) / -2
@@ -161,8 +148,7 @@
           transform: rotate(calc((var(--card-i) - (var(--card-n) - 1) / 2) * var(--card-angle)));
           transform-origin: 50% 150%;
 
-          // Opacity on the icon only - the card itself must stay opaque to occlude the
-          // cards fanned behind it.
+          // Opacity on the icon only - the card must stay opaque to occlude those behind it.
           .xh-icon {
             opacity: 0.5;
           }
@@ -211,9 +197,7 @@
   //------------------------
   // Group paths
   //------------------------
-  // The single rendering of a group path wherever one is displayed - the slash delimiter within
-  // the persisted string never surfaces. Inline-flex so it reads within a sentence as well as
-  // within a form control or menu row.
+  // Inline-flex, so a path reads within a sentence as well as within a form control or menu row.
   &__group-path {
     display: inline-flex;
     align-items: baseline;
@@ -227,13 +211,13 @@
       color: var(--xh-text-color-muted);
     }
 
-    // Context rather than subject - must follow the base rule to win on source order.
+    // Must follow the base rule to win on source order.
     &--muted {
       color: var(--xh-text-color-muted);
     }
 
-    // Against a non-standard background - an intent-colored toast - where the standard text
-    // colors have no contrast. Separators stay distinct via opacity instead.
+    // For use against an intent-colored background, where the standard text colors have no
+    // contrast. Separators stay distinct via opacity instead.
     &--inherit,
     &--inherit &__separator {
       color: inherit;
@@ -243,7 +227,7 @@
       opacity: 0.7;
     }
 
-    // The final segment is the subject - its ancestors are the context leading to it.
+    // Emphasize the leaf as the subject, its ancestors as context.
     &--emph &__segment {
       color: var(--xh-text-color-muted);
     }
@@ -253,7 +237,7 @@
       font-weight: 600;
     }
 
-    // Not a literal value, and so cannot collide with a name a user typed.
+    // Sentinel labels (e.g. *Top Level*) are not literal group names.
     &--sentinel {
       font-style: italic;
       color: var(--xh-text-color-muted);
@@ -264,23 +248,22 @@
   // Edit panel group field
   //------------------------
   &__group-field {
-    // An empty field is never a literal name - match the Top Level option's presentation.
+    // Match the Top Level option's presentation.
     .xh-select__placeholder {
       font-style: italic;
       color: var(--xh-text-color-muted);
     }
 
-    // Blueprint pins the input's left container to the top of the field with auto height, sized
-    // for a 16px icon. Stretch it to the full height so wider content centers on the input text.
+    // Blueprint pins the input's left container to the top with auto height, sized for a 16px
+    // icon. Stretch to full height so wider content centers on the input text.
     .bp6-input-left-container {
       display: flex;
       align-items: center;
       bottom: 0;
     }
 
-    // Parent of a group being created - static context within the field, not an editable segment.
-    // Blueprint sets the input's left padding to this element's width, so its right padding is
-    // what separates the trailing separator from the name being typed.
+    // Parent path shown within the field while creating a group. Blueprint sets the input's left
+    // padding to this element's width, so its right padding separates it from the name typed.
     &__parent {
       align-items: center;
       gap: var(--xh-pad-half-px);
@@ -288,9 +271,8 @@
       padding-right: var(--xh-pad-half-px);
     }
 
-    // Creation as a first-class option rather than a separate button, set off from the paths
-    // above it by a rule. Select.scss puts the option's padding on this element, so the border
-    // spans the full width of the menu.
+    // Set off from the paths above by a rule. Select.scss puts the option's padding on this
+    // element, so the border spans the full width of the menu.
     &__create-option {
       gap: var(--xh-pad-half-px);
       border-top: 1px solid var(--xh-border-color);

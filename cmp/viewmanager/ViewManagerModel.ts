@@ -541,9 +541,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     /**
-     * Rename or re-parent a group, cascading to every view at or nested under the renamed path.
-     * Groups are namespaced separately for global vs. user-owned views, so pass `isGlobal` to
-     * select which of the two to rename within.
+     * Rename or re-parent a group, cascading to every view at or nested under `from`. Groups are
+     * namespaced separately for global vs. user-owned views - `isGlobal` selects which to rename.
      */
     async renameGroupAsync(from: string, to: string, isGlobal: boolean): Promise<void> {
         return this.runner()

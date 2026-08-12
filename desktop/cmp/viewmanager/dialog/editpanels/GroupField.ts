@@ -28,9 +28,8 @@ interface GroupFieldProps extends HoistProps<GroupFieldModel> {
 }
 
 /**
- * Group select for the view edit panels and the Save As dialog - one searchable combobox over
- * every existing group path, with a persistent option that swaps the control in place into an
- * input naming a new group beneath the current selection.
+ * Group select for the view edit panels and the Save As dialog - a searchable combobox over every
+ * existing group path, with an option that swaps the control in place into a new-group name input.
  */
 export const groupField = hoistCmp.factory<GroupFieldProps>({
     model: uses(GroupFieldModel),
@@ -81,14 +80,13 @@ const createFace = hoistCmp.factory<GroupFieldModel>({
             field: 'newGroupName',
             label: 'Group',
             className: 'xh-view-manager__group-field',
-            // The name is written straight to the bound `group` field as it is typed, so its
-            // validation must show inline where it blocks the enclosing form's save - not as the
-            // hover tooltip that the surrounding forms' `minimal` default would give it.
+            // Show validation inline, where it blocks the enclosing form's save, rather than as
+            // the hover tooltip the surrounding forms' `minimal` default would give it.
             minimal: false,
             item: textInput({
                 autoFocus: true,
                 placeholder: 'New group name',
-                // Static context within the field, not an editable segment.
+                // Parent path shown as static context, not an editable segment.
                 leftElement: parentPath
                     ? hbox({
                           className: 'xh-view-manager__group-field__parent',
@@ -109,7 +107,7 @@ const createFace = hoistCmp.factory<GroupFieldModel>({
                 }),
                 onKeyDown: e => {
                     if (e.key === 'Escape') {
-                        // Otherwise taken by the enclosing dialog, closing it outright.
+                        // Otherwise taken by the enclosing dialog, closing it.
                         e.stopPropagation();
                         model.cancelCreate();
                     }
@@ -139,8 +137,8 @@ function optionDisplay(opt: GroupPathOption, selectedValue: string): ReactNode {
     return hbox({
         alignItems: 'center',
         items: [
-            // Mirrors the left gutter of Select's own default option renderer - custom renderers
-            // are not otherwise told which option is selected.
+            // Mirrors the left gutter of Select's default option renderer, which custom
+            // renderers do not inherit.
             div({
                 style: {minWidth: 25, textAlign: 'center'},
                 item: value === selectedValue ? Icon.check({size: 'sm'}) : null

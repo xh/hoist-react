@@ -117,7 +117,7 @@ export class DataAccess<T> {
             });
     }
 
-    /** Apply the same metadata updates to multiple views.*/
+    /** Apply the same metadata updates to multiple views. */
     async updateViewsInfoAsync(
         views: ViewInfo[],
         updates: ViewUpdateSpec,
@@ -140,11 +140,7 @@ export class DataAccess<T> {
             });
     }
 
-    /**
-     * Rename or re-parent a group, cascading to every view at or nested under the renamed path.
-     * Pass `isGlobal` to select which namespace to rename within - the global views, or those
-     * owned by the current user.
-     */
+    /** Rename or re-parent a group, cascading to every view at or nested under `from`. */
     async renameGroupAsync(
         from: string,
         to: string,

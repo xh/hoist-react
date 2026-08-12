@@ -47,8 +47,8 @@ export const viewMultiPanel = hoistCmp.factory({
                         div({
                             className: 'xh-view-manager__manage-dialog__multi-header',
                             items: [
-                                // One icon per view, fanned like a hand of cards - see the
-                                // companion styles for the CSS-var driven rotation.
+                                // One icon per view, fanned like a hand of cards - rotation is
+                                // driven by these CSS vars, in ViewManager.scss.
                                 div({
                                     className: 'xh-view-manager__manage-dialog__multi-header__fan',
                                     style: {'--card-n': views.length} as CSSProperties,
@@ -77,8 +77,8 @@ export const viewMultiPanel = hoistCmp.factory({
                                 info: visInfo
                             }),
                             vspacer(),
-                            // Group name contextualizes delete/pin wording when the selection
-                            // is a sole group row, operating on the group's views as a unit.
+                            // Group name contextualizes the delete/pin wording for a sole
+                            // selected group row.
                             formButtons({
                                 model,
                                 groupName: parent.selectedGroupRecord?.data.name

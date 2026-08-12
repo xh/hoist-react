@@ -40,8 +40,8 @@ export class ViewInfo {
     readonly isGlobal: boolean;
 
     /**
-     * Optional group name used for bucketing this view in display. Forward slashes within the
-     * name are interpreted as delimiters for nested sub-groups - see {@link GroupUtils}.
+     * Optional group name used for bucketing this view in display. Slashes within the name
+     * delimit nested sub-groups - see `VIEW_GROUP_DELIMITER`.
      */
     readonly group: string;
 

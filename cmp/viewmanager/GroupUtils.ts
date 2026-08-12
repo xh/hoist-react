@@ -8,9 +8,8 @@ import {isEmpty} from 'lodash';
 import type {ViewInfo} from './ViewInfo';
 
 /**
- * Delimiter used within view group names to express nesting - e.g. `Reports/Sales/Monthly` is the
- * `Monthly` group nested two levels down within `Reports`. Groups remain plain strings on their
- * persisted JsonBlobs - nesting is a display-time interpretation of this delimiter.
+ * Delimiter expressing nesting within a view group name - e.g. `Reports/Sales/Monthly`. Groups
+ * persist as plain strings; nesting is a display-time interpretation of this delimiter.
  */
 export const VIEW_GROUP_DELIMITER = '/';
 
@@ -49,8 +48,8 @@ export function composeGroupPath(parent: string, leaf: string): string {
 }
 
 /**
- * Normalize a group path - trim each segment, drop any empty segments (handling values such as
- * 'a//b', '/a', or 'a/ '), and rejoin. Returns null if nothing remains.
+ * Normalize a group path - trim each segment, drop any empty ones (e.g. 'a//b', '/a', 'a/ '), and
+ * rejoin. Returns null if nothing remains.
  */
 export function normalizeGroupPath(path: string): string {
     if (!path) return null;
@@ -67,9 +66,8 @@ export function isGroupSameOrDescendant(candidate: string, ancestor: string): bo
 }
 
 /**
- * All distinct group paths across the given views, including implied ancestor paths - a view in
- * 'A/B/C' implies groups 'A', 'A/B', and 'A/B/C'. Returned in depth-first order with sibling
- * groups sorted alpha, suitable for rendering as an indented hierarchy.
+ * All distinct group paths across the given views, including implied ancestors - a view in 'A/B/C'
+ * implies groups 'A', 'A/B', and 'A/B/C'. Depth-first, siblings sorted alpha.
  */
 export function getAllGroupPaths(views: ViewInfo[]): string[] {
     const {roots} = buildViewGroupTree(views),
