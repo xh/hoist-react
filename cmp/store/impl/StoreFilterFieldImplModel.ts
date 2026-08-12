@@ -5,14 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, lookup, XH} from '@xh/hoist/core';
+import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
-import {appendFilter, Store} from '@xh/hoist/data';
+import {appendFilter, getFilterRegex, Store} from '@xh/hoist/data';
 import {action, comparer, makeObservable} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     debounce,
-    escapeRegExp,
     filter,
     flatMap,
     get,
@@ -119,7 +118,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
         let newFilter = null;
         if (filterText && !isEmpty(activeFields)) {
-            const regex = this.getRegex(filterText),
+            const regex = getFilterRegex(filterText, this.matchMode),
                 valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
             newFilter = (rec: StoreRecord) => valGetters.some(fn => regex.test(fn(rec)));
         }
@@ -137,19 +136,6 @@ export class StoreFilterFieldImplModel extends HoistModel {
                 this.applyFilter();
             }
         }
-    }
-
-    getRegex(searchTerm: string): RegExp {
-        searchTerm = escapeRegExp(searchTerm);
-        switch (this.matchMode) {
-            case 'any':
-                return new RegExp(searchTerm, 'i');
-            case 'start':
-                return new RegExp(`^${searchTerm}`, 'i');
-            case 'startWord':
-                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
-        }
-        throw XH.exception('Unknown matchMode in StoreFilterField');
     }
 
     getActiveFields(): string[] {

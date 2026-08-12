@@ -285,7 +285,7 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
                 'xh-col-chooser__column-row': ({data: rec}) => rec && !rec.isSummary
             },
             columns: [
-                chooserLibraryColumn(),
+                chooserLibraryColumn(this.parent),
                 {
                     field: 'chooserGroup',
                     hidden: true
