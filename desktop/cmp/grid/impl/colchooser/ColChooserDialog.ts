@@ -7,16 +7,18 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {ColChooserModalModel} from './ColChooserModalModel';
 import {colChooser} from './ColChooser';
-import {ColChooserModel} from './ColChooserModel';
 
+/**
+ * @internal
+ */
 export const colChooserDialog = hoistCmp.factory({
-    model: uses(ColChooserModel),
+    model: uses(ColChooserModalModel),
     className: 'xh-col-chooser-dialog',
 
     render({model, className}) {
-        const {isOpen, width} = model;
-        if (!isOpen) return null;
+        if (!model.isOpen) return null;
 
         return dialog({
             icon: Icon.gridPanel(),
@@ -25,7 +27,8 @@ export const colChooserDialog = hoistCmp.factory({
             onClose: () => model.close(),
             item: colChooser({model}),
             className,
-            style: {width}
+            // Hug the chooser's content - it sizes itself to the buckets plus the library when shown.
+            style: {width: 'fit-content', maxWidth: '90vw'}
         });
     }
 });

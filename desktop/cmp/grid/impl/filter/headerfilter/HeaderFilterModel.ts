@@ -26,6 +26,9 @@ import {CustomTabModel} from './custom/CustomTabModel';
 import {valuesTab} from './values/ValuesTab';
 import {ValuesTabModel} from './values/ValuesTabModel';
 
+/**
+ * @internal
+ */
 export class HeaderFilterModel extends HoistModel {
     override xhImpl = true;
 
