@@ -165,7 +165,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
         this.chooserGridModel.agApi?.refreshCells({columns: [actionCol.colId], force: true});
     }
 
-    refreshFilterHighlight() {
+    refreshFilterRowClasses() {
         const {agApi, rowClassRules} = this.chooserGridModel;
         // Re-setting the unchanged object is what makes ag-grid re-run its row class rules.
         agApi?.setGridOption('rowClassRules', rowClassRules);
@@ -770,7 +770,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                     this.parent.isLibraryShown && this.parent.shouldDimRow(rec)
             },
             columns: [
-                chooserNameColumn(true),
+                chooserNameColumn(true, this.parent),
                 {
                     ...actionCol,
                     width: calcActionColWidth(1),
@@ -791,7 +791,8 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                                             className: 'xh-gray',
                                             size: 'sm',
                                             title: 'Hide Column'
-                                        })
+                                        }),
+                                        className: 'xh-col-chooser__row-action--hover-only'
                                     };
                                 }
 

@@ -3,12 +3,25 @@
 .xh-col-chooser,
 .xh-col-chooser__meta-tip {
   --column-chooser-text-color-alt: color-mix(in srgb, var(--xh-gray) 60%, black);
+
+  --column-chooser-match-bg: var(--xh-bg-highlight-alt);
+  --column-chooser-match-color: var(--xh-black);
+
+  // Translucent so a match wash layers over the selection background and hover bar rather than
+  // replacing them.
+  --column-chooser-match-row-bg: #{color-mix(in srgb, var(--xh-bg-highlight-alt) 20%, transparent)};
 }
 
 .xh-dark {
   .xh-col-chooser,
   .xh-col-chooser__meta-tip {
     --column-chooser-text-color-alt: var(--xh-gray);
+    --column-chooser-match-color: black;
+    --column-chooser-match-row-bg: #{color-mix(
+        in srgb,
+        var(--xh-bg-highlight-alt) 12%,
+        transparent
+      )};
   }
 }
 
@@ -155,16 +168,53 @@
   }
 
   &__column-row {
-    // Dim the content, not the cell - opacity on the cell would dim the filter-match tint too.
-    &--hidden .ag-cell > *,
+    // Dim content, not the cell - cell opacity would dim the filter-match tint too. Match rows are
+    // exempt entirely: compositing the highlight chip through opacity makes it illegible.
+    &--hidden:not(.xh-col-chooser__column-row--filter-match) .ag-cell > *,
     &--filter-miss .ag-cell > * {
       opacity: 0.5;
     }
 
-    // Tint the cells, not the row - ag-grid's stripe/hover/selection rules own the row background.
+    // Tint the cells, not the row - ag-grid's stripe/selection rules own the row background, and the
+    // hover bar is painted there too.
     &--filter-match .ag-cell {
-      background-color: var(--xh-bg-highlight);
+      background-color: var(--column-chooser-match-row-bg);
     }
+  }
+
+  // Row hover cue - a leading accent bar, as a gradient so it layers over the row's background-color
+  // and leaves that to selection alone (these grids set `showHover: false`).
+  .ag-row.ag-row-hover:not(.ag-full-width-row) {
+    background-image: linear-gradient(to right, var(--xh-gray) 0 3px, transparent 3px);
+  }
+
+  // Delaying `visibility` by the fade duration holds it `visible` through the fade-out, so the element
+  // still transitions both ways while staying out of hit-testing and the tab order once hidden.
+  &__name-cell__meta,
+  &__row-action--hover-only {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 100ms ease-in-out,
+      visibility 0s linear 100ms;
+  }
+
+  .ag-row-hover,
+  .ag-row-selected {
+    .xh-col-chooser__name-cell__meta,
+    .xh-col-chooser__row-action--hover-only {
+      visibility: visible;
+      opacity: 1;
+      transition:
+        opacity 100ms ease-in-out,
+        visibility 0s linear 0s;
+    }
+  }
+
+  &__highlight {
+    background-color: var(--column-chooser-match-bg);
+    color: var(--column-chooser-match-color);
+    border-radius: 2px;
   }
 
   // The row owns its vertical rhythm, so the cell can grow with wrapped description content.

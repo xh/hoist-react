@@ -10,6 +10,7 @@ import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, FilterTestFn, Store, StoreRecord} from '@xh/hoist/data';
+import {getFilterMatchRanges} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -256,14 +257,14 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
             run: () =>
                 this.bucketModels.forEach(it => {
                     it.refreshActionColumn();
-                    it.refreshFilterHighlight();
+                    it.refreshFilterRowClasses();
                 })
         });
 
         this.addReaction({
             track: () => this.filterTestFn,
             run: () => {
-                this.bucketModels.forEach(it => it.refreshFilterHighlight());
+                this.bucketModels.forEach(it => it.refreshFilterRowClasses());
                 this.unpinnedBucketModel.scrollToFilterMatches();
             }
         });
@@ -319,6 +320,12 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     //-----------------------
     isMatchedColumn(record: StoreRecord): boolean {
         return this.isFilterCandidate(record) && this.filterTestFn(record);
+    }
+
+    /** Spans of `name` matched by the active filter, for highlighting - empty when unfiltered. */
+    getMatchRanges(name: string): Array<[number, number]> {
+        const {filterText} = this;
+        return filterText ? getFilterMatchRanges(name, filterText, this.filterMatchMode) : [];
     }
 
     /** True for a group row as well as a non-matching column - neither can match the filter. */
