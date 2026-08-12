@@ -116,6 +116,11 @@
   `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
   group is expanded (`'open'`) or collapsed (`'closed'`). Groups render expanded unless set
   otherwise with the new `ColumnGroupSpec.expandedByDefault`.
+* `GridModel` now tracks column group expand/collapse state as `columnGroupState`, with
+  `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
+  `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
+  see the new `GridModelPersistOptions.persistColumnGroups` - and is retained across `setColumns()`
+  for any group the new configs still define.
 * Added a `position` option to `GridModel.ensureRecordsVisibleAsync()`,
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the

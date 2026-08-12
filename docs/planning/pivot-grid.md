@@ -1241,11 +1241,15 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       of them framework-level.
 - [ ] **Build the day-1 set.** See [Extras](#extras-and-nice-to-haves) for each. Rough dependency
       order, since several interlock:
-      1. Framework first: **`columnGroupShow` on `ColumnSpec` / `ColumnGroupSpec` is done**, with
+      1. ~~Framework first.~~ **Done.** `columnGroupShow` on both specs, plus
          `ColumnGroupSpec.expandedByDefault` (default true) rather than a grid-level default-expanded
          depth - a model generating a group tree applies its own depth policy, and ag-Grid's own
-         default is per-group. Still to do: column group expand/collapse as persisted `GridModel`
-         state.
+         default is per-group. Collapse state is now `GridModel.columnGroupState`, persisted via
+         `persistColumnGroups` and retained across `setColumns` for groups the new configs still
+         define. Note **ag-Grid keeps a provided group's expanded flag keyed on `groupId` alone** -
+         verified across def replacement, reorder, and re-parenting - so the retention that matters
+         is the model's, and a group that leaves the column set and returns comes back at its
+         default (as a re-added `colId` does).
       2. Column plumbing: `labelColumn`, `pivotGroupSpec`, qualified `exportName`, filter `fieldSpecs`
          and cell-field `displayName`, the `PivotSort` comparator, the single-value collapse toggle.
       3. Layout: `columnLayout: 'path' | 'value'` and group expand/collapse, which share the summary
@@ -1435,9 +1439,11 @@ against the current `result` is a separate, later utility - YAGNI for now.
 - ~~`columnGroupShow` on `ColumnSpec` / `ColumnGroupSpec`, plus a default-expanded depth
   (ag-Grid's `pivotDefaultExpanded`).~~ Done - `expandedByDefault` on `ColumnGroupSpec` covers the
   default, so a depth config, if wanted, belongs on `PivotGridModel` where the groups are generated.
-- Column group expand/collapse tracked as `GridModel` state, persisted, and surviving `setColumns` on a
-  structural rebuild - the problem `rebuildColumns` currently solves for `cubeLabel` alone. ag-Grid
-  keeps this in `columnGroupState`, separate from `columnState`, and Hoist manages neither.
+- ~~Column group expand/collapse tracked as `GridModel` state, persisted, and surviving `setColumns` on a
+  structural rebuild - the problem `rebuildColumns` currently solves for `cubeLabel` alone.~~ Done -
+  `GridModel.columnGroupState`, kept separate from `columnState` as ag-Grid keeps it, and normalized
+  against the current group tree on every read from ag-Grid (whose own report includes the padding
+  groups it mints to balance headers).
 
 ### Follow-up
 

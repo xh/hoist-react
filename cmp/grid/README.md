@@ -159,9 +159,18 @@ A group of plain columns is a static header, as is one where every child specifi
 This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
 group non-expandable.
 
-Collapse state lives in ag-Grid, not `GridModel` - it is not persisted, and resets to
-`expandedByDefault` whenever the grid's columns are rebuilt via `setColumns()`. Collapsing affects
-display only: `columnState`, `isColumnVisible()`, and export are all unaffected.
+Expand/collapse state is tracked on `GridModel.columnGroupState`, one entry per configured group.
+Read it with `isColumnGroupExpanded(groupId)`, drive it with `setColumnGroupExpanded()` or
+`setColumnGroupState()`, and persist it via `persistWith` (on by default, alongside column state -
+see `GridModelPersistOptions.persistColumnGroups`). Nothing is written until a user actually
+expands or collapses a group, and returning every group to its default clears the saved entry.
+
+`setColumns()` **retains** this state for groups the new configs still define - a rebuild that mints
+new columns must not spring a user's collapsed groups open. A group that leaves the column set and
+later returns comes back at its `expandedByDefault`, the same way a re-added `colId` returns to its
+in-code defaults. `restoreDefaultsAsync()` resets it.
+
+Collapsing affects display only: `columnState`, `isColumnVisible()`, and export are all unaffected.
 
 ### Tree Mode
 
