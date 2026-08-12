@@ -112,6 +112,10 @@
 * Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
   active filter and reloads the log around the selected line, then re-selects it and centers it in
   the viewport - useful for examining the context around a hit found via filtering.
+* Added support for collapsible grid column groups via a new `columnGroupShow` config on
+  `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
+  group is expanded (`'open'`) or collapsed (`'closed'`). Groups render expanded unless set
+  otherwise with the new `ColumnGroupSpec.expandedByDefault`.
 * Added a `position` option to `GridModel.ensureRecordsVisibleAsync()`,
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the

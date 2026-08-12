@@ -134,6 +134,35 @@ gridModel.collapseAll();
 gridModel.expandToLevel(2);
 ```
 
+### Column Groups
+
+```typescript
+new GridModel({
+    columns: [
+        {field: 'name', flex: 1},
+        {
+            headerName: 'Q1',
+            expandedByDefault: false,          // Render collapsed until the user expands
+            children: [
+                {field: 'q1Jan', columnGroupShow: 'open'},
+                {field: 'q1Feb', columnGroupShow: 'open'},
+                {field: 'q1Total', columnGroupShow: 'closed'}
+            ]
+        }
+    ]
+});
+```
+
+`columnGroupShow` is what makes a group expandable, and it takes both values to do so: the group's
+children must resolve to at least one column shown while expanded *and* one shown while collapsed.
+A group of plain columns is a static header, as is one where every child specifies the same value.
+This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
+group non-expandable.
+
+Collapse state lives in ag-Grid, not `GridModel` - it is not persisted, and resets to
+`expandedByDefault` whenever the grid's columns are rebuilt via `setColumns()`. Collapsing affects
+display only: `columnState`, `isColumnVisible()`, and export are all unaffected.
+
 ### Tree Mode
 
 ```typescript
@@ -277,7 +306,7 @@ Key categories of `ColumnSpec` properties:
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
 | Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
-| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                    |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `columnGroupShow` |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |

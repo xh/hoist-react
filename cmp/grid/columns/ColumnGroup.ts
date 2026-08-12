@@ -13,7 +13,7 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
-import {ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
+import {ColumnGroupShow, ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
 import {Column, ColumnSpec} from './Column';
 
 /**
@@ -43,6 +43,19 @@ export interface ColumnGroupSpec {
     borders?: boolean;
 
     /**
+     * Show this group only while its containing parent ColumnGroup is expanded ('open') or
+     * collapsed ('closed'). Default is to always show it. Ignored for a top-level group.
+     */
+    columnGroupShow?: ColumnGroupShow;
+
+    /**
+     * False to render this group collapsed until the user expands it. Defaults to true.
+     * Applies only to an expandable group - i.e. one with a descendant specifying
+     * `columnGroupShow`. Note the grid resets to this state whenever its columns are rebuilt.
+     */
+    expandedByDefault?: boolean;
+
+    /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
      * these options may be used / overwritten by the framework itself, and are not all
      * guaranteed to be compatible with its usages of Ag-Grid.
@@ -69,6 +82,8 @@ export class ColumnGroup {
     readonly headerAlign: HAlign;
     readonly headerTooltip: string;
     readonly borders: boolean;
+    readonly columnGroupShow: ColumnGroupShow;
+    readonly expandedByDefault: boolean;
     readonly omit: Thunkable<boolean>;
 
     /**
@@ -99,6 +114,8 @@ export class ColumnGroup {
             headerTooltip,
             agOptions,
             borders,
+            columnGroupShow,
+            expandedByDefault,
             appData,
             omit,
             ...rest
@@ -116,6 +133,8 @@ export class ColumnGroup {
         this.headerAlign = headerAlign;
         this.headerTooltip = headerTooltip;
         this.borders = withDefault(borders, true);
+        this.columnGroupShow = columnGroupShow;
+        this.expandedByDefault = withDefault(expandedByDefault, true);
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -145,6 +164,8 @@ export class ColumnGroup {
             },
             headerClass: getAgHeaderClassFn(this),
             headerTooltip: this.headerTooltip,
+            columnGroupShow: this.columnGroupShow,
+            openByDefault: this.expandedByDefault,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: gridModel.lockColumnGroups,
