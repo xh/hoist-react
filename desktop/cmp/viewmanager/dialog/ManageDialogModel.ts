@@ -200,11 +200,7 @@ export class ManageDialogModel extends HoistModel {
                 tabContainerModel.setTabTitle('shared', this.sharedTabTitle);
             }
         });
-        if (!loadSpec.isRefresh) {
-            [this.ownedGridModel, this.globalGridModel, this.sharedGridModel].forEach(gm =>
-                gm?.expandAll()
-            );
-        }
+        if (!loadSpec.isRefresh) this.expandAllGrids();
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
         }
@@ -415,8 +411,11 @@ export class ManageDialogModel extends HoistModel {
             // Refresh even on failure - bulk updates apply per-view and can partially succeed.
             await viewManagerModel.refreshAsync();
             await this.refreshAsync();
+            // Views can land in a group that is new to the grid they moved to, which returns
+            // from a refresh collapsed.
+            this.expandAllGrids();
         }
-        // No reselect -- views may have moved between tabs.
+        // No reselect - views may have moved between tabs.
     }
 
     private async doRenameGroupAsync(from: string, to: string, isGlobal: boolean) {
@@ -434,6 +433,13 @@ export class ManageDialogModel extends HoistModel {
         const gridModel = isGlobal ? this.globalGridModel : this.ownedGridModel;
         gridModel.expandAll();
         await gridModel.selectAsync(`group:${path}`);
+    }
+
+    /** Expand every grid, so that no view is left hidden within a collapsed group. */
+    private expandAllGrids() {
+        [this.ownedGridModel, this.globalGridModel, this.sharedGridModel].forEach(gm =>
+            gm?.expandAll()
+        );
     }
 
     //------------------------
@@ -742,6 +748,8 @@ export class ManageDialogModel extends HoistModel {
         }
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
+        // A group emptied by the move ceased to exist, and returns from this refresh collapsed.
+        this.expandAllGrids();
     }
 
     private async doDeleteAsync(views: ViewInfo[], groupName?: string) {
