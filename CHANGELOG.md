@@ -4,7 +4,7 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade, hoist-core update.)
 
-* Requires `hoist-core > 40.4.0` for the `ViewManager` group and bulk-editing APIs.
+* Requires `hoist-core >= 41.0` for the `ViewManager` group and bulk-editing APIs.
 * Hoist v87 updates to React 19. Apps may require minor adjustments - test carefully.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
