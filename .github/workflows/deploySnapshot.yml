@@ -28,6 +28,12 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
+            # Allows the job to mint a short-lived OIDC token, which pnpm exchanges with npm for
+            # a scoped publish token (npm "trusted publishing"). Grants nothing on npm by itself -
+            # the registry only honors it if a trusted publisher is configured for the package
+            # naming this repo and workflow file. Also what lets npm attach a provenance
+            # attestation to the published tarball.
+            id-token: write
         # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
         # which every subsequent npm/pnpm invocation reads - pnpm warns when the var is
         # unresolvable, so supply a job-wide placeholder to keep logs clean. The real token is
@@ -73,10 +79,26 @@ jobs:
           with:
               version: ${{ inputs.version }}
 
+        # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
+        # snapshots publish from develop rather than pnpm's expected master/main (which prompts
+        # interactively, hanging a non-TTY runner), and the shallow checkout above reads as
+        # out-of-date against the remote.
+        #
+        # Auth prefers OIDC trusted publishing, falling back to NODE_AUTH_TOKEN. pnpm tries the
+        # OIDC exchange first and uses the resulting token when it succeeds; if no trusted
+        # publisher is configured, or the config does not match this repo/workflow, it falls back
+        # to the static token. That fallback keeps a misconfiguration from breaking snapshot
+        # builds - drop the token here (and delete the NPM_TOKEN secret) only once every publish
+        # path uses OIDC and npm is set to disallow tokens.
+        #
+        # No `--provenance` flag: under trusted publishing the registry's token-exchange response
+        # tells pnpm to attach a provenance attestation, and pnpm only defaults to that response
+        # (`provenance ??= ...`). Forcing the flag would also demand provenance on the token
+        # fallback path, turning a graceful degradation into a failed publish.
         - name: Publish snapshot to npm
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          run: npm publish --tag next
+          run: pnpm publish --no-git-checks --tag next
 
         - name: Write job summary
           # Best-effort only - a summary glitch must never fail an otherwise-good publish.
@@ -90,6 +112,8 @@ jobs:
                 echo "Version: [\`$SNAPSHOT_VERSION\`](https://www.npmjs.com/package/@xh/hoist/v/$SNAPSHOT_VERSION)"
 
                 # Pack stats are a nice-to-have - skip the table silently if anything throws.
+                # Deliberately `npm pack`, not `pnpm pack`: pnpm's --json output is a different
+                # shape and reports no entryCount / size / unpackedSize.
                 if STATS=$(npm pack --dry-run --json 2>/dev/null | node -e "
                     const [p] = JSON.parse(require('fs').readFileSync(0, 'utf8'));
                     const mb = b => (b / 1048576).toFixed(1) + ' MB';
