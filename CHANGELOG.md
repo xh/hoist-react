@@ -4,9 +4,7 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade, hoist-core update.)
 
-* Requires `hoist-core >= 40.4.0` for the `ViewManager` group and bulk-editing APIs - the new
-  `xhView/renameGroup` and `xhView/bulkUpdateInfo` endpoints. Group renames and bulk view edits
-  will fail against earlier servers.
+* Requires `hoist-core > 40.4.0` for the `ViewManager` group and bulk-editing APIs.
 * Hoist v87 updates to React 19. Apps may require minor adjustments - test carefully.
     * Apply any type adjustments needed to meet React 19's stricter typing. See
       https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
@@ -161,17 +159,9 @@
   registered by the app in its `Bootstrap.ts` (alongside the other required community modules) -
   the drag handles will not render without it. The `ViewManager` also supports bulk editing of
   views' pin and visibility state.
-    * Group paths display as breadcrumbs (`Africa › Sub-Saharan`) everywhere they appear - the
-      slash delimiter within the persisted group string no longer surfaces in the UI at all.
-    * A view's group is chosen with a single searchable combobox, offering an explicit `Top Level`
-      option and a persistent option that swaps the control in place into an input naming a new
-      group. Replaces the prior select + "Sub Group" button + subgroup input.
-    * Deleting the last view in a group toasts that the group went with it - groups exist only as
-      long as they contain views.
 * `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within
-  the control, complementing the existing `optionRenderer` for the dropdown menu.
-* `TextInput` now accepts a `leftElement` prop, rendered inline at the left of the input. Unlike
-  `leftIcon`, the input's padding tracks this element's width, so it can hold wider content.
+  the control.
+* `TextInput` now accepts a `leftElement` prop, rendered inline at the left of the input.
 
 ### 🐞 Bug Fixes
 
