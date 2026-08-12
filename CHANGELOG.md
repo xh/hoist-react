@@ -163,6 +163,10 @@ columns.
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Callers can now request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, instead of scrolling only the
   minimum amount required.
+* Added support for collapsible grid column groups via a new `columnGroupShow` config on
+  `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
+  group is expanded (`'open'`) or collapsed (`'closed'`). Groups render expanded unless set
+  otherwise with the new `ColumnGroupSpec.expandedByDefault`.
 
 #### Admin Console
 

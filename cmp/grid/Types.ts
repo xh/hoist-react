@@ -284,6 +284,16 @@ export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
 }
 
 /**
+ * Show a Column or ColumnGroup only while its containing ColumnGroup is expanded ('open') or
+ * collapsed ('closed').
+ *
+ * Note that this config is what makes a ColumnGroup expandable, and takes both values to do so: the
+ * group must have a visible child shown while expanded *and* one shown while collapsed. Groups not
+ * meeting that bar render as static headers.
+ */
+export type ColumnGroupShow = 'open' | 'closed';
+
+/**
  * Sort comparator function for a grid column. Note that this comparator will also be called if
  * agGrid-provided column filtering is enabled: it is used to sort values shown for set filter
  * options. In that case, some extra params will be null.

@@ -60,6 +60,7 @@ import {
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
+    ColumnGroupShow,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
     ColumnRenderer,
@@ -162,6 +163,13 @@ export interface ColumnSpec {
 
     /** True to suppress default display of the column.*/
     hidden?: boolean;
+
+    /**
+     * Show this column only while its containing {@link ColumnGroup} is expanded ('open') or
+     * collapsed ('closed'). Default is to always show it. Ignored for a column with no
+     * containing group.
+     */
+    columnGroupShow?: ColumnGroupShow;
 
     /**
      * Flex columns stretch to fill the width of the grid after all columns with a set pixel-width
@@ -495,6 +503,7 @@ export class Column {
     cellClassRules: Record<string, ColumnCellClassRuleFn>;
     align: HAlign;
     hidden: boolean;
+    columnGroupShow: ColumnGroupShow;
     flex: boolean | number;
     width: number;
     minWidth: number;
@@ -568,6 +577,7 @@ export class Column {
             cellClass,
             cellClassRules,
             hidden,
+            columnGroupShow,
             align,
             width,
             minWidth,
@@ -653,6 +663,7 @@ export class Column {
         this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
+        this.columnGroupShow = columnGroupShow;
 
         warnIf(
             flex && width,
@@ -773,6 +784,7 @@ export class Column {
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
+                columnGroupShow: this.columnGroupShow,
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
