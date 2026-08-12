@@ -628,6 +628,15 @@ loudly — it inflates every figure and eventually looks like an indefinite hang
 measurably idle. Assert `document.visibilityState === 'visible'` before trusting a run, and register
 a `visibilitychange` tripwire to void one that went hidden partway.
 
+**`PivotPerfModel`'s grid pass genuinely deadlocks in a hidden tab**, which is worse than the
+inflation above and reads exactly like a hang caused by whatever you just changed. `mountMs` awaits
+two chained `requestAnimationFrame`s, and rAF never fires while a tab is hidden, so the run parks at
+the mount step with its Cube and grid live — defeating the teardown its own `finally` would otherwise
+run. That panel now refuses to start when `document.hidden`, and its frame wait races a timeout so a
+run hidden partway degrades to a voided row instead of parking. The data-layer-only pass mounts
+nothing and so runs fine hidden — use it, plus DOM reads via `javascript_tool`, to verify behavior
+without taking the desktop.
+
 ### Baseline — `PivotDataModel` as imported
 
 Captured 2026-08-01 on a Linux workstation. **This table is now the only record of it** — the
