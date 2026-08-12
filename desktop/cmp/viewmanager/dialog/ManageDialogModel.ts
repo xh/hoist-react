@@ -39,6 +39,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, compact, every, groupBy, isEqual, keys, some, startCase, uniqBy} from 'lodash';
 import {createRef, ReactNode} from 'react';
 import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
+import {confirmGroupMergeIfExistsAsync} from './Utils';
 import {RenameGroupDialogModel} from './editpanels/RenameGroupDialogModel';
 import {ViewMultiPanelModel} from './editpanels/ViewMultiPanelModel';
 import {ViewPanelModel} from './editpanels/ViewPanelModel';
@@ -636,12 +637,20 @@ export class ManageDialogModel extends HoistModel {
 
     /** Drop-driven re-parenting of a group and its full subtree - same immediate/toast pattern. */
     private async dropMoveGroupAsync(from: string, targetPath: string, isGlobal: boolean) {
-        const leaf = getGroupLeaf(from),
+        const {viewManagerModel} = this,
+            leaf = getGroupLeaf(from),
             to = composeGroupPath(targetPath, leaf),
             dest = this.toastGroupDisplay(targetPath);
+
+        // The one drop worth interrupting - merging into an existing group folds two libraries
+        // together, which Undo can reverse but a glance at the grid will not reveal.
+        if (!(await confirmGroupMergeIfExistsAsync(viewManagerModel, from, to, isGlobal))) return;
+
+        // Undo per view - a reverse rename would also move views already at the destination.
+        const prevGroups = this.snapshotGroupViews(from, isGlobal);
         let moved = false;
         try {
-            await this.viewManagerModel.renameGroupAsync(from, to, isGlobal);
+            await viewManagerModel.renameGroupAsync(from, to, isGlobal);
             moved = true;
             const message = fragment(
                 'Group ',
@@ -651,9 +660,7 @@ export class ManageDialogModel extends HoistModel {
                 '.'
             );
             this.showMoveToast(message, async () => {
-                await this.viewManagerModel.renameGroupAsync(to, from, isGlobal);
-                await this.viewManagerModel.refreshAsync();
-                await this.refreshAsync();
+                await this.restoreViewGroupsAsync(prevGroups);
                 await this.reselectGroupAsync(from, isGlobal);
             });
         } catch (e) {
@@ -669,7 +676,7 @@ export class ManageDialogModel extends HoistModel {
                 ...this.toastOpts
             });
         } finally {
-            await this.viewManagerModel.refreshAsync();
+            await viewManagerModel.refreshAsync();
             await this.refreshAsync();
         }
         if (moved) await this.reselectGroupAsync(to, isGlobal);
@@ -705,9 +712,20 @@ export class ManageDialogModel extends HoistModel {
     }
 
     /**
-     * Restore each view's previous group from a snapshot taken before a flat move, batched by
-     * distinct prior group so views that came from different groups (a multi-select drop/click)
-     * each land back where they started.
+     * Snapshot the current group path of every view at or nested beneath `path`, within the
+     * global or owned namespace - the set a group move rewrites, captured for a precise undo.
+     */
+    private snapshotGroupViews(path: string, isGlobal: boolean): Map<ViewInfo, string> {
+        const views = this.scopedViews(isGlobal).filter(v =>
+            isGroupSameOrDescendant(v.group, path)
+        );
+        return new Map(views.map(v => [v, v.group ?? null]));
+    }
+
+    /**
+     * Restore each view's previous group from a snapshot taken before a move, batched by distinct
+     * prior group so views that came from different groups (a multi-select drop/click, or a moved
+     * group's nested subtree) each land back where they started.
      */
     private async restoreViewGroupsAsync(prevGroups: Map<ViewInfo, string>) {
         const {viewManagerModel} = this,
@@ -798,10 +816,15 @@ export class ManageDialogModel extends HoistModel {
         XH.successToast({message, ...this.toastOpts});
     }
 
-    /** All group paths within the global or owned views, which namespace their groups separately. */
-    private scopedGroupPaths(isGlobal: boolean): string[] {
+    /** The global or owned views, which namespace their groups separately. */
+    private scopedViews(isGlobal: boolean): ViewInfo[] {
         const {viewManagerModel: vmm} = this;
-        return getAllGroupPaths(isGlobal ? vmm.globalViews : vmm.ownedViews);
+        return isGlobal ? vmm.globalViews : vmm.ownedViews;
+    }
+
+    /** All group paths within the global or owned views. */
+    private scopedGroupPaths(isGlobal: boolean): string[] {
+        return getAllGroupPaths(this.scopedViews(isGlobal));
     }
 
     /**

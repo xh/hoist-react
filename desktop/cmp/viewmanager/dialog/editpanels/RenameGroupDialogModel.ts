@@ -9,7 +9,6 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {
     composeGroupPath,
-    getAllGroupPaths,
     getGroupLeaf,
     getGroupParent,
     isGroupSameOrDescendant,
@@ -20,9 +19,8 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {required, StoreRecord} from '@xh/hoist/data';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {partition} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
-import {groupPathBreadcrumb} from '../GroupPathBreadcrumb';
+import {confirmGroupMergeIfExistsAsync} from '../Utils';
 
 /**
  * Backing model for the RenameGroupDialog - rename/re-nest a single selected group in place,
@@ -85,7 +83,12 @@ export class RenameGroupDialogModel extends HoistModel {
 
         // Run all confirms up front, before applying any changes.
         if (renamePending && !(await this.confirmGlobalRenameAsync())) return false;
-        if (renamePending && !(await this.confirmMergeIfExistsAsync(to))) return false;
+        if (
+            renamePending &&
+            !(await confirmGroupMergeIfExistsAsync(parent.viewManagerModel, group, to, isGlobal))
+        ) {
+            return false;
+        }
         if (renamePending) await parent.renameGroupAsync(group, to, isGlobal);
         return true;
     }
@@ -123,36 +126,6 @@ export class RenameGroupDialogModel extends HoistModel {
             ),
             confirmProps: {
                 text: 'Yes, rename',
-                outlined: true,
-                autoFocus: false,
-                intent: 'primary'
-            }
-        });
-    }
-
-    /**
-     * If the target path already exists as a group in its own right, the rename will merge this
-     * group's views into it - confirm with the user before proceeding.
-     */
-    private async confirmMergeIfExistsAsync(to: string): Promise<boolean> {
-        const {parent, group, isGlobal} = this,
-            {viewManagerModel} = parent,
-            views = isGlobal ? viewManagerModel.globalViews : viewManagerModel.ownedViews,
-            [movingViews, otherViews] = partition(views, v =>
-                isGroupSameOrDescendant(v.group, group)
-            );
-
-        if (!getAllGroupPaths(otherViews).includes(to)) return true;
-
-        return XH.confirm({
-            message: fragment(
-                p(fragment('Group ', groupPathBreadcrumb({path: to}), ' already exists.')),
-                p(
-                    `You will be adding ${pluralize(viewManagerModel.typeDisplayName, movingViews.length, true)} to this group.`
-                )
-            ),
-            confirmProps: {
-                text: 'Yes, merge groups',
                 outlined: true,
                 autoFocus: false,
                 intent: 'primary'

@@ -6,10 +6,16 @@
  */
 
 import {fragment, p, span, strong} from '@xh/hoist/cmp/layout';
-import {normalizeGroupPath, ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {
+    getAllGroupPaths,
+    isGroupSameOrDescendant,
+    normalizeGroupPath,
+    ViewInfo,
+    ViewManagerModel
+} from '@xh/hoist/cmp/viewmanager';
 import {SelectOption, XH} from '@xh/hoist/core';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, every, startCase} from 'lodash';
+import {capitalize, every, partition, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
 
@@ -45,6 +51,37 @@ export function groupValueDisplay(value: string, emphasizeLeaf: boolean = false)
 /** Italic-muted *Top Level* - the standard signal for a value that is not a literal group name. */
 export function topLevelLabel(): ReactNode {
     return span({className: 'xh-view-manager__group-path--sentinel', item: 'Top Level'});
+}
+
+/**
+ * Confirm moving the group at `from` to `to` when a group already exists there, as the two will
+ * merge. Returns true (without prompting) when `to` is free, and for any move that cannot merge.
+ */
+export async function confirmGroupMergeIfExistsAsync(
+    vmm: ViewManagerModel,
+    from: string,
+    to: string,
+    isGlobal: boolean
+): Promise<boolean> {
+    const views = isGlobal ? vmm.globalViews : vmm.ownedViews,
+        [movingViews, otherViews] = partition(views, v => isGroupSameOrDescendant(v.group, from));
+
+    if (!getAllGroupPaths(otherViews).includes(to)) return true;
+
+    return XH.confirm({
+        message: fragment(
+            p(fragment('Group ', groupPathBreadcrumb({path: to}), ' already exists.')),
+            p(
+                `You will be adding ${pluralize(vmm.typeDisplayName, movingViews.length, true)} to this group.`
+            )
+        ),
+        confirmProps: {
+            text: 'Yes, merge groups',
+            outlined: true,
+            autoFocus: false,
+            intent: 'primary'
+        }
+    });
 }
 
 /**
