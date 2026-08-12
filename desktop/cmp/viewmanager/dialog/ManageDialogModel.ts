@@ -36,7 +36,18 @@ import {Icon} from '@xh/hoist/icon';
 import {GridOptions, RowDropZoneEvents} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, compact, every, groupBy, isEqual, keys, some, startCase, uniqBy} from 'lodash';
+import {
+    capitalize,
+    compact,
+    every,
+    groupBy,
+    isEqual,
+    keys,
+    some,
+    startCase,
+    uniq,
+    uniqBy
+} from 'lodash';
 import {createRef, ReactNode} from 'react';
 import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
 import {confirmGroupMergeIfExistsAsync} from './Utils';
@@ -414,8 +425,28 @@ export class ManageDialogModel extends HoistModel {
             // Views can land in a group that is new to the grid they moved to, which returns
             // from a refresh collapsed.
             this.expandAllGrids();
+            await this.reselectViewsAsync(views);
         }
-        // No reselect - views may have moved between tabs.
+    }
+
+    /**
+     * Reselect views after a bulk update, following them to their new tab when they all landed in
+     * the same one - a visibility change moves the entire batch together, while a group change
+     * leaves every view where it was.
+     */
+    private async reselectViewsAsync(views: ViewInfo[]) {
+        const tokens = views.map(it => it.token),
+            updated = this.viewManagerModel.views.filter(it => tokens.includes(it.token)),
+            tabIds = uniq(updated.map(it => this.tabIdFor(it)));
+        if (tabIds.length !== 1) return;
+
+        this.tabContainerModel.setActiveTabId(tabIds[0]);
+        await this.gridModel?.selectAsync(updated.map(it => it.token));
+    }
+
+    /** Tab displaying a given view - views you own show in your own tab, even when shared. */
+    private tabIdFor(view: ViewInfo): GridType {
+        return view.isOwned ? 'owned' : view.isGlobal ? 'global' : 'shared';
     }
 
     private async doRenameGroupAsync(from: string, to: string, isGlobal: boolean) {
@@ -851,9 +882,7 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async selectViewAsync(view: ViewInfo) {
-        this.tabContainerModel.setActiveTabId(
-            view.isOwned ? 'owned' : view.isGlobal ? 'global' : 'shared'
-        );
+        this.tabContainerModel.setActiveTabId(this.tabIdFor(view));
         // Ensure the target is not hidden within a collapsed group before selecting.
         this.gridModel.expandAll();
         await this.gridModel.selectAsync(view.token);
