@@ -322,10 +322,8 @@ export class View
     /**
      * Create a new row data object as a clone of this View's shared template, which carries a
      * slot for every ViewRowData property and query field. Rows are only ever written via
-     * overwrites of these slots - never property adds - keeping them in V8's compact
-     * fast-properties mode rather than "dictionary mode". Rows retained across query changes may
-     * carry a prior query's (superset) shape - the RowCache retains rows only when the current
-     * fields are a subset of those they were minted with.
+     * overwrites of these slots - never property adds - so all rows in a View share one fixed
+     * shape, keeping them in V8's compact fast-properties mode rather than "dictionary mode".
      * @internal
      */
     newRowData(id: string): ViewRowData {
