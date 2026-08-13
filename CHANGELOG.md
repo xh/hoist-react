@@ -4,7 +4,7 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
 
-Hoist Reaact v87 is a BIG release with a number of potentially breaking changes and many new
+Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
 features and performance optimizations, grouped by topic below.
 
 #### React 19 and Build Tooling
@@ -56,6 +56,10 @@ features and performance optimizations, grouped by topic below.
   to views that users have curated and named. The columns remain available in the column chooser.
   Set the new `GridModelPersistOptions.hideNewColumns` config to `false` to restore the previous
   behavior.
+
+#### View Manager -- Support for nested groups.
+
+* Requires `hoist-core >= 41.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
@@ -179,6 +183,14 @@ columns.
 * Added a `RestGrid.formBbar` prop to replace the record editor form's default toolbar.
 * Added JSON validation to `RestGrid` editor forms for `json`-type fields, including those
   dynamically typed via a `typeField`.
+* `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus in the
+  ViewManager menu and as expandable tree grids in the Manage dialog. Groups and views support
+  drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades
+  to every view nested beneath it. The `ViewManager` also supports bulk editing of
+  views' pin and visibility state.
+* `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within
+  the control.
+* `TextInput` now accepts a `leftElement` prop, rendered inline at the left of the input.
 
 ### 🐞 Bug Fixes
 

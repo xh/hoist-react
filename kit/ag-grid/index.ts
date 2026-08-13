@@ -53,6 +53,7 @@ export type {
     RowDoubleClickedEvent,
     RowClickedEvent,
     RowHeightParams,
+    RowDropZoneEvents,
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,

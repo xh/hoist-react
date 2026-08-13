@@ -148,6 +148,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     optionRenderer?: (opt: SelectOption) => ReactNode;
 
     /**
+     * Renderer for the selected value within the control itself, called with the option matching
+     * the current value. Defaults to displaying the option's `label`.
+     */
+    valueRenderer?: (opt: SelectOption) => ReactNode;
+
+    /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
      * Primitives will be displayed via toString().
      * Objects must have either:
@@ -555,7 +561,8 @@ class SelectInputModel extends HoistInputModel {
     formatOptionLabel = (opt, params) => {
         // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
-            return opt.label;
+            const {valueRenderer} = this.componentProps;
+            return valueRenderer ? valueRenderer(opt) : opt.label;
         }
 
         // For rendering dropdown menu items, use an optionRenderer if provided - or use the
