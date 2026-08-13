@@ -6,7 +6,7 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {isEmpty} from 'lodash';
+import {forEach, isEmpty} from 'lodash';
 import {BucketSpec} from '../BucketSpec';
 import {CubeField} from '../CubeField';
 import {View} from '../View';
@@ -35,10 +35,15 @@ export abstract class ParentRow extends BaseRow {
     private depth: number = null;
 
     // Values of the dimensions applied at this row, retained only to hand to a `canAggregateFn`.
-    private appliedDimensions: PlainObject = null;
+    protected appliedDimensions: PlainObject = null;
 
     /** True if this row's children have been hidden from results by the Query's `lockFn`. */
     locked: boolean = false;
+
+    // Reuse bookkeeping, written by RowCache: the generation that last requested this row, and
+    // the cache's cube-data version as of then.
+    lastUsedGen = 0;
+    lastUsedDataVersion: number = null;
 
     /** The dimension or bucket by which this row groups its children, and its value here. */
     protected abstract get dimOrBucketName(): string;
@@ -50,7 +55,16 @@ export abstract class ParentRow extends BaseRow {
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        Object.assign(this.data, appliedDimensions);
+        // Publish applied dimension values only where they are queried fields - always the case
+        // when the query auto-includes its dimensions.
+        if (view.query.autoIncludeDimensions) {
+            Object.assign(this.data, appliedDimensions);
+        } else {
+            const fieldNames = view._queryFieldNames;
+            forEach(appliedDimensions, (v, name) => {
+                if (fieldNames.has(name)) this.data[name] = v;
+            });
+        }
         this.depth = depth;
 
         // Needed to re-evaluate any `canAggregateFn` - clone, as the View mutates its copy as it
@@ -101,6 +115,34 @@ export abstract class ParentRow extends BaseRow {
     //-------------------
     // Aggregation
     //--------------------
+    /**
+     * Reuse this cached row for a new generation, adopting the (possibly changed) children array
+     * and re-pointing each child at this row. When `recomputeAll`, re-evaluate `canAggregateFn`
+     * results and recompute every aggregate at this row's depth in place - required when children
+     * changed, or when this row sat out a generation across which cube data changed (its children
+     * may have been updated in place under other parents, so an identical children array does not
+     * imply identical values). Otherwise recompute only context-dependent fields, per
+     * `recomputeAggregatesForContextChange`. Returns true if any value changed - the caller must
+     * then bump this row's digest.
+     */
+    reuse(children: BaseRow[], recomputeAll: boolean, recomputeForContext: boolean): boolean {
+        this.children = children;
+        children.forEach(it => (it.parent = this));
+
+        if (recomputeAll) {
+            this.recomputeCanAggregate();
+            let changed = false;
+            this.view._aggFieldsByDepth[this.depth].forEach(field => {
+                if (this.recomputeAggregate(field)) changed = true;
+            });
+            return changed;
+        }
+        if (recomputeForContext) {
+            return this.recomputeAggregatesForContextChange(this.recomputeCanAggregate());
+        }
+        return false;
+    }
+
     /** Re-evaluate this row's `canAggregateFn` fields, returning any that changed - else null. */
     recomputeCanAggregate(): string[] {
         let changes = null;
@@ -181,9 +223,12 @@ export class AggregateRow extends ParentRow {
         return this.dimName;
     }
 
-    // Value of `dim` on `data`, never aggregated over - or 'Total' for a dimension-less summary.
+    // Value of `dim` at this row - or 'Total' for a dimension-less summary. Read from the
+    // retained `appliedDimensions` rather than `data`, where the value may not be published -
+    // see Query.autoIncludeDimensions. Only consumed by a `canAggregateFn` (via
+    // evalCanAggregate), exactly the condition under which `appliedDimensions` is retained.
     protected get dimOrBucketVal(): any {
-        return this.dim ? this.data[this.dimName] : this.dimName;
+        return this.dim ? this.appliedDimensions[this.dimName] : this.dimName;
     }
 
     constructor(

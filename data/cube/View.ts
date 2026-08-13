@@ -148,6 +148,7 @@ export class View
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
     _aggFieldsByDepth: CubeField[][] = null;
     _aggFieldNamesByDepth: Set<string>[] = null;
+    _queryFieldNames: Set<string> = null;
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
     _aggContext: AggregationContext = null;
@@ -248,12 +249,19 @@ export class View
 
     /** Gather all unique values for each dimension field in the query. */
     getDimensionValues(): DimensionValue[] {
-        const ret = this.query.fields
-            .filter(it => it.isDimension)
-            .map(field => ({field, values: new Set<any>()}));
+        // Applied dimensions are appended for queries that do not auto-include them in fields.
+        const {query} = this,
+            dimFields = uniq([
+                ...query.fields.filter(it => it.isDimension),
+                ...(query.dimensions ?? [])
+            ]),
+            ret = dimFields.map(field => ({field, values: new Set<any>()}));
 
         this._leafMap.forEach(leaf => {
-            ret.forEach(({field, values}) => values.add(leaf.data[field.name]));
+            // Read via the source record - cube record data always carries dimension values,
+            // while leaf data omits them when `autoIncludeDimensions` is false.
+            const {data} = leaf.cubeRecord;
+            ret.forEach(({field, values}) => values.add(data[field.name]));
         });
 
         return ret;
@@ -319,8 +327,10 @@ export class View
     /**
      * Create a new row data object as a clone of this View's shared template, which carries a
      * slot for every ViewRowData property and query field. Rows are only ever written via
-     * overwrites of these slots - never property adds - so all rows in a View share one fixed
-     * shape, keeping them in V8's compact fast-properties mode rather than "dictionary mode".
+     * overwrites of these slots - never property adds - keeping them in V8's compact
+     * fast-properties mode rather than "dictionary mode". Rows retained across query changes may
+     * carry a prior query's (superset) shape - see `pruneCacheForQueryChange`, which retains
+     * rows only when the current fields are a subset of those they were minted with.
      * @internal
      */
     newRowData(id: string): ViewRowData {
@@ -348,6 +358,7 @@ export class View
 
         // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
         this._rowDataTemplate = {...rowData} as ViewRowData;
+        this._queryFieldNames = new Set(this.fieldNames);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
@@ -380,20 +391,37 @@ export class View
         // 0) Filter change only is a no-op - great for fast filter toggling
         if (oldQuery.equalsExcludingFilter(newQuery)) return;
 
-        // 1) If fields/leaves or buckets are changing, just blow everything away.
+        // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate rows
+        // wholesale - blow everything away. A gained field is one absent from the prior query:
+        // rows built while it was out of the query hold null or last-known values for it. Note
+        // fields dropped from the query do NOT invalidate - retained rows keep their (superset)
+        // slots, which simply stop updating and are out of the published contract.
         const cache = this._rowCache,
             oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
             newExposed = newQuery.includeLeaves || newQuery.provideLeaves,
-            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields),
+            oldFieldNames = new Set(map(oldQuery.fields, 'name')),
+            fieldsGained = newQuery.fields.some(it => !oldFieldNames.has(it.name)),
             bucketsRemoved = oldQuery.bucketSpecFn && !newQuery.bucketSpecFn;
-        if (oldExposed !== newExposed || (newExposed && fieldsChanged) || bucketsRemoved) {
+        if (oldExposed !== newExposed || (newExposed && fieldsGained) || bucketsRemoved) {
             cache.clear();
             return;
         }
 
-        // 2) Otherwise, blow away parent rows (they are not worth saving). Surviving leaves that
-        // moved to new tree positions are detected by connected stores' treePath checks.
-        cache.removeParentRows();
+        // 2) Field gains with hidden leaves, or a change of bucketSpecFn: leaves remain valid
+        // (hidden leaves adopt complete cube record data), but parents hold aggregates never
+        // computed for the gained field, or bucket rows a stale BucketSpec.
+        if (fieldsGained || oldQuery.bucketSpecFn !== newQuery.bucketSpecFn) {
+            cache.removeParentRows();
+            return;
+        }
+
+        // 3) Otherwise retain everything. Reused parents recompute in place as needed, and
+        // surviving leaves that moved to new tree positions are detected by connected stores'
+        // treePath checks. Parents orphaned by a change of grouping are evicted when the coming
+        // generation ends - their id space would otherwise accumulate for the life of the view.
+        if (!isEqual(oldQuery.dimensions, newQuery.dimensions)) {
+            cache.evictUnusedParentsAtGenerationEnd();
+        }
     }
 
     @logWithDebug

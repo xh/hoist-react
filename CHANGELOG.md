@@ -95,13 +95,23 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
   available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
   automatically.
-* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, and regrouping
-  or filtering. Unchanged rows - validated against their source records and child rows - keep their
-  data objects and reuse digests. This skips re-aggregation for untouched subtrees, and record
-  rebuilds in connected stores. Update costs now scale with the size of the change rather than the
-  size of the dataset. Complex (non-`dependsOnChildrenOnly`)
-  aggregators also reuse their rows, re-deriving all aggregations in place on each generation and
-  republishing only the values that actually changed.
+* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping,
+  and filtering. Leaf rows reuse when backed by an unchanged source record, and aggregate rows now
+  reuse even when their children change - re-deriving their aggregations in place and republishing
+  only values that actually changed. Changes of grouping, filter, or field set leave every
+  unaffected row's data object and reuse digest intact - e.g. adding or dropping a trailing
+  dimension republishes nothing above the level that moved - so connected stores and grids skip
+  the matching record rebuilds and re-renders. Update costs now scale with the size of the change
+  rather than the size of the dataset. Complex (non-`dependsOnChildrenOnly`) aggregators re-derive
+  in place on every generation. Note rows retained across a query change that drops fields keep
+  their slots for those fields, which simply stop updating - apps must not read fields that are
+  not in the current query.
+* Added `QueryConfig.autoIncludeDimensions` (default `true`, matching established behavior of
+  merging `dimensions` into `fields`). Set `false` to keep an explicit `fields` list exactly as
+  specified: dimension values are then not published on row data at all, so the published row
+  shape no longer varies with grouping and a `View` reuses every leaf - and connected stores skip
+  every record rebuild - across any regrouping. Not suitable for views that render dimension
+  values as grid columns or read them from row data in `lockFn`/`omitFn`/`bucketSpecFn`.
 * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store. A source that
   supplies per-row digests can now preserve record identity across full `Cube.loadDataAsync()`
   reloads, extending View row reuse to wholesale refreshes.
