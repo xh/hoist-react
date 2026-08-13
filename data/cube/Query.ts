@@ -136,7 +136,9 @@ export interface QueryConfig {
  * @mcpHint query spec against a Cube, produced by executeQuery / createView
  */
 export class Query {
-    /** Queried fields, sorted by name. Includes `dimensions`, added here if not already present. */
+    /**
+     * Queried fields, sorted by name. Includes `dimensions`, added here if not already present.
+     */
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];
     readonly filter: Filter;

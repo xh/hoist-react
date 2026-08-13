@@ -167,6 +167,10 @@ view.updateQuery({
 view.setFilter({field: 'year', op: '=', value: 2025});
 ```
 
+Query updates are highly incremental - the View caches its generated rows and republishes
+unchanged rows (and their record-reuse digests) across regrouping, refiltering, and field
+changes, so connected stores and grids only process rows that actually changed.
+
 **One-shot queries with `executeQuery`:**
 
 For cases where you need aggregated data once without retaining a View — e.g. computing a

@@ -6,6 +6,7 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {isEmpty} from 'lodash';
 import {BucketSpec} from '../BucketSpec';
 import {CubeField} from '../CubeField';
@@ -35,7 +36,7 @@ export abstract class ParentRow extends BaseRow {
     private depth: number = null;
 
     // Values of the dimensions applied at this row, retained only to hand to a `canAggregateFn`.
-    private appliedDimensions: PlainObject = null;
+    protected appliedDimensions: PlainObject = null;
 
     /** True if this row's children have been hidden from results by the Query's `lockFn`. */
     locked: boolean = false;
@@ -102,8 +103,41 @@ export abstract class ParentRow extends BaseRow {
     //-------------------
     // Aggregation
     //--------------------
+    /** Reuse this row for a new generation, recomputing in place as needed - null to rebuild. */
+    reuse(children: BaseRow[], genStartDigest: number): ParentRow {
+        const {view, isBucket} = this,
+            childrenEqual = shallowEqualArrays(this.children, children);
+
+        // 0) Can't reuse a bucket with different children
+        if (!childrenEqual && isBucket) return null;
+
+        // 1) Rewire children if needed
+        if (!childrenEqual) {
+            this.children = children;
+            children.forEach(it => (it.parent = this));
+        }
+
+        // 2) Re-aggregate, only if needed, and mark if changes resulted.
+        let changed = false;
+        const simpleAggsAreCurrent =
+            childrenEqual &&
+            !isBucket &&
+            !children.some(it => it.data.cubeRowDigest > genStartDigest);
+        if (!simpleAggsAreCurrent) {
+            this.recomputeCanAggregate();
+            view._aggFieldsByDepth[this.depth].forEach(field => {
+                if (this.recomputeAggregate(field)) changed = true;
+            });
+        } else if (view.hasContextDependentFields) {
+            changed = this.recomputeAggregatesForContextChange(this.recomputeCanAggregate());
+        }
+
+        if (changed) view.noteRowDataMutated(this.data);
+        return this;
+    }
+
     /** Re-evaluate this row's `canAggregateFn` fields, returning any that changed - else null. */
-    recomputeCanAggregate(): string[] {
+    private recomputeCanAggregate(): string[] {
         let changes = null;
         this.view._canAggregateFnFieldsByDepth[this.depth].forEach(field => {
             const {name} = field,
@@ -117,7 +151,7 @@ export abstract class ParentRow extends BaseRow {
         return changes;
     }
 
-    recomputeAggregatesForContextChange(force: string[]): boolean {
+    private recomputeAggregatesForContextChange(force: string[]): boolean {
         const {view} = this;
         let changed = false;
 
