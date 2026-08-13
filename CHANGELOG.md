@@ -99,14 +99,12 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   and filtering. Aggregate rows now reuse even when their children change - re-deriving in place
   and republishing only values that actually changed - so e.g. dropping a trailing dimension
   republishes nothing above the level that moved, and connected stores and grids skip the
-  matching record rebuilds. Update costs scale with the size of the change, not the dataset.
-  Note fields dropped from a query stop updating on retained rows - do not read fields outside
-  the current query.
+  matching record rebuilds.
 * Added `QueryConfig.autoIncludeDimensions` (default `true`, the established behavior). Set
   `false` to keep an explicit `fields` list exactly as specified: dimension values are then not
   published on row data, so row shape no longer varies with grouping and every leaf survives any
-  regroup. Unsuitable for views that render dimension values as columns or read them from row
-  data in `lockFn`/`omitFn`/`bucketSpecFn`.
+  regroup. If you set this flag and need these values for grid columns or in your
+  `lockFn`/`omitFn`/`bucketSpecFn`, specify your dimension explicitly in `fields`.
 * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store. A source that
   supplies per-row digests can now preserve record identity across full `Cube.loadDataAsync()`
   reloads, extending View row reuse to wholesale refreshes.

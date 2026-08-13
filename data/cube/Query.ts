@@ -61,12 +61,8 @@ export interface QueryConfig {
      *
      * False to leave `fields` exactly as specified - dimension values are then not published on
      * row data at all, with grouping expressed only via tree structure, row ids and
-     * `cubeLabel`/`cubeDimension`. Grids cannot then render dimension values as columns, and app
-     * `lockFn`/`omitFn`/`bucketSpecFn` implementations will not find them on row data. In
-     * exchange, the published row shape no longer varies with grouping, allowing a connected
-     * View to reuse rows - and its stores and grids to skip updates - much more aggressively
-     * when regrouping. Note `fields` defaults to all Cube fields when unspecified, so an
-     * explicit `fields` list is required for this option to have any effect.
+     * `cubeLabel`/`cubeDimension`. Note `fields` defaults to all Cube fields when unspecified,
+     * so an explicit `fields` list is required for this option to have any effect.
      */
     autoIncludeDimensions?: boolean;
 
