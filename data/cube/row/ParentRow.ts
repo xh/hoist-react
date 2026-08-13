@@ -6,6 +6,7 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {forEach, isEmpty} from 'lodash';
 import {BucketSpec} from '../BucketSpec';
 import {CubeField} from '../CubeField';
@@ -50,8 +51,7 @@ export abstract class ParentRow extends BaseRow {
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        // Publish applied dimension values only where they are queried fields - always the case
-        // when the query auto-includes its dimensions (the default).
+        // Publish applied dimension values only where they are queried fields
         const fieldNames = view._queryFieldNames;
         forEach(appliedDimensions, (v, name) => {
             if (fieldNames.has(name)) this.data[name] = v;
@@ -107,34 +107,52 @@ export abstract class ParentRow extends BaseRow {
     // Aggregation
     //--------------------
     /**
-     * Reuse this cached row for a new generation, adopting the (possibly changed) children array
-     * and re-pointing each child at this row. When `recomputeAll`, re-evaluate `canAggregateFn`
-     * results and recompute every aggregate at this row's depth in place - required when children
-     * changed, when a child's values changed in place this generation, or on any bucket row -
-     * see RowCache.reuseParentRow. Otherwise recompute only context-dependent fields, per
-     * `recomputeAggregatesForContextChange`. Returns true if any value changed - the caller must
-     * then bump this row's digest.
+     * Reuse this cached row for a new generation: adopt the passed children array, re-point each
+     * child at this row (it may have been adopted by another parent while this row sat out a
+     * generation), and recompute aggregates in place as needed - bumping this row's digest only
+     * if some published value actually changed.
+     *
+     * Recomputation is skipped only when this row is provably current: an AggregateRow whose
+     * children are identical, none of whose values changed in place this generation - detected
+     * by a child `cubeRowDigest` postdating `startDigest`, the view's digest watermark captured
+     * at generation start. Rows recompute bottom-up, so a changed child's digest bump cascades
+     * recomputes up through reused ancestors. (Hidden leaves publish no digest, but no leaf can
+     * change values in place within a generation - leaf reuse is gated on record identity, so a
+     * changed leaf is a new object and fails the children-identity check instead.) Dormancy
+     * needs no check for aggregate rows: filter-dormant subtrees are coherently dormant (their
+     * leaves receive no in-place updates, and a changed record rebuilds its leaf and changes the
+     * children array), and grouping-orphaned rows are evicted rather than revived. Bucket rows
+     * always recompute - data-driven migration can idle a bucket while its children stay live
+     * and drift, and they are too few to warrant a finer rule.
+     *
+     * Even a current row re-derives context-reading fields - complex aggregators and
+     * `canAggregateFn` results - which may move with the per-generation AggregationContext.
      */
-    reuse(children: BaseRow[], recomputeAll: boolean, recomputeForContext: boolean): boolean {
+    reuse(children: BaseRow[], startDigest: number) {
+        const {view} = this,
+            current =
+                this.isAggregate &&
+                shallowEqualArrays(this.children, children) &&
+                !children.some(it => it.data.cubeRowDigest > startDigest);
+
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        if (recomputeAll) {
+        let changed = false;
+        if (!current) {
             this.recomputeCanAggregate();
-            let changed = false;
-            this.view._aggFieldsByDepth[this.depth].forEach(field => {
+            view._aggFieldsByDepth[this.depth].forEach(field => {
                 if (this.recomputeAggregate(field)) changed = true;
             });
-            return changed;
+        } else if (view.hasContextDependentFields) {
+            changed = this.recomputeAggregatesForContextChange(this.recomputeCanAggregate());
         }
-        if (recomputeForContext) {
-            return this.recomputeAggregatesForContextChange(this.recomputeCanAggregate());
-        }
-        return false;
+
+        if (changed) view.noteRowDataMutated(this.data);
     }
 
     /** Re-evaluate this row's `canAggregateFn` fields, returning any that changed - else null. */
-    recomputeCanAggregate(): string[] {
+    private recomputeCanAggregate(): string[] {
         let changes = null;
         this.view._canAggregateFnFieldsByDepth[this.depth].forEach(field => {
             const {name} = field,
@@ -148,7 +166,7 @@ export abstract class ParentRow extends BaseRow {
         return changes;
     }
 
-    recomputeAggregatesForContextChange(force: string[]): boolean {
+    private recomputeAggregatesForContextChange(force: string[]): boolean {
         const {view} = this;
         let changed = false;
 

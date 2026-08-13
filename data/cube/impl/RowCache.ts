@@ -7,7 +7,6 @@
 
 import type {StoreRecord} from '@xh/hoist/data';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
-import {isEmpty} from 'lodash';
 import type {BaseRow} from '../row/BaseRow';
 import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
 import type {ParentRow} from '../row/ParentRow';
@@ -28,9 +27,9 @@ import type {View} from '../View';
  * postdating the generation start cascades recomputes up through reused ancestors - replacing
  * the ancestor-chain rebuilds that reuse-in-place avoids. Bucket rows reuse only on an identical
  * children array (changed membership would require re-deriving their BucketSpec) and always
- * recompute - see `reuseParentRow`. Reused rows keep their `cubeRowDigest`, letting connected
- * stores - which read that stamp via a View-installed reuse digest - skip record rebuilds for
- * them.
+ * recompute. See {@link ParentRow.reuse}, which owns the full skip/recompute contract. Reused
+ * rows keep their `cubeRowDigest`, letting connected stores - which read that stamp via a
+ * View-installed reuse digest - skip record rebuilds for them.
  *
  * Views with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly}, or with
  * fields that define a `canAggregateFn` - both of which may read the per-generation
@@ -53,7 +52,6 @@ import type {View} from '../View';
 export class RowCache {
     private view: View;
     private rows = new Map<string, BaseRow>();
-    private recomputeAggs = false;
     private exposedLeaves = false;
     private sweptAsOf: number = null;
     private genStartDigest = 0;
@@ -64,7 +62,6 @@ export class RowCache {
     private reused = 0;
     private rebuilt = 0;
     private created = 0;
-    private recomputed = 0;
     private evicted = 0;
     private removed = 0;
     private sweepTime = 0;
@@ -103,11 +100,11 @@ export class RowCache {
                     return ret as T;
                 }
             } else {
-                const childrenEqual = shallowEqualArrays(ret.children, children);
                 // BucketRows with changed children rebuild - their BucketSpec and label would
                 // need re-deriving from the new membership.
-                if (childrenEqual || ret.isAggregate) {
-                    this.reuseParentRow(ret as ParentRow, children, childrenEqual);
+                if (ret.isAggregate || shallowEqualArrays(ret.children, children)) {
+                    (ret as ParentRow).reuse(children, this.genStartDigest);
+                    this.usedParents?.add(ret);
                     this.reused++;
                     return ret as T;
                 }
@@ -122,43 +119,12 @@ export class RowCache {
         return ret as T;
     }
 
-    // Reuse a cached parent, adopting the passed children (re-pointing each at this row - a
-    // child may have been adopted by another parent while this one sat out a generation) and
-    // recomputing aggregates as needed, with the digest bumped only on actual value change.
-    private reuseParentRow(row: ParentRow, children: BaseRow[], childrenEqual: boolean) {
-        // Skip the full recompute only when provably current: an aggregate row with children
-        // identical, none of whose values changed in place this generation - detected by a
-        // `cubeRowDigest` postdating the generation-start watermark. Rows recompute bottom-up,
-        // so a changed child's digest bump cascades recomputes up through reused ancestors.
-        // (Hidden leaves publish no digest, but no leaf can change values in place within a
-        // generation - leaf reuse is gated on record identity, so a changed leaf is a new object
-        // and fails the children-identity check instead.) Dormancy needs no check for aggregate
-        // rows: filter-dormant subtrees are coherently dormant (their leaves are not in
-        // `_leafMap`, so receive no in-place updates, and a changed record rebuilds its leaf and
-        // changes this children array), and grouping-orphaned parents are evicted rather than
-        // revived. Bucket rows always recompute - data-driven migration can idle a bucket while
-        // its children stay live and drift, and they are too few to warrant a finer rule.
-        const {genStartDigest} = this,
-            current =
-                childrenEqual &&
-                row.isAggregate &&
-                !children.some(it => it.data.cubeRowDigest > genStartDigest);
-
-        if (!current || this.recomputeAggs) this.recomputed++;
-        if (row.reuse(children, !current, this.recomputeAggs)) {
-            this.view.noteRowDataMutated(row.data);
-        }
-        this.usedParents?.add(row);
-    }
-
     beginGeneration() {
         const {view} = this;
         this.genStartDigest = view._rowDigest;
         this.usedParents = this.evictUnusedParents ? new Set() : null;
-        this.recomputeAggs =
-            !view.aggregatorsAreSimple || !isEmpty(view._canAggregateFnFieldsByDepth[0]);
         this.exposedLeaves = view.exposesLeaves;
-        this.reused = this.rebuilt = this.created = this.recomputed = 0;
+        this.reused = this.rebuilt = this.created = 0;
         this.evicted = this.removed = this.sweepTime = 0;
     }
 
@@ -170,9 +136,9 @@ export class RowCache {
         }
         this.sweep();
         this.view.logDebug(
-            `Generated rows: reused=${this.reused} recomputed=${this.recomputed} ` +
-                `rebuilt=${this.rebuilt} created=${this.created} ` +
-                `cached=${this.size} evicted=${this.evicted} removed=${this.removed} ` +
+            `Generated rows: reused=${this.reused} rebuilt=${this.rebuilt} ` +
+                `created=${this.created} cached=${this.size} ` +
+                `evicted=${this.evicted} removed=${this.removed} ` +
                 `sweepTime=${this.sweepTime.toFixed(1)}ms`
         );
     }

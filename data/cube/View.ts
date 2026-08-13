@@ -703,6 +703,16 @@ export class View
         return isEmpty(this._complexAggFieldsByDepth[0]);
     }
 
+    /**
+     * True if reused parent rows must re-derive context-reading fields - complex aggregators and
+     * `canAggregateFn` results - on every generation, as either may move with the
+     * per-generation AggregationContext. See {@link ParentRow.reuse}.
+     * @internal
+     */
+    get hasContextDependentFields(): boolean {
+        return !this.aggregatorsAreSimple || !isEmpty(this._canAggregateFnFieldsByDepth[0]);
+    }
+
     private parseStores(stores: Some<Store>): Store[] {
         const ret = castArray(stores);
 
