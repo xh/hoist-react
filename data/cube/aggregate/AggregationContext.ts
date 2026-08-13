@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {throwIf} from '@xh/hoist/utils/js';
 import {StoreRecord} from '../../StoreRecord';
 import {View} from '../View';
 
@@ -25,11 +26,21 @@ export class AggregationContext {
      */
     appData: any;
 
-    private _records: StoreRecord[] = null;
-
-    /** All records currently meeting the filter for this view. Materialized lazily on first read.*/
+    /**
+     * All records currently meeting the filter for this view.
+     *
+     * Available only when an aggregator on the view declares
+     * {@link Aggregator.dependsOnChildrenOnly} as false - the View then rebuilds its filtered
+     * records before every aggregation pass. Views with children-only aggregators update
+     * incrementally without refreshing that collection, so reading it here throws.
+     */
     get filteredRecords(): StoreRecord[] {
-        return (this._records ??= Array.from(this.view._recordMap.values()));
+        const {view} = this;
+        throwIf(
+            view.aggregatorsAreSimple,
+            'filteredRecords is available only when an aggregator declares `dependsOnChildrenOnly` as false - aggregators depending on records beyond their own children must do so.'
+        );
+        return view._records.list;
     }
 
     constructor(view: View) {

@@ -8,7 +8,6 @@
 import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {RecordDigest, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {RecordSetDelta} from '../impl/RecordSet';

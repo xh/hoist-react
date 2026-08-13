@@ -2,179 +2,267 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19 upgrade)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
 
-* Hoist v87 updates to React 19. Apps may require minor adjustments - test carefully.
-    * Apply any type adjustments needed to meet React 19's stricter typing. See
-      https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
-    * Both desktop and mobile `Popover` implementations now render on Floating UI, rather than
-      Popper.js, which is not React-19 compatible. This changes the underlying DOM and CSS classes
-      for popovers. Test popover-based UI (menus, selects, date inputs, filter choosers) and adjust
-      any custom styling that targeted Blueprint or Popper CSS classes (e.g. `bp6-minimal`).
+Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
+features and performance optimizations, grouped by topic below.
+
+#### React 19 and Build Tooling
+
+* Hoist v87 upgrades to React 19. Most apps need only minor adjustments, but test carefully.
+    * Adjust types as needed to satisfy React 19's stricter typings. See
+      https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for details.
+    * Both the desktop and mobile `Popover` components now render on Floating UI instead of
+      Popper.js, which does not support React 19. The DOM structure and CSS classes for popovers
+      have changed. Test all popover-based UI - menus, selects, date inputs, and filter choosers -
+      and update any custom styles that targeted Blueprint or Popper CSS classes (e.g.
+      `bp6-minimal`).
     * Removed the `popperOptions` escape-hatch prop from the mobile `Popover`.
-* Requires `@xh/hoist-dev-utils >= 14.0`, the build-tooling release paired and tested with v87.
-  It ships the matching `@types/react` 19.x and adds support for pnpm as the app package manager
-  (optional - yarn classic and npm remain fully supported). See
-  [Version Compatibility](docs/version-compatibility.md).
+    * Requires `@xh/hoist-dev-utils >= 14.0`, the build-tooling release tested with v87. It provides
+      the matching `@types/react` 19.x and adds optional support for pnpm as the app package
+      manager - yarn classic and npm remain fully supported.
+
+#### Data - Cube, Store, and Records
+
 * `View.result.leafMap` is now null unless the `Query` sets `includeLeaves` or `provideLeaves`. Set
-     either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
-* Leaf rows published by Cube `View`s now use their source cube record's id as their row/record
-  id, rather than a generated id encoding the row's full dimension path. Review any code that
-  parses leaf row ids - aggregate and bucket row ids are unchanged. `Store.idEncodesTreePath` may
-  no longer be configured on a connected store -- it is now supplanted by more effective
-  performance optimzations.
-* New exported `getCubeLeaves()` helper replaces the `ViewRowData.cubeLeaves` getter, supporting
-  important memory optimizations in this version. Update any code reading `row.cubeLeaves` to call
-  `getCubeLeaves(row)`.
-* Read `StoreRecord.data` by field name only - enumerating, spreading, or calling `JSON.stringify()`
-  on this object does not reliably see default field values. Review any code enumerating `data`
-  directly and use `StoreRecord.getValues()` / `getModifiedValues()` instead. This never worked
-  reliably, but the new memory optimizations in this version make it far more likely to bite.
-* Grid columns newly added to the code are now initially hidden when column state is persisted to a
-  `ViewManagerModel` or `DashViewModel`, ensuring a software release does not add columns to views
-  users have curated and named. They remain available via the column chooser. Set the new
-  `GridModelPersistOptions.hideNewColumns` config to `false` to restore the prior behavior.
+  either flag if an aggregate-only view needs leaf access, or read source records from `Cube.store`.
+* Leaf rows published by Cube `View`s now use the id of their source cube record. They no longer use
+  a generated id that encodes the row's full dimension path. Review any code that parses leaf row
+  ids - aggregate and bucket row ids are unchanged. `Store.idEncodesTreePath` can no longer be set
+  on a View-connected store, as more effective performance optimizations have replaced it.
+* Added an exported `getCubeLeaves()` helper to replace the `ViewRowData.cubeLeaves` getter,
+  supporting important memory optimizations in this release. Update any code that reads
+  `row.cubeLeaves` to call `getCubeLeaves(row)`.
+* `StoreRecord.data` must be read by field name only. Enumerating, spreading, or calling
+  `JSON.stringify()` on this object does not reliably see default field values. Use
+  `StoreRecord.getValues()` or `getModifiedValues()` instead. This never worked reliably, but the
+  new memory optimizations in this release make it much more likely to cause a problem.
 * `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
-  rather than their ids - removed records cannot be resolved against the Store after the fact,
-  making the records themselves the more useful report. Read `record.id` where ids are needed.
+  instead of their ids. Removed records cannot be resolved against the Store after the fact, so the
+  records themselves are the more useful report. Read `record.id` where you need ids.
+
+#### Grid - New Column Chooser and Column State
+
+* Re-implemented the desktop grid column chooser (see New Features below). Its UX is substantially
+  improved yet also different - review before release to ensure key stakeholders are not surprised.
+* Apps that register an explicit list of ag-Grid modules (instead of `AllCommunityModule`) must add
+  `RowDragModule`. Without it, the chooser's drag-and-drop fails silently.
+* `Column.chooserGroup` now groups columns only within the new, opt-in Column Library. Set
+  `colChooserModel: {columnLibrary: true}` to keep a grouped presentation of hidden columns.
+* Update or remove any custom styles that targeted the chooser's former `LeftRightChooser`- based
+  DOM. The chooser now renders its own grids and CSS classes in a different layout.
+* Columns newly added to the code are now hidden initially when column state persists to a
+  `ViewManagerModel` or `DashViewModel`. This ensures that a software release does not add columns
+  to views that users have curated and named. The columns remain available in the column chooser.
+  Set the new `GridModelPersistOptions.hideNewColumns` config to `false` to restore the previous
+  behavior.
+
+#### View Manager -- Support for nested groups.
+
+* Requires `hoist-core >= 41.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
-* Hoist v87 delivers a major round of performance work across `FetchService` and the `data`
-  package, substantially reducing memory footprint and load/update costs for apps working with
-  large datasets. Records, Cube `View` rows, and raw payloads all take leaner representations,
-  alongside new opt-in configs for zero-copy projection, digest-based record reuse, and streaming
-  loads:
-    * Improved `Store` memory efficiency - record `data` objects now take one of two compact
-      representations, which `Store` picks per record by how many fields hold non-default values:
-      the established sparse form for lightly-populated records, and a fixed shape cloned from a
-      shared per-Store template for wider records. Avoids dropping into V8's memory-hungry
-      "dictionary" mode, substantially reducing per-record memory on stores with wide records.
-    * Improved Cube `View` memory efficiency - each `View` now clones its `ViewRowData` rows from a
-      shared template, so all rows in a View share one compact, fixed shape. Substantially reduces
-      per-row memory and speeds up view builds, especially for queries with many fields.
-    * Cube `View`s no longer copy leaf row data when their results do not expose leaves (neither
-      `includeLeaves` nor `provideLeaves` set) - leaf rows read directly from cube records,
-      eliminating per-View leaf data objects and speeding up view builds for aggregate-only views
-      over large datasets. Such views no longer publish a `View.result.leafMap` - see Breaking
-      Changes.
-    * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of
-      data that its provider parses and owns - use for stores connected to a Cube `View`, or fed by
-      an endpoint returning data in its final client-side form. Records use the provider's row
-      object as their `data` by reference rather than re-parsing and copying it, collapsing the
-      usual two per-row objects to one and skipping the per-row parse on every load and update.
-      Local modification APIs (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly`
-      config docs for the full contract.
-    * Enhanced `Store.reuseRecords` to also accept a digest specification - a raw data property
-      name or a function deriving a digest value - reusing the existing record whenever an
-      incoming raw object yields an unchanged digest. Applies to both `loadData()` and
-      `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted
-      digests are exposed as `StoreRecord.digest`. Stores connected to a Cube `View` get a
-      suitable digest installed automatically.
-    * Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, and
-      regrouping/filtering. Unchanged rows - validated against their source records and child
-      rows - retain their data objects and reuse digests, skipping re-aggregation for untouched
-      subtrees and record rebuilds in connected stores. Update costs now scale with the size of
-      the change rather than the size of the dataset. Complex (non-`dependsOnChildrenOnly`)
-      aggregators also reuse their rows, re-deriving all aggregations in place each generation
-      and republishing only values that actually changed.
-    * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store - lets a
-      source supplying per-row digests preserve record identity across full `Cube.loadDataAsync()`
-      reloads, extending View row reuse to wholesale refreshes.
-    * Added `Store.retainRaw` config (default `true`). Set to `false` to drop each record's
-      reference to its raw source data object after parsing, reducing memory usage on large
-      stores where `StoreRecord.raw` is not needed. Not compatible with `reuseRecords: true`.
-    * Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync
-      or async iterable yielding raw records. Creates records incrementally without buffering the
-      complete raw dataset in memory, then installs them in a single transaction once the source
-      completes. `Cube.loadDataAsync()` likewise accepts a streaming source.
-    * Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response
-      incrementally. Returns a `lines` async iterable of parsed records - the natural streaming
-      source for `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata
-      record. Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
-    * Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within
-      large JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets.
-      `FetchService` can also share interned values across successive fetches of the same logical
-      dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip
-      known high-cardinality fields (e.g. UUID columns) via `excludeFields`.
-    * `Store.loadData()` and `Cube.loadDataAsync` calls have been optimized to skip all downstream work.
-    * Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
-      incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
-      the size of the change rather than the size of the store. Enable via `Store` config
-      `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental`
-      soft-config.
+#### Data - Store and Records
 
+Hoist v87 delivers a major round of performance work across the `data` package and `FetchService`,
+substantially reducing memory use and load/update costs for apps working with large datasets.
+Records, Cube `View` rows, and raw payloads all take leaner representations, alongside new opt-in
+configs for zero-copy projection, digest-based record reuse, and streaming loads.
 
-* Added an `icon` prop to `Badge`, rendered before the badge's content. Spacing between the icon and
-  content is controlled by the new `--xh-badge-gap` CSS variable.
-* Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
-  active filter and reloads the log around the selected line, then re-selects it and centers it in
-  the viewport - useful for examining the context around a hit found via filtering.
+* Improved `Store` memory efficiency - record `data` objects now take one of two compact
+  representations. `Store` picks the representation per record, based on how many fields hold
+  non-default values: the established sparse form for lightly-populated records, and a fixed shape
+  cloned from a shared per-Store template for wider records. This avoids V8's memory-hungry
+  "dictionary" mode and substantially reduces per-record memory on stores with wide records.
+* Improved Cube `View` memory efficiency - each `View` now clones its `ViewRowData` rows from a
+  shared template, so all rows in a View share one compact, fixed shape. This substantially reduces
+  per-row memory and speeds up view builds, especially for queries with many fields.
+* Cube `View`s no longer copy leaf row data when their results do not expose leaves (neither
+  `includeLeaves` nor `provideLeaves` set). Leaf rows read directly from cube records, which
+  eliminates per-View leaf data objects and speeds up view builds for aggregate-only views over
+  large datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+* Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
+  that its provider parses and owns. Use it for stores connected to a Cube `View`, or fed by an
+  endpoint that returns data in its final client-side form. Records reference the provider's row
+  object as their `data` instead of re-parsing and copying it, collapsing the usual two per-row
+  objects to one and skipping the per-row parse on every load and update. Local modification APIs
+  (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly`
+  config docs for the full contract.
+* Enhanced `Store.reuseRecords` to also accept a digest specification - a raw data property name, or
+  a function that derives a digest value. `Store` reuses the existing record whenever an incoming
+  raw object yields an unchanged digest. This applies to both `loadData()` and
+  `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
+  available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
+  automatically.
+* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, and regrouping
+  or filtering. Unchanged rows - validated against their source records and child rows - keep their
+  data objects and reuse digests. This skips re-aggregation for untouched subtrees, and record
+  rebuilds in connected stores. Update costs now scale with the size of the change rather than the
+  size of the dataset. Complex (non-`dependsOnChildrenOnly`)
+  aggregators also reuse their rows, re-deriving all aggregations in place on each generation and
+  republishing only the values that actually changed.
+* Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store. A source that
+  supplies per-row digests can now preserve record identity across full `Cube.loadDataAsync()`
+  reloads, extending View row reuse to wholesale refreshes.
+* Added a `Store.retainRaw` config (default `true`). Set it to `false` to drop each record's
+  reference to its raw source data object after parsing, reducing memory use on large stores that do
+  not need `StoreRecord.raw`. Not compatible with `reuseRecords: true`.
+* Enhanced `Cube.loadDataAsync()` to detect reloads that leave the store's record collections
+  unchanged, as already detected by `Store.loadData()`. Connected `View`s now sync their info and
+  timestamp instead of regenerating all of their rows, so polled reloads of unchanged data cost
+  nothing downstream.
+* Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
+  incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
+  the size of the change rather than the size of the store. Enable via `Store` config
+  `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental` soft-config.
+
+#### FetchService - ndjson + string interning
+
+* Added `XH.fetchNdjson()` to consume an NDJSON (newline-delimited JSON) response incrementally.
+  Returns a `lines` async iterable of parsed records - the natural streaming source for
+  `Store.loadDataAsync()` - plus a `meta` promise for an optional leading metadata record.
+  Optionally pairs with hoist-core v41's `BaseController.renderNdjson()`.
+* Added `Store.loadDataAsync()` to load a complete dataset from a streaming source - a sync or async
+  iterable that yields raw records. Creates records incrementally, without buffering the complete
+  raw dataset in memory, then installs them in a single transaction once the source completes.
+  `Cube.loadDataAsync()` also accepts a streaming source.
+* Added `FetchOptions.internStrings` to intern (deduplicate) repeated string values within large
+  JSON and NDJSON responses, reducing retained memory for high-volume tabular datasets.
+  `FetchService` can also share interned values across successive fetches of the same logical
+  dataset, which the app identifies with a required key, per a configurable `retainMode`. Skip known
+  high-cardinality fields (e.g. UUID columns) via `excludeFields`.
+
+#### Grid - New Column Chooser and Grid APIs
+
+Hoist v87 introduces a new and much improved Grid Column Chooser, with drag-and-drop re-ordering of
+columns.
+
+* Columns appear in true grid order across three zones - pinned-left, unpinned, and pinned-right.
+  Drag within or across zones to reorder, pin, and unpin.
+* Toggle the visibility of a column with a checkbox, a double-click, or the space key.
+* Drag multiple selected rows, or an entire `ColumnGroup` row, in a single gesture.
+* Drags respect `hideable`, `movable`, and `lockColumnGroups`. Drops that would split a locked group
+  clamp to the nearest legal position, and refused drags explain themselves in the drag ghost.
+* An optional Column Library presents a docked list of hidden columns, grouped by
+  `Column.chooserGroup`. Drag a column out to show and position it, or drag one in to hide it.
+  Enable the library with `ColChooserConfig.columnLibrary` and customize it with `ColLibraryConfig`.
+* A new docked side-panel presentation stays open alongside the grid and always commits immediately.
+  Enable it with the new `GridConfig.colChooserPanelModel` config (`ColChooserPanelConfig`) and open
+  it with `GridModel.showColChooserPanel()`, the new `colChooserPanel` context-menu token, or a
+  `colChooserButton` with `target: 'panel'`.
+* Added a `target` prop to `ColChooserButton` to select the presentation - `'popover'` (default),
+  `'dialog'`, or `'panel'`.
+* Columns that set a `chooserDescription` show an info icon, which reveals that description in an
+  on-demand tooltip.
+* Users can toggle the display of column groups and the Column Library. Hoist persists this choice
+  as a browser-local user preference and syncs it live across every chooser in the app.
+* In deferred-commit mode (`commitOnChange: false`), the chooser prompts before it discards unsaved
+  changes - both when the user dismisses it and when an external change to column state arrives.
+* Added `GridModel.isColumnHideable()` and `GridModel.isColumnMovable()` to report whether the user
+  is permitted to hide or reorder a given column.
 * Added a `position` option to `GridModel.ensureRecordsVisibleAsync()`,
-  `ensureSelectionVisibleAsync()`, and `selectAsync()`. Allows callers to request that a row be
-  scrolled to the `top`, `middle`, or `bottom` of the viewport, rather than just scrolling the
+  `ensureSelectionVisibleAsync()`, and `selectAsync()`. Callers can now request that a row be
+  scrolled to the `top`, `middle`, or `bottom` of the viewport, instead of scrolling only the
   minimum amount required.
+
+#### Admin Console
+
+* Enhanced the Admin Console config editor. JSON configs backed by a typed class, an active
+  instance-config override, or both now present a tabbed value editor over the resolved,
+  instance-override, database, and code-default views of their value, muting resolved entries that
+  are not explicitly set. The grid's Value column shows the effective value - resolved, and honoring
+  any instance override. Requires hoist-core v41 or later. Against earlier versions the editor
+  degrades gracefully.
+* Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
+  active filter and reloads the log around the selected line, then re-selects that line and centers
+  it in the viewport - useful for examining the context around a hit found by filtering.
+
+#### Other Improvements
+
+* Added an `icon` prop to `Badge`, rendered before the badge's content. The new `--xh-badge-gap` CSS
+  variable controls the spacing between the icon and the content.
+* Added a `CodeInput.lineStyles` prop to apply custom CSS class (es) to specific (1-based) lines,
+  either as static groups or as a function of the current document text.
+* Added a `RestGrid.formBbar` prop to replace the record editor form's default toolbar.
+* Added JSON validation to `RestGrid` editor forms for `json`-type fields, including those
+  dynamically typed via a `typeField`.
+* `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus in the
+  ViewManager menu and as expandable tree grids in the Manage dialog. Groups and views support
+  drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades
+  to every view nested beneath it. The `ViewManager` also supports bulk editing of
+  views' pin and visibility state.
+* `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within
+  the control.
+* `TextInput` now accepts a `leftElement` prop, rendered inline at the left of the input.
 
 ### 🐞 Bug Fixes
 
-* Fixed `View.getDimensionValues()` returning sets of `undefined` rather than the actual unique
+* Fixed `View.getDimensionValues()` returning sets of `undefined` instead of the actual unique
   values for each dimension.
-* Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates - bucket
-  assignments are now re-derived from each row's current position on every View generation.
-* Fixed `StoreRecord.getModifiedValues()` omitting fields locally modified back to their default
-  value - it now reports every difference against committed data, regardless of how the record's
+* Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates. Hoist now
+  re-derives bucket assignments from each row's current position on every View generation.
+* Fixed `StoreRecord.getModifiedValues()` omitting fields modified locally back to their default
+  value. It now reports every difference against committed data, regardless of how the record's
   `data` object represents defaults.
-* Fixed Cube `View` forcing a full (rather than incremental) update on every data update when the
-  `Query`'s fields did not also include a `BucketSpec.dependentFields` entry.
-* Fixed `Grid` retaining an extra generation of records in memory indefinitely - ag-Grid's stored
+* Fixed Cube `View` forcing a full update, instead of an incremental one, on every data update when
+  the `Query`'s fields did not also include a `BucketSpec.dependentFields` entry.
+* Fixed `Grid` retaining an extra generation of records in memory indefinitely. ag-Grid's stored
   `rowData` pinned the record array from the last load into an empty grid, along with every
   `StoreRecord`, `data`, and retained `raw` object in it.
-* Fixed `Query.clone()` retaining dimensions dropped by a dimension-only update within its `fields`.
-  Cube `View`s changing dimensions via `updateQuery()` accumulated these stale fields, aggregating
-  each one on every aggregate row despite nothing having requested or displayed them.
+* Fixed `Query.clone()` retaining within its `fields` any dimensions dropped by a dimension-only
+  update. Cube `View`s that changed dimensions via `updateQuery()` accumulated these stale fields
+  and aggregated each one on every aggregate row, although nothing requested or displayed them.
 * Fixed `SumAggregator`, `MinAggregator`, and `MaxAggregator` mishandling incoming `null` values on
-  incremental Cube `View` updates, leaving aggregates disagreeing with a full rebuild.
+  incremental Cube `View` updates, leaving aggregates that disagreed with a full rebuild.
+* Fixed the default message shown for routine exceptions - Hoist no longer appends the underlying
+  server-side cause, as a routine exception's own message is intended to be complete.
+* Fixed `isValidJson` failing on blank values. Null and empty values now defer to `required`, as
+  with Hoist's other constraints. Pair the two rules if a value must be present.
+* Fixed `CodeInput` with `autoFormat` committing reformatted text back to its bound value, leaving
+  forms dirty after a reset.
 
 ### ⚙️ Technical
 
-* Moved both desktop and mobile popover implementations off the deprecated, React-18-capped
-  Popper.js onto Floating UI for React 19 compatibility. Updated the Hoist `Popover` components
-  (mobile and desktop) so apps require no call-site changes.
-* Applied type adjustments to meet React 19's stricter `@types/react` typing.
-* Field XSS protection now preserves the reference identity of string values that sanitization
-  does not modify (the common case). Previously every parsed string value was replaced with a
-  freshly-allocated copy, doubling string memory on stores retaining raw data and defeating any
-  upstream deduplication of repeated values.
-* Added experimental `Store` config `denseRecordThreshold` - the populated (non-default) field
-  count at/above which a record's `data` takes its fixed dense shape rather than the sparse form.
-  For testing/tuning only - set to e.g. `999` to restore the pre-v87 (all-sparse) behavior.
-* Migrated this repo's own package management from yarn classic to pnpm 11 - `pnpm-lock.yaml`
-  replaces `yarn.lock`, and all scripts, CI, and publish workflows now run on pnpm.
-    * No change is required for apps consuming the published `@xh/hoist` package - pnpm, yarn
-      classic, and npm all remain fully supported. Apps adopting pnpm themselves need
-      `@xh/hoist-dev-utils` v14+ and must declare every package they import directly - see the
-      hoist-dev-utils CHANGELOG for migration guidance.
-    * Developers building against a local hoist-react checkout (`inlineHoist`) now need pnpm to
-      install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`) - the app
-      itself may remain on yarn or npm. Update any `startWithHoist`-style app scripts that run an
-      install within the sibling checkout.
-* Declared several packages this library imports directly but that had resolved only via yarn's
-  flat hoisting of transitive dependencies, most notably `sass-material-colors` (imported by
-  shipped SCSS).
+* Field XSS protection now returns unmodified strings by reference instead of a fresh copy, avoiding
+  a duplicate in memory of every parsed string value.
+* Migrated this repo's own package management from yarn classic to pnpm 11. Apps consuming the
+  published `@xh/hoist` package require no change - pnpm, yarn classic, and npm all remain fully
+  supported.
+    * Developers who build against a local hoist-react checkout (`inlineHoist`) now need pnpm to
+      install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`). The app itself
+      can remain on yarn or npm. Update any `startWithHoist`-style app scripts accordingly.
 
 ### ⚙️ Typescript API Adjustments
 
-* Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`, reflecting that custom `Aggregator`
-  implementations may only rely on queried field values - not `ViewRowData` metadata - when reading
-  row data. Use row-level getters such as `BaseRow.isLeaf` in place of `data.cubeRowType`.
-* Corrected `ChildRawData.rawData` type from `PlainObject[]` to `PlainObject` - the runtime has
+* Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`. When reading row data, custom
+  `Aggregator` implementations may rely only on queried field values, not on `ViewRowData` metadata.
+  Use row-level getters such as `BaseRow.isLeaf` in place of `data.cubeRowType`.
+* Corrected the `ChildRawData.rawData` type from `PlainObject[]` to `PlainObject`. The runtime has
   always expected a single raw record per object, and an array would throw on load.
 
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.23 → 2.24`
+* @azure/msal-browser `5.17 → 5.18`
+* @floating-ui/react `added @ 0.27`
+* @xh/hoist-dev-utils `13.x → 14.x`
 * react `18.2 → 19.2`
+* react-popper `removed`
 * react-window `2.2 → 2.3`
+
+## 86.4.1 - 2026-08-11
+
+### 🐞 Bug Fixes
+
+* Fixed `DashContainer` sizing regression introduced with the golden-layout fork in v86.0.0. CSS
+  padding applied to the container element was incorrectly counted as available layout space,
+  causing dashboard content to render oversized and cut off.
+* Revert swiper library to previous version to address swiping regressions (#4559)
+
+### 📚 Libraries
+
+* swiper  `14.0 -> 12.1`
 
 ## 86.4.0 - 2026-07-15
 

@@ -29,7 +29,7 @@ import {RowCache} from './impl/RowCache';
 import {BaseRow} from './row/BaseRow';
 import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
-import {RecordSetDelta} from '../impl/RecordSet';
+import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
 /**
  * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally
@@ -138,7 +138,7 @@ export class View
     // Implementation
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
-    _recordMap: Map<StoreRecordId, StoreRecord> = null;
+    _records: RecordSet = null; // cube records passing this view's filter
     private _bucketDependentFields = new Set<string>();
     private _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
@@ -398,20 +398,20 @@ export class View
 
     @logWithDebug
     private fullUpdate() {
-        const records = this.filterRecords();
+        this.filterRecords();
         this.createAggregationContext();
-        this.generateRows(records);
+        this.generateRows();
         this.loadStores();
         this.updateResults();
     }
 
     @logWithDebug
     private dataOnlyUpdate(updates: StoreRecord[]) {
-        const {_leafMap, _recordMap, stores} = this,
+        const {_leafMap, stores} = this,
             updatedRowDatas = new Set<PlainObject>();
 
+        // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
-            _recordMap.set(rec.id, rec);
             const leaf = _leafMap.get(rec.id);
             leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
@@ -452,7 +452,7 @@ export class View
     }
 
     // Generate a new full data representation from the filtered records
-    private generateRows(records: StoreRecord[]) {
+    private generateRows() {
         const {query} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
@@ -463,7 +463,14 @@ export class View
         rowCache.beginGeneration();
 
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
-        let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, 0, leafMap);
+        let newRows = this.groupAndInsertRecords(
+            this._records.list,
+            dimensions,
+            rootId,
+            {},
+            0,
+            leafMap
+        );
         newRows = this.bucketRows(newRows, rootId, {}, 0);
 
         if (includeRoot) {
@@ -642,28 +649,16 @@ export class View
 
         const fieldNames = uniq([...dimensions.map(it => it.name), ...bucketDependentFields]);
         for (const rec of update) {
-            const curRec = this._recordMap.get(rec.id);
+            const curRec = this._records.getById(rec.id);
             if (fieldNames.some(name => rec.data[name] !== curRec.data[name])) return true;
         }
 
         return false;
     }
 
-    private filterRecords(): StoreRecord[] {
-        const {query, cube} = this,
-            {hasFilter} = query,
-            recordMap = new Map(),
-            records = [];
-
-        for (const r of cube.store.records) {
-            if (!hasFilter || query.test(r)) {
-                recordMap.set(r.id, r);
-                records.push(r);
-            }
-        }
-
-        this._recordMap = recordMap;
-        return records;
+    private filterRecords() {
+        const {query, cube} = this;
+        this._records = cube.store._filtered.withFilter(query.filter, this._records);
     }
 
     private createAggregationContext() {

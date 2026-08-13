@@ -4,6 +4,159 @@
   //------------------------
   // Dialogs
   //------------------------
+  &__manage-dialog {
+    // Tree icon width is pinned by AgGrid.scss to this var - FontAwesome size props do not apply.
+    --xh-grid-tree-icon-px: 14px;
+    --xh-grid-tree-indent: 1.5em;
+
+    // Views and groups are siblings at every level here, so the framework's extra leaf indent
+    // reads as another level of nesting. Important to beat its per-level specificity.
+    .ag-ltr .ag-row-group-leaf-indent {
+      margin-left: 0 !important;
+    }
+
+    // Group row targeted by an in-flight row drag. Important to beat the grid's own row
+    // background rules (clear-background, tree highlights).
+    .ag-row.xh-view-manager__drop-target {
+      background-color: var(--xh-intent-primary-trans2) !important;
+    }
+
+    // Gray out the drag handles and block drag initiation for an undraggable selection.
+    &__grid--drag-disabled .ag-drag-handle {
+      color: var(--xh-text-color-muted);
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    // Encloses the top-level drop strip and the grid, presenting the two as a single drop surface.
+    &__grid-wrapper {
+      margin: var(--xh-pad-half-px);
+      border: var(--xh-border-solid);
+      border-radius: var(--xh-border-radius-px);
+      // Clip the grid's square corners to the rounded border.
+      overflow: hidden;
+    }
+
+    // Height matches a grid row, so the strip does not perceptibly enlarge the dialog.
+    &__top-level-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 26px;
+      margin: var(--xh-pad-half-px);
+      padding: 0 var(--xh-pad-half-px);
+      border: 1px dashed var(--xh-border-color);
+      border-radius: var(--xh-border-radius-px);
+      color: var(--xh-text-color-muted);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition:
+        background 140ms,
+        border-color 140ms,
+        color 140ms;
+
+      &__icon {
+        flex: none;
+        width: 14px;
+        text-align: center;
+      }
+
+      &__hint {
+        font-size: 11px;
+        opacity: 0.75;
+      }
+
+      // A drag is in flight over the dialog, dragged row not already top level.
+      &--armed {
+        border-style: dashed;
+        border-color: var(--xh-intent-primary);
+        background: var(--xh-intent-primary-trans1);
+        color: var(--xh-intent-primary-text-color);
+      }
+
+      // As armed, plus the pointer is over the strip.
+      &--hot {
+        border-style: solid;
+        border-color: var(--xh-intent-primary);
+        background: var(--xh-intent-primary-trans2);
+        color: var(--xh-intent-primary-text-color);
+        font-weight: 600;
+      }
+
+      // A drag is in flight, but the dragged row is already at the top level.
+      &--blocked {
+        opacity: 0.7;
+        cursor: no-drop;
+      }
+
+      &--armed &__hint,
+      &--hot &__hint,
+      &--blocked &__hint {
+        opacity: 1;
+      }
+
+      // Hint stays regular weight as the label bolds.
+      &--hot &__hint {
+        font-weight: 400;
+      }
+    }
+
+    // Mirrors the muted styling of a Placeholder, without growing to fill the panel.
+    &__multi-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--xh-pad-px);
+      padding: var(--xh-pad-px);
+      color: var(--xh-text-color-muted);
+
+      // One icon per selected view, fanned out like a hand of cards. Rotation derives from each
+      // card's index (--card-i) and the total count (--card-n), both set inline, about a pivot
+      // below the icons so the hand also arcs.
+      &__fan {
+        --card-w: 1.4em;
+
+        display: flex;
+        // Stable basis for the %-based card margins below.
+        align-self: stretch;
+        justify-content: center;
+        font-size: 2.5em;
+        margin: 0 0 var(--xh-pad-px) 0;
+
+        > * {
+          --card-angle: min(16deg, 72deg / max(var(--card-n) - 1, 1));
+
+          // Fixed overlap between neighboring cards, tightening to hold the hand's visible span
+          // within 80% of the header, with a floor at a full stack.
+          --card-mx: max(
+            min(-0.52em, ((80% - var(--card-w)) / max(var(--card-n) - 1, 1) - var(--card-w)) / 2),
+            var(--card-w) / -2
+          );
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: var(--card-w);
+          margin: 0 var(--card-mx);
+          padding: 0.2em 0;
+          background-color: var(--xh-bg);
+          border: 1px solid var(--xh-border-color);
+          border-radius: 0.15em;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+          transform: rotate(calc((var(--card-i) - (var(--card-n) - 1) / 2) * var(--card-angle)));
+          transform-origin: 50% 150%;
+
+          // Opacity on the icon only - the card must stay opaque to occlude those behind it.
+          .xh-icon {
+            opacity: 0.5;
+          }
+        }
+      }
+    }
+  }
+
   &__manage-dialog,
   &__save-dialog {
     &__form {
@@ -30,18 +183,96 @@
     }
 
     &__help-text {
-      display: flex;
-      align-items: center;
-      gap: var(--xh-pad-px);
       margin: var(--xh-pad-px);
-      padding: var(--xh-pad-px);
-      border: var(--xh-border-solid);
-      border-radius: var(--xh-border-radius-px);
       background-color: var(--xh-bg-alt);
 
-      .xh-icon {
-        font-size: 1.2em;
+      &.xh-card--collapsed {
+        margin-bottom: 0;
+        background-color: unset;
+        border-radius: 0;
       }
+    }
+  }
+
+  //------------------------
+  // Group paths
+  //------------------------
+  // Inline-flex, so a path reads within a sentence as well as within a form control or menu row.
+  &__group-path {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--xh-pad-half-px);
+    min-width: 0;
+    white-space: nowrap;
+    color: var(--xh-text-color);
+
+    &__separator,
+    &__segment--collapsed {
+      color: var(--xh-text-color-muted);
+    }
+
+    // For use against an intent-colored background, where the standard text colors have no
+    // contrast. Separators stay distinct via opacity instead.
+    &--inherit,
+    &--inherit &__separator {
+      color: inherit;
+    }
+
+    &--inherit &__separator {
+      opacity: 0.7;
+    }
+
+    // Sentinel labels (e.g. *Top Level*) are not literal group names.
+    &--sentinel {
+      font-style: italic;
+      color: var(--xh-text-color-muted);
+    }
+  }
+
+  //------------------------
+  // Edit panel group field
+  //------------------------
+  // Bottom-aligns the new-group button with the select, whether its label sits above or inline,
+  // taking over the field's own bottom margin so the button does not align below it.
+  &__group-field {
+    align-items: flex-end;
+    margin-bottom: var(--xh-pad-px);
+
+    .xh-form-field {
+      margin-bottom: 0;
+    }
+
+    // Match the Top Level option's presentation.
+    .xh-select__placeholder {
+      font-style: italic;
+      color: var(--xh-text-color-muted);
+    }
+
+    // Clears the field's bottom padding, which sits below the select.
+    button {
+      margin-bottom: var(--xh-form-field-padding);
+      margin-left: var(--xh-pad-half-px);
+    }
+  }
+
+  //------------------------
+  // New group popover
+  //------------------------
+  &__new-group-popover {
+    &__form {
+      width: 320px;
+      gap: var(--xh-pad-half-px);
+      padding: var(--xh-pad-px);
+
+      // Blueprint's input group is inline-block by default - stretch it to the popover width.
+      .bp6-input-group {
+        width: 100%;
+      }
+    }
+
+    &__path {
+      font-size: var(--xh-font-size-small-px);
+      padding: 0 var(--xh-pad-half-px);
     }
   }
 }
