@@ -30,6 +30,8 @@ export abstract class Aggregator {
      * By default this property returns true, indicating to the cube that if all children of a
      * given node are the same, the node does not need to be re-aggregated.  Aggregators that
      * depend on global values (e.g. % of total) should return false for this value.
+     *
+     * Aggregators that delegate to other aggregators must all agree on this setting.
      */
     get dependsOnChildrenOnly(): boolean {
         return true;

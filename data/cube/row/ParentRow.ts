@@ -67,9 +67,10 @@ export abstract class ParentRow extends BaseRow {
         // initial computation of aggregates
         const {data, canAggResults} = this,
             ctx = view._aggContext;
-        view._aggFieldsByDepth[this.depth].forEach(({aggregator, name}) => {
+        view._aggFieldsByDepth[this.depth].forEach(field => {
+            const {name} = field;
             if (canAggResults?.[name] !== false) {
-                data[name] = aggregator.aggregate(children, name, ctx);
+                data[name] = ctx.aggregate(children, field);
             }
         });
     }
@@ -87,7 +88,7 @@ export abstract class ParentRow extends BaseRow {
                 {name} = field;
             if (aggFieldNames.has(name) && canAggResults?.[name] !== false) {
                 const oldValue = data[name],
-                    newValue = field.aggregator.replace(children, oldValue, update, ctx);
+                    newValue = ctx.replace(children, oldValue, update);
                 update.oldValue = oldValue;
                 update.newValue = newValue;
                 myUpdates.push(update);
@@ -175,10 +176,10 @@ export abstract class ParentRow extends BaseRow {
     // Re-aggregate a single field in place, returning true if its value changed.
     private recomputeAggregate(field: CubeField): boolean {
         const {children, data, view} = this,
-            {aggregator, name} = field,
+            {name} = field,
             val =
                 this.canAggResults?.[name] !== false
-                    ? aggregator.aggregate(children, name, view._aggContext)
+                    ? view._aggContext.aggregate(children, field)
                     : null;
 
         if (data[name] === val) return false;

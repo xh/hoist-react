@@ -59,7 +59,7 @@ features and performance optimizations, grouped by topic below.
 
 #### View Manager -- Support for nested groups.
 
-* Requires `hoist-core >= 41.0` for the `ViewManager` group and bulk-editing APIs.
+* Requires `hoist-core >= 40.5.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
@@ -87,8 +87,7 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   endpoint that returns data in its final client-side form. Records reference the provider's row
   object as their `data` instead of re-parsing and copying it, collapsing the usual two per-row
   objects to one and skipping the per-row parse on every load and update. Local modification APIs
-  (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly`
-  config docs for the full contract.
+  (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly` config docs.
 * Enhanced `Store.reuseRecords` to also accept a digest specification - a raw data property name, or
   a function that derives a digest value. `Store` reuses the existing record whenever an incoming
   raw object yields an unchanged digest. This applies to both `loadData()` and
@@ -115,6 +114,10 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   unchanged, as already detected by `Store.loadData()`. Connected `View`s now sync their info and
   timestamp instead of regenerating all of their rows, so polled reloads of unchanged data cost
   nothing downstream.
+* Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
+  incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
+  the size of the change rather than the size of the store. Enable via `Store` config
+  `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental` soft-config.
 
 #### FetchService - ndjson + string interning
 
