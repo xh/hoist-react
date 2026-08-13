@@ -51,8 +51,6 @@ export abstract class ParentRow extends BaseRow {
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        // Publish applied dimension values only where they are queried fields - the data
-        // template carries a slot for exactly those.
         forEach(appliedDimensions, (v, name) => {
             if (name in this.data) this.data[name] = v;
         });
@@ -107,28 +105,17 @@ export abstract class ParentRow extends BaseRow {
     // Aggregation
     //--------------------
     /**
-     * Reuse this cached row for a new generation, returning it on success - or null when it
-     * cannot be reused (a BucketRow whose children changed - its BucketSpec and label would need
-     * re-deriving from the new membership) and the caller should rebuild. On success: adopts the
-     * passed children array, re-points each child at this row (it may have been adopted by
-     * another parent while this row sat out a generation), and recomputes aggregates in place as
-     * needed - bumping this row's digest only if some published value actually changed.
+     * Reuse this cached row for a new generation: adopt the passed children, re-point each at
+     * this row, and recompute aggregates in place as needed, bumping the digest only if a value
+     * actually changed. Returns this row - or null if it cannot be reused (a BucketRow whose
+     * children changed, requiring its BucketSpec be re-derived) and the caller should rebuild.
      *
-     * Recomputation is skipped only when this row is provably current: an AggregateRow whose
-     * children are identical, none of whose values changed in place this generation - detected
-     * by a child `cubeRowDigest` postdating `genStartDigest`, the view's digest watermark captured
-     * at generation start. Rows recompute bottom-up, so a changed child's digest bump cascades
-     * recomputes up through reused ancestors. (Hidden leaves publish no digest, but no leaf can
-     * change values in place within a generation - leaf reuse is gated on record identity, so a
-     * changed leaf is a new object and fails the children-identity check instead.) Dormancy
-     * needs no check for aggregate rows: filter-dormant subtrees are coherently dormant (their
-     * leaves receive no in-place updates, and a changed record rebuilds its leaf and changes the
-     * children array), and grouping-orphaned rows are evicted rather than revived. Bucket rows
-     * always recompute - data-driven migration can idle a bucket while its children stay live
-     * and drift, and they are too few to warrant a finer rule.
-     *
-     * Even a current row re-derives context-reading fields - complex aggregators and
-     * `canAggregateFn` results - which may move with the per-generation AggregationContext.
+     * An AggregateRow with an identical children array skips recomputation when no child digest
+     * postdates `genStartDigest`, the view's watermark at generation start - rows recompute
+     * bottom-up, so in-place child changes cascade by digest, and a changed leaf is always a new
+     * object. Dormancy needs no extra check: filter-dormant subtrees are dormant with their
+     * leaves, and grouping-orphaned rows are evicted, never revived. Bucket rows and
+     * context-reading fields (complex aggregators, `canAggregateFn`) always recompute.
      */
     reuse(children: BaseRow[], genStartDigest: number): ParentRow {
         const {view, isAggregate} = this,
