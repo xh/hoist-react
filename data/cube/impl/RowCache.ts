@@ -36,14 +36,12 @@ export class RowCache {
     private sweptAsOf: number = null;
     private genStartDigest = 0;
     private lastQuery: Query = null;
-    // Parents touched by the current generation, when a grouping change requires evicting the rest.
     private usedParents: Set<BaseRow> = null;
 
     // Stats for the current generation - logged by endGeneration()
     private reused = 0;
     private rebuilt = 0;
     private created = 0;
-    private evicted = 0;
     private removed = 0;
     private sweepTime = 0;
 
@@ -100,7 +98,7 @@ export class RowCache {
         this.genStartDigest = view._rowDigest;
         this.exposedLeaves = view.exposesLeaves;
         this.reused = this.rebuilt = this.created = 0;
-        this.evicted = this.removed = this.sweepTime = 0;
+        this.removed = this.sweepTime = 0;
     }
 
     endGeneration() {
@@ -111,8 +109,7 @@ export class RowCache {
         this.sweep();
         this.view.logDebug(
             `Generated rows: reused=${this.reused} rebuilt=${this.rebuilt} ` +
-                `created=${this.created} cached=${this.size} ` +
-                `evicted=${this.evicted} removed=${this.removed} ` +
+                `created=${this.created} cached=${this.size} removed=${this.removed} ` +
                 `sweepTime=${this.sweepTime.toFixed(1)}ms`
         );
     }
@@ -186,10 +183,10 @@ export class RowCache {
         rows.forEach((row, id) => {
             if (!row.isLeaf && !usedParents.has(row)) {
                 rows.delete(id);
-                this.evicted++;
+                this.removed++;
             }
         });
-        if (!this.evicted) return;
+        if (!this.removed) return;
         rows.forEach(row => {
             const {parent} = row;
             if (parent && rows.get(parent.id) !== parent) row.parent = null;
@@ -225,7 +222,7 @@ export class RowCache {
         });
 
         this.sweptAsOf = asOf;
-        this.removed = startSize - rows.size;
+        this.removed += startSize - rows.size;
         this.sweepTime = performance.now() - start;
     }
 }
