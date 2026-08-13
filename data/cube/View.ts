@@ -149,7 +149,6 @@ export class View
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
     _aggFieldsByDepth: CubeField[][] = null;
     _aggFieldNamesByDepth: Set<string>[] = null;
-    _queryFieldNames: Set<string> = null;
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
     _aggContext: AggregationContext = null;
@@ -359,7 +358,6 @@ export class View
 
         // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
         this._rowDataTemplate = {...rowData} as ViewRowData;
-        this._queryFieldNames = new Set(this.fieldNames);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied

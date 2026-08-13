@@ -51,10 +51,10 @@ export abstract class ParentRow extends BaseRow {
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        // Publish applied dimension values only where they are queried fields
-        const fieldNames = view._queryFieldNames;
+        // Publish applied dimension values only where they are queried fields - the data
+        // template carries a slot for exactly those.
         forEach(appliedDimensions, (v, name) => {
-            if (fieldNames.has(name)) this.data[name] = v;
+            if (name in this.data) this.data[name] = v;
         });
         this.depth = depth;
 
