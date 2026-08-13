@@ -22,14 +22,14 @@ import type {View} from '../View';
  * StoreRecord and match the view's current exposed/hidden leaf class - its data then needs no
  * work at all. An aggregate row is reused whenever requested (its id fixes its dimension path,
  * so only its children and aggregate values can vary): when its children array is identical and
- * provably current it also needs no work, otherwise its aggregates are recomputed in place, with
- * its digest bumped only if some value actually changed. "Provably current" = used by the
- * previous generation, or no cube data change since last use - a dormant row's children may have
- * been updated in place under other parents, so identical children do not imply identical
- * values. Bucket rows reuse only on an identical children array - changed membership would
- * require re-deriving their BucketSpec. Reused rows keep their `cubeRowDigest`, letting
- * connected stores - which read that stamp via a View-installed reuse digest - skip record
- * rebuilds for them.
+ * no child's values changed this generation it also needs no work, otherwise its aggregates are
+ * recomputed in place, with its digest bumped only if some value actually changed. Rows generate
+ * bottom-up, so the `valuesChangedGen` stamp cascades child value changes up through reused
+ * ancestors - replacing the ancestor-chain rebuilds that reuse-in-place avoids. Bucket rows
+ * reuse only on an identical children array (changed membership would require re-deriving their
+ * BucketSpec) and recompute whenever they sat out a generation - see `reuseParentRow` for the
+ * dormancy reasoning. Reused rows keep their `cubeRowDigest`, letting connected stores - which
+ * read that stamp via a View-installed reuse digest - skip record rebuilds for them.
  *
  * Views with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly}, or with
  * fields that define a `canAggregateFn` - both of which may read the per-generation
@@ -57,13 +57,6 @@ export class RowCache {
     private sweptAsOf: number = null;
     private generation = 0;
     private evictUnusedParents = false;
-
-    // Monotonic cube-data version, advanced when a generation observes changed source data.
-    // Keyed on RecordSet identity - replaced on every real data change, preserved by no-change
-    // reloads - rather than the ms-resolution `cube.lastUpdated`, which can falsely equate a
-    // tick landing in the same millisecond as a prior generation.
-    private dataVersion = 0;
-    private lastSeenRecords: unknown = null;
 
     // Stats for the current generation - logged by endGeneration()
     private reused = 0;
@@ -123,7 +116,7 @@ export class RowCache {
         }
         ret = fn();
         ret.valuesChangedGen = this.generation;
-        if (!ret.isLeaf) this.stampParentRow(ret as ParentRow);
+        if (!ret.isLeaf) (ret as ParentRow).lastUsedGen = this.generation;
         this.rows.set(id, ret);
         return ret as T;
     }
@@ -132,41 +125,32 @@ export class RowCache {
     // child may have been adopted by another parent while this one sat out a generation) and
     // recomputing aggregates as needed, with the digest bumped only on actual value change.
     private reuseParentRow(row: ParentRow, children: BaseRow[], childrenEqual: boolean) {
-        // Skip the full recompute only when provably current: children identical, none of them
-        // (re)built or changed in place this generation (rows recompute bottom-up, so child
-        // value changes must cascade to reused ancestors), AND either used by the previous
-        // generation (in the live tree, so tick propagation maintained it) or no cube data
-        // change since last use (nothing could drift while dormant). A dormant row's children
-        // may have been updated in place under other parents, so identical children alone do
-        // not imply identical values.
+        // Skip the full recompute only when provably current: children identical, and none of
+        // them (re)built or changed in place this generation - rows recompute bottom-up, so
+        // child value changes must cascade to reused ancestors. Dormancy needs no further check
+        // for aggregate rows: filter-dormant subtrees are coherently dormant (their leaves are
+        // not in `_leafMap`, so receive no in-place updates, and a changed record rebuilds its
+        // leaf and changes this children array), and grouping-orphaned parents are evicted
+        // rather than revived. Bucket rows are the one exception - data-driven migration can
+        // idle a bucket while its children stay live under other parents - so a bucket row that
+        // sat out a generation always recomputes.
         const {generation} = this,
             current =
                 childrenEqual &&
                 !children.some(it => it.valuesChangedGen === generation) &&
-                (row.lastUsedGen === generation - 1 ||
-                    row.lastUsedDataVersion === this.dataVersion);
+                (row.isAggregate || row.lastUsedGen === generation - 1);
 
         if (!current || this.recomputeAggs) this.recomputed++;
         if (row.reuse(children, !current, this.recomputeAggs)) {
             row.valuesChangedGen = generation;
             this.view.noteRowDataMutated(row.data);
         }
-        this.stampParentRow(row);
-    }
-
-    private stampParentRow(row: ParentRow) {
-        row.lastUsedGen = this.generation;
-        row.lastUsedDataVersion = this.dataVersion;
+        row.lastUsedGen = generation;
     }
 
     beginGeneration() {
         const {view} = this;
         this.generation++;
-        const records = view.cube.store._filtered;
-        if (records !== this.lastSeenRecords) {
-            this.dataVersion++;
-            this.lastSeenRecords = records;
-        }
         this.recomputeAggs =
             !view.aggregatorsAreSimple || !isEmpty(view._canAggregateFnFieldsByDepth[0]);
         this.exposedLeaves = view.exposesLeaves;
