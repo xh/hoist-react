@@ -585,6 +585,19 @@ export class GridModel extends HoistModel {
         return this.cleanColumnState(this.columnState);
     }
 
+    /**
+     * Groups the user has moved off their configured default, and only those - a grid that mints new
+     * groups as its data changes must not read as dirty, or write anything, merely for having
+     * rebuilt its columns. Missing groups resolve to their default on restore.
+     */
+    @computed.struct
+    get persistableColumnGroupState(): ColumnGroupState[] {
+        const defaults = new Map(
+            this.getColumnGroups().map(it => [it.groupId, it.expandedByDefault])
+        );
+        return this.columnGroupState.filter(it => it.expanded !== defaults.get(it.groupId));
+    }
+
     @bindable showSummary: boolean | VSide = false;
     @bindable.ref emptyText: ReactNode;
     @bindable treeStyle: TreeStyle;

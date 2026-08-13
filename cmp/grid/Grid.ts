@@ -533,14 +533,11 @@ export class GridLocalModel extends HoistModel {
             run: ([api, groupState]) => {
                 if (!api || isEmpty(groupState)) return;
 
-                // Skip any group ag-Grid does not know: one unresolvable groupId makes it drop the
-                // entire call.
-                const agGroupIds = new Set(api.getColumnGroupState().map(it => it.groupId)),
-                    state = groupState
-                        .filter(it => agGroupIds.has(it.groupId))
-                        .map(({groupId, expanded}) => ({groupId, open: expanded}));
-
-                if (!isEmpty(state)) api.setColumnGroupState(state);
+                // Pass the full set: ag-Grid skips any groupId it cannot resolve, and skips groups
+                // already in the requested state, so this neither throws nor re-enters.
+                api.setColumnGroupState(
+                    groupState.map(({groupId, expanded}) => ({groupId, open: expanded}))
+                );
             }
         };
     }
