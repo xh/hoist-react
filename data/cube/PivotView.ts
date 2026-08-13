@@ -148,9 +148,9 @@ export class PivotView extends View {
     //------------------------
     // Implementation
     //------------------------
-    protected override generateRows(records: StoreRecord[]) {
-        super.generateRows(records);
-        this.generateCells(records);
+    protected override generateRows() {
+        super.generateRows();
+        this.generateCells(this._records.list);
     }
 
     protected override createResult(): PivotViewResult {
