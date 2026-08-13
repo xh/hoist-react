@@ -8,6 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {StoreRecord} from '../../StoreRecord';
 import {View} from '../View';
+import {CubeField} from '@xh/hoist/data';
 
 /**
  * Context provided to aggregators.
@@ -27,27 +28,25 @@ export class AggregationContext {
     appData: any;
 
     /**
-     * Name of the field currently being aggregated - set by row implementations immediately before
+     * The cube field currently being aggregated - set by row implementations immediately before
      * each call into an aggregator, and used to identify the aggregator in error messages.
      * @internal
      */
-    activeFieldName: string = null;
+    activeField: CubeField = null;
 
     /**
      * All records currently meeting the filter for this view.
      *
      * Available only when an aggregator on the view overrides
-     * {@link Aggregator.dependsOnChildrenOnly} to return false - the View then rebuilds its
-     * filtered records before every aggregation pass. Views with children-only aggregators update
-     * incrementally without refreshing that collection, so reading it here throws.
+     * {@link Aggregator.dependsOnChildrenOnly} to return false.
      */
     get filteredRecords(): StoreRecord[] {
-        const {view} = this;
-        // Note error message built lazily - this getter is called throughout aggregation.
-        if (view.aggregatorsAreSimple) {
+        const {activeField, view} = this,
+            agg = activeField?.aggregator;
+        if (agg?.dependsOnChildrenOnly) {
+            const label = `${agg.constructor.name} for the ${activeField.name} field`;
             throw XH.exception(
-                `${this.activeAggregatorDescription} read \`filteredRecords\` but does not override \`dependsOnChildrenOnly\` to return false. ` +
-                    'Aggregators reading records beyond their own children must do so.'
+                `${label} read \`filteredRecords\` but does not override \`dependsOnChildrenOnly\` to return false. `
             );
         }
         return view._records.list;
@@ -56,15 +55,5 @@ export class AggregationContext {
     constructor(view: View) {
         this.view = view;
         this.appData = {};
-    }
-
-    /** Identify the in-progress aggregator by its class + field, for error reporting. */
-    private get activeAggregatorDescription(): string {
-        const {activeFieldName, view} = this,
-            aggregator = activeFieldName ? view.getField(activeFieldName)?.aggregator : null;
-
-        return aggregator
-            ? `${aggregator.constructor.name} for the ${activeFieldName} field`
-            : 'An aggregator on this Cube View';
     }
 }

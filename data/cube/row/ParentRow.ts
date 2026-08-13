@@ -64,9 +64,10 @@ export abstract class ParentRow extends BaseRow {
         // initial computation of aggregates
         const {data, canAggResults} = this,
             ctx = view._aggContext;
-        view._aggFieldsByDepth[this.depth].forEach(({aggregator, name}) => {
+        view._aggFieldsByDepth[this.depth].forEach(f => {
+            const {aggregator, name} = f;
             if (canAggResults?.[name] !== false) {
-                ctx.activeFieldName = name;
+                ctx.activeField = f;
                 data[name] = aggregator.aggregate(children, name, ctx);
             }
         });
@@ -84,7 +85,7 @@ export abstract class ParentRow extends BaseRow {
             const {field} = update,
                 {name} = field;
             if (aggFieldNames.has(name) && canAggResults?.[name] !== false) {
-                ctx.activeFieldName = name;
+                ctx.activeField = field;
                 const oldValue = data[name],
                     newValue = field.aggregator.replace(children, oldValue, update, ctx);
                 update.oldValue = oldValue;
@@ -144,7 +145,7 @@ export abstract class ParentRow extends BaseRow {
             {aggregator, name} = field,
             ctx = view._aggContext;
 
-        ctx.activeFieldName = name;
+        ctx.activeField = field;
         const val =
             this.canAggResults?.[name] !== false ? aggregator.aggregate(children, name, ctx) : null;
 
