@@ -279,11 +279,12 @@ export class PatchableRecordSet {
             mark = rec => passes.set(rec.id, rec);
 
         // Pass 1.  Mark all passing records, and potentially their children recursively.
-        // Any row already marked will already have all of its children marked, so check can be skipped
-        let markChildren;
+        // Any row already marked will already have all of its children marked, so check can be
+        // skipped. Only the children-marking variant can pre-mark - the plain loop visits each
+        // record once and skips the isMarked probe entirely.
         if (includeChildren) {
             const childrenMap = this.childrenMap;
-            markChildren = rec => {
+            const markChildren = rec => {
                 const children = childrenMap.get(rec.id) || [];
                 children.forEach(c => {
                     if (!isMarked(c)) {
@@ -292,13 +293,17 @@ export class PatchableRecordSet {
                     }
                 });
             };
+            this.forEachRecord(rec => {
+                if (!isMarked(rec) && test(rec)) {
+                    mark(rec);
+                    markChildren(rec);
+                }
+            });
+        } else {
+            this.forEachRecord(rec => {
+                if (test(rec)) mark(rec);
+            });
         }
-        this.forEachRecord(rec => {
-            if (!isMarked(rec) && test(rec)) {
-                mark(rec);
-                if (includeChildren) markChildren(rec);
-            }
-        });
 
         // Pass 2) Walk up from any passing roots and make sure all parents are marked
         const markParents = rec => {
