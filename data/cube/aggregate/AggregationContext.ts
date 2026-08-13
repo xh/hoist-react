@@ -7,8 +7,10 @@
 
 import {XH} from '@xh/hoist/core';
 import {StoreRecord} from '../../StoreRecord';
+import type {CubeField} from '../CubeField';
+import type {BaseRow} from '../row/BaseRow';
+import type {RowUpdate} from '../row/RowUpdate';
 import {View} from '../View';
-import {CubeField} from '@xh/hoist/data';
 
 /**
  * Context provided to aggregators.
@@ -28,8 +30,7 @@ export class AggregationContext {
     appData: any;
 
     /**
-     * The cube field currently being aggregated - set by row implementations immediately before
-     * each call into an aggregator, and used to identify the aggregator in error messages.
+     * Field currently being aggregated, or null if not within a call to an aggregator.
      * @internal
      */
     activeField: CubeField = null;
@@ -39,14 +40,14 @@ export class AggregationContext {
      *
      * Available only when an aggregator on the view overrides
      * {@link Aggregator.dependsOnChildrenOnly} to return false.
+     * Views with children-only aggregators update incrementally without
+     * refreshing that collection, so reading it here throws.
      */
     get filteredRecords(): StoreRecord[] {
-        const {activeField, view} = this,
-            agg = activeField?.aggregator;
-        if (agg?.dependsOnChildrenOnly) {
-            const label = `${agg.constructor.name} for the ${activeField.name} field`;
+        const {activeField, view} = this;
+        if (activeField?.aggregator.dependsOnChildrenOnly) {
             throw XH.exception(
-                `${label} read \`filteredRecords\` but does not override \`dependsOnChildrenOnly\` to return false. `
+                `The aggregator for the '${activeField.name}' field read \`filteredRecords\`, but does not override \`dependsOnChildrenOnly\` to return false - aggregators depending on records beyond their own children must do so.`
             );
         }
         return view._records.list;
@@ -55,5 +56,33 @@ export class AggregationContext {
     constructor(view: View) {
         this.view = view;
         this.appData = {};
+    }
+
+    /**
+     * Aggregate the given rows for a field, tracking the field as active for the duration.
+     * @internal
+     */
+    aggregate(rows: BaseRow[], field: CubeField): any {
+        this.activeField = field;
+        try {
+            return field.aggregator.aggregate(rows, field.name, this);
+        } finally {
+            this.activeField = null;
+        }
+    }
+
+    /**
+     * Adjust an aggregated value for a single child update, tracking the updated field as active
+     * for the duration.
+     * @internal
+     */
+    replace(rows: BaseRow[], currVal: any, update: RowUpdate): any {
+        const {field} = update;
+        this.activeField = field;
+        try {
+            return field.aggregator.replace(rows, currVal, update, this);
+        } finally {
+            this.activeField = null;
+        }
     }
 }
