@@ -99,9 +99,10 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   and republishing only values that actually changed - so e.g. dropping a trailing dimension
   republishes nothing above the level that moved, and connected stores and grids skip the
   matching record rebuilds.
-* Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store. A source that
-  supplies per-row digests can now preserve record identity across full `Cube.loadDataAsync()`
-  reloads, extending View row reuse to wholesale refreshes.
+* Added `CubeConfig.store`, exposing `StoreConfig` options - notably `reuseRecords` and `retainRaw` -
+  on the Cube's internal Store. A source that supplies per-row digests can now preserve record
+  identity across full `Cube.loadDataAsync()` reloads, extending View row reuse to wholesale
+  refreshes.
 * Added a `Store.retainRaw` config (default `true`). Set it to `false` to drop each record's
   reference to its raw source data object after parsing, reducing memory use on large stores that do
   not need `StoreRecord.raw`. Not compatible with `reuseRecords: true`.

@@ -9,7 +9,7 @@ import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
-import {RecordDigest, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {Store, StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {RecordSetDelta} from '../impl/RecordSet';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
@@ -45,18 +45,15 @@ export interface CubeConfig {
     /** See {@link StoreConfig.processRawData} */
     processRawData?: (data: PlainObject) => PlainObject;
 
-    /** See {@link StoreConfig.retainRaw} */
-    retainRaw?: boolean;
-
-    /** See {@link StoreConfig.projectionOnly} */
-    projectionOnly?: boolean;
-
     /**
-     * See {@link StoreConfig.reuseRecords}. Recommended whenever the source can supply a cheap
-     * per-row digest - preserves record identity for unchanged rows across loads and updates,
-     * allowing connected Views to reuse their generated rows and connected stores their records.
+     * Additional configs for the internal {@link Store} of leaf-level records maintained by this
+     * Cube - i.e. tuning of how that Store holds the data described by `fields` / `idSpec` above.
+     *
+     * Note `reuseRecords` is recommended whenever the source can supply a cheap per-row digest - it
+     * preserves record identity for unchanged rows across loads and updates, allowing connected
+     * Views to reuse their generated rows and connected stores their records.
      */
-    reuseRecords?: boolean | string | ((raw: PlainObject) => RecordDigest);
+    store?: CubeStoreConfig;
 
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;
@@ -79,6 +76,36 @@ export interface CubeConfig {
      */
     omitFn?: OmitFn;
 }
+
+/**
+ * Configs available for a {@link Cube}'s internal {@link Store}, via {@link CubeConfig.store}.
+ *
+ * Excludes configs specified on {@link CubeConfig} itself (`fields`, `data`, `idSpec`,
+ * `processRawData`) or required by the Cube's internal representation (`freezeData`,
+ * `idEncodesTreePath`), along with configs that do not apply to a flat store of leaf-level facts:
+ *
+ *  - Tree loading (`loadTreeData`, `loadTreeDataFrom`, `loadRootAsSummary`) - hierarchy is produced
+ *    by `View`s from the Cube's dimensions, not loaded into its source store.
+ *  - Filtering (`filter`, `filterIncludesChildren`) - filter via `QueryConfig.filter` instead, so
+ *    that aggregations remain consistent with the facts loaded into the Cube.
+ *  - `projectionOnly` - incompatible with `Cube.modifyRecordsAsync()`, which requires a store that
+ *    supports local record modification.
+ */
+export type CubeStoreConfig = Omit<
+    StoreConfig,
+    | 'fields'
+    | 'data'
+    | 'idSpec'
+    | 'processRawData'
+    | 'freezeData'
+    | 'idEncodesTreePath'
+    | 'loadTreeData'
+    | 'loadTreeDataFrom'
+    | 'loadRootAsSummary'
+    | 'filter'
+    | 'filterIncludesChildren'
+    | 'projectionOnly'
+>;
 
 /**
  * Function to be called for each node to aggregate to determine if it should be "locked",
@@ -149,9 +176,7 @@ export class Cube extends HoistBase {
         data = [],
         idSpec = 'id',
         processRawData,
-        retainRaw,
-        projectionOnly,
-        reuseRecords,
+        store,
         info = {},
         lockFn,
         bucketSpecFn,
@@ -160,12 +185,10 @@ export class Cube extends HoistBase {
         super();
         makeObservable(this);
         this.store = new Store({
+            ...store,
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
-            processRawData: processRawData,
-            retainRaw: retainRaw,
-            projectionOnly: projectionOnly,
-            reuseRecords: reuseRecords,
+            processRawData,
             freezeData: false,
             idEncodesTreePath: true
         });
