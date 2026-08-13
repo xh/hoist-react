@@ -22,10 +22,10 @@ import type {View} from '../View';
  * leaf class; parents recompute in place as needed per {@link ParentRow.reuse}. Digests bump
  * only on actual value change, letting connected stores skip record rebuilds for unchanged rows.
  *
- * The cache tracks the query it last generated against and invalidates affected entries itself
- * at generation start when the query has changed. Unused entries are retained for later reuse
- * (e.g. filter widening), bounded by eviction of parents orphaned by a grouping change and a
- * sweep of dead-record rows when the cache outgrows the rows in use by 50%+.
+ * The cache invalidates itself at generation start when the query has changed. Unused entries
+ * are retained for later reuse (e.g. filter widening), bounded by eviction of parents orphaned
+ * by a grouping change and a sweep of dead-record rows when the cache outgrows the rows in use
+ * by 50%+.
  *
  * @internal
  */
@@ -36,8 +36,7 @@ export class RowCache {
     private sweptAsOf: number = null;
     private genStartDigest = 0;
     private lastQuery: Query = null;
-    // Parents touched by the current generation - collected only when a grouping change requires
-    // eviction of the rest at generation end, and released there.
+    // Parents touched by the current generation, when a grouping change requires evicting the rest.
     private usedParents: Set<BaseRow> = null;
 
     // Stats for the current generation - logged by endGeneration()
@@ -61,9 +60,8 @@ export class RowCache {
     }
 
     /**
-     * Return the cached row for id if it satisfies the reuse invariant, otherwise build via
-     * `fn` and cache the result. Leaves validate against `record`; parents delegate to
-     * {@link ParentRow.reuse}, which recomputes in place as needed.
+     * Return the cached row for id if reusable, else build via `fn` and cache. Leaves validate
+     * against `record`; parents recompute in place per {@link ParentRow.reuse}.
      */
     getOrCreate<T extends BaseRow>(
         id: string,
@@ -125,14 +123,17 @@ export class RowCache {
         this.usedParents = null;
     }
 
-    // Selectively invalidate cached rows when the query has changed since the last generation.
+    //------------------
+    // Implementation
+    //------------------
+
+    // Invalidate cached rows affected by a query change since the last generation.
     private pruneForQueryChange(query: Query) {
         const oldQuery = this.lastQuery;
         if (oldQuery === query) return;
         this.lastQuery = query;
 
-        // 0) Fresh/cleared cache needs no pruning, and a filter-only change is a no-op - great
-        // for fast filter toggling.
+        // 0) Fresh cache, or a filter-only change - nothing to prune.
         if (!oldQuery || oldQuery.equalsExcludingFilter(query)) return;
 
         const oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
@@ -141,37 +142,31 @@ export class RowCache {
             fieldsGained = query.fields.some(it => !oldFieldNames.has(it.name)),
             bucketsRemoved = oldQuery.bucketSpecFn && !query.bucketSpecFn;
 
-        // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate rows
-        // wholesale. A gained field is one absent from the prior query: rows built while it was
-        // out of the query hold null or last-known values for it. Fields dropped from the query
-        // do NOT invalidate - retained rows keep their (superset) slots, which simply stop
-        // updating and are out of the published contract.
+        // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate
+        // wholesale - gained fields hold null/stale values on existing rows. (Dropped fields do
+        // NOT invalidate: their slots remain, stop updating, and are out of contract.)
         if (oldExposed !== newExposed || (newExposed && fieldsGained) || bucketsRemoved) {
             this.rows.clear();
             return;
         }
 
-        // 2) Field gains with hidden leaves, or a change of bucketSpecFn: leaves remain valid
-        // (hidden leaves adopt complete cube record data), but parents hold aggregates never
-        // computed for the gained field, or bucket rows a stale BucketSpec.
+        // 2) Field gains with hidden leaves, or a changed bucketSpecFn: leaves remain valid,
+        // but parents hold never-computed aggregates or a stale BucketSpec.
         if (fieldsGained || oldQuery.bucketSpecFn !== query.bucketSpecFn) {
             this.removeParentRows();
             return;
         }
 
-        // 3) Otherwise retain everything - reused parents recompute in place as needed, and
-        // surviving leaves that moved to new tree positions are detected by connected stores'
-        // treePath checks. A changed grouping orphans the prior grouping's parents, evicted at
-        // generation end lest each distinct grouping accumulate a parent set for the life of
-        // the view.
+        // 3) Otherwise retain everything - but a changed grouping orphans the prior grouping's
+        // parents, to be evicted at generation end lest each grouping's set accumulate for the
+        // life of the view.
         if (!isEqual(oldQuery.dimensions, query.dimensions)) {
             this.usedParents = new Set();
         }
     }
 
-    // Remove all parent (aggregate/bucket) rows, and null the parent pointers of the retained
-    // leaves - every pointer is dead once all parents are dropped, and would otherwise pin the
-    // dead chains in memory.
+    // Remove all parent rows, nulling retained leaves' parent pointers so dead chains are not
+    // pinned in memory.
     private removeParentRows() {
         const {rows} = this;
         rows.forEach((row, id) => {
@@ -183,13 +178,9 @@ export class RowCache {
         });
     }
 
-    // Drop parents orphaned by a grouping change - each distinct grouping would otherwise
-    // accumulate a cached parent set for the life of the view, as live-record children keep such
-    // parents from ever sweeping. Then null dangling parent pointers on retained rows, so
-    // evicted chains are not pinned in memory. Filter-dormant parents are retained across
-    // filter-only changes (which never trigger this pass) and are bounded at one full-data
-    // tree's worth; any evicted here alongside the orphans (their subtree filtered out during a
-    // regroup) simply rebuild if the filter widens again.
+    // Drop parents untouched by this generation's grouping (their live-record children would
+    // otherwise keep them from ever sweeping), then null dangling parent pointers so evicted
+    // chains are not pinned in memory.
     private doEvictUnusedParents() {
         const {rows, usedParents} = this;
         rows.forEach((row, id) => {
@@ -205,9 +196,8 @@ export class RowCache {
         });
     }
 
-    // Drop rows whose underlying cube records have been removed or replaced. Skipped unless the
-    // cache has outgrown the generation's live rows by 50%+ and cube data has changed since the
-    // last sweep - rows can only die with their records.
+    // Drop rows whose cube records have been removed or replaced - rows only die with their
+    // records. Skipped until the cache outgrows the generation's live rows by 50%+.
     private sweep() {
         const live = this.reused + this.rebuilt + this.created,
             asOf = this.view.cube.lastUpdated;
