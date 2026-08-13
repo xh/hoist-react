@@ -322,8 +322,9 @@ export class View
     /**
      * Create a new row data object as a clone of this View's shared template, which carries a
      * slot for every ViewRowData property and query field. Rows are only ever written via
-     * overwrites of these slots - never property adds - so all rows in a View share one fixed
-     * shape, keeping them in V8's compact fast-properties mode rather than "dictionary mode".
+     * overwrites of these slots - never property adds - so rows minted for a given query share
+     * one fixed shape, keeping them in V8's compact fast-properties mode rather than
+     * "dictionary mode".
      * @internal
      */
     newRowData(id: string): ViewRowData {
