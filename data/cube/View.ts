@@ -246,9 +246,13 @@ export class View
 
     /** Gather all unique values for each dimension field in the query. */
     getDimensionValues(): DimensionValue[] {
-        const ret = this.query.fields
-            .filter(it => it.isDimension)
-            .map(field => ({field, values: new Set<any>()}));
+        // Applied dimensions are appended for queries that do not auto-include them in fields.
+        const {query} = this,
+            dimFields = uniq([
+                ...query.fields.filter(it => it.isDimension),
+                ...(query.dimensions ?? [])
+            ]),
+            ret = dimFields.map(field => ({field, values: new Set<any>()}));
 
         this._leafMap.forEach(leaf => {
             const {data} = leaf.cubeRecord;
