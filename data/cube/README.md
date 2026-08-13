@@ -169,12 +169,7 @@ view.setFilter({field: 'year', op: '=', value: 2025});
 
 Query updates are highly incremental - the View caches its generated rows and republishes
 unchanged rows (and their record-reuse digests) across regrouping, refiltering, and field
-changes, so connected stores and grids only process rows that actually changed. Note that
-`dimensions` are auto-included in `fields` by default, which makes the published row shape a
-function of the current grouping. Queries with an explicit `fields` list can set
-`autoIncludeDimensions: false` to keep row shape fully grouping-independent - maximizing reuse
-across regroups - in exchange for dimension values not being published on row data at all. See
-`QueryConfig.autoIncludeDimensions` for the trade-offs.
+changes, so connected stores and grids only process rows that actually changed.
 
 **One-shot queries with `executeQuery`:**
 

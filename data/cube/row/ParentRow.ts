@@ -7,7 +7,7 @@
 
 import {PlainObject} from '@xh/hoist/core';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
-import {forEach, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import {BucketSpec} from '../BucketSpec';
 import {CubeField} from '../CubeField';
 import {View} from '../View';
@@ -51,9 +51,7 @@ export abstract class ParentRow extends BaseRow {
         this.children = children;
         children.forEach(it => (it.parent = this));
 
-        forEach(appliedDimensions, (v, name) => {
-            if (name in this.data) this.data[name] = v;
-        });
+        Object.assign(this.data, appliedDimensions);
         this.depth = depth;
 
         // Needed to re-evaluate any `canAggregateFn` - clone, as the View mutates its copy as it
@@ -218,12 +216,9 @@ export class AggregateRow extends ParentRow {
         return this.dimName;
     }
 
-    // Value of `dim` at this row - or 'Total' for a dimension-less summary. Read from the
-    // retained `appliedDimensions` rather than `data`, where the value may not be published -
-    // see Query.autoIncludeDimensions. Only consumed by a `canAggregateFn` (via
-    // evalCanAggregate), exactly the condition under which `appliedDimensions` is retained.
+    // Value of `dim` on `data`, never aggregated over - or 'Total' for a dimension-less summary.
     protected get dimOrBucketVal(): any {
-        return this.dim ? this.appliedDimensions[this.dimName] : this.dimName;
+        return this.dim ? this.data[this.dimName] : this.dimName;
     }
 
     constructor(
