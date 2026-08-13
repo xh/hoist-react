@@ -23,7 +23,7 @@ import {
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isEqual, isNil, map, uniq} from 'lodash';
+import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {BaseRow} from './row/BaseRow';
@@ -144,7 +144,7 @@ export class View
     protected _bucketDependentFields = new Set<string>();
     protected _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
-    private _rowDigest = 0;
+    _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
@@ -243,8 +243,6 @@ export class View
             }
         }
 
-        this.pruneCacheForQueryChange(oldQuery, newQuery);
-
         this.fullUpdate();
     }
 
@@ -255,7 +253,8 @@ export class View
             .map(field => ({field, values: new Set<any>()}));
 
         this._leafMap.forEach(leaf => {
-            ret.forEach(({field, values}) => values.add(leaf.data[field.name]));
+            const {data} = leaf.cubeRecord;
+            ret.forEach(({field, values}) => values.add(data[field.name]));
         });
 
         return ret;
@@ -321,8 +320,9 @@ export class View
     /**
      * Create a new row data object as a clone of this View's shared template, which carries a
      * slot for every ViewRowData property and query field. Rows are only ever written via
-     * overwrites of these slots - never property adds - so all rows in a View share one fixed
-     * shape, keeping them in V8's compact fast-properties mode rather than "dictionary mode".
+     * overwrites of these slots - never property adds - so rows minted for a given query share
+     * one fixed shape, keeping them in V8's compact fast-properties mode rather than
+     * "dictionary mode".
      * @internal
      */
     newRowData(id: string): ViewRowData {
@@ -375,27 +375,6 @@ export class View
         this._complexAggFieldsByDepth = this._aggFieldsByDepth.map(fields =>
             fields.filter(it => !it.aggregator.dependsOnChildrenOnly)
         );
-    }
-
-    // Selectively invalidate cached rows on a query change.
-    private pruneCacheForQueryChange(oldQuery: Query, newQuery: Query) {
-        // 0) Filter change only is a no-op - great for fast filter toggling
-        if (oldQuery.equalsExcludingFilter(newQuery)) return;
-
-        // 1) If fields/leaves or buckets are changing, just blow everything away.
-        const cache = this._rowCache,
-            oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
-            newExposed = newQuery.includeLeaves || newQuery.provideLeaves,
-            fieldsChanged = !isEqual(oldQuery.fields, newQuery.fields),
-            bucketsRemoved = oldQuery.bucketSpecFn && !newQuery.bucketSpecFn;
-        if (oldExposed !== newExposed || (newExposed && fieldsChanged) || bucketsRemoved) {
-            cache.clear();
-            return;
-        }
-
-        // 2) Otherwise, blow away parent rows (they are not worth saving). Surviving leaves that
-        // moved to new tree positions are detected by connected stores' treePath checks.
-        cache.removeParentRows();
     }
 
     @logWithDebug
@@ -691,6 +670,16 @@ export class View
      */
     get aggregatorsAreSimple() {
         return isEmpty(this._complexAggFieldsByDepth[0]);
+    }
+
+    /**
+     * True if reused parent rows must re-derive context-reading fields - complex aggregators and
+     * `canAggregateFn` results - on every generation, as either may move with the
+     * per-generation AggregationContext. See {@link ParentRow.reuse}.
+     * @internal
+     */
+    get hasContextDependentFields(): boolean {
+        return !this.aggregatorsAreSimple || !isEmpty(this._canAggregateFnFieldsByDepth[0]);
     }
 
     protected parseStores(stores: Some<Store>): Store[] {

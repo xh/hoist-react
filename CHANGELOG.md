@@ -59,7 +59,7 @@ features and performance optimizations, grouped by topic below.
 
 #### View Manager -- Support for nested groups.
 
-* Requires `hoist-core >= 40.5.0` for the `ViewManager` group and bulk-editing APIs.
+* Requires `hoist-core >= 41.0.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
@@ -94,13 +94,11 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
   available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
   automatically.
-* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, and regrouping
-  or filtering. Unchanged rows - validated against their source records and child rows - keep their
-  data objects and reuse digests. This skips re-aggregation for untouched subtrees, and record
-  rebuilds in connected stores. Update costs now scale with the size of the change rather than the
-  size of the dataset. Complex (non-`dependsOnChildrenOnly`)
-  aggregators also reuse their rows, re-deriving all aggregations in place on each generation and
-  republishing only the values that actually changed.
+* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping,
+  and filtering. Aggregate rows now reuse even when their children change - re-deriving in place
+  and republishing only values that actually changed - so e.g. dropping a trailing dimension
+  republishes nothing above the level that moved, and connected stores and grids skip the
+  matching record rebuilds.
 * Added `CubeConfig.reuseRecords`, passed through to the Cube's internal Store. A source that
   supplies per-row digests can now preserve record identity across full `Cube.loadDataAsync()`
   reloads, extending View row reuse to wholesale refreshes.
@@ -111,6 +109,10 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   unchanged, as already detected by `Store.loadData()`. Connected `View`s now sync their info and
   timestamp instead of regenerating all of their rows, so polled reloads of unchanged data cost
   nothing downstream.
+* Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
+  incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
+  the size of the change rather than the size of the store. Enable via `Store` config
+  `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental` soft-config.
 
 #### FetchService - ndjson + string interning
 

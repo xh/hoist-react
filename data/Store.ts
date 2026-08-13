@@ -47,6 +47,7 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
+import {PatchableRecordSet} from './impl/PatchableRecordSet';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -232,7 +233,15 @@ export interface StoreConfig {
 
     /**
      *  Flags for experimental features. These features are designed for early client-access and
-     *  testing, but are not yet part of the Hoist API.
+     *  testing, but are not yet part of the Hoist API. Currently includes:
+     *   - `patchableRecordSet: true` to enable {@link PatchableRecordSet} - incremental record
+     *     collections that make transaction cost scale with the size of the change rather than
+     *     the size of the store. Note record order becomes stable-by-incumbency rather than
+     *     source-order: existing records keep their positions and additions append, including
+     *     records entering a filter incrementally and adds within partial reloads. Apply a
+     *     grid sort where deterministic order matters.
+     *   - `patchRecordsMaxRatio` - its core threshold, the max patch size as a fraction of
+     *     total records (default 0.1).
      */
     experimental?: PlainObject;
 }
@@ -1310,7 +1319,8 @@ export class Store
 
     @action
     private resetRecords() {
-        this._committed = this._current = this._filtered = new RecordSet(this);
+        const cls = this.experimental.patchableRecordSet ? PatchableRecordSet : RecordSet;
+        this._committed = this._current = this._filtered = new cls(this) as unknown as RecordSet;
         this.summaryRecords = null;
     }
 
