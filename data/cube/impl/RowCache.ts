@@ -6,7 +6,6 @@
  */
 
 import type {StoreRecord} from '@xh/hoist/data';
-import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import type {BaseRow} from '../row/BaseRow';
 import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
 import type {ParentRow} from '../row/ParentRow';
@@ -80,8 +79,8 @@ export class RowCache {
 
     /**
      * Return the cached row for id if it satisfies the reuse invariant, otherwise build via
-     * `fn` and cache the result. Leaves validate against `record`, bucket rows against
-     * `children`; aggregate rows always reuse, recomputing in place as needed.
+     * `fn` and cache the result. Leaves validate against `record`; parents delegate to
+     * {@link ParentRow.reuse}, which recomputes in place as needed.
      */
     getOrCreate<T extends BaseRow>(
         id: string,
@@ -99,15 +98,10 @@ export class RowCache {
                     this.reused++;
                     return ret as T;
                 }
-            } else {
-                // BucketRows with changed children rebuild - their BucketSpec and label would
-                // need re-deriving from the new membership.
-                if (ret.isAggregate || shallowEqualArrays(ret.children, children)) {
-                    (ret as ParentRow).reuse(children, this.genStartDigest);
-                    this.usedParents?.add(ret);
-                    this.reused++;
-                    return ret as T;
-                }
+            } else if ((ret as ParentRow).reuse(children, this.genStartDigest)) {
+                this.usedParents?.add(ret);
+                this.reused++;
+                return ret as T;
             }
             this.rebuilt++;
         } else {

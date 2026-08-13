@@ -107,14 +107,16 @@ export abstract class ParentRow extends BaseRow {
     // Aggregation
     //--------------------
     /**
-     * Reuse this cached row for a new generation: adopt the passed children array, re-point each
-     * child at this row (it may have been adopted by another parent while this row sat out a
-     * generation), and recompute aggregates in place as needed - bumping this row's digest only
-     * if some published value actually changed.
+     * Reuse this cached row for a new generation, returning it on success - or null when it
+     * cannot be reused (a BucketRow whose children changed - its BucketSpec and label would need
+     * re-deriving from the new membership) and the caller should rebuild. On success: adopts the
+     * passed children array, re-points each child at this row (it may have been adopted by
+     * another parent while this row sat out a generation), and recomputes aggregates in place as
+     * needed - bumping this row's digest only if some published value actually changed.
      *
      * Recomputation is skipped only when this row is provably current: an AggregateRow whose
      * children are identical, none of whose values changed in place this generation - detected
-     * by a child `cubeRowDigest` postdating `startDigest`, the view's digest watermark captured
+     * by a child `cubeRowDigest` postdating `genStartDigest`, the view's digest watermark captured
      * at generation start. Rows recompute bottom-up, so a changed child's digest bump cascades
      * recomputes up through reused ancestors. (Hidden leaves publish no digest, but no leaf can
      * change values in place within a generation - leaf reuse is gated on record identity, so a
@@ -128,12 +130,15 @@ export abstract class ParentRow extends BaseRow {
      * Even a current row re-derives context-reading fields - complex aggregators and
      * `canAggregateFn` results - which may move with the per-generation AggregationContext.
      */
-    reuse(children: BaseRow[], startDigest: number) {
-        const {view} = this,
-            current =
-                this.isAggregate &&
-                shallowEqualArrays(this.children, children) &&
-                !children.some(it => it.data.cubeRowDigest > startDigest);
+    reuse(children: BaseRow[], genStartDigest: number): ParentRow {
+        const {view, isAggregate} = this,
+            childrenEqual = shallowEqualArrays(this.children, children);
+        if (!childrenEqual && !isAggregate) return null;
+
+        const current =
+            childrenEqual &&
+            isAggregate &&
+            !children.some(it => it.data.cubeRowDigest > genStartDigest);
 
         this.children = children;
         children.forEach(it => (it.parent = this));
@@ -149,6 +154,7 @@ export abstract class ParentRow extends BaseRow {
         }
 
         if (changed) view.noteRowDataMutated(this.data);
+        return this;
     }
 
     /** Re-evaluate this row's `canAggregateFn` fields, returning any that changed - else null. */
