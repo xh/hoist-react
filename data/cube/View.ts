@@ -142,7 +142,6 @@ export class View
     private _bucketDependentFields = new Set<string>();
     private _rowDataTemplate: ViewRowData = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
-    // Read by RowCache as a generation-start watermark to detect in-place child value changes.
     _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
