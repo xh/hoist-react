@@ -51,15 +51,11 @@ export abstract class ParentRow extends BaseRow {
         children.forEach(it => (it.parent = this));
 
         // Publish applied dimension values only where they are queried fields - always the case
-        // when the query auto-includes its dimensions.
-        if (view.query.autoIncludeDimensions) {
-            Object.assign(this.data, appliedDimensions);
-        } else {
-            const fieldNames = view._queryFieldNames;
-            forEach(appliedDimensions, (v, name) => {
-                if (fieldNames.has(name)) this.data[name] = v;
-            });
-        }
+        // when the query auto-includes its dimensions (the default).
+        const fieldNames = view._queryFieldNames;
+        forEach(appliedDimensions, (v, name) => {
+            if (fieldNames.has(name)) this.data[name] = v;
+        });
         this.depth = depth;
 
         // Needed to re-evaluate any `canAggregateFn` - clone, as the View mutates its copy as it

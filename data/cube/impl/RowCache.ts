@@ -58,8 +58,6 @@ export class RowCache {
     private sweptAsOf: number = null;
     private genStartDigest = 0;
     private evictUnusedParents = false;
-    // Parents touched by the current generation - collected only when a grouping change has
-    // requested eviction of the rest, and released at generation end.
     private usedParents: Set<BaseRow> = null;
 
     // Stats for the current generation - logged by endGeneration()
