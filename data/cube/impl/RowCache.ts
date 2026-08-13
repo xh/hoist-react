@@ -56,9 +56,11 @@ export class RowCache {
     private recomputeAggs = false;
     private exposedLeaves = false;
     private sweptAsOf: number = null;
-    private generation = 0;
     private genStartDigest = 0;
     private evictUnusedParents = false;
+    // Parents touched by the current generation - collected only when a grouping change has
+    // requested eviction of the rest, and released at generation end.
+    private usedParents: Set<BaseRow> = null;
 
     // Stats for the current generation - logged by endGeneration()
     private reused = 0;
@@ -117,7 +119,7 @@ export class RowCache {
             this.created++;
         }
         ret = fn();
-        if (!ret.isLeaf) (ret as ParentRow).lastUsedGen = this.generation;
+        if (!ret.isLeaf) this.usedParents?.add(ret);
         this.rows.set(id, ret);
         return ret as T;
     }
@@ -148,13 +150,13 @@ export class RowCache {
         if (row.reuse(children, !current, this.recomputeAggs)) {
             this.view.noteRowDataMutated(row.data);
         }
-        row.lastUsedGen = this.generation;
+        this.usedParents?.add(row);
     }
 
     beginGeneration() {
         const {view} = this;
-        this.generation++;
         this.genStartDigest = view._rowDigest;
+        this.usedParents = this.evictUnusedParents ? new Set() : null;
         this.recomputeAggs =
             !view.aggregatorsAreSimple || !isEmpty(view._canAggregateFnFieldsByDepth[0]);
         this.exposedLeaves = view.exposesLeaves;
@@ -166,6 +168,7 @@ export class RowCache {
         if (this.evictUnusedParents) {
             this.evictUnusedParents = false;
             this.doEvictUnusedParents();
+            this.usedParents = null;
         }
         this.sweep();
         this.view.logDebug(
@@ -213,9 +216,9 @@ export class RowCache {
     // tree's worth; any evicted here alongside the orphans (their subtree filtered out during a
     // regroup) simply rebuild if the filter widens again.
     private doEvictUnusedParents() {
-        const {rows, generation} = this;
+        const {rows, usedParents} = this;
         rows.forEach((row, id) => {
-            if (!row.isLeaf && (row as ParentRow).lastUsedGen !== generation) {
+            if (!row.isLeaf && !usedParents.has(row)) {
                 rows.delete(id);
                 this.evicted++;
             }

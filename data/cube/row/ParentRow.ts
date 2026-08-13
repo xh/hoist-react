@@ -40,10 +40,6 @@ export abstract class ParentRow extends BaseRow {
     /** True if this row's children have been hidden from results by the Query's `lockFn`. */
     locked: boolean = false;
 
-    // Generation that last requested this row - written by RowCache, keying its eviction of
-    // grouping-orphaned parents.
-    lastUsedGen = 0;
-
     /** The dimension or bucket by which this row groups its children, and its value here. */
     protected abstract get dimOrBucketName(): string;
     protected abstract get dimOrBucketVal(): any;
