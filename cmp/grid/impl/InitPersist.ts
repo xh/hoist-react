@@ -74,7 +74,8 @@ export function initPersist(
                 isObject(persistColumnGroups) ? persistColumnGroups : null
             ),
             target: {
-                getPersistableState: () => new PersistableState(gridModel.columnGroupState),
+                getPersistableState: () =>
+                    new PersistableState(gridModel.persistableColumnGroupState),
                 setPersistableState: ({value}) => gridModel.setColumnGroupState(value)
             },
             owner: gridModel

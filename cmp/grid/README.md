@@ -162,8 +162,9 @@ group non-expandable.
 Expand/collapse state is tracked on `GridModel.columnGroupState`, one entry per configured group.
 Read it with `isColumnGroupExpanded(groupId)`, drive it with `setColumnGroupExpanded()` or
 `setColumnGroupState()`, and persist it via `persistWith` (on by default, alongside column state -
-see `GridModelPersistOptions.persistColumnGroups`). Nothing is written until a user actually
-expands or collapses a group, and returning every group to its default clears the saved entry.
+see `GridModelPersistOptions.persistColumnGroups`). Only groups moved off their `expandedByDefault`
+are written, so a grid that rebuilds its columns never reads as dirty on that account, and returning
+every group to its default clears the saved entry.
 
 `setColumns()` **retains** this state for groups the new configs still define - a rebuild that mints
 new columns must not spring a user's collapsed groups open. A group that leaves the column set and

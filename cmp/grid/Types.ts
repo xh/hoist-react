@@ -110,7 +110,8 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistColumns?: boolean | PersistOptions;
     /**
      * True (default) to include column group expand/collapse state, or provide group-specific
-     * PersistOptions. Nothing is written unless the user actually expands or collapses a group.
+     * PersistOptions. Only groups the user has moved off their `expandedByDefault` are written, so
+     * a grid whose groups are all at their defaults persists nothing here.
      */
     persistColumnGroups?: boolean | PersistOptions;
     /** True (default) to include grouping state or provide grouping-specific PersistOptions. */

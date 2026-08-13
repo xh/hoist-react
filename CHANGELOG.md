@@ -205,6 +205,9 @@ columns.
 
 ### 🐞 Bug Fixes
 
+* Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
+  without cancelling any pending debounced write, so state returned to its default within the
+  debounce interval (250ms by default) was re-persisted by the stale write that followed.
 * Fixed `View.getDimensionValues()` returning sets of `undefined` instead of the actual unique
   values for each dimension.
 * Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates. Hoist now

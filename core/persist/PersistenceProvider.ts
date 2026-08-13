@@ -130,6 +130,11 @@ export abstract class PersistenceProvider<S = any> {
     /** Clear any persisted data at a path. Also clears any parent objects that become empty. */
     clear() {
         logDebug('Clearing state', this.owner);
+
+        // Drop any debounced write still pending - it holds pre-clear state and would otherwise
+        // land after this call and resurrect it.
+        (this.writeInternal as any).cancel?.();
+
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
         do {
