@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {throwIf} from '@xh/hoist/utils/js';
+import {XH} from '@xh/hoist/core';
 import {StoreRecord} from '../../StoreRecord';
 import {View} from '../View';
 
@@ -27,24 +27,44 @@ export class AggregationContext {
     appData: any;
 
     /**
+     * Name of the field currently being aggregated - set by row implementations immediately before
+     * each call into an aggregator, and used to identify the aggregator in error messages.
+     * @internal
+     */
+    activeFieldName: string = null;
+
+    /**
      * All records currently meeting the filter for this view.
      *
-     * Available only when an aggregator on the view declares
-     * {@link Aggregator.dependsOnChildrenOnly} as false - the View then rebuilds its filtered
-     * records before every aggregation pass. Views with children-only aggregators update
+     * Available only when an aggregator on the view overrides
+     * {@link Aggregator.dependsOnChildrenOnly} to return false - the View then rebuilds its
+     * filtered records before every aggregation pass. Views with children-only aggregators update
      * incrementally without refreshing that collection, so reading it here throws.
      */
     get filteredRecords(): StoreRecord[] {
         const {view} = this;
-        throwIf(
-            view.aggregatorsAreSimple,
-            'filteredRecords is available only when an aggregator declares `dependsOnChildrenOnly` as false - aggregators depending on records beyond their own children must do so.'
-        );
+        // Note error message built lazily - this getter is called throughout aggregation.
+        if (view.aggregatorsAreSimple) {
+            throw XH.exception(
+                `${this.activeAggregatorDescription} read \`filteredRecords\` but does not override \`dependsOnChildrenOnly\` to return false. ` +
+                    'Aggregators reading records beyond their own children must do so.'
+            );
+        }
         return view._records.list;
     }
 
     constructor(view: View) {
         this.view = view;
         this.appData = {};
+    }
+
+    /** Identify the in-progress aggregator by its class + field, for error reporting. */
+    private get activeAggregatorDescription(): string {
+        const {activeFieldName, view} = this,
+            aggregator = activeFieldName ? view.getField(activeFieldName)?.aggregator : null;
+
+        return aggregator
+            ? `${aggregator.constructor.name} for the ${activeFieldName} field`
+            : 'An aggregator on this Cube View';
     }
 }
