@@ -154,9 +154,10 @@ export class RowCache {
             return;
         }
 
-        // 3) Otherwise retain everything - but a changed grouping orphans the prior grouping's
-        // parents, to be evicted at generation end lest each grouping's set accumulate for the
-        // life of the view.
+        // 3) Otherwise retain everything...
+
+        // but on a changed grouping, be sure to throw out any unused rows
+        // at end, when we have already rescued any reusable "upper tree" nodes.
         if (!isEqual(oldQuery.dimensions, query.dimensions)) {
             this.usedParents = new Set();
         }
