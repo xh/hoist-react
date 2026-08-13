@@ -27,10 +27,6 @@ export abstract class BaseRow {
     parent: ParentRow = null;
     children: BaseRow[] = null;
 
-    // Generation in which this row was (re)built or its values last changed in place - written
-    // by RowCache, read there to cascade recomputes up through reused ancestors.
-    valuesChangedGen = 0;
-
     get isLeaf() {
         return false;
     }
