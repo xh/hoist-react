@@ -104,34 +104,27 @@ export abstract class ParentRow extends BaseRow {
     //-------------------
     // Aggregation
     //--------------------
-    /**
-     * Reuse this cached row for a new generation: adopt the passed children, re-point each at
-     * this row, and recompute aggregates in place as needed, bumping the digest only if a value
-     * actually changed. Returns this row - or null if it cannot be reused (a BucketRow whose
-     * children changed, requiring its BucketSpec be re-derived) and the caller should rebuild.
-     *
-     * An AggregateRow with an identical children array skips recomputation when no child digest
-     * postdates `genStartDigest`, the view's watermark at generation start - rows recompute
-     * bottom-up, so in-place child changes cascade by digest, and a changed leaf is always a new
-     * object. Dormancy needs no extra check: filter-dormant subtrees are dormant with their
-     * leaves, and grouping-orphaned rows are evicted, never revived. Bucket rows and
-     * context-reading fields (complex aggregators, `canAggregateFn`) always recompute.
-     */
+    /** Reuse this row for a new generation, recomputing in place as needed - null to rebuild. */
     reuse(children: BaseRow[], genStartDigest: number): ParentRow {
-        const {view, isAggregate} = this,
+        const {view, isBucket} = this,
             childrenEqual = shallowEqualArrays(this.children, children);
-        if (!childrenEqual && !isAggregate) return null;
 
-        const current =
-            childrenEqual &&
-            isAggregate &&
-            !children.some(it => it.data.cubeRowDigest > genStartDigest);
+        // 0) Can't reuse a bucket with different children
+        if (!childrenEqual && isBucket) return null;
 
-        this.children = children;
-        children.forEach(it => (it.parent = this));
+        // 1) Rewire children if needed
+        if (!childrenEqual) {
+            this.children = children;
+            children.forEach(it => (it.parent = this));
+        }
 
+        // 2) Re-aggregate, only if needed, and mark if changes resulted.
         let changed = false;
-        if (!current) {
+        const simpleAggsAreCurrent =
+            childrenEqual &&
+            !isBucket &&
+            !children.some(it => it.data.cubeRowDigest > genStartDigest);
+        if (!simpleAggsAreCurrent) {
             this.recomputeCanAggregate();
             view._aggFieldsByDepth[this.depth].forEach(field => {
                 if (this.recomputeAggregate(field)) changed = true;
