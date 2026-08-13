@@ -26,11 +26,11 @@ import type {View} from '../View';
  * recomputed in place, with its digest bumped only if some value actually changed. Rows generate
  * bottom-up and every in-place value change bumps the row's `cubeRowDigest`, so a child digest
  * postdating the generation start cascades recomputes up through reused ancestors - replacing
- * the ancestor-chain rebuilds that reuse-in-place avoids. Bucket rows
- * reuse only on an identical children array (changed membership would require re-deriving their
- * BucketSpec) and recompute whenever they sat out a generation - see `reuseParentRow` for the
- * dormancy reasoning. Reused rows keep their `cubeRowDigest`, letting connected stores - which
- * read that stamp via a View-installed reuse digest - skip record rebuilds for them.
+ * the ancestor-chain rebuilds that reuse-in-place avoids. Bucket rows reuse only on an identical
+ * children array (changed membership would require re-deriving their BucketSpec) and always
+ * recompute - see `reuseParentRow`. Reused rows keep their `cubeRowDigest`, letting connected
+ * stores - which read that stamp via a View-installed reuse digest - skip record rebuilds for
+ * them.
  *
  * Views with aggregators that do not declare {@link Aggregator.dependsOnChildrenOnly}, or with
  * fields that define a `canAggregateFn` - both of which may read the per-generation
@@ -126,30 +126,29 @@ export class RowCache {
     // child may have been adopted by another parent while this one sat out a generation) and
     // recomputing aggregates as needed, with the digest bumped only on actual value change.
     private reuseParentRow(row: ParentRow, children: BaseRow[], childrenEqual: boolean) {
-        // Skip the full recompute only when provably current: children identical, and no child's
-        // values changed in place this generation - detected by its `cubeRowDigest` postdating
-        // the generation-start watermark. Rows recompute bottom-up, so a changed child's digest
-        // bump cascades recomputes up through reused ancestors. (Hidden leaves publish no
-        // digest, but no leaf can change values in place within a generation - leaf reuse is
-        // gated on record identity, so a changed leaf is a new object and fails the
-        // children-identity check instead.) Dormancy needs no further check for aggregate rows:
-        // filter-dormant subtrees are coherently dormant (their leaves are not in `_leafMap`, so
-        // receive no in-place updates, and a changed record rebuilds its leaf and changes this
-        // children array), and grouping-orphaned parents are evicted rather than revived. Bucket
-        // rows are the one exception - data-driven migration can idle a bucket while its
-        // children stay live under other parents, drifting between generations, below this
-        // watermark - so a bucket row that sat out a generation always recomputes.
-        const {generation, genStartDigest} = this,
+        // Skip the full recompute only when provably current: an aggregate row with children
+        // identical, none of whose values changed in place this generation - detected by a
+        // `cubeRowDigest` postdating the generation-start watermark. Rows recompute bottom-up,
+        // so a changed child's digest bump cascades recomputes up through reused ancestors.
+        // (Hidden leaves publish no digest, but no leaf can change values in place within a
+        // generation - leaf reuse is gated on record identity, so a changed leaf is a new object
+        // and fails the children-identity check instead.) Dormancy needs no check for aggregate
+        // rows: filter-dormant subtrees are coherently dormant (their leaves are not in
+        // `_leafMap`, so receive no in-place updates, and a changed record rebuilds its leaf and
+        // changes this children array), and grouping-orphaned parents are evicted rather than
+        // revived. Bucket rows always recompute - data-driven migration can idle a bucket while
+        // its children stay live and drift, and they are too few to warrant a finer rule.
+        const {genStartDigest} = this,
             current =
                 childrenEqual &&
-                !children.some(it => it.data.cubeRowDigest > genStartDigest) &&
-                (row.isAggregate || row.lastUsedGen === generation - 1);
+                row.isAggregate &&
+                !children.some(it => it.data.cubeRowDigest > genStartDigest);
 
         if (!current || this.recomputeAggs) this.recomputed++;
         if (row.reuse(children, !current, this.recomputeAggs)) {
             this.view.noteRowDataMutated(row.data);
         }
-        row.lastUsedGen = generation;
+        row.lastUsedGen = this.generation;
     }
 
     beginGeneration() {

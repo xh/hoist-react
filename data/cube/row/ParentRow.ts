@@ -41,7 +41,7 @@ export abstract class ParentRow extends BaseRow {
     locked: boolean = false;
 
     // Generation that last requested this row - written by RowCache, keying its eviction of
-    // grouping-orphaned parents and forced recompute of revived bucket rows.
+    // grouping-orphaned parents.
     lastUsedGen = 0;
 
     /** The dimension or bucket by which this row groups its children, and its value here. */
@@ -118,8 +118,8 @@ export abstract class ParentRow extends BaseRow {
      * Reuse this cached row for a new generation, adopting the (possibly changed) children array
      * and re-pointing each child at this row. When `recomputeAll`, re-evaluate `canAggregateFn`
      * results and recompute every aggregate at this row's depth in place - required when children
-     * changed, when a child's values changed in place this generation, or on a revived bucket
-     * row - see RowCache.reuseParentRow. Otherwise recompute only context-dependent fields, per
+     * changed, when a child's values changed in place this generation, or on any bucket row -
+     * see RowCache.reuseParentRow. Otherwise recompute only context-dependent fields, per
      * `recomputeAggregatesForContextChange`. Returns true if any value changed - the caller must
      * then bump this row's digest.
      */
