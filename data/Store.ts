@@ -236,7 +236,10 @@ export interface StoreConfig {
      *  testing, but are not yet part of the Hoist API. Currently includes:
      *   - `patchableRecordSet: true` to enable {@link PatchableRecordSet} - incremental record
      *     collections that make transaction cost scale with the size of the change rather than
-     *     the size of the store.
+     *     the size of the store. Note record order becomes stable-by-incumbency rather than
+     *     source-order: existing records keep their positions and additions append, including
+     *     records entering a filter incrementally and adds within partial reloads. Apply a
+     *     grid sort where deterministic order matters.
      *   - `patchRecordsMaxRatio` - its core threshold, the max patch size as a fraction of
      *     total records (default 0.1).
      */
