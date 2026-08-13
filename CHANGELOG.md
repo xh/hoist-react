@@ -59,7 +59,7 @@ features and performance optimizations, grouped by topic below.
 
 #### View Manager -- Support for nested groups.
 
-* Requires `hoist-core >= 40.5.0` for the `ViewManager` group and bulk-editing APIs.
+* Requires `hoist-core >= 41.0.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
