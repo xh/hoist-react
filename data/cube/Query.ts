@@ -56,6 +56,17 @@ export interface QueryConfig {
     dimensions?: string[] | CubeField[];
 
     /**
+     * True (default) to automatically include `dimensions` in `fields`, publishing each applied
+     * dimension's value on the row data of its aggregate rows and leaves.
+     *
+     * False to leave `fields` exactly as specified - dimension values are then not published on
+     * row data at all, with grouping expressed only via tree structure, row ids and
+     * `cubeLabel`/`cubeDimension`. Note `fields` defaults to all Cube fields when unspecified,
+     * so an explicit `fields` list is required for this option to have any effect.
+     */
+    autoIncludeDimensions?: boolean;
+
+    /**
      * Filters to apply to leaf data, or configs to create. Note that leaf data will be filtered
      * and then aggregated - i.e. the filters provided here will filter in/out the lowest level
      * facts and _won't_ operate directly on any aggregates.
@@ -137,10 +148,12 @@ export interface QueryConfig {
  */
 export class Query {
     /**
-     * Queried fields, sorted by name. Includes `dimensions`, added here if not already present.
+     * Queried fields, sorted by name. Includes `dimensions`, added here if not already present,
+     * unless `autoIncludeDimensions` was set to false.
      */
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];
+    readonly autoIncludeDimensions: boolean;
     readonly filter: Filter;
     readonly hasFilter: boolean;
     readonly includeRoot: boolean;
@@ -159,6 +172,7 @@ export class Query {
         cube,
         fields,
         dimensions,
+        autoIncludeDimensions = true,
         filter = null,
         includeRoot = false,
         includeLeaves = false,
@@ -171,9 +185,13 @@ export class Query {
         this.cube = cube;
         this._rawFields = fields?.slice();
         this.dimensions = this.parseDimensions(dimensions);
+        this.autoIncludeDimensions = autoIncludeDimensions;
         // Ensure canonical field order so equivalent queries compare equal
         this.fields = sortBy(
-            uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]),
+            uniq([
+                ...this.parseFields(fields),
+                ...(autoIncludeDimensions ? (this.dimensions ?? []) : [])
+            ]),
             'name'
         );
         this.includeRoot = includeRoot;
@@ -193,6 +211,7 @@ export class Query {
         const conf = {
             dimensions: this.dimensions,
             fields: this._rawFields, // NOT this.fields - would retain stale dimensions
+            autoIncludeDimensions: this.autoIncludeDimensions,
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
@@ -230,6 +249,7 @@ export class Query {
         return (
             isEqual(this.fields, other.fields) &&
             isEqual(this.dimensions, other.dimensions) &&
+            this.autoIncludeDimensions === other.autoIncludeDimensions &&
             this.cube === other.cube &&
             this.includeRoot === other.includeRoot &&
             this.includeLeaves === other.includeLeaves &&
