@@ -6,6 +6,8 @@
  */
 
 import type {StoreRecord} from '@xh/hoist/data';
+import {isEqual, map} from 'lodash';
+import type {Query} from '../Query';
 import type {BaseRow} from '../row/BaseRow';
 import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
 import type {ParentRow} from '../row/ParentRow';
@@ -20,9 +22,10 @@ import type {View} from '../View';
  * leaf class; parents recompute in place as needed per {@link ParentRow.reuse}. Digests bump
  * only on actual value change, letting connected stores skip record rebuilds for unchanged rows.
  *
- * Unused entries are retained for later reuse (e.g. filter widening), bounded by eviction of
- * parents orphaned by a grouping change and a sweep of dead-record rows when the cache outgrows
- * the rows in use by 50%+.
+ * The cache tracks the query it last generated against and invalidates affected entries itself
+ * at generation start when the query has changed. Unused entries are retained for later reuse
+ * (e.g. filter widening), bounded by eviction of parents orphaned by a grouping change and a
+ * sweep of dead-record rows when the cache outgrows the rows in use by 50%+.
  *
  * @internal
  */
@@ -32,7 +35,9 @@ export class RowCache {
     private exposedLeaves = false;
     private sweptAsOf: number = null;
     private genStartDigest = 0;
-    private evictUnusedParents = false;
+    private lastQuery: Query = null;
+    // Parents touched by the current generation - collected only when a grouping change requires
+    // eviction of the rest at generation end, and released there.
     private usedParents: Set<BaseRow> = null;
 
     // Stats for the current generation - logged by endGeneration()
@@ -93,16 +98,15 @@ export class RowCache {
 
     beginGeneration() {
         const {view} = this;
+        this.pruneForQueryChange(view.query);
         this.genStartDigest = view._rowDigest;
-        this.usedParents = this.evictUnusedParents ? new Set() : null;
         this.exposedLeaves = view.exposesLeaves;
         this.reused = this.rebuilt = this.created = 0;
         this.evicted = this.removed = this.sweepTime = 0;
     }
 
     endGeneration() {
-        if (this.evictUnusedParents) {
-            this.evictUnusedParents = false;
+        if (this.usedParents) {
             this.doEvictUnusedParents();
             this.usedParents = null;
         }
@@ -115,25 +119,60 @@ export class RowCache {
         );
     }
 
-    /**
-     * Request eviction of any parent rows not used by the coming generation, at its end. Called
-     * ahead of a query change that alters the grouping - see View.pruneCacheForQueryChange.
-     */
-    evictUnusedParentsAtGenerationEnd() {
-        this.evictUnusedParents = true;
-    }
-
     clear() {
         this.rows.clear();
-        this.evictUnusedParents = false;
+        this.lastQuery = null;
+        this.usedParents = null;
     }
 
-    /**
-     * Remove all parent (aggregate/bucket) rows, and null the parent pointers of the retained
-     * leaves - every pointer is dead once all parents are dropped, and would otherwise pin the
-     * dead chains in memory.
-     */
-    removeParentRows() {
+    // Selectively invalidate cached rows when the query has changed since the last generation.
+    private pruneForQueryChange(query: Query) {
+        const oldQuery = this.lastQuery;
+        if (oldQuery === query) return;
+        this.lastQuery = query;
+
+        // 0) Fresh/cleared cache needs no pruning, and a filter-only change is a no-op - great
+        // for fast filter toggling.
+        if (!oldQuery || oldQuery.equalsExcludingFilter(query)) return;
+
+        const oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
+            newExposed = query.includeLeaves || query.provideLeaves,
+            oldFieldNames = new Set(map(oldQuery.fields, 'name')),
+            fieldsGained = query.fields.some(it => !oldFieldNames.has(it.name)),
+            bucketsRemoved = oldQuery.bucketSpecFn && !query.bucketSpecFn;
+
+        // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate rows
+        // wholesale. A gained field is one absent from the prior query: rows built while it was
+        // out of the query hold null or last-known values for it. Fields dropped from the query
+        // do NOT invalidate - retained rows keep their (superset) slots, which simply stop
+        // updating and are out of the published contract.
+        if (oldExposed !== newExposed || (newExposed && fieldsGained) || bucketsRemoved) {
+            this.rows.clear();
+            return;
+        }
+
+        // 2) Field gains with hidden leaves, or a change of bucketSpecFn: leaves remain valid
+        // (hidden leaves adopt complete cube record data), but parents hold aggregates never
+        // computed for the gained field, or bucket rows a stale BucketSpec.
+        if (fieldsGained || oldQuery.bucketSpecFn !== query.bucketSpecFn) {
+            this.removeParentRows();
+            return;
+        }
+
+        // 3) Otherwise retain everything - reused parents recompute in place as needed, and
+        // surviving leaves that moved to new tree positions are detected by connected stores'
+        // treePath checks. A changed grouping orphans the prior grouping's parents, evicted at
+        // generation end lest each distinct grouping accumulate a parent set for the life of
+        // the view.
+        if (!isEqual(oldQuery.dimensions, query.dimensions)) {
+            this.usedParents = new Set();
+        }
+    }
+
+    // Remove all parent (aggregate/bucket) rows, and null the parent pointers of the retained
+    // leaves - every pointer is dead once all parents are dropped, and would otherwise pin the
+    // dead chains in memory.
+    private removeParentRows() {
         const {rows} = this;
         rows.forEach((row, id) => {
             if (row.isLeaf) {

@@ -23,7 +23,7 @@ import {
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isEqual, isNil, map, uniq} from 'lodash';
+import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {BaseRow} from './row/BaseRow';
@@ -241,8 +241,6 @@ export class View
             }
         }
 
-        this.pruneCacheForQueryChange(oldQuery, newQuery);
-
         this.fullUpdate();
     }
 
@@ -257,8 +255,6 @@ export class View
             ret = dimFields.map(field => ({field, values: new Set<any>()}));
 
         this._leafMap.forEach(leaf => {
-            // Read via the source record - cube record data always carries dimension values,
-            // while leaf data omits them when `autoIncludeDimensions` is false.
             const {data} = leaf.cubeRecord;
             ret.forEach(({field, values}) => values.add(data[field.name]));
         });
@@ -328,8 +324,8 @@ export class View
      * slot for every ViewRowData property and query field. Rows are only ever written via
      * overwrites of these slots - never property adds - keeping them in V8's compact
      * fast-properties mode rather than "dictionary mode". Rows retained across query changes may
-     * carry a prior query's (superset) shape - see `pruneCacheForQueryChange`, which retains
-     * rows only when the current fields are a subset of those they were minted with.
+     * carry a prior query's (superset) shape - the RowCache retains rows only when the current
+     * fields are a subset of those they were minted with.
      * @internal
      */
     newRowData(id: string): ViewRowData {
@@ -382,44 +378,6 @@ export class View
         this._complexAggFieldsByDepth = this._aggFieldsByDepth.map(fields =>
             fields.filter(it => !it.aggregator.dependsOnChildrenOnly)
         );
-    }
-
-    // Selectively invalidate cached rows on a query change.
-    private pruneCacheForQueryChange(oldQuery: Query, newQuery: Query) {
-        // 0) Filter change only is a no-op - great for fast filter toggling
-        if (oldQuery.equalsExcludingFilter(newQuery)) return;
-
-        // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate rows
-        // wholesale - blow everything away. A gained field is one absent from the prior query:
-        // rows built while it was out of the query hold null or last-known values for it. Note
-        // fields dropped from the query do NOT invalidate - retained rows keep their (superset)
-        // slots, which simply stop updating and are out of the published contract.
-        const cache = this._rowCache,
-            oldExposed = oldQuery.includeLeaves || oldQuery.provideLeaves,
-            newExposed = newQuery.includeLeaves || newQuery.provideLeaves,
-            oldFieldNames = new Set(map(oldQuery.fields, 'name')),
-            fieldsGained = newQuery.fields.some(it => !oldFieldNames.has(it.name)),
-            bucketsRemoved = oldQuery.bucketSpecFn && !newQuery.bucketSpecFn;
-        if (oldExposed !== newExposed || (newExposed && fieldsGained) || bucketsRemoved) {
-            cache.clear();
-            return;
-        }
-
-        // 2) Field gains with hidden leaves, or a change of bucketSpecFn: leaves remain valid
-        // (hidden leaves adopt complete cube record data), but parents hold aggregates never
-        // computed for the gained field, or bucket rows a stale BucketSpec.
-        if (fieldsGained || oldQuery.bucketSpecFn !== newQuery.bucketSpecFn) {
-            cache.removeParentRows();
-            return;
-        }
-
-        // 3) Otherwise retain everything. Reused parents recompute in place as needed, and
-        // surviving leaves that moved to new tree positions are detected by connected stores'
-        // treePath checks. Parents orphaned by a change of grouping are evicted when the coming
-        // generation ends - their id space would otherwise accumulate for the life of the view.
-        if (!isEqual(oldQuery.dimensions, newQuery.dimensions)) {
-            cache.evictUnusedParentsAtGenerationEnd();
-        }
     }
 
     @logWithDebug
