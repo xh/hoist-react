@@ -9,10 +9,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {
-    GroupFieldModel,
-    newGroupNameField
-} from '@xh/hoist/desktop/cmp/viewmanager/dialog/editpanels/GroupFieldModel';
+import {GroupFieldModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/editpanels/GroupFieldModel';
 import {normalizeGroupValue} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {some} from 'lodash';
@@ -46,7 +43,6 @@ export class SaveAsDialogModel extends HoistModel {
 
         formModel.init({
             name,
-            newGroupName: null,
             // Do not copy description or visibility from source view
             description: null,
             visibility: 'private',
@@ -89,7 +85,6 @@ export class SaveAsDialogModel extends HoistModel {
                     ]
                 },
                 {name: 'group'},
-                newGroupNameField(),
                 {name: 'description'},
                 {name: 'visibility'}
             ]

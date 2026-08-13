@@ -25,14 +25,11 @@ import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
  */
 export const TOP_LEVEL_GROUP_VALUE = 'xh-top-level-group';
 
-/** Sentinel value for the group select's persistent "New group..." option. */
-export const NEW_GROUP_VALUE = 'xh-new-group';
-
 /** SelectOption for a group path. */
 export interface GroupPathOption extends SelectOption {
-    /** Full delimited group path, or one of the sentinel values above. */
+    /** Full delimited group path, or the sentinel value above. */
     value: string;
-    /** Full delimited path, for filtering and screen readers - displayed as a breadcrumb. */
+    /** Full delimited path, for screen readers - displayed as a breadcrumb. */
     label: string;
 }
 
@@ -42,9 +39,9 @@ export function normalizeGroupValue(value: string): string {
 }
 
 /** Display a committed group select value - a breadcrumb, or the italic-muted top-level label. */
-export function groupValueDisplay(value: string, emphasizeLeaf: boolean = false): ReactNode {
+export function groupValueDisplay(value: string): ReactNode {
     const path = normalizeGroupValue(value);
-    return path ? groupPathBreadcrumb({path, emphasizeLeaf}) : topLevelLabel();
+    return path ? groupPathBreadcrumb({path}) : topLevelLabel();
 }
 
 /** Italic-muted *Top Level*, signalling a value that is not a literal group name. */

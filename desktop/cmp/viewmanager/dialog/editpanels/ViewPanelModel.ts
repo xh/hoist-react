@@ -14,7 +14,7 @@ import {ReactNode} from 'react';
 import {ManageDialogModel} from '../ManageDialogModel';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {normalizeGroupValue} from '../Utils';
-import {GroupFieldModel, newGroupNameField} from './GroupFieldModel';
+import {GroupFieldModel} from './GroupFieldModel';
 
 /**
  * Backing model for EditForm
@@ -62,8 +62,7 @@ export class ViewPanelModel extends HoistModel {
                     formModel.init({
                         ...view,
                         visibility: view.isShared ? 'shared' : view.isGlobal ? 'global' : 'private',
-                        owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName),
-                        newGroupName: null
+                        owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName)
                     });
                     this.groupFieldModel.init(view.group);
                     formModel.readonly = !view.isEditable;
@@ -90,9 +89,7 @@ export class ViewPanelModel extends HoistModel {
         if (updates.hasOwnProperty('group')) {
             updates.group = normalizeGroupValue(formModel.values.group);
         }
-        delete updates.newGroupName;
 
-        // An abandoned new-group name can dirty the form without producing any real updates.
         if (isEmpty(updates)) return;
 
         if (visibilityField.isDirty) {
@@ -157,7 +154,6 @@ export class ViewPanelModel extends HoistModel {
                 },
                 {name: 'owner'},
                 {name: 'group'},
-                newGroupNameField(),
                 {name: 'description'},
                 {name: 'visibility'}
             ]

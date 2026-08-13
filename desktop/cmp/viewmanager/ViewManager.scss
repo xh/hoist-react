@@ -211,11 +211,6 @@
       color: var(--xh-text-color-muted);
     }
 
-    // Must follow the base rule to win on source order.
-    &--muted {
-      color: var(--xh-text-color-muted);
-    }
-
     // For use against an intent-colored background, where the standard text colors have no
     // contrast. Separators stay distinct via opacity instead.
     &--inherit,
@@ -225,16 +220,6 @@
 
     &--inherit &__separator {
       opacity: 0.7;
-    }
-
-    // Emphasize the leaf as the subject, its ancestors as context.
-    &--emph &__segment {
-      color: var(--xh-text-color-muted);
-    }
-
-    &--emph &__segment--leaf {
-      color: var(--xh-text-color);
-      font-weight: 600;
     }
 
     // Sentinel labels (e.g. *Top Level*) are not literal group names.
@@ -247,41 +232,47 @@
   //------------------------
   // Edit panel group field
   //------------------------
+  // Bottom-aligns the new-group button with the select, whether its label sits above or inline,
+  // taking over the field's own bottom margin so the button does not align below it.
   &__group-field {
+    align-items: flex-end;
+    margin-bottom: var(--xh-pad-px);
+
+    .xh-form-field {
+      margin-bottom: 0;
+    }
+
     // Match the Top Level option's presentation.
     .xh-select__placeholder {
       font-style: italic;
       color: var(--xh-text-color-muted);
     }
 
-    // Blueprint pins the input's left container to the top with auto height, sized for a 16px
-    // icon. Stretch to full height so wider content centers on the input text.
-    .bp6-input-left-container {
-      display: flex;
-      align-items: center;
-      bottom: 0;
+    // Clears the field's bottom padding, which sits below the select.
+    button {
+      margin-bottom: var(--xh-form-field-padding);
+      margin-left: var(--xh-pad-half-px);
     }
+  }
 
-    // Parent path shown within the field while creating a group. Blueprint sets the input's left
-    // padding to this element's width, so its right padding separates it from the name typed.
-    &__parent {
-      align-items: center;
+  //------------------------
+  // New group popover
+  //------------------------
+  &__new-group-popover {
+    &__form {
+      width: 320px;
       gap: var(--xh-pad-half-px);
-      padding-left: var(--xh-pad-px);
-      padding-right: var(--xh-pad-half-px);
+      padding: var(--xh-pad-px);
+
+      // Blueprint's input group is inline-block by default - stretch it to the popover width.
+      .bp6-input-group {
+        width: 100%;
+      }
     }
 
-    // Set off from the paths above by a rule. Select.scss puts the option's padding on this
-    // element, so the border spans the full width of the menu.
-    &__create-option {
-      gap: var(--xh-pad-half-px);
-      border-top: 1px solid var(--xh-border-color);
-      color: var(--xh-intent-primary-text-color);
-    }
-
-    // Non-blocking - the blocking "/" error renders via the field's own validation message.
-    &__warning {
-      color: var(--xh-intent-warning-text-color);
+    &__path {
+      font-size: var(--xh-font-size-small-px);
+      padding: 0 var(--xh-pad-half-px);
     }
   }
 }

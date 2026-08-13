@@ -18,12 +18,6 @@ export interface GroupPathBreadcrumbProps extends HoistProps {
     /** Delimited group path to render - null/empty renders nothing. */
     path: string;
 
-    /** True to bold the final segment and mute its ancestors, presenting it as the subject. */
-    emphasizeLeaf?: boolean;
-
-    /** True to mute the entire path, where it provides context rather than the subject. */
-    muted?: boolean;
-
     /** True to take the surrounding text color - e.g. within an intent-colored toast. */
     inheritColor?: boolean;
 
@@ -43,7 +37,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
     className: 'xh-view-manager__group-path',
     model: false,
 
-    render({path, emphasizeLeaf, muted, inheritColor, maxChars = 44, className}) {
+    render({path, inheritColor, maxChars = 44, className}) {
         const segments = splitGroupPath(path);
         if (isEmpty(segments)) return null;
 
@@ -63,16 +57,12 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                     })
                 );
             }
-            const isCollapsed = collapse && idx === 1;
             items.push(
                 span({
                     key: idx,
                     className: classNames(
                         'xh-view-manager__group-path__segment',
-                        isCollapsed && 'xh-view-manager__group-path__segment--collapsed',
-                        !isCollapsed &&
-                            idx === shown.length - 1 &&
-                            'xh-view-manager__group-path__segment--leaf'
+                        collapse && idx === 1 && 'xh-view-manager__group-path__segment--collapsed'
                     ),
                     item: segment
                 })
@@ -82,8 +72,6 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
         return span({
             className: classNames(
                 className,
-                emphasizeLeaf && 'xh-view-manager__group-path--emph',
-                muted && 'xh-view-manager__group-path--muted',
                 inheritColor && 'xh-view-manager__group-path--inherit'
             ),
             title: collapse ? fullText : null,
