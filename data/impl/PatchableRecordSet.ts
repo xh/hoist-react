@@ -271,8 +271,11 @@ export class PatchableRecordSet {
     }
 
     private withFilterFull(filter: Filter): PatchableRecordSet {
-        const {store} = this,
-            includeChildren = store.filterIncludesChildren,
+        const {store} = this;
+        store.patchStats.count++;
+        store.logDebug(`Filtering ${this.count} records in full - no incremental path available`);
+
+        const includeChildren = store.filterIncludesChildren,
             test = filter.getTestFn(store),
             passes = new Map(),
             isMarked = rec => passes.has(rec.id),
@@ -345,8 +348,9 @@ export class PatchableRecordSet {
         // When reuse dominates, express the new set as a patch over the incumbent base -
         // preserving base identity so consumers can derive the (small) reload delta. Otherwise
         // the incoming map simply becomes a fresh base.
-        const {base, patch} = this,
-            ratio = PatchableRecordSet.patchRatio(this.store),
+        const {store, base, patch} = this,
+            stats = store.patchStats,
+            ratio = PatchableRecordSet.patchRatio(store),
             changes = changed.length + removedCount;
         if (changes <= ratio * count) {
             const newPatch: PatchMap = patch ? new Map(patch) : new Map();
@@ -357,11 +361,17 @@ export class PatchableRecordSet {
                 });
             }
             if (newPatch.size <= ratio * base.size) {
-                return new PatchableRecordSet(this.store, base, newPatch, count, rootCount);
+                stats.count++;
+                stats.patched++;
+                return new PatchableRecordSet(store, base, newPatch, count, rootCount);
             }
         }
 
-        return new PatchableRecordSet(this.store, recordMap, null, count, rootCount);
+        stats.count++;
+        store.logDebug(
+            `Reload rebased onto a fresh base of ${count} - ${changes} changes exceeded patch cap`
+        );
+        return new PatchableRecordSet(store, recordMap, null, count, rootCount);
     }
 
     withTransaction(t: {
@@ -514,15 +524,22 @@ export class PatchableRecordSet {
         count: number,
         rootCount: number
     ): PatchableRecordSet {
-        return patch.size > PatchableRecordSet.patchRatio(store) * base.size
-            ? new PatchableRecordSet(
-                  store,
-                  PatchableRecordSet.applyPatch(base, patch),
-                  null,
-                  count,
-                  rootCount
-              )
-            : new PatchableRecordSet(store, base, patch, count, rootCount);
+        const stats = store.patchStats;
+        stats.count++;
+
+        if (patch.size > PatchableRecordSet.patchRatio(store) * base.size) {
+            store.logDebug(`Flattened patch of ${patch.size} into base of ${base.size}`);
+            return new PatchableRecordSet(
+                store,
+                PatchableRecordSet.applyPatch(base, patch),
+                null,
+                count,
+                rootCount
+            );
+        }
+
+        stats.patched++;
+        return new PatchableRecordSet(store, base, patch, count, rootCount);
     }
 
     private isSameFilter(f1: Filter, f2: Filter): boolean {
@@ -619,4 +636,29 @@ export class PatchableRecordSet {
         });
         return idSet;
     }
+}
+
+/**
+ * How often a Store's record sets stayed on the incremental (patch) path. Exposed as
+ * {@link Store.patchStats}.
+ *
+ * `patched` should track `count` closely - the shortfall is the number of operations that fell
+ * back to a full O(records) rebuild, each of which is also logged in detail via
+ * `Store.logDebug()`. A growing shortfall means loads are not reusing enough records to express
+ * as a patch (typically a missing or ineffective digest), that updates are crossing
+ * `experimental.patchRecordsMaxRatio`, or that filtering is missing its incremental arm.
+ *
+ * Note both counters accrue from every consumer of the Store's record sets, not just the Store
+ * itself - notably each connected Cube `View`, whose derived record sets report against the
+ * Cube's Store.
+ */
+export interface PatchStats {
+    /** Operations that derived a new record set - loads, updates, and filter runs. */
+    count: number;
+    /** Of those, the ones that stayed incremental rather than rebuilding a full base. */
+    patched: number;
+}
+
+export function newPatchStats(): PatchStats {
+    return {count: 0, patched: 0};
 }

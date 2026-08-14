@@ -22,7 +22,7 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
@@ -375,38 +375,40 @@ export class View
         );
     }
 
-    @logWithDebug
     private fullUpdate() {
-        this.filterRecords();
-        this.createAggregationContext();
-        this.generateRows();
-        this.loadStores();
-        this.updateResults();
+        this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
+            this.filterRecords();
+            this.createAggregationContext();
+            this.generateRows();
+            this.loadStores();
+            this.updateResults();
+        });
     }
 
-    @logWithDebug
     private dataOnlyUpdate(updates: StoreRecord[]) {
-        const {_leafMap, stores} = this,
-            updatedRowDatas = new Set<PlainObject>();
+        this.withDebug(['dataOnlyUpdate', `${updates.length} updates`], () => {
+            const {_leafMap, stores} = this,
+                updatedRowDatas = new Set<PlainObject>();
 
-        // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
-        updates.forEach(rec => {
-            const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
-        });
-
-        updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
-
-        this.createAggregationContext();
-
-        stores.forEach(store => {
-            const recordUpdates = [];
-            updatedRowDatas.forEach(rowData => {
-                if (store.getById(rowData.id)) recordUpdates.push(rowData);
+            // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
+            updates.forEach(rec => {
+                const leaf = _leafMap.get(rec.id);
+                leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
             });
-            store.updateData({update: recordUpdates});
+
+            updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
+
+            this.createAggregationContext();
+
+            stores.forEach(store => {
+                const recordUpdates = [];
+                updatedRowDatas.forEach(rowData => {
+                    if (store.getById(rowData.id)) recordUpdates.push(rowData);
+                });
+                store.updateData({update: recordUpdates});
+            });
+            this.updateResults();
         });
-        this.updateResults();
     }
 
     private loadStores() {
