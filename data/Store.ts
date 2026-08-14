@@ -524,6 +524,11 @@ export class Store
      * downstream consumers (e.g. ag-Grid) to recognize Records that have not changed and do not
      * need to be re-evaluated / re-rendered.
      *
+     * Note that record order is not a guaranteed property of a Store. Loads are free to preserve
+     * incumbent record positions, and a payload differing from the current dataset only in its
+     * ordering will be processed as a no-op. Apply an explicit sort - e.g. on an ordinal field
+     * supplied with the source data - wherever deterministic order matters.
+     *
      * Summary data can be provided via `rawSummaryData` or as the root data if the Store was
      * created with its `loadRootAsSummary` flag set to true.
      *
@@ -982,12 +987,18 @@ export class Store
         return this.fields.map(it => it.name);
     }
 
-    /** Records in this store, respecting any filter (if applied).*/
+    /**
+     * Records in this store, respecting any filter (if applied).
+     * Order is not a guaranteed property of a Store - sort explicitly where order matters.
+     */
     get records(): StoreRecord[] {
         return this._filtered.list;
     }
 
-    /** All records in this store, unfiltered.*/
+    /**
+     * All records in this store, unfiltered.
+     * Order is not a guaranteed property of a Store - sort explicitly where order matters.
+     */
     get allRecords(): StoreRecord[] {
         return this._current.list;
     }
