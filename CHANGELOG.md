@@ -170,11 +170,19 @@ columns.
   instance-config override, or both now present a tabbed value editor over the resolved,
   instance-override, database, and code-default views of their value, muting resolved entries that
   are not explicitly set. The grid's Value column shows the effective value - resolved, and honoring
-  any instance override. Requires hoist-core v41 or later. Against earlier versions the editor
+  any instance override. Requires hoist-core v40.6 or later. Against earlier versions the editor
   degrades gracefully.
 * Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
   active filter and reloads the log around the selected line, then re-selects that line and centers
   it in the viewport - useful for examining the context around a hit found by filtering.
+* Enhanced the Roles admin module to resolve and display friendly names for directory groups, via
+  the new `roleAdmin/directoryGroupsInfo` endpoint. Especially useful with hoist-core's new
+  `EntraIdService`, where groups are stored as opaque object IDs (GUIDs), and also improves the
+  display of LDAP DNs. Per-group lookup errors surface as warning icons on the affected rows.
+* Added a search-based directory group picker to the Roles admin role editor, backed by the new
+  `roleAdmin/searchDirectoryGroups` endpoint. Admins can find groups by partial name, with free-text
+  entry of a known GUID or DN still supported. Requires hoist-core v40.6 or later - against earlier
+  versions these features degrade gracefully to the previous identifier-based display.
 
 #### Other Improvements
 

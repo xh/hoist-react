@@ -34,8 +34,8 @@ export abstract class BaseMembersModel extends HoistModel {
         this.gridModel = this.createGridModel();
         this.addReaction(
             {
-                track: () => this.selectedRole,
-                run: role => this.loadGridData(role),
+                track: () => [this.selectedRole, this.roleModel.directoryGroupInfo],
+                run: () => this.loadGridData(this.selectedRole),
                 fireImmediately: true
             },
             {
@@ -103,6 +103,7 @@ export abstract class BaseMembersModel extends HoistModel {
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'sources', type: 'json'},
+                    {name: 'displayName', type: 'string'}, // For directory groups
                     {name: 'error', type: 'string'}, // For directory groups
                     {name: 'dateCreated', type: 'date'}, // For direct members
                     {name: 'createdBy', type: 'string'} // For direct members
@@ -116,7 +117,10 @@ export abstract class BaseMembersModel extends HoistModel {
             columns: [
                 {
                     field: 'name',
-                    autosizeMaxWidth: 300
+                    autosizeMaxWidth: 300,
+                    renderer: this.nameRenderer,
+                    sortValue: (v, {record}) => record.data.displayName ?? v,
+                    exportValue: (v, {record}) => record.data.displayName ?? v
                 },
                 {
                     field: 'sources',

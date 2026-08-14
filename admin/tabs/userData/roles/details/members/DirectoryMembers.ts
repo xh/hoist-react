@@ -42,23 +42,27 @@ class DirectoryMembersModel extends BaseMembersModel {
     }
 
     override getGridData(role: HoistRole): PlainObject[] {
-        const members = keyBy(filter(role.members, {type: 'DIRECTORY_GROUP'}), 'name');
+        const {roleModel} = this,
+            members = keyBy(filter(role.members, {type: 'DIRECTORY_GROUP'}), 'name');
         return role.effectiveDirectoryGroups.map(it => ({
             name: it.name,
+            displayName: roleModel.getDirectoryGroupDisplayName(it.name),
             sources: this.sourceList(it.sourceRoles),
-            error: role.errors.directoryGroups[it.name],
+            error:
+                role.errors.directoryGroups[it.name] ??
+                roleModel.getDirectoryGroupLookupError(it.name),
             dateCreated: members[it.name]?.dateCreated,
             createdBy: members[it.name]?.createdBy
         }));
     }
 
     override nameRenderer: ColumnRenderer = (name, {record}) => {
-        const {error} = record.data;
+        const {displayName, error} = record.data;
         return hbox({
             alignItems: 'center',
             items: [
                 box({
-                    item: RoleModel.fmtDirectoryGroup(name),
+                    item: displayName ?? RoleModel.fmtDirectoryGroup(name),
                     paddingRight: 'var(--xh-pad-half-px)',
                     title: name
                 }),
