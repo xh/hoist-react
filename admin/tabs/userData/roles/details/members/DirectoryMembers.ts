@@ -13,7 +13,6 @@ import './BaseMembers.scss';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {filter, keyBy} from 'lodash';
-import {RoleModel} from '../../RoleModel';
 import {HoistRole} from '../../Types';
 import {BaseMembersModel} from './BaseMembersModel';
 
@@ -62,7 +61,7 @@ class DirectoryMembersModel extends BaseMembersModel {
             alignItems: 'center',
             items: [
                 box({
-                    item: displayName ?? RoleModel.fmtDirectoryGroup(name),
+                    item: displayName,
                     paddingRight: 'var(--xh-pad-half-px)',
                     title: name
                 }),
