@@ -11,6 +11,7 @@ import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
 import {Filter} from '../filter/Filter';
+import type {RecordSetDerivation} from './StoreDiagnostics';
 
 type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
@@ -44,6 +45,9 @@ export class RecordSet {
     private _list: StoreRecord[]; // all records.
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
+
+    /** How this instance was derived - read and stamped by Store. @internal */
+    derivation: RecordSetDerivation = null;
 
     constructor(store: Store, recordMap: StoreRecordMap = new Map()) {
         this.store = store;
@@ -212,16 +216,9 @@ export class RecordSet {
 
         // A full pass computes which records pass, not how that set differs from the last one -
         // leave the change counts at zero rather than paying for a diff to populate them.
-        this.store.diagnostics.noteFilter({
-            type: 'full',
-            update: 0,
-            add: 0,
-            remove: 0,
-            total: passes.size,
-            timestamp: Date.now()
-        });
-
-        return new RecordSet(this.store, passes);
+        const ret = new RecordSet(this.store, passes);
+        ret.derivation = {type: 'full', update: 0, add: 0, remove: 0, total: passes.size};
+        return ret;
     }
 
     withNewRecords(recordMap: StoreRecordMap): RecordSet {
@@ -241,19 +238,20 @@ export class RecordSet {
             }
         });
 
-        const count = recordMap.size;
-        this.store.diagnostics.noteLoad({
+        const count = recordMap.size,
+            ret =
+                reused === recordMap.size && reused === this.count
+                    ? this
+                    : new RecordSet(this.store, recordMap);
+
+        ret.derivation = {
             type: 'full',
             update: count - reused - adds,
             add: adds,
             remove: this.count - (count - adds),
-            total: count,
-            timestamp: Date.now()
-        });
-
-        return reused === recordMap.size && reused === this.count
-            ? this
-            : new RecordSet(this.store, recordMap);
+            total: count
+        };
+        return ret;
     }
 
     withTransaction(t: {
@@ -314,16 +312,15 @@ export class RecordSet {
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
-        this.store.diagnostics.noteUpdate({
+        const ret = new RecordSet(this.store, newRecords);
+        ret.derivation = {
             type: 'full',
             update: (update?.length ?? 0) - missingUpdates,
             add: add?.length ?? 0,
             remove: this.count + (add?.length ?? 0) - newRecords.size,
-            total: newRecords.size,
-            timestamp: Date.now()
-        });
-
-        return new RecordSet(this.store, newRecords);
+            total: newRecords.size
+        };
+        return ret;
     }
 
     //------------------------

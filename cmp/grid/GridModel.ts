@@ -623,7 +623,7 @@ export class GridModel extends HoistModel {
     /** Tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
 
-    /** Detail on the last transaction synced to ag-Grid. Not a stable API. */
+    /** @internal */
     readonly diagnostics = new GridModelDiagnostics();
 
     constructor(config: GridConfig) {

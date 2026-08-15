@@ -48,7 +48,7 @@ import {
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 import {PatchableRecordSet} from './impl/PatchableRecordSet';
-import {StoreDiagnostics} from './impl/StoreDiagnostics';
+import {StoreDiagnostics, StoreOp} from './impl/StoreDiagnostics';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -426,7 +426,7 @@ export class Store
     private _fieldMap: Map<string, Field>;
     experimental: any;
 
-    /** Detail on the last load, update, and filter run. Not a stable API. */
+    /** @internal */
     readonly diagnostics = new StoreDiagnostics();
 
     constructor({
@@ -533,6 +533,8 @@ export class Store
     @action
     @logWithDebug
     loadData(rawData: PlainObject[], rawSummaryData?: Some<PlainObject>) {
+        const start = performance.now();
+
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
         if (rawData.length !== 0 && this.loadRootAsSummary) {
             throwIf(
@@ -550,6 +552,8 @@ export class Store
         const {_committed, _current} = this,
             records = this.createRecords(rawData, null),
             updated = _committed.withNewRecords(records);
+
+        this.noteOp('load', updated, start);
 
         // Skip downstream work on no-change reloads, unless local mods are being discarded.
         if (updated !== _committed || updated !== _current) {
@@ -634,7 +638,8 @@ export class Store
     updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: StoreChangeLog = {};
+        const start = performance.now(),
+            changeLog: StoreChangeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction: StoreTransaction;
@@ -746,6 +751,7 @@ export class Store
                 this._current = this._committed;
             }
 
+            this.noteOp('update', this._current, start);
             this.rebuildFiltered();
         }
 
@@ -1347,7 +1353,31 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter, this._filtered);
+        const start = performance.now(),
+            {_current} = this;
+        this._filtered = _current.withFilter(this.filter, this._filtered);
+        if (this._filtered !== _current) this.noteOp('filter', this._filtered, start);
+    }
+
+    // Record an op against diagnostics, combining the counts the RecordSet computed while deriving
+    // `rs` with the elapsed time for the Store-level operation that drove it. Clears the
+    // derivation once consumed, so a set passed through untouched is not reported twice.
+    private noteOp(kind: 'load' | 'update' | 'filter', rs: RecordSet, start: number) {
+        const {derivation} = rs;
+        if (!derivation) return;
+        const op: StoreOp = {
+            ...derivation,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
+        if (kind === 'load') {
+            this.diagnostics.noteLoad(op);
+        } else if (kind === 'update') {
+            this.diagnostics.noteUpdate(op);
+        } else {
+            this.diagnostics.noteFilter(op);
+        }
+        rs.derivation = null;
     }
 
     //---------------------------------------

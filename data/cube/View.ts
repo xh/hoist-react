@@ -139,7 +139,7 @@ export class View
     @observable
     lastUpdated: number;
 
-    /** Detail on the last row generation. Not a stable API. */
+    /** @internal */
     readonly diagnostics = new ViewDiagnostics();
 
     // Implementation
@@ -384,18 +384,20 @@ export class View
 
     private fullUpdate(trigger: ViewOpTrigger) {
         this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
+            const start = performance.now();
             this.filterRecords();
             this.createAggregationContext();
             this.generateRows();
             this.loadStores();
             this.updateResults();
-            this.noteOp(trigger, 'fullUpdate');
+            this.noteOp(trigger, 'fullUpdate', start);
         });
     }
 
     private dataOnlyUpdate(updates: StoreRecord[]) {
         this.withDebug(['dataOnlyUpdate', `${updates.length} updates`], () => {
-            const {_leafMap, stores} = this,
+            const start = performance.now(),
+                {_leafMap, stores} = this,
                 updatedRowDatas = new Set<PlainObject>();
 
             // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
@@ -416,14 +418,14 @@ export class View
                 store.updateData({update: recordUpdates});
             });
             this.updateResults();
-            this.noteOp('update', 'dataOnly');
+            this.noteOp('update', 'dataOnly', start);
         });
     }
 
     // Record the generation just completed against the diagnostics slot for its trigger - a
     // regeneration driven by a query change or a Cube load is reported separately from the
     // steady-state response to Cube data changes, so neither masks the other.
-    private noteOp(trigger: ViewOpTrigger, type: ViewOp['type']) {
+    private noteOp(trigger: ViewOpTrigger, type: ViewOp['type'], start: number) {
         // Row counts come from the last generation - on a data-only update no generation ran, so
         // the row set is unchanged and every row was, in effect, reused.
         const counts = this._rowCache.generationCounts,
@@ -432,6 +434,7 @@ export class View
                 type,
                 ...(type === 'dataOnly' ? {reused: total, rebuilt: 0, created: 0} : counts),
                 total,
+                elapsed: performance.now() - start,
                 timestamp: Date.now()
             };
         if (trigger === 'query') {

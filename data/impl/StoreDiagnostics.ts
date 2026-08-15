@@ -45,5 +45,9 @@ export interface StoreOp {
     add: number;
     remove: number;
     total: number;
+    elapsed: number;
     timestamp: number;
 }
+
+/** How a RecordSet instance was derived - counts only, stamped by Store. @internal */
+export type RecordSetDerivation = Omit<StoreOp, 'elapsed' | 'timestamp'>;

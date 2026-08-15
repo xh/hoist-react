@@ -33,5 +33,6 @@ export interface GridOp {
     add: number;
     remove: number;
     total: number;
+    elapsed: number;
     timestamp: number;
 }

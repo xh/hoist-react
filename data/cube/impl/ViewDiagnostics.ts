@@ -45,5 +45,6 @@ export interface ViewOp {
     rebuilt: number;
     created: number;
     total: number;
+    elapsed: number;
     timestamp: number;
 }

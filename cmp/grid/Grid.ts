@@ -694,18 +694,11 @@ export class GridLocalModel extends HoistModel {
             newRs = store._filtered,
             prevRs = this.prevRs;
 
-        const transaction = this.genTransaction(newRs, prevRs);
-
-        // `deltaFrom` answers only when the two sets share a base - the same test the diff above
-        // makes internally, so this reports how that diff was actually derived.
-        model.diagnostics.noteTransaction({
-            type: newRs.deltaFrom(prevRs) ? 'delta' : 'scanned',
-            update: transaction.update?.length ?? 0,
-            add: transaction.add?.length ?? 0,
-            remove: transaction.remove?.length ?? 0,
-            total: newRs.count,
-            timestamp: Date.now()
-        });
+        const start = performance.now(),
+            transaction = this.genTransaction(newRs, prevRs),
+            // `deltaFrom` answers only when the two sets share a base - the same test the diff
+            // makes internally, so this reports how that diff was actually derived.
+            type = newRs.deltaFrom(prevRs) ? 'delta' : 'scanned';
 
         if (!this.transactionIsEmpty(transaction)) {
             this.logDebug(...this.genTxnLogMsgs(transaction));
@@ -716,6 +709,16 @@ export class GridLocalModel extends HoistModel {
             // an empty store shows its loading overlay indefinitely instead of `emptyText`.
             agApi.updateGridOptions({rowData: []});
         }
+
+        model.diagnostics.noteTransaction({
+            type,
+            update: transaction.update?.length ?? 0,
+            add: transaction.add?.length ?? 0,
+            remove: transaction.remove?.length ?? 0,
+            total: newRs.count,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        });
 
         if (model.externalSort) {
             agGridModel.applySortBy(model.sortBy);
