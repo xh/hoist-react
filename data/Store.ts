@@ -426,10 +426,7 @@ export class Store
     private _fieldMap: Map<string, Field>;
     experimental: any;
 
-    /**
-     * Detail on the last load, update, and filter run performed by this Store, for performance
-     * debugging and developer tooling. Not a stable API - see {@link StoreDiagnostics}.
-     */
+    /** Detail on the last load, update, and filter run. Not a stable API. */
     readonly diagnostics = new StoreDiagnostics();
 
     constructor({

@@ -21,7 +21,7 @@ import {
     StoreRecordId
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
-import {ViewDiagnostics, ViewOpType} from './ViewDiagnostics';
+import {ViewDiagnostics, ViewOp} from './ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, isString, map, uniq} from 'lodash';
@@ -136,10 +136,7 @@ export class View
     @observable
     lastUpdated: number;
 
-    /**
-     * Detail on the last row generation performed by this View, for performance debugging and
-     * developer tooling. Not a stable API - see {@link ViewDiagnostics}.
-     */
+    /** Detail on the last row generation. Not a stable API. */
     readonly diagnostics = new ViewDiagnostics();
 
     // Implementation
@@ -382,7 +379,7 @@ export class View
         );
     }
 
-    private fullUpdate(type: ViewOpType) {
+    private fullUpdate(type: ViewOp['type']) {
         this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
             this.filterRecords();
             this.createAggregationContext();
@@ -423,7 +420,7 @@ export class View
     // Record the generation just completed against the diagnostics slot for its trigger - a
     // regeneration driven by a query change or a Cube load is reported separately from the
     // steady-state response to Cube data changes, so neither masks the other.
-    private noteOp(type: ViewOpType) {
+    private noteOp(type: ViewOp['type']) {
         // Row counts come from the last generation - on a data-only update no generation ran, so
         // the row set is unchanged and every row was, in effect, reused.
         const counts = this._rowCache.generationCounts,
@@ -616,9 +613,9 @@ export class View
         return ret;
     }
 
-    // Return a list of simple data updates we can apply to leaves, or the ViewOpType naming the
+    // Return a list of simple data updates we can apply to leaves, or the ViewOp['type'] naming the
     // condition that requires a full regeneration instead.
-    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | ViewOpType {
+    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | ViewOp['type'] {
         if (!t) return [];
         if (!this.aggregatorsAreSimple) return 'complexAggregators';
         const {_leafMap, query} = this;

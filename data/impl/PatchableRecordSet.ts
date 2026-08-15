@@ -10,7 +10,7 @@ import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
-import type {StoreOpType} from '../StoreDiagnostics';
+import type {StoreOp} from '../StoreDiagnostics';
 import {Filter} from '../filter/Filter';
 import {RecordSetDelta} from './RecordSet';
 
@@ -351,7 +351,7 @@ export class PatchableRecordSet {
         const {store, base, patch} = this,
             ratio = PatchableRecordSet.patchRatio(store),
             changes = changed.length + removedCount,
-            noteLoad = (type: StoreOpType) =>
+            noteLoad = (type: StoreOp['type']) =>
                 store.diagnostics.noteLoad({
                     type,
                     update: changed.length - adds,
@@ -561,7 +561,7 @@ export class PatchableRecordSet {
         patch: PatchMap,
         count: number,
         rootCount: number,
-        note: (type: StoreOpType) => void
+        note: (type: StoreOp['type']) => void
     ): PatchableRecordSet {
         if (patch.size > PatchableRecordSet.patchRatio(store) * base.size) {
             note('flattened');
