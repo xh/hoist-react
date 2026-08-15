@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {RowCache} from './RowCache';
 
 /**
  * Diagnostics for Cube View.
@@ -24,21 +25,18 @@ export class ViewDiagnostics {
     }
 
     @action
-    noteLoad(op: ViewOp) {
-        const {count, elapsed} = this.load;
-        this.load = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    noteLoad(cache: RowCache, type: ViewOp['type'], start: number) {
+        this.load = accumulate(this.load, cache, type, start);
     }
 
     @action
-    noteUpdate(op: ViewOp) {
-        const {count, elapsed} = this.update;
-        this.update = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    noteUpdate(cache: RowCache, type: ViewOp['type'], start: number) {
+        this.update = accumulate(this.update, cache, type, start);
     }
 
     @action
-    noteQuery(op: ViewOp) {
-        const {count, elapsed} = this.query;
-        this.query = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    noteQuery(cache: RowCache, type: ViewOp['type'], start: number) {
+        this.query = accumulate(this.query, cache, type, start);
     }
 
     @action
@@ -56,6 +54,26 @@ export interface ViewOpStats {
 }
 
 const emptyStats = (): ViewOpStats => ({last: null, count: 0, elapsed: 0});
+
+// Row counts come from the last generation - on a data-only update no generation ran, so the row
+// set is unchanged and every row was, in effect, reused.
+function accumulate(
+    stats: ViewOpStats,
+    cache: RowCache,
+    type: ViewOp['type'],
+    start: number
+): ViewOpStats {
+    const counts = cache.generationCounts,
+        total = counts.reused + counts.rebuilt + counts.created,
+        op: ViewOp = {
+            type,
+            ...(type === 'dataOnly' ? {reused: total, rebuilt: 0, created: 0} : counts),
+            total,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
+    return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
+}
 
 export interface ViewOp {
     type: 'dataOnly' | 'fullUpdate';

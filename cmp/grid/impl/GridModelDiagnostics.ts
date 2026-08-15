@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
@@ -22,7 +23,23 @@ export class GridModelDiagnostics {
     }
 
     @action
-    noteTransaction(op: GridOp) {
+    noteTransaction(
+        txn: Partial<RecordSetDelta>,
+        newRs: RecordSet,
+        prevRs: RecordSet,
+        start: number
+    ) {
+        const op: GridOp = {
+            // `deltaFrom` answers only when the two sets share a base - the same test the diff
+            // makes internally, so this reports how that diff was actually derived.
+            type: newRs.deltaFrom(prevRs) ? 'delta' : 'scanned',
+            update: txn.update?.length ?? 0,
+            add: txn.add?.length ?? 0,
+            remove: txn.remove?.length ?? 0,
+            total: newRs.count,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
         const {count, elapsed} = this.transaction;
         this.transaction = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
     }

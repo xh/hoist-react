@@ -48,7 +48,7 @@ import {
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 import {PatchableRecordSet} from './impl/PatchableRecordSet';
-import {StoreDiagnostics, StoreOp} from './impl/StoreDiagnostics';
+import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -553,7 +553,7 @@ export class Store
             records = this.createRecords(rawData, null),
             updated = _committed.withNewRecords(records);
 
-        this.noteOp('load', updated, start);
+        this.diagnostics.noteLoad(updated, start);
 
         // Skip downstream work on no-change reloads, unless local mods are being discarded.
         if (updated !== _committed || updated !== _current) {
@@ -751,7 +751,7 @@ export class Store
                 this._current = this._committed;
             }
 
-            this.noteOp('update', this._current, start);
+            this.diagnostics.noteUpdate(this._current, start);
             this.rebuildFiltered();
         }
 
@@ -1356,28 +1356,7 @@ export class Store
         const start = performance.now(),
             {_current} = this;
         this._filtered = _current.withFilter(this.filter, this._filtered);
-        if (this._filtered !== _current) this.noteOp('filter', this._filtered, start);
-    }
-
-    // Record an op against diagnostics, combining the counts the RecordSet computed while deriving
-    // `rs` with the elapsed time for the Store-level operation that drove it. Clears the
-    // derivation once consumed, so a set passed through untouched is not reported twice.
-    private noteOp(kind: 'load' | 'update' | 'filter', rs: RecordSet, start: number) {
-        const {derivation} = rs;
-        if (!derivation) return;
-        const op: StoreOp = {
-            ...derivation,
-            elapsed: performance.now() - start,
-            timestamp: Date.now()
-        };
-        if (kind === 'load') {
-            this.diagnostics.noteLoad(op);
-        } else if (kind === 'update') {
-            this.diagnostics.noteUpdate(op);
-        } else {
-            this.diagnostics.noteFilter(op);
-        }
-        rs.derivation = null;
+        if (this._filtered !== _current) this.diagnostics.noteFilter(this._filtered, start);
     }
 
     //---------------------------------------

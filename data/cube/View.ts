@@ -422,27 +422,17 @@ export class View
         });
     }
 
-    // Record the generation just completed against the diagnostics slot for its trigger - a
-    // regeneration driven by a query change or a Cube load is reported separately from the
-    // steady-state response to Cube data changes, so neither masks the other.
+    // Record the generation just completed against the diagnostics slot for its trigger, so a
+    // regeneration driven by a query change or a Cube load does not mask the steady-state
+    // response to Cube data changes.
     private noteOp(trigger: ViewOpTrigger, type: ViewOp['type'], start: number) {
-        // Row counts come from the last generation - on a data-only update no generation ran, so
-        // the row set is unchanged and every row was, in effect, reused.
-        const counts = this._rowCache.generationCounts,
-            total = counts.reused + counts.rebuilt + counts.created,
-            op = {
-                type,
-                ...(type === 'dataOnly' ? {reused: total, rebuilt: 0, created: 0} : counts),
-                total,
-                elapsed: performance.now() - start,
-                timestamp: Date.now()
-            };
+        const {diagnostics, _rowCache} = this;
         if (trigger === 'query') {
-            this.diagnostics.noteQuery(op);
+            diagnostics.noteQuery(_rowCache, type, start);
         } else if (trigger === 'load') {
-            this.diagnostics.noteLoad(op);
+            diagnostics.noteLoad(_rowCache, type, start);
         } else {
-            this.diagnostics.noteUpdate(op);
+            diagnostics.noteUpdate(_rowCache, type, start);
         }
     }
 

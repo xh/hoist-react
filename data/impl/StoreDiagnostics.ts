@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {RecordSet} from './RecordSet';
 
 /**
  * Diagnostics for Store.
@@ -24,21 +25,18 @@ export class StoreDiagnostics {
     }
 
     @action
-    noteLoad(op: StoreOp) {
-        const {count, elapsed} = this.load;
-        this.load = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    noteLoad(rs: RecordSet, start: number) {
+        this.load = accumulate(this.load, rs, start);
     }
 
     @action
-    noteUpdate(op: StoreOp) {
-        const {count, elapsed} = this.update;
-        this.update = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    noteUpdate(rs: RecordSet, start: number) {
+        this.update = accumulate(this.update, rs, start);
     }
 
     @action
-    noteFilter(op: StoreOp) {
-        const {count, elapsed} = this.filter;
-        this.filter = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    noteFilter(rs: RecordSet, start: number) {
+        this.filter = accumulate(this.filter, rs, start);
     }
 
     @action
@@ -56,6 +54,22 @@ export interface StoreOpStats {
 }
 
 const emptyStats = (): StoreOpStats => ({last: null, count: 0, elapsed: 0});
+
+// Combine the counts the RecordSet computed while deriving `rs` with the elapsed time for the
+// Store operation that drove it. The derivation is cleared once consumed, so a set passed through
+// untouched - `withFilter` with no filter returns its receiver - is not reported a second time.
+function accumulate(stats: StoreOpStats, rs: RecordSet, start: number): StoreOpStats {
+    const {derivation} = rs;
+    if (!derivation) return stats;
+    rs.derivation = null;
+
+    const op: StoreOp = {
+        ...derivation,
+        elapsed: performance.now() - start,
+        timestamp: Date.now()
+    };
+    return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
+}
 
 export interface StoreOp {
     type: 'patched' | 'flattened' | 'rebased' | 'full';
