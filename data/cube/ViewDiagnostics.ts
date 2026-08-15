@@ -23,6 +23,11 @@ export interface ViewOp {
     timestamp: number;
 }
 
+/**
+ * Detail on the last row generations performed by a Cube {@link View}.
+ * Not intended as a stable API - shape and `type` values track Hoist internals and are subject
+ * to change at any time.
+ */
 export class ViewDiagnostics {
     @observable.ref lastLoad: ViewOp = null;
     @observable.ref lastUpdate: ViewOp = null;

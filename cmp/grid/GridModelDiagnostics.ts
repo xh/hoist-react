@@ -15,6 +15,11 @@ export interface GridOp {
     timestamp: number;
 }
 
+/**
+ * Detail on the last transaction a {@link GridModel} synced to ag-Grid.
+ * Not intended as a stable API - shape and `type` values track Hoist internals and are subject
+ * to change at any time.
+ */
 export class GridModelDiagnostics {
     @observable.ref lastTransaction: GridOp = null;
 

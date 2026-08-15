@@ -15,6 +15,11 @@ export interface StoreOp {
     timestamp: number;
 }
 
+/**
+ * Detail on the last load, update, and filter run performed by a {@link Store}.
+ * Not intended as a stable API - shape and `type` values track Hoist internals and are subject
+ * to change at any time.
+ */
 export class StoreDiagnostics {
     @observable.ref lastLoad: StoreOp = null;
     @observable.ref lastUpdate: StoreOp = null;
