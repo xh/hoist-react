@@ -213,7 +213,7 @@ export class RecordSet {
         // A full pass computes which records pass, not how that set differs from the last one -
         // leave the change counts at zero rather than paying for a diff to populate them.
         this.store.diagnostics.noteFilter({
-            mode: 'full',
+            type: 'full',
             update: 0,
             add: 0,
             remove: 0,
@@ -243,7 +243,7 @@ export class RecordSet {
 
         const count = recordMap.size;
         this.store.diagnostics.noteLoad({
-            mode: 'full',
+            type: 'full',
             update: count - reused - adds,
             add: adds,
             remove: this.count - (count - adds),
@@ -315,7 +315,7 @@ export class RecordSet {
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
         this.store.diagnostics.noteUpdate({
-            mode: 'full',
+            type: 'full',
             update: (update?.length ?? 0) - missingUpdates,
             add: add?.length ?? 0,
             remove: this.count + (add?.length ?? 0) - newRecords.size,

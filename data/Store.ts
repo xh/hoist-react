@@ -48,7 +48,7 @@ import {
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 import {PatchableRecordSet} from './impl/PatchableRecordSet';
-import {StoreDiagnostics} from './Diagnostics';
+import {StoreDiagnostics} from './StoreDiagnostics';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -428,7 +428,7 @@ export class Store
 
     /**
      * Detail on the last load, update, and filter run performed by this Store, for performance
-     * debugging and developer tooling. Not a stable API - see {@link DataOp}.
+     * debugging and developer tooling. Not a stable API - see {@link StoreDiagnostics}.
      */
     readonly diagnostics = new StoreDiagnostics();
 

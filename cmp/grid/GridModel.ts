@@ -625,7 +625,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Detail on the last transaction this grid synced to ag-Grid, for performance debugging and
-     * developer tooling. Not a stable API - see {@link DataOp}.
+     * developer tooling. Not a stable API - see {@link GridDiagnostics}.
      */
     readonly diagnostics = new GridDiagnostics();
 

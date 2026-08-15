@@ -699,7 +699,7 @@ export class GridLocalModel extends HoistModel {
         // `deltaFrom` answers only when the two sets share a base - the same test the diff above
         // makes internally, so this reports how that diff was actually derived.
         model.diagnostics.noteTransaction({
-            mode: newRs.deltaFrom(prevRs) ? 'delta' : 'scanned',
+            type: newRs.deltaFrom(prevRs) ? 'delta' : 'scanned',
             update: transaction.update?.length ?? 0,
             add: transaction.add?.length ?? 0,
             remove: transaction.remove?.length ?? 0,

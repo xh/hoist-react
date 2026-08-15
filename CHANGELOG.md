@@ -117,11 +117,11 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
 * Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - detail on the last operation each
   performed, for performance debugging and developer tooling. Each publishes the last op of each
   kind it handles (e.g. `store.diagnostics.lastUpdate`, `view.diagnostics.lastQuery`,
-  `gridModel.diagnostics.lastTransaction`), reporting how much work the op did and a `mode` naming
+  `gridModel.diagnostics.lastTransaction`), reporting how much work the op did and a `type` naming
   the path it took - including, for a `View`, the specific condition that forced a full row
   regeneration rather than an incremental update. Read across the three stages, these localize the
   cost of a data change to the stage responsible for it. Note these objects are intentionally NOT a
-  stable API - see `DataOp`.
+  stable API - see `StoreDiagnostics`, `ViewDiagnostics`, and `GridDiagnostics`.
 * Removed `Store.patchStats`, superseded by `Store.diagnostics`. The new API reports the last
   operation of each kind rather than cumulative counters - loads, updates, and filter runs differ
   by orders of magnitude in cost, so an average across them was not meaningful - and unlike

@@ -18,11 +18,10 @@ import {
     QueryConfig,
     Store,
     StoreRecord,
-    StoreRecordId,
-    ViewDiagnostics,
-    ViewOpMode
+    StoreRecordId
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
+import {ViewDiagnostics, ViewOpType} from './ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, isString, map, uniq} from 'lodash';
@@ -139,7 +138,7 @@ export class View
 
     /**
      * Detail on the last row generation performed by this View, for performance debugging and
-     * developer tooling. Not a stable API - see {@link DataOp}.
+     * developer tooling. Not a stable API - see {@link ViewDiagnostics}.
      */
     readonly diagnostics = new ViewDiagnostics();
 
@@ -383,14 +382,14 @@ export class View
         );
     }
 
-    private fullUpdate(mode: ViewOpMode) {
+    private fullUpdate(type: ViewOpType) {
         this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
             this.filterRecords();
             this.createAggregationContext();
             this.generateRows();
             this.loadStores();
             this.updateResults();
-            this.noteOp(mode);
+            this.noteOp(type);
         });
     }
 
@@ -424,20 +423,20 @@ export class View
     // Record the generation just completed against the diagnostics slot for its trigger - a
     // regeneration driven by a query change or a Cube load is reported separately from the
     // steady-state response to Cube data changes, so neither masks the other.
-    private noteOp(mode: ViewOpMode) {
+    private noteOp(type: ViewOpType) {
         // Row counts come from the last generation - on a data-only update no generation ran, so
         // the row set is unchanged and every row was, in effect, reused.
         const counts = this._rowCache.generationCounts,
             total = counts.reused + counts.rebuilt + counts.created,
             op = {
-                mode,
-                ...(mode === 'dataOnly' ? {reused: total, rebuilt: 0, created: 0} : counts),
+                type,
+                ...(type === 'dataOnly' ? {reused: total, rebuilt: 0, created: 0} : counts),
                 total,
                 timestamp: Date.now()
             };
-        if (mode === 'queryChanged') {
+        if (type === 'queryChanged') {
             this.diagnostics.noteQuery(op);
-        } else if (mode === 'cubeLoaded') {
+        } else if (type === 'cubeLoaded') {
             this.diagnostics.noteLoad(op);
         } else {
             this.diagnostics.noteUpdate(op);
@@ -617,9 +616,9 @@ export class View
         return ret;
     }
 
-    // Return a list of simple data updates we can apply to leaves, or the ViewOpMode naming the
+    // Return a list of simple data updates we can apply to leaves, or the ViewOpType naming the
     // condition that requires a full regeneration instead.
-    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | ViewOpMode {
+    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | ViewOpType {
         if (!t) return [];
         if (!this.aggregatorsAreSimple) return 'complexAggregators';
         const {_leafMap, query} = this;

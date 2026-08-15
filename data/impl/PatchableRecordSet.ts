@@ -10,7 +10,7 @@ import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
-import type {StoreOpMode} from '../Diagnostics';
+import type {StoreOpType} from '../StoreDiagnostics';
 import {Filter} from '../filter/Filter';
 import {RecordSetDelta} from './RecordSet';
 
@@ -351,9 +351,9 @@ export class PatchableRecordSet {
         const {store, base, patch} = this,
             ratio = PatchableRecordSet.patchRatio(store),
             changes = changed.length + removedCount,
-            noteLoad = (mode: StoreOpMode) =>
+            noteLoad = (type: StoreOpType) =>
                 store.diagnostics.noteLoad({
-                    mode,
+                    type,
                     update: changed.length - adds,
                     add: adds,
                     remove: removedCount,
@@ -461,9 +461,9 @@ export class PatchableRecordSet {
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
         const {store} = this;
-        return PatchableRecordSet.create(store, base, newPatch, count, rootCount, mode =>
+        return PatchableRecordSet.create(store, base, newPatch, count, rootCount, type =>
             store.diagnostics.noteUpdate({
-                mode,
+                type,
                 update: (update?.length ?? 0) - missingUpdates,
                 add: add?.length ?? 0,
                 remove: this.count + (add?.length ?? 0) - count,
@@ -535,9 +535,9 @@ export class PatchableRecordSet {
 
         if (!changes) return prevFiltered;
 
-        return PatchableRecordSet.create(store, fBase, newPatch, count, count, mode =>
+        return PatchableRecordSet.create(store, fBase, newPatch, count, count, type =>
             store.diagnostics.noteFilter({
-                mode,
+                type,
                 update: updated,
                 add: added,
                 remove: removed,
@@ -561,7 +561,7 @@ export class PatchableRecordSet {
         patch: PatchMap,
         count: number,
         rootCount: number,
-        note: (mode: StoreOpMode) => void
+        note: (type: StoreOpType) => void
     ): PatchableRecordSet {
         if (patch.size > PatchableRecordSet.patchRatio(store) * base.size) {
             note('flattened');
