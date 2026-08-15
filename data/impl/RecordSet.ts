@@ -210,6 +210,17 @@ export class RecordSet {
         };
         passes.forEach(rec => markParents(rec));
 
+        // A full pass computes which records pass, not how that set differs from the last one -
+        // leave the change counts at zero rather than paying for a diff to populate them.
+        this.store.diagnostics.noteFilter({
+            mode: 'full',
+            update: 0,
+            add: 0,
+            remove: 0,
+            total: passes.size,
+            timestamp: Date.now()
+        });
+
         return new RecordSet(this.store, passes);
     }
 
@@ -217,16 +228,29 @@ export class RecordSet {
         // Reuse existing StoreRecord object instances where possible.
         // If reload changed nothing - preserve instance identity outright,
         // Be sure to finalize any new records that are accepted.
-        let reused = 0;
+        let reused = 0,
+            adds = 0;
         recordMap.forEach((newRec, id) => {
             const currRec = this.getById(id);
             if (currRec && this.areRecordsEqual(currRec, newRec)) {
                 recordMap.set(id, currRec);
                 reused++;
             } else {
+                if (!currRec) adds++;
                 newRec.finalize();
             }
         });
+
+        const count = recordMap.size;
+        this.store.diagnostics.noteLoad({
+            mode: 'full',
+            update: count - reused - adds,
+            add: adds,
+            remove: this.count - (count - adds),
+            total: count,
+            timestamp: Date.now()
+        });
+
         return reused === recordMap.size && reused === this.count
             ? this
             : new RecordSet(this.store, recordMap);
@@ -289,6 +313,15 @@ export class RecordSet {
             logWarn(`Failed to remove ${missingRemoves} records not found by id`, this);
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
+
+        this.store.diagnostics.noteUpdate({
+            mode: 'full',
+            update: (update?.length ?? 0) - missingUpdates,
+            add: add?.length ?? 0,
+            remove: this.count + (add?.length ?? 0) - newRecords.size,
+            total: newRecords.size,
+            timestamp: Date.now()
+        });
 
         return new RecordSet(this.store, newRecords);
     }

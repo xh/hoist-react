@@ -110,6 +110,7 @@ import {
 import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
+import {GridDiagnostics} from './GridDiagnostics';
 import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {initPersist} from './impl/InitPersist';
@@ -621,6 +622,12 @@ export class GridModel extends HoistModel {
 
     /** Tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
+
+    /**
+     * Detail on the last transaction this grid synced to ag-Grid, for performance debugging and
+     * developer tooling. Not a stable API - see {@link DataOp}.
+     */
+    readonly diagnostics = new GridDiagnostics();
 
     constructor(config: GridConfig) {
         super();

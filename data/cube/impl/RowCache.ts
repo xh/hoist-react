@@ -53,6 +53,12 @@ export class RowCache {
         return this.rows.size;
     }
 
+    /** Row disposition for the generation just completed - see {@link ViewOp}. */
+    get generationCounts(): {reused: number; rebuilt: number; created: number} {
+        const {reused, rebuilt, created} = this;
+        return {reused, rebuilt, created};
+    }
+
     get(id: string): BaseRow {
         return this.rows.get(id);
     }

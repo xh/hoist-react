@@ -695,6 +695,18 @@ export class GridLocalModel extends HoistModel {
             prevRs = this.prevRs;
 
         const transaction = this.genTransaction(newRs, prevRs);
+
+        // `deltaFrom` answers only when the two sets share a base - the same test the diff above
+        // makes internally, so this reports how that diff was actually derived.
+        model.diagnostics.noteTransaction({
+            mode: newRs.deltaFrom(prevRs) ? 'delta' : 'scanned',
+            update: transaction.update?.length ?? 0,
+            add: transaction.add?.length ?? 0,
+            remove: transaction.remove?.length ?? 0,
+            total: newRs.count,
+            timestamp: Date.now()
+        });
+
         if (!this.transactionIsEmpty(transaction)) {
             this.logDebug(...this.genTxnLogMsgs(transaction));
             agApi.applyTransaction(transaction);

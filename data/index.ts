@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+export * from './Diagnostics';
 export * from './Field';
 export * from './Store';
 export * from './StoreRecord';

@@ -47,9 +47,8 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
-import {newPatchStats, PatchableRecordSet, PatchStats} from './impl/PatchableRecordSet';
-
-export type {PatchStats};
+import {PatchableRecordSet} from './impl/PatchableRecordSet';
+import {StoreDiagnostics} from './Diagnostics';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -428,11 +427,10 @@ export class Store
     experimental: any;
 
     /**
-     * Counters tracking how often this Store's record sets stay on the incremental (patch) path
-     * vs. falling back to a full O(records) rebuild. Non-null only with the experimental
-     * `patchableRecordSet` enabled - see {@link PatchStats}.
+     * Detail on the last load, update, and filter run performed by this Store, for performance
+     * debugging and developer tooling. Not a stable API - see {@link DataOp}.
      */
-    readonly patchStats: PatchStats;
+    readonly diagnostics = new StoreDiagnostics();
 
     constructor({
         fields,
@@ -465,7 +463,6 @@ export class Store
         );
 
         this.experimental = this.parseExperimental(experimental);
-        this.patchStats = this.experimental.patchableRecordSet ? newPatchStats() : null;
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
