@@ -10,7 +10,7 @@ import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
-import type {StoreOp} from '../StoreDiagnostics';
+import type {StoreOp} from './StoreDiagnostics';
 import {Filter} from '../filter/Filter';
 import {RecordSetDelta} from './RecordSet';
 

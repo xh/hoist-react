@@ -7,7 +7,6 @@
 
 export * from './Field';
 export * from './Store';
-export * from './StoreDiagnostics';
 export * from './StoreRecord';
 export * from './RecordAction';
 export * from './StoreSelectionModel';
@@ -38,7 +37,6 @@ export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
-export * from './cube/ViewDiagnostics';
 export * from './cube/ViewRowData';
 
 export * from './validation/constraints';

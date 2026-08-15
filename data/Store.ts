@@ -48,7 +48,7 @@ import {
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 import {PatchableRecordSet} from './impl/PatchableRecordSet';
-import {StoreDiagnostics} from './StoreDiagnostics';
+import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and

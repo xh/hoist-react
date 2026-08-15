@@ -110,7 +110,7 @@ import {
 import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
-import {GridModelDiagnostics} from './GridModelDiagnostics';
+import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
 import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {initPersist} from './impl/InitPersist';

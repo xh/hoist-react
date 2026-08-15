@@ -6,19 +6,13 @@
  */
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
-export interface StoreOp {
-    type: 'patched' | 'flattened' | 'rebased' | 'full';
-    update: number;
-    add: number;
-    remove: number;
-    total: number;
-    timestamp: number;
-}
-
 /**
- * Detail on the last load, update, and filter run performed by a {@link Store}.
+ * Diagnostics for Store.
+ *
  * Not intended as a stable API - shape and `type` values track Hoist internals and are subject
  * to change at any time.
+ *
+ * @internal
  */
 export class StoreDiagnostics {
     @observable.ref lastLoad: StoreOp = null;
@@ -43,4 +37,13 @@ export class StoreDiagnostics {
     noteFilter(op: StoreOp) {
         this.lastFilter = op;
     }
+}
+
+export interface StoreOp {
+    type: 'patched' | 'flattened' | 'rebased' | 'full';
+    update: number;
+    add: number;
+    remove: number;
+    total: number;
+    timestamp: number;
 }

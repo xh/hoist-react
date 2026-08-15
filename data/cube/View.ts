@@ -21,7 +21,7 @@ import {
     StoreRecordId
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
-import {ViewDiagnostics, ViewOp} from './ViewDiagnostics';
+import {ViewDiagnostics, ViewOp} from './impl/ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, isString, map, uniq} from 'lodash';

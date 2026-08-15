@@ -6,19 +6,13 @@
  */
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
-export interface GridOp {
-    type: 'delta' | 'scanned';
-    update: number;
-    add: number;
-    remove: number;
-    total: number;
-    timestamp: number;
-}
-
 /**
- * Detail on the last transaction a {@link GridModel} synced to ag-Grid.
+ * Diagnostics for GridModel.
+ *
  * Not intended as a stable API - shape and `type` values track Hoist internals and are subject
  * to change at any time.
+ *
+ * @internal
  */
 export class GridModelDiagnostics {
     @observable.ref lastTransaction: GridOp = null;
@@ -31,4 +25,13 @@ export class GridModelDiagnostics {
     noteTransaction(op: GridOp) {
         this.lastTransaction = op;
     }
+}
+
+export interface GridOp {
+    type: 'delta' | 'scanned';
+    update: number;
+    add: number;
+    remove: number;
+    total: number;
+    timestamp: number;
 }

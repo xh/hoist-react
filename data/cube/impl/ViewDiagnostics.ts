@@ -6,27 +6,13 @@
  */
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
-export interface ViewOp {
-    /** `dataOnly`, or the condition that forced a full regeneration. */
-    type:
-        | 'dataOnly'
-        | 'complexAggregators'
-        | 'leafSetChanged'
-        | 'filterCrossed'
-        | 'dimensionChanged'
-        | 'queryChanged'
-        | 'cubeLoaded';
-    reused: number;
-    rebuilt: number;
-    created: number;
-    total: number;
-    timestamp: number;
-}
-
 /**
- * Detail on the last row generations performed by a Cube {@link View}.
+ * Diagnostics for Cube View.
+ *
  * Not intended as a stable API - shape and `type` values track Hoist internals and are subject
  * to change at any time.
+ *
+ * @internal
  */
 export class ViewDiagnostics {
     @observable.ref lastLoad: ViewOp = null;
@@ -51,4 +37,21 @@ export class ViewDiagnostics {
     noteQuery(op: ViewOp) {
         this.lastQuery = op;
     }
+}
+
+export interface ViewOp {
+    /** `dataOnly`, or the condition that forced a full regeneration. */
+    type:
+        | 'dataOnly'
+        | 'complexAggregators'
+        | 'leafSetChanged'
+        | 'filterCrossed'
+        | 'dimensionChanged'
+        | 'queryChanged'
+        | 'cubeLoaded';
+    reused: number;
+    rebuilt: number;
+    created: number;
+    total: number;
+    timestamp: number;
 }
