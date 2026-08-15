@@ -208,8 +208,8 @@ importers:
         specifier: 35.x
         version: 35.3.1
       ag-grid-react:
-        specifier: 35.x
-        version: 35.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 36.x
+        version: 36.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       csstype:
         specifier: 3.x
         version: 3.2.3
@@ -2052,14 +2052,23 @@ packages:
   ag-charts-types@13.3.1:
     resolution: {integrity: sha512-m37eUe4g//swvGh8PWMlYQH3gknjSsPeW4sQwBhM3/auGAHmN0wvxEWlrdAn98pBPg4HoKbtOy+yf7gPCYsnvQ==}
 
+  ag-charts-types@14.1.0:
+    resolution: {integrity: sha512-mmzkng88c0l+Z9PvCMowMilhVeNgDU/iMuMemcOQD4BG/qO4vbkxWvyQO0iqju8Dx7YOY81PNzC/RmElQNiVkA==}
+
   ag-grid-community@35.3.1:
     resolution: {integrity: sha512-Wmkd/xYTCbAApcZZO74nBggZCnd/oX753NY3MJ4zYARVpfBHRWWhIBJ2sFTFKbDWwHZOWsx3YT9+kkyeuyLKlw==}
 
-  ag-grid-react@35.3.1:
-    resolution: {integrity: sha512-M3ljCQyGL+qzoyPN0BYrn4eAlgZr6Ailcjd8+a7OcneSiVsMNSJb/gTkIMUwmYivkPLIA8EEJ4hTxxKSaya6mQ==}
+  ag-grid-community@36.1.0:
+    resolution: {integrity: sha512-WnvSQ4csRs8gv/b1B0lPHykQXvUJVgi2u5mpY0Aa6dv3pvhDVVqCT8dwUyOeCog4JNPptaXGrOrZ8qP2XoJzVA==}
+
+  ag-grid-react@36.1.0:
+    resolution: {integrity: sha512-FNsmrOmr+taZY11sCA+6Ow0mKs2JqnmrjBrMjkKC2rVTXPARtks+tv+Ne4ZkLGGtvIMDlBFCDbSzFXVP0CdwXQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  ag-stack@36.1.0:
+    resolution: {integrity: sha512-Kmkf5iRZmyduNx2KtW450j6GbCdJ4ejacSpb1AWl0yrdquRmScLRc1SlLolx6lyCbTBSJGo4tRraKbBzre+GlQ==}
 
   ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
@@ -7664,16 +7673,25 @@ snapshots:
 
   ag-charts-types@13.3.1: {}
 
+  ag-charts-types@14.1.0: {}
+
   ag-grid-community@35.3.1:
     dependencies:
       ag-charts-types: 13.3.1
 
-  ag-grid-react@35.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  ag-grid-community@36.1.0:
     dependencies:
-      ag-grid-community: 35.3.1
+      ag-charts-types: 14.1.0
+      ag-stack: 36.1.0
+
+  ag-grid-react@36.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      ag-grid-community: 36.1.0
       prop-types: 15.8.1
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
+
+  ag-stack@36.1.0: {}
 
   ajv-formats@2.1.1(ajv@8.20.0):
     optionalDependencies:
