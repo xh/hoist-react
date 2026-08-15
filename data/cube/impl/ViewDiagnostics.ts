@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {HoistBase} from '@xh/hoist/core';
+import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import type {RowCache} from './RowCache';
 
@@ -16,22 +17,14 @@ import type {RowCache} from './RowCache';
  *
  * @internal
  */
-export class ViewDiagnostics {
+export class ViewDiagnostics extends BaseDiagnostics {
     @observable.ref load: ViewOpStats = emptyStats();
     @observable.ref update: ViewOpStats = emptyStats();
     @observable.ref query: ViewOpStats = emptyStats();
 
     constructor(owner: HoistBase) {
+        super(owner);
         makeObservable(this);
-        this.owner = owner;
-    }
-
-    startLogging() {
-        this.logging = true;
-    }
-
-    stopLogging() {
-        this.logging = false;
     }
 
     @action
@@ -56,9 +49,6 @@ export class ViewDiagnostics {
         this.query = emptyStats();
     }
 
-    private owner: HoistBase;
-    private logging = false;
-
     private note(
         kind: string,
         stats: ViewOpStats,
@@ -67,15 +57,12 @@ export class ViewDiagnostics {
         start: number
     ): ViewOpStats {
         const ret = accumulate(stats, cache, type, start);
-        if (this.logging && ret !== stats) {
-            const {last: op} = ret;
-            this.owner.logInfo(
-                `${kind} ${op.type}`,
-                `reused ${op.reused} rebuilt ${op.rebuilt} created ${op.created}`,
-                `total ${op.total}`,
-                `${op.elapsed.toFixed(2)}ms`
+        if (ret !== stats)
+            this.logOp(
+                kind,
+                ret.last,
+                `reused ${ret.last.reused} rebuilt ${ret.last.rebuilt} created ${ret.last.created}`
             );
-        }
         return ret;
     }
 }

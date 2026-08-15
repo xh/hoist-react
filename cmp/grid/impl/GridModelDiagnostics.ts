@@ -6,6 +6,7 @@
  */
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import type {HoistBase} from '@xh/hoist/core';
+import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
@@ -16,20 +17,12 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  *
  * @internal
  */
-export class GridModelDiagnostics {
+export class GridModelDiagnostics extends BaseDiagnostics {
     @observable.ref transaction: GridOpStats = emptyStats();
 
     constructor(owner: HoistBase) {
+        super(owner);
         makeObservable(this);
-        this.owner = owner;
-    }
-
-    startLogging() {
-        this.logging = true;
-    }
-
-    stopLogging() {
-        this.logging = false;
     }
 
     @action
@@ -53,23 +46,13 @@ export class GridModelDiagnostics {
         const {count, elapsed} = this.transaction;
         this.transaction = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
 
-        if (this.logging) {
-            this.owner.logInfo(
-                `transaction ${op.type}`,
-                `upd ${op.update} add ${op.add} rem ${op.remove}`,
-                `total ${op.total}`,
-                `${op.elapsed.toFixed(2)}ms`
-            );
-        }
+        this.logOp('transaction', op, `upd ${op.update} add ${op.add} rem ${op.remove}`);
     }
 
     @action
     reset() {
         this.transaction = emptyStats();
     }
-
-    private owner: HoistBase;
-    private logging = false;
 }
 
 export interface GridOpStats {

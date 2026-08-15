@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {HoistBase} from '@xh/hoist/core';
+import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import type {RecordSet} from './RecordSet';
 
@@ -16,22 +17,14 @@ import type {RecordSet} from './RecordSet';
  *
  * @internal
  */
-export class StoreDiagnostics {
+export class StoreDiagnostics extends BaseDiagnostics {
     @observable.ref load: StoreOpStats = emptyStats();
     @observable.ref update: StoreOpStats = emptyStats();
     @observable.ref filter: StoreOpStats = emptyStats();
 
     constructor(owner: HoistBase) {
+        super(owner);
         makeObservable(this);
-        this.owner = owner;
-    }
-
-    startLogging() {
-        this.logging = true;
-    }
-
-    stopLogging() {
-        this.logging = false;
     }
 
     @action
@@ -56,20 +49,14 @@ export class StoreDiagnostics {
         this.filter = emptyStats();
     }
 
-    private owner: HoistBase;
-    private logging = false;
-
     private note(kind: string, stats: StoreOpStats, rs: RecordSet, start: number): StoreOpStats {
         const ret = accumulate(stats, rs, start);
-        if (this.logging && ret !== stats) {
-            const {last: op} = ret;
-            this.owner.logInfo(
-                `${kind} ${op.type}`,
-                `upd ${op.update} add ${op.add} rem ${op.remove}`,
-                `total ${op.total}`,
-                `${op.elapsed.toFixed(2)}ms`
+        if (ret !== stats)
+            this.logOp(
+                kind,
+                ret.last,
+                `upd ${ret.last.update} add ${ret.last.add} rem ${ret.last.remove}`
             );
-        }
         return ret;
     }
 }
