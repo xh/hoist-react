@@ -19,6 +19,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  */
 export class GridModelDiagnostics extends BaseDiagnostics {
     @observable.ref transaction: GridOpStats = emptyStats();
+    @observable.ref autosize: AutosizeOpStats = emptyAutosizeStats();
 
     constructor(owner: HoistBase) {
         super(owner);
@@ -50,8 +51,30 @@ export class GridModelDiagnostics extends BaseDiagnostics {
     }
 
     @action
+    noteAutosize(
+        type: AutosizeOp['type'],
+        columns: number,
+        records: number,
+        total: number,
+        start: number
+    ) {
+        const op: AutosizeOp = {
+            type,
+            columns,
+            records,
+            total,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
+        const {count, elapsed} = this.autosize;
+        this.autosize = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+        this.logOp('autosize', op, `cols ${op.columns} records ${op.records}`);
+    }
+
+    @action
     reset() {
         this.transaction = emptyStats();
+        this.autosize = emptyAutosizeStats();
     }
 }
 
@@ -62,6 +85,24 @@ export interface GridOpStats {
 }
 
 const emptyStats = (): GridOpStats => ({last: null, count: 0, elapsed: 0});
+
+export interface AutosizeOpStats {
+    last: AutosizeOp;
+    count: number;
+    elapsed: number;
+}
+
+const emptyAutosizeStats = (): AutosizeOpStats => ({last: null, count: 0, elapsed: 0});
+
+export interface AutosizeOp {
+    // `elapsed` is latency, not CPU - autosize yields while measuring. `records` is the work.
+    type: 'sized' | 'aborted' | 'notReady' | 'noColumns' | 'disabled';
+    columns: number;
+    records: number;
+    total: number;
+    elapsed: number;
+    timestamp: number;
+}
 
 export interface GridOp {
     type: 'delta' | 'scanned';

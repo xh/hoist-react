@@ -117,7 +117,7 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
 * Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - detail on the operations each
   performs, for performance debugging and developer tooling. Each publishes a slot per kind of op
   it handles (e.g. `store.diagnostics.update`, `view.diagnostics.query`,
-  `gridModel.diagnostics.transaction`), holding the `last` such op plus a cumulative `count` and
+  `gridModel.diagnostics.transaction`, `gridModel.diagnostics.autosize`), holding the `last` such op plus a cumulative `count` and
   `elapsed` to average over. Each op reports how much work it did, how long it took, and a `type`
   naming the path it took. Read across the three stages, these localize the cost of a data change
   to the stage responsible for it. `reset()` clears the counts to isolate a run under test, and
