@@ -140,7 +140,7 @@ export class View
     lastUpdated: number;
 
     /** @internal */
-    readonly diagnostics = new ViewDiagnostics();
+    readonly diagnostics = new ViewDiagnostics(this);
 
     // Implementation
     private _rowDatas: ViewRowData[] = null;

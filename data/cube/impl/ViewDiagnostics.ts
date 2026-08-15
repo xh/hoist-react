@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {HoistBase} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import type {RowCache} from './RowCache';
 
@@ -20,23 +21,32 @@ export class ViewDiagnostics {
     @observable.ref update: ViewOpStats = emptyStats();
     @observable.ref query: ViewOpStats = emptyStats();
 
-    constructor() {
+    constructor(owner: HoistBase) {
         makeObservable(this);
+        this.owner = owner;
+    }
+
+    startLogging() {
+        this.logging = true;
+    }
+
+    stopLogging() {
+        this.logging = false;
     }
 
     @action
     noteLoad(cache: RowCache, type: ViewOp['type'], start: number) {
-        this.load = accumulate(this.load, cache, type, start);
+        this.load = this.note('load', this.load, cache, type, start);
     }
 
     @action
     noteUpdate(cache: RowCache, type: ViewOp['type'], start: number) {
-        this.update = accumulate(this.update, cache, type, start);
+        this.update = this.note('update', this.update, cache, type, start);
     }
 
     @action
     noteQuery(cache: RowCache, type: ViewOp['type'], start: number) {
-        this.query = accumulate(this.query, cache, type, start);
+        this.query = this.note('query', this.query, cache, type, start);
     }
 
     @action
@@ -44,6 +54,29 @@ export class ViewDiagnostics {
         this.load = emptyStats();
         this.update = emptyStats();
         this.query = emptyStats();
+    }
+
+    private owner: HoistBase;
+    private logging = false;
+
+    private note(
+        kind: string,
+        stats: ViewOpStats,
+        cache: RowCache,
+        type: ViewOp['type'],
+        start: number
+    ): ViewOpStats {
+        const ret = accumulate(stats, cache, type, start);
+        if (this.logging && ret !== stats) {
+            const {last: op} = ret;
+            this.owner.logInfo(
+                `${kind} ${op.type}`,
+                `reused ${op.reused} rebuilt ${op.rebuilt} created ${op.created}`,
+                `total ${op.total}`,
+                `${op.elapsed.toFixed(2)}ms`
+            );
+        }
+        return ret;
     }
 }
 

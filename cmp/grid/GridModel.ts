@@ -624,7 +624,7 @@ export class GridModel extends HoistModel {
     @managed autosizeTask = TaskObserver.trackAll();
 
     /** @internal */
-    readonly diagnostics = new GridModelDiagnostics();
+    readonly diagnostics = new GridModelDiagnostics(this);
 
     constructor(config: GridConfig) {
         super();

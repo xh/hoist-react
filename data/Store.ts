@@ -427,7 +427,7 @@ export class Store
     experimental: any;
 
     /** @internal */
-    readonly diagnostics = new StoreDiagnostics();
+    readonly diagnostics = new StoreDiagnostics(this);
 
     constructor({
         fields,

@@ -120,7 +120,9 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   `gridModel.diagnostics.transaction`), holding the `last` such op plus a cumulative `count` and
   `elapsed` to average over. Each op reports how much work it did, how long it took, and a `type`
   naming the path it took. Read across the three stages, these localize the cost of a data change
-  to the stage responsible for it, and `reset()` clears the counts to isolate a run under test.
+  to the stage responsible for it. `reset()` clears the counts to isolate a run under test, and
+  `startLogging()` streams each op to the console as it happens - opt-in per object, from code or
+  the console, and independent of `XH.logLevel`.
   Note these objects are intentionally NOT a stable API - their shape, and especially the set of
   `type` values, tracks Hoist internals and can change in any release.
 * Removed `Store.patchStats`, superseded by `Store.diagnostics`. The new API reports the last

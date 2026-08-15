@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
+import type {HoistBase} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
@@ -18,8 +19,17 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 export class GridModelDiagnostics {
     @observable.ref transaction: GridOpStats = emptyStats();
 
-    constructor() {
+    constructor(owner: HoistBase) {
         makeObservable(this);
+        this.owner = owner;
+    }
+
+    startLogging() {
+        this.logging = true;
+    }
+
+    stopLogging() {
+        this.logging = false;
     }
 
     @action
@@ -42,12 +52,24 @@ export class GridModelDiagnostics {
         };
         const {count, elapsed} = this.transaction;
         this.transaction = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+
+        if (this.logging) {
+            this.owner.logInfo(
+                `transaction ${op.type}`,
+                `upd ${op.update} add ${op.add} rem ${op.remove}`,
+                `total ${op.total}`,
+                `${op.elapsed.toFixed(2)}ms`
+            );
+        }
     }
 
     @action
     reset() {
         this.transaction = emptyStats();
     }
+
+    private owner: HoistBase;
+    private logging = false;
 }
 
 export interface GridOpStats {
