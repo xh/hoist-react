@@ -15,9 +15,9 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  * @internal
  */
 export class StoreDiagnostics {
-    @observable.ref lastLoad: StoreOp = null;
-    @observable.ref lastUpdate: StoreOp = null;
-    @observable.ref lastFilter: StoreOp = null;
+    @observable.ref load: StoreOpStats = emptyStats();
+    @observable.ref update: StoreOpStats = emptyStats();
+    @observable.ref filter: StoreOpStats = emptyStats();
 
     constructor() {
         makeObservable(this);
@@ -25,19 +25,37 @@ export class StoreDiagnostics {
 
     @action
     noteLoad(op: StoreOp) {
-        this.lastLoad = op;
+        const {count, elapsed} = this.load;
+        this.load = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
     }
 
     @action
     noteUpdate(op: StoreOp) {
-        this.lastUpdate = op;
+        const {count, elapsed} = this.update;
+        this.update = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
     }
 
     @action
     noteFilter(op: StoreOp) {
-        this.lastFilter = op;
+        const {count, elapsed} = this.filter;
+        this.filter = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    }
+
+    @action
+    reset() {
+        this.load = emptyStats();
+        this.update = emptyStats();
+        this.filter = emptyStats();
     }
 }
+
+export interface StoreOpStats {
+    last: StoreOp;
+    count: number;
+    elapsed: number;
+}
+
+const emptyStats = (): StoreOpStats => ({last: null, count: 0, elapsed: 0});
 
 export interface StoreOp {
     type: 'patched' | 'flattened' | 'rebased' | 'full';

@@ -15,7 +15,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  * @internal
  */
 export class GridModelDiagnostics {
-    @observable.ref lastTransaction: GridOp = null;
+    @observable.ref transaction: GridOpStats = emptyStats();
 
     constructor() {
         makeObservable(this);
@@ -23,9 +23,23 @@ export class GridModelDiagnostics {
 
     @action
     noteTransaction(op: GridOp) {
-        this.lastTransaction = op;
+        const {count, elapsed} = this.transaction;
+        this.transaction = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    }
+
+    @action
+    reset() {
+        this.transaction = emptyStats();
     }
 }
+
+export interface GridOpStats {
+    last: GridOp;
+    count: number;
+    elapsed: number;
+}
+
+const emptyStats = (): GridOpStats => ({last: null, count: 0, elapsed: 0});
 
 export interface GridOp {
     type: 'delta' | 'scanned';

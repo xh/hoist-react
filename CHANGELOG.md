@@ -114,14 +114,15 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
   the size of the change rather than the size of the store. Enable via `Store` config
   `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental` soft-config.
-* Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - detail on the last operation each
-  performed, for performance debugging and developer tooling. Each publishes the last op of each
-  kind it handles (e.g. `store.diagnostics.lastUpdate`, `view.diagnostics.lastQuery`,
-  `gridModel.diagnostics.lastTransaction`), reporting how much work the op did, how long it took,
-  and a `type` naming the path it took. Read across the three stages, these localize the cost of a
-  data change to the stage responsible for it. Note these objects are intentionally NOT a
-  stable API - their shape, and especially the set of `type` values, tracks Hoist internals and can
-  change in any release.
+* Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - detail on the operations each
+  performs, for performance debugging and developer tooling. Each publishes a slot per kind of op
+  it handles (e.g. `store.diagnostics.update`, `view.diagnostics.query`,
+  `gridModel.diagnostics.transaction`), holding the `last` such op plus a cumulative `count` and
+  `elapsed` to average over. Each op reports how much work it did, how long it took, and a `type`
+  naming the path it took. Read across the three stages, these localize the cost of a data change
+  to the stage responsible for it, and `reset()` clears the counts to isolate a run under test.
+  Note these objects are intentionally NOT a stable API - their shape, and especially the set of
+  `type` values, tracks Hoist internals and can change in any release.
 * Removed `Store.patchStats`, superseded by `Store.diagnostics`. The new API reports the last
   operation of each kind rather than cumulative counters - loads, updates, and filter runs differ
   by orders of magnitude in cost, so an average across them was not meaningful - and unlike

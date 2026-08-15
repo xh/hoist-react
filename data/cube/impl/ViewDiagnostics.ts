@@ -15,9 +15,9 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  * @internal
  */
 export class ViewDiagnostics {
-    @observable.ref lastLoad: ViewOp = null;
-    @observable.ref lastUpdate: ViewOp = null;
-    @observable.ref lastQuery: ViewOp = null;
+    @observable.ref load: ViewOpStats = emptyStats();
+    @observable.ref update: ViewOpStats = emptyStats();
+    @observable.ref query: ViewOpStats = emptyStats();
 
     constructor() {
         makeObservable(this);
@@ -25,19 +25,37 @@ export class ViewDiagnostics {
 
     @action
     noteLoad(op: ViewOp) {
-        this.lastLoad = op;
+        const {count, elapsed} = this.load;
+        this.load = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
     }
 
     @action
     noteUpdate(op: ViewOp) {
-        this.lastUpdate = op;
+        const {count, elapsed} = this.update;
+        this.update = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
     }
 
     @action
     noteQuery(op: ViewOp) {
-        this.lastQuery = op;
+        const {count, elapsed} = this.query;
+        this.query = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    }
+
+    @action
+    reset() {
+        this.load = emptyStats();
+        this.update = emptyStats();
+        this.query = emptyStats();
     }
 }
+
+export interface ViewOpStats {
+    last: ViewOp;
+    count: number;
+    elapsed: number;
+}
+
+const emptyStats = (): ViewOpStats => ({last: null, count: 0, elapsed: 0});
 
 export interface ViewOp {
     type: 'dataOnly' | 'fullUpdate';
