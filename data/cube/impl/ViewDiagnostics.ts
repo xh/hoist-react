@@ -40,15 +40,7 @@ export class ViewDiagnostics {
 }
 
 export interface ViewOp {
-    /** `dataOnly`, or the condition that forced a full regeneration. */
-    type:
-        | 'dataOnly'
-        | 'complexAggregators'
-        | 'leafSetChanged'
-        | 'filterCrossed'
-        | 'dimensionChanged'
-        | 'queryChanged'
-        | 'cubeLoaded';
+    type: 'dataOnly' | 'fullUpdate';
     reused: number;
     rebuilt: number;
     created: number;

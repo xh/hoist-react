@@ -118,9 +118,8 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   performed, for performance debugging and developer tooling. Each publishes the last op of each
   kind it handles (e.g. `store.diagnostics.lastUpdate`, `view.diagnostics.lastQuery`,
   `gridModel.diagnostics.lastTransaction`), reporting how much work the op did and a `type` naming
-  the path it took - including, for a `View`, the specific condition that forced a full row
-  regeneration rather than an incremental update. Read across the three stages, these localize the
-  cost of a data change to the stage responsible for it. Note these objects are intentionally NOT a
+  the path it took. Read across the three stages, these localize the cost of a data change to the
+  stage responsible for it. Note these objects are intentionally NOT a
   stable API - their shape, and especially the set of `type` values, tracks Hoist internals and can
   change in any release.
 * Removed `Store.patchStats`, superseded by `Store.diagnostics`. The new API reports the last

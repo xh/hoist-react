@@ -22,9 +22,12 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics, ViewOp} from './impl/ViewDiagnostics';
+
+// Which diagnostics slot a generation is recorded against - see `noteOp`.
+type ViewOpTrigger = 'load' | 'update' | 'query';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isNil, isString, map, uniq} from 'lodash';
+import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {BaseRow} from './row/BaseRow';
@@ -168,7 +171,7 @@ export class View
         this.stores = this.parseStores(stores);
         this._rowCache = new RowCache(this);
         this.buildRowTemplates();
-        this.fullUpdate('queryChanged');
+        this.fullUpdate('query');
 
         if (connect) {
             this.cube._connectedViews.add(this);
@@ -245,7 +248,7 @@ export class View
             }
         }
 
-        this.fullUpdate('queryChanged');
+        this.fullUpdate('query');
     }
 
     /** Gather all unique values for each dimension field in the query. */
@@ -283,15 +286,15 @@ export class View
     //-----------------------
     @action
     noteCubeLoaded() {
-        this.fullUpdate('cubeLoaded');
+        this.fullUpdate('load');
     }
 
     @action
     noteCubeUpdated(changes: RecordSetDelta) {
         const simpleUpdates = this.getSimpleUpdates(changes);
 
-        if (isString(simpleUpdates)) {
-            this.fullUpdate(simpleUpdates);
+        if (!simpleUpdates) {
+            this.fullUpdate('update');
         } else if (!isEmpty(simpleUpdates)) {
             this.dataOnlyUpdate(simpleUpdates);
         } else {
@@ -379,14 +382,14 @@ export class View
         );
     }
 
-    private fullUpdate(type: ViewOp['type']) {
+    private fullUpdate(trigger: ViewOpTrigger) {
         this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
             this.filterRecords();
             this.createAggregationContext();
             this.generateRows();
             this.loadStores();
             this.updateResults();
-            this.noteOp(type);
+            this.noteOp(trigger, 'fullUpdate');
         });
     }
 
@@ -413,14 +416,14 @@ export class View
                 store.updateData({update: recordUpdates});
             });
             this.updateResults();
-            this.noteOp('dataOnly');
+            this.noteOp('update', 'dataOnly');
         });
     }
 
     // Record the generation just completed against the diagnostics slot for its trigger - a
     // regeneration driven by a query change or a Cube load is reported separately from the
     // steady-state response to Cube data changes, so neither masks the other.
-    private noteOp(type: ViewOp['type']) {
+    private noteOp(trigger: ViewOpTrigger, type: ViewOp['type']) {
         // Row counts come from the last generation - on a data-only update no generation ran, so
         // the row set is unchanged and every row was, in effect, reused.
         const counts = this._rowCache.generationCounts,
@@ -431,9 +434,9 @@ export class View
                 total,
                 timestamp: Date.now()
             };
-        if (type === 'queryChanged') {
+        if (trigger === 'query') {
             this.diagnostics.noteQuery(op);
-        } else if (type === 'cubeLoaded') {
+        } else if (trigger === 'load') {
             this.diagnostics.noteLoad(op);
         } else {
             this.diagnostics.noteUpdate(op);
@@ -613,23 +616,24 @@ export class View
         return ret;
     }
 
-    // Return a list of simple data updates we can apply to leaves, or the ViewOp['type'] naming the
-    // condition that requires a full regeneration instead.
-    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | ViewOp['type'] {
+    // return a list of simple data updates we can apply to leaves.
+    // false if leaf population changing, or aggregations are complex
+    private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | false {
         if (!t) return [];
-        if (!this.aggregatorsAreSimple) return 'complexAggregators';
+        if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
 
         // 1) Simple case: no filter
         if (!query.filter) {
-            if (!isEmpty(t.add) || !isEmpty(t.remove)) return 'leafSetChanged';
-            return this.hasDimOrBucketUpdates(t.update) ? 'dimensionChanged' : t.update;
+            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimOrBucketUpdates(t.update)
+                ? t.update
+                : false;
         }
 
         // 2) Examine, accounting for filter
         // 2a) Relevant adds or removes fail us
-        if (t.add?.some(rec => query.test(rec))) return 'leafSetChanged';
-        if (t.remove?.some(rec => _leafMap.has(rec.id))) return 'leafSetChanged';
+        if (t.add?.some(rec => query.test(rec))) return false;
+        if (t.remove?.some(rec => _leafMap.has(rec.id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
@@ -638,14 +642,14 @@ export class View
                 const passes = query.test(r),
                     present = _leafMap.has(r.id);
 
-                if (passes !== present) return 'filterCrossed';
+                if (passes !== present) return false;
                 if (present) ret.push(r);
             }
         }
 
         // 2c) Examine the final set of updates for any changes to dimension field values which would
         //     require rebuilding the row hierarchy
-        if (this.hasDimOrBucketUpdates(ret)) return 'dimensionChanged';
+        if (this.hasDimOrBucketUpdates(ret)) return false;
 
         return ret;
     }
