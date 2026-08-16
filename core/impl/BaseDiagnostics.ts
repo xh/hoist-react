@@ -15,11 +15,11 @@ import {logInfo} from '@xh/hoist/utils/js';
  *
  * @internal
  */
-export abstract class BaseDiagnostics {
-    protected owner: HoistBase;
+export abstract class BaseDiagnostics<T extends HoistBase> {
+    protected owner: T;
     protected loggingEnabled = false;
 
-    constructor(owner: HoistBase) {
+    protected constructor(owner: T) {
         this.owner = owner;
     }
 

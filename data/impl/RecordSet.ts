@@ -11,7 +11,6 @@ import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
 import {Filter} from '../filter/Filter';
-import type {RecordSetDerivation} from './StoreDiagnostics';
 
 type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
@@ -46,7 +45,6 @@ export class RecordSet {
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
 
-    /** How this instance was derived - read and stamped by Store. @internal */
     derivation: RecordSetDerivation = null;
 
     constructor(store: Store, recordMap: StoreRecordMap = new Map()) {
@@ -167,8 +165,9 @@ export class RecordSet {
         return this.isEqual(target) ? target : this;
     }
 
+    // This implementation always filters in full - `prevFiltered` (the previous projection) is
+    // consulted only to count the changes for diagnostics.
     withFilter(filter: Filter, prevFiltered: RecordSet): RecordSet {
-        // `prevFiltered` (the previous projection) is unused by this full-pass implementation.
         if (!filter) return this;
         const {store} = this,
             includeChildren = store.filterIncludesChildren,
@@ -214,10 +213,26 @@ export class RecordSet {
         };
         passes.forEach(rec => markParents(rec));
 
-        // A full pass computes which records pass, not how that set differs from the last one -
-        // leave the change counts at zero rather than paying for a diff to populate them.
+        // Count changes vs. the previous projection - one lookup per passing record, with removes
+        // falling out by arithmetic.
+        let update = 0,
+            add = 0;
+        passes.forEach((rec, id) => {
+            const prev = prevFiltered?.getById(id);
+            if (!prev) {
+                add++;
+            } else if (prev !== rec) {
+                update++;
+            }
+        });
+
         const ret = new RecordSet(this.store, passes);
-        ret.derivation = {type: 'full', update: 0, add: 0, remove: 0, total: passes.size};
+        ret.derivation = {
+            type: 'full',
+            update,
+            add,
+            remove: prevFiltered ? prevFiltered.count - (passes.size - add) : 0
+        };
         return ret;
     }
 
@@ -248,8 +263,7 @@ export class RecordSet {
             type: 'full',
             update: count - reused - adds,
             add: adds,
-            remove: this.count - (count - adds),
-            total: count
+            remove: this.count - (count - adds)
         };
         return ret;
     }
@@ -317,8 +331,7 @@ export class RecordSet {
             type: 'full',
             update: (update?.length ?? 0) - missingUpdates,
             add: add?.length ?? 0,
-            remove: this.count + (add?.length ?? 0) - newRecords.size,
-            total: newRecords.size
+            remove: this.count + (add?.length ?? 0) - newRecords.size
         };
         return ret;
     }
@@ -393,4 +406,12 @@ export class RecordSet {
         });
         return idSet;
     }
+}
+
+/** How a RecordSet instance was derived - counts only, stamped by Store. @internal */
+export interface RecordSetDerivation {
+    type: 'patched' | 'flattened' | 'full';
+    update: number;
+    add: number;
+    remove: number;
 }

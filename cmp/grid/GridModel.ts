@@ -1565,14 +1565,12 @@ export class GridModel extends HoistModel {
      */
     @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
-        const start = performance.now();
         const {columns, ...options}: GridAutosizeOptions = {
             ...this.autosizeOptions,
             ...overrideOpts
         };
 
         if (options.mode === 'disabled') {
-            this.diagnostics.noteAutosize('disabled', 0, 0, this.store.count, start);
             return;
         }
 
@@ -1594,12 +1592,9 @@ export class GridModel extends HoistModel {
             return col && col.autosizable && !col.flex && includeColFn(col);
         });
 
-        if (isEmpty(colIds)) {
-            this.diagnostics.noteAutosize('noColumns', 0, 0, this.store.count, start);
-            return;
-        }
+        if (isEmpty(colIds)) return;
 
-        await this.autosizeColsInternalAsync(colIds, options, start).linkTo(this.autosizeTask);
+        await this.autosizeColsInternalAsync(colIds, options).linkTo(this.autosizeTask);
     }
 
     /**
@@ -1782,14 +1777,10 @@ export class GridModel extends HoistModel {
     @sharePendingPromise
     private async autosizeColsInternalAsync(
         colIds: string[],
-        options: Omit<GridAutosizeOptions, 'columns'>,
-        start: number
+        options: Omit<GridAutosizeOptions, 'columns'>
     ) {
         await this.whenReadyAsync();
-        if (!this.isReady) {
-            this.diagnostics.noteAutosize('notReady', 0, 0, this.store.count, start);
-            return;
-        }
+        if (!this.isReady) return;
 
         const {agApi} = this,
             {showMask} = options;
@@ -1799,7 +1790,7 @@ export class GridModel extends HoistModel {
         }
 
         try {
-            await XH.gridAutosizeService.autosizeAsync(this, colIds, options, start);
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
         } finally {
             if (showMask) {
                 await wait();

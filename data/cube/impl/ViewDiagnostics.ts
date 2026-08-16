@@ -4,10 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {HoistBase} from '@xh/hoist/core';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import type {RowCache} from './RowCache';
+import type {View} from '../View';
 
 /**
  * Diagnostics for Cube View.
@@ -17,46 +16,45 @@ import type {RowCache} from './RowCache';
  *
  * @internal
  */
-export class ViewDiagnostics extends BaseDiagnostics {
-    @observable.ref load: ViewOpStats = emptyStats();
-    @observable.ref update: ViewOpStats = emptyStats();
-    @observable.ref query: ViewOpStats = emptyStats();
+export class ViewDiagnostics extends BaseDiagnostics<View> {
+    @observable.ref load: ViewOpStats = this.emptyStats();
+    @observable.ref update: ViewOpStats = this.emptyStats();
+    @observable.ref query: ViewOpStats = this.emptyStats();
 
-    constructor(owner: HoistBase) {
+    constructor(owner: View) {
         super(owner);
         makeObservable(this);
     }
 
     @action
-    noteLoad(cache: RowCache, type: ViewOp['type'], start: number) {
-        this.load = this.note('load', this.load, cache, type, start);
+    noteLoad(type: ViewOp['type'], start: number) {
+        this.load = this.note('load', this.load, type, start);
     }
 
     @action
-    noteUpdate(cache: RowCache, type: ViewOp['type'], start: number) {
-        this.update = this.note('update', this.update, cache, type, start);
+    noteUpdate(type: ViewOp['type'], start: number) {
+        this.update = this.note('update', this.update, type, start);
     }
 
     @action
-    noteQuery(cache: RowCache, type: ViewOp['type'], start: number) {
-        this.query = this.note('query', this.query, cache, type, start);
+    noteQuery(type: ViewOp['type'], start: number) {
+        this.query = this.note('query', this.query, type, start);
     }
 
     @action
     reset() {
-        this.load = emptyStats();
-        this.update = emptyStats();
-        this.query = emptyStats();
+        this.load = this.emptyStats();
+        this.update = this.emptyStats();
+        this.query = this.emptyStats();
     }
 
     private note(
         kind: string,
         stats: ViewOpStats,
-        cache: RowCache,
         type: ViewOp['type'],
         start: number
     ): ViewOpStats {
-        const ret = accumulate(stats, cache, type, start);
+        const ret = this.accumulate(stats, type, start);
         if (ret !== stats)
             this.logOp(
                 kind,
@@ -65,34 +63,33 @@ export class ViewDiagnostics extends BaseDiagnostics {
             );
         return ret;
     }
+
+    // Row counts come from the last generation - on a data-only update no generation ran, so the
+    // row set is unchanged and every row was, in effect, reused.
+    private accumulate(stats: ViewOpStats, type: ViewOp['type'], start: number): ViewOpStats {
+        const {reused, rebuilt, created} = this.owner._rowCache,
+            total = reused + rebuilt + created,
+            op: ViewOp = {
+                type,
+                ...(type === 'dataOnly'
+                    ? {reused: total, rebuilt: 0, created: 0}
+                    : {reused, rebuilt, created}),
+                total,
+                elapsed: performance.now() - start,
+                timestamp: Date.now()
+            };
+        return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
+    }
+
+    private emptyStats(): ViewOpStats {
+        return {last: null, count: 0, elapsed: 0};
+    }
 }
 
 export interface ViewOpStats {
     last: ViewOp;
     count: number;
     elapsed: number;
-}
-
-const emptyStats = (): ViewOpStats => ({last: null, count: 0, elapsed: 0});
-
-// Row counts come from the last generation - on a data-only update no generation ran, so the row
-// set is unchanged and every row was, in effect, reused.
-function accumulate(
-    stats: ViewOpStats,
-    cache: RowCache,
-    type: ViewOp['type'],
-    start: number
-): ViewOpStats {
-    const counts = cache.generationCounts,
-        total = counts.reused + counts.rebuilt + counts.created,
-        op: ViewOp = {
-            type,
-            ...(type === 'dataOnly' ? {reused: total, rebuilt: 0, created: 0} : counts),
-            total,
-            elapsed: performance.now() - start,
-            timestamp: Date.now()
-        };
-    return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
 }
 
 export interface ViewOp {

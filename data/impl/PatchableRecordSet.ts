@@ -10,9 +10,8 @@ import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
-import type {RecordSetDerivation, StoreOp} from './StoreDiagnostics';
 import {Filter} from '../filter/Filter';
-import {RecordSetDelta} from './RecordSet';
+import {RecordSetDelta, type RecordSetDerivation} from './RecordSet';
 
 type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
@@ -61,7 +60,6 @@ export class PatchableRecordSet {
     private _filterSource: PatchableRecordSet = null; // source a filtered projection was built from
     private _filter: Filter = null; // filter a projection was built with
 
-    /** How this instance was derived - read and stamped by Store. @internal */
     derivation: RecordSetDerivation = null;
 
     constructor(
@@ -266,7 +264,9 @@ export class PatchableRecordSet {
     withFilter(filter: Filter, prevFiltered?: PatchableRecordSet): PatchableRecordSet {
         if (!filter) return this;
 
-        const ret = this.withFilterIncremental(filter, prevFiltered) ?? this.withFilterFull(filter);
+        const ret =
+            this.withFilterIncremental(filter, prevFiltered) ??
+            this.withFilterFull(filter, prevFiltered);
         if (ret !== prevFiltered) {
             ret._filterSource = this;
             ret._filter = filter;
@@ -274,7 +274,7 @@ export class PatchableRecordSet {
         return ret;
     }
 
-    private withFilterFull(filter: Filter): PatchableRecordSet {
+    private withFilterFull(filter: Filter, prevFiltered: PatchableRecordSet): PatchableRecordSet {
         const {store} = this;
         store.logDebug(`Filtering ${this.count} records in full - no incremental path available`);
 
@@ -321,8 +321,26 @@ export class PatchableRecordSet {
         };
         passes.forEach(rec => markParents(rec));
 
+        // Count changes vs. the previous projection - one lookup per passing record, with removes
+        // falling out by arithmetic.
+        let update = 0,
+            add = 0;
+        passes.forEach((rec, id) => {
+            const prev = prevFiltered?.getById(id);
+            if (!prev) {
+                add++;
+            } else if (prev !== rec) {
+                update++;
+            }
+        });
+
         const ret = new PatchableRecordSet(this.store, passes);
-        ret.derivation = {type: 'full', update: 0, add: 0, remove: 0, total: passes.size};
+        ret.derivation = {
+            type: 'full',
+            update,
+            add,
+            remove: prevFiltered ? prevFiltered.count - (passes.size - add) : 0
+        };
         return ret;
     }
 
@@ -356,13 +374,7 @@ export class PatchableRecordSet {
         const {store, base, patch} = this,
             ratio = PatchableRecordSet.patchRatio(store),
             changes = changed.length + removedCount,
-            derivation = (type: StoreOp['type']): RecordSetDerivation => ({
-                type,
-                update: changed.length - adds,
-                add: adds,
-                remove: removedCount,
-                total: count
-            });
+            counts = {update: changed.length - adds, add: adds, remove: removedCount};
 
         if (changes <= ratio * count) {
             const newPatch: PatchMap = patch ? new Map(patch) : new Map();
@@ -374,7 +386,7 @@ export class PatchableRecordSet {
             }
             if (newPatch.size <= ratio * base.size) {
                 const ret = new PatchableRecordSet(store, base, newPatch, count, rootCount);
-                ret.derivation = derivation('patched');
+                ret.derivation = {type: 'patched', ...counts};
                 return ret;
             }
         }
@@ -383,7 +395,7 @@ export class PatchableRecordSet {
             `Reload rebased onto a fresh base of ${count} - ${changes} changes exceeded patch cap`
         );
         const ret = new PatchableRecordSet(store, recordMap, null, count, rootCount);
-        ret.derivation = derivation('rebased');
+        ret.derivation = {type: 'full', ...counts};
         return ret;
     }
 
@@ -465,13 +477,14 @@ export class PatchableRecordSet {
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
-        return PatchableRecordSet.create(this.store, base, newPatch, count, rootCount, type => ({
-            type,
+        const ret = PatchableRecordSet.create(this.store, base, newPatch, count, rootCount);
+        ret.derivation = {
+            type: ret.patch ? 'patched' : 'flattened',
             update: (update?.length ?? 0) - missingUpdates,
             add: add?.length ?? 0,
-            remove: this.count + (add?.length ?? 0) - count,
-            total: count
-        }));
+            remove: this.count + (add?.length ?? 0) - count
+        };
+        return ret;
     }
 
     // Incremental arm of withFilter - null when not applicable, directing the caller to the
@@ -496,7 +509,6 @@ export class PatchableRecordSet {
             fBase = prevFiltered.base,
             newPatch: PatchMap = prevFiltered.patch ? new Map(prevFiltered.patch) : new Map();
         let count = prevFiltered.count,
-            changes = 0,
             added = 0,
             removed = 0,
             updated = 0;
@@ -506,7 +518,6 @@ export class PatchableRecordSet {
             if (prevFiltered.getById(id)) {
                 PatchableRecordSet.patchRemove(newPatch, fBase, id);
                 count--;
-                changes++;
                 removed++;
             }
         });
@@ -516,12 +527,10 @@ export class PatchableRecordSet {
             if (test(rec)) {
                 newPatch.set(id, rec);
                 if (!present) count++;
-                changes++;
                 present ? updated++ : added++;
             } else if (present) {
                 PatchableRecordSet.patchRemove(newPatch, fBase, id);
                 count--;
-                changes++;
                 removed++;
             }
         });
@@ -529,20 +538,20 @@ export class PatchableRecordSet {
             if (test(rec)) {
                 newPatch.set(rec.id, rec);
                 count++;
-                changes++;
                 added++;
             }
         });
 
-        if (!changes) return prevFiltered;
+        if (!(added || removed || updated)) return prevFiltered;
 
-        return PatchableRecordSet.create(store, fBase, newPatch, count, count, type => ({
-            type,
+        const ret = PatchableRecordSet.create(store, fBase, newPatch, count, count);
+        ret.derivation = {
+            type: ret.patch ? 'patched' : 'flattened',
             update: updated,
             add: added,
-            remove: removed,
-            total: count
-        }));
+            remove: removed
+        };
+        return ret;
     }
 
     //------------------------
@@ -550,33 +559,26 @@ export class PatchableRecordSet {
     //------------------------
     /**
      * Construct over a base + patch, flattening into a fresh base when the patch has grown.
-     * Calls `derivation` with the type taken, stamping the result on the instance returned.
+     * Callers stamp the derivation - a null `patch` on the result marks a flattened set.
      */
     private static create(
         store: Store,
         base: StoreRecordMap,
         patch: PatchMap,
         count: number,
-        rootCount: number,
-        derivation: (type: StoreOp['type']) => RecordSetDerivation
+        rootCount: number
     ): PatchableRecordSet {
-        let ret: PatchableRecordSet, type: StoreOp['type'];
         if (patch.size > PatchableRecordSet.patchRatio(store) * base.size) {
             store.logDebug(`Flattened patch of ${patch.size} into base of ${base.size}`);
-            type = 'flattened';
-            ret = new PatchableRecordSet(
+            return new PatchableRecordSet(
                 store,
                 PatchableRecordSet.applyPatch(base, patch),
                 null,
                 count,
                 rootCount
             );
-        } else {
-            type = 'patched';
-            ret = new PatchableRecordSet(store, base, patch, count, rootCount);
         }
-        ret.derivation = derivation(type);
-        return ret;
+        return new PatchableRecordSet(store, base, patch, count, rootCount);
     }
 
     private isSameFilter(f1: Filter, f2: Filter): boolean {

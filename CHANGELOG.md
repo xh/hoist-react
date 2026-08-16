@@ -114,21 +114,6 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
   the size of the change rather than the size of the store. Enable via `Store` config
   `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental` soft-config.
-* Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - detail on the operations each
-  performs, for performance debugging and developer tooling. Each publishes a slot per kind of op
-  it handles (e.g. `store.diagnostics.update`, `view.diagnostics.query`,
-  `gridModel.diagnostics.transaction`, `gridModel.diagnostics.autosize`), holding the `last` such op plus a cumulative `count` and
-  `elapsed` to average over. Each op reports how much work it did, how long it took, and a `type`
-  naming the path it took. Read across the three stages, these localize the cost of a data change
-  to the stage responsible for it. `reset()` clears the counts to isolate a run under test, and
-  `startLogging()` streams each op to the console as it happens - opt-in per object, from code or
-  the console, and independent of `XH.logLevel`.
-  Note these objects are intentionally NOT a stable API - their shape, and especially the set of
-  `type` values, tracks Hoist internals and can change in any release.
-* Removed `Store.patchStats`, superseded by `Store.diagnostics`. The new API reports the last
-  operation of each kind rather than cumulative counters - loads, updates, and filter runs differ
-  by orders of magnitude in cost, so an average across them was not meaningful - and unlike
-  `patchStats` it is populated with or without `experimental.patchableRecordSet`.
 
 #### FetchService - ndjson + string interning
 
@@ -236,6 +221,11 @@ columns.
   forms dirty after a reset.
 
 ### ⚙️ Technical
+
+* Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
+  `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
+  and the path taken, with `reset()` and `startLogging()`. For app troubleshooting and benchmarking,
+  but not a stable API, and is subject to change with any release.
 
 * Field XSS protection now returns unmodified strings by reference instead of a fresh copy, avoiding
   a duplicate in memory of every parsed string value.

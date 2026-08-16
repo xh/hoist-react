@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
-import type {HoistBase} from '@xh/hoist/core';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {GridModel} from '@xh/hoist/cmp/grid';
 
 /**
  * Diagnostics for GridModel.
@@ -17,11 +17,11 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  *
  * @internal
  */
-export class GridModelDiagnostics extends BaseDiagnostics {
-    @observable.ref transaction: GridOpStats = emptyStats();
-    @observable.ref autosize: AutosizeOpStats = emptyAutosizeStats();
+export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
+    @observable.ref transaction: GridOpStats = this.emptyStats();
+    @observable.ref autosize: AutosizeOpStats = this.emptyStats();
 
-    constructor(owner: HoistBase) {
+    constructor(owner: GridModel) {
         super(owner);
         makeObservable(this);
     }
@@ -34,8 +34,6 @@ export class GridModelDiagnostics extends BaseDiagnostics {
         start: number
     ) {
         const op: GridOp = {
-            // `deltaFrom` answers only when the two sets share a base - the same test the diff
-            // makes internally, so this reports how that diff was actually derived.
             type: newRs.deltaFrom(prevRs) ? 'delta' : 'scanned',
             update: txn.update?.length ?? 0,
             add: txn.add?.length ?? 0,
@@ -51,18 +49,12 @@ export class GridModelDiagnostics extends BaseDiagnostics {
     }
 
     @action
-    noteAutosize(
-        type: AutosizeOp['type'],
-        columns: number,
-        records: number,
-        total: number,
-        start: number
-    ) {
+    noteAutosize(type: AutosizeOp['type'], columns: number, records: number, start: number) {
         const op: AutosizeOp = {
             type,
             columns,
             records,
-            total,
+            total: this.owner.store.records.length,
             elapsed: performance.now() - start,
             timestamp: Date.now()
         };
@@ -73,8 +65,15 @@ export class GridModelDiagnostics extends BaseDiagnostics {
 
     @action
     reset() {
-        this.transaction = emptyStats();
-        this.autosize = emptyAutosizeStats();
+        this.transaction = this.emptyStats();
+        this.autosize = this.emptyStats();
+    }
+
+    //--------------
+    // Implementation
+    //---------------
+    private emptyStats() {
+        return {last: null, count: 0, elapsed: 0};
     }
 }
 
@@ -84,19 +83,14 @@ export interface GridOpStats {
     elapsed: number;
 }
 
-const emptyStats = (): GridOpStats => ({last: null, count: 0, elapsed: 0});
-
 export interface AutosizeOpStats {
     last: AutosizeOp;
     count: number;
     elapsed: number;
 }
 
-const emptyAutosizeStats = (): AutosizeOpStats => ({last: null, count: 0, elapsed: 0});
-
 export interface AutosizeOp {
-    // `elapsed` is latency, not CPU - autosize yields while measuring. `records` is the work.
-    type: 'sized' | 'aborted' | 'notReady' | 'noColumns' | 'disabled';
+    type: 'standard' | 'fillMode';
     columns: number;
     records: number;
     total: number;

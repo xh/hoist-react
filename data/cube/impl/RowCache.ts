@@ -38,12 +38,12 @@ export class RowCache {
     private lastQuery: Query = null;
     private usedParents: Set<BaseRow> = null;
 
-    // Stats for the current generation - logged by endGeneration()
-    private reused = 0;
-    private rebuilt = 0;
-    private created = 0;
-    private removed = 0;
-    private sweepTime = 0;
+    // Stats for the current generation - for ViewDiagnostics
+    reused = 0;
+    rebuilt = 0;
+    created = 0;
+    removed = 0;
+    sweepTime = 0;
 
     constructor(view: View) {
         this.view = view;
@@ -51,12 +51,6 @@ export class RowCache {
 
     get size(): number {
         return this.rows.size;
-    }
-
-    /** Row disposition for the generation just completed. */
-    get generationCounts(): {reused: number; rebuilt: number; created: number} {
-        const {reused, rebuilt, created} = this;
-        return {reused, rebuilt, created};
     }
 
     get(id: string): BaseRow {

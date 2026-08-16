@@ -21,10 +21,7 @@ import {
     StoreRecordId
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
-import {ViewDiagnostics, ViewOp} from './impl/ViewDiagnostics';
-
-// Which diagnostics slot a generation is recorded against - see `noteOp`.
-type ViewOpTrigger = 'load' | 'update' | 'query';
+import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
@@ -382,7 +379,7 @@ export class View
         );
     }
 
-    private fullUpdate(trigger: ViewOpTrigger) {
+    private fullUpdate(trigger: 'load' | 'update' | 'query') {
         this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
             const start = performance.now();
             this.filterRecords();
@@ -390,7 +387,19 @@ export class View
             this.generateRows();
             this.loadStores();
             this.updateResults();
-            this.noteOp(trigger, 'fullUpdate', start);
+
+            const {diagnostics} = this;
+            switch (trigger) {
+                case 'query':
+                    diagnostics.noteQuery('fullUpdate', start);
+                    break;
+                case 'load':
+                    diagnostics.noteLoad('fullUpdate', start);
+                    break;
+                case 'update':
+                    diagnostics.noteUpdate('fullUpdate', start);
+                    break;
+            }
         });
     }
 
@@ -418,22 +427,8 @@ export class View
                 store.updateData({update: recordUpdates});
             });
             this.updateResults();
-            this.noteOp('update', 'dataOnly', start);
+            this.diagnostics.noteUpdate('dataOnly', start);
         });
-    }
-
-    // Record the generation just completed against the diagnostics slot for its trigger, so a
-    // regeneration driven by a query change or a Cube load does not mask the steady-state
-    // response to Cube data changes.
-    private noteOp(trigger: ViewOpTrigger, type: ViewOp['type'], start: number) {
-        const {diagnostics, _rowCache} = this;
-        if (trigger === 'query') {
-            diagnostics.noteQuery(_rowCache, type, start);
-        } else if (trigger === 'load') {
-            diagnostics.noteLoad(_rowCache, type, start);
-        } else {
-            diagnostics.noteUpdate(_rowCache, type, start);
-        }
     }
 
     private loadStores() {

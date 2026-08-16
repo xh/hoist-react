@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {HoistBase} from '@xh/hoist/core';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {Store} from '../Store';
 import type {RecordSet} from './RecordSet';
 
 /**
@@ -17,12 +17,12 @@ import type {RecordSet} from './RecordSet';
  *
  * @internal
  */
-export class StoreDiagnostics extends BaseDiagnostics {
-    @observable.ref load: StoreOpStats = emptyStats();
-    @observable.ref update: StoreOpStats = emptyStats();
-    @observable.ref filter: StoreOpStats = emptyStats();
+export class StoreDiagnostics extends BaseDiagnostics<Store> {
+    @observable.ref load: StoreOpStats = this.emptyStats();
+    @observable.ref update: StoreOpStats = this.emptyStats();
+    @observable.ref filter: StoreOpStats = this.emptyStats();
 
-    constructor(owner: HoistBase) {
+    constructor(owner: Store) {
         super(owner);
         makeObservable(this);
     }
@@ -38,19 +38,20 @@ export class StoreDiagnostics extends BaseDiagnostics {
     }
 
     @action
-    noteFilter(rs: RecordSet, start: number) {
+    noteFilter(rs: RecordSet, source: RecordSet, start: number) {
+        if (rs === source) return;
         this.filter = this.note('filter', this.filter, rs, start);
     }
 
     @action
     reset() {
-        this.load = emptyStats();
-        this.update = emptyStats();
-        this.filter = emptyStats();
+        this.load = this.emptyStats();
+        this.update = this.emptyStats();
+        this.filter = this.emptyStats();
     }
 
     private note(kind: string, stats: StoreOpStats, rs: RecordSet, start: number): StoreOpStats {
-        const ret = accumulate(stats, rs, start);
+        const ret = this.accumulate(stats, rs, start);
         if (ret !== stats)
             this.logOp(
                 kind,
@@ -58,6 +59,27 @@ export class StoreDiagnostics extends BaseDiagnostics {
                 `upd ${ret.last.update} add ${ret.last.add} rem ${ret.last.remove}`
             );
         return ret;
+    }
+
+    // Combine the counts the RecordSet computed while deriving `rs` with the elapsed time for the
+    // Store operation that drove it. The derivation is cleared once consumed, so a set passed
+    // through untouched - `withFilter` with no filter returns its receiver - is not reported twice.
+    private accumulate(stats: StoreOpStats, rs: RecordSet, start: number): StoreOpStats {
+        const {derivation} = rs;
+        if (!derivation) return stats;
+        rs.derivation = null;
+
+        const op: StoreOp = {
+            ...derivation,
+            total: rs.count,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
+        return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
+    }
+
+    private emptyStats(): StoreOpStats {
+        return {last: null, count: 0, elapsed: 0};
     }
 }
 
@@ -67,26 +89,8 @@ export interface StoreOpStats {
     elapsed: number;
 }
 
-const emptyStats = (): StoreOpStats => ({last: null, count: 0, elapsed: 0});
-
-// Combine the counts the RecordSet computed while deriving `rs` with the elapsed time for the
-// Store operation that drove it. The derivation is cleared once consumed, so a set passed through
-// untouched - `withFilter` with no filter returns its receiver - is not reported a second time.
-function accumulate(stats: StoreOpStats, rs: RecordSet, start: number): StoreOpStats {
-    const {derivation} = rs;
-    if (!derivation) return stats;
-    rs.derivation = null;
-
-    const op: StoreOp = {
-        ...derivation,
-        elapsed: performance.now() - start,
-        timestamp: Date.now()
-    };
-    return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
-}
-
 export interface StoreOp {
-    type: 'patched' | 'flattened' | 'rebased' | 'full';
+    type: 'patched' | 'flattened' | 'full';
     update: number;
     add: number;
     remove: number;
@@ -94,6 +98,3 @@ export interface StoreOp {
     elapsed: number;
     timestamp: number;
 }
-
-/** How a RecordSet instance was derived - counts only, stamped by Store. @internal */
-export type RecordSetDerivation = Omit<StoreOp, 'elapsed' | 'timestamp'>;

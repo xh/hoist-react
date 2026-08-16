@@ -743,9 +743,6 @@ export class GridLocalModel extends HoistModel {
         this.prevRs = newRs;
         this.applyScrollOptimization();
 
-        // Noted last, so `elapsed` covers the whole sync - the transaction plus the pinned-row,
-        // complex-renderer refresh, and expand-state work it requires. Selection sync and autosize
-        // are deferred out of this frame, the latter with its own diagnostics slot.
         model.diagnostics.noteTransaction(transaction, newRs, prevRs, start);
     }
 

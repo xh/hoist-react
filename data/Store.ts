@@ -1356,7 +1356,7 @@ export class Store
         const start = performance.now(),
             {_current} = this;
         this._filtered = _current.withFilter(this.filter, this._filtered);
-        if (this._filtered !== _current) this.diagnostics.noteFilter(this._filtered, start);
+        this.diagnostics.noteFilter(this._filtered, _current, start);
     }
 
     //---------------------------------------
