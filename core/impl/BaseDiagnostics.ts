@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {HoistBase} from '@xh/hoist/core';
-import {logInfo} from '@xh/hoist/utils/js';
+import {logDebug, logInfo} from '@xh/hoist/utils/js';
 
 /**
  * Base for the diagnostics published by Store, Cube View, and GridModel.
@@ -16,19 +16,16 @@ import {logInfo} from '@xh/hoist/utils/js';
  * @internal
  */
 export abstract class BaseDiagnostics<T extends HoistBase> {
+    /**
+     * Level at which each op is logged as it happens. Leave at 'debug' to stream with the rest of
+     * the app's debug output, or set to 'info' to follow this object alone at any `XH.logLevel`.
+     */
+    logLevel: 'info' | 'debug' = 'debug';
+
     protected owner: T;
-    protected loggingEnabled = false;
 
     protected constructor(owner: T) {
         this.owner = owner;
-    }
-
-    startLogging() {
-        this.loggingEnabled = true;
-    }
-
-    stopLogging() {
-        this.loggingEnabled = false;
     }
 
     abstract reset(): void;
@@ -38,10 +35,14 @@ export abstract class BaseDiagnostics<T extends HoistBase> {
         op: {type: string; total: number; elapsed: number},
         detail: string
     ) {
-        if (!this.loggingEnabled) return;
-        logInfo(
-            [`${kind} ${op.type}`, detail, `total ${op.total}`, `${op.elapsed.toFixed(2)}ms`],
-            this.owner
-        );
+        const msgs = [
+                `${kind} ${op.type}`,
+                detail,
+                `total ${op.total}`,
+                `${op.elapsed.toFixed(2)}ms`
+            ],
+            {owner} = this;
+
+        this.logLevel === 'info' ? logInfo(msgs, owner) : logDebug(msgs, owner);
     }
 }

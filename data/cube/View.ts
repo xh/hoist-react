@@ -382,53 +382,49 @@ export class View
     }
 
     private fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {
-        this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
-            this.filterRecords();
-            this.createAggregationContext();
-            this.generateRows();
-            this.loadStores();
-            this.updateResults();
+        this.filterRecords();
+        this.createAggregationContext();
+        this.generateRows();
+        this.loadStores();
+        this.updateResults();
 
-            const {diagnostics} = this;
-            switch (trigger) {
-                case 'query':
-                    diagnostics.noteQuery('fullUpdate', start);
-                    break;
-                case 'load':
-                    diagnostics.noteLoad('fullUpdate', start);
-                    break;
-                case 'update':
-                    diagnostics.noteUpdate('fullUpdate', start);
-                    break;
-            }
-        });
+        const {diagnostics} = this;
+        switch (trigger) {
+            case 'query':
+                diagnostics.noteQuery('fullUpdate', start);
+                break;
+            case 'load':
+                diagnostics.noteLoad('fullUpdate', start);
+                break;
+            case 'update':
+                diagnostics.noteUpdate('fullUpdate', start);
+                break;
+        }
     }
 
     private dataOnlyUpdate(updates: StoreRecord[], start: number) {
-        this.withDebug(['dataOnlyUpdate', `${updates.length} updates`], () => {
-            const {_leafMap, stores} = this,
-                updatedRowDatas = new Set<PlainObject>();
+        const {_leafMap, stores} = this,
+            updatedRowDatas = new Set<PlainObject>();
 
-            // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
-            updates.forEach(rec => {
-                const leaf = _leafMap.get(rec.id);
-                leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
-            });
-
-            updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
-
-            this.createAggregationContext();
-
-            stores.forEach(store => {
-                const recordUpdates = [];
-                updatedRowDatas.forEach(rowData => {
-                    if (store.getById(rowData.id)) recordUpdates.push(rowData);
-                });
-                store.updateData({update: recordUpdates});
-            });
-            this.updateResults();
-            this.diagnostics.noteUpdate('dataOnly', start);
+        // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
+        updates.forEach(rec => {
+            const leaf = _leafMap.get(rec.id);
+            leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
+
+        updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
+
+        this.createAggregationContext();
+
+        stores.forEach(store => {
+            const recordUpdates = [];
+            updatedRowDatas.forEach(rowData => {
+                if (store.getById(rowData.id)) recordUpdates.push(rowData);
+            });
+            store.updateData({update: recordUpdates});
+        });
+        this.updateResults();
+        this.diagnostics.noteUpdate('dataOnly', start);
     }
 
     // Rows left untouched, but deciding that meant testing the changes against the query.

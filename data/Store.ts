@@ -24,7 +24,7 @@ import {
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -531,7 +531,6 @@ export class Store
      *      custom aggregations for the dataset, if desired.
      */
     @action
-    @logWithDebug
     loadData(rawData: PlainObject[], rawSummaryData?: Some<PlainObject>) {
         const start = performance.now();
 
@@ -638,7 +637,6 @@ export class Store
      * @returns changes applied, or null if no record changes were made.
      */
     @action
-    @logWithDebug
     updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
         if (isEmpty(rawData)) return null;
 

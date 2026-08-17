@@ -73,7 +73,6 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     deepFreeze,
     executeIfFunction,
-    logWithDebug,
     sharePendingPromise,
     throwIf,
     warnIf,
@@ -1563,7 +1562,6 @@ export class GridModel extends HoistModel {
      *
      * @param overrideOpts - optional overrides of this model's {@link GridAutosizeOptions}.
      */
-    @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
         const {columns, ...options}: GridAutosizeOptions = {
             ...this.autosizeOptions,

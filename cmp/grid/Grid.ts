@@ -46,7 +46,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
@@ -681,13 +681,11 @@ export class GridLocalModel extends HoistModel {
         });
     }
 
-    @logWithDebug
     genTransaction(newRs, prevRs) {
         // Skip empty props -- ag-grid is not internally optimized
         return omitBy(newRs.diffFrom(prevRs), isEmpty);
     }
 
-    @logWithDebug
     syncData() {
         const {model} = this,
             {agGridModel, store, agApi} = model,
@@ -698,7 +696,6 @@ export class GridLocalModel extends HoistModel {
             transaction = this.genTransaction(newRs, prevRs);
 
         if (!this.transactionIsEmpty(transaction)) {
-            this.logDebug(...this.genTxnLogMsgs(transaction));
             agApi.applyTransaction(transaction);
         } else if (!prevRs) {
             // First sync with an empty store yields an empty transaction, but AG Grid must still
@@ -756,15 +753,6 @@ export class GridLocalModel extends HoistModel {
 
     transactionIsEmpty(t) {
         return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
-    }
-
-    private genTxnLogMsgs(t): string[] {
-        const {add, update, remove} = t;
-        return [
-            `update: ${update ? update.length : 0}`,
-            `add: ${add ? add.length : 0}`,
-            `remove: ${remove ? remove.length : 0}`
-        ];
     }
 
     //------------------------

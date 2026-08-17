@@ -275,10 +275,8 @@ export class PatchableRecordSet {
     }
 
     private withFilterFull(filter: Filter, prevFiltered: PatchableRecordSet): PatchableRecordSet {
-        const {store} = this;
-        store.logDebug(`Filtering ${this.count} records in full - no incremental path available`);
-
-        const includeChildren = store.filterIncludesChildren,
+        const {store} = this,
+            includeChildren = store.filterIncludesChildren,
             test = filter.getTestFn(store),
             passes = new Map(),
             isMarked = rec => passes.has(rec.id),
@@ -391,9 +389,6 @@ export class PatchableRecordSet {
             }
         }
 
-        store.logDebug(
-            `Reload rebased onto a fresh base of ${count} - ${changes} changes exceeded patch cap`
-        );
         const ret = new PatchableRecordSet(store, recordMap, null, count, rootCount);
         ret.derivation = {type: 'full', ...counts};
         return ret;
@@ -569,7 +564,6 @@ export class PatchableRecordSet {
         rootCount: number
     ): PatchableRecordSet {
         if (patch.size > PatchableRecordSet.patchRatio(store) * base.size) {
-            store.logDebug(`Flattened patch of ${patch.size} into base of ${base.size}`);
             return new PatchableRecordSet(
                 store,
                 PatchableRecordSet.applyPatch(base, patch),
