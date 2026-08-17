@@ -39,7 +39,7 @@ export abstract class BaseDiagnostics<T extends HoistBase> {
                 `${kind} ${op.type}`,
                 detail,
                 `total ${op.total}`,
-                `${op.elapsed.toFixed(2)}ms`
+                `${op.elapsed.toFixed(1)}ms`
             ],
             {owner} = this;
 
