@@ -553,7 +553,7 @@ export class Store
             records = this.createRecords(rawData, null),
             updated = _committed.withNewRecords(records);
 
-        this.diagnostics.noteLoad(updated, start);
+        this.diagnostics.noteLoad(updated, _committed, start);
 
         // Skip downstream work on no-change reloads, unless local mods are being discarded.
         if (updated !== _committed || updated !== _current) {
@@ -592,7 +592,8 @@ export class Store
             'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
         );
 
-        const recordMap = new Map<StoreRecordId, StoreRecord>(),
+        const start = performance.now(),
+            recordMap = new Map<StoreRecordId, StoreRecord>(),
             summaryIds = new Set<StoreRecordId>();
 
         for await (const raw of rawData) {
@@ -603,6 +604,9 @@ export class Store
             this.summaryRecords = null;
             const {_committed, _current} = this,
                 updated = _committed.withNewRecords(recordMap);
+
+            this.diagnostics.noteLoad(updated, _committed, start);
+
             if (updated !== _committed || updated !== _current) {
                 this._committed = this._current = updated;
                 this.rebuildFiltered();
@@ -727,7 +731,9 @@ export class Store
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
 
-        if (!isEmpty(rsTransaction)) {
+        const hasChanges = !isEmpty(rsTransaction),
+            prevCurrent = this._current;
+        if (hasChanges) {
             // Prepare changelog up front - removed records are unresolvable post-removal.
             const {update, add, remove: removeIds} = rsTransaction;
             if (update) changeLog.update = update;
@@ -750,10 +756,10 @@ export class Store
                 // Otherwise, the updated RecordSet is both current and committed.
                 this._current = this._committed;
             }
-
-            this.diagnostics.noteUpdate(this._current, start);
-            this.rebuildFiltered();
         }
+        this.diagnostics.noteUpdate(this._current, prevCurrent, start);
+
+        if (hasChanges) this.rebuildFiltered();
 
         if (!isEmpty(changeLog)) {
             this.lastUpdated = Date.now();

@@ -410,7 +410,7 @@ export class RecordSet {
 
 /** How a RecordSet instance was derived - counts only, stamped by Store. @internal */
 export interface RecordSetDerivation {
-    type: 'patched' | 'flattened' | 'full';
+    type: 'patched' | 'flattened' | 'full' | 'unchanged';
     update: number;
     add: number;
     remove: number;
