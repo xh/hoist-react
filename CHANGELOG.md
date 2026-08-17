@@ -225,7 +225,7 @@ columns.
 * Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
   `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
   and the path taken. Note that diagnostics log by default under `debug` output, but users may set
-  `diagnostics.logLevel = 'info'` on a particular set of instance to focus on the performance of
+  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of
   a particular chain. This API is provided for app troubleshooting and benchmarking only, and is
   subject to change without notice at any release.
 

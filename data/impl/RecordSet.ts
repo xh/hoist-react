@@ -253,12 +253,10 @@ export class RecordSet {
             }
         });
 
-        const count = recordMap.size,
-            ret =
-                reused === recordMap.size && reused === this.count
-                    ? this
-                    : new RecordSet(this.store, recordMap);
+        const count = recordMap.size;
+        if (reused === count && reused === this.count) return this;
 
+        const ret = new RecordSet(this.store, recordMap);
         ret.derivation = {
             type: 'full',
             update: count - reused - adds,
