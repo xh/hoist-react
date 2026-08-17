@@ -12,6 +12,9 @@ import type {RecordSet, RecordSetDerivation} from './RecordSet';
 /**
  * Diagnostics for Store.
  *
+ * Reports the loads, updates, and filtering driven by its source of record - local modifications
+ * (e.g. `modifyRecords`) are intentionally out of scope, and note only the refiltering they cause.
+ *
  * Not intended as a stable API - shape and `type` values track Hoist internals and are subject
  * to change at any time.
  *
