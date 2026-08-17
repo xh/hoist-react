@@ -47,7 +47,9 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
-import {PatchableRecordSet} from './impl/PatchableRecordSet';
+import {newPatchStats, PatchableRecordSet, PatchStats} from './impl/PatchableRecordSet';
+
+export type {PatchStats};
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -426,6 +428,13 @@ export class Store
     private _fieldMap: Map<string, Field>;
     experimental: any;
 
+    /**
+     * Counters tracking how often this Store's record sets stay on the incremental (patch) path
+     * vs. falling back to a full O(records) rebuild. Non-null only with the experimental
+     * `patchableRecordSet` enabled - see {@link PatchStats}.
+     */
+    readonly patchStats: PatchStats;
+
     constructor({
         fields,
         fieldDefaults = {},
@@ -458,6 +467,7 @@ export class Store
 
         this.experimental = this.parseExperimental(experimental);
         this._fieldDefaults = fieldDefaults;
+        this.patchStats = this.experimental.patchableRecordSet ? newPatchStats() : null;
         this.fields = this.parseFields(fields, fieldDefaults);
         // Immediately after `fields` - `getField()` reads it, and construction below can reach that.
         this._fieldMap = this.createFieldMap();
@@ -516,6 +526,11 @@ export class Store
      * place in any hierarchy across old and new loads. This is to maximize the ability of
      * downstream consumers (e.g. ag-Grid) to recognize Records that have not changed and do not
      * need to be re-evaluated / re-rendered.
+     *
+     * Note that record order is not a guaranteed property of a Store. Loads are free to preserve
+     * incumbent record positions, and a payload differing from the current dataset only in its
+     * ordering will be processed as a no-op. Apply an explicit sort - e.g. on an ordinal field
+     * supplied with the source data - wherever deterministic order matters.
      *
      * Summary data can be provided via `rawSummaryData` or as the root data if the Store was
      * created with its `loadRootAsSummary` flag set to true.
@@ -995,12 +1010,18 @@ export class Store
         return this.fields.map(it => it.name);
     }
 
-    /** Records in this store, respecting any filter (if applied).*/
+    /**
+     * Records in this store, respecting any filter (if applied).
+     * Order is not a guaranteed property of a Store - sort explicitly where order matters.
+     */
     get records(): StoreRecord[] {
         return this._filtered.list;
     }
 
-    /** All records in this store, unfiltered.*/
+    /**
+     * All records in this store, unfiltered.
+     * Order is not a guaranteed property of a Store - sort explicitly where order matters.
+     */
     get allRecords(): StoreRecord[] {
         return this._current.list;
     }

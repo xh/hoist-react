@@ -50,6 +50,19 @@ const cube = new Cube({
 await cube.loadDataAsync(salesData);
 ```
 
+A Cube maintains an internal `Store` of the leaf-level records loaded into it. Tune that Store via
+`CubeConfig.store` - notably with `reuseRecords`, recommended whenever the source can supply a cheap
+per-row digest, as it preserves record identity for unchanged rows across loads and updates and so
+allows connected Views to reuse their generated rows:
+
+```typescript
+const cube = new Cube({
+    fields: [...],
+    idSpec: 'orderId',
+    store: {reuseRecords: 'rev'}
+});
+```
+
 ## Built-in Aggregators
 
 | Aggregator | Description |

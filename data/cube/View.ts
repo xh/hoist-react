@@ -22,7 +22,7 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
@@ -377,35 +377,37 @@ export class View
         );
     }
 
-    @logWithDebug
     protected fullUpdate() {
-        this.filterRecords();
-        this.createAggregationContext();
-        this.generateRows();
-        // Closed here, not inside generateRows - a subclass generating further rows in its override
-        // must land inside the generation, or its rows are uncounted and the sweep sees the cache as
-        // having outgrown a live count that never included them.
-        this._rowCache.endGeneration();
-        this.loadStores();
-        this.updateResults();
+        this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
+            this.filterRecords();
+            this.createAggregationContext();
+            this.generateRows();
+            // Closed here, not inside generateRows - a subclass generating further rows in its
+            // override must land inside the generation, or its rows are uncounted and the sweep sees
+            // the cache as having outgrown a live count that never included them.
+            this._rowCache.endGeneration();
+            this.loadStores();
+            this.updateResults();
+        });
     }
 
-    @logWithDebug
     protected dataOnlyUpdate(updates: StoreRecord[]) {
-        const {_leafMap} = this,
-            updatedRows = new Set<BaseRow>();
+        this.withDebug(['dataOnlyUpdate', `${updates.length} updates`], () => {
+            const {_leafMap} = this,
+                updatedRows = new Set<BaseRow>();
 
-        // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
-        updates.forEach(rec => {
-            const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRows);
+            // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
+            updates.forEach(rec => {
+                const leaf = _leafMap.get(rec.id);
+                leaf?.applyLeafDataUpdate(rec, updatedRows);
+            });
+
+            updatedRows.forEach(row => this.noteRowDataMutated(row.data));
+
+            this.createAggregationContext();
+            this.loadUpdatedRows(updatedRows);
+            this.updateResults();
         });
-
-        updatedRows.forEach(row => this.noteRowDataMutated(row.data));
-
-        this.createAggregationContext();
-        this.loadUpdatedRows(updatedRows);
-        this.updateResults();
     }
 
     /** Push the rows touched by an incremental update into any connected stores. */
