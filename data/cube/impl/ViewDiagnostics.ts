@@ -64,16 +64,16 @@ export class ViewDiagnostics extends BaseDiagnostics<View> {
         return ret;
     }
 
-    // Row counts come from the last generation - on a data-only update no generation ran, so the
-    // row set is unchanged and every row was, in effect, reused.
+    // Row counts come from the last generation - without one of its own, an op left the row set as
+    // it found it, and every row was in effect reused.
     private accumulate(stats: ViewOpStats, type: ViewOp['type'], start: number): ViewOpStats {
         const {reused, rebuilt, created} = this.owner._rowCache,
             total = reused + rebuilt + created,
             op: ViewOp = {
                 type,
-                ...(type === 'dataOnly'
-                    ? {reused: total, rebuilt: 0, created: 0}
-                    : {reused, rebuilt, created}),
+                ...(type === 'fullUpdate'
+                    ? {reused, rebuilt, created}
+                    : {reused: total, rebuilt: 0, created: 0}),
                 total,
                 elapsed: performance.now() - start,
                 timestamp: Date.now()
@@ -93,7 +93,7 @@ export interface ViewOpStats {
 }
 
 export interface ViewOp {
-    type: 'dataOnly' | 'fullUpdate';
+    type: 'dataOnly' | 'fullUpdate' | 'unchanged';
     reused: number;
     rebuilt: number;
     created: number;

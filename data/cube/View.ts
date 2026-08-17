@@ -162,13 +162,14 @@ export class View
         super();
         makeObservable(this);
 
-        const {query, stores = [], connect = false} = config;
+        const start = performance.now(),
+            {query, stores = [], connect = false} = config;
 
         this.query = query;
         this.stores = this.parseStores(stores);
         this._rowCache = new RowCache(this);
         this.buildRowTemplates();
-        this.fullUpdate('query');
+        this.fullUpdate('query', start);
 
         if (connect) {
             this.cube._connectedViews.add(this);
@@ -221,7 +222,8 @@ export class View
      */
     @action
     updateQuery(overrides: Partial<QueryConfig>) {
-        const oldQuery = this.query,
+        const start = performance.now(),
+            oldQuery = this.query,
             newQuery = oldQuery.clone(overrides);
 
         if (oldQuery.equals(newQuery)) return;
@@ -245,7 +247,7 @@ export class View
             }
         }
 
-        this.fullUpdate('query');
+        this.fullUpdate('query', start);
     }
 
     /** Gather all unique values for each dimension field in the query. */
@@ -283,20 +285,20 @@ export class View
     //-----------------------
     @action
     noteCubeLoaded() {
-        this.fullUpdate('load');
+        this.fullUpdate('load', performance.now());
     }
 
     @action
     noteCubeUpdated(changes: RecordSetDelta) {
-        const simpleUpdates = this.getSimpleUpdates(changes);
+        const start = performance.now(),
+            simpleUpdates = this.getSimpleUpdates(changes);
 
         if (!simpleUpdates) {
-            this.fullUpdate('update');
+            this.fullUpdate('update', start);
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdate(simpleUpdates);
+            this.dataOnlyUpdate(simpleUpdates, start);
         } else {
-            this.info = this.cube.info;
-            this.cubeUpdated = this.cube.lastUpdated;
+            this.dataUnchangedUpdate(start);
         }
     }
 
@@ -379,9 +381,8 @@ export class View
         );
     }
 
-    private fullUpdate(trigger: 'load' | 'update' | 'query') {
+    private fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {
         this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
-            const start = performance.now();
             this.filterRecords();
             this.createAggregationContext();
             this.generateRows();
@@ -403,10 +404,9 @@ export class View
         });
     }
 
-    private dataOnlyUpdate(updates: StoreRecord[]) {
+    private dataOnlyUpdate(updates: StoreRecord[], start: number) {
         this.withDebug(['dataOnlyUpdate', `${updates.length} updates`], () => {
-            const start = performance.now(),
-                {_leafMap, stores} = this,
+            const {_leafMap, stores} = this,
                 updatedRowDatas = new Set<PlainObject>();
 
             // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
@@ -429,6 +429,13 @@ export class View
             this.updateResults();
             this.diagnostics.noteUpdate('dataOnly', start);
         });
+    }
+
+    // Rows left untouched, but deciding that meant testing the changes against the query.
+    private dataUnchangedUpdate(start: number) {
+        this.info = this.cube.info;
+        this.cubeUpdated = this.cube.lastUpdated;
+        this.diagnostics.noteUpdate('unchanged', start);
     }
 
     private loadStores() {
