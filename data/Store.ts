@@ -1360,9 +1360,9 @@ export class Store
     @action
     private rebuildFiltered() {
         const start = performance.now(),
-            {_current} = this;
-        this._filtered = _current.withFilter(this.filter, this._filtered);
-        this.diagnostics.noteFilter(this._filtered, _current, start);
+            {_current, _filtered: prevFiltered} = this;
+        this._filtered = _current.withFilter(this.filter, prevFiltered);
+        this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
     }
 
     //---------------------------------------

@@ -28,19 +28,19 @@ export class StoreDiagnostics extends BaseDiagnostics<Store> {
     }
 
     @action
-    noteLoad(rs: RecordSet, source: RecordSet, start: number) {
-        this.load = this.note('load', this.load, rs, source, start);
+    noteLoad(rs: RecordSet, prev: RecordSet, start: number) {
+        this.load = this.note('load', this.load, rs, prev, start);
     }
 
     @action
-    noteUpdate(rs: RecordSet, source: RecordSet, start: number) {
-        this.update = this.note('update', this.update, rs, source, start);
+    noteUpdate(rs: RecordSet, prev: RecordSet, start: number) {
+        this.update = this.note('update', this.update, rs, prev, start);
     }
 
     @action
-    noteFilter(rs: RecordSet, source: RecordSet, start: number) {
-        if (rs === source) return;
-        this.filter = this.note('filter', this.filter, rs, source, start);
+    noteFilter(rs: RecordSet, unfiltered: RecordSet, prev: RecordSet, start: number) {
+        if (rs === unfiltered) return;
+        this.filter = this.note('filter', this.filter, rs, prev, start);
     }
 
     @action
@@ -54,10 +54,10 @@ export class StoreDiagnostics extends BaseDiagnostics<Store> {
         kind: string,
         stats: StoreOpStats,
         rs: RecordSet,
-        source: RecordSet,
+        prev: RecordSet,
         start: number
     ): StoreOpStats {
-        const ret = this.accumulate(stats, rs, source, start);
+        const ret = this.accumulate(stats, rs, prev, start);
         if (ret !== stats)
             this.logOp(
                 kind,
@@ -74,10 +74,10 @@ export class StoreDiagnostics extends BaseDiagnostics<Store> {
     private accumulate(
         stats: StoreOpStats,
         rs: RecordSet,
-        source: RecordSet,
+        prev: RecordSet,
         start: number
     ): StoreOpStats {
-        const derivation = rs.derivation ?? (rs === source ? UNCHANGED : null);
+        const derivation = rs.derivation ?? (rs === prev ? UNCHANGED : null);
         if (!derivation) return stats;
         rs.derivation = null;
 
