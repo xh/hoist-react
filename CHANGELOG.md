@@ -170,8 +170,7 @@ columns.
 * `GridModel` now tracks column group expand/collapse state as `columnGroupState`, with
   `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
   `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
-  see the new `GridModelPersistOptions.persistColumnGroups` - and is retained across `setColumns()`
-  for any group the new configs still define.
+  see the new `GridModelPersistOptions.persistColumnGroups`.
 
 #### Admin Console
 

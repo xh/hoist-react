@@ -54,8 +54,7 @@ export interface ColumnGroupSpec {
      * `columnGroupShow`.
      *
      * Note this is the *default* only: once rendered, expand/collapse state is tracked on
-     * {@link GridModel.columnGroupState}, survives a `setColumns()` rebuild, and is persisted with
-     * the grid's `persistWith`.
+     * {@link GridModel.columnGroupState} and is persisted with the grid's `persistWith`.
      */
     expandedByDefault?: boolean;
 
