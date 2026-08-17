@@ -59,6 +59,15 @@ export abstract class BaseRow {
     pivotParent: ParentRow = null;
     children: BaseRow[] = null;
 
+    /**
+     * Cell field names a {@link PivotView} last projected on this row's behalf - onto its owning group
+     * row for a {@link PivotCellRow}, onto its own data for an exposed leaf. Retained so a later
+     * generation writing fewer of them can null what it no longer covers. Null in a plain View.
+     *
+     * @internal
+     */
+    projectedCellNames: string[] = null;
+
     get isLeaf() {
         return false;
     }

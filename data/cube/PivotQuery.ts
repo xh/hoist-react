@@ -123,6 +123,18 @@ export class PivotQuery extends Query {
         );
     }
 
+    // Cell row ids are keyed on pivot path, and path keys carry dimension *values* alone - so a pivot
+    // dimension change can even land a stale cell on a live id.
+    override orphansParents(other: PivotQuery): boolean {
+        return super.orphansParents(other) || !isEqual(this.pivotDimensions, other.pivotDimensions);
+    }
+
+    // Cell rows aggregate `valueFields` alone, so a measure change moves a field set that `fields` -
+    // and with it RowCache's own field-gain check - can miss entirely.
+    override invalidatesParents(other: PivotQuery): boolean {
+        return super.invalidatesParents(other) || !isEqual(this.valueFields, other.valueFields);
+    }
+
     protected override cloneConfig(overrides: Partial<PivotQueryConfig>): PivotQueryConfig {
         return {
             ...super.cloneConfig(overrides),

@@ -647,7 +647,7 @@ export class View
 
         if (isEmpty(dimensions) && isEmpty(bucketDependentFields)) return false;
 
-        const fieldNames = uniq([...dimensions.map(it => it.name), ...bucketDependentFields]);
+        const fieldNames = uniq([...map(dimensions, 'name'), ...bucketDependentFields]);
         for (const rec of update) {
             const curRec = this._records.getById(rec.id);
             if (fieldNames.some(name => rec.data[name] !== curRec.data[name])) return true;

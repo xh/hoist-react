@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {Field, Store, StoreConfig, StoreRecord} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -245,6 +246,7 @@ export class PivotView extends View {
     }
 
     private clearCells() {
+        this.clearVacatedCells(this._cellRows, EMPTY_CELLS);
         this._allPaths = [];
         this._pathKeys = [];
         this._pathLabels = [];
@@ -256,7 +258,8 @@ export class PivotView extends View {
     }
 
     private generateCells(records: StoreRecord[]) {
-        const {query, _rootRows} = this;
+        const {query, _rootRows} = this,
+            prevCells = this._cellRows;
         if (!query.isPivoted || isEmpty(_rootRows)) return this.clearCells();
 
         const {groups, parentOfGroup, innermost, groupIdxOf} = this.enumerateGroups();
@@ -295,7 +298,23 @@ export class PivotView extends View {
 
         this.syncPaths(discovery.paths);
         this.buildCellRows(lattice, groups, leafRows);
+        this.clearVacatedCells(prevCells, new Set(this._cellRows));
         this.projectCells(leafRows);
+    }
+
+    /**
+     * Null the slots of cells present in `prev` but not in `live`.
+     *
+     * Cells are sparse - a `(group, path)` pair holding no leaves is simply not built - so a cell
+     * vacated by a re-partitioning would otherwise leave its last value on a reused owner row forever,
+     * where it reads as a real cell and breaks `total == sum of cells`.
+     */
+    private clearVacatedCells(prev: PivotCellRow[], live: Set<PivotCellRow>) {
+        prev?.forEach(cell => {
+            if (live.has(cell)) return;
+            const {data} = cell.ownerRow;
+            if (clearCellSlots(cell, data, EMPTY_NAMES)) this.noteRowDataMutated(data);
+        });
     }
 
     /**
@@ -459,20 +478,36 @@ export class PivotView extends View {
             {valueFields} = this.query,
             {data} = leaf;
 
+        if (clearCellSlots(leaf, data, names)) this.noteRowDataMutated(data);
         for (let i = 0; i < valueFields.length; i++) {
             data[names[i]] = data[valueFields[i].name];
         }
     }
 
+    /**
+     * Write a cell's values onto its owning group row.
+     *
+     * Cells are published on the owner's data, so a moved cell must move the owner's digest - the
+     * owner's own aggregates can be entirely unchanged while its cells move (leaves shifting between
+     * pivot paths), and a `canAggregateFn` can keep it out of an incremental update's row set.
+     */
     private projectCell(cell: PivotCellRow) {
         const names = this.cellFieldNames(cell),
             {data, ownerRow} = cell,
             ownerData = ownerRow.data,
             {valueFields} = this.query;
 
+        let changed = clearCellSlots(cell, ownerData, names);
         for (let i = 0; i < valueFields.length; i++) {
-            ownerData[names[i]] = data[valueFields[i].name];
+            const name = names[i],
+                val = data[valueFields[i].name];
+            if (ownerData[name] !== val) {
+                ownerData[name] = val;
+                changed = true;
+            }
         }
+
+        if (changed) this.noteRowDataMutated(ownerData);
     }
 
     /** A miss means a cached cell outlived its path - `buildCellRows` should have rebound it. */
@@ -512,3 +547,28 @@ export class PivotView extends View {
 function arraysEqual(a: string[], b: string[]): boolean {
     return a.length === b.length && a.every((v, i) => v === b[i]);
 }
+
+/**
+ * Point `row` at the cell fields it is about to write, nulling any it wrote last generation and no
+ * longer covers. Returns true if a value moved.
+ *
+ * Name arrays hold their identity while the pivot structure does, so this is an identity check on the
+ * common path.
+ */
+function clearCellSlots(row: BaseRow, data: PlainObject, names: string[]): boolean {
+    const prior = row.projectedCellNames;
+    row.projectedCellNames = names;
+    if (!prior || prior === names) return false;
+
+    let changed = false;
+    prior.forEach(name => {
+        if (!names.includes(name) && data[name] != null) {
+            data[name] = null;
+            changed = true;
+        }
+    });
+    return changed;
+}
+
+const EMPTY_NAMES: string[] = [],
+    EMPTY_CELLS = new Set<PivotCellRow>();

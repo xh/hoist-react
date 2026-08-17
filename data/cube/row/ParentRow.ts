@@ -59,9 +59,14 @@ export abstract class ParentRow extends BaseRow {
     }
 
     protected init(children: BaseRow[], appliedDimensions: PlainObject, depth: number) {
+        this.adoptChildren(children);
+        this.initData(appliedDimensions, depth);
+    }
+
+    /** Take ownership of `children`, claiming their group-axis `parent`. */
+    protected adoptChildren(children: BaseRow[]) {
         this.children = children;
         children.forEach(it => (it.parent = this));
-        this.initData(appliedDimensions, depth);
     }
 
     /**
@@ -130,10 +135,7 @@ export abstract class ParentRow extends BaseRow {
         if (!childrenEqual && isBucket) return null;
 
         // 1) Rewire children if needed
-        if (!childrenEqual) {
-            this.children = children;
-            children.forEach(it => (it.parent = this));
-        }
+        if (!childrenEqual) this.adoptChildren(children);
 
         // 2) Re-aggregate, only if needed, and mark if changes resulted.
         let changed = false;
@@ -143,7 +145,7 @@ export abstract class ParentRow extends BaseRow {
             !children.some(it => it.data.cubeRowDigest > genStartDigest);
         if (!simpleAggsAreCurrent) {
             this.recomputeCanAggregate();
-            view._aggFieldsByDepth[this.depth].forEach(field => {
+            this.aggFields.forEach(field => {
                 if (this.recomputeAggregate(field)) changed = true;
             });
         } else if (view.hasContextDependentFields) {
