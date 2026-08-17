@@ -6,7 +6,7 @@
  */
 
 import type {StoreRecord} from '@xh/hoist/data';
-import {isEqual, map} from 'lodash';
+import {map} from 'lodash';
 import type {Query} from '../Query';
 import type {BaseRow} from '../row/BaseRow';
 import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
@@ -137,7 +137,10 @@ export class RowCache {
             newExposed = query.includeLeaves || query.provideLeaves,
             oldFieldNames = new Set(map(oldQuery.fields, 'name')),
             fieldsGained = query.fields.some(it => !oldFieldNames.has(it.name)),
-            bucketsRemoved = oldQuery.bucketSpecFn && !query.bucketSpecFn;
+            bucketsRemoved = oldQuery.bucketSpecFn && !query.bucketSpecFn,
+            // Any other change leaving parents holding state the new query does not ask for - a moved
+            // BucketSpec, or pivot cells aggregating measures it no longer names.
+            parentsInvalid = query.invalidatesParents(oldQuery);
 
         // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate
         // wholesale - gained fields hold null/stale values on existing rows. (Dropped fields do
@@ -147,29 +150,29 @@ export class RowCache {
             return;
         }
 
-        // 2) Field gains with hidden leaves, or a changed bucketSpecFn: leaves remain valid,
-        // but parents hold never-computed aggregates or a stale BucketSpec.
-        if (fieldsGained || oldQuery.bucketSpecFn !== query.bucketSpecFn) {
+        // 2) Field gains with hidden leaves, or an invalidating change: leaves remain valid, but
+        // parents hold never-computed aggregates or a stale BucketSpec.
+        if (fieldsGained || parentsInvalid) {
             this.removeParentRows();
             return;
         }
 
         // 3) Otherwise retain everything...
 
-        // but on a changed grouping, be sure to throw out any unused rows
-        // at end, when we have already rescued any reusable "upper tree" nodes.
-        if (!isEqual(oldQuery.dimensions, query.dimensions)) {
+        // but where the change moves the ids parents generate under, be sure to throw out any unused
+        // rows at end, when we have already rescued any reusable "upper tree" nodes.
+        if (query.orphansParents(oldQuery)) {
             this.usedParents = new Set();
         }
     }
 
-    // Remove all parent rows, nulling retained leaves' parent pointers so dead chains are not
-    // pinned in memory.
+    // Remove all parent (aggregate/bucket/cell) rows, nulling retained leaves' parent pointers so
+    // dead chains are not pinned in memory.
     private removeParentRows() {
         const {rows} = this;
         rows.forEach((row, id) => {
             if (row.isLeaf) {
-                row.parent = null;
+                row.parent = row.pivotParent = null;
             } else {
                 rows.delete(id);
             }
@@ -189,8 +192,9 @@ export class RowCache {
         });
         if (!this.removed) return;
         rows.forEach(row => {
-            const {parent} = row;
+            const {parent, pivotParent} = row;
             if (parent && rows.get(parent.id) !== parent) row.parent = null;
+            if (pivotParent && rows.get(pivotParent.id) !== pivotParent) row.pivotParent = null;
         });
     }
 

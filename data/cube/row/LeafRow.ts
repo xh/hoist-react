@@ -10,7 +10,7 @@ import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
-import {BaseRow} from './BaseRow';
+import {BaseRow, propagateUpdate} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
@@ -46,7 +46,7 @@ export abstract class LeafRow extends BaseRow {
         this.cubeRecord = rawRecord;
     }
 
-    applyLeafDataUpdate(newRec: StoreRecord, updatedRowDatas: Set<PlainObject>) {
+    applyLeafDataUpdate(newRec: StoreRecord, updatedRows: Set<BaseRow>) {
         this.cubeRecord = newRec;
         const {view, data} = this,
             newData = newRec.data,
@@ -63,18 +63,19 @@ export abstract class LeafRow extends BaseRow {
         });
 
         // 2) Apply new values to our data, as per subclass strategy.
-        this.applyUpdatedData(updates, newData, updatedRowDatas);
+        this.applyUpdatedData(updates, newData, updatedRows);
 
-        // 3) Propagate any updates to ancestors and consumers.
+        // 3) Propagate any updates to ancestors and consumers. In a pivot view a leaf has two
+        //    parents - its innermost group row and its own full-path cell.
         if (!isEmpty(updates)) {
-            this.parent?.applyDataUpdate(updates, updatedRowDatas);
+            propagateUpdate(this.parent, this.pivotParent, updates, updatedRows);
         }
     }
 
     protected abstract applyUpdatedData(
         updates: RowUpdate[],
         newData: PlainObject,
-        updatedRowDatas: Set<PlainObject>
+        updatedRows: Set<BaseRow>
     ): void;
 }
 
@@ -102,11 +103,11 @@ export class ExposedLeafRow extends LeafRow {
     protected override applyUpdatedData(
         updates: RowUpdate[],
         newData: PlainObject,
-        updatedRowDatas: Set<PlainObject>
+        updatedRows: Set<BaseRow>
     ) {
         const {data} = this;
         updates.forEach(({field, newValue}) => (data[field.name] = newValue));
-        if (!isEmpty(updates)) updatedRowDatas.add(data);
+        if (!isEmpty(updates)) updatedRows.add(this);
     }
 }
 
@@ -129,7 +130,7 @@ export class HiddenLeafRow extends LeafRow {
 
     protected override applyUpdatedData(updates: RowUpdate[], newData: PlainObject) {
         // Always swap reference to avoid retaining the old record. Never registered in
-        // updatedRowDatas - hidden leaves are not published to stores or results.
+        // updatedRows - hidden leaves are not published to stores or results.
         this.data = newData;
     }
 }

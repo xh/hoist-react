@@ -11,6 +11,31 @@ import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {compact, isEmpty} from 'lodash';
 import {View} from '../View';
 import type {ParentRow} from './ParentRow';
+import {RowUpdate} from './RowUpdate';
+
+/**
+ * Send a set of updates up both aggregation routes.
+ *
+ * `applyDataUpdate` rewrites each {@link RowUpdate}'s `oldValue` / `newValue` in place as it walks,
+ * and `Aggregator.replace` reads them - so when a row has two parents the second must get its own
+ * copies, or it would apply the first route's aggregated delta instead of this row's.
+ *
+ * @internal
+ */
+export function propagateUpdate(
+    parent: ParentRow,
+    pivotParent: ParentRow,
+    updates: RowUpdate[],
+    updatedRows: Set<BaseRow>
+) {
+    if (parent && pivotParent) {
+        const forPivot = updates.map(u => new RowUpdate(u.field, u.oldValue, u.newValue));
+        parent.applyDataUpdate(updates, updatedRows);
+        pivotParent.applyDataUpdate(forPivot, updatedRows);
+    } else {
+        (parent ?? pivotParent)?.applyDataUpdate(updates, updatedRows);
+    }
+}
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
@@ -25,7 +50,23 @@ export abstract class BaseRow {
     // which adopt their cube record's plain data object - see LeafRow and subclasses.
     data: PlainObject;
     parent: ParentRow = null;
+    /**
+     * Second aggregation parent, used by pivot views to propagate up the pivot axis in addition to
+     * the group axis. Null for every row in a plain View.
+     *
+     * The two routes must reach disjoint sets of ancestors - see {@link PivotLatticeResult}.
+     */
+    pivotParent: ParentRow = null;
     children: BaseRow[] = null;
+
+    /**
+     * Cell field names a {@link PivotView} last projected on this row's behalf - onto its owning group
+     * row for a {@link PivotCellRow}, onto its own data for an exposed leaf. Retained so a later
+     * generation writing fewer of them can null what it no longer covers. Null in a plain View.
+     *
+     * @internal
+     */
+    projectedCellNames: string[] = null;
 
     get isLeaf() {
         return false;

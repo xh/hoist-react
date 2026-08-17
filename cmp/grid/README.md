@@ -134,6 +134,45 @@ gridModel.collapseAll();
 gridModel.expandToLevel(2);
 ```
 
+### Column Groups
+
+```typescript
+new GridModel({
+    columns: [
+        {field: 'name', flex: 1},
+        {
+            headerName: 'Q1',
+            expandedByDefault: false,          // Render collapsed until the user expands
+            children: [
+                {field: 'q1Jan', columnGroupShow: 'open'},
+                {field: 'q1Feb', columnGroupShow: 'open'},
+                {field: 'q1Total', columnGroupShow: 'closed'}
+            ]
+        }
+    ]
+});
+```
+
+`columnGroupShow` is what makes a group expandable, and it takes both values to do so: the group's
+children must resolve to at least one column shown while expanded *and* one shown while collapsed.
+A group of plain columns is a static header, as is one where every child specifies the same value.
+This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
+group non-expandable.
+
+Expand/collapse state is tracked on `GridModel.columnGroupState`, one entry per configured group.
+Read it with `isColumnGroupExpanded(groupId)`, drive it with `setColumnGroupExpanded()` or
+`setColumnGroupState()`, and persist it via `persistWith` (on by default, alongside column state -
+see `GridModelPersistOptions.persistColumnGroups`). Only groups moved off their `expandedByDefault`
+are written, so a grid that rebuilds its columns never reads as dirty on that account, and returning
+every group to its default clears the saved entry.
+
+`setColumns()` **retains** this state for groups the new configs still define - a rebuild that mints
+new columns must not spring a user's collapsed groups open. A group that leaves the column set and
+later returns comes back at its `expandedByDefault`, the same way a re-added `colId` returns to its
+in-code defaults. `restoreDefaultsAsync()` resets it.
+
+Collapsing affects display only: `columnState`, `isColumnVisible()`, and export are all unaffected.
+
 ### Tree Mode
 
 ```typescript
@@ -277,7 +316,7 @@ Key categories of `ColumnSpec` properties:
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
 | Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
-| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                    |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `columnGroupShow` |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |

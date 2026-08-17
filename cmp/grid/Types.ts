@@ -42,6 +42,15 @@ export interface ColumnState {
     pinned?: HSide;
 }
 
+/**
+ * Expand/collapse state for a single {@link ColumnGroup}, as tracked by
+ * {@link GridModel.columnGroupState}.
+ */
+export interface ColumnGroupState {
+    groupId: string;
+    expanded: boolean;
+}
+
 /** Options for {@link GridModel.setColumnState}. */
 export interface ColumnStateOptions {
     /**
@@ -99,6 +108,12 @@ export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
 export interface GridModelPersistOptions extends PersistOptions {
     /** True (default) to include column state or provide column-specific PersistOptions. */
     persistColumns?: boolean | PersistOptions;
+    /**
+     * True (default) to include column group expand/collapse state, or provide group-specific
+     * PersistOptions. Only groups the user has moved off their `expandedByDefault` are written, so
+     * a grid whose groups are all at their defaults persists nothing here.
+     */
+    persistColumnGroups?: boolean | PersistOptions;
     /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
@@ -282,6 +297,16 @@ export type ColumnOrGroupSpec = ColumnSpec | ColumnGroupSpec;
 export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
     return !('children' in spec);
 }
+
+/**
+ * Show a Column or ColumnGroup only while its containing ColumnGroup is expanded ('open') or
+ * collapsed ('closed').
+ *
+ * Note that this config is what makes a ColumnGroup expandable, and takes both values to do so: the
+ * group must have a visible child shown while expanded *and* one shown while collapsed. Groups not
+ * meeting that bar render as static headers.
+ */
+export type ColumnGroupShow = 'open' | 'closed';
 
 /**
  * Sort comparator function for a grid column. Note that this comparator will also be called if
