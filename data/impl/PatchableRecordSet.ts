@@ -215,7 +215,12 @@ export class PatchableRecordSet {
 
     /** As `diffFrom`, but only when answerable at O(patch) - null on unrelated instances. */
     deltaFrom(prev: PatchableRecordSet): RecordSetDelta {
-        return prev && prev.base === this.base ? this.diffFrom(prev) : null;
+        return this.hasDeltaFrom(prev) ? this.diffFrom(prev) : null;
+    }
+
+    /** True if `deltaFrom` would answer - i.e. this and `prev` share a base map. */
+    hasDeltaFrom(prev: PatchableRecordSet): boolean {
+        return !!prev && prev.base === this.base;
     }
 
     //----------------------------------------------------------

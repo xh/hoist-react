@@ -126,6 +126,11 @@ export class RecordSet {
         return null;
     }
 
+    /** True if `deltaFrom` would answer. Always false for this implementation. */
+    hasDeltaFrom(prev: RecordSet): boolean {
+        return false;
+    }
+
     //----------------------------------------------------------
     // Lazy getters
     // Avoid memory allocation and work -- in many cases

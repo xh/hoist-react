@@ -18,7 +18,8 @@ import type {GridModel} from '@xh/hoist/cmp/grid';
  * @internal
  */
 export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
-    @observable.ref transaction: GridOpStats = this.emptyStats();
+    @observable.ref genTransaction: GridOpStats = this.emptyStats();
+    @observable.ref applyTransaction: GridOpStats = this.emptyStats();
     @observable.ref autosize: AutosizeOpStats = this.emptyStats();
 
     constructor(owner: GridModel) {
@@ -27,25 +28,30 @@ export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
     }
 
     @action
-    noteTransaction(
-        txn: Partial<RecordSetDelta>,
-        newRs: RecordSet,
-        prevRs: RecordSet,
-        start: number
-    ) {
-        const op: GridOp = {
-            type: newRs.deltaFrom(prevRs) ? 'delta' : 'scanned',
-            update: txn.update?.length ?? 0,
-            add: txn.add?.length ?? 0,
-            remove: txn.remove?.length ?? 0,
-            total: newRs.count,
-            elapsed: performance.now() - start,
-            timestamp: Date.now()
-        };
-        const {count, elapsed} = this.transaction;
-        this.transaction = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+    noteGenTransaction(txn: RecordSetDelta, newRs: RecordSet, prevRs: RecordSet, start: number) {
+        const type = newRs.hasDeltaFrom(prevRs) ? 'delta' : 'scanned';
+        this.genTransaction = this.note(
+            'genTransaction',
+            this.genTransaction,
+            type,
+            txn,
+            newRs,
+            start
+        );
+    }
 
-        this.logOp('transaction', op, `upd ${op.update} add ${op.add} rem ${op.remove}`);
+    @action
+    noteApplyTransaction(txn: RecordSetDelta, newRs: RecordSet, start: number) {
+        const type =
+            txn.update.length || txn.add.length || txn.remove.length ? 'applied' : 'unchanged';
+        this.applyTransaction = this.note(
+            'applyTransaction',
+            this.applyTransaction,
+            type,
+            txn,
+            newRs,
+            start
+        );
     }
 
     @action
@@ -65,13 +71,35 @@ export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
 
     @action
     reset() {
-        this.transaction = this.emptyStats();
+        this.genTransaction = this.emptyStats();
+        this.applyTransaction = this.emptyStats();
         this.autosize = this.emptyStats();
     }
 
     //--------------
     // Implementation
     //---------------
+    private note(
+        kind: string,
+        stats: GridOpStats,
+        type: GridOp['type'],
+        txn: RecordSetDelta,
+        newRs: RecordSet,
+        start: number
+    ): GridOpStats {
+        const op: GridOp = {
+            type,
+            update: txn.update.length,
+            add: txn.add.length,
+            remove: txn.remove.length,
+            total: newRs.count,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
+        this.logOp(kind, op, `upd ${op.update} add ${op.add} rem ${op.remove}`);
+        return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
+    }
+
     private emptyStats() {
         return {last: null, count: 0, elapsed: 0};
     }
@@ -99,7 +127,7 @@ export interface AutosizeOp {
 }
 
 export interface GridOp {
-    type: 'delta' | 'scanned';
+    type: 'delta' | 'scanned' | 'applied' | 'unchanged';
     update: number;
     add: number;
     remove: number;

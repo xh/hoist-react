@@ -49,18 +49,7 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {
-    compact,
-    debounce,
-    isBoolean,
-    isEmpty,
-    isEqual,
-    isNil,
-    max,
-    maxBy,
-    merge,
-    omitBy
-} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {type MouseEvent} from 'react';
 import {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -681,11 +670,6 @@ export class GridLocalModel extends HoistModel {
         });
     }
 
-    genTransaction(newRs, prevRs) {
-        // Skip empty props -- ag-grid is not internally optimized
-        return omitBy(newRs.diffFrom(prevRs), isEmpty);
-    }
-
     syncData() {
         const {model} = this,
             {agGridModel, store, agApi} = model,
@@ -693,8 +677,10 @@ export class GridLocalModel extends HoistModel {
             prevRs = this.prevRs;
 
         const start = performance.now(),
-            transaction = this.genTransaction(newRs, prevRs);
+            transaction = newRs.diffFrom(prevRs);
+        model.diagnostics.noteGenTransaction(transaction, newRs, prevRs, start);
 
+        const applyStart = performance.now();
         if (!this.transactionIsEmpty(transaction)) {
             agApi.applyTransaction(transaction);
         } else if (!prevRs) {
@@ -710,7 +696,7 @@ export class GridLocalModel extends HoistModel {
 
         this.updatePinnedSummaryRowData();
 
-        if (transaction.update) {
+        if (!isEmpty(transaction.update)) {
             const visibleCols = model.getVisibleLeafColumns();
 
             // Refresh cells in columns with complex renderers
@@ -724,7 +710,7 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        if (transaction.add || transaction.remove) {
+        if (!isEmpty(transaction.add) || !isEmpty(transaction.remove)) {
             wait().then(() => this.syncSelection());
         }
 
@@ -740,7 +726,7 @@ export class GridLocalModel extends HoistModel {
         this.prevRs = newRs;
         this.applyScrollOptimization();
 
-        model.diagnostics.noteTransaction(transaction, newRs, prevRs, start);
+        model.diagnostics.noteApplyTransaction(transaction, newRs, applyStart);
     }
 
     syncSelection() {
