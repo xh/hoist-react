@@ -71,8 +71,9 @@ export class StoreDiagnostics extends BaseDiagnostics<Store> {
     }
 
     // Combine the counts the RecordSet computed while deriving `rs` with the elapsed time for the
-    // Store operation that drove it. A set returned untouched stamps no derivation of its own - the
-    // op did its work and found nothing to change. The derivation is cleared once consumed, so a
+    // Store operation that drove it. A set returned untouched means the op did its work and found
+    // nothing to change - any derivation still on it is a stale stamp from an out-of-scope local
+    // modification, discarded here. Derivations are cleared once consumed (or discarded), so a
     // set is never reported twice.
     private accumulate(
         stats: StoreOpStats,
@@ -80,7 +81,7 @@ export class StoreDiagnostics extends BaseDiagnostics<Store> {
         prev: RecordSet,
         start: number
     ): StoreOpStats {
-        const derivation = rs.derivation ?? (rs === prev ? UNCHANGED : null);
+        const derivation = rs === prev ? UNCHANGED : rs.derivation;
         if (!derivation) return stats;
         rs.derivation = null;
 
