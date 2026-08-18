@@ -31,7 +31,7 @@ import {debouncePromise, wait} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, unionWith} from 'lodash';
+import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
@@ -301,7 +301,7 @@ class SelectInputModel extends HoistInputModel {
 
     override onLinked() {
         const queryBuffer = withDefault(this.componentProps.queryBuffer, 300);
-        if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
+        if (queryBuffer) this.queryAsync = debouncePromise(this.queryAsync, queryBuffer);
 
         this.addReaction({
             track: () => this.componentProps.options,
@@ -534,19 +534,39 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Async
     //------------------------
-    doQueryAsync = async query => {
-        const rawOpts = await this.componentProps.queryFn(query),
+    // Bumped for each query issued by react-select, to identify superseded results below.
+    private queryGeneration = 0;
+
+    doQueryAsync = query => {
+        this.queryGeneration++;
+        return this.queryAsync(query);
+    };
+
+    // Debounced within onLinked(), per the queryBuffer prop.
+    private queryAsync = async query => {
+        const generation = this.queryGeneration,
+            rawOpts = await this.componentProps.queryFn(query),
             matchOpts = this.normalizeOptions(rawOpts);
 
-        // Carry forward and add to any existing internalOpts to allow our value
-        // converters to continue all selected values in multiMode.
-        this.internalOptions = unionWith(matchOpts, this.internalOptions, (a, b) =>
-            isEqual(a.value, b.value)
-        );
+        // Retain the queried options, plus any selected options not among them, to allow our value
+        // converters to continue to resolve all selected values in multiMode. Skipped if superseded
+        // by later input, as react-select discards such results.
+        if (generation === this.queryGeneration) {
+            const extraOpts = this.selectedOptions.filter(
+                it => !this.findOption(it.value, false, matchOpts)
+            );
+            this.internalOptions = [...matchOpts, ...extraOpts];
+        }
 
         // But only return the matching options back to the combo.
         return matchOpts;
     };
+
+    // Option(s) backing the current selection, as produced by toInternal() above.
+    private get selectedOptions(): SelectOption[] {
+        const {internalValue} = this;
+        return isNil(internalValue) ? [] : castArray(internalValue).filter(it => !isNil(it));
+    }
 
     loadingMessageFn = params => {
         const {loadingMessageFn} = this.componentProps,
