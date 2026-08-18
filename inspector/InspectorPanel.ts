@@ -5,24 +5,50 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hframe} from '@xh/hoist/cmp/layout';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import {InspectorHostModel} from '@xh/hoist/inspector/InspectorHostModel';
 import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
 import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
+import {portalProvider} from '@xh/hoist/kit/blueprint';
+import {createPortal} from 'react-dom';
 import './Inspector.scss';
 
 /**
  * See {@link InspectorService} for an explanation of the Hoist Inspector tool.
+ *
+ * In addition to its default rendering as a panel docked within the app viewport, the Inspector
+ * can be pinned over the app in the browser's top layer ('overlay' mode), where it remains fully
+ * visible and interactive above any app-level masks and modal dialogs. Hosting is managed by
+ * {@link InspectorHostModel}.
  */
 export const inspectorPanel = hoistCmp.factory({
     displayName: 'InspectorPanel',
+    model: creates(InspectorHostModel),
 
-    render() {
+    render({model}) {
         if (!XH.inspectorService.active) return null;
 
-        return panel({
+        const {renderMode, overlayEl} = model;
+
+        // Key by mode to remount the view (and recreate its mode-specific PanelModel) on change.
+        if (renderMode === 'overlay' && overlayEl) {
+            return createPortal(inspectorView({key: 'overlay'}), overlayEl);
+        }
+        return inspectorView({key: 'dock'});
+    }
+});
+
+const inspectorView = hoistCmp.factory<InspectorHostModel>({
+    displayName: 'InspectorView',
+
+    render({model}) {
+        const {renderMode, popupContainer} = model,
+            isDocked = renderMode === 'dock';
+
+        const ret = panel({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
             icon: Icon.search(),
             className: 'xh-inspector',
@@ -31,14 +57,24 @@ export const inspectorPanel = hoistCmp.factory({
                 defaultSize: 400,
                 side: 'bottom',
                 persistWith: XH.inspectorService.persistWith,
-                modalSupport: true,
+                // Modal support docked only - its dialog renders beneath the top layer.
+                modalSupport: isDocked,
                 errorBoundary: true,
-                showModalToggleButton: true,
+                showModalToggleButton: isDocked,
                 showHeaderCollapseButton: false,
                 xhImpl: true
             },
             compactHeader: true,
             headerItems: [
+                button({
+                    icon: Icon.pin(),
+                    omit: !model.overlaySupported,
+                    tooltip: isDocked
+                        ? 'Pin over app - keep Inspector visible above masks and dialogs'
+                        : 'Unpin - return to docked panel',
+                    intent: isDocked ? null : 'primary',
+                    onClick: () => model.setRenderMode(isDocked ? 'overlay' : 'dock')
+                }),
                 button({
                     icon: Icon.x(),
                     text: 'Close Inspector',
@@ -52,5 +88,9 @@ export const inspectorPanel = hoistCmp.factory({
             ],
             item: hframe(statsPanel(), instancesPanel())
         });
+
+        // When detached, redirect Blueprint portals (tooltips, popovers, dialogs) into the host,
+        // where they can paint above/alongside the Inspector itself.
+        return popupContainer ? portalProvider({portalContainer: popupContainer, item: ret}) : ret;
     }
 });

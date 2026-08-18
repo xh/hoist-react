@@ -7,11 +7,12 @@
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid} from '@xh/hoist/cmp/grid';
 import {code, div, filler, span} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {creates, hoistCmp, useContextModel, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {InspectorHostModel} from '@xh/hoist/inspector/InspectorHostModel';
 import {StatsModel} from '@xh/hoist/inspector/stats/StatsModel';
 import {popover} from '@xh/hoist/kit/blueprint';
 
@@ -19,13 +20,16 @@ export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
     render({model}) {
+        // Re-parent grid popups (context/column menus) when Inspector is detached.
+        const popupParent = useContextModel(InspectorHostModel)?.popupContainer ?? undefined;
+
         return panel({
             title: 'Stats',
             icon: Icon.chartArea(),
             compactHeader: true,
             model: model.panelModel,
             items: [
-                grid(),
+                grid({agOptions: {popupParent}}),
                 panel({
                     item: chart(),
                     modelConfig: {

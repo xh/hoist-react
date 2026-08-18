@@ -7,12 +7,13 @@
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {creates, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {InspectorHostModel} from '@xh/hoist/inspector/InspectorHostModel';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
 import {popover} from '@xh/hoist/kit/blueprint';
 
@@ -21,6 +22,8 @@ export const instancesPanel = hoistCmp.factory({
 
     render({model}) {
         const {instancesPanelModel, selectedSyncRun} = model,
+            // Re-parent grid popups (context/column menus) when Inspector is detached.
+            popupParent = useContextModel(InspectorHostModel)?.popupContainer ?? undefined,
             headerItems = [];
 
         if (selectedSyncRun) {
@@ -62,7 +65,8 @@ export const instancesPanel = hoistCmp.factory({
                     item: grid({
                         model: model.instancesGridModel,
                         agOptions: {
-                            suppressGroupChangesColumnVisibility: true
+                            suppressGroupChangesColumnVisibility: true,
+                            popupParent
                         }
                     }),
                     bbar: instanceGridBar(),
@@ -72,7 +76,7 @@ export const instancesPanel = hoistCmp.factory({
                     title: 'Properties',
                     icon: Icon.fileText(),
                     compactHeader: true,
-                    item: grid({model: model.propertiesGridModel}),
+                    item: grid({model: model.propertiesGridModel, agOptions: {popupParent}}),
                     bbar: propertiesGridBar()
                 })
             )
