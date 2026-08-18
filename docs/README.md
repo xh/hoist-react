@@ -72,7 +72,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, and tree data | Store, StoreRecord, Field, Filter, tree data, loadData, processRawData |
+| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, tree data, and memory tuning | Store, StoreRecord, Field, Filter, tree data, loadData, loadDataAsync, updateData, reuseRecords, projectionOnly, diagnostics |
 | [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
 | [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 

@@ -11,13 +11,15 @@
 | [Integration with GridModel](#integration-with-gridmodel) | Inline store config, data loading, and editing |
 | [Tree Data](#tree-data) | Hierarchical loading, filtering, and summary records |
 | [Cube (Aggregation)](#cube-aggregation) | Pointer to dedicated [`cube/README.md`](cube/README.md) |
-| [Common Patterns](#common-patterns) | Record reuse, processRawData, composite IDs |
-| [Common Pitfalls](#common-pitfalls) | ID fields, missing IDs, data mutation, FunctionFilter persistence |
+| [Performance and Memory](#performance-and-memory) | Record reuse, projections, streaming loads, memory tuning |
+| [Diagnostics](#diagnostics) | Per-operation timing and path reporting |
+| [Common Patterns](#common-patterns) | processRawData, composite IDs, record queries |
+| [Common Pitfalls](#common-pitfalls) | ID fields, data enumeration, mutation, record order |
 
 ## Overview
 
-The `/data/` package provides Hoist's data management layer - observable, in-memory data containers
-with support for hierarchical structures, filtering, validation, and multi-dimensional aggregation.
+The `/data/` package is Hoist's data management layer - observable, in-memory data containers with
+support for hierarchical structures, filtering, validation, and multi-dimensional aggregation.
 
 The core classes are:
 
@@ -29,12 +31,16 @@ The core classes are:
 | **Cube** | Multi-dimensional aggregation engine for OLAP-style grouping and analysis |
 | **View** | Query result from a Cube - hierarchical, auto-updating aggregated data |
 
-Store, StoreRecord, and Field are used in virtually every Hoist application. Cube and View support
-advanced analytics use cases where data needs to be dynamically grouped and aggregated.
+Store, StoreRecord, and Field appear in virtually every Hoist application. Cube and View support
+advanced analytics use cases, where the app groups and aggregates data dynamically.
 
 The package also includes:
+
 - **Filter system** - Composable, immutable filters with JSON serialization
 - **Validation system** - Synchronous and async constraints with multiple severity levels
+- **UrlStore** - A `Store` subclass that loads its own data from a URL
+- **RecordAction** - Shared config for grid context menus and action columns
+- **StoreSelectionModel** - Observable record selection, typically created and held by `GridModel`
 
 ## Architecture
 
@@ -43,15 +49,16 @@ Store                                    Cube
 ├── fields: Field[]                      ├── fields: CubeField[]
 ├── records: StoreRecord[]               ├── store: Store (source data)
 ├── rootRecords: StoreRecord[]           └── views: View[]
-├── filter: Filter
-├── selModel: StoreSelectionModel        View
-└── validator: StoreValidator            ├── query: Query (dimensions, filters)
-                                         ├── result: ViewResult (observable output)
+├── summaryRecords: StoreRecord[]
+├── filter: Filter                       View
+├── validator: StoreValidator            ├── query: Query (dimensions, filters)
+└── diagnostics: StoreDiagnostics        ├── result: ViewResult (observable output)
                                          └── stores: Store[] (connected for auto-loading)
 StoreRecord
 ├── id: StoreRecordId
-├── data: PlainObject            // Current field values
+├── data: PlainObject            // Current field values - read by field name only
 ├── committedData: PlainObject   // Last committed state
+├── digest: RecordDigest         // Snapshot used to detect unchanged raw data
 ├── parent / children            // Tree navigation
 └── validationState              // Per-record validation
 
@@ -87,26 +94,27 @@ const store = new Store({
 
 ### Store Configuration
 
-| Property | Type | Default | Description                                                                            |
-|----------|------|---------|----------------------------------------------------------------------------------------|
-| `fields` | `Array<string \| FieldSpec \| Field>` | - | Schema definition                                                                      |
-| `fieldDefaults` | `Omit<FieldSpec, 'name'>` | - | Defaults applied to all fields                                                         |
-| `idSpec` | `string \| Function` | `'id'` | Property name or function to derive record IDs                                         |
-| `data` | `PlainObject[]` | - | Initial data to load                                                                   |
-| `processRawData` | `(raw) => PlainObject` | - | Transform raw data before parsing                                                      |
-| `filter` | `FilterLike` | - | Initial filter                                                                         |
-| `filterIncludesChildren` | `boolean` | `false` | Include children when parent passes filter                                             |
-| `loadTreeData` | `boolean` | `true` | Enable hierarchical loading                                                            |
-| `loadTreeDataFrom` | `string` | `'children'` | Property containing child records                                                      |
-| `loadRootAsSummary` | `boolean` | `false` | Treat root node as summary record                                                      |
-| `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set to false as performance optimization) |
-| `reuseRecords` | `boolean\|string\|fn` | `false` | Reuse records when raw data yields an unchanged digest (performance)                   |
-| `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory)                  |
-| `projectionOnly` | `boolean` | `false` | Read-only projection of data parsed elsewhere - adopts raw objects as record `data`. Recommended for View-connected stores |
-| `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
-| `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `fields` | `Array<string \| FieldSpec \| Field>` | - | Schema definition |
+| `fieldDefaults` | `Omit<FieldSpec, 'name'>` | - | Defaults applied to all fields |
+| `idSpec` | `string \| Function` | `'id'` | Property name or function to derive record IDs |
+| `data` | `PlainObject[]` | - | Initial data to load |
+| `processRawData` | `(raw) => PlainObject` | - | Transform raw data before parsing |
+| `filter` | `FilterLike` | - | Initial filter |
+| `filterIncludesChildren` | `boolean` | `false` | Include children when parent passes filter |
+| `loadTreeData` | `boolean` | `true` | Enable hierarchical loading |
+| `loadTreeDataFrom` | `string` | `'children'` | Property containing child records |
+| `loadRootAsSummary` | `boolean` | `false` | Treat root node as summary record |
+| `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set false as a performance optimization) |
+| `reuseRecords` | `boolean \| string \| fn` | `null` | Reuse records when raw data yields an unchanged digest (performance) |
+| `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory) |
+| `projectionOnly` | `boolean` | `null` | Read-only projection of data parsed elsewhere - adopts raw objects as record `data`. Recommended for View-connected stores |
+| `idEncodesTreePath` | `boolean` | `false` | IDs imply a fixed tree position (performance). Not supported on View-connected stores |
+| `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change |
+| `experimental` | `PlainObject` | `{}` | Flags for experimental features - see [Performance and Memory](#performance-and-memory) |
 
-`Store.defaults` exposes `freezeData` for app-wide override — see `StoreDefaults` for details.
+`Store.defaults` exposes `freezeData` for an app-wide override. See `StoreDefaults` for details.
 
 ### Data Loading
 
@@ -132,7 +140,7 @@ store.loadData([
 ]);
 ```
 
-**`updateData(rawData | transaction)`** - Transactional updates preserving local modifications:
+**`updateData(rawData | transaction)`** - Transactional updates that preserve local modifications:
 
 ```typescript
 // Simple array form - adds or updates based on ID match
@@ -144,48 +152,76 @@ store.updateData([
 store.updateData({
     update: [{id: 1, salary: 110000}],
     add: [{id: 3, name: 'Carol', salary: 95000}],
-    remove: [2]
+    remove: [2],
+    rawSummaryData: {id: 'summary', totalSalary: 5200000}
 });
 ```
 
-**`loadDataAsync(rawData)`** - Streaming counterpart to `loadData()`. Accepts a sync or async
-iterable yielding raw records, creating records incrementally
-without buffering the complete raw dataset in memory - useful for very large datasets streamed
-from the server. Does not accept summary data (an aggregate cannot precede its stream) - install
-via `updateData({rawSummaryData})` after loading. Pair with `XH.fetchNdjson()` for NDJSON:
+`updateData()` returns a `StoreChangeLog` reporting the changes it actually applied, or null if it
+made none. Note that `remove` holds the removed `StoreRecord`s, not their ids - a removed record is
+no longer resolvable against the Store. Read `record.id` where you need ids. `modifyRecords()`
+returns a `StoreChangeLog` in the same form.
+
+```typescript
+const changes = store.updateData(rawData);
+if (changes) {
+    console.log(changes.add.length, changes.update.length, changes.remove.length);
+}
+```
+
+**`loadDataAsync(rawData)`** - Streaming counterpart to `loadData()`. It accepts a sync or async
+iterable that yields raw records, and creates records incrementally without buffering the complete
+raw dataset in memory. Use it for very large datasets streamed from the server. Pair it with
+`XH.fetchNdjson()` for NDJSON:
 
 ```typescript
 await store.loadDataAsync(XH.fetchNdjson({url: 'myRows'}).lines);
 ```
 
-The Store updates in a single transaction once the source completes, and remains unchanged if
-the source throws.
+The Store updates in a single transaction once the source completes, and remains unchanged if the
+source throws. Stores with `loadRootAsSummary` cannot stream, as such payloads nest all rows within
+a single root node.
+
+This method does not accept summary data, because an aggregate cannot precede its stream. Install a
+summary afterwards via `updateData({rawSummaryData})`.
+
+### Record Order
+
+Order is not a guaranteed property of a Store. Loads are free to preserve the positions of
+incumbent records, so a payload that differs from the current dataset only in its ordering
+processes as a no-op. Apply an explicit sort wherever deterministic order matters - a grid sort, or
+a sort on an ordinal field supplied with the source data.
 
 ### Local Modifications
 
 Stores track uncommitted changes separately from server-sourced data:
 
 ```typescript
-// Add new records (must include id - use XH.genId() if needed)
+// Add new records - data must include a literal id, as addRecords() skips idSpec
 store.addRecords([{id: XH.genId(), name: 'New Employee'}]);
 
-// Modify existing records
+// Modify field values on existing records
 store.modifyRecords([{id: 1, salary: 120000}]);
 
 // Remove records
 store.removeRecords([recordOrId]);
 
 // Query modification state
-store.hasLocalChanges;     // Any uncommitted changes?
+store.isDirty;             // Any uncommitted changes?
 store.addedRecords;        // Records added locally
 store.removedRecords;      // Records removed locally
-store.modifiedRecords;     // Records with modified fields
-store.dirtyRecords;        // All uncommitted changes
+store.dirtyRecords;        // Records modified locally
+store.modifiedRecords;     // Alias for dirtyRecords
+store.committedRecords;    // Records as originally loaded
 
-// Commit or revert
-store.commitRecords();     // Mark local changes as committed
-store.revertRecords();     // Discard local changes
+// Revert
+store.revertRecords([1, 2]);  // Discard changes to specific records
+store.revert();               // Discard all local changes
 ```
+
+There is no explicit commit call. Records become committed when the server or other source of record
+sends them back through `loadData()` or `updateData()`. A typical flush posts
+`record.getModifiedValues()` to the server, then loads the server response.
 
 ### Filtering
 
@@ -205,12 +241,18 @@ store.setFilter({
 // Clear filter
 store.clearFilter();
 
+// Re-run the current filter after external state it depends on has changed
+store.refreshFilter();
+
 // Access filtered vs unfiltered data
 store.records;       // Filtered records
 store.allRecords;    // All records (ignores filter)
 store.count;         // Filtered record count
 store.allCount;      // Total record count
 ```
+
+Store re-filters automatically whenever record data changes. Call `refreshFilter()` only when the
+state behind a `FunctionFilter` changes without any change to the records themselves.
 
 ### Observable Properties
 
@@ -228,6 +270,7 @@ store.records              // Filtered records
 store.count                // Filtered count
 store.allCount             // Total count
 store.empty                // No records?
+store.maxDepth             // Deepest nesting level
 store.lastUpdated          // Timestamp of last change
 store.lastLoaded           // Timestamp of last loadData call
 ```
@@ -245,9 +288,10 @@ const record = store.getById(1);
 
 // Data access
 record.id;                  // Unique identifier
-record.data;                // Current field values
-record.committedData;       // Last committed state (null if new)
-record.raw;                 // Original raw data
+record.data;                // Current field values - read by field name only
+record.committedData;       // Last committed state
+record.raw;                 // Original raw data (null if retainRaw: false, or a local add)
+record.digest;              // Digest snapshotted for reuseRecords, if configured
 
 // State predicates
 record.isAdd;               // Never committed (new record)
@@ -258,12 +302,31 @@ record.isCommitted;         // No local modifications
 // Field access
 record.get('salary');                // Single field value
 record.getValues();                  // All field values (with defaults)
-record.getModifiedValues();          // Only changed fields
+record.getModifiedValues();          // Only changed fields, plus id (null if none)
+record.matchesData({salary: 120000}) // Test against a partial data object
+```
+
+### Reading `data`
+
+Read `record.data` by field name only. Store optimizes its internal layout for memory and varies it
+per record, so `Object.keys()`, object spread, and `JSON.stringify()` do not reliably see every
+field. Call `getValues()` to enumerate all field values, or `getModifiedValues()` to read
+locally-modified values only. See
+[Tuning Memory for Large Datasets](#tuning-memory-for-large-datasets) for the reason behind this.
+
+```typescript
+// ❌ Wrong: enumeration can miss fields that hold their default value
+const clone = {...record.data};
+const json = JSON.stringify(record.data);
+
+// ✅ Correct: getValues() carries an own property for every declared Field
+const clone = record.getValues();
+const json = JSON.stringify(record.getValues());
 ```
 
 ### Tree Navigation
 
-For hierarchical data, records provide navigation without direct object references:
+For hierarchical data, records support navigation without direct object references:
 
 ```typescript
 record.parentId;            // Parent record ID
@@ -272,9 +335,15 @@ record.children;            // Direct children (filtered)
 record.allChildren;         // Direct children (unfiltered)
 record.descendants;         // All descendants (filtered)
 record.allDescendants;      // All descendants (unfiltered)
-record.ancestors;           // All ancestors
+record.ancestors;           // All ancestors (filtered)
+record.allAncestors;        // All ancestors (unfiltered)
 record.depth;               // Nesting level (0 for roots)
-record.treePath;            // Array of ancestor IDs
+record.treePath;            // Array of ancestor IDs, ending with this record's own
+
+// Iteration variants, to avoid allocating intermediate arrays
+record.forEachChild(fn);
+record.forEachDescendant(fn);
+record.forEachAncestor(fn);
 ```
 
 ### Validation Access
@@ -283,9 +352,10 @@ record.treePath;            // Array of ancestor IDs
 record.validationState;     // 'Valid' | 'NotValid' | 'Unknown'
 record.isValid;             // Boolean shortcut
 record.isNotValid;          // Boolean shortcut
-record.errors;              // Map of field → error messages
+record.errors;              // Field name → error messages
 record.errorCount;          // Total error count
-record.validationResults;   // Map of field → ValidationResult[]
+record.allErrors;           // Flat array of all error messages
+record.validationResults;   // Field name → ValidationResult[]
 record.isValidationPending; // Async validation in progress?
 ```
 
@@ -295,9 +365,8 @@ record.isValidationPending; // Async validation in progress?
 
 Metadata descriptor defining type parsing, defaults, display names, descriptions, and validation
 rules. The `displayName` and `description` properties flow from `Field` to `Column` automatically,
-providing defaults for grid headers, tooltips, and chooser descriptions. Fields with
-`isDimension: true` are automatically available for selection in a `GroupingChooserModel` bound to
-the associated GridModel or View.
+providing defaults for grid headers, tooltips, and chooser descriptions. A `GroupingChooserModel`
+bound to a GridModel or View offers every field with `isDimension: true` for selection.
 
 ### Field Configuration
 
@@ -318,10 +387,17 @@ const store = new Store({
         },
 
         {name: 'department', type: 'string', isDimension: true},
-        {name: 'hireDate', type: 'localDate'}
+        {name: 'hireDate', type: 'localDate'},
+
+        // Opt in to DOMPurify escaping of incoming string values
+        {name: 'comment', type: 'string', enableXssProtection: true}
     ]
 });
 ```
+
+Hoist disables XSS protection by default, in keeping with its primary use case of secured internal
+apps with large datasets. Set `enableXssProtection` per field, or app-wide via
+`AppSpec.enableXssProtection`, for apps that display content from untrusted sources.
 
 ### Field Types
 
@@ -364,16 +440,24 @@ import {FieldFilter} from '@xh/hoist/data';
 {field: 'name', op: 'begins', value: 'A'}        // Starts with
 {field: 'email', op: 'ends', value: '@acme.com'} // Ends with
 
+// Negated string matching
+{field: 'name', op: 'not like', value: 'test'}
+{field: 'code', op: 'not begins', value: 'TMP'}
+{field: 'file', op: 'not ends', value: '.bak'}
+
 // Array operations (for array-valued fields)
 {field: 'tags', op: 'includes', value: 'urgent'}
 {field: 'roles', op: 'excludes', value: 'guest'}
 ```
 
+`FieldFilter.OPERATORS` lists every supported operator. Hoist logs a console warning when a filter
+names a field the target Store does not declare.
+
 #### Multi-Value Matching with Array Values
 
-Certain operators accept an array as their `value`, matching if the field equals *any* of the
-supplied values. This is the preferred approach for multi-value matching on a single field
-(rather than constructing a compound OR filter):
+Certain operators accept an array as their `value`, and match if the field equals *any* of the
+supplied values. Prefer this form for multi-value matching on a single field, rather than a
+compound OR filter:
 
 ```typescript
 // Match any of these statuses - preferred form
@@ -394,7 +478,8 @@ supplied values. This is the preferred approach for multi-value matching on a si
 {field: 'name', op: 'like', value: ['smith', 'jones']}   // Match any substring
 ```
 
-The operators supporting array values are listed in `FieldFilter.ARRAY_OPERATORS`.
+`FieldFilter.ARRAY_OPERATORS` lists the operators that support array values. The four range
+operators (`>`, `>=`, `<`, `<=`) do not.
 
 ### CompoundFilter
 
@@ -430,32 +515,36 @@ import {CompoundFilter} from '@xh/hoist/data';
 
 ### FunctionFilter
 
-Custom filtering via developer-supplied test function:
+Custom filtering via a developer-supplied test function:
 
 ```typescript
 import {FunctionFilter} from '@xh/hoist/data';
 
 // Cannot be serialized - use for dynamic/complex logic
 store.setFilter(new FunctionFilter({
-    testFn: (record) => record.data.salary > record.data.minSalary
+    testFn: record => record.data.salary > record.data.minSalary
 }));
 ```
 
 ### Filter Utilities
 
 ```typescript
-import {parseFilter, appendFilter} from '@xh/hoist/data';
+import {parseFilter, appendFilter, flattenFilter} from '@xh/hoist/data';
 
 // Parse various input formats into Filter instances
-const filter = parseFilter({field: 'name', op: 'like', value: 'smith'});
-const filter = parseFilter([filter1, filter2]);  // Wraps in AND
+const fieldFilter = parseFilter({field: 'name', op: 'like', value: 'smith'});
+const andFilter = parseFilter([filter1, filter2]);  // Wraps in AND
+
+// Collect the leaf filters within a (possibly nested) CompoundFilter
+const leaves = flattenFilter(andFilter);
 ```
 
 #### Instance Methods for Filter Transformation
 
-All `Filter` subclasses provide instance methods that return a new `Filter | null` with matching
-filters removed. CompoundFilters are recursively traversed. Each method accepts an optional
-argument to target a specific field/key, or removes all matching filters when called without one.
+Every `Filter` subclass offers instance methods that return a new `Filter | null` with matching
+filters removed. These methods traverse CompoundFilters recursively. Each method accepts an optional
+argument to target a specific field or key, and removes all matching filters when called without
+one.
 
 ```typescript
 // Remove FieldFilters targeting a specific field
@@ -474,7 +563,8 @@ const remaining = filter.removeFunctionFilters();
 #### Combining Filters with `appendFilter()`
 
 `appendFilter()` combines a source filter with one or more additions via AND. If the source is
-already an AND CompoundFilter, additions are flattened into its children rather than nesting.
+already an AND CompoundFilter, it flattens the additions into that filter's children rather than
+nesting them.
 
 ```typescript
 // Replace FieldFilters on one field, keep everything else
@@ -496,11 +586,11 @@ appendFilter(null, null)               // → null
 
 **Files**: `validation/Rule.ts`, `validation/constraints.ts`
 
-Comprehensive validation supporting sync/async constraints with multiple severity levels.
+Validation with sync and async constraints, at three severity levels.
 
 ### Defining Rules
 
-Rules are defined on Fields and consist of constraints with optional conditions:
+Rules live on Fields and consist of constraints with optional conditions:
 
 ```typescript
 import {required, numberIs, lengthIs} from '@xh/hoist/data';
@@ -556,9 +646,12 @@ const store = new Store({
 | `isValidJson` | Valid JSON format |
 | `constrainAll(constraint)` | Apply constraint to each array element |
 
+Constraints other than `required` pass null and empty values. Pair a constraint with `required`
+where a value must be present.
+
 ### Custom Constraints
 
-Constraints are functions receiving `(fieldState, allValues)` and returning null (valid) or an
+Constraints are functions that receive `(fieldState, allValues)` and return null (valid) or an
 error message/result:
 
 ```typescript
@@ -583,7 +676,7 @@ const requireIfActive = ({value}, allValues) => {
     return null;
 };
 
-// Async constraint (e.g., server-side validation)
+// Async constraint (e.g. server-side validation)
 const uniqueEmail = async ({value}) => {
     const exists = await XH.fetchJson({url: 'api/checkEmail', params: {email: value}});
     return exists ? 'Email already in use' : null;
@@ -596,14 +689,14 @@ Constraints can return results with different severity levels:
 
 | Severity | Effect on `isValid` | Use Case |
 |----------|---------------------|----------|
-| `'error'` | Marks record invalid | Blocking issues that must be fixed |
+| `'error'` | Marks record invalid | Blocking issues the user must fix |
 | `'warning'` | Record remains valid | Non-blocking concerns worth noting |
 | `'info'` | Record remains valid | Informational hints or suggestions |
 
-Only `'error'` severity marks a record as invalid. The `'warning'` and `'info'` severities allow
-constraints to provide feedback without blocking form submission or other actions. Associated UI
-components (e.g., form fields) can display these lesser severities to relay helpful information
-to the end user.
+Only `'error'` severity marks a record as invalid. The `'warning'` and `'info'` severities let
+constraints give feedback without blocking form submission or other actions. Associated UI
+components (e.g. form fields) can display these lesser severities to relay helpful information to
+the end user.
 
 ```typescript
 // Return a string for error severity (default)
@@ -623,14 +716,20 @@ const suggestFormat = ({value}) =>
 // Store-level validation
 store.validator.validationState;   // 'Valid' | 'NotValid' | 'Unknown'
 store.validator.isValid;           // Boolean
-store.validator.errors;            // Map<recordId, Map<field, string[]>>
+store.validator.errors;            // Record id → (field name → string[])
 store.validator.errorCount;        // Total errors
+store.validator.isPending;         // Async validation in progress?
+await store.validateAsync();       // Recompute all, resolve to true if valid
 
 // Record-level validation
 record.isValid;
-record.errors;                     // Map<field, string[]>
-record.validationResults;          // Map<field, ValidationResult[]>
+record.errors;                     // Field name → string[]
+record.validationResults;          // Field name → ValidationResult[]
 ```
+
+By default, Store validates only the records affected by a change. Set `validationIsComplex: true`
+to validate every uncommitted record on every add, modify, or remove. Use this where a rule on one
+record depends on the values of another.
 
 ## Integration with GridModel
 
@@ -662,9 +761,12 @@ gridModel.store.records;
 gridModel.store.setFilter({field: 'salary', op: '>', value: 50000});
 ```
 
+`GridModel` also owns the `StoreSelectionModel` for its store, available as `gridModel.selModel` and
+configured via the `selModel` config on `GridConfig`.
+
 ## Tree Data
 
-Stores provide full support for hierarchical parent-child data.
+Stores fully support hierarchical parent-child data.
 
 ### Loading Tree Data
 
@@ -697,6 +799,9 @@ store.loadData([
 ]);
 ```
 
+Note that updates cannot move a record between parents. To restructure a hierarchy, load the new
+shape via `loadData()`.
+
 ### Tree Filtering
 
 ```typescript
@@ -712,7 +817,7 @@ new Store({
 ### Summary Records
 
 Summary records hold aggregated totals or other derived data, displayed separately from regular
-records (e.g., in a grid's pinned footer row).
+records (e.g. in a grid's pinned footer row).
 
 ```typescript
 // Option 1: Load summary via second argument to loadData
@@ -722,6 +827,7 @@ store.loadData(
 );
 
 store.summaryRecords;  // Array of summary StoreRecords
+store.summaryRecord;   // Convenience getter for the single-summary case
 
 // Option 2: Use loadRootAsSummary for nested data structures
 const store = new Store({
@@ -749,18 +855,29 @@ See `cmp/grid/GridModel.ts` for details on summary row rendering.
 
 ## Cube (Aggregation)
 
-Client-side OLAP-style aggregation for multi-dimensional grouping and analysis. The Cube
-subsystem has its own dedicated documentation — see the
-[Cube package README](cube/README.md) for full coverage of creating Cubes, aggregators,
-querying with Views, and accessing results.
+Client-side OLAP-style aggregation for multi-dimensional grouping and analysis. The Cube subsystem
+has its own dedicated documentation. See the [Cube package README](cube/README.md) for full coverage
+of creating Cubes, aggregators, querying with Views, accessing results, and the recommended
+configuration for View-connected Stores.
 
-## Common Patterns
+Two points matter most to app code that reads View output:
+
+- Leaf rows carry the id of their source cube record. Aggregate and bucket row ids encode the row's
+  dimension path.
+- `View.result.leafMap` is null unless the `Query` sets `includeLeaves` or `provideLeaves`. Read the
+  leaves behind a row with the exported `getCubeLeaves()` helper.
+
+## Performance and Memory
+
+Store and Cube `View` optimize memory and update cost automatically, with no app configuration. The
+sections below cover the further opt-in configs, and the behavior each one assumes of its data
+source.
 
 ### StoreRecord Reuse for Grid Stability
 
-StoreRecords are immutable - their `data` property is frozen by default. When `loadData()` is
-called, Store performs a **fieldwise comparison** of new data against existing records with the
-same ID. If data is unchanged, the existing `StoreRecord` instance is preserved:
+StoreRecords are immutable - Store freezes their `data` property by default. On `loadData()`, Store
+compares new data fieldwise against the existing record with the same ID. If every field matches,
+Store preserves the existing `StoreRecord` instance:
 
 ```typescript
 // First load
@@ -779,13 +896,15 @@ record1 === record3;  // false - new instance with updated data
 ```
 
 This preserves ag-Grid row state (expansion, selection) for unchanged records across data refreshes.
+A `loadData()` call that changes nothing at all preserves the Store's record collections outright,
+and skips all downstream work.
 
-**Optimization with `reuseRecords`:** For large datasets whose provider can cheaply identify
-unchanged records, set `reuseRecords` to derive a *digest* from each incoming raw object,
-snapshotted on the record when built. Records are reused when a later raw object yields an equal
-digest, skipping parsing, comparison, and record creation for each hit. Applies to `updateData()`
-as well, where unchanged-digest updates are dropped as no-ops. `loadData()` misses still fall
-back to the standard fieldwise comparison:
+### Digest-Based Reuse with `reuseRecords`
+
+For large datasets whose provider can cheaply identify unchanged records, set `reuseRecords` to
+derive a *digest* from each incoming raw object. Store snapshots that digest on the record it
+builds, and reuses the record whenever a later raw object for the same id yields an equal digest.
+Each hit skips raw data processing, parsing, and record creation.
 
 ```typescript
 const store = new Store({
@@ -801,8 +920,65 @@ const store = new Store({
 });
 ```
 
-Stores connected to a Cube `View` need no configuration here - the View installs a digest on
-them automatically, reading a stamp it maintains on every row it publishes.
+Digests must be primitives, compared via `===`. A null digest never matches. Build composite keys as
+strings.
+
+This config applies to `updateData()` as well, where Store drops an unchanged-digest update as a
+no-op and so preserves any uncommitted local modifications on that record. An update with a changed
+digest builds a new record and overwrites local modifications, as updates always do. `loadData()`
+misses still fall back to the standard fieldwise comparison.
+
+Do not combine `reuseRecords` with a `processRawData` function that depends on external state, as
+Store bypasses that function for reused records.
+
+Stores connected to a Cube `View` must leave this config unset. The View installs a digest that
+reads a stamp it maintains on every row it publishes, and throws on connection if the app set an
+explicit value. `CubeConfig.store` exposes the same config on the Cube's own internal store, where a
+source that supplies per-row digests can preserve record identity across full reloads.
+
+### Read-Only Projections with `projectionOnly`
+
+Set `projectionOnly: true` to mark a store as a read-only projection of data that its provider
+parses and owns. Store then uses each incoming raw object *as* its record's `data`, by reference.
+This collapses the usual two objects per row to one, and skips the per-row parse on every load and
+update.
+
+Use this config for stores connected to a Cube `View`, or fed by an endpoint that returns data in
+its final client-side form. A View logs a warning when a connected store leaves the config unset.
+Set it explicitly to `false` to opt out and silence that warning.
+
+```typescript
+const store = new Store({
+    fields: [...],
+    projectionOnly: true
+});
+
+const view = cube.createView({
+    query: {dimensions: ['region', 'product']},
+    stores: store,
+    connect: true
+});
+```
+
+This mode carries real constraints:
+
+- Raw data must already match what the Store's Fields would parse. Store applies neither `type`,
+  `parseVal`, nor `defaultValue`.
+- Store never modifies or freezes these objects, whatever the `freezeData` setting. A provider may
+  mutate rows in place, but must then publish via `updateData()`. `loadData()` skips
+  reference-equal objects as unchanged.
+- `data` carries every key on the raw object, not only declared Fields. Only declared Field values
+  take part in the equality checks that detect unchanged records.
+- The local modification APIs (`addRecords`, `modifyRecords`, `removeRecords`, `revertRecords`, and
+  `revert`) throw.
+- Not compatible with `processRawData`.
+
+### Streaming Loads
+
+`Store.loadDataAsync()` accepts a sync or async iterable of raw records and creates records
+incrementally, without buffering the complete raw dataset in memory. `XH.fetchNdjson()` is its
+natural source. `Cube.loadDataAsync()` accepts a streaming source too. See
+[Data Loading](#data-loading) above.
 
 ### Tuning Memory for Large Datasets
 
@@ -811,23 +987,76 @@ memory. They stack, and both are opt-in:
 
 | Knob | What it does | When to use |
 |------|--------------|-------------|
-| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords: true` |
-| `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values across a response | Your data has many repeated string values (categories, statuses, names) |
+| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords: true`, which needs the raw for its identity check |
+| `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values within a response, and optionally across refetches of the same dataset | Your data repeats many string values (categories, statuses, names) |
 
-Record `data` objects themselves are built for memory efficiency out of the box, with a
-representation chosen automatically per record: sparsely-populated records carry own properties
-only for fields holding non-default values (defaults reached via a shared prototype), while
-densely-populated records are cloned from a shared per-Store template carrying every declared
-field. Both forms stay in V8's compact "fast properties" mode - wide objects built instead by
-per-field property adds would be demoted to a per-object hashtable past ~20 adds, costing several
-times more memory per record.
+Store builds record `data` objects for memory efficiency out of the box, and picks a representation
+per record. Sparsely-populated records carry own properties only for fields that hold non-default
+values, and reach their defaults through a shared prototype. Store clones densely-populated records
+from a shared per-Store template that carries every declared field. Both forms stay in V8's compact
+"fast properties" mode.
 
-One consequence to be aware of: enumeration of `data` (`Object.keys()`, spread,
-`JSON.stringify()`) sees own properties only, which vary with each record's density. Use
-`record.getValues()` or `record.getModifiedValues()` rather than enumerating `data` directly.
+Wide objects built instead by per-field property adds would fall back to a per-object hashtable past
+roughly 20 adds, at several times the memory per record.
 
-The crossover is governed by the experimental `denseRecordThreshold` Store config, for testing
-and tuning only - e.g. set to `999` to restore the pre-v87 (all-sparse) behavior.
+One consequence deserves attention: `Object.keys()`, spread, and `JSON.stringify()` see own
+properties only, which vary with each record's density. Call `record.getValues()` or
+`record.getModifiedValues()` instead of enumerating `data` directly.
+
+The `experimental.denseRecordThreshold` config governs the crossover between the two forms. It
+exists for testing and tuning only. Set it above the field count of any record to force the sparse
+form throughout.
+
+### Experimental: `PatchableRecordSet`
+
+`PatchableRecordSet` is an experimental, drop-in alternative to Hoist's internal `RecordSet`. It
+makes transaction, filtering, and grid-sync costs scale with the size of a change rather than the
+size of the store. It holds a shared, never-mutated `base` map plus a small `patch` layer of changed
+entries, so a transaction merges at the cost of the patch alone.
+
+```typescript
+const store = new Store({
+    fields: [...],
+    experimental: {patchableRecordSet: true}
+});
+```
+
+Enable it app-wide with the `xhStoreExperimental` soft-config. Note one behavior difference from the
+default record set: record order is stable-by-incumbency rather than source-order. Existing records keep their positions
+and additions append, including records that enter a filter incrementally. Apply a grid sort where
+deterministic order matters. The `experimental.patchRecordsMaxRatio` config caps patch size
+relative to the base (default `0.1`). A larger change flattens the record set into a fresh base.
+
+This feature is available for early client access and testing. It is not yet part of the Hoist API.
+
+## Diagnostics
+
+`Store`, Cube `View`, and `GridModel` each expose a `diagnostics` object with one slot per kind of
+operation. Each slot reports the work done, the elapsed time, and the path taken.
+
+```typescript
+store.diagnostics.load;      // Last load op, plus count and total elapsed ms
+store.diagnostics.update;
+store.diagnostics.filter;
+
+const {type, add, update, remove, total, elapsed} = store.diagnostics.update.last;
+// type: 'patched' | 'flattened' | 'full' | 'unchanged'
+
+store.diagnostics.reset();
+```
+
+Diagnostics log at `debug` level by default. Set `diagnostics.logLevel = 'info'` on one instance to
+follow that object alone at any `XH.logLevel`.
+
+```typescript
+gridModel.store.diagnostics.logLevel = 'info';
+gridModel.diagnostics.logLevel = 'info';
+```
+
+This API supports app troubleshooting and benchmarking only. It can change without notice at any
+release.
+
+## Common Patterns
 
 ### Processing Raw Data with `processRawData`
 
@@ -844,10 +1073,10 @@ const store = new Store({
 });
 ```
 
-For efficiency, prefer modifying and returning the raw object in place (as above) - typically the
-raw data is transient and there is no need to allocate a clone. If the app does cache, share, or
-otherwise re-use the raw data, be careful to return a modified clone instead. In-place edits will
-also be visible on `StoreRecord.raw`.
+For efficiency, prefer modifying and returning the raw object in place, as above. The raw data is
+typically transient, so there is no need to allocate a clone. If the app does cache, share, or
+otherwise re-use the raw data, return a modified clone instead. In-place edits are also visible on
+`StoreRecord.raw`.
 
 ### Composite or Alternate IDs with `idSpec`
 
@@ -860,9 +1089,8 @@ const store = new Store({
 });
 ```
 
-A field other than `id` can also be read from the source data when loading records. Note that the
-value for this property must be unique across all data elements, and that it will still be installed
-as `StoreRecord.id` on the constructed records.
+Store can also read a property other than `id` from the source data. The value must be unique across
+all data elements, and Store still installs it as `StoreRecord.id` on the records it constructs.
 
 ```typescript
 const store = new Store({
@@ -871,11 +1099,25 @@ const store = new Store({
 });
 ```
 
+### Querying Records
+
+```typescript
+store.getById(1);                        // Record, or null
+store.getById(1, true);                  // Restrict to post-filter records
+store.getChildrenById('eng');            // Children of a record
+store.getDescendantsById('eng');
+store.getAncestorsById('eng-1');
+store.recordIsFiltered(record);          // In the store, but excluded by the filter?
+store.getField('salary');                // Field instance by name
+store.fieldNames;                        // Names of all declared fields
+store.getValuesForFieldFilter('status', filter);  // Candidate values for a filter UI
+```
+
 ## Common Pitfalls
 
 ### Defining 'id' as a Field
 
-The `id` property is a top-level property of `StoreRecord`, not a field. Don't include it in your
+The `id` property is a top-level property of `StoreRecord`, not a field. Do not include it in the
 fields configuration:
 
 ```typescript
@@ -895,12 +1137,13 @@ const store = new Store({
         {name: 'salary'}
     ]
 });
-// Record IDs are derived from the 'id' property in raw data by default (idSpec: 'id')
+// Store derives record IDs from the 'id' property in raw data by default (idSpec: 'id')
 ```
 
 ### Forgetting to Include ID in Added Records
 
-Records added via `addRecords()` must include an ID in the raw data:
+Records added via `addRecords()` must include a literal `id` in the raw data. This method does not
+run the Store's `idSpec` function:
 
 ```typescript
 // ❌ Wrong: Missing ID
@@ -910,9 +1153,22 @@ store.addRecords([{name: 'New Employee'}]);
 store.addRecords([{id: XH.genId(), name: 'New Employee'}]);
 ```
 
+### Enumerating `record.data`
+
+Store optimizes the internal `data` layout for memory and varies it per record, so enumeration does
+not reliably see every field:
+
+```typescript
+// ❌ Wrong: can silently miss fields holding their default value
+const values = {...record.data};
+
+// ✅ Correct: an own property for every declared Field
+const values = record.getValues();
+```
+
 ### Mutating Record Data Directly
 
-Record data should be modified through Store APIs, not direct mutation:
+Modify record data through Store APIs, not by direct mutation:
 
 ```typescript
 // ❌ Wrong: Direct mutation bypasses tracking
@@ -922,14 +1178,42 @@ record.data.salary = 100000;
 store.modifyRecords([{id: record.id, salary: 100000}]);
 ```
 
-### FunctionFilter Cannot Be Persisted
+### Relying on Record Order
 
-FunctionFilters work fine for runtime filtering but cannot be serialized. This becomes a problem
-when the filter needs to be persisted (e.g., via `@persist`):
+A Store makes no ordering guarantee. Do not read `store.records` positionally, and do not expect a
+reload to reorder rows:
+
+```typescript
+// ❌ Wrong: assumes the Store preserves source order
+const newest = store.records[0];
+
+// ✅ Correct: sort explicitly, e.g. on an ordinal field from the source data
+const newest = maxBy(store.records, r => r.data.seq);
+```
+
+### Reading Removed Records from a `StoreChangeLog`
+
+`StoreChangeLog.remove` holds the removed `StoreRecord`s, not their ids. Those records are no longer
+resolvable against the Store:
+
+```typescript
+const {remove} = store.updateData(transaction);
+
+// ❌ Wrong: remove holds records, and getById() cannot resolve them anyway
+remove.forEach(id => console.log(store.getById(id).data.name));
+
+// ✅ Correct: read the records directly
+remove.forEach(rec => console.log(rec.data.name));
+```
+
+### Hoist Cannot Persist a FunctionFilter
+
+FunctionFilters work fine for runtime filtering, but Hoist cannot serialize them. This becomes a
+problem when the app must persist the filter (e.g. via `@persist`):
 
 ```typescript
 class MyModel extends HoistModel {
-    // ❌ Problem: FunctionFilter cannot be serialized for persistence
+    // ❌ Problem: Hoist cannot serialize a FunctionFilter for persistence
     @persist
     @observable.ref
     filter: Filter = new FunctionFilter({testFn: r => r.data.custom > 0});
@@ -944,7 +1228,9 @@ class MyModel extends HoistModel {
 ## Related Packages
 
 - [`/core/`](../core/README.md) - HoistModel, HoistBase - base classes Store extends
+- [`/data/cube/`](cube/README.md) - Cube, View, Query - multi-dimensional aggregation
 - [`/cmp/grid/`](../cmp/grid/README.md) - GridModel consumes Store for data display
 - [`/cmp/form/`](../cmp/form/README.md) - FormModel uses similar Field and validation patterns
+- [`/svc/`](../svc/README.md) - FetchService, including `fetchNdjson()` and `internStrings`
 - `/cmp/filter/` - UI components for filter construction
 - `/cmp/grouping/` - GroupingChooser for specifying multi-level dimension groupings
