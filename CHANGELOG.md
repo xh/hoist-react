@@ -16,6 +16,9 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
 
+See [`docs/upgrade-notes/v87-upgrade-notes.md`](docs/upgrade-notes/v87-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
 Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
 features and performance optimizations, grouped by topic below.
 
@@ -56,13 +59,19 @@ features and performance optimizations, grouped by topic below.
 * `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
   instead of their ids. Removed records cannot be resolved against the Store after the fact, so the
   records themselves are the more useful report. Read `record.id` where you need ids.
+* `AggregationContext.filteredRecords` now throws when read by a custom `Aggregator` that does not
+  override `dependsOnChildrenOnly` to return `false`. Views with only children-based aggregators
+  update incrementally without maintaining that collection - aggregators that read records beyond
+  their own children must declare themselves.
 
 #### Grid - New Column Chooser and Column State
 
 * Re-implemented the desktop grid column chooser (see New Features below). Its UX is substantially
   improved yet also different - review before release to ensure key stakeholders are not surprised.
 * Apps that register an explicit list of ag-Grid modules (instead of `AllCommunityModule`) must add
-  `RowDragModule`. Without it, the chooser's drag-and-drop fails silently.
+  `RowDragModule`. Without it, the chooser's drag-and-drop fails silently. Consider switching to
+  `AllCommunityModule` - module registration does not affect shipped bundle size, and registering
+  everything avoids this class of silent failure.
 * `Column.chooserGroup` now groups columns only within the new, opt-in Column Library. Set
   `colChooserModel: {columnLibrary: true}` to keep a grouped presentation of hidden columns.
 * Update or remove any custom styles that targeted the chooser's former `LeftRightChooser`- based

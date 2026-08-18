@@ -494,6 +494,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v85.x to v86.0.0. Medium difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v86", "v85", "editorProps", "serializeIcon", "deserializeIcon", "enableMulti", "showFileGrid", "singleDatePickerProps", "react-dates", "golden-layout"]
+        },
+        {
+            "id": "docs/upgrade-notes/v87-upgrade-notes.md",
+            "title": "v87 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v86.x to v87.0.0. Medium difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v87", "v86", "react-popper", "popperOptions", "cubeLeaves"]
         }
     ]
 }
