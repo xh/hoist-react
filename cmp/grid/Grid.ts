@@ -220,7 +220,7 @@ export class GridLocalModel extends HoistModel {
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
-        this.transactionMgr = new GridTransactionManager(this.model, !!this.agOptions.deltaSort);
+        this.transactionMgr = new GridTransactionManager(this.model);
     }
 
     private createDefaultAgOptions(): GridOptions {

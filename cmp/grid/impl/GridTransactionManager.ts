@@ -43,17 +43,15 @@ const DELTA_SORT_MAX_RATIO = 0.2;
  */
 export class GridTransactionManager extends HoistBase {
     private model: GridModel;
-    private currentDeltaSort: boolean;
     private sortDirty = false;
     @managed private sortTimer: Timer;
 
     // Cached provable sort paths - undefined = stale, null = sort not provably value-based.
     private _sortPaths: Array<Some<string>> | null | undefined;
 
-    constructor(model: GridModel, initialDeltaSort: boolean) {
+    constructor(model: GridModel) {
         super();
         this.model = model;
-        this.currentDeltaSort = initialDeltaSort;
 
         this.addReaction({
             track: () => [model.sortBy, model.columns],
@@ -68,19 +66,23 @@ export class GridTransactionManager extends HoistBase {
 
     apply(transaction: RecordSetDelta, prevRs: RecordSet, newRs: RecordSet) {
         const {agApi} = this.model,
-            mode = this.getRefreshMode(transaction, prevRs, newRs);
+            mode = this.getRefreshMode(transaction, prevRs, newRs),
+            suppress = mode === 'suppress';
 
-        if (mode === 'suppress') {
-            agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', true);
-        } else {
-            this.syncDeltaSort(mode === 'delta');
-        }
-        agApi.applyTransaction(transaction);
-        if (mode === 'suppress') {
-            agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', false);
-        } else {
+        // Set both options explicitly per transaction - each apply is self-contained, with no
+        // dependence on state left by a prior pass. Same-value writes are no-ops within ag-Grid.
+        agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', suppress);
+        agApi.setGridOption('deltaSort', mode === 'delta');
+        try {
+            agApi.applyTransaction(transaction);
             // Any un-suppressed pass re-sorted (delta implies a clean starting order - see below).
-            this.sortDirty = false;
+            if (!suppress) this.sortDirty = false;
+        } finally {
+            // Never leave suppression on - transactions applied outside this manager (or after an
+            // exception above) must get ag-Grid's full default refresh behavior.
+            if (suppress) {
+                agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', false);
+            }
         }
     }
 
@@ -174,15 +176,6 @@ export class GridTransactionManager extends HoistBase {
             ret.push(path);
         }
         return ret;
-    }
-
-    // Delta sort is managed per-transaction. Only touch the ag option when the desired state
-    // actually changes.
-    private syncDeltaSort(desired: boolean) {
-        if (desired !== this.currentDeltaSort) {
-            this.model.agApi.setGridOption('deltaSort', desired);
-            this.currentDeltaSort = desired;
-        }
     }
 
     private flushPendingSort() {
