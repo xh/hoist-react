@@ -41,6 +41,13 @@ export abstract class LeafRow extends BaseRow {
         return true;
     }
 
+    // Leaves publish no children - skip BaseRow's child wiring, whose null writes would add own
+    // `children`/`_cubeLeafChildren` slots to exposed leaf data (`children` reads null off its
+    // prototype; the internal `_cubeLeafChildren` is simply absent).
+    override getVisibleDatas(): ViewRowData {
+        return this.data as ViewRowData;
+    }
+
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);
         this.cubeRecord = rawRecord;
@@ -80,8 +87,9 @@ export abstract class LeafRow extends BaseRow {
 
 /**
  * Leaf row exposed on results - i.e. when the Query sets {@link Query.includeLeaves} or
- * {@link Query.provideLeaves}. Holds a per-View {@link ViewRowData} copy of its source record's
- * data, limited to the queried fields.
+ * {@link Query.provideLeaves}. Holds a per-View {@link ViewRowData} whose queried field values
+ * are read through prototype getters over an own `_src` reference to the source record's data,
+ * avoiding a per-leaf copy. See {@link View.newLeafRowData}.
  */
 export class ExposedLeafRow extends LeafRow {
     declare data: ViewRowData;
@@ -89,14 +97,8 @@ export class ExposedLeafRow extends LeafRow {
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id, rawRecord);
 
-        const data = (this.data = view.newRowData(id));
-        data.cubeRowType = 'leaf';
+        const data = (this.data = view.newLeafRowData(id, rawRecord.data));
         data.cubeLabel = rawRecord.id.toString();
-        data.isCubeLeaf = true;
-
-        view.fields.forEach(({name}) => {
-            data[name] = rawRecord.data[name];
-        });
     }
 
     protected override applyUpdatedData(
@@ -104,9 +106,10 @@ export class ExposedLeafRow extends LeafRow {
         newData: PlainObject,
         updatedRowDatas: Set<PlainObject>
     ) {
-        const {data} = this;
-        updates.forEach(({field, newValue}) => (data[field.name] = newValue));
-        if (!isEmpty(updates)) updatedRowDatas.add(data);
+        // Always swap the getter source to avoid retaining the old record's data - register with
+        // consumers only on genuine change.
+        this.data._src = newData;
+        if (!isEmpty(updates)) updatedRowDatas.add(this.data);
     }
 }
 

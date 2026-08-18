@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Some} from '@xh/hoist/core';
+import {PlainObject, Some} from '@xh/hoist/core';
 import {flatMap} from 'lodash';
 
 /**
@@ -60,8 +60,15 @@ export interface ViewRowData {
     //------------------
     // Implementation
     //-----------------
-    /** @internal */
-    _cubeLeafChildren: ViewRowData[];
+    /** @internal - aggregate rows only, leaf rows omit this key entirely. */
+    _cubeLeafChildren?: ViewRowData[];
+
+    /**
+     * Leaf rows only - the underlying cube record data, through which queried field values are
+     * read via prototype getters rather than held as own properties.
+     * @internal
+     */
+    _src?: PlainObject;
 }
 
 /**

@@ -27,6 +27,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
+import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
 import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
@@ -144,7 +145,7 @@ export class View
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     _records: RecordSet = null; // cube records passing this view's filter
     private _bucketDependentFields = new Set<string>();
-    private _rowDataTemplate: ViewRowData = null;
+    _rowDataGenerator: RowDataGenerator = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
@@ -168,7 +169,8 @@ export class View
         this.query = query;
         this.stores = this.parseStores(stores);
         this._rowCache = new RowCache(this);
-        this.buildRowTemplates();
+        this._rowDataGenerator = new RowDataGenerator(this);
+        this.buildAggFields();
         this.fullUpdate('query', start);
 
         if (connect) {
@@ -229,7 +231,8 @@ export class View
         if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
-        this.buildRowTemplates();
+        this._rowDataGenerator.onQueryChange();
+        this.buildAggFields();
 
         // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
@@ -322,39 +325,30 @@ export class View
     }
 
     /**
-     * Create a new row data object as a clone of this View's shared template, which carries a
-     * slot for every ViewRowData property and query field. Rows are only ever written via
-     * overwrites of these slots - never property adds - so rows minted for a given query share
-     * one fixed shape, keeping them in V8's compact fast-properties mode rather than
-     * "dictionary mode".
+     * Create a new aggregate or bucket row data object.
      * @internal
      */
-    newRowData(id: string): ViewRowData {
-        return {...this._rowDataTemplate, id, cubeRowDigest: ++this._rowDigest};
+    newParentRowData(id: string): ViewRowData {
+        const ret = this._rowDataGenerator.newParentRowData(id);
+        this.assignDigest(ret);
+        return ret;
     }
 
-    noteRowDataMutated(data: PlainObject) {
+    /**
+     * Create the data object for an exposed leaf row.
+     * @internal
+     */
+    newLeafRowData(id: string, src: PlainObject): ViewRowData {
+        const ret = this._rowDataGenerator.newLeafRowData(id, src);
+        this.assignDigest(ret);
+        return ret;
+    }
+
+    assignDigest(data: ViewRowData) {
         data.cubeRowDigest = ++this._rowDigest;
     }
 
-    // Templates depend on the query's field set - rebuilt on any query change.
-    private buildRowTemplates() {
-        const rowData: PlainObject = {
-            id: null,
-            cubeRowType: null,
-            cubeLabel: null,
-            cubeDimension: null,
-            cubeBuckets: null,
-            children: null,
-            isCubeLeaf: false,
-            cubeRowDigest: null,
-            _cubeLeafChildren: null
-        };
-        this.fields.forEach(({name}) => (rowData[name] = null));
-
-        // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
-        this._rowDataTemplate = {...rowData} as ViewRowData;
-
+    private buildAggFields() {
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
         // dimensions, and so holds the unfiltered superset of each list. Queries need not specify
@@ -404,7 +398,7 @@ export class View
 
     private dataOnlyUpdate(updates: StoreRecord[], start: number) {
         const {_leafMap, stores} = this,
-            updatedRowDatas = new Set<PlainObject>();
+            updatedRowDatas = new Set<ViewRowData>();
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
@@ -412,7 +406,7 @@ export class View
             leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
 
-        updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
+        updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
 
         this.createAggregationContext();
 

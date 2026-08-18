@@ -37,6 +37,10 @@ features and performance optimizations, grouped by topic below.
   `JSON.stringify()` on this object does not reliably see default field values. Use
   `StoreRecord.getValues()` or `getModifiedValues()` instead. This never worked reliably, but the
   new memory optimizations in this release make it much more likely to cause a problem.
+* Leaf rows exposed by Cube `View`s (via `Query.includeLeaves` or `provideLeaves`) now read their
+  field values through generated prototype getters over the source cube record's data. Read values
+  by field name only - spreading or calling `JSON.stringify()` on a leaf row no longer captures
+  field values, and leaf field keys are now read-only.
 * `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
   instead of their ids. Removed records cannot be resolved against the Store after the fact, so the
   records themselves are the more useful report. Read `record.id` where you need ids.
@@ -82,6 +86,10 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   `includeLeaves` nor `provideLeaves` set). Leaf rows read directly from cube records, which
   eliminates per-View leaf data objects and speeds up view builds for aggregate-only views over
   large datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+* Improved Cube `View` memory efficiency for views that do expose leaf rows - leaf `ViewRowData`
+  now reads field values directly from its source cube record via generated prototype getters,
+  eliminating the per-leaf copy of queried field values. Substantially reduces View memory - with
+  savings that scale with query width - and speeds up view builds. See Breaking Changes.
 * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
   that its provider parses and owns. Use it for stores connected to a Cube `View`, or fed by an
   endpoint that returns data in its final client-side form. Records reference the provider's row
