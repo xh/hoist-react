@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnRenderer, grid} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, ColumnTooltipFn, grid} from '@xh/hoist/cmp/grid';
 import {box, filler, hbox, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, PlainObject} from '@xh/hoist/core';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
@@ -12,7 +12,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './BaseMembers.scss';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {filter, keyBy} from 'lodash';
+import {compact, filter, keyBy} from 'lodash';
 import {HoistRole} from '../../Types';
 import {BaseMembersModel} from './BaseMembersModel';
 
@@ -62,11 +62,15 @@ class DirectoryMembersModel extends BaseMembersModel {
             items: [
                 box({
                     item: displayName,
-                    paddingRight: 'var(--xh-pad-half-px)',
-                    title: name
+                    paddingRight: 'var(--xh-pad-half-px)'
                 }),
-                Icon.warning({omit: !error, intent: 'warning', title: error})
+                Icon.warning({omit: !error, intent: 'warning'})
             ]
         });
     };
+
+    // Show the raw identifier - an opaque GUID for Entra ID, a DN for LDAP - plus any lookup
+    // error. A plain string picks up the standard grid tooltip styling.
+    override nameTooltip: ColumnTooltipFn = (name, {record}) =>
+        compact([name, record.data.error]).join('\n\n');
 }

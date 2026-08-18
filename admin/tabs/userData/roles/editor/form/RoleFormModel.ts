@@ -20,7 +20,7 @@ import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {groupBy, isNil, isString, keyBy, map, sortBy, uniq, without} from 'lodash';
+import {compact, groupBy, isNil, isString, keyBy, map, sortBy, uniq, without} from 'lodash';
 import {ReactNode} from 'react';
 import {RoleModel} from '../../RoleModel';
 import {DirectoryGroupInfo, HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
@@ -218,13 +218,23 @@ export class RoleFormModel extends HoistModel {
                                 ...props,
                                 inputProps: {
                                     enableCreate: true,
+                                    // Open on focus so the empty-state message below doubles as a
+                                    // prompt for what to type.
+                                    openMenuOnFocus: true,
                                     createMessageFn: q => `Add ${q}`,
                                     queryFn: q => this.queryDirectoryGroupsAsync(q, selected),
                                     optionRenderer: opt => this.directoryGroupOptionRenderer(opt),
-                                    noOptionsMessageFn: q =>
-                                        (q?.length ?? 0) < RoleFormModel.SEARCH_MIN_CHARS
+                                    noOptionsMessageFn: q => {
+                                        if (!q) {
+                                            return (
+                                                this.moduleConfig?.directoryGroupsDescription ??
+                                                'Search for a directory group by name.'
+                                            );
+                                        }
+                                        return q.length < RoleFormModel.SEARCH_MIN_CHARS
                                             ? `Type at least ${RoleFormModel.SEARCH_MIN_CHARS} characters to search the directory.`
-                                            : 'No matching groups found.',
+                                            : 'No matching groups found.';
+                                    },
                                     generateOptionFn: value => ({
                                         label: this.roleModel.getDirectoryGroupDisplayName(value),
                                         value
@@ -245,6 +255,7 @@ export class RoleFormModel extends HoistModel {
                             ...props,
                             inputProps: {
                                 enableCreate: entity !== 'ROLE',
+                                openMenuOnFocus: true,
                                 createMessageFn: user => `Add ${user}`,
                                 options: this.filterSelected(options, selected)
                             }
@@ -260,13 +271,18 @@ export class RoleFormModel extends HoistModel {
                                         entity === 'DIRECTORY_GROUP'
                                             ? (displayName ?? RoleModel.fmtDirectoryGroup(v))
                                             : v,
-                                    paddingRight: 'var(--xh-pad-half-px)',
-                                    title: v
+                                    paddingRight: 'var(--xh-pad-half-px)'
                                 }),
-                                Icon.warning({omit: !error, intent: 'warning', title: error})
+                                Icon.warning({omit: !error, intent: 'warning'})
                             ]
                         });
                     },
+                    // Show the raw identifier - an opaque GUID for Entra ID, a DN for LDAP - plus
+                    // any lookup error. A plain string picks up the standard grid tooltip styling.
+                    tooltip:
+                        entity === 'DIRECTORY_GROUP'
+                            ? (v, {record}) => compact([v, record.data.error]).join('\n\n')
+                            : null,
                     rendererIsComplex: true,
                     setValueFn: ({record, store, value}) => {
                         const {id} = record;
@@ -310,7 +326,7 @@ export class RoleFormModel extends HoistModel {
             actionFn: ({gridModel}) => {
                 const id = XH.genId();
                 gridModel.store.addRecords({id});
-                gridModel.beginEditAsync({record: id});
+                gridModel.beginEditAsync({record: id, colId: 'name'});
             }
         };
     }

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
-import {ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, ColumnTooltipFn, GridModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {tag} from '@xh/hoist/kit/blueprint';
@@ -65,6 +65,9 @@ export abstract class BaseMembersModel extends HoistModel {
         return name;
     };
 
+    /** Optional tooltip for the name column - null for no tooltip. */
+    protected nameTooltip: ColumnTooltipFn = null;
+
     protected sourcesRenderer: ColumnRenderer = (sources: string[]) => {
         return hbox({
             className: 'roles-renderer',
@@ -119,6 +122,7 @@ export abstract class BaseMembersModel extends HoistModel {
                     field: 'name',
                     autosizeMaxWidth: 300,
                     renderer: this.nameRenderer,
+                    tooltip: this.nameTooltip,
                     sortValue: (v, {record}) => record.data.displayName ?? v,
                     exportValue: (v, {record}) => record.data.displayName ?? v
                 },
