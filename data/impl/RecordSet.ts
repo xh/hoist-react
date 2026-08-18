@@ -45,6 +45,8 @@ export class RecordSet {
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
 
+    derivation: RecordSetDerivation = null;
+
     constructor(store: Store, recordMap: StoreRecordMap = new Map()) {
         this.store = store;
         this._recordMap = recordMap;
@@ -124,6 +126,11 @@ export class RecordSet {
         return null;
     }
 
+    /** True if `deltaFrom` would answer. Always false for this implementation. */
+    hasDeltaFrom(prev: RecordSet): boolean {
+        return false;
+    }
+
     //----------------------------------------------------------
     // Lazy getters
     // Avoid memory allocation and work -- in many cases
@@ -163,8 +170,9 @@ export class RecordSet {
         return this.isEqual(target) ? target : this;
     }
 
+    // This implementation always filters in full - `prevFiltered` (the previous projection) is
+    // consulted only to count the changes for diagnostics.
     withFilter(filter: Filter, prevFiltered: RecordSet): RecordSet {
-        // `prevFiltered` (the previous projection) is unused by this full-pass implementation.
         if (!filter) return this;
         const {store} = this,
             includeChildren = store.filterIncludesChildren,
@@ -210,26 +218,57 @@ export class RecordSet {
         };
         passes.forEach(rec => markParents(rec));
 
-        return new RecordSet(this.store, passes);
+        // Count changes vs. the previous projection - one lookup per passing record, with removes
+        // falling out by arithmetic.
+        let update = 0,
+            add = 0;
+        passes.forEach((rec, id) => {
+            const prev = prevFiltered?.getById(id);
+            if (!prev) {
+                add++;
+            } else if (prev !== rec) {
+                update++;
+            }
+        });
+
+        const ret = new RecordSet(this.store, passes);
+        ret.derivation = {
+            type: 'full',
+            update,
+            add,
+            remove: prevFiltered ? prevFiltered.count - (passes.size - add) : 0
+        };
+        return ret;
     }
 
     withNewRecords(recordMap: StoreRecordMap): RecordSet {
         // Reuse existing StoreRecord object instances where possible.
         // If reload changed nothing - preserve instance identity outright,
         // Be sure to finalize any new records that are accepted.
-        let reused = 0;
+        let reused = 0,
+            adds = 0;
         recordMap.forEach((newRec, id) => {
             const currRec = this.getById(id);
             if (currRec && this.areRecordsEqual(currRec, newRec)) {
                 recordMap.set(id, currRec);
                 reused++;
             } else {
+                if (!currRec) adds++;
                 newRec.finalize();
             }
         });
-        return reused === recordMap.size && reused === this.count
-            ? this
-            : new RecordSet(this.store, recordMap);
+
+        const count = recordMap.size;
+        if (reused === count && reused === this.count) return this;
+
+        const ret = new RecordSet(this.store, recordMap);
+        ret.derivation = {
+            type: 'full',
+            update: count - reused - adds,
+            add: adds,
+            remove: this.count - (count - adds)
+        };
+        return ret;
     }
 
     withTransaction(t: {
@@ -290,7 +329,14 @@ export class RecordSet {
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
-        return new RecordSet(this.store, newRecords);
+        const ret = new RecordSet(this.store, newRecords);
+        ret.derivation = {
+            type: 'full',
+            update: (update?.length ?? 0) - missingUpdates,
+            add: add?.length ?? 0,
+            remove: this.count + (add?.length ?? 0) - newRecords.size
+        };
+        return ret;
     }
 
     //------------------------
@@ -363,4 +409,12 @@ export class RecordSet {
         });
         return idSet;
     }
+}
+
+/** How a RecordSet instance was derived - counts only, stamped by Store. @internal */
+export interface RecordSetDerivation {
+    type: 'patched' | 'flattened' | 'full' | 'unchanged';
+    update: number;
+    add: number;
+    remove: number;
 }

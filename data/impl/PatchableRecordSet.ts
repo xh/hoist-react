@@ -11,7 +11,7 @@ import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
 import {Filter} from '../filter/Filter';
-import {RecordSetDelta} from './RecordSet';
+import {RecordSetDelta, type RecordSetDerivation} from './RecordSet';
 
 type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
@@ -59,6 +59,8 @@ export class PatchableRecordSet {
     private _maxDepth: number;
     private _filterSource: PatchableRecordSet = null; // source a filtered projection was built from
     private _filter: Filter = null; // filter a projection was built with
+
+    derivation: RecordSetDerivation = null;
 
     constructor(
         store: Store,
@@ -213,7 +215,12 @@ export class PatchableRecordSet {
 
     /** As `diffFrom`, but only when answerable at O(patch) - null on unrelated instances. */
     deltaFrom(prev: PatchableRecordSet): RecordSetDelta {
-        return prev && prev.base === this.base ? this.diffFrom(prev) : null;
+        return this.hasDeltaFrom(prev) ? this.diffFrom(prev) : null;
+    }
+
+    /** True if `deltaFrom` would answer - i.e. this and `prev` share a base map. */
+    hasDeltaFrom(prev: PatchableRecordSet): boolean {
+        return !!prev && prev.base === this.base;
     }
 
     //----------------------------------------------------------
@@ -262,7 +269,9 @@ export class PatchableRecordSet {
     withFilter(filter: Filter, prevFiltered?: PatchableRecordSet): PatchableRecordSet {
         if (!filter) return this;
 
-        const ret = this.withFilterIncremental(filter, prevFiltered) ?? this.withFilterFull(filter);
+        const ret =
+            this.withFilterIncremental(filter, prevFiltered) ??
+            this.withFilterFull(filter, prevFiltered);
         if (ret !== prevFiltered) {
             ret._filterSource = this;
             ret._filter = filter;
@@ -270,12 +279,9 @@ export class PatchableRecordSet {
         return ret;
     }
 
-    private withFilterFull(filter: Filter): PatchableRecordSet {
-        const {store} = this;
-        store.patchStats.count++;
-        store.logDebug(`Filtering ${this.count} records in full - no incremental path available`);
-
-        const includeChildren = store.filterIncludesChildren,
+    private withFilterFull(filter: Filter, prevFiltered: PatchableRecordSet): PatchableRecordSet {
+        const {store} = this,
+            includeChildren = store.filterIncludesChildren,
             test = filter.getTestFn(store),
             passes = new Map(),
             isMarked = rec => passes.has(rec.id),
@@ -318,7 +324,27 @@ export class PatchableRecordSet {
         };
         passes.forEach(rec => markParents(rec));
 
-        return new PatchableRecordSet(this.store, passes);
+        // Count changes vs. the previous projection - one lookup per passing record, with removes
+        // falling out by arithmetic.
+        let update = 0,
+            add = 0;
+        passes.forEach((rec, id) => {
+            const prev = prevFiltered?.getById(id);
+            if (!prev) {
+                add++;
+            } else if (prev !== rec) {
+                update++;
+            }
+        });
+
+        const ret = new PatchableRecordSet(this.store, passes);
+        ret.derivation = {
+            type: 'full',
+            update,
+            add,
+            remove: prevFiltered ? prevFiltered.count - (passes.size - add) : 0
+        };
+        return ret;
     }
 
     withNewRecords(recordMap: StoreRecordMap): PatchableRecordSet {
@@ -349,9 +375,10 @@ export class PatchableRecordSet {
         // preserving base identity so consumers can derive the (small) reload delta. Otherwise
         // the incoming map simply becomes a fresh base.
         const {store, base, patch} = this,
-            stats = store.patchStats,
             ratio = PatchableRecordSet.patchRatio(store),
-            changes = changed.length + removedCount;
+            changes = changed.length + removedCount,
+            counts = {update: changed.length - adds, add: adds, remove: removedCount};
+
         if (changes <= ratio * count) {
             const newPatch: PatchMap = patch ? new Map(patch) : new Map();
             changed.forEach(rec => newPatch.set(rec.id, rec));
@@ -361,17 +388,15 @@ export class PatchableRecordSet {
                 });
             }
             if (newPatch.size <= ratio * base.size) {
-                stats.count++;
-                stats.patched++;
-                return new PatchableRecordSet(store, base, newPatch, count, rootCount);
+                const ret = new PatchableRecordSet(store, base, newPatch, count, rootCount);
+                ret.derivation = {type: 'patched', ...counts};
+                return ret;
             }
         }
 
-        stats.count++;
-        store.logDebug(
-            `Reload rebased onto a fresh base of ${count} - ${changes} changes exceeded patch cap`
-        );
-        return new PatchableRecordSet(store, recordMap, null, count, rootCount);
+        const ret = new PatchableRecordSet(store, recordMap, null, count, rootCount);
+        ret.derivation = {type: 'full', ...counts};
+        return ret;
     }
 
     withTransaction(t: {
@@ -452,7 +477,14 @@ export class PatchableRecordSet {
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
-        return PatchableRecordSet.create(this.store, base, newPatch, count, rootCount);
+        const ret = PatchableRecordSet.create(this.store, base, newPatch, count, rootCount);
+        ret.derivation = {
+            type: ret.patch ? 'patched' : 'flattened',
+            update: (update?.length ?? 0) - missingUpdates,
+            add: add?.length ?? 0,
+            remove: this.count + (add?.length ?? 0) - count
+        };
+        return ret;
     }
 
     // Incremental arm of withFilter - null when not applicable, directing the caller to the
@@ -477,14 +509,16 @@ export class PatchableRecordSet {
             fBase = prevFiltered.base,
             newPatch: PatchMap = prevFiltered.patch ? new Map(prevFiltered.patch) : new Map();
         let count = prevFiltered.count,
-            changes = 0;
+            added = 0,
+            removed = 0,
+            updated = 0;
 
         delta.remove.forEach(rec => {
             const {id} = rec;
             if (prevFiltered.getById(id)) {
                 PatchableRecordSet.patchRemove(newPatch, fBase, id);
                 count--;
-                changes++;
+                removed++;
             }
         });
         delta.update.forEach(rec => {
@@ -493,30 +527,40 @@ export class PatchableRecordSet {
             if (test(rec)) {
                 newPatch.set(id, rec);
                 if (!present) count++;
-                changes++;
+                present ? updated++ : added++;
             } else if (present) {
                 PatchableRecordSet.patchRemove(newPatch, fBase, id);
                 count--;
-                changes++;
+                removed++;
             }
         });
         delta.add.forEach(rec => {
             if (test(rec)) {
                 newPatch.set(rec.id, rec);
                 count++;
-                changes++;
+                added++;
             }
         });
 
-        return changes
-            ? PatchableRecordSet.create(store, fBase, newPatch, count, count)
-            : prevFiltered;
+        if (!(added || removed || updated)) return prevFiltered;
+
+        const ret = PatchableRecordSet.create(store, fBase, newPatch, count, count);
+        ret.derivation = {
+            type: ret.patch ? 'patched' : 'flattened',
+            update: updated,
+            add: added,
+            remove: removed
+        };
+        return ret;
     }
 
     //------------------------
     // Implementation
     //------------------------
-    /** Construct over a base + patch, flattening into a fresh base when the patch has grown. */
+    /**
+     * Construct over a base + patch, flattening into a fresh base when the patch has grown.
+     * Callers stamp the derivation - a null `patch` on the result marks a flattened set.
+     */
     private static create(
         store: Store,
         base: StoreRecordMap,
@@ -524,11 +568,7 @@ export class PatchableRecordSet {
         count: number,
         rootCount: number
     ): PatchableRecordSet {
-        const stats = store.patchStats;
-        stats.count++;
-
         if (patch.size > PatchableRecordSet.patchRatio(store) * base.size) {
-            store.logDebug(`Flattened patch of ${patch.size} into base of ${base.size}`);
             return new PatchableRecordSet(
                 store,
                 PatchableRecordSet.applyPatch(base, patch),
@@ -537,8 +577,6 @@ export class PatchableRecordSet {
                 rootCount
             );
         }
-
-        stats.patched++;
         return new PatchableRecordSet(store, base, patch, count, rootCount);
     }
 
@@ -636,29 +674,4 @@ export class PatchableRecordSet {
         });
         return idSet;
     }
-}
-
-/**
- * How often a Store's record sets stayed on the incremental (patch) path. Exposed as
- * {@link Store.patchStats}.
- *
- * `patched` should track `count` closely - the shortfall is the number of operations that fell
- * back to a full O(records) rebuild, each of which is also logged in detail via
- * `Store.logDebug()`. A growing shortfall means loads are not reusing enough records to express
- * as a patch (typically a missing or ineffective digest), that updates are crossing
- * `experimental.patchRecordsMaxRatio`, or that filtering is missing its incremental arm.
- *
- * Note both counters accrue from every consumer of the Store's record sets, not just the Store
- * itself - notably each connected Cube `View`, whose derived record sets report against the
- * Cube's Store.
- */
-export interface PatchStats {
-    /** Operations that derived a new record set - loads, updates, and filter runs. */
-    count: number;
-    /** Of those, the ones that stayed incremental rather than rebuilding a full base. */
-    patched: number;
-}
-
-export function newPatchStats(): PatchStats {
-    return {count: 0, patched: 0};
 }

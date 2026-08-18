@@ -222,6 +222,13 @@ columns.
 
 ### ⚙️ Technical
 
+* Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
+  `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
+  and the path taken. Note that diagnostics log by default under `debug` output, but users may set
+  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of
+  a particular chain. This API is provided for app troubleshooting and benchmarking only, and is
+  subject to change without notice at any release.
+
 * Field XSS protection now returns unmodified strings by reference instead of a fresh copy, avoiding
   a duplicate in memory of every parsed string value.
 * Migrated this repo's own package management from yarn classic to pnpm 11. Apps consuming the

@@ -73,7 +73,6 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     deepFreeze,
     executeIfFunction,
-    logWithDebug,
     sharePendingPromise,
     throwIf,
     warnIf,
@@ -110,6 +109,7 @@ import {
 import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
+import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
 import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {initPersist} from './impl/InitPersist';
@@ -621,6 +621,9 @@ export class GridModel extends HoistModel {
 
     /** Tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
+
+    /** @internal */
+    readonly diagnostics = new GridModelDiagnostics(this);
 
     constructor(config: GridConfig) {
         super();
@@ -1559,7 +1562,6 @@ export class GridModel extends HoistModel {
      *
      * @param overrideOpts - optional overrides of this model's {@link GridAutosizeOptions}.
      */
-    @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
         const {columns, ...options}: GridAutosizeOptions = {
             ...this.autosizeOptions,
