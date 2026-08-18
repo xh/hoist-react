@@ -578,9 +578,8 @@ export class RecordSet {
     // Implementation
     //------------------------
     /**
-     * Construct over a base + patch,flattening into a fresh base when the patch has grown past cap.
-     * Note `base` is not always this instance's own - incremental filtering derives over the
-     * previous projection's base.
+     * Construct over a base + patch, flattening into a fresh base when the patch has grown past
+     * the cap.
      */
     private create(
         base: StoreRecordMap,
