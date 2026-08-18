@@ -7,6 +7,10 @@
 Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
 features and performance optimizations, grouped by topic below.
 
+* Requires `hoist-core >= 40.5.0` for the `ViewManager` group rename and bulk-editing APIs, now
+  correctly enforced at startup - apps on an older core will fail fast rather than start. Features
+  that pair with hoist-core v41 endpoints degrade gracefully against earlier versions.
+
 #### React 19 and Build Tooling
 
 * Hoist v87 upgrades to React 19. Most apps need only minor adjustments, but test carefully.
@@ -56,10 +60,6 @@ features and performance optimizations, grouped by topic below.
   to views that users have curated and named. The columns remain available in the column chooser.
   Set the new `GridModelPersistOptions.hideNewColumns` config to `false` to restore the previous
   behavior.
-
-#### View Manager -- Support for nested groups.
-
-* Requires `hoist-core >= 41.0.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
