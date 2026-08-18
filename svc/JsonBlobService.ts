@@ -52,8 +52,8 @@ export class JsonBlobService extends HoistService {
     static instance: JsonBlobService;
 
     /** Retrieve a single JSONBlob by its unique token. */
-    async getAsync(token: string): Promise<JsonBlob> {
-        return this.runner().span('get').fetchJson({
+    async getAsync(token: string, ctx?: CallContextLike): Promise<JsonBlob> {
+        return this.runner(ctx).span('get').fetchJson({
             url: 'xh/getJsonBlob',
             params: {token}
         });
@@ -63,7 +63,7 @@ export class JsonBlobService extends HoistService {
     async listAsync(spec: {
         type: string;
         includeValue?: boolean;
-        ctx: CallContextLike;
+        ctx?: CallContextLike;
     }): Promise<JsonBlob[]> {
         const {type, includeValue, ctx} = spec;
         return this.runner(ctx)
@@ -72,15 +72,11 @@ export class JsonBlobService extends HoistService {
     }
 
     /** Persist a new JSONBlob back to the server. */
-    async createAsync({
-        acl,
-        description,
-        type,
-        meta,
-        name,
-        value
-    }: Partial<JsonBlob>): Promise<JsonBlob> {
-        return this.runner()
+    async createAsync(
+        {acl, description, type, meta, name, value}: Partial<JsonBlob>,
+        ctx?: CallContextLike
+    ): Promise<JsonBlob> {
+        return this.runner(ctx)
             .span('create')
             .fetchJson({
                 url: 'xh/createJsonBlob',
@@ -91,8 +87,12 @@ export class JsonBlobService extends HoistService {
     }
 
     /** Modify mutable properties of an existing JSONBlob, as identified by its unique token. */
-    async updateAsync(token: string, update: Partial<JsonBlob>): Promise<JsonBlob> {
-        return this.runner()
+    async updateAsync(
+        token: string,
+        update: Partial<JsonBlob>,
+        ctx?: CallContextLike
+    ): Promise<JsonBlob> {
+        return this.runner(ctx)
             .span('update')
             .run(async ctx => {
                 update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
@@ -110,9 +110,10 @@ export class JsonBlobService extends HoistService {
     async createOrUpdateAsync(
         type: string,
         name: string,
-        data: Partial<JsonBlob>
+        data: Partial<JsonBlob>,
+        ctx?: CallContextLike
     ): Promise<JsonBlob> {
-        return this.runner()
+        return this.runner(ctx)
             .span('createOrUpdate')
             .run(async ctx => {
                 const update = pick(data, ['acl', 'description', 'meta', 'value']);
@@ -127,16 +128,16 @@ export class JsonBlobService extends HoistService {
     }
 
     /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
-    async findAsync(type: string, name: string): Promise<JsonBlob> {
-        return this.runner().span('find').fetchJson({
+    async findAsync(type: string, name: string, ctx?: CallContextLike): Promise<JsonBlob> {
+        return this.runner(ctx).span('find').fetchJson({
             url: 'xh/findJsonBlob',
             params: {type, name}
         });
     }
 
     /** Archive (soft-delete) an existing JSONBlob, as identified by its unique token. */
-    async archiveAsync(token: string): Promise<JsonBlob> {
-        return this.runner().span('archive').fetchJson({
+    async archiveAsync(token: string, ctx?: CallContextLike): Promise<JsonBlob> {
+        return this.runner(ctx).span('archive').fetchJson({
             url: 'xh/archiveJsonBlob',
             params: {token}
         });

@@ -58,9 +58,27 @@ import {ReactElement} from 'react';
 import './CodeInput.scss';
 import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
 
+/**
+ * A group of (1-based) line numbers to decorate in a {@link CodeInput}, plus the CSS class(es)
+ * to apply to each. A line may appear in multiple groups - their classes combine. Target
+ * descendant spans with `!important` to override syntax-token text color.
+ */
+export interface CodeInputLineStyles {
+    lines: number[];
+    className: string;
+}
+
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
+
+    /**
+     * True to automatically format content for display using the configured `formatter`.
+     * Defaults to true for `readonly` inputs - set false to opt out. May also be enabled on
+     * editable inputs, in which case content is formatted on blur (never mid-edit, so user
+     * edits and cursor position are preserved while typing).
+     */
+    autoFormat?: boolean;
 
     /** False to not commit on every change/keystroke, default true. */
     commitOnChange?: boolean;
@@ -80,6 +98,12 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
 
     /** True to highlight active line in input. (Default false) */
     highlightActiveLine?: boolean;
+
+    /**
+     * One or more {@link CodeInputLineStyles} groups - or a function of the current document
+     * text, re-evaluated as it changes. Read once at editor creation - not reactive as a prop.
+     */
+    lineStyles?: CodeInputLineStyles[] | ((text: string) => CodeInputLineStyles[]);
 
     /**
      * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
@@ -170,6 +194,10 @@ class CodeInputModel extends HoistInputModel {
 
     private themeCompartment = new Compartment();
     private editableCompartment = new Compartment();
+    private editorContainer: HTMLElement = null;
+
+    // True while pushing the bound value into the editor - such edits are not user input.
+    private syncingFromValue = false;
 
     get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
@@ -224,7 +252,7 @@ class CodeInputModel extends HoistInputModel {
                 ? button({
                       icon: Icon.magic(),
                       title: 'Auto-format',
-                      onClick: () => this.onAutoFormat()
+                      onClick: () => this.formatAndSetEditorValue()
                   })
                 : null,
             showFullscreenButton
@@ -281,9 +309,14 @@ class CodeInputModel extends HoistInputModel {
                 run: val => {
                     const {editor} = this;
                     if (editor && editor.state.doc.toString() !== val) {
-                        editor.dispatch({
-                            changes: {from: 0, to: editor.state.doc.length, insert: val ?? ''}
-                        });
+                        this.syncingFromValue = true;
+                        try {
+                            editor.dispatch({
+                                changes: {from: 0, to: editor.state.doc.length, insert: val ?? ''}
+                            });
+                        } finally {
+                            this.syncingFromValue = false;
+                        }
                     }
                 }
             },
@@ -313,15 +346,36 @@ class CodeInputModel extends HoistInputModel {
         );
     }
 
-    createCodeEditor = async (container: HTMLElement) => {
-        if (!container) return;
-        const extensions = await this.getExtensionsAsync();
+    /**
+     * Ref callback for the editor container - disposes of any existing editor, then installs a
+     * fresh EditorView when attached. Must be a stable instance and return void, not a promise.
+     */
+    createCodeEditor = (container: HTMLElement) => {
+        XH.safeDestroy(this.editor);
+        this.editor = null;
 
-        const state = EditorState.create({doc: this.renderValue || '', extensions});
-        this.editor = new EditorView({state, parent: container});
+        this.editorContainer = container;
+        if (!container) return;
+
+        this.getExtensionsAsync().then(extensions => {
+            // Bail if the container was detached or replaced while loading extensions.
+            if (this.editorContainer !== container) return;
+
+            const state = EditorState.create({doc: this.renderValue || '', extensions});
+            this.editor = new EditorView({state, parent: container});
+        });
     };
 
-    onAutoFormat() {
+    get autoFormat(): boolean {
+        const {autoFormat, readonly} = this.componentProps;
+        return withDefault(autoFormat, !!readonly);
+    }
+
+    override toInternal(val: any) {
+        return this.autoFormat ? this.tryPrettyPrint(val) : val;
+    }
+
+    private formatAndSetEditorValue() {
         if (!this.editor) return;
         const val = this.tryPrettyPrint(this.editor.state.doc.toString());
         this.editor.dispatch({changes: {from: 0, to: this.editor.state.doc.length, insert: val}});
@@ -398,6 +452,7 @@ class CodeInputModel extends HoistInputModel {
                 readonly,
                 language,
                 highlightActiveLine,
+                lineStyles,
                 linter,
                 lineNumbers = true,
                 lineWrapping = false
@@ -415,7 +470,12 @@ class CodeInputModel extends HoistInputModel {
                 // - Clears custom search results when document changes.
                 EditorView.updateListener.of((update: ViewUpdate) => {
                     if (update.docChanged) {
-                        this.noteValueChange(update.state.doc.toString());
+                        // Skip write-back when syncing the bound value in: with `autoFormat` the
+                        // synced text is reformatted, and committing it would leave the field
+                        // dirty against its own initial value.
+                        if (!this.syncingFromValue) {
+                            this.noteValueChange(update.state.doc.toString());
+                        }
                         this.clearSearchResults();
                     }
                 }),
@@ -443,7 +503,7 @@ class CodeInputModel extends HoistInputModel {
                     {
                         key: 'Mod-p',
                         run: () => {
-                            this.onAutoFormat();
+                            this.formatAndSetEditorValue();
                             return true;
                         }
                     }
@@ -452,6 +512,9 @@ class CodeInputModel extends HoistInputModel {
 
         if (lineWrapping) {
             extensions.push(EditorView.lineWrapping);
+        }
+        if (lineStyles && (isFunction(lineStyles) || lineStyles.length)) {
+            extensions.push(this.getLineStylesExtension(lineStyles));
         }
         if (highlightActiveLine) {
             extensions.push(highlightActiveLineExtension(), highlightActiveLineGutterExtension());
@@ -546,6 +609,41 @@ class CodeInputModel extends HoistInputModel {
         });
     }
 
+    /** Apply the specified CSS class(es) as per-line decorations for the given line groups. */
+    private getLineStylesExtension(lineStyles: CodeInputProps['lineStyles']) {
+        const classesByLine = (state: EditorState): Map<number, Set<string>> => {
+            const groups = isFunction(lineStyles)
+                    ? (lineStyles(state.doc.toString()) ?? [])
+                    : lineStyles,
+                ret = new Map<number, Set<string>>();
+            groups.forEach(g =>
+                g.lines?.forEach(ln => {
+                    if (!ret.has(ln)) ret.set(ln, new Set());
+                    const classes = ret.get(ln);
+                    g.className?.split(/\s+/).forEach(cls => cls && classes.add(cls));
+                })
+            );
+            return ret;
+        };
+
+        const build = (state: EditorState): DecorationSet => {
+            const lineClasses = classesByLine(state),
+                builder = new RangeSetBuilder<Decoration>();
+            for (let i = 1; i <= state.doc.lines && lineClasses.size; i++) {
+                const classes = lineClasses.get(i);
+                if (!classes?.size) continue;
+                const from = state.doc.line(i).from;
+                builder.add(from, from, Decoration.line({class: [...classes].join(' ')}));
+            }
+            return builder.finish();
+        };
+        return StateField.define<DecorationSet>({
+            create: build,
+            update: (deco, tr) => (tr.docChanged ? build(tr.state) : deco),
+            provide: f => EditorView.decorations.from(f)
+        });
+    }
+
     private autofocusExtension = ViewPlugin.fromClass(
         class {
             constructor(view: EditorView) {
@@ -588,7 +686,6 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
-                // We pass the container via ref to createCodeEditor, which initializes the editor inside it.
                 ref: model.createCodeEditor
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()

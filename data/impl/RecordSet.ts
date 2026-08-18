@@ -16,6 +16,19 @@ type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 
 /**
+ * Changes deriving one RecordSet from another, as computed by {@link RecordSet.diffFrom}.
+ * Unlike a transaction used to *specify* changes, `remove` here holds the full set of removed
+ * records (as they exist in the diffed-from instance), including cascaded descendants -
+ * consumers apply it verbatim.
+ * @internal
+ */
+export interface RecordSetDelta {
+    update: StoreRecord[];
+    add: StoreRecord[];
+    remove: StoreRecord[];
+}
+
+/**
  * Internal container for StoreRecord management within a Store.
  * Note this is an immutable object; its update and filtering APIs return new instances as required.
  *
@@ -23,18 +36,20 @@ type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
  */
 export class RecordSet {
     store: Store;
-    recordMap: StoreRecordMap; // Map of all Records by id
     count: number;
     rootCount: number;
 
+    private _recordMap: StoreRecordMap; // Map of all Records by id
     private _childrenMap: ChildRecordMap; // children by parentId
     private _list: StoreRecord[]; // all records.
     private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
 
+    derivation: RecordSetDerivation = null;
+
     constructor(store: Store, recordMap: StoreRecordMap = new Map()) {
         this.store = store;
-        this.recordMap = recordMap;
+        this._recordMap = recordMap;
         this.count = recordMap.size;
         this.rootCount = this.countRoots(recordMap);
     }
@@ -44,7 +59,7 @@ export class RecordSet {
     }
 
     getById(id: StoreRecordId): StoreRecord {
-        return this.recordMap.get(id);
+        return this._recordMap.get(id);
     }
 
     getDescendantsById(id: StoreRecordId): StoreRecord[] {
@@ -67,11 +82,53 @@ export class RecordSet {
     isEqual(other: RecordSet): boolean {
         if (this.count !== other.count) return false;
 
-        for (const [id, rec] of this.recordMap) {
-            if (rec !== other.recordMap.get(id)) return false;
+        for (const [id, rec] of this._recordMap) {
+            if (rec !== other.getById(id)) return false;
         }
 
         return true;
+    }
+
+    /**
+     * Changes that would derive this RecordSet from `prev` - the delta contract consumed by
+     * Grid to sync ag-Grid transactionally.
+     */
+    diffFrom(prev: RecordSet): RecordSetDelta {
+        const update = [],
+            add = [],
+            remove = [];
+
+        if (!prev) return {update, add: this.list, remove};
+
+        this._recordMap.forEach((rec, id) => {
+            const existing = prev.getById(id);
+            if (!existing) {
+                add.push(rec);
+            } else if (existing !== rec) {
+                update.push(rec);
+            }
+        });
+
+        if (this.count !== prev.count + add.length) {
+            prev._recordMap.forEach((rec, id) => {
+                if (!this.getById(id)) remove.push(rec);
+            });
+        }
+
+        return {update, add, remove};
+    }
+
+    /**
+     * As `diffFrom`, but only provided if cheaply derivable (i.e. without a full scan).
+     * Always null for this implementation.
+     */
+    deltaFrom(prev: RecordSet): RecordSetDelta {
+        return null;
+    }
+
+    /** True if `deltaFrom` would answer. Always false for this implementation. */
+    hasDeltaFrom(prev: RecordSet): boolean {
+        return false;
     }
 
     //----------------------------------------------------------
@@ -80,12 +137,12 @@ export class RecordSet {
     // clients will never ask for list or tree representations.
     //----------------------------------------------------------
     get childrenMap(): ChildRecordMap {
-        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap(this.recordMap);
+        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap(this._recordMap);
         return this._childrenMap;
     }
 
     get list(): StoreRecord[] {
-        if (!this._list) this._list = Array.from(this.recordMap.values());
+        if (!this._list) this._list = Array.from(this._recordMap.values());
         return this._list;
     }
 
@@ -113,7 +170,9 @@ export class RecordSet {
         return this.isEqual(target) ? target : this;
     }
 
-    withFilter(filter: Filter): RecordSet {
+    // This implementation always filters in full - `prevFiltered` (the previous projection) is
+    // consulted only to count the changes for diagnostics.
+    withFilter(filter: Filter, prevFiltered: RecordSet): RecordSet {
         if (!filter) return this;
         const {store} = this,
             includeChildren = store.filterIncludesChildren,
@@ -123,11 +182,12 @@ export class RecordSet {
             mark = rec => passes.set(rec.id, rec);
 
         // Pass 1.  Mark all passing records, and potentially their children recursively.
-        // Any row already marked will already have all of its children marked, so check can be skipped
-        let markChildren;
+        // Any row already marked will already have all of its children marked, so check can be
+        // skipped. Only the children-marking variant can pre-mark - the plain loop visits each
+        // record once and skips the isMarked probe entirely.
         if (includeChildren) {
             const childrenMap = this.childrenMap;
-            markChildren = rec => {
+            const markChildren = rec => {
                 const children = childrenMap.get(rec.id) || [];
                 children.forEach(c => {
                     if (!isMarked(c)) {
@@ -136,13 +196,17 @@ export class RecordSet {
                     }
                 });
             };
+            this._recordMap.forEach(rec => {
+                if (!isMarked(rec) && test(rec)) {
+                    mark(rec);
+                    markChildren(rec);
+                }
+            });
+        } else {
+            this._recordMap.forEach(rec => {
+                if (test(rec)) mark(rec);
+            });
         }
-        this.recordMap.forEach(rec => {
-            if (!isMarked(rec) && test(rec)) {
-                mark(rec);
-                if (includeChildren) markChildren(rec);
-            }
-        });
 
         // Pass 2) Walk up from any passing roots and make sure all parents are marked
         const markParents = rec => {
@@ -154,26 +218,57 @@ export class RecordSet {
         };
         passes.forEach(rec => markParents(rec));
 
-        return new RecordSet(this.store, passes);
+        // Count changes vs. the previous projection - one lookup per passing record, with removes
+        // falling out by arithmetic.
+        let update = 0,
+            add = 0;
+        passes.forEach((rec, id) => {
+            const prev = prevFiltered?.getById(id);
+            if (!prev) {
+                add++;
+            } else if (prev !== rec) {
+                update++;
+            }
+        });
+
+        const ret = new RecordSet(this.store, passes);
+        ret.derivation = {
+            type: 'full',
+            update,
+            add,
+            remove: prevFiltered ? prevFiltered.count - (passes.size - add) : 0
+        };
+        return ret;
     }
 
     withNewRecords(recordMap: StoreRecordMap): RecordSet {
-        // Reuse existing StoreRecord object instances where possible.  See Store.loadData().
+        // Reuse existing StoreRecord object instances where possible.
+        // If reload changed nothing - preserve instance identity outright,
         // Be sure to finalize any new records that are accepted.
-        if (this.empty) {
-            recordMap.forEach(r => r.finalize());
-        } else {
-            recordMap.forEach((newRec, id) => {
-                const currRec = this.getById(id);
-                if (currRec && this.areRecordsEqual(currRec, newRec)) {
-                    recordMap.set(id, currRec);
-                } else {
-                    newRec.finalize();
-                }
-            });
-        }
+        let reused = 0,
+            adds = 0;
+        recordMap.forEach((newRec, id) => {
+            const currRec = this.getById(id);
+            if (currRec && this.areRecordsEqual(currRec, newRec)) {
+                recordMap.set(id, currRec);
+                reused++;
+            } else {
+                if (!currRec) adds++;
+                newRec.finalize();
+            }
+        });
 
-        return new RecordSet(this.store, recordMap);
+        const count = recordMap.size;
+        if (reused === count && reused === this.count) return this;
+
+        const ret = new RecordSet(this.store, recordMap);
+        ret.derivation = {
+            type: 'full',
+            update: count - reused - adds,
+            add: adds,
+            remove: this.count - (count - adds)
+        };
+        return ret;
     }
 
     withTransaction(t: {
@@ -184,8 +279,7 @@ export class RecordSet {
         const {update, add, remove} = t;
 
         // Be sure to finalize any new records that are accepted.
-        const {recordMap} = this,
-            newRecords = new Map(recordMap);
+        const newRecords = new Map(this._recordMap);
 
         let missingRemoves = 0,
             missingUpdates = 0;
@@ -235,17 +329,49 @@ export class RecordSet {
         if (missingUpdates > 0)
             logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
-        return new RecordSet(this.store, newRecords);
+        const ret = new RecordSet(this.store, newRecords);
+        ret.derivation = {
+            type: 'full',
+            update: (update?.length ?? 0) - missingUpdates,
+            add: add?.length ?? 0,
+            remove: this.count + (add?.length ?? 0) - newRecords.size
+        };
+        return ret;
     }
 
     //------------------------
     // Implementation
     //------------------------
     private areRecordsEqual(r1: StoreRecord, r2: StoreRecord): boolean {
+        if (r1 === r2) return true;
+
+        const {store} = this;
+
+        // Version check: equal digests certify equal data - compare values directly only for
+        // digest-less records. In-place data mutations bump digests while leaving data equal.
+        if (r1.digest !== r2.digest) return false;
+        if (r1.digest == null) {
+            const d1 = r1.data,
+                d2 = r2.data;
+            // Projection data carries arbitrary provider keys - compare declared fields only.
+            const dataEqual = store.projectionOnly
+                ? d1 === d2 || store.fields.every(({name}) => equal(d1[name], d2[name]))
+                : equal(d1, d2);
+            if (!dataEqual) return false;
+        }
+
+        return this.positionUnchanged(r1, r2);
+    }
+
+    // True if two same-id records from successive loads occupy the same tree position. Compares
+    // the records' own (constructor-fixed) treePaths - `StoreRecord.parent` resolves against the
+    // pre-swap RecordSet here and cannot be trusted. Mirrors Store.positionUnchanged.
+    private positionUnchanged(r1: StoreRecord, r2: StoreRecord): boolean {
         return (
-            r1 === r2 ||
-            (equal(r1.data, r2.data) &&
-                (this.store.idEncodesTreePath || equal(r1.treePath, r2.treePath)))
+            this.store.idEncodesTreePath ||
+            // Root records share an id here, so their paths are equal by construction.
+            (r1.parentId == null && r2.parentId == null) ||
+            equal(r1.treePath, r2.treePath)
         );
     }
 
@@ -283,4 +409,12 @@ export class RecordSet {
         });
         return idSet;
     }
+}
+
+/** How a RecordSet instance was derived - counts only, stamped by Store. @internal */
+export interface RecordSetDerivation {
+    type: 'patched' | 'flattened' | 'full' | 'unchanged';
+    update: number;
+    add: number;
+    remove: number;
 }

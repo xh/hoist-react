@@ -1,12 +1,14 @@
 # Version Compatibility
 
-Hoist applications are built on a pairing of **hoist-react** (client) and **hoist-core** (server).
-These two libraries evolve together but are versioned independently. hoist-core does not guarantee
-backward-compatible APIs across major versions, so running a mismatched pairing can cause failures
-that are difficult to diagnose — error messages typically don't indicate a version mismatch.
+Hoist applications are built on a pairing of **hoist-react** (client) and **hoist-core** (server),
+plus **hoist-dev-utils** (the Webpack build tooling consumed by apps as a devDependency). These
+libraries evolve together but are versioned independently. Running a mismatched combination can
+cause failures that are difficult to diagnose — error messages typically don't indicate a version
+mismatch. hoist-core mismatches surface at runtime; hoist-dev-utils mismatches surface at build /
+dev-server time.
 
-This document provides a single reference for which hoist-core versions are required, recommended,
-or tested with each hoist-react release.
+This document provides a single reference for which hoist-core and hoist-dev-utils versions are
+required, recommended, or tested with each hoist-react release.
 
 ## Maintaining This Document
 
@@ -16,13 +18,18 @@ dependency is introduced. Use the following checklist:
 1. Add a new row to the [Compatibility Matrix](#compatibility-matrix) with the new hoist-react
    version
 2. Set **Min Core Required** if the release introduces a hard dependency on a new core version
-   (check the CHANGELOG for "Requires hoist-core" entries)
+   (check the CHANGELOG for "Requires hoist-core" entries). **If this value changes, update
+   `MIN_HOIST_CORE_VERSION` in `core/XH.ts` to match** - that constant is what actually enforces
+   the minimum at runtime, and it is easy to miss. See [Min Core Required](#reading-the-matrix).
 3. Set **Recommended Core** if the release has features that benefit from a newer core version but
    don't strictly require it
 4. Set **Max Core Tested** to the highest hoist-core version verified at the time of release
 5. Update the [Reverse Lookup](#reverse-lookup-hoist-core--hoist-react) table if the new core
    version introduces breaking changes for older hoist-react versions
-6. Link to upgrade notes if available
+6. Update the [hoist-react ↔ hoist-dev-utils](#hoist-react--hoist-dev-utils) tables if the release
+   requires or recommends a new dev-utils version, or if a new dev-utils major has been released
+   (check both CHANGELOGs for "Requires hoist-react" / "Requires ... hoist-dev-utils" entries)
+7. Link to upgrade notes if available
 
 **Template row:**
 
@@ -36,7 +43,7 @@ The compatibility matrix uses three requirement levels:
 
 | Level | Meaning |
 |---|---|
-| **Min Core Required** | Hard minimum — the app won't function below this hoist-core version. hoist-core does not guarantee backward-compatible APIs, so this is a real constraint. |
+| **Min Core Required** | Hard minimum — the app won't function below this hoist-core version. hoist-core does not guarantee backward-compatible APIs, so this is a real constraint. Enforced at startup by `EnvironmentService`, which throws when the server reports a version below `MIN_HOIST_CORE_VERSION` (`core/XH.ts`). This column and that constant must agree. |
 | **Recommended Core** | Features available only with this core version or higher, but not a hard gate for basic operation. |
 | **Max Core Tested** | The highest hoist-core version verified with this hoist-react release. Running a newer core is untested and could introduce incompatibilities. |
 
@@ -54,7 +61,8 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | |
+| 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | [Notes](./upgrade-notes/v87-upgrade-notes.md) |
+| 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | [Notes](./upgrade-notes/v86-upgrade-notes.md) |
 | 85.0 | -- | 39.0 | 39.0 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
 | 84.0 | 38.0 | | 38.0 | Span sampling, OTEL tag alignment, log level overrides | [Notes](./upgrade-notes/v84-upgrade-notes.md) |
 | 83.0 | 37.0 | | 37.0 | OTEL tracing, static defaults, metrics publishing | [Notes](./upgrade-notes/v83-upgrade-notes.md) |
@@ -111,6 +119,8 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 41.0 | 87.0 recommended | Tabbed/typed config editor, directory group names + search endpoints - consumed by v87's Admin Console, which degrades gracefully without them. No hard hoist-react bump. |
+| 40.5 | 87.0 recommended | `ViewManager` group rename + bulk-editing endpoints consumed by v87 (which requires 40.5 as its floor). No hard hoist-react bump from 40.0. |
 | 40.0 | 86.0 recommended | Client metrics `/xh/recordMetrics` endpoint (added in 40.0.1). No hard hoist-react bump; needed only by apps recording client metrics. |
 | 39.0 | 85.0 recommended | Telemetry package restructuring, typed `ConfigSpec`/`PreferenceSpec`/`RoleSpec`, JDK 25 toolchain. No hard hoist-react bump from 38.0; v85 is the natural pairing. |
 | 38.0 | 84.0 | Span sampling, OTEL tag alignment, log level overrides |
@@ -133,6 +143,47 @@ to find the minimum hoist-react version for a given core release.
 | 14.0 | 50.0 | Excel export with FieldType |
 | 10.0 | 44.0 | JsonBlobService APIs |
 | 8.0 | 35.0 | Admin Activity Tracking tab |
+
+## hoist-react ↔ hoist-dev-utils
+
+hoist-dev-utils is a build-time dependency: it supplies the Webpack config that compiles both app
+code and hoist-react's raw TypeScript source. A version mismatch therefore fails at build or
+dev-server startup (`pnpm start` / `pnpm build`, or the yarn equivalents) rather than at runtime.
+Requirements flow in both directions - dev-utils majors set a minimum hoist-react, and some
+hoist-react releases require or strongly recommend a newer dev-utils.
+
+Same conventions as the core matrix above: `--` means "unchanged from the previous version - scan
+down to the last explicitly stated value."
+
+Unlike hoist-core minimums (hard runtime gates), dev-utils minimums here reflect the oldest
+pairing XH supports and tests with that hoist-react release - older dev-utils may happen to build,
+but such pairings are untested and unsupported. dev-utils is a build-time-only devDependency, so
+taking its current major alongside a hoist-react upgrade is low-cost and always the right move.
+
+| hoist-react | Min Dev-Utils Required | Recommended Dev-Utils | Notes |
+|---|---|---|---|
+| 87.0 | 14.0 | 14.0 | React 19: dev-utils 14 ships `@types/react` 19.x and is required for apps adopting pnpm. (13.x can build v87 with `@types/react` 19.x pinned via `resolutions` - a transitional pairing only, not supported.) |
+| 86.0 | -- | 13.0.1 | dev-utils 13 sets a Node floor of >= 22.11 and swaps the markdown loader - verify `flex: 1 1 0` styles (see [v86 notes](./upgrade-notes/v86-upgrade-notes.md)). |
+| 83.0 | -- | 12.0 | dev-utils 12's same-port dev proxy pairs with the hoist-react 83.0.2 `WebSocketService` fix. |
+| 73.0 | -- | 11.0 | Strongly recommended pairing; brings eslint 9 / `@xh/eslint-config` 7 (app eslint config migration). |
+| 71.0 | -- | 10.0 | dev-utils 10 sets its minimum at hoist-react 71. |
+| 66.1 | 9.0.1 | | `type-fest` required for TS compile. |
+| 65.0 | 9.0 | | Static assets moved to `/public`. |
+| 62.0 | 8.0 | | |
+
+### Reverse Lookup: hoist-dev-utils → hoist-react
+
+Minimum hoist-react version (and Node floor, where declared) for each dev-utils major. These are
+hard gates stated in the [hoist-dev-utils CHANGELOG](https://github.com/xh/hoist-dev-utils/blob/develop/CHANGELOG.md).
+
+| hoist-dev-utils | Min hoist-react | Min Node | Notes |
+|---|---|---|---|
+| 14.0 | 87.0 | 22.15 | React 19 / `@types/react` 19.x baseline. Adds pnpm support - apps adopting pnpm must take 14+, and must declare every package they import directly (see dev-utils CHANGELOG). webpack-dev-server 6. |
+| 13.0 | -- | 22.11 | Take 13.0.1+. Markdown files now import as strings; verify `flex: 1 1 0` styles. |
+| 12.0 | 83.0.2 | | Same-port dev proxy (`baseUrl` default now `/api/`); requires hoist-react's `WebSocketService` fix in 83.0.2. |
+| 11.0 | 73.0 | | `@xh/eslint-config` 7 requires app eslint config migration (flat config). |
+| 10.0 | 71.0 | | |
+| 9.0 | 64.1 | | Static assets in `/public`; 9.0.1 adds `type-fest` (needed by hoist-react 66.1+). |
 
 ## Version Eras
 
@@ -161,9 +212,10 @@ CHANGELOG or upgrade notes for details on what each recommended version enables.
 
 ### Forgetting hoist-dev-utils compatibility
 
-Some hoist-react upgrades also require a corresponding hoist-dev-utils upgrade (e.g. v62 requires
-hoist-dev-utils >= v8, v65 requires >= v9). These are build-time dependencies, so failures appear
-during `yarn start` or `yarn build` rather than at runtime.
+Some hoist-react upgrades also require a corresponding hoist-dev-utils upgrade, and each dev-utils
+major sets its own minimum hoist-react. These are build-time dependencies, so failures appear when
+starting the dev server or building rather than at runtime. See
+[hoist-react ↔ hoist-dev-utils](#hoist-react--hoist-dev-utils) above.
 
 ### Upgrading hoist-core without upgrading hoist-react
 

@@ -6,16 +6,15 @@
  */
 import {AppOptionSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
 import {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
-import {buttonGroupInput, ButtonGroupInputProps} from '@xh/hoist/mobile/cmp/input';
+import {segmentedControl, SegmentedControlProps} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 
 interface ThemeAppOptionSpec {
     /** Props for nested FormField */
     formFieldProps?: Partial<FormFieldProps>;
-    /** Props for nested ButtonGroupInput */
-    inputProps?: Partial<ButtonGroupInputProps>;
+    /** Props for nested SegmentedControl */
+    inputProps?: Partial<SegmentedControlProps>;
 }
 
 /**
@@ -29,28 +28,12 @@ export const themeAppOption = ({
         name: 'theme',
         formField: {
             label: 'Theme',
-            item: buttonGroupInput({
-                items: [
-                    button({
-                        value: 'light',
-                        text: 'Light',
-                        icon: Icon.sun(),
-                        width: '33.33%'
-                    }),
-                    button({
-                        value: 'dark',
-                        text: 'Dark',
-                        icon: Icon.moon(),
-                        width: '33.33%'
-                    }),
-                    button({
-                        value: 'system',
-                        text: 'System',
-                        icon: Icon.sync(),
-                        width: '33.33%'
-                    })
+            item: segmentedControl({
+                options: [
+                    {value: 'light', label: 'Light', icon: Icon.sun()},
+                    {value: 'dark', label: 'Dark', icon: Icon.moon()},
+                    {value: 'system', label: 'System', icon: Icon.sync()}
                 ],
-                width: '100%',
                 ...inputProps
             }),
             ...formFieldProps

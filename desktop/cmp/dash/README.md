@@ -215,6 +215,9 @@ dashModel.renameView(viewModelId);
 dashModel.getViewSpec('chartId');
 dashModel.getViewModel(viewModelId);
 
+// Remove all views (async — rebuilds GoldenLayout empty, guaranteeing fresh views on next load)
+await dashModel.clearAsync();
+
 // Restore initial state (async — destroys and recreates GoldenLayout)
 await dashModel.restoreDefaultsAsync();
 
@@ -864,12 +867,29 @@ const dashModel = new DashContainerModel({
 
 ## Common Pitfalls
 
-### Loading DashContainer state is destructive
+### Loading state reuses views that match by position
 
-Calling `loadStateAsync` destroys and recreates the entire GoldenLayout instance, including all
-view components. Avoid calling it frequently — use persistence and `restoreDefaultsAsync` instead
-of programmatically swapping layouts. If you need dynamic content within a view, use `viewState`
-rather than changing the layout structure.
+Both `DashCanvasModel.loadState()` and `DashContainerModel.loadStateAsync()` match incoming state
+entries against existing views by their generated ids, which encode *position* (viewSpec id plus
+instance index — e.g. `chart_0`, `options_1`), not identity. Matched views are reused: their view
+models and mounted content (including widget models created via `creates()`) survive the load, with
+the incoming state pushed into them under replace semantics — omitted properties reset to defaults.
+
+This reuse is deliberate — it lets persistence providers push updated state for the *same*
+dashboard without tearing down every widget. But it applies equally when the incoming state
+describes a logically different dashboard (e.g. switching saved views through a ViewManager),
+where positional ids from unrelated boards will typically collide. Reused widget models do not
+re-run `onLinked()`, and any internal state they do not persist carries over. Ensure widget models
+persist all meaningful configuration so an incoming state push fully resets them — or force a full
+rebuild:
+
+- **DashCanvas** — call `clear()` before `loadState()`. This destroys all view models synchronously
+  and guarantees fresh mounts, with no need to wait between the two calls.
+- **DashContainer** — `await clearAsync()` before loading the new state.
+
+For the same reason, do not treat view ids as stable identifiers across state loads — they are
+regenerated positionally on every load and are never persisted (DashCanvas) or are overwritten on
+load (DashContainer).
 
 ### Persisted state references obsolete viewSpecs
 
@@ -882,7 +902,8 @@ when their layout becomes stale.
 
 DashCanvasModel's `restoreDefaults()` runs synchronously and returns void. DashContainerModel's
 `restoreDefaultsAsync()` is async and returns a Promise — it must destroy and recreate
-GoldenLayout. Await it if you need to take action after the layout is rebuilt.
+GoldenLayout. Await it if you need to take action after the layout is rebuilt. The same asymmetry
+applies to `clear()` (DashCanvas) vs. `clearAsync()` (DashContainer).
 
 ## Key Source Files
 

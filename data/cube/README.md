@@ -50,6 +50,19 @@ const cube = new Cube({
 await cube.loadDataAsync(salesData);
 ```
 
+A Cube maintains an internal `Store` of the leaf-level records loaded into it. Tune that Store via
+`CubeConfig.store` - notably with `reuseRecords`, recommended whenever the source can supply a cheap
+per-row digest, as it preserves record identity for unchanged rows across loads and updates and so
+allows connected Views to reuse their generated rows:
+
+```typescript
+const cube = new Cube({
+    fields: [...],
+    idSpec: 'orderId',
+    store: {reuseRecords: 'rev'}
+});
+```
+
 ## Built-in Aggregators
 
 | Aggregator | Description |
@@ -126,7 +139,7 @@ const view = cube.createView({
 
 ```typescript
 // Like includeLeaves, but leaves are accessible programmatically via
-// ViewRowData.cubeLeaves rather than rendered as tree children.
+// the getCubeLeaves() helper rather than rendered as tree children.
 // Useful for showing detail in a separate panel on selection.
 const view = cube.createView({
     query: {
@@ -167,6 +180,10 @@ view.updateQuery({
 view.setFilter({field: 'year', op: '=', value: 2025});
 ```
 
+Query updates are highly incremental - the View caches its generated rows and republishes
+unchanged rows (and their record-reuse digests) across regrouping, refiltering, and field
+changes, so connected stores and grids only process rows that actually changed.
+
 **One-shot queries with `executeQuery`:**
 
 For cases where you need aggregated data once without retaining a View — e.g. computing a
@@ -195,10 +212,16 @@ There are two ways to consume View results:
 **Option 1: Connected stores (recommended for grids)**
 
 Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
-into them whenever the query results change:
+into them whenever the query results change. Configure connected stores with
+`projectionOnly: true` (adopt View rows as record data without re-parsing). Record reuse is
+automatic - the View installs a `reuseRecords` digest on each connected store, so rows
+republished without change skip record rebuilds:
 
 ```typescript
-const store = new Store({fields: [...]});
+const store = new Store({
+    fields: [...],
+    projectionOnly: true
+});
 
 const view = cube.createView({
     query: {dimensions: ['region', 'product']},
@@ -224,6 +247,11 @@ addReaction({
     }
 });
 ```
+
+Note that `leafMap` is populated only when the query sets `includeLeaves` or `provideLeaves`. Views
+that expose no leaves hold them as zero-copy references to the source `Cube` record data - a
+significant memory and build-time win on large datasets, but not safe to publish. Read source
+records from `cube.store` directly if you need them.
 
 **Update triggers:** View data updates when either:
 - The underlying Cube data changes (requires `connect: true`)

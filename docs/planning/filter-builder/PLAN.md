@@ -102,7 +102,7 @@ NOT groups requires the core update.
 ### 0c. Verify with lint and type-check
 
 ```bash
-yarn lint:code && npx tsc --noEmit
+pnpm lint:code && pnpm typecheck
 ```
 
 ---
@@ -249,7 +249,7 @@ not dirty, preserve working tree when dirty (log a warning).
 ### 1e. Verify
 
 ```bash
-yarn lint:code && npx tsc --noEmit
+pnpm lint:code && pnpm typecheck
 ```
 
 ---
@@ -374,7 +374,7 @@ fixed at the bottom. Consider `overflow: 'auto'` on the content container.
 ### 2d. Verify
 
 ```bash
-yarn lint && npx tsc --noEmit
+pnpm lint && pnpm typecheck
 ```
 
 ---
@@ -434,7 +434,7 @@ Based on browser testing, refine:
 ### 4a. Final Verification
 
 ```bash
-yarn lint && npx tsc --noEmit
+pnpm lint && pnpm typecheck
 ```
 
 Review all new files for:

@@ -28,7 +28,8 @@ export interface ExpandToLevelButtonProps extends Omit<ButtonProps, 'title'> {
 
 /**
  * A menu button to expand a multi-level grouped or tree grid out to a desired level.
- * Requires {@link GridConfig.levelLabels} to be configured on the bound GridModel.
+ * Requires {@link GridConfig.levelLabels} to be configured on the bound GridModel - the menu offers
+ * one entry per labelled level, so a partial array will limit the available expand-to targets.
  */
 export const [ExpandToLevelButton, expandToLevelButton] =
     hoistCmp.withFactory<ExpandToLevelButtonProps>({
@@ -53,13 +54,11 @@ export const [ExpandToLevelButton, expandToLevelButton] =
             }
 
             // Render a disabled button if requested, if we have a flat grid, or no level labels
-            const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
+            const {maxDepth, resolvedLevelLabels} = gridModel;
             if (disabled || !maxDepth || !resolvedLevelLabels) return disabledButton();
 
             const menuItems: MenuItemLike[] = resolvedLevelLabels.map((label, idx) => {
-                const isCurrLevel =
-                    expandLevel === idx ||
-                    (expandLevel > maxDepth && idx === resolvedLevelLabels.length - 1);
+                const isCurrLevel = gridModel.isCurrentExpandLevel(idx);
 
                 return {
                     icon: isCurrLevel ? Icon.check() : Icon.placeholder(),

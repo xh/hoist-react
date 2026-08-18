@@ -348,8 +348,8 @@
             "title": "Version Compatibility",
             "mcpCategory": "concept",
             "viewerCategory": "upgrade",
-            "description": "Reference mapping hoist-react releases to required/recommended hoist-core versions.",
-            "keywords": ["version", "compatibility", "hoist-core", "upgrade", "minimum", "required", "recommended", "matrix", "pairing", "hoist-dev-utils", "reverse lookup"]
+            "description": "Reference mapping hoist-react releases to required/recommended hoist-core and hoist-dev-utils versions, with reverse lookups and Node version floors.",
+            "keywords": ["version", "compatibility", "hoist-core", "upgrade", "minimum", "required", "recommended", "matrix", "pairing", "hoist-dev-utils", "reverse lookup", "node version", "pnpm", "build tooling"]
         },
         {
             "id": "docs/build-and-publish.md",
@@ -373,7 +373,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "Local development environment setup for Hoist and app developers.",
-            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
+            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "pnpm", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
         },
         {
             "id": "docs/compilation-notes.md",
@@ -494,6 +494,22 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v84.x to v85.0.0. Low difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v85", "v84"]
+        },
+        {
+            "id": "docs/upgrade-notes/v86-upgrade-notes.md",
+            "title": "v86 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v85.x to v86.0.0. Medium difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v86", "v85", "editorProps", "serializeIcon", "deserializeIcon", "enableMulti", "showFileGrid", "singleDatePickerProps", "react-dates", "golden-layout"]
+        },
+        {
+            "id": "docs/upgrade-notes/v87-upgrade-notes.md",
+            "title": "v87 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v86.x to v87.0.0. Medium difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v87", "v86", "react-popper", "popperOptions", "cubeLeaves"]
         }
     ]
 }

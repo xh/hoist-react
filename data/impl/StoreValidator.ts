@@ -125,7 +125,8 @@ export class StoreValidator extends HoistBase {
     // Implementation
     //---------------------------------------
     private get uncommittedRecords() {
-        return this.store.allRecords.filter(it => !it.isCommitted);
+        const {store} = this;
+        return store.isDirty ? store.allRecords.filter(it => !it.isCommitted) : [];
     }
 
     private async syncValidatorsAsync() {

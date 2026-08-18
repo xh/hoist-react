@@ -152,9 +152,10 @@ Each upgrade step must include:
 - Reference Toolbox as the canonical example where helpful (it's the public demo app).
 - Do not mention sample or customer applications by name, with the exception of Toolbox.
 - Keep prose minimal between code blocks — this is a recipe, not an essay.
-- Use package-manager-neutral language. Write `yarn install` / `npm install` (not just one).
-  The target application may use either yarn or npm — check for `yarn.lock` vs
-  `package-lock.json` to determine which, but write docs that work for both.
+- Use package-manager-neutral language. Write `pnpm install` / `yarn install` / `npm install`
+  (not just one). The target application may use pnpm, yarn, or npm — check for
+  `pnpm-lock.yaml` vs `yarn.lock` vs `package-lock.json` to determine which, but write docs
+  that work for all.
 - Steps should be ordered logically (build system first, then source code, then cleanup).
 - The verification checklist at the end should cover all critical functionality.
 
@@ -182,6 +183,19 @@ Upgrade column:
 If the row already has an empty Upgrade column, add the link. If the row doesn't exist yet,
 this is a new release — add it following the existing pattern. Also update the reverse lookup
 table (hoist-core → hoist-react) if a new core minimum is introduced.
+
+**If the Min Core Required value changes, update `MIN_HOIST_CORE_VERSION` in `core/XH.ts` to
+match.** That constant is what `EnvironmentService` enforces at app startup. The CHANGELOG entry
+and the matrix row document the minimum; neither enforces it.
+
+Set the floor to the lowest core version the client genuinely cannot run without, not the newest
+core the release pairs with. Features that detect a missing endpoint and degrade gracefully do not
+justify raising the floor - document those in the Recommended Core column instead.
+
+Then test the floor against the core snapshot that development actually runs against, using
+`checkMinVersion`. Semver sorts prereleases below the release, and `normalizeVersion` handles only
+`X.0-SNAPSHOT`, not `X.Y-SNAPSHOT`. A three-part floor therefore rejects a server reporting a
+SNAPSHOT of that same `X.Y`; the two-part form (`NN.0`) accepts both.
 
 **Important:** The Notes columns in both tables should describe features that drive the
 **core/react pairing** — server-side features that the react version needs to support (e.g.
@@ -221,16 +235,42 @@ both artifacts. This agent stress-tests the upgrade notes by simulating a real u
 For **LOW or TRIVIAL difficulty** upgrades, skip this phase — the sample app analysis in Phase 1c
 provides sufficient validation. The user can always request a dry-run explicitly.
 
+### Precondition: Toolbox MUST be clean and committed (hard gate)
+
+The dry-run checks out a prior commit in the Toolbox working copy, so it **requires a fully clean,
+committed tree**. Before launching the agent, the orchestrator MUST verify this itself — do not
+delegate the check to the subagent:
+
+```bash
+git -C ../toolbox status --porcelain
+```
+
+- If this prints **nothing**, the tree is clean — proceed to Agent Setup.
+- If it prints **any output at all** (modified, staged, or untracked files), **STOP**. Do not
+  launch the agent. Report to the user that Toolbox has open changes — list them — and ask how
+  they want to proceed (e.g. they commit or set the work aside themselves, or they ask you to skip
+  the dry-run).
+
+**NEVER** `git stash`, `git commit`, `git reset`, `git clean`, `git checkout`/`switch`, or create
+branches to force a clean state. The user may have uncommitted work in progress (this is common);
+silently stashing or branching around it risks losing or hiding their changes. The only acceptable
+responses to a dirty Toolbox tree are: STOP and ask, or (if the user directs) skip the dry-run
+entirely. Restoring a clean state is the user's call, never an automatic step.
+
 ### Agent Setup
 
-Launch a subagent (subagent_type: "general-purpose") with these instructions:
+Only after the precondition above passes, launch a subagent (subagent_type: "general-purpose")
+with these instructions:
 
 > You are an "App Upgrade Advisor" agent. Your job is to evaluate upgrade documentation by
 > simulating its use against a real application.
 >
-> 1. **Setup:** Check out Toolbox (at `../toolbox`) at a commit BEFORE the target hoist-react
->    version was applied. Use `git log --oneline` to find the last commit before the upgrade.
->    Create a temporary branch for the dry run.
+> 1. **Setup:** The orchestrator has already confirmed Toolbox (`../toolbox`) has a clean,
+>    committed working tree. Re-verify with `git -C ../toolbox status --porcelain` as a safety
+>    check: if it returns ANY output, **ABORT immediately** and report that the tree is dirty —
+>    do NOT stash, reset, clean, checkout over, or otherwise discard/hide changes. If clean, find
+>    the last commit BEFORE the target hoist-react version was applied (`git log --oneline`) and
+>    create a temporary branch at it for the dry run.
 >
 > 2. **Dry run:** Working solely from the upgrade notes file at
 >    `docs/upgrade-notes/v{NN}-upgrade-notes.md` and the app's current source, walk through each
@@ -247,10 +287,14 @@ Launch a subagent (subagent_type: "general-purpose") with these instructions:
 >    - **Suggestions**: Ways to improve clarity
 >    Rate each finding as HIGH / MEDIUM / LOW priority.
 >
-> 4. **Cleanup:** Restore Toolbox to its original state (checkout original branch, delete temp
->    branch). Do NOT leave any changes behind.
+> 4. **Cleanup:** Restore Toolbox to its original state (checkout original branch, delete the temp
+>    branch you created). Do NOT leave any changes or branches behind. Verify `git status` is clean
+>    and HEAD matches the original commit before reporting completion.
 >
-> IMPORTANT: Do NOT modify any files in the upgrade notes or CHANGELOG — only report findings.
+> IMPORTANT: Do NOT modify any files in the upgrade notes or CHANGELOG — only report findings. Do
+> NOT run any command that mutates or discards the Toolbox working tree (`stash`, `reset`, `clean`,
+> `commit`, overwriting `checkout`). The only git writes you may perform are creating and deleting
+> your own temporary dry-run branch on an already-clean tree.
 
 ### Handling the Report
 

@@ -282,6 +282,9 @@ export class DashCanvasModel
         this._onDropDragOverFn = onDropDragOver;
 
         this.loadState(initialState);
+        // Initialize `state` directly - when initialState is empty, loadState above is a no-op
+        // (setLayout early-returns) and the viewState reaction below does not yet exist, but the
+        // PersistenceProvider must capture a well-formed (not undefined) default state on create.
         this.state = this.buildState();
 
         if (persistWith) {
@@ -488,6 +491,18 @@ export class DashCanvasModel
      * Load the given state array into the canvas, replacing the current set of views and layout.
      * Applications can call this directly when they already hold a `DashCanvasItemState[]` and
      * want to avoid constructing a `PersistableState` wrapper.
+     *
+     * Note this applies full replace (not patch) semantics, at both levels: views not present in
+     * the given state are removed, and entries fully replace each matched view's state - omitted
+     * properties (e.g. `title`, `state`) reset to their defaults.
+     *
+     * Views are matched to incoming state by their generated ids, which encode position (spec id
+     * plus instance index - see {@link DashModel.genViewId}), not identity. Matched view models
+     * are reused rather than rebuilt: their content components stay mounted and any models owned
+     * by that content remain live, with the incoming state pushed into them. This holds for any
+     * state loaded here, including state saved from a logically different dashboard (e.g. a
+     * saved-view switch driven by a ViewManager-linked provider). Call {@link clear} immediately
+     * beforehand to instead force a full teardown and remount of all views.
      */
     @action
     loadState(state: DashCanvasItemState[]) {
@@ -506,8 +521,12 @@ export class DashCanvasModel
             stateWithIds.map(it => {
                 const existingViewModel = existingViewModelsById[it.id];
                 if (existingViewModel) {
+                    // Loading state over an existing view applies replace semantics - omitted
+                    // values reset to their defaults (required by e.g. restoreDefaults). For
+                    // viewState the default is nullish (widget defaults), but title must reset
+                    // to the spec title rather than wipe, matching DashViewModel construction.
                     existingViewModel.setViewState(it.state);
-                    existingViewModel.title = it.title;
+                    existingViewModel.title = it.title ?? existingViewModel.viewSpec.title;
                     return existingViewModel;
                 }
 
@@ -529,10 +548,7 @@ export class DashCanvasModel
             })
         );
 
-        this.setLayout(
-            stateWithIds.map(it => ({i: it.id, ...it.layout})),
-            false
-        );
+        this.setLayout(stateWithIds.map(it => ({i: it.id, ...it.layout})));
     }
 
     //------------------------
@@ -595,7 +611,7 @@ export class DashCanvasModel
                 id,
                 viewSpec,
                 viewState: state,
-                title: title ?? viewSpec.title,
+                title,
                 containerModel: this
             }),
             prevLayout = previousViewId ? this.getViewLayout(previousViewId) : null,
@@ -621,13 +637,12 @@ export class DashCanvasModel
     }
 
     @action
-    private setLayout(layout: LayoutItem[], buildAndSetState = true) {
+    private setLayout(layout: LayoutItem[]) {
         layout = sortBy(layout, 'i');
-        const layoutChanged = !isEqual(layout, this.layout);
-        if (!layoutChanged) return;
+        if (isEqual(layout, this.layout)) return;
 
         this.layout = layout;
-        if (buildAndSetState) this.state = this.buildState();
+        this.state = this.buildState();
     }
 
     private buildState(): DashCanvasItemState[] {

@@ -4,12 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '../core';
+import {HoistModel, HoistRoute} from '../core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
+// Required so downstream consumers pick up Router TS augmentation (buildUrl, etc.).
+import 'router5-plugin-browser';
 
 /**
  * Top-level model for managing application routing in Hoist.
@@ -36,11 +38,11 @@ export class RouterModel extends HoistModel {
     /**
      * Add routes to the router.
      *
-     * @param routes - collection of router5 route spec.
-     *      This method supports an additional keyword 'omit' on each spec, in order to allow declarative
-     *      exclusion.  Otherwise these are Router5 configs to be passed directly to the Router5 API.
+     * @param routes - collection of {@link HoistRoute} specs. In addition to the standard Router5
+     *      route config, each spec supports an `omit` keyword to allow declarative exclusion.
+     *      Otherwise these are Router5 configs to be passed directly to the Router5 API.
      */
-    addRoutes(routes: object[]) {
+    addRoutes(routes: HoistRoute[]) {
         this.router.add(this.preprocessRoutes(routes));
     }
 
@@ -98,7 +100,7 @@ export class RouterModel extends HoistModel {
         return ret;
     }
 
-    private preprocessRoutes(routes) {
+    private preprocessRoutes(routes: HoistRoute[]): HoistRoute[] {
         const ret = routes.filter(r => !isOmitted(r));
         ret.forEach(r => {
             if (r.children) r.children = this.preprocessRoutes(r.children);

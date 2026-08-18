@@ -8,9 +8,10 @@ import {ElementFactory, elementFactory, HoistModel} from '@xh/hoist/core';
 import onsen from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
-import {createElement, forwardRef, FunctionComponent} from 'react';
+import {composeRefs} from '@xh/hoist/utils/react';
+import {createElement, forwardRef, FunctionComponent, useLayoutEffect, useRef} from 'react';
 import * as ons from 'react-onsenui';
-import {omitBy} from 'lodash';
+import {mapKeys, omitBy, pickBy} from 'lodash';
 import './styles.scss';
 import './theme.scss';
 
@@ -42,23 +43,41 @@ export const [dialog, Dialog] = wrappedCmp(ons.Dialog),
 //-----------------
 // Implementation
 //-----------------
+// Onsen's deprecated boolean prop aliases - react-onsenui remaps these to the real custom-element
+// property names before assigning. We replicate it here since we bypass that step for booleans.
+const ONSEN_BOOL_ALIASES = {isOpen: 'visible', isCancelable: 'cancelable', isDisabled: 'disabled'};
+
 /**
- * Wrappers around ElementFactory and ContainerElementFactory that strip
- * HoistModel props before passing onto the Onsen component.
+ * Wrapper around ElementFactory that adapts an Onsen component for use within Hoist.
  *
- * Onsen component props are internally serialized to JSON. If it receives a HoistModel as a prop,
- * it can easily cause a circular structure error due to the complexity of the model. For example,
- * any HoistModel that implements LoadSupport will create a 'target' reference to itself.
- * Apps can readily introduce other structures incompatible with JSON serialization.
+ * Strips HoistModel props before passing them on. Onsen serializes props to JSON internally, and a
+ * an Onsen component never needs a HoistModel prop.
  *
- * There is no reason for an Onsen Component to ever receive a HoistModel prop, so we can safely
- * strip them out here.
+ * Applies boolean props imperatively as real booleans via a ref. react-onsenui encodes boolean
+ * props as the string `''` (or `null`), which React 19 assigns as a *property* on the underlying
+ * custom element rather than as an *attribute* (as React 18 and earlier did). Onsen's boolean property
+ * setters treat `''` as falsy, so props such as `checked`, `disabled`, and `visible` silently fail
+ * to apply. Setting the real boolean on the element after commit routes through Onsen's own setters.
  */
 function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {
     const cmp = forwardRef((props, ref) => {
-        const safeProps = omitBy(props, it => it instanceof HoistModel);
-        if (ref) safeProps.ref = ref;
-        return createElement(rawCmp, safeProps);
+        // 1) Gather the boolean props, accounting for aliased keys.
+        // We'll apply these values directly on underlying onsen component after render.
+        const elemRef = useRef(null);
+        const boolProps = mapKeys(
+            pickBy(props, it => typeof it === 'boolean'),
+            (_v, key) => ONSEN_BOOL_ALIASES[key] ?? key
+        );
+        useLayoutEffect(() => {
+            if (elemRef.current) Object.assign(elemRef.current, boolProps);
+        });
+
+        // 2) Set remaining props on the underlying component, including our ref.
+        const childProps = {
+            ...omitBy(props, it => it instanceof HoistModel || typeof it === 'boolean'),
+            ref: composeRefs(elemRef, ref)
+        };
+        return createElement(rawCmp, childProps);
     });
     return [elementFactory(cmp), cmp];
 }

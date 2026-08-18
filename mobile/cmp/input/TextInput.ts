@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {box, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {input} from '@xh/hoist/kit/onsen';
@@ -15,6 +15,7 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
+import {ReactElement} from 'react';
 import './TextInput.scss';
 
 export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
@@ -45,6 +46,9 @@ export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps,
 
     /** True to show a "clear" button aligned to the right of the control. Defaults to false. */
     enableClear?: boolean;
+
+    /** Icon to display inline on the left side of the input. */
+    leftIcon?: ReactElement;
 
     /** Onsen modifier string */
     modifier?: string;
@@ -123,6 +127,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             width: withDefault(width, null)
         },
         items: [
+            leftIcon(),
             input({
                 value: model.renderValue || '',
 
@@ -149,6 +154,11 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             clearButton()
         ]
     });
+});
+
+const leftIcon = hoistCmp.factory<TextInputModel>(({model}) => {
+    const {leftIcon} = model.componentProps;
+    return leftIcon ? box({className: 'xh-text-input__left-icon', item: leftIcon}) : null;
 });
 
 const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>

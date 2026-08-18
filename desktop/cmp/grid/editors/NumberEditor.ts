@@ -6,8 +6,8 @@
  */
 import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
-import {useCallback, useEffect} from 'react';
-import {CustomCellEditorProps, useGridCellEditor} from '@xh/hoist/kit/ag-grid';
+import {useEffect} from 'react';
+import {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {numberInput, NumberInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -39,20 +39,19 @@ export const [NumberEditor, numberEditor] = hoistCmp.withFactory<NumberEditorPro
     }
 });
 
-const useNumberGuard = ({onValueChange, eventKey}: CustomCellEditorProps) => {
-    // Needed (strangely) by agGrid to trigger call of isCancelBeforeStart
+// Characters that can validly begin a numeric entry - digits, sign, and decimal point.
+const NUMBER_START_RE = /[0-9.+-]/;
+
+const useNumberGuard = ({onValueChange, eventKey, stopEditing}: CustomCellEditorProps) => {
+    // When editing is started by typing a printable character, seed the editor with it if it can
+    // legally begin a number (digit, `-`, `+`, or `.`), otherwise stop editing to reject the
+    // keystroke - reverting to the original value, as the editor was never seeded.
     useEffect(() => {
-        if (eventKey?.length === 1) onValueChange(eventKey);
-    }, [eventKey, onValueChange]);
-
-    // Gets called before editor component is rendered, to give agGrid a chance to
-    // cancel the editing before it even starts if char is not a number.
-    const isCancelBeforeStart = useCallback(
-        () => eventKey?.length === 1 && '1234567890'.indexOf(eventKey) < 0,
-        [eventKey]
-    );
-
-    useGridCellEditor({
-        isCancelBeforeStart
-    });
+        if (eventKey?.length !== 1) return;
+        if (NUMBER_START_RE.test(eventKey)) {
+            onValueChange(eventKey);
+        } else {
+            stopEditing(true);
+        }
+    }, [eventKey, onValueChange, stopEditing]);
 };

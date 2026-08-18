@@ -11,7 +11,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {popoverFilterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
 import {dateInput, DateInputProps, select} from '@xh/hoist/desktop/cmp/input';
@@ -20,7 +20,7 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {viewManager} from '@xh/hoist/desktop/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {ActivityTrackingModel} from './ActivityTrackingModel';
+import {INTERVALS, ActivityTrackingModel} from './ActivityTrackingModel';
 import {aggChartPanel} from '@xh/hoist/admin/tabs/activity/tracking/chart/AggChartPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
 import './ActivityTracking.scss';
@@ -75,32 +75,14 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     disabled: model.endDay >= LocalDate.currentAppDay()
                 }),
                 buttonGroup({
-                    items: [
+                    items: INTERVALS.map(interval =>
                         button({
-                            text: '6m',
-                            onClick: () => model.adjustStartDate(6, 'months'),
-                            active: model.isInterval(6, 'months'),
-                            ...dateBtn
-                        }),
-                        button({
-                            text: '1m',
-                            onClick: () => model.adjustStartDate(1, 'months'),
-                            active: model.isInterval(1, 'months'),
-                            ...dateBtn
-                        }),
-                        button({
-                            text: '7d',
-                            onClick: () => model.adjustStartDate(7, 'days'),
-                            active: model.isInterval(7, 'days'),
-                            ...dateBtn
-                        }),
-                        button({
-                            text: '1d',
-                            onClick: () => model.adjustStartDate(1, 'days'),
-                            active: model.isInterval(1, 'days'),
+                            text: `${interval.value}${interval.unit[0]}`,
+                            onClick: () => model.adjustStartDate(interval),
+                            active: model.isInterval(interval),
                             ...dateBtn
                         })
-                    ]
+                    )
                 }),
                 toolbarSep(),
                 filterChooserToggleButton(),
@@ -137,7 +119,8 @@ const filterChooserToggleButton = hoistCmp.factory<ActivityTrackingModel>(({mode
 const filterBar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
     return model.showFilterChooser
         ? toolbar(
-              popoverFilterChooser({
+              filterChooser({
+                  popover: true,
                   flex: 1,
                   enableClear: true
               })

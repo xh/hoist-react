@@ -9,6 +9,11 @@
     }
   }
 
+  &__unsupported {
+    padding: var(--xh-pad-px);
+    color: var(--xh-text-color-muted);
+  }
+
   &__tbar {
     background-color: transparent;
     .xh-button {

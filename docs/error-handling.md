@@ -490,6 +490,15 @@ The logged payload includes:
 - Whether the user was shown an alert
 - An optional user-provided message (via the "Report" dialog)
 
+> **Routing client errors to a chat system:** Because reported errors land server-side as
+> `'Client Error'` track entries, a Grails service can forward them to a realtime chat system
+> (Slack, Teams, etc.) by subscribing to the `xhTrackReceived` cluster topic - no client changes
+> required. XH's [Toolbox](https://github.com/xh/toolbox) demo app
+> [includes a `SlackAlertService` that does exactly this](https://github.com/xh/toolbox/blob/develop/grails-app/services/io/xh/toolbox/SlackAlertService.groovy),
+> posting client errors (alongside monitor alerts and user feedback) to Slack. See the hoist-core
+> [activity tracking](https://github.com/xh/hoist-core/blob/develop/docs/activity-tracking.md) docs
+> for the server-side topic mechanism.
+
 ### Sensitive Data Redaction
 
 The handler automatically redacts values at paths listed in

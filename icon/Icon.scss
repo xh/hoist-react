@@ -1,0 +1,13 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// FA v7 sizes icons via the `--fa-width` custom property (default 1.25em) rather than the old
+// `fa-fw` class. The placeholder is a plain div, so it reads the same property to stay aligned
+// with sibling icons under any width override, falling back to FA's default when unset.
+.xh-icon--placeholder {
+  width: var(--fa-width, 1.25em);
+}

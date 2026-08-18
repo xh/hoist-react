@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import type {HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {HoistModel, HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {PanelConfig} from '@xh/hoist/desktop/cmp/panel';
 import type {
     FilterBindTarget,
     FilterMatchMode,
@@ -41,6 +42,19 @@ export interface ColumnState {
     pinned?: HSide;
 }
 
+/** Options for {@link GridModel.setColumnState}. */
+export interface ColumnStateOptions {
+    /**
+     * True to hide any columns missing from the provided state, regardless of their in-code
+     * `hidden` config. Default false, respecting that config.
+     *
+     * Columns configured with `hideable: false` or `excludeFromChooser: true` are never hidden by
+     * this option, as the app has indicated that they must be displayed and/or cannot be restored
+     * by the user.
+     */
+    hideNewColumns?: boolean;
+}
+
 /**
  * Comparator for custom grid group sorting, provided to GridModel.
  * @param groupAVal - first group value to be compared.
@@ -60,6 +74,9 @@ export type GridGroupSortFn = (
         nodeB: IRowNode;
     }
 ) => number;
+
+/** Position of a row in the viewport when scrolled into view - default null scrolls minimally. */
+export type GridScrollPosition = 'top' | 'middle' | 'bottom';
 
 /**
  * Closure to generate CSS class names for a row.
@@ -88,6 +105,23 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistSort?: boolean | PersistOptions;
     /** True (default) to include expanded level state or provide expanded level-specific PersistOptions.  */
     persistExpandToLevel?: boolean | PersistOptions;
+    /**
+     * True to force columns newly added to the code - and therefore missing from any previously
+     * persisted state - to be initially hidden, regardless of their in-code `hidden` config. False
+     * to respect that config, allowing new columns to appear automatically.
+     *
+     * Defaults to true when persisting to a user-curated, named view - i.e. a `ViewManagerModel`
+     * or `DashViewModel`, per the resolved `persistColumns` options - as a release should not add
+     * columns to views users have deliberately composed. Defaults to false for all other
+     * providers, where state records a user's last-used layout and new columns aid discovery of
+     * newly released data. The in-code default view of a `ViewManagerModel` always follows the
+     * code - set this config to true to force-hide new columns there as well.
+     *
+     * Affects initial visibility only - new columns are always added to state and remain available
+     * via the column chooser. Columns with `hideable: false` or `excludeFromChooser: true` are
+     * never force-hidden, as the app requires them shown and/or users could not restore them.
+     */
+    hideNewColumns?: boolean;
 }
 
 /**
@@ -142,6 +176,15 @@ export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSourc
  */
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
+/** Cross-platform interface for desktop and mobile ColChooserModels. */
+export interface IColChooserModel extends HoistModel {
+    readonly gridModel: GridModel;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(): void;
+}
+
 /**
  * Configuration for a {@link ColChooserModel} - the model backing the grid column chooser UI.
  * Passed via the `colChooserModel` config on {@link GridConfig}, or set app-wide via
@@ -171,7 +214,12 @@ export interface ColChooserConfig {
      */
     autosizeOnCommit?: boolean;
 
-    /** Chooser width for popover and dialog. Desktop only. */
+    /**
+     * Width of the chooser's bucket column - the always-present part, excluding the optional Column
+     * Library (see {@link ColLibraryConfig.libraryWidth}). In the popover and dialog the overlay
+     * sizes to fit this plus the library when shown; in the docked panel it is the initial dock width
+     * (grown by the library width while shown). Desktop only.
+     */
     width?: string | number;
 
     /** Chooser height for popover and dialog. Desktop only. */
@@ -179,6 +227,53 @@ export interface ColChooserConfig {
 
     /** Mode to use when filtering (default 'startWord'). Desktop only. */
     filterMatchMode?: FilterMatchMode;
+
+    /**
+     * Enable the Column Library - a docked panel listing hidden columns (grouped by `chooserGroup`)
+     * that users drag onto the chooser's bucket grids to show, and onto which they drag columns to
+     * hide. When enabled, hidden columns are removed from the buckets by default. Default false.
+     * Pass `true` for defaults, or a {@link ColLibraryConfig} to customize. Desktop only.
+     */
+    columnLibrary?: boolean | ColLibraryConfig;
+}
+
+/**
+ * Configuration for the ColumnChooser's optional Column Library, passed via
+ * {@link ColChooserConfig.columnLibrary}. Desktop only.
+ */
+export interface ColLibraryConfig {
+    /**
+     * Render the library's `chooserGroup` groups collapsed by default (default false). Recommended
+     * for large column sets.
+     */
+    collapseGroups?: boolean;
+
+    /**
+     * Max number of matching columns for a library group to be expanded while the chooser's filter
+     * is active (default 5). Set to 0 to disable.
+     */
+    autoExpandOnFilter?: number;
+
+    /**
+     * Fixed width of the Column Library panel (default 250).
+     */
+    libraryWidth?: number;
+}
+
+/**
+ * Configuration for a docked, non-modal column chooser - the model backing the side-panel chooser
+ * presentation. Passed via the `colChooserPanelModel` config on {@link GridConfig}. Extends
+ * {@link ColChooserConfig}; changes always auto-commit and stay in sync with external column state
+ * (i.e. `commitOnChange` is forced true). Desktop only.
+ */
+export interface ColChooserPanelConfig extends Omit<ColChooserConfig, 'commitOnChange'> {
+    /**
+     * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
+     * horizontally, so `side` is limited to 'left'/'right' (default 'right'). The dock is resize-only
+     * (open/close is driven externally - e.g. a `ColChooserButton` with `target: 'panel'`, or
+     * `GridModel.showColChooserPanel()`), so `collapsible` is omitted.
+     */
+    panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;

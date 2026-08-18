@@ -15,8 +15,9 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
+import {groupField} from './editpanels/GroupField';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
-import {getGroupOptions, getVisibilityOptions, getVisibilityInfo} from './Utils';
+import {getVisibilityOptions, getVisibilityInfo} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -33,7 +34,7 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
             title: `Save as...`,
             className,
             isOpen: true,
-            style: {width: 500},
+            style: {width: 550},
             canOutsideClickClose: false,
             onClose: () => model.close(),
             item: formPanel()
@@ -45,8 +46,6 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
         const {parent, formModel} = model,
             {visibility} = formModel.values,
-            isGlobal = visibility === 'global',
-            groupOptions = getGroupOptions(parent, isGlobal),
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
 
@@ -70,15 +69,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 }
                             })
                         }),
-                        formField({
-                            field: 'group',
-                            item: select({
-                                enableCreate: true,
-                                enableClear: true,
-                                placeholder: 'Select optional group....',
-                                options: groupOptions
-                            })
-                        }),
+                        groupField({model: model.groupFieldModel}),
                         formField({
                             field: 'description',
                             item: textArea({

@@ -27,6 +27,8 @@ import {
     JsonBlobService,
     LocalStorageService,
     MetricsService,
+    NdjsonFetchOptions,
+    NdjsonResult,
     PrefService,
     SessionStorageService,
     TrackService,
@@ -73,7 +75,7 @@ import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
-export const MIN_HOIST_CORE_VERSION = '31.2';
+export const MIN_HOIST_CORE_VERSION = '40.5.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -303,6 +305,14 @@ export class XHApi {
      */
     getJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
         return this.fetchService.getJson(opts, ctx);
+    }
+
+    /**
+     * Send an HTTP request and decode the response incrementally as NDJSON.
+     * @see FetchService.fetchNdjson
+     */
+    fetchNdjson(opts: NdjsonFetchOptions, ctx?: CallContextLike): NdjsonResult {
+        return this.fetchService.fetchNdjson(opts, ctx);
     }
 
     /**

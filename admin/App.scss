@@ -6,19 +6,11 @@
  */
 
 .xh-admin-app {
+  // The admin console uses left side-tab rails throughout - give them a consistent minimum width.
+  // All other vertical-switcher styling is inherited from the framework default.
   .xh-tab-switcher--left,
   .xh-tab-switcher--right {
-    min-width: 160px;
-    background-color: var(--xh-grid-bg-odd);
-    border-right: var(--xh-border-solid);
-
-    .bp6-tab {
-      border-radius: 0 !important;
-    }
-
-    .xh-tab-switcher__tab {
-      line-height: 40px;
-    }
+    --xh-tab-switcher-vertical-min-width: 160px;
   }
 
   &__editor-dialog {

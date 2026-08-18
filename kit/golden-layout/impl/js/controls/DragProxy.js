@@ -62,8 +62,8 @@ lm.controls.DragProxy = function( x, y, dragListener, layoutManager, contentItem
 
 	this._minX = containerRect.left + window.scrollX;
 	this._minY = containerRect.top + window.scrollY;
-	this._maxX = containerNode.clientWidth + this._minX;
-	this._maxY = containerNode.clientHeight + this._minY;
+	this._maxX = lm.utils.contentWidth(containerNode) + this._minX;
+	this._maxY = lm.utils.contentHeight(containerNode) + this._minY;
 	this._width = this.element.clientWidth;
 	this._height = this.element.clientHeight;
 

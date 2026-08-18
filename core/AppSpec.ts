@@ -7,7 +7,7 @@
 import {ElementFactory, HoistAppModel, HoistAuthModel, HoistProps, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
-import {Component, ComponentClass, FunctionComponent} from 'react';
+import {Component, ComponentClass, FunctionComponent, ReactElement} from 'react';
 
 /**
  * Spec for a client-side Hoist application. A config matching this class's shape is provided
@@ -118,6 +118,12 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     /** Optional message to show users when denied access to app. */
     lockoutMessage?: string;
 
+    /**
+     * Icon to display on the form-based login page, if active via `enableLoginForm: true`.
+     * Defaults to `Icon.shieldHalved()`.
+     */
+    loginPanelIcon?: ReactElement;
+
     /** Optional message to show on login form, if `showLoginForm: true`. */
     loginMessage?: string;
 
@@ -156,6 +162,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         lockoutMessage = null,
         lockoutPanel = null,
         loginMessage = null,
+        loginPanelIcon = null,
         modelClass,
         showBrowserContextMenu = false,
         trackAppLoad = true
@@ -191,6 +198,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.lockoutMessage = lockoutMessage;
         this.lockoutPanel = lockoutPanel;
         this.loginMessage = loginMessage;
+        this.loginPanelIcon = loginPanelIcon;
         this.modelClass = modelClass;
         this.showBrowserContextMenu = showBrowserContextMenu;
         this.trackAppLoad = trackAppLoad;

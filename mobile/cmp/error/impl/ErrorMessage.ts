@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {div, filler, hbox, p} from '@xh/hoist/cmp/layout';
+import {div, p, vbox} from '@xh/hoist/cmp/layout';
 import {ErrorMessageProps} from '@xh/hoist/cmp/error';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -21,15 +21,11 @@ export const errorMessageImpl = hoistCmp.factory<
     Omit<ErrorMessageProps, 'error' | 'actionFn' | 'detailsFn'>
 >({
     render({message, title, actionButtonProps, detailsButtonProps}) {
-        let buttons = [],
-            buttonBar = null;
+        // Stack action buttons vertically and full-width - idiomatic for mobile.
+        const buttons = [];
         if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps as ButtonProps));
         if (actionButtonProps) buttons.push(actionButton(actionButtonProps as ButtonProps));
-        if (buttons.length == 1) {
-            buttonBar = buttons[0];
-        } else if (buttons.length == 2) {
-            buttonBar = hbox(buttons[0], filler(), buttons[1]);
-        }
+        const buttonBar = buttons.length ? vbox({gap: true, items: buttons}) : null;
 
         return div({
             className: 'xh-error-message__inner',

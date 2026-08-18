@@ -10,7 +10,7 @@ import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -27,11 +27,13 @@ import {
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {
     colChooser as desktopColChooser,
+    colChooserPanel as desktopColChooserPanel,
     gridFilterDialog,
     ModalSupportModel,
     DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
+import type {ColChooserPanelModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserPanelModel';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
@@ -44,10 +46,12 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {type MouseEvent} from 'react';
+import {PartialDeep} from 'type-fest';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -65,7 +69,7 @@ export interface GridProps<M extends GridModel = GridModel>
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions?: GridOptions;
+    agOptions?: PartialDeep<GridOptions>;
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
@@ -102,6 +106,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 treeStyle,
                 highlightRowOnClick,
                 colChooserModel,
+                colChooserPanelModel,
                 filterModel,
                 enableFullWidthScroll
             } = model,
@@ -119,24 +124,38 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
+        const gridContainer = container({
+            className,
+            items: [
+                agGrid({
+                    model: model.agGridModel,
+                    ...getLayoutProps(props),
+                    ...impl.agOptions
+                }),
+                gridHScrollbar({
+                    omit: !enableFullWidthScroll,
+                    gridLocalModel: impl
+                })
+            ],
+            testId,
+            onKeyDown: impl.onKeyDown,
+            onMouseDown: impl.onViewMouseDown,
+            ref: composeRefs(impl.viewRef, model.viewRef, ref)
+        });
+
+        // Safe to use the desktop component unconditionally - GridModel never creates this model
+        // on mobile.
+        let content = gridContainer;
+        if (colChooserPanelModel) {
+            const chooser = desktopColChooserPanel({model: colChooserPanelModel}),
+                {side} = colChooserPanelModel as ColChooserPanelModel;
+
+            content =
+                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser);
+        }
+
         return fragment(
-            container({
-                className,
-                items: [
-                    agGrid({
-                        model: model.agGridModel,
-                        ...getLayoutProps(props),
-                        ...impl.agOptions
-                    }),
-                    gridHScrollbar({
-                        omit: !enableFullWidthScroll,
-                        gridLocalModel: impl
-                    })
-                ],
-                testId,
-                onKeyDown: impl.onKeyDown,
-                ref: composeRefs(impl.viewRef, model.viewRef, ref)
-            }),
+            content,
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
             filterModel ? gridFilterDialog({model: filterModel}) : null
         );
@@ -150,6 +169,10 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 //------------------------
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
+
+    // Structural "empty" grid space.
+    private static EMPTY_SPACE_SELECTOR =
+        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
 
     @lookup(GridModel)
     private model: GridModel;
@@ -386,7 +409,14 @@ export class GridLocalModel extends HoistModel {
         return {
             track: () => [model.agApi, model.groupBy],
             run: ([agApi, groupBy]) => {
-                if (agApi) agApi.setRowGroupColumns(groupBy);
+                if (!agApi) return;
+                agApi.setRowGroupColumns(groupBy);
+
+                // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
+                const state = model.columnState
+                    .filter(({colId}) => !groupBy.includes(colId))
+                    .map(({colId, hidden}) => ({colId, hide: hidden}));
+                agApi.applyColumnState({state});
             }
         };
     }
@@ -640,54 +670,24 @@ export class GridLocalModel extends HoistModel {
         });
     }
 
-    @logWithDebug
-    genTransaction(newRs, prevRs) {
-        if (!prevRs) return {add: newRs.list};
-
-        const newList = newRs.list,
-            prevList = prevRs.list;
-
-        let add = [],
-            update = [],
-            remove = [];
-        newList.forEach(rec => {
-            const existing = prevRs.getById(rec.id);
-            if (!existing) {
-                add.push(rec);
-            } else if (existing !== rec) {
-                update.push(rec);
-            }
-        });
-
-        if (newList.length !== prevList.length + add.length) {
-            remove = prevList.filter(rec => !newRs.getById(rec.id));
-        }
-
-        // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
-        const ret: any = {};
-        if (!isEmpty(add)) ret.add = add;
-        if (!isEmpty(update)) ret.update = update;
-        if (!isEmpty(remove)) ret.remove = remove;
-        return ret;
-    }
-
-    @logWithDebug
     syncData() {
         const {model} = this,
             {agGridModel, store, agApi} = model,
             newRs = store._filtered,
-            prevRs = this.prevRs,
-            prevCount = prevRs ? prevRs.count : 0;
+            prevRs = this.prevRs;
 
-        let transaction = null;
-        if (prevCount !== 0) {
-            transaction = this.genTransaction(newRs, prevRs);
-            if (!this.transactionIsEmpty(transaction)) {
-                this.logDebug(...this.genTxnLogMsgs(transaction));
-                agApi.applyTransaction(transaction);
-            }
-        } else {
-            agApi.updateGridOptions({rowData: newRs.list});
+        const start = performance.now(),
+            transaction = newRs.diffFrom(prevRs);
+        model.diagnostics.noteGenTransaction(transaction, newRs, prevRs, start);
+
+        const applyStart = performance.now();
+        if (!this.transactionIsEmpty(transaction)) {
+            agApi.applyTransaction(transaction);
+        } else if (!prevRs) {
+            // First sync with an empty store yields an empty transaction, but AG Grid must still
+            // be handed rowData to exit its initial loading state - otherwise a grid mounted over
+            // an empty store shows its loading overlay indefinitely instead of `emptyText`.
+            agApi.updateGridOptions({rowData: []});
         }
 
         if (model.externalSort) {
@@ -696,7 +696,7 @@ export class GridLocalModel extends HoistModel {
 
         this.updatePinnedSummaryRowData();
 
-        if (transaction?.update) {
+        if (!isEmpty(transaction.update)) {
             const visibleCols = model.getVisibleLeafColumns();
 
             // Refresh cells in columns with complex renderers
@@ -710,7 +710,7 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        if (!transaction || transaction.add || transaction.remove) {
+        if (!isEmpty(transaction.add) || !isEmpty(transaction.remove)) {
             wait().then(() => this.syncSelection());
         }
 
@@ -725,6 +725,8 @@ export class GridLocalModel extends HoistModel {
 
         this.prevRs = newRs;
         this.applyScrollOptimization();
+
+        model.diagnostics.noteApplyTransaction(transaction, newRs, applyStart);
     }
 
     syncSelection() {
@@ -737,15 +739,6 @@ export class GridLocalModel extends HoistModel {
 
     transactionIsEmpty(t) {
         return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
-    }
-
-    private genTxnLogMsgs(t): string[] {
-        const {add, update, remove} = t;
-        return [
-            `update: ${update ? update.length : 0}`,
-            `add: ${add ? add.length : 0}`,
-            `remove: ${remove ? remove.length : 0}`
-        ];
     }
 
     //------------------------
@@ -842,6 +835,17 @@ export class GridLocalModel extends HoistModel {
 
     navigateToNextCell = agParams => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);
+    };
+
+    // `stopEditingWhenCellsLoseFocus` doesn't fire on clicks in empty grid space (focus stays in
+    // the grid), so commit the active edit on those clicks ourselves. Require exact match on empty
+    // space to avoid interfering with cell editors.
+    onViewMouseDown = (evt: MouseEvent) => {
+        const {model} = this,
+            target = evt.target as HTMLElement;
+        if (model.isEditing && target.matches(GridLocalModel.EMPTY_SPACE_SELECTOR)) {
+            model.agApi?.stopEditing();
+        }
     };
 
     onCellMouseDown = evt => {

@@ -96,7 +96,10 @@ compile it via webpack during their own build. Webpack only processes files reac
 chains from app entry points. As long as no browser-targeted hoist code imports from `mcp/`, the
 MCP server's Node-only dependencies (`@modelcontextprotocol/sdk`, `ts-morph`, etc.) will never
 enter application bundles. The separate `tsconfig.json` provides an additional safety net at the
-type-checking level, and all MCP dependencies are `devDependencies` in the root `package.json`.
+type-checking level. Note that these packages are regular `dependencies`, not `devDependencies` --
+the published `hoist-mcp`, `hoist-docs`, and `hoist-ts` bins must resolve them from a consuming
+application's own install, and package managers do not install a dependency's `devDependencies`.
+Bundle isolation therefore rests on the import-chain boundary alone, not on dependency scope.
 
 **Tolerant doc-id resolution.** `data/doc-id-resolver.ts` accepts shortened or
 slightly-off doc IDs that agents naturally try (e.g. `grid` → `cmp/grid/README.md`,
@@ -259,10 +262,10 @@ The repository includes a `.mcp.json` file that Claude Code reads automatically:
 No manual setup is needed -- Claude Code discovers and starts the server when you open a session
 in the hoist-react directory.
 
-**Method 2: yarn script**
+**Method 2: pnpm exec (from the hoist-react repo)**
 
 ```bash
-yarn hoist-mcp
+pnpm exec hoist-mcp
 ```
 
 **Method 3: npx (from installed package)**
@@ -724,6 +727,18 @@ console.log('Server started');
 The `resolveDocPath()` utility in `util/paths.ts` validates that resolved paths stay within the
 repository root. It rejects paths containing `..` segments. Always use this function when resolving
 file paths from external input.
+
+### Path Separators (Cross-Platform)
+
+ts-morph's `SourceFile.getFilePath()` always returns **forward-slash** paths on every platform
+(e.g. `D:/hoist-react/cmp/grid/GridModel.ts` on Windows), whereas `resolveRepoRoot()` returns a
+native path from Node's `path` module -- **backslash-separated** on Windows (`D:\hoist-react`).
+Comparing or slicing one against the other (e.g. `filePath.startsWith(repoRoot + '/')`) silently
+fails on Windows, filtering out every source file and yielding an empty symbol index. When
+comparing against or slicing a ts-morph path, use `resolveRepoRootPosix()` (and `toPosixPath()` for
+any incoming file-path argument) from `util/paths.ts` rather than `resolveRepoRoot()`. Filesystem
+access that stays within Node's `path`/`fs` APIs (e.g. the doc registry, the index cache) can keep
+using `resolveRepoRoot()`, since those are separator-consistent on both sides.
 
 ### Registry Sync
 

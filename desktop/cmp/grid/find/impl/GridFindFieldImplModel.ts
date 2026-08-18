@@ -5,14 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
+import {getFilterRegex} from '@xh/hoist/data';
 import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
-    escapeRegExp,
     filter,
     flatMap,
     get,
@@ -169,7 +169,7 @@ export class GridFindFieldImplModel extends HoistModel {
             return;
         }
 
-        const regex = this.getRegex(query),
+        const regex = getFilterRegex(query, this.matchMode),
             valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
 
         this.results = this.getRecords()
@@ -253,22 +253,8 @@ export class GridFindFieldImplModel extends HoistModel {
         return records;
     }
 
-    private getRegex(searchTerm: string): RegExp {
-        searchTerm = escapeRegExp(searchTerm);
-        switch (this.matchMode) {
-            case 'any':
-                return new RegExp(searchTerm, 'i');
-            case 'start':
-                return new RegExp(`^${searchTerm}`, 'i');
-            case 'startWord':
-                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
-        }
-        throw XH.exception('Unknown matchMode in GridFindField');
-    }
-
     private getActiveFields(): string[] {
         const {gridModel, includeFields, excludeFields} = this,
-            groupBy = gridModel.groupBy,
             visibleCols = gridModel.getVisibleLeafColumns();
 
         let ret = ['id', ...gridModel.store.fieldNames];
@@ -293,12 +279,11 @@ export class GridFindFieldImplModel extends HoistModel {
         // Run exclude once more to support explicitly excluding a dot-sep field added above.
         if (excludeFields) ret = without(ret, ...excludeFields);
 
-        // Final filter for column visibility, or explicit request for inclusion.
+        // Final filter for column visibility, or explicit request for inclusion. Deliberately not
+        // keyed to groupBy, so query results stay stable across regrouping (see #4070).
         ret = ret.filter(f => {
             return (
-                (includeFields && includeFields.includes(f)) ||
-                visibleCols.find(c => c.field === f) ||
-                groupBy.includes(f)
+                (includeFields && includeFields.includes(f)) || visibleCols.find(c => c.field === f)
             );
         });
 

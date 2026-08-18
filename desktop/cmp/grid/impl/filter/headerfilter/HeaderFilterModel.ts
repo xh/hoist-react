@@ -26,6 +26,9 @@ import {CustomTabModel} from './custom/CustomTabModel';
 import {valuesTab} from './values/ValuesTab';
 import {ValuesTabModel} from './values/ValuesTabModel';
 
+/**
+ * @internal
+ */
 export class HeaderFilterModel extends HoistModel {
     override xhImpl = true;
 
@@ -98,10 +101,15 @@ export class HeaderFilterModel extends HoistModel {
 
     @computed
     get isCustomFilter() {
-        const {columnCompoundFilter, columnFilters} = this;
+        const {columnCompoundFilter, columnFilters, fieldType} = this;
         if (columnCompoundFilter) return true;
         if (isEmpty(columnFilters)) return false;
-        return columnFilters.some(it => !['=', '!=', 'includes'].includes(it.op));
+        return columnFilters.some(it => {
+            const isValuesTabOp = ['=', '!=', 'includes'].includes(it.op),
+                isTagsBlank =
+                    fieldType === 'tags' && ['=', '!='].includes(it.op) && it.value == null;
+            return !isValuesTabOp || isTagsBlank;
+        });
     }
 
     get commitOnChange() {
@@ -170,8 +178,8 @@ export class HeaderFilterModel extends HoistModel {
         if (close) {
             this.parent.close();
         } else {
-            // We must wait before resetting as GridFilterModel.setFilter() is async
-            wait().then(() => this.resetTabModels());
+            // Wait as setFilter is async.
+            wait().then(() => this.syncWithFilter());
         }
     }
 

@@ -30,16 +30,21 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorPro
                 onCommit: flushOnCommit
                     ? () => wait().then(() => props.agParams.stopEditing())
                     : null,
-                rsOptions: {
-                    styles: {
-                        menu: styles => ({
-                            ...styles,
-                            whiteSpace: 'nowrap',
-                            width: 'auto',
-                            minWidth: '100%'
-                        })
-                    }
-                },
+                // Auto-size the menu to content, not the narrow cell - but skip when width is already
+                // set, via windowed measurement (#4325) or an explicit `menuWidth` (#4057).
+                rsOptions:
+                    props.inputProps?.enableWindowed || props.inputProps?.menuWidth != null
+                        ? {}
+                        : {
+                              styles: {
+                                  menu: styles => ({
+                                      ...styles,
+                                      whiteSpace: 'nowrap',
+                                      width: 'auto',
+                                      minWidth: '100%'
+                                  })
+                              }
+                          },
                 ...props.inputProps
             }
         };

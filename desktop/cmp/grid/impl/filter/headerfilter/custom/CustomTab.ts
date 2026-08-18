@@ -23,13 +23,24 @@ import {CustomTabModel} from './CustomTabModel';
 export const customTab = hoistCmp.factory({
     model: uses(CustomTabModel),
     render({model}) {
+        const {rowModels} = model;
+        if (!rowModels) {
+            return panel({
+                className: 'xh-custom-filter-tab',
+                item: div({
+                    className: 'xh-custom-filter-tab__unsupported',
+                    item: 'This filter is too complex to edit here.'
+                })
+            });
+        }
+
         return panel({
             className: 'xh-custom-filter-tab',
             tbar: tbar(),
             items: div({
                 className: 'xh-custom-filter-tab__list',
                 items: [
-                    ...model.rowModels.map(m => customRow({model: m})),
+                    ...rowModels.map(m => customRow({model: m})),
                     div({
                         className: 'xh-custom-filter-tab__list__add-btn-row',
                         items: [
@@ -52,7 +63,7 @@ export const customTab = hoistCmp.factory({
 const tbar = hoistCmp.factory<CustomTabModel>(({model}) => {
     return toolbar({
         className: 'xh-custom-filter-tab__tbar',
-        omit: model.rowModels.length < 2,
+        omit: !model.rowModels || model.rowModels.length < 2,
         compact: true,
         items: [
             filler(),

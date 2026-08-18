@@ -15,11 +15,13 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let ColChooserModel = null;
+export let ColChooserModalModel = null;
+export let ColChooserPanelModel = null;
 export let ColumnHeaderFilterModel = null;
 export let ModalSupportModel = null;
 export let DashContainerViewModel = null;
 export let colChooser = null;
+export let colChooserPanel = null;
 export let zoneMapper = null;
 export let columnHeaderFilter = null;
 export let dockContainerImpl = null;
@@ -38,11 +40,13 @@ export let cardHeaderImpl = null;
  * Not for Application use.
  */
 export function installDesktopImpls(impls) {
-    ColChooserModel = impls.ColChooserModel;
+    ColChooserModalModel = impls.ColChooserModalModel;
+    ColChooserPanelModel = impls.ColChooserPanelModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     ModalSupportModel = impls.ModalSupportModel;
     DashContainerViewModel = impls.DashContainerViewModel;
     colChooser = impls.colChooser;
+    colChooserPanel = impls.colChooserPanel;
     zoneMapper = impls.zoneMapper;
     columnHeaderFilter = impls.columnHeaderFilter;
     dockContainerImpl = impls.dockContainerImpl;

@@ -4,22 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {getAppModel} from '@xh/hoist/admin/AdminUtils';
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {CallContext, HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
-import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {compact, groupBy, mapValues} from 'lodash';
-import moment from 'moment/moment';
+import {compact, groupBy, isEmpty, isString, mapValues, uniq} from 'lodash';
 import {RoleEditorModel} from './editor/RoleEditorModel';
-import {HoistRole, RoleModuleConfig} from './Types';
+import {DirectoryGroupInfo, HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     override telemetryPrefix = 'xh.client.admin.roles';
@@ -41,9 +40,26 @@ export class RoleModel extends HoistModel {
     @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
-    @observable.ref moduleConfig: RoleModuleConfig;
+
+    /**
+     * Display info for directory groups, keyed by the identifier stored on the role. Values are
+     * either a resolved {@link DirectoryGroupInfo} or a string describing a lookup error.
+     * Loaded via `roleAdmin/directoryGroupsInfo` after each load of the role list. (observable)
+     */
+    @observable.ref directoryGroupInfo: Record<string, DirectoryGroupInfo | string> = {};
+
+    /**
+     * Set to false if the server 404s the `directoryGroupsInfo` endpoint (i.e. app on an older
+     * hoist-core), to avoid re-requesting and re-logging on every role list refresh.
+     */
+    directoryGroupInfoAvailable = true;
 
     @bindable showInGroups = true;
+
+    /** Role-module config - loaded at init. */
+    get moduleConfig(): RoleModuleConfig {
+        return getAppModel().roleModuleConfig;
+    }
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -58,6 +74,10 @@ export class RoleModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = this.createGridModel();
+        this.filterChooserModel = this.createFilterChooserModel();
+
         this.addReaction({
             track: () => this.showInGroups,
             run: showInGroups => {
@@ -76,9 +96,6 @@ export class RoleModel extends HoistModel {
         return this.runner({loadSpec})
             .span('list')
             .run(async ctx => {
-                await this.ensureInitializedAsync(ctx);
-                if (!this.moduleConfig.enabled) return;
-
                 const {data} = await XH.fetchJson({url: 'roleAdmin/list'}, ctx);
                 if (loadSpec.isStale) return;
 
@@ -86,6 +103,7 @@ export class RoleModel extends HoistModel {
                     this.allRoles = this.processRolesFromServer(data);
                 });
                 this.displayRoles(loadSpec.isRefresh);
+                this.loadDirectoryGroupInfoAsync();
                 await this.gridModel.preSelectFirstAsync();
             })
             .catch(e => {
@@ -108,6 +126,30 @@ export class RoleModel extends HoistModel {
     clear() {
         this.allRoles = [];
         this.gridModel.clear();
+    }
+
+    /** Resolved display info for a directory group, or null if unresolved or lookup failed. */
+    getDirectoryGroupInfo(name: string): DirectoryGroupInfo {
+        const info = this.directoryGroupInfo[name];
+        return isString(info) ? null : (info ?? null);
+    }
+
+    /** Friendly display name for a directory group, with fallback formatting if unresolved. */
+    getDirectoryGroupDisplayName(name: string): string {
+        return this.getDirectoryGroupInfo(name)?.displayName ?? RoleModel.fmtDirectoryGroup(name);
+    }
+
+    /** Description of any error encountered resolving display info for a directory group. */
+    getDirectoryGroupLookupError(name: string): string {
+        const info = this.directoryGroupInfo[name];
+        return isString(info) ? info : null;
+    }
+
+    /** Merge additional entries into the directory group display info cache. */
+    @action
+    updateDirectoryGroupInfo(updates: Record<string, DirectoryGroupInfo | string>) {
+        if (isEmpty(updates)) return;
+        this.directoryGroupInfo = {...this.directoryGroupInfo, ...updates};
     }
 
     async createAsync(roleSpec?: HoistRole): Promise<void> {
@@ -235,17 +277,31 @@ export class RoleModel extends HoistModel {
         gridModel.autosizeAsync({includeCollapsedChildren: true});
     }
 
-    private async ensureInitializedAsync(ctx: CallContext) {
-        if (this.moduleConfig) return;
-
-        const config = await this.runner(ctx).fetchJson({url: 'roleAdmin/config'});
-        runInAction(() => {
-            this.moduleConfig = config;
-            if (config.enabled) {
-                this.gridModel = this.createGridModel();
-                this.filterChooserModel = this.createFilterChooserModel();
+    private async loadDirectoryGroupInfoAsync() {
+        const names = uniq(this.allRoles.flatMap(it => it.directoryGroups));
+        if (
+            isEmpty(names) ||
+            !this.moduleConfig.directoryGroupsSupported ||
+            !this.directoryGroupInfoAvailable
+        ) {
+            return;
+        }
+        try {
+            const {data} = await this.runner()
+                .span('directoryGroupsInfo')
+                .fetchJson({url: 'roleAdmin/directoryGroupsInfo', params: {names}});
+            this.updateDirectoryGroupInfo(data);
+        } catch (e) {
+            if (e?.httpStatus === 404) {
+                this.directoryGroupInfoAvailable = false;
+                this.logWarn(
+                    'Server does not support directory group display info - will show raw identifiers',
+                    e
+                );
+            } else {
+                this.logError('Failed to resolve directory group display info', e);
             }
-        });
+        }
     }
 
     private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {
@@ -397,23 +453,7 @@ export class RoleModel extends HoistModel {
                 config.directoryGroupsSupported && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
-                {
-                    field: 'lastUpdated',
-                    example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
-                    },
-                    valueRenderer: v => fmtDate(v),
-                    ops: ['>', '>=', '<', '<=']
-                }
+                'lastUpdated'
             ]),
             persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });

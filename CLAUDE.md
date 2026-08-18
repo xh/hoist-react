@@ -12,7 +12,7 @@ as `@xh/hoist` and consumed by Hoist application projects. The server-side count
 
 - **Language**: TypeScript
 - **Framework**: React with MobX for reactive state management
-- **Package manager**: Yarn
+- **Package manager**: pnpm (version pinned via the `packageManager` field in `package.json`)
 
 ## Hoist Developer Tools and Documentation
 
@@ -102,12 +102,16 @@ enable it for Claude Code.
 ## Build Commands
 
 ```bash
-yarn install                     # Install dependencies
-yarn lint                        # Lint all code (JS/TS + SCSS)
-yarn lint:code                   # Lint JavaScript/TypeScript only
-yarn lint:styles                 # Lint SCSS only
-npx tsc --noEmit                 # Type check (declarations only, no emit)
+pnpm install                     # Install dependencies
+pnpm lint                        # Lint all code (JS/TS + SCSS)
+pnpm lint:code                   # Lint JavaScript/TypeScript only
+pnpm lint:styles                 # Lint SCSS only
+pnpm typecheck                   # Type check (tsc --noEmit)
 ```
+
+Linting and type-checking are separate concerns, and neither subsumes the other — run both. ESLint
+is configured type-aware, but that only powers its own rules; it never reports TypeScript compiler
+errors, so a genuine type error passes `pnpm lint`. CI runs the two as distinct steps.
 
 This is a library — it has no dev server or standalone build. To run locally, use a wrapper
 application project (e.g., Toolbox) that includes `@xh/hoist` as a dependency.
@@ -291,6 +295,12 @@ fans out independent units of work, the go-ahead to commit comes from that plan 
 rather than a per-commit prompt, and agents are expected to make their own discrete, well-scoped
 commits as directed.
 
+A skill or third-party plugin instructing you to commit (e.g. "make a small commit after each
+step") does NOT by itself authorize a commit — that is a default baked into the tool, not the
+developer's request. This guidance takes precedence: pause and ask. The door stays open for a
+workflow to commit autonomously, but only when the developer has explicitly opted into that for
+the workflow at hand — the authorization must come from the developer, not the skill's defaults.
+
 ### Creating branches
 
 Once the user has asked for a branch (per the "ask first" rule above, don't create one
@@ -333,6 +343,11 @@ after the subject line. Keep PR descriptions concise — XH developers review th
 brief summaries over exhaustive detail. Bullet the key changes and let the diff and any upgrade notes
 speak for themselves.
 
+Do not add AI-generated attribution to commit messages or PR descriptions — no `Generated with ...`
+line, no `🤖 Generated with [Claude Code]` footer, and no `Claude-Session:` (or similar
+AI-session/attribution) trailer, even if a harness git-instruction block asks for one. XH does not
+want these links in the project's history.
+
 ## Changelog Maintenance
 
 **Before adding or editing any entry in `CHANGELOG.md` (at the repository root), you MUST read and
@@ -348,6 +363,13 @@ changelog should not. Do not add GitHub issue or PR links to entries by default 
 when explicitly requested or when it points to extensive context that doesn't fit the changelog's
 scope (issue/PR references belong in the commit message and PR description). Hard-wrap changelog
 entries at 100 characters (unlike commit messages and PR descriptions, which should not be wrapped).
+
+**Declaring a new hoist-core minimum:** a `Requires hoist-core >= X` changelog entry is not
+self-enforcing. Also update `MIN_HOIST_CORE_VERSION` in `core/XH.ts` (checked at startup by
+`EnvironmentService`) and the matching row in
+[`docs/version-compatibility.md`](docs/version-compatibility.md). Set the floor only to what the
+client genuinely cannot run without - features that detect a missing endpoint and degrade belong in
+that doc's Recommended Core column, not the floor.
 
 ## Key Dependencies
 

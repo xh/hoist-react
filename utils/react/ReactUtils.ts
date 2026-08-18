@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Content} from '@xh/hoist/core';
+import type {Content} from '@xh/hoist/core';
 import {ReactElement, cloneElement, createElement, isValidElement} from 'react';
 import {isFunction, isNil} from 'lodash';
 import {renderToStaticMarkup as reactRenderToStaticMarkup} from 'react-dom/server';

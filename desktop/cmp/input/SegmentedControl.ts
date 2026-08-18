@@ -4,21 +4,24 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    HoistInputModel,
+    HoistInputProps,
+    OptionPrimitive,
+    SegmentedControlNullOption,
+    SegmentedControlOption,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
-import {ReactElement} from 'react';
 import './SegmentedControl.scss';
-
-type OptionPrimitive = string | number | boolean | LocalDate;
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
@@ -51,52 +54,6 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     outlined?: boolean;
 }
 
-export interface SegmentedControlOption {
-    /** Value for this option. */
-    value: OptionPrimitive;
-
-    /** Display label. Defaults to `value.toString()` if omitted. */
-    label?: string;
-
-    /** Icon element, displayed before the label. */
-    icon?: ReactElement;
-
-    /** True to disable this individual option. */
-    disabled?: boolean;
-
-    /**
-     * Visual intent for this option - rendered as a solid fill when selected and as a subtle
-     * text-color hint when not (e.g. to flag a destructive choice). Overrides any control-level
-     * `intent` default. Defaults to the control's `intent`.
-     */
-    intent?: Intent;
-}
-
-/**
- * Variant of SegmentedControlOption for representing a null/"no value" selection.
- * Label is required to force use case to override default js 'null' toString rendering.
- */
-export interface SegmentedControlNullOption {
-    /** Null value for this option. */
-    value: null;
-
-    /** Display label - required for null options. */
-    label: string;
-
-    /** Icon element, displayed before the label. */
-    icon?: ReactElement;
-
-    /** True to disable this individual option. */
-    disabled?: boolean;
-
-    /**
-     * Visual intent for this option - rendered as a solid fill when selected and as a subtle
-     * text-color hint when not (e.g. to flag a destructive choice). Overrides any control-level
-     * `intent` default. Defaults to the control's `intent`.
-     */
-    intent?: Intent;
-}
-
 /**
  * An input for selecting a single value from a small set of mutually exclusive options,
  * rendered as a group of toggle buttons with clear visual indication of the active
@@ -123,6 +80,7 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
     intent?: Intent;
+    testId?: string;
     _key: string;
 }
 
@@ -135,13 +93,14 @@ class SegmentedControlModel extends HoistInputModel {
         return options.map((o: any, idx: number) => {
             const key = String(idx);
             if (isObject(o)) {
-                const {label, value, icon, disabled, intent} = o as SegmentedControlOption;
+                const {label, value, icon, disabled, intent, testId} = o as SegmentedControlOption;
                 return {
                     value: this.toInternal(value),
                     label: label ?? (icon ? '' : String(value)),
                     icon,
                     disabled,
                     intent,
+                    testId,
                     _key: key
                 };
             } else {
@@ -206,13 +165,15 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
     // applied via a per-button className that our SCSS keys its solid/hint coloring off of.
     const defaultIntent = intent && intent !== 'none' ? intent : null,
         bpOptions = model.normalizedOptions.map(opt => {
-            const optIntent = opt.intent ?? defaultIntent;
+            const optIntent = opt.intent ?? defaultIntent,
+                optTestId = opt.testId ?? (testId ? `${testId}-${String(opt.value)}` : null);
             return {
                 value: opt._key,
                 label: opt.label,
                 icon: opt.icon,
                 disabled: opt.disabled,
-                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null
+                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null,
+                ...(optTestId ? {[TEST_ID]: optTestId} : null)
             };
         });
 

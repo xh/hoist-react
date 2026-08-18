@@ -96,7 +96,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                     text: 'Replace',
                     icon: Icon.transaction(),
                     items: replaceMenuItems,
-                    hidden: !viewSpec.allowRemove || contentLocked
+                    hidden: !viewSpec.allowRemove || contentLocked || isEmpty(replaceMenuItems)
                 },
                 {
                     text: 'Duplicate',

@@ -6,14 +6,18 @@
  */
 
 import {hoistCmp} from '@xh/hoist/core';
-import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {
+    buildViewGroupTree,
+    ViewGroupNode,
+    ViewManagerModel,
+    ViewInfo
+} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators, parseMenuItems} from '@xh/hoist/utils/impl';
-import {Dictionary} from 'express-serve-static-core';
-import {each, filter, groupBy, isEmpty, isFunction, orderBy, some, startCase} from 'lodash';
+import {filter, groupBy, isEmpty, isFunction, keys, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
 
@@ -37,8 +41,8 @@ export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
 
 function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
     const {enableDefault, view, defaultDisplayName, typeDisplayName, globalDisplayName} = model,
-        ownedViews = groupBy(filter(model.ownedViews, 'isPinned'), 'group'),
-        globalViews = groupBy(filter(model.globalViews, 'isPinned'), 'group'),
+        ownedViews = filter(model.ownedViews, 'isPinned'),
+        globalViews = filter(model.globalViews, 'isPinned'),
         sharedViews = groupBy(filter(model.sharedViews, 'isPinned'), 'owner'),
         pluralName = pluralize(startCase(typeDisplayName)),
         ret = [];
@@ -59,7 +63,19 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
     if (!isEmpty(sharedViews)) {
         ret.push(
             menuDivider({title: `Shared ${pluralName}`}),
-            ...getGroupedMenuItems(sharedViews, model)
+            // One submenu per owner, each nesting that owner's views by group within.
+            ...keys(sharedViews)
+                .sort((a, b) => a.localeCompare(b))
+                .map(owner =>
+                    menuItem({
+                        text: owner,
+                        icon: some(sharedViews[owner], 'isCurrentView')
+                            ? Icon.check()
+                            : Icon.placeholder(),
+                        shouldDismissPopover: false,
+                        items: getGroupedMenuItems(sharedViews[owner], model)
+                    })
+                )
         );
     }
 
@@ -131,35 +147,33 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
     ];
 }
 
-function getGroupedMenuItems(
-    byGroup: Dictionary<ViewInfo[]>,
-    model: ViewManagerModel
-): ReactNode[] {
-    // Create grouped tree...
-    let nodes: (ViewInfo | {name: string; groupViews: ViewInfo[]; isSelected: boolean})[] = [],
-        selectedToken = model.view.token;
+function getGroupedMenuItems(views: ViewInfo[], model: ViewManagerModel): ReactNode[] {
+    // Groups (nested to any depth via slash-delimited group names) first, then loose views,
+    // alpha by name at every level. But could easily intersperse instead.
+    const {roots, ungrouped} = buildViewGroupTree(views);
+    return [
+        ...roots.map(node => groupMenuItem(node, model)),
+        ...ungrouped.map(v => viewMenuItem(v, model))
+    ];
+}
 
-    each(byGroup, (groupViews, name) => {
-        if (name != 'null') {
-            nodes.push({name, groupViews, isSelected: some(groupViews, {token: selectedToken})});
-        } else {
-            nodes.push(...groupViews);
-        }
+function groupMenuItem(node: ViewGroupNode, model: ViewManagerModel): ReactNode {
+    return menuItem({
+        text: node.name,
+        icon: containsSelected(node, model) ? Icon.check() : Icon.placeholder(),
+        shouldDismissPopover: false,
+        items: [
+            ...node.children.map(child => groupMenuItem(child, model)),
+            ...node.views.map(v => viewMenuItem(v, model))
+        ]
     });
+}
 
-    // ...sort groups first, then alpha by name. But could easily intersperse instead
-    nodes = orderBy(nodes, [v => v instanceof ViewInfo, 'name']);
-
-    return nodes.map(n => {
-        return n instanceof ViewInfo
-            ? viewMenuItem(n, model)
-            : menuItem({
-                  text: n.name,
-                  icon: n.isSelected ? Icon.check() : Icon.placeholder(),
-                  shouldDismissPopover: false,
-                  items: n.groupViews.map(v => viewMenuItem(v, model))
-              });
-    });
+function containsSelected(node: ViewGroupNode, model: ViewManagerModel): boolean {
+    return (
+        some(node.views, {token: model.view.token}) ||
+        some(node.children, child => containsSelected(child, model))
+    );
 }
 
 function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
