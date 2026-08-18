@@ -128,10 +128,11 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   unchanged, as already detected by `Store.loadData()`. Connected `View`s now sync their info and
   timestamp instead of regenerating all of their rows, so polled reloads of unchanged data cost
   nothing downstream.
-* Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
-  incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
-  the size of the change rather than the size of the store. Enable via `Store` config
-  `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental` soft-config.
+* Added experimental support for patch-based record collections within `Store`, substantially
+  improving performance for incremental changes to large datasets - transaction, filtering, and
+  grid-sync costs scale with the size of the change rather than the size of the store. Enable via
+  `Store` config `experimental: {maxPatchRatio: 0.1}` or app-wide via the
+  `xhStoreExperimental` soft-config. The ratio may also be changed on a live `Store` at any time.
 
 #### FetchService - ndjson + string interning
 

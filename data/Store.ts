@@ -47,7 +47,6 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
-import {PatchableRecordSet} from './impl/PatchableRecordSet';
 import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
 /**
@@ -235,14 +234,14 @@ export interface StoreConfig {
     /**
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API. Currently includes:
-     *   - `patchableRecordSet: true` to enable {@link PatchableRecordSet} - incremental record
-     *     collections that make transaction cost scale with the size of the change rather than
-     *     the size of the store. Note record order becomes stable-by-incumbency rather than
-     *     source-order: existing records keep their positions and additions append, including
-     *     records entering a filter incrementally and adds within partial reloads. Apply a
-     *     grid sort where deterministic order matters.
-     *   - `patchRecordsMaxRatio` - its core threshold, the max patch size as a fraction of
-     *     total records (default 0.1).
+     *   - `maxPatchRatio` - max size of a RecordSet patch layer as a fraction of total records,
+     *     clamped to [0, 0.5] (default 0, disabling patching). Set to e.g. 0.1 to make
+     *     transaction, filtering, and grid-sync costs scale with the size of the change rather
+     *     than the size of the store. Note record order then becomes stable-by-incumbency rather
+     *     than source-order: existing records keep their positions and additions append, including
+     *     records entering a filter incrementally and adds within partial reloads. Apply a grid
+     *     sort where deterministic order matters. The ratio is read live on each operation, so
+     *     it may also be changed on an existing Store at any time.
      */
     experimental?: PlainObject;
 }
@@ -1321,8 +1320,7 @@ export class Store
 
     @action
     private resetRecords() {
-        const cls = this.experimental.patchableRecordSet ? PatchableRecordSet : RecordSet;
-        this._committed = this._current = this._filtered = new cls(this) as unknown as RecordSet;
+        this._committed = this._current = this._filtered = new RecordSet(this);
         this.summaryRecords = null;
     }
 
