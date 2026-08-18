@@ -557,7 +557,7 @@ export class Store
         // Skip downstream work on no-change reloads, unless local mods are being discarded.
         if (updated !== _committed || updated !== _current) {
             this._committed = this._current = updated;
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
 
         this.lastLoaded = this.lastUpdated = Date.now();
@@ -608,7 +608,7 @@ export class Store
 
             if (updated !== _committed || updated !== _current) {
                 this._committed = this._current = updated;
-                this.rebuildFiltered();
+                this.incrementalRefilter();
             }
             this.lastLoaded = this.lastUpdated = Date.now();
         });
@@ -757,7 +757,7 @@ export class Store
         }
         this.diagnostics.noteUpdate(this._current, prevCurrent, start);
 
-        if (hasChanges) this.rebuildFiltered();
+        if (hasChanges) this.incrementalRefilter();
 
         if (!isEmpty(changeLog)) {
             this.lastUpdated = Date.now();
@@ -772,7 +772,7 @@ export class Store
      * re-filter automatically whenever StoreRecord data is updated or modified.
      */
     refreshFilter() {
-        this.rebuildFiltered();
+        this.fullRefilter();
     }
 
     /**
@@ -817,7 +817,7 @@ export class Store
         });
 
         this._current = this._current.withTransaction({add: addRecs});
-        this.rebuildFiltered();
+        this.incrementalRefilter();
     }
 
     /**
@@ -840,7 +840,7 @@ export class Store
             .withTransaction({remove: idsToRemove})
             .normalize(this._committed);
 
-        this.rebuildFiltered();
+        this.incrementalRefilter();
     }
 
     /**
@@ -931,7 +931,7 @@ export class Store
         if (!isEmpty(updateRecs)) {
             this._current = this._current.withTransaction({update: updateRecs});
             changeLog.update = updateRecs;
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
 
         return changeLog;
@@ -963,7 +963,7 @@ export class Store
                 .withTransaction({update: recsToRevert.map(r => this.getCommittedOrThrow(r.id))})
                 .normalize(this._committed);
 
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
     }
 
@@ -979,7 +979,7 @@ export class Store
         this.throwIfProjectionOnly('revert');
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
-        this.rebuildFiltered();
+        this.incrementalRefilter();
     }
 
     /** Get a specific Field by name.*/
@@ -1087,7 +1087,7 @@ export class Store
         filter = parseFilter(filter);
         if (this.filter != filter && !this.filter?.equals(filter)) {
             this.filter = filter;
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
 
         if (!filter) this.setXhFilterText(null);
@@ -1096,7 +1096,7 @@ export class Store
     @action
     setFilterIncludesChildren(val: boolean) {
         this.filterIncludesChildren = val;
-        this.rebuildFiltered();
+        this.fullRefilter();
     }
 
     /** Convenience method to clear the Filter applied to this store. */
@@ -1356,11 +1356,19 @@ export class Store
     }
 
     @action
-    private rebuildFiltered() {
+    private incrementalRefilter() {
         const start = performance.now(),
             {_current, _filtered: prevFiltered} = this;
         this._filtered = _current.withFilter(this.filter, prevFiltered);
         this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
+    }
+
+    @action
+    private fullRefilter() {
+        const start = performance.now(),
+            {_current} = this;
+        this._filtered = _current.withFilter(this.filter, null);
+        this.diagnostics.noteFilter(this._filtered, _current, null, start);
     }
 
     //---------------------------------------

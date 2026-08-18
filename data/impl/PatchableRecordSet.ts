@@ -142,7 +142,7 @@ export class PatchableRecordSet {
     /**
      * Changes that would derive this RecordSet from `prev` - computed by comparing patch
      * layers at O(patch) when both instances share a base map, by a full scan of both sets
-     * otherwise (flattens, fresh-base reloads). An empty delta means identical content.
+     * otherwise. An empty delta means identical content.
      */
     diffFrom(prev: PatchableRecordSet): RecordSetDelta {
         const update = [],
@@ -154,6 +154,7 @@ export class PatchableRecordSet {
         const {base, patch} = this,
             prevPatch = prev.patch;
 
+        // Scan compare
         if (prev.base !== base) {
             this.forEachRecord((rec, id) => {
                 const existing = prev.getById(id);
@@ -171,6 +172,7 @@ export class PatchableRecordSet {
             return {update, add, remove};
         }
 
+        //... or patch compare
         if (patch !== prevPatch) {
             const prevEff = (id: StoreRecordId): StoreRecord => {
                 if (prevPatch) {
@@ -266,6 +268,7 @@ export class PatchableRecordSet {
         return this.isEqual(target) ? target : this;
     }
 
+    // Caller can pass a `prevFiltered`, if it has one that has the identical filter applied.
     withFilter(filter: Filter, prevFiltered?: PatchableRecordSet): PatchableRecordSet {
         if (!filter) return this;
 
