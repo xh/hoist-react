@@ -1652,10 +1652,12 @@ export class GridModel extends HoistModel {
             return;
         }
 
-        agApi.startEditingCell({
-            rowIndex,
-            colKey: colToEdit.colId
-        });
+        // Focus the cell before starting the editor - ag-Grid's `startEditingCell` opens the
+        // editor but does not move browser focus, so an edit begun from outside the grid (e.g. a
+        // toolbar button) would otherwise leave focus behind and require a click to type.
+        const colKey = colToEdit.colId;
+        agApi.setFocusedCell(rowIndex, colKey);
+        agApi.startEditingCell({rowIndex, colKey});
     }
 
     /**

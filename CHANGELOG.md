@@ -204,6 +204,8 @@ columns.
 
 ### 🐞 Bug Fixes
 
+* Fixed `GridModel.beginEditAsync()` opening an inline editor that never took keyboard focus,
+  requiring an extra click on the cell before the user could type.
 * Fixed `View.getDimensionValues()` returning sets of `undefined` instead of the actual unique
   values for each dimension.
 * Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates. Hoist now
