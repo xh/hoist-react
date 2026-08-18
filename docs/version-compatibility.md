@@ -18,7 +18,9 @@ dependency is introduced. Use the following checklist:
 1. Add a new row to the [Compatibility Matrix](#compatibility-matrix) with the new hoist-react
    version
 2. Set **Min Core Required** if the release introduces a hard dependency on a new core version
-   (check the CHANGELOG for "Requires hoist-core" entries)
+   (check the CHANGELOG for "Requires hoist-core" entries). **If this value changes, update
+   `MIN_HOIST_CORE_VERSION` in `core/XH.ts` to match** - that constant is what actually enforces
+   the minimum at runtime, and it is easy to miss. See [Min Core Required](#reading-the-matrix).
 3. Set **Recommended Core** if the release has features that benefit from a newer core version but
    don't strictly require it
 4. Set **Max Core Tested** to the highest hoist-core version verified at the time of release
@@ -41,7 +43,7 @@ The compatibility matrix uses three requirement levels:
 
 | Level | Meaning |
 |---|---|
-| **Min Core Required** | Hard minimum — the app won't function below this hoist-core version. hoist-core does not guarantee backward-compatible APIs, so this is a real constraint. |
+| **Min Core Required** | Hard minimum — the app won't function below this hoist-core version. hoist-core does not guarantee backward-compatible APIs, so this is a real constraint. Enforced at startup by `EnvironmentService`, which throws when the server reports a version below `MIN_HOIST_CORE_VERSION` (`core/XH.ts`). This column and that constant must agree. |
 | **Recommended Core** | Features available only with this core version or higher, but not a hard gate for basic operation. |
 | **Max Core Tested** | The highest hoist-core version verified with this hoist-react release. Running a newer core is untested and could introduce incompatibilities. |
 
@@ -59,6 +61,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
+| 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | |
 | 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | [Notes](./upgrade-notes/v86-upgrade-notes.md) |
 | 85.0 | -- | 39.0 | 39.0 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
 | 84.0 | 38.0 | | 38.0 | Span sampling, OTEL tag alignment, log level overrides | [Notes](./upgrade-notes/v84-upgrade-notes.md) |

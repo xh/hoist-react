@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {CustomCellEditorProps, useGridCellEditor} from '@xh/hoist/kit/ag-grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
@@ -30,8 +31,8 @@ export function useInlineEditorModel(
     props: EditorProps<any>,
     ref: ForwardedRef<any>
 ): ReactElement {
-    const {className, inputProps, agParams} = props,
-        impl = useLocalModel(() => new InlineEditorModel(agParams));
+    const {className, inputProps, agParams, gridModel} = props,
+        impl = useLocalModel(() => new InlineEditorModel(agParams, gridModel));
 
     useGridCellEditor({
         // This is called in full-row editing when the user tabs into the cell
@@ -80,17 +81,19 @@ class InlineEditorModel extends HoistModel {
         return this.ref.current?.inputEl;
     }
 
-    constructor(agParams: CustomCellEditorProps) {
+    constructor(agParams: CustomCellEditorProps, gridModel: GridModel) {
         super();
         makeObservable(this);
 
         this.agParams = agParams;
         this.value = agParams.value;
 
-        // Focus into the input once the component is rendered but only do so if this cell started
-        // the editing process. If using full row editing the editor may be rendered but we do not
-        // want to focus the input if it was not the cell which initiated the editing.
-        if (agParams.cellStartedEdit) {
+        // Focus into the input once the component is rendered. With full row editing, multiple
+        // editors render at once, so defer to ag-Grid's flag for which cell initiated the edit.
+        // With single-cell editing there is only ever one editor, so always focus it - note that
+        // ag-Grid reports `cellStartedEdit: false` for edits started via its `startEditingCell`
+        // API, as `GridModel.beginEditAsync()` does.
+        if (!gridModel.fullRowEditing || agParams.cellStartedEdit) {
             this.addReaction(this.focusOnRenderReaction());
         }
     }

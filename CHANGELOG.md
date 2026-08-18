@@ -7,6 +7,10 @@
 Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
 features and performance optimizations, grouped by topic below.
 
+* Requires `hoist-core >= 40.5.0` for the `ViewManager` group rename and bulk-editing APIs, now
+  correctly enforced at startup - apps on an older core will fail fast rather than start. Features
+  that pair with hoist-core v41 endpoints degrade gracefully against earlier versions.
+
 #### React 19 and Build Tooling
 
 * Hoist v87 upgrades to React 19. Most apps need only minor adjustments, but test carefully.
@@ -56,10 +60,6 @@ features and performance optimizations, grouped by topic below.
   to views that users have curated and named. The columns remain available in the column chooser.
   Set the new `GridModelPersistOptions.hideNewColumns` config to `false` to restore the previous
   behavior.
-
-#### View Manager -- Support for nested groups.
-
-* Requires `hoist-core >= 41.0.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
@@ -170,11 +170,19 @@ columns.
   instance-config override, or both now present a tabbed value editor over the resolved,
   instance-override, database, and code-default views of their value, muting resolved entries that
   are not explicitly set. The grid's Value column shows the effective value - resolved, and honoring
-  any instance override. Requires hoist-core v41 or later. Against earlier versions the editor
+  any instance override. Requires hoist-core v41.0.0 or later. Against earlier versions the editor
   degrades gracefully.
 * Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
   active filter and reloads the log around the selected line, then re-selects that line and centers
   it in the viewport - useful for examining the context around a hit found by filtering.
+* Enhanced the Roles admin module to resolve and display friendly names for directory groups, via
+  the new `roleAdmin/directoryGroupsInfo` endpoint. Especially useful with hoist-core's new
+  `EntraIdService`, where groups are stored as opaque object IDs (GUIDs), and also improves the
+  display of LDAP DNs. Per-group lookup errors surface as warning icons on the affected rows.
+* Added a search-based directory group picker to the Roles admin role editor, backed by the new
+  `roleAdmin/searchDirectoryGroups` endpoint. Admins can find groups by partial name, with free-text
+  entry of a known GUID or DN still supported. Requires hoist-core v41.0.0 or later - against earlier
+  versions these features degrade gracefully to the previous identifier-based display.
 
 #### Other Improvements
 
@@ -196,6 +204,8 @@ columns.
 
 ### 🐞 Bug Fixes
 
+* Fixed `GridModel.beginEditAsync()` opening an inline editor that never took keyboard focus,
+  requiring an extra click on the cell before the user could type.
 * Fixed `View.getDimensionValues()` returning sets of `undefined` instead of the actual unique
   values for each dimension.
 * Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates. Hoist now

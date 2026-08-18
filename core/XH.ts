@@ -75,7 +75,7 @@ import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
-export const MIN_HOIST_CORE_VERSION = '31.2';
+export const MIN_HOIST_CORE_VERSION = '40.5.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
