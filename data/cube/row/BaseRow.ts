@@ -52,7 +52,6 @@ export abstract class BaseRow {
 
         if (!shallowEqualObjects(data.cubeBuckets, buckets)) {
             data.cubeBuckets = buckets;
-            // Safe cast - hidden leaves, the only rows with non-ViewRowData data, no-op this walk.
             this.view.assignDigest(data as ViewRowData);
         }
 

@@ -41,9 +41,6 @@ export abstract class LeafRow extends BaseRow {
         return true;
     }
 
-    // Leaves publish no children - skip BaseRow's child wiring, whose null writes would add own
-    // `children`/`_cubeLeafChildren` slots to exposed leaf data (`children` reads null off its
-    // prototype; the internal `_cubeLeafChildren` is simply absent).
     override getVisibleDatas(): ViewRowData {
         return this.data as ViewRowData;
     }
@@ -106,8 +103,6 @@ export class ExposedLeafRow extends LeafRow {
         newData: PlainObject,
         updatedRowDatas: Set<PlainObject>
     ) {
-        // Always swap the getter source to avoid retaining the old record's data - register with
-        // consumers only on genuine change.
         this.data._src = newData;
         if (!isEmpty(updates)) updatedRowDatas.add(this.data);
     }
@@ -131,8 +126,6 @@ export class HiddenLeafRow extends LeafRow {
     override syncBuckets() {}
 
     protected override applyUpdatedData(updates: RowUpdate[], newData: PlainObject) {
-        // Always swap reference to avoid retaining the old record. Never registered in
-        // updatedRowDatas - hidden leaves are not published to stores or results.
         this.data = newData;
     }
 }

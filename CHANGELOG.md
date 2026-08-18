@@ -78,7 +78,7 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
 * Improved Cube `View` memory efficiency across all row types - `ViewRowData` rows now share
   compact fixed shapes, and leaf rows read field values directly from their source cube records
   instead of holding copies. Substantially reduces per-row memory and speeds up view builds, with
-  savings that scale with query width - see related Breaking Changes.
+  savings that scale with query width.
 * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
   that its provider parses and owns. Use it for stores connected to a Cube `View`, or fed by an
   endpoint that returns data in its final client-side form. Records reference the provider's row
