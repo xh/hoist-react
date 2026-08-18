@@ -248,6 +248,14 @@
             "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "Onsen", "GoldenLayout", "react-select"]
         },
         {
+            "id": "kit/blueprint/README.md",
+            "title": "Blueprint",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "Hoist's BlueprintJS integration - wrapped components and element factories, plus the build-time icon stubbing (via @xh/hoist-dev-utils) and the checklist for re-verifying Blueprint's built-in icons on library upgrades.",
+            "keywords": ["blueprint", "blueprintjs", "kit", "popover", "dialog", "menu", "blueprint icons", "icon stubs", "loadAllBlueprintJsIcons", "requiredBlueprintIcons", "bundle size"]
+        },
+        {
             "id": "inspector/README.md",
             "title": "Inspector",
             "mcpCategory": "package",
