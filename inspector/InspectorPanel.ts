@@ -59,7 +59,7 @@ const inspectorView = hoistCmp.factory<InspectorHostModel>({
             headerClassName: 'xh-inspector-panel-header',
             flex: isWindow ? 1 : undefined,
             modelConfig: isWindow
-                ? {errorBoundary: true, xhImpl: true}
+                ? {collapsible: false, resizable: false, errorBoundary: true, xhImpl: true}
                 : {
                       defaultSize: 400,
                       side: 'bottom',
