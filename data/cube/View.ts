@@ -145,7 +145,7 @@ export class View
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     _records: RecordSet = null; // cube records passing this view's filter
     private _bucketDependentFields = new Set<string>();
-    _rowDataGenerator: RowDataGenerator = null;
+    private _rowDataGenerator: RowDataGenerator = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
