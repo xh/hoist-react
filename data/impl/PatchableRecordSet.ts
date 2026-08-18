@@ -391,7 +391,13 @@ export class PatchableRecordSet {
                 });
             }
             if (newPatch.size <= ratio * base.size) {
-                const ret = new PatchableRecordSet(store, base, newPatch, count, rootCount);
+                const ret = new PatchableRecordSet(
+                    store,
+                    base,
+                    newPatch.size ? newPatch : null,
+                    count,
+                    rootCount
+                );
                 ret.derivation = {type: 'patched', ...counts};
                 return ret;
             }
@@ -482,7 +488,7 @@ export class PatchableRecordSet {
 
         const ret = PatchableRecordSet.create(this.store, base, newPatch, count, rootCount);
         ret.derivation = {
-            type: ret.patch ? 'patched' : 'flattened',
+            type: ret.base === base ? 'patched' : 'flattened',
             update: (update?.length ?? 0) - missingUpdates,
             add: add?.length ?? 0,
             remove: this.count + (add?.length ?? 0) - count
@@ -549,7 +555,7 @@ export class PatchableRecordSet {
 
         const ret = PatchableRecordSet.create(store, fBase, newPatch, count, count);
         ret.derivation = {
-            type: ret.patch ? 'patched' : 'flattened',
+            type: ret.base === fBase ? 'patched' : 'flattened',
             update: updated,
             add: added,
             remove: removed
@@ -561,8 +567,9 @@ export class PatchableRecordSet {
     // Implementation
     //------------------------
     /**
-     * Construct over a base + patch, flattening into a fresh base when the patch has grown.
-     * Callers stamp the derivation - a null `patch` on the result marks a flattened set.
+     * Construct over a base + patch, normalizing an empty patch to a flat set over the same base
+     * and flattening into a fresh base when the patch has grown past the cap. Callers stamp the
+     * derivation - base identity on the result distinguishes patched from flattened.
      */
     private static create(
         store: Store,
@@ -571,6 +578,7 @@ export class PatchableRecordSet {
         count: number,
         rootCount: number
     ): PatchableRecordSet {
+        if (!patch.size) return new PatchableRecordSet(store, base, null, count, rootCount);
         if (patch.size > PatchableRecordSet.patchRatio(store) * base.size) {
             return new PatchableRecordSet(
                 store,
@@ -597,16 +605,10 @@ export class PatchableRecordSet {
         base.has(id) ? patch.set(id, TOMBSTONE) : patch.delete(id);
     }
 
+    /** Flatten a patch into a fresh map - in-place updates and appended adds preserve order. */
     private static applyPatch(base: StoreRecordMap, patch: PatchMap): StoreRecordMap {
-        const ret = new Map();
-        base.forEach((rec, id) => {
-            const v = patch.get(id);
-            if (v === undefined) ret.set(id, rec);
-            else if (v !== TOMBSTONE) ret.set(id, v);
-        });
-        patch.forEach((v, id) => {
-            if (v !== TOMBSTONE && !base.has(id)) ret.set(id, v);
-        });
+        const ret = new Map(base);
+        patch.forEach((v, id) => (v === TOMBSTONE ? ret.delete(id) : ret.set(id, v)));
         return ret;
     }
 
