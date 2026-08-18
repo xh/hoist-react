@@ -1,5 +1,17 @@
 # Changelog
 
+<!--
+  Entry conventions: docs/changelog-format.md - read it before adding entries here.
+
+  The three rules that account for most review feedback:
+
+  1. Every bullet needs an explicit grammatical subject. No "Provides support for ..." or "Misc.
+     improvements to ...".
+  2. Open with a past-tense verb (Added / Fixed / Removed / Renamed) when reporting an action on the
+     codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
+  3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
+-->
+
 ## 87.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
