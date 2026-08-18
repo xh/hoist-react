@@ -46,21 +46,10 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {
-    compact,
-    debounce,
-    isBoolean,
-    isEmpty,
-    isEqual,
-    isNil,
-    max,
-    maxBy,
-    merge,
-    omitBy
-} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {type MouseEvent} from 'react';
 import {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -681,22 +670,18 @@ export class GridLocalModel extends HoistModel {
         });
     }
 
-    @logWithDebug
-    genTransaction(newRs, prevRs) {
-        // Skip empty props -- ag-grid is not internally optimized
-        return omitBy(newRs.diffFrom(prevRs), isEmpty);
-    }
-
-    @logWithDebug
     syncData() {
         const {model} = this,
             {agGridModel, store, agApi} = model,
             newRs = store._filtered,
             prevRs = this.prevRs;
 
-        const transaction = this.genTransaction(newRs, prevRs);
+        const start = performance.now(),
+            transaction = newRs.diffFrom(prevRs);
+        model.diagnostics.noteGenTransaction(transaction, newRs, prevRs, start);
+
+        const applyStart = performance.now();
         if (!this.transactionIsEmpty(transaction)) {
-            this.logDebug(...this.genTxnLogMsgs(transaction));
             agApi.applyTransaction(transaction);
         } else if (!prevRs) {
             // First sync with an empty store yields an empty transaction, but AG Grid must still
@@ -711,7 +696,7 @@ export class GridLocalModel extends HoistModel {
 
         this.updatePinnedSummaryRowData();
 
-        if (transaction.update) {
+        if (!isEmpty(transaction.update)) {
             const visibleCols = model.getVisibleLeafColumns();
 
             // Refresh cells in columns with complex renderers
@@ -725,7 +710,7 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        if (transaction.add || transaction.remove) {
+        if (!isEmpty(transaction.add) || !isEmpty(transaction.remove)) {
             wait().then(() => this.syncSelection());
         }
 
@@ -740,6 +725,8 @@ export class GridLocalModel extends HoistModel {
 
         this.prevRs = newRs;
         this.applyScrollOptimization();
+
+        model.diagnostics.noteApplyTransaction(transaction, newRs, applyStart);
     }
 
     syncSelection() {
@@ -752,15 +739,6 @@ export class GridLocalModel extends HoistModel {
 
     transactionIsEmpty(t) {
         return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
-    }
-
-    private genTxnLogMsgs(t): string[] {
-        const {add, update, remove} = t;
-        return [
-            `update: ${update ? update.length : 0}`,
-            `add: ${add ? add.length : 0}`,
-            `remove: ${remove ? remove.length : 0}`
-        ];
     }
 
     //------------------------

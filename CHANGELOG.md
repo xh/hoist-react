@@ -230,6 +230,13 @@ columns.
 
 ### ⚙️ Technical
 
+* Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
+  `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
+  and the path taken. Note that diagnostics log by default under `debug` output, but users may set
+  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of
+  a particular chain. This API is provided for app troubleshooting and benchmarking only, and is
+  subject to change without notice at any release.
+
 * Field XSS protection now returns unmodified strings by reference instead of a fresh copy, avoiding
   a duplicate in memory of every parsed string value.
 * Migrated this repo's own package management from yarn classic to pnpm 11. Apps consuming the
@@ -251,11 +258,20 @@ columns.
 
 * @auth0/auth0-spa-js `2.23 → 2.24`
 * @azure/msal-browser `5.17 → 5.18`
+* @blueprintjs/core `6.3 → 6.18`
+* @blueprintjs/datetime `6.0 → 6.2`
+* @codemirror/commands `6.10 → 6.11`
 * @floating-ui/react `added @ 0.27`
+* @fortawesome/* `7.2 → 7.3`
+* @fortawesome/react-fontawesome `3.2 → 3.5`
+* @modelcontextprotocol/sdk `1.26 → 1.30`
 * @xh/hoist-dev-utils `13.x → 14.x`
 * react `18.2 → 19.2`
 * react-popper `removed`
 * react-window `2.2 → 2.3`
+* swiper `12.1 → 12.2`
+* tsx `4.21 → 4.23`
+* zod `4.3 → 4.4`
 
 ## 86.4.1 - 2026-08-11
 

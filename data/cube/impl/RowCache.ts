@@ -38,12 +38,10 @@ export class RowCache {
     private lastQuery: Query = null;
     private usedParents: Set<BaseRow> = null;
 
-    // Stats for the current generation - logged by endGeneration()
-    private reused = 0;
-    private rebuilt = 0;
-    private created = 0;
-    private removed = 0;
-    private sweepTime = 0;
+    // Row disposition for the current generation - for ViewDiagnostics
+    reused = 0;
+    rebuilt = 0;
+    created = 0;
 
     constructor(view: View) {
         this.view = view;
@@ -98,7 +96,6 @@ export class RowCache {
         this.genStartDigest = view._rowDigest;
         this.exposedLeaves = view.exposesLeaves;
         this.reused = this.rebuilt = this.created = 0;
-        this.removed = this.sweepTime = 0;
     }
 
     endGeneration() {
@@ -107,11 +104,6 @@ export class RowCache {
             this.usedParents = null;
         }
         this.sweep();
-        this.view.logDebug(
-            `Generated rows: reused=${this.reused} rebuilt=${this.rebuilt} ` +
-                `created=${this.created} cached=${this.size} removed=${this.removed} ` +
-                `sweepTime=${this.sweepTime.toFixed(1)}ms`
-        );
     }
 
     clear() {
@@ -181,13 +173,14 @@ export class RowCache {
     // chains are not pinned in memory.
     private doEvictUnusedParents() {
         const {rows, usedParents} = this;
+        let removed = 0;
         rows.forEach((row, id) => {
             if (!row.isLeaf && !usedParents.has(row)) {
                 rows.delete(id);
-                this.removed++;
+                removed++;
             }
         });
-        if (!this.removed) return;
+        if (!removed) return;
         rows.forEach(row => {
             const {parent} = row;
             if (parent && rows.get(parent.id) !== parent) row.parent = null;
@@ -223,7 +216,10 @@ export class RowCache {
         });
 
         this.sweptAsOf = asOf;
-        this.removed += startSize - rows.size;
-        this.sweepTime = performance.now() - start;
+
+        this.view.logDebug(
+            `Swept ${startSize - rows.size} of ${startSize} cached rows`,
+            `${(performance.now() - start).toFixed(1)}ms`
+        );
     }
 }

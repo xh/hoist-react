@@ -24,7 +24,7 @@ import {
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -47,9 +47,8 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
-import {newPatchStats, PatchableRecordSet, PatchStats} from './impl/PatchableRecordSet';
-
-export type {PatchStats};
+import {PatchableRecordSet} from './impl/PatchableRecordSet';
+import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -427,12 +426,8 @@ export class Store
     private _fieldMap: Map<string, Field>;
     experimental: any;
 
-    /**
-     * Counters tracking how often this Store's record sets stay on the incremental (patch) path
-     * vs. falling back to a full O(records) rebuild. Non-null only with the experimental
-     * `patchableRecordSet` enabled - see {@link PatchStats}.
-     */
-    readonly patchStats: PatchStats;
+    /** @internal */
+    readonly diagnostics = new StoreDiagnostics(this);
 
     constructor({
         fields,
@@ -465,7 +460,6 @@ export class Store
         );
 
         this.experimental = this.parseExperimental(experimental);
-        this.patchStats = this.experimental.patchableRecordSet ? newPatchStats() : null;
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
@@ -537,8 +531,9 @@ export class Store
      *      custom aggregations for the dataset, if desired.
      */
     @action
-    @logWithDebug
     loadData(rawData: PlainObject[], rawSummaryData?: Some<PlainObject>) {
+        const start = performance.now();
+
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
         if (rawData.length !== 0 && this.loadRootAsSummary) {
             throwIf(
@@ -556,6 +551,8 @@ export class Store
         const {_committed, _current} = this,
             records = this.createRecords(rawData, null),
             updated = _committed.withNewRecords(records);
+
+        this.diagnostics.noteLoad(updated, _committed, start);
 
         // Skip downstream work on no-change reloads, unless local mods are being discarded.
         if (updated !== _committed || updated !== _current) {
@@ -594,7 +591,8 @@ export class Store
             'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
         );
 
-        const recordMap = new Map<StoreRecordId, StoreRecord>(),
+        const start = performance.now(),
+            recordMap = new Map<StoreRecordId, StoreRecord>(),
             summaryIds = new Set<StoreRecordId>();
 
         for await (const raw of rawData) {
@@ -605,6 +603,9 @@ export class Store
             this.summaryRecords = null;
             const {_committed, _current} = this,
                 updated = _committed.withNewRecords(recordMap);
+
+            this.diagnostics.noteLoad(updated, _committed, start);
+
             if (updated !== _committed || updated !== _current) {
                 this._committed = this._current = updated;
                 this.rebuildFiltered();
@@ -636,11 +637,11 @@ export class Store
      * @returns changes applied, or null if no record changes were made.
      */
     @action
-    @logWithDebug
     updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: StoreChangeLog = {};
+        const start = performance.now(),
+            changeLog: StoreChangeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction: StoreTransaction;
@@ -728,7 +729,9 @@ export class Store
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
 
-        if (!isEmpty(rsTransaction)) {
+        const hasChanges = !isEmpty(rsTransaction),
+            prevCurrent = this._current;
+        if (hasChanges) {
             // Prepare changelog up front - removed records are unresolvable post-removal.
             const {update, add, remove: removeIds} = rsTransaction;
             if (update) changeLog.update = update;
@@ -751,9 +754,10 @@ export class Store
                 // Otherwise, the updated RecordSet is both current and committed.
                 this._current = this._committed;
             }
-
-            this.rebuildFiltered();
         }
+        this.diagnostics.noteUpdate(this._current, prevCurrent, start);
+
+        if (hasChanges) this.rebuildFiltered();
 
         if (!isEmpty(changeLog)) {
             this.lastUpdated = Date.now();
@@ -1353,7 +1357,10 @@ export class Store
 
     @action
     private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter, this._filtered);
+        const start = performance.now(),
+            {_current, _filtered: prevFiltered} = this;
+        this._filtered = _current.withFilter(this.filter, prevFiltered);
+        this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
     }
 
     //---------------------------------------

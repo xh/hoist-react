@@ -21,6 +21,7 @@ import {
     StoreRecordId
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
+import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
@@ -135,6 +136,9 @@ export class View
     @observable
     lastUpdated: number;
 
+    /** @internal */
+    readonly diagnostics = new ViewDiagnostics(this);
+
     // Implementation
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
@@ -158,13 +162,14 @@ export class View
         super();
         makeObservable(this);
 
-        const {query, stores = [], connect = false} = config;
+        const start = performance.now(),
+            {query, stores = [], connect = false} = config;
 
         this.query = query;
         this.stores = this.parseStores(stores);
         this._rowCache = new RowCache(this);
         this.buildRowTemplates();
-        this.fullUpdate();
+        this.fullUpdate('query', start);
 
         if (connect) {
             this.cube._connectedViews.add(this);
@@ -217,7 +222,8 @@ export class View
      */
     @action
     updateQuery(overrides: Partial<QueryConfig>) {
-        const oldQuery = this.query,
+        const start = performance.now(),
+            oldQuery = this.query,
             newQuery = oldQuery.clone(overrides);
 
         if (oldQuery.equals(newQuery)) return;
@@ -241,7 +247,7 @@ export class View
             }
         }
 
-        this.fullUpdate();
+        this.fullUpdate('query', start);
     }
 
     /** Gather all unique values for each dimension field in the query. */
@@ -279,20 +285,20 @@ export class View
     //-----------------------
     @action
     noteCubeLoaded() {
-        this.fullUpdate();
+        this.fullUpdate('load', performance.now());
     }
 
     @action
     noteCubeUpdated(changes: RecordSetDelta) {
-        const simpleUpdates = this.getSimpleUpdates(changes);
+        const start = performance.now(),
+            simpleUpdates = this.getSimpleUpdates(changes);
 
         if (!simpleUpdates) {
-            this.fullUpdate();
+            this.fullUpdate('update', start);
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdate(simpleUpdates);
+            this.dataOnlyUpdate(simpleUpdates, start);
         } else {
-            this.info = this.cube.info;
-            this.cubeUpdated = this.cube.lastUpdated;
+            this.dataUnchangedUpdate(start);
         }
     }
 
@@ -375,40 +381,57 @@ export class View
         );
     }
 
-    private fullUpdate() {
-        this.withDebug(['fullUpdate', `${this.cube.store.allCount} cube rows`], () => {
-            this.filterRecords();
-            this.createAggregationContext();
-            this.generateRows();
-            this.loadStores();
-            this.updateResults();
-        });
+    private fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {
+        this.filterRecords();
+        this.createAggregationContext();
+        this.generateRows();
+        this.loadStores();
+        this.updateResults();
+
+        const {diagnostics} = this;
+        switch (trigger) {
+            case 'query':
+                diagnostics.noteQuery('fullUpdate', start);
+                break;
+            case 'load':
+                diagnostics.noteLoad('fullUpdate', start);
+                break;
+            case 'update':
+                diagnostics.noteUpdate('fullUpdate', start);
+                break;
+        }
     }
 
-    private dataOnlyUpdate(updates: StoreRecord[]) {
-        this.withDebug(['dataOnlyUpdate', `${updates.length} updates`], () => {
-            const {_leafMap, stores} = this,
-                updatedRowDatas = new Set<PlainObject>();
+    private dataOnlyUpdate(updates: StoreRecord[], start: number) {
+        const {_leafMap, stores} = this,
+            updatedRowDatas = new Set<PlainObject>();
 
-            // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
-            updates.forEach(rec => {
-                const leaf = _leafMap.get(rec.id);
-                leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
-            });
-
-            updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
-
-            this.createAggregationContext();
-
-            stores.forEach(store => {
-                const recordUpdates = [];
-                updatedRowDatas.forEach(rowData => {
-                    if (store.getById(rowData.id)) recordUpdates.push(rowData);
-                });
-                store.updateData({update: recordUpdates});
-            });
-            this.updateResults();
+        // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
+        updates.forEach(rec => {
+            const leaf = _leafMap.get(rec.id);
+            leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
+
+        updatedRowDatas.forEach(rowData => this.noteRowDataMutated(rowData));
+
+        this.createAggregationContext();
+
+        stores.forEach(store => {
+            const recordUpdates = [];
+            updatedRowDatas.forEach(rowData => {
+                if (store.getById(rowData.id)) recordUpdates.push(rowData);
+            });
+            store.updateData({update: recordUpdates});
+        });
+        this.updateResults();
+        this.diagnostics.noteUpdate('dataOnly', start);
+    }
+
+    // Rows left untouched, but deciding that meant testing the changes against the query.
+    private dataUnchangedUpdate(start: number) {
+        this.info = this.cube.info;
+        this.cubeUpdated = this.cube.lastUpdated;
+        this.diagnostics.noteUpdate('unchanged', start);
     }
 
     private loadStores() {
