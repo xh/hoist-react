@@ -69,20 +69,17 @@ export class GridTransactionManager extends HoistBase {
             mode = this.getRefreshMode(transaction, prevRs, newRs),
             suppress = mode === 'suppress';
 
-        // Set both options explicitly per transaction - each apply is self-contained, with no
-        // dependence on state left by a prior pass. Same-value writes are no-ops within ag-Grid.
-        agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', suppress);
-        agApi.setGridOption('deltaSort', mode === 'delta');
+        agApi.updateGridOptions({
+            suppressModelUpdateAfterUpdateTransaction: suppress,
+            deltaSort: mode === 'delta'
+        });
         try {
             agApi.applyTransaction(transaction);
-            // Any un-suppressed pass re-sorted (delta implies a clean starting order - see below).
             if (!suppress) this.sortDirty = false;
         } finally {
-            // Never leave suppression on - transactions applied outside this manager (or after an
-            // exception above) must get ag-Grid's full default refresh behavior.
-            if (suppress) {
-                agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', false);
-            }
+            // Never leave suppression on - transactions applied outside this manager must get
+            // ag-Grid's full default refresh behavior.
+            agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', false);
         }
     }
 
@@ -116,8 +113,7 @@ export class GridTransactionManager extends HoistBase {
             }
         }
 
-        // Once order is stale only a full sort restores it - deltaSort merges changed rows into
-        // the existing (stale) order.
+        // deltaSort not possible if we let the sort lapse.
         if (this.sortDirty) return 'full';
 
         const changedCount = update.length + add.length + remove.length;
