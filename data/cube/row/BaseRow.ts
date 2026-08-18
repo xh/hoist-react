@@ -52,7 +52,7 @@ export abstract class BaseRow {
 
         if (!shallowEqualObjects(data.cubeBuckets, buckets)) {
             data.cubeBuckets = buckets;
-            this.view.noteRowDataMutated(data);
+            this.view.assignDigest(data as ViewRowData);
         }
 
         this.children?.forEach(it => it.syncBuckets(buckets));

@@ -132,8 +132,8 @@ export class RowCache {
             bucketsRemoved = oldQuery.bucketSpecFn && !query.bucketSpecFn;
 
         // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate
-        // wholesale - gained fields hold null/stale values on existing rows. (Dropped fields do
-        // NOT invalidate: their slots remain, stop updating, and are out of contract.)
+        // wholesale - existing rows' data was minted without the gained fields. (Dropped fields
+        // do NOT invalidate: they remain readable on existing rows, but are out of contract.)
         if (oldExposed !== newExposed || (newExposed && fieldsGained) || bucketsRemoved) {
             this.rows.clear();
             return;

@@ -87,13 +87,10 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   non-default values: the established sparse form for lightly-populated records, and a fixed shape
   cloned from a shared per-Store template for wider records. This avoids V8's memory-hungry
   "dictionary" mode and substantially reduces per-record memory on stores with wide records.
-* Improved Cube `View` memory efficiency - each `View` now clones its `ViewRowData` rows from a
-  shared template, so all rows in a View share one compact, fixed shape. This substantially reduces
-  per-row memory and speeds up view builds, especially for queries with many fields.
-* Cube `View`s no longer copy leaf row data when their results do not expose leaves (neither
-  `includeLeaves` nor `provideLeaves` set). Leaf rows read directly from cube records, which
-  eliminates per-View leaf data objects and speeds up view builds for aggregate-only views over
-  large datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+* Improved Cube `View` memory efficiency across all row types - `ViewRowData` rows now share
+  compact fixed shapes, and leaf rows read field values directly from their source cube records
+  instead of holding copies. Substantially reduces per-row memory and speeds up view builds, with
+  savings that scale with query width.
 * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
   that its provider parses and owns. Use it for stores connected to a Cube `View`, or fed by an
   endpoint that returns data in its final client-side form. Records reference the provider's row
