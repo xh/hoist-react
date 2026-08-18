@@ -17,6 +17,7 @@ import {
     HoistProps,
     LayoutProps,
     lookup,
+    managed,
     PlainObject,
     ReactionSpec,
     TestSupportProps,
@@ -25,6 +26,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
+import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
 import {
     colChooser as desktopColChooser,
     colChooserPanel as desktopColChooserPanel,
@@ -180,6 +182,7 @@ export class GridLocalModel extends HoistModel {
     viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
+    @managed private transactionMgr: GridTransactionManager;
 
     /** @returns true if any root-level records have children */
     @computed
@@ -217,14 +220,14 @@ export class GridLocalModel extends HoistModel {
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+        this.transactionMgr = new GridTransactionManager(this.model, !!this.agOptions.deltaSort);
     }
 
     private createDefaultAgOptions(): GridOptions {
         const {model} = this,
-            {clicksToEdit, selModel, deltaSort} = model;
+            {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
-            deltaSort,
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
@@ -682,7 +685,7 @@ export class GridLocalModel extends HoistModel {
 
         const applyStart = performance.now();
         if (!this.transactionIsEmpty(transaction)) {
-            agApi.applyTransaction(transaction);
+            this.transactionMgr.apply(transaction, prevRs, newRs);
         } else if (!prevRs) {
             // First sync with an empty store yields an empty transaction, but AG Grid must still
             // be handed rowData to exit its initial loading state - otherwise a grid mounted over

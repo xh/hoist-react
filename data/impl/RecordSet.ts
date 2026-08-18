@@ -7,7 +7,7 @@
 
 import equal from 'fast-deep-equal';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
-import {clamp, maxBy, isNil} from 'lodash';
+import {clamp, isEmpty, isNil, maxBy} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
 import {Filter} from '../filter/Filter';
@@ -18,6 +18,9 @@ type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 /** Patch-layer entry marking a base record as removed. */
 const TOMBSTONE = {} as StoreRecord;
 type PatchMap = Map<StoreRecordId, StoreRecord>;
+
+// Source of `RecordSet.ordinal` values - global uniqueness is all that matters.
+let ordinalSeq = 0;
 
 /**
  * Changes deriving one RecordSet from another, as computed by {@link RecordSet.diffFrom}.
@@ -30,6 +33,15 @@ export interface RecordSetDelta {
     update: StoreRecord[];
     add: StoreRecord[];
     remove: StoreRecord[];
+
+    /**
+     * Names of every field whose value changed in `update` records, when known - null when
+     * unknown. Only populated when the delta spans a single value-only transaction that supplied
+     * {@link StoreTransaction.changedFields} - carries that producer's assertion that updates
+     * changed record values only (no structural/parent changes) and touched no field outside
+     * the set. Lets consumers (e.g. Grid) prove a change cannot affect sort order.
+     */
+    changedFields?: Set<string>;
 }
 
 // Default cap on patch size as a fraction of base - 0 disables the patch layer entirely, with
@@ -72,6 +84,17 @@ export class RecordSet {
     readonly base: StoreRecordMap;
     /** Changed entries relative to `base` (TOMBSTONE = removed), or null for a flat set. */
     readonly patch: PatchMap;
+
+    /** Unique id for step-provenance tracking - see `prevOrdinal`. */
+    readonly ordinal: number = ++ordinalSeq;
+    /**
+     * Ordinal of the instance a single-step derivation produced this one from, or null.
+     * With `changedFields`, lets `diffFrom` recognize a one-step diff window and surface the
+     * fields changed within it - identity via ordinals avoids retaining predecessor instances.
+     */
+    private prevOrdinal: number = null;
+    /** Fields changed in that single step, when the producing transaction supplied them. */
+    private changedFields: Set<string> = null;
 
     private _childrenMap: ChildRecordMap; // children by parentId
     private _list: StoreRecord[]; // all records.
@@ -171,6 +194,10 @@ export class RecordSet {
 
         if (!prev) return {update, add: this.list, remove};
 
+        // changedFields is only knowable when the window is exactly the single step that
+        // produced this instance from `prev`.
+        const changedFields = this.prevOrdinal === prev.ordinal ? this.changedFields : null;
+
         const {base, patch} = this,
             prevPatch = prev.patch;
 
@@ -189,7 +216,7 @@ export class RecordSet {
                     if (!this.getById(id)) remove.push(rec);
                 });
             }
-            return {update, add, remove};
+            return {update, add, remove, changedFields};
         }
 
         //... or patch compare
@@ -232,7 +259,7 @@ export class RecordSet {
             });
         }
 
-        return {update, add, remove};
+        return {update, add, remove, changedFields};
     }
 
     /** As `diffFrom`, but only when answerable at O(patch) - null on unrelated instances. */
@@ -426,6 +453,7 @@ export class RecordSet {
         update?: StoreRecord[];
         add?: StoreRecord[];
         remove?: StoreRecordId[];
+        changedFields?: Set<string>;
     }): RecordSet {
         const {update, add, remove} = t,
             {base, patch} = this;
@@ -507,6 +535,10 @@ export class RecordSet {
             add: add?.length ?? 0,
             remove: this.count + (add?.length ?? 0) - count
         };
+        ret.prevOrdinal = this.ordinal;
+        if (t.changedFields && isEmpty(add) && isEmpty(remove)) {
+            ret.changedFields = t.changedFields;
+        }
         return ret;
     }
 
@@ -571,6 +603,11 @@ export class RecordSet {
             add: added,
             remove: removed
         };
+        ret.prevOrdinal = prevFiltered.ordinal;
+        // Fields carry through only when the source delta was itself a single value-only step.
+        if (delta.changedFields && !added && !removed) {
+            ret.changedFields = delta.changedFields;
+        }
         return ret;
     }
 

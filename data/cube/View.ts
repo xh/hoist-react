@@ -398,12 +398,13 @@ export class View
 
     private dataOnlyUpdate(updates: StoreRecord[], start: number) {
         const {_leafMap, stores} = this,
-            updatedRowDatas = new Set<ViewRowData>();
+            updatedRowDatas = new Set<ViewRowData>(),
+            changedFields = new Set<string>();
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
             const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
+            leaf?.applyLeafDataUpdate(rec, updatedRowDatas, changedFields);
         });
 
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
@@ -415,7 +416,9 @@ export class View
             updatedRowDatas.forEach(rowData => {
                 if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
-            store.updateData({update: recordUpdates});
+            // Parents only rewrite fields reported changed by leaves, so the leaf-level union
+            // covers every value written - and this path never touches structure.
+            store.updateData({update: recordUpdates, changedFields});
         });
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);

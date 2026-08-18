@@ -182,6 +182,17 @@ columns.
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Callers can now request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, instead of scrolling only the
   minimum amount required.
+* Improved `Grid` data update performance with tiered ag-Grid transaction handling. Update
+  transactions that provably cannot affect row order, grouping, or tree structure now skip
+  ag-Grid's model refresh (sort/filter/group/flatten) entirely, and smaller transactions that do
+  reorder re-sort only their changed rows via ag-Grid delta sorting. Streaming updates into large
+  sorted grids apply up to ~100x faster, with no configuration required.
+* Added `GridConfig.streamingSortInterval` to amortize re-sorting on rapidly-updating grids - cell
+  values update immediately while row order is restored at most once per interval. New records
+  still sort into place immediately.
+* Added `StoreTransaction.changedFields`, letting data producers assert exactly which fields a
+  value-only update touched. Cube `View`s supply this automatically, extending the no-re-sort
+  Grid fast path to view-connected stores. See the data package README for details.
 
 #### Admin Console
 
@@ -251,6 +262,8 @@ columns.
 
 ### ⚙️ Technical
 
+* Removed `GridExperimentalFlags.deltaSort` - Hoist now manages ag-Grid delta sorting
+  automatically per transaction. See the Grid transaction handling entry under New Features.
 * Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
   `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
   and the path taken. Note that diagnostics log by default under `debug` output, but users may set

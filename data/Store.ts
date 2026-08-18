@@ -282,6 +282,14 @@ export interface StoreTransaction {
      *  `update` property.
      */
     rawSummaryData?: Some<PlainObject>;
+
+    /**
+     * Names of every field whose value changed across the `update` rows, when the producer can
+     * supply them cheaply. Providing this asserts that updates change record values only - no
+     * structural/parent changes - and that no field outside the set changed. Enables downstream
+     * consumers (e.g. Grid) to prove a change cannot affect sort order and skip re-sorting.
+     */
+    changedFields?: Set<string>;
 }
 
 /**
@@ -666,7 +674,7 @@ export class Store
             rawTransaction = rawData;
         }
 
-        const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
+        const {update, add, remove, rawSummaryData, changedFields, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
@@ -723,10 +731,12 @@ export class Store
             update?: StoreRecord[];
             add?: StoreRecord[];
             remove?: StoreRecordId[];
+            changedFields?: Set<string>;
         } = {};
         if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
+        if (changedFields && rsTransaction.update) rsTransaction.changedFields = changedFields;
 
         const hasChanges = !isEmpty(rsTransaction),
             prevCurrent = this._current;

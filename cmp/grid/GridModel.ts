@@ -372,6 +372,16 @@ export interface GridConfig {
     externalSort?: boolean;
 
     /**
+     * Interval (ms) at which to re-sort this grid while streaming updates are arriving, or null
+     * (default) to re-sort on every change. When set, update-only transactions are applied
+     * without re-running ag-Grid's sort/filter/group stages - cell values update immediately
+     * while row order is restored by a managed re-sort at most once per interval. New records
+     * (adds) still sort into position immediately. Intended for grids over large, rapidly
+     * updating datasets, where a per-transaction re-sort is both costly and visually noisy.
+     */
+    streamingSortInterval?: number;
+
+    /**
      * Set to true to highlight a row on click. Intended to provide feedback to users in grids
      * without selection. Note this setting overrides the styling used by Column.highlightOnChange,
      * and is not recommended for use alongside that feature. Default true for mobiles,
@@ -400,14 +410,6 @@ export interface GridConfig {
 }
 
 interface GridExperimentalFlags {
-    /**
-     * Set to true to enable more optimal row sorting in cases where only small subsets of rows are
-     * updated in configurations where rows have many siblings.
-     * See https://www.ag-grid.com/javascript-data-grid/grid-options/#reference-sort-deltaSort for
-     * more details on where this option may improve (or degrade) performance.
-     */
-    deltaSort?: boolean;
-
     /**
      * Set to true to disable scroll optimization for large grids, where we proactively update the
      * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
@@ -528,6 +530,7 @@ export class GridModel extends HoistModel {
     enableExport: boolean;
     enableFullWidthScroll: boolean;
     externalSort: boolean;
+    streamingSortInterval: number;
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
     autosizeOptions: GridAutosizeOptions;
@@ -644,6 +647,7 @@ export class GridModel extends HoistModel {
             groupBy = null,
             showGroupRowCounts = GridModel.defaults.showGroupRowCounts,
             externalSort = false,
+            streamingSortInterval = null,
             persistWith,
             sizingMode = GridModel.defaults.sizingMode,
             showHover = GridModel.defaults.showHover,
@@ -707,6 +711,7 @@ export class GridModel extends HoistModel {
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
+        this.streamingSortInterval = streamingSortInterval;
         this.enableFullWidthScroll = enableFullWidthScroll;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
@@ -1735,11 +1740,6 @@ export class GridModel extends HoistModel {
         if (b === '') return -1;
         return a.localeCompare(b);
     };
-
-    /** @internal */
-    get deltaSort() {
-        return !!this.experimental.deltaSort;
-    }
 
     /** @internal */
     get disableScrollOptimization() {
