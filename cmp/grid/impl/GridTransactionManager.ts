@@ -77,9 +77,7 @@ export class GridTransactionManager extends HoistBase {
             agApi.applyTransaction(transaction);
             if (!suppress) this.sortDirty = false;
         } finally {
-            // Never leave suppression on - transactions applied outside this manager must get
-            // ag-Grid's full default refresh behavior.
-            agApi.setGridOption('suppressModelUpdateAfterUpdateTransaction', false);
+            agApi.updateGridOptions({suppressModelUpdateAfterUpdateTransaction: false});
         }
     }
 
