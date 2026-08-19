@@ -179,33 +179,35 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
 });
 
 const pickerDialog = hoistCmp.factory<DateInputModel>(({model}) => {
-    const {minDate, maxDate, renderValue} = model,
+    let {minDate, maxDate, renderValue} = model,
         {dayPickerProps} = model.componentProps,
         disabledDays = [];
     if (minDate) disabledDays.push({before: minDate});
     if (maxDate) disabledDays.push({after: maxDate});
     if (dayPickerProps?.disabled) disabledDays.push(...castArray(dayPickerProps.disabled));
 
+    // Props above the spread are overridable defaults; those below are controlled by this
+    // component, per the dayPickerProps doc.
+    dayPickerProps = omitBy(
+        {
+            defaultMonth: renderValue,
+            startMonth: minDate,
+            endMonth: maxDate,
+            ...dayPickerProps,
+            mode: 'single',
+            required: true,
+            selected: renderValue,
+            disabled: disabledDays,
+            onSelect: model.onDaySelect
+        },
+        isNil
+    );
+
     return dialog({
         isOpen: model.pickerIsOpen,
         className: 'xh-date-input__picker-dialog',
         onCancel: () => (model.pickerIsOpen = false),
-        content: dayPicker(
-            omitBy(
-                {
-                    selected: renderValue,
-                    defaultMonth: renderValue,
-                    startMonth: minDate,
-                    endMonth: maxDate,
-                    ...dayPickerProps,
-                    mode: 'single',
-                    required: true,
-                    disabled: disabledDays,
-                    onSelect: model.onDaySelect
-                },
-                isNil
-            )
-        )
+        content: dayPicker(dayPickerProps)
     });
 });
 
