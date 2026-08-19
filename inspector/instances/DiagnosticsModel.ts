@@ -143,7 +143,7 @@ export class DiagnosticsModel extends HoistModel {
     }
 
     private createGridModel(): GridModel {
-        const msRenderer = (v: number) => (v != null ? `${v.toFixed(1)}ms` : null);
+        const msRenderer = numberRenderer({precision: 1, zeroPad: true, label: 'ms'});
 
         return new GridModel({
             persistWith: {...this.parent.persistWith, path: 'diagnosticsGrid'},
