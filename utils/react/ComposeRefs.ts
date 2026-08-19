@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {MutableRefObject, Ref} from 'react';
+import {MutableRefObject, Ref, RefObject, useCallback} from 'react';
 
 type OptRef<T> = Ref<T> | undefined;
 
@@ -19,8 +19,8 @@ type OptRef<T> = Ref<T> | undefined;
  * Adapted from the (now unmaintained) `@seznam/compose-react-refs` package by Seznam.cz,
  * https://github.com/seznam/compose-react-refs - MIT licensed.
  *
- * TODO (React 19): forward ref-callback cleanup returns and add a `useComposedRefs` hook variant
- * (using `useCallback`) so callers no longer rely on this util's WeakMap caching for stability.
+ * Prefer the `useComposedRefs` hook variant within component render functions - it also forwards
+ * React 19 ref-callback cleanups, which this legacy form does not.
  */
 export function composeRefs<T>(...refs: [OptRef<T>, OptRef<T>, ...Array<OptRef<T>>]): Ref<T> {
     if (refs.length === 2) {
@@ -58,4 +58,45 @@ function assignRef<T>(ref: NonNullable<Ref<T>>, value: T | null): void {
     } else {
         (ref as MutableRefObject<T | null>).current = value;
     }
+}
+
+//---------------------
+// Hook variants
+//---------------------
+/**
+ * Compose two or more refs into a single callback ref, with identity managed by `useCallback` and
+ * keyed on the input refs. The preferred form within component render functions - see
+ * `composeRefs` for the non-hook variant, required where hooks are unavailable (conditional
+ * composition, cloned children, render props).
+ *
+ * Nullish inputs are skipped. React 19 ref-callback cleanups are forwarded: if any input callback
+ * returns a cleanup, the composed callback returns a combined cleanup, so React invokes cleanups
+ * on detach rather than calling back with `null`. Inputs without their own cleanup still get the
+ * legacy null-assignment.
+ */
+export function useComposedRefs<T>(...refs: [OptRef<T>, OptRef<T>, ...Array<OptRef<T>>]): Ref<T> {
+    return useCallback((value: T | null) => {
+        const cleanups = refs.map(ref => (ref ? attachRef(ref, value) : undefined));
+
+        if (cleanups.some(Boolean)) {
+            return () => {
+                refs.forEach((ref, idx) => {
+                    const cleanup = cleanups[idx];
+                    if (cleanup) cleanup();
+                    else if (ref) attachRef(ref, null);
+                });
+            };
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, refs);
+}
+
+/** Assign a value to a ref, returning any cleanup provided by a React 19 ref callback. */
+function attachRef<T>(ref: NonNullable<Ref<T>>, value: T | null): (() => void) | undefined {
+    if (typeof ref === 'function') {
+        const ret = ref(value);
+        return typeof ret === 'function' ? ret : undefined;
+    }
+    (ref as RefObject<T | null>).current = value;
+    return undefined;
 }
