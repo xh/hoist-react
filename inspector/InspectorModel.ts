@@ -22,7 +22,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  *
  * @internal
  */
-export class InspectorHostModel extends HoistModel {
+export class InspectorModel extends HoistModel {
     override xhImpl = true;
 
     /** Container within the popped-out window - portal target when popped out, null when docked. */

@@ -9,7 +9,7 @@ import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {InspectorHostModel} from '@xh/hoist/inspector/InspectorHostModel';
+import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
 import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
 import {portalProvider} from '@xh/hoist/kit/blueprint';
@@ -21,11 +21,11 @@ import './Inspector.scss';
  *
  * In addition to its default rendering as a panel docked within the app viewport, the Inspector
  * can be popped out into a separate browser window ('window' mode), leaving the app's viewport
- * entirely to the app. Hosting is managed by {@link InspectorHostModel}.
+ * entirely to the app. Hosting is managed by {@link InspectorModel}.
  */
 export const inspectorPanel = hoistCmp.factory({
     displayName: 'InspectorPanel',
-    model: creates(InspectorHostModel),
+    model: creates(InspectorModel),
 
     render({model}) {
         if (!XH.inspectorService.active) return null;
@@ -39,7 +39,7 @@ export const inspectorPanel = hoistCmp.factory({
     }
 });
 
-const inspectorView = hoistCmp.factory<InspectorHostModel>({
+const inspectorView = hoistCmp.factory<InspectorModel>({
     displayName: 'InspectorView',
 
     render({model}) {

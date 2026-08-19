@@ -13,7 +13,7 @@ import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {InspectorHostModel} from '@xh/hoist/inspector/InspectorHostModel';
+import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
 import {popover} from '@xh/hoist/kit/blueprint';
 
@@ -23,7 +23,7 @@ export const instancesPanel = hoistCmp.factory({
     render({model}) {
         const {instancesPanelModel, selectedSyncRun} = model,
             // Re-parent grid popups (context/column menus) when Inspector is detached.
-            popupParent = useContextModel(InspectorHostModel)?.popupContainer ?? undefined,
+            popupParent = useContextModel(InspectorModel)?.popupContainer ?? undefined,
             headerItems = [];
 
         if (selectedSyncRun) {

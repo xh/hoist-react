@@ -26,7 +26,7 @@ The Inspector provides two main views: **Stats** (timeseries of model counts and
 ```
 inspector/
 ├── InspectorPanel.ts                # Top-level container (renders Stats + Instances panels)
-├── InspectorHostModel.ts            # Hosts the UI docked in the app or in a popped-out window
+├── InspectorModel.ts                # Hosts the UI docked in the app or in a popped-out window
 ├── Inspector.scss                   # Inspector-specific styles
 ├── instances/
 │   ├── InstancesPanel.ts            # Split view: instance grid (left) + properties grid (right)
@@ -85,7 +85,7 @@ masks and modal dialogs will cover and block it. A button in the Inspector's hea
 into a separate browser window (e.g. onto a second monitor), leaving the app's viewport entirely
 to the app while keeping the Inspector fully live, with direct access to all app state.
 
-Hosting and window lifecycle are managed by `InspectorHostModel`, which portals the same component
+Hosting and window lifecycle are managed by `InspectorModel`, which portals the same component
 tree rendered when docked into the popped-out window. Notes and limitations:
 
 - The popped-out state is not restored on app load - browsers require a user gesture to open a
