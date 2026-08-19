@@ -6,8 +6,6 @@
  */
 import {MutableRefObject, Ref, RefObject, useCallback} from 'react';
 
-type OptRef<T> = Ref<T> | undefined;
-
 /**
  * Compose two or more refs into a single callback ref. Returns `null` if all inputs are nullish,
  * or the lone non-nullish ref when only one is provided.
@@ -22,16 +20,16 @@ type OptRef<T> = Ref<T> | undefined;
  * Prefer the `useComposedRefs` hook variant within component render functions - it also forwards
  * React 19 ref-callback cleanups, which this legacy form does not.
  */
-export function composeRefs<T>(...refs: [OptRef<T>, OptRef<T>, ...Array<OptRef<T>>]): Ref<T> {
+export function composeRefs<T>(...refs: [Ref<T>, Ref<T>, ...Array<Ref<T>>]): Ref<T> {
     if (refs.length === 2) {
         return composePair(refs[0], refs[1]) ?? null;
     }
-    return refs.slice(1).reduce<OptRef<T>>((acc, ref) => composePair(acc, ref), refs[0]) ?? null;
+    return refs.slice(1).reduce<Ref<T>>((acc, ref) => composePair(acc, ref), refs[0]) ?? null;
 }
 
 const cache = new WeakMap<object, WeakMap<object, Ref<unknown>>>();
 
-function composePair<T>(a: OptRef<T>, b: OptRef<T>): OptRef<T> {
+function composePair<T>(a: Ref<T>, b: Ref<T>): Ref<T> {
     if (!a) return b;
     if (!b) return a;
 
@@ -41,9 +39,9 @@ function composePair<T>(a: OptRef<T>, b: OptRef<T>): OptRef<T> {
     let inner = cache.get(keyA);
     if (!inner) cache.set(keyA, (inner = new WeakMap()));
 
-    let composed = inner.get(keyB) as Ref<T> | undefined;
+    let composed = inner.get(keyB) as Ref<T>;
     if (!composed) {
-        composed = (value: T | null) => {
+        composed = (value: T) => {
             assignRef(a, value);
             assignRef(b, value);
         };
@@ -52,11 +50,11 @@ function composePair<T>(a: OptRef<T>, b: OptRef<T>): OptRef<T> {
     return composed;
 }
 
-function assignRef<T>(ref: NonNullable<Ref<T>>, value: T | null): void {
+function assignRef<T>(ref: Ref<T>, value: T): void {
     if (typeof ref === 'function') {
         ref(value);
     } else {
-        (ref as MutableRefObject<T | null>).current = value;
+        (ref as MutableRefObject<T>).current = value;
     }
 }
 
@@ -74,16 +72,15 @@ function assignRef<T>(ref: NonNullable<Ref<T>>, value: T | null): void {
  * on detach rather than calling back with `null`. Inputs without their own cleanup still get the
  * legacy null-assignment.
  */
-export function useComposedRefs<T>(...refs: [OptRef<T>, OptRef<T>, ...Array<OptRef<T>>]): Ref<T> {
-    return useCallback((value: T | null) => {
-        const cleanups = refs.map(ref => (ref ? attachRef(ref, value) : undefined));
+export function useComposedRefs<T>(...refs: [Ref<T>, Ref<T>, ...Array<Ref<T>>]): Ref<T> {
+    return useCallback((value: T) => {
+        const cleanups = refs.map(ref => attachRef(ref, value));
 
         if (cleanups.some(Boolean)) {
             return () => {
                 refs.forEach((ref, idx) => {
                     const cleanup = cleanups[idx];
-                    if (cleanup) cleanup();
-                    else if (ref) attachRef(ref, null);
+                    cleanup ? cleanup() : attachRef(ref, null);
                 });
             };
         }
@@ -92,11 +89,12 @@ export function useComposedRefs<T>(...refs: [OptRef<T>, OptRef<T>, ...Array<OptR
 }
 
 /** Assign a value to a ref, returning any cleanup provided by a React 19 ref callback. */
-function attachRef<T>(ref: NonNullable<Ref<T>>, value: T | null): (() => void) | undefined {
+function attachRef<T>(ref: Ref<T>, value: T): () => void {
+    if (!ref) return undefined;
     if (typeof ref === 'function') {
         const ret = ref(value);
         return typeof ret === 'function' ? ret : undefined;
     }
-    (ref as RefObject<T | null>).current = value;
+    (ref as RefObject<T>).current = value;
     return undefined;
 }
