@@ -210,7 +210,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      *
      * Note this is not capable of "creating" new values via `enableCreate`.
      */
-    generateOptionFn?: (value: any) => SelectOption | null;
+    generateOptionFn?: (value: any) => SelectOption;
 }
 
 /**
@@ -478,11 +478,8 @@ class SelectInputModel extends HoistInputModel {
         if (!createIfNotFound) return null;
 
         return (
-            // Attempts to find the option in internalValue.
             this.selectedOptions.find(it => isEqual(it.value, value)) ??
-            // Attempts to call the generateOptionFn function to get the option for this value.
             this.componentProps.generateOptionFn?.(value) ??
-            // All else failing, converts the value into an option.
             this.valueToOption(value)
         );
     }
