@@ -16,27 +16,3 @@
   background-color: hsl(33, 93%, 40%);
   color: white;
 }
-
-// Top-layer host for 'overlay' render mode - a manual popover covering the full viewport, with
-// the Inspector panel pinned to its bottom edge. The host itself must not intercept pointer
-// events (the app remains interactive above/behind it), while its children - the Inspector panel
-// plus any re-parented popups (grid menus, tooltips) - do receive events.
-.xh-inspector-overlay-host {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  pointer-events: none;
-
-  > * {
-    pointer-events: auto;
-  }
-}

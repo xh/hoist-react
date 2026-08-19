@@ -20,9 +20,8 @@ import './Inspector.scss';
  * See {@link InspectorService} for an explanation of the Hoist Inspector tool.
  *
  * In addition to its default rendering as a panel docked within the app viewport, the Inspector
- * can be pinned over the app in the browser's top layer ('overlay' mode - stays fully visible and
- * interactive above app-level masks and modal dialogs) or popped out into a separate browser
- * window ('window' mode). Hosting is managed by {@link InspectorHostModel}.
+ * can be popped out into a separate browser window ('window' mode), leaving the app's viewport
+ * entirely to the app. Hosting is managed by {@link InspectorHostModel}.
  */
 export const inspectorPanel = hoistCmp.factory({
     displayName: 'InspectorPanel',
@@ -31,12 +30,9 @@ export const inspectorPanel = hoistCmp.factory({
     render({model}) {
         if (!XH.inspectorService.active) return null;
 
-        const {renderMode, overlayEl, windowContainer} = model;
+        const {renderMode, windowContainer} = model;
 
         // Key by mode to remount the view (and recreate its mode-specific PanelModel) on change.
-        if (renderMode === 'overlay' && overlayEl) {
-            return createPortal(inspectorView({key: 'overlay'}), overlayEl);
-        }
         if (renderMode === 'window' && windowContainer) {
             return createPortal(inspectorView({key: 'window'}), windowContainer);
         }
@@ -48,9 +44,8 @@ const inspectorView = hoistCmp.factory<InspectorHostModel>({
     displayName: 'InspectorView',
 
     render({model}) {
-        const {renderMode, popupContainer} = model,
-            isDocked = renderMode === 'dock',
-            isWindow = renderMode === 'window';
+        const {popupContainer} = model,
+            isWindow = model.renderMode === 'window';
 
         const ret = panel({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
@@ -64,24 +59,12 @@ const inspectorView = hoistCmp.factory<InspectorHostModel>({
                       defaultSize: 400,
                       side: 'bottom',
                       persistWith: XH.inspectorService.persistWith,
-                      // Modal support docked only - its dialog renders beneath the top layer.
-                      modalSupport: isDocked,
                       errorBoundary: true,
-                      showModalToggleButton: isDocked,
                       showHeaderCollapseButton: false,
                       xhImpl: true
                   },
             compactHeader: true,
             headerItems: [
-                button({
-                    icon: Icon.pin(),
-                    omit: isWindow || !model.overlaySupported,
-                    tooltip: isDocked
-                        ? 'Pin over app - keep Inspector visible above masks and dialogs'
-                        : 'Unpin - return to docked panel',
-                    intent: isDocked ? null : 'primary',
-                    onClick: () => model.setRenderMode(isDocked ? 'overlay' : 'dock')
-                }),
                 button({
                     icon: Icon.openExternal(),
                     tooltip: isWindow
@@ -104,8 +87,8 @@ const inspectorView = hoistCmp.factory<InspectorHostModel>({
             item: hframe(statsPanel(), instancesPanel())
         });
 
-        // When detached, redirect Blueprint portals (tooltips, popovers, dialogs) into the host,
-        // where they can paint above/alongside the Inspector itself.
+        // When popped out, redirect Blueprint portals (tooltips, popovers, dialogs) into the
+        // child window, alongside the Inspector itself.
         return popupContainer ? portalProvider({portalContainer: popupContainer, item: ret}) : ret;
     }
 });

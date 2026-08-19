@@ -7,8 +7,7 @@ The Inspector is a built-in developer and admin tool for real-time inspection of
 application's `HoistModel`, `HoistService`, and `Store` instances, along with memory and
 performance statistics. It renders by default as a resizable bottom panel within the desktop
 application UI, driven by the `InspectorService` in [`/svc/`](../svc/README.md), and can also be
-pinned over the app in the browser's top layer or popped out into a separate browser window (see
-[Render Modes](#render-modes) below).
+popped out into a separate browser window (see [Render Modes](#render-modes) below).
 
 ## Overview
 
@@ -27,7 +26,7 @@ The Inspector provides two main views: **Stats** (timeseries of model counts and
 ```
 inspector/
 ├── InspectorPanel.ts                # Top-level container (renders Stats + Instances panels)
-├── InspectorHostModel.ts            # Manages render mode - docked, overlay, or popped-out window
+├── InspectorHostModel.ts            # Manages render mode - docked or popped-out window
 ├── Inspector.scss                   # Inspector-specific styles
 ├── instances/
 │   ├── InstancesPanel.ts            # Split view: instance grid (left) + properties grid (right)
@@ -82,29 +81,20 @@ refreshes.
 ## Render Modes
 
 Because the docked Inspector renders as a standard part of the app's component tree, app-level
-masks and modal dialogs will cover and block it. Two alternate hosting modes - toggled via buttons
-in the Inspector's header - detach it from the app's layout while keeping it fully live, with
-direct access to all app state:
-
-| Mode | Header Button | Description |
-|------|---------------|-------------|
-| `dock` | (default) | Resizable panel docked to the bottom of the app viewport |
-| `overlay` | Pin | Pinned over the app in the browser's [top layer](https://developer.mozilla.org/en-US/docs/Glossary/Top_layer), above all app masks and modal dialogs |
-| `window` | Open in window | Popped out into a separate browser window - e.g. onto a second monitor |
+masks and modal dialogs will cover and block it. The alternate `window` mode - toggled via a
+button in the Inspector's header - pops the Inspector out into a separate browser window (e.g.
+onto a second monitor), leaving the app's viewport entirely to the app while keeping the Inspector
+fully live, with direct access to all app state.
 
 Mode selection and lifecycle are managed by `InspectorHostModel`, which portals the same component
-tree rendered when docked into the alternate host. Notes and limitations:
+tree rendered when docked into the popped-out window. Notes and limitations:
 
-- The active mode is persisted to `localStorage`, except that `window` mode is not restored on app
-  load - browsers require a user gesture to open a window, so the Inspector returns docked.
-- Closing the popped-out window directly returns the Inspector to `dock` mode. Reloading or closing
-  the main app window closes the popped-out window.
-- `overlay` mode requires browser support for the native
-  [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API) (all modern browsers).
-  The pin button is hidden when not supported.
+- `window` mode is not restored on app load - browsers require a user gesture to open a window, so
+  the Inspector returns docked after a refresh.
+- Closing the popped-out window directly returns the Inspector to its docked state. Reloading or
+  closing the main app window closes the popped-out window.
 - Toasts and framework dialogs (e.g. the "Restore Defaults" confirm) always render within the main
   app window, even when triggered from a popped-out Inspector.
-- The docked panel's modal (expand) toggle is available in `dock` mode only.
 
 ## Stats View
 

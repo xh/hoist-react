@@ -205,12 +205,10 @@ columns.
 
 #### Other Improvements
 
-* Added two new hosting modes to the Hoist Inspector, toggled via new buttons in its header.
-  Both keep the Inspector fully live, with direct access to all app state:
-    * `overlay` pins the Inspector over the app in the browser's top layer, keeping it visible and
-      interactive above app-level masks and modal dialogs.
-    * `window` pops the Inspector out into a separate browser window - useful for moving it to a
-      second monitor while leaving the full app viewport to the app.
+* Added a pop-out mode to the Hoist Inspector, toggled via a new button in its header - opens
+  the Inspector in a separate browser window (e.g. on a second monitor), leaving the app's viewport
+  entirely to the app while keeping the Inspector fully live, with direct access to all app state.
+  Replaces the Inspector's previous modal (expand) toggle.
 * Added an `icon` prop to `Badge`, rendered before the badge's content. The new `--xh-badge-gap` CSS
   variable controls the spacing between the icon and the content.
 * Added a `CodeInput.lineStyles` prop to apply custom CSS class (es) to specific (1-based) lines,
