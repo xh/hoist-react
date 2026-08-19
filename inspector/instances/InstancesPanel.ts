@@ -58,7 +58,7 @@ export const instancesPanel = hoistCmp.factory({
         return panel({
             item: hframe(
                 panel({
-                    title: `Models · Services · Stores`,
+                    title: `Models · Services · Stores · Cubes · Views`,
                     headerItems,
                     icon: Icon.cube(),
                     compactHeader: true,

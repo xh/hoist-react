@@ -7,7 +7,7 @@
 import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
 import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import {Cube, StoreRecord, View} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
@@ -172,7 +172,9 @@ export class InstancesModel extends HoistModel {
         return (
             head(XH.getModels(it => it.xhId === xhId)) ??
             XH.getServices().find(it => it.xhId === xhId) ??
-            XH.getStores().find(it => it.xhId === xhId)
+            XH.getStores().find(it => it.xhId === xhId) ??
+            XH.getCubes().find(it => it.xhId === xhId) ??
+            XH.getViews().find(it => it.xhId === xhId)
         );
     }
 
@@ -193,6 +195,8 @@ export class InstancesModel extends HoistModel {
                     {name: 'isHoistService', type: 'bool'},
                     {name: 'isHoistModel', type: 'bool'},
                     {name: 'isStore', type: 'bool'},
+                    {name: 'isCube', type: 'bool'},
+                    {name: 'isView', type: 'bool'},
                     {name: 'isLinked', type: 'bool'},
                     {name: 'isXhImpl', type: 'bool'},
                     {name: 'hasLoadSupport', type: 'bool'},
@@ -288,6 +292,8 @@ export class InstancesModel extends HoistModel {
                     {name: 'isHoistModel', type: 'bool'},
                     {name: 'isHoistService', type: 'bool'},
                     {name: 'isStore', type: 'bool'},
+                    {name: 'isCube', type: 'bool'},
+                    {name: 'isView', type: 'bool'},
                     {name: 'isGetter', type: 'bool'},
                     {name: 'isLoadedGetter', type: 'bool'}
                 ]
@@ -345,7 +351,13 @@ export class InstancesModel extends HoistModel {
                         if (data.isGetter && !data.isLoadedGetter) {
                             return a({item: '(...)', onClick: () => this.loadGetter(record)});
                         }
-                        if (data.isHoistModel || data.isHoistService || data.isStore) {
+                        if (
+                            data.isHoistModel ||
+                            data.isHoistService ||
+                            data.isStore ||
+                            data.isCube ||
+                            data.isView
+                        ) {
                             return a({item: v, onClick: () => this.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
@@ -376,7 +388,11 @@ export class InstancesModel extends HoistModel {
                         ? 'Services'
                         : inst.isStore
                           ? 'Stores'
-                          : 'Models';
+                          : inst.isCube
+                            ? 'Cubes'
+                            : inst.isView
+                              ? 'Views'
+                              : 'Models';
                     data.push({...inst, displayGroup});
                 });
 
@@ -464,7 +480,9 @@ export class InstancesModel extends HoistModel {
             isProxy = !!v?._xhIsProxy,
             isHoistModel = v?.isHoistModel,
             isHoistService = v?.isHoistService,
-            isStore = v?.isStore;
+            isStore = v?.isStore,
+            isCube = Cube.isCube(v),
+            isView = View.isView(v);
 
         const valueType =
             isGetter && !isLoadedGetter
@@ -482,7 +500,7 @@ export class InstancesModel extends HoistModel {
             displayProperty: fromWatchlistItem ? `${instanceDisplayName}.${property}` : property,
             displayGroup: fromWatchlistItem ? 'Watchlist' : instanceDisplayName,
             value:
-                isHoistModel || isHoistService || isStore
+                isHoistModel || isHoistService || isStore || isCube || isView
                     ? v.xhId
                     : isProxy
                       ? '[cannot render]'
@@ -493,6 +511,8 @@ export class InstancesModel extends HoistModel {
             isHoistModel,
             isHoistService,
             isStore,
+            isCube,
+            isView,
             isGetter,
             isLoadedGetter,
             isWatchlistItem: !!this.getWatchlistItem(xhId, property)
