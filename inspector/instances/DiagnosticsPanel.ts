@@ -41,9 +41,10 @@ export const diagnosticsPanel = hoistCmp.factory({
             bbar: toolbar({
                 items: [
                     span({
-                        title: 'Stream each op performed by the selected instances to the devtools console, without raising the app-wide log level.',
+                        title: 'Stream each op performed by the selected instances to the devtools console, without raising the app-wide log level. Sticky per instance - logging continues when the selection moves elsewhere.',
                         item: switchInput({
-                            bind: 'logOps',
+                            value: model.logOps,
+                            onChange: v => model.setLogOps(v),
                             label: 'Log operations to console',
                             disabled: !hasTracked
                         })

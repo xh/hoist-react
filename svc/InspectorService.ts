@@ -14,7 +14,8 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
- * running application, specifically its current HoistModel, HoistService, and Store instances.
+ * running application, specifically its current HoistModel, HoistService, Store, Cube, and cube
+ * View instances.
  *
  * Activating this service will cause it to maintain an observable array of summary data synced
  * (with a minimal throttle) on each change to the Hoist registry, as well as an array of model

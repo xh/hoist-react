@@ -8,9 +8,9 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable} from '@xh/hoist/mobx';
 import {Cube} from '@xh/hoist/data';
-import {forIn, isFinite} from 'lodash';
+import {forIn, isEmpty, isFinite} from 'lodash';
 import type {InstancesModel} from './InstancesModel';
 
 /**
@@ -33,11 +33,15 @@ export class DiagnosticsModel extends HoistModel {
     @managed gridModel: GridModel;
 
     /**
-     * True to stream each op performed by the selected instances to the devtools console at
-     * 'info' level, following them without raising the app-wide log level. Reset on selection
-     * change.
+     * True if every currently selected diagnostics source is streaming its ops to the devtools
+     * console at 'info' level. Derived from (and toggled onto) the per-instance
+     * `diagnostics.logLevel`, so it is sticky per instance - logging continues as the selection
+     * moves elsewhere, and any number of instances can be logging at once.
      */
-    @bindable logOps = false;
+    get logOps(): boolean {
+        const tracked = this.trackedDiagnostics;
+        return !isEmpty(tracked) && tracked.every(it => it.logLevel === 'info');
+    }
 
     /** Diagnostics published by the currently selected instances. */
     get trackedDiagnostics(): BaseDiagnostics<any>[] {
@@ -66,8 +70,6 @@ export class DiagnosticsModel extends HoistModel {
         return ret;
     }
 
-    private escalated: BaseDiagnostics<any>[] = [];
-
     constructor(parent: InstancesModel) {
         super();
         makeObservable(this);
@@ -78,24 +80,16 @@ export class DiagnosticsModel extends HoistModel {
             run: () => this.syncGrid(),
             delay: 300
         });
-
-        this.addReaction(
-            {
-                track: () => this.parent.instancesGridModel.selectedIds,
-                run: () => {
-                    this.logOps = false;
-                    this.syncLogging();
-                }
-            },
-            {
-                track: () => this.logOps,
-                run: () => this.syncLogging()
-            }
-        );
     }
 
     resetAll() {
         this.trackedDiagnostics.forEach(it => it.reset());
+    }
+
+    /** Enable/disable op logging for all currently selected diagnostics sources. */
+    @action
+    setLogOps(logOps: boolean) {
+        this.trackedDiagnostics.forEach(it => (it.logLevel = logOps ? 'info' : 'debug'));
     }
 
     //------------------
@@ -146,12 +140,6 @@ export class DiagnosticsModel extends HoistModel {
               : op.update != null
                 ? `upd ${op.update} · add ${op.add} · rem ${op.remove}`
                 : null;
-    }
-
-    private syncLogging() {
-        this.escalated.forEach(it => (it.logLevel = 'debug'));
-        this.escalated = this.logOps ? this.trackedDiagnostics : [];
-        this.escalated.forEach(it => (it.logLevel = 'info'));
     }
 
     private createGridModel(): GridModel {
@@ -222,11 +210,6 @@ export class DiagnosticsModel extends HoistModel {
             ],
             xhImpl: true
         });
-    }
-
-    override destroy() {
-        this.escalated.forEach(it => (it.logLevel = 'debug'));
-        super.destroy();
     }
 }
 
