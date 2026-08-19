@@ -19,8 +19,8 @@
 See [`docs/upgrade-notes/v87-upgrade-notes.md`](docs/upgrade-notes/v87-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
-features and performance optimizations, grouped by topic below.
+Hoist React v87 is a BIG release with a number of potentially breaking changes and many new features
+and performance optimizations, grouped by topic below.
 
 * Requires `hoist-core >= 40.5.0` for the `ViewManager` group rename and bulk-editing APIs, now
   correctly enforced at startup - apps on an older core will fail fast rather than start. Features
@@ -96,10 +96,10 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   non-default values: the established sparse form for lightly-populated records, and a fixed shape
   cloned from a shared per-Store template for wider records. This avoids V8's memory-hungry
   "dictionary" mode and substantially reduces per-record memory on stores with wide records.
-* Improved Cube `View` memory efficiency across all row types - `ViewRowData` rows now share
-  compact fixed shapes, and leaf rows read field values directly from their source cube records
-  instead of holding copies. Substantially reduces per-row memory and speeds up view builds, with
-  savings that scale with query width.
+* Improved Cube `View` memory efficiency across all row types - `ViewRowData` rows now share compact
+  fixed shapes, and leaf rows read field values directly from their source cube records instead of
+  holding copies. Substantially reduces per-row memory and speeds up view builds, with savings that
+  scale with query width.
 * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
   that its provider parses and owns. Use it for stores connected to a Cube `View`, or fed by an
   endpoint that returns data in its final client-side form. Records reference the provider's row
@@ -112,15 +112,15 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
   available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
   automatically.
-* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping,
-  and filtering. Aggregate rows now reuse even when their children change - re-deriving in place
-  and republishing only values that actually changed - so e.g. dropping a trailing dimension
-  republishes nothing above the level that moved, and connected stores and grids skip the
-  matching record rebuilds.
-* Added `CubeConfig.store`, exposing `StoreConfig` options - notably `reuseRecords` and `retainRaw` -
-  on the Cube's internal Store. A source that supplies per-row digests can now preserve record
-  identity across full `Cube.loadDataAsync()` reloads, extending View row reuse to wholesale
-  refreshes.
+* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping, and
+  filtering. Aggregate rows now reuse even when their children change - re-deriving in place and
+  republishing only values that actually changed - so e.g. dropping a trailing dimension republishes
+  nothing above the level that moved, and connected stores and grids skip the matching record
+  rebuilds.
+* Added `CubeConfig.store`, exposing `StoreConfig` options - notably `reuseRecords` and
+  `retainRaw` - on the Cube's internal Store. A source that supplies per-row digests can now
+  preserve record identity across full `Cube.loadDataAsync()` reloads, extending View row reuse to
+  wholesale refreshes.
 * Added a `Store.retainRaw` config (default `true`). Set it to `false` to drop each record's
   reference to its raw source data object after parsing, reducing memory use on large stores that do
   not need `StoreRecord.raw`. Not compatible with `reuseRecords: true`.
@@ -200,15 +200,11 @@ columns.
   display of LDAP DNs. Per-group lookup errors surface as warning icons on the affected rows.
 * Added a search-based directory group picker to the Roles admin role editor, backed by the new
   `roleAdmin/searchDirectoryGroups` endpoint. Admins can find groups by partial name, with free-text
-  entry of a known GUID or DN still supported. Requires hoist-core v41.0.0 or later - against earlier
-  versions these features degrade gracefully to the previous identifier-based display.
+  entry of a known GUID or DN still supported. Requires hoist-core v41.0.0 or later - against
+  earlier versions these features degrade gracefully to the previous identifier-based display.
 
 #### Other Improvements
 
-* Added a pop-out mode to the Hoist Inspector, toggled via a new button in its header - opens
-  the Inspector in a separate browser window (e.g. on a second monitor), leaving the app's viewport
-  entirely to the app while keeping the Inspector fully live, with direct access to all app state.
-  Replaces the Inspector's previous modal (expand) toggle.
 * Added an `icon` prop to `Badge`, rendered before the badge's content. The new `--xh-badge-gap` CSS
   variable controls the spacing between the icon and the content.
 * Added a `CodeInput.lineStyles` prop to apply custom CSS class (es) to specific (1-based) lines,
@@ -218,12 +214,14 @@ columns.
   dynamically typed via a `typeField`.
 * `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus in the
   ViewManager menu and as expandable tree grids in the Manage dialog. Groups and views support
-  drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades
-  to every view nested beneath it. The `ViewManager` also supports bulk editing of
-  views' pin and visibility state.
-* `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within
-  the control.
+  drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades to
+  every view nested beneath it. `ViewManager` also now supports bulk editing of views' pin and
+  visibility state.
+* `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within the
+  control.
 * `TextInput` now accepts a `leftElement` prop, rendered inline at the left of the input.
+* Hoist Inspector now pops out in a separate browser window, leaving the app's viewport to the app
+  while ensuring Inspector itself is not covered by masks or other modal content.
 
 ### 🐞 Bug Fixes
 
@@ -258,8 +256,8 @@ columns.
 * Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
   `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
   and the path taken. Note that diagnostics log by default under `debug` output, but users may set
-  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of
-  a particular chain. This API is provided for app troubleshooting and benchmarking only, and is
+  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of a
+  particular chain. This API is provided for app troubleshooting and benchmarking only, and is
   subject to change without notice at any release.
 
 * Field XSS protection now returns unmodified strings by reference instead of a fresh copy, avoiding
