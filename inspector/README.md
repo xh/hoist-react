@@ -29,8 +29,10 @@ inspector/
 ├── InspectorModel.ts                # Hosts the UI docked in the app or in a popped-out window
 ├── Inspector.scss                   # Inspector-specific styles
 ├── instances/
-│   ├── InstancesPanel.ts            # Split view: instance grid (left) + properties grid (right)
-│   └── InstancesModel.ts            # Model managing instance/property grids, watchlist, getters
+│   ├── InstancesPanel.ts            # Instance grid (left) + tabbed properties/diagnostics (right)
+│   ├── InstancesModel.ts            # Model managing instance/property grids, watchlist, getters
+│   ├── DiagnosticsPanel.ts          # Data-pipeline diagnostics readout for selected instances
+│   └── DiagnosticsModel.ts          # Model syncing op stats from selected instance diagnostics
 └── stats/
     ├── StatsPanel.ts                # Chart + grid combo for timeseries stats
     └── StatsModel.ts                # Model tracking model count, heap memory, sync runs
@@ -119,10 +121,12 @@ navigation or load action created them.
 
 The Instances panel is a split layout with:
 
-- **Instances grid** (left, resizable) — Lists all live `HoistModel`, `HoistService`, and `Store`
-  instances with their class name, creation time, linked status, and sync run
+- **Instances grid** (left, resizable) — Lists all live `HoistModel`, `HoistService`, `Store`,
+  `Cube`, and `View` instances with their class name, creation time, linked status, and sync run
 - **Properties grid** (right) — Shows properties of the selected instance(s), including observable
   values with live updates
+- **Diagnostics panel** (tabbed with properties) — Live readout of the data-pipeline
+  `diagnostics` published by selected Stores, Cube Views, and GridModels
 
 ### Instance Grid Features
 
@@ -143,10 +147,29 @@ The Instances panel is a split layout with:
   watched properties across multiple instances
 - **Filtering** — Toggle filters for: own properties only, observable properties only, hide
   underscore-prefixed properties
-- **Navigation** — When a property value is a HoistModel, HoistService, or Store, clicking its
-  value navigates to that instance in the instances grid
+- **Navigation** — When a property value is a HoistModel, HoistService, Store, Cube, or View,
+  clicking its value navigates to that instance in the instances grid
 - **Console logging** — Double-click a property or use the action button to log its value to the
   browser devtools console
+
+### Diagnostics Panel
+
+`Store`, Cube `View`, and `GridModel` publish `diagnostics` reporting on each data-pipeline
+operation they perform - see [Diagnostics](../data/README.md#diagnostics) in the data package
+README. When any selected instance publishes diagnostics, this panel shows one row per operation
+kind with the last op's type (the path taken - e.g. an incremental patch vs. a full rebuild), the
+work done, its timing, and cumulative count/average stats. Selecting a `Cube` reports via its
+internal `Store`, where its data ops actually land.
+
+- **Log operations to console** — Streams each op performed by the selected instances to the
+  devtools console, by escalating their per-instance `diagnostics.logLevel` - no need to raise the
+  app-wide `XH.logLevel`. Sticky per instance - logging continues when the selection moves
+  elsewhere, and any number of instances can log at once.
+- **Reset** — Clears counts and timings for the selected instances.
+
+Select the instances along a data-change's path - e.g. a Cube's `Store`, a `View` on that cube, and
+the `GridModel` displaying its results - to localize the cost of the change to the stage
+responsible for it.
 
 ### Persistence
 

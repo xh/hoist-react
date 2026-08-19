@@ -6,7 +6,7 @@
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
 import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
-import {Store} from '@xh/hoist/data';
+import {Cube, Store, View} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never} from '@xh/hoist/promise';
@@ -873,6 +873,16 @@ export class XHApi {
     /** All Stores registered with this application. */
     getStores(): Store[] {
         return Array.from(instanceManager.stores);
+    }
+
+    /** All Cubes registered with this application. */
+    getCubes(): Cube[] {
+        return Array.from(instanceManager.cubes);
+    }
+
+    /** All Cube Views registered with this application. */
+    getViews(): View[] {
+        return Array.from(instanceManager.views);
     }
 
     /**

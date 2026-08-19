@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {composeRefs} from '@xh/hoist/utils/react';
+import {useComposedRefs} from '@xh/hoist/utils/react';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {isString} from 'lodash';
@@ -43,9 +43,7 @@ export const resizeContainer = hoistCmp.factory({
             minDim = vertical ? 'minHeight' : 'minWidth',
             cmpSize = !collapsed && sizeIsPct ? size : undefined;
 
-        if (panelModel._resizeRef) {
-            ref = composeRefs(panelModel._resizeRef, ref);
-        }
+        ref = useComposedRefs(panelModel._resizeRef, ref);
 
         return cmp({
             ref,
