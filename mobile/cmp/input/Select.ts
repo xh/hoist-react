@@ -457,7 +457,8 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Async
     //------------------------
-    // Bumped for each query issued by react-select, to identify superseded results below.
+    // Bumped on each loadOptions call from react-select - i.e. per input change, not per query
+    // actually issued - so the debounced query below can detect results superseded by later input.
     private queryGeneration = 0;
 
     doQueryAsync = query => {
