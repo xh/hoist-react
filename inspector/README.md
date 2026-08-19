@@ -161,9 +161,10 @@ kind with the last op's type (the path taken - e.g. an incremental patch vs. a f
 work done, its timing, and cumulative count/average stats. Selecting a `Cube` reports via its
 internal `Store`, where its data ops actually land.
 
-- **Log ops** — Streams each op performed by the selected instances to the devtools console,
-  by escalating their per-instance `diagnostics.logLevel` - no need to raise the app-wide
-  `XH.logLevel`. Resets when the selection changes.
+- **Log operations to console** — Streams each op performed by the selected instances to the
+  devtools console, by escalating their per-instance `diagnostics.logLevel` - no need to raise the
+  app-wide `XH.logLevel`. Sticky per instance - logging continues when the selection moves
+  elsewhere, and any number of instances can log at once.
 - **Reset** — Clears counts and timings for the selected instances.
 
 Select the instances along a data-change's path - e.g. a Cube's `Store`, a `View` on that cube, and
