@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -28,7 +28,7 @@ export class DiagnosticsModel extends HoistModel {
     override xhImpl = true;
 
     parent: InstancesModel;
-    gridModel: GridModel;
+    @managed gridModel: GridModel;
 
     /**
      * True to stream each op performed by the selected instances to the devtools console at
@@ -208,7 +208,6 @@ export class DiagnosticsModel extends HoistModel {
 
     override destroy() {
         this.escalated.forEach(it => (it.logLevel = 'debug'));
-        XH.safeDestroy(this.gridModel);
         super.destroy();
     }
 }
