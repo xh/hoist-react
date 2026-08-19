@@ -11,7 +11,7 @@ import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
+import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
@@ -256,7 +256,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
         buttonPosition: 'none',
         disabled: props.disabled,
-        inputRef: composeRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
+        inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
         min: props.min,
         max: props.max,

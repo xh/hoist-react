@@ -11,7 +11,7 @@ import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {composeRefs, createObservableRef} from '@xh/hoist/utils/react';
+import {useComposedRefs, createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {ForwardedRef, ReactElement, useCallback} from 'react';
 
@@ -50,7 +50,7 @@ export function useInlineEditorModel(
         model: impl,
         bind: 'value',
         commitOnChange: true,
-        ref: composeRefs(impl.ref, ref),
+        ref: useComposedRefs(impl.ref, ref),
         ...inputProps,
         onCommit: (value: any, oldValue: any) => {
             agParams.onValueChange(value);

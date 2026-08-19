@@ -38,6 +38,8 @@ export class StatsModel extends HoistModel {
 
         this.gridModel = new GridModel({
             colChooserModel: true,
+            filterModel: true,
+            headerMenuDisplay: 'hover',
             persistWith: this.persistWith,
             autosizeOptions: {mode: 'managed'},
             store: {
@@ -52,7 +54,7 @@ export class StatsModel extends HoistModel {
                 ]
             },
             sortBy: ['timestamp|desc'],
-            colDefaults: {autosizeIncludeHeaderIcons: false},
+            colDefaults: {autosizeIncludeHeaderIcons: false, filterable: true},
             columns: [
                 {field: 'timestamp', renderer: timestampRenderer},
                 {field: 'modelCount', renderer: numberRenderer({precision: 0})},

@@ -47,7 +47,7 @@ import type {
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
-import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {type MouseEvent} from 'react';
@@ -140,7 +140,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             testId,
             onKeyDown: impl.onKeyDown,
             onMouseDown: impl.onViewMouseDown,
-            ref: composeRefs(impl.viewRef, model.viewRef, ref)
+            ref: useComposedRefs(impl.viewRef, model.viewRef, ref)
         });
 
         // Safe to use the desktop component unconditionally - GridModel never creates this model

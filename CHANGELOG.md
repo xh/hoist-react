@@ -222,6 +222,15 @@ columns.
 * `TextInput` now accepts a `leftElement` prop, rendered inline at the left of the input.
 * Hoist Inspector now pops out in a separate browser window, leaving the app's viewport to the app
   while ensuring Inspector itself is not covered by masks or other modal content.
+* Hoist Inspector now tracks `Cube` and cube `View` instances alongside models, services, and
+  stores, and adds a Diagnostics panel - a live readout of the data-pipeline `diagnostics`
+  published by selected Stores, Cubes, Cube Views, and GridModels, with controls to reset counters
+  and stream ops to the devtools console.
+* Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances,
+  now registered with Hoist's instance registry.
+* Added `useComposedRefs` - a hook variant of `composeRefs` that manages identity via `useCallback`
+  and forwards React 19 ref-callback cleanups. Prefer it when composing refs within a component
+  render function.
 
 ### 🐞 Bug Fixes
 
