@@ -224,7 +224,13 @@ export class InstancesModel extends HoistModel {
                     ]
                 },
                 {field: 'id', displayName: 'xhId'},
-                {field: 'syncRun', displayName: 'Sync', autosizeIncludeHeaderIcons: false},
+                {
+                    field: 'syncRun',
+                    displayName: 'Sync',
+                    headerTooltip:
+                        'Sync run in which this instance first appeared. Inspector increments its sync run counter each time it detects newly-created instances, grouping instances that were created together.',
+                    autosizeIncludeHeaderIcons: false
+                },
                 {
                     field: 'isLinked',
                     headerName: Icon.link(),

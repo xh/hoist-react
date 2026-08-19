@@ -5,8 +5,9 @@
 
 The Inspector is a built-in developer and admin tool for real-time inspection of a running Hoist
 application's `HoistModel`, `HoistService`, and `Store` instances, along with memory and
-performance statistics. It renders as a collapsible bottom panel within the desktop application UI,
-driven by the `InspectorService` in [`/svc/`](../svc/README.md).
+performance statistics. It renders by default as a resizable bottom panel within the desktop
+application UI, driven by the `InspectorService` in [`/svc/`](../svc/README.md), and can also be
+popped out into a separate browser window (see [Pop-Out Window](#pop-out-window) below).
 
 ## Overview
 
@@ -24,7 +25,8 @@ The Inspector provides two main views: **Stats** (timeseries of model counts and
 
 ```
 inspector/
-├── InspectorPanel.ts                # Top-level container (bottom panel with Stats + Instances)
+├── InspectorPanel.ts                # Top-level container (renders Stats + Instances panels)
+├── InspectorModel.ts                # Hosts the UI docked in the app or in a popped-out window
 ├── Inspector.scss                   # Inspector-specific styles
 ├── instances/
 │   ├── InstancesPanel.ts            # Split view: instance grid (left) + properties grid (right)
@@ -75,6 +77,23 @@ The Inspector can be toggled via:
 
 The `active` state is persisted to `localStorage`, so the Inspector will remain open across page
 refreshes.
+
+## Pop-Out Window
+
+Because the docked Inspector renders as a standard part of the app's component tree, app-level
+masks and modal dialogs will cover and block it. A button in the Inspector's header pops it out
+into a separate browser window (e.g. onto a second monitor), leaving the app's viewport entirely
+to the app while keeping the Inspector fully live, with direct access to all app state.
+
+Hosting and window lifecycle are managed by `InspectorModel`, which portals the same component
+tree rendered when docked into the popped-out window. Notes and limitations:
+
+- The popped-out state is not restored on app load - browsers require a user gesture to open a
+  window, so the Inspector returns docked after a refresh.
+- Closing the popped-out window directly returns the Inspector to its docked state. Reloading or
+  closing the main app window closes the popped-out window.
+- Toasts and framework dialogs (e.g. the "Restore Defaults" confirm) always render within the main
+  app window, even when triggered from a popped-out Inspector.
 
 ## Stats View
 
