@@ -228,6 +228,9 @@ columns.
   and stream ops to the devtools console.
 * Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances,
   now registered with Hoist's instance registry.
+* Added `useComposedRefs` - a hook variant of `composeRefs` that manages identity via `useCallback`
+  and forwards React 19 ref-callback cleanups. Prefer it when composing refs within a component
+  render function.
 
 ### 🐞 Bug Fixes
 

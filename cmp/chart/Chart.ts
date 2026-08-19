@@ -22,7 +22,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {logError, mergeDeep} from '@xh/hoist/utils/js';
 import {
-    composeRefs,
+    useComposedRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,
@@ -70,7 +70,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
         }
 
         const impl = useLocalModel(ChartLocalModel);
-        ref = composeRefs(
+        ref = useComposedRefs(
             ref,
             useOnResize(impl.onResize),
             useOnVisibleChange(impl.onVisibleChange)
