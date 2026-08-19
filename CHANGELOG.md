@@ -233,7 +233,8 @@ columns.
   render function.
 * Mobile `DateInput` now opens a themeable calendar picker (react-day-picker) within a dialog,
   replacing the OS-provided picker of the native `<input type="date">` element. Adds a
-  `formatString` prop to control the in-input display of the value.
+  `formatString` prop to control the in-input display of the value, and a `dayPickerProps` escape
+  hatch to pass props (e.g. `disabled` day matchers) directly to the underlying calendar.
 
 ### 🐞 Bug Fixes
 
