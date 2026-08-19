@@ -174,8 +174,8 @@ importers:
         specifier: ^2.14.4
         version: 2.14.4
       swiper:
-        specifier: ~12.2.0
-        version: 12.2.0
+        specifier: ~14.1.0
+        version: 14.1.0
       ts-morph:
         specifier: ^27.0.2
         version: 27.0.2
@@ -4876,8 +4876,8 @@ packages:
   svg-tags@1.0.0:
     resolution: {integrity: sha512-ovssysQTa+luh7A5Weu3Rta6FJlFBBbInjOh722LIt6klpU2/HtdUbszju/G4devcvk8PGt7FCLv5wftu3THUA==}
 
-  swiper@12.2.0:
-    resolution: {integrity: sha512-K8uXsBZU6ME97Ia3xbBge8IRCnR1lOmIILzvY/jGVic7dSTQ530s3uO8RvXbPUtkkXLWIwmZLRPbtDxRWVAFdg==}
+  swiper@14.1.0:
+    resolution: {integrity: sha512-ppit/AqmGvThKlXy4I1/9N/gEyb9s/BDHWciWNeIxbfteFKUhPQXrYuOMKszomXKd9WiLd+/0vKdPHW+0N0mhA==}
     engines: {node: '>= 4.7.0'}
 
   symbol-observable@1.2.0:
@@ -10993,7 +10993,7 @@ snapshots:
 
   svg-tags@1.0.0: {}
 
-  swiper@12.2.0: {}
+  swiper@14.1.0: {}
 
   symbol-observable@1.2.0: {}
 
