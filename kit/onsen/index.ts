@@ -8,10 +8,18 @@ import {ElementFactory, elementFactory, HoistModel} from '@xh/hoist/core';
 import onsen from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
-import {composeRefs} from '@xh/hoist/utils/react';
-import {createElement, forwardRef, FunctionComponent, useLayoutEffect, useRef} from 'react';
+import {
+    createElement,
+    ForwardedRef,
+    forwardRef,
+    FunctionComponent,
+    RefObject,
+    useLayoutEffect,
+    useMemo,
+    useRef
+} from 'react';
 import * as ons from 'react-onsenui';
-import {mapKeys, omitBy, pickBy} from 'lodash';
+import {isFunction, mapKeys, omitBy, pickBy} from 'lodash';
 import './styles.scss';
 import './theme.scss';
 
@@ -72,12 +80,37 @@ function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {
             if (elemRef.current) Object.assign(elemRef.current, boolProps);
         });
 
-        // 2) Set remaining props on the underlying component, including our ref.
+        // 2) Set remaining props on the underlying component, including our ref. Note
+        // react-onsenui reads `.current` on the ref it receives within its own effects, so it
+        // must be handed an object ref - a callback ref from `composeRefs` would break it.
         const childProps = {
             ...omitBy(props, it => it instanceof HoistModel || typeof it === 'boolean'),
-            ref: composeRefs(elemRef, ref)
+            ref: useComposedObjectRef(elemRef, ref)
         };
         return createElement(rawCmp, childProps);
     });
     return [elementFactory(cmp), cmp];
+}
+
+/**
+ * Compose our internal element ref with any caller-provided ref into a single object ref,
+ * memoized per component instance. Assignments to `current` fan out to every input ref with
+ * standard React semantics - callback refs are called, object refs assigned - at React's normal
+ * ref-attach timing.
+ */
+function useComposedObjectRef<T>(...refs: Array<ForwardedRef<T>>): RefObject<T | null> {
+    return useMemo(() => {
+        const targets = refs.filter(Boolean);
+        let value: T | null = null;
+        return {
+            get current() {
+                return value;
+            },
+            set current(v: T | null) {
+                value = v;
+                targets.forEach(it => (isFunction(it) ? it(v) : (it.current = v)));
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, refs);
 }
