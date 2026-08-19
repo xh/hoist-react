@@ -29,7 +29,7 @@ inspector/
 ├── InspectorModel.ts                # Hosts the UI docked in the app or in a popped-out window
 ├── Inspector.scss                   # Inspector-specific styles
 ├── instances/
-│   ├── InstancesPanel.ts            # Split view: instance grid (left) + properties grid (right)
+│   ├── InstancesPanel.ts            # Instance grid (left) + tabbed properties/diagnostics (right)
 │   ├── InstancesModel.ts            # Model managing instance/property grids, watchlist, getters
 │   ├── DiagnosticsPanel.ts          # Data-pipeline diagnostics readout for selected instances
 │   └── DiagnosticsModel.ts          # Model syncing op stats from selected instance diagnostics
@@ -125,7 +125,7 @@ The Instances panel is a split layout with:
   `Cube`, and `View` instances with their class name, creation time, linked status, and sync run
 - **Properties grid** (right) — Shows properties of the selected instance(s), including observable
   values with live updates
-- **Diagnostics panel** (below properties, collapsible) — Live readout of the data-pipeline
+- **Diagnostics panel** (tabbed with properties) — Live readout of the data-pipeline
   `diagnostics` published by selected Stores, Cube Views, and GridModels
 
 ### Instance Grid Features
