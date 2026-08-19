@@ -259,6 +259,9 @@ columns.
   with Hoist's other constraints. Pair the two rules if a value must be present.
 * Fixed `CodeInput` with `autoFormat` committing reformatted text back to its bound value, leaving
   forms dirty after a reset.
+* Fixed an `O(n²)` option merge in async `Select` (v86.3.0 regression) that could block the main
+  thread for seconds on large `queryFn` results. `Select` no longer accumulates and de-dupes the
+  full query history.
 
 ### ⚙️ Technical
 
