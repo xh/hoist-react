@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {a, div, filler, hframe, hspacer, p, span, vframe} from '@xh/hoist/cmp/layout';
+import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
@@ -73,18 +74,43 @@ export const instancesPanel = hoistCmp.factory({
                     bbar: instanceGridBar(),
                     model: instancesPanelModel
                 }),
-                vframe(
-                    panel({
-                        title: 'Properties',
-                        icon: Icon.fileText(),
-                        compactHeader: true,
-                        item: grid({model: model.propertiesGridModel, agOptions: {popupParent}}),
-                        bbar: propertiesGridBar()
-                    }),
-                    diagnosticsPanel({model: model.diagnosticsModel})
-                )
+                tabContainer({
+                    modelConfig: {
+                        persistWith: {...model.persistWith, path: 'detailTabs'},
+                        xhImpl: true,
+                        tabs: [
+                            {
+                                id: 'properties',
+                                icon: Icon.fileText(),
+                                content: propertiesView
+                            },
+                            {
+                                id: 'diagnostics',
+                                icon: Icon.gauge(),
+                                content: diagnosticsView
+                            }
+                        ]
+                    }
+                })
             )
         });
+    }
+});
+
+const propertiesView = hoistCmp.factory<InstancesModel>({
+    render({model}) {
+        // Re-parent grid popups (context/column menus) when Inspector is detached.
+        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
+        return panel({
+            item: grid({model: model.propertiesGridModel, agOptions: {popupParent}}),
+            bbar: propertiesGridBar()
+        });
+    }
+});
+
+const diagnosticsView = hoistCmp.factory<InstancesModel>({
+    render({model}) {
+        return diagnosticsPanel({model: model.diagnosticsModel});
     }
 });
 

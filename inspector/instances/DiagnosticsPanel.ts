@@ -32,16 +32,6 @@ export const diagnosticsPanel = hoistCmp.factory({
             hasTracked = !isEmpty(model.trackedDiagnostics);
 
         return panel({
-            title: 'Diagnostics',
-            icon: Icon.gauge(),
-            compactHeader: true,
-            modelConfig: {
-                side: 'bottom',
-                defaultSize: 250,
-                persistWith: {...model.parent.persistWith, path: 'diagnosticsPanel'},
-                showHeaderCollapseButton: true,
-                xhImpl: true
-            },
             item: grid({model: model.gridModel, agOptions: {popupParent}}),
             bbar: toolbar({
                 items: [
