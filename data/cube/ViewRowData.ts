@@ -56,12 +56,6 @@ export interface ViewRowData {
      * Support all other string keys for application fields in source data.
      */
     [key: string]: any;
-
-    //------------------
-    // Implementation
-    //-----------------
-    /** @internal */
-    _cubeLeafChildren: ViewRowData[];
 }
 
 /**

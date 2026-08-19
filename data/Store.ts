@@ -24,7 +24,7 @@ import {
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -47,9 +47,7 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
-import {newPatchStats, PatchableRecordSet, PatchStats} from './impl/PatchableRecordSet';
-
-export type {PatchStats};
+import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
 /**
  * Populated (non-default) field count at/above which a record's `data` is considered dense and
@@ -236,14 +234,14 @@ export interface StoreConfig {
     /**
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API. Currently includes:
-     *   - `patchableRecordSet: true` to enable {@link PatchableRecordSet} - incremental record
-     *     collections that make transaction cost scale with the size of the change rather than
-     *     the size of the store. Note record order becomes stable-by-incumbency rather than
-     *     source-order: existing records keep their positions and additions append, including
-     *     records entering a filter incrementally and adds within partial reloads. Apply a
-     *     grid sort where deterministic order matters.
-     *   - `patchRecordsMaxRatio` - its core threshold, the max patch size as a fraction of
-     *     total records (default 0.1).
+     *   - `maxPatchRatio` - max size of a RecordSet patch layer as a fraction of total records,
+     *     clamped to [0, 0.5] (default 0, disabling patching). Set to e.g. 0.1 to make
+     *     transaction, filtering, and grid-sync costs scale with the size of the change rather
+     *     than the size of the store. Note record order then becomes stable-by-incumbency rather
+     *     than source-order: existing records keep their positions and additions append, including
+     *     records entering a filter incrementally and adds within partial reloads. Apply a grid
+     *     sort where deterministic order matters. The ratio is read live on each operation, so
+     *     it may also be changed on an existing Store at any time.
      */
     experimental?: PlainObject;
 }
@@ -427,12 +425,8 @@ export class Store
     private _fieldMap: Map<string, Field>;
     experimental: any;
 
-    /**
-     * Counters tracking how often this Store's record sets stay on the incremental (patch) path
-     * vs. falling back to a full O(records) rebuild. Non-null only with the experimental
-     * `patchableRecordSet` enabled - see {@link PatchStats}.
-     */
-    readonly patchStats: PatchStats;
+    /** @internal */
+    readonly diagnostics = new StoreDiagnostics(this);
 
     constructor({
         fields,
@@ -465,7 +459,6 @@ export class Store
         );
 
         this.experimental = this.parseExperimental(experimental);
-        this.patchStats = this.experimental.patchableRecordSet ? newPatchStats() : null;
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
@@ -537,8 +530,9 @@ export class Store
      *      custom aggregations for the dataset, if desired.
      */
     @action
-    @logWithDebug
     loadData(rawData: PlainObject[], rawSummaryData?: Some<PlainObject>) {
+        const start = performance.now();
+
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
         if (rawData.length !== 0 && this.loadRootAsSummary) {
             throwIf(
@@ -557,10 +551,12 @@ export class Store
             records = this.createRecords(rawData, null),
             updated = _committed.withNewRecords(records);
 
+        this.diagnostics.noteLoad(updated, _committed, start);
+
         // Skip downstream work on no-change reloads, unless local mods are being discarded.
         if (updated !== _committed || updated !== _current) {
             this._committed = this._current = updated;
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
 
         this.lastLoaded = this.lastUpdated = Date.now();
@@ -594,7 +590,8 @@ export class Store
             'loadDataAsync does not support loadRootAsSummary - load via loadData(), or install summary records separately via updateData().'
         );
 
-        const recordMap = new Map<StoreRecordId, StoreRecord>(),
+        const start = performance.now(),
+            recordMap = new Map<StoreRecordId, StoreRecord>(),
             summaryIds = new Set<StoreRecordId>();
 
         for await (const raw of rawData) {
@@ -605,9 +602,12 @@ export class Store
             this.summaryRecords = null;
             const {_committed, _current} = this,
                 updated = _committed.withNewRecords(recordMap);
+
+            this.diagnostics.noteLoad(updated, _committed, start);
+
             if (updated !== _committed || updated !== _current) {
                 this._committed = this._current = updated;
-                this.rebuildFiltered();
+                this.incrementalRefilter();
             }
             this.lastLoaded = this.lastUpdated = Date.now();
         });
@@ -636,11 +636,11 @@ export class Store
      * @returns changes applied, or null if no record changes were made.
      */
     @action
-    @logWithDebug
     updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: StoreChangeLog = {};
+        const start = performance.now(),
+            changeLog: StoreChangeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction: StoreTransaction;
@@ -728,7 +728,9 @@ export class Store
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
 
-        if (!isEmpty(rsTransaction)) {
+        const hasChanges = !isEmpty(rsTransaction),
+            prevCurrent = this._current;
+        if (hasChanges) {
             // Prepare changelog up front - removed records are unresolvable post-removal.
             const {update, add, remove: removeIds} = rsTransaction;
             if (update) changeLog.update = update;
@@ -751,9 +753,10 @@ export class Store
                 // Otherwise, the updated RecordSet is both current and committed.
                 this._current = this._committed;
             }
-
-            this.rebuildFiltered();
         }
+        this.diagnostics.noteUpdate(this._current, prevCurrent, start);
+
+        if (hasChanges) this.incrementalRefilter();
 
         if (!isEmpty(changeLog)) {
             this.lastUpdated = Date.now();
@@ -768,7 +771,7 @@ export class Store
      * re-filter automatically whenever StoreRecord data is updated or modified.
      */
     refreshFilter() {
-        this.rebuildFiltered();
+        this.fullRefilter();
     }
 
     /**
@@ -813,7 +816,7 @@ export class Store
         });
 
         this._current = this._current.withTransaction({add: addRecs});
-        this.rebuildFiltered();
+        this.incrementalRefilter();
     }
 
     /**
@@ -836,7 +839,7 @@ export class Store
             .withTransaction({remove: idsToRemove})
             .normalize(this._committed);
 
-        this.rebuildFiltered();
+        this.incrementalRefilter();
     }
 
     /**
@@ -927,7 +930,7 @@ export class Store
         if (!isEmpty(updateRecs)) {
             this._current = this._current.withTransaction({update: updateRecs});
             changeLog.update = updateRecs;
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
 
         return changeLog;
@@ -959,7 +962,7 @@ export class Store
                 .withTransaction({update: recsToRevert.map(r => this.getCommittedOrThrow(r.id))})
                 .normalize(this._committed);
 
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
     }
 
@@ -975,7 +978,7 @@ export class Store
         this.throwIfProjectionOnly('revert');
         this._current = this._committed;
         if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
-        this.rebuildFiltered();
+        this.incrementalRefilter();
     }
 
     /** Get a specific Field by name.*/
@@ -1083,7 +1086,7 @@ export class Store
         filter = parseFilter(filter);
         if (this.filter != filter && !this.filter?.equals(filter)) {
             this.filter = filter;
-            this.rebuildFiltered();
+            this.incrementalRefilter();
         }
 
         if (!filter) this.setXhFilterText(null);
@@ -1092,7 +1095,7 @@ export class Store
     @action
     setFilterIncludesChildren(val: boolean) {
         this.filterIncludesChildren = val;
-        this.rebuildFiltered();
+        this.fullRefilter();
     }
 
     /** Convenience method to clear the Filter applied to this store. */
@@ -1317,8 +1320,7 @@ export class Store
 
     @action
     private resetRecords() {
-        const cls = this.experimental.patchableRecordSet ? PatchableRecordSet : RecordSet;
-        this._committed = this._current = this._filtered = new cls(this) as unknown as RecordSet;
+        this._committed = this._current = this._filtered = new RecordSet(this);
         this.summaryRecords = null;
     }
 
@@ -1352,8 +1354,19 @@ export class Store
     }
 
     @action
-    private rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter, this._filtered);
+    private incrementalRefilter() {
+        const start = performance.now(),
+            {_current, _filtered: prevFiltered} = this;
+        this._filtered = _current.withFilter(this.filter, prevFiltered);
+        this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
+    }
+
+    @action
+    private fullRefilter() {
+        const start = performance.now(),
+            {_current} = this;
+        this._filtered = _current.withFilter(this.filter, null);
+        this.diagnostics.noteFilter(this._filtered, _current, null, start);
     }
 
     //---------------------------------------

@@ -1,11 +1,30 @@
 # Changelog
 
+<!--
+  Entry conventions: docs/changelog-format.md - read it before adding entries here.
+
+  The three rules that account for most review feedback:
+
+  1. Every bullet needs an explicit grammatical subject. No "Provides support for ..." or "Misc.
+     improvements to ...".
+  2. Open with a past-tense verb (Added / Fixed / Removed / Renamed) when reporting an action on the
+     codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
+  3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
+-->
+
 ## 87.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
 
+See [`docs/upgrade-notes/v87-upgrade-notes.md`](docs/upgrade-notes/v87-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
 Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
 features and performance optimizations, grouped by topic below.
+
+* Requires `hoist-core >= 40.5.0` for the `ViewManager` group rename and bulk-editing APIs, now
+  correctly enforced at startup - apps on an older core will fail fast rather than start. Features
+  that pair with hoist-core v41 endpoints degrade gracefully against earlier versions.
 
 #### React 19 and Build Tooling
 
@@ -40,13 +59,19 @@ features and performance optimizations, grouped by topic below.
 * `StoreChangeLog.remove` (returned by `Store.updateData()`) now holds the removed `StoreRecord`s
   instead of their ids. Removed records cannot be resolved against the Store after the fact, so the
   records themselves are the more useful report. Read `record.id` where you need ids.
+* `AggregationContext.filteredRecords` now throws when read by a custom `Aggregator` that does not
+  override `dependsOnChildrenOnly` to return `false`. Views with only children-based aggregators
+  update incrementally without maintaining that collection - aggregators that read records beyond
+  their own children must declare themselves.
 
 #### Grid - New Column Chooser and Column State
 
 * Re-implemented the desktop grid column chooser (see New Features below). Its UX is substantially
   improved yet also different - review before release to ensure key stakeholders are not surprised.
 * Apps that register an explicit list of ag-Grid modules (instead of `AllCommunityModule`) must add
-  `RowDragModule`. Without it, the chooser's drag-and-drop fails silently.
+  `RowDragModule`. Without it, the chooser's drag-and-drop fails silently. Consider switching to
+  `AllCommunityModule` - module registration does not affect shipped bundle size, and registering
+  everything avoids this class of silent failure.
 * `Column.chooserGroup` now groups columns only within the new, opt-in Column Library. Set
   `colChooserModel: {columnLibrary: true}` to keep a grouped presentation of hidden columns.
 * Update or remove any custom styles that targeted the chooser's former `LeftRightChooser`- based
@@ -56,10 +81,6 @@ features and performance optimizations, grouped by topic below.
   to views that users have curated and named. The columns remain available in the column chooser.
   Set the new `GridModelPersistOptions.hideNewColumns` config to `false` to restore the previous
   behavior.
-
-#### View Manager -- Support for nested groups.
-
-* Requires `hoist-core >= 41.0.0` for the `ViewManager` group and bulk-editing APIs.
 
 ### 🎁 New Features
 
@@ -75,13 +96,10 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   non-default values: the established sparse form for lightly-populated records, and a fixed shape
   cloned from a shared per-Store template for wider records. This avoids V8's memory-hungry
   "dictionary" mode and substantially reduces per-record memory on stores with wide records.
-* Improved Cube `View` memory efficiency - each `View` now clones its `ViewRowData` rows from a
-  shared template, so all rows in a View share one compact, fixed shape. This substantially reduces
-  per-row memory and speeds up view builds, especially for queries with many fields.
-* Cube `View`s no longer copy leaf row data when their results do not expose leaves (neither
-  `includeLeaves` nor `provideLeaves` set). Leaf rows read directly from cube records, which
-  eliminates per-View leaf data objects and speeds up view builds for aggregate-only views over
-  large datasets. Such views no longer publish a `View.result.leafMap` - see Breaking Changes.
+* Improved Cube `View` memory efficiency across all row types - `ViewRowData` rows now share
+  compact fixed shapes, and leaf rows read field values directly from their source cube records
+  instead of holding copies. Substantially reduces per-row memory and speeds up view builds, with
+  savings that scale with query width.
 * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
   that its provider parses and owns. Use it for stores connected to a Cube `View`, or fed by an
   endpoint that returns data in its final client-side form. Records reference the provider's row
@@ -110,10 +128,11 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   unchanged, as already detected by `Store.loadData()`. Connected `View`s now sync their info and
   timestamp instead of regenerating all of their rows, so polled reloads of unchanged data cost
   nothing downstream.
-* Added experimental `PatchableRecordSet`, substantially improving `Store` performance for
-  incremental changes to large datasets - transaction, filtering, and grid-sync costs scale with
-  the size of the change rather than the size of the store. Enable via `Store` config
-  `experimental: {patchableRecordSet: true}` or app-wide via the `xhStoreExperimental` soft-config.
+* Added experimental support for patch-based record collections within `Store`, substantially
+  improving performance for incremental changes to large datasets - transaction, filtering, and
+  grid-sync costs scale with the size of the change rather than the size of the store. Enable via
+  `Store` config `experimental: {maxPatchRatio: 0.1}` or app-wide via the
+  `xhStoreExperimental` soft-config. The ratio may also be changed on a live `Store` at any time.
 
 #### FetchService - ndjson + string interning
 
@@ -178,11 +197,19 @@ columns.
   instance-config override, or both now present a tabbed value editor over the resolved,
   instance-override, database, and code-default views of their value, muting resolved entries that
   are not explicitly set. The grid's Value column shows the effective value - resolved, and honoring
-  any instance override. Requires hoist-core v41 or later. Against earlier versions the editor
+  any instance override. Requires hoist-core v41.0.0 or later. Against earlier versions the editor
   degrades gracefully.
 * Added a `View Surrounding Lines` right-click action to the Admin Console log viewer. Clears any
   active filter and reloads the log around the selected line, then re-selects that line and centers
   it in the viewport - useful for examining the context around a hit found by filtering.
+* Enhanced the Roles admin module to resolve and display friendly names for directory groups, via
+  the new `roleAdmin/directoryGroupsInfo` endpoint. Especially useful with hoist-core's new
+  `EntraIdService`, where groups are stored as opaque object IDs (GUIDs), and also improves the
+  display of LDAP DNs. Per-group lookup errors surface as warning icons on the affected rows.
+* Added a search-based directory group picker to the Roles admin role editor, backed by the new
+  `roleAdmin/searchDirectoryGroups` endpoint. Admins can find groups by partial name, with free-text
+  entry of a known GUID or DN still supported. Requires hoist-core v41.0.0 or later - against earlier
+  versions these features degrade gracefully to the previous identifier-based display.
 
 #### Other Improvements
 
@@ -207,6 +234,8 @@ columns.
 * Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.
+* Fixed `GridModel.beginEditAsync()` opening an inline editor that never took keyboard focus,
+  requiring an extra click on the cell before the user could type.
 * Fixed `View.getDimensionValues()` returning sets of `undefined` instead of the actual unique
   values for each dimension.
 * Fixed stale `ViewRowData.cubeBuckets` values on rows reused across query updates. Hoist now
@@ -233,6 +262,13 @@ columns.
 
 ### ⚙️ Technical
 
+* Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
+  `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
+  and the path taken. Note that diagnostics log by default under `debug` output, but users may set
+  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of
+  a particular chain. This API is provided for app troubleshooting and benchmarking only, and is
+  subject to change without notice at any release.
+
 * Field XSS protection now returns unmodified strings by reference instead of a fresh copy, avoiding
   a duplicate in memory of every parsed string value.
 * Migrated this repo's own package management from yarn classic to pnpm 11. Apps consuming the
@@ -254,11 +290,20 @@ columns.
 
 * @auth0/auth0-spa-js `2.23 → 2.24`
 * @azure/msal-browser `5.17 → 5.18`
+* @blueprintjs/core `6.3 → 6.18`
+* @blueprintjs/datetime `6.0 → 6.2`
+* @codemirror/commands `6.10 → 6.11`
 * @floating-ui/react `added @ 0.27`
+* @fortawesome/* `7.2 → 7.3`
+* @fortawesome/react-fontawesome `3.2 → 3.5`
+* @modelcontextprotocol/sdk `1.26 → 1.30`
 * @xh/hoist-dev-utils `13.x → 14.x`
 * react `18.2 → 19.2`
 * react-popper `removed`
 * react-window `2.2 → 2.3`
+* swiper `12.1 → 12.2`
+* tsx `4.21 → 4.23`
+* zod `4.3 → 4.4`
 
 ## 86.4.1 - 2026-08-11
 
