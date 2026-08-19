@@ -24,7 +24,7 @@ import {isEmpty} from 'lodash';
  */
 export const diagnosticsPanel = hoistCmp.factory({
     displayName: 'DiagnosticsPanel',
-    model: uses(DiagnosticsModel, {fromContext: false, publishMode: 'none'}),
+    model: uses(DiagnosticsModel, {fromContext: false}),
 
     render({model}) {
         // Re-parent grid popups (context/column menus) when Inspector is popped out.
