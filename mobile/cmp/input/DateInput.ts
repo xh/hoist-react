@@ -5,17 +5,21 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, hbox} from '@xh/hoist/cmp/layout';
+import {box, div, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {input} from '@xh/hoist/kit/onsen';
+import {dayPicker} from '@xh/hoist/kit/react-day-picker';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import '@xh/hoist/mobile/register';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import type {Property} from 'csstype';
-import {ChangeEvent, ReactElement} from 'react';
+import {ReactElement} from 'react';
 import './DateInput.scss';
 
 export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
@@ -24,6 +28,9 @@ export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps,
     /** True to show a "clear" button aligned to the right of the control. Defaults to false. */
     enableClear?: boolean;
 
+    /** MomentJS format string for the in-input display of the value. Defaults to `YYYY-MM-DD`. */
+    formatString?: string;
+
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
 
@@ -31,20 +38,14 @@ export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps,
     rightIcon?: ReactElement;
 
     /**
-     * Maximum (inclusive) valid date. Applied to the native input's `max` attribute and also
-     * enforced on commit, resetting any out-of-bounds value to `null`.
-     *
-     * Note this is distinct in these ways from FormModel based validation, which will leave an
-     * invalid date entry in place but flag as invalid via FormField. For cases where it is
-     * possible to use FormField, that is often a better choice.
+     * Maximum (inclusive) valid date. Days beyond this bound are disabled within the calendar,
+     * and the calendar cannot be navigated past its month.
      */
     maxDate?: Date | LocalDate;
 
     /**
-     * Minimum (inclusive) valid date. Applied to the native input's `min` attribute and also
-     * enforced on commit, resetting any out-of-bounds value to `null`.
-     *
-     * See note re. validation on maxDate, above.
+     * Minimum (inclusive) valid date. Days before this bound are disabled within the calendar,
+     * and the calendar cannot be navigated before its month.
      */
     minDate?: Date | LocalDate;
 
@@ -56,13 +57,9 @@ export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps,
 }
 
 /**
- * A mobile-first calendar control for choosing a Date, backed by the browser's native
- * `<input type="date">` element. Tapping the input invokes the OS-provided date picker -
- * a drum/wheel on iOS, a Material date dialog on Android, and a popover calendar on desktop
- * browsers.
- *
- * The in-input display and picker UI follow the user's OS locale. Values are read from and
- * written to the underlying input as ISO-8601 (`YYYY-MM-DD`) strings.
+ * A mobile-first calendar control for choosing a Date. Tapping the input opens a calendar
+ * picker (react-day-picker) hosted within a modal dialog. Selecting a day commits the value
+ * and dismisses the picker.
  */
 export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
     displayName: 'DateInput',
@@ -79,6 +76,13 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 //---------------------------------
 class DateInputModel extends HoistInputModel {
     override xhImpl = true;
+
+    @bindable pickerIsOpen: boolean = false;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     get valueType(): 'date' | 'localDate' {
         return withDefault(this.componentProps.valueType, 'date');
@@ -97,6 +101,15 @@ class DateInputModel extends HoistInputModel {
         return !!enableClear && !disabled && this.renderValue != null;
     }
 
+    get formatString(): string {
+        return withDefault(this.componentProps.formatString, 'YYYY-MM-DD');
+    }
+
+    get formattedRenderValue(): string {
+        const {renderValue} = this;
+        return renderValue ? (fmtDate(renderValue, this.formatString) as string) : '';
+    }
+
     override toExternal(internal: Date | null): Date | LocalDate | null {
         if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
         return internal;
@@ -107,43 +120,19 @@ class DateInputModel extends HoistInputModel {
         return isLocalDate(external) ? external.date : (external as Date);
     }
 
-    onInputChange = (ev: ChangeEvent<HTMLInputElement>) => {
-        const str = ev.target.value;
-        if (!str) {
-            this.noteValueChange(null);
-            return;
-        }
+    openPicker() {
+        if (!this.componentProps.disabled) this.pickerIsOpen = true;
+    }
 
-        let date = isoToDate(str);
-        if (date && this.isOutsideRange(date)) {
-            this.logDebug('Value exceeded max/minDate bounds on change - reset to null.');
-            date = null;
-            // Force the native input back in sync with the reset value. When the prior value was
-            // also null, the internalValue observable does not change, so no re-render fires and
-            // the out-of-bounds entry would otherwise remain displayed in the control.
-            ev.target.value = '';
-        }
-        this.noteValueChange(date);
+    onDaySelect = (date: Date) => {
+        this.noteValueChange(date ?? null);
+        this.doCommit();
+        this.pickerIsOpen = false;
     };
-
-    isOutsideRange(date: Date): boolean {
-        const {minDate, maxDate} = this,
-            stamped = stripTime(date);
-        if (minDate && stamped < minDate) return true;
-        if (maxDate && stamped > maxDate) return true;
-        return false;
-    }
-
-    // No-op on browsers without showPicker() (pre-16.4 Safari); tapping the field still opens it.
-    showPicker() {
-        if (this.componentProps.disabled) return;
-        (this.inputEl as HTMLInputElement)?.showPicker?.();
-    }
 }
 
 const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref) => {
     const {width, ...layoutProps} = getLayoutProps(props),
-        {renderValue} = model,
         textAlign = withDefault(props.textAlign, 'left'),
         leftIcon = withDefault(props.leftIcon, null),
         rightIcon = withDefault(props.rightIcon, Icon.calendar());
@@ -158,29 +147,49 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
         },
         items: [
             leftIcon,
-            input({
-                type: 'date',
-                className: 'xh-date-input__input',
-                value: dateToIso(renderValue as Date) ?? '',
-                min: dateToIso(model.minDate),
-                max: dateToIso(model.maxDate),
-                disabled: props.disabled,
-                tabIndex: props.tabIndex,
+            div({
+                className: classNames(
+                    'xh-date-input__display',
+                    props.disabled ? 'xh-date-input__display--disabled' : null
+                ),
                 style: {textAlign},
+                tabIndex: props.tabIndex,
                 [TEST_ID]: props.testId,
-
-                onChange: model.onInputChange,
-                onFocus: model.onFocus,
-                onBlur: model.onBlur
+                item: model.formattedRenderValue,
+                onClick: () => model.openPicker()
             }),
             clearButton(),
             rightIcon &&
                 box({
                     className: 'xh-date-input__picker-button',
-                    onClick: () => model.showPicker(),
+                    onClick: () => model.openPicker(),
                     item: rightIcon
-                })
+                }),
+            pickerDialog()
         ]
+    });
+});
+
+const pickerDialog = hoistCmp.factory<DateInputModel>(({model}) => {
+    const {minDate, maxDate, renderValue} = model,
+        disabledDays = [];
+    if (minDate) disabledDays.push({before: minDate});
+    if (maxDate) disabledDays.push({after: maxDate});
+
+    return dialog({
+        isOpen: model.pickerIsOpen,
+        className: 'xh-date-input__picker-dialog',
+        onCancel: () => (model.pickerIsOpen = false),
+        content: dayPicker({
+            mode: 'single',
+            required: true,
+            selected: renderValue ?? undefined,
+            defaultMonth: renderValue ?? undefined,
+            startMonth: minDate ?? undefined,
+            endMonth: maxDate ?? undefined,
+            disabled: disabledDays.length ? disabledDays : undefined,
+            onSelect: model.onDaySelect
+        })
     });
 });
 
@@ -193,8 +202,6 @@ const clearButton = hoistCmp.factory<DateInputModel>(({model}) =>
         omit: !model.showClearButton,
         testId: getTestId(model.componentProps, 'clear-btn'),
         onClick: () => {
-            // Intentionally no refocus after clearing - on iOS/Android, focusing the native
-            // date input reopens the OS picker, which is unwanted UX after an explicit clear.
             model.noteValueChange(null);
             model.doCommit();
         }
@@ -202,26 +209,11 @@ const clearButton = hoistCmp.factory<DateInputModel>(({model}) =>
 );
 
 //---------------------------------
-// Local helpers - date <-> ISO
+// Local helpers
 //---------------------------------
 function resolveBoundDate(val: Date | LocalDate | undefined | null): Date | null {
     if (val == null) return null;
     return isLocalDate(val) ? val.date : stripTime(val);
-}
-
-function isoToDate(iso: string): Date | null {
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-    if (!match) return null;
-    const [, y, m, d] = match;
-    return new Date(Number(y), Number(m) - 1, Number(d));
-}
-
-function dateToIso(date: Date | null | undefined): string | undefined {
-    if (date == null) return undefined;
-    const y = date.getFullYear(),
-        m = String(date.getMonth() + 1).padStart(2, '0'),
-        d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
 }
 
 function stripTime(date: Date): Date {

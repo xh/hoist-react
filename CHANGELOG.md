@@ -231,6 +231,9 @@ columns.
 * Added `useComposedRefs` - a hook variant of `composeRefs` that manages identity via `useCallback`
   and forwards React 19 ref-callback cleanups. Prefer it when composing refs within a component
   render function.
+* Mobile `DateInput` now opens a themeable calendar picker (react-day-picker) within a dialog,
+  replacing the OS-provided picker of the native `<input type="date">` element. Adds a
+  `formatString` prop to control the in-input display of the value.
 
 ### 🐞 Bug Fixes
 
@@ -299,6 +302,7 @@ columns.
 * @modelcontextprotocol/sdk `1.26 → 1.30`
 * @xh/hoist-dev-utils `13.x → 14.x`
 * react `18.2 → 19.2`
+* react-day-picker `added @ 9.14`
 * react-popper `removed`
 * react-window `2.2 → 2.3`
 * swiper `12.1 → 12.2`
