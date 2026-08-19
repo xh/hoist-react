@@ -200,7 +200,7 @@ const pickerDialog = hoistCmp.factory<DateInputModel>(({model}) => {
                     ...dayPickerProps,
                     mode: 'single',
                     required: true,
-                    disabled: disabledDays.length ? disabledDays : null,
+                    disabled: disabledDays,
                     onSelect: model.onDaySelect
                 },
                 isNil
