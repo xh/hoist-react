@@ -1081,6 +1081,9 @@ gridModel.diagnostics.logLevel = 'info';
 This API supports app troubleshooting and benchmarking only. It can change without notice at any
 release.
 
+The [Hoist Inspector](../inspector/README.md) provides a built-in UI for these diagnostics - select
+any Store, Cube View, or GridModel in its Instances grid to see a live readout.
+
 ## Common Patterns
 
 ### Processing Raw Data with `processRawData`
