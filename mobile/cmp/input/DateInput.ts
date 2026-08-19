@@ -19,7 +19,7 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {Property} from 'csstype';
-import {castArray} from 'lodash';
+import {castArray, isNil, omitBy} from 'lodash';
 import {ReactElement} from 'react';
 import './DateInput.scss';
 
@@ -190,17 +190,22 @@ const pickerDialog = hoistCmp.factory<DateInputModel>(({model}) => {
         isOpen: model.pickerIsOpen,
         className: 'xh-date-input__picker-dialog',
         onCancel: () => (model.pickerIsOpen = false),
-        content: dayPicker({
-            selected: renderValue ?? undefined,
-            defaultMonth: renderValue ?? undefined,
-            startMonth: minDate ?? undefined,
-            endMonth: maxDate ?? undefined,
-            ...dayPickerProps,
-            mode: 'single',
-            required: true,
-            disabled: disabledDays.length ? disabledDays : undefined,
-            onSelect: model.onDaySelect
-        })
+        content: dayPicker(
+            omitBy(
+                {
+                    selected: renderValue,
+                    defaultMonth: renderValue,
+                    startMonth: minDate,
+                    endMonth: maxDate,
+                    ...dayPickerProps,
+                    mode: 'single',
+                    required: true,
+                    disabled: disabledDays.length ? disabledDays : null,
+                    onSelect: model.onDaySelect
+                },
+                isNil
+            )
+        )
     });
 });
 
