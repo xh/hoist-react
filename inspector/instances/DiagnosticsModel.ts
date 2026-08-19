@@ -9,6 +9,7 @@ import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {Cube} from '@xh/hoist/data';
 import {forIn, isFinite} from 'lodash';
 import type {InstancesModel} from './InstancesModel';
 
@@ -16,7 +17,8 @@ import type {InstancesModel} from './InstancesModel';
  * Displays the data-pipeline `diagnostics` published by any currently selected instances that
  * provide them - Stores, Cube Views, and GridModels. Each op-stats slot on a diagnostics object
  * renders as a row reporting the last operation performed (its type, work done, and timing)
- * alongside cumulative count and average timing.
+ * alongside cumulative count and average timing. A selected Cube reports via its internal Store,
+ * where its data ops actually land.
  *
  * Rows are discovered from the shape of each diagnostics object rather than a per-class schema -
  * the diagnostics APIs are internal and deliberately unstable, so this readout adapts to their
@@ -39,9 +41,29 @@ export class DiagnosticsModel extends HoistModel {
 
     /** Diagnostics published by the currently selected instances. */
     get trackedDiagnostics(): BaseDiagnostics<any>[] {
-        return this.parent.selectedInstances
-            .map(inst => (inst as any).diagnostics)
-            .filter(it => it instanceof BaseDiagnostics);
+        return this.diagnosticSources.map(it => it.diag);
+    }
+
+    /**
+     * Selected instances resolved to the diagnostics they publish, with a display label for
+     * each. A Cube resolves to its internal Store's diagnostics, labeled to show the indirection.
+     */
+    private get diagnosticSources(): DiagnosticSource[] {
+        const ret: DiagnosticSource[] = [];
+        this.parent.selectedInstances.forEach(inst => {
+            const label = `${inst.constructor.name} [${inst.xhId}]`,
+                diag = (inst as any).diagnostics;
+            if (diag instanceof BaseDiagnostics) {
+                ret.push({xhId: inst.xhId, diag, label});
+            } else if (Cube.isCube(inst) && inst.store?.diagnostics instanceof BaseDiagnostics) {
+                ret.push({
+                    xhId: inst.xhId,
+                    diag: inst.store.diagnostics,
+                    label: `${label} › Store [${inst.store.xhId}]`
+                });
+            }
+        });
+        return ret;
     }
 
     private escalated: BaseDiagnostics<any>[] = [];
@@ -82,17 +104,13 @@ export class DiagnosticsModel extends HoistModel {
     private syncGrid() {
         const data = [];
 
-        this.parent.selectedInstances.forEach(inst => {
-            const diag = (inst as any).diagnostics;
-            if (!(diag instanceof BaseDiagnostics)) return;
-
-            const instanceDisplayName = `${inst.constructor.name} [${inst.xhId}]`;
+        this.diagnosticSources.forEach(({xhId, diag, label}) => {
             forIn(diag as PlainObject, (stats, kind) => {
                 if (!this.isOpStats(stats)) return;
                 const {last, count, elapsed} = stats;
                 data.push({
-                    id: `${inst.xhId}-${kind}`,
-                    instanceDisplayName,
+                    id: `${xhId}-${kind}`,
+                    instanceDisplayName: label,
                     kind,
                     type: last?.type ?? null,
                     detail: last ? this.opDetail(last) : null,
@@ -210,4 +228,10 @@ export class DiagnosticsModel extends HoistModel {
         this.escalated.forEach(it => (it.logLevel = 'debug'));
         super.destroy();
     }
+}
+
+interface DiagnosticSource {
+    xhId: string;
+    diag: BaseDiagnostics<any>;
+    label: string;
 }

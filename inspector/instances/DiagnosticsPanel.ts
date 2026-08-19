@@ -36,7 +36,7 @@ export const diagnosticsPanel = hoistCmp.factory({
                 ? grid({model: model.gridModel, agOptions: {popupParent}})
                 : placeholder(
                       Icon.gauge(),
-                      'Select a Store, Cube View, or GridModel to view data-pipeline diagnostics.'
+                      'Select a Store, Cube, Cube View, or GridModel to view data-pipeline diagnostics.'
                   ),
             bbar: toolbar({
                 items: [
@@ -44,7 +44,7 @@ export const diagnosticsPanel = hoistCmp.factory({
                         title: 'Stream each op performed by the selected instances to the devtools console, without raising the app-wide log level.',
                         item: switchInput({
                             bind: 'logOps',
-                            label: 'Log ops',
+                            label: 'Log operations to console',
                             disabled: !hasTracked
                         })
                     }),

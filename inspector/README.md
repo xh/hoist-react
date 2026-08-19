@@ -158,7 +158,8 @@ The Instances panel is a split layout with:
 operation they perform - see [Diagnostics](../data/README.md#diagnostics) in the data package
 README. When any selected instance publishes diagnostics, this panel shows one row per operation
 kind with the last op's type (the path taken - e.g. an incremental patch vs. a full rebuild), the
-work done, its timing, and cumulative count/average stats.
+work done, its timing, and cumulative count/average stats. Selecting a `Cube` reports via its
+internal `Store`, where its data ops actually land.
 
 - **Log ops** — Streams each op performed by the selected instances to the devtools console,
   by escalating their per-instance `diagnostics.logLevel` - no need to raise the app-wide

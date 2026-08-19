@@ -224,8 +224,8 @@ columns.
   while ensuring Inspector itself is not covered by masks or other modal content.
 * Hoist Inspector now tracks `Cube` and cube `View` instances alongside models, services, and
   stores, and adds a Diagnostics panel - a live readout of the data-pipeline `diagnostics`
-  published by selected Stores, Cube Views, and GridModels, with controls to reset counters and
-  stream ops to the devtools console.
+  published by selected Stores, Cubes, Cube Views, and GridModels, with controls to reset counters
+  and stream ops to the devtools console.
 * Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances,
   now registered with Hoist's instance registry.
 
