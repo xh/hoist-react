@@ -186,8 +186,6 @@ const pickerDialog = hoistCmp.factory<DateInputModel>(({model}) => {
     if (maxDate) disabledDays.push({after: maxDate});
     if (dayPickerProps?.disabled) disabledDays.push(...castArray(dayPickerProps.disabled));
 
-    // Props above the spread are overridable defaults; those below are controlled by this
-    // component, per the dayPickerProps doc.
     dayPickerProps = omitBy(
         {
             defaultMonth: renderValue,
