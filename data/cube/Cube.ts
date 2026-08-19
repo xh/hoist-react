@@ -6,6 +6,7 @@
  */
 
 import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
@@ -160,6 +161,12 @@ export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
 export class Cube extends HoistBase {
     static RECORD_ID_DELIMITER = '>>';
 
+    static isCube(obj: unknown): obj is Cube {
+        return obj instanceof Cube;
+    }
+
+    _created = Date.now();
+
     @managed store: Store;
     lockFn: LockFn;
     bucketSpecFn: BucketSpecFn;
@@ -197,6 +204,7 @@ export class Cube extends HoistBase {
         this.lockFn = lockFn;
         this.bucketSpecFn = bucketSpecFn;
         this.omitFn = omitFn;
+        instanceManager.registerCube(this);
     }
 
     /** Fields configured for this Cube. */
@@ -434,6 +442,7 @@ export class Cube extends HoistBase {
     }
 
     override destroy() {
+        instanceManager.unregisterCube(this);
         this._connectedViews.forEach(v => v.disconnect());
         super.destroy();
     }

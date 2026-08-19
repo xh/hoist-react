@@ -51,7 +51,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Observable data layer with Store, Field, filtering, validation, tree data, and memory tuning.",
-            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "loadDataAsync", "updateData", "StoreChangeLog", "processRawData", "reuseRecords", "projectionOnly", "retainRaw", "diagnostics", "PatchableRecordSet"]
+            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "loadDataAsync", "updateData", "StoreChangeLog", "processRawData", "reuseRecords", "projectionOnly", "retainRaw", "diagnostics", "maxPatchRatio"]
         },
         {
             "id": "data/cube/README.md",
@@ -269,7 +269,7 @@
             "mcpCategory": "package",
             "viewerCategory": "supporting",
             "description": "Built-in developer tool for real-time inspection of Hoist instances.",
-            "keywords": ["InspectorPanel", "InspectorModel", "StatsModel", "InstancesModel", "property watchlist", "model leak detection"]
+            "keywords": ["InspectorPanel", "InspectorModel", "StatsModel", "InstancesModel", "DiagnosticsModel", "property watchlist", "model leak detection"]
         },
         {
             "id": "mcp/README.md",
