@@ -142,6 +142,8 @@ export class DiagnosticsModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.parent.persistWith, path: 'diagnosticsGrid'},
             autosizeOptions: {mode: 'managed'},
+            filterModel: true,
+            headerMenuDisplay: 'hover',
             emptyText: 'Select a Store, Cube View, or GridModel to view data-pipeline diagnostics.',
             groupBy: 'instanceDisplayName',
             showGroupRowCounts: false,
@@ -152,14 +154,14 @@ export class DiagnosticsModel extends HoistModel {
                     {name: 'kind', displayName: 'Op', type: 'string'},
                     {name: 'type', type: 'string'},
                     {name: 'detail', displayName: 'Last Op Detail', type: 'string'},
-                    {name: 'total', type: 'number'},
+                    {name: 'total', displayName: 'Row #', type: 'number'},
                     {name: 'lastElapsedMs', displayName: 'ms', type: 'number'},
                     {name: 'count', displayName: 'n', type: 'number'},
                     {name: 'avgMs', displayName: 'avg ms', type: 'number'},
                     {name: 'timestamp', displayName: 'Last Run', type: 'number'}
                 ]
             },
-            colDefaults: {autosizeIncludeHeaderIcons: false},
+            colDefaults: {autosizeIncludeHeaderIcons: false, filterable: true},
             columns: [
                 {field: 'instanceDisplayName', hidden: true},
                 {field: 'kind', width: 140},
@@ -190,8 +192,7 @@ export class DiagnosticsModel extends HoistModel {
                 },
                 {
                     field: 'avgMs',
-                    headerTooltip:
-                        'Mean time per operation - resolves sub-millisecond ops that report 0ms individually.',
+                    headerTooltip: 'Mean time per operation.',
                     align: 'right',
                     renderer: msRenderer
                 },

@@ -188,6 +188,9 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: 'managed'},
+            filterModel: true,
+            headerMenuDisplay: 'hover',
+            colDefaults: {filterable: true},
             emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
@@ -272,6 +275,9 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
             autosizeOptions: {mode: 'managed'},
+            filterModel: true,
+            headerMenuDisplay: 'hover',
+            colDefaults: {filterable: true},
             sortBy: 'displayProperty',
             groupBy: 'displayGroup',
             showGroupRowCounts: false,
