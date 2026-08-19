@@ -23,7 +23,7 @@ export const instancesPanel = hoistCmp.factory({
     render({model}) {
         const {instancesPanelModel, selectedSyncRun} = model,
             // Re-parent grid popups (context/column menus) when Inspector is detached.
-            popupParent = useContextModel(InspectorModel)?.popupContainer ?? undefined,
+            popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined,
             headerItems = [];
 
         if (selectedSyncRun) {

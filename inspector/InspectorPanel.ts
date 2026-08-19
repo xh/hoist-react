@@ -43,7 +43,7 @@ const inspectorView = hoistCmp.factory<InspectorModel>({
     displayName: 'InspectorView',
 
     render({model}) {
-        const {popupContainer, isWindowed} = model;
+        const {windowContainer, isWindowed} = model;
 
         const ret = panel({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
@@ -87,6 +87,8 @@ const inspectorView = hoistCmp.factory<InspectorModel>({
 
         // When popped out, redirect Blueprint portals (tooltips, popovers, dialogs) into the
         // child window, alongside the Inspector itself.
-        return popupContainer ? portalProvider({portalContainer: popupContainer, item: ret}) : ret;
+        return windowContainer
+            ? portalProvider({portalContainer: windowContainer, item: ret})
+            : ret;
     }
 });

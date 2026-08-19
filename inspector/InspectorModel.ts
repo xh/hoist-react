@@ -25,23 +25,18 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 export class InspectorModel extends HoistModel {
     override xhImpl = true;
 
-    /** Container within the popped-out window - portal target when popped out, null when docked. */
+    /**
+     * Container within the popped-out window, or null when docked. Portal target for the
+     * Inspector UI itself and for any popups its components spawn (grid menus, tooltips,
+     * dropdowns) - popups portaled to the main `document.body` would otherwise render within
+     * the wrong window entirely.
+     */
     @observable.ref
     windowContainer: HTMLElement = null;
 
     /** True when the Inspector is popped out into its own window. */
     get isWindowed(): boolean {
         return this.windowContainer != null;
-    }
-
-    /**
-     * Container to which any popups spawned by Inspector components (grid menus, tooltips,
-     * dropdowns) should be re-parented, or null to use their default document-level parent.
-     * Required when popped out - popups portaled to the main `document.body` would otherwise
-     * render within the wrong window entirely.
-     */
-    get popupContainer(): HTMLElement {
-        return this.windowContainer;
     }
 
     private childWindow: Window = null;

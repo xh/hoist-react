@@ -21,7 +21,7 @@ export const statsPanel = hoistCmp.factory({
 
     render({model}) {
         // Re-parent grid popups (context/column menus) when Inspector is detached.
-        const popupParent = useContextModel(InspectorModel)?.popupContainer ?? undefined;
+        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
 
         return panel({
             title: 'Stats',
