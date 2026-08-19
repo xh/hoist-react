@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
+import {a, div, filler, hframe, hspacer, p, span, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -14,6 +14,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
+import {diagnosticsPanel} from '@xh/hoist/inspector/instances/DiagnosticsPanel';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
 import {popover} from '@xh/hoist/kit/blueprint';
 
@@ -72,13 +73,16 @@ export const instancesPanel = hoistCmp.factory({
                     bbar: instanceGridBar(),
                     model: instancesPanelModel
                 }),
-                panel({
-                    title: 'Properties',
-                    icon: Icon.fileText(),
-                    compactHeader: true,
-                    item: grid({model: model.propertiesGridModel, agOptions: {popupParent}}),
-                    bbar: propertiesGridBar()
-                })
+                vframe(
+                    panel({
+                        title: 'Properties',
+                        icon: Icon.fileText(),
+                        compactHeader: true,
+                        item: grid({model: model.propertiesGridModel, agOptions: {popupParent}}),
+                        bbar: propertiesGridBar()
+                    }),
+                    diagnosticsPanel({model: model.diagnosticsModel})
+                )
             )
         });
     }

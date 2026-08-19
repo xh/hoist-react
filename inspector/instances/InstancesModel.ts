@@ -6,7 +6,7 @@
  */
 import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
-import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
+import {HoistBase, hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {Cube, StoreRecord, View} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
@@ -17,6 +17,7 @@ import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {StatsModel} from '../stats/StatsModel';
+import {DiagnosticsModel} from './DiagnosticsModel';
 
 /**
  * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
@@ -30,6 +31,7 @@ export class InstancesModel extends HoistModel {
     instancesGridModel: GridModel;
     propertiesGridModel: GridModel;
     instancesPanelModel: PanelModel;
+    @managed diagnosticsModel: DiagnosticsModel;
 
     get statsModel(): StatsModel {
         return XH.getModels(StatsModel)[0] as StatsModel;
@@ -75,6 +77,7 @@ export class InstancesModel extends HoistModel {
 
         this.instancesGridModel = this.createInstancesGridModel();
         this.propertiesGridModel = this.createPropertiesGridModel();
+        this.diagnosticsModel = new DiagnosticsModel(this);
         this.instancesPanelModel = new PanelModel({
             defaultSize: 575,
             side: 'left',
