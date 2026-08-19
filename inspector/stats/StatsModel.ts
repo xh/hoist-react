@@ -56,7 +56,12 @@ export class StatsModel extends HoistModel {
             columns: [
                 {field: 'timestamp', renderer: timestampRenderer},
                 {field: 'modelCount', renderer: numberRenderer({precision: 0})},
-                {field: 'syncRun', renderer: numberRenderer({precision: 0})},
+                {
+                    field: 'syncRun',
+                    headerTooltip:
+                        'Sync run counter as of this snapshot. Inspector increments its sync run counter each time it detects newly-created instances. Select a row to filter the Instances grid to the instances created during its sync run.',
+                    renderer: numberRenderer({precision: 0})
+                },
                 {
                     field: 'modelCountChange',
                     renderer: numberRenderer({precision: 0, colorSpec: true, withSignGlyph: true})
@@ -88,7 +93,8 @@ export class StatsModel extends HoistModel {
 
         this.chartModel = new ChartModel({
             highchartsConfig: {
-                chart: {zoomType: 'x'},
+                chart: {zoomType: 'x', animation: false},
+                plotOptions: {series: {animation: false}},
                 legend: {enabled: false},
                 title: {text: null},
                 xAxis: {type: 'datetime'},
