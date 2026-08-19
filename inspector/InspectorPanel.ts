@@ -30,13 +30,12 @@ export const inspectorPanel = hoistCmp.factory({
     render({model}) {
         if (!XH.inspectorService.active) return null;
 
-        const {renderMode, windowContainer} = model;
+        const {windowContainer} = model;
 
         // Key by mode to remount the view (and recreate its mode-specific PanelModel) on change.
-        if (renderMode === 'window' && windowContainer) {
-            return createPortal(inspectorView({key: 'window'}), windowContainer);
-        }
-        return inspectorView({key: 'dock'});
+        return windowContainer
+            ? createPortal(inspectorView({key: 'window'}), windowContainer)
+            : inspectorView({key: 'dock'});
     }
 });
 
@@ -44,16 +43,15 @@ const inspectorView = hoistCmp.factory<InspectorHostModel>({
     displayName: 'InspectorView',
 
     render({model}) {
-        const {popupContainer} = model,
-            isWindow = model.renderMode === 'window';
+        const {popupContainer, isWindowed} = model;
 
         const ret = panel({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
             icon: Icon.search(),
             className: 'xh-inspector',
             headerClassName: 'xh-inspector-panel-header',
-            flex: isWindow ? 1 : undefined,
-            modelConfig: isWindow
+            flex: isWindowed ? 1 : undefined,
+            modelConfig: isWindowed
                 ? {collapsible: false, resizable: false, errorBoundary: true, xhImpl: true}
                 : {
                       defaultSize: 400,
@@ -67,11 +65,11 @@ const inspectorView = hoistCmp.factory<InspectorHostModel>({
             headerItems: [
                 button({
                     icon: Icon.openExternal(),
-                    tooltip: isWindow
+                    tooltip: isWindowed
                         ? 'Return Inspector to the main app window'
                         : 'Open Inspector in a separate window',
-                    intent: isWindow ? 'primary' : null,
-                    onClick: () => (isWindow ? model.setRenderMode('dock') : model.openWindow())
+                    intent: isWindowed ? 'primary' : null,
+                    onClick: () => (isWindowed ? model.dock() : model.openWindow())
                 }),
                 button({
                     icon: Icon.x(),
