@@ -261,7 +261,7 @@
             "mcpCategory": "package",
             "viewerCategory": "supporting",
             "description": "Built-in developer tool for real-time inspection of Hoist instances.",
-            "keywords": ["InspectorPanel", "InspectorHostModel", "StatsModel", "InstancesModel", "property watchlist", "model leak detection", "render modes", "overlay", "pop-out window"]
+            "keywords": ["InspectorPanel", "InspectorHostModel", "StatsModel", "InstancesModel", "property watchlist", "model leak detection"]
         },
         {
             "id": "mcp/README.md",
