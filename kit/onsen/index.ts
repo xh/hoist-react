@@ -95,15 +95,15 @@ function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {
  * Compose refs into a single object ref, memoized per component instance. Assignments to
  * `current` fan out to every input ref with standard React semantics.
  */
-function useComposedObjectRef<T>(...refs: Array<ForwardedRef<T>>): RefObject<T | null> {
+function useComposedObjectRef<T>(...refs: Array<ForwardedRef<T>>): RefObject<T> {
     return useMemo(() => {
         const targets = refs.filter(Boolean);
-        let value: T | null = null;
+        let value: T = null;
         return {
             get current() {
                 return value;
             },
-            set current(v: T | null) {
+            set current(v: T) {
                 value = v;
                 targets.forEach(it => (isFunction(it) ? it(v) : (it.current = v)));
             }
