@@ -212,6 +212,7 @@ export class InstancesModel extends HoistModel {
             },
             sortBy: ['created|desc'],
             groupBy: this.showInGroups ? 'displayGroup' : null,
+            groupSortFn: (a, b) => GROUP_SORT_ORDER.indexOf(a) - GROUP_SORT_ORDER.indexOf(b),
             selModel: {mode: 'multiple'},
             colChooserModel: true,
             columns: [
@@ -552,6 +553,8 @@ export class InstancesModel extends HoistModel {
         return find(this.propsWatchlist, {instanceXhId, property});
     }
 }
+
+const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores'];
 
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
 
