@@ -121,7 +121,11 @@ the single source of truth for both the MCP server (which loads it at startup vi
      `components`, `desktop`, `mobile`, `utilities`, `supporting`, `devops`, or `upgrade`.
    - `description`: concise one-sentence summary matching existing entry style.
    - `keywords`: 5–12 key terms as a JSON array of strings — include API names, class names,
-     and topic terms.
+     and topic terms. Keywords must be distinctive to the doc: exported symbol names and
+     package-specific phrases only. Never add generic UI/concept words (e.g. "render modes",
+     "overlay", "window") — they misroute keyword search, especially when the term names a
+     distinct concept elsewhere in Hoist (e.g. `RenderMode`). Before adding a keyword, ask:
+     "if an agent searches this term, is this doc the right destination?"
 
 3. **Place entries** in logical order within the `entries` array (grouped by category).
 
