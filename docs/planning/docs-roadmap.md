@@ -53,6 +53,7 @@ Smaller packages that provide important but more specialized functionality.
 | `/icon/` | 5 | Icon system and FontAwesome integration | [Done](../../icon/README.md) |
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Done](../../security/README.md) |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | 📝 [Draft](../../kit/README.md) |
+| `/kit/blueprint/` | 5 | Blueprint integration - wrappers, factories, build-time icon stubbing, upgrade checklist | [Done](../../kit/blueprint/README.md) |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | 📝 [Draft](../../inspector/README.md) |
 | `/styles/` | 3 | CSS custom properties, theming (dark/light), BEM naming, SCSS conventions, utility classes | 📝 [Draft](../../styles/README.md) |
 
