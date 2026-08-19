@@ -168,7 +168,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * meaningful to the user, such as an object select that should always render the object's name
      * rather than its id value.
      *
-     * Note this is not intended as the hook for "generating" new values created via `enableCreate`.
+     * Note this is not capable of "creating" new values via `enableCreate`.
      */
     generateOptionFn?: (value: any) => SelectOption | null;
 }
