@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {filler, span} from '@xh/hoist/cmp/layout';
+import {filler, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
@@ -32,7 +32,12 @@ export const diagnosticsPanel = hoistCmp.factory({
             hasTracked = !isEmpty(model.trackedDiagnostics);
 
         return panel({
-            item: grid({model: model.gridModel, agOptions: {popupParent}}),
+            item: hasTracked
+                ? grid({model: model.gridModel, agOptions: {popupParent}})
+                : placeholder(
+                      Icon.gauge(),
+                      'Select a Store, Cube View, or GridModel to view data-pipeline diagnostics.'
+                  ),
             bbar: toolbar({
                 items: [
                     span({

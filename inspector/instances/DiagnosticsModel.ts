@@ -144,7 +144,6 @@ export class DiagnosticsModel extends HoistModel {
             autosizeOptions: {mode: 'managed'},
             filterModel: true,
             headerMenuDisplay: 'hover',
-            emptyText: 'Select a Store, Cube View, or GridModel to view data-pipeline diagnostics.',
             groupBy: 'instanceDisplayName',
             showGroupRowCounts: false,
             sortBy: 'kind',
@@ -157,7 +156,7 @@ export class DiagnosticsModel extends HoistModel {
                     {name: 'total', displayName: 'Row #', type: 'number'},
                     {name: 'lastElapsedMs', displayName: 'ms', type: 'number'},
                     {name: 'count', displayName: 'n', type: 'number'},
-                    {name: 'avgMs', displayName: 'avg ms', type: 'number'},
+                    {name: 'avgMs', displayName: 'Avg ms', type: 'number'},
                     {name: 'timestamp', displayName: 'Last Run', type: 'number'}
                 ]
             },
