@@ -80,6 +80,14 @@
             "aliases": ["components"]
         },
         {
+            "id": "cmp/filter/README.md",
+            "title": "Filter Components",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Cross-platform models for filter construction UIs — FilterChooser (typeahead) and FilterBuilder (visual query builder).",
+            "keywords": ["FilterBuilderModel", "FilterChooserModel", "FilterBuilderFieldSpec", "FilterChooserFieldSpec", "fieldSpecs", "FilterBindTarget", "FilterValueSource", "FilterGroupNode", "maxGroupDepth", "query builder", "filter groups", "filter favorites"]
+        },
+        {
             "id": "cmp/grid/README.md",
             "title": "Grid Component",
             "mcpCategory": "package",
