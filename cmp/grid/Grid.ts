@@ -25,6 +25,7 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
 import {
     colChooser as desktopColChooser,
@@ -488,18 +489,26 @@ export class GridLocalModel extends HoistModel {
         );
     }
 
-    applyScrollOptimization() {
-        if (!this.useScrollOptimization) return;
+    applyScrollOptimization(added?: StoreRecord[]) {
+        if (!this.useScrollOptimization || (added && !added.length)) return;
 
         const {agApi} = this.model,
             {getRowHeight} = this.agOptions,
-            params = {api: agApi, context: null} as any;
+            params = {api: agApi, context: null} as any,
+            setHeight = node => {
+                params.node = node;
+                params.data = node.data;
+                node.setRowHeight(getRowHeight(params));
+            };
 
-        agApi.forEachNode(node => {
-            params.node = node;
-            params.data = node.data;
-            node.setRowHeight(getRowHeight(params));
-        });
+        if (added) {
+            added.forEach(rec => {
+                const node = agApi.getRowNode(rec.agId);
+                if (node) setHeight(node);
+            });
+        } else {
+            agApi.forEachNode(setHeight);
+        }
         agApi.onRowHeightChanged();
     }
 
@@ -728,7 +737,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         model._syncedRs = newRs;
-        this.applyScrollOptimization();
+        this.applyScrollOptimization(transaction.add);
 
         model.diagnostics.noteApplyTransaction(transaction, newRs, applyStart);
     }
