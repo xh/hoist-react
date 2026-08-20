@@ -182,10 +182,10 @@ columns.
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Callers can now request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, instead of scrolling only the
   minimum amount required.
-* Added support for collapsible grid column groups via a new `columnGroupShow` config on
+* Added support for collapsible grid column groups via a new `showWhenGroup` config on
   `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
-  group is expanded (`'open'`) or collapsed (`'closed'`). Groups render expanded unless set
-  otherwise with the new `ColumnGroupSpec.expandedByDefault`.
+  group is `'expanded'` or `'collapsed'`. Groups render expanded unless set otherwise with the new
+  `ColumnGroupSpec.expandedByDefault`.
 * `GridModel` now tracks column group expand/collapse state as `columnGroupState`, with
   `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
   `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -

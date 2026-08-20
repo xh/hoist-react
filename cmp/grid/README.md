@@ -144,16 +144,16 @@ new GridModel({
             headerName: 'Q1',
             expandedByDefault: false,          // Render collapsed until the user expands
             children: [
-                {field: 'q1Jan', columnGroupShow: 'open'},
-                {field: 'q1Feb', columnGroupShow: 'open'},
-                {field: 'q1Total', columnGroupShow: 'closed'}
+                {field: 'q1Jan', showWhenGroup: 'expanded'},
+                {field: 'q1Feb', showWhenGroup: 'expanded'},
+                {field: 'q1Total', showWhenGroup: 'collapsed'}
             ]
         }
     ]
 });
 ```
 
-`columnGroupShow` is what makes a group expandable, and it takes both values to do so: the group's
+`showWhenGroup` is what makes a group expandable, and it takes both values to do so: the group's
 children must resolve to at least one column shown while expanded *and* one shown while collapsed.
 A group of plain columns is a static header, as is one where every child specifies the same value.
 This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
@@ -309,7 +309,7 @@ Key categories of `ColumnSpec` properties:
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
 | Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
-| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `columnGroupShow` |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `showWhenGroup` |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |

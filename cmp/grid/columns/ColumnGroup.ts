@@ -13,7 +13,13 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
-import {ColumnGroupShow, ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
+import {
+    ColumnGroupShowMode,
+    ColumnHeaderClassFn,
+    ColumnHeaderNameFn,
+    ColumnOrGroup,
+    toAgColumnGroupShow
+} from '../Types';
 import {Column, ColumnSpec} from './Column';
 
 /**
@@ -43,15 +49,15 @@ export interface ColumnGroupSpec {
     borders?: boolean;
 
     /**
-     * Show this group only while its containing parent ColumnGroup is expanded ('open') or
-     * collapsed ('closed'). Default is to always show it. Ignored for a top-level group.
+     * Show this group only while its containing parent ColumnGroup is 'expanded' or 'collapsed'.
+     * Default is to always show it. Ignored for a top-level group.
      */
-    columnGroupShow?: ColumnGroupShow;
+    showWhenGroup?: ColumnGroupShowMode;
 
     /**
      * False to render this group collapsed until the user expands it. Defaults to true.
      * Applies only to an expandable group - i.e. one with a descendant specifying
-     * `columnGroupShow`.
+     * `showWhenGroup`.
      *
      * Note this is the *default* only: once rendered, expand/collapse state is tracked on
      * {@link GridModel.columnGroupState} and is persisted with the grid's `persistWith`.
@@ -85,7 +91,7 @@ export class ColumnGroup {
     readonly headerAlign: HAlign;
     readonly headerTooltip: string;
     readonly borders: boolean;
-    readonly columnGroupShow: ColumnGroupShow;
+    readonly showWhenGroup: ColumnGroupShowMode;
     readonly expandedByDefault: boolean;
     readonly omit: Thunkable<boolean>;
 
@@ -117,7 +123,7 @@ export class ColumnGroup {
             headerTooltip,
             agOptions,
             borders,
-            columnGroupShow,
+            showWhenGroup,
             expandedByDefault,
             appData,
             omit,
@@ -136,7 +142,7 @@ export class ColumnGroup {
         this.headerAlign = headerAlign;
         this.headerTooltip = headerTooltip;
         this.borders = withDefault(borders, true);
-        this.columnGroupShow = columnGroupShow;
+        this.showWhenGroup = showWhenGroup;
         this.expandedByDefault = withDefault(expandedByDefault, true);
         this.children = children;
         this.gridModel = gridModel;
@@ -167,7 +173,7 @@ export class ColumnGroup {
             },
             headerClass: getAgHeaderClassFn(this),
             headerTooltip: this.headerTooltip,
-            columnGroupShow: this.columnGroupShow,
+            columnGroupShow: toAgColumnGroupShow(this.showWhenGroup),
             openByDefault: this.expandedByDefault,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),

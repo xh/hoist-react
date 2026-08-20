@@ -299,14 +299,22 @@ export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
 }
 
 /**
- * Show a Column or ColumnGroup only while its containing ColumnGroup is expanded ('open') or
- * collapsed ('closed').
+ * Expand/collapse state of a containing ColumnGroup, within which a Column or nested ColumnGroup
+ * should be shown - see {@link ColumnSpec.showWhenGroup}.
  *
  * Note that this config is what makes a ColumnGroup expandable, and takes both values to do so: the
  * group must have a visible child shown while expanded *and* one shown while collapsed. Groups not
  * meeting that bar render as static headers.
  */
-export type ColumnGroupShow = 'open' | 'closed';
+export type ColumnGroupShowMode = 'expanded' | 'collapsed';
+
+/**
+ * Map a {@link ColumnGroupShowMode} to the ag-Grid `columnGroupShow` value.
+ * @internal
+ */
+export function toAgColumnGroupShow(mode: ColumnGroupShowMode): 'open' | 'closed' {
+    return mode == null ? null : mode === 'expanded' ? 'open' : 'closed';
+}
 
 /**
  * Sort comparator function for a grid column. Note that this comparator will also be called if

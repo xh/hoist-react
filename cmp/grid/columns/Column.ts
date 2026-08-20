@@ -60,14 +60,15 @@ import {
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
-    ColumnGroupShow,
+    ColumnGroupShowMode,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
     ColumnRenderer,
     ColumnSetValueFn,
     ColumnSortSpec,
     ColumnSortValueFn,
-    ColumnTooltipFn
+    ColumnTooltipFn,
+    toAgColumnGroupShow
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
@@ -165,11 +166,10 @@ export interface ColumnSpec {
     hidden?: boolean;
 
     /**
-     * Show this column only while its containing {@link ColumnGroup} is expanded ('open') or
-     * collapsed ('closed'). Default is to always show it. Ignored for a column with no
-     * containing group.
+     * Show this column only while its containing {@link ColumnGroup} is 'expanded' or 'collapsed'.
+     * Default is to always show it. Ignored for a column with no containing group.
      */
-    columnGroupShow?: ColumnGroupShow;
+    showWhenGroup?: ColumnGroupShowMode;
 
     /**
      * Flex columns stretch to fill the width of the grid after all columns with a set pixel-width
@@ -503,7 +503,7 @@ export class Column {
     cellClassRules: Record<string, ColumnCellClassRuleFn>;
     align: HAlign;
     hidden: boolean;
-    columnGroupShow: ColumnGroupShow;
+    showWhenGroup: ColumnGroupShowMode;
     flex: boolean | number;
     width: number;
     minWidth: number;
@@ -577,7 +577,7 @@ export class Column {
             cellClass,
             cellClassRules,
             hidden,
-            columnGroupShow,
+            showWhenGroup,
             align,
             width,
             minWidth,
@@ -663,7 +663,7 @@ export class Column {
         this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
-        this.columnGroupShow = columnGroupShow;
+        this.showWhenGroup = showWhenGroup;
 
         warnIf(
             flex && width,
@@ -784,7 +784,7 @@ export class Column {
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
-                columnGroupShow: this.columnGroupShow,
+                columnGroupShow: toAgColumnGroupShow(this.showWhenGroup),
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
