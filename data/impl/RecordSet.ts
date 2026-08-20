@@ -22,6 +22,9 @@ type PatchMap = Map<StoreRecordId, StoreRecord>;
 // Source of `RecordSet.ordinal` values - global uniqueness is all that matters.
 let ordinalSeq = 0;
 
+// Depth without forcing lazy treePath materialization on root records of flat stores.
+const recDepth = (rec: StoreRecord): number => (rec.parentId == null ? 0 : rec.depth);
+
 /**
  * Changes deriving one RecordSet from another, as computed by {@link RecordSet.diffFrom}.
  * Unlike a transaction used to *specify* changes, `remove` here holds the full set of removed
@@ -399,7 +402,9 @@ export class RecordSet {
         // Be sure to finalize any new records that are accepted.
         const changed: StoreRecord[] = []; // accepted new instances - updates and adds
         let adds = 0,
-            rootCount = 0;
+            rootCount = 0,
+            maxChangedDepth = 0,
+            depthLowered = false;
         recordMap.forEach((newRec, id) => {
             const currRec = this.getById(id);
             if (currRec && this.areRecordsEqual(currRec, newRec)) {
@@ -408,6 +413,8 @@ export class RecordSet {
             } else {
                 newRec.finalize();
                 if (!currRec) adds++;
+                else if (recDepth(newRec) < recDepth(currRec)) depthLowered = true;
+                maxChangedDepth = Math.max(maxChangedDepth, recDepth(newRec));
                 changed.push(newRec);
                 if (newRec.parentId == null) rootCount++;
             }
@@ -425,6 +432,13 @@ export class RecordSet {
             changes = changed.length + removedCount,
             counts = {update: changed.length - adds, add: adds, remove: removedCount};
 
+        // Carry maxDepth forward without a scan - safe unless a removed or shallower-moved
+        // record could have held the old max.
+        const newMaxDepth =
+            !isNil(this._maxDepth) && !removedCount && !depthLowered
+                ? Math.max(this._maxDepth, maxChangedDepth)
+                : null;
+
         if (changes <= ratio * count) {
             const newPatch: PatchMap = patch ? new Map(patch) : new Map();
             changed.forEach(rec => newPatch.set(rec.id, rec));
@@ -436,12 +450,14 @@ export class RecordSet {
             if (newPatch.size <= ratio * base.size) {
                 const ret = new RecordSet(store, base, newPatch, count, rootCount);
                 ret.derivation = {type: 'patched', ...counts};
+                ret._maxDepth = newMaxDepth;
                 return ret;
             }
         }
 
         const ret = new RecordSet(store, recordMap, null, count, rootCount);
         ret.derivation = {type: 'full', ...counts};
+        ret._maxDepth = newMaxDepth;
         return ret;
     }
 
@@ -534,6 +550,14 @@ export class RecordSet {
         ret.prevOrdinal = this.ordinal;
         if (t.changedFields && isEmpty(add) && isEmpty(remove)) {
             ret.changedFields = t.changedFields;
+        }
+
+        // Carry maxDepth forward without a scan - only removes can lower it (recompute lazily).
+        if (!isNil(this._maxDepth) && isEmpty(remove)) {
+            ret._maxDepth = (add ?? []).reduce(
+                (m, rec) => Math.max(m, recDepth(rec)),
+                this._maxDepth
+            );
         }
         return ret;
     }
