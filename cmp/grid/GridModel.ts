@@ -66,6 +66,7 @@ import {
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
+import type {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
@@ -401,19 +402,27 @@ export interface GridConfig {
 
 interface GridExperimentalFlags {
     /**
-     * Set to true to enable more optimal row sorting in cases where only small subsets of rows are
-     * updated in configurations where rows have many siblings.
-     * See https://www.ag-grid.com/javascript-data-grid/grid-options/#reference-sort-deltaSort for
-     * more details on where this option may improve (or degrade) performance.
-     */
-    deltaSort?: boolean;
-
-    /**
      * Set to true to disable scroll optimization for large grids, where we proactively update the
      * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
      * through large grids.
      */
     disableScrollOptimization?: boolean;
+
+    /**
+     * Percentage [0-90] of changed rows above which a managed re-sort runs a full sort rather
+     * than an ag-Grid delta sort. Delta cost is ~linear in changed rows while full cost is ~flat
+     * in them, with measured break-even near 55% on nested cube grids - erring toward delta
+     * yields smaller, smoother chunks. Default 50.
+     */
+    deltaSortRatio?: number;
+
+    /**
+     * Multiplier pacing the managed re-sort of updating grids - a re-sort costing E ms defers
+     * the next for `E * factor`, bounding sort work to a fraction of main-thread time regardless
+     * of grid size or hardware. Set 0 to disable deferral entirely and re-sort synchronously on
+     * every change. Default 4.
+     */
+    deferredSortFactor?: number;
 }
 
 export interface GridModelDefaults {
@@ -564,6 +573,9 @@ export class GridModel extends HoistModel {
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
+
+    /** @internal - latest RecordSet applied to ag-Grid, maintained by the Grid component. */
+    @observable.ref _syncedRs: RecordSet = null;
 
     // Kept alive, as the primary reader `getColumn()` is often called outside of a reaction.
     @computed({keepAlive: true})
@@ -1707,21 +1719,26 @@ export class GridModel extends HoistModel {
      *   within this class re-check `isReady` directly. We have observed this method returning
      *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
      *
-     * This method will introduce a minimal delay for all calls.  This is useful to ensure
-     * that the grid has had the opportunity to process any pending data updates, which are also
-     * subject to a minimal async debounce.
+     * This method also waits for all current (filtered) Store data to be applied to the
+     * underlying ag-Grid - data changes apply in their own macrotask - and introduces a minimal
+     * delay for all calls.
      *
      * @param timeout - timeout in ms
      */
     async whenReadyAsync(timeout: number = 3 * SECONDS): Promise<boolean> {
         try {
-            await when(() => this.isReady, {timeout});
+            await when(() => this.isReady && this.isDataSynced, {timeout});
         } catch (ignored) {
-            this.logDebug(`Grid failed to enter ready state after waiting ${timeout}ms`);
+            this.logDebug(`Grid not ready with data applied after waiting ${timeout}ms`);
         }
         await wait();
 
         return this.isReady;
+    }
+
+    /** True when the Store's current data has been fully applied to ag-Grid. */
+    get isDataSynced(): boolean {
+        return this._syncedRs === this.store._filtered;
     }
 
     /**
@@ -1735,11 +1752,6 @@ export class GridModel extends HoistModel {
         if (b === '') return -1;
         return a.localeCompare(b);
     };
-
-    /** @internal */
-    get deltaSort() {
-        return !!this.experimental.deltaSort;
-    }
 
     /** @internal */
     get disableScrollOptimization() {

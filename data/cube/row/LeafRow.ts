@@ -50,7 +50,11 @@ export abstract class LeafRow extends BaseRow {
         this.cubeRecord = rawRecord;
     }
 
-    applyLeafDataUpdate(newRec: StoreRecord, updatedRowDatas: Set<PlainObject>) {
+    applyLeafDataUpdate(
+        newRec: StoreRecord,
+        updatedRowDatas: Set<PlainObject>,
+        changedFields: Set<string>
+    ) {
         this.cubeRecord = newRec;
         const {view, data} = this,
             newData = newRec.data,
@@ -63,6 +67,7 @@ export abstract class LeafRow extends BaseRow {
                 newValue = newData[name];
             if (oldValue !== newValue) {
                 updates.push(new RowUpdate(field, oldValue, newValue));
+                changedFields.add(name);
             }
         });
 
