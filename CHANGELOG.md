@@ -313,6 +313,19 @@ columns.
 * tsx `4.21 → 4.23`
 * zod `4.3 → 4.4`
 
+## 86.4.2 - 2026-08-20
+
+### 🎁 New Features
+
+* Mobile `DateInput` now opens a themeable calendar picker (react-day-picker) within a dialog,
+  replacing the OS-provided picker of the native `<input type="date">` element. Adds a
+  `formatString` prop to control the in-input display of the value, and a `dayPickerProps` escape
+  hatch to pass props (e.g. `disabled` day matchers) directly to the underlying calendar.
+
+### 📚 Libraries
+
+* react-day-picker `added @ 9.14`
+
 ## 86.4.1 - 2026-08-11
 
 ### 🐞 Bug Fixes
