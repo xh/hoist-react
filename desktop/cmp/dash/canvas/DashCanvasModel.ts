@@ -27,6 +27,7 @@ import {
     pick,
     isEqual,
     startCase,
+    map,
     partition,
     keyBy,
     compact
@@ -636,10 +637,9 @@ export class DashCanvasModel
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
 
         // Accept only layouts whose ids correspond 1:1 with our current viewModels - RGL's copy
-        // lags ours by a render after a drop, and adopting it would strand the new view in an
-        // update loop.
-        const layoutIds = sortBy(rglLayout.map(it => it.i)),
-            viewIds = sortBy(this.viewModels.map(it => it.id));
+        // lags ours by a render after a drop. Adopting it would trap the app in an update loop.
+        const layoutIds = sortBy(map(rglLayout, 'i')),
+            viewIds = sortBy(map(this.viewModels, 'id'));
         if (!isEqual(layoutIds, viewIds)) return;
 
         this.setLayout(rglLayout);
