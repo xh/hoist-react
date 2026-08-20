@@ -82,10 +82,12 @@ export class GridTransactionManager extends HoistBase {
         });
         try {
             agApi.applyTransaction(transaction);
-            // Any non-suppressed refresh re-sorts everything, resolving pending staleness.
             if (!suppress) this.pendingSortIds = null;
         } finally {
-            agApi.updateGridOptions({suppressModelUpdateAfterUpdateTransaction: false});
+            agApi.updateGridOptions({
+                suppressModelUpdateAfterUpdateTransaction: false,
+                deltaSort: false
+            });
         }
     }
 
@@ -173,9 +175,10 @@ export class GridTransactionManager extends HoistBase {
             if (!col || col.comparator || col.getValueFn !== col.defaultGetValueFn) return null;
             const {sortValue} = col;
             if (isFunction(sortValue)) return null;
-            const path = sortValue ?? col.fieldPath;
-            if (path == null) return null;
-            ret.push(path);
+            // A string sortValue falls back to the column's own value when nullish per-record.
+            const paths = sortValue != null ? [sortValue, col.fieldPath] : [col.fieldPath];
+            if (paths.some(p => p == null)) return null;
+            ret.push(...paths);
         }
         return ret;
     }
@@ -216,8 +219,10 @@ export class GridTransactionManager extends HoistBase {
     }
 
     private flushPendingSort() {
+        if (this.isDestroyed) return;
         const {model, pendingSortIds} = this,
             latestRs = model._syncedRs;
+        // Not ready - leave ids pending; the next transaction will run 'full' and resolve them.
         if (!pendingSortIds || !latestRs || !model.isReady) return;
         this.pendingSortIds = null;
 
@@ -231,7 +236,11 @@ export class GridTransactionManager extends HoistBase {
 
         if (update.length && update.length / latestRs.count < this.deltaSortRatio) {
             agApi.updateGridOptions({deltaSort: true});
-            agApi.applyTransaction({update});
+            try {
+                agApi.applyTransaction({update});
+            } finally {
+                agApi.updateGridOptions({deltaSort: false});
+            }
             model.diagnostics.noteSortFlush('delta', update.length, latestRs.count, start);
         } else {
             agApi.refreshClientSideRowModel('sort');
