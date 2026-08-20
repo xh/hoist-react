@@ -27,6 +27,7 @@ import {
     pick,
     isEqual,
     startCase,
+    map,
     partition,
     keyBy,
     compact
@@ -426,6 +427,7 @@ export class DashCanvasModel
      * and places it at the drop location. Called by the DashCanvas component - not typically
      * called directly by application code.
      */
+    @action // collapse internal actions
     onDrop(rglLayout: LayoutItem[], layoutItem: LayoutItem, evt: Event) {
         throwIf(
             !this.draggedInView,
@@ -434,8 +436,7 @@ export class DashCanvasModel
              a DashCanvasWidgetChooser or similar component.`
         );
 
-        const droppingItem: any = rglLayout.find(it => it.i === RGL_DROPPING_ITEM_ID);
-        if (!droppingItem) {
+        if (!rglLayout.some(it => it.i === RGL_DROPPING_ITEM_ID)) {
             // if `onDropDragOver` returned false, we won't have a dropping item
             // and we cancel the drop
             this.setDraggedInView(null);
@@ -450,14 +451,21 @@ export class DashCanvasModel
                 layout
             });
 
-        // Change ID of dropping item to the new view's id
-        // so that the new view goes where the dropping item is.
-        droppingItem.i = newViewModel.id;
+        // Adopt RGL's mid-drag layout - views already shifted aside - and give the placeholder's
+        // slot to the new view. Appending to our own pre-drag layout would leave it overlapping,
+        // and RGL settles such collisions by pushing the new view clear of where it was dropped.
+        this.setLayout(
+            rglLayout.map(({i, x, y, w, h}) => ({
+                i: i === RGL_DROPPING_ITEM_ID ? newViewModel.id : i,
+                x,
+                y,
+                w,
+                h
+            }))
+        );
 
-        // must wait a tick for RGL to settle
         wait().then(() => {
             this.setDraggedInView(null);
-            this.onRglLayoutChange(rglLayout);
             this.onDropDone?.(newViewModel);
         });
     }
@@ -628,10 +636,11 @@ export class DashCanvasModel
     onRglLayoutChange(rglLayout: LayoutItem[]) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
 
-        // Early out if RGL is changing layout as user is dragging droppable
-        // item around the canvas.  This will be called again once dragging
-        // has stopped and user has dropped the item onto the canvas.
-        if (rglLayout.some(it => it.i === RGL_DROPPING_ITEM_ID)) return;
+        // Accept only layouts whose ids correspond 1:1 with our current viewModels - RGL's copy
+        // lags ours by a render after a drop. Adopting it would trap the app in an update loop.
+        const layoutIds = sortBy(map(rglLayout, 'i')),
+            viewIds = sortBy(map(this.viewModels, 'id'));
+        if (!isEqual(layoutIds, viewIds)) return;
 
         this.setLayout(rglLayout);
     }
@@ -738,7 +747,8 @@ export class DashCanvasModel
 
 /**
  * Sentinel layout item ID hardcoded by react-grid-layout for the temporary placeholder element
- * shown while an external item is being dragged over the canvas. Used internally to detect
- * and filter RGL's in-flight drop placeholder from layout change events.
+ * shown while an external item is being dragged over the canvas. Its presence in the layout
+ * handed to {@link DashCanvasModel.onDrop} is what distinguishes a real drop from one vetoed by
+ * `onDropDragOver`.
  */
 const RGL_DROPPING_ITEM_ID = '__dropping-elem__';
