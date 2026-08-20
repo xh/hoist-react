@@ -87,11 +87,7 @@ export class RecordSet {
 
     /** Unique id for step-provenance tracking - see `prevOrdinal`. */
     readonly ordinal: number = ++ordinalSeq;
-    /**
-     * Ordinal of the instance a single-step derivation produced this one from, or null.
-     * With `changedFields`, lets `diffFrom` recognize a one-step diff window and surface the
-     * fields changed within it - identity via ordinals avoids retaining predecessor instances.
-     */
+    /** Ordinal of the instance a single-step derivation produced this one from, or null. */
     private prevOrdinal: number = null;
     /** Fields changed in that single step, when the producing transaction supplied them. */
     private changedFields: Set<string> = null;
@@ -604,7 +600,6 @@ export class RecordSet {
             remove: removed
         };
         ret.prevOrdinal = prevFiltered.ordinal;
-        // Fields carry through only when the source delta was itself a single value-only step.
         if (delta.changedFields && !added && !removed) {
             ret.changedFields = delta.changedFields;
         }
