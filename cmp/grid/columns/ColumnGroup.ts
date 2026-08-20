@@ -9,7 +9,7 @@ import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 
 import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
@@ -149,6 +149,21 @@ export class ColumnGroup {
         this.agOptions = agOptions ? clone(agOptions) : {};
         this.appData = appData ? clone(appData) : {};
         this.omit = omit;
+
+        const changeable = children.some(it => it.showWhenGroup),
+            showsWhenExpanded = children.some(it => it.showWhenGroup !== 'collapsed'),
+            showsWhenCollapsed = children.some(it => it.showWhenGroup !== 'expanded'),
+            expandable = changeable && showsWhenExpanded && showsWhenCollapsed;
+
+        warnIf(
+            changeable && !expandable,
+            `Column group '${this.groupId}' specifies 'showWhenGroup' on its children but cannot be expanded - that requires at least one child shown when expanded and one shown when collapsed.`
+        );
+
+        warnIf(
+            !expandable && !this.expandedByDefault,
+            `Column group '${this.groupId}' specifies 'expandedByDefault: false' but cannot be expanded - this config will be ignored.`
+        );
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
