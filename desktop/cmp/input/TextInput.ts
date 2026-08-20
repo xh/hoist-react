@@ -12,7 +12,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
-import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
+import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
@@ -136,7 +136,7 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
                 ),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
-                inputRef: composeRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
+                inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
                 leftElement: props.leftElement as ReactElement,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,

@@ -1049,28 +1049,6 @@ The `experimental.denseRecordThreshold` config governs the crossover between the
 exists for testing and tuning only. Set it above the field count of any record to force the sparse
 form throughout.
 
-### Experimental: `PatchableRecordSet`
-
-`PatchableRecordSet` is an experimental, drop-in alternative to Hoist's internal `RecordSet`. It
-makes transaction, filtering, and grid-sync costs scale with the size of a change rather than the
-size of the store. It holds a shared, never-mutated `base` map plus a small `patch` layer of changed
-entries, so a transaction merges at the cost of the patch alone.
-
-```typescript
-const store = new Store({
-    fields: [...],
-    experimental: {patchableRecordSet: true}
-});
-```
-
-Enable it app-wide with the `xhStoreExperimental` soft-config. Note one behavior difference from the
-default record set: record order is stable-by-incumbency rather than source-order. Existing records keep their positions
-and additions append, including records that enter a filter incrementally. Apply a grid sort where
-deterministic order matters. The `experimental.patchRecordsMaxRatio` config caps patch size
-relative to the base (default `0.1`). A larger change flattens the record set into a fresh base.
-
-This feature is available for early client access and testing. It is not yet part of the Hoist API.
-
 ## Diagnostics
 
 `Store`, Cube `View`, and `GridModel` each expose a `diagnostics` object with one slot per kind of
@@ -1097,6 +1075,9 @@ gridModel.diagnostics.logLevel = 'info';
 
 This API supports app troubleshooting and benchmarking only. It can change without notice at any
 release.
+
+The [Hoist Inspector](../inspector/README.md) provides a built-in UI for these diagnostics - select
+any Store, Cube View, or GridModel in its Instances grid to see a live readout.
 
 ## Common Patterns
 

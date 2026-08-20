@@ -7,6 +7,7 @@
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {
     Cube,
     CubeField,
@@ -140,6 +141,8 @@ export class View
     /** @internal */
     readonly diagnostics = new ViewDiagnostics(this);
 
+    _created = Date.now();
+
     // Implementation
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
@@ -176,6 +179,8 @@ export class View
         if (connect) {
             this.cube._connectedViews.add(this);
         }
+
+        instanceManager.registerView(this);
     }
 
     //--------------------
@@ -709,6 +714,7 @@ export class View
     }
 
     override destroy() {
+        instanceManager.unregisterView(this);
         this.disconnect();
         super.destroy();
     }
