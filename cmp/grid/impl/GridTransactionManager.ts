@@ -4,10 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, Some} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import {HoistBase, Some} from '@xh/hoist/core';
+import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
-import {Timer} from '@xh/hoist/utils/async';
+import {wait} from '@xh/hoist/promise';
+import {runWhenIdle} from '@xh/hoist/utils/async';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {get, isArray, isEmpty, isEqual, isFunction} from 'lodash';
 import type {GridModel} from '../GridModel';
 
@@ -21,9 +23,9 @@ import type {GridModel} from '../GridModel';
  */
 type RefreshMode = 'suppress' | 'delta' | 'full';
 
-// Transactions changing less than this fraction of rows sort via deltaSort - above it, merging
-// changed rows into the existing order stops beating a full sort.
-const DELTA_SORT_MAX_RATIO = 0.2;
+// Ceiling (ms) on the total deferral of a pending re-sort - pacing floor plus idle wait
+// combined - so row order can never go stale for longer than this.
+const MAX_DEFERRED_SORT = 10 * SECONDS;
 
 /**
  * Applies Store transactions to ag-Grid on behalf of Grid, minimizing the portion of ag-Grid's
@@ -35,16 +37,26 @@ const DELTA_SORT_MAX_RATIO = 0.2;
  * sorted field values record-by-record against the prior RecordSet otherwise. Smaller
  * transactions that miss that bar sort via ag-Grid `deltaSort`; the rest run a full sort.
  *
- * With {@link GridModel.streamingSortInterval} set, update-only transactions that would require
- * a re-sort are also applied suppressed - cell values update immediately while row order goes
- * briefly stale - and a managed timer restores sort order at most once per interval.
+ * Update-only transactions that would require a re-sort are also applied suppressed - cell
+ * values update immediately while row order goes briefly stale - and the touched rows
+ * accumulate for a managed flush that restores order.
+ * Flushes pace adaptively off their own measured cost (see the `deferredSortFactor`
+ * experimental flag), bounding sort work to a fraction of main-thread time. The flush lands at the browser's next
+ * idle moment, deadline-bounded, and re-applies the touched rows under ag-Grid `deltaSort` when
+ * few enough are pending, falling back to a full re-sort.
  *
  * @internal
  */
 export class GridTransactionManager extends HoistBase {
     private model: GridModel;
-    private sortDirty = false;
-    @managed private sortTimer: Timer;
+    private flushQueued = false;
+
+    // Rows updated by suppressed transactions since the last sort - null when order is current.
+    private pendingSortIds: Set<StoreRecordId> = null;
+
+    // Earliest performance.now() at which the next flush may start - set from the last flush's
+    // measured cost and any configured interval floor.
+    private nextFlushAllowed = 0;
 
     // Cached provable sort paths - undefined = stale, null = sort not provably value-based.
     private _sortPaths: Array<Some<string>> | null | undefined;
@@ -56,11 +68,6 @@ export class GridTransactionManager extends HoistBase {
         this.addReaction({
             track: () => [model.sortBy, model.columns],
             run: () => (this._sortPaths = undefined)
-        });
-
-        this.sortTimer = Timer.create({
-            runFn: () => this.flushPendingSort(),
-            interval: () => model.streamingSortInterval ?? -1
         });
     }
 
@@ -75,7 +82,8 @@ export class GridTransactionManager extends HoistBase {
         });
         try {
             agApi.applyTransaction(transaction);
-            if (!suppress) this.sortDirty = false;
+            // Any non-suppressed refresh re-sorts everything, resolving pending staleness.
+            if (!suppress) this.pendingSortIds = null;
         } finally {
             agApi.updateGridOptions({suppressModelUpdateAfterUpdateTransaction: false});
         }
@@ -102,20 +110,20 @@ export class GridTransactionManager extends HoistBase {
             if (structureStable) {
                 if (this.sortUnchanged(update, prevRs, changedFields)) return 'suppress';
 
-                // Streaming mode: suppress anyway, leaving order stale until the next
-                // interval flush.
-                if (model.streamingSortInterval > 0) {
-                    this.sortDirty = true;
+                // Suppress even when order is affected, leaving it stale until the pending flush.
+                if (this.deferredSortFactor > 0) {
+                    this.notePendingSort(update);
                     return 'suppress';
                 }
             }
         }
 
-        // deltaSort not possible if we let the sort lapse.
-        if (this.sortDirty) return 'full';
+        // With a flush pending, current order is stale - a delta merge would preserve the
+        // staleness, so any refresh must be full (which resolves the pending flush, per apply).
+        if (this.pendingSortIds) return 'full';
 
         const changedCount = update.length + add.length + remove.length;
-        return newRs.count > 0 && changedCount / newRs.count < DELTA_SORT_MAX_RATIO
+        return newRs.count > 0 && changedCount / newRs.count < this.deltaSortRatio
             ? 'delta'
             : 'full';
     }
@@ -172,10 +180,68 @@ export class GridTransactionManager extends HoistBase {
         return ret;
     }
 
+    // Changed-row fraction above which a full sort beats a delta sort - see the experimental
+    // flag's doc for the cost model.
+    private get deltaSortRatio(): number {
+        return (this.model.experimental.deltaSortRatio ?? 50) / 100;
+    }
+
+    private get deferredSortFactor(): number {
+        return this.model.experimental.deferredSortFactor ?? 4;
+    }
+
+    private notePendingSort(updates: StoreRecord[]) {
+        const ids = (this.pendingSortIds ??= new Set());
+        updates.forEach(rec => ids.add(rec.id));
+        this.scheduleFlushAsync();
+    }
+
+    // Decides *when* the pending flush runs. Two stages: a floor (see nextFlushAllowed), then
+    // idle placement - with MAX_DEFERRED_SORT bounding the two combined, so a busy main thread
+    // cannot defer the flush indefinitely.
+    private async scheduleFlushAsync() {
+        if (this.flushQueued || !this.pendingSortIds) return;
+        this.flushQueued = true;
+
+        const deadline = performance.now() + MAX_DEFERRED_SORT,
+            floor = this.nextFlushAllowed - performance.now();
+        if (floor > 0) await wait(floor);
+        runWhenIdle(
+            () => {
+                this.flushQueued = false;
+                this.flushPendingSort();
+            },
+            {timeout: Math.max(1, deadline - performance.now())}
+        );
+    }
+
     private flushPendingSort() {
-        const {model, sortDirty} = this;
-        if (!sortDirty || !model.isReady) return;
-        this.sortDirty = false;
-        model.agApi.refreshClientSideRowModel('sort');
+        const {model, pendingSortIds} = this,
+            latestRs = model._syncedRs;
+        if (!pendingSortIds || !latestRs || !model.isReady) return;
+        this.pendingSortIds = null;
+
+        const start = performance.now(),
+            {agApi} = model,
+            update = [];
+        pendingSortIds.forEach(id => {
+            const rec = latestRs.getById(id);
+            if (rec) update.push(rec);
+        });
+
+        if (update.length && update.length / latestRs.count < this.deltaSortRatio) {
+            agApi.updateGridOptions({deltaSort: true});
+            agApi.applyTransaction({update});
+            model.diagnostics.noteSortFlush('delta', update.length, latestRs.count, start);
+        } else {
+            agApi.refreshClientSideRowModel('sort');
+            model.diagnostics.noteSortFlush('full', update.length, latestRs.count, start);
+        }
+
+        this.nextFlushAllowed = performance.now() + this.backoffFor(performance.now() - start);
+    }
+
+    private backoffFor(elapsed: number): number {
+        return Math.min(elapsed * this.deferredSortFactor, MAX_DEFERRED_SORT);
     }
 }

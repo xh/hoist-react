@@ -82,6 +82,14 @@ and performance optimizations, grouped by topic below.
   Set the new `GridModelPersistOptions.hideNewColumns` config to `false` to restore the previous
   behavior.
 
+#### Grid - Data Update Timing
+
+* Grids now always apply `Store` data changes to ag-Grid in a fresh macrotask - pending UI
+  updates (e.g. load masks) paint first, and rapid changes coalesce. This strengthens an existing
+  requirement: grid reads after a data change were already subject to a minimal async debounce
+  and should already route through `GridModel.whenReadyAsync()`, which now provides a hard
+  guarantee that all store data has been applied to ag-Grid.
+
 ### 🎁 New Features
 
 #### Data - Store and Records
@@ -184,12 +192,9 @@ columns.
   minimum amount required.
 * Improved `Grid` data update performance with tiered ag-Grid transaction handling. Update
   transactions that provably cannot affect row order, grouping, or tree structure now skip
-  ag-Grid's model refresh (sort/filter/group/flatten) entirely, and smaller transactions that do
-  reorder re-sort only their changed rows via ag-Grid delta sorting. Streaming updates into large
-  sorted grids apply up to ~100x faster, with no configuration required.
-* Added `GridConfig.streamingSortInterval` to amortize re-sorting on rapidly-updating grids - cell
-  values update immediately while row order is restored at most once per interval. New records
-  still sort into place immediately.
+  ag-Grid's model refresh entirely, and transactions that would re-order rows apply their cell
+  values immediately, with row order restored by a managed, idle-scheduled re-sort. New records
+  still sort into place on arrival.
 * Added `StoreTransaction.changedFields`, letting data producers assert exactly which fields a
   value-only update touched. Cube `View`s supply this automatically, extending the no-re-sort
   Grid fast path to view-connected stores. See the data package README for details.
@@ -273,8 +278,12 @@ columns.
 
 ### ⚙️ Technical
 
-* Removed `GridExperimentalFlags.deltaSort` - Hoist now manages ag-Grid delta sorting
-  automatically per transaction. See the Grid transaction handling entry under New Features.
+* Replaced `GridExperimentalFlags.deltaSort` with `deltaSortRatio` - Hoist now manages ag-Grid
+  delta sorting automatically, using it for re-sorts touching fewer than this percentage of rows
+  (default 50). See the Grid transaction handling entry under New Features.
+* Added `GridExperimentalFlags.deferredSortFactor` to tune the pacing of the managed re-sort on
+  updating grids - a re-sort costing E ms defers the next for `E * factor` (default 4). Set 0 to
+  disable deferral and re-sort synchronously on every change.
 * Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
   `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
   and the path taken. Note that diagnostics log by default under `debug` output, but users may set

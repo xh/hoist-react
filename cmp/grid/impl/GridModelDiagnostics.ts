@@ -20,6 +20,7 @@ import type {GridModel} from '@xh/hoist/cmp/grid';
 export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
     @observable.ref genTransaction: GridOpStats = this.emptyStats();
     @observable.ref applyTransaction: GridOpStats = this.emptyStats();
+    @observable.ref sortFlush: SortFlushOpStats = this.emptyStats();
     @observable.ref autosize: AutosizeOpStats = this.emptyStats();
 
     constructor(owner: GridModel) {
@@ -55,6 +56,20 @@ export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
     }
 
     @action
+    noteSortFlush(type: SortFlushOp['type'], pending: number, total: number, start: number) {
+        const op: SortFlushOp = {
+            type,
+            pending,
+            total,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
+        const {count, elapsed} = this.sortFlush;
+        this.sortFlush = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
+        this.logOp('sortFlush', op, `pending ${op.pending} of ${op.total}`);
+    }
+
+    @action
     noteAutosize(type: AutosizeOp['type'], columns: number, records: number, start: number) {
         const op: AutosizeOp = {
             type,
@@ -73,6 +88,7 @@ export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
     reset() {
         this.genTransaction = this.emptyStats();
         this.applyTransaction = this.emptyStats();
+        this.sortFlush = this.emptyStats();
         this.autosize = this.emptyStats();
     }
 
@@ -115,6 +131,20 @@ export interface AutosizeOpStats {
     last: AutosizeOp;
     count: number;
     elapsed: number;
+}
+
+export interface SortFlushOpStats {
+    last: SortFlushOp;
+    count: number;
+    elapsed: number;
+}
+
+export interface SortFlushOp {
+    type: 'delta' | 'full';
+    pending: number;
+    total: number;
+    elapsed: number;
+    timestamp: number;
 }
 
 export interface AutosizeOp {

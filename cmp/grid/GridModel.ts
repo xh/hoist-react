@@ -66,6 +66,7 @@ import {
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
+import type {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
@@ -372,16 +373,6 @@ export interface GridConfig {
     externalSort?: boolean;
 
     /**
-     * Interval (ms) at which to re-sort this grid while streaming updates are arriving, or null
-     * (default) to re-sort on every change. When set, update-only transactions are applied
-     * without re-running ag-Grid's sort/filter/group stages - cell values update immediately
-     * while row order is restored by a managed re-sort at most once per interval. New records
-     * (adds) still sort into position immediately. Intended for grids over large, rapidly
-     * updating datasets, where a per-transaction re-sort is both costly and visually noisy.
-     */
-    streamingSortInterval?: number;
-
-    /**
      * Set to true to highlight a row on click. Intended to provide feedback to users in grids
      * without selection. Note this setting overrides the styling used by Column.highlightOnChange,
      * and is not recommended for use alongside that feature. Default true for mobiles,
@@ -416,6 +407,22 @@ interface GridExperimentalFlags {
      * through large grids.
      */
     disableScrollOptimization?: boolean;
+
+    /**
+     * Percentage [0-90] of changed rows above which a managed re-sort runs a full sort rather
+     * than an ag-Grid delta sort. Delta cost is ~linear in changed rows while full cost is ~flat
+     * in them, with measured break-even near 55% on nested cube grids - erring toward delta
+     * yields smaller, smoother chunks. Default 50.
+     */
+    deltaSortRatio?: number;
+
+    /**
+     * Multiplier pacing the managed re-sort of updating grids - a re-sort costing E ms defers
+     * the next for `E * factor`, bounding sort work to a fraction of main-thread time regardless
+     * of grid size or hardware. Set 0 to disable deferral entirely and re-sort synchronously on
+     * every change. Default 4.
+     */
+    deferredSortFactor?: number;
 }
 
 export interface GridModelDefaults {
@@ -530,7 +537,6 @@ export class GridModel extends HoistModel {
     enableExport: boolean;
     enableFullWidthScroll: boolean;
     externalSort: boolean;
-    streamingSortInterval: number;
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
     autosizeOptions: GridAutosizeOptions;
@@ -567,6 +573,9 @@ export class GridModel extends HoistModel {
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
+
+    /** @internal - latest RecordSet applied to ag-Grid, maintained by the Grid component. */
+    @observable.ref _syncedRs: RecordSet = null;
 
     // Kept alive, as the primary reader `getColumn()` is often called outside of a reaction.
     @computed({keepAlive: true})
@@ -647,7 +656,6 @@ export class GridModel extends HoistModel {
             groupBy = null,
             showGroupRowCounts = GridModel.defaults.showGroupRowCounts,
             externalSort = false,
-            streamingSortInterval = null,
             persistWith,
             sizingMode = GridModel.defaults.sizingMode,
             showHover = GridModel.defaults.showHover,
@@ -711,7 +719,6 @@ export class GridModel extends HoistModel {
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
-        this.streamingSortInterval = streamingSortInterval;
         this.enableFullWidthScroll = enableFullWidthScroll;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
@@ -1712,21 +1719,26 @@ export class GridModel extends HoistModel {
      *   within this class re-check `isReady` directly. We have observed this method returning
      *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
      *
-     * This method will introduce a minimal delay for all calls.  This is useful to ensure
-     * that the grid has had the opportunity to process any pending data updates, which are also
-     * subject to a minimal async debounce.
+     * This method also waits for all current (filtered) Store data to be applied to the
+     * underlying ag-Grid - data changes apply in their own macrotask - and introduces a minimal
+     * delay for all calls.
      *
      * @param timeout - timeout in ms
      */
     async whenReadyAsync(timeout: number = 3 * SECONDS): Promise<boolean> {
         try {
-            await when(() => this.isReady, {timeout});
+            await when(() => this.isReady && this.isDataSynced, {timeout});
         } catch (ignored) {
-            this.logDebug(`Grid failed to enter ready state after waiting ${timeout}ms`);
+            this.logDebug(`Grid not ready with data applied after waiting ${timeout}ms`);
         }
         await wait();
 
         return this.isReady;
+    }
+
+    /** True when the Store's current data has been fully applied to ag-Grid. */
+    get isDataSynced(): boolean {
+        return this._syncedRs === this.store._filtered;
     }
 
     /**

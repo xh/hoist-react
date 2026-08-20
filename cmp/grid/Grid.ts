@@ -25,7 +25,6 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
-import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
 import {
     colChooser as desktopColChooser,
@@ -46,7 +45,7 @@ import type {
     GridReadyEvent,
     ProcessCellForExportParams
 } from '@xh/hoist/kit/ag-grid';
-import {computed, observer} from '@xh/hoist/mobx';
+import {computed, observer, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -181,7 +180,6 @@ export class GridLocalModel extends HoistModel {
     agOptions: GridOptions;
     viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
-    private prevRs: RecordSet;
     @managed private transactionMgr: GridTransactionManager;
 
     /** @returns true if any root-level records have children */
@@ -204,6 +202,9 @@ export class GridLocalModel extends HoistModel {
     }
 
     override onLinked() {
+        // This mount's ag instance starts empty, regardless of what a prior mount applied.
+        runInAction(() => (this.model._syncedRs = null));
+
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
         this.addReaction(
             this.selectionReaction(),
@@ -380,8 +381,10 @@ export class GridLocalModel extends HoistModel {
         return {
             track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecords],
             run: () => {
-                if (model.isReady) this.syncData();
-            }
+                if (!this.isDestroyed && model.isReady) this.syncData();
+            },
+            // Sync in a fresh macrotask - lets pending UI paint first and coalesces rapid arrivals.
+            debounce: 0
         };
     }
 
@@ -677,7 +680,7 @@ export class GridLocalModel extends HoistModel {
         const {model} = this,
             {agGridModel, store, agApi} = model,
             newRs = store._filtered,
-            prevRs = this.prevRs;
+            prevRs = model._syncedRs;
 
         const start = performance.now(),
             transaction = newRs.diffFrom(prevRs);
@@ -687,9 +690,7 @@ export class GridLocalModel extends HoistModel {
         if (!this.transactionIsEmpty(transaction)) {
             this.transactionMgr.apply(transaction, prevRs, newRs);
         } else if (!prevRs) {
-            // First sync with an empty store yields an empty transaction, but AG Grid must still
-            // be handed rowData to exit its initial loading state - otherwise a grid mounted over
-            // an empty store shows its loading overlay indefinitely instead of `emptyText`.
+            // AG Grid needs rowData (even if empty) to exit its initial loading state.
             agApi.updateGridOptions({rowData: []});
         }
 
@@ -726,7 +727,7 @@ export class GridLocalModel extends HoistModel {
             model.noteAgExpandStateChange();
         }
 
-        this.prevRs = newRs;
+        model._syncedRs = newRs;
         this.applyScrollOptimization();
 
         model.diagnostics.noteApplyTransaction(transaction, newRs, applyStart);
