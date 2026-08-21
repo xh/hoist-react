@@ -1444,6 +1444,17 @@ export class GridModel extends HoistModel {
         return this.leafColumnMap.get(colId) ?? null;
     }
 
+    /**
+     * @returns the current GridSorter for the given column, or null if it is not sorted.
+     * Optimized for hot loops, should be a search in a collection of 1-3.
+     */
+    getSorter(colId: string): GridSorter {
+        for (const it of this.sortBy) {
+            if (it.colId === colId) return it;
+        }
+        return null;
+    }
+
     getColumnGroup(groupId: string): ColumnGroup {
         return this.findColumnGroup(this.columns, groupId);
     }

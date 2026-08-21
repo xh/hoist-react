@@ -26,6 +26,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import type {StoreRecord} from '@xh/hoist/data';
+import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
 import {
     colChooser as desktopColChooser,
@@ -732,7 +733,7 @@ export class GridLocalModel extends HoistModel {
             model.autosizeAsync({columns});
         }
 
-        if (model.treeMode || !isEmpty(model.groupBy)) {
+        if (this.transactionCouldChangeStructure(transaction, prevRs)) {
             model.noteAgExpandStateChange();
         }
 
@@ -750,8 +751,19 @@ export class GridLocalModel extends HoistModel {
         }
     }
 
-    transactionIsEmpty(t) {
+    transactionIsEmpty(t: RecordSetDelta): boolean {
         return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
+    }
+
+    transactionCouldChangeStructure(t: RecordSetDelta, prevRs: RecordSet): boolean {
+        const {model} = this;
+        if (!isEmpty(model.groupBy) || !prevRs || !isEmpty(t.add) || !isEmpty(t.remove)) {
+            return true;
+        }
+        return (
+            model.treeMode &&
+            t.update.some(rec => rec.parentId !== prevRs.getById(rec.id)?.parentId)
+        );
     }
 
     //------------------------
