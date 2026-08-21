@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {castArray, compact, remove, isEqual, union, map} from 'lodash';
+import {castArray, compact, isEqual, union} from 'lodash';
 import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
@@ -67,7 +67,9 @@ export class StoreSelectionModel extends HoistModel {
 
     @computed.struct
     get selectedIds(): StoreRecordId[] {
-        return map(this.selectedRecords, 'id');
+        // Independent of `selectedRecords` - identity-only observers (e.g. Grid selection sync)
+        // should not pay that computed's structural compare over record contents.
+        return this._ids.filter(id => this.store.getById(id, true));
     }
 
     /**
@@ -150,11 +152,15 @@ export class StoreSelectionModel extends HoistModel {
     // Implementation
     //------------------------
     private cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store.
+        // Remove recs from selection if they are no longer in store. Reassign (never mutate in
+        // place) - `_ids` is observable.ref, so only a new reference notifies observers.
         const {store} = this;
         return {
             track: () => store._filtered,
-            run: () => remove(this._ids, id => !store.getById(id, true))
+            run: action(() => {
+                const ids = this._ids.filter(id => store.getById(id, true));
+                if (ids.length !== this._ids.length) this._ids = ids;
+            })
         };
     }
 }

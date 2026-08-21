@@ -482,19 +482,25 @@ export class AgGridModel extends HoistModel {
 
     /**
      * Sets the selected row node ids. Any rows currently selected which are not in the list will be
-     * deselected.
+     * deselected. Applies the delta against the current selection in (at most) two bulk calls,
+     * leaving already-selected rows untouched.
      *
      * @param ids - row node ids to mark as selected
      */
     setSelectedRowNodeIds(ids: string[]) {
         this.throwIfNotReady();
 
-        const {agApi} = this;
-        agApi.deselectAll();
+        const {agApi} = this,
+            idSet = new Set(ids),
+            toDeselect = agApi.getSelectedNodes().filter(it => !idSet.has(it.id)),
+            toSelect: IRowNode[] = [];
         ids.forEach(id => {
             const node = agApi.getRowNode(id);
-            if (node) node.setSelected(true);
+            if (node && !node.isSelected()) toSelect.push(node);
         });
+
+        if (!isEmpty(toDeselect)) agApi.setNodesSelected({nodes: toDeselect, newValue: false});
+        if (!isEmpty(toSelect)) agApi.setNodesSelected({nodes: toSelect, newValue: true});
     }
 
     /**

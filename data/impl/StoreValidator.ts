@@ -16,7 +16,11 @@ import {sumBy, chunk} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
 import {RecordValidator} from './RecordValidator';
 import {Store} from '../Store';
-import {StoreRecordId} from '../StoreRecord';
+import {StoreRecord, StoreRecordId} from '../StoreRecord';
+
+// Shared stable return for clean stores - reference equality keeps the sync reaction from
+// firing on every transaction of a clean store.
+const EMPTY: StoreRecord[] = Object.freeze([]) as StoreRecord[];
 
 /**
  * Computes validation state for a Store's uncommitted Records.
@@ -80,7 +84,7 @@ export class StoreValidator extends HoistBase {
 
         this.addReaction({
             track: () => this.uncommittedRecords,
-            run: () => this.syncValidatorsAsync(),
+            run: recs => this.syncValidatorsAsync(recs),
             fireImmediately: true
         });
     }
@@ -124,18 +128,18 @@ export class StoreValidator extends HoistBase {
     //---------------------------------------
     // Implementation
     //---------------------------------------
-    private get uncommittedRecords() {
+    private get uncommittedRecords(): StoreRecord[] {
         const {store} = this;
-        return store.isDirty ? store.allRecords.filter(it => !it.isCommitted) : [];
+        return store.isDirty ? store.allRecords.filter(it => !it.isCommitted) : EMPTY;
     }
 
-    private async syncValidatorsAsync() {
+    private async syncValidatorsAsync(records: StoreRecord[]) {
         const isComplex = this.store.validationIsComplex,
             currValidators = this._validators,
             newValidators = new Map(),
             toValidate = [];
 
-        this.uncommittedRecords.forEach(record => {
+        records.forEach(record => {
             const {id} = record;
 
             // Re-use existing validators to preserve validation state and avoid churn.

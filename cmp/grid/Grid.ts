@@ -391,9 +391,11 @@ export class GridLocalModel extends HoistModel {
     }
 
     selectionReaction() {
+        // Track ids, not records - ag-Grid selection is by id, and tracking selectedRecords
+        // would pay a structural compare over record contents on every transaction.
         const {model} = this;
         return {
-            track: () => [model.isReady, model.selectedRecords],
+            track: () => [model.isReady, model.selModel.selectedIds],
             run: () => {
                 if (model.isReady) this.syncSelection();
             }
@@ -773,9 +775,8 @@ export class GridLocalModel extends HoistModel {
         return record.treePath;
     };
 
-    // We debounce this handler because the implementation of `AgGridModel.setSelectedRowNodeIds()`
-    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
-    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    // Debounced to coalesce the (up to two) events fired by `AgGridModel.setSelectedRowNodeIds()`
+    // bulk delta application, plus rapid user-driven selection changes.
     onSelectionChanged = debounce(() => {
         this.model.noteAgSelectionStateChanged();
         this.syncSelection();
