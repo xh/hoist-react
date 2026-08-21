@@ -41,7 +41,6 @@ import {
     isString,
     partition,
     remove as lodashRemove,
-    some,
     uniq,
     values
 } from 'lodash';
@@ -677,7 +676,9 @@ export class Store
         const {update, add, remove, rawSummaryData, changedFields, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
-        // 1) Pre-process updates and adds into Records
+        // 1) Pre-process updates and adds into Records. Summary ids hoisted - referenced per
+        // updated/added record below.
+        const {summaryRecordIds} = this;
         let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
         if (update) {
             updateRecs = [];
@@ -688,7 +689,7 @@ export class Store
                         'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
                     ),
                     parent = rec.parent,
-                    isSummary = some(this.summaryRecords, {id: recId}),
+                    isSummary = summaryRecordIds.has(recId),
                     newRec = this.createRecord(it, parent, isSummary);
 
                 // Reused records signal an unchanged digest - drop such updates as no-ops.
@@ -701,9 +702,9 @@ export class Store
                 if (isChildRawDataObject(it)) {
                     const {rawData, parentId} = it,
                         parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
-                    this.createRecordDeep(rawData, parent, addRecs);
+                    this.createRecordDeep(rawData, parent, addRecs, summaryRecordIds);
                 } else {
-                    this.createRecordDeep(it, null, addRecs);
+                    this.createRecordDeep(it, null, addRecs, summaryRecordIds);
                 }
             });
         }
@@ -712,7 +713,7 @@ export class Store
         const {summaryRecords} = this;
         let summaryUpdateRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => some(summaryRecords, {id}));
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => summaryRecordIds.has(id));
         }
 
         if (isEmpty(summaryUpdateRecs) && rawSummaryData) {
@@ -928,7 +929,8 @@ export class Store
         const {summaryRecords} = this;
         let summaryUpdateRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => some(summaryRecords, {id}));
+            const {summaryRecordIds} = this;
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => summaryRecordIds.has(id));
         }
 
         if (!isEmpty(summaryUpdateRecs)) {

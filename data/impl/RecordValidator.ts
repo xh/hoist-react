@@ -16,7 +16,7 @@ import {
 } from '@xh/hoist/data';
 import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
 import {compact, flatten, isEmpty, isString, mapValues, values} from 'lodash';
-import {TaskObserver} from '../../core';
+import {PlainObject, TaskObserver} from '../../core';
 
 /**
  * Computes validation state for a StoreRecord.
@@ -93,10 +93,11 @@ export class RecordValidator {
             {record} = this,
             fieldsToValidate = record.store.fields.filter(it => !isEmpty(it.rules));
 
+        const values = record.getValues();
         const promises = fieldsToValidate.flatMap(field => {
             fieldValidations[field.name] = [];
             return field.rules.map(async rule => {
-                const result = await this.evaluateRuleAsync(record, field, rule);
+                const result = await this.evaluateRuleAsync(record, field, rule, values);
                 fieldValidations[field.name].push(result);
             });
         });
@@ -120,13 +121,13 @@ export class RecordValidator {
     async evaluateRuleAsync(
         record: StoreRecord,
         field: Field,
-        rule: Rule
+        rule: Rule,
+        values: PlainObject = record.getValues()
     ): Promise<ValidationResult[]> {
-        const values = record.getValues(),
-            {name, displayName} = field,
+        const {name, displayName} = field,
             value = record.get(name);
 
-        if (this.ruleIsActive(record, field, rule)) {
+        if (this.ruleIsActive(field, rule, values)) {
             const promises = rule.check.map(async constraint => {
                 const fieldState = {value, name, displayName, record};
                 return constraint(fieldState, values);
@@ -139,8 +140,8 @@ export class RecordValidator {
         }
     }
 
-    ruleIsActive(record: StoreRecord, field: Field, rule: Rule) {
+    ruleIsActive(field: Field, rule: Rule, values: PlainObject) {
         const {when} = rule;
-        return !when || when(field, record.getValues());
+        return !when || when(field, values);
     }
 }
