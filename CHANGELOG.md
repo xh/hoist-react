@@ -306,7 +306,10 @@ columns.
     * Developers who build against a local hoist-react checkout (`inlineHoist`) now need pnpm to
       install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`). The app itself
       can remain on yarn or npm. Update any `startWithHoist`-style app scripts accordingly.
-
+* `Store`s with no validation `Rules` on any `Field` now skip record validation entirely, no longer
+  creating a `RecordValidator` per uncommitted record. Note that `StoreRecord.validationState` now
+  reports `Valid` (rather than `Unknown`) for records in such a Store.
+*
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`. When reading row data, custom

@@ -173,7 +173,10 @@ export class StoreRecord {
 
     /** The current validation state of the record. */
     get validationState(): ValidationState {
-        return this.validator?.validationState ?? 'Unknown';
+        const {validator} = this;
+        if (validator) return validator.validationState;
+
+        return this.store.validator.hasRules ? 'Unknown' : 'Valid';
     }
 
     /** Map of field names to list of errors. */
