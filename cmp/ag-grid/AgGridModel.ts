@@ -482,8 +482,7 @@ export class AgGridModel extends HoistModel {
 
     /**
      * Sets the selected row node ids. Any rows currently selected which are not in the list will be
-     * deselected. Applies the delta against the current selection in (at most) two bulk calls,
-     * leaving already-selected rows untouched.
+     * deselected.
      *
      * @param ids - row node ids to mark as selected
      */
