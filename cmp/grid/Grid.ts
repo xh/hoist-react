@@ -534,12 +534,16 @@ export class GridLocalModel extends HoistModel {
             run: ([api, colState]) => {
                 if (!api) return;
 
-                const agColState = api.getColumnState();
+                const agColState = api.getColumnState(),
+                    agColStateMap = new Map(agColState.map(c => [c.colId, c]));
 
-                // Insert the auto group col state if it exists, since we won't have it in our column state list
-                const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
+                // Insert the auto group col state if it exists, since we won't have it in our
+                // column state list. Work on a local copy - the tracked `colState` is the model's
+                // own observable array and must never be mutated in place.
+                const autoColState = agColStateMap.get('ag-Grid-AutoColumn');
                 if (autoColState) {
                     const {colId, width, hide, pinned} = autoColState;
+                    colState = [...colState];
                     colState.splice(agColState.indexOf(autoColState), 0, {
                         colId,
                         width,
@@ -557,9 +561,7 @@ export class GridLocalModel extends HoistModel {
                 // Build a list of column state changes
                 colState = compact(
                     colState.map(({colId, width, hidden, pinned}) => {
-                        const agCol: AgColumnState = agColState.find(c => c.colId === colId) || {
-                                colId
-                            },
+                        const agCol: AgColumnState = agColStateMap.get(colId) || {colId},
                             ret: any = {colId};
 
                         let hasChanges = applyOrder;
