@@ -555,7 +555,7 @@ export class Store
             : null;
 
         const {_committed, _current} = this,
-            records = this.createRecords(rawData, null, this.summaryRecordIds),
+            records = this.createRecords(rawData, null),
             updated = _committed.withNewRecords(records);
 
         this.diagnostics.noteLoad(updated, _committed, start);
@@ -602,7 +602,7 @@ export class Store
             summaryIds = new Set<StoreRecordId>();
 
         for await (const raw of rawData) {
-            this.createRecordDeep(raw, null, summaryIds, recordMap);
+            this.createRecordDeep(raw, null, recordMap, summaryIds);
         }
 
         runInAction(() => {
@@ -700,9 +700,9 @@ export class Store
                 if (isChildRawDataObject(it)) {
                     const {rawData, parentId} = it,
                         parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
-                    this.createRecordDeep(rawData, parent, this.summaryRecordIds, addRecs);
+                    this.createRecordDeep(rawData, parent, addRecs);
                 } else {
-                    this.createRecordDeep(it, null, this.summaryRecordIds, addRecs);
+                    this.createRecordDeep(it, null, addRecs);
                 }
             });
         }
@@ -1465,10 +1465,10 @@ export class Store
     private createRecords(
         rawData: PlainObject[],
         parent: StoreRecord,
-        summaryRecordIds: Set<StoreRecordId>,
-        recordMap: Map<StoreRecordId, StoreRecord> = new Map()
+        recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
     ) {
-        rawData.forEach(raw => this.createRecordDeep(raw, parent, summaryRecordIds, recordMap));
+        rawData.forEach(raw => this.createRecordDeep(raw, parent, recordMap, summaryRecordIds));
         return recordMap;
     }
 
@@ -1476,8 +1476,8 @@ export class Store
     private createRecordDeep(
         raw: PlainObject,
         parent: StoreRecord,
-        summaryRecordIds: Set<StoreRecordId>,
-        recordMap: Map<StoreRecordId, StoreRecord>
+        recordMap: Map<StoreRecordId, StoreRecord>,
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
     ) {
         const rec = this.createRecord(raw, parent),
             {id} = rec;
@@ -1491,7 +1491,7 @@ export class Store
         recordMap.set(id, rec);
 
         if (this.loadTreeData && raw[this.loadTreeDataFrom]) {
-            this.createRecords(raw[this.loadTreeDataFrom], rec, summaryRecordIds, recordMap);
+            this.createRecords(raw[this.loadTreeDataFrom], rec, recordMap, summaryRecordIds);
         }
     }
 
