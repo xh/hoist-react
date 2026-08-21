@@ -71,6 +71,7 @@ export class StoreRecord {
     readonly digest: RecordDigest;
 
     private _treePath: StoreRecordId[];
+    private _agId: string;
 
     /**
      * Unique ID for representing record within ag-Grid node API.
@@ -78,7 +79,9 @@ export class StoreRecord {
      * A string variant of the main record ID.  It should be used when trying to identify or
      * locate the record using the ag-Grid callbacks and API.
      */
-    readonly agId: string;
+    get agId(): string {
+        return (this._agId ??= 'ag_' + this.id.toString());
+    }
 
     /**
      * Path to this record within any tree hierarchy, as an array of string record IDs ending
@@ -267,16 +270,14 @@ export class StoreRecord {
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
 
-        const idStr = id.toString();
         this.id = id;
-        this.agId = 'ag_' + idStr;
         this.store = store;
         this.data = data;
         this.raw = raw;
         this.committedData = committedData;
         this.parentId = parent?.id;
         // Root record paths are built lazily by the getter - we may never need for flat data.
-        this._treePath = parent ? [...parent.treePath, idStr] : null;
+        this._treePath = parent ? [...parent.treePath, id.toString()] : null;
         this.digest = digest;
         this.isSummary = isSummary;
 
