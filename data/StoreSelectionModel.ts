@@ -67,8 +67,6 @@ export class StoreSelectionModel extends HoistModel {
 
     @computed.struct
     get selectedIds(): StoreRecordId[] {
-        // Independent of `selectedRecords` - identity-only observers (e.g. Grid selection sync)
-        // should not pay that computed's structural compare over record contents.
         return this._ids.filter(id => this.store.getById(id, true));
     }
 
@@ -152,8 +150,7 @@ export class StoreSelectionModel extends HoistModel {
     // Implementation
     //------------------------
     private cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store. Reassign (never mutate in
-        // place) - `_ids` is observable.ref, so only a new reference notifies observers.
+        // Remove recs from selection if they are no longer in store.
         const {store} = this;
         return {
             track: () => store._filtered,
