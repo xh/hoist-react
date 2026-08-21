@@ -120,7 +120,8 @@ export class GridFindFieldImplModel extends HoistModel {
                 run: () => {
                     this._records = null;
                     if (this.hasQuery) this.updateResults();
-                }
+                },
+                debounce: this.queryBuffer
             },
             {
                 track: () => [this.includeFields, this.excludeFields, this.matchMode],
