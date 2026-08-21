@@ -121,7 +121,7 @@ class BaseLeafRowData implements ViewRowData {
     [key: string]: any;
 
     // Constants for all leaves - no own slots, and non-enumerable like all class accessors:
-    // enumerating consumers (e.g. Store.parseRaw) care only about queried fields.
+    // enumerating consumers (e.g. Store.parseOrRescue) care only about queried fields.
     get cubeRowType(): 'leaf' {
         return 'leaf';
     }

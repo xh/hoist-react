@@ -119,7 +119,9 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   raw object yields an unchanged digest. This applies to both `loadData()` and
   `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
   available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
-  automatically.
+  automatically. Note `reuseRecords: true` is now shorthand for the identity digest `raw => raw`,
+  and like any digest miss, a new raw object is treated as changed even if value-equal - such
+  sources should rely on the default value-based reuse instead.
 * Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping, and
   filtering. Aggregate rows now reuse even when their children change - re-deriving in place and
   republishing only values that actually changed - so e.g. dropping a trailing dimension republishes
