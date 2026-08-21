@@ -41,7 +41,6 @@ import {
     isString,
     partition,
     remove as lodashRemove,
-    some,
     uniq,
     values
 } from 'lodash';
@@ -688,7 +687,7 @@ export class Store
                         'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
                     ),
                     parent = rec.parent,
-                    isSummary = some(this.summaryRecords, {id: recId}),
+                    isSummary = this.summaryRecordIds.has(recId),
                     newRec = this.createRecord(it, parent, isSummary);
 
                 // Reused records signal an unchanged digest - drop such updates as no-ops.
@@ -712,7 +711,7 @@ export class Store
         const {summaryRecords} = this;
         let summaryUpdateRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => some(summaryRecords, {id}));
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
         }
 
         if (isEmpty(summaryUpdateRecs) && rawSummaryData) {
@@ -928,7 +927,7 @@ export class Store
         const {summaryRecords} = this;
         let summaryUpdateRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => some(summaryRecords, {id}));
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
@@ -1496,6 +1495,7 @@ export class Store
         }
     }
 
+    @computed({keepAlive: true})
     private get summaryRecordIds(): Set<StoreRecordId> {
         return new Set(this.summaryRecords?.map(it => it.id) ?? []);
     }

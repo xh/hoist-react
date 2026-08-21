@@ -391,8 +391,6 @@ export class GridLocalModel extends HoistModel {
     }
 
     selectionReaction() {
-        // Track ids, not records - ag-Grid selection is by id, and tracking selectedRecords
-        // would pay a structural compare over record contents on every transaction.
         const {model} = this;
         return {
             track: () => [model.isReady, model.selModel.selectedIds],
