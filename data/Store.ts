@@ -555,7 +555,7 @@ export class Store
             : null;
 
         const {_committed, _current} = this,
-            records = this.createRecords(rawData, null, new Map(), this.summaryRecordIds),
+            records = this.createRecords(rawData, null, new Map()),
             updated = _committed.withNewRecords(records);
 
         this.diagnostics.noteLoad(updated, _committed, start);
@@ -676,9 +676,7 @@ export class Store
         const {update, add, remove, rawSummaryData, changedFields, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
-        // 1) Pre-process updates and adds into Records. Summary ids hoisted - referenced per
-        // updated/added record below.
-        const {summaryRecordIds} = this;
+        // 1) Pre-process updates and adds into Records
         let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
         if (update) {
             updateRecs = [];
@@ -689,7 +687,7 @@ export class Store
                         'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
                     ),
                     parent = rec.parent,
-                    isSummary = summaryRecordIds.has(recId),
+                    isSummary = this.summaryRecordIds.has(recId),
                     newRec = this.createRecord(it, parent, isSummary);
 
                 // Reused records signal an unchanged digest - drop such updates as no-ops.
@@ -702,9 +700,9 @@ export class Store
                 if (isChildRawDataObject(it)) {
                     const {rawData, parentId} = it,
                         parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
-                    this.createRecordDeep(rawData, parent, addRecs, summaryRecordIds);
+                    this.createRecordDeep(rawData, parent, addRecs);
                 } else {
-                    this.createRecordDeep(it, null, addRecs, summaryRecordIds);
+                    this.createRecordDeep(it, null, addRecs);
                 }
             });
         }
@@ -713,7 +711,7 @@ export class Store
         const {summaryRecords} = this;
         let summaryUpdateRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => summaryRecordIds.has(id));
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
         }
 
         if (isEmpty(summaryUpdateRecs) && rawSummaryData) {
@@ -929,8 +927,7 @@ export class Store
         const {summaryRecords} = this;
         let summaryUpdateRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            const {summaryRecordIds} = this;
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => summaryRecordIds.has(id));
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
@@ -1469,7 +1466,7 @@ export class Store
         rawData: PlainObject[],
         parent: StoreRecord,
         recordMap: Map<StoreRecordId, StoreRecord>,
-        summaryRecordIds: Set<StoreRecordId>
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
     ) {
         rawData.forEach(raw => this.createRecordDeep(raw, parent, recordMap, summaryRecordIds));
         return recordMap;
@@ -1480,7 +1477,7 @@ export class Store
         raw: PlainObject,
         parent: StoreRecord,
         recordMap: Map<StoreRecordId, StoreRecord>,
-        summaryRecordIds: Set<StoreRecordId>
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
     ) {
         const rec = this.createRecord(raw, parent),
             {id} = rec;
@@ -1498,6 +1495,9 @@ export class Store
         }
     }
 
+    // Cached index of summary ids - keepAlive as this is read from non-reactive code, where an
+    // unobserved computed would re-evaluate (and re-allocate) on every access.
+    @computed({keepAlive: true})
     private get summaryRecordIds(): Set<StoreRecordId> {
         return new Set(this.summaryRecords?.map(it => it.id) ?? []);
     }
