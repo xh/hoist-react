@@ -13,6 +13,7 @@ import {action, bindable, comparer, computed, makeObservable, observable} from '
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
+    compact,
     filter,
     flatMap,
     get,
@@ -192,40 +193,50 @@ export class GridFindFieldImplModel extends HoistModel {
         return this._records;
     }
 
-    // Sort records with GridModel's sortBy(s) using the Column's comparator
+    // Sort records with GridModel's sortBy(s) using the Column's comparator. Sorters are
+    // resolved once up front, and values/nodes resolved once per record (decorate-sort-
+    // undecorate) rather than per comparison.
     private sortRecordsRecursive(records: StoreRecord[]): StoreRecord[] {
         const {gridModel} = this,
             {sortBy, treeMode, agApi, store} = gridModel,
-            ret: StoreRecord[] = [];
+            sorters = compact(
+                [...sortBy].reverse().map(it => {
+                    const column = gridModel.getColumn(it.colId);
+                    if (!column) return null;
+                    const {field, getValueFn} = column;
+                    return {
+                        getValueFn,
+                        compFn: (column.getAgSpec().comparator as Function).bind(column),
+                        direction: it.sort === 'desc' ? -1 : 1,
+                        ctx: {field, column, gridModel, store, agParams: null}
+                    };
+                })
+            );
 
-        [...sortBy].reverse().forEach(it => {
-            const column = gridModel.getColumn(it.colId);
-            if (!column) return;
+        const sortRecs = (records: StoreRecord[]): StoreRecord[] => {
+            const ret: StoreRecord[] = [];
 
-            const {field, getValueFn} = column,
-                compFn = (column.getAgSpec().comparator as Function).bind(column),
-                direction = it.sort === 'desc' ? -1 : 1;
-
-            const ctx = {field, column, gridModel, store, agParams: null};
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, ...ctx}),
-                    valueB = getValueFn({record: b, ...ctx}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
-
-                return compFn(valueA, valueB, nodeA, nodeB) * direction;
+            sorters.forEach(({getValueFn, compFn, direction, ctx}) => {
+                const decorated = records.map(record => ({
+                    record,
+                    value: getValueFn({record, ...ctx}),
+                    node: agApi?.getRowNode(record.agId)
+                }));
+                decorated.sort((a, b) => compFn(a.value, b.value, a.node, b.node) * direction);
+                records = decorated.map(it => it.record);
             });
-        });
 
-        records.forEach(rec => {
-            ret.push(rec);
-            if (treeMode && !isEmpty(rec.children)) {
-                const children = this.sortRecordsRecursive(rec.children);
-                ret.push(...children);
-            }
-        });
+            records.forEach(rec => {
+                ret.push(rec);
+                if (treeMode && !isEmpty(rec.children)) {
+                    ret.push(...sortRecs(rec.children));
+                }
+            });
 
-        return ret;
+            return ret;
+        };
+
+        return sortRecs(records);
     }
 
     // Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
@@ -238,16 +249,17 @@ export class GridFindFieldImplModel extends HoistModel {
             if (!column) return;
 
             const {field, getValueFn} = column,
-                ctx = {field, column, gridModel, store, agParams: null};
+                ctx = {field, column, gridModel, store, agParams: null},
+                decorated = records.map(record => ({
+                    record,
+                    value: getValueFn({record, ...ctx}),
+                    node: agApi?.getRowNode(record.agId)
+                }));
 
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, ...ctx}),
-                    valueB = getValueFn({record: b, ...ctx}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
-
-                return groupSortFn(valueA, valueB, field, {gridModel, nodeA, nodeB});
-            });
+            decorated.sort((a, b) =>
+                groupSortFn(a.value, b.value, field, {gridModel, nodeA: a.node, nodeB: b.node})
+            );
+            records = decorated.map(it => it.record);
         });
 
         return records;
