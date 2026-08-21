@@ -1495,8 +1495,6 @@ export class Store
         }
     }
 
-    // Cached index of summary ids - keepAlive as this is read from non-reactive code, where an
-    // unobserved computed would re-evaluate (and re-allocate) on every access.
     @computed({keepAlive: true})
     private get summaryRecordIds(): Set<StoreRecordId> {
         return new Set(this.summaryRecords?.map(it => it.id) ?? []);
