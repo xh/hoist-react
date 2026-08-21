@@ -88,7 +88,6 @@ import {
     defaults,
     defaultsDeep,
     every,
-    find,
     first,
     forEach,
     isArray,
@@ -1573,7 +1572,7 @@ export class GridModel extends HoistModel {
      * current value of any state-tracked property is required.
      */
     getStateForColumn(colId: string): ColumnState {
-        return find(this.columnState, {colId});
+        return this.columnState.find(it => it.colId === colId) ?? null;
     }
 
     /**
