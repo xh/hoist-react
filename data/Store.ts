@@ -555,7 +555,7 @@ export class Store
             : null;
 
         const {_committed, _current} = this,
-            records = this.createRecords(rawData, null),
+            records = this.createRecords(rawData, null, new Map(), this.summaryRecordIds),
             updated = _committed.withNewRecords(records);
 
         this.diagnostics.noteLoad(updated, _committed, start);
@@ -1468,8 +1468,8 @@ export class Store
     private createRecords(
         rawData: PlainObject[],
         parent: StoreRecord,
-        recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
-        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+        recordMap: Map<StoreRecordId, StoreRecord>,
+        summaryRecordIds: Set<StoreRecordId>
     ) {
         rawData.forEach(raw => this.createRecordDeep(raw, parent, recordMap, summaryRecordIds));
         return recordMap;
@@ -1480,7 +1480,7 @@ export class Store
         raw: PlainObject,
         parent: StoreRecord,
         recordMap: Map<StoreRecordId, StoreRecord>,
-        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+        summaryRecordIds: Set<StoreRecordId>
     ) {
         const rec = this.createRecord(raw, parent),
             {id} = rec;
