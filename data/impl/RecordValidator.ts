@@ -118,11 +118,11 @@ export class RecordValidator {
         return 'Valid';
     }
 
-    async evaluateRuleAsync(
+    private async evaluateRuleAsync(
         record: StoreRecord,
         field: Field,
         rule: Rule,
-        values: PlainObject = record.getValues()
+        values: PlainObject
     ): Promise<ValidationResult[]> {
         const {name, displayName} = field,
             value = record.get(name);
@@ -140,7 +140,7 @@ export class RecordValidator {
         }
     }
 
-    ruleIsActive(field: Field, rule: Rule, values: PlainObject) {
+    private ruleIsActive(field: Field, rule: Rule, values: PlainObject) {
         const {when} = rule;
         return !when || when(field, values);
     }
