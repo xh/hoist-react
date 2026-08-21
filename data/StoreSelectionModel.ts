@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {castArray, compact, isEqual, union} from 'lodash';
+import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
@@ -67,7 +67,7 @@ export class StoreSelectionModel extends HoistModel {
 
     @computed.struct
     get selectedIds(): StoreRecordId[] {
-        return this._ids.filter(id => this.store.getById(id, true));
+        return map(this.selectedRecords, 'id');
     }
 
     /**
@@ -154,10 +154,7 @@ export class StoreSelectionModel extends HoistModel {
         const {store} = this;
         return {
             track: () => store._filtered,
-            run: action(() => {
-                const ids = this._ids.filter(id => store.getById(id, true));
-                if (ids.length !== this._ids.length) this._ids = ids;
-            })
+            run: () => remove(this._ids, id => !store.getById(id, true))
         };
     }
 }
