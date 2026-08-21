@@ -12,12 +12,18 @@ export class UniqueAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         if (isEmpty(rows)) return null;
         const val = rows[0].data[fieldName];
-        return rows.every(it => isEqual(it.data[fieldName], val)) ? val : null;
+        for (const row of rows) {
+            const v = row.data[fieldName];
+            if (v !== val && !isEqual(v, val)) return null;
+        }
+        return val;
     }
 
     override replace(rows, currAgg, update, context) {
         const {newValue, field} = update;
-        if (rows.length === 1 || isEqual(newValue, currAgg)) return newValue;
+        if (rows.length === 1 || newValue === currAgg || isEqual(newValue, currAgg)) {
+            return newValue;
+        }
         return this.aggregate(rows, field.name);
     }
 }
