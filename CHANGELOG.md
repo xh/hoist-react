@@ -282,6 +282,9 @@ columns.
 * Fixed an `O(n²)` option merge in async `Select` (v86.3.0 regression) that could block the main
   thread for seconds on large `queryFn` results. `Select` no longer accumulates and de-dupes the
   full query history.
+* Fixed mobile app bundles pulling in all of Blueprint's JS and global CSS via the shared
+  `utils/impl` barrel. The internal `parseMenuItems` util now lives at
+  `@xh/hoist/desktop/cmp/menu/impl/MenuItems` - update any app imports of this `@internal` API.
 
 ### ⚙️ Technical
 
