@@ -208,8 +208,8 @@ importers:
         specifier: ^14.0.0
         version: 14.0.0(clean-css@5.3.3)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(jiti@2.7.0)(js-yaml@4.3.1)(json5@2.2.3)(sass@1.100.0)(supports-color@10.2.2)(typescript@5.9.3)
       ag-grid-community:
-        specifier: ^35.3.1
-        version: 35.3.1
+        specifier: ^36.1.0
+        version: 36.1.0
       ag-grid-react:
         specifier: ^35.3.1
         version: 35.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -2062,14 +2062,23 @@ packages:
   ag-charts-types@13.3.1:
     resolution: {integrity: sha512-m37eUe4g//swvGh8PWMlYQH3gknjSsPeW4sQwBhM3/auGAHmN0wvxEWlrdAn98pBPg4HoKbtOy+yf7gPCYsnvQ==}
 
+  ag-charts-types@14.1.0:
+    resolution: {integrity: sha512-mmzkng88c0l+Z9PvCMowMilhVeNgDU/iMuMemcOQD4BG/qO4vbkxWvyQO0iqju8Dx7YOY81PNzC/RmElQNiVkA==}
+
   ag-grid-community@35.3.1:
     resolution: {integrity: sha512-Wmkd/xYTCbAApcZZO74nBggZCnd/oX753NY3MJ4zYARVpfBHRWWhIBJ2sFTFKbDWwHZOWsx3YT9+kkyeuyLKlw==}
+
+  ag-grid-community@36.1.0:
+    resolution: {integrity: sha512-WnvSQ4csRs8gv/b1B0lPHykQXvUJVgi2u5mpY0Aa6dv3pvhDVVqCT8dwUyOeCog4JNPptaXGrOrZ8qP2XoJzVA==}
 
   ag-grid-react@35.3.1:
     resolution: {integrity: sha512-M3ljCQyGL+qzoyPN0BYrn4eAlgZr6Ailcjd8+a7OcneSiVsMNSJb/gTkIMUwmYivkPLIA8EEJ4hTxxKSaya6mQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  ag-stack@36.1.0:
+    resolution: {integrity: sha512-Kmkf5iRZmyduNx2KtW450j6GbCdJ4ejacSpb1AWl0yrdquRmScLRc1SlLolx6lyCbTBSJGo4tRraKbBzre+GlQ==}
 
   ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
@@ -2811,6 +2820,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -7694,9 +7704,16 @@ snapshots:
 
   ag-charts-types@13.3.1: {}
 
+  ag-charts-types@14.1.0: {}
+
   ag-grid-community@35.3.1:
     dependencies:
       ag-charts-types: 13.3.1
+
+  ag-grid-community@36.1.0:
+    dependencies:
+      ag-charts-types: 14.1.0
+      ag-stack: 36.1.0
 
   ag-grid-react@35.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
@@ -7704,6 +7721,8 @@ snapshots:
       prop-types: 15.8.1
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
+
+  ag-stack@36.1.0: {}
 
   ajv-formats@2.1.1(ajv@8.20.0):
     optionalDependencies:
