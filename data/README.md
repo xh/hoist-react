@@ -58,7 +58,7 @@ StoreRecord
 ├── id: StoreRecordId
 ├── data: PlainObject            // Current field values - read by field name only
 ├── committedData: PlainObject   // Last committed state
-├── digest: RecordDigest         // Snapshot used to detect unchanged raw data
+├── digest: unknown              // Snapshot used to detect unchanged raw data
 ├── parent / children            // Tree navigation
 └── validationState              // Per-record validation
 

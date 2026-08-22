@@ -8,7 +8,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
-import {RecordDigest, Store} from './Store';
+import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
@@ -64,11 +64,18 @@ export class StoreRecord {
 
     /**
      * Digest snapshotted from this record's raw data at creation, used by
-     * {@link StoreConfig.reuseRecords} to detect unchanged records across loads. Null when no
-     * string/function digest is configured - including with `reuseRecords: true`, which matches
-     * on raw object identity instead.
+     * {@link StoreConfig.reuseRecords} to detect unchanged records across loads. Null when
+     * `reuseRecords` is unset; the raw object itself with `reuseRecords: true`.
      */
-    readonly digest: RecordDigest;
+    readonly digest: unknown;
+
+    /**
+     * Count of non-default field values written into `data` when built by the parent Store -
+     * null when unknown (e.g. `projectionOnly` records, whose data is the raw object itself).
+     * Supports value-based record rescue across loads - see `Store.parseOrRescue()`.
+     * @internal
+     */
+    readonly nonDefaultCount: number;
 
     private _treePath: StoreRecordId[];
     private _agId: string;
@@ -264,7 +271,17 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {id, store, raw, data, committedData, parent, isSummary, digest = null} = config;
+        const {
+            id,
+            store,
+            raw,
+            data,
+            committedData,
+            parent,
+            isSummary,
+            digest = null,
+            nonDefaultCount = null
+        } = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
@@ -280,6 +297,7 @@ export class StoreRecord {
         this._treePath = parent ? [...parent.treePath, id.toString()] : null;
         this.digest = digest;
         this.isSummary = isSummary;
+        this.nonDefaultCount = nonDefaultCount;
 
         if (this.ownsData) data.id = id;
     }
@@ -388,5 +406,11 @@ export interface StoreRecordConfig {
     isSummary?: boolean;
 
     /** See {@link StoreRecord.digest}. */
-    digest?: RecordDigest;
+    digest?: unknown;
+
+    /**
+     * See {@link StoreRecord.nonDefaultCount}.
+     * @internal
+     */
+    nonDefaultCount?: number;
 }
