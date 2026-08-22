@@ -137,9 +137,11 @@ export class DiagnosticsModel extends HoistModel {
             ? `reused ${op.reused} · rebuilt ${op.rebuilt} · created ${op.created}`
             : op.columns != null
               ? `cols ${op.columns} · recs ${op.records}`
-              : op.update != null
-                ? `upd ${op.update} · add ${op.add} · rem ${op.remove}`
-                : null;
+              : op.pending != null
+                ? `pending ${op.pending}`
+                : op.update != null
+                  ? `upd ${op.update} · add ${op.add} · rem ${op.remove}`
+                  : null;
     }
 
     private createGridModel(): GridModel {
