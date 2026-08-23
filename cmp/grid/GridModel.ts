@@ -422,6 +422,15 @@ interface GridExperimentalFlags {
      * every change. Default 4.
      */
     deferredSortFactor?: number;
+
+    /**
+     * Multiplier pacing the managed re-autosize of updating grids, as `deferredSortFactor` does
+     * for re-sorts - an autosize costing E ms defers the next for `E * factor`, bounding autosize
+     * to ~`1/factor` of main-thread time. Loads and filter changes always autosize immediately.
+     * Set 0 to autosize on every change. Higher than `deferredSortFactor` because stale column
+     * widths are cosmetic where a stale sort is incorrect. Default 10.
+     */
+    deferredAutosizeFactor?: number;
 }
 
 export interface GridModelDefaults {

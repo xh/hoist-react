@@ -25,7 +25,9 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
-import type {StoreRecord} from '@xh/hoist/data';
+import type {Filter, StoreRecord} from '@xh/hoist/data';
+import {SECONDS} from '@xh/hoist/utils/datetime';
+import {runWhenIdle} from '@xh/hoist/utils/async';
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
 import {
@@ -170,6 +172,10 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 //------------------------
 // Implementation
 //------------------------
+// Generous vs. MAX_DEFERRED_SORT - a deferred sort leaves row order wrong, while a deferred
+// autosize only leaves columns a little off. Rarely binding: reached only above a 3s autosize.
+const MAX_DEFERRED_AUTOSIZE = 30 * SECONDS;
+
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
@@ -183,6 +189,12 @@ export class GridLocalModel extends HoistModel {
     viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     @managed private transactionMgr: GridTransactionManager;
+
+    // State for the managed-autosize trigger - see `noteManagedAutosizeTrigger()`.
+    private autosizedAsOfLoad: number = null;
+    private autosizedAsOfFilter: Filter = null;
+    private nextAutosizeAllowed = 0;
+    private autosizeQueued = false;
 
     /** @returns true if any root-level records have children */
     @computed
@@ -731,8 +743,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         if (model.autosizeOptions.mode === 'managed') {
-            const columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
-            model.autosizeAsync({columns});
+            this.noteManagedAutosizeTrigger();
         }
 
         if (this.transactionCouldChangeStructure(transaction, prevRs)) {
@@ -774,6 +785,58 @@ export class GridLocalModel extends HoistModel {
     getDataPath = record => {
         return record.treePath;
     };
+
+    /**
+     * Managed autosize follows a load or filter change immediately - the visible dataset changed,
+     * and the user expects columns to fit it. Data updates instead pace off autosize's own cost:
+     * a streaming grid would otherwise re-measure every column on every tick, applying widths the
+     * next tick immediately obsoletes.
+     */
+    private noteManagedAutosizeTrigger() {
+        const {lastLoaded, filter} = this.model.store;
+        if (lastLoaded === this.autosizedAsOfLoad && filter === this.autosizedAsOfFilter) {
+            this.scheduleManagedAutosizeAsync();
+            return;
+        }
+
+        this.autosizedAsOfLoad = lastLoaded;
+        this.autosizedAsOfFilter = filter;
+        this.nextAutosizeAllowed = 0;
+        this.autosizeManagedAsync();
+    }
+
+    // Paces update-driven autosizes off their own measured cost, as `GridTransactionManager` does
+    // for deferred sort flushes: a floor (see nextAutosizeAllowed), then idle placement, with
+    // MAX_DEFERRED_AUTOSIZE bounding the two combined.
+    private async scheduleManagedAutosizeAsync() {
+        if (this.autosizeQueued) return;
+        this.autosizeQueued = true;
+
+        const deadline = performance.now() + MAX_DEFERRED_AUTOSIZE,
+            floor = this.nextAutosizeAllowed - performance.now();
+        if (floor > 0) await wait(floor);
+        runWhenIdle(
+            () => {
+                this.autosizeQueued = false;
+                if (!this.isDestroyed) this.autosizeManagedAsync();
+            },
+            {timeout: Math.max(1, deadline - performance.now())}
+        );
+    }
+
+    private async autosizeManagedAsync() {
+        const {model} = this,
+            columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId),
+            start = performance.now();
+
+        await model.autosizeAsync({columns});
+        this.nextAutosizeAllowed = performance.now() + this.autosizeBackoffFor(start);
+    }
+
+    private autosizeBackoffFor(start: number): number {
+        const factor = this.model.experimental.deferredAutosizeFactor ?? 10;
+        return Math.min((performance.now() - start) * factor, MAX_DEFERRED_AUTOSIZE);
+    }
 
     // Debounced to coalesce the (up to two) events fired by `AgGridModel.setSelectedRowNodeIds()`
     // bulk delta application, plus rapid user-driven selection changes.

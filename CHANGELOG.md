@@ -89,6 +89,10 @@ and performance optimizations, grouped by topic below.
   requirement: grid reads after a data change were already subject to a minimal async debounce
   and should already route through `GridModel.whenReadyAsync()`, which now provides a hard
   guarantee that all store data has been applied to ag-Grid.
+* Grids using `autosizeOptions.mode: 'managed'` now re-autosize immediately only on a `Store` load
+  or filter change. Incremental updates instead pace re-autosizing off its own measured cost - as
+  `deferredSortFactor` already does for re-sorts - bounding autosize to a fraction of main-thread
+  time on streaming grids. Tune via the new `deferredAutosizeFactor` experimental flag.
 
 ### 🎁 New Features
 
