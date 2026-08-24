@@ -8,7 +8,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
-import {RecordDigest, Store} from './Store';
+import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
@@ -64,13 +64,21 @@ export class StoreRecord {
 
     /**
      * Digest snapshotted from this record's raw data at creation, used by
-     * {@link StoreConfig.reuseRecords} to detect unchanged records across loads. Null when no
-     * string/function digest is configured - including with `reuseRecords: true`, which matches
-     * on raw object identity instead.
+     * {@link StoreConfig.reuseRecords} to detect unchanged records across loads. Null when
+     * `reuseRecords` is unset; the raw object itself with `reuseRecords: true`.
      */
-    readonly digest: RecordDigest;
+    readonly digest: unknown;
+
+    /**
+     * Count of non-default field values written into `data` when built by the parent Store -
+     * null when unknown (e.g. `projectionOnly` records, whose data is the raw object itself).
+     * Supports value-based record rescue across loads - see `Store.parseOrRescue()`.
+     * @internal
+     */
+    readonly nonDefaultCount: number;
 
     private _treePath: StoreRecordId[];
+    private _agId: string;
 
     /**
      * Unique ID for representing record within ag-Grid node API.
@@ -78,7 +86,9 @@ export class StoreRecord {
      * A string variant of the main record ID.  It should be used when trying to identify or
      * locate the record using the ag-Grid callbacks and API.
      */
-    readonly agId: string;
+    get agId(): string {
+        return (this._agId ??= 'ag_' + this.id.toString());
+    }
 
     /**
      * Path to this record within any tree hierarchy, as an array of string record IDs ending
@@ -173,7 +183,10 @@ export class StoreRecord {
 
     /** The current validation state of the record. */
     get validationState(): ValidationState {
-        return this.validator?.validationState ?? 'Unknown';
+        const {validator} = this;
+        if (validator) return validator.validationState;
+
+        return this.store.validator.hasRules ? 'Unknown' : 'Valid';
     }
 
     /** Map of field names to list of errors. */
@@ -258,24 +271,33 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {id, store, raw, data, committedData, parent, isSummary, digest = null} = config;
+        const {
+            id,
+            store,
+            raw,
+            data,
+            committedData,
+            parent,
+            isSummary,
+            digest = null,
+            nonDefaultCount = null
+        } = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
 
-        const idStr = id.toString();
         this.id = id;
-        this.agId = 'ag_' + idStr;
         this.store = store;
         this.data = data;
         this.raw = raw;
         this.committedData = committedData;
         this.parentId = parent?.id;
         // Root record paths are built lazily by the getter - we may never need for flat data.
-        this._treePath = parent ? [...parent.treePath, idStr] : null;
+        this._treePath = parent ? [...parent.treePath, id.toString()] : null;
         this.digest = digest;
         this.isSummary = isSummary;
+        this.nonDefaultCount = nonDefaultCount;
 
         if (this.ownsData) data.id = id;
     }
@@ -384,5 +406,11 @@ export interface StoreRecordConfig {
     isSummary?: boolean;
 
     /** See {@link StoreRecord.digest}. */
-    digest?: RecordDigest;
+    digest?: unknown;
+
+    /**
+     * See {@link StoreRecord.nonDefaultCount}.
+     * @internal
+     */
+    nonDefaultCount?: number;
 }

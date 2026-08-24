@@ -25,9 +25,10 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
-import type {StoreRecord} from '@xh/hoist/data';
+import type {Filter, StoreRecord} from '@xh/hoist/data';
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
+import {DeferredWorkScheduler} from '@xh/hoist/cmp/grid/impl/DeferredWorkScheduler';
 import {
     colChooser as desktopColChooser,
     colChooserPanel as desktopColChooserPanel,
@@ -183,6 +184,16 @@ export class GridLocalModel extends HoistModel {
     viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     @managed private transactionMgr: GridTransactionManager;
+
+    // State for the managed-autosize trigger - see `noteManagedAutosizeTrigger()`.
+    private autosizedAsOfFilter: Filter = null;
+
+    @managed
+    private autosizeScheduler = new DeferredWorkScheduler({
+        runFn: () => this.autosizeManagedAsync(),
+        maxDeferral: GridModel.MAX_DEFERRED_AUTOSIZE,
+        factorFn: () => this.model.experimental.deferredAutosizeFactor ?? 10
+    });
 
     /** @returns true if any root-level records have children */
     @computed
@@ -393,7 +404,7 @@ export class GridLocalModel extends HoistModel {
     selectionReaction() {
         const {model} = this;
         return {
-            track: () => [model.isReady, model.selectedRecords],
+            track: () => [model.isReady, model.selModel.selectedIds],
             run: () => {
                 if (model.isReady) this.syncSelection();
             }
@@ -731,8 +742,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         if (model.autosizeOptions.mode === 'managed') {
-            const columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
-            model.autosizeAsync({columns});
+            this.noteManagedAutosizeTrigger();
         }
 
         if (this.transactionCouldChangeStructure(transaction, prevRs)) {
@@ -775,9 +785,36 @@ export class GridLocalModel extends HoistModel {
         return record.treePath;
     };
 
-    // We debounce this handler because the implementation of `AgGridModel.setSelectedRowNodeIds()`
-    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
-    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    /**
+     * Loads and filter changes autosize immediately - the visible dataset changed. Data updates
+     * instead pace off autosize's own cost, so a streaming grid isn't re-measuring every tick.
+     */
+    private noteManagedAutosizeTrigger() {
+        const {store} = this.model,
+            {filter} = store,
+            // Store stamps lastLoaded and lastUpdated together on load, then bumps lastUpdated
+            // alone per update - so equality means the latest change was a load. `setFilter` moves
+            // neither, hence the separate filter check.
+            isLoad = store.lastUpdated === store.lastLoaded;
+
+        if (!isLoad && filter === this.autosizedAsOfFilter) {
+            this.autosizeScheduler.scheduleAsync();
+            return;
+        }
+
+        this.autosizedAsOfFilter = filter;
+        this.autosizeScheduler.clearBackoff();
+        this.autosizeScheduler.runNow();
+    }
+
+    private async autosizeManagedAsync() {
+        const {model} = this,
+            columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
+        await model.autosizeAsync({columns});
+    }
+
+    // Debounced to coalesce the (up to two) events fired by `AgGridModel.setSelectedRowNodeIds()`
+    // bulk delta application, plus rapid user-driven selection changes.
     onSelectionChanged = debounce(() => {
         this.model.noteAgSelectionStateChanged();
         this.syncSelection();

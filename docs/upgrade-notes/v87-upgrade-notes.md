@@ -29,6 +29,8 @@ The most significant app-level impacts are:
 - **Cube / Store API adjustments** - `View.result.leafMap` access, leaf row ids, `cubeLeaves`,
   `StoreRecord.data` access patterns, and custom `Aggregator` contracts. Only apps using these
   specific APIs are affected - see Steps 6-7.
+- **Managed autosize now paces itself on data updates** - loads and filter changes still autosize
+  immediately. Affects only grids opted in to `autosizeOptions.mode: 'managed'` - see Step 8.
 - **hoist-core >= 40.5.0 now required** and enforced at startup - apps on an older core will fail
   fast rather than start.
 
@@ -430,7 +432,54 @@ grep -rn "updateData(" client-app/src/
 Only callers that read the returned change log's `remove` collection are affected - the many
 calls that ignore the return value need no change.
 
-### 8. A note on pnpm (no action required)
+### 8. Review grids using managed autosize
+
+Applies only to grids configured with `autosizeOptions: {mode: 'managed'}`, or to apps that set
+`GridModel.defaults.autosizeMode = 'managed'` globally. Grids using the default
+`'onSizingModeChange'` mode are unaffected.
+
+Managed autosize previously re-measured every column after **every** applied transaction. On a
+grid receiving streaming updates that meant a full re-measure of every record in every column on
+every tick - work the next tick immediately invalidated, and a visible source of column jitter.
+
+Managed autosize now distinguishes what changed:
+
+| Change | Behavior |
+| --- | --- |
+| `Store` load (`loadData` / `loadDataAsync`) | Autosizes immediately, as before |
+| Filter change | Autosizes immediately, as before |
+| Incremental update (`updateData`) | Paced - see below |
+
+Update-driven autosizes now pace off their own measured cost, exactly as `deferredSortFactor`
+already does for deferred re-sorts: an autosize costing E ms defers the next by `E * factor`
+(default 10), so a grid where autosize is cheap re-fits almost immediately, while an expensive one
+backs off - bounding autosize to roughly 10% of main-thread time regardless of grid size or
+hardware. Columns still settle to fit their content, just not on every single tick.
+
+No configuration change is required, and no API changed. Tune with the
+`deferredAutosizeFactor` experimental flag, or set it to 0 to restore the previous
+autosize-on-every-change behavior:
+
+```typescript
+new GridModel({
+    autosizeOptions: {mode: 'managed'},
+    experimental: {deferredAutosizeFactor: 0}
+});
+```
+
+Review if either applies:
+
+- **A grid whose values grow substantially wider mid-stream** may show the wider content clipped
+  for longer than before. Call `gridModel.autosizeAsync()` at an appropriate point, widen
+  `autosizeOptions.bufferPx`, or lower `deferredAutosizeFactor`.
+- **Tests or scripts that assert column widths right after an update** may now observe the
+  pre-update widths. Await the pacing interval, or call `gridModel.autosizeAsync()` explicitly.
+
+```bash
+grep -rn "autosizeMode\|mode: 'managed'" client-app/src/
+```
+
+### 9. A note on pnpm (no action required)
 
 `@xh/hoist-dev-utils` 14.x adds optional support for **pnpm** as the app package manager -
 **yarn classic and npm remain fully supported and require no change**. Moving an app to pnpm
@@ -458,6 +507,8 @@ After completing all steps:
 - [ ] **Grids with persisted column state** (ViewManager/dashboards): verify saved views load
   correctly and confirm the new hidden-by-default behavior for newly added columns is acceptable
 - [ ] **Cube-driven screens**: aggregations, drill-downs, and bucket rows render as before
+- [ ] **Grids using managed autosize**: columns fit on load and on filter change; streaming grids
+  settle to fit once updates pause
 - [ ] Grids render and function correctly (sorting, filtering, grouping, inline editing)
 - [ ] Forms validate and submit correctly
 

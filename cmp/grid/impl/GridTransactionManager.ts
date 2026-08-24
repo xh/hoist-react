@@ -4,14 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistBase, Some} from '@xh/hoist/core';
+import {HoistBase, managed, Some} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
-import {wait} from '@xh/hoist/promise';
-import {runWhenIdle} from '@xh/hoist/utils/async';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {DeferredWorkScheduler} from '@xh/hoist/cmp/grid/impl/DeferredWorkScheduler';
 import {get, isArray, isEmpty, isEqual, isFunction} from 'lodash';
-import type {GridModel} from '../GridModel';
+import {GridModel} from '../GridModel';
 
 /**
  * How much of ag-Grid's client-side model refresh a transaction requires:
@@ -22,10 +20,6 @@ import type {GridModel} from '../GridModel';
  *   'full'     - full refresh with a full sort.
  */
 type RefreshMode = 'suppress' | 'delta' | 'full';
-
-// Ceiling (ms) on the total deferral of a pending re-sort - pacing floor plus idle wait
-// combined - so row order can never go stale for longer than this.
-const MAX_DEFERRED_SORT = 10 * SECONDS;
 
 /**
  * Applies Store transactions to ag-Grid on behalf of Grid, minimizing the portion of ag-Grid's
@@ -49,14 +43,12 @@ const MAX_DEFERRED_SORT = 10 * SECONDS;
  */
 export class GridTransactionManager extends HoistBase {
     private model: GridModel;
-    private flushQueued = false;
+
+    @managed
+    private sortScheduler: DeferredWorkScheduler;
 
     // Rows updated by suppressed transactions since the last sort - null when order is current.
     private pendingSortIds: Set<StoreRecordId> = null;
-
-    // Earliest performance.now() at which the next flush may start - set from the last flush's
-    // measured cost and any configured interval floor.
-    private nextFlushAllowed = 0;
 
     // Cached provable sort paths - undefined = stale, null = sort not provably value-based.
     private _sortPaths: Array<Some<string>> | null | undefined;
@@ -64,6 +56,11 @@ export class GridTransactionManager extends HoistBase {
     constructor(model: GridModel) {
         super();
         this.model = model;
+        this.sortScheduler = new DeferredWorkScheduler({
+            runFn: () => this.flushPendingSort(),
+            maxDeferral: GridModel.MAX_DEFERRED_SORT,
+            factorFn: () => this.deferredSortFactor
+        });
 
         this.addReaction({
             track: () => [model.sortBy, model.columns],
@@ -196,30 +193,10 @@ export class GridTransactionManager extends HoistBase {
     private notePendingSort(updates: StoreRecord[]) {
         const ids = (this.pendingSortIds ??= new Set());
         updates.forEach(rec => ids.add(rec.id));
-        this.scheduleFlushAsync();
-    }
-
-    // Decides *when* the pending flush runs. Two stages: a floor (see nextFlushAllowed), then
-    // idle placement - with MAX_DEFERRED_SORT bounding the two combined, so a busy main thread
-    // cannot defer the flush indefinitely.
-    private async scheduleFlushAsync() {
-        if (this.flushQueued || !this.pendingSortIds) return;
-        this.flushQueued = true;
-
-        const deadline = performance.now() + MAX_DEFERRED_SORT,
-            floor = this.nextFlushAllowed - performance.now();
-        if (floor > 0) await wait(floor);
-        runWhenIdle(
-            () => {
-                this.flushQueued = false;
-                this.flushPendingSort();
-            },
-            {timeout: Math.max(1, deadline - performance.now())}
-        );
+        this.sortScheduler.scheduleAsync();
     }
 
     private flushPendingSort() {
-        if (this.isDestroyed) return;
         const {model, pendingSortIds} = this,
             latestRs = model._syncedRs;
         // Not ready - leave ids pending; the next transaction will run 'full' and resolve them.
@@ -246,11 +223,5 @@ export class GridTransactionManager extends HoistBase {
             agApi.refreshClientSideRowModel('sort');
             model.diagnostics.noteSortFlush('full', update.length, latestRs.count, start);
         }
-
-        this.nextFlushAllowed = performance.now() + this.backoffFor(performance.now() - start);
-    }
-
-    private backoffFor(elapsed: number): number {
-        return Math.min(elapsed * this.deferredSortFactor, MAX_DEFERRED_SORT);
     }
 }

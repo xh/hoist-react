@@ -64,16 +64,22 @@ const inspectorView = hoistCmp.factory<InspectorModel>({
             compactHeader: true,
             headerItems: [
                 button({
+                    omit: !isWindowed,
+                    icon: Icon.arrowDownToSquare(),
+                    text: 'Dock',
+                    tooltip: 'Return Inspector to the main app window',
+                    onClick: () => model.dock()
+                }),
+                button({
+                    omit: isWindowed,
                     icon: Icon.openExternal(),
-                    tooltip: isWindowed
-                        ? 'Return Inspector to the main app window'
-                        : 'Open Inspector in a separate window',
-                    intent: isWindowed ? 'primary' : null,
-                    onClick: () => (isWindowed ? model.dock() : model.openWindow())
+                    text: 'Pop-out',
+                    tooltip: 'Open Inspector in a separate window',
+                    onClick: () => model.openWindow()
                 }),
                 button({
                     icon: Icon.x(),
-                    text: 'Close Inspector',
+                    text: 'Close',
                     onClick: () => XH.inspectorService.deactivate()
                 }),
                 button({

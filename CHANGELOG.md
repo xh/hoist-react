@@ -89,6 +89,9 @@ and performance optimizations, grouped by topic below.
   requirement: grid reads after a data change were already subject to a minimal async debounce
   and should already route through `GridModel.whenReadyAsync()`, which now provides a hard
   guarantee that all store data has been applied to ag-Grid.
+* Grids now pace update-driven re-sorts and managed autosizes off their own measured cost, instead
+  of re-running them every tick. Managed autosize still runs immediately on a `Store` load or filter
+  change. Tune via the `deferredSortFactor` and `deferredAutosizeFactor` experimental flags.
 
 ### 🎁 New Features
 
@@ -119,7 +122,9 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   raw object yields an unchanged digest. This applies to both `loadData()` and
   `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
   available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
-  automatically.
+  automatically. Note `reuseRecords: true` is now shorthand for the identity digest `raw => raw`,
+  and like any digest miss, a new raw object is treated as changed even if value-equal - such
+  sources should rely on the default value-based reuse instead.
 * Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping, and
   filtering. Aggregate rows now reuse even when their children change - re-deriving in place and
   republishing only values that actually changed - so e.g. dropping a trailing dimension republishes
@@ -282,6 +287,9 @@ columns.
 * Fixed an `O(n²)` option merge in async `Select` (v86.3.0 regression) that could block the main
   thread for seconds on large `queryFn` results. `Select` no longer accumulates and de-dupes the
   full query history.
+* Fixed mobile app bundles pulling in all of Blueprint's JS and global CSS via the shared
+  `utils/impl` barrel. The internal `parseMenuItems` util now lives at
+  `@xh/hoist/desktop/cmp/menu/impl/MenuItems` - update any app imports of this `@internal` API.
 * Fixed `GridFindField` on a tree grid permanently reordering the child arrays returned by
   `Store.getChildrenById()` - its sort now leaves Store state untouched.
 * Fixed grid export ordering rows without regard to `GridModel.groupBy`, so exports of a grouped
@@ -313,6 +321,10 @@ columns.
 * Improved sort performance for grid export and `GridFindField`. Both now share a single
   decorate-sort-undecorate implementation that resolves each record's value, comparator, and
   ag-Grid row node once per sort rather than on every comparison.
+* `Store`s with no validation `Rules` on any `Field` now skip record validation entirely, no longer
+  creating a `RecordValidator` per uncommitted record. Note that `StoreRecord.validationState` now
+  reports `Valid` (rather than `Unknown`) for records in such a Store.
+*
 
 ### ⚙️ Typescript API Adjustments
 

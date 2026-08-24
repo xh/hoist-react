@@ -49,20 +49,5 @@
       --rdp-accent-background-color: var(--xh-bg-alt);
       --rdp-today-color: var(--xh-accent-color);
     }
-
-    // blueprint-datetime.css - currently pulled into all bundles via kit/blueprint - embeds
-    // react-day-picker v8's stylesheet, whose class names partially collide with the v9 markup
-    // rendered here. Reset the clashing v8 rules, most critically the day cells, which v8 styles
-    // as flex-box buttons but v9 renders as table cells.
-    .rdp-day,
-    .rdp-weeknumber {
-      display: table-cell;
-      width: var(--rdp-day-width);
-      max-width: none;
-      height: var(--rdp-day-height);
-      overflow: visible;
-      border: none;
-      border-radius: 0;
-    }
   }
 }

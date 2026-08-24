@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import equal from 'fast-deep-equal';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {clamp, isEmpty, isNil, maxBy} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
@@ -397,7 +396,7 @@ export class RecordSet {
     }
 
     withNewRecords(recordMap: StoreRecordMap): RecordSet {
-        // Reuse existing StoreRecord object instances where possible.
+        // Store reuses/rescues unchanged records pre-creation any new instance is genuinely changed.
         // If reload changed nothing - preserve instance identity outright.
         // Be sure to finalize any new records that are accepted.
         const changed: StoreRecord[] = []; // accepted new instances - updates and adds
@@ -407,8 +406,7 @@ export class RecordSet {
             depthLowered = false;
         recordMap.forEach((newRec, id) => {
             const currRec = this.getById(id);
-            if (currRec && this.areRecordsEqual(currRec, newRec)) {
-                recordMap.set(id, currRec);
+            if (currRec === newRec) {
                 if (currRec.parentId == null) rootCount++;
             } else {
                 newRec.finalize();
@@ -657,39 +655,6 @@ export class RecordSet {
     private patchRatio(): number {
         const ratio = this.store.experimental.maxPatchRatio;
         return ratio == null ? DEFAULT_MAX_PATCH_RATIO : clamp(ratio, 0, MAX_PATCH_RATIO);
-    }
-
-    private areRecordsEqual(r1: StoreRecord, r2: StoreRecord): boolean {
-        if (r1 === r2) return true;
-
-        const {store} = this;
-
-        // Version check: equal digests certify equal data - compare values directly only for
-        // digest-less records. In-place data mutations bump digests while leaving data equal.
-        if (r1.digest !== r2.digest) return false;
-        if (r1.digest == null) {
-            const d1 = r1.data,
-                d2 = r2.data;
-            // Projection data carries arbitrary provider keys - compare declared fields only.
-            const dataEqual = store.projectionOnly
-                ? d1 === d2 || store.fields.every(({name}) => equal(d1[name], d2[name]))
-                : equal(d1, d2);
-            if (!dataEqual) return false;
-        }
-
-        return this.positionUnchanged(r1, r2);
-    }
-
-    // True if two same-id records from successive loads occupy the same tree position. Compares
-    // the records' own (constructor-fixed) treePaths - `StoreRecord.parent` resolves against the
-    // pre-swap RecordSet here and cannot be trusted. Mirrors Store.positionUnchanged.
-    private positionUnchanged(r1: StoreRecord, r2: StoreRecord): boolean {
-        return (
-            this.store.idEncodesTreePath ||
-            // Root records share an id here, so their paths are equal by construction.
-            (r1.parentId == null && r2.parentId == null) ||
-            equal(r1.treePath, r2.treePath)
-        );
     }
 
     private computeChildrenMap(): ChildRecordMap {
