@@ -479,6 +479,17 @@ export interface GridModelDefaults {
  * @mcpHint model backing all grid components
  */
 export class GridModel extends HoistModel {
+    /**
+     * Ceilings (ms) on how long deferred grid work may be held back, calibrated to what going
+     * stale costs the user: a deferred sort leaves row order wrong, while a deferred autosize
+     * only leaves columns a little off. The autosize ceiling is rarely binding - reached only
+     * above a 3s autosize. See `DeferredWorkScheduler`.
+     * @internal
+     */
+    static readonly MAX_DEFERRED_SORT = 10 * SECONDS;
+    /** @internal */
+    static readonly MAX_DEFERRED_AUTOSIZE = 30 * SECONDS;
+
     /** App-level defaults for GridModel. Instance config takes precedence. */
     static defaults: GridModelDefaults = {
         autosizeMode: 'onSizingModeChange',
