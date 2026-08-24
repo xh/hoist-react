@@ -937,8 +937,8 @@ const store = new Store({
 });
 ```
 
-Digests must be primitives, compared via `===`. A null digest never matches. Build composite keys as
-strings.
+Digests are compared via `===` - primitives, or an object identity as with `reuseRecords: true`. A
+null digest never matches. Build composite keys as strings.
 
 This config applies to `updateData()` as well, where Store drops an unchanged-digest update as a
 no-op and so preserves any uncommitted local modifications on that record. An update with a changed
@@ -981,9 +981,10 @@ This mode carries real constraints:
 
 - Raw data must already match what the Store's Fields would parse. Store applies neither `type`,
   `parseVal`, nor `defaultValue`.
-- Store never modifies or freezes these objects, whatever the `freezeData` setting. A provider may
-  mutate rows in place, but must then publish via `updateData()`. `loadData()` skips
-  reference-equal objects as unchanged.
+- Store never modifies or freezes these objects, whatever the `freezeData` setting, leaving the
+  provider free to mutate rows in place. Rows re-supplied by reference are therefore always treated
+  as changed - no value comparison can detect an in-place mutation. A provider that retains and
+  mutates its own rows should supply a `reuseRecords` digest to restore reuse.
 - `data` carries every key on the raw object, not only declared Fields. Only declared Field values
   take part in the equality checks that detect unchanged records.
 - The local modification APIs (`addRecords`, `modifyRecords`, `removeRecords`, `revertRecords`, and

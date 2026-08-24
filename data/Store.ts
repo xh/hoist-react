@@ -206,15 +206,17 @@ export interface StoreConfig {
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
      * Store's Fields would parse - `type`, `parseVal`, and `defaultValue` are not applied. The
-     * Store never modifies or freezes these objects (regardless of `freezeData`); the provider
-     * may mutate rows in place but must then publish via `updateData()`, as `loadData()` would
-     * skip reference-equal objects as unchanged.
+     * Store never modifies or freezes these objects (regardless of `freezeData`), leaving the
+     * provider free to mutate rows in place. Rows re-supplied by reference are therefore always
+     * treated as changed - no value comparison can detect an in-place mutation. A provider that
+     * retains and mutates its own rows should supply a digest via `reuseRecords` or
+     * `setDigestFn()`, the only signal that restores record reuse for such rows.
      *
      * `data` will carry every key on the raw object, not just declared Fields - but only declared
-     * Field values participate in the equality checks `loadData()` uses to detect unchanged
-     * records for reuse. As a read-only projection, local modification APIs (`addRecords`,
-     * `modifyRecords`, `removeRecords`, `revertRecords`, and `revert`) throw - data updates flow
-     * in via `loadData()`/`updateData()`.
+     * Field values participate in the equality checks `loadData()`/`updateData()` use to detect
+     * unchanged records for reuse. As a read-only projection, local modification APIs
+     * (`addRecords`, `modifyRecords`, `removeRecords`, `revertRecords`, and `revert`) throw -
+     * data updates flow in via `loadData()`/`updateData()`.
      * Not compatible with `processRawData`.
      */
     projectionOnly?: boolean;
@@ -1393,9 +1395,17 @@ export class Store
             cached = null;
         }
 
-        // 2) Projections can (re)use raw data with no reparsing.
+        // 2) Projections adopt raw data with no reparsing. Value identical rows
+        // can be re-used (instance identical reuse requires a digest above)
         if (this.projectionOnly) {
-            if (cached && this.rawMatchesData(raw, cached.data)) return cached;
+            const cachedData = cached?.data;
+            if (
+                cachedData &&
+                raw !== cachedData &&
+                this.fields.every(({name}) => equal(raw[name], cachedData[name]))
+            ) {
+                return cached;
+            }
             return new StoreRecord({
                 id,
                 store: this,
@@ -1441,10 +1451,6 @@ export class Store
         if (!committed || committed.empty) return null;
         const cached = committed.getById(id);
         return cached && this.positionUnchanged(cached.parent, parent) ? cached : null;
-    }
-
-    private rawMatchesData(raw: PlainObject, data: PlainObject): boolean {
-        return raw === data || this.fields.every(({name}) => equal(raw[name], data[name]));
     }
 
     // True if a record cached under `cachedParent` sits at the same tree position under `parent`.
