@@ -282,6 +282,10 @@ columns.
 * Fixed an `O(n²)` option merge in async `Select` (v86.3.0 regression) that could block the main
   thread for seconds on large `queryFn` results. `Select` no longer accumulates and de-dupes the
   full query history.
+* Fixed `GridFindField` on a tree grid permanently reordering the child arrays returned by
+  `Store.getChildrenById()` - its sort now leaves Store state untouched.
+* Fixed grid export ordering rows without regard to `GridModel.groupBy`, so exports of a grouped
+  grid no longer diverge from the rendered row order.
 
 ### ⚙️ Technical
 
@@ -306,6 +310,9 @@ columns.
     * Developers who build against a local hoist-react checkout (`inlineHoist`) now need pnpm to
       install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`). The app itself
       can remain on yarn or npm. Update any `startWithHoist`-style app scripts accordingly.
+* Improved sort performance for grid export and `GridFindField`. Both now share a single
+  decorate-sort-undecorate implementation that resolves each record's value, comparator, and
+  ag-Grid row node once per sort rather than on every comparison.
 
 ### ⚙️ Typescript API Adjustments
 

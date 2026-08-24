@@ -30,6 +30,7 @@ import {
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
 import {GridModel, Column} from '@xh/hoist/cmp/grid';
+import {getSortedRecords} from '@xh/hoist/cmp/grid/impl/RecordSortUtils';
 import {StoreRecord} from '@xh/hoist/data';
 
 /**
@@ -85,7 +86,7 @@ export class GridExportService extends HoistService {
                   )
                 : []),
 
-            ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
+            ...this.getRecordRows(gridModel, exportColumns, type)
         ];
 
         // Show separate 'started' toasts for larger (i.e. slower) exports.
@@ -343,46 +344,11 @@ export class GridExportService extends HoistService {
         return {data: headers, depth: 0};
     }
 
-    private getRecordRowsRecursive(gridModel, records, columns, type, depth) {
-        const {sortBy, treeMode, agApi} = gridModel,
-            ret = [];
-
-        records = [...records];
-
-        // Sort using comparator functions we pass to ag-Grid - imitating rendered data
-        [...sortBy].reverse().forEach(it => {
-            const column = gridModel.getColumn(it.colId);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                compFn = column.getAgSpec().comparator.bind(column),
-                direction = it.sort === 'desc' ? -1 : 1;
-
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, field, column, gridModel}),
-                    valueB = getValueFn({record: b, field, column, gridModel}),
-                    agNodeA = agApi?.getRowNode(a.agId),
-                    agNodeB = agApi?.getRowNode(b.agId);
-
-                return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
-            });
-        });
-
-        records.forEach(record => {
-            ret.push(this.getRecordRow(gridModel, record, columns, type, depth));
-            if (treeMode && record.children.length) {
-                const childRows = this.getRecordRowsRecursive(
-                    gridModel,
-                    record.children,
-                    columns,
-                    type,
-                    depth + 1
-                );
-                childRows.forEach(r => ret.push(r));
-            }
-        });
-
-        return ret;
+    // Rows in rendered order - roots at depth 1, below the depth 0 header row.
+    private getRecordRows(gridModel, columns, type) {
+        return getSortedRecords(gridModel).map(record =>
+            this.getRecordRow(gridModel, record, columns, type, record.depth + 1)
+        );
     }
 
     private getRecordRow(gridModel, record, columns, type, depth) {

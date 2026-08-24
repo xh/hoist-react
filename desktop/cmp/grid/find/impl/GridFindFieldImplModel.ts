@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {getSortedRecords} from '@xh/hoist/cmp/grid/impl/RecordSortUtils';
 import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
@@ -13,7 +14,6 @@ import {action, bindable, comparer, computed, makeObservable, observable} from '
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
-    compact,
     filter,
     flatMap,
     get,
@@ -121,7 +121,8 @@ export class GridFindFieldImplModel extends HoistModel {
                 run: () => {
                     this._records = null;
                     if (this.hasQuery) this.updateResults();
-                }
+                },
+                debounce: this.queryBuffer
             },
             {
                 track: () => [this.includeFields, this.excludeFields, this.matchMode],
@@ -186,83 +187,7 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     private getRecords(): StoreRecord[] {
-        if (!this._records) {
-            const records = this.sortRecordsRecursive([...this.gridModel.store.rootRecords]);
-            this._records = this.sortRecordsByGroupBy(records);
-        }
-        return this._records;
-    }
-
-    // Sort records with GridModel's sortBy(s) using the Column's comparator. Sorters are
-    // resolved once up front, and values/nodes resolved once per record (decorate-sort-
-    // undecorate) rather than per comparison.
-    private sortRecordsRecursive(records: StoreRecord[]): StoreRecord[] {
-        const {gridModel} = this,
-            {sortBy, treeMode, agApi, store} = gridModel,
-            sorters = compact(
-                [...sortBy].reverse().map(it => {
-                    const column = gridModel.getColumn(it.colId);
-                    if (!column) return null;
-                    const {field, getValueFn} = column;
-                    return {
-                        getValueFn,
-                        compFn: (column.getAgSpec().comparator as Function).bind(column),
-                        direction: it.sort === 'desc' ? -1 : 1,
-                        ctx: {field, column, gridModel, store, agParams: null}
-                    };
-                })
-            );
-
-        const sortRecs = (records: StoreRecord[]): StoreRecord[] => {
-            const ret: StoreRecord[] = [];
-
-            sorters.forEach(({getValueFn, compFn, direction, ctx}) => {
-                const decorated = records.map(record => ({
-                    record,
-                    value: getValueFn({record, ...ctx}),
-                    node: agApi?.getRowNode(record.agId)
-                }));
-                decorated.sort((a, b) => compFn(a.value, b.value, a.node, b.node) * direction);
-                records = decorated.map(it => it.record);
-            });
-
-            records.forEach(rec => {
-                ret.push(rec);
-                if (treeMode && !isEmpty(rec.children)) {
-                    ret.push(...sortRecs(rec.children));
-                }
-            });
-
-            return ret;
-        };
-
-        return sortRecs(records);
-    }
-
-    // Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
-    private sortRecordsByGroupBy(records: StoreRecord[]) {
-        const {gridModel} = this,
-            {agApi, groupBy, groupSortFn, store} = gridModel;
-
-        [...groupBy].reverse().forEach(groupField => {
-            const column = gridModel.getColumn(groupField);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                ctx = {field, column, gridModel, store, agParams: null},
-                decorated = records.map(record => ({
-                    record,
-                    value: getValueFn({record, ...ctx}),
-                    node: agApi?.getRowNode(record.agId)
-                }));
-
-            decorated.sort((a, b) =>
-                groupSortFn(a.value, b.value, field, {gridModel, nodeA: a.node, nodeB: b.node})
-            );
-            records = decorated.map(it => it.record);
-        });
-
-        return records;
+        return (this._records ??= getSortedRecords(this.gridModel));
     }
 
     private getActiveFields(): string[] {
