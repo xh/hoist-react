@@ -191,7 +191,6 @@ export class GridLocalModel extends HoistModel {
     @managed private transactionMgr: GridTransactionManager;
 
     // State for the managed-autosize trigger - see `noteManagedAutosizeTrigger()`.
-    private autosizedAsOfLoad: number = null;
     private autosizedAsOfFilter: Filter = null;
     private nextAutosizeAllowed = 0;
     private autosizeQueued = false;
@@ -793,13 +792,18 @@ export class GridLocalModel extends HoistModel {
      * next tick immediately obsoletes.
      */
     private noteManagedAutosizeTrigger() {
-        const {lastLoaded, filter} = this.model.store;
-        if (lastLoaded === this.autosizedAsOfLoad && filter === this.autosizedAsOfFilter) {
+        const {store} = this.model,
+            {filter} = store,
+            // Store stamps lastLoaded and lastUpdated together on load, then bumps lastUpdated
+            // alone per update - so equality means the latest change was a load. `setFilter` moves
+            // neither, hence the separate filter check.
+            isLoad = store.lastUpdated === store.lastLoaded;
+
+        if (!isLoad && filter === this.autosizedAsOfFilter) {
             this.scheduleManagedAutosizeAsync();
             return;
         }
 
-        this.autosizedAsOfLoad = lastLoaded;
         this.autosizedAsOfFilter = filter;
         this.nextAutosizeAllowed = 0;
         this.autosizeManagedAsync();
