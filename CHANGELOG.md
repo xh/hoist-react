@@ -293,6 +293,9 @@ columns.
 
 ### ⚙️ Technical
 
+* Removed the deprecated webpack-only `~` prefix from bare-module SCSS imports and the `inter-ui`
+  font-path URL in framework styles. Modern sass-loader and css-loader resolve the same package
+  paths without it, and the prefix breaks under other bundlers.
 * Replaced `GridExperimentalFlags.deltaSort` with `deltaSortRatio` - Hoist now manages ag-Grid
   delta sorting automatically, using it for re-sorts touching fewer than this percentage of rows
   (default 50). See the Grid transaction handling entry under New Features.
