@@ -158,7 +158,7 @@ export class ActivityDetailModel extends HoistModel {
         return new GridModel({
             persistWith: persistWith ? {...persistWith, path: `${persistWith.path}.grid`} : null,
             sortBy: 'dateCreated|desc',
-            popupColChooserModel: {height: 450},
+            colChooserModel: {height: 450},
             enableExport: true,
             filterModel: false,
             exportOptions: {

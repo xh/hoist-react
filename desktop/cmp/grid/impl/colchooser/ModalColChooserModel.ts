@@ -4,20 +4,22 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopupColChooserConfig} from '@xh/hoist/cmp/grid';
+import {ColChooserConfig, ColChooserMode} from '@xh/hoist/cmp/grid';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {ColChooserModel} from './ColChooserModel';
 
 /**
- * Column chooser model for the popup presentations - a modal dialog (opened via {@link open}) and a
+ * Column chooser model for the modal presentation - a dialog (opened via {@link open}) and a
  * popover (opened via {@link openPopover}). The two are mutually exclusive overlays.
  * @internal
  */
-export class PopupColChooserModel extends ColChooserModel {
+export class ModalColChooserModel extends ColChooserModel {
+    override readonly mode: ColChooserMode = 'modal';
+
     @observable override isOpen = false; // dialog
     @observable isPopoverOpen = false;
 
-    constructor(config: PopupColChooserConfig) {
+    constructor(config: ColChooserConfig) {
         super(config);
         makeObservable(this);
     }

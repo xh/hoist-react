@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopupColChooserConfig, ColumnState, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
+import {
+    ColChooserConfig,
+    ColChooserMode,
+    ColumnState,
+    GridModel,
+    IColChooserModel
+} from '@xh/hoist/cmp/grid';
 import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
@@ -36,6 +42,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     // Immutable Properties
     //-----------------------
     readonly gridModel: GridModel;
+    abstract readonly mode: ColChooserMode;
     readonly commitOnChange: boolean;
     readonly showRestoreDefaults: boolean;
     readonly autosizeOnCommit: boolean;
@@ -194,7 +201,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         width = 300,
         height = 600,
         filterMatchMode = 'startWord'
-    }: PopupColChooserConfig) {
+    }: ColChooserConfig) {
         super();
         makeObservable(this);
 

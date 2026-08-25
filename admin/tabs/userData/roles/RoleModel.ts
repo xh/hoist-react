@@ -347,7 +347,7 @@ export class RoleModel extends HoistModel {
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             selModel: 'multiple',
             emptyText: 'No roles found.',
-            popupColChooserModel: true,
+            colChooserModel: true,
             sortBy: 'name',
             enableExport: true,
             exportOptions: {filename: 'roles'},

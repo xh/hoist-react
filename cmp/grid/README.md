@@ -24,13 +24,12 @@ selection, inline editing, and export.
 
 ```
 GridModel (orchestrator)
-├── store: Store                      # Data source (from /data/)
-├── selModel: StoreSelectionModel     # Selection state
-├── columns: Column[]                 # Column definitions
-├── filterModel: GridFilterModel      # Column-level filtering (desktop only)
-├── popupColChooserModel: HoistModel  # Column visibility UI - dialog/popover
-├── dockedColChooserModel: HoistModel # Column visibility UI - docked panel (desktop only)
-└── agGridModel: AgGridModel          # ag-Grid wrapper (from /cmp/ag-grid/)
+├── store: Store                  # Data source (from /data/)
+├── selModel: StoreSelectionModel # Selection state
+├── columns: Column[]             # Column definitions
+├── filterModel: GridFilterModel  # Column-level filtering (desktop only)
+├── colChooserModel: HoistModel   # Column visibility UI (modal or docked)
+└── agGridModel: AgGridModel      # ag-Grid wrapper (from /cmp/ag-grid/)
 ```
 
 ### Key Classes

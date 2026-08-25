@@ -214,36 +214,7 @@ surprised by the change.
 
 App-level adjustments to check:
 
-**a. `colChooserModel` is now `popupColChooserModel`.** The config and the `GridModel` property
-have both been renamed to distinguish the popup chooser from the new docked presentation (see (e)
-below). `GridModel.showColChooser()` is now `showPopupColChooser()`, and the `colChooser`
-context-menu token is now `popupColChooser`.
-
-Before:
-
-```typescript
-new GridModel({
-    colChooserModel: true,
-    contextMenu: ['colChooser', 'autosizeColumns']
-});
-```
-
-After:
-
-```typescript
-new GridModel({
-    popupColChooserModel: true,
-    contextMenu: ['popupColChooser', 'autosizeColumns']
-});
-```
-
-**Find affected models:**
-
-```bash
-grep -rn "colChooserModel\|showColChooser\|'colChooser'" client-app/src/
-```
-
-**b. `Column.chooserGroup` now requires the Column Library.** Grouping applies only within the
+**a. `Column.chooserGroup` now requires the Column Library.** Grouping applies only within the
 new, opt-in Column Library. If your app sets `chooserGroup` on columns and you want to keep a
 grouped presentation of hidden columns, enable the library:
 
@@ -251,7 +222,7 @@ Before:
 
 ```typescript
 new GridModel({
-    popupColChooserModel: true,
+    colChooserModel: true,
     columns: [...] // columns with chooserGroup
 });
 ```
@@ -260,7 +231,7 @@ After:
 
 ```typescript
 new GridModel({
-    popupColChooserModel: {columnLibrary: true},
+    colChooserModel: {columnLibrary: true},
     columns: [...] // chooserGroup now groups the Column Library
 });
 ```
@@ -271,7 +242,7 @@ new GridModel({
 grep -rn "chooserGroup" client-app/src/
 ```
 
-**c. Custom chooser styles.** The chooser no longer renders on `LeftRightChooser` - it renders
+**b. Custom chooser styles.** The chooser no longer renders on `LeftRightChooser` - it renders
 its own grids and CSS classes in a different layout. Update or remove styles that targeted the
 old DOM:
 
@@ -279,7 +250,7 @@ old DOM:
 grep -rn "xh-col-chooser\|xh-lr-chooser" client-app/src/
 ```
 
-**d. New columns are now hidden by default in user-curated views.** When column state persists
+**c. New columns are now hidden by default in user-curated views.** When column state persists
 to a `ViewManagerModel` or `DashViewModel`, columns newly added in an app release start hidden,
 so a release does not push new columns into views users have curated and named. The columns
 remain available in the chooser. To restore the previous behavior:
@@ -290,11 +261,12 @@ new GridModel({
 });
 ```
 
-**e. New capabilities to adopt (optional).** The chooser also gains a docked side-panel
-presentation (`GridConfig.dockedColChooserModel` + `GridModel.showDockedColChooser()`, the
-`dockedColChooser` context-menu token, or `colChooserButton({target: 'docked'})`), per-column
-`chooserDescription` tooltips, and `ColChooserConfig` options like `filterMatchMode` and
-`autosizeOnCommit`. See the configs for details - no action required.
+**d. New capabilities to adopt (optional).** The chooser also gains a docked side-panel
+presentation - set `colChooserModel: 'docked'` (or `{mode: 'docked', ...}`) and open it as usual via
+`GridModel.showColChooser()`, the `colChooser` context-menu token, or a `colChooserButton`. A grid
+still has exactly one chooser, and `mode` defaults to `'modal'`, so existing configs are unchanged.
+Also new: per-column `chooserDescription` tooltips, and `ColChooserConfig` options like
+`filterMatchMode` and `autosizeOnCommit`. See the configs for details - no action required.
 
 ### 6. Update Cube `View` usages
 

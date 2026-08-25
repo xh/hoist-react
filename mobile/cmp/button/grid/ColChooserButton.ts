@@ -20,7 +20,7 @@ export interface ColChooserButtonProps extends ButtonProps {
  * A convenience button to trigger the display of a ColChooser for user selection, discovery and
  * reordering of available Grid columns.
  *
- * Requires {@link GridConfig.popupColChooserModel} to be configured on the bound GridModel.
+ * Requires {@link GridConfig.colChooserModel} to be configured on the bound GridModel.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChooserButtonProps>({
     displayName: 'ColChooserButton',
@@ -38,7 +38,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                     ColChooserButton
                 );
                 disabled = true;
-            } else if (!gridModel.popupColChooserModel) {
+            } else if (!gridModel.colChooserModel) {
                 logError(
                     'ColChooser not enabled on bound GridModel - button will be disabled.',
                     ColChooserButton
@@ -47,7 +47,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             }
         }
 
-        onClick = onClick ?? (() => gridModel.showPopupColChooser());
+        onClick = onClick ?? (() => gridModel.showColChooser());
         return button({
             icon: withDefault(icon, Icon.gridPanel()),
             disabled,

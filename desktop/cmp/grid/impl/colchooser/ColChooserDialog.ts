@@ -7,14 +7,14 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {PopupColChooserModel} from './PopupColChooserModel';
+import {ModalColChooserModel} from './ModalColChooserModel';
 import {colChooser} from './ColChooser';
 
 /**
  * @internal
  */
 export const colChooserDialog = hoistCmp.factory({
-    model: uses(PopupColChooserModel),
+    model: uses(ModalColChooserModel),
     className: 'xh-col-chooser-dialog',
 
     render({model, className}) {

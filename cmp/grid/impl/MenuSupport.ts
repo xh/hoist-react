@@ -133,24 +133,25 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                     }
                 }
             });
-        case 'popupColChooser':
+        case 'colChooser':
             return new RecordAction({
-                text: 'Columns...',
-                icon: Icon.gridPanel(),
-                hidden: !gridModel?.popupColChooserModel,
-                actionFn: () => gridModel.popupColChooserModel?.open()
-            });
-        case 'dockedColChooser':
-            return new RecordAction({
-                hidden: !gridModel?.dockedColChooserModel,
+                hidden: !gridModel?.colChooserModel,
                 displayFn: () => {
-                    const isOpen = gridModel.dockedColChooserModel?.isOpen;
+                    const chooser = gridModel?.colChooserModel;
+                    if (chooser?.mode !== 'docked') {
+                        return {icon: Icon.gridPanel(), text: 'Columns...'};
+                    }
+                    // The dock is toggled in place, so reflect its current state.
+                    const {isOpen} = chooser;
                     return {
                         icon: isOpen ? Icon.cross() : Icon.gridPanel(),
                         text: `${isOpen ? 'Close' : 'Open'} Columns Panel`
                     };
                 },
-                actionFn: () => gridModel.dockedColChooserModel?.toggle()
+                actionFn: () => {
+                    const chooser = gridModel?.colChooserModel;
+                    chooser?.mode === 'docked' ? chooser.toggle() : chooser?.open();
+                }
             });
         case 'expandCollapseAll': // For backward compatibility
         case 'expandCollapse':

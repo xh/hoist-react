@@ -11,8 +11,8 @@ import {colChooser} from './ColChooser';
 
 /**
  * Docked, non-modal side-panel column chooser - a resizable, header-less dock rendered alongside the
- * grid while open. Desktop only; Grid mounts this in an `hframe` when a {@link DockedColChooserModel} is
- * configured.
+ * grid while open. Desktop only; Grid mounts this in an `hframe` when its chooser is configured
+ * with `mode: 'docked'`.
  * @internal
  */
 export const dockedColChooser = hoistCmp.factory({

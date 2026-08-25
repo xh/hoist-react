@@ -19,8 +19,8 @@ export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | 
  * Hoist tokens, all of which require a GridModel:
  *          `autosizeColumns` - autosize columns to fit their contents.
  *          `copyCell` - copy cell value to clipboard.
- *          `dockedColChooser` - open the docked, non-modal side-panel column chooser. Desktop only.
- *          `popupColChooser` - display the popup (dialog or popover) column chooser for a grid.
+ *          `colChooser` - show the grid's column chooser, in whichever presentation it is
+ *              configured for. Toggles the dock when `mode: 'docked'`.
  *          `expandCollapse` - expand/collapse parent rows on grouped or tree grid.
  *          `export` - export grid data to excel via Hoist's server-side export capabilities.
  *          `exportExcel` - alias for `export`.
@@ -33,8 +33,7 @@ export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | 
 export type GridContextMenuToken =
     | 'autosizeColumns'
     | 'copyCell'
-    | 'dockedColChooser'
-    | 'popupColChooser'
+    | 'colChooser'
     | 'expandCollapseAll'
     | 'expandCollapse'
     | 'export'

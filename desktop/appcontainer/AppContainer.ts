@@ -17,7 +17,7 @@ import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {dockedColChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/DockedColChooser';
 import {DockedColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/DockedColChooserModel';
-import {PopupColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/PopupColChooserModel';
+import {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
@@ -60,7 +60,7 @@ installDesktopImpls({
     columnHeaderFilter,
     gridFilterDialog,
     DockedColChooserModel,
-    PopupColChooserModel,
+    ModalColChooserModel,
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,

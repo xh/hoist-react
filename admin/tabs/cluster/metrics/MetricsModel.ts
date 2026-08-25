@@ -54,7 +54,7 @@ export class MetricsModel extends BaseAdminTabModel {
 
         this.gridModel = new GridModel({
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
-            popupColChooserModel: true,
+            colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('metrics'), columns: 'ALL'},
             persistWith: {...this.persistWith, path: 'mainGrid'},

@@ -15,7 +15,7 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let PopupColChooserModel = null;
+export let ModalColChooserModel = null;
 export let DockedColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let ModalSupportModel = null;
@@ -40,7 +40,7 @@ export let cardHeaderImpl = null;
  * Not for Application use.
  */
 export function installDesktopImpls(impls) {
-    PopupColChooserModel = impls.PopupColChooserModel;
+    ModalColChooserModel = impls.ModalColChooserModel;
     DockedColChooserModel = impls.DockedColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     ModalSupportModel = impls.ModalSupportModel;

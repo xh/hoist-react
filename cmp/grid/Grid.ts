@@ -109,8 +109,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 treeMode,
                 treeStyle,
                 highlightRowOnClick,
-                popupColChooserModel,
-                dockedColChooserModel,
+                colChooserModel,
                 filterModel,
                 enableFullWidthScroll
             } = model,
@@ -147,20 +146,23 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             ref: useComposedRefs(impl.viewRef, model.viewRef, ref)
         });
 
-        // Safe to use the desktop component unconditionally - GridModel never creates this model
-        // on mobile.
-        let content = gridContainer;
-        if (dockedColChooserModel) {
-            const chooser = desktopDockedColChooser({model: dockedColChooserModel}),
-                {side} = dockedColChooserModel as DockedColChooserModel;
+        // Safe to use the desktop component unconditionally for the docked chooser - GridModel
+        // never creates that model on mobile.
+        let content = gridContainer,
+            modalChooser = null;
+        if (colChooserModel?.mode === 'docked') {
+            const chooser = desktopDockedColChooser({model: colChooserModel}),
+                {side} = colChooserModel as DockedColChooserModel;
 
             content =
                 side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser);
+        } else if (colChooserModel) {
+            modalChooser = platformColChooser({model: colChooserModel});
         }
 
         return fragment(
             content,
-            popupColChooserModel ? platformColChooser({model: popupColChooserModel}) : null,
+            modalChooser,
             filterModel ? gridFilterDialog({model: filterModel}) : null
         );
     }

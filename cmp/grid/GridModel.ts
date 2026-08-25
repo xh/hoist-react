@@ -51,7 +51,7 @@ import {
 } from '@xh/hoist/data';
 import {
     DockedColChooserModel as DesktopDockedColChooserModel,
-    PopupColChooserModel as DesktopPopupColChooserModel
+    ModalColChooserModel as DesktopModalColChooserModel
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -116,13 +116,13 @@ import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
+    ColChooserConfig,
+    ColChooserMode,
     ColumnState,
     ColumnStateOptions,
-    DockedColChooserConfig,
     GridModelPersistOptions,
     GridScrollPosition,
     GroupRowRenderer,
-    PopupColChooserConfig,
     RowClassFn,
     RowClassRuleFn
 } from './Types';
@@ -163,15 +163,10 @@ export interface GridConfig {
     filterModel?: GridFilterModelConfig | boolean;
 
     /**
-     * Config for the popup (dialog/popover) column chooser, or boolean `true` to enable default.
+     * Config for this grid's column chooser, a bare {@link ColChooserMode} to enable the default
+     * config for that presentation, or boolean `true` for an all-default (modal) chooser.
      */
-    popupColChooserModel?: Omit<PopupColChooserConfig, 'gridModel'> | boolean;
-
-    /**
-     * Config for the docked, non-modal side-panel column chooser, or boolean `true` to enable
-     * default. Desktop only - ignored on mobile.
-     */
-    dockedColChooserModel?: Omit<DockedColChooserConfig, 'gridModel'> | boolean;
+    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean;
 
     /**
      * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
@@ -438,8 +433,7 @@ export interface GridModelDefaults {
     autosizeMode?: GridAutosizeMode;
     cellBorders?: boolean;
     clicksToExpand?: number | null;
-    popupColChooserModel?: Omit<PopupColChooserConfig, 'gridModel'> | boolean | null;
-    dockedColChooserModel?: Omit<DockedColChooserConfig, 'gridModel'> | boolean | null;
+    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
@@ -496,8 +490,7 @@ export class GridModel extends HoistModel {
         autosizeMode: 'onSizingModeChange',
         cellBorders: false,
         clicksToExpand: null,
-        popupColChooserModel: null,
-        dockedColChooserModel: null,
+        colChooserModel: null,
         colDefaults: null,
         contextMenu: [
             'filter',
@@ -513,7 +506,7 @@ export class GridModel extends HoistModel {
             '-',
             'restoreDefaults',
             '-',
-            'popupColChooser',
+            'colChooser',
             'autosizeColumns'
         ],
         emptyText: null,
@@ -544,8 +537,7 @@ export class GridModel extends HoistModel {
     store: Store;
     selModel: StoreSelectionModel;
     treeMode: boolean;
-    popupColChooserModel: IColChooserModel;
-    dockedColChooserModel: IColChooserModel;
+    colChooserModel: IColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
@@ -668,8 +660,7 @@ export class GridModel extends HoistModel {
             showSummary = false,
             selModel,
             filterModel,
-            popupColChooserModel = GridModel.defaults.popupColChooserModel,
-            dockedColChooserModel = GridModel.defaults.dockedColChooserModel,
+            colChooserModel = GridModel.defaults.colChooserModel,
             emptyText = GridModel.defaults.emptyText,
             hideEmptyTextBeforeLoad = true,
             sortBy = [],
@@ -794,8 +785,7 @@ export class GridModel extends HoistModel {
             xhImpl
         });
 
-        this.popupColChooserModel = this.parsePopupChooserModel(popupColChooserModel);
-        this.dockedColChooserModel = this.parseDockedChooserModel(dockedColChooserModel);
+        this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
         if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
@@ -1367,12 +1357,8 @@ export class GridModel extends HoistModel {
         this.columnState = this.cleanColumnState(colState, opts);
     }
 
-    showPopupColChooser() {
-        this.popupColChooserModel?.open();
-    }
-
-    showDockedColChooser() {
-        this.dockedColChooserModel?.open();
+    showColChooser() {
+        this.colChooserModel?.open();
     }
 
     noteAgColumnStateChanged(agColState: AgColumnState[]) {
@@ -2137,25 +2123,29 @@ export class GridModel extends HoistModel {
         };
     }
 
-    private parsePopupChooserModel(
-        chooserModel: GridConfig['popupColChooserModel']
-    ): IColChooserModel {
+    private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
-        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopPopupColChooserModel;
-        chooserModel = chooserModel === true ? {} : chooserModel;
-        return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
-    }
+        const config: ColChooserConfig =
+            chooserModel === true
+                ? {}
+                : isString(chooserModel)
+                  ? {mode: chooserModel}
+                  : chooserModel;
 
-    private parseDockedChooserModel(
-        chooserModel: GridConfig['dockedColChooserModel']
-    ): IColChooserModel {
-        if (XH.isMobileApp || !chooserModel) return null;
-
-        chooserModel = chooserModel === true ? {} : chooserModel;
-        return this.markManaged(
-            new DesktopDockedColChooserModel({...chooserModel, gridModel: this})
+        // Docked chooser is desktop only - fall back to the modal presentation on mobile.
+        warnIf(
+            XH.isMobileApp && config.mode === 'docked',
+            "ColChooser `mode: 'docked'` is not supported on mobile - showing the modal chooser."
         );
+
+        const modelClass = XH.isMobileApp
+            ? MobileColChooserModel
+            : config.mode === 'docked'
+              ? DesktopDockedColChooserModel
+              : DesktopModalColChooserModel;
+
+        return this.markManaged(new modelClass({...config, gridModel: this}));
     }
 
     private isGroupSpec(col: ColumnOrGroupSpec): col is ColumnGroupSpec {

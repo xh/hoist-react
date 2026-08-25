@@ -46,7 +46,7 @@ const required = true,
 
 const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
-    popupColChooserModel: true,
+    colChooserModel: true,
     enableExport: true,
     showRefreshButton: true,
     store: {
