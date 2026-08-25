@@ -112,6 +112,7 @@ import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
 import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
+import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
@@ -1105,6 +1106,14 @@ export class GridModel extends HoistModel {
     /** True if this grid has no records to show in its store. */
     get empty(): boolean {
         return this.store.empty;
+    }
+
+    /**
+     * Records in the order this grid renders them - sorted by {@link groupBy} and {@link sortBy},
+     * and flattened depth-first for tree grids. Leaf records only - group rows have no StoreRecord.
+     */
+    getSortedRecords(): StoreRecord[] {
+        return computeSortedRecords(this);
     }
 
     get isReady(): boolean {

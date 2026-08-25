@@ -256,6 +256,10 @@ columns.
   replacing the OS-provided picker of the native `<input type="date">` element. Adds a
   `formatString` prop to control the in-input display of the value, and a `dayPickerProps` escape
   hatch to pass props (e.g. `disabled` day matchers) directly to the underlying calendar.
+* Added `GridModel.getSortedRecords()`, returning the grid's records in the order it renders them -
+  sorted by `groupBy` and `sortBy` and, for tree grids, flattened depth-first through each record's
+  children. Does not require the grid to have been rendered. Grid export and `GridFindField` are
+  both re-built on this more efficient implementation.
 
 ### 🐞 Bug Fixes
 
@@ -290,6 +294,10 @@ columns.
 * Fixed mobile app bundles pulling in all of Blueprint's JS and global CSS via the shared
   `utils/impl` barrel. The internal `parseMenuItems` util now lives at
   `@xh/hoist/desktop/cmp/menu/impl/MenuItems` - update any app imports of this `@internal` API.
+* Fixed `GridFindField` on a tree grid permanently reordering the child arrays returned by
+  `Store.getChildrenById()` - its sort now leaves Store state untouched.
+* Fixed grid export ordering rows without regard to `GridModel.groupBy`, so exports of a grouped
+  grid no longer diverge from the rendered row order.
 
 ### ⚙️ Technical
 
@@ -320,7 +328,7 @@ columns.
 * `Store`s with no validation `Rules` on any `Field` now skip record validation entirely, no longer
   creating a `RecordValidator` per uncommitted record. Note that `StoreRecord.validationState` now
   reports `Valid` (rather than `Unknown`) for records in such a Store.
-*
+
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `BaseRow.data` from `ViewRowData` to `PlainObject`. When reading row data, custom
