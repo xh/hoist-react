@@ -83,6 +83,10 @@
         padding: var(--xh-pad-px);
       }
 
+      &--is-disabled {
+        color: var(--xh-input-disabled-text-color);
+      }
+
       &--is-selected {
         // Suppress default highlighting - checkmark indicate selection.
         color: var(--xh-text-color);
