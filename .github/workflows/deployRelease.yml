@@ -87,10 +87,14 @@ jobs:
         # the value fell through to the positional arg. If a future npm consumed it as the flag's
         # value instead, `version` would run with no args, silently leave package.json untouched,
         # and publish a SNAPSHOT build as a release.
+        #
+        # `--no-git-checks` is required: the Font Awesome auth step above appends a token to the
+        # repo's tracked `.npmrc`, leaving the working tree dirty. Without it, `pnpm version`
+        # aborts with ERR_PNPM_UNCLEAN_WORKING_TREE.
         - name: Set release version in package.json
           env:
               VERSION: ${{ inputs.version }}
-          run: pnpm version --no-git-tag-version "$VERSION"
+          run: pnpm version --no-git-tag-version --no-git-checks "$VERSION"
 
         # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
         # the version bump above leaves the working tree dirty, and hotfix releases run from a
