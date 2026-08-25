@@ -16,6 +16,7 @@ import {
     FilterValueSource,
     parseFilter,
     StoreRecord,
+    StoreRecordDigest,
     StoreRecordId,
     StoreRecordOrId,
     StoreValidationMessagesMap,
@@ -146,27 +147,27 @@ export interface StoreConfig {
     idEncodesTreePath?: boolean;
 
     /**
-     * Performance optimization for large datasets whose provider can cheaply identify unchanged
-     * records across loads and updates.
+     * Specification for a *digest* derived from each incoming raw object and snapshotted on the
+     * record when built - a performance optimization for large datasets whose provider can cheaply
+     * identify unchanged records across loads and updates.
      *
-     * By default, Store reuses existing StoreRecord instances when new data is loaded or updated
-     * with matching IDs and identical field values (determined via equality comparison). This
-     * preserves row state in grids for unchanged records.
+     * By default (null), Store reuses existing StoreRecord instances when new data is loaded or
+     * updated with matching IDs and identical field values (determined via equality comparison).
+     * This preserves row state in grids for unchanged records.
      *
-     * Set to instead derive a *digest* from each incoming raw object, snapshotted on the record
-     * when built. A record is then reused whenever a later raw object for its id yields an equal
-     * digest, skipping raw data processing, parsing, and construction entirely:
+     * Set this config to supply a cheaper, stronger signal for that reuse. A record is reused
+     * whenever a later raw object for its id yields an equal digest, skipping raw data processing,
+     * parsing, and construction entirely:
      *
-     *   - `true` - shorthand for `raw => raw`: the digest is the raw object itself, reusing a
-     *     record when a later raw object for its id is the very same object, by reference.
-     *     Requires the source to provide stable references for unchanged records and to never
-     *     mutate them - a new object is treated as changed, even if its values are equal.
      *   - string - the digest is the named raw property, e.g. a server-provided timestamp or
      *     sequence number.
-     *   - function - the digest is the returned value. Digests are compared via `===` - objects
-     *     match by identity only, never by value, so build composite keys as strings (e.g.
-     *     `raw => raw.type + '|' + raw.seq`) and digest timestamps as epoch ms, not `Date`s.
-     *     A null/undefined digest never matches.
+     *   - function - the digest is the returned value. Return null to disqualify a row from reuse.
+     *
+     * Digests must be primitives, compared via `===` - build composite keys as strings (e.g.
+     * `raw => raw.type + '|' + raw.seq`) and digest timestamps as epoch ms, not `Date`s. A provider
+     * that caches and re-supplies its own row objects should stamp each row with a revision it
+     * bumps on every mutation, and digest that - a stamp is the only signal that distinguishes an
+     * unchanged row from one mutated in place.
      *
      * Applies to `loadData()` and `updateData()` alike - an update yielding an unchanged digest
      * is dropped from the transaction as a no-op, intentionally preserving any uncommitted local
@@ -182,17 +183,13 @@ export interface StoreConfig {
      *
      * Default null.
      */
-    reuseRecords?: boolean | string | ((raw: PlainObject) => unknown);
+    digestSpec?: StoreRecordDigestSpec;
 
     /**
      * True (default) to have each StoreRecord retain a reference to the raw data object from
      * which it was created, exposed as `StoreRecord.raw`. May be set to false to reduce memory
      * usage on large stores - raw data objects are then eligible for garbage collection after
      * parsing, and `StoreRecord.raw` will be null.
-     *
-     * Setting to false is not compatible with `reuseRecords: true`, which requires retained raw
-     * data for its reference-identity check. The string and function `reuseRecords` forms may be
-     * used, however.
      */
     retainRaw?: boolean;
 
@@ -209,8 +206,8 @@ export interface StoreConfig {
      * Store never modifies or freezes these objects (regardless of `freezeData`), leaving the
      * provider free to mutate rows in place. Rows re-supplied by reference are therefore always
      * treated as changed - no value comparison can detect an in-place mutation. A provider that
-     * retains and mutates its own rows should supply a digest via `reuseRecords` or
-     * `setDigestFn()`, the only signal that restores record reuse for such rows.
+     * retains and mutates its own rows should supply a `digestSpec` - the only signal that
+     * restores record reuse for such rows.
      *
      * `data` will carry every key on the raw object, not just declared Fields - but only declared
      * Field values participate in the equality checks `loadData()`/`updateData()` use to detect
@@ -312,6 +309,7 @@ export interface ChildRawData {
 }
 
 export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
+export type StoreRecordDigestSpec = string | ((data: PlainObject) => StoreRecordDigest);
 
 /**
  * A managed, observable collection of in-memory {@link StoreRecord}s - the core data container
@@ -369,7 +367,6 @@ export class Store
     loadRootAsSummary: boolean;
     idEncodesTreePath: boolean;
     freezeData: boolean;
-    reuseRecords: boolean | string | ((raw: PlainObject) => unknown);
     retainRaw: boolean;
     readonly projectionOnly: boolean;
     validationIsComplex: boolean;
@@ -413,7 +410,8 @@ export class Store
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
-    private _digestFn: (raw: PlainObject) => unknown;
+    private _digestSpec: StoreRecordDigestSpec;
+    private _digestFn: (raw: PlainObject) => StoreRecordDigest;
 
     // Last parent pair verified position-equal by positionUnchanged().
     private _verifiedCachedParent: StoreRecord = null;
@@ -444,7 +442,7 @@ export class Store
         loadRootAsSummary = false,
         freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
-        reuseRecords = null,
+        digestSpec = null,
         retainRaw = true,
         projectionOnly = null,
         validationIsComplex = false,
@@ -453,10 +451,6 @@ export class Store
     }: StoreConfig) {
         super();
         makeObservable(this);
-        throwIf(
-            reuseRecords === true && !retainRaw,
-            'Store cannot be configured with both `reuseRecords: true` and `retainRaw: false` - the reference-identity check requires retained raw data. Provide a string or function `reuseRecords` digest to combine record reuse with `retainRaw: false`.'
-        );
         throwIf(
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
@@ -473,7 +467,7 @@ export class Store
         this.loadRootAsSummary = loadRootAsSummary;
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
-        this.reuseRecords = reuseRecords;
+        this.digestSpec = digestSpec;
         this.retainRaw = retainRaw;
         this.projectionOnly = projectionOnly;
         this.validationIsComplex = validationIsComplex;
@@ -483,7 +477,6 @@ export class Store
 
         this.validator = new StoreValidator({store: this});
         this._fieldMap = this.createFieldMap();
-        this._digestFn = this.createDigestFn();
         this._dataDefaults = this.createDataDefaults();
         this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
         this._denseRecordThreshold =
@@ -493,13 +486,14 @@ export class Store
         instanceManager.registerStore(this);
     }
 
-    /**
-     * Install a digest fn for record reuse, overriding any configured `reuseRecords` spec.
-     * @internal - called by a Cube {@link View} on its connected stores, letting the View manage
-     * reuse via the stamp it maintains on every row it publishes.
-     */
-    setDigestFn(fn: (raw: PlainObject) => unknown) {
-        this._digestFn = fn;
+    /** See {@link StoreConfig.digestSpec} - settable, taking effect on the next load. */
+    get digestSpec(): StoreRecordDigestSpec {
+        return this._digestSpec;
+    }
+
+    set digestSpec(spec: StoreRecordDigestSpec) {
+        this._digestSpec = spec;
+        this._digestFn = this.createDigestFn();
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -1386,7 +1380,7 @@ export class Store
         isSummary: boolean = false
     ): StoreRecord {
         let id = this.idSpec(raw),
-            digest = this._digestFn(raw),
+            digest = this._digestFn?.(raw),
             cached = this.getCachedRecord(id, parent);
 
         // 1) A digest rescues or disqualifies a cached record immediately
@@ -1618,13 +1612,11 @@ export class Store
         return ret;
     }
 
-    // `reuseRecords: true` digests each raw with its own identity - see `reuseRecords`.
-    private createDigestFn(): (raw: PlainObject) => unknown {
-        const {reuseRecords} = this;
-        if (reuseRecords === true) return raw => raw;
-        if (isFunction(reuseRecords)) return reuseRecords;
-        if (isString(reuseRecords)) return raw => raw[reuseRecords];
-        return () => null;
+    private createDigestFn(): (raw: PlainObject) => StoreRecordDigest {
+        const {_digestSpec} = this;
+        if (isFunction(_digestSpec)) return _digestSpec;
+        if (isString(_digestSpec)) return raw => raw[_digestSpec];
+        return null;
     }
 
     private parseExperimental(experimental) {

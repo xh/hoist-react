@@ -703,10 +703,10 @@ export class View
         const ret = castArray(stores);
 
         throwIf(
-            ret.some(s => s.reuseRecords != null),
-            '`Store.reuseRecords` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
+            ret.some(s => s.digestSpec != null && s.digestSpec !== 'cubeRowDigest'),
+            '`Store.digestSpec` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
         );
-        ret.forEach(s => s.setDigestFn(row => row.cubeRowDigest));
+        ret.forEach(s => (s.digestSpec = 'cubeRowDigest'));
 
         throwIf(
             ret.some(s => s.idEncodesTreePath),

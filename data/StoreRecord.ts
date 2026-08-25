@@ -64,10 +64,10 @@ export class StoreRecord {
 
     /**
      * Digest snapshotted from this record's raw data at creation, used by
-     * {@link StoreConfig.reuseRecords} to detect unchanged records across loads. Null when
-     * `reuseRecords` is unset; the raw object itself with `reuseRecords: true`.
+     * {@link StoreConfig.digestSpec} to detect unchanged records across loads. Null when
+     * `digestSpec` is unset.
      */
-    readonly digest: unknown;
+    readonly digest: StoreRecordDigest;
 
     /**
      * Count of non-default field values written into `data` when built by the parent Store -
@@ -367,6 +367,9 @@ export class StoreRecord {
 /** Unique identifier for a StoreRecord within a Store. */
 export type StoreRecordId = number | string;
 
+/** Value snapshotted on a StoreRecord to detect changes - see {@link StoreConfig.digestSpec}. */
+export type StoreRecordDigest = number | string;
+
 /** A Hoist StoreRecord, or an ID for one. */
 export type StoreRecordOrId = StoreRecordId | StoreRecord;
 
@@ -406,7 +409,7 @@ export interface StoreRecordConfig {
     isSummary?: boolean;
 
     /** See {@link StoreRecord.digest}. */
-    digest?: unknown;
+    digest?: StoreRecordDigest;
 
     /**
      * See {@link StoreRecord.nonDefaultCount}.

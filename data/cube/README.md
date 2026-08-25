@@ -51,7 +51,7 @@ await cube.loadDataAsync(salesData);
 ```
 
 A Cube maintains an internal `Store` of the leaf-level records loaded into it. Tune that Store via
-`CubeConfig.store` - notably with `reuseRecords`, recommended whenever the source can supply a cheap
+`CubeConfig.store` - notably with `digestSpec`, recommended whenever the source can supply a cheap
 per-row digest, as it preserves record identity for unchanged rows across loads and updates and so
 allows connected Views to reuse their generated rows:
 
@@ -59,7 +59,7 @@ allows connected Views to reuse their generated rows:
 const cube = new Cube({
     fields: [...],
     idSpec: 'orderId',
-    store: {reuseRecords: 'rev'}
+    store: {digestSpec: 'rev'}
 });
 ```
 
@@ -214,7 +214,7 @@ There are two ways to consume View results:
 Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
 into them whenever the query results change. Configure connected stores with
 `projectionOnly: true` (adopt View rows as record data without re-parsing). Record reuse is
-automatic - the View installs a `reuseRecords` digest on each connected store, so rows
+automatic - the View installs its own row-based digest on each connected store, so rows
 republished without change skip record rebuilds:
 
 ```typescript

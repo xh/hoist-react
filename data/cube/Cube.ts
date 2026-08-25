@@ -50,7 +50,7 @@ export interface CubeConfig {
      * Additional configs for the internal {@link Store} of leaf-level records maintained by this
      * Cube - i.e. tuning of how that Store holds the data described by `fields` / `idSpec` above.
      *
-     * Note `reuseRecords` is recommended whenever the source can supply a cheap per-row digest - it
+     * Note `digestSpec` is recommended whenever the source can supply a cheap per-row digest - it
      * preserves record identity for unchanged rows across loads and updates, allowing connected
      * Views to reuse their generated rows and connected stores their records.
      */

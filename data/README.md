@@ -107,7 +107,7 @@ const store = new Store({
 | `loadTreeDataFrom` | `string` | `'children'` | Property containing child records |
 | `loadRootAsSummary` | `boolean` | `false` | Treat root node as summary record |
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set false as a performance optimization) |
-| `reuseRecords` | `boolean \| string \| fn` | `null` | Reuse records when raw data yields an unchanged digest (performance) |
+| `digestSpec` | `string \| fn` | `null` | Derive a digest from each raw object, reusing records whose digest is unchanged (performance) |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory) |
 | `projectionOnly` | `boolean` | `null` | Read-only projection of data parsed elsewhere - adopts raw objects as record `data`. Recommended for View-connected stores |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply a fixed tree position (performance). Not supported on View-connected stores |
@@ -308,7 +308,7 @@ record.id;                  // Unique identifier
 record.data;                // Current field values - read by field name only
 record.committedData;       // Last committed state
 record.raw;                 // Original raw data (null if retainRaw: false, or a local add)
-record.digest;              // Digest snapshotted for reuseRecords, if configured
+record.digest;              // Digest snapshotted per digestSpec, if configured
 
 // State predicates
 record.isAdd;               // Never committed (new record)
@@ -916,36 +916,35 @@ This preserves ag-Grid row state (expansion, selection) for unchanged records ac
 A `loadData()` call that changes nothing at all preserves the Store's record collections outright,
 and skips all downstream work.
 
-### Digest-Based Reuse with `reuseRecords`
+### Digest-Based Reuse with `digestSpec`
 
-For large datasets whose provider can cheaply identify unchanged records, set `reuseRecords` to
+For large datasets whose provider can cheaply identify unchanged records, set `digestSpec` to
 derive a *digest* from each incoming raw object. Store snapshots that digest on the record it
 builds, and reuses the record whenever a later raw object for the same id yields an equal digest.
 Each hit skips raw data processing, parsing, and record creation.
 
 ```typescript
 const store = new Store({
-    reuseRecords: true  // reuse on raw object identity - requires stable, immutable raws
+    digestSpec: 'lastUpdated' // digest is a raw property, e.g. a server-provided stamp
 });
 
 const store = new Store({
-    reuseRecords: 'lastUpdated' // digest is a raw property, e.g. a server-provided stamp
+    digestSpec: raw => raw.type + '|' + raw.seq // or derived - primitive values only
 });
 
-const store = new Store({
-    reuseRecords: raw => raw.type + '|' + raw.seq // or derived - primitive values only
-});
 ```
 
-Digests are compared via `===` - primitives, or an object identity as with `reuseRecords: true`. A
-null digest never matches. Build composite keys as strings.
+Digests must be primitives (`string` or `number`), compared via `===`. Build composite keys as
+strings, and a null digest never matches. A provider that caches and re-supplies its own row objects
+should stamp each row with a revision it bumps on every mutation and digest that - a stamp is the
+only signal that distinguishes an unchanged row from one mutated in place.
 
 This config applies to `updateData()` as well, where Store drops an unchanged-digest update as a
 no-op and so preserves any uncommitted local modifications on that record. An update with a changed
 digest builds a new record and overwrites local modifications, as updates always do. `loadData()`
 misses still fall back to the standard fieldwise comparison.
 
-Do not combine `reuseRecords` with a `processRawData` function that depends on external state, as
+Do not combine `digestSpec` with a `processRawData` function that depends on external state, as
 Store bypasses that function for reused records.
 
 Stores connected to a Cube `View` must leave this config unset. The View installs a digest that
@@ -984,7 +983,7 @@ This mode carries real constraints:
 - Store never modifies or freezes these objects, whatever the `freezeData` setting, leaving the
   provider free to mutate rows in place. Rows re-supplied by reference are therefore always treated
   as changed - no value comparison can detect an in-place mutation. A provider that retains and
-  mutates its own rows should supply a `reuseRecords` digest to restore reuse.
+  mutates its own rows should supply a `digestSpec` to restore reuse.
 - `data` carries every key on the raw object, not only declared Fields. Only declared Field values
   take part in the equality checks that detect unchanged records.
 - The local modification APIs (`addRecords`, `modifyRecords`, `removeRecords`, `revertRecords`, and
@@ -1030,7 +1029,7 @@ memory. They stack, and both are opt-in:
 
 | Knob | What it does | When to use |
 |------|--------------|-------------|
-| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords: true`, which needs the raw for its identity check |
+| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw` |
 | `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values within a response, and optionally across refetches of the same dataset | Your data repeats many string values (categories, statuses, names) |
 
 Store builds record `data` objects for memory efficiency out of the box, and picks a representation

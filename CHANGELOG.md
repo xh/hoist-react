@@ -52,6 +52,10 @@ and performance optimizations, grouped by topic below.
 * Added an exported `getCubeLeaves()` helper to replace the `ViewRowData.cubeLeaves` getter,
   supporting important memory optimizations in this release. Update any code that reads
   `row.cubeLeaves` to call `getCubeLeaves(row)`.
+* Removed the `Store.reuseRecords` config, replaced by the new `Store.digestSpec` (see New Features
+  below). Reuse keyed on raw-object *reference* identity - the former `reuseRecords: true` - is no
+  longer supported: have the provider stamp each row with a revision and set `digestSpec` to it, or
+  drop the config and fall back to Hoist's default value-based reuse.
 * `StoreRecord.data` must be read by field name only. Enumerating, spreading, or calling
   `JSON.stringify()` on this object does not reliably see default field values. Use
   `StoreRecord.getValues()` or `getModifiedValues()` instead. This never worked reliably, but the
@@ -117,26 +121,23 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   object as their `data` instead of re-parsing and copying it, collapsing the usual two per-row
   objects to one and skipping the per-row parse on every load and update. Local modification APIs
   (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly` config docs.
-* Enhanced `Store.reuseRecords` to also accept a digest specification - a raw data property name, or
-  a function that derives a digest value. `Store` reuses the existing record whenever an incoming
-  raw object yields an unchanged digest. This applies to both `loadData()` and
-  `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
-  available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
-  automatically. Note `reuseRecords: true` is now shorthand for the identity digest `raw => raw`,
-  and like any digest miss, a new raw object is treated as changed even if value-equal - such
-  sources should rely on the default value-based reuse instead.
+* Added a `Store.digestSpec` config, replacing `reuseRecords` and symmetrical with `idSpec` - name a
+  raw data property or supply a function returning a primitive digest. `Store` reuses the existing
+  record whenever an incoming raw object yields an unchanged digest, skipping parsing and record
+  construction, and drops unchanged-digest `updateData()` rows as no-ops. Digests are exposed as
+  `StoreRecord.digest`.
 * Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping, and
   filtering. Aggregate rows now reuse even when their children change - re-deriving in place and
   republishing only values that actually changed - so e.g. dropping a trailing dimension republishes
   nothing above the level that moved, and connected stores and grids skip the matching record
   rebuilds.
-* Added `CubeConfig.store`, exposing `StoreConfig` options - notably `reuseRecords` and
+* Added `CubeConfig.store`, exposing `StoreConfig` options - notably `digestSpec` and
   `retainRaw` - on the Cube's internal Store. A source that supplies per-row digests can now
   preserve record identity across full `Cube.loadDataAsync()` reloads, extending View row reuse to
   wholesale refreshes.
 * Added a `Store.retainRaw` config (default `true`). Set it to `false` to drop each record's
   reference to its raw source data object after parsing, reducing memory use on large stores that do
-  not need `StoreRecord.raw`. Not compatible with `reuseRecords: true`.
+  not need `StoreRecord.raw`.
 * Enhanced `Cube.loadDataAsync()` to detect reloads that leave the store's record collections
   unchanged, as already detected by `Store.loadData()`. Connected `View`s now sync their info and
   timestamp instead of regenerating all of their rows, so polled reloads of unchanged data cost

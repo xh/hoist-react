@@ -432,6 +432,37 @@ grep -rn "updateData(" client-app/src/
 Only callers that read the returned change log's `remove` collection are affected - the many
 calls that ignore the return value need no change.
 
+**c. `Store.reuseRecords` is now `Store.digestSpec`.** The new config names the *digest* it
+derives from each raw object - symmetrical with `idSpec`, and clearer about the fact that Store
+always attempts record reuse. Name a raw property holding a per-row stamp, or supply a function
+returning one:
+
+Before:
+
+```typescript
+const store = new Store({fields: [...], reuseRecords: true});
+```
+
+After:
+
+```typescript
+const store = new Store({fields: [...], digestSpec: 'rev'});
+```
+
+```bash
+grep -rn "reuseRecords" client-app/src/
+```
+
+Drop any `reuseRecords: false` outright - it never differed from the unset default.
+
+Note this is not a pure rename. The former `reuseRecords: true` reused a record only when handed
+the very same raw object, by reference, and digests must now be primitives - so that form is gone.
+It could never hit for data straight off the wire (a re-fetch yields new objects every time), and
+it silently reported "unchanged" for a cached row mutated in place. If your provider caches and
+re-supplies its own rows, stamp each row with a revision it bumps on every mutation - e.g.
+`XH.genId()` at creation - and digest that. Otherwise drop the config: Store still reuses records
+whose field values compare equal, which is the default behavior.
+
 ### 8. Review grids using managed autosize
 
 Applies only to grids configured with `autosizeOptions: {mode: 'managed'}`, or to apps that set
@@ -506,6 +537,8 @@ After completing all steps:
   toggles work; any `chooserGroup` presentation reviewed
 - [ ] **Grids with persisted column state** (ViewManager/dashboards): verify saved views load
   correctly and confirm the new hidden-by-default behavior for newly added columns is acceptable
+- [ ] **Stores configured with `reuseRecords`**: migrated to `digestSpec`, and record reuse still
+  observed (unchanged rows keep their grid state across a reload)
 - [ ] **Cube-driven screens**: aggregations, drill-downs, and bucket rows render as before
 - [ ] **Grids using managed autosize**: columns fit on load and on filter change; streaming grids
   settle to fit once updates pause
