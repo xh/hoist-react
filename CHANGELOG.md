@@ -302,6 +302,10 @@ columns.
 
 ### ⚙️ Technical
 
+* Trimmed `static/polyfills.js` to import `core-js/stable` rather than the bare `core-js` root
+  entry, which unconditionally injects shims for unfinished proposals. Apps shed those dead shims
+  from every bundle on their next build, while the polyfill mechanism itself - auto-scaling to an
+  app's configured `targetBrowsers` - is unchanged.
 * Expanded the package `sideEffects` declaration to cover SCSS/CSS imports and the platform
   `register` modules, all previously (and incorrectly) marked pure. Inert under current dev-utils
   releases, which disable `sideEffects`-based tree-shaking - this is groundwork for a future
