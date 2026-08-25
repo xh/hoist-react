@@ -30,7 +30,6 @@ import {
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
 import {GridModel, Column} from '@xh/hoist/cmp/grid';
-import {getSortedRecords} from '@xh/hoist/cmp/grid/impl/RecordSortUtils';
 import {StoreRecord} from '@xh/hoist/data';
 
 /**
@@ -346,9 +345,9 @@ export class GridExportService extends HoistService {
 
     // Rows in rendered order - roots at depth 1, below the depth 0 header row.
     private getRecordRows(gridModel, columns, type) {
-        return getSortedRecords(gridModel).map(record =>
-            this.getRecordRow(gridModel, record, columns, type, record.depth + 1)
-        );
+        return gridModel
+            .getSortedRecords()
+            .map(record => this.getRecordRow(gridModel, record, columns, type, record.depth + 1));
     }
 
     private getRecordRow(gridModel, record, columns, type, depth) {

@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {getSortedRecords} from '@xh/hoist/cmp/grid/impl/RecordSortUtils';
 import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
@@ -187,7 +186,7 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     private getRecords(): StoreRecord[] {
-        return (this._records ??= getSortedRecords(this.gridModel));
+        return (this._records ??= this.gridModel.getSortedRecords());
     }
 
     private getActiveFields(): string[] {

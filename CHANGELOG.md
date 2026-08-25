@@ -256,6 +256,10 @@ columns.
   replacing the OS-provided picker of the native `<input type="date">` element. Adds a
   `formatString` prop to control the in-input display of the value, and a `dayPickerProps` escape
   hatch to pass props (e.g. `disabled` day matchers) directly to the underlying calendar.
+* Added `GridModel.getSortedRecords()`, returning the grid's records in the order it renders them -
+  sorted by `groupBy` and `sortBy` and, for tree grids, flattened depth-first through each record's
+  children. Does not require the grid to have been rendered. Grid export and `GridFindField` are
+  both re-built on this more efficient implementation.
 
 ### 🐞 Bug Fixes
 
@@ -318,13 +322,9 @@ columns.
     * Developers who build against a local hoist-react checkout (`inlineHoist`) now need pnpm to
       install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`). The app itself
       can remain on yarn or npm. Update any `startWithHoist`-style app scripts accordingly.
-* Improved sort performance for grid export and `GridFindField`. Both now share a single
-  decorate-sort-undecorate implementation that resolves each record's value, comparator, and
-  ag-Grid row node once per sort rather than on every comparison.
 * `Store`s with no validation `Rules` on any `Field` now skip record validation entirely, no longer
   creating a `RecordValidator` per uncommitted record. Note that `StoreRecord.validationState` now
   reports `Valid` (rather than `Unknown`) for records in such a Store.
-*
 
 ### ⚙️ Typescript API Adjustments
 

@@ -12,14 +12,14 @@ import {compact, isEmpty} from 'lodash';
  * Return the GridModel's root records in the order the grid renders them - sorted per its groupBy
  * and sortBy and, for tree grids, flattened depth-first through each record's children.
  *
- * Used to reproduce rendered row order for consumers that work off the Store rather than ag-Grid,
- * e.g. export and find. Always returns a newly allocated array, and never mutates the Store's own.
+ * Implements {@link GridModel.getSortedRecords} - reproduces rendered row order for consumers
+ * that work off the Store rather than ag-Grid, e.g. export and find. Always returns a newly allocated array, and never mutates the Store's own.
  * Sorts via decorate-sort-undecorate, resolving each record's value and row node once rather than
  * on every comparison. Note this yields leaf records only - the group rows rendered for a grouped
  * grid are synthetic ag-Grid nodes with no backing StoreRecord.
  * @internal
  */
-export function getSortedRecords(gridModel: GridModel): StoreRecord[] {
+export function computeSortedRecords(gridModel: GridModel): StoreRecord[] {
     const {treeMode, store} = gridModel,
         records = store.rootRecords;
 
