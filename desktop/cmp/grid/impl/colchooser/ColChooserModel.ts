@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserConfig, ColumnState, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
+import {PopupColChooserConfig, ColumnState, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
 import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
@@ -194,7 +194,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         width = 300,
         height = 600,
         filterMatchMode = 'startWord'
-    }: ColChooserConfig) {
+    }: PopupColChooserConfig) {
         super();
         makeObservable(this);
 

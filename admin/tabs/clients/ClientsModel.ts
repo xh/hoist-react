@@ -153,7 +153,7 @@ export class ClientsModel extends BaseAdminTabModel {
             emptyText: 'No clients connected.',
             groupBy: this.groupBy,
             persistWith: persistOptions(this.persistWith, {path: 'mainGrid'}),
-            colChooserModel: true,
+            popupColChooserModel: true,
             enableExport: true,
             selModel: 'multiple',
             exportOptions: {filename: exportFilenameWithDate('clients')},

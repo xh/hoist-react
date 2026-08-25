@@ -44,7 +44,7 @@ export class JsonBlobModel extends HoistModel {
         this.gridModel = new RestGridModel({
             readonly: AppModel.readonly,
             persistWith: this.persistWith,
-            colChooserModel: true,
+            popupColChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('json-blobs')},
             selModel: 'multiple',

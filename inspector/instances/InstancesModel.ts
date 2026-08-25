@@ -214,7 +214,7 @@ export class InstancesModel extends HoistModel {
             groupBy: this.showInGroups ? 'displayGroup' : null,
             groupSortFn: (a, b) => GROUP_SORT_ORDER.indexOf(a) - GROUP_SORT_ORDER.indexOf(b),
             selModel: {mode: 'multiple'},
-            colChooserModel: true,
+            popupColChooserModel: true,
             columns: [
                 {
                     ...actionCol,

@@ -29,7 +29,7 @@ export class UserModel extends HoistModel {
         this.gridModel = new GridModel({
             emptyText: 'No users found.',
             persistWith: this.persistWith,
-            colChooserModel: true,
+            popupColChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('users')},
             store: {idSpec: 'username'},

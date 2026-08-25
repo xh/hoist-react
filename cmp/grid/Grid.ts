@@ -31,13 +31,13 @@ import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionMan
 import {DeferredWorkScheduler} from '@xh/hoist/cmp/grid/impl/DeferredWorkScheduler';
 import {
     colChooser as desktopColChooser,
-    colChooserPanel as desktopColChooserPanel,
+    dockedColChooser as desktopDockedColChooser,
     gridFilterDialog,
     ModalSupportModel,
     DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import type {ColChooserPanelModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserPanelModel';
+import type {DockedColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/DockedColChooserModel';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
@@ -109,8 +109,8 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 treeMode,
                 treeStyle,
                 highlightRowOnClick,
-                colChooserModel,
-                colChooserPanelModel,
+                popupColChooserModel,
+                dockedColChooserModel,
                 filterModel,
                 enableFullWidthScroll
             } = model,
@@ -150,9 +150,9 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
         // Safe to use the desktop component unconditionally - GridModel never creates this model
         // on mobile.
         let content = gridContainer;
-        if (colChooserPanelModel) {
-            const chooser = desktopColChooserPanel({model: colChooserPanelModel}),
-                {side} = colChooserPanelModel as ColChooserPanelModel;
+        if (dockedColChooserModel) {
+            const chooser = desktopDockedColChooser({model: dockedColChooserModel}),
+                {side} = dockedColChooserModel as DockedColChooserModel;
 
             content =
                 side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser);
@@ -160,7 +160,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 
         return fragment(
             content,
-            colChooserModel ? platformColChooser({model: colChooserModel}) : null,
+            popupColChooserModel ? platformColChooser({model: popupColChooserModel}) : null,
             filterModel ? gridFilterDialog({model: filterModel}) : null
         );
     }

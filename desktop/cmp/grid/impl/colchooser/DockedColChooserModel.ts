@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserPanelConfig} from '@xh/hoist/cmp/grid';
+import {DockedColChooserConfig} from '@xh/hoist/cmp/grid';
 import {HSide, managed} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -17,7 +17,7 @@ import {ColChooserModel} from './ColChooserModel';
  * externally rather than by panel collapse. Non-modal, so `commitOnChange` is forced true.
  * @internal
  */
-export class ColChooserPanelModel extends ColChooserModel {
+export class DockedColChooserModel extends ColChooserModel {
     @observable override isOpen = false;
 
     @managed
@@ -35,7 +35,7 @@ export class ColChooserPanelModel extends ColChooserModel {
         return true;
     }
 
-    constructor(config: ColChooserPanelConfig) {
+    constructor(config: DockedColChooserConfig) {
         super({...config, commitOnChange: true});
         makeObservable(this);
 

@@ -76,8 +76,12 @@ and performance optimizations, grouped by topic below.
   `RowDragModule`. Without it, the chooser's drag-and-drop fails silently. Consider switching to
   `AllCommunityModule` - module registration does not affect shipped bundle size, and registering
   everything avoids this class of silent failure.
+* Renamed `GridConfig.colChooserModel` (and `GridModel.colChooserModel`) to `popupColChooserModel`,
+  and `GridModel.showColChooser()` to `showPopupColChooser()`, to distinguish the popup chooser from
+  the new docked presentation below. The `colChooser` context-menu token is now `popupColChooser`,
+  and `ColChooserConfig` has been split into a shared base plus `PopupColChooserConfig`.
 * `Column.chooserGroup` now groups columns only within the new, opt-in Column Library. Set
-  `colChooserModel: {columnLibrary: true}` to keep a grouped presentation of hidden columns.
+  `popupColChooserModel: {columnLibrary: true}` to keep a grouped presentation of hidden columns.
 * Update or remove any custom styles that targeted the chooser's former `LeftRightChooser`- based
   DOM. The chooser now renders its own grids and CSS classes in a different layout.
 * Columns newly added to the code are now hidden initially when column state persists to a
@@ -179,11 +183,11 @@ columns.
   `Column.chooserGroup`. Drag a column out to show and position it, or drag one in to hide it.
   Enable the library with `ColChooserConfig.columnLibrary` and customize it with `ColLibraryConfig`.
 * A new docked side-panel presentation stays open alongside the grid and always commits immediately.
-  Enable it with the new `GridConfig.colChooserPanelModel` config (`ColChooserPanelConfig`) and open
-  it with `GridModel.showColChooserPanel()`, the new `colChooserPanel` context-menu token, or a
-  `colChooserButton` with `target: 'panel'`.
+  Enable it with the new `GridConfig.dockedColChooserModel` config (`DockedColChooserConfig`) and
+  open it with `GridModel.showDockedColChooser()`, the new `dockedColChooser` context-menu token, or
+  a `colChooserButton` with `target: 'docked'`.
 * Added a `target` prop to `ColChooserButton` to select the presentation - `'popover'` (default),
-  `'dialog'`, or `'panel'`.
+  `'dialog'`, or `'docked'`.
 * Columns that set a `chooserDescription` show an info icon, which reveals that description in an
   on-demand tooltip.
 * Users can toggle the display of column groups and the Column Library. Hoist persists this choice

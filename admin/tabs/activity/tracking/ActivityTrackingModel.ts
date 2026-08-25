@@ -450,7 +450,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             selModel: 'multiple',
             enableExport: true,
             treeMode: true,
-            colChooserModel: {height: 450},
+            popupColChooserModel: {height: 450},
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             exportOptions: {filename: exportFilename('activity-summary')},

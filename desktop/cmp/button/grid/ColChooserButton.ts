@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
-import {ColChooserModalModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModalModel';
+import {PopupColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/PopupColChooserModel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
@@ -21,9 +21,9 @@ export interface ColChooserButtonProps extends ButtonProps {
 
     /**
      * How the chooser is presented when triggered (default 'popover'). 'dialog' and 'popover' bind
-     * to the grid's `colChooserModel`; 'panel' binds to its `colChooserPanelModel`.
+     * to the grid's `popupColChooserModel`; 'docked' binds to its `dockedColChooserModel`.
      */
-    target?: 'dialog' | 'popover' | 'panel';
+    target?: 'dialog' | 'popover' | 'docked';
 
     /** Position for chooser popover, as per Blueprint docs. Only applies when `target` is 'popover'. */
     popoverPosition?: Position;
@@ -34,8 +34,8 @@ export interface ColChooserButtonProps extends ButtonProps {
  * available Grid columns. For use by applications when a button is desired in addition to the
  * context menu item built into the Grid component directly.
  *
- * Requires {@link GridConfig.colChooserModel} (for 'dialog'/'popover' targets) or
- * {@link GridConfig.colChooserPanelModel} (for the 'panel' target) on the bound GridModel.
+ * Requires {@link GridConfig.popupColChooserModel} (for 'dialog'/'popover' targets) or
+ * {@link GridConfig.dockedColChooserModel} (for the 'docked' target) on the bound GridModel.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChooserButtonProps>({
     displayName: 'ColChooserButton',
@@ -50,12 +50,14 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         target = withDefault(target, 'popover');
 
         const chooserModel =
-            target === 'panel' ? gridModel?.colChooserPanelModel : gridModel?.colChooserModel;
+            target === 'docked'
+                ? gridModel?.dockedColChooserModel
+                : gridModel?.popupColChooserModel;
 
         icon = withDefault(icon, Icon.gridPanel());
         title = withDefault(
             title,
-            target === 'panel' ? 'Toggle column panel' : 'Choose grid columns...'
+            target === 'docked' ? 'Toggle column panel' : 'Choose grid columns...'
         );
 
         // Return a plain disabled button rather than falling through - the popover config below
@@ -79,17 +81,17 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                 disabled,
                 onClick: e => {
                     onClick?.(e);
-                    target === 'panel' ? chooserModel.toggle() : chooserModel.open();
+                    target === 'docked' ? chooserModel.toggle() : chooserModel.open();
                 },
                 ...rest
             });
         }
 
-        const modalModel = chooserModel as ColChooserModalModel;
+        const popupModel = chooserModel as PopupColChooserModel;
         return popover({
             popoverClassName: 'xh-col-chooser-popover',
             position: withDefault(popoverPosition, 'auto'),
-            isOpen: modalModel.isPopoverOpen,
+            isOpen: popupModel.isPopoverOpen,
             item: button({icon, title, className, disabled, onClick, ...rest}),
             disabled,
             content: vbox({
@@ -97,14 +99,14 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                 onDoubleClick: stopPropagation,
                 items: [
                     div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
-                    colChooser({model: modalModel})
+                    colChooser({model: popupModel})
                 ]
             }),
             onInteraction: willOpen => {
                 if (willOpen) {
-                    modalModel.openPopover();
+                    popupModel.openPopover();
                 } else {
-                    modalModel.closeConfirmAsync().catchDefault();
+                    popupModel.closeConfirmAsync().catchDefault();
                 }
             }
         });

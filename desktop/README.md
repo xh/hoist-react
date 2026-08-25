@@ -234,7 +234,7 @@ import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {textEditor, numberEditor} from '@xh/hoist/desktop/cmp/grid';
 
 const gridModel = new GridModel({
-    colChooserModel: true,
+    popupColChooserModel: true,
     filterModel: true,
     columns: [
         {field: 'name', editable: true, editor: textEditor()},

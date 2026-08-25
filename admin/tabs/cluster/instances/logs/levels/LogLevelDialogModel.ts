@@ -47,7 +47,7 @@ export class LogLevelDialogModel extends HoistModel {
     private createGridModel() {
         return new RestGridModel({
             persistWith: {localStorageKey: 'xhAdminLogLevelState'},
-            colChooserModel: true,
+            popupColChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('log-levels')},
             readonly: AppModel.readonly,

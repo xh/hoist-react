@@ -42,7 +42,7 @@ export class PrefEditorModel extends HoistModel {
         this.gridModel = new RestGridModel({
             // Core config
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
-            colChooserModel: true,
+            popupColChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('prefs')},
             filterFields: ['name', 'groupName'],

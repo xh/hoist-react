@@ -133,24 +133,24 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                     }
                 }
             });
-        case 'colChooser':
+        case 'popupColChooser':
             return new RecordAction({
                 text: 'Columns...',
                 icon: Icon.gridPanel(),
-                hidden: !gridModel?.colChooserModel,
-                actionFn: () => gridModel.colChooserModel?.open()
+                hidden: !gridModel?.popupColChooserModel,
+                actionFn: () => gridModel.popupColChooserModel?.open()
             });
-        case 'colChooserPanel':
+        case 'dockedColChooser':
             return new RecordAction({
-                hidden: !gridModel?.colChooserPanelModel,
+                hidden: !gridModel?.dockedColChooserModel,
                 displayFn: () => {
-                    const isOpen = gridModel.colChooserPanelModel?.isOpen;
+                    const isOpen = gridModel.dockedColChooserModel?.isOpen;
                     return {
                         icon: isOpen ? Icon.cross() : Icon.gridPanel(),
                         text: `${isOpen ? 'Close' : 'Open'} Columns Panel`
                     };
                 },
-                actionFn: () => gridModel.colChooserPanelModel?.toggle()
+                actionFn: () => gridModel.dockedColChooserModel?.toggle()
             });
         case 'expandCollapseAll': // For backward compatibility
         case 'expandCollapse':

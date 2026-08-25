@@ -293,7 +293,7 @@ export interface ColumnSpec {
 
     /**
      * Group name for organizing this column within the column chooser's Column Library panel
-     * (see {@link ColChooserConfig.columnLibrary}). Not used by the chooser's main list, which
+     * (see {@link PopupColChooserConfig.columnLibrary}). Not used by the chooser's main list, which
      * groups by actual {@link ColumnGroup} structure instead.
      */
     chooserGroup?: string;
@@ -781,7 +781,7 @@ export class Column {
                 pinned: this.pinned,
                 lockVisible:
                     !this.hideable ||
-                    (!gridModel.colChooserModel && !gridModel.colChooserPanelModel) ||
+                    (!gridModel.popupColChooserModel && !gridModel.dockedColChooserModel) ||
                     XH.isMobileApp,
                 headerComponentParams: {xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,

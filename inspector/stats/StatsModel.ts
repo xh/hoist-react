@@ -37,7 +37,7 @@ export class StatsModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
-            colChooserModel: true,
+            popupColChooserModel: true,
             filterModel: true,
             headerMenuDisplay: 'hover',
             persistWith: this.persistWith,

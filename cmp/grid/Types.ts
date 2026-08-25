@@ -186,21 +186,15 @@ export interface IColChooserModel extends HoistModel {
 }
 
 /**
- * Configuration for a {@link ColChooserModel} - the model backing the grid column chooser UI.
- * Passed via the `colChooserModel` config on {@link GridConfig}, or set app-wide via
- * `GridModel.defaults.colChooserModel`.
+ * Options shared by both column chooser presentations - the popup (dialog/popover) chooser and the
+ * docked side-panel chooser.
  *
- * @see ColChooserModel
+ * @see PopupColChooserConfig
+ * @see DockedColChooserConfig
  */
 export interface ColChooserConfig {
-    /** GridModel to bind to. Not required if creating via `GridModel.colChooserModel` */
+    /** GridModel to bind to. Not required if creating via `GridModel.popupColChooserModel` */
     gridModel?: GridModel;
-
-    /**
-     * Immediately render changed columns on grid (default true).
-     * Set to false to enable Save button for committing changes on save. Desktop only.
-     */
-    commitOnChange?: boolean;
 
     /**
      * Show Restore Defaults button (default true). Set to false to hide Restore Grid
@@ -221,9 +215,6 @@ export interface ColChooserConfig {
      * (grown by the library width while shown). Desktop only.
      */
     width?: string | number;
-
-    /** Chooser height for popover and dialog. Desktop only. */
-    height?: string | number;
 
     /** Mode to use when filtering (default 'startWord'). Desktop only. */
     filterMatchMode?: FilterMatchMode;
@@ -261,17 +252,32 @@ export interface ColLibraryConfig {
 }
 
 /**
- * Configuration for a docked, non-modal column chooser - the model backing the side-panel chooser
- * presentation. Passed via the `colChooserPanelModel` config on {@link GridConfig}. Extends
- * {@link ColChooserConfig}; changes always auto-commit and stay in sync with external column state
- * (i.e. `commitOnChange` is forced true). Desktop only.
+ * Configuration for the popup column chooser - the modal dialog and popover presentations. Passed
+ * via the `popupColChooserModel` config on {@link GridConfig}, or set app-wide via
+ * `GridModel.defaults.popupColChooserModel`.
  */
-export interface ColChooserPanelConfig extends Omit<ColChooserConfig, 'commitOnChange'> {
+export interface PopupColChooserConfig extends ColChooserConfig {
+    /**
+     * Immediately render changed columns on grid (default true).
+     * Set to false to enable Save button for committing changes on save. Desktop only.
+     */
+    commitOnChange?: boolean;
+
+    /** Chooser height for popover and dialog. Desktop only. */
+    height?: string | number;
+}
+
+/**
+ * Configuration for the docked, non-modal column chooser - the side-panel presentation. Passed via
+ * the `dockedColChooserModel` config on {@link GridConfig}. Changes always auto-commit and stay in
+ * sync with external column state. Desktop only.
+ */
+export interface DockedColChooserConfig extends ColChooserConfig {
     /**
      * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
      * horizontally, so `side` is limited to 'left'/'right' (default 'right'). The dock is resize-only
-     * (open/close is driven externally - e.g. a `ColChooserButton` with `target: 'panel'`, or
-     * `GridModel.showColChooserPanel()`), so `collapsible` is omitted.
+     * (open/close is driven externally - e.g. a `ColChooserButton` with `target: 'docked'`, or
+     * `GridModel.showDockedColChooser()`), so `collapsible` is omitted.
      */
     panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
 }

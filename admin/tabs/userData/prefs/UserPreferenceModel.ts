@@ -27,7 +27,7 @@ export class UserPreferenceModel extends HoistModel {
         this.gridModel = new RestGridModel({
             // Core config
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
-            colChooserModel: true,
+            popupColChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('user-prefs')},
             filterFields: ['name', 'username'],
