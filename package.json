@@ -26,7 +26,11 @@
     "prepare": "husky"
   },
   "sideEffects": [
-    "./static/polyfills.js"
+    "./static/polyfills.js",
+    "./desktop/register.ts",
+    "./mobile/register.ts",
+    "**/*.scss",
+    "**/*.css"
   ],
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

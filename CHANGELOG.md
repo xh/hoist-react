@@ -302,6 +302,10 @@ columns.
 
 ### ⚙️ Technical
 
+* Expanded the package `sideEffects` declaration to cover SCSS/CSS imports and the platform
+  `register` modules, all previously (and incorrectly) marked pure. Inert under current dev-utils
+  releases, which disable `sideEffects`-based tree-shaking - this is groundwork for a future
+  dev-utils that re-enables it.
 * Removed the deprecated webpack-only `~` prefix from bare-module SCSS imports and the `inter-ui`
   font-path URL in framework styles. Modern sass-loader and css-loader resolve the same package
   paths without it, and the prefix breaks under other bundlers.
