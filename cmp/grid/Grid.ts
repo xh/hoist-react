@@ -31,13 +31,13 @@ import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionMan
 import {DeferredWorkScheduler} from '@xh/hoist/cmp/grid/impl/DeferredWorkScheduler';
 import {
     colChooser as desktopColChooser,
-    colChooserPanel as desktopColChooserPanel,
+    dockedColChooser as desktopDockedColChooser,
     gridFilterDialog,
     ModalSupportModel,
     DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import type {ColChooserPanelModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserPanelModel';
+import type {DockedColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/DockedColChooserModel';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
@@ -110,7 +110,6 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 treeStyle,
                 highlightRowOnClick,
                 colChooserModel,
-                colChooserPanelModel,
                 filterModel,
                 enableFullWidthScroll
             } = model,
@@ -147,22 +146,29 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             ref: useComposedRefs(impl.viewRef, model.viewRef, ref)
         });
 
-        // Safe to use the desktop component unconditionally - GridModel never creates this model
-        // on mobile.
-        let content = gridContainer;
-        if (colChooserPanelModel) {
-            const chooser = desktopColChooserPanel({model: colChooserPanelModel}),
-                {side} = colChooserPanelModel as ColChooserPanelModel;
+        const filterDialog = filterModel ? gridFilterDialog({model: filterModel}) : null;
 
-            content =
-                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser);
+        if (colChooserModel?.mode === 'docked') {
+            // 1) docked chooser - laid out beside the grid rather than shown above it. Safe to use
+            // the desktop component unconditionally, as GridModel never creates it on mobile.
+            const chooser = desktopDockedColChooser({model: colChooserModel}),
+                {side} = colChooserModel as DockedColChooserModel;
+
+            return fragment(
+                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser),
+                filterDialog
+            );
+        } else if (colChooserModel) {
+            // 2) modal chooser
+            return fragment(
+                gridContainer,
+                platformColChooser({model: colChooserModel}),
+                filterDialog
+            );
+        } else {
+            // 3) no chooser
+            return fragment(gridContainer, filterDialog);
         }
-
-        return fragment(
-            content,
-            colChooserModel ? platformColChooser({model: colChooserModel}) : null,
-            filterModel ? gridFilterDialog({model: filterModel}) : null
-        );
     }
 });
 

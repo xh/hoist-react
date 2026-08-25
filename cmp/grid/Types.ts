@@ -179,6 +179,7 @@ export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 /** Cross-platform interface for desktop and mobile ColChooserModels. */
 export interface IColChooserModel extends HoistModel {
     readonly gridModel: GridModel;
+    readonly mode: ColChooserMode;
     readonly isOpen: boolean;
     open(): void;
     close(): void;
@@ -186,19 +187,34 @@ export interface IColChooserModel extends HoistModel {
 }
 
 /**
- * Configuration for a {@link ColChooserModel} - the model backing the grid column chooser UI.
- * Passed via the `colChooserModel` config on {@link GridConfig}, or set app-wide via
+ * Presentation for a grid's column chooser, as specified by {@link ColChooserConfig.mode}.
+ *      `modal` - an overlay (dialog or popover) shown above the grid.
+ *      `docked` - a resizable, non-modal side-panel rendered alongside the grid. Desktop only.
+ */
+export type ColChooserMode = 'modal' | 'docked';
+
+/**
+ * Configuration for a grid's column chooser - the model backing the column chooser UI. Passed via
+ * the `colChooserModel` config on {@link GridConfig}, or set app-wide via
  * `GridModel.defaults.colChooserModel`.
  *
- * @see ColChooserModel
+ * A grid has at most one chooser; `mode` selects how it is presented.
  */
 export interface ColChooserConfig {
     /** GridModel to bind to. Not required if creating via `GridModel.colChooserModel` */
     gridModel?: GridModel;
 
     /**
-     * Immediately render changed columns on grid (default true).
-     * Set to false to enable Save button for committing changes on save. Desktop only.
+     * How the chooser is presented (default 'modal'). Pass a bare {@link ColChooserMode} in place of
+     * this config as a shortcut - e.g. `colChooserModel: 'docked'`. Docked is desktop only and will
+     * throw in a mobile app.
+     */
+    mode?: ColChooserMode;
+
+    /**
+     * Immediately render changed columns on grid (default true). Set to false to enable Save button
+     * for committing changes on save. Desktop only, and modal only - the docked chooser stays in
+     * sync with external column state, so it always commits immediately.
      */
     commitOnChange?: boolean;
 
@@ -216,13 +232,13 @@ export interface ColChooserConfig {
 
     /**
      * Width of the chooser's bucket column - the always-present part, excluding the optional Column
-     * Library (see {@link ColLibraryConfig.libraryWidth}). In the popover and dialog the overlay
-     * sizes to fit this plus the library when shown; in the docked panel it is the initial dock width
-     * (grown by the library width while shown). Desktop only.
+     * Library (see {@link ColLibraryConfig.libraryWidth}). In the modal overlay this sizes to fit
+     * this plus the library when shown; in the docked panel it is the initial dock width (grown by
+     * the library width while shown). Desktop only.
      */
     width?: string | number;
 
-    /** Chooser height for popover and dialog. Desktop only. */
+    /** Chooser height. Desktop only, and modal only - the dock sizes itself vertically. */
     height?: string | number;
 
     /** Mode to use when filtering (default 'startWord'). Desktop only. */
@@ -235,6 +251,14 @@ export interface ColChooserConfig {
      * Pass `true` for defaults, or a {@link ColLibraryConfig} to customize. Desktop only.
      */
     columnLibrary?: boolean | ColLibraryConfig;
+
+    /**
+     * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
+     * horizontally, so `side` is limited to 'left'/'right' (default 'right'). The dock is resize-only
+     * (open/close is driven externally - e.g. a `ColChooserButton` or `GridModel.showColChooser()`),
+     * so `collapsible` is omitted. Requires `mode: 'docked'`.
+     */
+    panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
 }
 
 /**
@@ -258,22 +282,6 @@ export interface ColLibraryConfig {
      * Fixed width of the Column Library panel (default 250).
      */
     libraryWidth?: number;
-}
-
-/**
- * Configuration for a docked, non-modal column chooser - the model backing the side-panel chooser
- * presentation. Passed via the `colChooserPanelModel` config on {@link GridConfig}. Extends
- * {@link ColChooserConfig}; changes always auto-commit and stay in sync with external column state
- * (i.e. `commitOnChange` is forced true). Desktop only.
- */
-export interface ColChooserPanelConfig extends Omit<ColChooserConfig, 'commitOnChange'> {
-    /**
-     * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
-     * horizontally, so `side` is limited to 'left'/'right' (default 'right'). The dock is resize-only
-     * (open/close is driven externally - e.g. a `ColChooserButton` with `target: 'panel'`, or
-     * `GridModel.showColChooserPanel()`), so `collapsible` is omitted.
-     */
-    panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;

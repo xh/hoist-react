@@ -179,11 +179,11 @@ columns.
   `Column.chooserGroup`. Drag a column out to show and position it, or drag one in to hide it.
   Enable the library with `ColChooserConfig.columnLibrary` and customize it with `ColLibraryConfig`.
 * A new docked side-panel presentation stays open alongside the grid and always commits immediately.
-  Enable it with the new `GridConfig.colChooserPanelModel` config (`ColChooserPanelConfig`) and open
-  it with `GridModel.showColChooserPanel()`, the new `colChooserPanel` context-menu token, or a
-  `colChooserButton` with `target: 'panel'`.
-* Added a `target` prop to `ColChooserButton` to select the presentation - `'popover'` (default),
-  `'dialog'`, or `'panel'`.
+  Select it with the new `ColChooserConfig.mode` config - `colChooserModel: 'docked'` for defaults -
+  A grid has one chooser; `mode` chooses how it appears, and defaults to `'modal'` for the
+  dialog/popover behavior of prior releases.
+* Added a `modalTarget` prop to `ColChooserButton` to select the overlay a modal chooser opens in -
+  `'popover'` (default) or `'dialog'`. Ignored by a docked chooser, which the button toggles.
 * Columns that set a `chooserDescription` show an info icon, which reveals that description in an
   on-demand tooltip.
 * Users can toggle the display of column groups and the Column Library. Hoist persists this choice

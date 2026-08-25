@@ -262,10 +262,11 @@ new GridModel({
 ```
 
 **d. New capabilities to adopt (optional).** The chooser also gains a docked side-panel
-presentation (`GridConfig.colChooserPanelModel` + `GridModel.showColChooserPanel()`, the
-`colChooserPanel` context-menu token, or `colChooserButton({target: 'panel'})`), per-column
-`chooserDescription` tooltips, and `ColChooserConfig` options like `filterMatchMode` and
-`autosizeOnCommit`. See the configs for details - no action required.
+presentation - set `colChooserModel: 'docked'` (or `{mode: 'docked', ...}`) and open it as usual via
+`GridModel.showColChooser()`, the `colChooser` context-menu token, or a `colChooserButton`. A grid
+still has exactly one chooser, and `mode` defaults to `'modal'`, so existing configs are unchanged.
+Also new: per-column `chooserDescription` tooltips, and `ColChooserConfig` options like
+`filterMatchMode` and `autosizeOnCommit`. See the configs for details - no action required.
 
 ### 6. Update Cube `View` usages
 
