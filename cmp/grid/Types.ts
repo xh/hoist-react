@@ -206,7 +206,8 @@ export interface ColChooserConfig {
 
     /**
      * How the chooser is presented (default 'modal'). Pass a bare {@link ColChooserMode} in place of
-     * this config as a shortcut - e.g. `colChooserModel: 'docked'`. Docked is desktop only.
+     * this config as a shortcut - e.g. `colChooserModel: 'docked'`. Docked is desktop only and will
+     * throw in a mobile app.
      */
     mode?: ColChooserMode;
 

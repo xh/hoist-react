@@ -135,9 +135,9 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
             });
         case 'colChooser':
             return new RecordAction({
-                hidden: !gridModel?.colChooserModel,
+                hidden: !gridModel.colChooserModel,
                 displayFn: () => {
-                    const chooser = gridModel?.colChooserModel;
+                    const chooser = gridModel.colChooserModel;
                     if (chooser?.mode !== 'docked') {
                         return {icon: Icon.gridPanel(), text: 'Columns...'};
                     }
@@ -149,8 +149,8 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                     };
                 },
                 actionFn: () => {
-                    const chooser = gridModel?.colChooserModel;
-                    chooser?.mode === 'docked' ? chooser.toggle() : chooser?.open();
+                    const chooser = gridModel.colChooserModel;
+                    chooser.mode === 'docked' ? chooser.toggle() : chooser.open();
                 }
             });
         case 'expandCollapseAll': // For backward compatibility

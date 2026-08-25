@@ -146,25 +146,29 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             ref: useComposedRefs(impl.viewRef, model.viewRef, ref)
         });
 
-        // Safe to use the desktop component unconditionally for the docked chooser - GridModel
-        // never creates that model on mobile.
-        let content = gridContainer,
-            modalChooser = null;
+        const filterDialog = filterModel ? gridFilterDialog({model: filterModel}) : null;
+
         if (colChooserModel?.mode === 'docked') {
+            // 1) docked chooser - laid out beside the grid rather than shown above it. Safe to use
+            // the desktop component unconditionally, as GridModel never creates it on mobile.
             const chooser = desktopDockedColChooser({model: colChooserModel}),
                 {side} = colChooserModel as DockedColChooserModel;
 
-            content =
-                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser);
+            return fragment(
+                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser),
+                filterDialog
+            );
         } else if (colChooserModel) {
-            modalChooser = platformColChooser({model: colChooserModel});
+            // 2) modal chooser
+            return fragment(
+                gridContainer,
+                platformColChooser({model: colChooserModel}),
+                filterDialog
+            );
+        } else {
+            // 3) no chooser
+            return fragment(gridContainer, filterDialog);
         }
-
-        return fragment(
-            content,
-            modalChooser,
-            filterModel ? gridFilterDialog({model: filterModel}) : null
-        );
     }
 });
 

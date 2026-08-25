@@ -164,7 +164,8 @@ export interface GridConfig {
 
     /**
      * Config for this grid's column chooser, a bare {@link ColChooserMode} to enable the default
-     * config for that presentation, or boolean `true` for an all-default (modal) chooser.
+     * config for that presentation, or boolean `true` for an all-default (modal) chooser. Note that
+     * `mode: 'docked'` is desktop only and will throw in a mobile app.
      */
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean;
 
@@ -2128,20 +2129,20 @@ export class GridModel extends HoistModel {
 
         const config: ColChooserConfig =
             chooserModel === true
-                ? {}
+                ? {mode: 'modal'}
                 : isString(chooserModel)
                   ? {mode: chooserModel}
                   : chooserModel;
 
-        // Docked chooser is desktop only - fall back to the modal presentation on mobile.
-        warnIf(
-            XH.isMobileApp && config.mode === 'docked',
-            "ColChooser `mode: 'docked'` is not supported on mobile - showing the modal chooser."
+        const isDocked = config.mode === 'docked';
+        throwIf(
+            isDocked && XH.isMobileApp,
+            "ColChooser `mode: 'docked'` is not supported on mobile - use the default 'modal'."
         );
 
         const modelClass = XH.isMobileApp
             ? MobileColChooserModel
-            : config.mode === 'docked'
+            : isDocked
               ? DesktopDockedColChooserModel
               : DesktopModalColChooserModel;
 

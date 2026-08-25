@@ -23,9 +23,12 @@ export interface ColChooserButtonProps extends ButtonProps {
      * Overlay to show a modal chooser in (default 'popover'). Ignored by a chooser configured with
      * `mode: 'docked'`, which this button toggles in place.
      */
-    target?: 'dialog' | 'popover';
+    modalTarget?: 'dialog' | 'popover';
 
-    /** Position for chooser popover, as per Blueprint docs. Only applies when `target` is 'popover'. */
+    /**
+     * Position for chooser popover, as per Blueprint docs. Only applies when `modalTarget` is
+     * 'popover'.
+     */
     popoverPosition?: Position;
 }
 
@@ -42,11 +45,21 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
     model: false,
 
     render(
-        {className, icon, title, gridModel, target, popoverPosition, disabled, onClick, ...rest},
+        {
+            className,
+            icon,
+            title,
+            gridModel,
+            modalTarget,
+            popoverPosition,
+            disabled,
+            onClick,
+            ...rest
+        },
         ref
     ) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
-        target = withDefault(target, 'popover');
+        modalTarget = withDefault(modalTarget, 'popover');
 
         const chooserModel = gridModel?.colChooserModel,
             isDocked = chooserModel?.mode === 'docked';
@@ -66,7 +79,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             return button({ref, icon, title, className, disabled: true, ...rest});
         }
 
-        if (isDocked || target === 'dialog') {
+        if (isDocked || modalTarget === 'dialog') {
             return button({
                 ref,
                 icon,
