@@ -64,10 +64,9 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * Useful to avoid stale selections when options are reloaded, replacing app-level reactions
      * that manually reconcile the value against the options.
      *
-     * Not supported with `enableCreate` or `queryFn`, where values may legitimately fall outside
-     * `options` (will throw if combined). Note also that a value set before `options` are loaded
-     * will be removed - do not use when relying on `generateOptionFn` to render not-yet-loaded
-     * values.
+     * Not supported with `enableCreate`, `queryFn`, or `generateOptionFn`, where values may
+     * legitimately fall outside `options` (will throw if combined). Note also that this enforces
+     * immediately, so a value set before `options` are loaded will be removed.
      */
     enforceValueInOptions?: boolean;
 
@@ -273,8 +272,8 @@ class SelectInputModel extends HoistInputModel {
 
         if (this.componentProps.enforceValueInOptions) {
             throwIf(
-                this.creatableMode || this.asyncMode,
-                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+                this.creatableMode || this.asyncMode || this.componentProps.generateOptionFn,
+                '`enforceValueInOptions` is not supported with `enableCreate`, `queryFn`, or `generateOptionFn`.'
             );
             this.addReaction({
                 track: () => [this.externalValue, this.internalOptions],

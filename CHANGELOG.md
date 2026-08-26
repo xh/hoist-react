@@ -14,6 +14,14 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`. When true, the
+  control keeps its value constrained to the current `options` - any selected value not found in
+  `options` is removed whenever the value or the options list changes, replacing the app-level
+  reactions teams write today to reconcile a selection against reloaded options. Not supported
+  with `enableCreate`, `queryFn`, or `generateOptionFn`.
+
 ## 87.0.0 - 2026-08-25
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
