@@ -80,24 +80,6 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableTooltips?: boolean;
 
     /**
-     * True to enforce that the control's value is always present in the current `options`.
-     * Whenever the value or the `options` list changes, any selected value not found in `options`
-     * is removed - cleared to `emptyValue`, or filtered out of the array when `enableMulti` is
-     * true. Useful to avoid stale selections when options are reloaded, replacing app-level
-     * reactions that manually reconcile the value against the options.
-     *
-     * Enforced only once `options` is non-null: a null (or undefined) list signals that options
-     * have yet to load, and leaves any current value untouched. Apps loading options
-     * asynchronously should therefore pass null until loaded, not an empty array - an empty array
-     * is taken as "no valid choices" and will clear the value. Pair with `generateOptionFn` to
-     * render a proper label for a value set before its options arrive.
-     *
-     * Not supported with `enableCreate` or `queryFn`, where values may legitimately fall outside
-     * `options` (will throw if combined).
-     */
-    enforceValueInOptions?: boolean;
-
-    /**
      * True to use react-windowed-select for improved performance on large option lists.
      * See https://github.com/jacobworrel/react-windowed-select/.
      *
@@ -108,6 +90,14 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * Applications should use this option with care.
      */
     enableWindowed?: boolean;
+
+    /**
+     * True to constrain the value to the current `options` - any selected value not found there is
+     * removed whenever the value or the list changes. Enforced only once `options` is non-null, so
+     * pass null (not `[]`) while options load - `[]` means "no valid choices" and clears the value.
+     * Throws if combined with `enableCreate` or `queryFn`.
+     */
+    enforceValueInOptions?: boolean;
 
     /**
      * Function called to filter available options for a given query string input.

@@ -16,12 +16,9 @@
 
 ### 🎁 New Features
 
-* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`. When true, the
-  control keeps its value constrained to the current `options` - any selected value not found in
-  `options` is removed whenever the value or the options list changes, replacing the app-level
-  reactions teams write today to reconcile a selection against reloaded options. Enforced once
-  `options` is non-null, so apps loading options asynchronously should pass null until loaded.
-  Not supported with `enableCreate` or `queryFn`.
+* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
+  value to the current `options` and dropping any selection no longer found there. Enforced once
+  `options` is non-null, so pass null while options load.
 
 ## 87.0.0 - 2026-08-25
 
