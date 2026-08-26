@@ -151,7 +151,7 @@ export interface SelectProps<T = {}> extends HoistProps, HoistInputProps, Layout
      * Renderer for the selected value within the control itself, called with the option matching
      * the current value. Defaults to displaying the option's `label`.
      */
-    valueRenderer?: (opt: SelectOption) => ReactNode;
+    valueRenderer?: (opt: SelectOption<T>) => ReactNode;
 
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
