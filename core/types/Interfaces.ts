@@ -184,11 +184,24 @@ export interface MessageSpec {
      * Unique key identifying the message. If subsequent messages are triggered with this key, they
      * will replace this message. Useful for usages that may be producing messages recursively, or
      * via timers, and wish to avoid generating a large stack of duplicates.
+     *
+     * Also identifies the message for suppression purposes - required if `suppress` is set.
      */
     messageKey?: string;
 
     /** Config for input to be displayed (as a prompt). */
     input?: MessageSpecInput;
+
+    /**
+     * True or config to display a "Don't show this message again" checkbox, allowing users to
+     * opt out of future copies of this message. If the user confirms the message with the
+     * checkbox checked, their response will be saved to browser storage and returned
+     * immediately by future calls with the same `messageKey` (which must also be set).
+     *
+     * Specify as a config object to customize the checkbox label, limit how long the saved
+     * response should remain in effect, or save it to session (vs. local) storage.
+     */
+    suppress?: boolean | MessageSuppressSpec;
 
     /** If specified, user will be required to type this text when confirming. */
     extraConfirmText?: string;
@@ -241,6 +254,29 @@ export interface MessageSpecInput {
 
     /** Initial value for the input. */
     initialValue?: any;
+}
+
+/**
+ * Config for user opt-in message suppression - see {@link MessageSpec.suppress}.
+ */
+export interface MessageSuppressSpec {
+    /**
+     * Time (in ms) for which the user's saved response should remain in effect. Specify with
+     * datetime constants, e.g. `30 * DAYS`. Default null suppresses indefinitely.
+     */
+    expiry?: number;
+
+    /**
+     * Browser storage in which the user's response should be saved (default 'local'). Specify
+     * 'session' to suppress only for the lifetime of the current browser tab.
+     */
+    storage?: 'local' | 'session';
+
+    /** Label for the suppress checkbox. Defaults to a generated label appropriate to `expiry`. */
+    label?: ReactNode;
+
+    /** Initial value of the suppress checkbox (default false). */
+    initialValue?: boolean;
 }
 
 //------------------------

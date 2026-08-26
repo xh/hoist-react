@@ -14,6 +14,13 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `MessageSpec.suppress` config for `XH.message()` and its `alert`, `confirm`, and
+  `prompt` variants. Set to `true` (or a config object) to offer users a "Don't show this message
+  again" checkbox. Confirmed responses are saved to browser local or session storage - optionally
+  with an expiry - and returned immediately by future calls with the same `messageKey`.
+
 ## 87.0.0 - 2026-08-25
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
