@@ -121,7 +121,9 @@ export interface DashContainerViewState {
  * id references to the provided DashContainerViewSpec, e.g. `{type: `view`, id: ViewSpec.id}`.
  * Use instead of the `component` and `react-component` types provided by GoldenLayout.
  *
- * Note that loading state will destroy and reinitialize all components - do so sparingly!
+ * Note that loading state rebuilds the entire GoldenLayout instance, but views whose generated
+ * ids match the incoming state are reused along with their mounted content - see
+ * {@link loadStateAsync} for details on these reuse semantics.
  *
  * @example
  * ```
@@ -265,6 +267,17 @@ export class DashContainerModel
     }
 
     /**
+     * Remove all views from the container.
+     *
+     * Destroys all current view models, guaranteeing fresh views (and freshly-mounted content) on
+     * any subsequent {@link loadStateAsync}. Async counterpart to `DashCanvasModel.clear()` - the
+     * underlying GoldenLayout instance must be destroyed and recreated.
+     */
+    async clearAsync() {
+        await this.loadStateAsync([]);
+    }
+
+    /**
      * Restore the initial state as specified by the application at construction time. This is the
      * state without any persisted state or user changes applied.
      *
@@ -285,6 +298,15 @@ export class DashContainerModel
      * Note this applies full replace (not patch) semantics, at both levels: views not present in
      * the given state are removed, and entries fully replace each matched view's state - omitted
      * properties (e.g. `title`, `state`) reset to their defaults.
+     *
+     * Views are matched to incoming state by their generated ids, which encode position (spec id
+     * plus instance index - see {@link DashModel.genViewId}), not identity. Matched view models
+     * are reused rather than rebuilt: their content components stay mounted across the
+     * GoldenLayout rebuild and any models owned by that content remain live, with the incoming
+     * state pushed into them. This holds for any state loaded here, including state saved from a
+     * logically different dashboard (e.g. a saved-view switch driven by a ViewManager-linked
+     * provider). To instead force a full teardown and remount of all views, call
+     * {@link clearAsync} first.
      */
     async loadStateAsync(state: DashContainerViewState[]) {
         const ids = new Set<string>(),
