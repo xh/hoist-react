@@ -4,13 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
+import {getFilterRegex} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
-import {escapeRegExp} from 'lodash';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 export interface LeftRightChooserFilterProps extends HoistProps<LeftRightChooserModel> {
@@ -66,7 +66,7 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
     private runFilter() {
         const {fields = ['text', 'group']} = this.componentProps,
             searchTerm = this.value,
-            regex = this.getRegex(searchTerm);
+            regex = getFilterRegex(searchTerm, this.matchMode);
 
         const filter = raw => {
             return fields.some(f => {
@@ -77,19 +77,6 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
         };
 
         this.model.setDisplayFilter(filter);
-    }
-
-    private getRegex(searchTerm: string): RegExp {
-        searchTerm = escapeRegExp(searchTerm);
-        switch (this.matchMode) {
-            case 'any':
-                return new RegExp(searchTerm, 'i');
-            case 'start':
-                return new RegExp(`^${searchTerm}`, 'i');
-            case 'startWord':
-                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
-        }
-        throw XH.exception('Unknown matchMode in StoreFilterField');
     }
 
     override destroy() {

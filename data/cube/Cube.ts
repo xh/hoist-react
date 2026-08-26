@@ -5,18 +5,19 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
+import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {action, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {defaultsDeep, isEmpty} from 'lodash';
-import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {defaultsDeep, isArray, isEmpty} from 'lodash';
+import {Store, StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {RecordSetDelta} from '../impl/RecordSet';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
 import {Query, QueryConfig} from './Query';
-import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
-import {BucketRow} from './row/BucketRow';
+import {AggregateRow, BucketRow} from './row/ParentRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
@@ -45,6 +46,16 @@ export interface CubeConfig {
     /** See {@link StoreConfig.processRawData} */
     processRawData?: (data: PlainObject) => PlainObject;
 
+    /**
+     * Additional configs for the internal {@link Store} of leaf-level records maintained by this
+     * Cube - i.e. tuning of how that Store holds the data described by `fields` / `idSpec` above.
+     *
+     * Note `digestSpec` is recommended whenever the source can supply a cheap per-row digest - it
+     * preserves record identity for unchanged rows across loads and updates, allowing connected
+     * Views to reuse their generated rows and connected stores their records.
+     */
+    store?: CubeStoreConfig;
+
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;
 
@@ -66,6 +77,36 @@ export interface CubeConfig {
      */
     omitFn?: OmitFn;
 }
+
+/**
+ * Configs available for a {@link Cube}'s internal {@link Store}, via {@link CubeConfig.store}.
+ *
+ * Excludes configs specified on {@link CubeConfig} itself (`fields`, `data`, `idSpec`,
+ * `processRawData`) or required by the Cube's internal representation (`freezeData`,
+ * `idEncodesTreePath`), along with configs that do not apply to a flat store of leaf-level facts:
+ *
+ *  - Tree loading (`loadTreeData`, `loadTreeDataFrom`, `loadRootAsSummary`) - hierarchy is produced
+ *    by `View`s from the Cube's dimensions, not loaded into its source store.
+ *  - Filtering (`filter`, `filterIncludesChildren`) - filter via `QueryConfig.filter` instead, so
+ *    that aggregations remain consistent with the facts loaded into the Cube.
+ *  - `projectionOnly` - incompatible with `Cube.modifyRecordsAsync()`, which requires a store that
+ *    supports local record modification.
+ */
+export type CubeStoreConfig = Omit<
+    StoreConfig,
+    | 'fields'
+    | 'data'
+    | 'idSpec'
+    | 'processRawData'
+    | 'freezeData'
+    | 'idEncodesTreePath'
+    | 'loadTreeData'
+    | 'loadTreeDataFrom'
+    | 'loadRootAsSummary'
+    | 'filter'
+    | 'filterIncludesChildren'
+    | 'projectionOnly'
+>;
 
 /**
  * Function to be called for each node to aggregate to determine if it should be "locked",
@@ -120,6 +161,12 @@ export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
 export class Cube extends HoistBase {
     static RECORD_ID_DELIMITER = '>>';
 
+    static isCube(obj: unknown): obj is Cube {
+        return obj instanceof Cube;
+    }
+
+    _created = Date.now();
+
     @managed store: Store;
     lockFn: LockFn;
     bucketSpecFn: BucketSpecFn;
@@ -135,6 +182,7 @@ export class Cube extends HoistBase {
         data = [],
         idSpec = 'id',
         processRawData,
+        store,
         info = {},
         lockFn,
         bucketSpecFn,
@@ -142,9 +190,10 @@ export class Cube extends HoistBase {
     }: CubeConfig) {
         super();
         this.store = new Store({
+            ...store,
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
-            processRawData: processRawData,
+            processRawData,
             freezeData: false,
             idEncodesTreePath: true
         });
@@ -153,6 +202,7 @@ export class Cube extends HoistBase {
         this.lockFn = lockFn;
         this.bucketSpecFn = bucketSpecFn;
         this.omitFn = omitFn;
+        instanceManager.registerCube(this);
     }
 
     /** Fields configured for this Cube. */
@@ -271,16 +321,36 @@ export class Cube extends HoistBase {
      * Populate this cube with a new dataset.
      * This method largely delegates to {@link Store.loadData} - see that method for more info.
      *
+     * May also be passed a streaming source - a sync or async iterable yielding raw records -
+     * loaded via {@link Store.loadDataAsync}, e.g.
+     * `cube.loadDataAsync(XH.fetchNdjson({url}).lines)`.
+     *
      * Note that this method will update its views asynchronously in order to avoid locking up the
      * browser when attached to multiple expensive views.
      *
-     * @param rawData - flat array of lowest/leaf level data rows.
+     * @param rawData - flat array of lowest/leaf level data rows, or a streaming source of same.
      * @param info - optional metadata to associate with this cube/dataset.
      */
-    async loadDataAsync(rawData: PlainObject[], info: PlainObject = {}): Promise<void> {
-        this.store.loadData(rawData);
+    async loadDataAsync(
+        rawData: PlainObject[] | AnyIterable<PlainObject>,
+        info: PlainObject = {}
+    ): Promise<void> {
+        const {store} = this,
+            prevRecords = store._filtered;
+        if (isArray(rawData)) {
+            store.loadData(rawData);
+        } else {
+            await store.loadDataAsync(rawData);
+        }
         this.setInfo(info);
-        await forEachAsync(this._connectedViews, v => v.noteCubeLoaded());
+
+        // Sync views incrementally on no-change loads and cheaply derivable deltas - see deltaFrom.
+        const {_filtered} = store,
+            unchanged = _filtered === prevRecords,
+            delta = unchanged ? null : _filtered.deltaFrom(prevRecords);
+        await forEachAsync(this._connectedViews, v =>
+            unchanged || delta ? v.noteCubeUpdated(delta) : v.noteCubeLoaded()
+        );
     }
 
     /**
@@ -307,7 +377,9 @@ export class Cube extends HoistBase {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
-            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+            await forEachAsync(this._connectedViews, v =>
+                v.noteCubeUpdated(changeLog as RecordSetDelta)
+            );
         }
     }
 
@@ -327,7 +399,9 @@ export class Cube extends HoistBase {
         const changeLog = this.store.modifyRecords(modifications);
 
         if (changeLog) {
-            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+            await forEachAsync(this._connectedViews, v =>
+                v.noteCubeUpdated(changeLog as RecordSetDelta)
+            );
         }
     }
 
@@ -366,6 +440,7 @@ export class Cube extends HoistBase {
     }
 
     override destroy() {
+        instanceManager.unregisterCube(this);
         this._connectedViews.forEach(v => v.disconnect());
         super.destroy();
     }

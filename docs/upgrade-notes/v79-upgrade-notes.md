@@ -156,13 +156,22 @@ grep -r "applyColumnStateChanges" client-app/src/
 
 Before:
 ```typescript
-gridModel.applyColumnStateChanges({visible: ['name', 'status']});
+gridModel.applyColumnStateChanges([
+    {colId: 'name', hidden: false},
+    {colId: 'status', hidden: true, width: 120}
+]);
 ```
 
 After:
 ```typescript
-gridModel.updateColumnState({visible: ['name', 'status']});
+gridModel.updateColumnState([
+    {colId: 'name', hidden: false},
+    {colId: 'status', hidden: true, width: 120}
+]);
 ```
+
+The argument is unchanged - a `Partial<ColumnState>[]`, requiring only `colId` plus the properties
+to change. Only the method name is different.
 
 ### 6. Update `TabSwitcher` / `TabContainerConfig.switcher` Usage
 

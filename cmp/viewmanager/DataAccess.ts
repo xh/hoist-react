@@ -117,6 +117,53 @@ export class DataAccess<T> {
             });
     }
 
+    /** Apply the same metadata updates to multiple views. */
+    async updateViewsInfoAsync(
+        views: ViewInfo[],
+        updates: ViewUpdateSpec,
+        ctx: CallContext
+    ): Promise<void> {
+        views.forEach(v => this.ensureEditable(v));
+        const {model} = this;
+        return model
+            .runner(ctx)
+            .postJson({
+                url: 'xhView/bulkUpdateInfo',
+                params: {tokens: map(views, 'token').join(',')},
+                body: updates
+            })
+            .catch(e => {
+                throw XH.exception({
+                    message: `Unable to update ${pluralize(model.typeDisplayName)}`,
+                    cause: e
+                });
+            });
+    }
+
+    /** Rename or re-parent a group, cascading to every view at or nested under `from`. */
+    async renameGroupAsync(
+        from: string,
+        to: string,
+        isGlobal: boolean,
+        ctx: CallContext
+    ): Promise<void> {
+        const {model} = this;
+        throwIf(
+            isGlobal && !model.manageGlobal,
+            `Cannot rename a ${model.globalDisplayName} group - missing required permission.`
+        );
+        return model
+            .runner(ctx)
+            .postJson({
+                url: 'xhView/renameGroup',
+                params: {type: model.type},
+                body: {from, to, isGlobal}
+            })
+            .catch(e => {
+                throw XH.exception({message: `Unable to rename group "${from}"`, cause: e});
+            });
+    }
+
     /** Update a view's value. */
     async updateViewValueAsync(
         view: View<T>,

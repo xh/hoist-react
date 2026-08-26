@@ -75,17 +75,11 @@ class GridHScrollbarModel extends HoistModel {
         );
     }
 
-    private get agViewport(): HTMLDivElement {
-        return this.viewRef.current.querySelector('.ag-center-cols-viewport');
-    }
-
-    private get agHeaderViewport(): HTMLDivElement {
-        return this.viewRef.current.querySelector('.ag-header-viewport');
-    }
-
-    private get agVerticalScrollContainer(): HTMLDivElement {
-        return this.viewRef.current.querySelector('.ag-body-vertical-scroll-container');
-    }
+    // ag-Grid viewport elements, resolved once on link - stable for the life of the grid
+    // instance, and read on the frame-critical scroll path.
+    private agViewport: HTMLDivElement;
+    private agHeaderViewport: HTMLDivElement;
+    private agVerticalScrollContainer: HTMLDivElement;
 
     private get gridModel(): GridModel {
         return this.componentProps.model as GridModel;
@@ -108,16 +102,22 @@ class GridHScrollbarModel extends HoistModel {
         this.addReaction({
             when: () => this.viewRef.current && this.gridModel.isReady,
             run: () => {
-                const {agViewport, viewRef} = this;
-                this.viewWidth = viewRef.current.clientWidth;
-                agViewport.addEventListener('scroll', e => {
+                const {viewRef} = this,
+                    view = viewRef.current;
+                this.agViewport = view.querySelector('.ag-center-cols-viewport');
+                this.agHeaderViewport = view.querySelector('.ag-header-viewport');
+                this.agVerticalScrollContainer = view.querySelector(
+                    '.ag-body-vertical-scroll-container'
+                );
+                this.viewWidth = view.clientWidth;
+                this.agViewport.addEventListener('scroll', e => {
                     const left = (e.target as HTMLDivElement).scrollLeft;
                     this.scrollScroller(left);
                     this.agHeaderViewport.scrollLeft = left;
                 });
                 this.agViewportResizeObserver = observeResize(
                     () => this.onAgViewportResized(),
-                    agViewport,
+                    this.agViewport,
                     {debounce: 100}
                 );
                 this.viewResizeObserver = observeResize(

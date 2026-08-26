@@ -13,7 +13,6 @@ module.exports = defineConfig([
     },
     globalIgnores([
         'build/**/*',
-        '.yarn/**/*',
         'node_modules/**/*',
         'mcp/**/*',
         'bin/**/*',

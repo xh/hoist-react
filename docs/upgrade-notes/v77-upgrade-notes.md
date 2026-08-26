@@ -149,7 +149,10 @@ XH.renderApp({
 });
 ```
 
-The same rename applies at the `FieldSpec` / `Store.fieldDefaults` level:
+The same replacement applies at the `FieldSpec` / `Store.fieldDefaults` level. **Note the inverted
+sense — this is not a straight rename.** A field or store that set `disableXssProtection: true` was
+opting *out* of protection, so the equivalent is `enableXssProtection: false` (or simply dropping
+the flag, as `false` is the new default):
 
 Before:
 ```typescript
@@ -161,11 +164,24 @@ new Store({
 
 After:
 ```typescript
+// Protection is now off by default - the flag can simply be removed.
+new Store({
+    // ...
+});
+```
+
+Conversely, a field or store that *relied on* the old default to sanitize untrusted input must now
+opt in explicitly:
+
+```typescript
 new Store({
     fieldDefaults: {enableXssProtection: true},
     // ...
 });
 ```
+
+Field-level settings continue to override the app-level default from
+`AppSpec.enableXssProtection`.
 
 ### 4. Update AG Grid Context Menu Markup
 

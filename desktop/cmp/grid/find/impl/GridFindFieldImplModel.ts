@@ -5,14 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
+import {getFilterRegex} from '@xh/hoist/data';
 import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, comparer, computed, observable} from '@xh/hoist/mobx';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
-    escapeRegExp,
     filter,
     flatMap,
     get,
@@ -114,7 +114,8 @@ export class GridFindFieldImplModel extends HoistModel {
                 run: () => {
                     this._records = null;
                     if (this.hasQuery) this.updateResults();
-                }
+                },
+                debounce: this.queryBuffer
             },
             {
                 track: () => [this.includeFields, this.excludeFields, this.matchMode],
@@ -163,7 +164,7 @@ export class GridFindFieldImplModel extends HoistModel {
             return;
         }
 
-        const regex = this.getRegex(query),
+        const regex = getFilterRegex(query, this.matchMode),
             valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
 
         this.results = this.getRecords()
@@ -179,85 +180,7 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     private getRecords(): StoreRecord[] {
-        if (!this._records) {
-            const records = this.sortRecordsRecursive([...this.gridModel.store.rootRecords]);
-            this._records = this.sortRecordsByGroupBy(records);
-        }
-        return this._records;
-    }
-
-    // Sort records with GridModel's sortBy(s) using the Column's comparator
-    private sortRecordsRecursive(records: StoreRecord[]): StoreRecord[] {
-        const {gridModel} = this,
-            {sortBy, treeMode, agApi, store} = gridModel,
-            ret: StoreRecord[] = [];
-
-        [...sortBy].reverse().forEach(it => {
-            const column = gridModel.getColumn(it.colId);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                compFn = (column.getAgSpec().comparator as Function).bind(column),
-                direction = it.sort === 'desc' ? -1 : 1;
-
-            const ctx = {field, column, gridModel, store, agParams: null};
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, ...ctx}),
-                    valueB = getValueFn({record: b, ...ctx}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
-
-                return compFn(valueA, valueB, nodeA, nodeB) * direction;
-            });
-        });
-
-        records.forEach(rec => {
-            ret.push(rec);
-            if (treeMode && !isEmpty(rec.children)) {
-                const children = this.sortRecordsRecursive(rec.children);
-                ret.push(...children);
-            }
-        });
-
-        return ret;
-    }
-
-    // Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
-    private sortRecordsByGroupBy(records: StoreRecord[]) {
-        const {gridModel} = this,
-            {agApi, groupBy, groupSortFn, store} = gridModel;
-
-        [...groupBy].reverse().forEach(groupField => {
-            const column = gridModel.getColumn(groupField);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                ctx = {field, column, gridModel, store, agParams: null};
-
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, ...ctx}),
-                    valueB = getValueFn({record: b, ...ctx}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
-
-                return groupSortFn(valueA, valueB, field, {gridModel, nodeA, nodeB});
-            });
-        });
-
-        return records;
-    }
-
-    private getRegex(searchTerm: string): RegExp {
-        searchTerm = escapeRegExp(searchTerm);
-        switch (this.matchMode) {
-            case 'any':
-                return new RegExp(searchTerm, 'i');
-            case 'start':
-                return new RegExp(`^${searchTerm}`, 'i');
-            case 'startWord':
-                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
-        }
-        throw XH.exception('Unknown matchMode in GridFindField');
+        return (this._records ??= this.gridModel.getSortedRecords());
     }
 
     private getActiveFields(): string[] {

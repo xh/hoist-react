@@ -80,12 +80,14 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
         };
 
         const expandCollapseIcon = () => {
-            const {xhColumn} = model;
+            const {xhColumn} = model,
+                {store} = model.gridModel;
             if (
                 !xhColumn ||
                 !xhColumn.isTreeColumn ||
                 !xhColumn.headerHasExpandCollapse ||
-                !model.rootsWithChildren
+                // Any non-root record implies at least one expandable root.
+                store.count === store.rootCount
             ) {
                 return null;
             }
@@ -234,14 +236,9 @@ class ColumnHeaderModel extends HoistModel {
     };
 
     @computed
-    get rootsWithChildren() {
-        return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children)).length;
-    }
-
-    @computed
     get majorityIsExpanded() {
-        const {expandState} = this.gridModel;
-        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren / 2;
+        const {expandState, store} = this.gridModel;
+        return !isEmpty(expandState) && size(expandState) > store.rootCount / 2;
     }
 
     // Desktop click handling

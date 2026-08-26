@@ -7,10 +7,9 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {br, fragment, hbox, hspacer} from '@xh/hoist/cmp/layout';
+import {br, fragment, hbox, hspacer, span} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
-import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -25,6 +24,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
+import {configValue} from './ConfigValue';
 
 export class ConfigPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminConfigState'};
@@ -53,7 +53,7 @@ export class ConfigPanelModel extends HoistModel {
             colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('configs')},
-            filterFields: ['name', 'value', 'groupName', 'note'],
+            filterFields: ['name', 'value', 'effectiveValue', 'groupName', 'note'],
             groupBy: 'groupName',
             persistWith: this.persistWith,
             prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
@@ -66,6 +66,15 @@ export class ConfigPanelModel extends HoistModel {
                 url: 'rest/configAdmin',
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {enableXssProtection: false},
+                // Effective value for display/filter/sort/export - resolved, else override,
+                // else stored.
+                processRawData: raw => ({
+                    ...raw,
+                    effectiveValue:
+                        raw.resolvedValue != null
+                            ? JSON.stringify(raw.resolvedValue)
+                            : (raw.overrideValue ?? raw.value)
+                }),
                 fields: [
                     {...(Col.name.field as FieldSpec), required},
                     {
@@ -89,7 +98,13 @@ export class ConfigPanelModel extends HoistModel {
                         name: 'overrideValue',
                         typeField: 'valueType',
                         editable: false
-                    }
+                    },
+                    {name: 'resolvedValue', type: 'auto', editable: false},
+                    {name: 'defaultValue', type: 'auto', editable: false},
+                    {name: 'effectiveValue', type: 'auto', displayName: 'Value', editable: false},
+
+                    // Read-only presentation slot for the value editor - edits flow through `value`.
+                    {name: 'valueDisplay', type: 'auto', editable: false}
                 ]
             },
             // Cols + editors
@@ -99,6 +114,7 @@ export class ConfigPanelModel extends HoistModel {
                 {...Col.valueType},
                 {
                     ...Col.value,
+                    field: 'effectiveValue',
                     renderer: this.valueRenderer,
                     tooltip: this.valueTooltip,
                     rendererIsComplex: true
@@ -112,19 +128,27 @@ export class ConfigPanelModel extends HoistModel {
                 {field: 'name'},
                 {field: 'groupName'},
                 {field: 'valueType'},
-                {field: 'value'},
+                // The readonlyRenderer effectively provides a custom editor for `value`.
+                // `omit: false` defeats the default omission of empty read-only fields on add.
                 {
-                    field: 'overrideValue',
-                    omit: isNil,
+                    field: 'valueDisplay',
+                    omit: false,
                     formField: {
-                        className: 'xh-bg-intent-warning',
-                        info: 'Editable (database) value overridden by instance config / env variable.',
-                        readonlyRenderer: (v, model) =>
-                            model.formModel.values.valueType === 'pwd'
-                                ? '*****'
-                                : defaultReadonlyRenderer(v)
+                        label: 'Value',
+                        // Keyed by FormModel so each (re)opening mounts fresh tab state.
+                        readonlyRenderer: (_v, model) =>
+                            configValue({
+                                key: model.formModel.xhId,
+                                formModel: model.formModel,
+                                height: 250
+                            })
                     }
                 },
+                // Data/bind fields for the presentation above; never rendered directly.
+                {field: 'value', omit: true},
+                {field: 'resolvedValue', omit: true},
+                {field: 'defaultValue', omit: true},
+                {field: 'overrideValue', omit: true},
                 {field: 'note', formField: {item: textArea({height: 100})}},
                 {field: 'clientVisible'},
                 {field: 'lastUpdated'},
@@ -161,7 +185,7 @@ export class ConfigPanelModel extends HoistModel {
                 return v.valueType === 'pwd'
                     ? '*****'
                     : !isNil(v.overrideValue)
-                      ? this.withOverrideWarning(v.value)
+                      ? this.withOverrideWarning(v.value, {strike: true})
                       : v.value;
             }
         });
@@ -176,14 +200,15 @@ export class ConfigPanelModel extends HoistModel {
 
     private valueRenderer = (value, {record}) => {
         value = this.fmtValue(value, record);
-        if (isNil(record.get('overrideValue'))) return value;
-        return this.withOverrideWarning(value);
+        return isNil(record.get('overrideValue')) ? value : this.withOverrideWarning(value);
     };
 
-    private valueTooltip = (value, {record}) =>
-        !isNil(record.get('overrideValue'))
-            ? 'Overridden by instance config / env variable. Open to view effective value.'
-            : this.fmtValue(value, record);
+    private valueTooltip = (value, {record}) => {
+        const ret = this.fmtValue(value, record);
+        return isNil(record.get('overrideValue'))
+            ? ret
+            : `Overridden by instance config / env variable: ${ret}`;
+    };
 
     private fmtValue(value, record) {
         switch (record.data.valueType) {
@@ -196,14 +221,22 @@ export class ConfigPanelModel extends HoistModel {
         }
     }
 
-    private withOverrideWarning(value) {
+    private withOverrideWarning(value, {strike = false}: {strike?: boolean} = {}) {
         return hbox({
             alignItems: 'center',
-            items: [Icon.warning({intent: 'warning', prefix: 'fas'}), hspacer(), value],
-            style: {
-                color: 'var(--xh-text-color-muted)',
-                textDecoration: 'line-through'
-            }
+            items: [
+                Icon.warning({intent: 'warning', prefix: 'fas'}),
+                hspacer(),
+                // Clip long values cleanly - the flex row defeats the grid cell's own ellipsis.
+                span({
+                    item: value,
+                    style: {overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}
+                })
+            ],
+            // {} rather than null - a null style clobbers Box's own inline layout styles.
+            style: strike
+                ? {color: 'var(--xh-text-color-muted)', textDecoration: 'line-through'}
+                : {}
         });
     }
 }

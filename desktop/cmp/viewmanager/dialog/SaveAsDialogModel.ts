@@ -9,6 +9,8 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {GroupFieldModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/editpanels/GroupFieldModel';
+import {normalizeGroupValue} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {action, observable} from '@xh/hoist/mobx';
 import {some} from 'lodash';
 
@@ -19,12 +21,17 @@ export class SaveAsDialogModel extends HoistModel {
     readonly parent: ViewManagerModel;
 
     @managed readonly formModel: FormModel;
+    @managed readonly groupFieldModel: GroupFieldModel;
     @observable accessor isOpen: boolean = false;
 
     constructor(parent: ViewManagerModel) {
         super();
         this.parent = parent;
         this.formModel = this.createFormModel();
+        this.groupFieldModel = new GroupFieldModel({
+            formModel: this.formModel,
+            viewManagerModel: parent
+        });
     }
 
     @action
@@ -35,12 +42,12 @@ export class SaveAsDialogModel extends HoistModel {
 
         formModel.init({
             name,
-            group: src.group,
             // Do not copy description or visibility from source view
             description: null,
             visibility: 'private',
             isPinned: !!src.info?.isPinned
         });
+        this.groupFieldModel.init(src.group);
 
         this.isOpen = true;
     }
@@ -113,7 +120,7 @@ export class SaveAsDialogModel extends HoistModel {
 
         await parent.saveAsAsync({
             name: name.trim(),
-            group: group?.trim(),
+            group: normalizeGroupValue(group),
             description: description?.trim(),
             isGlobal,
             isShared,

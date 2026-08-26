@@ -7,7 +7,7 @@
 
 import {HoistService, HoistModel} from '../';
 import {isNil} from 'lodash';
-import {Store} from '@xh/hoist/data';
+import type {Cube, Store, View} from '@xh/hoist/data';
 import {observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
@@ -21,6 +21,10 @@ class InstanceManager {
     @observable.shallow accessor models: Set<HoistModel> = new Set();
 
     @observable.shallow accessor stores: Set<Store> = new Set();
+
+    @observable.shallow accessor cubes: Set<Cube> = new Set();
+
+    @observable.shallow accessor views: Set<View> = new Set();
 
     private modelsByTestId: Map<string, HoistModel> = new Map();
     private testSupportedModels = new Set(['GridModel', 'DataViewModel', 'FormModel', 'TabModel']);
@@ -43,6 +47,22 @@ class InstanceManager {
 
     unregisterStore(s: Store) {
         wait().thenAction(() => this.stores.delete(s));
+    }
+
+    registerCube(c: Cube) {
+        wait().thenAction(() => this.cubes.add(c));
+    }
+
+    unregisterCube(c: Cube) {
+        wait().thenAction(() => this.cubes.delete(c));
+    }
+
+    registerView(v: View) {
+        wait().thenAction(() => this.views.add(v));
+    }
+
+    unregisterView(v: View) {
+        wait().thenAction(() => this.views.delete(v));
     }
 
     registerModelWithTestId(testId: string, m: HoistModel) {

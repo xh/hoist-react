@@ -28,7 +28,7 @@ GridModel (orchestrator)
 ├── selModel: StoreSelectionModel # Selection state
 ├── columns: Column[]             # Column definitions
 ├── filterModel: GridFilterModel  # Column-level filtering (desktop only)
-├── colChooserModel: HoistModel   # Column visibility UI
+├── colChooserModel: HoistModel   # Column visibility UI (modal or docked)
 └── agGridModel: AgGridModel      # ag-Grid wrapper (from /cmp/ag-grid/)
 ```
 

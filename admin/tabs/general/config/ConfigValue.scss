@@ -1,0 +1,79 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+.xh-config-value {
+  width: 100%;
+
+  // Database tab label when an instance value overrides it.
+  &__overridden {
+    text-decoration: line-through;
+    color: var(--xh-text-color-muted);
+  }
+
+  // Mute all text in the Defaults tab.
+  &__defaults .cm-line,
+  &__defaults .cm-line span {
+    color: var(--xh-text-color-muted) !important;
+  }
+}
+
+// Stale-resolved-value prompt - framed as an input surface, standing in for the readonly editor.
+.xh-placeholder.xh-config-value__stale {
+  border: var(--xh-border-solid);
+  border-radius: var(--xh-border-radius-px);
+  background-color: var(--xh-input-bg);
+
+  // Dial back Placeholder's own 4em icon. Doubled class above to out-rank it.
+  > .xh-icon:first-child {
+    font-size: 2.5em;
+  }
+}
+
+// Mute not-explicitly-set lines in the Resolved tab. Classes are applied via
+// CodeMirror `lineStyles` directly on the `.cm-line` elements. Kept self-contained, not nested
+// under .xh-config-value, to preserve styles in the modal display.
+.cm-line.xh-config-value__muted,
+.cm-line.xh-config-value__muted span {
+  color: var(--xh-text-color-muted) !important;
+}
+
+// FormField's readonly wrapper shrinks to content width and adds vertical padding - both meant
+// for its generic plain-text renderer, not our own fully-styled readonly inputs. Covers the outer
+// valueDisplay field (wrapping the whole tab container) and the Database tab's own nested `value`
+// field (whose readonly-display wraps a bare jsonInput, not a `.xh-config-value`).
+.xh-form-field__readonly-display:has(.xh-config-value),
+.xh-config-value__field .xh-form-field__readonly-display {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+}
+
+// Top-align the enclosing field's label, as for a json-input field.
+.xh-form-field--inline:has(.xh-config-value) {
+  align-items: start;
+}
+
+// Nested FormField hosting the value input - a bare, full-width slot. The doubled selector out-
+// ranks RestForm's per-field margin-bottom, which would make this tab taller than its siblings.
+.xh-config-value__field,
+.xh-rest-form .xh-config-value__field.xh-form-field {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+// FormField's json-input + readonly styling frames the readonly display with its own background/
+// border - intended for the generic plain-text readonly renderer. Our readonlyRenderer supplies
+// its own fully-framed jsonInput instead, so undo the double frame here.
+.xh-config-value__field {
+  &.xh-form-field--json-input.xh-form-field--readonly .xh-form-field__inner--flex {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+  }
+}
