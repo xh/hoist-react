@@ -14,6 +14,22 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - one behavior change to `FileChooser`)
+
+* `FileChooser` now accepts as many dropped files as its `maxFiles` limit allows, rejecting only
+  the surplus. Previously a drop that would exceed the limit was discarded in full. Apps relying on
+  the all-or-nothing behavior should check `onFileAccepted` - it now reports only the files actually
+  added.
+
+### ⚙️ Technical
+
+* Upgraded `react-dropzone` to v20, which drops its UMD build and ships as an ESM + CJS package with
+  an `exports` map. Requires Node >= 22 to install.
+
+### 📚 Libraries
+
+* react-dropzone `15.0 → 20.1`
+
 ## 87.0.0 - 2026-08-25
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)

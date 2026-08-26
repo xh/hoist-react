@@ -11,7 +11,18 @@ import {ErrorCode, FileRejection} from '@xh/hoist/kit/react-dropzone';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {castArray, concat, filter, isEmpty, keys, fromPairs, map, sortBy, uniqBy} from 'lodash';
+import {
+    castArray,
+    differenceBy,
+    filter,
+    isEmpty,
+    keys,
+    fromPairs,
+    map,
+    sortBy,
+    take,
+    uniqBy
+} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef} from 'react-dropzone';
 
@@ -120,10 +131,10 @@ export class FileChooserModel extends HoistModel {
     }
 
     /**
-     * Add files to the selection.
+     * Add files to the selection, taking as many as the `maxFiles` limit allows.
      *
-     * Respects the `maxFiles` limit but does NOT enforce the `accept` / file-size constraints
-     * (those are applied only on drop/browse) - use with care.
+     * Does NOT enforce the `accept` / file-size constraints (those are applied only on
+     * drop/browse) - use with care.
      */
     addFiles(files: Some<File>) {
         this.addFilesInternal(files);
@@ -158,33 +169,36 @@ export class FileChooserModel extends HoistModel {
             // In single-file mode, replace the current selection with the incoming file.
             if (maxFiles === 1 && accepted.length === 1) this.clear();
 
-            if (this.addFilesInternal(accepted)) {
-                this.onFileAccepted?.(accepted);
-            }
+            const added = this.addFilesInternal(accepted);
+            if (!isEmpty(added)) this.onFileAccepted?.(added);
         }
     }
 
     //------------------------
     // Implementation
     //------------------------
-    // De-dupe by name, then enforce `maxFiles` on the result. Warns and no-ops if exceeded;
-    // returns true if the selection was updated.
+    // Add incoming files, replacing any same-named file already selected and taking the rest up to
+    // the `maxFiles` limit. Warns on any surplus. Returns the files actually added.
     @action
-    private addFilesInternal(files: Some<File>): boolean {
+    private addFilesInternal(files: Some<File>): File[] {
         const {maxFiles} = this,
-            deduped = uniqBy(concat(files, this.files), 'name');
+            incoming = uniqBy(castArray(files), 'name'),
+            // Existing files the incoming batch does not replace - always retained.
+            retained = differenceBy(this.files, incoming, 'name'),
+            capacity = maxFiles != null ? Math.max(maxFiles - retained.length, 0) : incoming.length,
+            added = take(incoming, capacity),
+            surplus = incoming.length - added.length;
 
-        if (maxFiles != null && deduped.length > maxFiles) {
+        if (surplus) {
             XH.warningToast(
                 maxFiles === 1
                     ? 'Only one file allowed for upload.'
-                    : `File limit of ${maxFiles} exceeded.`
+                    : `File limit of ${maxFiles} reached - ${surplus} ${pluralize('file', surplus)} not added.`
             );
-            return false;
         }
 
-        this.files = deduped;
-        return true;
+        if (!isEmpty(added)) this.files = [...added, ...retained];
+        return added;
     }
 
     private defaultRejectMessage = (rejections: FileRejection[]): ReactElement => {
