@@ -58,15 +58,18 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /**
      * True to enforce that the control's value is always present in the current `options`.
-     * When either the value or the `options` list changes, any selected value not found in
-     * `options` is automatically removed (cleared to null).
+     * Whenever the value or the `options` list changes, any selected value not found in `options`
+     * is removed (cleared to null). Useful to avoid stale selections when options are reloaded,
+     * replacing app-level reactions that manually reconcile the value against the options.
      *
-     * Useful to avoid stale selections when options are reloaded, replacing app-level reactions
-     * that manually reconcile the value against the options.
+     * Enforced only once `options` is non-null: a null (or undefined) list signals that options
+     * have yet to load, and leaves any current value untouched. Apps loading options
+     * asynchronously should therefore pass null until loaded, not an empty array - an empty array
+     * is taken as "no valid choices" and will clear the value. Pair with `generateOptionFn` to
+     * render a proper label for a value set before its options arrive.
      *
-     * Not supported with `enableCreate`, `queryFn`, or `generateOptionFn`, where values may
-     * legitimately fall outside `options` (will throw if combined). Note also that this enforces
-     * immediately, so a value set before `options` are loaded will be removed.
+     * Not supported with `enableCreate` or `queryFn`, where values may legitimately fall outside
+     * `options` (will throw if combined).
      */
     enforceValueInOptions?: boolean;
 
@@ -272,8 +275,8 @@ class SelectInputModel extends HoistInputModel {
 
         if (this.componentProps.enforceValueInOptions) {
             throwIf(
-                this.creatableMode || this.asyncMode || this.componentProps.generateOptionFn,
-                '`enforceValueInOptions` is not supported with `enableCreate`, `queryFn`, or `generateOptionFn`.'
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
             );
             this.addReaction({
                 track: () => [this.externalValue, this.internalOptions],
@@ -288,9 +291,10 @@ class SelectInputModel extends HoistInputModel {
     }
 
     // Enforce `enforceValueInOptions` - clear any current value not present in internalOptions.
+    // Null options signal that they have yet to load, and are not yet enforced against.
     private pruneValueToOptions() {
         const {externalValue} = this;
-        if (isNil(externalValue)) return;
+        if (isNil(this.componentProps.options) || isNil(externalValue)) return;
         if (!this.findOption(externalValue, false)) this.noteValueChange(null);
     }
 
