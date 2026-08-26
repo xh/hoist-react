@@ -15,7 +15,8 @@ Development of Hoist applications requires:
 
 * Git
 * A Java JDK (version set by your application - see [Server-side prerequisites](#server-side-prerequisites) below)
-* Node (LTS or other recent) + `npm` (bundled with Node) or `yarn` (installable via `npm`)
+* Node (LTS or other recent) + a JS package manager - `pnpm` (XH's standard), `yarn` (v1), or
+  `npm` (bundled with Node)
 
 ## Git
 
@@ -77,21 +78,27 @@ application (via Webpack and webpack-dev-server).
   install and update your local node versions.
 - Ensure that node is on your path via `node --version`.
 
-### Yarn
+### Package manager (pnpm, yarn, or npm)
 
-XH uses both `yarn` (v1) and `npm` (recent/lts) for JS package management - Hoist has no requirement
-for one over the other, although `npm` has been found to work better in some corporate environments
-with intensive workstation and/or network-level antimalware and other file scanning. The important
-thing is to decide on one or the other for your project and ensure all developers use the same tool.
+Hoist apps can be managed with any of the major JS package managers - `pnpm`, `yarn` (v1), or
+`npm`. XH has standardized its own repos (hoist-react, hoist-dev-utils, and Toolbox) on
+[pnpm](https://pnpm.io) and recommends it for new projects - its isolated `node_modules` layout
+surfaces undeclared dependencies early, and its content-addressed store makes installs fast and
+disk-efficient. Note that pnpm requires `@xh/hoist-dev-utils` v14+ and that apps declare every
+package they import directly - see the hoist-dev-utils CHANGELOG for migration notes. Whichever
+tool you choose, decide on one per project and ensure all developers use the same tool. (`npm` has
+been found to work better in some corporate environments with intensive workstation and/or
+network-level antimalware and other file scanning.)
 
-When using `yarn`, we typically include an updated, portable version of yarn bundled within each
-project, but a local yarn install is still required to detect and run the portable copy:
+Projects should pin their package manager version via the `packageManager` field in `package.json`.
+Node's bundled [corepack](https://nodejs.org/api/corepack.html) can then provision the pinned
+version automatically:
 
-- The easiest way to install yarn is with npm: `npm i -g yarn`
-- Once installed, verify it can be run globally with `yarn --version`
-- Within the `client-app` directory of a Hoist app such as Toolbox, run `yarn` to download, install,
-  and build all client-side dependencies. (Note that `yarn` is a shortcut for `yarn install` - they
-  do the same thing.)
+- Run `corepack enable pnpm` (or `corepack enable yarn`) once to put a corepack-managed shim on
+  your PATH, then verify with `pnpm --version` from within the project directory. Standalone
+  installs (e.g. `npm i -g pnpm`) also work - pnpm v10+ verifies the `packageManager` pin itself.
+- Within the `client-app` directory of a Hoist app such as Toolbox, run `pnpm install` (or the
+  yarn/npm equivalent) to download and install all client-side dependencies.
 
 ## JetBrains IntelliJ
 
@@ -130,13 +137,13 @@ From within the IDE's general preferences / settings dialog:
       the root of your local hoist-react project. This will cause IntelliJ to resolve any
       auto-suggestions or context clues to the local versions of the Hoist classes and utils.
     - Expand `Code Quality Tools > Eslint` - select "Automatic" configuration to enable eslint to
-      run and monitor your code as you update it. Note that you will need to have run `yarn` to
-      install your local client-side dependencies first.
+      run and monitor your code as you update it. Note that you will need to have installed your
+      local client-side dependencies first (e.g. via `pnpm install`).
     - If using Prettier in your project, enable that as well in the dedicated `Prettier` section.
 - Navigate to `Languages & Frameworks > Node.js and NPM`:
     - Ensure the IDE has detected the version of Node you wish to use.
-    - You can also specify yarn as your package manager, if you wish to use the IDEs built-in yarn
-      integration.
+    - You can also specify your project's package manager (e.g. pnpm or yarn), if you wish to use
+      the IDE's built-in package manager integration.
 - Navigate to `Languages & Frameworks > Stylesheets > Stylelint`:
     - Enable with "Automatic configuration" to turn on local support for Stylelint, if using in your
       project.

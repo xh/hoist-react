@@ -22,7 +22,6 @@ import classNames from 'classnames';
 import {
     castArray,
     clone,
-    find,
     get,
     groupBy,
     isArray,
@@ -41,6 +40,7 @@ import {
     forwardRef,
     FunctionComponent,
     isValidElement,
+    ReactElement,
     ReactNode,
     useImperativeHandle,
     useLayoutEffect,
@@ -292,8 +292,9 @@ export interface ColumnSpec {
     chooserName?: string;
 
     /**
-     * Group name to display within the column chooser component.  Chooser will automatically group
-     * its "available columns" grid if any cols provide.
+     * Group name for organizing this column within the column chooser's Column Library panel
+     * (see {@link ColChooserConfig.columnLibrary}). Not used by the chooser's main list, which
+     * groups by actual {@link ColumnGroup} structure instead.
      */
     chooserGroup?: string;
 
@@ -798,16 +799,7 @@ export class Column {
                     });
                     return true;
                 },
-                valueGetter: (agParams: ValueGetterParams) => {
-                    const record = agParams.data;
-                    return this.getValueFn({
-                        record,
-                        field,
-                        store: record?.store,
-                        column: this,
-                        gridModel
-                    });
-                },
+                valueGetter: this.buildFastValueGetter(),
                 suppressKeyboardEvent: ({editing, event}) => {
                     if (!editing) return false;
 
@@ -990,7 +982,7 @@ export class Column {
             ret.width = this.width;
         }
 
-        const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
+        const sortCfg = gridModel.getSorter(ret.colId);
         if (sortCfg) {
             ret.sort = sortCfg.sort;
             ret.sortIndex = gridModel.sortBy.indexOf(sortCfg);
@@ -1002,7 +994,7 @@ export class Column {
                 const {gridModel, colId} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
-                    sortCfg = find(gridModel.sortBy, {colId}),
+                    sortCfg = gridModel.getSorter(colId),
                     sortDir = sortCfg?.sort || 'asc',
                     recordA = agNodeA?.data,
                     recordB = agNodeB?.data;
@@ -1013,7 +1005,7 @@ export class Column {
                 const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
                 if (sortToBottom !== 0) return sortToBottom;
 
-                return this.defaultComparator(valueA, valueB);
+                return this.defaultComparator(valueA, valueB, sortCfg);
             };
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
@@ -1021,7 +1013,7 @@ export class Column {
                 const {gridModel, colId} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
-                    sortCfg = find(gridModel.sortBy, {colId}),
+                    sortCfg = gridModel.getSorter(colId),
                     sortDir = sortCfg?.sort || 'asc',
                     abs = sortCfg?.abs || false,
                     recordA = agNodeA?.data as StoreRecord,
@@ -1062,7 +1054,7 @@ export class Column {
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
                 if ((editor as any).isHoistComponent) return createElement(editor, props);
-                if (isFunction(editor)) return editor(props);
+                if (isFunction(editor)) return editor(props) as ReactElement;
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellEditorPopup = this.editorIsPopup;
@@ -1088,8 +1080,9 @@ export class Column {
     // Implementation
     //--------------------
     // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-    private defaultComparator = (v1, v2) => {
-        const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
+    // Optimized for hot path - internal callers pass the resolved sortCfg to skip the lookup.
+    private defaultComparator = (v1, v2, sortCfg?: GridSorter) => {
+        sortCfg ??= this.gridModel.getSorter(this.colId);
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
@@ -1123,6 +1116,27 @@ export class Column {
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
+
+    // ag-Grid valueGetter factory - heavily optimized for common default hot-path
+    private buildFastValueGetter(): (agParams: ValueGetterParams) => any {
+        const {getValueFn, field, gridModel, fieldPath} = this;
+        if (getValueFn !== this.defaultGetValueFn) {
+            return agParams => {
+                const record = agParams.data;
+                return getValueFn({record, field, store: record?.store, column: this, gridModel});
+            };
+        }
+        if (isNil(fieldPath)) return () => '';
+        return isArray(fieldPath)
+            ? agParams => {
+                  const record = agParams.data;
+                  return record ? get(record.data, fieldPath) : '';
+              }
+            : agParams => {
+                  const record = agParams.data;
+                  return record ? record.data[fieldPath] : '';
+              };
+    }
 
     private parseField(field) {
         if (isPlainObject(field)) {

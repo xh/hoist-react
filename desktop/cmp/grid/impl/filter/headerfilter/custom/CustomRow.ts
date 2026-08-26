@@ -12,7 +12,7 @@ import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/i
 import {Icon} from '@xh/hoist/icon';
 import {kebabCase} from 'lodash';
 
-import {CustomRowModel} from './CustomRowModel';
+import {CustomRowModel, usesMultiValueInput} from './CustomRowModel';
 
 /**
  * Row with operator and value combination for CustomTab.
@@ -74,17 +74,7 @@ const inputField = hoistCmp.factory<CustomRowModel>(({model}) => {
             ...fieldSpec.inputProps
         };
 
-    if (fieldSpec.isNumericFieldType) {
-        return numberInput({
-            ...props,
-            enableShorthandUnits: true
-        });
-    } else if (fieldSpec.isDateBasedFieldType) {
-        return dateInput({
-            ...props,
-            valueType: fieldSpec.fieldType as 'localDate' | 'date'
-        });
-    } else if (fieldSpec.supportsSuggestions(op as FieldFilterOperator)) {
+    if (usesMultiValueInput(fieldSpec, op as FieldFilterOperator)) {
         return select({
             ...props,
             options: fieldSpec.values,
@@ -93,6 +83,16 @@ const inputField = hoistCmp.factory<CustomRowModel>(({model}) => {
             hideDropdownIndicator: true,
             hideSelectedOptionCheck: true,
             enableClear: false
+        });
+    } else if (fieldSpec.isNumericFieldType) {
+        return numberInput({
+            ...props,
+            enableShorthandUnits: true
+        });
+    } else if (fieldSpec.isDateBasedFieldType) {
+        return dateInput({
+            ...props,
+            valueType: fieldSpec.fieldType as 'localDate' | 'date'
         });
     } else {
         return textInput(props);

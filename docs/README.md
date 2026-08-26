@@ -62,7 +62,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
-| Check hoist-react / hoist-core version compatibility | [Version Compatibility](./version-compatibility.md)                                                                 |
+| Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes)                                                                                     |
 
 ## Package Documentation
@@ -72,7 +72,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, and tree data | Store, StoreRecord, Field, Filter, tree data, loadData, processRawData |
+| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, tree data, and memory tuning | Store, StoreRecord, Field, Filter, tree data, loadData, loadDataAsync, updateData, digestSpec, projectionOnly, diagnostics |
 | [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
 | [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
@@ -118,7 +118,7 @@ Cross-cutting documentation that spans multiple packages:
 | [Telemetry & Observability](./telemetry.md) | Client-side tracing, metrics, activity tracking, and timed logging composed via the Runner chain | Runner, CallContext, TraceService, MetricsService, span, traceparent, sampling, telemetryPrefix, metrics, activity tracking |
 | [Test Automation](./test-automation.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
 | [Coding Conventions](./coding-conventions.md) | Coding conventions for imports, naming, class structure, component patterns, null handling, async, error handling, logging, and CSS | conventions, code style, imports, naming, TypeScript, class structure, hoistCmp, exports, async, error handling, logging, CSS, BEM |
-| [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core versions | version matrix, hoist-core pairing, upgrade requirements, compatibility |
+| [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core and hoist-dev-utils versions | version matrix, hoist-core pairing, hoist-dev-utils pairing, node version, upgrade requirements, compatibility |
 
 ### Supporting Packages
 
@@ -127,7 +127,8 @@ Cross-cutting documentation that spans multiple packages:
 | [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
 | [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
-| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
+| [`/kit/blueprint/`](../kit/blueprint/README.md) | Blueprint integration - wrapped components, element factories, and build-time icon stubbing | Blueprint, Popover, Dialog, element factories, blueprint icons, loadAllBlueprintJsIcons, upgrade checklist |
+| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, InspectorModel, StatsModel, InstancesModel, DiagnosticsModel, property watchlist, model leak detection |
 | [`/styles/`](../styles/README.md) | CSS custom properties, theming, BEM naming, SCSS conventions, and utility classes | `--xh-*` CSS vars, vars.scss, XH.scss, dark theme, ThemeModel, BEM, `xh-` prefix, intent colors, utility classes |
 
 ### Other Packages
@@ -165,7 +166,8 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v86](./upgrade-notes/v86-upgrade-notes.md) | TBD | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
+| [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |
+| [v86](./upgrade-notes/v86-upgrade-notes.md) | 2026-06-12 | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
 | [v85](./upgrade-notes/v85-upgrade-notes.md) | 2026-04-23 | 🟢 LOW | `InitContext` on `HoistService.initAsync()` / `HoistAppModel.initAsync()`, nested app-load spans, Swiper 11→12 |
 | [v84](./upgrade-notes/v84-upgrade-notes.md) | 2026-04-15 | 🟢 LOW | FontAwesome v7, icon-based Spinner, `getClassName` removal, hoistCmp `defaults` |
 | [v83](./upgrade-notes/v83-upgrade-notes.md) | 2026-03-24 | 🟢 LOW | TraceService, static defaults pattern, `downloadjs` removal, `SegmentedControl` |

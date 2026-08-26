@@ -213,7 +213,7 @@ export class AgGridModel extends HoistModel {
      * Some of the state may be data-dependent. Specifically the expandState and filterState. It is
      * recommended that applications wait until the data has been loaded in the grid before setting
      * the state if including those elements. This method can be called immediately after the data
-     * has been loaded via `agApi.updateGridOptions({rowData: data})`.
+     * has been loaded into the grid.
      */
     setState(state: AgGridState) {
         this.throwIfNotReady();
@@ -489,12 +489,17 @@ export class AgGridModel extends HoistModel {
     setSelectedRowNodeIds(ids: string[]) {
         this.throwIfNotReady();
 
-        const {agApi} = this;
-        agApi.deselectAll();
+        const {agApi} = this,
+            idSet = new Set(ids),
+            toDeselect = agApi.getSelectedNodes().filter(it => !idSet.has(it.id)),
+            toSelect: IRowNode[] = [];
         ids.forEach(id => {
             const node = agApi.getRowNode(id);
-            if (node) node.setSelected(true);
+            if (node && !node.isSelected()) toSelect.push(node);
         });
+
+        if (!isEmpty(toDeselect)) agApi.setNodesSelected({nodes: toDeselect, newValue: false});
+        if (!isEmpty(toSelect)) agApi.setNodesSelected({nodes: toSelect, newValue: true});
     }
 
     /**

@@ -53,11 +53,21 @@ export type {
     RowDoubleClickedEvent,
     RowClickedEvent,
     RowHeightParams,
+    RowDropZoneEvents,
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
-    CellEditingStoppedEvent
+    CellEditingStoppedEvent,
+    RowDragEndEvent,
+    RowDragEnterEvent,
+    RowDragLeaveEvent,
+    RowDragMoveEvent,
+    RowDragCancelEvent,
+    IsRowValidDropPositionParams,
+    IsRowValidDropPositionResult,
+    RowDropTargetPosition,
+    RowDropZoneParams
 } from 'ag-grid-community';
 
 export type {
