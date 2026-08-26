@@ -16,11 +16,10 @@
 
 ### ⚙️ Typescript API Adjustments
 
-* `SelectOption` now accepts an optional type param for custom fields carried alongside the standard
-  `value`/`label` (e.g. `SelectOption<{data: MyRecord}>`), and `SelectProps`, `PickerProps`, and
-  `SelectEditorProps` are correspondingly generic. Callbacks like `optionRenderer` and `filterFn`
-  receive typed access to these fields, supporting richer rendering and filtering. Defaults preserve
-  existing behavior, so untyped usage is unaffected.
+* `SelectOption` now admits custom fields alongside the standard `value`/`label`, so extra data
+  carried on an option (and already passed through at runtime) can be read within `optionRenderer`,
+  `filterFn`, and friends without a cast. Annotate the callback's argument with the app's own option
+  type for fully typed access - e.g. `optionRenderer: (opt: MyOption) => ...`.
 
 ## 87.0.0 - 2026-08-25
 
