@@ -14,7 +14,6 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {tag} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {filter, keyBy, partition, sortBy, uniq, uniqBy} from 'lodash';
-import {RoleModel} from '../../RoleModel';
 import {HoistRole, UserSource} from '../../Types';
 import {BaseMembersModel} from './BaseMembersModel';
 
@@ -47,22 +46,26 @@ class UserMembersModel extends BaseMembersModel {
         }));
     }
 
-    private userSourceList(sources: UserSource[]): UserSource[] {
-        const [thisRole, otherRoles] = partition(sources, {role: this.selectedRole.name});
-        return [...thisRole, ...sortBy(otherRoles, ['role', 'directoryGroup'])];
+    private userSourceList(sources: UserSource[]): PlainObject[] {
+        const [thisRole, otherRoles] = partition(sources, {role: this.selectedRole.name}),
+            ret = [...thisRole, ...sortBy(otherRoles, ['role', 'directoryGroup'])];
+        return ret.map(it => ({
+            ...it,
+            directoryGroupDisplayName: it.directoryGroup
+                ? this.roleModel.getDirectoryGroupDisplayName(it.directoryGroup)
+                : null
+        }));
     }
 
-    override sourcesRenderer: ColumnRenderer = (sources: UserSource[]) => {
-        let tagSpecs = sources.map(({role, directoryGroup}) => {
+    override sourcesRenderer: ColumnRenderer = (sources: PlainObject[]) => {
+        let tagSpecs = sources.map(({role, directoryGroup, directoryGroupDisplayName}) => {
             const isThisRole = role === this.selectedRole.name;
             return {
                 className: classNames(
                     'roles-renderer__role',
                     !isThisRole && 'roles-renderer__role--effective'
                 ),
-                item: isThisRole
-                    ? (RoleModel.fmtDirectoryGroup(directoryGroup) ?? '<Direct>')
-                    : role,
+                item: isThisRole ? (directoryGroupDisplayName ?? '<Direct>') : role,
                 title: isThisRole ? (directoryGroup ?? '<Direct>') : role,
                 minimal: true,
                 onDoubleClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
@@ -75,9 +78,11 @@ class UserMembersModel extends BaseMembersModel {
         });
     };
 
-    override sourcesExportRenderer: ColumnRenderer = (sources: UserSource[]) => {
-        const labels = sources.map(({role, directoryGroup}) => {
-            return role === this.selectedRole.name ? (directoryGroup ?? '<Direct>') : role;
+    override sourcesExportRenderer: ColumnRenderer = (sources: PlainObject[]) => {
+        const labels = sources.map(({role, directoryGroupDisplayName}) => {
+            return role === this.selectedRole.name
+                ? (directoryGroupDisplayName ?? '<Direct>')
+                : role;
         });
         return uniq(labels).join(', ');
     };

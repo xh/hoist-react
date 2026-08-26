@@ -30,9 +30,8 @@ export class PrefService extends HoistService {
     override telemetryPrefix = 'xh.client.prefs';
 
     static instance: PrefService;
-
-    private _data = {};
-    private _updates = {};
+    private _data: Record<string, PrefEntry> = {};
+    private _updates: Record<string, any> = {}; // undefined indicates unset
 
     override async initAsync(ctx: InitContext) {
         // Flush on page teardown while the page is still alive.
@@ -50,6 +49,17 @@ export class PrefService extends HoistService {
      */
     hasKey(key: string): boolean {
         return this._data.hasOwnProperty(key);
+    }
+
+    /**
+     * Check whether the current user has an explicit value on file for the given preference, vs.
+     * receiving the preference's server-side default value.
+     *
+     * @param key - unique key used to identify the pref.
+     */
+    isSet(key: string): boolean {
+        this.ensureKeyExists(key);
+        return !!this._data[key].isSet;
     }
 
     /**
@@ -91,7 +101,9 @@ export class PrefService extends HoistService {
 
         // Change local value to sanitized copy and fire.
         value = deepFreeze(cloneDeep(value));
-        this._data[key].value = value;
+        const pref = this._data[key];
+        pref.value = value;
+        pref.isSet = true;
 
         // Schedule serialization to storage
         this._updates[key] = value;
@@ -99,11 +111,22 @@ export class PrefService extends HoistService {
     }
 
     /**
-     * Restore a preference to its default value.
+     * Restore a preference to its default value, clearing the user's explicit value on the server.
+     *
+     * Unlike `set()`, this clears the user's explicit value rather than persisting the default as
+     * one - so {@link isSet} will report `false` afterwards. Saved asynchronously (see `set()`).
      */
     unset(key: string) {
-        // TODO: round-trip this to the server as a proper unset?
-        this.set(key, this._data[key]?.defaultValue);
+        this.ensureKeyExists(key);
+        const pref = this._data[key];
+        if (!pref.isSet && isEqual(pref.value, pref.defaultValue)) return;
+
+        pref.value = pref.defaultValue;
+        pref.isSet = false;
+
+        // Schedule serialization to storage
+        this._updates[key] = undefined;
+        this.pushPendingBuffered();
     }
 
     /**
@@ -131,18 +154,44 @@ export class PrefService extends HoistService {
         // Clear synchronously with the capture, so overlapping flushes cannot post twice.
         this._updates = {};
 
+        // Partition into value updates and unsets.
+        // On a core that predates unset support, fall back to persisting default
+        const setPrefs = {},
+            unsetKeys = [];
+        forEach(updates, (value, key) => {
+            const pref = this._data[key];
+            if (value !== undefined) {
+                setPrefs[key] = value;
+            } else if (pref.hasOwnProperty('isSet')) {
+                unsetKeys.push(key);
+            } else {
+                setPrefs[key] = pref.defaultValue;
+            }
+        });
+
         await this.runner()
-            .span('set')
-            .run(ctx =>
-                terminationSafePostJson(
-                    {
-                        url: 'xh/setPrefs',
-                        body: updates,
-                        params: {clientUsername: XH.getUsername()}
-                    },
-                    ctx
-                )
-            );
+            .span('update')
+            .run(async ctx => {
+                const clientUsername = XH.getUsername(),
+                    tasks = [];
+                if (!isEmpty(setPrefs)) {
+                    tasks.push(
+                        terminationSafePostJson(
+                            {url: 'xh/setPrefs', body: setPrefs, params: {clientUsername}},
+                            ctx
+                        )
+                    );
+                }
+                if (!isEmpty(unsetKeys)) {
+                    tasks.push(
+                        terminationSafePostJson(
+                            {url: 'xh/unsetPrefs', body: unsetKeys, params: {clientUsername}},
+                            ctx
+                        )
+                    );
+                }
+                await Promise.all(tasks);
+            });
     }
 
     //-------------------
@@ -172,9 +221,13 @@ export class PrefService extends HoistService {
             });
     }
 
-    private validateBeforeSet(key, value) {
+    private ensureKeyExists(key: string) {
+        throwIf(!this.hasKey(key), `Preference key not found: '${key}'`);
+    }
+
+    private validateBeforeSet(key: string, value: any) {
+        this.ensureKeyExists(key);
         const pref = this._data[key];
-        throwIf(!pref, `Cannot set preference ${key}: not found`);
         throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
         throwIf(
             !this.valueIsOfType(value, pref.type),
@@ -200,4 +253,11 @@ export class PrefService extends HoistService {
                 return false;
         }
     }
+}
+
+interface PrefEntry {
+    type: string;
+    value: any;
+    defaultValue: any;
+    isSet: boolean;
 }

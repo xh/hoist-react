@@ -4,24 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, fragment} from '@xh/hoist/cmp/layout';
 import {
-    Content,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    PlainObject,
-    useLocalModel,
-    XH
-} from '@xh/hoist/core';
+    autoPlacement,
+    autoUpdate,
+    flip,
+    type Placement,
+    shift,
+    useFloating
+} from '@floating-ui/react';
+import {div, fragment} from '@xh/hoist/cmp/layout';
+import {Content, hoistCmp, HoistModel, HoistProps, useLocalModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
+import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
 import {ReactPortal} from 'react';
 import ReactDom from 'react-dom';
-import {usePopper} from 'react-popper';
 
 import './Popover.scss';
 
@@ -62,18 +61,15 @@ export interface PopoverProps extends HoistProps {
 
     /** Optional className applied to the popover content wrapper. */
     popoverClassName?: string;
-
-    /** Escape hatch to provide additional options to the PopperJS implementation */
-    popperOptions?: PlainObject;
 }
 
 /**
  * Popovers display floating content next to a target element.
  *
  * The API is based on a stripped-down version of Blueprint's Popover component
- * that is used on Desktop. Popover is built on top of the Popper.js library.
+ * that is used on Desktop. Popover is built on top of the Floating UI library.
  *
- * @see https://popper.js.org/
+ * @see https://floating-ui.com/
  */
 export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     displayName: 'Popover',
@@ -86,30 +82,28 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
         disabled = false,
         backdrop = false,
         position = 'auto',
-        popoverClassName,
-        popperOptions
+        popoverClassName
     }) {
         const impl = useLocalModel(PopoverModel),
-            popper = usePopper(impl.targetEl, impl.contentEl, {
-                placement: impl.menuPositionToPlacement(position),
+            isAuto = position === 'auto',
+            placement = isAuto ? undefined : impl.menuPositionToPlacement(position),
+            // Use Floating UI's own `refs.setReference`/`setFloating` callback refs rather than
+            // the controlled `elements` option. This lets Floating UI manage the element state
+            // (and trigger its own re-renders/repositioning) internally, instead of relying on a
+            // MobX observer re-render when an observable ref is set during the commit phase - a
+            // dependency that does not reliably fire under React 19 for the portaled content.
+            {refs, floatingStyles} = useFloating({
+                placement,
                 strategy: 'fixed',
-                modifiers: [
-                    {
-                        name: 'preventOverflow',
-                        options: {
-                            padding: 10,
-                            boundary: 'viewport'
-                        } as any
-                    }
-                ],
-                ...popperOptions
+                middleware: [isAuto ? autoPlacement() : flip(), shift({padding: 10})],
+                whileElementsMounted: autoUpdate
             });
 
         return div({
             className,
             items: [
                 div({
-                    ref: impl.targetRef,
+                    ref: refs.setReference,
                     className: 'xh-popover__target-wrapper',
                     items: children,
                     onClick: () => {
@@ -122,8 +116,8 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                         omit: !impl.isOpen,
                         items: [
                             div({
-                                ref: impl.contentRef,
-                                style: popper?.styles?.popper,
+                                ref: refs.setFloating,
+                                style: floatingStyles,
                                 className: classNames(
                                     'xh-popover__content-wrapper',
                                     popoverClassName
@@ -149,20 +143,10 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
 class PopoverModel extends HoistModel {
     override xhImpl = true;
 
-    targetRef = createObservableRef<HTMLElement>();
-    contentRef = createObservableRef<HTMLElement>();
     @observable isOpen;
 
     _onInteraction;
     _controlledMode = false;
-
-    get targetEl() {
-        return this.targetRef.current;
-    }
-
-    get contentEl() {
-        return this.contentRef.current;
-    }
 
     constructor() {
         super();
@@ -224,12 +208,12 @@ class PopoverModel extends HoistModel {
     }
 
     /**
-     * Convert a menu position to a Popper.js placement.
-     * This allows us to the same position names as desktop, and is inspired
+     * Convert a menu position to a Floating UI placement (the vocabulary is shared with
+     * Popper.js). This allows us to use the same position names as desktop, and is inspired
      * by Blueprint's similar implementation:
      * https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/popover/popoverMigrationUtils.ts
      */
-    menuPositionToPlacement(position) {
+    menuPositionToPlacement(position: string): Placement {
         switch (position) {
             case 'top-left':
                 return 'top-start';
@@ -248,7 +232,7 @@ class PopoverModel extends HoistModel {
             case 'left-bottom':
                 return 'left-end';
             default:
-                return position;
+                return position as Placement;
         }
     }
 }

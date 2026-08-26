@@ -33,6 +33,13 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
+        # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
+        # which every subsequent npm/pnpm invocation reads - pnpm warns when the var is
+        # unresolvable, so supply a job-wide placeholder to keep logs clean. The real token is
+        # provided to the publish step alone (step env overrides job env), keeping it out of
+        # dependency lifecycle scripts during install.
+        env:
+            NODE_AUTH_TOKEN: 'unused-outside-publish'
 
         steps:
         - uses: actions/checkout@v7
@@ -44,17 +51,25 @@ jobs:
         - name: Validate release version
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@52a7e7ef6c04a01ee43c66463f92080eebb75179 # master
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@71d46b39323491a7fd5090e7b651958b05630fa0 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
 
+        # Installs the pnpm version pinned via the packageManager field in package.json.
+        - name: Setup pnpm
+          uses: pnpm/setup@v2
+          with:
+              # `install: false` - this workflow runs its own install step below, after
+              # Font Awesome registry auth, and with --frozen-lockfile.
+              install: false
+
         - name: Setup Node.js
-          uses: actions/setup-node@v6
+          uses: actions/setup-node@v7
           with:
               node-version-file: '.nvmrc'
               registry-url: 'https://registry.npmjs.org'
-              cache: 'yarn'
+              cache: 'pnpm'
 
         - name: Configure Font Awesome registry auth
           env:
@@ -62,16 +77,30 @@ jobs:
           run: echo "//npm.fontawesome.com/:_authToken=$FONTAWESOME_PACKAGE_TOKEN" >> .npmrc
 
         - name: Install dependencies
-          run: yarn install --frozen-lockfile
+          run: pnpm install --frozen-lockfile
 
-        - name: Yarn lint
-          run: yarn lint:all
+        - name: Lint
+          run: pnpm lint:all
 
+        # Note the version is passed positionally. The legacy `--new-version` flag is no longer
+        # recognized by npm/pnpm and warns as an unknown config - it only appeared to work because
+        # the value fell through to the positional arg. If a future npm consumed it as the flag's
+        # value instead, `version` would run with no args, silently leave package.json untouched,
+        # and publish a SNAPSHOT build as a release.
+        #
+        # `--no-git-checks` is required: the Font Awesome auth step above appends a token to the
+        # repo's tracked `.npmrc`, leaving the working tree dirty. Without it, `pnpm version`
+        # aborts with ERR_PNPM_UNCLEAN_WORKING_TREE.
         - name: Set release version in package.json
           env:
               VERSION: ${{ inputs.version }}
-          run: npm version --no-git-tag-version --new-version "$VERSION"
+          run: pnpm version --no-git-tag-version --no-git-checks "$VERSION"
 
+        # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
+        # the version bump above leaves the working tree dirty, and hotfix releases run from a
+        # branch other than master/main (which prompts interactively, hanging a non-TTY runner).
+        # Release safety is enforced instead by the job-level `if:` guard and the
+        # validate-release-version action above.
         - name: Publish release to npm
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -81,7 +110,7 @@ jobs:
               if [ "$IS_HOTFIX" = "true" ]; then
                   TAG_ARGS=(--tag hotfix)
               fi
-              npm publish "${TAG_ARGS[@]}"
+              pnpm publish --no-git-checks "${TAG_ARGS[@]}"
 
         # Note: The tag intentionally points to a commit where package.json still has the
         # SNAPSHOT version. We chose not to commit the version change back to the repo to
@@ -89,7 +118,7 @@ jobs:
         # the correct release version — the tag is just a pointer to the source commit.
         # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@52a7e7ef6c04a01ee43c66463f92080eebb75179 # master
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@71d46b39323491a7fd5090e7b651958b05630fa0 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
@@ -108,6 +137,8 @@ jobs:
                 echo "Version: [\`$VERSION\`](https://www.npmjs.com/package/@xh/hoist/v/$VERSION)"
 
                 # Pack stats are a nice-to-have - skip the table silently if anything throws.
+                # Deliberately `npm pack`, not `pnpm pack`: pnpm's --json output is a different
+                # shape and reports no entryCount / size / unpackedSize.
                 if STATS=$(npm pack --dry-run --json 2>/dev/null | node -e "
                     const [p] = JSON.parse(require('fs').readFileSync(0, 'utf8'));
                     const mb = b => (b / 1048576).toFixed(1) + ' MB';

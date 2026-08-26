@@ -74,7 +74,7 @@
 - Completed `/desktop/cmp/panel/README.md` — first desktop sub-package README:
   - Panel layout (vframe structure, flex defaults, padding stripping)
   - Toolbars (tbar/bbar, array auto-wrap, separator shortcut, compact, filler, overflow)
-  - Panel + Grid pattern (most common usage, drawn from Jobsite/Veracity examples)
+  - Panel + Grid pattern (most common usage, drawn from JobSite examples)
   - Mask (all forms: 'onLoad', TaskObserver, array, explicit, boolean)
   - Collapsing and resizing (PanelModel config, side, defaultSize, all options table)
   - collapsedTitle/collapsedIcon, compactHeader for visual hierarchy
@@ -536,3 +536,12 @@
   (era-neutral name to avoid renaming on each future archival) and updated its header.
 - Updated references: main CHANGELOG footer (now "prior to v64"), and the `docs/README.md` Additional
   Resources entries (CHANGELOG range and archive link/description).
+
+### 2026-08-18
+- Added `kit/blueprint/README.md` - first sub-package README under `/kit/`, covering Hoist's
+  Blueprint integration: wrappers/factories, popover and dialog behavior, and the build-time icon
+  stubbing provided by `@xh/hoist-dev-utils` (restored in dev-utils v14.0.1 after silently breaking
+  with Blueprint 5's icon repackaging). Includes a checklist for re-verifying Blueprint's built-in
+  icons on future library upgrades.
+- Indexed in `docs/README.md` (Supporting Packages), the roadmap Priority 4 table (Done), and
+  `docs/doc-registry.json`; cross-linked from the `/kit/` README's Blueprint section.
