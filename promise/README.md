@@ -97,7 +97,7 @@ Selectively catch exceptions by name or predicate, re-throwing anything that doe
 ```typescript
 // Catch by predicate — handler is optional, omit to silently swallow
 fetchAsync()
-    .catchWhen(e => e.isFetchAborted);        // swallow aborts, return undefined
+    .catchWhen(e => e.isAborted);             // swallow aborts, return undefined
 
 // Catch by predicate with handler
 fetchAsync()
@@ -112,7 +112,7 @@ fetchAsync()
 
 // Catch with default handler, only for matching exceptions
 fetchAsync()
-    .catchDefaultWhen(e => e.isFetchAborted, {showAlert: false});
+    .catchDefaultWhen(e => e.isAborted, {showAlert: false});
 ```
 
 The `selector` parameter accepts:

@@ -14,6 +14,25 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Renamed the `isFetchAborted` exception flag to `isAborted` (on `FetchException` and related
+  `HoistException`s). The flag is now also set by the new `LoadAbortedException`. Update any
+  references from `e.isFetchAborted` to `e.isAborted` (e.g. in `catchWhen`/`catchDefaultWhen`
+  predicates).
+
+### 🎁 New Features
+
+* `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
+  obsolete, and auto-refresh errors:
+    * New `Loadable.skipStaleLoads` flag (default `true`) - controls whether loads superseded
+      by a newer *started* request are aborted and silenced. Loads superseded by a newer
+      *completed* request are always skipped.
+    * New `Loadable.skipAutoRefreshErrors` flag (default `true`) - controls whether errors
+      raised during an auto-refresh are silenced rather than routed to `handleLoadException`.
+    * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
+      failures not skipped via the flags above. Default delegates to `XH.handleException(e)`.
+
 ## 87.0.0 - 2026-08-25
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)

@@ -14,7 +14,8 @@ import {
     LoadSpecConfig,
     managed,
     PlainObject,
-    TaskObserver
+    TaskObserver,
+    XH
 } from '../';
 import {instanceManager} from '../impl/InstanceManager';
 import {Loadable, LoadSpec, LoadSupport} from '../load';
@@ -198,7 +199,14 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
 
+    skipStaleLoads = true;
+    skipAutoRefreshErrors = true;
+
     async doLoadAsync(loadSpec: LoadSpec) {}
+
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void> {
+        XH.handleException(e);
+    }
 
     async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {
         return this.loadSupport?.loadAsync(loadSpec);

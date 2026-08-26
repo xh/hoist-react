@@ -326,10 +326,6 @@ interface SampleRule {
  */
 function isRetryableError(e: any): boolean {
     return (
-        !e?.httpStatus ||
-        e.httpStatus >= 500 ||
-        e.isTimeout ||
-        e.isServerUnavailable ||
-        e.isFetchAborted
+        !e?.httpStatus || e.httpStatus >= 500 || e.isTimeout || e.isServerUnavailable || e.isAborted
     );
 }

@@ -90,11 +90,11 @@ export class ClientDetailModel extends HoistModel implements ActivityDetailProvi
                     },
                     ctx
                 );
-            })
-            .catch(e => {
-                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-                XH.handleException(e, {alertType: 'toast'});
-                this.trackLogs = [];
             });
+    }
+
+    override handleLoadException(e: unknown) {
+        XH.handleException(e, {alertType: 'toast'});
+        this.trackLogs = [];
     }
 }

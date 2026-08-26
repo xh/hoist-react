@@ -17,14 +17,50 @@ export interface Loadable {
      */
     loadObserver: TaskObserver;
 
-    /** Date when last load was initiated. */
+    /** Date when the last load was initiated. */
     lastLoadRequested: Date;
 
-    /** Date when last load was completed. */
+    /**
+     * Date when the last load was completed.
+     *
+     * Does not include loads "skipped" due to {@link skipStaleLoads} and {@link skipAutoRefreshErrors}.
+     */
     lastLoadCompleted: Date;
 
-    /** Any exception that occurred during last load. */
+    /**
+     * Any exception that occurred during the last load.
+     *
+     * If the last load was successfully completed, this property will be null.
+     *
+     * Does not include loads "skipped" due to {@link skipStaleLoads} and {@link skipAutoRefreshErrors}.
+     */
     lastLoadException: any;
+
+    /**
+     * Should this loadable skip loads that arrive after a newer load has *started*?
+     * Defaults to true.  Set false to more aggressively handle these intermediate results.
+     *
+     * Loads that arrive after a newer load has *completed* are always skipped.
+     *
+     * Note that this flag is largely implemented via {@link FetchService}, which aborts a fetch
+     * carrying this object's LoadSpec if is noted to be stale. Implementations may also trigger
+     * this behavior via well-placed calls to LoadSpec.abortIfNeeded() in doLoadAsync().
+     *
+     * If true, the framework will also skip passing any exceptions for stale loads to
+     * `handleLoadException`. Such exceptions are not surfaced to the user (no alert), but any
+     * genuine (non-abort) error is still logged on the server for diagnostics.
+     */
+    skipStaleLoads?: boolean;
+
+    /**
+     * Should this loadable skip handling errors that occurred during auto-refresh?
+     * Defaults to true.  Set to false if you wish to handle these errors in your application.
+     *
+     * If true, exceptions are not routed to `handleLoadException` and are not surfaced to the
+     * user (no alert). Note that auto-refresh errors are also excluded from the server log by
+     * `ExceptionHandler`'s standard defaults.
+     */
+    skipAutoRefreshErrors?: boolean;
 
     /**
      * Trigger a managed load through this object's {@link doLoadAsync} template method. Use this
@@ -65,4 +101,18 @@ export interface Loadable {
      * full load/refresh lifecycle.
      */
     doLoadAsync(loadSpec: LoadSpec): Promise<void>;
+
+    /**
+     * Called by {@link LoadSupport} when {@link doLoadAsync} throws. Override to add
+     * app-specific cleanup (e.g. clearing a grid, resetting state) without re-implementing
+     * the standard error-handling path.
+     *
+     * The framework filters out *quiet* exceptions before invoking this method - aborted
+     * loads/fetches (`isAborted`) and any error raised during an auto-refresh
+     * (`loadSpec.isAutoRefresh`) - so overrides can assume any exception they see is a
+     * genuine, surface-worthy failure.
+     *
+     * Default implementation calls `XH.handleException(e)`.
+     */
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void>;
 }

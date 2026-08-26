@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {Exception} from '@xh/hoist/exception';
 import {Span} from '../Span';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
@@ -100,6 +101,26 @@ export class LoadSpec {
 
     get isFirstLoad(): boolean {
         return this.loadNumber === 0;
+    }
+
+    /**
+     * True if this load has been superseded and should be aborted. Always true once a newer
+     * load has *successfully completed* ({@link isObsolete}); also true once a newer load has
+     * *started* ({@link isStale}) and the target's skipStaleLoads is true.
+     */
+    get shouldAbort(): boolean {
+        return this.isObsolete || (this.isStale && this.owner.target.skipStaleLoads);
+    }
+
+    /**
+     * Throw a {@link LoadAbortedException} if {@link shouldAbort} is true.
+     *
+     * Called automatically by {@link FetchService} after each fetch carrying this spec.
+     * Application code may call directly for non-fetch async work that should also abort
+     * when the load is superseded.
+     */
+    abortIfNeeded(): void {
+        if (this.shouldAbort) throw Exception.loadAborted();
     }
 
     /**

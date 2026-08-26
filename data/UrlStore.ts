@@ -63,6 +63,9 @@ export class UrlStore extends Store implements Loadable {
     async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport.loadAsync(loadSpec);
     }
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void> {
+        XH.handleException(e);
+    }
 
     /** @internal - call loadAsync() instead. */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {

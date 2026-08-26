@@ -149,13 +149,9 @@ export class ServiceModel extends BaseInstanceModel {
                     },
                     ctx
                 );
-
-                if (!loadSpec.isStale) {
-                    gridModel.loadData(data);
-                    await gridModel.preSelectFirstAsync();
-                }
-            })
-            .catch(e => this.handleLoadException(e, loadSpec));
+                gridModel.loadData(data);
+                await gridModel.preSelectFirstAsync();
+            });
     }
 
     private processRawData(r: PlainObject) {
