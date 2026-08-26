@@ -22,7 +22,7 @@ import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
  * @param hotkeys - An array of hotkeys, or configs for hotkeys,
  *      as prescribed by blueprint. A Hotkeys element may also be provided.
  */
-export function useHotkeys(child?: ReactElement, hotkeys?: HotkeyConfig[]) {
+export function useHotkeys(child?: ReactElement<any>, hotkeys?: HotkeyConfig[]) {
     if (!child || isEmpty(hotkeys)) return child;
 
     const memoHotkeys = useMemo(() => hotkeys, []),

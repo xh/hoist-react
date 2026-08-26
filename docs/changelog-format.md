@@ -117,6 +117,24 @@ reorder these requirements:
 Each bullet should be concise (1-2 lines). The upgrade notes file handles expanded detail with
 before/after code examples.
 
+### Grouping by Topic (large releases only)
+
+When a major version carries an unusually large set of breaking changes - roughly eight or more
+bullets, spanning several unrelated areas - group them under `####` topic sub-headers instead of
+presenting one flat list. This is a special case for big releases; ordinary versions keep the flat
+list.
+
+- Add a short lead-in paragraph after the `### 💥` header (following the upgrade notes link) telling
+  readers that the changes are grouped and which groups affect every app.
+- Name groups for the area an app developer would search for: `React 19`, `Build Tooling`,
+  `Data - Cube`, `Data - Store and Records`, `Grid - Column Chooser and Column State`.
+- Order groups by how broadly they apply - framework-wide and tooling changes first, then
+  package-specific ones.
+- Keep the difficulty rating on the `###` header, summarizing the release as a whole. Do not rate
+  individual groups.
+- Group only Breaking Changes. Other sections (New Features, Bug Fixes) stay flat, since readers scan
+  them rather than work through them.
+
 ### Difficulty Ratings
 
 When upgrade notes exist for a major version, include a difficulty rating:

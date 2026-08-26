@@ -85,6 +85,7 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
     intent?: Intent;
+    testId?: string;
     _key: string;
 }
 
@@ -97,13 +98,14 @@ class SegmentedControlModel extends HoistInputModel {
         return options.map((o: any, idx: number) => {
             const key = String(idx);
             if (isObject(o)) {
-                const {label, value, icon, disabled, intent} = o as SegmentedControlOption;
+                const {label, value, icon, disabled, intent, testId} = o as SegmentedControlOption;
                 return {
                     value: this.toInternal(value),
                     label: label ?? (icon ? '' : String(value)),
                     icon,
                     disabled,
                     intent,
+                    testId,
                     _key: key
                 };
             } else {
@@ -168,7 +170,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
 
     const buttons = model.normalizedOptions.map(opt => {
         const optIntent = opt.intent ?? defaultIntent,
-            selected = opt._key === selectedKey;
+            selected = opt._key === selectedKey,
+            optTestId = opt.testId ?? (testId ? `${testId}-${String(opt.value)}` : null);
         // Wrap the label so it can truncate with an ellipsis when the segment is too narrow,
         // rather than hard-clipping mid-character. Pass null for icon-only options so the Button
         // renders the icon alone (an empty span would suppress that).
@@ -187,7 +190,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
                 selected && 'xh-segmented-control-option--selected',
                 optIntent && `xh-segmented-control-option--${optIntent}`
             ),
-            onClick: () => model.onValueChange(opt._key)
+            onClick: () => model.onValueChange(opt._key),
+            testId: optTestId
         });
     });
 

@@ -1,0 +1,92 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+import {form} from '@xh/hoist/cmp/form';
+import {div, fragment, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {select} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {pluralize} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
+import {CSSProperties} from 'react';
+import {getVisibilityInfo, getVisibilityOptions} from '../Utils';
+import {formButtons} from './FormButtons';
+import {ViewMultiPanelModel} from './ViewMultiPanelModel';
+
+/**
+ * Form to bulk-edit visibility across multiple selected views within the ViewManager manage
+ * dialog, along with bulk pin/unpin and delete actions. Group is not editable here - views and
+ * whole groups are moved by dragging them within the grids.
+ */
+export const viewMultiPanel = hoistCmp.factory({
+    model: uses(ViewMultiPanelModel),
+    render({model, defaultViewIcon}) {
+        const {views, parent, formModel, allEditable} = model,
+            {viewManagerModel} = parent;
+
+        if (isEmpty(views)) return null;
+
+        const visibility = formModel.values.visibility,
+            visOptions = getVisibilityOptions(viewManagerModel),
+            visInfo = getVisibilityInfo(viewManagerModel, visibility);
+
+        return panel({
+            item: form({
+                fieldDefaults: {
+                    commitOnChange: true,
+                    minimal: true
+                },
+                item: vframe({
+                    className: 'xh-view-manager__manage-dialog__form',
+                    items: [
+                        div({
+                            className: 'xh-view-manager__manage-dialog__multi-header',
+                            items: [
+                                // One icon per view, fanned like a hand of cards - rotation is
+                                // driven by these CSS vars, in ViewManager.scss.
+                                div({
+                                    className: 'xh-view-manager__manage-dialog__multi-header__fan',
+                                    style: {'--card-n': views.length} as CSSProperties,
+                                    items: views.map((v, i) =>
+                                        span({
+                                            key: v.token,
+                                            style: {'--card-i': i} as CSSProperties,
+                                            item: defaultViewIcon
+                                        })
+                                    )
+                                }),
+                                span(
+                                    `Editing ${views.length} ${pluralize(viewManagerModel.typeDisplayName, views.length)}`
+                                )
+                            ]
+                        }),
+                        fragment(
+                            formField({
+                                field: 'visibility',
+                                omit: !allEditable || visOptions.length === 1,
+                                item: select({
+                                    options: visOptions,
+                                    enableFilter: false,
+                                    placeholder: 'Mixed'
+                                }),
+                                info: visInfo
+                            }),
+                            vspacer(),
+                            // Group name contextualizes the delete/pin wording for a sole
+                            // selected group row.
+                            formButtons({
+                                model,
+                                groupName: parent.selectedGroupRecord?.data.name
+                            })
+                        )
+                    ]
+                })
+            })
+        });
+    }
+});

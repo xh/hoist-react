@@ -37,12 +37,12 @@ within the application source code via both the Gradle and Webpack configs.
 
 We do this first to fail fast if the client code doesn't pass the linter checks, which is relatively
 common. This step could also run any preflight unit tests, etc. should you be diligent enough to
-have them. The below assumes `yarn` is used for the project's package manager, sub with `npm` if
-using that instead.
+have them. The below assumes `pnpm` (XH's recommended package manager) is used for the project, sub
+with the `yarn` or `npm` equivalents if using one of those instead.
 
 ```bash
-yarn
-yarn lint
+pnpm install
+pnpm lint
 ```
 
 ## Server and Client Builds
@@ -97,7 +97,7 @@ The appVersion and appBuild params, detailed above, are the most common options 
 # Source commit hash from CI system (e.g. $GITHUB_SHA, $CI_COMMIT_SHA, etc.)
 APP_BUILD=${GIT_COMMIT:0:10}
 echo "Building $APP_VERSION $APP_BUILD"
-yarn build --env appVersion=$APP_VERSION --env appBuild=$APP_BUILD
+pnpm build --env appVersion=$APP_VERSION --env appBuild=$APP_BUILD
 ```
 
 The output is a set of files within `/client-app/build/`.

@@ -391,15 +391,20 @@ class PortfolioGridModel extends HoistModel {
             persistWith: {
                 viewManagerModel: XH.appModel.portfolioGridViewManager,
                 path: 'grid',
+                persistColumns: true,
                 persistSort: true,
-                persistGrouping: true,
-                persistFilter: true,
-                persistColumns: {hidden: true, width: true, order: true}
+                persistGrouping: true
             }
         });
     }
 }
 ```
+
+Note that columns added to the code after a view was saved are hidden by default when persisting
+to a ViewManager, so that a software release does not add columns to views users have curated.
+They remain available via the column chooser, and the in-code default view continues to show them.
+See [Newly Added Columns](../../docs/persistence.md#newly-added-columns) to adjust this behavior
+via `hideNewColumns`.
 
 ### React to View Changes
 

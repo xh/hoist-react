@@ -122,7 +122,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
                 ref: useOnVisibleChange(isVisible => (locModel.isVisible = isVisible))
             }),
-            manageDialog({model: locModel.manageDialogModel}),
+            manageDialog({model: locModel.manageDialogModel, defaultViewIcon}),
             saveAsDialog({model: locModel.saveAsDialogModel})
         );
     }

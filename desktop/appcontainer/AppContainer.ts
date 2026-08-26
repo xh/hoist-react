@@ -15,7 +15,9 @@ import {cardHeaderImpl} from '@xh/hoist/desktop/cmp/card/impl/CardHeaderImpl';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
-import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
+import {dockedColChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/DockedColChooser';
+import {DockedColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/DockedColChooserModel';
+import {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
@@ -53,10 +55,12 @@ installDesktopImpls({
     storeFilterFieldImpl,
     pinPadImpl,
     colChooser,
+    dockedColChooser,
     zoneMapper,
     columnHeaderFilter,
     gridFilterDialog,
-    ColChooserModel,
+    DockedColChooserModel,
+    ModalColChooserModel,
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,
