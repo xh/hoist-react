@@ -14,12 +14,10 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - one behavior change to `FileChooser`)
+### 🎁 New Features
 
-* `FileChooser` now accepts as many dropped files as its `maxFiles` limit allows, rejecting only
-  the surplus. Previously a drop that would exceed the limit was discarded in full. Apps relying on
-  the all-or-nothing behavior should check `onFileAccepted` - it now reports only the files actually
-  added.
+* `FileChooser` now takes as many dropped files as its `maxFiles` limit allows, warning about only
+  the surplus rather than discarding the entire drop.
 
 ### ⚙️ Technical
 
