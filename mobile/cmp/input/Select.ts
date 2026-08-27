@@ -57,6 +57,14 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableFullscreen?: boolean;
 
     /**
+     * True to constrain the value to the current `options` - any selected value not found there is
+     * removed whenever the value or the list changes. Enforced only once `options` is non-null, so
+     * pass null (not `[]`) while options load - `[]` means "no valid choices" and clears the value.
+     * Throws if combined with `enableCreate` or `queryFn`.
+     */
+    enforceValueInOptions?: boolean;
+
+    /**
      * Optional override for fullscreen z-index. Useful for enabling fullscreen from
      * within components that have a higher z-index.
      */
@@ -256,9 +264,29 @@ class SelectInputModel extends HoistInputModel {
             fireImmediately: true
         });
 
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
+
         if (this.fullscreenMode) {
             this.addReaction(this.fullscreenReaction());
         }
+    }
+
+    // Enforce `enforceValueInOptions` - clear any current value not present in internalOptions.
+    // Null options signal that they have yet to load, and are not yet enforced against.
+    private pruneValueToOptions() {
+        const {externalValue} = this;
+        if (isNil(this.componentProps.options) || isNil(externalValue)) return;
+        if (!this.findOption(externalValue, false)) this.noteValueChange(null);
     }
 
     reactSelectRef = createObservableRef<any>();
