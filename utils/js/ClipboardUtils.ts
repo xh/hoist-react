@@ -46,7 +46,7 @@ function copyViaExecCommand(text: string): void {
     range.selectNode(span);
     selection.addRange(range);
 
-    let success = false;
+    let success: boolean;
     try {
         success = document.execCommand('copy');
     } finally {
