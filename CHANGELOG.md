@@ -24,6 +24,10 @@
 * Upgraded `react-dropzone` to v20, which drops its UMD build and ships as an ESM + CJS package with
   an `exports` map. Requires Node >= 22 to install.
 
+* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
+  value to the current `options` and dropping any selection no longer found there. Enforced once
+  `options` is non-null, so pass null while options load.
+
 ### ⚙️ Typescript API Adjustments
 
 * `SelectOption` now admits custom fields alongside the standard `value`/`label`, so extra data
