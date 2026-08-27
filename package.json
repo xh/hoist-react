@@ -29,6 +29,12 @@
     "./static/polyfills.js",
     "./desktop/register.ts",
     "./mobile/register.ts",
+    "./icon/index.ts",
+    "./mobx/index.ts",
+    "./kit/blueprint/index.ts",
+    "./kit/golden-layout/index.js",
+    "./kit/golden-layout/impl/js/**",
+    "./core/persist/index.ts",
     "**/*.scss",
     "**/*.css"
   ],
