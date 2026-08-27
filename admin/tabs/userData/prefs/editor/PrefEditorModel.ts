@@ -12,7 +12,7 @@ import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {DifferModel} from '../../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../../regroup/RegroupDialogModel';
@@ -28,11 +28,10 @@ export class PrefEditorModel extends HoistModel {
 
     @managed
     @observable.ref
-    differModel: DifferModel;
+    accessor differModel: DifferModel;
 
     constructor() {
         super();
-        makeObservable(this);
 
         const {regroupAction} = this.regroupDialogModel,
             required = true,

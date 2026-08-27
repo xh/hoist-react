@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {isFinite, clamp} from 'lodash';
 import {NavigatorModel} from '../NavigatorModel';
@@ -17,7 +17,7 @@ import {hasDraggableParent} from './Utils';
 export class GestureRefreshModel extends HoistModel {
     @lookup(NavigatorModel) navigatorModel;
 
-    @observable refreshProgress = null;
+    @observable accessor refreshProgress = null;
 
     @computed
     get refreshStarted() {
@@ -37,11 +37,6 @@ export class GestureRefreshModel extends HoistModel {
     @action
     refreshEnd() {
         this.refreshProgress = null;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     @action

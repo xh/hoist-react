@@ -11,8 +11,8 @@ import {
     computed,
     configure,
     extendObservable,
+    isObservableProp,
     observable,
-    override,
     reaction,
     runInAction,
     toJS,
@@ -33,9 +33,9 @@ export {
     comparer,
     computed,
     extendObservable,
+    isObservableProp,
     observable,
     observer,
-    override,
     reaction,
     runInAction,
     toJS,
@@ -45,4 +45,3 @@ export {
 };
 
 export * from './decorators';
-export * from './overrides';

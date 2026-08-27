@@ -9,7 +9,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {useComposedRefs, createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -71,7 +71,7 @@ export function useInlineEditorModel(
 class InlineEditorModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable value;
+    @bindable accessor value;
 
     ref = createObservableRef<HoistInputModel>();
 
@@ -83,7 +83,6 @@ class InlineEditorModel extends HoistModel {
 
     constructor(agParams: CustomCellEditorProps, gridModel: GridModel) {
         super();
-        makeObservable(this);
 
         this.agParams = agParams;
         this.value = agParams.value;

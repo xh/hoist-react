@@ -200,10 +200,10 @@ Import from `@xh/hoist/utils/js`.
 
 ### Decorators
 
-Hoist uses **legacy (Stage 2) decorators** via Babel (configured in `hoist-dev-utils`), with
-TypeScript's `experimentalDecorators` flag enabled. This is the `(target, key, descriptor)`
-API, not the newer TC39 Stage 3 standard. Most application code simply uses the decorators
-below, but anyone writing a custom decorator must use the legacy signature.
+Hoist uses **TC39 Stage 3 modern decorators** (2022.3 / Babel `2023-05`). TypeScript's
+`experimentalDecorators` flag is **off**. This is the two-argument `(value, context)` API — any
+custom decorator must use this signature. `@observable` and `@bindable` fields require the
+`accessor` keyword; method/getter decorators below do not.
 
 Class method decorators for common patterns:
 
@@ -213,7 +213,6 @@ Class method decorators for common patterns:
 | `@computeOnce` | Cache the result of a zero-argument method or getter lazily. Ideal for immutable objects (used extensively by `LocalDate`) |
 | `@logWithInfo` | Wrap method with `withInfo()` — times execution and logs to `console.log` |
 | `@logWithDebug` | Wrap method with `withDebug()` — times execution and logs to `console.debug` |
-| `@enumerable` | Mark a getter as enumerable (getters default to non-enumerable) |
 | `@abstract` | Method throws if called directly — must be overridden by subclass |
 | `@sharePendingPromise` | Concurrent calls to a Promise-returning method with the same arguments share a single pending Promise. Arguments must be JSON-serializable |
 

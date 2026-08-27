@@ -23,7 +23,7 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
@@ -113,30 +113,25 @@ export class View
     readonly isFilterValueSource = true;
 
     /** Query defining this View. Update via {@link updateQuery}. */
-    @observable.ref
-    query: Query = null;
+    @observable.ref accessor query: Query = null;
 
     /**
      * Results of this view, an observable object with a `rows` property containing an array of
      * hierarchical {@link ViewRowData} objects.
      */
-    @observable.ref
-    result: ViewResult = null;
+    @observable.ref accessor result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
 
     /** The source {@link Cube.info} as of the last time the view was updated. */
-    @observable.ref
-    info: PlainObject = null;
+    @observable.ref accessor info: PlainObject = null;
 
     /** The source {@link Cube.lastUpdated} as of the last time the view was updated. */
-    @observable
-    cubeUpdated: number;
+    @observable accessor cubeUpdated: number;
 
     /** Timestamp (ms) when the view was last updated. */
-    @observable
-    lastUpdated: number;
+    @observable accessor lastUpdated: number;
 
     /** @internal */
     readonly diagnostics = new ViewDiagnostics(this);
@@ -166,7 +161,6 @@ export class View
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
         super();
-        makeObservable(this);
 
         const start = performance.now(),
             {query, stores = [], connect = false} = config;

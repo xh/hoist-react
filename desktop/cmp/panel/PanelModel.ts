@@ -19,7 +19,7 @@ import {
     Side
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, isNumber, isString} from 'lodash';
@@ -162,16 +162,13 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
      * True when collapsed in its "home" location as per this model's state.
      * See also {@link isRenderedCollapsed}, which takes modal state into account.
      */
-    @observable
-    collapsed: boolean = false;
+    @observable accessor collapsed: boolean = false;
 
     /** Size in pixels or percents along sizing dimension. Used when object is *not* collapsed. */
-    @bindable
-    size: number | string = null;
+    @bindable accessor size: number | string = null;
 
     /** Is this panel currently resizing? */
-    @observable
-    isResizing: boolean = false;
+    @observable accessor isResizing: boolean = false;
 
     /** Is the panel rendering in its modal view state? Observable property. */
     get isModal(): boolean {
@@ -218,7 +215,6 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         xhImpl = false
     }: PanelConfig) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
 
         defaultSize =

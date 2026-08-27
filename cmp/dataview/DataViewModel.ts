@@ -27,7 +27,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
 import {ReactNode} from 'react';
@@ -150,12 +150,11 @@ export type ItemHeightFn = (params: {
  */
 export class DataViewModel extends HoistModel {
     @managed gridModel: GridModel;
-    @bindable.ref itemHeight: number | ItemHeightFn;
-    @bindable groupRowHeight: number;
+    @bindable.ref accessor itemHeight: number | ItemHeightFn;
+    @bindable accessor groupRowHeight: number;
 
     constructor(config: DataViewConfig) {
         super();
-        makeObservable(this);
         const {
             store,
             renderer,

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ToastSpec, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {isString, partition} from 'lodash';
 import {ToastModel} from './ToastModel';
 
@@ -18,12 +18,7 @@ export class ToastSourceModel extends HoistModel {
 
     @managed
     @observable.ref
-    toastModels: ToastModel[] = [];
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    accessor toastModels: ToastModel[] = [];
 
     show(config: ToastSpec | string) {
         if (isString(config)) config = {message: config};

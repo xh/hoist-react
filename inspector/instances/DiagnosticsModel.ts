@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {action, makeObservable} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {Cube} from '@xh/hoist/data';
 import {forIn, isEmpty, isFinite} from 'lodash';
 import type {InstancesModel} from './InstancesModel';
@@ -72,7 +72,6 @@ export class DiagnosticsModel extends HoistModel {
 
     constructor(parent: InstancesModel) {
         super();
-        makeObservable(this);
         this.parent = parent;
         this.gridModel = this.createGridModel();
 

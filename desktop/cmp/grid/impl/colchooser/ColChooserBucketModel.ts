@@ -12,7 +12,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import type {
     GridOptions,
     IsRowValidDropPositionParams,
@@ -70,8 +70,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
     chooserGridModel: GridModel;
 
     /** True while a cross-bucket drag is hovering this bucket - drives the empty-strip highlight. */
-    @bindable
-    dragOver: boolean = false;
+    @bindable accessor dragOver: boolean = false;
 
     /** The target GridModel whose columns this bucket manages. */
     get targetGridModel(): GridModel {
@@ -122,7 +121,6 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
     constructor({parent, pinned, title, emptyText}: ColChooserBucketConfig) {
         super();
-        makeObservable(this);
         this.parent = parent;
         this.pinned = pinned;
         this.title = title;

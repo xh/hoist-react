@@ -17,7 +17,6 @@ import {
     textInput
 } from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isPlainObject, last, union} from 'lodash';
 import {ReactElement} from 'react';
@@ -77,11 +76,6 @@ class ConfigValueModel extends HoistModel {
 
     get resolvedIsStale(): boolean {
         return this.overrideValue == null && (this.valueField?.isDirty ?? false);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

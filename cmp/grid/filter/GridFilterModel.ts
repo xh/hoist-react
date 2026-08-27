@@ -21,7 +21,7 @@ import {
     flattenFilter
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
 import {ReactElement} from 'react';
@@ -45,7 +45,7 @@ export class GridFilterModel extends HoistModel {
 
     gridModel: GridModel;
     bind: GridFilterBindTarget;
-    @bindable commitOnChange: boolean;
+    @bindable accessor commitOnChange: boolean;
     @managed fieldSpecs: GridFilterFieldSpec[] = [];
     activeFilterIcon: ReactElement;
 
@@ -54,7 +54,7 @@ export class GridFilterModel extends HoistModel {
     }
 
     // Open state for filter dialog
-    @observable dialogOpen = false;
+    @observable accessor dialogOpen = false;
 
     // Display for nil or empty values
     static BLANK_PLACEHOLDER = '[blank]';
@@ -70,7 +70,6 @@ export class GridFilterModel extends HoistModel {
         gridModel: GridModel
     ) {
         super();
-        makeObservable(this);
         this.gridModel = gridModel;
         this.bind = bind;
         this.commitOnChange = commitOnChange;

@@ -7,7 +7,7 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, SelectOption} from '@xh/hoist/core';
 import {Cube, StoreRecord} from '@xh/hoist/data';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, last, sortBy} from 'lodash';
@@ -25,14 +25,14 @@ export class AggChartModel extends HoistModel {
      *  - elapsed - avg elapsed time in ms for the primary dim group.
      *  - any other numeric, aggregated custom data field metrics, if so configured
      */
-    @bindable metric: string = 'entryCount';
+    @bindable accessor metric: string = 'entryCount';
 
     @computed
     get metricLabel() {
         return this.selectableMetrics.find(it => it.value === this.metric)?.label ?? this.metric;
     }
 
-    @bindable incWeekends: boolean = true;
+    @bindable accessor incWeekends: boolean = true;
 
     @managed chartModel: ChartModel;
 
@@ -69,11 +69,6 @@ export class AggChartModel extends HoistModel {
         });
 
         return sortBy(ret, 'label');
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

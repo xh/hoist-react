@@ -10,7 +10,7 @@ import {getFilterRegex} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 export interface LeftRightChooserFilterProps extends HoistProps<LeftRightChooserModel> {
@@ -49,8 +49,7 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
     @lookup(LeftRightChooserModel)
     model: LeftRightChooserModel;
 
-    @bindable
-    value = null;
+    @bindable accessor value = null;
 
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
@@ -58,7 +57,6 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => [this.value, this.matchMode],
             run: () => this.runFilter()

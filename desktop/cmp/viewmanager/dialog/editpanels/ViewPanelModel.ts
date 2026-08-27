@@ -8,7 +8,6 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {makeObservable} from '@xh/hoist/mobx';
 import {capitalize, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from '../ManageDialogModel';
@@ -45,7 +44,6 @@ export class ViewPanelModel extends HoistModel {
 
     constructor(parent: ManageDialogModel) {
         super();
-        makeObservable(this);
 
         this.parent = parent;
         this.formModel = this.createFormModel();

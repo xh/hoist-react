@@ -8,7 +8,7 @@ import {ColumnGroup, GridModel} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, creates, HoistProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isFunction} from 'lodash';
 import {ReactNode} from 'react';
@@ -73,7 +73,7 @@ export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
 class ColumnGroupHeaderModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable isExpanded = true;
+    @bindable accessor isExpanded = true;
 
     get isExpandable() {
         return this.agColumnGroup.isExpandable();
@@ -81,11 +81,6 @@ class ColumnGroupHeaderModel extends HoistModel {
 
     get agColumnGroup(): AgProvidedColumnGroup {
         return this.componentProps.columnGroup.providedColumnGroup;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

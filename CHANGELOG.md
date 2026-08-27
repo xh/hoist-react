@@ -14,6 +14,20 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* **Migrated to TC39 Stage 3 (2023-05) decorators**, retiring `experimentalDecorators`. Drops
+  `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
+  `accessor` to `@observable`/`@bindable` fields and run the codemods in `docs/codemod/v87/`.
+  Requires `@xh/hoist-dev-utils >= 15` - upgrade both packages together, as a legacy-decorator app
+  built against the new dev-utils silently loses every `@observable` and `@bindable` field.
+    * `@observable accessor` fields are now prototype getter/setters rather than own enumerable
+      properties, which changes `Object.keys` and spread (`{...model}`) over model instances.
+    * `@persist` must now be applied *after* the MobX decorator (`@bindable` then `@persist`).
+      Reversed, it silently no-ops and the field stops persisting - no error, no type error.
+      Decorator order was irrelevant under legacy decorators, and the codemods do not reorder
+      them, so audit every `@persist` in app code by hand.
+
 ## 87.0.0 - 2026-08-25
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
@@ -456,6 +470,12 @@ columns.
 * Added the exported `HoistRoute` type - Router5's `Route` extended with Hoist's `omit` key - and
   retyped `HoistAppModel.getRoutes()` to return it, so declarative route exclusion (e.g.
   `omit: !XH.getUser().isHoistAdmin`) now type-checks without a cast.
+
+### ⚙️ Technical
+* Model lookup now subscribes only to slots that can affect resolution — the matched slot, or
+  nullish/HoistModel candidates if no match. Primitive observables are excluded. Tighter than
+  the prior walk, which subscribed indiscriminately and triggered needless re-renders.
+* Misc. improvements to persistence in the Admin client.
 
 ### 🤖 AI Docs + Tooling
 

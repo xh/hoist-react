@@ -14,7 +14,7 @@ import {
     ViewManagerModel
 } from '@xh/hoist/cmp/viewmanager';
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {GroupPathOption, normalizeGroupValue, TOP_LEVEL_GROUP_VALUE} from '../Utils';
 
 export interface GroupFieldModelConfig {
@@ -31,16 +31,16 @@ export class GroupFieldModel extends HoistModel {
     readonly formModel: FormModel;
     readonly viewManagerModel: ViewManagerModel;
 
-    @observable isCreateOpen: boolean = false;
+    @observable accessor isCreateOpen: boolean = false;
 
     /** Parent for the group being created - frozen when the popover opens. */
-    @observable parentPath: string = null;
+    @observable accessor parentPath: string = null;
 
     /** Name typed into the popover - may itself be a path, creating multiple levels at once. */
-    @bindable newGroupName: string = null;
+    @bindable accessor newGroupName: string = null;
 
     /** Group created here but not yet saved - offered in the select alongside existing groups. */
-    @observable pendingPath: string = null;
+    @observable accessor pendingPath: string = null;
 
     get value(): string {
         return this.formModel.values.group;
@@ -86,7 +86,6 @@ export class GroupFieldModel extends HoistModel {
 
     constructor({formModel, viewManagerModel}: GroupFieldModelConfig) {
         super();
-        makeObservable(this);
         this.formModel = formModel;
         this.viewManagerModel = viewManagerModel;
     }

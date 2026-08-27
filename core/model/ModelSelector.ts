@@ -64,19 +64,24 @@ export function formatSelector(selector: ModelSelector): string {
  * Accessing properties decorated with `@lookup` should first be done in the
  * {@link HoistModel.onLinked} or {@link HoistModel.afterLinked} handlers.
  */
-export const lookup: any = (selector: ModelSelector) => {
+export function lookup(selector: ModelSelector) {
     ensureIsSelector(selector);
-    return function (target, property, descriptor) {
-        throwIf(
-            !target.isHoistModel,
-            '@lookup decorator should be applied to a subclass of HoistModel'
-        );
-        // Be sure to create list for *this* particular class. Clone and include inherited values.
-        const key = '_xhInjectedParentProperties';
-        if (!target.hasOwnProperty(key)) {
-            target[key] = {...target[key]};
-        }
-        target[key][property] = selector;
-        return descriptor;
+    return function (_value: any, context: ClassFieldDecoratorContext) {
+        const {name} = context;
+        // Babel's addInitializer callback fails for fields, so register in initial return.
+        return function (this: any, initialValue: any) {
+            throwIf(
+                !this.isHoistModel,
+                '@lookup decorator should be applied to a subclass of HoistModel'
+            );
+            const target = Object.getPrototypeOf(this),
+                key = '_xhInjectedParentProperties';
+            // Be sure to create list for *this* particular class. Clone and include inherited values.
+            if (!target.hasOwnProperty(key)) {
+                target[key] = {...(target[key] ?? {})};
+            }
+            target[key][name] = selector;
+            return initialValue;
+        };
     };
-};
+}

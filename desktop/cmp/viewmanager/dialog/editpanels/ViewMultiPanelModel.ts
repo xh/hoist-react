@@ -8,7 +8,6 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {makeObservable} from '@xh/hoist/mobx';
 import {every, isEmpty, uniq} from 'lodash';
 import {ManageDialogModel} from '../ManageDialogModel';
 import {confirmVisibilityChangeAsync, Visibility} from '../Utils';
@@ -32,7 +31,6 @@ export class ViewMultiPanelModel extends HoistModel {
 
     constructor(parent: ManageDialogModel) {
         super();
-        makeObservable(this);
 
         this.parent = parent;
         this.formModel = new FormModel({fields: [{name: 'visibility'}]});

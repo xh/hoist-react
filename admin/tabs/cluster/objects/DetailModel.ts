@@ -8,7 +8,7 @@ import {ClusterObjectsModel} from '@xh/hoist/admin/tabs/cluster/objects/ClusterO
 import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {isEmpty, isEqual, without} from 'lodash';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 
@@ -18,7 +18,7 @@ export class DetailModel extends HoistModel {
 
     @managed
     @observable.ref
-    gridModel: GridModel = null;
+    accessor gridModel: GridModel = null;
 
     //---------------------------------------------
     // Current cluster object and related.
@@ -49,7 +49,6 @@ export class DetailModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => this.selectedObject,
             run: record => this.updateGridModel(record)
