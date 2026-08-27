@@ -83,7 +83,7 @@
     "onsenui": "~2.12.9",
     "qs": "^6.15.3",
     "react-day-picker": "^9.14.0",
-    "react-dropzone": "~15.0.0",
+    "react-dropzone": "~20.1.1",
     "react-grid-layout": "~2.2.4",
     "react-markdown": "~10.1.0",
     "react-onsenui": "~1.13.3",

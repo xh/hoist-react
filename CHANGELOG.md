@@ -16,6 +16,14 @@
 
 ### 🎁 New Features
 
+* `FileChooser` now takes as many dropped files as its `maxFiles` limit allows, warning about only
+  the surplus rather than discarding the entire drop.
+
+### ⚙️ Technical
+
+* Upgraded `react-dropzone` to v20, which drops its UMD build and ships as an ESM + CJS package with
+  an `exports` map. Requires Node >= 22 to install.
+
 * Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
   value to the current `options` and dropping any selection no longer found there. Enforced once
   `options` is non-null, so pass null while options load.
@@ -26,6 +34,10 @@
   carried on an option (and already passed through at runtime) can be read within `optionRenderer`,
   `filterFn`, and friends without a cast. Annotate the callback's argument with the app's own option
   type for fully typed access - e.g. `optionRenderer: (opt: MyOption) => ...`.
+
+### 📚 Libraries
+
+* react-dropzone `15.0 → 20.1`
 
 ## 87.0.0 - 2026-08-25
 
