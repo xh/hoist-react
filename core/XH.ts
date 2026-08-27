@@ -663,6 +663,10 @@ export class XHApi {
      * button instead (e.g. for confirming risky operations), applications should specify a
      * `cancelProps` argument of the following form `cancelProps: {..., autoFocus: true}`.
      *
+     * If `suppress` is specified and the user has previously opted to suppress this message,
+     * this method will resolve immediately to their previously saved response, without showing
+     * a dialog. This also applies to the `alert`, `confirm`, and `prompt` variants below.
+     *
      * @returns true if user confirms, false if user cancels. If an input is provided, the
      * returned Promise will resolve to the input value if user confirms, false if user cancels.
      */
