@@ -20,6 +20,16 @@
   `prompt` variants. Set to `true` (or a config object) to offer users a "Don't show this message
   again" checkbox. Confirmed responses are saved to browser local or session storage - optionally
   with an expiry - and returned immediately by future calls with the same `messageKey`.
+* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
+  value to the current `options` and dropping any selection no longer found there. Enforced once
+  `options` is non-null, so pass null while options load.
+
+### ⚙️ Typescript API Adjustments
+
+* `SelectOption` now admits custom fields alongside the standard `value`/`label`, so extra data
+  carried on an option (and already passed through at runtime) can be read within `optionRenderer`,
+  `filterFn`, and friends without a cast. Annotate the callback's argument with the app's own option
+  type for fully typed access - e.g. `optionRenderer: (opt: MyOption) => ...`.
 
 ## 87.0.0 - 2026-08-25
 

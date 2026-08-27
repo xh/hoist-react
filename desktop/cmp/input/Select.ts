@@ -92,6 +92,14 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableWindowed?: boolean;
 
     /**
+     * True to constrain the value to the current `options` - any selected value not found there is
+     * removed whenever the value or the list changes. Enforced only once `options` is non-null, so
+     * pass null (not `[]`) while options load - `[]` means "no valid choices" and clears the value.
+     * Throws if combined with `enableCreate` or `queryFn`.
+     */
+    enforceValueInOptions?: boolean;
+
+    /**
      * Function called to filter available options for a given query string input.
      * Used for filtering of options provided by `options` prop when `enableFilter` is true.
      * Not to be confused with `queryFn` prop, used in asynchronous mode.
@@ -323,6 +331,18 @@ class SelectInputModel extends HoistInputModel {
             },
             fireImmediately: true
         });
+
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
     }
 
     reactSelectRef = createObservableRef<any>();
@@ -482,6 +502,22 @@ class SelectInputModel extends HoistInputModel {
             this.componentProps.generateOptionFn?.(value) ??
             this.valueToOption(value)
         );
+    }
+
+    // Enforce `enforceValueInOptions` - drop any current value not present in internalOptions.
+    // Null options signal that they have yet to load, and are not yet enforced against.
+    private pruneValueToOptions() {
+        const {externalValue, multiMode, emptyValue} = this;
+        if (isNil(this.componentProps.options)) return;
+        if (isNil(externalValue) || isEqual(externalValue, emptyValue)) return;
+
+        if (multiMode) {
+            const curr = castArray(externalValue),
+                keptOpts = curr.map(v => this.findOption(v, false)).filter(Boolean);
+            if (keptOpts.length !== curr.length) this.noteValueChange(keptOpts);
+        } else if (!this.findOption(externalValue, false)) {
+            this.noteValueChange(null);
+        }
     }
 
     override toExternal(internal) {

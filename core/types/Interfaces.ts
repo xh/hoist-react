@@ -366,9 +366,17 @@ export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, 
 //------------------------
 /**
  * An option to be passed to Select controls.
+ *
+ * Additional custom fields are supported alongside the standard entries below and are passed
+ * through to callbacks such as `optionRenderer` and `filterFn`. For typed access to such fields,
+ * annotate the callback's argument with the app's own option type - e.g.
+ * `optionRenderer: (opt: MyOption) => ...`.
  */
 export interface SelectOption {
     value?: any;
     label?: string;
     options?: (SelectOption | any)[];
+
+    /** Custom fields, passed through to Select callbacks. */
+    [key: string]: any;
 }
