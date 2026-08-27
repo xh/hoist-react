@@ -23,10 +23,14 @@
 
 * Upgraded `react-dropzone` to v20, which drops its UMD build and ships as an ESM + CJS package with
   an `exports` map. Requires Node >= 22 to install.
-
 * Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
   value to the current `options` and dropping any selection no longer found there. Enforced once
   `options` is non-null, so pass null while options load.
+* Extended the package `sideEffects` declaration to cover the vendored golden-layout implementation
+  and the barrels with registration or configuration side effects on import - icon, mobx, blueprint
+  kit, golden-layout kit, and persist. Required by the tree-shaking in hoist-dev-utils v15.
+* Restructured `PersistenceProvider` provider registration to remove a base/subclass import cycle
+  that breaks under tree-shaking bundlers' re-export optimization. No API change.
 
 ### ⚙️ Typescript API Adjustments
 
