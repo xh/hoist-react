@@ -21,6 +21,12 @@
       background-color: var(--xh-intent-primary-trans2) !important;
     }
 
+    // Grip glyph swapped in via the grid's `icons` option - see ManageDialog.ts. Muted tone to
+    // match the ColChooser's handle, over ag-Grid's own drag-handle color.
+    &__drag-handle__grip {
+      color: var(--xh-text-color-muted);
+    }
+
     // Gray out the drag handles and block drag initiation for an undraggable selection.
     &__grid--drag-disabled .ag-drag-handle {
       color: var(--xh-text-color-muted);
