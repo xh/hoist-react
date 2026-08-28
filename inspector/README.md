@@ -134,6 +134,9 @@ The Instances panel is a split layout with:
 - **Grouping** — Toggle "Show in Groups" to group by type (Models, Services, Stores)
 - **XH impl filtering** — Toggle "Show XH Impl" to show/hide Hoist's internal framework instances
   (marked with `xhImpl = true`)
+- **Favorites** — Star any instance with an `xhName` to pin it, then toggle "Favorites" to show
+  only pinned instances. Keyed by `{className}:{xhName}` and persisted, so the same set of objects
+  can be followed across reloads
 - **Actions** — Log instance to devtools console, trigger `loadAsync()` on models with
   `LoadSupport`
 - **Multi-select** — Select multiple instances to compare their properties side-by-side
@@ -179,7 +182,8 @@ Inspector state is persisted to `localStorage` under the key
 
 - Panel sizes (stats panel, instances panel)
 - Grid column state for both grids
-- Quick filter selections (grouping, xhImpl visibility, property filters)
+- Quick filter selections (grouping, xhImpl visibility, favorites, property filters)
+- Favorited instances
 - Store filter text
 - Active/inactive state
 

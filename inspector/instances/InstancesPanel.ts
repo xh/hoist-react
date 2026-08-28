@@ -132,6 +132,12 @@ const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
                         value: 'showXhImpl',
                         tooltip:
                             'Show instances created as part of internal Hoist model/component implementations'
+                    }),
+                    button({
+                        text: 'Favorites',
+                        value: 'favoritesOnly',
+                        tooltip:
+                            'Show only favorited instances. Star any instance with an xhName to favorite it - favorites persist across reloads.'
                     })
                 ]
             }),

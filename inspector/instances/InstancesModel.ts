@@ -49,12 +49,18 @@ export class InstancesModel extends HoistModel {
     @bindable @persist instancesStoreFilter;
     @bindable @persist propertiesStoreFilter;
 
+    /** Keys of favorited instances (`{className}:{xhName}`) - requires an `xhName` to pin. */
+    @bindable.ref @persist favorites: string[] = [];
+
     @bindable @persist instQuickFilters = ['showInGroups'];
     get showInGroups() {
         return this.instQuickFilters?.includes('showInGroups');
     }
     get showXhImpl() {
         return this.instQuickFilters?.includes('showXhImpl');
+    }
+    get favoritesOnly() {
+        return this.instQuickFilters?.includes('favoritesOnly');
     }
 
     @bindable @persist propQuickFilters = [];
@@ -161,6 +167,13 @@ export class InstancesModel extends HoistModel {
         }
     }
 
+    toggleFavorite(record: StoreRecord) {
+        const key = favoriteKey(record?.data);
+        if (!key) return;
+        const {favorites} = this;
+        this.favorites = favorites.includes(key) ? without(favorites, key) : [...favorites, key];
+    }
+
     togglePropsWatchlistItem(record: StoreRecord) {
         const {instanceXhId, property, isGetter} = record.data,
             {propsWatchlist} = this,
@@ -197,6 +210,7 @@ export class InstancesModel extends HoistModel {
                 fields: [
                     {name: 'className', type: 'string'},
                     {name: 'xhName', type: 'string'},
+                    {name: 'isFavorite', type: 'bool'},
                     {name: 'displayGroup', type: 'string'},
                     {name: 'created', type: 'date'},
                     {name: 'syncRun', type: 'number'},
@@ -220,12 +234,28 @@ export class InstancesModel extends HoistModel {
             columns: [
                 {
                     ...actionCol,
-                    width: calcActionColWidth(2),
+                    width: calcActionColWidth(3),
                     actions: [
                         {
                             icon: Icon.terminal(),
                             tooltip: 'Log to console',
                             actionFn: ({record}) => this.logInstanceToConsole(record)
+                        },
+                        {
+                            icon: Icon.favorite(),
+                            actionFn: ({record}) => this.toggleFavorite(record),
+                            displayFn: ({record}) => {
+                                const {xhName, isFavorite} = record.data;
+                                return {
+                                    disabled: !xhName,
+                                    tooltip: xhName
+                                        ? 'Toggle Favorite'
+                                        : 'Set xhName to enable favorites',
+                                    icon: isFavorite
+                                        ? Icon.favorite({intent: 'warning', prefix: 'fas'})
+                                        : Icon.favorite({className: 'xh-text-color-muted'})
+                                };
+                            }
                         },
                         {
                             icon: Icon.refresh({intent: 'success'}),
@@ -254,6 +284,7 @@ export class InstancesModel extends HoistModel {
                     renderer: v => (v ? Icon.link() : null)
                 },
                 {field: 'displayGroup', hidden: true},
+                {field: 'isFavorite', ...boolCheckCol, hidden: true},
                 {field: 'xhName', flex: 1, minWidth: 150},
                 {field: 'className', flex: 1, minWidth: 150},
                 {
@@ -390,11 +421,15 @@ export class InstancesModel extends HoistModel {
     private autoLoadInstancesGrid() {
         this.addAutorun({
             run: () => {
-                const {showXhImpl, instancesGridModel, selectedSyncRun} = this,
+                const {showXhImpl, favoritesOnly, favorites, instancesGridModel, selectedSyncRun} =
+                        this,
                     data = [];
 
                 XH.inspectorService.activeInstances.forEach(inst => {
-                    if (!showXhImpl && inst.isXhImpl) return;
+                    const isFavorite = favorites.includes(favoriteKey(inst));
+
+                    // A star is an explicit opt-in, so favorites show regardless of the xhImpl filter.
+                    if (favoritesOnly ? !isFavorite : !showXhImpl && inst.isXhImpl) return;
                     if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
 
                     const displayGroup = inst.isHoistService
@@ -406,7 +441,7 @@ export class InstancesModel extends HoistModel {
                             : inst.isView
                               ? 'Views'
                               : 'Models';
-                    data.push({...inst, displayGroup});
+                    data.push({...inst, displayGroup, isFavorite});
                 });
 
                 instancesGridModel.loadData(data);
@@ -557,6 +592,10 @@ export class InstancesModel extends HoistModel {
 }
 
 const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores'];
+
+/** Persistent identity for Favorites - null when the instance has no `xhName` to pin by. */
+const favoriteKey = (inst: {className?: string; xhName?: string}): string =>
+    inst?.xhName ? `${inst.className}:${inst.xhName}` : null;
 
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
 
