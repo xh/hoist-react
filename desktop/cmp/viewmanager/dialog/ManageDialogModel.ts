@@ -961,7 +961,9 @@ export class ManageDialogModel extends HoistModel {
             // Sort groups above loose views among siblings, then alpha by name.
             sortBy: ['isGroupRow|desc', 'name'],
             treeMode: true,
-            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
+            // Highlights only - the tree-border style adds a second, differently colored rule on
+            // top of each level-0 row, which doubles up with the row borders below.
+            treeStyle: TreeStyle.HIGHLIGHTS,
             rowBorders: true,
             selModel: 'multiple',
             contextMenu,
@@ -992,7 +994,9 @@ export class ManageDialogModel extends HoistModel {
                     headerName: null,
                     width: 28,
                     resizable: false,
-                    align: 'center',
+                    // Left-aligned, so the cell keeps its standard left padding and the grip lands
+                    // at the same inset as the ColChooser's. Centering zeroes that padding, which
+                    // pinned the grip against the grid's left border.
                     omit: !this.dragDropEnabled(type),
                     agOptions: {rowDrag: true}
                 },
