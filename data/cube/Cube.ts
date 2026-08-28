@@ -286,20 +286,24 @@ export class Cube extends HoistBase {
      * @param query - query to be used to construct this view.
      * @param stores - Stores to be automatically loaded/reloaded with View results.
      * @param connect - true to update View automatically when data in the underlying Cube changes.
+     * @param xhName - see {@link HoistBase.xhName}.
      */
     createView({
         query,
         stores,
-        connect = false
+        connect = false,
+        xhName = null
     }: {
         query: QueryConfig;
         stores?: Store[] | Store;
         connect?: boolean;
+        xhName?: string;
     }): View {
         return new View({
             query: new Query({...query, cube: this}),
             stores,
-            connect
+            connect,
+            xhName
         });
     }
 
