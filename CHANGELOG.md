@@ -12,6 +12,8 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+## 88.0.0-SNAPSHOT - unreleased
+
 ## 87.1.0 - 2026-08-28
 
 ### 🎁 New Features
