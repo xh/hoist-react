@@ -117,6 +117,25 @@ class MyModel extends HoistModel {
 }
 ```
 
+**Instance Naming**
+
+Log output, trace spans, and the Inspector label objects by class name, so several `Store`s all
+log as `[Store]`. Set `xhName` to tell them apart - it is accepted as a config by `Store`,
+`Cube`, `View`, `GridModel`, and `FormModel`, and can be set directly on any `HoistBase`:
+
+```typescript
+const gridModel = new GridModel({xhName: 'positionsGrid', store: {...}});
+// gridModel logs as [positionsGrid]; its store is named 'positionsGrid.store'
+
+export class PositionsModel extends HoistModel {
+    override xhName = 'positions';
+}
+```
+
+Owners name the children they create as `{owner}.{child}` - a `Cube`'s internal store, a
+`GridModel`'s store, a `FormModel`'s fields (`positionsForm.firstName`). Uniqueness is not
+enforced.
+
 ### Core API
 
 | Method | Purpose |
@@ -128,6 +147,7 @@ class MyModel extends HoistModel {
 | `setBindable(prop, val)` | Set value via conventional setter |
 | `destroy()` | Clean up all managed resources |
 | `xhId` | Unique identifier for this instance |
+| `xhName` | Optional developer-facing name, labelling this instance in logs, telemetry, and Inspector |
 
 ## HoistModel
 

@@ -237,6 +237,9 @@ export interface StoreConfig {
      *     it may also be changed on an existing Store at any time.
      */
     experimental?: PlainObject;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -447,10 +450,12 @@ export class Store
         projectionOnly = null,
         validationIsComplex = false,
         experimental,
+        xhName = null,
         data
     }: StoreConfig) {
         super();
         makeObservable(this);
+        this.xhName = xhName;
         throwIf(
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'

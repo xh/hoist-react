@@ -282,13 +282,28 @@ export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): Plain
 }
 
 /**
- * A string, or an object from which a name can be derived - via `displayName` (e.g. React
- * components) or `constructor.name` (e.g. class instances). Used for logging and tracing.
+ * A string, or an object from which a name can be derived - via `xhName` (named HoistBase
+ * instances), `displayName` (e.g. React components), or `constructor.name` (class instances).
+ * Used for logging and tracing.
  */
-export type NameSource = string | {displayName: string} | {constructor: {name: string}};
+export type NameSource =
+    string | {xhName: string} | {displayName: string} | {constructor: {name: string}};
 
-/** Resolve a {@link NameSource} to a string, or null if unresolvable. */
+/**
+ * Resolve a {@link NameSource} to a string, or null if unresolvable.
+ * Prefers an instance-level `xhName` when set - see {@link parseTypeName} to skip it.
+ */
 export function parseNameSource(source: NameSource): string {
+    if (!source) return null;
+    if (isString(source)) return source;
+    return source['xhName'] || parseTypeName(source);
+}
+
+/**
+ * Resolve a {@link NameSource} to its type-level name - `displayName` or `constructor.name` -
+ * ignoring any instance-level `xhName`. Returns null if unresolvable.
+ */
+export function parseTypeName(source: NameSource): string {
     if (!source) return null;
     if (isString(source)) return source;
     if (source['displayName']) return source['displayName'];

@@ -76,6 +76,12 @@ export interface CubeConfig {
      * Return true to omit the row.
      */
     omitFn?: OmitFn;
+
+    /**
+     * See {@link HoistBase.xhName}. Also names the internal store `{xhName}.store`
+     * unless `store.xhName` is set explicitly.
+     */
+    xhName?: string;
 }
 
 /**
@@ -187,11 +193,14 @@ export class Cube extends HoistBase {
         info = {},
         lockFn,
         bucketSpecFn,
-        omitFn
+        omitFn,
+        xhName = null
     }: CubeConfig) {
         super();
         makeObservable(this);
+        this.xhName = xhName;
         this.store = new Store({
+            xhName: xhName ? `${xhName}.store` : null,
             ...store,
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,

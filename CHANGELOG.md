@@ -16,6 +16,11 @@
 
 ### 🎁 New Features
 
+* Added `HoistBase.xhName`, an optional developer-facing name that labels an instance in log
+  output, trace spans (new `xh.name` tag), and the Inspector's new `xhName` column. Accepted as a
+  config by `Store`, `Cube`, `View`, `GridModel`, and `FormModel` - a named `GridModel` or `Cube`
+  names the store it creates `{xhName}.store`, and a named `FormModel` names its fields
+  `{xhName}.{fieldName}`.
 * Added new `MessageSpec.suppress` config for `XH.message()` and its `alert`, `confirm`, and
   `prompt` variants. Set to `true` (or a config object) to offer users a "Don't show this message
   again" checkbox. Confirmed responses are saved to browser local or session storage - optionally

@@ -88,7 +88,10 @@ export interface FullSpanConfig extends SpanConfig {
      */
     startTime?: number;
 
-    /** Source for the `code.namespace` tag - usually the calling object/function. */
+    /**
+     * Usually the calling object/function. Its type-level name (class or component name) becomes
+     * the `code.namespace` tag; a HoistBase `xhName`, when set, becomes `xh.name`.
+     */
     caller?: NameSource;
 }
 

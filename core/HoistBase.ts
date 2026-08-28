@@ -92,6 +92,13 @@ export abstract class HoistBase {
      */
     xhImpl: boolean = undefined;
 
+    /**
+     * Optional developer-facing name for this instance, distinguishing it from other instances of
+     * the same class in log output, telemetry, and the Hoist Inspector. Falls back to the class
+     * name when null. Uniqueness is not enforced - apps choose their own naming scheme.
+     */
+    xhName: string = null;
+
     // Internal State
     private managedInstances = [];
     private disposers = [];

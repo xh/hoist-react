@@ -392,6 +392,12 @@ export interface GridConfig {
     /** Extra app-specific data for the GridModel. */
     appData?: PlainObject;
 
+    /**
+     * See {@link HoistBase.xhName}. Also names a store created from a `store` config
+     * `{xhName}.store` unless that config sets its own `xhName`.
+     */
+    xhName?: string;
+
     /** @internal */
     xhImpl?: boolean;
 }
@@ -707,11 +713,13 @@ export class GridModel extends HoistModel {
             enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll,
             experimental,
             appData,
+            xhName = null,
             xhImpl,
             ...rest
         }: GridConfig = config;
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this._defaultState = {columns, sortBy, groupBy, expandLevel};
 
@@ -1894,7 +1902,11 @@ export class GridModel extends HoistModel {
             store = storeOrConfig;
         } else {
             storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
-            store = new Store({loadTreeData: this.treeMode, ...storeOrConfig});
+            store = new Store({
+                xhName: this.xhName ? `${this.xhName}.store` : null,
+                loadTreeData: this.treeMode,
+                ...storeOrConfig
+            });
             store.xhImpl = this.xhImpl;
             this.markManaged(store);
         }
