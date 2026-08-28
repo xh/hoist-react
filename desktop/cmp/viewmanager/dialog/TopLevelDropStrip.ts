@@ -11,13 +11,12 @@ import {Icon} from '@xh/hoist/icon';
 import {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {KeyboardEvent} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
 
 /**
  * Strip rendered above the tree grid within one tab of the ViewManager's Manage dialog, registered
  * with ag-Grid as an external row-drop-zone accepting drops that move a view/group out of all
- * groups. Also clickable, to move the current selection without a drag.
+ * groups.
  *
  * Deliberately not a grid row - it sits outside the grid's scrolling viewport, so it needs no
  * special-casing in the tree data and cannot be occluded by a sticky group-row header.
@@ -36,22 +35,12 @@ export const topLevelDropStrip = hoistCmp.factory<GridModel>({
 
         const {mode, hint} = dialogModel.stripState(gridModel),
             blocked = mode === 'blocked',
-            open = mode === 'armed' || mode === 'hot',
-            activate = () => dialogModel.moveSelectionToTopLevelAsync(gridModel).catchDefault();
+            open = mode === 'armed' || mode === 'hot';
 
         return div({
             ref: impl.ref,
             className: classNames(className, mode !== 'rest' ? `${className}--${mode}` : null),
-            role: 'button',
-            tabIndex: 0,
-            'aria-label': 'Move selection to top level',
             'aria-disabled': blocked,
-            onClick: activate,
-            onKeyDown: (e: KeyboardEvent) => {
-                if (e.key !== 'Enter' && e.key !== ' ') return;
-                e.preventDefault();
-                activate();
-            },
             items: [
                 open
                     ? Icon.folderOpen({className: `${className}__icon`})

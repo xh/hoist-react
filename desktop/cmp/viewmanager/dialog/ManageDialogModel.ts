@@ -300,19 +300,13 @@ export class ManageDialogModel extends HoistModel {
 
     /**
      * Display state for `gridModel`'s top-level drop strip - rest/armed/hot/blocked, matching
-     * the in-flight drag (if it originated in this grid) or, at rest, the current selection.
+     * the in-flight drag, if it originated in this grid.
      */
     stripState(gridModel: GridModel): {mode: StripMode; hint: string} {
         const type = this.gridTypeFor(gridModel),
             payload = this.drag?.type === type ? this.drag.payload : null;
 
-        if (!payload) {
-            const hasSelection = gridModel.hasSelection && !this.isDragDisabled(gridModel);
-            return {
-                mode: 'rest',
-                hint: hasSelection ? 'Click to move the selection to the top level' : ''
-            };
-        }
+        if (!payload) return {mode: 'rest', hint: ''};
 
         const name = this.dragPayloadName(payload);
         if (!this.isValidDrop(payload, TOP_LEVEL_TARGET)) {
@@ -340,17 +334,6 @@ export class ManageDialogModel extends HoistModel {
                 }
             }
         };
-    }
-
-    /**
-     * Move the grid's current selection to the top level, as clicked on its top-level strip. No-op
-     * without a draggable selection, or if the selection is already at the top level.
-     */
-    async moveSelectionToTopLevelAsync(gridModel: GridModel): Promise<void> {
-        const type = this.gridTypeFor(gridModel),
-            payload = this.getSelectionPayload(gridModel);
-        if (!payload || !this.isValidDrop(payload, TOP_LEVEL_TARGET)) return;
-        return this.doRowDragDropAsync(type, payload, TOP_LEVEL_TARGET);
     }
 
     //------------------------
@@ -538,22 +521,6 @@ export class ManageDialogModel extends HoistModel {
                 .map(n => n?.data as StoreRecord)
                 .filter(rec => rec && !rec.data.isGroupRow)
                 .map(rec => rec.data.view as ViewInfo);
-        return {views: uniqBy(compact(views), 'token')};
-    }
-
-    /**
-     * As {@link getDragPayload}, but driven by the grid's selection - for the top-level strip's
-     * click-to-move. Null when the selection is empty or undraggable.
-     */
-    private getSelectionPayload(gridModel: GridModel): DragPayload {
-        const recs = gridModel.selectedRecords;
-        if (!recs.length || this.isDragDisabled(gridModel)) return null;
-
-        if (recs.length === 1 && recs[0].data.isGroupRow) return {group: recs[0].data.group};
-
-        const views = recs.flatMap(r =>
-            r.data.isGroupRow ? r.descendants.map(d => d.data.view) : [r.data.view]
-        );
         return {views: uniqBy(compact(views), 'token')};
     }
 
