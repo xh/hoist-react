@@ -11,7 +11,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {formField} from '@xh/hoist/mobile/cmp/form';
-import {textInput} from '@xh/hoist/mobile/cmp/input';
+import {checkbox, textInput} from '@xh/hoist/mobile/cmp/input';
 import {withDefault} from '@xh/hoist/utils/js';
 import './Message.scss';
 
@@ -92,6 +92,16 @@ const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
                 field: 'extraConfirm',
                 testId: 'xh-message-extra-confirm',
                 item: textInput()
+            })
+        );
+    }
+    if (formModel.getField('suppress')) {
+        items.push(
+            formField({
+                label: model.suppressLabel,
+                field: 'suppress',
+                testId: 'xh-message-suppress',
+                item: checkbox()
             })
         );
     }

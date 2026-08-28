@@ -27,9 +27,9 @@ import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {
-    composeRefs,
     getLayoutProps,
     getReactElementName,
+    useComposedRefs,
     useOnMount,
     useOnUnmount
 } from '@xh/hoist/utils/react';
@@ -346,7 +346,7 @@ const editableChild = hoistCmp.factory<FieldModel>({
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref),
+            ref: useComposedRefs(model?.boundInputRef, child.ref),
             testId: props.testId ?? testId
         };
 

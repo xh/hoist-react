@@ -7,6 +7,7 @@
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {
     Cube,
     CubeField,
@@ -24,7 +25,7 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
+import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
@@ -140,11 +141,15 @@ export class View
     /** @internal */
     readonly diagnostics = new ViewDiagnostics(this);
 
+    _created = Date.now();
+
     // Implementation
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     _records: RecordSet = null; // cube records passing this view's filter
     private _bucketDependentFields = new Set<string>();
+
+    private _fieldsByName: Map<string, CubeField> = null;
     private _rowDataGenerator: RowDataGenerator = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     _rowDigest = 0;
@@ -170,12 +175,14 @@ export class View
         this.stores = this.parseStores(stores);
         this._rowCache = new RowCache(this);
         this._rowDataGenerator = new RowDataGenerator(this);
-        this.buildAggFields();
+        this.buildIndices();
         this.fullUpdate('query', start);
 
         if (connect) {
             this.cube._connectedViews.add(this);
         }
+
+        instanceManager.registerView(this);
     }
 
     //--------------------
@@ -232,7 +239,7 @@ export class View
 
         this.query = newQuery;
         this._rowDataGenerator.onQueryChange();
-        this.buildAggFields();
+        this.buildIndices();
 
         // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
@@ -269,7 +276,7 @@ export class View
 
     /** Get a specific Field by name.*/
     getField(name: string): CubeField {
-        return find(this.fields, {name});
+        return this._fieldsByName.get(name);
     }
 
     /** Set stores to be loaded/reloaded with data from this view. */
@@ -348,7 +355,9 @@ export class View
         data.cubeRowDigest = ++this._rowDigest;
     }
 
-    private buildAggFields() {
+    private buildIndices() {
+        this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
+
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
         // dimensions, and so holds the unfiltered superset of each list. Queries need not specify
@@ -398,12 +407,13 @@ export class View
 
     private dataOnlyUpdate(updates: StoreRecord[], start: number) {
         const {_leafMap, stores} = this,
-            updatedRowDatas = new Set<ViewRowData>();
+            updatedRowDatas = new Set<ViewRowData>(),
+            changedFields = new Set<string>();
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
             const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
+            leaf?.applyLeafDataUpdate(rec, updatedRowDatas, changedFields);
         });
 
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
@@ -415,7 +425,9 @@ export class View
             updatedRowDatas.forEach(rowData => {
                 if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
-            store.updateData({update: recordUpdates});
+            // Parents only rewrite fields reported changed by leaves, so the leaf-level union
+            // covers every value written - and this path never touches structure.
+            store.updateData({update: recordUpdates, changedFields});
         });
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);
@@ -641,14 +653,19 @@ export class View
 
     private hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
         const {dimensions} = this.query,
-            bucketDependentFields = Array.from(this._bucketDependentFields);
+            bucketFields = this._bucketDependentFields;
 
-        if (isEmpty(dimensions) && isEmpty(bucketDependentFields)) return false;
+        if (isEmpty(dimensions) && !bucketFields.size) return false;
 
-        const fieldNames = uniq([...dimensions.map(it => it.name), ...bucketDependentFields]);
         for (const rec of update) {
-            const curRec = this._records.getById(rec.id);
-            if (fieldNames.some(name => rec.data[name] !== curRec.data[name])) return true;
+            const curData = this._records.getById(rec.id).data,
+                {data} = rec;
+            for (const dim of dimensions) {
+                if (data[dim.name] !== curData[dim.name]) return true;
+            }
+            for (const name of bucketFields) {
+                if (data[name] !== curData[name]) return true;
+            }
         }
 
         return false;
@@ -686,10 +703,10 @@ export class View
         const ret = castArray(stores);
 
         throwIf(
-            ret.some(s => s.reuseRecords != null),
-            '`Store.reuseRecords` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
+            ret.some(s => s.digestSpec != null && s.digestSpec !== 'cubeRowDigest'),
+            '`Store.digestSpec` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
         );
-        ret.forEach(s => s.setDigestFn(row => row.cubeRowDigest));
+        ret.forEach(s => (s.digestSpec = 'cubeRowDigest'));
 
         throwIf(
             ret.some(s => s.idEncodesTreePath),
@@ -706,6 +723,7 @@ export class View
     }
 
     override destroy() {
+        instanceManager.unregisterView(this);
         this.disconnect();
         super.destroy();
     }

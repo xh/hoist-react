@@ -184,7 +184,7 @@ export class TabModel extends HoistModel {
         if (!content) return null;
 
         // Recognize if content is a child container spec.
-        let childConfig: TabContainerConfig = null;
+        let childConfig: TabContainerConfig;
         if (isArray(content)) {
             childConfig = {tabs: content};
         } else if ('tabs' in content) {

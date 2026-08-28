@@ -6,7 +6,7 @@
  */
 import {hoistCmp, useLocalModel, HoistModel, BoxProps, HoistProps} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
-import {composeRefs, useOnResize} from '@xh/hoist/utils/react';
+import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import {useState, useLayoutEffect} from 'react';
 import {minBy, isEqual} from 'lodash';
 import {Children} from 'react';
@@ -96,7 +96,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             [onLayoutChange, localModel.layout]
         );
 
-        ref = composeRefs(
+        ref = useComposedRefs(
             ref,
             useOnResize(
                 ({width, height}) => {

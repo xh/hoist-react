@@ -22,7 +22,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
 import {logError, logWithDebug} from '@xh/hoist/utils/js';
 import {
-    composeRefs,
+    useComposedRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,
@@ -63,7 +63,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
         }
 
         const impl = useLocalModel(TreeMapLocalModel);
-        ref = composeRefs(
+        ref = useComposedRefs(
             ref,
             useOnResize(impl.startResize),
             useOnResize(impl.onResizeAsync, {debounce: 100}),

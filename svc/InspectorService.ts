@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, InitContext, managed, persist, XH} from '@xh/hoist/core';
-import {Store} from '@xh/hoist/data';
+import {Cube, Store, View} from '@xh/hoist/data';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
@@ -14,7 +14,8 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
- * running application, specifically its current HoistModel, HoistService, and Store instances.
+ * running application, specifically its current HoistModel, HoistService, Store, Cube, and cube
+ * View instances.
  *
  * Activating this service will cause it to maintain an observable array of summary data synced
  * (with a minimal throttle) on each change to the Hoist registry, as well as an array of model
@@ -174,7 +175,13 @@ export class InspectorService extends HoistService {
     private sync() {
         if (!this.active) return;
 
-        const instances = [...XH.getModels(), ...XH.getServices(), ...XH.getStores()];
+        const instances = [
+            ...XH.getModels(),
+            ...XH.getServices(),
+            ...XH.getStores(),
+            ...XH.getCubes(),
+            ...XH.getViews()
+        ];
 
         const {_idToSyncRun, _syncRun} = this,
             newSyncRun = _syncRun + 1;
@@ -198,6 +205,8 @@ export class InspectorService extends HoistService {
                     isHoistService: inst.isHoistService,
                     isHoistModel: inst.isHoistModel,
                     isStore: Store.isStore(inst),
+                    isCube: Cube.isCube(inst),
+                    isView: View.isView(inst),
                     isLinked: inst.isLinked,
                     isXhImpl: inst.xhImpl,
                     hasLoadSupport: inst.loadSupport != null,
@@ -234,6 +243,8 @@ interface InspectorInstanceData {
     isHoistModel: boolean;
     isHoistService: boolean;
     isStore: boolean;
+    isCube: boolean;
+    isView: boolean;
     isLinked: boolean;
     isXhImpl: boolean;
     hasLoadSupport: boolean;

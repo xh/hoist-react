@@ -8,8 +8,7 @@ import {ElementSpec, isMenuItem, MenuItemLike} from '@xh/hoist/core';
 import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
-import {isOmitted} from '@xh/hoist/utils/impl/IsOmitted';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl/Separators';
+import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
 import {clone, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 

@@ -150,11 +150,10 @@ export class StoreSelectionModel extends HoistModel {
     // Implementation
     //------------------------
     private cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store. Cleanup array in place without
-        // modifying observable -- the 'records' getter provides all observable state.
+        // Remove recs from selection if they are no longer in store.
         const {store} = this;
         return {
-            track: () => store.records,
+            track: () => store._filtered,
             run: () => remove(this._ids, id => !store.getById(id, true))
         };
     }

@@ -6,8 +6,8 @@
  */
 import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
-import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import {HoistBase, hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import {Cube, StoreRecord, View} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
@@ -17,6 +17,7 @@ import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {StatsModel} from '../stats/StatsModel';
+import {DiagnosticsModel} from './DiagnosticsModel';
 
 /**
  * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
@@ -30,6 +31,7 @@ export class InstancesModel extends HoistModel {
     instancesGridModel: GridModel;
     propertiesGridModel: GridModel;
     instancesPanelModel: PanelModel;
+    @managed diagnosticsModel: DiagnosticsModel;
 
     get statsModel(): StatsModel {
         return XH.getModels(StatsModel)[0] as StatsModel;
@@ -75,6 +77,7 @@ export class InstancesModel extends HoistModel {
 
         this.instancesGridModel = this.createInstancesGridModel();
         this.propertiesGridModel = this.createPropertiesGridModel();
+        this.diagnosticsModel = new DiagnosticsModel(this);
         this.instancesPanelModel = new PanelModel({
             defaultSize: 575,
             side: 'left',
@@ -172,7 +175,9 @@ export class InstancesModel extends HoistModel {
         return (
             head(XH.getModels(it => it.xhId === xhId)) ??
             XH.getServices().find(it => it.xhId === xhId) ??
-            XH.getStores().find(it => it.xhId === xhId)
+            XH.getStores().find(it => it.xhId === xhId) ??
+            XH.getCubes().find(it => it.xhId === xhId) ??
+            XH.getViews().find(it => it.xhId === xhId)
         );
     }
 
@@ -183,6 +188,9 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: 'managed'},
+            filterModel: true,
+            headerMenuDisplay: 'hover',
+            colDefaults: {filterable: true},
             emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
@@ -193,6 +201,8 @@ export class InstancesModel extends HoistModel {
                     {name: 'isHoistService', type: 'bool'},
                     {name: 'isHoistModel', type: 'bool'},
                     {name: 'isStore', type: 'bool'},
+                    {name: 'isCube', type: 'bool'},
+                    {name: 'isView', type: 'bool'},
                     {name: 'isLinked', type: 'bool'},
                     {name: 'isXhImpl', type: 'bool'},
                     {name: 'hasLoadSupport', type: 'bool'},
@@ -202,6 +212,7 @@ export class InstancesModel extends HoistModel {
             },
             sortBy: ['created|desc'],
             groupBy: this.showInGroups ? 'displayGroup' : null,
+            groupSortFn: (a, b) => GROUP_SORT_ORDER.indexOf(a) - GROUP_SORT_ORDER.indexOf(b),
             selModel: {mode: 'multiple'},
             colChooserModel: true,
             columns: [
@@ -224,7 +235,13 @@ export class InstancesModel extends HoistModel {
                     ]
                 },
                 {field: 'id', displayName: 'xhId'},
-                {field: 'syncRun', displayName: 'Sync', autosizeIncludeHeaderIcons: false},
+                {
+                    field: 'syncRun',
+                    displayName: 'Sync',
+                    headerTooltip:
+                        'Sync run in which this instance first appeared. Inspector increments its sync run counter each time it detects newly-created instances, grouping instances that were created together.',
+                    autosizeIncludeHeaderIcons: false
+                },
                 {
                     field: 'isLinked',
                     headerName: Icon.link(),
@@ -259,6 +276,9 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
             autosizeOptions: {mode: 'managed'},
+            filterModel: true,
+            headerMenuDisplay: 'hover',
+            colDefaults: {filterable: true},
             sortBy: 'displayProperty',
             groupBy: 'displayGroup',
             showGroupRowCounts: false,
@@ -282,6 +302,8 @@ export class InstancesModel extends HoistModel {
                     {name: 'isHoistModel', type: 'bool'},
                     {name: 'isHoistService', type: 'bool'},
                     {name: 'isStore', type: 'bool'},
+                    {name: 'isCube', type: 'bool'},
+                    {name: 'isView', type: 'bool'},
                     {name: 'isGetter', type: 'bool'},
                     {name: 'isLoadedGetter', type: 'bool'}
                 ]
@@ -339,7 +361,13 @@ export class InstancesModel extends HoistModel {
                         if (data.isGetter && !data.isLoadedGetter) {
                             return a({item: '(...)', onClick: () => this.loadGetter(record)});
                         }
-                        if (data.isHoistModel || data.isHoistService || data.isStore) {
+                        if (
+                            data.isHoistModel ||
+                            data.isHoistService ||
+                            data.isStore ||
+                            data.isCube ||
+                            data.isView
+                        ) {
                             return a({item: v, onClick: () => this.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
@@ -370,7 +398,11 @@ export class InstancesModel extends HoistModel {
                         ? 'Services'
                         : inst.isStore
                           ? 'Stores'
-                          : 'Models';
+                          : inst.isCube
+                            ? 'Cubes'
+                            : inst.isView
+                              ? 'Views'
+                              : 'Models';
                     data.push({...inst, displayGroup});
                 });
 
@@ -458,7 +490,9 @@ export class InstancesModel extends HoistModel {
             isProxy = !!v?._xhIsProxy,
             isHoistModel = v?.isHoistModel,
             isHoistService = v?.isHoistService,
-            isStore = v?.isStore;
+            isStore = v?.isStore,
+            isCube = Cube.isCube(v),
+            isView = View.isView(v);
 
         const valueType =
             isGetter && !isLoadedGetter
@@ -476,7 +510,7 @@ export class InstancesModel extends HoistModel {
             displayProperty: fromWatchlistItem ? `${instanceDisplayName}.${property}` : property,
             displayGroup: fromWatchlistItem ? 'Watchlist' : instanceDisplayName,
             value:
-                isHoistModel || isHoistService || isStore
+                isHoistModel || isHoistService || isStore || isCube || isView
                     ? v.xhId
                     : isProxy
                       ? '[cannot render]'
@@ -487,6 +521,8 @@ export class InstancesModel extends HoistModel {
             isHoistModel,
             isHoistService,
             isStore,
+            isCube,
+            isView,
             isGetter,
             isLoadedGetter,
             isWatchlistItem: !!this.getWatchlistItem(xhId, property)
@@ -517,6 +553,8 @@ export class InstancesModel extends HoistModel {
         return find(this.propsWatchlist, {instanceXhId, property});
     }
 }
+
+const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores'];
 
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
 

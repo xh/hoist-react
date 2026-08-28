@@ -117,6 +117,15 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                                     groupContracted: Icon.folder({
                                         asHtml: true,
                                         className: 'ag-group-contracted'
+                                    }),
+                                    // Replaces ag-Grid's own grip glyph, matching the ColChooser.
+                                    // Must be set here - the row-drag comp reads only grid-level
+                                    // icons, never the column's own.
+                                    rowDrag: Icon.grip({
+                                        asHtml: true,
+                                        prefix: 'fas',
+                                        className:
+                                            'xh-view-manager__manage-dialog__drag-handle__grip'
                                     })
                                 },
                                 ...dialogModel?.getRowDragAgOptions(model)

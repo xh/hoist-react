@@ -242,7 +242,7 @@ function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): str
     }
 
     // 3) Basic timestamp, with suffix /prefix
-    let ret = '';
+    let ret: string;
     if (elapsed < 60 * SECONDS) {
         // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
         // end of that range that output is a bit too inaccurate, so we replace as per below.

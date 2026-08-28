@@ -12,15 +12,53 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 87.0.0-SNAPSHOT - unreleased
+## 88.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Added new `MessageSpec.suppress` config for `XH.message()` and its `alert`, `confirm`, and
+  `prompt` variants. Set to `true` (or a config object) to offer users a "Don't show this message
+  again" checkbox. Confirmed responses are saved to browser local or session storage - optionally
+  with an expiry - and returned immediately by future calls with the same `messageKey`.
+* `FileChooser` now takes as many dropped files as its `maxFiles` limit allows, warning about only
+  the surplus rather than discarding the entire drop.
+* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
+  value to the current `options` and dropping any selection no longer found there. Enforced once
+  `options` is non-null, so pass null while options load.
+
+### ⚙️ Technical
+
+* Upgraded `react-dropzone` to v20, which drops its UMD build and ships as an ESM + CJS package with
+  an `exports` map. Requires Node >= 22 to install.
+* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
+  value to the current `options` and dropping any selection no longer found there. Enforced once
+  `options` is non-null, so pass null while options load.
+* Extended the package `sideEffects` declaration to cover the vendored golden-layout implementation
+  and the barrels with registration or configuration side effects on import - icon, mobx, blueprint
+  kit, golden-layout kit, and persist. Required by the tree-shaking in hoist-dev-utils v15.
+* Restructured `PersistenceProvider` provider registration to remove a base/subclass import cycle
+  that breaks under tree-shaking bundlers' re-export optimization. No API change.
+
+### ⚙️ Typescript API Adjustments
+
+* `SelectOption` now admits custom fields alongside the standard `value`/`label`, so extra data
+  carried on an option (and already passed through at runtime) can be read within `optionRenderer`,
+  `filterFn`, and friends without a cast. Annotate the callback's argument with the app's own option
+  type for fully typed access - e.g. `optionRenderer: (opt: MyOption) => ...`.
+
+### 📚 Libraries
+
+* react-dropzone `15.0 → 20.1`
+
+## 87.0.0 - 2026-08-25
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - React 19, data layer, column chooser)
 
 See [`docs/upgrade-notes/v87-upgrade-notes.md`](docs/upgrade-notes/v87-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-Hoist React v87 is a BIG release with a number of potentially breaking changes and many new
-features and performance optimizations, grouped by topic below.
+Hoist React v87 is a BIG release with a number of potentially breaking changes and many new features
+and performance optimizations, grouped by topic below.
 
 * Requires `hoist-core >= 40.5.0` for the `ViewManager` group rename and bulk-editing APIs, now
   correctly enforced at startup - apps on an older core will fail fast rather than start. Features
@@ -52,6 +90,10 @@ features and performance optimizations, grouped by topic below.
 * Added an exported `getCubeLeaves()` helper to replace the `ViewRowData.cubeLeaves` getter,
   supporting important memory optimizations in this release. Update any code that reads
   `row.cubeLeaves` to call `getCubeLeaves(row)`.
+* Removed the `Store.reuseRecords` config, replaced by the new `Store.digestSpec` (see New Features
+  below). Reuse keyed on raw-object *reference* identity - the former `reuseRecords: true` - is no
+  longer supported: have the provider stamp each row with a revision and set `digestSpec` to it, or
+  drop the config and fall back to Hoist's default value-based reuse.
 * `StoreRecord.data` must be read by field name only. Enumerating, spreading, or calling
   `JSON.stringify()` on this object does not reliably see default field values. Use
   `StoreRecord.getValues()` or `getModifiedValues()` instead. This never worked reliably, but the
@@ -82,6 +124,17 @@ features and performance optimizations, grouped by topic below.
   Set the new `GridModelPersistOptions.hideNewColumns` config to `false` to restore the previous
   behavior.
 
+#### Grid - Data Update Timing
+
+* Grids now always apply `Store` data changes to ag-Grid in a fresh macrotask - pending UI
+  updates (e.g. load masks) paint first, and rapid changes coalesce. This strengthens an existing
+  requirement: grid reads after a data change were already subject to a minimal async debounce
+  and should already route through `GridModel.whenReadyAsync()`, which now provides a hard
+  guarantee that all store data has been applied to ag-Grid.
+* Grids now pace update-driven re-sorts and managed autosizes off their own measured cost, instead
+  of re-running them every tick. Managed autosize still runs immediately on a `Store` load or filter
+  change. Tune via the `deferredSortFactor` and `deferredAutosizeFactor` experimental flags.
+
 ### 🎁 New Features
 
 #### Data - Store and Records
@@ -96,34 +149,33 @@ configs for zero-copy projection, digest-based record reuse, and streaming loads
   non-default values: the established sparse form for lightly-populated records, and a fixed shape
   cloned from a shared per-Store template for wider records. This avoids V8's memory-hungry
   "dictionary" mode and substantially reduces per-record memory on stores with wide records.
-* Improved Cube `View` memory efficiency across all row types - `ViewRowData` rows now share
-  compact fixed shapes, and leaf rows read field values directly from their source cube records
-  instead of holding copies. Substantially reduces per-row memory and speeds up view builds, with
-  savings that scale with query width.
+* Improved Cube `View` memory efficiency across all row types - `ViewRowData` rows now share compact
+  fixed shapes, and leaf rows read field values directly from their source cube records instead of
+  holding copies. Substantially reduces per-row memory and speeds up view builds, with savings that
+  scale with query width.
 * Added an opt-in `Store.projectionOnly` config to mark a store as a read-only projection of data
   that its provider parses and owns. Use it for stores connected to a Cube `View`, or fed by an
   endpoint that returns data in its final client-side form. Records reference the provider's row
   object as their `data` instead of re-parsing and copying it, collapsing the usual two per-row
   objects to one and skipping the per-row parse on every load and update. Local modification APIs
   (e.g. `modifyRecords`) throw in this mode - see the `projectionOnly` config docs.
-* Enhanced `Store.reuseRecords` to also accept a digest specification - a raw data property name, or
-  a function that derives a digest value. `Store` reuses the existing record whenever an incoming
-  raw object yields an unchanged digest. This applies to both `loadData()` and
-  `updateData()`, where `Store` drops unchanged-digest updates as no-ops. Snapshotted digests are
-  available as `StoreRecord.digest`. Stores connected to a Cube `View` get a suitable digest
-  automatically.
-* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping,
-  and filtering. Aggregate rows now reuse even when their children change - re-deriving in place
-  and republishing only values that actually changed - so e.g. dropping a trailing dimension
-  republishes nothing above the level that moved, and connected stores and grids skip the
-  matching record rebuilds.
-* Added `CubeConfig.store`, exposing `StoreConfig` options - notably `reuseRecords` and `retainRaw` -
-  on the Cube's internal Store. A source that supplies per-row digests can now preserve record
-  identity across full `Cube.loadDataAsync()` reloads, extending View row reuse to wholesale
-  refreshes.
+* Added a `Store.digestSpec` config, replacing `reuseRecords` and symmetrical with `idSpec` - name a
+  raw data property or supply a function returning a primitive digest. `Store` reuses the existing
+  record whenever an incoming raw object yields an unchanged digest, skipping parsing and record
+  construction, and drops unchanged-digest `updateData()` rows as no-ops. Digests are exposed as
+  `StoreRecord.digest`.
+* Enhanced Cube `View`s to reuse their generated rows across data updates, reloads, regrouping, and
+  filtering. Aggregate rows now reuse even when their children change - re-deriving in place and
+  republishing only values that actually changed - so e.g. dropping a trailing dimension republishes
+  nothing above the level that moved, and connected stores and grids skip the matching record
+  rebuilds.
+* Added `CubeConfig.store`, exposing `StoreConfig` options - notably `digestSpec` and
+  `retainRaw` - on the Cube's internal Store. A source that supplies per-row digests can now
+  preserve record identity across full `Cube.loadDataAsync()` reloads, extending View row reuse to
+  wholesale refreshes.
 * Added a `Store.retainRaw` config (default `true`). Set it to `false` to drop each record's
   reference to its raw source data object after parsing, reducing memory use on large stores that do
-  not need `StoreRecord.raw`. Not compatible with `reuseRecords: true`.
+  not need `StoreRecord.raw`.
 * Enhanced `Cube.loadDataAsync()` to detect reloads that leave the store's record collections
   unchanged, as already detected by `Store.loadData()`. Connected `View`s now sync their info and
   timestamp instead of regenerating all of their rows, so polled reloads of unchanged data cost
@@ -165,11 +217,11 @@ columns.
   `Column.chooserGroup`. Drag a column out to show and position it, or drag one in to hide it.
   Enable the library with `ColChooserConfig.columnLibrary` and customize it with `ColLibraryConfig`.
 * A new docked side-panel presentation stays open alongside the grid and always commits immediately.
-  Enable it with the new `GridConfig.colChooserPanelModel` config (`ColChooserPanelConfig`) and open
-  it with `GridModel.showColChooserPanel()`, the new `colChooserPanel` context-menu token, or a
-  `colChooserButton` with `target: 'panel'`.
-* Added a `target` prop to `ColChooserButton` to select the presentation - `'popover'` (default),
-  `'dialog'`, or `'panel'`.
+  Select it with the new `ColChooserConfig.mode` config - `colChooserModel: 'docked'` for defaults -
+  A grid has one chooser; `mode` chooses how it appears, and defaults to `'modal'` for the
+  dialog/popover behavior of prior releases.
+* Added a `modalTarget` prop to `ColChooserButton` to select the overlay a modal chooser opens in -
+  `'popover'` (default) or `'dialog'`. Ignored by a docked chooser, which the button toggles.
 * Columns that set a `chooserDescription` show an info icon, which reveals that description in an
   on-demand tooltip.
 * Users can toggle the display of column groups and the Column Library. Hoist persists this choice
@@ -190,6 +242,14 @@ columns.
   `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
   `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
   see the new `GridModelPersistOptions.persistColumnGroups`.
+* Improved `Grid` data update performance with tiered ag-Grid transaction handling. Update
+  transactions that provably cannot affect row order, grouping, or tree structure now skip
+  ag-Grid's model refresh entirely, and transactions that would re-order rows apply their cell
+  values immediately, with row order restored by a managed, idle-scheduled re-sort. New records
+  still sort into place on arrival.
+* Added `StoreTransaction.changedFields`, letting data producers assert exactly which fields a
+  value-only update touched. Cube `View`s supply this automatically, extending the no-re-sort
+  Grid fast path to view-connected stores. See the data package README for details.
 
 #### Admin Console
 
@@ -208,8 +268,8 @@ columns.
   display of LDAP DNs. Per-group lookup errors surface as warning icons on the affected rows.
 * Added a search-based directory group picker to the Roles admin role editor, backed by the new
   `roleAdmin/searchDirectoryGroups` endpoint. Admins can find groups by partial name, with free-text
-  entry of a known GUID or DN still supported. Requires hoist-core v41.0.0 or later - against earlier
-  versions these features degrade gracefully to the previous identifier-based display.
+  entry of a known GUID or DN still supported. Requires hoist-core v41.0.0 or later - against
+  earlier versions these features degrade gracefully to the previous identifier-based display.
 
 #### Other Improvements
 
@@ -222,12 +282,31 @@ columns.
   dynamically typed via a `typeField`.
 * `ViewManager` groups now support unlimited nesting, rendered as nested sub-menus in the
   ViewManager menu and as expandable tree grids in the Manage dialog. Groups and views support
-  drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades
-  to every view nested beneath it. The `ViewManager` also supports bulk editing of
-  views' pin and visibility state.
-* `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within
-  the control.
+  drag-and-drop reorganization within the personal and global tabs, and renaming a group cascades to
+  every view nested beneath it. `ViewManager` also now supports bulk editing of views' pin and
+  visibility state.
+* `Select` now accepts a `valueRenderer` prop to customize how the selected value renders within the
+  control.
 * `TextInput` now accepts a `leftElement` prop, rendered inline at the left of the input.
+* Hoist Inspector now pops out in a separate browser window, leaving the app's viewport to the app
+  while ensuring Inspector itself is not covered by masks or other modal content.
+* Hoist Inspector now tracks `Cube` and cube `View` instances alongside models, services, and
+  stores, and adds a Diagnostics panel - a live readout of the data-pipeline `diagnostics`
+  published by selected Stores, Cubes, Cube Views, and GridModels, with controls to reset counters
+  and stream ops to the devtools console.
+* Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances,
+  now registered with Hoist's instance registry.
+* Added `useComposedRefs` - a hook variant of `composeRefs` that manages identity via `useCallback`
+  and forwards React 19 ref-callback cleanups. Prefer it when composing refs within a component
+  render function.
+* Mobile `DateInput` now opens a themeable calendar picker (react-day-picker) within a dialog,
+  replacing the OS-provided picker of the native `<input type="date">` element. Adds a
+  `formatString` prop to control the in-input display of the value, and a `dayPickerProps` escape
+  hatch to pass props (e.g. `disabled` day matchers) directly to the underlying calendar.
+* Added `GridModel.getSortedRecords()`, returning the grid's records in the order it renders them -
+  sorted by `groupBy` and `sortBy` and, for tree grids, flattened depth-first through each record's
+  children. Does not require the grid to have been rendered. Grid export and `GridFindField` are
+  both re-built on this more efficient implementation.
 
 ### 🐞 Bug Fixes
 
@@ -259,14 +338,41 @@ columns.
   with Hoist's other constraints. Pair the two rules if a value must be present.
 * Fixed `CodeInput` with `autoFormat` committing reformatted text back to its bound value, leaving
   forms dirty after a reset.
+* Fixed an `O(n²)` option merge in async `Select` (v86.3.0 regression) that could block the main
+  thread for seconds on large `queryFn` results. `Select` no longer accumulates and de-dupes the
+  full query history.
+* Fixed mobile app bundles pulling in all of Blueprint's JS and global CSS via the shared
+  `utils/impl` barrel. The internal `parseMenuItems` util now lives at
+  `@xh/hoist/desktop/cmp/menu/impl/MenuItems` - update any app imports of this `@internal` API.
+* Fixed `GridFindField` on a tree grid permanently reordering the child arrays returned by
+  `Store.getChildrenById()` - its sort now leaves Store state untouched.
+* Fixed grid export ordering rows without regard to `GridModel.groupBy`, so exports of a grouped
+  grid no longer diverge from the rendered row order.
 
 ### ⚙️ Technical
 
+* Trimmed `static/polyfills.js` to import `core-js/stable` rather than the bare `core-js` root
+  entry, which unconditionally injects shims for unfinished proposals. Apps shed those dead shims
+  from every bundle on their next build, while the polyfill mechanism itself - auto-scaling to an
+  app's configured `targetBrowsers` - is unchanged.
+* Expanded the package `sideEffects` declaration to cover SCSS/CSS imports and the platform
+  `register` modules, all previously (and incorrectly) marked pure. Inert under current dev-utils
+  releases, which disable `sideEffects`-based tree-shaking - this is groundwork for a future
+  dev-utils that re-enables it.
+* Removed the deprecated webpack-only `~` prefix from bare-module SCSS imports and the `inter-ui`
+  font-path URL in framework styles. Modern sass-loader and css-loader resolve the same package
+  paths without it, and the prefix breaks under other bundlers.
+* Replaced `GridExperimentalFlags.deltaSort` with `deltaSortRatio` - Hoist now manages ag-Grid
+  delta sorting automatically, using it for re-sorts touching fewer than this percentage of rows
+  (default 50). See the Grid transaction handling entry under New Features.
+* Added `GridExperimentalFlags.deferredSortFactor` to tune the pacing of the managed re-sort on
+  updating grids - a re-sort costing E ms defers the next for `E * factor` (default 4). Set 0 to
+  disable deferral and re-sort synchronously on every change.
 * Added `diagnostics` to `Store`, Cube `View`, and `GridModel` - a slot per kind of op (e.g.
   `store.diagnostics.update`, `gridModel.diagnostics.autosize`) reporting work done, elapsed time,
   and the path taken. Note that diagnostics log by default under `debug` output, but users may set
-  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of
-  a particular chain. This API is provided for app troubleshooting and benchmarking only, and is
+  `diagnostics.logLevel = 'info'` on a particular instance to focus on the performance of a
+  particular chain. This API is provided for app troubleshooting and benchmarking only, and is
   subject to change without notice at any release.
 
 * Field XSS protection now returns unmodified strings by reference instead of a fresh copy, avoiding
@@ -277,6 +383,9 @@ columns.
     * Developers who build against a local hoist-react checkout (`inlineHoist`) now need pnpm to
       install this repo's dependencies (`corepack enable pnpm`, then `pnpm install`). The app itself
       can remain on yarn or npm. Update any `startWithHoist`-style app scripts accordingly.
+* `Store`s with no validation `Rules` on any `Field` now skip record validation entirely, no longer
+  creating a `RecordValidator` per uncommitted record. Note that `StoreRecord.validationState` now
+  reports `Valid` (rather than `Unknown`) for records in such a Store.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -299,11 +408,25 @@ columns.
 * @modelcontextprotocol/sdk `1.26 → 1.30`
 * @xh/hoist-dev-utils `13.x → 14.x`
 * react `18.2 → 19.2`
+* react-day-picker `added @ 9.14`
 * react-popper `removed`
 * react-window `2.2 → 2.3`
 * swiper `12.1 → 12.2`
 * tsx `4.21 → 4.23`
 * zod `4.3 → 4.4`
+
+## 86.4.2 - 2026-08-20
+
+### 🎁 New Features
+
+* Mobile `DateInput` now opens a themeable calendar picker (react-day-picker) within a dialog,
+  replacing the OS-provided picker of the native `<input type="date">` element. Adds a
+  `formatString` prop to control the in-input display of the value, and a `dayPickerProps` escape
+  hatch to pass props (e.g. `disabled` day matchers) directly to the underlying calendar.
+
+### 📚 Libraries
+
+* react-day-picker `added @ 9.14`
 
 ## 86.4.1 - 2026-08-11
 

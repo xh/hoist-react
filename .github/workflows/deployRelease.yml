@@ -51,7 +51,7 @@ jobs:
         - name: Validate release version
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@b621e83007eb69dba986e585c09848d026eeba54 # master
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@71d46b39323491a7fd5090e7b651958b05630fa0 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
@@ -87,10 +87,14 @@ jobs:
         # the value fell through to the positional arg. If a future npm consumed it as the flag's
         # value instead, `version` would run with no args, silently leave package.json untouched,
         # and publish a SNAPSHOT build as a release.
+        #
+        # `--no-git-checks` is required: the Font Awesome auth step above appends a token to the
+        # repo's tracked `.npmrc`, leaving the working tree dirty. Without it, `pnpm version`
+        # aborts with ERR_PNPM_UNCLEAN_WORKING_TREE.
         - name: Set release version in package.json
           env:
               VERSION: ${{ inputs.version }}
-          run: pnpm version --no-git-tag-version "$VERSION"
+          run: pnpm version --no-git-tag-version --no-git-checks "$VERSION"
 
         # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
         # the version bump above leaves the working tree dirty, and hotfix releases run from a
@@ -114,7 +118,7 @@ jobs:
         # the correct release version — the tag is just a pointer to the source commit.
         # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@b621e83007eb69dba986e585c09848d026eeba54 # master
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@71d46b39323491a7fd5090e7b651958b05630fa0 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}

@@ -48,7 +48,7 @@ export interface ViewRowData {
 
     /**
      * Monotonic stamp updated on each create or mutation - read as the record-reuse digest by
-     * stores connected to this row's View. See `StoreConfig.reuseRecords`.
+     * stores connected to this row's View. See `StoreConfig.digestSpec`.
      */
     cubeRowDigest: number;
 

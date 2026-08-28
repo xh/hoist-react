@@ -11,7 +11,7 @@ import ReactGridLayout, {
     getCompactor
 } from 'react-grid-layout';
 import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
-import {composeRefs} from '@xh/hoist/utils/react';
+import {useComposedRefs} from '@xh/hoist/utils/react';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
     elementFactory,
@@ -83,7 +83,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                ref: composeRefs(ref, model.ref, containerRef),
+                ref: useComposedRefs(ref, model.ref, containerRef),
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
                     gridBackgroundCells({

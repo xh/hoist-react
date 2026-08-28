@@ -13,7 +13,7 @@ import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
-import {composeRefs, splitLayoutProps} from '@xh/hoist/utils/react';
+import {useComposedRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
@@ -73,7 +73,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
                 textInput({
                     model: impl,
                     bind: 'query',
-                    ref: composeRefs(impl.inputRef, ref),
+                    ref: useComposedRefs(impl.inputRef, ref),
                     commitOnChange: true,
                     leftIcon: Icon.search(),
                     enableClear: true,

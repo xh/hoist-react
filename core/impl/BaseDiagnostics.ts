@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {HoistBase} from '@xh/hoist/core';
+import {observable} from '@xh/hoist/mobx';
 import {logDebug, logInfo} from '@xh/hoist/utils/js';
 
 /**
@@ -19,7 +20,9 @@ export abstract class BaseDiagnostics<T extends HoistBase> {
     /**
      * Level at which each op is logged as it happens. Leave at 'debug' to stream with the rest of
      * the app's debug output, or set to 'info' to follow this object alone at any `XH.logLevel`.
+     * Observable, to support UI toggles (e.g. the Hoist Inspector's Diagnostics panel).
      */
+    @observable
     logLevel: 'info' | 'debug' = 'debug';
 
     protected owner: T;

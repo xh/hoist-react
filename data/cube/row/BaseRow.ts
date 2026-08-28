@@ -8,7 +8,7 @@
 import {PlainObject, Some} from '@xh/hoist/core';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
-import {compact, isEmpty} from 'lodash';
+import {isArray, isEmpty} from 'lodash';
 import {View} from '../View';
 import type {ParentRow} from './ParentRow';
 
@@ -120,9 +120,17 @@ export abstract class BaseRow {
             if (row.locked) return null;
         }
 
-        // Recurse
-        const ret = compact(children.flatMap(it => it.getVisibleDatas()));
-        return !isEmpty(ret) ? ret : null;
+        // Recurse - single pass, folding in null filtering and flattening.
+        const ret: ViewRowData[] = [];
+        for (const child of children) {
+            const datas = child.getVisibleDatas();
+            if (isArray(datas)) {
+                for (const data of datas) ret.push(data);
+            } else if (datas) {
+                ret.push(datas);
+            }
+        }
+        return ret.length ? ret : null;
     }
 
     // Bucket context applying to this row and its descendants - BucketRow extends with own entry.

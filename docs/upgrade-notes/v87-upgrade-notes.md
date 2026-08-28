@@ -29,6 +29,8 @@ The most significant app-level impacts are:
 - **Cube / Store API adjustments** - `View.result.leafMap` access, leaf row ids, `cubeLeaves`,
   `StoreRecord.data` access patterns, and custom `Aggregator` contracts. Only apps using these
   specific APIs are affected - see Steps 6-7.
+- **Managed autosize now paces itself on data updates** - loads and filter changes still autosize
+  immediately. Affects only grids opted in to `autosizeOptions.mode: 'managed'` - see Step 8.
 - **hoist-core >= 40.5.0 now required** and enforced at startup - apps on an older core will fail
   fast rather than start.
 
@@ -260,10 +262,11 @@ new GridModel({
 ```
 
 **d. New capabilities to adopt (optional).** The chooser also gains a docked side-panel
-presentation (`GridConfig.colChooserPanelModel` + `GridModel.showColChooserPanel()`, the
-`colChooserPanel` context-menu token, or `colChooserButton({target: 'panel'})`), per-column
-`chooserDescription` tooltips, and `ColChooserConfig` options like `filterMatchMode` and
-`autosizeOnCommit`. See the configs for details - no action required.
+presentation - set `colChooserModel: 'docked'` (or `{mode: 'docked', ...}`) and open it as usual via
+`GridModel.showColChooser()`, the `colChooser` context-menu token, or a `colChooserButton`. A grid
+still has exactly one chooser, and `mode` defaults to `'modal'`, so existing configs are unchanged.
+Also new: per-column `chooserDescription` tooltips, and `ColChooserConfig` options like
+`filterMatchMode` and `autosizeOnCommit`. See the configs for details - no action required.
 
 ### 6. Update Cube `View` usages
 
@@ -430,7 +433,85 @@ grep -rn "updateData(" client-app/src/
 Only callers that read the returned change log's `remove` collection are affected - the many
 calls that ignore the return value need no change.
 
-### 8. A note on pnpm (no action required)
+**c. `Store.reuseRecords` is now `Store.digestSpec`.** The new config names the *digest* it
+derives from each raw object - symmetrical with `idSpec`, and clearer about the fact that Store
+always attempts record reuse. Name a raw property holding a per-row stamp, or supply a function
+returning one:
+
+Before:
+
+```typescript
+const store = new Store({fields: [...], reuseRecords: true});
+```
+
+After:
+
+```typescript
+const store = new Store({fields: [...], digestSpec: 'rev'});
+```
+
+```bash
+grep -rn "reuseRecords" client-app/src/
+```
+
+Drop any `reuseRecords: false` outright - it never differed from the unset default.
+
+Note this is not a pure rename. The former `reuseRecords: true` reused a record only when handed
+the very same raw object, by reference, and digests must now be primitives - so that form is gone.
+It could never hit for data straight off the wire (a re-fetch yields new objects every time), and
+it silently reported "unchanged" for a cached row mutated in place. If your provider caches and
+re-supplies its own rows, stamp each row with a revision it bumps on every mutation - e.g.
+`XH.genId()` at creation - and digest that. Otherwise drop the config: Store still reuses records
+whose field values compare equal, which is the default behavior.
+
+### 8. Review grids using managed autosize
+
+Applies only to grids configured with `autosizeOptions: {mode: 'managed'}`, or to apps that set
+`GridModel.defaults.autosizeMode = 'managed'` globally. Grids using the default
+`'onSizingModeChange'` mode are unaffected.
+
+Managed autosize previously re-measured every column after **every** applied transaction. On a
+grid receiving streaming updates that meant a full re-measure of every record in every column on
+every tick - work the next tick immediately invalidated, and a visible source of column jitter.
+
+Managed autosize now distinguishes what changed:
+
+| Change | Behavior |
+| --- | --- |
+| `Store` load (`loadData` / `loadDataAsync`) | Autosizes immediately, as before |
+| Filter change | Autosizes immediately, as before |
+| Incremental update (`updateData`) | Paced - see below |
+
+Update-driven autosizes now pace off their own measured cost, exactly as `deferredSortFactor`
+already does for deferred re-sorts: an autosize costing E ms defers the next by `E * factor`
+(default 10), so a grid where autosize is cheap re-fits almost immediately, while an expensive one
+backs off - bounding autosize to roughly 10% of main-thread time regardless of grid size or
+hardware. Columns still settle to fit their content, just not on every single tick.
+
+No configuration change is required, and no API changed. Tune with the
+`deferredAutosizeFactor` experimental flag, or set it to 0 to restore the previous
+autosize-on-every-change behavior:
+
+```typescript
+new GridModel({
+    autosizeOptions: {mode: 'managed'},
+    experimental: {deferredAutosizeFactor: 0}
+});
+```
+
+Review if either applies:
+
+- **A grid whose values grow substantially wider mid-stream** may show the wider content clipped
+  for longer than before. Call `gridModel.autosizeAsync()` at an appropriate point, widen
+  `autosizeOptions.bufferPx`, or lower `deferredAutosizeFactor`.
+- **Tests or scripts that assert column widths right after an update** may now observe the
+  pre-update widths. Await the pacing interval, or call `gridModel.autosizeAsync()` explicitly.
+
+```bash
+grep -rn "autosizeMode\|mode: 'managed'" client-app/src/
+```
+
+### 9. A note on pnpm (no action required)
 
 `@xh/hoist-dev-utils` 14.x adds optional support for **pnpm** as the app package manager -
 **yarn classic and npm remain fully supported and require no change**. Moving an app to pnpm
@@ -457,7 +538,11 @@ After completing all steps:
   toggles work; any `chooserGroup` presentation reviewed
 - [ ] **Grids with persisted column state** (ViewManager/dashboards): verify saved views load
   correctly and confirm the new hidden-by-default behavior for newly added columns is acceptable
+- [ ] **Stores configured with `reuseRecords`**: migrated to `digestSpec`, and record reuse still
+  observed (unchanged rows keep their grid state across a reload)
 - [ ] **Cube-driven screens**: aggregations, drill-downs, and bucket rows render as before
+- [ ] **Grids using managed autosize**: columns fit on load and on filter change; streaming grids
+  settle to fit once updates pause
 - [ ] Grids render and function correctly (sorting, filtering, grouping, inline editing)
 - [ ] Forms validate and submit correctly
 

@@ -17,6 +17,7 @@ import {
     isEmpty,
     isEqual,
     isNil,
+    isObject,
     isString,
     isUndefined,
     uniq
@@ -181,20 +182,35 @@ export class FieldFilter extends Filter {
         // Treat null, empty string, and empty array (blank `tags`) alike as "blank".
         const isBlank = (v: any) => isNil(v) || v === '' || (isArray(v) && isEmpty(v));
 
-        let regExps, opFn: (v: any) => boolean;
+        // Generate optimized closures for hot-loops, using sets, hoisted conditionals
+        let regExps, lookup: Set<any>, opFn: (v: any) => boolean;
         switch (op) {
             case '=':
-                opFn = v => {
-                    if (isBlank(v)) v = null;
-                    // A blank filter (empty `value`) matches only blank record values.
-                    return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
-                };
+                lookup = this.lookupSet(value);
+                opFn = lookup
+                    ? v => {
+                          if (isBlank(v)) v = null;
+                          // A blank filter (empty `value`) matches only blank record values.
+                          return (v == null && !lookup.size) || lookup.has(v);
+                      }
+                    : v => {
+                          if (isBlank(v)) v = null;
+                          return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
+                      };
                 break;
             case '!=':
-                opFn = v => {
-                    if (isBlank(v)) v = null;
-                    return (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it));
-                };
+                lookup = this.lookupSet(value);
+                opFn = lookup
+                    ? v => {
+                          if (isBlank(v)) v = null;
+                          return (v != null || !!lookup.size) && !lookup.has(v);
+                      }
+                    : v => {
+                          if (isBlank(v)) v = null;
+                          return (
+                              (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it))
+                          );
+                      };
                 break;
             case '>':
                 opFn = v => !isNil(v) && v > value;
@@ -233,10 +249,12 @@ export class FieldFilter extends Filter {
                 opFn = v => regExps.every(re => !re.test(v));
                 break;
             case 'includes':
-                opFn = v => !isNil(v) && v.some(it => value.includes(it));
+                lookup = new Set(value);
+                opFn = v => !isNil(v) && v.some(it => lookup.has(it));
                 break;
             case 'excludes':
-                opFn = v => isNil(v) || !v.some(it => value.includes(it));
+                lookup = new Set(value);
+                opFn = v => isNil(v) || !v.some(it => lookup.has(it));
                 break;
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
@@ -316,5 +334,11 @@ export class FieldFilter extends Filter {
         if (value instanceof Date) return 'date';
         if (value instanceof LocalDate) return 'localDate';
         return undefined;
+    }
+
+    // Set-based candidate lookup for primitives, where `Set.has` (SameValueZero) matches `isEqual`
+    // semantics - null when any candidate is an object (e.g. Date) and requires the isEqual path.
+    private lookupSet(values: any[]): Set<any> {
+        return values.some(isObject) ? null : new Set(values);
     }
 }

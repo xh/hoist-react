@@ -150,6 +150,9 @@ export const Icon = {
     arrowDownToBracket(p?: IconProps) {
         return Icon.icon({...p, iconName: 'arrow-down-to-bracket'});
     },
+    arrowDownToSquare(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'arrow-down-to-square'});
+    },
     arrowLeft(p?: IconProps) {
         return Icon.icon({...p, iconName: 'arrow-left'});
     },

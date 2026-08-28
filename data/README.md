@@ -58,7 +58,7 @@ StoreRecord
 ├── id: StoreRecordId
 ├── data: PlainObject            // Current field values - read by field name only
 ├── committedData: PlainObject   // Last committed state
-├── digest: RecordDigest         // Snapshot used to detect unchanged raw data
+├── digest: unknown              // Snapshot used to detect unchanged raw data
 ├── parent / children            // Tree navigation
 └── validationState              // Per-record validation
 
@@ -107,7 +107,7 @@ const store = new Store({
 | `loadTreeDataFrom` | `string` | `'children'` | Property containing child records |
 | `loadRootAsSummary` | `boolean` | `false` | Treat root node as summary record |
 | `freezeData` | `boolean` | `true` | Freeze record data objects for immutability (set false as a performance optimization) |
-| `reuseRecords` | `boolean \| string \| fn` | `null` | Reuse records when raw data yields an unchanged digest (performance) |
+| `digestSpec` | `string \| fn` | `null` | Derive a digest from each raw object, reusing records whose digest is unchanged (performance) |
 | `retainRaw` | `boolean` | `true` | Retain raw data reference on each record (set false to reduce memory) |
 | `projectionOnly` | `boolean` | `null` | Read-only projection of data parsed elsewhere - adopts raw objects as record `data`. Recommended for View-connected stores |
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply a fixed tree position (performance). Not supported on View-connected stores |
@@ -168,6 +168,23 @@ if (changes) {
     console.log(changes.add.length, changes.update.length, changes.remove.length);
 }
 ```
+
+#### Declaring changed fields
+
+A transaction may include `changedFields` - a `Set` of the field names whose values changed across
+its `update` rows:
+
+```typescript
+store.updateData({update: tickingRows, changedFields: new Set(['lastPrice', 'volume'])});
+```
+
+Providing it is an assertion: the updates change record values only (no parent/structural changes),
+and no field outside the set changed. Hoist carries the set through to the `Grid` transaction sync,
+which uses it to prove that an update cannot affect row order and skip ag-Grid's re-sort entirely -
+a major win for high-frequency updates into large sorted grids. Cube `View`s supply `changedFields`
+automatically on streaming updates, so view-connected stores get this for free. Producers that
+cannot cheaply determine the set should simply omit it - the grid falls back to comparing sorted
+field values record-by-record where possible.
 
 **`loadDataAsync(rawData)`** - Streaming counterpart to `loadData()`. It accepts a sync or async
 iterable that yields raw records, and creates records incrementally without buffering the complete
@@ -291,7 +308,7 @@ record.id;                  // Unique identifier
 record.data;                // Current field values - read by field name only
 record.committedData;       // Last committed state
 record.raw;                 // Original raw data (null if retainRaw: false, or a local add)
-record.digest;              // Digest snapshotted for reuseRecords, if configured
+record.digest;              // Digest snapshotted per digestSpec, if configured
 
 // State predicates
 record.isAdd;               // Never committed (new record)
@@ -899,36 +916,35 @@ This preserves ag-Grid row state (expansion, selection) for unchanged records ac
 A `loadData()` call that changes nothing at all preserves the Store's record collections outright,
 and skips all downstream work.
 
-### Digest-Based Reuse with `reuseRecords`
+### Digest-Based Reuse with `digestSpec`
 
-For large datasets whose provider can cheaply identify unchanged records, set `reuseRecords` to
+For large datasets whose provider can cheaply identify unchanged records, set `digestSpec` to
 derive a *digest* from each incoming raw object. Store snapshots that digest on the record it
 builds, and reuses the record whenever a later raw object for the same id yields an equal digest.
 Each hit skips raw data processing, parsing, and record creation.
 
 ```typescript
 const store = new Store({
-    reuseRecords: true  // reuse on raw object identity - requires stable, immutable raws
+    digestSpec: 'lastUpdated' // digest is a raw property, e.g. a server-provided stamp
 });
 
 const store = new Store({
-    reuseRecords: 'lastUpdated' // digest is a raw property, e.g. a server-provided stamp
+    digestSpec: raw => raw.type + '|' + raw.seq // or derived - primitive values only
 });
 
-const store = new Store({
-    reuseRecords: raw => raw.type + '|' + raw.seq // or derived - primitive values only
-});
 ```
 
-Digests must be primitives, compared via `===`. A null digest never matches. Build composite keys as
-strings.
+Digests must be primitives (`string` or `number`), compared via `===`. Build composite keys as
+strings, and a null digest never matches. A provider that caches and re-supplies its own row objects
+should stamp each row with a revision it bumps on every mutation and digest that - a stamp is the
+only signal that distinguishes an unchanged row from one mutated in place.
 
 This config applies to `updateData()` as well, where Store drops an unchanged-digest update as a
 no-op and so preserves any uncommitted local modifications on that record. An update with a changed
 digest builds a new record and overwrites local modifications, as updates always do. `loadData()`
 misses still fall back to the standard fieldwise comparison.
 
-Do not combine `reuseRecords` with a `processRawData` function that depends on external state, as
+Do not combine `digestSpec` with a `processRawData` function that depends on external state, as
 Store bypasses that function for reused records.
 
 Stores connected to a Cube `View` must leave this config unset. The View installs a digest that
@@ -964,9 +980,10 @@ This mode carries real constraints:
 
 - Raw data must already match what the Store's Fields would parse. Store applies neither `type`,
   `parseVal`, nor `defaultValue`.
-- Store never modifies or freezes these objects, whatever the `freezeData` setting. A provider may
-  mutate rows in place, but must then publish via `updateData()`. `loadData()` skips
-  reference-equal objects as unchanged.
+- Store never modifies or freezes these objects, whatever the `freezeData` setting, leaving the
+  provider free to mutate rows in place. Rows re-supplied by reference are therefore always treated
+  as changed - no value comparison can detect an in-place mutation. A provider that retains and
+  mutates its own rows should supply a `digestSpec` to restore reuse.
 - `data` carries every key on the raw object, not only declared Fields. Only declared Field values
   take part in the equality checks that detect unchanged records.
 - The local modification APIs (`addRecords`, `modifyRecords`, `removeRecords`, `revertRecords`, and
@@ -1012,7 +1029,7 @@ memory. They stack, and both are opt-in:
 
 | Knob | What it does | When to use |
 |------|--------------|-------------|
-| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw`. Incompatible with `reuseRecords: true`, which needs the raw for its identity check |
+| `retainRaw: false` | Drops each record's reference to its raw source object once parsed | Your app never reads `StoreRecord.raw` |
 | `internStrings` (a `FetchOptions` config) | Deduplicates repeated string values within a response, and optionally across refetches of the same dataset | Your data repeats many string values (categories, statuses, names) |
 
 Store builds record `data` objects for memory efficiency out of the box, and picks a representation
@@ -1031,28 +1048,6 @@ properties only, which vary with each record's density. Call `record.getValues()
 The `experimental.denseRecordThreshold` config governs the crossover between the two forms. It
 exists for testing and tuning only. Set it above the field count of any record to force the sparse
 form throughout.
-
-### Experimental: `PatchableRecordSet`
-
-`PatchableRecordSet` is an experimental, drop-in alternative to Hoist's internal `RecordSet`. It
-makes transaction, filtering, and grid-sync costs scale with the size of a change rather than the
-size of the store. It holds a shared, never-mutated `base` map plus a small `patch` layer of changed
-entries, so a transaction merges at the cost of the patch alone.
-
-```typescript
-const store = new Store({
-    fields: [...],
-    experimental: {patchableRecordSet: true}
-});
-```
-
-Enable it app-wide with the `xhStoreExperimental` soft-config. Note one behavior difference from the
-default record set: record order is stable-by-incumbency rather than source-order. Existing records keep their positions
-and additions append, including records that enter a filter incrementally. Apply a grid sort where
-deterministic order matters. The `experimental.patchRecordsMaxRatio` config caps patch size
-relative to the base (default `0.1`). A larger change flattens the record set into a fresh base.
-
-This feature is available for early client access and testing. It is not yet part of the Hoist API.
 
 ## Diagnostics
 
@@ -1080,6 +1075,9 @@ gridModel.diagnostics.logLevel = 'info';
 
 This API supports app troubleshooting and benchmarking only. It can change without notice at any
 release.
+
+The [Hoist Inspector](../inspector/README.md) provides a built-in UI for these diagnostics - select
+any Store, Cube View, or GridModel in its Instances grid to see a live readout.
 
 ## Common Patterns
 
