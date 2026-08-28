@@ -162,6 +162,7 @@ taking its current major alongside a hoist-react upgrade is low-cost and always 
 
 | hoist-react | Min Dev-Utils Required | Recommended Dev-Utils | Notes |
 |---|---|---|---|
+| 87.1 | -- | 15.0 | dev-utils 15 requires 87.1 - its completed `sideEffects` declaration and persist import-cycle fix are what make v15's tree-shaking safe. Apps taking v15 must also be TS-only (no `.jsx` files) and will see ESLint v10 rules. |
 | 87.0 | 14.0 | 14.0 | React 19: dev-utils 14 ships `@types/react` 19.x and is required for apps adopting pnpm. (13.x can build v87 with `@types/react` 19.x pinned via `resolutions` - a transitional pairing only, not supported.) |
 | 86.0 | -- | 13.0.1 | dev-utils 13 sets a Node floor of >= 22.11 and swaps the markdown loader - verify `flex: 1 1 0` styles (see [v86 notes](./upgrade-notes/v86-upgrade-notes.md)). |
 | 83.0 | -- | 12.0 | dev-utils 12's same-port dev proxy pairs with the hoist-react 83.0.2 `WebSocketService` fix. |
@@ -178,6 +179,7 @@ hard gates stated in the [hoist-dev-utils CHANGELOG](https://github.com/xh/hoist
 
 | hoist-dev-utils | Min hoist-react | Min Node | Notes |
 |---|---|---|---|
+| 15.0 | 87.1 | 22.15 | Apps must be TypeScript-only - `.jsx` files are no longer resolved or transpiled, and the build fails fast if any are found. Re-enables tree-shaking and Terser name-mangling (needs 87.1's `sideEffects` fix), ships ESLint v10 via `@xh/eslint-config` 8, and emits pre-compressed `.br` / `.gz` assets on prod builds. |
 | 14.0 | 87.0 | 22.15 | React 19 / `@types/react` 19.x baseline. Adds pnpm support - apps adopting pnpm must take 14+, and must declare every package they import directly (see dev-utils CHANGELOG). webpack-dev-server 6. |
 | 13.0 | -- | 22.11 | Take 13.0.1+. Markdown files now import as strings; verify `flex: 1 1 0` styles. |
 | 12.0 | 83.0.2 | | Same-port dev proxy (`baseUrl` default now `/api/`); requires hoist-react's `WebSocketService` fix in 83.0.2. |
