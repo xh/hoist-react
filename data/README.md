@@ -1255,5 +1255,5 @@ class MyModel extends HoistModel {
 - [`/cmp/grid/`](../cmp/grid/README.md) - GridModel consumes Store for data display
 - [`/cmp/form/`](../cmp/form/README.md) - FormModel uses similar Field and validation patterns
 - [`/svc/`](../svc/README.md) - FetchService, including `fetchNdjson()` and `internStrings`
-- `/cmp/filter/` - UI components for filter construction
+- [`/cmp/filter/`](../cmp/filter/README.md) - FilterChooser and FilterBuilder UI components for filter construction
 - `/cmp/grouping/` - GroupingChooser for specifying multi-level dimension groupings

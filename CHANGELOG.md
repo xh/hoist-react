@@ -665,6 +665,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added `FilterBuilder` - a new panel-based component for constructing filters of arbitrary
+  complexity. Provides a visual query builder UI with nested AND/OR groups, NOT negation,
+  type-appropriate value editors, favorites, and full integration with Hoist's filter binding
+  system. Includes cross-platform `FilterBuilderModel` and desktop `FilterBuilder` component.
+* Added `not` support to `CompoundFilter`, enabling negated filter groups (e.g. NOT (A AND B)).
+  Backwards-compatible - existing filters are unaffected.
 * `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit, fully
   customizable `emptyDisplay` / `fileDisplay` content, `onFileAccepted` / `onFileRejected`
   callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled` options, and a

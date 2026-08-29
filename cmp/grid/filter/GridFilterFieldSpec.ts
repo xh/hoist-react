@@ -13,10 +13,7 @@ import {
     Filter,
     parseFilter
 } from '@xh/hoist/data';
-import {
-    BaseFilterFieldSpec,
-    BaseFilterFieldSpecConfig
-} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {FilterFieldSpec, FilterFieldSpecConfig} from '@xh/hoist/data/filter/FilterFieldSpec';
 import {castArray, compact, flatMap, isDate, isEmpty, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
 import {GridFilterModel} from './GridFilterModel';
@@ -35,7 +32,7 @@ export type GridFilterRenderer = (value: any) => ReactNode;
  */
 export type GridFilterSortValueFn = (value: any) => any;
 
-export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
+export interface GridFilterFieldSpecConfig extends FilterFieldSpecConfig {
     /** GridFilterModel instance owning this fieldSpec. */
     filterModel?: GridFilterModel;
 
@@ -65,7 +62,7 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
  * Apps should NOT instantiate this class directly.
  * Instead, provide a config for this object via {@link GridConfig.filterModel} config.
  */
-export class GridFilterFieldSpec extends BaseFilterFieldSpec {
+export class GridFilterFieldSpec extends FilterFieldSpec {
     filterModel: GridFilterModel;
     renderer: GridFilterRenderer;
     sortValue: GridFilterSortValueFn;

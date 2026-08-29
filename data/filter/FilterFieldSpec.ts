@@ -18,7 +18,7 @@ import {FieldFilterOperator} from './Types';
  * @see GridFilterFieldSpec
  * @see FilterChooserFieldSpec
  */
-export interface BaseFilterFieldSpecConfig {
+export interface FilterFieldSpecConfig {
     /** Identifying field name to filter on. */
     field: string;
     /**
@@ -56,7 +56,7 @@ export interface BaseFilterFieldSpecConfig {
  * @see FilterChooserFieldSpec
  * @see GridFilterFieldSpec
  */
-export abstract class BaseFilterFieldSpec extends HoistBase {
+export abstract class FilterFieldSpec extends HoistBase {
     field: string;
     fieldType: FieldType;
     displayName: string;
@@ -76,7 +76,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         enableValues,
         forceSelection,
         values
-    }: BaseFilterFieldSpecConfig) {
+    }: FilterFieldSpecConfig) {
         super();
         this.field = field;
         this.source = source;

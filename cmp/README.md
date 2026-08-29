@@ -174,7 +174,7 @@ techniques.
 
 | Sub-package | Description |
 |-------------|-------------|
-| `/filter/` | FilterChooserModel for building filter UIs |
+| `/filter/` | FilterChooserModel and FilterBuilderModel for building filter UIs. [See README](./filter/README.md) |
 | `/grouping/` | GroupingChooserModel for dimension selection |
 | `/store/` | Store-related UI components (count label, filter field) |
 

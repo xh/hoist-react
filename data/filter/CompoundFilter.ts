@@ -23,6 +23,7 @@ export class CompoundFilter extends Filter {
 
     readonly filters: Filter[];
     readonly op: CompoundFilterOperator;
+    readonly not: boolean;
 
     /** @returns the singular field this filter operates on, if consistent across all clauses. */
     get field(): string {
@@ -36,13 +37,14 @@ export class CompoundFilter extends Filter {
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
      * @internal
      */
-    constructor({filters, op = 'AND'}: CompoundFilterSpec) {
+    constructor({filters, op = 'AND', not}: CompoundFilterSpec) {
         super();
         op = (op as any)?.toUpperCase();
         throwIf(op !== 'AND' && op !== 'OR', 'CompoundFilter requires "op" value of "AND" or "OR"');
 
         this.filters = compact(filters.map(parseFilter));
         this.op = op;
+        this.not = !!not;
         Object.freeze(this);
     }
 
@@ -50,11 +52,13 @@ export class CompoundFilter extends Filter {
     // Overrides
     //-----------------
     override getTestFn(store?: Store): FilterTestFn {
-        const {op, filters} = this;
+        const {op, not, filters} = this;
         if (isEmpty(filters)) return () => true;
 
-        const tests = filters.map(f => f.getTestFn(store));
-        return op === 'AND' ? r => tests.every(test => test(r)) : r => tests.some(test => test(r));
+        const tests = filters.map(f => f.getTestFn(store)),
+            baseFn: FilterTestFn =
+                op === 'AND' ? r => tests.every(test => test(r)) : r => tests.some(test => test(r));
+        return not ? r => !baseFn(r) : baseFn;
     }
 
     override equals(other: Filter): boolean {
@@ -62,6 +66,7 @@ export class CompoundFilter extends Filter {
         return (
             other instanceof CompoundFilter &&
             other.op === this.op &&
+            other.not === this.not &&
             isEqualWith(other.filters, this.filters, (a, b) =>
                 Filter.isFilter(a) && Filter.isFilter(b) ? a.equals(b) : undefined
             )
@@ -71,7 +76,8 @@ export class CompoundFilter extends Filter {
     override toJSON(): CompoundFilterSpec {
         return {
             filters: this.filters.map(f => f.toJSON()),
-            op: this.op
+            op: this.op,
+            ...(this.not ? {not: true} : {})
         };
     }
 
@@ -91,7 +97,7 @@ export class CompoundFilter extends Filter {
      * Returns same instance if nothing changed, single child if one remains, or null if empty.
      */
     private applyRemove(removeFn: (f: Filter) => Filter | null): Filter {
-        const {filters, op} = this,
+        const {filters, op, not} = this,
             result = compact(filters.map(removeFn));
 
         if (result.length === filters.length && result.every((f, i) => f === filters[i])) {
@@ -99,6 +105,6 @@ export class CompoundFilter extends Filter {
         }
         if (result.length === 0) return null;
         if (result.length === 1) return result[0];
-        return new CompoundFilter({filters: result, op});
+        return new CompoundFilter({filters: result, op, not});
     }
 }
