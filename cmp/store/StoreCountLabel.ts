@@ -9,14 +9,19 @@ import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize} from '@xh/hoist/utils/js';
+import {CountMode, resolveCountLabelValue} from './impl/CountLabelSupport';
 
 export interface StoreCountLabelProps extends HoistProps, BoxProps {
     /** Store to which this component should bind. */
     store: Store;
 
+    /** Which records to count: 'roots' (default), 'all', or 'leaves' (exclude parents). */
+    includeMode?: CountMode;
+
     /**
      * True to count nested child records.
      * If false (default) only root records will be included in count.
+     * @deprecated use `includeMode` instead ('all' for true, 'roots' for false).
      */
     includeChildren?: boolean;
 
@@ -30,8 +35,8 @@ export interface StoreCountLabelProps extends HoistProps, BoxProps {
 export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory<StoreCountLabelProps>({
     className: 'xh-store-count-label',
 
-    render({store, unit = 'record', includeChildren = false, ...props}, ref) {
-        const count = includeChildren ? store.count : store.rootCount,
+    render({store, unit = 'record', includeMode, includeChildren, ...props}, ref) {
+        const count = resolveCountLabelValue(store, includeMode, includeChildren, StoreCountLabel),
             unitLabel = count === 1 ? singularize(unit) : pluralize(unit),
             item = `${fmtNumber(count, {precision: 0, asHtml: true})} ${unitLabel}`;
 
