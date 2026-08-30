@@ -17,6 +17,7 @@ import {Icon} from '../icon';
  */
 export class AboutDialogModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'aboutDialogModel';
 
     @observable
     isOpen: boolean = false;
