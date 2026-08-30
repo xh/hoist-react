@@ -301,6 +301,8 @@ export function parseNameSource(source: NameSource): string {
 /**
  * Resolve a {@link NameSource} to its type-level name - `displayName` or `constructor.name` -
  * ignoring any instance-level `xhName`. Returns null if unresolvable.
+ *
+ * @internal - use {@link parseNameSource}.
  */
 export function parseTypeName(source: NameSource): string {
     if (!source) return null;
