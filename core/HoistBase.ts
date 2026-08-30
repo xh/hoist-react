@@ -283,6 +283,14 @@ export abstract class HoistBase {
         return this.xhName ? `${this.xhName}.${key}` : null;
     }
 
+    /** Name each unnamed `@managed` HoistBase child of this object `{xhName}.{property}`. */
+    protected nameManagedChildren() {
+        this['_xhManagedProperties']?.forEach(p => {
+            const child = this[p];
+            if (child?.isHoistBase) child.xhName ??= this.childXhName(p);
+        });
+    }
+
     /**
      * Mark an object as managed by this object.
      *

@@ -20,8 +20,8 @@
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
   `PanelModel`, etc.), which also name the child models they create. Services are named with
-  their `XH` key (e.g. `fetchService`) and `XH.appModel` as `appModel`, so they now log under
-  those labels.
+  their `XH` key (e.g. `fetchService`), `XH.appModel` as `appModel`, and the app container's
+  models as `appContainerModel.*`, so they now log under those labels.
 * Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin
   it, and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
   across reloads, so the same set of objects can be followed session to session; those with no live
