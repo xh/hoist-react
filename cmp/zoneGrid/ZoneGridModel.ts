@@ -397,6 +397,7 @@ export class ZoneGridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.mapperModel = this.parseMapperModel(zoneMapperModel);
+        if (this.mapperModel) this.mapperModel.xhName = this.childXhName('mapperModel');
         if (persistWith) initPersist(this, persistWith);
 
         this.addReaction({

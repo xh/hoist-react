@@ -2164,7 +2164,9 @@ export class GridModel extends HoistModel {
               ? DesktopDockedColChooserModel
               : DesktopModalColChooserModel;
 
-        return this.markManaged(new modelClass({...config, gridModel: this}));
+        const ret = this.markManaged(new modelClass({...config, gridModel: this}));
+        ret.xhName = this.childXhName('colChooserModel');
+        return ret;
     }
 
     private isGroupSpec(col: ColumnOrGroupSpec): col is ColumnGroupSpec {

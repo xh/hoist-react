@@ -272,6 +272,7 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
                 modalSupport === true
                     ? new ModalSupportModel()
                     : new ModalSupportModel(modalSupport);
+            this.modalSupportModel.xhName = this.childXhName('modalSupportModel');
         }
 
         if (errorBoundary) {
@@ -279,10 +280,12 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
                 errorBoundary === true
                     ? new ErrorBoundaryModel()
                     : new ErrorBoundaryModel(errorBoundary);
+            this.errorBoundaryModel.xhName = this.childXhName('errorBoundaryModel');
         }
 
         if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
+            this.refreshContextModel.xhName = this.childXhName('refreshContextModel');
         }
 
         if (collapsible || resizable) {
