@@ -71,6 +71,8 @@ import {installServicesAsync} from '../core/impl/InstallServices';
  * Root object for Framework GUI State.
  */
 export class AppContainerModel extends HoistModel {
+    override xhName = 'appContainerModel';
+
     override telemetryPrefix = 'xh.client';
 
     private initCalled = false;
@@ -126,6 +128,7 @@ export class AppContainerModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+        this.nameManagedChildren();
     }
 
     /**

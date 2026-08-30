@@ -143,6 +143,7 @@ export class PositionsModel extends HoistModel {
 | `xhId` | Unique identifier for this instance |
 | `xhName` | Optional developer-facing name for logs, telemetry, and Inspector |
 | `childXhName(key)` | `{xhName}.{key}`, for naming child objects |
+| `nameManagedChildren()` | Name unnamed `@managed` children `{xhName}.{property}` |
 
 ## HoistModel
 
