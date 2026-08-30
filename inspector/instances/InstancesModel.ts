@@ -75,7 +75,9 @@ export class InstancesModel extends HoistModel {
     }
 
     get selectedInstances(): HoistBase[] {
-        return this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it));
+        return compact(
+            this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it))
+        );
     }
 
     constructor() {
@@ -211,6 +213,7 @@ export class InstancesModel extends HoistModel {
                     {name: 'className', type: 'string'},
                     {name: 'xhName', type: 'string'},
                     {name: 'isFavorite', type: 'bool'},
+                    {name: 'alive', type: 'bool'},
                     {name: 'displayGroup', type: 'string'},
                     {name: 'created', type: 'date'},
                     {name: 'syncRun', type: 'number'},
@@ -239,7 +242,8 @@ export class InstancesModel extends HoistModel {
                         {
                             icon: Icon.terminal(),
                             tooltip: 'Log to console',
-                            actionFn: ({record}) => this.logInstanceToConsole(record)
+                            actionFn: ({record}) => this.logInstanceToConsole(record),
+                            displayFn: ({record}) => ({hidden: !record.data.alive})
                         },
                         {
                             icon: Icon.favorite(),
@@ -266,7 +270,11 @@ export class InstancesModel extends HoistModel {
                         }
                     ]
                 },
-                {field: 'id', displayName: 'xhId'},
+                {
+                    field: 'id',
+                    displayName: 'xhId',
+                    renderer: (v, {record}) => (record.data.alive ? v : null)
+                },
                 {
                     field: 'syncRun',
                     displayName: 'Sync',
@@ -297,10 +305,8 @@ export class InstancesModel extends HoistModel {
                 },
                 {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
-            rowClassFn: rec => {
-                return rec?.data.isXhImpl ? 'xh-impl-row' : null;
-            },
-            onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec),
+            rowClassFn: rec => (rec?.data.isXhImpl || !rec?.data.alive ? 'xh-impl-row' : null),
+            onRowDoubleClicked: ({data: rec}) => rec?.data.alive && this.logInstanceToConsole(rec),
             xhImpl: true
         });
     }
@@ -441,8 +447,28 @@ export class InstancesModel extends HoistModel {
                             : inst.isView
                               ? 'Views'
                               : 'Models';
-                    data.push({...inst, displayGroup, isFavorite});
+                    data.push({...inst, displayGroup, isFavorite, alive: true});
                 });
+
+                // Favorites with no live instance - shown so they can be seen and un-starred.
+                if (favoritesOnly && !selectedSyncRun) {
+                    const aliveKeys = new Set(data.map(favoriteKey));
+                    favorites
+                        .filter(key => !aliveKeys.has(key))
+                        .forEach(key => {
+                            const sep = key.indexOf(':'),
+                                className = key.slice(0, sep),
+                                xhName = key.slice(sep + 1);
+                            data.push({
+                                id: key,
+                                className,
+                                xhName,
+                                displayGroup: 'Not Alive',
+                                isFavorite: true,
+                                alive: false
+                            });
+                        });
+                }
 
                 instancesGridModel.loadData(data);
             }
@@ -591,7 +617,7 @@ export class InstancesModel extends HoistModel {
     }
 }
 
-const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores'];
+const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores', 'Not Alive'];
 
 /** Persistent identity for Favorites - null when the instance has no `xhName` to pin by. */
 const favoriteKey = (inst: {className?: string; xhName?: string}): string =>

@@ -23,7 +23,8 @@
   `{xhName}.{fieldName}`.
 * Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin
   it, and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
-  across reloads, so the same set of objects can be followed session to session.
+  across reloads, so the same set of objects can be followed session to session; those with no live
+  instance show as placeholder rows until un-starred.
 * Added new `MessageSpec.suppress` config for `XH.message()` and its `alert`, `confirm`, and
   `prompt` variants. Set to `true` (or a config object) to offer users a "Don't show this message
   again" checkbox. Confirmed responses are saved to browser local or session storage - optionally

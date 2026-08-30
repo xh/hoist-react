@@ -136,7 +136,8 @@ The Instances panel is a split layout with:
   (marked with `xhImpl = true`)
 - **Favorites** — Star any instance with an `xhName` to pin it, then toggle "Favorites" to show
   only pinned instances. Keyed by `{className}:{xhName}` and persisted, so the same set of objects
-  can be followed across reloads
+  can be followed across reloads. Favorites with no live instance show as muted placeholder rows -
+  un-star one to drop it
 - **Actions** — Log instance to devtools console, trigger `loadAsync()` on models with
   `LoadSupport`
 - **Multi-select** — Select multiple instances to compare their properties side-by-side
