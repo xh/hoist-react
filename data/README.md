@@ -113,7 +113,7 @@ const store = new Store({
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply a fixed tree position (performance). Not supported on View-connected stores |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change |
 | `experimental` | `PlainObject` | `{}` | Flags for experimental features - see [Performance and Memory](#performance-and-memory) |
-| `xhName` | `string` | `null` | Developer-facing name labelling this store in logs and Inspector - see [Instance Naming](../core/README.md#hoistbase) |
+| `xhName` | `string` | `null` | Developer-facing name for logs, telemetry, and Inspector |
 
 `Store.defaults` exposes `freezeData` for an app-wide override. See `StoreDefaults` for details.
 

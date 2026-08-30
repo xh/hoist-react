@@ -16,11 +16,12 @@
 
 ### 🎁 New Features
 
-* Added `HoistBase.xhName`, an optional developer-facing name that labels an instance in log
-  output, trace spans (new `xh.name` tag), and the Inspector's new `xhName` column. Accepted as a
-  config by `Store`, `Cube`, `View`, `GridModel`, and `FormModel` - a named `GridModel` or `Cube`
-  names the store it creates `{xhName}.store`, and a named `FormModel` names its fields
-  `{xhName}.{fieldName}`.
+* Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
+  log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
+  Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
+  `PanelModel`, etc.), which also name the child models they create. Services are named with
+  their `XH` key (e.g. `fetchService`) and `XH.appModel` as `appModel`, so they now log under
+  those labels.
 * Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin
   it, and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
   across reloads, so the same set of objects can be followed session to session; those with no live

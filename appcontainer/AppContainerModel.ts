@@ -338,6 +338,7 @@ export class AppContainerModel extends HoistModel {
         // App init phase
         this.setAppState('INITIALIZING_APP');
         this.appModel = createSingleton(this.appSpec.modelClass);
+        this.appModel.xhName ??= 'appModel';
         await this.runner(ctx)
             .span('appInit')
             .run(ctx => this.appModel.initAsync(ctx as InitContext));

@@ -34,7 +34,11 @@ export async function installServicesAsync(
     const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
     throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
 
-    const svcs = serviceClasses.map(c => createSingleton(c));
+    const svcs = serviceClasses.map(c => {
+        const svc = createSingleton(c);
+        svc.xhName ??= camelCase(c.name);
+        return svc;
+    });
     await initServicesInternalAsync(svcs, ctx);
 
     svcs.forEach(svc => {

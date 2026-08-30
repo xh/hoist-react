@@ -77,10 +77,7 @@ export interface CubeConfig {
      */
     omitFn?: OmitFn;
 
-    /**
-     * See {@link HoistBase.xhName}. Also names the internal store `{xhName}.store`
-     * unless `store.xhName` is set explicitly.
-     */
+    /** See {@link HoistBase.xhName}. */
     xhName?: string;
 }
 
@@ -200,7 +197,7 @@ export class Cube extends HoistBase {
         makeObservable(this);
         this.xhName = xhName;
         this.store = new Store({
-            xhName: xhName ? `${xhName}.store` : null,
+            xhName: this.childXhName('store'),
             ...store,
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
@@ -286,7 +283,6 @@ export class Cube extends HoistBase {
      * @param query - query to be used to construct this view.
      * @param stores - Stores to be automatically loaded/reloaded with View results.
      * @param connect - true to update View automatically when data in the underlying Cube changes.
-     * @param xhName - see {@link HoistBase.xhName}.
      */
     createView({
         query,

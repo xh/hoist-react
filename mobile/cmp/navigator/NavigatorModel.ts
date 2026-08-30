@@ -52,6 +52,9 @@ export interface NavigatorConfig {
      * See enum for description of supported modes.
      */
     refreshMode?: RefreshMode;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -101,10 +104,12 @@ export class NavigatorModel extends HoistModel {
         pullDownToRefresh = true,
         transitionMs = 500,
         renderMode = 'lazy',
-        refreshMode = 'onShowLazy'
+        refreshMode = 'onShowLazy',
+        xhName = null
     }: NavigatorConfig) {
         super();
         makeObservable(this);
+        this.xhName = xhName;
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
