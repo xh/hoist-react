@@ -162,9 +162,11 @@ export class RestGridModel extends HoistModel {
         onRowDoubleClicked,
         store,
         appData,
+        xhName = null,
         ...rest
     }: RestGridConfig) {
         super();
+        this.xhName = xhName;
         this.readonly = readonly;
         this.editors = editors;
         this.toolbarActions = toolbarActions;
@@ -186,6 +188,7 @@ export class RestGridModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
+            xhName: this.childXhName('gridModel'),
             contextMenu: [...this.menuActions, '-', ...GridModel.defaults.contextMenu],
             exportOptions: {filename: pluralize(unit)},
             store: this.parseStore(store),
@@ -197,6 +200,7 @@ export class RestGridModel extends HoistModel {
         });
 
         this.formModel = new RestFormModel(this);
+        this.formModel.xhName = this.childXhName('formModel');
     }
 
     /** Load the underlying store. */

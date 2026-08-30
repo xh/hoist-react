@@ -108,7 +108,7 @@ const formModel = new FormModel({
 | `disabled` | `boolean` | Disable all fields |
 | `readonly` | `boolean` | Make all fields read-only |
 | `persistWith` | `FormPersistOptions` | Options for persisting form state |
-| `xhName` | `string` | Developer-facing name for logs and Inspector; fields are named `{xhName}.{fieldName}` |
+| `xhName` | `string` | Developer-facing name for logs, telemetry, and Inspector |
 
 ### Working with Data
 

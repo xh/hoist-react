@@ -301,6 +301,9 @@ export interface ZoneGridConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -364,8 +367,10 @@ export class ZoneGridModel extends HoistModel {
             restoreDefaultsFn,
             restoreDefaultsWarning,
             persistWith,
+            xhName = null,
             ...rest
         } = config;
+        this.xhName = xhName;
 
         this.availableColumns = columns
             .filter(it => !executeIfFunction(it.omit))
@@ -569,6 +574,7 @@ export class ZoneGridModel extends HoistModel {
     //-----------------------
     private createGridModel(config: GridConfig): GridModel {
         return new GridModel({
+            xhName: this.childXhName('gridModel'),
             ...config,
             xhImpl: true,
             contextMenu: withDefault(config.contextMenu, this.getDefaultContextMenu),

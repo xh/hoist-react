@@ -59,10 +59,7 @@ export interface FormConfig {
     disabled?: boolean;
     readonly?: boolean;
 
-    /**
-     * See {@link HoistBase.xhName}. Fields without their own `xhName` are named
-     * `{xhName}.{fieldName}`, or just `{fieldName}` when the form is unnamed.
-     */
+    /** See {@link HoistBase.xhName}. */
     xhName?: string;
 
     /** @internal */
@@ -179,7 +176,7 @@ export class FormModel extends HoistModel {
         forOwn(this.fields, f => {
             f.formModel = this;
             f.xhImpl = xhImpl;
-            f.xhName ??= xhName ? `${xhName}.${f.name}` : f.name;
+            f.xhName ??= this.childXhName(f.name) ?? f.name;
         });
     }
 

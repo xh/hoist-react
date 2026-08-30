@@ -64,8 +64,10 @@ export class SplitTreeMapModel extends HoistModel {
             mapTitleFn,
             showSplitter = false,
             orientation = 'vertical',
+            xhName = null,
             ...rest
         } = config ?? {};
+        this.xhName = xhName;
 
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
@@ -77,8 +79,16 @@ export class SplitTreeMapModel extends HoistModel {
         );
         this.orientation = orientation;
 
-        this.primaryMapModel = new TreeMapModel({...rest, filter: r => this.mapFilter(r)});
-        this.secondaryMapModel = new TreeMapModel({...rest, filter: r => !this.mapFilter(r)});
+        this.primaryMapModel = new TreeMapModel({
+            xhName: this.childXhName('primaryMapModel'),
+            ...rest,
+            filter: r => this.mapFilter(r)
+        });
+        this.secondaryMapModel = new TreeMapModel({
+            xhName: this.childXhName('secondaryMapModel'),
+            ...rest,
+            filter: r => !this.mapFilter(r)
+        });
     }
 
     // Getters derived from both underlying TreeMapModels.

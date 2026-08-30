@@ -111,6 +111,9 @@ export interface PanelConfig {
 
     /** @internal */
     xhImpl?;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface PanelPersistState {
@@ -215,11 +218,13 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
         showModalToggleButton = true,
+        xhName = null,
         xhImpl = false
     }: PanelConfig) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         defaultSize =
             isString(defaultSize) && defaultSize.endsWith('px')

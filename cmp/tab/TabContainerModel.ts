@@ -93,6 +93,9 @@ export interface TabContainerConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -149,6 +152,7 @@ export class TabContainerModel extends HoistModel {
             refreshMode = 'onShowLazy',
             persistWith,
             emptyText = 'No tabs to display.',
+            xhName = null,
             xhImpl = false,
             switcher = {mode: 'static'}
         }: TabContainerConfig,
@@ -157,6 +161,7 @@ export class TabContainerModel extends HoistModel {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.depth = depth;
         this.renderMode = renderMode;

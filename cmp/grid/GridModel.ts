@@ -392,10 +392,7 @@ export interface GridConfig {
     /** Extra app-specific data for the GridModel. */
     appData?: PlainObject;
 
-    /**
-     * See {@link HoistBase.xhName}. Also names a store created from a `store` config
-     * `{xhName}.store` unless that config sets its own `xhName`.
-     */
+    /** See {@link HoistBase.xhName}. */
     xhName?: string;
 
     /** @internal */
@@ -784,6 +781,7 @@ export class GridModel extends HoistModel {
         sizingMode = this.parseSizingMode(sizingMode);
 
         this.agGridModel = new AgGridModel({
+            xhName: this.childXhName('agGridModel'),
             sizingMode,
             showHover,
             rowBorders,
@@ -1903,7 +1901,7 @@ export class GridModel extends HoistModel {
         } else {
             storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
             store = new Store({
-                xhName: this.xhName ? `${this.xhName}.store` : null,
+                xhName: this.childXhName('store'),
                 loadTreeData: this.treeMode,
                 ...storeOrConfig
             });
@@ -2118,7 +2116,12 @@ export class GridModel extends HoistModel {
         }
 
         return this.markManaged(
-            new StoreSelectionModel({...selModel, store: this.store, xhImpl: true})
+            new StoreSelectionModel({
+                xhName: this.childXhName('selModel'),
+                ...selModel,
+                store: this.store,
+                xhImpl: true
+            })
         );
     }
 
@@ -2126,7 +2129,10 @@ export class GridModel extends HoistModel {
         if (XH.isMobileApp || !filterModel) return null;
 
         filterModel = filterModel === true ? {} : filterModel;
-        return new GridFilterModel({bind: this.store, ...filterModel}, this);
+        return new GridFilterModel(
+            {xhName: this.childXhName('filterModel'), bind: this.store, ...filterModel},
+            this
+        );
     }
 
     private parseExperimental(experimental: GridExperimentalFlags) {

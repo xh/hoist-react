@@ -26,6 +26,9 @@ interface ChartConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface ChartModelDefaults {
@@ -86,9 +89,16 @@ export class ChartModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const {highchartsConfig, series = [], contextMenu, xhImpl = false} = config ?? {};
+        const {
+            highchartsConfig,
+            series = [],
+            contextMenu,
+            xhName = null,
+            xhImpl = false
+        } = config ?? {};
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
         this.contextMenu = this.parseContextMenu(contextMenu);

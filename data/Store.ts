@@ -455,12 +455,12 @@ export class Store
     }: StoreConfig) {
         super();
         makeObservable(this);
-        this.xhName = xhName;
         throwIf(
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
         );
 
+        this.xhName = xhName;
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
