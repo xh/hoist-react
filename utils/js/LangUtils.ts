@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PlainObject, Thunkable} from '@xh/hoist/core';
+import type {HoistBase, PlainObject, Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {
     flatMap,
@@ -282,12 +282,11 @@ export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): Plain
 }
 
 /**
- * A string, or an object from which a name can be derived - via `xhName` (named HoistBase
- * instances), `displayName` (e.g. React components), or `constructor.name` (class instances).
- * Used for logging and tracing.
+ * A string, or an object from which a name can be derived - via `xhName` (HoistBase instances),
+ * `displayName` (e.g. React components), or `constructor.name` (class instances). Used for
+ * logging and tracing.
  */
-export type NameSource =
-    string | {xhName: string} | {displayName: string} | {constructor: {name: string}};
+export type NameSource = string | HoistBase | {displayName: string} | {constructor: {name: string}};
 
 /**
  * Resolve a {@link NameSource} to a string, or null if unresolvable.
