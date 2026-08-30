@@ -128,7 +128,6 @@ export class AppContainerModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-        this.nameManagedChildren(null);
     }
 
     /**
