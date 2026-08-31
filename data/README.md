@@ -431,6 +431,45 @@ apps with large datasets. Set `enableXssProtection` per field, or app-wide via
 | `'tags'` | String array | Splits comma-separated |
 | `'pwd'` | Password | Marks as sensitive |
 
+### Calculated Fields
+
+Declare a field with a `calculatedFn` to compute its value on the client at read time, from the
+record's other field values and the Store - no source data or server round-trip required:
+
+```typescript
+const store = new Store({
+    fields: [
+        'commission',
+        {
+            name: 'pctCommission',
+            calculatedFn: (data, store) =>
+                (data.commission / store.summaryRecords[0]?.data.commission) * 100
+        }
+    ]
+});
+```
+
+Calculated values are read through lazy prototype getters on record `data` objects - never
+stored, parsed, or included in the equality/digest comparisons used to detect unchanged records,
+and always current when read. Key characteristics:
+
+- **Read-only** - `modifyRecords()` throws on any attempt to write a calculated field. `type` is
+  display/metadata only, as parsing never applies.
+- **Works with `projectionOnly`** - record `data` becomes a generated wrapper over the adopted
+  raw object, adding the calculated getters with no per-record copy of source values.
+- **Automatic grid repaint** - grids bound to the Store refresh columns displaying calculated
+  fields after each transaction, repainting visible cells whose value moved via an input outside
+  their own row (e.g. a summary denominator).
+- **Automatic filter refresh** - a `FieldFilter` testing a calculated field triggers a full
+  re-filter on each transaction, keeping membership current. `FunctionFilter`s are opaque to this
+  detection - one reading calculated values may require a manual `refreshFilter()`.
+- Sorting and exporting read through the getters and work naturally - keep `calculatedFn` a fast,
+  pure function, as it can run once per visible cell per paint and once per comparison when
+  sorting.
+
+See `CubeFieldSpec.calculatedFn` (`data/cube/README.md`) for the Cube-layer form of the same
+concept, computed on View rows with an `AggregationContext`.
+
 ## Filter System
 
 **Files**: `filter/Filter.ts`, `filter/FieldFilter.ts`, `filter/CompoundFilter.ts`, `filter/FunctionFilter.ts`

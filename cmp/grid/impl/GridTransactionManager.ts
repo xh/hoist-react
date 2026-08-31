@@ -136,6 +136,14 @@ export class GridTransactionManager extends HoistBase {
         const sortPaths = this.getSortPaths();
         if (!sortPaths) return false;
 
+        // A calculated sort value is computed at read time and can move via inputs outside any
+        // updated row - absent from changedFields, and indistinguishable across old and new
+        // record data (both getters read current state). Nothing can be proven.
+        const calcNames = this.model.store.calculatedFieldNames;
+        if (calcNames.size && sortPaths.some(p => calcNames.has(isArray(p) ? p[0] : p))) {
+            return false;
+        }
+
         if (changedFields) {
             return sortPaths.every(p => !changedFields.has(isArray(p) ? p[0] : p));
         }

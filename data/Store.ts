@@ -14,6 +14,7 @@ import {
     FilterBindTarget,
     FilterLike,
     FilterValueSource,
+    flattenFilter,
     parseFilter,
     StoreRecord,
     StoreRecordDigest,
@@ -46,6 +47,10 @@ import {
     values
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
+import {
+    installCalculatedFieldGetters,
+    installSourceFieldGetters
+} from './impl/CalculatedFieldSupport';
 import {RecordSet} from './impl/RecordSet';
 import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
@@ -413,6 +418,14 @@ export class Store
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
 
+    // Calculated field support - see generateDataConfig().
+    private _calculatedFields: Field[] = [];
+    private _hasCalculatedFields = false;
+    private _equalityFields: Field[] = [];
+    private _calculatedFieldNames: Set<string> = null;
+    private _externalCalculatedFieldNames: Set<string> = null;
+    private _projectionDataClass: new (src: PlainObject) => PlainObject = null;
+
     // Last parent pair verified position-equal by positionUnchanged().
     private _verifiedCachedParent: StoreRecord = null;
     private _verifiedNewParent: StoreRecord = null;
@@ -476,9 +489,7 @@ export class Store
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._fieldMap = this.createFieldMap();
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this.generateDataConfig();
         this._denseRecordThreshold =
             this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
@@ -555,6 +566,10 @@ export class Store
         if (updated !== _committed || updated !== _current) {
             this._committed = this._current = updated;
             this.incrementalRefilter();
+        } else if (this.filterReferencesCalculatedFields()) {
+            // Replaced summary records can move calculated values (and thus filter membership)
+            // even when the reload changed no records.
+            this.fullRefilter();
         }
 
         this.lastLoaded = this.lastUpdated = Date.now();
@@ -756,7 +771,13 @@ export class Store
         }
         this.diagnostics.noteUpdate(this._current, prevCurrent, start);
 
-        if (hasChanges) this.incrementalRefilter();
+        if (hasChanges) {
+            this.incrementalRefilter();
+        } else if (changeLog.summaryRecords && this.filterReferencesCalculatedFields()) {
+            // A summary-only update can move calculated values (and thus filter membership)
+            // without any record transaction to trigger the refilter above.
+            this.fullRefilter();
+        }
 
         if (!isEmpty(changeLog)) {
             this.lastUpdated = Date.now();
@@ -990,6 +1011,32 @@ export class Store
 
     get fieldNames(): string[] {
         return this.fields.map(it => it.name);
+    }
+
+    /**
+     * Names of all fields on this Store whose values are computed at read time rather than
+     * loaded - fields declared with {@link FieldSpec.calculatedFn}, plus any marked by a
+     * connected Cube View publishing view-level calculated fields into this Store. Grids bound
+     * to this Store use this set to automatically repaint calculated columns after each data
+     * transaction.
+     */
+    get calculatedFieldNames(): Set<string> {
+        return (this._calculatedFieldNames ??= new Set([
+            ...this._calculatedFields.map(it => it.name),
+            ...(this._externalCalculatedFieldNames ?? [])
+        ]));
+    }
+
+    /**
+     * Mark fields of this Store whose values are computed at read time by an external provider -
+     * called by a connected Cube View publishing calculated fields into this Store, enabling the
+     * same automatic grid repaint and filter refresh handling as Store-level calculated fields.
+     * Replaces any previously marked set.
+     * @internal
+     */
+    setExternalCalculatedFieldNames(names: Set<string>) {
+        this._externalCalculatedFieldNames = names?.size ? names : null;
+        this._calculatedFieldNames = null;
     }
 
     /**
@@ -1357,10 +1404,32 @@ export class Store
 
     @action
     private incrementalRefilter() {
+        // A filter testing a calculated field must re-test every record on each transaction - a
+        // calculated value can cross the filter threshold via an input outside any transacted
+        // row (e.g. a moving summary denominator), which incremental re-testing of transacted
+        // records alone would leave stale. O(N), only while such a filter is active.
+        if (this.filterReferencesCalculatedFields()) {
+            this.fullRefilter();
+            return;
+        }
+
         const start = performance.now(),
             {_current, _filtered: prevFiltered} = this;
         this._filtered = _current.withFilter(this.filter, prevFiltered);
         this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
+    }
+
+    private filterReferencesCalculatedFields(): boolean {
+        const {filter} = this;
+        if (!filter) return false;
+
+        const calcNames = this.calculatedFieldNames;
+        if (!calcNames.size) return false;
+
+        // FieldFilters (nested at any depth) declare their field. FunctionFilters are opaque to
+        // this detection - one reading calculated values may require a manual refreshFilter()
+        // when external inputs change.
+        return flattenFilter(filter).some(it => calcNames.has((it as any).field));
     }
 
     @action
@@ -1390,22 +1459,28 @@ export class Store
         }
 
         // 2) Projections adopt raw data with no reparsing. Value identical rows
-        // can be re-used (instance identical reuse requires a digest above)
+        // can be re-used (instance identical reuse requires a digest above). Calculated fields
+        // are excluded from the comparison - computed values carry no signal of their own.
         if (this.projectionOnly) {
             const cachedData = cached?.data;
             if (
                 cachedData &&
-                raw !== cachedData &&
-                this.fields.every(({name}) => equal(raw[name], cachedData[name]))
+                raw !== cached.raw &&
+                this._equalityFields.every(({name}) => equal(raw[name], cachedData[name]))
             ) {
                 return cached;
             }
+
+            // With calculated fields, adopt the raw via a generated wrapper carrying their
+            // getters (data !== raw) - otherwise adopt the raw object itself, as-is.
+            const {_projectionDataClass} = this,
+                data = _projectionDataClass ? new _projectionDataClass(raw) : raw;
             return new StoreRecord({
                 id,
                 store: this,
                 raw,
-                data: raw,
-                committedData: raw,
+                data,
+                committedData: data,
                 parent,
                 isSummary,
                 digest
@@ -1518,7 +1593,8 @@ export class Store
             rescuable = !!cached;
         for (const name in data) {
             const field = _fieldMap.get(name);
-            if (field) {
+            // Calculated fields are never parsed or stored - values are computed at read time.
+            if (field && !field.isCalculated) {
                 const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
                     if (rescuable) {
@@ -1544,8 +1620,15 @@ export class Store
             hasOwn = Object.prototype.hasOwnProperty;
         let n = 0;
         this.fields.forEach(field => {
-            const {name} = field,
-                val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
+            const {name} = field;
+            if (field.isCalculated) {
+                throwIf(
+                    hasOwn.call(update, name),
+                    `Field '${name}' is calculated and read-only - its value is computed at read time and cannot be modified.`
+                );
+                return;
+            }
+            const val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
             if (val !== field.defaultValue) {
                 names[n] = name;
                 vals[n] = val;
@@ -1575,9 +1658,12 @@ export class Store
      * require.
      */
     private buildData(): PlainObject {
+        // Dense records clone the template into a plain object that cannot see the prototype
+        // getters carrying calculated values - stores with calculated fields therefore take the
+        // sparse form for all records.
         const {names, vals, n} = this._recordBuildData,
             ret =
-                n >= this._denseRecordThreshold
+                n >= this._denseRecordThreshold && !this._hasCalculatedFields
                     ? {...this._dataTemplate}
                     : Object.create(this._dataDefaults);
         for (let i = 0; i < n; i++) {
@@ -1594,16 +1680,78 @@ export class Store
     }
 
     /**
+     * (Re)generate the per-Store constructs backing record `data` objects - field map, shared
+     * defaults object and dense template, calculated field getters, and the generated projection
+     * wrapper class. Deliberately a re-runnable function of Store state rather than a one-shot
+     * constructor side effect, so a future API can update calculated field specs post-construction
+     * and regenerate. Existing records are not re-wrapped - callers of a future regeneration API
+     * own that step.
+     */
+    private generateDataConfig() {
+        this._fieldMap = this.createFieldMap();
+
+        // Cube-layer calculated fields (`CubeFieldSpec.calculatedFn`) are computed on View rows
+        // with an AggregationContext - never evaluated by a Store holding such fields (e.g. a
+        // Cube's internal leaf store), so they are excluded from the store-layer machinery here.
+        this._calculatedFields = this.fields.filter(it => it.isCalculated && !it.isCubeField);
+        this._hasCalculatedFields = !isEmpty(this._calculatedFields);
+        this._equalityFields = this.fields.filter(it => !it.isCalculated);
+        this._calculatedFieldNames = null;
+
+        this._dataDefaults = this.createDataDefaults();
+        // Clone for fast-props mode - before installing getters below, so the spread cannot
+        // evaluate them against the defaults object.
+        this._dataTemplate = {...this._dataDefaults};
+        installCalculatedFieldGetters(this._dataDefaults, this._calculatedFields, () => this);
+
+        this._projectionDataClass = this.createProjectionDataClass();
+    }
+
+    /**
      * Shared template for record `data` objects - an own property for every Field, holding its
      * defaultValue. `parseOrRescue()` clones it per record, so all records in a Store share one
      * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
      * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
      * past ~20 adds, costing several times more memory per record.
+     *
+     * Store-layer calculated fields hold no default slot - their values are read through
+     * prototype getters installed on the returned object by `generateDataConfig()`.
      */
     private createDataDefaults() {
         const ret = {};
-        this.fields.forEach(({name, defaultValue}) => (ret[name] = defaultValue));
+        this.fields.forEach(field => {
+            if (field.isCalculated && !field.isCubeField) return;
+            ret[field.name] = field.defaultValue;
+        });
         return ret;
+    }
+
+    /**
+     * Generated wrapper class for projection record data on stores declaring calculated fields.
+     * Adopted raw objects cannot carry computed values, so each record's `data` becomes a
+     * generated wrapper over the adopted raw (`data !== raw`) - source values read through
+     * prototype getters over an own `_src` reference, calculated values via their calculatedFns.
+     * Null when not applicable, directing `createRecord()` to adopt raw objects directly.
+     */
+    private createProjectionDataClass(): new (src: PlainObject) => PlainObject {
+        if (!this.projectionOnly || !this._hasCalculatedFields) return null;
+
+        class ProjectionData {
+            // Own slots for every instance - `id` is written post-construction by the
+            // StoreRecord constructor, an overwrite rather than a shape-changing add.
+            id: StoreRecordId = null;
+            _src: PlainObject;
+
+            constructor(src: PlainObject) {
+                this._src = src;
+            }
+        }
+        installSourceFieldGetters(
+            ProjectionData.prototype,
+            this._equalityFields.map(it => it.name)
+        );
+        installCalculatedFieldGetters(ProjectionData.prototype, this._calculatedFields, () => this);
+        return ProjectionData;
     }
 
     private createFieldMap() {

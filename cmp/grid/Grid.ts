@@ -743,6 +743,19 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
+        // Calculated values are computed at read time and can move via inputs outside their own
+        // row (e.g. a summary denominator) - leaving on-screen rows absent from the transaction
+        // above and painted stale. Refresh their columns on every sync: ag-Grid change detection
+        // re-reads visible cells only and repaints just those whose value actually moved.
+        const calcNames = store.calculatedFieldNames;
+        if (calcNames.size) {
+            const columns = model
+                .getVisibleLeafColumns()
+                .filter(c => calcNames.has(c.field))
+                .map(c => c.colId);
+            if (!isEmpty(columns)) agApi.refreshCells({columns});
+        }
+
         if (!isEmpty(transaction.add) || !isEmpty(transaction.remove)) {
             wait().then(() => this.syncSelection());
         }

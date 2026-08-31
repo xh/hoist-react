@@ -50,7 +50,11 @@ export class StoreRecord {
      * enumeration of all field values, or {@link getModifiedValues} for locally-modified values
      * only.
      *
-     * With {@link StoreConfig.projectionOnly}, this is the raw source object itself.
+     * With {@link StoreConfig.projectionOnly}, this is the raw source object itself - or, when
+     * the Store declares calculated fields, a generated wrapper reading through it.
+     *
+     * Values of calculated fields ({@link FieldSpec.calculatedFn}) are computed lazily by
+     * prototype getters when read from this object - they are never stored.
      */
     readonly data: PlainObject;
 
@@ -248,7 +252,9 @@ export class StoreRecord {
 
         const {data, committedData} = this,
             ret: PlainObject = {};
-        this.fields.forEach(({name}) => {
+        this.fields.forEach(({name, isCalculated}) => {
+            // Calculated values are read-only derivations - never themselves "modified".
+            if (isCalculated) return;
             const val = data[name];
             if (!equal(val, committedData[name])) ret[name] = val;
         });
