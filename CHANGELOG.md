@@ -14,6 +14,16 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* The desktop `ViewManager` menu button now renders in its `active` state while its popover menu is
+  open.
+* The desktop `GroupingChooser` trigger button now renders in its `active` state while its popover
+  is open, in both input and button modes.
+* The desktop `GroupingChooser` trigger button now defaults to an `outlined` style when in button
+  mode (`styleButtonAsInput: false`), to match the `ViewManager` trigger - pass `minimal`/`outlined`
+  props to the component to restore the prior filled styling.
+
 ## 87.1.0 - 2026-08-28
 
 ### 🎁 New Features

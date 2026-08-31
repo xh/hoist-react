@@ -112,7 +112,11 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                           width: 30
                       })
                     : viewMenu({model: locModel, extraMenuItems}),
-                onOpening: () => model.refreshAsync(),
+                onOpening: () => {
+                    locModel.isMenuOpen = true;
+                    model.refreshAsync();
+                },
+                onClosing: () => (locModel.isMenuOpen = false),
                 placement: 'bottom',
                 popoverClassName: 'xh-view-manager__popover'
             });
@@ -144,6 +148,7 @@ const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
                   }),
             rightIcon: Icon.chevronDown(),
             outlined: true,
+            active: model.isMenuOpen,
             ...rest
         });
     }

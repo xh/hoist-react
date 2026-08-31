@@ -23,6 +23,10 @@ export class ViewManagerLocalModel extends HoistModel {
     @bindable
     isVisible = true;
 
+    /** True when the menu popover is open - used to set the `active` state on the menu button. */
+    @bindable
+    isMenuOpen = false;
+
     async saveAsync() {
         const {parent} = this,
             {view} = parent;

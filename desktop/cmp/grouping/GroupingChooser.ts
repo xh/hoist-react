@@ -62,7 +62,10 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
      */
     popoverWidth?: number;
 
-    /** True (default) to style trigger button background and borders to match inputs. */
+    /**
+     * True (default) to style trigger button background and borders to match inputs. Set to false
+     * to render an outlined button instead - override via `minimal`/`outlined` props as needed.
+     */
     styleButtonAsInput?: boolean;
 }
 
@@ -125,7 +128,10 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                             'xh-grouping-chooser-button',
                             styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null
                         ),
-                        minimal: styleButtonAsInput,
+                        // Input mode relies on the `--as-input` class for its chrome, so renders
+                        // minimal. Button mode renders outlined, to match the ViewManager trigger.
+                        ...(styleButtonAsInput ? {minimal: true} : {outlined: true}),
+                        active: isOpen,
                         ...buttonProps,
                         onClick: () => impl.toggleEditor(),
                         testId
