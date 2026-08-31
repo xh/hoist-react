@@ -229,10 +229,12 @@ export class DashCanvasModel
         showAddViewButtonWhenEmpty = true,
         allowsDrop = false,
         onDropDone,
-        onDropDragOver
+        onDropDragOver,
+        xhName = null
     }: DashCanvasConfig) {
         super();
         makeObservable(this);
+        this.xhName = xhName;
         viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {

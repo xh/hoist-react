@@ -32,6 +32,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
+  log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
+  Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
+  `PanelModel`, etc.), which also name the child models they create. Services are named with
+  their `XH` key (e.g. `fetchService`), and `XH.appModel` and the app container's models by their
+  property (`appModel`, `routerModel`, `pageStateModel`, ...), so they now log under those labels.
+* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin
+  it, and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
+  across reloads, so the same set of objects can be followed session to session; those with no live
+  instance show as placeholder rows until un-starred.
+*
 * Added `FieldSpec.calculatedFn` - declare Store fields computed on the client from each record's
   other values and the Store, with no source data or server round-trip required. Values are
   computed lazily on read - always current, with minimal memory and load-time overhead - and
@@ -42,6 +53,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   percent-of-total, where a custom aggregator would slow updates to the entire View - calculated
   fields keep Views on their fastest incremental update path. `AggregationContext.filteredRecords`
   is readable from these functions and always current.
+
+
 
 ## 87.1.0 - 2026-08-28
 
@@ -66,7 +79,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `options` is non-null, so pass null while options load.
 * Extended the package `sideEffects` declaration to cover the vendored golden-layout implementation
   and the barrels with registration or configuration side effects on import - icon, mobx, blueprint
-  kit, golden-layout kit, and persist. Required by the tree-shaking in hoist-dev-utils v15.
+  kit, golden-layout kit, and persist. ~~Required by the tree-shaking in hoist-dev-utils v15.~~
+  (Tree-shaking reverted in dev-utils 15.0.1 - take 15.0.1+, see
+  [#4640](https://github.com/xh/hoist-react/issues/4640).)
 * Restructured `PersistenceProvider` provider registration to remove a base/subclass import cycle
   that breaks under tree-shaking bundlers' re-export optimization. No API change.
 

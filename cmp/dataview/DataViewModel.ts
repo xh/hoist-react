@@ -125,6 +125,9 @@ export interface DataViewConfig {
      * with its usages of GridModel.
      */
     gridOptions?: Omit<GridConfig, keyof DataViewConfig>;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export type ItemHeightFn = (params: {
@@ -177,8 +180,10 @@ export class DataViewModel extends HoistModel {
             rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
-            gridOptions
+            gridOptions,
+            xhName = null
         } = config;
+        this.xhName = xhName;
 
         throwIf(
             !isFunction(itemHeight) && !isNumber(itemHeight),
@@ -203,6 +208,7 @@ export class DataViewModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
+            xhName: this.childXhName('gridModel'),
             store,
             sortBy,
             selModel,

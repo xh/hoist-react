@@ -53,6 +53,9 @@ export interface ViewConfig {
      * capture a snapshot without further (automatic) updates.
      */
     connect?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface ViewResult {
@@ -162,8 +165,9 @@ export class View
         makeObservable(this);
 
         const start = performance.now(),
-            {query, connect = false} = config;
+            {query, connect = false, xhName = null} = config;
 
+        this.xhName = xhName;
         this.query = query;
         this.buildIndices();
         this._rowCache = new RowCache(this);

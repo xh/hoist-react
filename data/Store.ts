@@ -248,6 +248,9 @@ export interface StoreConfig {
      *     it may also be changed on an existing Store at any time.
      */
     experimental?: PlainObject;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -467,6 +470,7 @@ export class Store
         view = null,
         validationIsComplex = false,
         experimental,
+        xhName = null,
         data
     }: StoreConfig) {
         super();
@@ -492,6 +496,7 @@ export class Store
         }
         this.view = view;
 
+        this.xhName = xhName;
         this.experimental = this.parseExperimental(experimental);
         this._ownFields = this.parseFields(fields, fieldDefaults);
         this.fields = view ? this.mergeViewFields(view.fields) : this._ownFields;

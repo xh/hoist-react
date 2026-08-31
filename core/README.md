@@ -117,6 +117,19 @@ class MyModel extends HoistModel {
 }
 ```
 
+**Instance Naming**
+
+Set `xhName` to distinguish instances of the same class in logs, telemetry, and the Inspector.
+Config-driven models accept it as a config; any `HoistBase` can set it directly.
+
+```typescript
+new GridModel({xhName: 'positionsGrid', store: {...}});
+
+export class PositionsModel extends HoistModel {
+    override xhName = 'positions';
+}
+```
+
 ### Core API
 
 | Method | Purpose |
@@ -128,6 +141,8 @@ class MyModel extends HoistModel {
 | `setBindable(prop, val)` | Set value via conventional setter |
 | `destroy()` | Clean up all managed resources |
 | `xhId` | Unique identifier for this instance |
+| `xhName` | Optional developer-facing name for logs, telemetry, and Inspector |
+| `childXhName(key)` | `{xhName}.{key}`, for naming child objects |
 
 ## HoistModel
 
