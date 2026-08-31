@@ -421,6 +421,7 @@ export class Store
     private _hasCalculatedFields = false;
     private _equalityFields: Field[] = [];
     private _calculatedFieldNames: Set<string> = null;
+    private _filterHasCalcFields: boolean = null;
     private _externalCalculatedFieldNames: Set<string> = null;
     private _projectionDataClass: new (src: PlainObject) => PlainObject = null;
     private _denseDataClass: new () => PlainObject = null;
@@ -566,8 +567,6 @@ export class Store
             this._committed = this._current = updated;
             this.incrementalRefilter();
         } else if (this.filterReferencesCalculatedFields()) {
-            // Replaced summary records can move calculated values (and thus filter membership)
-            // even when the reload changed no records.
             this.fullRefilter();
         }
 
@@ -773,8 +772,6 @@ export class Store
         if (hasChanges) {
             this.incrementalRefilter();
         } else if (changeLog.summaryRecords && this.filterReferencesCalculatedFields()) {
-            // A summary-only update can move calculated values (and thus filter membership)
-            // without any record transaction to trigger the refilter above.
             this.fullRefilter();
         }
 
@@ -1057,19 +1054,15 @@ export class Store
         this.setExternalCalculatedFieldNames(new Set(map(view._calcFields, 'name')));
     }
 
-    /**
-     * Clear connected-View state that would otherwise outlive a destroyed View - called by the
-     * View on destroy. This store remains a projection holding its last-loaded rows.
-     * @internal
-     */
+    /** @internal */
     disconnectView() {
         this.setExternalCalculatedFieldNames(null);
     }
 
-    /** Mark external read-time-computed fields, e.g. a connected View's calculated fields. */
     private setExternalCalculatedFieldNames(names: Set<string>) {
         this._externalCalculatedFieldNames = names?.size ? names : null;
         this._calculatedFieldNames = null;
+        this._filterHasCalcFields = null;
     }
 
     /**
@@ -1168,6 +1161,7 @@ export class Store
         filter = parseFilter(filter);
         if (this.filter != filter && !this.filter?.equals(filter)) {
             this.filter = filter;
+            this._filterHasCalcFields = null;
             this.incrementalRefilter();
         }
 
@@ -1437,10 +1431,7 @@ export class Store
 
     @action
     private incrementalRefilter() {
-        // A filter testing a calculated field must re-test every record on each transaction - a
-        // calculated value can cross the filter threshold via an input outside any transacted
-        // row (e.g. a moving summary denominator), which incremental re-testing of transacted
-        // records alone would leave stale. O(N), only while such a filter is active.
+        // Calculated values can cross a filter threshold via inputs outside any transacted row.
         if (this.filterReferencesCalculatedFields()) {
             this.fullRefilter();
             return;
@@ -1452,17 +1443,16 @@ export class Store
         this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
     }
 
+    // FieldFilters declare their field; FunctionFilters are opaque to this detection and may
+    // need a manual refreshFilter() when external inputs change. Memoized - recomputed only
+    // when the filter or calculated field names change.
     private filterReferencesCalculatedFields(): boolean {
-        const {filter} = this;
-        if (!filter) return false;
-
-        const calcNames = this.calculatedFieldNames;
-        if (!calcNames.size) return false;
-
-        // FieldFilters (nested at any depth) declare their field. FunctionFilters are opaque to
-        // this detection - one reading calculated values may require a manual refreshFilter()
-        // when external inputs change.
-        return flattenFilter(filter).some(it => calcNames.has((it as any).field));
+        return (this._filterHasCalcFields ??=
+            !!this.filter &&
+            this.calculatedFieldNames.size > 0 &&
+            flattenFilter(this.filter).some(it =>
+                this.calculatedFieldNames.has((it as any).field)
+            ));
     }
 
     @action
@@ -1734,6 +1724,7 @@ export class Store
         this._hasCalculatedFields = !isEmpty(this._calculatedFields);
         this._equalityFields = this.fields.filter(it => !it.isCalculated);
         this._calculatedFieldNames = null;
+        this._filterHasCalcFields = null;
 
         this._dataDefaults = this.createDataDefaults();
         // Clone for fast-props mode - before installing getters below, so the spread cannot
