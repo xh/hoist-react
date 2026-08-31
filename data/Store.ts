@@ -49,7 +49,7 @@ import {
 } from 'lodash';
 import type {View} from './cube/View';
 import {instanceManager} from '../core/impl/InstanceManager';
-import {installCalculatedFieldGetters, installSourceFieldGetters} from './impl/FieldGetterSupport';
+import {RecordDataGenerator} from './impl/RecordDataGenerator';
 import {RecordSet} from './impl/RecordSet';
 import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
@@ -410,21 +410,15 @@ export class Store
     @observable.ref
     _filtered: RecordSet;
 
-    private _dataTemplate: PlainObject = null;
-    private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
 
-    // Calculated field support - see generateDataConfig().
-    private _calculatedFields: Field[] = [];
-    private _hasCalculatedFields = false;
-    private _equalityFields: Field[] = [];
+    // Record data generation + calculated field support - see generateDataConfig().
+    private _dataGenerator: RecordDataGenerator;
     private _calculatedFieldNames: Set<string> = null;
     private _filterHasCalcFields: boolean = null;
     private _externalCalculatedFieldNames: Set<string> = null;
-    private _projectionDataClass: new (src: PlainObject) => PlainObject = null;
-    private _denseDataClass: new () => PlainObject = null;
 
     // Last parent pair verified position-equal by positionUnchanged().
     private _verifiedCachedParent: StoreRecord = null;
@@ -1018,7 +1012,7 @@ export class Store
      */
     get calculatedFieldNames(): Set<string> {
         return (this._calculatedFieldNames ??= new Set([
-            ...this._calculatedFields.map(it => it.name),
+            ...this._dataGenerator.calcFields.map(it => it.name),
             ...(this._externalCalculatedFieldNames ?? [])
         ]));
     }
@@ -1488,15 +1482,16 @@ export class Store
             if (
                 cachedData &&
                 raw !== cached.raw &&
-                this._equalityFields.every(({name}) => equal(raw[name], cachedData[name]))
+                this._dataGenerator.equalityFields.every(({name}) =>
+                    equal(raw[name], cachedData[name])
+                )
             ) {
                 return cached;
             }
 
             // With calculated fields, adopt the raw via a generated wrapper carrying their
             // getters (data !== raw) - otherwise adopt the raw object itself, as-is.
-            const {_projectionDataClass} = this,
-                data = _projectionDataClass ? new _projectionDataClass(raw) : raw;
+            const data = this._dataGenerator.projectionData(raw);
             return new StoreRecord({
                 id,
                 store: this,
@@ -1663,34 +1658,18 @@ export class Store
     }
 
     /**
-     * Build a record `data` object from the non-default entries buffered in `_recordBuildData`,
-     * choosing its representation by their count:
-     *
-     *  - Below `denseRecordThreshold`, a sparse object - own properties for the buffered values
-     *    only, defaults reached through the shared `_dataDefaults` prototype. Costs nothing for
-     *    unpopulated fields, and stays safely inside V8's fast-properties mode at these counts.
-     *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
-     *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
-     *    (overwriting an existing property is not an add), so all dense records share the
-     *    template's one fixed shape. On stores with calculated fields the clone is instead an
-     *    instance of the generated dense data class, whose prototype carries the calculated
-     *    getters a plain spread-clone cannot see - constructor-assigned slots in one fixed order
-     *    keep instances on a single shape, with V8's constructor slack tracking holding them in
-     *    fast-properties mode well past the plain-object add limit.
-     *
-     * The representation is decided per record, from parsed content alone - records with equal
-     * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
-     * require.
+     * Build a record `data` object from the non-default entries buffered in `_recordBuildData` -
+     * sparse below `denseRecordThreshold`, dense at or above it (see {@link RecordDataGenerator}).
+     * Decided per record from parsed content alone, so records with equal field values always
+     * take equal shapes, as the deep-equal comparisons in modifyRecords() require.
      */
     private buildData(): PlainObject {
         const {names, vals, n} = this._recordBuildData,
-            {_denseDataClass} = this,
+            {_dataGenerator} = this,
             ret =
                 n >= this._denseRecordThreshold
-                    ? _denseDataClass
-                        ? new _denseDataClass()
-                        : {...this._dataTemplate}
-                    : Object.create(this._dataDefaults);
+                    ? _dataGenerator.denseData()
+                    : _dataGenerator.sparseData();
         for (let i = 0; i < n; i++) {
             ret[names[i]] = vals[i];
         }
@@ -1705,113 +1684,15 @@ export class Store
     }
 
     /**
-     * (Re)generate the per-Store constructs backing record `data` objects - field map, shared
-     * defaults object and dense template, calculated field getters, and the generated projection
-     * wrapper class. Deliberately a re-runnable function of Store state rather than a one-shot
-     * constructor side effect, so a future API can update calculated field specs post-construction
-     * and regenerate. Existing records are not re-wrapped - callers of a future regeneration API
-     * own that step.
+     * (Re)generate the per-Store constructs backing record `data` objects - field map and the
+     * record data generator. Re-runnable, so config changes (e.g. `connectView`) and anticipated
+     * runtime calculated-field updates can regenerate. Existing records are not re-wrapped.
      */
     private generateDataConfig() {
         this._fieldMap = this.createFieldMap();
-
-        // Cube-layer calculated fields (`CubeFieldSpec.calculatedFn`) are computed on View rows
-        // with an AggregationContext - never evaluated by a Store holding such fields (e.g. a
-        // Cube's internal leaf store), so they are excluded from the store-layer machinery here.
-        this._calculatedFields = this.fields.filter(it => it.isCalculated && !it.isCubeField);
-        this._hasCalculatedFields = !isEmpty(this._calculatedFields);
-        this._equalityFields = this.fields.filter(it => !it.isCalculated);
+        this._dataGenerator = new RecordDataGenerator(this);
         this._calculatedFieldNames = null;
         this._filterHasCalcFields = null;
-
-        this._dataDefaults = this.createDataDefaults();
-        // Clone for fast-props mode - before installing getters below, so the spread cannot
-        // evaluate them against the defaults object.
-        this._dataTemplate = {...this._dataDefaults};
-        installCalculatedFieldGetters(this._dataDefaults, this._calculatedFields, () => this);
-
-        this._denseDataClass = this.createDenseDataClass();
-        this._projectionDataClass = this.createProjectionDataClass();
-    }
-
-    /**
-     * Shared template for record `data` objects - an own property for every Field, holding its
-     * defaultValue. `parseOrRescue()` clones it per record, so all records in a Store share one
-     * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
-     * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
-     * past ~20 adds, costing several times more memory per record.
-     *
-     * Store-layer calculated fields hold no default slot - their values are read through
-     * prototype getters installed on the returned object by `generateDataConfig()`.
-     */
-    private createDataDefaults() {
-        const ret = {};
-        this.fields.forEach(field => {
-            if (field.isCalculated && !field.isCubeField) return;
-            ret[field.name] = field.defaultValue;
-        });
-        return ret;
-    }
-
-    /**
-     * Generated class for dense record data on stores declaring calculated fields - the
-     * getter-carrying counterpart to the `_dataTemplate` spread-clone, which yields a plain
-     * object that cannot see prototype getters. The constructor assigns a slot for `id` (written
-     * post-construction by the StoreRecord constructor as an overwrite, never an add) and every
-     * non-calculated Field at its defaultValue, in one fixed order - all instances share a
-     * single shape, kept in V8's fast-properties mode by constructor slack tracking (the ~20-add
-     * dictionary-mode demotion behind `denseRecordThreshold` applies to template-less plain
-     * objects, not constructor-built instances). Calculated values read through prototype
-     * getters. Null when not applicable, directing `buildData()` to the template clone.
-     */
-    private createDenseDataClass(): new () => PlainObject {
-        if (!this._hasCalculatedFields) return null;
-
-        const names = this._equalityFields.map(it => it.name),
-            defaultValues = this._equalityFields.map(it => it.defaultValue);
-
-        class DenseData {
-            id: StoreRecordId = null;
-
-            constructor() {
-                for (let i = 0; i < names.length; i++) {
-                    this[names[i]] = defaultValues[i];
-                }
-            }
-
-            // Type-only, erased: field slots assigned by name above.
-            [key: string]: any;
-        }
-        installCalculatedFieldGetters(DenseData.prototype, this._calculatedFields, () => this);
-        return DenseData;
-    }
-
-    /**
-     * Generated wrapper class for projection record data on stores declaring calculated fields.
-     * Adopted raw objects cannot carry computed values, so each record's `data` becomes a
-     * generated wrapper over the adopted raw (`data !== raw`) - source values read through
-     * prototype getters over an own `_src` reference, calculated values via their calculatedFns.
-     * Null when not applicable, directing `createRecord()` to adopt raw objects directly.
-     */
-    private createProjectionDataClass(): new (src: PlainObject) => PlainObject {
-        if (!this.projectionOnly || !this._hasCalculatedFields) return null;
-
-        class ProjectionData {
-            // Own slots for every instance - `id` is written post-construction by the
-            // StoreRecord constructor, an overwrite rather than a shape-changing add.
-            id: StoreRecordId = null;
-            _src: PlainObject;
-
-            constructor(src: PlainObject) {
-                this._src = src;
-            }
-        }
-        installSourceFieldGetters(
-            ProjectionData.prototype,
-            this._equalityFields.map(it => it.name)
-        );
-        installCalculatedFieldGetters(ProjectionData.prototype, this._calculatedFields, () => this);
-        return ProjectionData;
     }
 
     private createFieldMap() {
