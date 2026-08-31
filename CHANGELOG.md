@@ -14,6 +14,27 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `FieldSpec.calculatedFn` - declare Store fields whose values are computed on the client at
+  read time from the record's other values and the Store, with no source data or server round-trip
+  required. Values are read via lazy prototype getters - never stored, parsed, or included in
+  record equality/digest comparisons - and grids bound to the Store automatically repaint
+  calculated columns after each transaction, covering values moved by inputs outside their own row
+  (e.g. a `Store.summaryRecords` denominator). A `FieldFilter` testing a calculated field likewise
+  triggers an automatic full re-filter on each transaction.
+* Added `CubeFieldSpec.calculatedFn` - the Cube-layer form of the same concept, computed on View
+  rows with the View's `AggregationContext`. Calculated fields carry no aggregator, so Views using
+  them for globally-dependent values (e.g. percent-of-total) retain their incremental data-only
+  update path. `AggregationContext.filteredRecords` is now readable from calculated field
+  functions and stays fresh on incremental updates, rebuilt lazily from the View's leaves.
+
+### ⚙️ Technical
+
+* Aggregate and bucket row data objects published by a Cube `View` are now instances of a
+  generated per-query class rather than clones of a shared template, keeping all parent rows on
+  one fixed shape and supporting prototype getters for calculated fields.
+
 ## 87.1.0 - 2026-08-28
 
 ### 🎁 New Features

@@ -145,7 +145,7 @@ export class View
 
     // Implementation
     private _rowDatas: ViewRowData[] = null;
-    private _leafMap: Map<StoreRecordId, LeafRow> = null;
+    _leafMap: Map<StoreRecordId, LeafRow> = null; // internal - read by AggregationContext
     _records: RecordSet = null; // cube records passing this view's filter
     private _bucketDependentFields = new Set<string>();
 
@@ -160,6 +160,10 @@ export class View
     _aggFieldNamesByDepth: Set<string>[] = null;
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
+    // Calculated fields carry no aggregator and hold no stored values - see the non-calculated
+    // complement, consulted where stored values are diffed or written.
+    _calculatedFields: CubeField[] = null;
+    _nonCalculatedFields: CubeField[] = null;
     _aggContext: AggregationContext = null;
     _rowCache: RowCache = null;
 
@@ -240,6 +244,7 @@ export class View
         this.query = newQuery;
         this._rowDataGenerator.onQueryChange();
         this.buildIndices();
+        this.syncStoreCalculatedFields(this.stores);
 
         // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
@@ -357,6 +362,8 @@ export class View
 
     private buildIndices() {
         this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
+        this._calculatedFields = this.fields.filter(it => it.isCalculated);
+        this._nonCalculatedFields = this.fields.filter(it => !it.isCalculated);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
@@ -418,7 +425,9 @@ export class View
 
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
 
-        this.createAggregationContext();
+        // Flag `_records` staleness - `AggregationContext.filteredRecords` then rebuilds from
+        // the leaf map, whose leaves were patched fresh just above.
+        this.createAggregationContext(true);
 
         stores.forEach(store => {
             const recordUpdates = [];
@@ -586,7 +595,13 @@ export class View
             buckets: Record<string, BaseRow[]> = {},
             ret: BaseRow[] = [];
 
-        dependentFields.forEach(it => this._bucketDependentFields.add(it));
+        dependentFields.forEach(it => {
+            throwIf(
+                this.getField(it)?.isCalculated,
+                `BucketSpec 'dependentFields' may not include calculated field '${it}' - calculated values hold no stored slot to diff for re-bucketing.`
+            );
+            this._bucketDependentFields.add(it);
+        });
 
         // Determine which bucket to put this row into (if any)
         rows.forEach(row => {
@@ -676,8 +691,8 @@ export class View
         this._records = cube.store._filtered.withFilter(query.filter, this._records);
     }
 
-    private createAggregationContext() {
-        this._aggContext = new AggregationContext(this);
+    private createAggregationContext(recordsAreStale: boolean = false) {
+        this._aggContext = new AggregationContext(this, recordsAreStale);
     }
 
     /**
@@ -719,7 +734,31 @@ export class View
             );
         }
 
+        this.syncStoreCalculatedFields(ret);
+
         return ret;
+    }
+
+    /**
+     * Enforce and publish this View's calculated fields on its connected stores - values are
+     * computed lazily on view row datas, so a parsing store would copy stale snapshots, while
+     * marking the field names enables the same automatic grid repaint and filter refresh
+     * handling as Store-level calculated fields.
+     */
+    private syncStoreCalculatedFields(stores: Store[]) {
+        if (isEmpty(stores)) return;
+
+        const calcNames = new Set(
+            map(
+                this.query.fields.filter(it => it.isCalculated),
+                'name'
+            )
+        );
+        throwIf(
+            calcNames.size && stores.some(s => !s.projectionOnly),
+            'Stores connected to a Cube View with calculated fields must set `projectionOnly: true` - calculated values are computed lazily on view rows and must be adopted by reference, not copied by a parsing store.'
+        );
+        stores.forEach(s => s.setExternalCalculatedFieldNames(calcNames));
     }
 
     override destroy() {

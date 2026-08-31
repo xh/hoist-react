@@ -77,6 +77,44 @@ const cube = new Cube({
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
 
+## Calculated Fields
+
+Declare a `CubeField` with a `calculatedFn` to compute its value at read time on every View row,
+from the row's other values and the View's `AggregationContext` - the Cube-layer form of
+`FieldSpec.calculatedFn` (see `data/README.md`), with a widened signature:
+
+```typescript
+{
+    name: 'pctCommission',
+    calculatedFn: (row, ctx) => {
+        // Memoize per-update intermediates in ctx.appData - the context is replaced whenever
+        // the record set changes in any way.
+        const total = (ctx.appData.totalCommission ??= sumBy(
+            ctx.filteredRecords,
+            r => r.data.commission
+        ));
+        return total ? (row.commission / total) * 100 : null;
+    }
+}
+```
+
+Calculated values are read through lazy prototype getters on the `ViewRowData` objects a View
+publishes and are never stored or aggregated. Because they carry no aggregator, they never
+disqualify a View from its incremental data-only update path - making them the recommended way to
+express globally-dependent values like percent-of-total, in place of an eagerly-computed
+aggregator reading beyond its own children. `ctx.filteredRecords` stays readable and fresh on
+those incremental updates, rebuilt lazily from the View's leaves (at most one O(n) pass per
+update, and only if read).
+
+Note when the needed global is already published as a row - e.g. a View with `includeRoot`
+loading a store with `loadRootAsSummary` - prefer a Store-layer `calculatedFn` reading
+`store.summaryRecords`, with no Cube API needed at all.
+
+Constraints: `calculatedFn` is mutually exclusive with `aggregator`, `canAggregateFn` and
+`isDimension`; calculated fields may not feed other aggregators or appear in a `BucketSpec`'s
+`dependentFields`; and stores connected to a View with calculated fields must set
+`projectionOnly: true`.
+
 ## Querying with Views
 
 Views are the primary interface for consuming Cube data. Create them via `Cube.createView()`

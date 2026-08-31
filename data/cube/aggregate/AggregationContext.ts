@@ -36,12 +36,23 @@ export class AggregationContext {
     activeField: CubeField = null;
 
     /**
+     * True when this context was created for an incremental data-only update, on which the
+     * View's filtered RecordSet is left stale by design - `filteredRecords` then rebuilds from
+     * the leaf map, whose leaves are patched fresh on every such update.
+     */
+    private readonly recordsAreStale: boolean;
+
+    // Memoized per context - contexts are replaced whenever the record set changes in any way,
+    // so at most one O(N) rebuild per update, and only if something reads it.
+    private _filteredRecords: StoreRecord[] = null;
+
+    /**
      * All records currently meeting the filter for this view.
      *
-     * Available only when an aggregator on the view overrides
-     * {@link Aggregator.dependsOnChildrenOnly} to return false.
-     * Views with children-only aggregators update incrementally without
-     * refreshing that collection, so reading it here throws.
+     * Available to calculated field functions ({@link CubeFieldSpec.calculatedFn}) and to
+     * aggregators that override {@link Aggregator.dependsOnChildrenOnly} to return false.
+     * Reading from a children-only aggregator throws - such aggregators must declare their
+     * wider dependency for the View to keep this collection consistent with their reads.
      */
     get filteredRecords(): StoreRecord[] {
         const {activeField, view} = this;
@@ -50,12 +61,15 @@ export class AggregationContext {
                 `The aggregator for the '${activeField.name}' field read \`filteredRecords\`, but does not override \`dependsOnChildrenOnly\` to return false - aggregators depending on records beyond their own children must do so.`
             );
         }
-        return view._records.list;
+        return (this._filteredRecords ??= this.recordsAreStale
+            ? Array.from(view._leafMap.values(), it => it.cubeRecord)
+            : view._records.list);
     }
 
-    constructor(view: View) {
+    constructor(view: View, recordsAreStale: boolean = false) {
         this.view = view;
         this.appData = {};
+        this.recordsAreStale = recordsAreStale;
     }
 
     /**
