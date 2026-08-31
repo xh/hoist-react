@@ -122,7 +122,8 @@ navigation or load action created them.
 The Instances panel is a split layout with:
 
 - **Instances grid** (left, resizable) — Lists all live `HoistModel`, `HoistService`, `Store`,
-  `Cube`, and `View` instances with their class name, creation time, linked status, and sync run
+  `Cube`, and `View` instances with their `xhName` (when set), class name, creation time,
+  linked status, and sync run
 - **Properties grid** (right) — Shows properties of the selected instance(s), including observable
   values with live updates
 - **Diagnostics panel** (tabbed with properties) — Live readout of the data-pipeline

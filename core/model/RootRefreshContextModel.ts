@@ -18,6 +18,8 @@ import {RefreshContextModel} from './';
  * The `XH.refreshAppAsync()` convenience method is the recommended entry-point for apps to call.
  */
 export class RootRefreshContextModel extends RefreshContextModel {
+    override xhName = 'refreshContextModel';
+
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {appModel} = XH;
         if (appModel.loadSupport) {

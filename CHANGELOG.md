@@ -18,6 +18,12 @@
 
 ### 🎁 New Features
 
+* Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
+  log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
+  Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
+  `PanelModel`, etc.), which also name the child models they create. Services are named with
+  their `XH` key (e.g. `fetchService`), and `XH.appModel` and the app container's models by their
+  property (`appModel`, `routerModel`, `pageStateModel`, ...), so they now log under those labels.
 * Added new `MessageSpec.suppress` config for `XH.message()` and its `alert`, `confirm`, and
   `prompt` variants. Set to `true` (or a config object) to offer users a "Don't show this message
   again" checkbox. Confirmed responses are saved to browser local or session storage - optionally

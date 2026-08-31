@@ -16,6 +16,7 @@ import {action, bindable, isObservableProp, makeObservable, runInAction} from '@
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
+import {instanceLabel} from '../impl/InspectorUtils';
 import {StatsModel} from '../stats/StatsModel';
 import {DiagnosticsModel} from './DiagnosticsModel';
 
@@ -195,6 +196,7 @@ export class InstancesModel extends HoistModel {
             store: {
                 fields: [
                     {name: 'className', type: 'string'},
+                    {name: 'xhName', type: 'string'},
                     {name: 'displayGroup', type: 'string'},
                     {name: 'created', type: 'date'},
                     {name: 'syncRun', type: 'number'},
@@ -252,6 +254,7 @@ export class InstancesModel extends HoistModel {
                     renderer: v => (v ? Icon.link() : null)
                 },
                 {field: 'displayGroup', hidden: true},
+                {field: 'xhName', flex: 1, minWidth: 150},
                 {field: 'className', flex: 1, minWidth: 150},
                 {
                     field: 'lastLoadCompleted',
@@ -482,8 +485,7 @@ export class InstancesModel extends HoistModel {
             return null;
 
         const {xhId} = instance,
-            ctorName = instance.constructor.name,
-            instanceDisplayName = `${ctorName} [${xhId}]`,
+            instanceDisplayName = instanceLabel(instance),
             isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
             v = !isGetter || isLoadedGetter ? instance[property] : null,
             // Detect FormModel.values Proxy object - throws otherwise on attempt to render in grid.

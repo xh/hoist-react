@@ -59,6 +59,9 @@ export interface FormConfig {
     disabled?: boolean;
     readonly?: boolean;
 
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
+
     /** @internal */
     xhImpl?: boolean;
 }
@@ -140,11 +143,13 @@ export class FormModel extends HoistModel {
         disabled = false,
         persistWith = null,
         readonly = false,
+        xhName = null,
         xhImpl = false
     }: FormConfig = {}) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.disabled = disabled;
         this.readonly = readonly;
@@ -171,6 +176,7 @@ export class FormModel extends HoistModel {
         forOwn(this.fields, f => {
             f.formModel = this;
             f.xhImpl = xhImpl;
+            f.xhName ??= this.childXhName(f.name) ?? f.name;
         });
     }
 
