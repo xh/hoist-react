@@ -73,9 +73,9 @@ export interface FieldSpec {
      * are never stored, parsed, or included in the value-equality and digest comparisons Store
      * uses to detect unchanged records. They are always current: a value whose inputs live
      * outside its own record (e.g. a denominator read from `Store.summaryRecords`) is recomputed
-     * on every read. Calculated fields are read-only - `Store.modifyRecords()` throws on any
-     * attempt to modify one - and `type` serves as display/metadata only, as parsing never
-     * applies.
+     * on every read. Calculated fields are read-only - grid columns bound to them are never
+     * editable, and `Store.modifyRecords()` throws on any attempt to modify one. `type` serves
+     * as display/metadata only, as parsing never applies.
      *
      * The function receives the record's `data` object and the Store, and should be a pure,
      * fast function of those inputs - it can run once per visible cell on every grid paint and
@@ -90,7 +90,14 @@ export interface FieldSpec {
      * ```
      *
      * Reading other calculated fields from `data` works naturally via their getters - avoiding
-     * cycles is the application's responsibility.
+     * cycles is the application's responsibility. Prefer returning primitives or stable
+     * references - a fresh object or array minted on every read defeats the value-equality check
+     * grids use to skip repainting unchanged cells.
+     *
+     * Calculated values are invisible to own-property enumeration - `Object.keys()`, spread and
+     * `JSON.stringify()` omit them (record `data` should never be enumerated in any case - see
+     * {@link StoreRecord.data}). Use {@link StoreRecord.getValues} for a plain-object copy of
+     * all field values, calculated included.
      *
      * Grids bound to the Store automatically repaint columns displaying calculated fields after
      * each data transaction, covering values moved only by an input outside their own row. A

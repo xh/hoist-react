@@ -104,7 +104,9 @@ disqualify a View from its incremental data-only update path - making them the r
 express globally-dependent values like percent-of-total, in place of an eagerly-computed
 aggregator reading beyond its own children. `ctx.filteredRecords` stays readable and fresh on
 those incremental updates, rebuilt lazily from the View's leaves (at most one O(n) pass per
-update, and only if read).
+update, and only if read). As at the Store layer, values are read by name - never own-property
+enumeration - and fns should return primitives or stable references so grid change detection can
+skip unchanged cells.
 
 Note when the needed global is already published as a row - e.g. a View with `includeRoot`
 loading a store with `loadRootAsSummary` - prefer a Store-layer `calculatedFn` reading

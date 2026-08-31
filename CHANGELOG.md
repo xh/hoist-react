@@ -22,7 +22,8 @@
   record equality/digest comparisons - and grids bound to the Store automatically repaint
   calculated columns after each transaction, covering values moved by inputs outside their own row
   (e.g. a `Store.summaryRecords` denominator). A `FieldFilter` testing a calculated field likewise
-  triggers an automatic full re-filter on each transaction.
+  triggers an automatic full re-filter on each transaction. Grid columns bound to calculated
+  fields are never editable.
 * Added `CubeFieldSpec.calculatedFn` - the Cube-layer form of the same concept, computed on View
   rows with the View's `AggregationContext`. Calculated fields carry no aggregator, so Views using
   them for globally-dependent values (e.g. percent-of-total) retain their incremental data-only

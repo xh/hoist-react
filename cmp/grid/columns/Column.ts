@@ -365,7 +365,9 @@ export interface ColumnSpec {
 
     /**
      * True to make cells in this column editable, or a function to determine on a
-     * record-by-record basis.
+     * record-by-record basis. Ignored for columns bound to a calculated field
+     * ({@link FieldSpec.calculatedFn}) - such values are computed at read time and never
+     * editable.
      */
     editable?: boolean | ColumnEditableFn;
 
@@ -749,6 +751,8 @@ export class Column {
     isEditableForRecord(record: StoreRecord): boolean {
         const {editable, gridModel} = this;
         if (!record) return false;
+        // Values of calculated fields are computed at read time and never editable.
+        if (record.store.calculatedFieldNames.has(this.field)) return false;
         return isFunction(editable)
             ? editable({record, store: record.store, gridModel, column: this})
             : editable;

@@ -453,10 +453,15 @@ Calculated values are read through lazy prototype getters on record `data` objec
 stored, parsed, or included in the equality/digest comparisons used to detect unchanged records,
 and always current when read. Key characteristics:
 
-- **Read-only** - `modifyRecords()` throws on any attempt to write a calculated field. `type` is
-  display/metadata only, as parsing never applies.
+- **Read-only** - grid columns bound to calculated fields are never editable, and
+  `modifyRecords()` throws on any attempt to write one. `type` is display/metadata only, as
+  parsing never applies.
 - **Works with `projectionOnly`** - record `data` becomes a generated wrapper over the adopted
   raw object, adding the calculated getters with no per-record copy of source values.
+- **Read by name, never enumerated** - calculated values live behind prototype getters, invisible
+  to own-property enumeration: `Object.keys()`, spread and `JSON.stringify()` omit them (record
+  `data` should never be enumerated in any case). `StoreRecord.getValues()` returns a plain-object
+  copy of all field values, calculated included.
 - **Automatic grid repaint** - grids bound to the Store refresh columns displaying calculated
   fields after each transaction, repainting visible cells whose value moved via an input outside
   their own row (e.g. a summary denominator).
@@ -465,7 +470,8 @@ and always current when read. Key characteristics:
   detection - one reading calculated values may require a manual `refreshFilter()`.
 - Sorting and exporting read through the getters and work naturally - keep `calculatedFn` a fast,
   pure function, as it can run once per visible cell per paint and once per comparison when
-  sorting.
+  sorting. Prefer returning primitives or stable references - a fresh object or array per read
+  defeats the value-equality check grids use to skip repainting unchanged cells.
 
 See `CubeFieldSpec.calculatedFn` (`data/cube/README.md`) for the Cube-layer form of the same
 concept, computed on View rows with an `AggregationContext`.

@@ -764,6 +764,9 @@ export class View
     override destroy() {
         instanceManager.unregisterView(this);
         this.disconnect();
+        // Stores are not owned by the View and may outlive it - clear the marked calculated
+        // field names so a reused store no longer pays repaint/refilter handling for them.
+        this.stores.forEach(s => s.setExternalCalculatedFieldNames(null));
         super.destroy();
     }
 }

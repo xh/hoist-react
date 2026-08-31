@@ -715,8 +715,9 @@ export class GridLocalModel extends HoistModel {
             transaction = newRs.diffFrom(prevRs);
         model.diagnostics.noteGenTransaction(transaction, newRs, prevRs, start);
 
-        const applyStart = performance.now();
-        if (!this.transactionIsEmpty(transaction)) {
+        const applyStart = performance.now(),
+            emptyTxn = this.transactionIsEmpty(transaction);
+        if (!emptyTxn) {
             this.transactionMgr.apply(transaction, prevRs, newRs);
         } else if (!prevRs) {
             // AG Grid needs rowData (even if empty) to exit its initial loading state.
@@ -754,6 +755,18 @@ export class GridLocalModel extends HoistModel {
                 .filter(c => calcNames.has(c.field))
                 .map(c => c.colId);
             if (!isEmpty(columns)) agApi.refreshCells({columns});
+
+            // An empty transaction (e.g. a summary-only update) carries nothing for the
+            // transaction manager to re-sort through - when sorted on a calculated column,
+            // restore row order directly.
+            if (
+                emptyTxn &&
+                prevRs &&
+                !model.externalSort &&
+                model.sortBy.some(s => calcNames.has(model.getColumn(s.colId)?.field))
+            ) {
+                agApi.refreshClientSideRowModel('sort');
+            }
         }
 
         if (!isEmpty(transaction.add) || !isEmpty(transaction.remove)) {

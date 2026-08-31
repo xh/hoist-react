@@ -59,6 +59,11 @@ export interface CubeFieldSpec extends FieldSpec {
      * global is not published as a row, reading `ctx.filteredRecords` and memoizing per-tick
      * intermediates in `ctx.appData`.
      *
+     * As at the Store layer ({@link FieldSpec.calculatedFn}), values are read by name and are
+     * invisible to own-property enumeration, and fns should prefer returning primitives or
+     * stable references - a fresh object or array per read defeats the value-equality check
+     * grids use to skip repainting unchanged cells.
+     *
      * Mutually exclusive with `aggregator`, `canAggregateFn` and `isDimension`. Calculated
      * fields may not feed other aggregators or appear in a {@link BucketSpec}'s
      * `dependentFields`, and stores connected to a View with calculated fields must set
