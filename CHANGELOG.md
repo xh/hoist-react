@@ -43,7 +43,9 @@
   `options` is non-null, so pass null while options load.
 * Extended the package `sideEffects` declaration to cover the vendored golden-layout implementation
   and the barrels with registration or configuration side effects on import - icon, mobx, blueprint
-  kit, golden-layout kit, and persist. Required by the tree-shaking in hoist-dev-utils v15.
+  kit, golden-layout kit, and persist. ~~Required by the tree-shaking in hoist-dev-utils v15.~~
+  (Tree-shaking reverted in dev-utils 15.0.1 - take 15.0.1+, see
+  [#4640](https://github.com/xh/hoist-react/issues/4640).)
 * Restructured `PersistenceProvider` provider registration to remove a base/subclass import cycle
   that breaks under tree-shaking bundlers' re-export optimization. No API change.
 
