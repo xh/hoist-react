@@ -1443,9 +1443,8 @@ export class Store
         this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
     }
 
-    // FieldFilters declare their field; FunctionFilters are opaque to this detection and may
-    // need a manual refreshFilter() when external inputs change. Memoized - recomputed only
-    // when the filter or calculated field names change.
+    // FieldFilters declare their field; FunctionFilters are opaque and may need a manual
+    // refreshFilter() when external inputs change. Memoized on filter/calc field name changes.
     private filterReferencesCalculatedFields(): boolean {
         return (this._filterHasCalcFields ??=
             !!this.filter &&
