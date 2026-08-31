@@ -1615,7 +1615,6 @@ export class Store
             rescuable = !!cached;
         for (const name in data) {
             const field = _fieldMap.get(name);
-            // Calculated fields are never parsed or stored - values are computed at read time.
             if (field && !field.isCalculated) {
                 const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
