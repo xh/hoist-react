@@ -65,21 +65,8 @@ export interface FieldSpec {
     enableXssProtection?: boolean;
 
     /**
-     * Function computing this field's value at read time from the record's other field values,
-     * making this a *calculated* field - one derived on the client rather than loaded from
-     * source data.
-     *
-     * Calculated values are read through lazy prototype getters on record `data` objects - they
-     * are never stored, parsed, or included in the value-equality and digest comparisons Store
-     * uses to detect unchanged records. They are always current: a value whose inputs live
-     * outside its own record (e.g. a denominator read from `Store.summaryRecords`) is recomputed
-     * on every read. Calculated fields are read-only - grid columns bound to them are never
-     * editable, and `Store.modifyRecords()` throws on any attempt to modify one. `type` serves
-     * as display/metadata only, as parsing never applies.
-     *
-     * The function receives the record's `data` object and the Store, and should be a pure,
-     * fast function of those inputs - it can run once per visible cell on every grid paint and
-     * once per comparison when sorting on the field:
+     * Function computing this field's value at read time from the record's other values and the
+     * Store, making this a *calculated* field - derived on the client rather than loaded:
      *
      * ```ts
      * {
@@ -89,26 +76,21 @@ export interface FieldSpec {
      * }
      * ```
      *
-     * Reading other calculated fields from `data` works naturally via their getters - avoiding
-     * cycles is the application's responsibility. Prefer returning primitives or stable
-     * references - a fresh object or array minted on every read defeats the value-equality check
-     * grids use to skip repainting unchanged cells.
+     * Values are read via lazy prototype getters on record `data` - never stored, parsed, or
+     * compared for record reuse, and always current, even when inputs live outside the record
+     * (e.g. a summary denominator). Grids repaint calculated columns after each transaction,
+     * and a `FieldFilter` on one triggers a full re-filter. (`FunctionFilter`s are opaque and
+     * may need a manual {@link Store.refreshFilter}.)
      *
-     * Calculated values are invisible to own-property enumeration - `Object.keys()`, spread and
-     * `JSON.stringify()` omit them (record `data` should never be enumerated in any case - see
-     * {@link StoreRecord.data}). Use {@link StoreRecord.getValues} for a plain-object copy of
-     * all field values, calculated included.
+     * Calculated fields are read-only ({@link Store.modifyRecords} throws, columns are never
+     * editable, `type` is display-only) and invisible to own-property enumeration - read values
+     * by name, or via {@link StoreRecord.getValues}. Keep the fn pure and fast (it runs per
+     * cell paint and per sort comparison), return primitives or stable references, and avoid
+     * cycles when reading other calculated fields.
      *
-     * Grids bound to the Store automatically repaint columns displaying calculated fields after
-     * each data transaction, covering values moved only by an input outside their own row. A
-     * Store filter testing a calculated field likewise triggers a full re-filter on each
-     * transaction, keeping filter membership current - note however that `FunctionFilter`s are
-     * opaque to this detection, so one reading calculated values may require a manual
-     * {@link Store.refreshFilter} when external inputs change.
-     *
-     * Note {@link CubeFieldSpec.calculatedFn} declares its own signature for fields computed on
-     * Cube View rows - the union below keeps `CubeFieldSpec` assignable wherever a `FieldSpec`
-     * is accepted. On a plain Store, always supply the {@link StoreCalculatedFn} form.
+     * See {@link CubeFieldSpec.calculatedFn} for the Cube View form - the union type keeps
+     * `CubeFieldSpec` assignable wherever `FieldSpec` is accepted; on a plain Store, always
+     * supply the {@link StoreCalculatedFn} form.
      */
     calculatedFn?: StoreCalculatedFn | CubeCalculatedFn;
 }

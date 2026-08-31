@@ -253,10 +253,10 @@ export class StoreRecord {
         const {data, committedData} = this,
             ret: PlainObject = {};
         this.fields.forEach(({name, isCalculated}) => {
-            // Calculated values are read-only derivations - never themselves "modified".
-            if (isCalculated) return;
-            const val = data[name];
-            if (!equal(val, committedData[name])) ret[name] = val;
+            if (!isCalculated) {
+                const val = data[name];
+                if (!equal(val, committedData[name])) ret[name] = val;
+            }
         });
         if (!isEmpty(ret)) {
             ret.id = this.id;

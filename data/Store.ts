@@ -371,7 +371,7 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     retainRaw: boolean;
-    projectionOnly: boolean; // Not readonly - see connectView().
+    projectionOnly: boolean;
     validationIsComplex: boolean;
 
     @observable.ref

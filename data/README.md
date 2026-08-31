@@ -1004,9 +1004,9 @@ parses and owns. Store then uses each incoming raw object *as* its record's `dat
 This collapses the usual two objects per row to one, and skips the per-row parse on every load and
 update.
 
-Use this config for stores connected to a Cube `View`, or fed by an endpoint that returns data in
-its final client-side form. A View logs a warning when a connected store leaves the config unset.
-Set it explicitly to `false` to opt out and silence that warning.
+Use this config for stores fed by an endpoint that returns data in its final client-side form.
+Stores connected to a Cube `View` are always projections - the connecting View sets the flag
+itself, and throws on an explicit `false` or a `processRawData` function.
 
 ```typescript
 const store = new Store({
