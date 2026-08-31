@@ -1014,12 +1014,7 @@ export class Store
      * @internal
      */
     get calculatedFieldNames(): Set<string> {
-        return (this._calculatedFieldNames ??= new Set(
-            map(
-                this.fields.filter(it => it.isCalculated),
-                'name'
-            )
-        ));
+        return this._calculatedFieldNames;
     }
 
     /**
@@ -1726,7 +1721,12 @@ export class Store
     private generateDataConfig() {
         this._fieldMap = this.createFieldMap();
         this._dataGenerator = new RecordDataGenerator(this);
-        this._calculatedFieldNames = null;
+        this._calculatedFieldNames = new Set(
+            map(
+                this.fields.filter(it => it.isCalculated),
+                'name'
+            )
+        );
         this._filterHasCalcFields = null;
     }
 
