@@ -425,6 +425,7 @@ export class Store
     private _calculatedFieldNames: Set<string> = null;
     private _externalCalculatedFieldNames: Set<string> = null;
     private _projectionDataClass: new (src: PlainObject) => PlainObject = null;
+    private _denseDataClass: new () => PlainObject = null;
 
     // Last parent pair verified position-equal by positionUnchanged().
     private _verifiedCachedParent: StoreRecord = null;
@@ -1651,20 +1652,24 @@ export class Store
      *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
      *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
      *    (overwriting an existing property is not an add), so all dense records share the
-     *    template's one fixed shape.
+     *    template's one fixed shape. On stores with calculated fields the clone is instead an
+     *    instance of the generated dense data class, whose prototype carries the calculated
+     *    getters a plain spread-clone cannot see - constructor-assigned slots in one fixed order
+     *    keep instances on a single shape, with V8's constructor slack tracking holding them in
+     *    fast-properties mode well past the plain-object add limit.
      *
      * The representation is decided per record, from parsed content alone - records with equal
      * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
      * require.
      */
     private buildData(): PlainObject {
-        // Dense records clone the template into a plain object that cannot see the prototype
-        // getters carrying calculated values - stores with calculated fields therefore take the
-        // sparse form for all records.
         const {names, vals, n} = this._recordBuildData,
+            {_denseDataClass} = this,
             ret =
-                n >= this._denseRecordThreshold && !this._hasCalculatedFields
-                    ? {...this._dataTemplate}
+                n >= this._denseRecordThreshold
+                    ? _denseDataClass
+                        ? new _denseDataClass()
+                        : {...this._dataTemplate}
                     : Object.create(this._dataDefaults);
         for (let i = 0; i < n; i++) {
             ret[names[i]] = vals[i];
@@ -1704,6 +1709,7 @@ export class Store
         this._dataTemplate = {...this._dataDefaults};
         installCalculatedFieldGetters(this._dataDefaults, this._calculatedFields, () => this);
 
+        this._denseDataClass = this.createDenseDataClass();
         this._projectionDataClass = this.createProjectionDataClass();
     }
 
@@ -1724,6 +1730,39 @@ export class Store
             ret[field.name] = field.defaultValue;
         });
         return ret;
+    }
+
+    /**
+     * Generated class for dense record data on stores declaring calculated fields - the
+     * getter-carrying counterpart to the `_dataTemplate` spread-clone, which yields a plain
+     * object that cannot see prototype getters. The constructor assigns a slot for `id` (written
+     * post-construction by the StoreRecord constructor as an overwrite, never an add) and every
+     * non-calculated Field at its defaultValue, in one fixed order - all instances share a
+     * single shape, kept in V8's fast-properties mode by constructor slack tracking (the ~20-add
+     * dictionary-mode demotion behind `denseRecordThreshold` applies to template-less plain
+     * objects, not constructor-built instances). Calculated values read through prototype
+     * getters. Null when not applicable, directing `buildData()` to the template clone.
+     */
+    private createDenseDataClass(): new () => PlainObject {
+        if (!this._hasCalculatedFields) return null;
+
+        const names = this._equalityFields.map(it => it.name),
+            defaultValues = this._equalityFields.map(it => it.defaultValue);
+
+        class DenseData {
+            id: StoreRecordId = null;
+
+            constructor() {
+                for (let i = 0; i < names.length; i++) {
+                    this[names[i]] = defaultValues[i];
+                }
+            }
+
+            // Type-only, erased: field slots assigned by name above.
+            [key: string]: any;
+        }
+        installCalculatedFieldGetters(DenseData.prototype, this._calculatedFields, () => this);
+        return DenseData;
     }
 
     /**
