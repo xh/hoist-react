@@ -23,11 +23,45 @@ import {
     SumStrictAggregator,
     UniqueAggregator
 } from '@xh/hoist/data';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
+import type {ViewRowData} from './ViewRowData';
 
 export interface CubeFieldSpec extends FieldSpec {
     /** Instance of a Hoist Cube {@link Aggregator} or string token alias for one. */
     aggregator?: Aggregator | AggregatorToken;
+
+    /**
+     * Function computing this field's value at read time on every View row, from the row's other
+     * values and the View's {@link AggregationContext} - the Cube-layer form of
+     * {@link FieldSpec.calculatedFn}, with a widened signature.
+     *
+     * Carrying no aggregator, calculated fields never disqualify a View from its incremental
+     * data-only update path - the recommended way to express globally-dependent values like
+     * percent-of-total:
+     *
+     * ```ts
+     * {
+     *     name: 'pctCommission',
+     *     calculatedFn: (row, ctx) => {
+     *         const total = sumBy(ctx.filteredRecords, r => r.data.commission);
+     *         return total ? (row.commission / total) * 100 : null;
+     *     }
+     * }
+     * ```
+     *
+     * When the needed global is already published as a row (e.g. `includeRoot` +
+     * `loadRootAsSummary`), prefer a Store-layer `calculatedFn` reading `store.summaryRecords`.
+     * Otherwise read `ctx.filteredRecords` here, memoizing per-tick intermediates in
+     * `ctx.appData`. Shared semantics per {@link FieldSpec.calculatedFn}: read-only, read by
+     * name (never own-property enumeration), and prefer returning primitives or stable
+     * references.
+     *
+     * Mutually exclusive with `aggregator`, `canAggregateFn` and `isDimension`. Calculated
+     * fields may not feed other aggregators or appear in a {@link BucketSpec}'s
+     * `dependentFields`.
+     */
+    calculatedFn?: CubeCalculatedFn;
 
     /**
      * Function to determine if aggregation should be performed at a given level of a query result.
@@ -77,6 +111,12 @@ export type CanAggregateFn = (
 ) => boolean;
 
 /**
+ * Function computing a Cube-layer calculated field value at read time.
+ * See {@link CubeFieldSpec.calculatedFn}.
+ */
+export type CubeCalculatedFn = (row: ViewRowData, context: AggregationContext) => any;
+
+/**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
  * objects to be included in a Cube, the Cube must be configured with a matching Field that tells
  * it to extract the data from the source objects and how to aggregate or filter on that data.
@@ -88,6 +128,13 @@ export class CubeField extends Field {
     canAggregateFn: CanAggregateFn;
     isLeafDimension: boolean;
     parentDimension: string;
+
+    override get isCubeField() {
+        return true;
+    }
+
+    /** See {@link CubeFieldSpec.calculatedFn} - Cube-layer signature. */
+    declare calculatedFn: CubeCalculatedFn;
 
     static averageAggregator = new AverageAggregator();
     static averageStrictAggregator = new AverageStrictAggregator();
@@ -106,6 +153,7 @@ export class CubeField extends Field {
         canAggregateFn = null,
         isLeafDimension = false,
         parentDimension = null,
+        calculatedFn = null,
         ...fieldArgs
     }: CubeFieldSpec) {
         super(fieldArgs);
@@ -117,6 +165,13 @@ export class CubeField extends Field {
         // Dimension specific
         this.isLeafDimension = isLeafDimension;
         this.parentDimension = parentDimension;
+
+        // Calculated - carries the widened Cube-layer signature, assigned post-super.
+        this.calculatedFn = calculatedFn;
+        throwIf(
+            calculatedFn && (this.aggregator || this.canAggregateFn || this.isDimension),
+            `CubeField '${this.name}' may not combine 'calculatedFn' with 'aggregator', 'canAggregateFn', or 'isDimension' - calculated values are computed at read time, never aggregated or grouped on.`
+        );
     }
 
     //------------------------

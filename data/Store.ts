@@ -14,6 +14,7 @@ import {
     FilterBindTarget,
     FilterLike,
     FilterValueSource,
+    flattenFilter,
     parseFilter,
     StoreRecord,
     StoreRecordDigest,
@@ -40,12 +41,15 @@ import {
     isNil,
     isNull,
     isString,
+    map,
     partition,
     remove as lodashRemove,
     uniq,
     values
 } from 'lodash';
+import type {View} from './cube/View';
 import {instanceManager} from '../core/impl/InstanceManager';
+import {RecordDataGenerator} from './impl/RecordDataGenerator';
 import {RecordSet} from './impl/RecordSet';
 import {StoreDiagnostics} from './impl/StoreDiagnostics';
 
@@ -195,10 +199,8 @@ export interface StoreConfig {
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Recommended for stores connected to a Cube {@link View} for improved performance, when no
-     * additional record parsing or local data modification is required. Default null - a View
-     * logs a warning when its connected stores leave this unset. Set explicitly to `false` to
-     * opt out and silence the warning.
+     * Default null. Stores connected to a Cube {@link View} (via {@link StoreConfig.view}) are
+     * always projections - the flag is set automatically at construction.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -217,6 +219,15 @@ export interface StoreConfig {
      * Not compatible with `processRawData`.
      */
     projectionOnly?: boolean;
+
+    /**
+     * Cube {@link View} to connect this store to, fixed for the store's lifetime. The store is
+     * built as a read-only projection of the View's published rows: `projectionOnly` and a
+     * row-based `digestSpec` are set automatically, the View's query fields are merged into
+     * `fields` (view fields win on name collisions; app-declared extras are preserved), and the
+     * View registers and loads this store. Conflicting config throws.
+     */
+    view?: View;
 
     /**
      * Set to true to always validate all uncommitted records on every change to
@@ -371,8 +382,10 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     retainRaw: boolean;
-    readonly projectionOnly: boolean;
+    projectionOnly: boolean;
     validationIsComplex: boolean;
+    /** Connected Cube View, set at construction - see {@link StoreConfig.view}. */
+    readonly view: View = null;
 
     @observable.ref
     filter: Filter;
@@ -410,11 +423,17 @@ export class Store
     @observable.ref
     _filtered: RecordSet;
 
-    private _dataTemplate: PlainObject = null;
-    private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
+
+    // Record data generation + calculated field support - see generateDataConfig().
+    private _dataGenerator: RecordDataGenerator;
+    private _calculatedFieldNames: Set<string> = null;
+    private _filterHasCalcFields: boolean = null;
+
+    // Fields as declared at construction - the app's own set, preserved across view-field merges.
+    private _ownFields: Field[];
 
     // Last parent pair verified position-equal by positionUnchanged().
     private _verifiedCachedParent: StoreRecord = null;
@@ -448,6 +467,7 @@ export class Store
         digestSpec = null,
         retainRaw = true,
         projectionOnly = null,
+        view = null,
         validationIsComplex = false,
         experimental,
         xhName = null,
@@ -459,10 +479,27 @@ export class Store
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
         );
+        if (view) {
+            throwIf(
+                projectionOnly === false ||
+                    processRawData ||
+                    idEncodesTreePath ||
+                    (digestSpec != null && digestSpec !== 'cubeRowDigest'),
+                'A Store connected to a Cube View is built as a read-only projection of its published rows - remove conflicting `projectionOnly`, `processRawData`, `digestSpec`, or `idEncodesTreePath` config.'
+            );
+            throwIf(
+                data,
+                'A Store connected to a Cube View is loaded by that View - remove the `data` config.'
+            );
+            projectionOnly = true;
+            digestSpec = 'cubeRowDigest';
+        }
+        this.view = view;
 
         this.xhName = xhName;
         this.experimental = this.parseExperimental(experimental);
-        this.fields = this.parseFields(fields, fieldDefaults);
+        this._ownFields = this.parseFields(fields, fieldDefaults);
+        this.fields = view ? this.mergeViewFields(view.fields) : this._ownFields;
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
@@ -481,14 +518,13 @@ export class Store
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._fieldMap = this.createFieldMap();
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this.generateDataConfig();
         this._denseRecordThreshold =
             this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
+        view?.addStore(this);
     }
 
     /** See {@link StoreConfig.digestSpec} - settable, taking effect on the next load. */
@@ -560,6 +596,8 @@ export class Store
         if (updated !== _committed || updated !== _current) {
             this._committed = this._current = updated;
             this.incrementalRefilter();
+        } else if (this.filterReferencesCalculatedFields()) {
+            this.fullRefilter();
         }
 
         this.lastLoaded = this.lastUpdated = Date.now();
@@ -761,7 +799,11 @@ export class Store
         }
         this.diagnostics.noteUpdate(this._current, prevCurrent, start);
 
-        if (hasChanges) this.incrementalRefilter();
+        if (hasChanges) {
+            this.incrementalRefilter();
+        } else if (changeLog.summaryRecords && this.filterReferencesCalculatedFields()) {
+            this.fullRefilter();
+        }
 
         if (!isEmpty(changeLog)) {
             this.lastUpdated = Date.now();
@@ -998,6 +1040,48 @@ export class Store
     }
 
     /**
+     * Names of all fields on this Store whose values are computed at read time rather than
+     * loaded - fields declared with {@link FieldSpec.calculatedFn}, including view-published
+     * calculated `CubeField`s adopted from a connected Cube View. Grids bound to this Store use
+     * this set to automatically repaint calculated columns after each data transaction.
+     * @internal
+     */
+    get calculatedFieldNames(): Set<string> {
+        return this._calculatedFieldNames;
+    }
+
+    /** @internal - called by the connected View when its query fields change. */
+    reconcileFields(viewFields: Field[]) {
+        const newFields = this.mergeViewFields(viewFields),
+            unchanged =
+                newFields.length === this.fields.length &&
+                newFields.every((it, idx) => it === this.fields[idx]);
+        if (unchanged) return;
+
+        this.fields = newFields;
+        this.generateDataConfig();
+    }
+
+    // Merge view-published fields with the app's own extras - types, displayNames and calculated
+    // status flow from the query's CubeFields, which supersede app fields sharing their name.
+    private mergeViewFields(viewFields: Field[]): Field[] {
+        const viewNames = new Set(map(viewFields, 'name')),
+            extras = this._ownFields.filter(it => !viewNames.has(it.name));
+
+        // A store-layer calculatedFn on a view-published name is a genuine conflict - the app fn
+        // would shadow the view's value, with both claiming to compute the field.
+        const conflict = this._ownFields.find(
+            it => viewNames.has(it.name) && it.isCalculated && !it.isCubeField
+        );
+        throwIf(
+            conflict,
+            `Store field '${conflict?.name}' declares a calculatedFn but is also published by the connected Cube View - rename the store-layer field, or compute it on the View via CubeFieldSpec.calculatedFn.`
+        );
+
+        return [...viewFields, ...extras];
+    }
+
+    /**
      * Records in this store, respecting any filter (if applied).
      * Order is not a guaranteed property of a Store - sort explicitly where order matters.
      */
@@ -1093,6 +1177,7 @@ export class Store
         filter = parseFilter(filter);
         if (this.filter != filter && !this.filter?.equals(filter)) {
             this.filter = filter;
+            this._filterHasCalcFields = null;
             this.incrementalRefilter();
         }
 
@@ -1362,10 +1447,27 @@ export class Store
 
     @action
     private incrementalRefilter() {
+        // Calculated values can cross a filter threshold via inputs outside any transacted row.
+        if (this.filterReferencesCalculatedFields()) {
+            this.fullRefilter();
+            return;
+        }
+
         const start = performance.now(),
             {_current, _filtered: prevFiltered} = this;
         this._filtered = _current.withFilter(this.filter, prevFiltered);
         this.diagnostics.noteFilter(this._filtered, _current, prevFiltered, start);
+    }
+
+    // FieldFilters declare their field; FunctionFilters are opaque and may need a manual
+    // refreshFilter() when external inputs change. Memoized on filter/calc field name changes.
+    private filterReferencesCalculatedFields(): boolean {
+        return (this._filterHasCalcFields ??=
+            !!this.filter &&
+            this.calculatedFieldNames.size > 0 &&
+            flattenFilter(this.filter).some(it =>
+                this.calculatedFieldNames.has((it as any).field)
+            ));
     }
 
     @action
@@ -1395,22 +1497,29 @@ export class Store
         }
 
         // 2) Projections adopt raw data with no reparsing. Value identical rows
-        // can be re-used (instance identical reuse requires a digest above)
+        // can be re-used (instance identical reuse requires a digest above). Calculated fields
+        // are excluded from the comparison - computed values carry no signal of their own.
         if (this.projectionOnly) {
             const cachedData = cached?.data;
             if (
                 cachedData &&
-                raw !== cachedData &&
-                this.fields.every(({name}) => equal(raw[name], cachedData[name]))
+                raw !== cached.raw &&
+                this._dataGenerator.equalityFields.every(({name}) =>
+                    equal(raw[name], cachedData[name])
+                )
             ) {
                 return cached;
             }
+
+            // With calculated fields, adopt the raw via a generated wrapper carrying their
+            // getters (data !== raw) - otherwise adopt the raw object itself, as-is.
+            const data = this._dataGenerator.projectionData(raw);
             return new StoreRecord({
                 id,
                 store: this,
                 raw,
-                data: raw,
-                committedData: raw,
+                data,
+                committedData: data,
                 parent,
                 isSummary,
                 digest
@@ -1523,7 +1632,7 @@ export class Store
             rescuable = !!cached;
         for (const name in data) {
             const field = _fieldMap.get(name);
-            if (field) {
+            if (field && !field.isCalculated) {
                 const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
                     if (rescuable) {
@@ -1549,8 +1658,15 @@ export class Store
             hasOwn = Object.prototype.hasOwnProperty;
         let n = 0;
         this.fields.forEach(field => {
-            const {name} = field,
-                val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
+            const {name} = field;
+            if (field.isCalculated) {
+                throwIf(
+                    hasOwn.call(update, name),
+                    `Field '${name}' is calculated and read-only - its value is computed at read time and cannot be modified.`
+                );
+                return;
+            }
+            const val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
             if (val !== field.defaultValue) {
                 names[n] = name;
                 vals[n] = val;
@@ -1564,27 +1680,18 @@ export class Store
     }
 
     /**
-     * Build a record `data` object from the non-default entries buffered in `_recordBuildData`,
-     * choosing its representation by their count:
-     *
-     *  - Below `denseRecordThreshold`, a sparse object - own properties for the buffered values
-     *    only, defaults reached through the shared `_dataDefaults` prototype. Costs nothing for
-     *    unpopulated fields, and stays safely inside V8's fast-properties mode at these counts.
-     *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
-     *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
-     *    (overwriting an existing property is not an add), so all dense records share the
-     *    template's one fixed shape.
-     *
-     * The representation is decided per record, from parsed content alone - records with equal
-     * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
-     * require.
+     * Build a record `data` object from the non-default entries buffered in `_recordBuildData` -
+     * sparse below `denseRecordThreshold`, dense at or above it (see {@link RecordDataGenerator}).
+     * Decided per record from parsed content alone, so records with equal field values always
+     * take equal shapes, as the deep-equal comparisons in modifyRecords() require.
      */
     private buildData(): PlainObject {
         const {names, vals, n} = this._recordBuildData,
+            {_dataGenerator} = this,
             ret =
                 n >= this._denseRecordThreshold
-                    ? {...this._dataTemplate}
-                    : Object.create(this._dataDefaults);
+                    ? _dataGenerator.denseData()
+                    : _dataGenerator.sparseData();
         for (let i = 0; i < n; i++) {
             ret[names[i]] = vals[i];
         }
@@ -1599,16 +1706,20 @@ export class Store
     }
 
     /**
-     * Shared template for record `data` objects - an own property for every Field, holding its
-     * defaultValue. `parseOrRescue()` clones it per record, so all records in a Store share one
-     * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
-     * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
-     * past ~20 adds, costing several times more memory per record.
+     * (Re)generate the per-Store constructs backing record `data` objects - field map and the
+     * record data generator. Re-runnable, so field reconciliation and anticipated
+     * runtime calculated-field updates can regenerate. Existing records are not re-wrapped.
      */
-    private createDataDefaults() {
-        const ret = {};
-        this.fields.forEach(({name, defaultValue}) => (ret[name] = defaultValue));
-        return ret;
+    private generateDataConfig() {
+        this._fieldMap = this.createFieldMap();
+        this._dataGenerator = new RecordDataGenerator(this);
+        this._calculatedFieldNames = new Set(
+            map(
+                this.fields.filter(it => it.isCalculated),
+                'name'
+            )
+        );
+        this._filterHasCalcFields = null;
     }
 
     private createFieldMap() {

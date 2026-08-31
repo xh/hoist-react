@@ -14,6 +14,22 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - connected-store API)
+
+See [`docs/upgrade-notes/v88-upgrade-notes.md`](docs/upgrade-notes/v88-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Stores now connect to a Cube `View` at construction via `StoreConfig.view`, replacing
+  `ViewConfig.stores` and `View.setStores()` (see `View.addStore()`/`removeStore()` for transient
+  detach). Connected stores are built as `projectionOnly` projections adopting view rows by
+  reference - conflicting config (`projectionOnly: false`, `processRawData`, `digestSpec`,
+  `idEncodesTreePath`) throws. Route edits through the Cube (e.g. `Cube.modifyRecordsAsync()`).
+* A connected store's `fields` are now reconciled to its View's query fields at connection and on
+  query changes - view-published data is described by the query's own `CubeField`s, superseding
+  any same-named app or grid-inferred field, with app-declared extras preserved. Field metadata
+  read off the store (types, `displayName`s, calculated status) now flows from the Cube. A
+  store-layer `calculatedFn` field sharing a view field's name throws at connection.
+
 ### 🎁 New Features
 
 * Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
@@ -26,6 +42,18 @@
   it, and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
   across reloads, so the same set of objects can be followed session to session; those with no live
   instance show as placeholder rows until un-starred.
+*
+* Added `FieldSpec.calculatedFn` - declare Store fields computed on the client from each record's
+  other values and the Store, with no source data or server round-trip required. Values are
+  computed lazily on read - always current, with minimal memory and load-time overhead - and
+  support sorting, filtering, and export like any other field. Grids repaint calculated columns
+  automatically as data changes, and calculated fields are read-only for editing.
+* Added `CubeFieldSpec.calculatedFn` - the Cube-layer form of the same concept, computed on View
+  rows with the View's `AggregationContext`. Recommended for globally-dependent values such as
+  percent-of-total, where a custom aggregator would slow updates to the entire View - calculated
+  fields keep Views on their fastest incremental update path. `AggregationContext.filteredRecords`
+  is readable from these functions and always current.
+
 
 
 ## 87.1.0 - 2026-08-28

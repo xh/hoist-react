@@ -6,7 +6,7 @@
  */
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
-import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
+import {HoistBase, PlainObject} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {
     Cube,
@@ -25,7 +25,7 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {forEach, groupBy, isEmpty, isNil, map, partition} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
@@ -46,16 +46,6 @@ import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 export interface ViewConfig {
     /** Query to be used to construct this view. */
     query: Query;
-
-    /**
-     * Store(s) to be automatically (re)loaded with data from this view.
-     * Optional - read {@link View.result} directly to use without a Store.
-     *
-     * Connected stores should generally set {@link StoreConfig.projectionOnly} - view rows are
-     * already parsed and owned by this View, so adopting them directly improves performance
-     * when no additional record parsing or local data modification is required.
-     */
-    stores?: Store[] | Store;
 
     /**
      * True to reactively update the View's {@link View.result} and any connected store(s) when data
@@ -127,7 +117,8 @@ export class View
     result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
-    stores: Store[] = null;
+    /** Connected stores - registered at their construction via {@link StoreConfig.view}. */
+    stores: Store[] = [];
 
     /** The source {@link Cube.info} as of the last time the view was updated. */
     @observable.ref
@@ -163,6 +154,8 @@ export class View
     _aggFieldNamesByDepth: Set<string>[] = null;
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
+    _calcFields: CubeField[] = null;
+    _nonCalcFields: CubeField[] = null;
     _aggContext: AggregationContext = null;
     _rowCache: RowCache = null;
 
@@ -172,14 +165,13 @@ export class View
         makeObservable(this);
 
         const start = performance.now(),
-            {query, stores = [], connect = false, xhName = null} = config;
+            {query, connect = false, xhName = null} = config;
 
         this.xhName = xhName;
         this.query = query;
-        this.stores = this.parseStores(stores);
+        this.buildIndices();
         this._rowCache = new RowCache(this);
         this._rowDataGenerator = new RowDataGenerator(this);
-        this.buildIndices();
         this.fullUpdate('query', start);
 
         if (connect) {
@@ -242,8 +234,9 @@ export class View
         if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
-        this._rowDataGenerator.onQueryChange();
         this.buildIndices();
+        this._rowDataGenerator.onQueryChange();
+        this.stores.forEach(s => s.reconcileFields(this.fields));
 
         // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
@@ -283,10 +276,24 @@ export class View
         return this._fieldsByName.get(name);
     }
 
-    /** Set stores to be loaded/reloaded with data from this view. */
-    setStores(stores: Some<Store>) {
-        this.stores = this.parseStores(stores);
-        this.loadStores();
+    /**
+     * Attach a store constructed for this View via {@link StoreConfig.view}, loading it with
+     * current results - called by the Store's own constructor, and to re-attach a store after
+     * `removeStore()`. No-op if already attached.
+     */
+    addStore(store: Store) {
+        throwIf(
+            store.view !== this,
+            'Store was not constructed for this View - connect stores at construction via `StoreConfig.view`.'
+        );
+        if (this.stores.includes(store)) return;
+        this.stores = [...this.stores, store];
+        this.loadStores([store]);
+    }
+
+    /** Detach a connected store - it retains its configuration and last-loaded data. */
+    removeStore(store: Store) {
+        this.stores = this.stores.filter(it => it !== store);
     }
 
     /** Update the filter on the current Query.*/
@@ -361,6 +368,7 @@ export class View
 
     private buildIndices() {
         this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
+        [this._calcFields, this._nonCalcFields] = partition(this.fields, f => f.isCalculated);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
@@ -390,7 +398,7 @@ export class View
 
     private fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {
         this.filterRecords();
-        this.createAggregationContext();
+        this.createAggregationContext(() => this._records.list);
         this.generateRows();
         this.loadStores();
         this.updateResults();
@@ -422,7 +430,10 @@ export class View
 
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
 
-        this.createAggregationContext();
+        // If filtered records needed for complex aggregators, or calculated columns re-derive.
+        this.createAggregationContext(() =>
+            Array.from(this._leafMap.values(), it => it.cubeRecord)
+        );
 
         stores.forEach(store => {
             const recordUpdates = [];
@@ -444,13 +455,13 @@ export class View
         this.diagnostics.noteUpdate('unchanged', start);
     }
 
-    private loadStores() {
+    private loadStores(stores: Store[] = this.stores) {
         const {_leafMap, _rowDatas} = this;
         if (!_leafMap || !_rowDatas) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
         const storeRows = _leafMap.size !== 0 ? _rowDatas : [];
-        this.stores.forEach(s => s.loadData(storeRows));
+        stores.forEach(s => s.loadData(storeRows));
     }
 
     private updateResults() {
@@ -590,7 +601,14 @@ export class View
             buckets: Record<string, BaseRow[]> = {},
             ret: BaseRow[] = [];
 
-        dependentFields.forEach(it => this._bucketDependentFields.add(it));
+        dependentFields.forEach(it => {
+            if (this._bucketDependentFields.has(it)) return;
+            throwIf(
+                this.getField(it)?.isCalculated,
+                `BucketSpec 'dependentFields' may not include calculated field '${it}' - calculated values hold no stored slot to diff for re-bucketing.`
+            );
+            this._bucketDependentFields.add(it);
+        });
 
         // Determine which bucket to put this row into (if any)
         rows.forEach(row => {
@@ -680,8 +698,8 @@ export class View
         this._records = cube.store._filtered.withFilter(query.filter, this._records);
     }
 
-    private createAggregationContext() {
-        this._aggContext = new AggregationContext(this);
+    private createAggregationContext(getFilteredRecords: () => StoreRecord[]) {
+        this._aggContext = new AggregationContext(this, getFilteredRecords);
     }
 
     /**
@@ -703,32 +721,10 @@ export class View
         return !this.aggregatorsAreSimple || !isEmpty(this._canAggregateFnFieldsByDepth[0]);
     }
 
-    private parseStores(stores: Some<Store>): Store[] {
-        const ret = castArray(stores);
-
-        throwIf(
-            ret.some(s => s.digestSpec != null && s.digestSpec !== 'cubeRowDigest'),
-            '`Store.digestSpec` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
-        );
-        ret.forEach(s => (s.digestSpec = 'cubeRowDigest'));
-
-        throwIf(
-            ret.some(s => s.idEncodesTreePath),
-            '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
-        );
-
-        if (ret.some(s => s.projectionOnly == null && !s.processRawData)) {
-            this.logWarn(
-                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. Set explicitly to false to opt out and silence this warning.'
-            );
-        }
-
-        return ret;
-    }
-
     override destroy() {
         instanceManager.unregisterView(this);
         this.disconnect();
+        this.stores = [];
         super.destroy();
     }
 }
