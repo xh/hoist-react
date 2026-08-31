@@ -510,6 +510,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v86.x to v87.0.0. Medium difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v87", "v86", "react-popper", "popperOptions", "cubeLeaves"]
+        },
+        {
+            "id": "docs/upgrade-notes/v88-upgrade-notes.md",
+            "title": "v88 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v87.x to v88.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "calculatedFn", "projectionOnly", "connected stores"]
         }
     ]
 }

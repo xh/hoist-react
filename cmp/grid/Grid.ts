@@ -716,8 +716,8 @@ export class GridLocalModel extends HoistModel {
         model.diagnostics.noteGenTransaction(transaction, newRs, prevRs, start);
 
         const applyStart = performance.now(),
-            emptyTxn = this.transactionIsEmpty(transaction);
-        if (!emptyTxn) {
+            isEmptyTxn = this.transactionIsEmpty(transaction);
+        if (!isEmptyTxn) {
             this.transactionMgr.apply(transaction, prevRs, newRs);
         } else if (!prevRs) {
             // AG Grid needs rowData (even if empty) to exit its initial loading state.
@@ -744,28 +744,23 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        // Calculated values are computed at read time and can move via inputs outside their own
-        // row (e.g. a summary denominator) - leaving on-screen rows absent from the transaction
-        // above and painted stale. Refresh their columns on every sync: ag-Grid change detection
-        // re-reads visible cells only and repaints just those whose value actually moved.
         const calcNames = store.calculatedFieldNames;
         if (calcNames.size) {
+            // Calculated values can move via inputs outside transacted rows - repaint their columns.
             const columns = model
                 .getVisibleLeafColumns()
                 .filter(c => calcNames.has(c.field))
                 .map(c => c.colId);
             if (!isEmpty(columns)) agApi.refreshCells({columns});
 
-            // An empty transaction (e.g. a summary-only update) carries nothing for the
-            // transaction manager to re-sort through - when sorted on a calculated column,
-            // restore row order directly.
+            // An empty sync (e.g. summary-only) could still require calc cols resort.
             if (
-                emptyTxn &&
+                isEmptyTxn &&
                 prevRs &&
                 !model.externalSort &&
                 model.sortBy.some(s => calcNames.has(model.getColumn(s.colId)?.field))
             ) {
-                agApi.refreshClientSideRowModel('sort');
+                this.transactionMgr.noteSortStale();
             }
         }
 

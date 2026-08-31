@@ -200,10 +200,9 @@ export interface StoreConfig {
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Recommended for stores connected to a Cube {@link View} for improved performance, when no
-     * additional record parsing or local data modification is required. Default null - a View
-     * logs a warning when its connected stores leave this unset. Set explicitly to `false` to
-     * opt out and silence the warning.
+     * Default null - but a Cube {@link View} defaults its connected stores to `true` on
+     * connection, unless a store opts out with an explicit `false` or a `processRawData`
+     * function.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -373,7 +372,7 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     retainRaw: boolean;
-    readonly projectionOnly: boolean;
+    projectionOnly: boolean; // Not readonly - see setProjectionOnly().
     validationIsComplex: boolean;
 
     @observable.ref
@@ -1038,6 +1037,22 @@ export class Store
     setExternalCalculatedFieldNames(names: Set<string>) {
         this._externalCalculatedFieldNames = names?.size ? names : null;
         this._calculatedFieldNames = null;
+    }
+
+    /**
+     * Adopt or leave projection mode post-construction - called by a Cube View defaulting its
+     * connected stores into projection mode before (re)loading them. Existing records are not
+     * re-shaped - callers own reloading.
+     * @internal
+     */
+    setProjectionOnly(projectionOnly: boolean) {
+        if (this.projectionOnly === projectionOnly) return;
+        throwIf(
+            projectionOnly && this.processRawData,
+            'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
+        );
+        this.projectionOnly = projectionOnly;
+        this.generateDataConfig();
     }
 
     /**

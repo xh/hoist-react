@@ -60,9 +60,8 @@ export abstract class LeafRow extends BaseRow {
             newData = newRec.data,
             updates = [];
 
-        // 1) Calculate diff. Calculated fields are skipped - they hold no stored value to diff,
-        // and their read-time getters are always current.
-        view._nonCalculatedFields.forEach(field => {
+        // 1) Calculate diff.
+        view._nonCalcFields.forEach(field => {
             const name = field.name,
                 oldValue = data[name],
                 newValue = newData[name];

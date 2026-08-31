@@ -32,16 +32,13 @@ export interface CubeFieldSpec extends FieldSpec {
     aggregator?: Aggregator | AggregatorToken;
 
     /**
-     * Function computing this field's value at read time from a View row's other values and the
-     * View's {@link AggregationContext} - the Cube-layer form of the calculated field concept
-     * introduced by {@link FieldSpec.calculatedFn}, with a widened signature.
+     * Function computing this field's value at read time on every View row, from the row's other
+     * values and the View's {@link AggregationContext} - the Cube-layer form of
+     * {@link FieldSpec.calculatedFn}, with a widened signature.
      *
-     * Calculated values are read through lazy prototype getters on the {@link ViewRowData}
-     * objects a View publishes - computed fresh on every read, never stored or aggregated.
-     * Because such fields carry no aggregator, they never disqualify a View from its incremental
+     * Carrying no aggregator, calculated fields never disqualify a View from its incremental
      * data-only update path - the recommended way to express globally-dependent values like
-     * percent-of-total, in place of an eagerly-computed aggregator reading beyond its own
-     * children:
+     * percent-of-total:
      *
      * ```ts
      * {
@@ -53,21 +50,16 @@ export interface CubeFieldSpec extends FieldSpec {
      * }
      * ```
      *
-     * Note when the needed global is already published as a row - e.g. a View with `includeRoot`
-     * loading a store with `loadRootAsSummary` - prefer a Store-layer `calculatedFn` reading
-     * `store.summaryRecords`, requiring no Cube API at all. Use this Cube-layer form when the
-     * global is not published as a row, reading `ctx.filteredRecords` and memoizing per-tick
-     * intermediates in `ctx.appData`.
-     *
-     * As at the Store layer ({@link FieldSpec.calculatedFn}), values are read by name and are
-     * invisible to own-property enumeration, and fns should prefer returning primitives or
-     * stable references - a fresh object or array per read defeats the value-equality check
-     * grids use to skip repainting unchanged cells.
+     * When the needed global is already published as a row (e.g. `includeRoot` +
+     * `loadRootAsSummary`), prefer a Store-layer `calculatedFn` reading `store.summaryRecords`.
+     * Otherwise read `ctx.filteredRecords` here, memoizing per-tick intermediates in
+     * `ctx.appData`. Shared semantics per {@link FieldSpec.calculatedFn}: read-only, read by
+     * name (never own-property enumeration), and prefer returning primitives or stable
+     * references.
      *
      * Mutually exclusive with `aggregator`, `canAggregateFn` and `isDimension`. Calculated
      * fields may not feed other aggregators or appear in a {@link BucketSpec}'s
-     * `dependentFields`, and stores connected to a View with calculated fields must set
-     * {@link StoreConfig.projectionOnly}.
+     * `dependentFields`; connected stores may not opt out of {@link StoreConfig.projectionOnly}.
      */
     calculatedFn?: CubeCalculatedFn;
 

@@ -14,27 +14,27 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - behavioral default, most apps unaffected)
+
+See [`docs/upgrade-notes/v88-upgrade-notes.md`](docs/upgrade-notes/v88-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Stores connected to a Cube `View` now default to `projectionOnly: true`, adopting view rows by
+  reference. Apps that relied on full parsing of view rows - e.g. calling `modifyRecords()`
+  directly on a connected store - should opt out with an explicit `projectionOnly: false`.
+
 ### 🎁 New Features
 
-* Added `FieldSpec.calculatedFn` - declare Store fields whose values are computed on the client at
-  read time from the record's other values and the Store, with no source data or server round-trip
-  required. Values are read via lazy prototype getters - never stored, parsed, or included in
-  record equality/digest comparisons - and grids bound to the Store automatically repaint
-  calculated columns after each transaction, covering values moved by inputs outside their own row
-  (e.g. a `Store.summaryRecords` denominator). A `FieldFilter` testing a calculated field likewise
-  triggers an automatic full re-filter on each transaction. Grid columns bound to calculated
-  fields are never editable.
+* Added `FieldSpec.calculatedFn` - declare Store fields computed on the client from each record's
+  other values and the Store, with no source data or server round-trip required. Values are
+  computed lazily on read - always current, with minimal memory and load-time overhead - and
+  support sorting, filtering, and export like any other field. Grids repaint calculated columns
+  automatically as data changes, and calculated fields are read-only for editing.
 * Added `CubeFieldSpec.calculatedFn` - the Cube-layer form of the same concept, computed on View
-  rows with the View's `AggregationContext`. Calculated fields carry no aggregator, so Views using
-  them for globally-dependent values (e.g. percent-of-total) retain their incremental data-only
-  update path. `AggregationContext.filteredRecords` is now readable from calculated field
-  functions and stays fresh on incremental updates, rebuilt lazily from the View's leaves.
-
-### ⚙️ Technical
-
-* Aggregate and bucket row data objects published by a Cube `View` are now instances of a
-  generated per-query class rather than clones of a shared template, keeping all parent rows on
-  one fixed shape and supporting prototype getters for calculated fields.
+  rows with the View's `AggregationContext`. Recommended for globally-dependent values such as
+  percent-of-total, where a custom aggregator would slow updates to the entire View - calculated
+  fields keep Views on their fastest incremental update path. `AggregationContext.filteredRecords`
+  is readable from these functions and always current.
 
 ## 87.1.0 - 2026-08-28
 

@@ -50,6 +50,9 @@ export class GridTransactionManager extends HoistBase {
     // Rows updated by suppressed transactions since the last sort - null when order is current.
     private pendingSortIds: Set<StoreRecordId> = null;
 
+    // True when order may be stale beyond any tracked rows - the flush must run a full sort.
+    private pendingSortFull = false;
+
     // Cached provable sort paths - undefined = stale, null = sort not provably value-based.
     private _sortPaths: Array<Some<string>> | null | undefined;
 
@@ -79,13 +82,26 @@ export class GridTransactionManager extends HoistBase {
         });
         try {
             agApi.applyTransaction(transaction);
-            if (!suppress) this.pendingSortIds = null;
+            if (!suppress) {
+                this.pendingSortIds = null;
+                this.pendingSortFull = false;
+            }
         } finally {
             agApi.updateGridOptions({
                 suppressModelUpdateAfterUpdateTransaction: false,
                 deltaSort: false
             });
         }
+    }
+
+    /**
+     * Note current row order may be stale with no transaction to prove otherwise - e.g. a
+     * calculated sort value moved by a summary-only update. Schedules a paced full re-sort.
+     */
+    noteSortStale() {
+        this.pendingSortFull = true;
+        this.pendingSortIds ??= new Set();
+        this.sortScheduler.scheduleAsync();
     }
 
     //------------------------
@@ -136,9 +152,7 @@ export class GridTransactionManager extends HoistBase {
         const sortPaths = this.getSortPaths();
         if (!sortPaths) return false;
 
-        // A calculated sort value is computed at read time and can move via inputs outside any
-        // updated row - absent from changedFields, and indistinguishable across old and new
-        // record data (both getters read current state). Nothing can be proven.
+        // Calculated sort values can move via inputs outside any updated row - nothing provable.
         const calcNames = this.model.store.calculatedFieldNames;
         if (calcNames.size && sortPaths.some(p => calcNames.has(isArray(p) ? p[0] : p))) {
             return false;
@@ -205,11 +219,12 @@ export class GridTransactionManager extends HoistBase {
     }
 
     private flushPendingSort() {
-        const {model, pendingSortIds} = this,
+        const {model, pendingSortIds, pendingSortFull} = this,
             latestRs = model._syncedRs;
         // Not ready - leave ids pending; the next transaction will run 'full' and resolve them.
         if (!pendingSortIds || !latestRs || !model.isReady) return;
         this.pendingSortIds = null;
+        this.pendingSortFull = false;
 
         const start = performance.now(),
             {agApi} = model,
@@ -219,7 +234,11 @@ export class GridTransactionManager extends HoistBase {
             if (rec) update.push(rec);
         });
 
-        if (update.length && update.length / latestRs.count < this.deltaSortRatio) {
+        if (
+            !pendingSortFull &&
+            update.length &&
+            update.length / latestRs.count < this.deltaSortRatio
+        ) {
             agApi.updateGridOptions({deltaSort: true});
             try {
                 agApi.applyTransaction({update});

@@ -35,15 +35,8 @@ export class AggregationContext {
      */
     activeField: CubeField = null;
 
-    /**
-     * True when this context was created for an incremental data-only update, on which the
-     * View's filtered RecordSet is left stale by design - `filteredRecords` then rebuilds from
-     * the leaf map, whose leaves are patched fresh on every such update.
-     */
-    private readonly recordsAreStale: boolean;
-
-    // Memoized per context - contexts are replaced whenever the record set changes in any way,
-    // so at most one O(N) rebuild per update, and only if something reads it.
+    // Filtered-records source supplied by the owning View - read lazily, memoized per context.
+    private readonly getRecordsFn: () => StoreRecord[];
     private _filteredRecords: StoreRecord[] = null;
 
     /**
@@ -55,21 +48,19 @@ export class AggregationContext {
      * wider dependency for the View to keep this collection consistent with their reads.
      */
     get filteredRecords(): StoreRecord[] {
-        const {activeField, view} = this;
+        const {activeField} = this;
         if (activeField?.aggregator.dependsOnChildrenOnly) {
             throw XH.exception(
                 `The aggregator for the '${activeField.name}' field read \`filteredRecords\`, but does not override \`dependsOnChildrenOnly\` to return false - aggregators depending on records beyond their own children must do so.`
             );
         }
-        return (this._filteredRecords ??= this.recordsAreStale
-            ? Array.from(view._leafMap.values(), it => it.cubeRecord)
-            : view._records.list);
+        return (this._filteredRecords ??= this.getRecordsFn());
     }
 
-    constructor(view: View, recordsAreStale: boolean = false) {
+    constructor(view: View, getRecordsFn: () => StoreRecord[]) {
         this.view = view;
         this.appData = {};
-        this.recordsAreStale = recordsAreStale;
+        this.getRecordsFn = getRecordsFn;
     }
 
     /**

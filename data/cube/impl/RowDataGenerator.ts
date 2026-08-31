@@ -82,7 +82,8 @@ export class RowDataGenerator {
 
     private buildParentDataClass(): GeneratedDataClass {
         const {view} = this,
-            slotNames = this.fields.filter(it => !it.isCalculated).map(it => it.name);
+            {_nonCalcFields, _calcFields} = view,
+            slotNames = _nonCalcFields.map(it => it.name);
 
         class ParentRowData extends BaseParentRowData {
             constructor(id: string) {
@@ -91,31 +92,22 @@ export class RowDataGenerator {
                 for (let i = 0; i < slotNames.length; i++) this[slotNames[i]] = null;
             }
         }
-        this.installCalculatedGetters(ParentRowData.prototype, view);
+        installCalculatedFieldGetters(ParentRowData.prototype, _calcFields, () => view._aggContext);
         return ParentRowData;
     }
 
     private buildLeafDataClass(): GeneratedLeafDataClass {
         if (!this.exposesLeaves) return null;
 
-        const {view} = this;
+        const {view} = this,
+            {_nonCalcFields, _calcFields} = view;
         class LeafRowData extends BaseLeafRowData {}
         installSourceFieldGetters(
             LeafRowData.prototype,
-            this.fields.filter(it => !it.isCalculated).map(it => it.name)
+            _nonCalcFields.map(it => it.name)
         );
-        this.installCalculatedGetters(LeafRowData.prototype, view);
+        installCalculatedFieldGetters(LeafRowData.prototype, _calcFields, () => view._aggContext);
         return LeafRowData;
-    }
-
-    // Read the aggregation context live off the View - it is replaced per generation/update, and
-    // a getter must always compute against the current one.
-    private installCalculatedGetters(proto: object, view: View) {
-        installCalculatedFieldGetters(
-            proto,
-            this.fields.filter(it => it.isCalculated),
-            () => view._aggContext
-        );
     }
 }
 

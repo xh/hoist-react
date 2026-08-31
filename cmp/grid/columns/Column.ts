@@ -751,7 +751,6 @@ export class Column {
     isEditableForRecord(record: StoreRecord): boolean {
         const {editable, gridModel} = this;
         if (!record) return false;
-        // Values of calculated fields are computed at read time and never editable.
         if (record.store.calculatedFieldNames.has(this.field)) return false;
         return isFunction(editable)
             ? editable({record, store: record.store, gridModel, column: this})
