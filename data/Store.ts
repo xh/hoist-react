@@ -1011,6 +1011,7 @@ export class Store
      * loaded - fields declared with {@link FieldSpec.calculatedFn}, including view-published
      * calculated `CubeField`s adopted from a connected Cube View. Grids bound to this Store use
      * this set to automatically repaint calculated columns after each data transaction.
+     * @internal
      */
     get calculatedFieldNames(): Set<string> {
         return (this._calculatedFieldNames ??= new Set(
