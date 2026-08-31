@@ -418,7 +418,10 @@ export class Store
     private _dataGenerator: RecordDataGenerator;
     private _calculatedFieldNames: Set<string> = null;
     private _filterHasCalcFields: boolean = null;
-    private _externalCalculatedFieldNames: Set<string> = null;
+
+    // Fields as declared at construction - the app's own set, preserved across the view-field
+    // reconciliation performed by connectView()/disconnectView().
+    private _ownFields: Field[];
 
     // Last parent pair verified position-equal by positionUnchanged().
     private _verifiedCachedParent: StoreRecord = null;
@@ -464,7 +467,7 @@ export class Store
         );
 
         this.experimental = this.parseExperimental(experimental);
-        this.fields = this.parseFields(fields, fieldDefaults);
+        this.fields = this._ownFields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
@@ -1005,22 +1008,32 @@ export class Store
 
     /**
      * Names of all fields on this Store whose values are computed at read time rather than
-     * loaded - fields declared with {@link FieldSpec.calculatedFn}, plus any marked by a
-     * connected Cube View publishing view-level calculated fields into this Store. Grids bound
-     * to this Store use this set to automatically repaint calculated columns after each data
-     * transaction.
+     * loaded - fields declared with {@link FieldSpec.calculatedFn}, including view-published
+     * calculated `CubeField`s adopted from a connected Cube View. Grids bound to this Store use
+     * this set to automatically repaint calculated columns after each data transaction.
      */
     get calculatedFieldNames(): Set<string> {
-        return (this._calculatedFieldNames ??= new Set([
-            ...this._dataGenerator.calcFields.map(it => it.name),
-            ...(this._externalCalculatedFieldNames ?? [])
-        ]));
+        return (this._calculatedFieldNames ??= new Set(
+            map(
+                this.fields.filter(it => it.isCalculated),
+                'name'
+            )
+        ));
     }
 
     /**
      * Adopt the configuration required of a Store connected to a Cube {@link View} - a read-only
-     * projection carrying the View's row digest and calculated field names. Called by the View
-     * on connection and on query changes (idempotent); throws on conflicting app config.
+     * projection carrying the View's row digest and field metadata. Called by the View on
+     * connection and on query changes (idempotent); throws on conflicting app config.
+     *
+     * The View's query fields are reconciled into this Store's `fields`: view-published data is
+     * described by the query's own `CubeField` instances - types, displayNames and calculated
+     * status flow through, rather than being independently (and typically more weakly) declared.
+     * App-declared fields outside the query are preserved - store-layer calculated fields
+     * composed over view rows, and infra fields such as `cubeDimension` - while an app field
+     * sharing a view field's name is superseded by the view's; customize display metadata for
+     * view-published fields on the `CubeField`. A store connected to multiple Views reconciles
+     * to the last-connected View's fields.
      * @internal
      */
     connectView(view: View) {
@@ -1040,23 +1053,44 @@ export class Store
             this.projectionOnly === false || this.processRawData,
             'Stores connected to a Cube View are always read-only projections, adopting view rows by reference - remove any `projectionOnly: false` or `processRawData` config. Route edits through the Cube, and derive additional values via calculated fields.'
         );
-        if (!this.projectionOnly) {
-            this.projectionOnly = true;
-            this.generateDataConfig();
-        }
+        const becameProjection = !this.projectionOnly;
+        this.projectionOnly = true;
 
-        this.setExternalCalculatedFieldNames(new Set(map(view._calcFields, 'name')));
+        this.reconcileFields(view.fields, becameProjection);
     }
 
-    /** @internal */
+    /**
+     * Restore this Store's own declared fields, dropping any adopted from a connected View.
+     * Adopted `projectionOnly` and `digestSpec` are retained - existing records were built
+     * under them. @internal
+     */
     disconnectView() {
-        this.setExternalCalculatedFieldNames(null);
+        this.reconcileFields([]);
     }
 
-    private setExternalCalculatedFieldNames(names: Set<string>) {
-        this._externalCalculatedFieldNames = names?.size ? names : null;
-        this._calculatedFieldNames = null;
-        this._filterHasCalcFields = null;
+    // Merge view-published fields with the app's own extras, regenerating data config on change.
+    private reconcileFields(viewFields: Field[], forceRegen: boolean = false) {
+        const viewNames = new Set(map(viewFields, 'name')),
+            extras = this._ownFields.filter(it => !viewNames.has(it.name));
+
+        // A store-layer calculatedFn on a view-published name is a genuine conflict - the app fn
+        // would shadow the view's value, with both claiming to compute the field.
+        const conflict = this._ownFields.find(
+            it => viewNames.has(it.name) && it.isCalculated && !it.isCubeField
+        );
+        throwIf(
+            conflict,
+            `Store field '${conflict?.name}' declares a calculatedFn but is also published by the connected Cube View - rename the store-layer field, or compute it on the View via CubeFieldSpec.calculatedFn.`
+        );
+
+        const newFields = [...viewFields, ...extras],
+            unchanged =
+                newFields.length === this.fields.length &&
+                newFields.every((it, idx) => it === this.fields[idx]);
+        if (unchanged && !forceRegen) return;
+
+        this.fields = newFields;
+        this.generateDataConfig();
     }
 
     /**

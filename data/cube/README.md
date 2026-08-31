@@ -255,12 +255,22 @@ into them whenever the query results change. Connected stores are always `projec
 projections - the View sets this itself - adopting View rows as record data without re-parsing.
 Record reuse is
 automatic - the View installs its own row-based digest on each connected store, so rows
-republished without change skip record rebuilds:
+republished without change skip record rebuilds.
+
+Field metadata flows from the View as well: at connection (and on query changes), the store's
+`fields` are reconciled to the query's own `CubeField`s - types, `displayName`s, and calculated
+status carry through to everything reading field metadata off the store (filter fields, choosers,
+editability). There is no need to redeclare view-published fields on the store - declare only
+extras, such as store-layer calculated fields composed over view rows. An app field sharing a
+view field's name is superseded by the view's; customize display metadata for view-published
+fields on the `CubeField` itself.
 
 ```typescript
 const store = new Store({
-    fields: [...],
-    projectionOnly: true
+    fields: [
+        // View-published fields adopted automatically - declare only store-layer extras, e.g.:
+        {name: 'pctOfTotal', calculatedFn: (data, store) => ...}
+    ]
 });
 
 const view = cube.createView({

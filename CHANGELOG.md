@@ -23,6 +23,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   rows by reference - the connecting View sets the flag itself, and an explicit
   `projectionOnly: false` or `processRawData` config on a connected store now throws. Route edits
   through the Cube (e.g. `Cube.modifyRecordsAsync()`) rather than `modifyRecords()` on the store.
+* A connected store's `fields` are now reconciled to its View's query fields at connection and on
+  query changes - view-published data is described by the query's own `CubeField`s, superseding
+  any same-named app or grid-inferred field, with app-declared extras preserved. Field metadata
+  read off the store (types, `displayName`s, calculated status) now flows from the Cube. A
+  store-layer `calculatedFn` field sharing a view field's name throws at connection.
 
 ### 🎁 New Features
 
