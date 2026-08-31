@@ -41,11 +41,13 @@ import {
     isNil,
     isNull,
     isString,
+    map,
     partition,
     remove as lodashRemove,
     uniq,
     values
 } from 'lodash';
+import type {View} from './cube/View';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {
     installCalculatedFieldGetters,
@@ -372,7 +374,7 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     retainRaw: boolean;
-    projectionOnly: boolean; // Not readonly - see setProjectionOnly().
+    projectionOnly: boolean; // Not readonly - see connectView().
     validationIsComplex: boolean;
 
     @observable.ref
@@ -1028,31 +1030,49 @@ export class Store
     }
 
     /**
-     * Mark fields of this Store whose values are computed at read time by an external provider -
-     * called by a connected Cube View publishing calculated fields into this Store, enabling the
-     * same automatic grid repaint and filter refresh handling as Store-level calculated fields.
-     * Replaces any previously marked set.
+     * Adopt the configuration required of a Store connected to a Cube {@link View} - a read-only
+     * projection carrying the View's row digest and calculated field names. Called by the View
+     * on connection and on query changes (idempotent); throws on conflicting app config.
      * @internal
      */
-    setExternalCalculatedFieldNames(names: Set<string>) {
-        this._externalCalculatedFieldNames = names?.size ? names : null;
-        this._calculatedFieldNames = null;
+    connectView(view: View) {
+        throwIf(
+            this.digestSpec != null && this.digestSpec !== 'cubeRowDigest',
+            '`Store.digestSpec` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
+        );
+        this.digestSpec = 'cubeRowDigest';
+
+        throwIf(
+            this.idEncodesTreePath,
+            '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
+        );
+
+        // Connected stores adopt rows the View has already parsed - always projections.
+        throwIf(
+            this.projectionOnly === false || this.processRawData,
+            'Stores connected to a Cube View are always read-only projections, adopting view rows by reference - remove any `projectionOnly: false` or `processRawData` config. Route edits through the Cube, and derive additional values via calculated fields.'
+        );
+        if (!this.projectionOnly) {
+            this.projectionOnly = true;
+            this.generateDataConfig();
+        }
+
+        this.setExternalCalculatedFieldNames(new Set(map(view._calcFields, 'name')));
     }
 
     /**
-     * Adopt or leave projection mode post-construction - called by a Cube View placing its
-     * connected stores into projection mode before (re)loading them. Existing records are not
-     * re-shaped - callers own reloading.
+     * Clear connected-View state that would otherwise outlive a destroyed View - called by the
+     * View on destroy. This store remains a projection holding its last-loaded rows.
      * @internal
      */
-    setProjectionOnly(projectionOnly: boolean) {
-        if (this.projectionOnly === projectionOnly) return;
-        throwIf(
-            projectionOnly && this.processRawData,
-            'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
-        );
-        this.projectionOnly = projectionOnly;
-        this.generateDataConfig();
+    disconnectView() {
+        this.setExternalCalculatedFieldNames(null);
+    }
+
+    /** Mark external read-time-computed fields, e.g. a connected View's calculated fields. */
+    private setExternalCalculatedFieldNames(names: Set<string>) {
+        this._externalCalculatedFieldNames = names?.size ? names : null;
+        this._calculatedFieldNames = null;
     }
 
     /**

@@ -175,7 +175,8 @@ export class View
 
         this.query = query;
         this.buildIndices();
-        this.stores = this.parseStores(stores);
+        this.stores = castArray(stores);
+        this.stores.forEach(s => s.connectView(this));
         this._rowCache = new RowCache(this);
         this._rowDataGenerator = new RowDataGenerator(this);
         this.fullUpdate('query', start);
@@ -242,7 +243,7 @@ export class View
         this.query = newQuery;
         this.buildIndices();
         this._rowDataGenerator.onQueryChange();
-        this.syncStoreCalculatedFields(this.stores);
+        this.stores.forEach(s => s.connectView(this));
 
         // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
@@ -284,7 +285,9 @@ export class View
 
     /** Set stores to be loaded/reloaded with data from this view. */
     setStores(stores: Some<Store>) {
-        this.stores = this.parseStores(stores);
+        this.stores.forEach(s => s.disconnectView());
+        this.stores = castArray(stores);
+        this.stores.forEach(s => s.connectView(this));
         this.loadStores();
     }
 
@@ -713,44 +716,10 @@ export class View
         return !this.aggregatorsAreSimple || !isEmpty(this._canAggregateFnFieldsByDepth[0]);
     }
 
-    private parseStores(stores: Some<Store>): Store[] {
-        const ret = castArray(stores);
-
-        throwIf(
-            ret.some(s => s.digestSpec != null && s.digestSpec !== 'cubeRowDigest'),
-            '`Store.digestSpec` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
-        );
-        ret.forEach(s => (s.digestSpec = 'cubeRowDigest'));
-
-        throwIf(
-            ret.some(s => s.idEncodesTreePath),
-            '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
-        );
-
-        // Connected stores adopt rows this View has already parsed - always projections.
-        throwIf(
-            ret.some(s => s.projectionOnly === false || s.processRawData),
-            'Stores connected to a Cube View are always read-only projections, adopting view rows by reference - remove any `projectionOnly: false` or `processRawData` config. Route edits through the Cube, and derive additional values via calculated fields.'
-        );
-        ret.forEach(s => s.setProjectionOnly(true));
-
-        this.syncStoreCalculatedFields(ret);
-
-        return ret;
-    }
-
-    /** Mark this View's calculated field names on connected stores - drives their automatic
-     * grid repaint, filter refresh, and read-only column handling. */
-    private syncStoreCalculatedFields(stores: Store[]) {
-        const calcNames = new Set(map(this._calcFields, 'name'));
-        stores.forEach(s => s.setExternalCalculatedFieldNames(calcNames));
-    }
-
     override destroy() {
         instanceManager.unregisterView(this);
         this.disconnect();
-        // Clear marked calc field names - stores are not owned and may outlive this View.
-        this.stores.forEach(s => s.setExternalCalculatedFieldNames(null));
+        this.stores.forEach(s => s.disconnectView());
         super.destroy();
     }
 }
