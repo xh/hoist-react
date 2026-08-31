@@ -49,10 +49,7 @@ import {
 } from 'lodash';
 import type {View} from './cube/View';
 import {instanceManager} from '../core/impl/InstanceManager';
-import {
-    installCalculatedFieldGetters,
-    installSourceFieldGetters
-} from './impl/CalculatedFieldSupport';
+import {installCalculatedFieldGetters, installSourceFieldGetters} from './impl/FieldGetterSupport';
 import {RecordSet} from './impl/RecordSet';
 import {StoreDiagnostics} from './impl/StoreDiagnostics';
 

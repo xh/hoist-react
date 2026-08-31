@@ -9,7 +9,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {
     installCalculatedFieldGetters,
     installSourceFieldGetters
-} from '@xh/hoist/data/impl/CalculatedFieldSupport';
+} from '@xh/hoist/data/impl/FieldGetterSupport';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import type {CubeField} from '../CubeField';
 import type {View} from '../View';
