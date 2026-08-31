@@ -1005,20 +1005,16 @@ This collapses the usual two objects per row to one, and skips the per-row parse
 update.
 
 Use this config for stores fed by an endpoint that returns data in its final client-side form.
-Stores connected to a Cube `View` are always projections - the connecting View sets the flag
-itself, and throws on an explicit `false` or a `processRawData` function.
+Stores connected to a Cube `View` (constructed with `StoreConfig.view`) are always projections -
+the flag is set automatically, and conflicting config throws.
 
 ```typescript
-const store = new Store({
-    fields: [...],
-    projectionOnly: true
-});
-
 const view = cube.createView({
     query: {dimensions: ['region', 'product']},
-    stores: store,
     connect: true
 });
+
+const store = new Store({view, fields: [...]});
 ```
 
 This mode carries real constraints:

@@ -6,7 +6,7 @@
  */
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
-import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
+import {HoistBase, PlainObject} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {
     Cube,
@@ -25,7 +25,7 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, forEach, groupBy, isEmpty, isNil, map, partition} from 'lodash';
+import {forEach, groupBy, isEmpty, isNil, map, partition} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
@@ -46,16 +46,6 @@ import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 export interface ViewConfig {
     /** Query to be used to construct this view. */
     query: Query;
-
-    /**
-     * Store(s) to be automatically (re)loaded with data from this view.
-     * Optional - read {@link View.result} directly to use without a Store.
-     *
-     * Connected stores should generally set {@link StoreConfig.projectionOnly} - view rows are
-     * already parsed and owned by this View, so adopting them directly improves performance
-     * when no additional record parsing or local data modification is required.
-     */
-    stores?: Store[] | Store;
 
     /**
      * True to reactively update the View's {@link View.result} and any connected store(s) when data
@@ -124,7 +114,8 @@ export class View
     result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
-    stores: Store[] = null;
+    /** Connected stores - registered at their construction via {@link StoreConfig.view}. */
+    stores: Store[] = [];
 
     /** The source {@link Cube.info} as of the last time the view was updated. */
     @observable.ref
@@ -171,12 +162,10 @@ export class View
         makeObservable(this);
 
         const start = performance.now(),
-            {query, stores = [], connect = false} = config;
+            {query, connect = false} = config;
 
         this.query = query;
         this.buildIndices();
-        this.stores = castArray(stores);
-        this.stores.forEach(s => s.connectView(this));
         this._rowCache = new RowCache(this);
         this._rowDataGenerator = new RowDataGenerator(this);
         this.fullUpdate('query', start);
@@ -243,7 +232,7 @@ export class View
         this.query = newQuery;
         this.buildIndices();
         this._rowDataGenerator.onQueryChange();
-        this.stores.forEach(s => s.connectView(this));
+        this.stores.forEach(s => s.reconcileFields(this.fields));
 
         // If the cube is changing potentially disconnect from the old cube and connect to the new
         const {cube: oldCube} = oldQuery,
@@ -283,12 +272,24 @@ export class View
         return this._fieldsByName.get(name);
     }
 
-    /** Set stores to be loaded/reloaded with data from this view. */
-    setStores(stores: Some<Store>) {
-        this.stores.forEach(s => s.disconnectView());
-        this.stores = castArray(stores);
-        this.stores.forEach(s => s.connectView(this));
-        this.loadStores();
+    /**
+     * Attach a store constructed for this View via {@link StoreConfig.view}, loading it with
+     * current results - called by the Store's own constructor, and to re-attach a store after
+     * `removeStore()`. No-op if already attached.
+     */
+    addStore(store: Store) {
+        throwIf(
+            store.view !== this,
+            'Store was not constructed for this View - connect stores at construction via `StoreConfig.view`.'
+        );
+        if (this.stores.includes(store)) return;
+        this.stores = [...this.stores, store];
+        this.loadStores([store]);
+    }
+
+    /** Detach a connected store - it retains its configuration and last-loaded data. */
+    removeStore(store: Store) {
+        this.stores = this.stores.filter(it => it !== store);
     }
 
     /** Update the filter on the current Query.*/
@@ -450,13 +451,13 @@ export class View
         this.diagnostics.noteUpdate('unchanged', start);
     }
 
-    private loadStores() {
+    private loadStores(stores: Store[] = this.stores) {
         const {_leafMap, _rowDatas} = this;
         if (!_leafMap || !_rowDatas) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
         const storeRows = _leafMap.size !== 0 ? _rowDatas : [];
-        this.stores.forEach(s => s.loadData(storeRows));
+        stores.forEach(s => s.loadData(storeRows));
     }
 
     private updateResults() {
@@ -719,7 +720,7 @@ export class View
     override destroy() {
         instanceManager.unregisterView(this);
         this.disconnect();
-        this.stores.forEach(s => s.disconnectView());
+        this.stores = [];
         super.destroy();
     }
 }

@@ -14,15 +14,16 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - connected-store projection requirement)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - connected-store API)
 
 See [`docs/upgrade-notes/v88-upgrade-notes.md`](docs/upgrade-notes/v88-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-* Stores connected to a Cube `View` are now always `projectionOnly` projections, adopting view
-  rows by reference - the connecting View sets the flag itself, and an explicit
-  `projectionOnly: false` or `processRawData` config on a connected store now throws. Route edits
-  through the Cube (e.g. `Cube.modifyRecordsAsync()`) rather than `modifyRecords()` on the store.
+* Stores now connect to a Cube `View` at construction via `StoreConfig.view`, replacing
+  `ViewConfig.stores` and `View.setStores()` (see `View.addStore()`/`removeStore()` for transient
+  detach). Connected stores are built as `projectionOnly` projections adopting view rows by
+  reference - conflicting config (`projectionOnly: false`, `processRawData`, `digestSpec`,
+  `idEncodesTreePath`) throws. Route edits through the Cube (e.g. `Cube.modifyRecordsAsync()`).
 * A connected store's `fields` are now reconciled to its View's query fields at connection and on
   query changes - view-published data is described by the query's own `CubeField`s, superseding
   any same-named app or grid-inferred field, with app-declared extras preserved. Field metadata

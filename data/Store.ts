@@ -199,9 +199,8 @@ export interface StoreConfig {
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Default null. Stores connected to a Cube {@link View} are always projections - the
-     * connecting View sets this flag itself, and throws on an explicit `false` or a
-     * `processRawData` function.
+     * Default null. Stores connected to a Cube {@link View} (via {@link StoreConfig.view}) are
+     * always projections - the flag is set automatically at construction.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -220,6 +219,15 @@ export interface StoreConfig {
      * Not compatible with `processRawData`.
      */
     projectionOnly?: boolean;
+
+    /**
+     * Cube {@link View} to connect this store to, fixed for the store's lifetime. The store is
+     * built as a read-only projection of the View's published rows: `projectionOnly` and a
+     * row-based `digestSpec` are set automatically, the View's query fields are merged into
+     * `fields` (view fields win on name collisions; app-declared extras are preserved), and the
+     * View registers and loads this store. Conflicting config throws.
+     */
+    view?: View;
 
     /**
      * Set to true to always validate all uncommitted records on every change to
@@ -373,6 +381,8 @@ export class Store
     retainRaw: boolean;
     projectionOnly: boolean;
     validationIsComplex: boolean;
+    /** Connected Cube View, set at construction - see {@link StoreConfig.view}. */
+    readonly view: View = null;
 
     @observable.ref
     filter: Filter;
@@ -419,8 +429,7 @@ export class Store
     private _calculatedFieldNames: Set<string> = null;
     private _filterHasCalcFields: boolean = null;
 
-    // Fields as declared at construction - the app's own set, preserved across the view-field
-    // reconciliation performed by connectView()/disconnectView().
+    // Fields as declared at construction - the app's own set, preserved across view-field merges.
     private _ownFields: Field[];
 
     // Last parent pair verified position-equal by positionUnchanged().
@@ -455,6 +464,7 @@ export class Store
         digestSpec = null,
         retainRaw = true,
         projectionOnly = null,
+        view = null,
         validationIsComplex = false,
         experimental,
         data
@@ -465,9 +475,26 @@ export class Store
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
         );
+        if (view) {
+            throwIf(
+                projectionOnly === false ||
+                    processRawData ||
+                    idEncodesTreePath ||
+                    (digestSpec != null && digestSpec !== 'cubeRowDigest'),
+                'A Store connected to a Cube View is built as a read-only projection of its published rows - remove conflicting `projectionOnly`, `processRawData`, `digestSpec`, or `idEncodesTreePath` config.'
+            );
+            throwIf(
+                data,
+                'A Store connected to a Cube View is loaded by that View - remove the `data` config.'
+            );
+            projectionOnly = true;
+            digestSpec = 'cubeRowDigest';
+        }
+        this.view = view;
 
         this.experimental = this.parseExperimental(experimental);
-        this.fields = this._ownFields = this.parseFields(fields, fieldDefaults);
+        this._ownFields = this.parseFields(fields, fieldDefaults);
+        this.fields = view ? this.mergeViewFields(view.fields) : this._ownFields;
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
@@ -492,6 +519,7 @@ export class Store
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
+        view?.addStore(this);
     }
 
     /** See {@link StoreConfig.digestSpec} - settable, taking effect on the next load. */
@@ -1017,55 +1045,21 @@ export class Store
         return this._calculatedFieldNames;
     }
 
-    /**
-     * Adopt the configuration required of a Store connected to a Cube {@link View} - a read-only
-     * projection carrying the View's row digest and field metadata. Called by the View on
-     * connection and on query changes (idempotent); throws on conflicting app config.
-     *
-     * The View's query fields are reconciled into this Store's `fields`: view-published data is
-     * described by the query's own `CubeField` instances - types, displayNames and calculated
-     * status flow through, rather than being independently (and typically more weakly) declared.
-     * App-declared fields outside the query are preserved - store-layer calculated fields
-     * composed over view rows, and infra fields such as `cubeDimension` - while an app field
-     * sharing a view field's name is superseded by the view's; customize display metadata for
-     * view-published fields on the `CubeField`. A store connected to multiple Views reconciles
-     * to the last-connected View's fields.
-     * @internal
-     */
-    connectView(view: View) {
-        throwIf(
-            this.digestSpec != null && this.digestSpec !== 'cubeRowDigest',
-            '`Store.digestSpec` cannot be configured on a Store connected to a Cube View - the View manages record reuse automatically, installing its own row-based digest. Leave unset.'
-        );
-        this.digestSpec = 'cubeRowDigest';
+    /** @internal - called by the connected View when its query fields change. */
+    reconcileFields(viewFields: Field[]) {
+        const newFields = this.mergeViewFields(viewFields),
+            unchanged =
+                newFields.length === this.fields.length &&
+                newFields.every((it, idx) => it === this.fields[idx]);
+        if (unchanged) return;
 
-        throwIf(
-            this.idEncodesTreePath,
-            '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
-        );
-
-        // Connected stores adopt rows the View has already parsed - always projections.
-        throwIf(
-            this.projectionOnly === false || this.processRawData,
-            'Stores connected to a Cube View are always read-only projections, adopting view rows by reference - remove any `projectionOnly: false` or `processRawData` config. Route edits through the Cube, and derive additional values via calculated fields.'
-        );
-        const becameProjection = !this.projectionOnly;
-        this.projectionOnly = true;
-
-        this.reconcileFields(view.fields, becameProjection);
+        this.fields = newFields;
+        this.generateDataConfig();
     }
 
-    /**
-     * Restore this Store's own declared fields, dropping any adopted from a connected View.
-     * Adopted `projectionOnly` and `digestSpec` are retained - existing records were built
-     * under them. @internal
-     */
-    disconnectView() {
-        this.reconcileFields([]);
-    }
-
-    // Merge view-published fields with the app's own extras, regenerating data config on change.
-    private reconcileFields(viewFields: Field[], forceRegen: boolean = false) {
+    // Merge view-published fields with the app's own extras - types, displayNames and calculated
+    // status flow from the query's CubeFields, which supersede app fields sharing their name.
+    private mergeViewFields(viewFields: Field[]): Field[] {
         const viewNames = new Set(map(viewFields, 'name')),
             extras = this._ownFields.filter(it => !viewNames.has(it.name));
 
@@ -1079,14 +1073,7 @@ export class Store
             `Store field '${conflict?.name}' declares a calculatedFn but is also published by the connected Cube View - rename the store-layer field, or compute it on the View via CubeFieldSpec.calculatedFn.`
         );
 
-        const newFields = [...viewFields, ...extras],
-            unchanged =
-                newFields.length === this.fields.length &&
-                newFields.every((it, idx) => it === this.fields[idx]);
-        if (unchanged && !forceRegen) return;
-
-        this.fields = newFields;
-        this.generateDataConfig();
+        return [...viewFields, ...extras];
     }
 
     /**
@@ -1715,7 +1702,7 @@ export class Store
 
     /**
      * (Re)generate the per-Store constructs backing record `data` objects - field map and the
-     * record data generator. Re-runnable, so config changes (e.g. `connectView`) and anticipated
+     * record data generator. Re-runnable, so field reconciliation and anticipated
      * runtime calculated-field updates can regenerate. Existing records are not re-wrapped.
      */
     private generateDataConfig() {

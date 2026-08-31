@@ -10,25 +10,22 @@ The headline addition is **calculated fields** (`FieldSpec.calculatedFn` and
 `CubeFieldSpec.calculatedFn`) - client-computed field values at both the Store and Cube View
 layers. See the CHANGELOG for details; calculated fields are additive and require no app changes.
 
-## Connected stores are now always `projectionOnly`
+## Connected stores: construct with `StoreConfig.view`
 
-Stores connected to a Cube `View` are now always read-only projections - the View sets
-`projectionOnly: true` on them at connection, adopting the rows it publishes as record `data` by
-reference rather than re-parsing and copying them. The View already owns parsing (its rows are
-generated from the cube's parsed records), so projection mode is faster on every load and update
-and is required for Views using calculated fields. An explicit `projectionOnly: false` or a
-`processRawData` function on a connected store now throws at connection.
-
-Most apps need no changes - prior versions logged a warning recommending exactly this setting,
-and an unset config (the common case) simply lands on the enforced mode. Apps that configured
-around full parsing should migrate:
+Stores now connect to a Cube `View` at construction, replacing `ViewConfig.stores` and
+`View.setStores()`. A connected store is built as a read-only projection of the View's published
+rows - `projectionOnly` and a row-based `digestSpec` are set automatically, view rows are adopted
+as record `data` by reference (no re-parse or copy), and conflicting config
+(`projectionOnly: false`, `processRawData`, `digestSpec`, `idEncodesTreePath`) throws.
 
 ```typescript
-// Before - explicit opt-out kept the connected store parsing each view row.
-store: {fields: [...], projectionOnly: false}
+// Before - store built first, then adopted by the View.
+const gridModel = new GridModel({store: {fields: [...]}, ...});
+const view = cube.createView({query, stores: gridModel.store, connect: true});
 
-// After - remove the config; the View enforces projection mode.
-store: {fields: [...]}
+// After - View first; the store connects (and loads) at construction.
+const view = cube.createView({query, connect: true});
+const gridModel = new GridModel({store: {view, fields: [...]}, ...});
 ```
 
 - `modifyRecords()` (and other local modification APIs) throw on a projection store - route edits
@@ -36,6 +33,9 @@ store: {fields: [...]}
 - Replace a connected store's `processRawData` transform with Cube fields or calculated fields
   (`FieldSpec.calculatedFn` / `CubeFieldSpec.calculatedFn`) - note `updateData()` never applied
   `processRawData`, so such transforms only ever ran on full loads and were stale on updates.
+- To detach and later re-attach a connected store (it retains its config and last-loaded data),
+  use `View.removeStore()` / `addStore()`. To pause updates - e.g. for a hidden tab - prefer
+  `View.disconnect()` / `connect()`, which stops the whole pipeline.
 - `projectionOnly` remains a fully supported opt-in config for ordinary (non-connected) stores.
 
 ## Connected store fields flow from the View
