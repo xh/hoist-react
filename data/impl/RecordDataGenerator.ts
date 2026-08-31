@@ -17,9 +17,7 @@ import {installCalculatedFieldGetters, installSourceFieldGetters} from './FieldG
  * getters. Owned by its Store and rebuilt whenever data config changes, mirroring the Cube's
  * `RowDataGenerator`.
  *
- * All representations keep records on fixed shapes in V8's compact fast-properties mode - objects
- * built by keyed property adds are demoted to a memory-hungry per-object hashtable ("dictionary
- * mode") past ~20 adds.
+ * All representations keep records on fixed shapes in V8's compact fast-properties mode.
  *
  * @internal
  */
