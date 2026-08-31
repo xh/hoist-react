@@ -10,31 +10,30 @@ The headline addition is **calculated fields** (`FieldSpec.calculatedFn` and
 `CubeFieldSpec.calculatedFn`) - client-computed field values at both the Store and Cube View
 layers. See the CHANGELOG for details; calculated fields are additive and require no app changes.
 
-## Connected stores now default to `projectionOnly`
+## Connected stores are now always `projectionOnly`
 
-Stores connected to a Cube `View` now default to `projectionOnly: true`, adopting the rows the
-View publishes as record `data` by reference rather than re-parsing and copying them. The View
-already owns parsing (its rows are generated from the cube's parsed records), so projection mode
-is faster on every load and update and is required for Views using calculated fields.
+Stores connected to a Cube `View` are now always read-only projections - the View sets
+`projectionOnly: true` on them at connection, adopting the rows it publishes as record `data` by
+reference rather than re-parsing and copying them. The View already owns parsing (its rows are
+generated from the cube's parsed records), so projection mode is faster on every load and update
+and is required for Views using calculated fields. An explicit `projectionOnly: false` or a
+`processRawData` function on a connected store now throws at connection.
 
-Most apps need no changes - the default applies only where the config was left unset, and prior
-versions logged a warning recommending exactly this setting. Apps that relied on full parsing of
-view rows should opt out with an explicit `false`:
+Most apps need no changes - prior versions logged a warning recommending exactly this setting,
+and an unset config (the common case) simply lands on the enforced mode. Apps that configured
+around full parsing should migrate:
 
 ```typescript
-// Before - connected store parsed each view row (with a console warning).
-store: {fields: [...]}
-
-// After - no change needed to get projection mode. To keep full parsing instead:
+// Before - explicit opt-out kept the connected store parsing each view row.
 store: {fields: [...], projectionOnly: false}
-```
 
-Notes for opted-out or affected apps:
+// After - remove the config; the View enforces projection mode.
+store: {fields: [...]}
+```
 
 - `modifyRecords()` (and other local modification APIs) throw on a projection store - route edits
   through `Cube.modifyRecordsAsync()` instead, so they survive view regeneration.
-- A connected store with a `processRawData` function is automatically left in full-parsing mode -
-  note that `updateData()` has never applied `processRawData`, so such transforms only ever ran
-  on full loads.
-- Views with calculated fields (`CubeFieldSpec.calculatedFn`) require projection mode and will
-  throw at connection if a store opts out.
+- Replace a connected store's `processRawData` transform with Cube fields or calculated fields
+  (`FieldSpec.calculatedFn` / `CubeFieldSpec.calculatedFn`) - note `updateData()` never applied
+  `processRawData`, so such transforms only ever ran on full loads and were stale on updates.
+- `projectionOnly` remains a fully supported opt-in config for ordinary (non-connected) stores.

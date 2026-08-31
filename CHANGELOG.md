@@ -14,14 +14,15 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - behavioral default, most apps unaffected)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - connected-store projection requirement)
 
 See [`docs/upgrade-notes/v88-upgrade-notes.md`](docs/upgrade-notes/v88-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-* Stores connected to a Cube `View` now default to `projectionOnly: true`, adopting view rows by
-  reference. Apps that relied on full parsing of view rows - e.g. calling `modifyRecords()`
-  directly on a connected store - should opt out with an explicit `projectionOnly: false`.
+* Stores connected to a Cube `View` are now always `projectionOnly` projections, adopting view
+  rows by reference - the connecting View sets the flag itself, and an explicit
+  `projectionOnly: false` or `processRawData` config on a connected store now throws. Route edits
+  through the Cube (e.g. `Cube.modifyRecordsAsync()`) rather than `modifyRecords()` on the store.
 
 ### 🎁 New Features
 

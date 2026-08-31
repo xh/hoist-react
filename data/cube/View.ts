@@ -727,26 +727,22 @@ export class View
             '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
         );
 
-        // Connected stores adopt rows this View has already parsed - default them into
-        // projection mode. An explicit false or a processRawData function opts out.
-        ret.forEach(s => {
-            if (s.projectionOnly == null && !s.processRawData) s.setProjectionOnly(true);
-        });
+        // Connected stores adopt rows this View has already parsed - always projections.
+        throwIf(
+            ret.some(s => s.projectionOnly === false || s.processRawData),
+            'Stores connected to a Cube View are always read-only projections, adopting view rows by reference - remove any `projectionOnly: false` or `processRawData` config. Route edits through the Cube, and derive additional values via calculated fields.'
+        );
+        ret.forEach(s => s.setProjectionOnly(true));
 
         this.syncStoreCalculatedFields(ret);
 
         return ret;
     }
 
-    /** Enforce `projectionOnly` and mark this View's calculated field names on connected stores. */
+    /** Mark this View's calculated field names on connected stores - drives their automatic
+     * grid repaint, filter refresh, and read-only column handling. */
     private syncStoreCalculatedFields(stores: Store[]) {
-        if (isEmpty(stores)) return;
-
         const calcNames = new Set(map(this._calcFields, 'name'));
-        throwIf(
-            calcNames.size && stores.some(s => !s.projectionOnly),
-            'Stores connected to a Cube View with calculated fields may not opt out of `projectionOnly` - calculated values are computed lazily on view rows and must be adopted by reference, not copied by a parsing store.'
-        );
         stores.forEach(s => s.setExternalCalculatedFieldNames(calcNames));
     }
 

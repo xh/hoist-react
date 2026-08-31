@@ -166,7 +166,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v88](./upgrade-notes/v88-upgrade-notes.md) | TBD | 🟢 LOW | Connected stores default `projectionOnly: true`; calculated fields (`FieldSpec.calculatedFn` / `CubeFieldSpec.calculatedFn`) are the new-feature headline |
+| [v88](./upgrade-notes/v88-upgrade-notes.md) | TBD | 🟢 LOW | Connected stores are now always `projectionOnly`; calculated fields (`FieldSpec.calculatedFn` / `CubeFieldSpec.calculatedFn`) are the new-feature headline |
 | [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |
 | [v86](./upgrade-notes/v86-upgrade-notes.md) | 2026-06-12 | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
 | [v85](./upgrade-notes/v85-upgrade-notes.md) | 2026-04-23 | 🟢 LOW | `InitContext` on `HoistService.initAsync()` / `HoistAppModel.initAsync()`, nested app-load spans, Swiper 11→12 |

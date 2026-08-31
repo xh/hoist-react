@@ -59,7 +59,7 @@ export interface CubeFieldSpec extends FieldSpec {
      *
      * Mutually exclusive with `aggregator`, `canAggregateFn` and `isDimension`. Calculated
      * fields may not feed other aggregators or appear in a {@link BucketSpec}'s
-     * `dependentFields`; connected stores may not opt out of {@link StoreConfig.projectionOnly}.
+     * `dependentFields`.
      */
     calculatedFn?: CubeCalculatedFn;
 

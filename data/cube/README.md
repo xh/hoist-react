@@ -114,8 +114,7 @@ loading a store with `loadRootAsSummary` - prefer a Store-layer `calculatedFn` r
 
 Constraints: `calculatedFn` is mutually exclusive with `aggregator`, `canAggregateFn` and
 `isDimension`; calculated fields may not feed other aggregators or appear in a `BucketSpec`'s
-`dependentFields`; and stores connected to a View with calculated fields may not opt out of
-`projectionOnly`.
+`dependentFields`.
 
 ## Querying with Views
 
@@ -252,9 +251,9 @@ There are two ways to consume View results:
 **Option 1: Connected stores (recommended for grids)**
 
 Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
-into them whenever the query results change. Connected stores default to `projectionOnly`,
-adopting View rows as record data without re-parsing - opt out with an explicit `false` or a
-`processRawData` function. Record reuse is
+into them whenever the query results change. Connected stores are always `projectionOnly`
+projections - the View sets this itself - adopting View rows as record data without re-parsing.
+Record reuse is
 automatic - the View installs its own row-based digest on each connected store, so rows
 republished without change skip record rebuilds:
 

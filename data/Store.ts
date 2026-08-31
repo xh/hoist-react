@@ -200,9 +200,9 @@ export interface StoreConfig {
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Default null - but a Cube {@link View} defaults its connected stores to `true` on
-     * connection, unless a store opts out with an explicit `false` or a `processRawData`
-     * function.
+     * Default null. Stores connected to a Cube {@link View} are always projections - the
+     * connecting View sets this flag itself, and throws on an explicit `false` or a
+     * `processRawData` function.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -1040,7 +1040,7 @@ export class Store
     }
 
     /**
-     * Adopt or leave projection mode post-construction - called by a Cube View defaulting its
+     * Adopt or leave projection mode post-construction - called by a Cube View placing its
      * connected stores into projection mode before (re)loading them. Existing records are not
      * re-shaped - callers own reloading.
      * @internal
