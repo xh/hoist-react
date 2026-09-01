@@ -19,14 +19,30 @@
 * Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
-  `PanelModel`, etc.), which also name the child models they create. Services are named with
-  their `XH` key (e.g. `fetchService`), and `XH.appModel` and the app container's models by their
-  property (`appModel`, `routerModel`, `pageStateModel`, ...), so they now log under those labels.
-* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin
-  it, and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
+  `PanelModel`, etc.), which also name the child models they create. Services are named with their
+  `XH` key (e.g. `fetchService`), and `XH.appModel` and the app container's models by their property
+  (`appModel`, `routerModel`, `pageStateModel`, ...), so they now log under those labels.
+* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin it,
+  and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
   across reloads, so the same set of objects can be followed session to session; those with no live
   instance show as placeholder rows until un-starred.
+* Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
+  mobile) to provide more structure by default to the input control with easy options to customize.
+* Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile
+  prop. Defaults to `true`, so a filled control now divides its width into equal segments rather
+  than sizing each option to its own label.
 
+### 🐞 Bug Fixes
+
+* Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
+  the control now sizes to its options.
+
+### ✨ Styles
+
+* `SegmentedControl.outlined` now adds a border to the tray without also removing its background,
+  and defaults to `true`. Pair with `showTrayBackground: false` for the previous appearance.
+* Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
+  replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
 
 ## 87.1.0 - 2026-08-28
 
@@ -144,11 +160,11 @@ and performance optimizations, grouped by topic below.
 
 #### Grid - Data Update Timing
 
-* Grids now always apply `Store` data changes to ag-Grid in a fresh macrotask - pending UI
-  updates (e.g. load masks) paint first, and rapid changes coalesce. This strengthens an existing
-  requirement: grid reads after a data change were already subject to a minimal async debounce
-  and should already route through `GridModel.whenReadyAsync()`, which now provides a hard
-  guarantee that all store data has been applied to ag-Grid.
+* Grids now always apply `Store` data changes to ag-Grid in a fresh macrotask - pending UI updates
+  (e.g. load masks) paint first, and rapid changes coalesce. This strengthens an existing
+  requirement: grid reads after a data change were already subject to a minimal async debounce and
+  should already route through `GridModel.whenReadyAsync()`, which now provides a hard guarantee
+  that all store data has been applied to ag-Grid.
 * Grids now pace update-driven re-sorts and managed autosizes off their own measured cost, instead
   of re-running them every tick. Managed autosize still runs immediately on a `Store` load or filter
   change. Tune via the `deferredSortFactor` and `deferredAutosizeFactor` experimental flags.
@@ -253,13 +269,13 @@ columns.
   scrolled to the `top`, `middle`, or `bottom` of the viewport, instead of scrolling only the
   minimum amount required.
 * Improved `Grid` data update performance with tiered ag-Grid transaction handling. Update
-  transactions that provably cannot affect row order, grouping, or tree structure now skip
-  ag-Grid's model refresh entirely, and transactions that would re-order rows apply their cell
-  values immediately, with row order restored by a managed, idle-scheduled re-sort. New records
-  still sort into place on arrival.
+  transactions that provably cannot affect row order, grouping, or tree structure now skip ag-Grid's
+  model refresh entirely, and transactions that would re-order rows apply their cell values
+  immediately, with row order restored by a managed, idle-scheduled re-sort. New records still sort
+  into place on arrival.
 * Added `StoreTransaction.changedFields`, letting data producers assert exactly which fields a
-  value-only update touched. Cube `View`s supply this automatically, extending the no-re-sort
-  Grid fast path to view-connected stores. See the data package README for details.
+  value-only update touched. Cube `View`s supply this automatically, extending the no-re-sort Grid
+  fast path to view-connected stores. See the data package README for details.
 
 #### Admin Console
 
@@ -304,8 +320,8 @@ columns.
   stores, and adds a Diagnostics panel - a live readout of the data-pipeline `diagnostics`
   published by selected Stores, Cubes, Cube Views, and GridModels, with controls to reset counters
   and stream ops to the devtools console.
-* Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances,
-  now registered with Hoist's instance registry.
+* Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances, now
+  registered with Hoist's instance registry.
 * Added `useComposedRefs` - a hook variant of `composeRefs` that manages identity via `useCallback`
   and forwards React 19 ref-callback cleanups. Prefer it when composing refs within a component
   render function.
@@ -369,9 +385,9 @@ columns.
 * Removed the deprecated webpack-only `~` prefix from bare-module SCSS imports and the `inter-ui`
   font-path URL in framework styles. Modern sass-loader and css-loader resolve the same package
   paths without it, and the prefix breaks under other bundlers.
-* Replaced `GridExperimentalFlags.deltaSort` with `deltaSortRatio` - Hoist now manages ag-Grid
-  delta sorting automatically, using it for re-sorts touching fewer than this percentage of rows
-  (default 50). See the Grid transaction handling entry under New Features.
+* Replaced `GridExperimentalFlags.deltaSort` with `deltaSortRatio` - Hoist now manages ag-Grid delta
+  sorting automatically, using it for re-sorts touching fewer than this percentage of rows (default
+  50). See the Grid transaction handling entry under New Features.
 * Added `GridExperimentalFlags.deferredSortFactor` to tune the pacing of the managed re-sort on
   updating grids - a re-sort costing E ms defers the next for `E * factor` (default 4). Set 0 to
   disable deferral and re-sort synchronously on every change.
