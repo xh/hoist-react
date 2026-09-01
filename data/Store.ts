@@ -237,6 +237,9 @@ export interface StoreConfig {
      *     it may also be changed on an existing Store at any time.
      */
     experimental?: PlainObject;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -447,6 +450,7 @@ export class Store
         projectionOnly = null,
         validationIsComplex = false,
         experimental,
+        xhName = null,
         data
     }: StoreConfig) {
         super();
@@ -456,6 +460,7 @@ export class Store
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
         );
 
+        this.xhName = xhName;
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = this.parseIdSpec(idSpec);

@@ -18,6 +18,7 @@ import {AppOption} from './AppOption';
  */
 export class OptionsDialogModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'optionsDialogModel';
 
     @observable isOpen: boolean = false;
     @observable.ref options: AppOption[] = [];

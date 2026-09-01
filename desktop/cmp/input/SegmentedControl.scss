@@ -59,10 +59,53 @@
     }
   }
 
-  // Outlined mode - border around control tray with no inner background.
+  // Outlined mode (default) - a border around the control tray. Independent of the tray fill,
+  // which is governed by --no-tray-bg below.
   &--outlined .bp6-segmented-control {
-    background-color: transparent;
     border: 1px solid var(--xh-border-color);
+  }
+
+  // Not filling - shrink the tray to its options. The tray is a block-level flex container, so it
+  // spans its parent regardless; BP's fill class governs only whether the options themselves grow.
+  // Without this, an unfilled control leaves an empty run of tray to the right of its options.
+  &:not(#{&}--fill) .bp6-segmented-control {
+    width: fit-content;
+  }
+
+  // Equal segment widths - zeroing the flex basis makes each option take an identical share of the
+  // tray. BP's flex-grow alone divides only the leftover space, leaving options at differing widths.
+  &--fill#{&}--equal-widths .bp6-segmented-control > .bp6-button {
+    flex-basis: 0;
+  }
+
+  // Tray background suppressed - a lighter presentation, with no fill behind the options.
+  &--no-tray-bg .bp6-segmented-control {
+    background-color: transparent;
+  }
+
+  // Option dividers - internal structure for a tray whose options are otherwise undifferentiated,
+  // most notably in the empty state where no selected option breaks up the row. Drawn in the gap
+  // to the left of each option after the first, and suppressed on either side of the selected
+  // option so they never crowd it.
+  &--dividers .bp6-segmented-control {
+    > .bp6-button {
+      position: relative;
+    }
+
+    > .bp6-button + .bp6-button::before {
+      content: '';
+      position: absolute;
+      left: calc(var(--xh-segmented-control-pad-px) / -2);
+      top: 20%;
+      bottom: 20%;
+      width: 1px;
+      background-color: var(--xh-border-color);
+    }
+
+    > .bp6-button:not(.bp6-minimal)::before,
+    > .bp6-button:not(.bp6-minimal) + .bp6-button::before {
+      display: none;
+    }
   }
 
   @each $intent in (primary, success, warning, danger) {

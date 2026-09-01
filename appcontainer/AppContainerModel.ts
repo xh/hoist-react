@@ -71,6 +71,8 @@ import {installServicesAsync} from '../core/impl/InstallServices';
  * Root object for Framework GUI State.
  */
 export class AppContainerModel extends HoistModel {
+    override xhName = 'appContainerModel';
+
     override telemetryPrefix = 'xh.client';
 
     private initCalled = false;
@@ -338,6 +340,7 @@ export class AppContainerModel extends HoistModel {
         // App init phase
         this.setAppState('INITIALIZING_APP');
         this.appModel = createSingleton(this.appSpec.modelClass);
+        this.appModel.xhName ??= 'appModel';
         await this.runner(ctx)
             .span('appInit')
             .run(ctx => this.appModel.initAsync(ctx as InitContext));

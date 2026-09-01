@@ -392,6 +392,9 @@ export interface GridConfig {
     /** Extra app-specific data for the GridModel. */
     appData?: PlainObject;
 
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
+
     /** @internal */
     xhImpl?: boolean;
 }
@@ -707,11 +710,13 @@ export class GridModel extends HoistModel {
             enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll,
             experimental,
             appData,
+            xhName = null,
             xhImpl,
             ...rest
         }: GridConfig = config;
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this._defaultState = {columns, sortBy, groupBy, expandLevel};
 
@@ -776,6 +781,7 @@ export class GridModel extends HoistModel {
         sizingMode = this.parseSizingMode(sizingMode);
 
         this.agGridModel = new AgGridModel({
+            xhName: this.childXhName('agGridModel'),
             sizingMode,
             showHover,
             rowBorders,
@@ -1894,7 +1900,11 @@ export class GridModel extends HoistModel {
             store = storeOrConfig;
         } else {
             storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
-            store = new Store({loadTreeData: this.treeMode, ...storeOrConfig});
+            store = new Store({
+                xhName: this.childXhName('store'),
+                loadTreeData: this.treeMode,
+                ...storeOrConfig
+            });
             store.xhImpl = this.xhImpl;
             this.markManaged(store);
         }
@@ -2106,7 +2116,12 @@ export class GridModel extends HoistModel {
         }
 
         return this.markManaged(
-            new StoreSelectionModel({...selModel, store: this.store, xhImpl: true})
+            new StoreSelectionModel({
+                xhName: this.childXhName('selModel'),
+                ...selModel,
+                store: this.store,
+                xhImpl: true
+            })
         );
     }
 
@@ -2114,7 +2129,10 @@ export class GridModel extends HoistModel {
         if (XH.isMobileApp || !filterModel) return null;
 
         filterModel = filterModel === true ? {} : filterModel;
-        return new GridFilterModel({bind: this.store, ...filterModel}, this);
+        return new GridFilterModel(
+            {xhName: this.childXhName('filterModel'), bind: this.store, ...filterModel},
+            this
+        );
     }
 
     private parseExperimental(experimental: GridExperimentalFlags) {
@@ -2146,7 +2164,9 @@ export class GridModel extends HoistModel {
               ? DesktopDockedColChooserModel
               : DesktopModalColChooserModel;
 
-        return this.markManaged(new modelClass({...config, gridModel: this}));
+        const ret = this.markManaged(new modelClass({...config, gridModel: this}));
+        ret.xhName = this.childXhName('colChooserModel');
+        return ret;
     }
 
     private isGroupSpec(col: ColumnOrGroupSpec): col is ColumnGroupSpec {
