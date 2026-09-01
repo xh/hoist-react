@@ -37,8 +37,23 @@
 * Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
   the control now sizes to its options.
 
+### ⚙️ Technical
+
+* The desktop `GroupingChooser` (in both input and button modes), `ColChooserButton`, and
+  `ZoneMapperButton` trigger buttons now render in their `active` state while their popover is open.
+  These popovers are controlled by Hoist, so Blueprint does not flag their triggers automatically -
+  see the Styles note below for the uncontrolled case.
+* The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
+  (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
+
 ### ✨ Styles
 
+* Desktop `Button` active styling now also keys on Blueprint's `bp6-active` class, so any button
+  that opens an *uncontrolled* popover renders in its `active` state while that popover is showing,
+  with no per-component code. This brings Hoist's own menu triggers into line (`AppMenuButton`,
+  `ExpandToLevelButton`, `DashCanvasAddViewButton`, `DashContainerMenuButton`, and the `Toolbar`,
+  `TabSwitcher`, and `DashCanvas` overflow menus) and applies to app buttons as well. A button that
+  needs full control of its appearance can opt out by taking ownership of its popover's `isOpen`.
 * `SegmentedControl.outlined` now adds a border to the tray without also removing its background,
   and defaults to `true`. Pair with `showTrayBackground: false` for the previous appearance.
 * Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
