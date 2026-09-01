@@ -64,7 +64,7 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
 
     /**
      * True (default) to style trigger button background and borders to match inputs. Set to false
-     * to render an outlined button instead - override via `minimal`/`outlined` props as needed.
+     * to render an outlined button instead.
      */
     styleButtonAsInput?: boolean;
 }

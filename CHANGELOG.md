@@ -43,9 +43,8 @@
   `ZoneMapperButton` trigger buttons now render in their `active` state while their popover is open.
   These popovers are controlled by Hoist, so Blueprint does not flag their triggers automatically -
   see the Styles note below for the uncontrolled case.
-* The desktop `GroupingChooser` trigger button now defaults to an `outlined` style when in button
-  mode (`styleButtonAsInput: false`), to match the `ViewManager` trigger - pass `minimal`/`outlined`
-  props to the component to restore the prior filled styling.
+* The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
+  (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
 
 ### ✨ Styles
 
