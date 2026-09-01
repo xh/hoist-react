@@ -99,7 +99,15 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             popoverClassName: 'xh-col-chooser-popover',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: modalModel.isPopoverOpen,
-            item: button({icon, title, className, disabled, onClick, ...rest}),
+            item: button({
+                icon,
+                title,
+                className,
+                disabled,
+                active: modalModel.isPopoverOpen,
+                onClick,
+                ...rest
+            }),
             disabled,
             content: vbox({
                 onClick: stopPropagation,
