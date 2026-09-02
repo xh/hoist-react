@@ -1,0 +1,559 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// DateRangePicker - trigger + popover styling. Colors and key sizes come from the
+// `--xh-date-range-picker-*` vars declared in styles/vars.scss, so both themes work without any
+// theme-specific overrides here and apps can re-key the picker via the unprefixed hooks.
+
+// Fixed type scale for the picker's secondary text - tuned to the popover's layout, rather than
+// derived from the app font size.
+$drp-font-size-micro: 10px;
+$drp-font-size-secondary: 11px;
+$drp-icon-size: 12px;
+$drp-transition-dur: 120ms;
+
+// Uppercase header for a tab section or an input label.
+@mixin drp-micro-label {
+  font-size: $drp-font-size-secondary;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--xh-text-color-muted);
+}
+
+// Muted annotation text - helper copy, footnotes, secondary counts.
+@mixin drp-secondary-text {
+  font-size: $drp-font-size-secondary;
+  color: var(--xh-text-color-muted);
+}
+
+// As above, for wrapped explanatory sentences - looser leading at this size.
+@mixin drp-secondary-prose {
+  @include drp-secondary-text;
+
+  line-height: 1.45;
+}
+
+// The picker's date font, for the resolved dates shown throughout.
+@mixin drp-date {
+  font-family: var(--xh-date-range-picker-date-font-family);
+  font-size: var(--xh-date-range-picker-date-font-size);
+}
+
+// A resolved range shown beside a label - receding.
+@mixin drp-date-secondary {
+  @include drp-date;
+
+  color: var(--xh-text-color-muted);
+}
+
+// The primary resolved value on a tab - foregrounded.
+@mixin drp-date-emphasis {
+  @include drp-date;
+
+  font-size: calc(var(--xh-date-range-picker-date-font-size) + 2px);
+  color: var(--xh-text-color-headings);
+}
+
+@mixin drp-footer-shell {
+  padding: 7px 10px;
+  background: var(--xh-date-range-picker-footer-bg);
+  border-top: 1px solid var(--xh-border-color);
+  border-radius: 0 0 var(--xh-border-radius-px) var(--xh-border-radius-px);
+}
+
+// Scoped under .xh-app to out-rank Hoist base button rules of the same class count.
+.xh-app {
+  .xh-date-range-picker {
+    // Outer box is sized via layoutSupport - the trigger stretches to fill, beside any step buttons.
+    gap: 2px;
+
+    .bp6-popover-target {
+      flex: 1;
+      min-width: 0;
+      display: block;
+    }
+
+    &__step-btn.xh-button.bp6-button {
+      flex: none;
+      min-width: 24px;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    &__trigger.xh-button.bp6-button {
+      width: 100%;
+
+      > .bp6-button-text {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        width: 100%;
+        min-width: 0;
+        white-space: nowrap;
+      }
+
+      > .xh-icon {
+        font-size: $drp-icon-size;
+        opacity: 0.85;
+      }
+
+      .xh-date-range-picker__trigger-label {
+        font-size: var(--xh-font-size-px);
+        font-weight: 500;
+      }
+
+      .xh-date-range-picker__trigger-divider {
+        opacity: 0.35;
+      }
+
+      .xh-date-range-picker__trigger-range {
+        flex: 1;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        @include drp-date;
+
+        letter-spacing: -0.2px;
+      }
+
+      // Input styling for the trigger, matching GroupingChooser and Picker.
+      &.xh-date-range-picker__trigger--as-input {
+        background-color: var(--xh-input-bg) !important;
+        border: none;
+        box-shadow: var(--xh-form-field-box-shadow);
+        padding-left: var(--xh-pad-px) !important;
+        padding-right: var(--xh-pad-px) !important;
+
+        > .xh-icon {
+          color: var(--xh-text-color-muted);
+        }
+
+        // Preserve input-style box-shadow and add subtle surface highlight on hover/active -
+        // Blueprint's minimal button rules set `box-shadow: none` on these states, hiding the
+        // input outline in dark mode.
+        &:hover {
+          background-color: color-mix(in srgb, var(--xh-input-bg) 94%, gray) !important;
+          box-shadow: var(--xh-form-field-box-shadow) !important;
+        }
+
+        &:active,
+        &.xh-button--active,
+        &.bp6-active {
+          background-color: color-mix(in srgb, var(--xh-input-bg) 88%, gray) !important;
+          box-shadow: var(--xh-form-field-box-shadow) !important;
+        }
+      }
+    }
+
+    // Compact variant (narrow hosts, or `showRange: false`): the trigger carries the period label
+    // alone. The resolved range remains available via the trigger's title.
+    &--compact .xh-date-range-picker__trigger-label {
+      flex: 1;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      // Keep a truncated label's ellipsis off the trigger's edge.
+      padding-right: var(--xh-pad-half-px);
+    }
+  }
+
+  .xh-date-range-picker-popover {
+    // Selection accent - the primary intent by default, re-keyed by the component's `intent`
+    // prop via the modifier classes below.
+    &--intent-success {
+      --xh-date-range-picker-accent: var(--xh-intent-success);
+    }
+
+    &--intent-warning {
+      --xh-date-range-picker-accent: var(--xh-intent-warning);
+    }
+
+    &--intent-danger {
+      --xh-date-range-picker-accent: var(--xh-intent-danger);
+    }
+
+    .bp6-popover-content {
+      padding: 0;
+      background: var(--xh-popup-bg);
+      border-radius: var(--xh-border-radius-px);
+    }
+
+    &.bp6-popover {
+      border: 1px solid var(--xh-popup-border-color);
+      border-radius: var(--xh-border-radius-px);
+    }
+
+    &__content {
+      width: var(--xh-date-range-picker-popover-width);
+      font-size: var(--xh-font-size-px);
+      color: var(--xh-text-color);
+    }
+
+    &__body {
+      min-height: var(--xh-date-range-picker-popover-min-height);
+      align-items: stretch;
+
+      .xh-tab-switcher--left {
+        --xh-tab-switcher-vertical-item-hover-bg: var(--xh-date-range-picker-hover-bg);
+
+        background: var(--xh-date-range-picker-rail-bg);
+      }
+    }
+
+    // Single-tab variant: no rail to navigate, so the popover shrinks to the tab's width.
+    // Written as explicit descendants - `&--single &__content` would re-expand the .xh-app
+    // wrapper mid-selector and never match.
+    &--single {
+      .xh-date-range-picker-popover__content {
+        width: var(--xh-date-range-picker-popover-single-width);
+      }
+
+      .xh-date-range-picker-popover__body {
+        min-height: 0;
+      }
+    }
+
+    //------------------
+    // Tab shell
+    //------------------
+    &__tab {
+      flex: 1;
+      padding: var(--xh-pad-px);
+      min-width: 0;
+    }
+
+    &__section-hdr {
+      @include drp-micro-label;
+
+      padding: 2px 6px 6px;
+    }
+
+    //------------------
+    // Presets tab
+    //------------------
+    &__preset-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: var(--xh-date-range-picker-row-height);
+      min-height: var(--xh-date-range-picker-row-height);
+      padding: 0 6px;
+      border-radius: var(--xh-border-radius-px);
+      cursor: pointer;
+      transition:
+        background-color $drp-transition-dur,
+        color $drp-transition-dur;
+
+      &:hover {
+        background: var(--xh-date-range-picker-hover-bg);
+      }
+
+      &--selected {
+        background: var(--xh-date-range-picker-selected-bg);
+        color: var(--xh-text-color-headings);
+
+        &:hover {
+          background: var(--xh-date-range-picker-selected-bg);
+        }
+
+        .xh-date-range-picker-popover__row-range {
+          color: var(--xh-text-color);
+        }
+      }
+    }
+
+    &__row-check {
+      font-size: $drp-font-size-micro;
+      width: 12px;
+      color: var(--xh-date-range-picker-accent);
+
+      &--hidden {
+        visibility: hidden;
+      }
+    }
+
+    &__row-name {
+      flex: 1;
+    }
+
+    &__row-range {
+      @include drp-date-secondary;
+    }
+
+    //------------------
+    // Relative tab
+    //------------------
+    &__rel-row {
+      align-items: center;
+      gap: 8px;
+      padding: 0 6px;
+      margin-bottom: var(--xh-pad-px);
+    }
+
+    &__rel-last {
+      color: var(--xh-text-color-muted);
+    }
+
+    &__snap-box {
+      margin: 0 6px var(--xh-pad-px);
+      padding: 8px;
+      border: 1px solid var(--xh-border-color);
+      border-radius: var(--xh-border-radius-px);
+
+      // `fill: false` sizes the options but leaves the tray stretched - hug the content.
+      .xh-segmented-control {
+        width: fit-content;
+      }
+    }
+
+    &__snap-help {
+      @include drp-secondary-prose;
+
+      margin-top: 6px;
+    }
+
+    &__preview {
+      margin: 0 6px;
+      padding: 8px 10px;
+      background: var(--xh-bg-alt);
+      border: 1px solid var(--xh-border-color);
+      border-radius: var(--xh-border-radius-px);
+    }
+
+    &__preview-label {
+      @include drp-micro-label;
+
+      margin-bottom: 4px;
+    }
+
+    &__preview-range {
+      @include drp-date-emphasis;
+    }
+
+    &__preview-days {
+      @include drp-secondary-text;
+
+      margin-top: 2px;
+    }
+
+    //------------------
+    // Months & Years tab
+    //------------------
+    &__month-hdr {
+      align-items: center;
+
+      .xh-date-range-picker-popover__section-hdr {
+        padding-bottom: 2px;
+      }
+    }
+
+    &__nav-btn.xh-button.bp6-button {
+      width: 24px;
+      min-width: 24px;
+      height: 24px;
+      min-height: 24px;
+      padding: 0;
+      color: var(--xh-text-color-muted);
+
+      &.xh-button--disabled {
+        opacity: 0.3;
+      }
+    }
+
+    &__year-val {
+      @include drp-date-emphasis;
+
+      font-weight: 500;
+      width: 52px;
+      text-align: center;
+    }
+
+    &__month-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 4px 6px 0;
+    }
+
+    // Grid cells stretch; the buttons bring their own chrome, hover, active and disabled states.
+    &__month-btn.xh-button {
+      width: 100%;
+    }
+
+    &__year-row.xh-button {
+      margin: 6px 6px 0;
+
+      // Blueprint wraps `items` in a non-flex text span - lay them out, as the trigger does.
+      > .bp6-button-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+      }
+
+      svg {
+        font-size: $drp-icon-size;
+      }
+
+      // The range span sets its own muted color; when selected, let the filled button's
+      // text color win instead.
+      &.xh-button--active .xh-date-range-picker-popover__row-range {
+        color: inherit;
+      }
+    }
+
+    &__year-row-label {
+      flex: 1;
+    }
+
+    //------------------
+    // Custom tab
+    //------------------
+    &__custom-fields {
+      align-items: end;
+      gap: 8px;
+      padding: 0 6px;
+      margin-bottom: var(--xh-pad-px);
+    }
+
+    &__field {
+      flex: 1;
+
+      .xh-date-input .bp6-input {
+        font-family: var(--xh-date-range-picker-date-font-family);
+      }
+
+      // Accents the field whose edge the next calendar click will set. Overrides the resolved
+      // `--xh-` var, not the `--form-field-` hook: the hook is only read where Hoist declares
+      // these vars, on `body`, so it has no effect scoped to a descendant.
+      &--armed {
+        --xh-form-field-box-shadow: inset 0 0 0 1px var(--xh-date-range-picker-accent);
+      }
+    }
+
+    &__field-label {
+      @include drp-micro-label;
+
+      margin-bottom: 4px;
+    }
+
+    &__field-arrow {
+      font-size: $drp-font-size-micro;
+      color: var(--xh-text-color-muted);
+      margin-bottom: 9px;
+    }
+
+    &__cal-nav {
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    &__cal-title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      color: var(--xh-text-color-headings);
+    }
+
+    &__cals {
+      gap: 16px;
+      padding: 0 6px;
+    }
+
+    &__cal {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__cal-dow {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding-bottom: 3px;
+
+      > span {
+        font-size: $drp-font-size-micro;
+        font-weight: 600;
+        color: var(--xh-text-color-muted);
+        text-align: center;
+      }
+    }
+
+    &__cal-week {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      margin-bottom: 1px;
+    }
+
+    &__cal-cell {
+      height: var(--xh-date-range-picker-day-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      @include drp-date;
+
+      border-radius: 2px;
+      cursor: pointer;
+      transition:
+        background-color $drp-transition-dur,
+        color $drp-transition-dur;
+
+      &:empty {
+        cursor: default;
+        pointer-events: none;
+      }
+
+      &:hover:not(:empty):not(.xh-date-range-picker-popover__cal-cell--edge):not(
+          .xh-date-range-picker-popover__cal-cell--disabled
+        ) {
+        background: var(--xh-date-range-picker-hover-bg);
+      }
+
+      &--in-range {
+        background: var(--xh-date-range-picker-selected-bg);
+      }
+
+      &--edge {
+        background: var(--xh-date-range-picker-accent);
+        color: var(--xh-date-range-picker-accent-text-color);
+        font-weight: 600;
+        border-radius: 3px;
+      }
+
+      &--disabled {
+        opacity: 0.35;
+        cursor: default;
+        pointer-events: none;
+      }
+    }
+
+    //------------------
+    // Footer
+    //------------------
+    &__footer {
+      @include drp-footer-shell;
+
+      align-items: center;
+      gap: 8px;
+    }
+
+    &__footer-icon {
+      @include drp-secondary-text;
+    }
+
+    &__footer-note {
+      @include drp-secondary-prose;
+    }
+
+    &__single-footer {
+      @include drp-footer-shell;
+
+      @include drp-date-secondary;
+    }
+  }
+}

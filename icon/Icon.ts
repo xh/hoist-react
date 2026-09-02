@@ -231,6 +231,12 @@ export const Icon = {
     calendar(p?: IconProps) {
         return Icon.icon({...p, iconName: 'calendar-day'});
     },
+    calendarDays(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'calendar-days'});
+    },
+    calendarRange(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'calendar-range'});
+    },
     camera(p?: IconProps) {
         return Icon.icon({...p, iconName: 'camera'});
     },

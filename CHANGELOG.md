@@ -16,6 +16,13 @@
 
 ### 🎁 New Features
 
+* Added `DateRangePicker` (`desktop/cmp/daterange`), a compact control for selecting a period as a
+  preset (MTD, Last 30 Days, ...), a relative lookback, a calendar month or year, or a custom date
+  range. Its `DateRangePickerModel` persists the selection as plain JSON and resolves it to concrete
+  date ranges and `FieldFilterSpec`s for querying.
+* The Admin Console's Activity Tracking tab now selects its query period with a `DateRangePicker`.
+  Periods saved in existing views reset to Today on first load.
+* Added `Icon.calendarDays` and `Icon.calendarRange`.
 * Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
@@ -58,6 +65,7 @@
   and defaults to `true`. Pair with `showTrayBackground: false` for the previous appearance.
 * Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
+* Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
 
 ## 87.1.0 - 2026-08-28
 
