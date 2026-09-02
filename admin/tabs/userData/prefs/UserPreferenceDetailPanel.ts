@@ -4,9 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {yesNoRenderer} from '@xh/hoist/admin/AdminUtils';
 import {valueTypeRenderer} from '@xh/hoist/admin/columns';
-import {restDetailPanel} from '@xh/hoist/admin/detail/RestDetailPanel';
+import {jsonDetailRenderer, restDetailPanel} from '@xh/hoist/admin/detail/RestDetailPanel';
 import {formFieldSet} from '@xh/hoist/cmp/form';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -14,43 +13,34 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
-import {ConfigPanelModel} from './ConfigPanelModel';
-import {configValue} from './ConfigValue';
+import {UserPreferenceModel} from './UserPreferenceModel';
 
-/**
- * Read-only detail view of the config selected in the grid. Shows the config's metadata and every
- * available view of its value - resolved, instance override, database, and typedClass defaults -
- * opening on the most-derived view.
- */
-export const configDetailPanel = hoistCmp.factory<ConfigPanelModel>({
-    displayName: 'ConfigDetailPanel',
-    model: uses(ConfigPanelModel),
+/** Read-only detail view of the user preference value selected in the grid. */
+export const userPreferenceDetailPanel = hoistCmp.factory<UserPreferenceModel>({
+    displayName: 'UserPreferenceDetailPanel',
+    model: uses(UserPreferenceModel),
 
     render({model}) {
         return restDetailPanel({
-            icon: Icon.settings(),
-            emptyText: 'Select a config to view its details.',
+            icon: Icon.bookmark(),
+            emptyText: 'Select a user preference to view its details.',
             persistWith: {...model.persistWith, path: 'detailPanel'},
             renderForm: (record, formModel) => {
-                const {note, valueType} = formModel.values;
+                const {type} = formModel.values,
+                    isJson = type === 'json';
                 return [
                     formFieldSet({
-                        title: 'Config',
+                        title: 'Preference',
                         items: [
                             hbox(
+                                formField({field: 'username', flex: 1}),
                                 formField({field: 'groupName', flex: 1}),
                                 formField({
-                                    field: 'valueType',
+                                    field: 'type',
                                     readonlyRenderer: valueTypeRenderer,
-                                    flex: 1
-                                }),
-                                formField({
-                                    field: 'clientVisible',
-                                    readonlyRenderer: yesNoRenderer,
                                     flex: 1
                                 })
                             ),
-                            formField({field: 'note', omit: !note}),
                             hbox(
                                 formField({field: 'lastUpdatedBy', label: 'Updated By', flex: 1}),
                                 formField({
@@ -64,12 +54,12 @@ export const configDetailPanel = hoistCmp.factory<ConfigPanelModel>({
                     }),
                     formFieldSet({
                         title: 'Value',
-                        // JSON values stretch to fill the remaining height - scalars sit compactly.
-                        className: classNames(
-                            valueType === 'json' ? 'xh-admin-readonly-form__fill' : null
-                        ),
-                        // Keyed by record so the value's tab set rebuilds on selection change.
-                        item: configValue({key: record.id, formModel})
+                        className: classNames(isJson ? 'xh-admin-readonly-form__fill' : null),
+                        item: formField({
+                            field: 'userValue',
+                            label: null,
+                            readonlyRenderer: isJson ? jsonDetailRenderer : undefined
+                        })
                     })
                 ];
             }

@@ -13,6 +13,8 @@ import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 
 export class UserPreferenceModel extends HoistModel {
+    override persistWith = {localStorageKey: 'xhAdminUserPreferenceState'};
+
     @managed gridModel: RestGridModel;
 
     @bindable showEditorDialog: boolean = false;
@@ -32,7 +34,7 @@ export class UserPreferenceModel extends HoistModel {
             exportOptions: {filename: exportFilenameWithDate('user-prefs')},
             filterFields: ['name', 'username'],
             groupBy: 'groupName',
-            persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
+            persistWith: this.persistWith,
             readonly: AppModel.readonly,
             selModel: 'multiple',
             sortBy: 'name',

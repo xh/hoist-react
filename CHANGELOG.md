@@ -31,11 +31,12 @@
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile
   prop. Defaults to `true`, so a filled control now divides its width into equal segments rather
   than sizing each option to its own label.
-* Added a read-only detail panel to the Admin Console's Config tab, docked to the right of the grid
-  and tracking its selection. It shows every view of a config's value - resolved, instance
-  override, database, and typedClass defaults - opening on the most-derived view, with an `Edit`
-  button to open the editor. The editor dialog is now dedicated to editing and opens JSON values on
-  the `Database` tab, and double-click no longer opens a view-only dialog for read-only admins.
+* Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
+  tabs, docked to the right of each grid and tracking its selection. The Config panel shows every
+  view of a config's value - resolved, instance override, database, and typedClass defaults -
+  opening on the most-derived view. Each panel offers an `Edit` button to open the grid's editor,
+  which is now dedicated to editing: the Config editor opens JSON values on the `Database` tab, and
+  double-click no longer opens a view-only dialog for read-only admins.
 
 ### 🐞 Bug Fixes
 

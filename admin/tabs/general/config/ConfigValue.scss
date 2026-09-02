@@ -91,10 +91,4 @@
     flex: 1;
     min-height: 0;
   }
-
-  // Frame the editor - it otherwise floats borderless within the detail panel's field set.
-  .xh-code-input {
-    border: var(--xh-border-solid);
-    border-radius: var(--xh-border-radius-px);
-  }
 }

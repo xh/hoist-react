@@ -44,6 +44,48 @@
   --xh-form-field-label-font-weight: 600;
   --xh-form-field-label-text-transform: uppercase;
   --xh-form-field-readonly-label-margin: 0;
+
+  // A field set (or other child) that stretches to fill the remaining height, passing the flex
+  // down to a read-only code editor within. `.xh-card` renders as a <fieldset>, so make it an
+  // explicit flex column.
+  &__fill {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
+    > .xh-card__content,
+    .xh-form-field,
+    .xh-form-field__inner,
+    .xh-form-field__readonly-display {
+      flex: 1;
+      min-height: 0;
+    }
+
+    // FormField's read-only wrapper is a block - make it (and the display within) flex columns
+    // so a percentage-height editor has a definite height to fill.
+    .xh-form-field__inner,
+    .xh-form-field__readonly-display {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .xh-form-field__readonly-display {
+      padding: 0;
+    }
+  }
+
+  // Frame read-only editors - they otherwise float borderless within a field set.
+  .xh-code-input {
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius-px);
+  }
+}
+
+// RestDetailPanel form body.
+.xh-admin-rest-detail__form {
+  padding: var(--xh-pad-px);
+  gap: var(--xh-pad-px);
 }
 
 .xh-units-label {

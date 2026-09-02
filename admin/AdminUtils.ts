@@ -38,3 +38,8 @@ export function naSpan(): ReactNode {
 export function valOrNa(v: any): ReactNode {
     return v != null ? v : naSpan();
 }
+
+/** Readonly renderer for boolean fields in detail forms - "Yes" / "No", or {@link naSpan} when null. */
+export function yesNoRenderer(v: boolean): ReactNode {
+    return v == null ? naSpan() : v ? 'Yes' : 'No';
+}
