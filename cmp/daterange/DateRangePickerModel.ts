@@ -209,8 +209,9 @@ export class DateRangePickerModel extends HoistModel {
 
     /**
      * The immediately preceding, non-overlapping range of comparable shape - the same span one
-     * unit earlier for a period-to-date, an equal number of days for a rolling window. Null when
-     * the current range is unbounded.
+     * unit earlier for a period-to-date, `count` units earlier for a lookback in weeks or larger
+     * units, an equal number of days for day-based windows. Null when the current range is
+     * unbounded.
      */
     get priorRange(): LocalDateRange | null {
         return this.resolvedValue.prior;
@@ -342,8 +343,8 @@ export class DateRangePickerModel extends HoistModel {
                 return preset;
             }
             throwIf(
-                !it?.token || !isFunction(it.resolve),
-                'App-defined date range presets require a `token` and a `resolve` function.'
+                !it?.token || !it.label || !isFunction(it.resolve),
+                'App-defined date range presets require a `token`, a `label`, and a `resolve` function.'
             );
             return it;
         });
@@ -352,10 +353,14 @@ export class DateRangePickerModel extends HoistModel {
             'Date range preset tokens must be unique.'
         );
         this.presets = ret;
+
+        // The applied value may name a preset that is no longer offered.
+        if (this.value && !this.parseValue(this.value)) this.value = this.fallbackValue;
     }
 
     @action
     setAnchorDate(anchorDate: LocalDate) {
+        throwIf(!anchorDate, 'DateRangePickerModel requires an anchorDate.');
         this.anchorDate = anchorDate;
     }
 
@@ -466,6 +471,23 @@ export class DateRangePickerModel extends HoistModel {
      */
     @action
     private restoreValue(raw: unknown) {
-        this.value = this.parseValue(raw) ?? this.defaultValue;
+        const next = this.parseValue(raw) ?? this.fallbackValue;
+        if (!isEqual(next, this.value)) this.value = next;
+    }
+
+    /**
+     * `defaultValue` while it still resolves, else the first configured preset, else a rolling 30
+     * days - `defaultValue` can itself name a preset that `setPresets()` has since removed.
+     */
+    private get fallbackValue(): DateRangeSelection {
+        return (
+            this.parseValue(this.defaultValue) ??
+            this.parseValue(this.presets[0]?.token) ?? {
+                kind: 'relative',
+                count: 30,
+                unit: 'days',
+                snap: false
+            }
+        );
     }
 }

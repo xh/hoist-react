@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, type Intent, lookup, managed} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import type {LocalDate} from '@xh/hoist/utils/datetime';
 import {clamp, isEqual} from 'lodash';
@@ -61,8 +61,11 @@ export class DateRangePickerLocalModel extends HoistModel {
     /** testId of the host picker - tabs derive their own testIds from it. */
     testId: string;
 
-    /** Measured trigger width - drives the compact variant when stretched into a narrow host. */
-    @bindable triggerWidth: number = null;
+    /** Measured width of the whole control - drives the compact variant in a narrow host. */
+    @bindable measuredWidth: number = null;
+
+    /** Intent of the host picker as of its last render - accents selected months and years. */
+    intent: Intent = null;
 
     /** Root element of this instance - scopes popover outside-click handling to this picker. */
     viewRef = createRef<HTMLDivElement>();
@@ -224,9 +227,12 @@ export class DateRangePickerLocalModel extends HoistModel {
     //------------------
     // Custom tab
     //------------------
+    /** The Custom tab's draft, or null before the first open seeds it. */
     @computed.struct
     get customDraft(): DateRangeSelection {
-        return {kind: 'custom', start: this.customStart.isoString, end: this.customEnd.isoString};
+        const {customStart, customEnd} = this;
+        if (!customStart || !customEnd) return null;
+        return {kind: 'custom', start: customStart.isoString, end: customEnd.isoString};
     }
 
     get rightMonth(): LocalDate {
@@ -259,9 +265,9 @@ export class DateRangePickerLocalModel extends HoistModel {
         return this.activeTabId === 'relative' || this.activeTabId === 'custom';
     }
 
-    /** True to offer Apply and Cancel - a draft is pending and drafts do not commit on change. */
+    /** True to offer Apply and Cancel - drafts wait for Apply rather than committing on change. */
     get showApplyControls(): boolean {
-        return this.applyEnabled && !this.parentModel.commitOnChange;
+        return !this.parentModel.commitOnChange;
     }
 
     /** Whether the default footer note about anchoring applies to the configured tabs. */
@@ -477,7 +483,7 @@ export class DateRangePickerLocalModel extends HoistModel {
             if (tabChanged || !isEqual(this.relativeDraft, this.seededRelativeDraft)) {
                 parentModel.setValue(this.relativeDraft);
             }
-        } else if (activeTabId === 'custom') {
+        } else if (activeTabId === 'custom' && this.customDraft) {
             if (tabChanged || !isEqual(this.customDraft, this.seededCustomDraft)) {
                 parentModel.setValue(this.customDraft);
             }

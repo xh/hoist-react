@@ -32,7 +32,7 @@ import {Icon} from '@xh/hoist/icon';
 import {controlGroup, popover} from '@xh/hoist/kit/blueprint';
 import type {PopoverPosition} from '@blueprintjs/core';
 import type {LocalDate} from '@xh/hoist/utils/datetime';
-import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {composeRefs, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {KeyboardEvent, ReactNode} from 'react';
@@ -47,8 +47,9 @@ export interface DateRangePickerProps
     buttonProps?: Partial<ButtonProps>;
 
     /**
-     * Text rendered in the popover footer, or null to suppress. Default is a note on the date
-     * that relative periods anchor to, shown when the Presets or Relative tab is offered.
+     * Text rendered in the popover footer, or null to suppress. Default is a note on the date that
+     * relative periods anchor to, shown when the Presets or Relative tab is offered. Not shown by
+     * a single-tab picker, whose footer carries the resolved dates instead.
      */
     footerNote?: ReactNode;
 
@@ -132,9 +133,11 @@ export const [DateRangePicker, dateRangePicker] = hoistCmp.withFactory<DateRange
             {flex, width} = layoutProps,
             stretched =
                 (flex != null && flex !== 0 && flex !== '0' && flex !== 'none') || width != null,
-            compact = stretched && impl.triggerWidth != null && impl.triggerWidth < 280,
-            resizeRef = useOnResize(rect => (impl.triggerWidth = rect.width), {debounce: 100}),
+            compact = stretched && impl.measuredWidth != null && impl.measuredWidth < 280,
+            resizeRef = useOnResize(rect => (impl.measuredWidth = rect.width), {debounce: 100}),
             viewRef = stretched ? composeRefs(impl.viewRef, resizeRef) : impl.viewRef;
+
+        impl.intent = intent;
 
         return box({
             className: classNames(className, compact && 'xh-date-range-picker--compact'),
@@ -168,12 +171,14 @@ export const [DateRangePicker, dateRangePicker] = hoistCmp.withFactory<DateRange
                     content: popoverContent({model: impl, testId, intent, footerNote}),
                     onInteraction: (willOpen, e) => {
                         if (!willOpen && impl.isOpen) {
-                            // Clicks within this instance's own trigger toggle via its onClick -
-                            // don't double-close. Scoped by element so clicking a *different*
-                            // picker's trigger still closes this one.
-                            const target = e?.target as HTMLElement;
-                            if (target && impl.viewRef.current?.contains(target)) return;
-                            impl.close();
+                            // Clicks on this instance's own trigger toggle via its onClick - don't
+                            // double-close. Anything else, including this picker's own step
+                            // buttons, closes the popover so it never shows drafts seeded from a
+                            // stale value.
+                            const target = e?.target as HTMLElement,
+                                onTrigger =
+                                    target && elemWithin(target, 'xh-date-range-picker__trigger');
+                            if (!onTrigger) impl.close();
                         }
                     }
                 }),
@@ -494,7 +499,7 @@ const monthYearTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId
                         outlined: !active,
                         minimal: !active,
                         active,
-                        intent: active ? 'primary' : undefined,
+                        intent: active ? (model.intent ?? 'primary') : undefined,
                         disabled: model.isMonthDisabled(month),
                         testId: getTestId(testId, `month-${month}`),
                         onClick: () => model.commit({kind: 'month', year: gridYear, month})
@@ -506,7 +511,7 @@ const monthYearTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId
                 outlined: !yearSelected,
                 minimal: !yearSelected,
                 active: yearSelected,
-                intent: yearSelected ? 'primary' : undefined,
+                intent: yearSelected ? (model.intent ?? 'primary') : undefined,
                 disabled: !model.yearSelectable,
                 testId: getTestId(testId, 'year-row'),
                 onClick: () => model.commit({kind: 'year', year: gridYear}),
@@ -686,9 +691,10 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
                         ? model.anchorNote
                         : null
                     : footerNote,
-            showNote = !singleTab && note != null;
+            showNote = !singleTab && note != null && note !== false;
 
-        if (singleTab && !showApplyControls) {
+        // A single tab with nothing to apply - or that applies as it changes - needs no buttons.
+        if (singleTab && (!model.applyEnabled || !showApplyControls)) {
             return div({
                 className: 'xh-date-range-picker-popover__single-footer',
                 item: parentModel.rangeLabel
@@ -714,7 +720,7 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
                 button({
                     omit: !showApplyControls,
                     text: 'Cancel',
-                    testId: getTestId(testId, 'cancel-btn'),
+                    testId: getTestId(testId, 'cancel'),
                     onClick: () => model.close()
                 }),
                 button({
@@ -724,7 +730,7 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
                     // Follows the component's `intent`, so the footer stays coherent with the
                     // popover's selection accent. Primary otherwise, per the Hoist standard.
                     intent: intent ?? 'primary',
-                    testId: getTestId(testId, 'apply-btn'),
+                    testId: getTestId(testId, 'apply'),
                     onClick: () => model.apply()
                 })
             ]

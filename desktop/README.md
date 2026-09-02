@@ -355,7 +355,7 @@ leftRightChooser({model})
 | `/appOption/` | App-wide configuration options UI |
 | `/clipboard/` | Clipboard operations (copy with feedback) |
 | `/contextmenu/` | Right-click context menu support |
-| `/daterange/` | Date range picker - presets, relative lookbacks, months and years, custom ranges |
+| `/daterange/` | Date range picker - presets, relative lookbacks, months and years, custom ranges (see [Date Range README](../cmp/daterange/README.md)) |
 | `/filechooser/` | File selection input |
 | `/filter/` | Filter chooser and filter editor |
 | `/form/` | FormField wrapper for desktop inputs |

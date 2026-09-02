@@ -107,7 +107,7 @@ export interface PresetDateRangeSelection {
 /** A lookback of `count` units ending on the anchor date. */
 export interface RelativeDateRangeSelection {
     kind: 'relative';
-    /** Number of units, 1 or more. */
+    /** Number of units, from 1 to {@link MAX_RELATIVE_COUNT}. */
     count: number;
     unit: DateRangeUnit;
     /**

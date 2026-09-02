@@ -90,8 +90,19 @@ export function resolveDateRange(
                       anchorDate.startOf(unit).subtract(count - 1, unit)
                     : // Rolling window of exactly `count` units ending on the anchor date.
                       anchorDate.subtract(count, unit).nextDay(),
-                current = {start, end: anchorDate};
-            return {current, prior: equalDurationPrior(current)};
+                current = {start, end: anchorDate},
+                // Compare like against like: a lookback in months, quarters, weeks, or years steps
+                // its prior back by the same units, matching the equivalent presets - so 3 months
+                // ending May 31 compares against 3 months ending Feb 28, not 92 days. Days keep
+                // an equal number of days.
+                prior =
+                    unit === 'days'
+                        ? equalDurationPrior(current)
+                        : {
+                              start: start.subtract(count, unit),
+                              end: anchorDate.subtract(count, unit)
+                          };
+            return {current, prior};
         }
 
         case 'month':
@@ -342,7 +353,9 @@ export function stepDateRangeSelection(
         let next = start.add(steps, unit);
         if (next > maxStart) next = maxStart;
         if (next < minStart) next = minStart;
-        if (next === start) return null;
+        // No move, or clamping reversed the direction - e.g. stepping forward from a period
+        // already beyond `maxDate`.
+        if (steps > 0 ? next <= start : next >= start) return null;
 
         const year = next.moment.year();
         return sel.kind === 'month'
@@ -367,7 +380,8 @@ export function stepDateRangeSelection(
         // A range longer than the bounds themselves - fill them.
         if (nextEnd > maxDate) nextEnd = maxDate;
     }
-    if (nextStart === start && nextEnd === end) return null;
+    // As above - never move against the requested direction.
+    if (steps > 0 ? nextEnd <= end : nextStart >= start) return null;
 
     return {kind: 'custom', start: nextStart.isoString, end: nextEnd.isoString};
 }
