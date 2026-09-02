@@ -27,7 +27,7 @@ import {
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
-import {debouncePromise, wait} from '@xh/hoist/promise';
+import {debouncePromise, wait, waitFor} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -820,13 +820,14 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.inputValue = model.inputValue || '';
         rsProps.onInputChange = model.onInputChange;
         rsProps.controlShouldRenderValue = !model.hasFocus;
+    }
+
+    // Scroll selected option into view on open - react-select's own does not fire for portalled menus.
+    if (!model.multiMode && model.renderValue) {
         rsProps.onMenuOpen = () => {
-            wait().then(() => {
-                const selectedEl = document.getElementsByClassName(
-                    'xh-select__option--is-selected'
-                )[0];
-                selectedEl?.scrollIntoView({block: 'end'});
-            });
+            const getSel = () =>
+                document.getElementsByClassName('xh-select__option--is-selected')[0];
+            waitFor(() => !!getSel()).then(() => getSel().scrollIntoView({block: 'end'}));
         };
     }
 

@@ -41,6 +41,9 @@
 
 * Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
   the control now sizes to its options.
+* Fixed desktop `Select` not reliably scrolling the selected option into view when opening its
+  menu - a regression from the v86 react-select upgrade. Selects with `enableFilter: false` never
+  scrolled; others did so intermittently.
 
 ### ⚙️ Technical
 
