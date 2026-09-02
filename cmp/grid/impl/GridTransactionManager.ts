@@ -47,11 +47,9 @@ export class GridTransactionManager extends HoistBase {
     @managed
     private sortScheduler: DeferredWorkScheduler;
 
-    // Rows updated by suppressed transactions since the last sort - null when order is current.
-    private pendingSortIds: Set<StoreRecordId> = null;
-
-    // True when order may be stale beyond any tracked rows - the flush must run a full sort.
-    private pendingSortFull = false;
+    // Rows updated by suppressed transactions since the last sort, or 'full' when order may be
+    // stale beyond any tracked rows - null when order is current.
+    private pendingSort: Set<StoreRecordId> | 'full' = null;
 
     // Cached provable sort paths - undefined = stale, null = sort not provably value-based.
     private _sortPaths: Array<Some<string>> | null | undefined;
@@ -82,10 +80,7 @@ export class GridTransactionManager extends HoistBase {
         });
         try {
             agApi.applyTransaction(transaction);
-            if (!suppress) {
-                this.pendingSortIds = null;
-                this.pendingSortFull = false;
-            }
+            if (!suppress) this.pendingSort = null;
         } finally {
             agApi.updateGridOptions({
                 suppressModelUpdateAfterUpdateTransaction: false,
@@ -99,8 +94,7 @@ export class GridTransactionManager extends HoistBase {
      * calculated sort value moved by a summary-only update. Schedules a paced full re-sort.
      */
     noteSortStale() {
-        this.pendingSortFull = true;
-        this.pendingSortIds ??= new Set();
+        this.pendingSort = 'full';
         this.sortScheduler.scheduleAsync();
     }
 
@@ -135,7 +129,7 @@ export class GridTransactionManager extends HoistBase {
 
         // With a flush pending, current order is stale - a delta merge would preserve the
         // staleness, so any refresh must be full (which resolves the pending flush, per apply).
-        if (this.pendingSortIds) return 'full';
+        if (this.pendingSort) return 'full';
 
         const changedCount = update.length + add.length + remove.length;
         return newRs.count > 0 && changedCount / newRs.count < this.deltaSortRatio
@@ -213,32 +207,33 @@ export class GridTransactionManager extends HoistBase {
     }
 
     private notePendingSort(updates: StoreRecord[]) {
-        const ids = (this.pendingSortIds ??= new Set());
-        updates.forEach(rec => ids.add(rec.id));
+        const {pendingSort} = this;
+        // A pending full sort already covers these rows - no need to track them.
+        if (pendingSort !== 'full') {
+            const ids = pendingSort ?? (this.pendingSort = new Set());
+            updates.forEach(rec => ids.add(rec.id));
+        }
         this.sortScheduler.scheduleAsync();
     }
 
     private flushPendingSort() {
-        const {model, pendingSortIds, pendingSortFull} = this,
+        const {model, pendingSort} = this,
             latestRs = model._syncedRs;
-        // Not ready - leave ids pending; the next transaction will run 'full' and resolve them.
-        if (!pendingSortIds || !latestRs || !model.isReady) return;
-        this.pendingSortIds = null;
-        this.pendingSortFull = false;
+        // Not ready - leave the sort pending; the next transaction will run 'full' and resolve it.
+        if (!pendingSort || !latestRs || !model.isReady) return;
+        this.pendingSort = null;
 
         const start = performance.now(),
             {agApi} = model,
             update = [];
-        pendingSortIds.forEach(id => {
-            const rec = latestRs.getById(id);
-            if (rec) update.push(rec);
-        });
+        if (pendingSort !== 'full') {
+            pendingSort.forEach(id => {
+                const rec = latestRs.getById(id);
+                if (rec) update.push(rec);
+            });
+        }
 
-        if (
-            !pendingSortFull &&
-            update.length &&
-            update.length / latestRs.count < this.deltaSortRatio
-        ) {
+        if (update.length && update.length / latestRs.count < this.deltaSortRatio) {
             agApi.updateGridOptions({deltaSort: true});
             try {
                 agApi.applyTransaction({update});

@@ -42,7 +42,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   it, and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
   across reloads, so the same set of objects can be followed session to session; those with no live
   instance show as placeholder rows until un-starred.
-*
 * Added `FieldSpec.calculatedFn` - declare Store fields computed on the client from each record's
   other values and the Store, with no source data or server round-trip required. Values are
   computed lazily on read - always current, with minimal memory and load-time overhead - and
