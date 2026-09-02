@@ -522,6 +522,8 @@ const monthYearTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId
                         item: model.yearRowLabel
                     }),
                     span({
+                        // As on the Presets tab - the single-tab popover is too narrow for dates.
+                        omit: model.singleTab,
                         className: 'xh-date-range-picker-popover__row-range',
                         item: parentModel.fmtRange(yearRange)
                     })
