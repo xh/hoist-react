@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {span} from '@xh/hoist/cmp/layout';
+import {div, span} from '@xh/hoist/cmp/layout';
+import {markdown} from '@xh/hoist/cmp/markdown';
 import {XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
@@ -42,4 +43,15 @@ export function valOrNa(v: any): ReactNode {
 /** Readonly renderer for boolean fields in detail forms - "Yes" / "No", or {@link naSpan} when null. */
 export function yesNoRenderer(v: boolean): ReactNode {
     return v == null ? naSpan() : v ? 'Yes' : 'No';
+}
+
+/**
+ * Readonly renderer for free-text fields in detail forms that may contain Markdown (notes,
+ * descriptions). Renders via {@link markdown} within a wrapper styled for compact display, or
+ * {@link naSpan} when null.
+ */
+export function markdownRenderer(v: string): ReactNode {
+    return v == null
+        ? naSpan()
+        : div({className: 'xh-admin-readonly-form__markdown', item: markdown({content: v})});
 }

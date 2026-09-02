@@ -75,6 +75,31 @@
     }
   }
 
+  // Markdown-rendered text fields - undo the readonly display's pre-wrap (which turns
+  // react-markdown's inter-element newlines into blank lines) and tighten block spacing.
+  &__markdown {
+    white-space: normal;
+
+    p,
+    ul,
+    ol {
+      margin: 0 0 var(--xh-pad-half-px) 0;
+    }
+
+    ul,
+    ol {
+      padding-left: 1.5em;
+    }
+
+    li > p {
+      margin: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
   // Frame read-only editors - they otherwise float borderless within a field set.
   .xh-code-input {
     border: var(--xh-border-solid);

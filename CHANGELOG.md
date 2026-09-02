@@ -34,9 +34,10 @@
 * Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
   tabs, docked to the right of each grid and tracking its selection. The Config panel shows every
   view of a config's value - resolved, instance override, database, and typedClass defaults -
-  opening on the most-derived view. Each panel offers an `Edit` button to open the grid's editor,
-  which is now dedicated to editing: the Config editor opens JSON values on the `Database` tab, and
-  double-click no longer opens a view-only dialog for read-only admins.
+  opening on the most-derived view, and renders config notes as Markdown. Each panel offers an
+  `Edit` button to open the grid's editor, which is now dedicated to editing: the Config editor
+  opens JSON values on the `Database` tab, and double-click no longer opens a view-only dialog for
+  read-only admins.
 
 ### 🐞 Bug Fixes
 

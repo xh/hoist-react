@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {yesNoRenderer} from '@xh/hoist/admin/AdminUtils';
+import {markdownRenderer, yesNoRenderer} from '@xh/hoist/admin/AdminUtils';
 import {valueTypeRenderer} from '@xh/hoist/admin/columns';
 import {restDetailPanel} from '@xh/hoist/admin/detail/RestDetailPanel';
 import {formFieldSet} from '@xh/hoist/cmp/form';
@@ -50,7 +50,11 @@ export const configDetailPanel = hoistCmp.factory<ConfigPanelModel>({
                                     flex: 1
                                 })
                             ),
-                            formField({field: 'note', omit: !note}),
+                            formField({
+                                field: 'note',
+                                readonlyRenderer: markdownRenderer,
+                                omit: !note
+                            }),
                             hbox(
                                 formField({field: 'lastUpdatedBy', label: 'Updated By', flex: 1}),
                                 formField({
