@@ -822,16 +822,12 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.controlShouldRenderValue = !model.hasFocus;
     }
 
-    // Scroll the selected option into view on menu open. Required for all single-selects, as
-    // react-select's built-in equivalent does not fire for portalled menus (which we always use).
-    // Poll for the option element - the portalled menu mounts over multiple render passes.
-    if (!model.multiMode) {
+    // Scroll selected option into view on open - react-select's own does not fire for portalled menus.
+    if (!model.multiMode && model.renderValue) {
         rsProps.onMenuOpen = () => {
-            const getSelectedEl = () =>
+            const getSel = () =>
                 document.getElementsByClassName('xh-select__option--is-selected')[0];
-            waitFor(() => !!getSelectedEl())
-                .then(() => getSelectedEl()?.scrollIntoView({block: 'end'}))
-                .catch(() => {}); // Timeout expected when no option selected - nothing to scroll to.
+            waitFor(() => !!getSel()).then(() => getSel().scrollIntoView({block: 'end'}));
         };
     }
 
