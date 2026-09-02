@@ -155,14 +155,8 @@ export class InspectorService extends HoistService {
         this.stats = [];
     }
 
+    /** Clear all persisted Inspector state and reopen the Inspector. Callers should confirm first. */
     async restoreDefaultsAsync() {
-        if (
-            !(await XH.confirm({
-                message: "Reset Inspector's layout and options to their defaults?"
-            }))
-        )
-            return;
-
         XH.localStorageService.removeIf(it => it.startsWith(`xhInspector.${XH.clientAppCode}`));
         this.deactivate();
         await wait();

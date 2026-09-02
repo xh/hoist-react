@@ -7,7 +7,6 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 
 /**
@@ -18,7 +17,6 @@ export class StatsModel extends HoistModel {
 
     override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
-    panelModel: PanelModel;
     gridModel: GridModel;
     chartModel: ChartModel;
 
@@ -28,13 +26,6 @@ export class StatsModel extends HoistModel {
 
     constructor() {
         super();
-
-        this.panelModel = new PanelModel({
-            side: 'left',
-            defaultSize: 450,
-            persistWith: this.persistWith,
-            xhImpl: true
-        });
 
         this.gridModel = new GridModel({
             colChooserModel: true,

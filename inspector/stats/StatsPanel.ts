@@ -6,7 +6,7 @@
  */
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid} from '@xh/hoist/cmp/grid';
-import {code, div, filler, span} from '@xh/hoist/cmp/layout';
+import {code, div, filler, hframe, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, useContextModel, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -20,25 +20,22 @@ export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
     render({model}) {
-        const inspectorModel = useContextModel(InspectorModel),
-            popupParent = inspectorModel?.windowContainer ?? undefined;
+        // Re-parent grid popups (context/column menus) when Inspector is detached.
+        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
 
         return panel({
-            title: 'Stats',
-            icon: Icon.chartArea(),
-            compactHeader: true,
-            model: model.panelModel,
-            items: [
+            item: hframe(
                 grid({agOptions: {popupParent}}),
                 panel({
                     item: chart(),
                     modelConfig: {
-                        side: 'bottom',
-                        defaultSize: 200,
+                        side: 'right',
+                        defaultSize: '50%',
+                        collapsible: false,
                         xhImpl: true
                     }
                 })
-            ],
+            ),
             bbar: toolbar({
                 items: [
                     popover({
@@ -55,31 +52,14 @@ export const statsPanel = hoistCmp.factory({
                     }),
                     filler(),
                     button({
-                        text: `Tab ${XH.tabId}`,
-                        icon: Icon.window(),
-                        tooltip: 'Focus the app tab this Inspector is attached to',
-                        onClick: () => inspectorModel.focusApp()
+                        tooltip: 'Reset stats',
+                        icon: Icon.reset(),
+                        onClick: () => XH.inspectorService.clearStats()
                     }),
-                    '-',
                     button({
                         tooltip: 'Take stat snapshot now',
                         icon: Icon.camera(),
                         onClick: () => XH.inspectorService.updateStats()
-                    }),
-                    button({
-                        tooltip: 'Clear stats',
-                        icon: Icon.trash(),
-                        onClick: () => XH.inspectorService.clearStats()
-                    }),
-                    '-',
-                    button({
-                        tooltip: "Restore Inspector's layout and options to their defaults",
-                        icon: Icon.reset(),
-                        onClick: () => {
-                            // Confirm dialog renders in the app window - bring it forward.
-                            inspectorModel.focusApp();
-                            XH.inspectorService.restoreDefaultsAsync();
-                        }
                     })
                 ]
             })

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
+import {a, div, filler, hframe, p, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp, useContextModel} from '@xh/hoist/core';
@@ -23,47 +23,13 @@ export const instancesPanel = hoistCmp.factory({
     model: creates(InstancesModel),
 
     render({model}) {
-        const {instancesPanelModel, selectedSyncRun} = model,
+        const {instancesPanelModel} = model,
             // Re-parent grid popups (context/column menus) when Inspector is detached.
-            popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined,
-            headerItems = [];
-
-        if (selectedSyncRun) {
-            headerItems.push(
-                popover({
-                    interactionKind: 'hover',
-                    item: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
-                    content: div({
-                        className: 'xh-pad',
-                        style: {width: '300px'},
-                        items: [
-                            p('Triggered by your selection in the Stats grid.'),
-                            p(
-                                'Focuses this grid on instances created around the same time, in-between batched updates to stats.'
-                            ),
-                            p(
-                                'Useful for isolating clusters of models created together as part of an interaction or handler.'
-                            ),
-                            p(
-                                a({
-                                    item: '(click to clear)',
-                                    onClick: () => model.statsModel.gridModel.clearSelection()
-                                })
-                            )
-                        ]
-                    })
-                }),
-                hspacer()
-            );
-        }
+            popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
 
         return panel({
             item: hframe(
                 panel({
-                    title: `Models · Services · Data`,
-                    headerItems,
-                    icon: Icon.cube(),
-                    compactHeader: true,
                     item: grid({
                         model: model.instancesGridModel,
                         agOptions: {
@@ -115,7 +81,7 @@ const diagnosticsView = hoistCmp.factory<InstancesModel>({
 });
 
 const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
-    const {instancesGridModel} = model;
+    const {instancesGridModel, selectedSyncRun} = model;
     return toolbar({
         items: [
             buttonGroupInput({
@@ -140,6 +106,30 @@ const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
                             'Show only favorited instances, including any not currently alive. Star any instance with an xhName to favorite it - favorites persist across reloads.'
                     })
                 ]
+            }),
+            popover({
+                omit: !selectedSyncRun,
+                interactionKind: 'hover',
+                item: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
+                content: div({
+                    className: 'xh-pad',
+                    style: {width: '300px'},
+                    items: [
+                        p('Triggered by your selection in the Memory grid.'),
+                        p(
+                            'Focuses this grid on instances created around the same time, in-between batched updates to stats.'
+                        ),
+                        p(
+                            'Useful for isolating clusters of models created together as part of an interaction or handler.'
+                        ),
+                        p(
+                            a({
+                                item: '(click to clear)',
+                                onClick: () => model.statsModel.gridModel.clearSelection()
+                            })
+                        )
+                    ]
+                })
             }),
             filler(),
             gridCountLabel({unit: 'instance', gridModel: instancesGridModel}),

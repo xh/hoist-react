@@ -4,7 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
+import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
@@ -34,6 +39,21 @@ export class InspectorModel extends HoistModel {
     @observable.ref
     windowContainer: HTMLElement = null;
 
+    /** Top-level Objects / Memory tabs - switched via the picker in the Inspector header. */
+    @managed
+    tabContainerModel: TabContainerModel = new TabContainerModel({
+        persistWith: {localStorageKey: `xhInspector.${XH.clientAppCode}.tabs`},
+        tabs: [
+            {id: 'objects', title: 'Objects', icon: Icon.cube(), content: instancesPanel},
+            {id: 'memory', title: 'Memory', icon: Icon.chartArea(), content: statsPanel}
+        ],
+        xhImpl: true
+    });
+
+    /** Renders modal messages within the Inspector window, in place of app-level `XH.confirm()`. */
+    @managed
+    messageSourceModel = new MessageSourceModel();
+
     private childWindow: Window = null;
     private headObserver: MutationObserver = null;
     private bodyClassObserver: MutationObserver = null;
@@ -51,6 +71,14 @@ export class InspectorModel extends HoistModel {
             run: active => (active ? this.openWindow() : this.closeWindow()),
             fireImmediately: true
         });
+    }
+
+    /** Confirm within the Inspector window, then reset all persisted Inspector state. */
+    async restoreDefaultsAsync() {
+        const confirmed = await this.messageSourceModel.confirm({
+            message: "Reset Inspector's layout and options to their defaults?"
+        });
+        if (confirmed) await XH.inspectorService.restoreDefaultsAsync();
     }
 
     /**
@@ -125,7 +153,7 @@ export class InspectorModel extends HoistModel {
         // Reset any stale content from a previously-opened window reused via its name.
         doc.head.innerHTML = '';
         doc.body.innerHTML = '';
-        doc.title = `${XH.appName} Inspector - Tab ${XH.tabId}`;
+        doc.title = `${XH.appName} - Tab ${XH.tabId}`;
 
         this.syncChildStyles();
         this.syncChildBodyClass();

@@ -38,9 +38,9 @@ inspector/
     └── StatsModel.ts                # Model tracking model count, heap memory, sync runs
 ```
 
-The Inspector UI is rendered by `InspectorPanel`, which composes two side-by-side panels: a
-`StatsPanel` (resizable left) and an `InstancesPanel`. Both are backed by dedicated `HoistModel`
-subclasses.
+The Inspector UI is rendered by `InspectorPanel`, which hosts two top-level tabs switched via a
+picker in its header: **Memory** (`StatsPanel`) and **Objects** (`InstancesPanel`). Both are backed
+by dedicated `HoistModel` subclasses.
 
 The actual data collection happens in `InspectorService` (in [`/svc/`](../svc/README.md)), which:
 - Maintains an observable `activeInstances` array synced from Hoist's internal instance registry
@@ -97,7 +97,7 @@ Hosting and window lifecycle are managed by `InspectorModel`. Notes and limitati
 - Toasts and framework dialogs (e.g. the "Restore Defaults" confirm) always render within the main
   app window, even when triggered from the Inspector.
 
-## Stats View
+## Memory Tab (Stats)
 
 The Stats panel shows a timeseries chart and grid tracking:
 
@@ -117,7 +117,7 @@ Instances view to show only instances created during that sync batch.
 run counter. This groups instances by when they appeared, making it easier to identify which
 navigation or load action created them.
 
-## Instances View
+## Objects Tab (Instances)
 
 The Instances panel is a split layout with:
 
@@ -134,12 +134,12 @@ The Instances panel is a split layout with:
 - **Grouping** — Toggle "Show in Groups" to group by type (Models, Services, Stores)
 - **XH impl filtering** — Toggle "Show XH Impl" to show/hide Hoist's internal framework instances
   (marked with `xhImpl = true`)
-- **Favorites** — Star any instance with an `xhName` to pin it, then toggle "Favorites" to show
-  only pinned instances. Keyed by `{className}:{xhName}` and persisted, so the same set of objects
+- **Favorites** — Favorite any instance with an `xhName` (via its context menu) to pin it, then
+  toggle "Favorites" to show only pinned instances. Keyed by `{className}:{xhName}` and persisted, so the same set of objects
   can be followed across reloads. Favorites with no live instance show as muted placeholder rows -
   un-star one to drop it
-- **Actions** — Log instance to devtools console, trigger `loadAsync()` on models with
-  `LoadSupport`
+- **Context menu** — Log instance to devtools console, trigger `loadAsync()` on models with
+  `LoadSupport`, toggle favorite
 - **Multi-select** — Select multiple instances to compare their properties side-by-side
 
 ### Properties Grid Features
@@ -181,14 +181,14 @@ responsible for it.
 Inspector state is persisted to `localStorage` under the key
 `xhInspector.{clientAppCode}.*`. This includes:
 
-- Panel sizes (stats panel, instances panel)
+- Active top-level tab and panel sizes (instances panel)
 - Grid column state for both grids
 - Quick filter selections (grouping, xhImpl visibility, favorites, property filters)
 - Favorited instances
 - Store filter text
 - Active/inactive state
 
-The "Restore Defaults" button in the Stats panel toolbar clears all persisted state and restarts.
+The "Restore Defaults" button in the Inspector toolbar clears all persisted state and restarts.
 
 ## Usage Patterns
 

@@ -211,7 +211,7 @@ export class InstancesModel extends HoistModel {
             store: {
                 fields: [
                     {name: 'className', type: 'string'},
-                    {name: 'xhName', type: 'string'},
+                    {name: 'xhName', displayName: 'Name', type: 'string'},
                     {name: 'isFavorite', type: 'bool'},
                     {name: 'alive', type: 'bool'},
                     {name: 'displayGroup', type: 'string'},
@@ -234,47 +234,57 @@ export class InstancesModel extends HoistModel {
             groupSortFn: (a, b) => GROUP_SORT_ORDER.indexOf(a) - GROUP_SORT_ORDER.indexOf(b),
             selModel: {mode: 'multiple'},
             colChooserModel: true,
+            contextMenu: [
+                {
+                    text: 'Log to console',
+                    icon: Icon.terminal(),
+                    recordsRequired: 1,
+                    actionFn: ({record}) => this.logInstanceToConsole(record),
+                    displayFn: ({record}) => ({disabled: !record?.data.alive})
+                },
+                {
+                    text: 'Call loadAsync()',
+                    icon: Icon.refresh({intent: 'success'}),
+                    recordsRequired: 1,
+                    actionFn: ({record}) =>
+                        (this.getInstance(record.id as string) as any)?.loadAsync(),
+                    displayFn: ({record}) => ({disabled: !record?.data.hasLoadSupport})
+                },
+                {
+                    text: 'Toggle Favorite',
+                    icon: Icon.favorite(),
+                    recordsRequired: 1,
+                    actionFn: ({record}) => this.toggleFavorite(record),
+                    displayFn: ({record}) => {
+                        const {xhName, isFavorite} = record?.data ?? {};
+                        return {
+                            disabled: !xhName,
+                            text: isFavorite ? 'Remove Favorite' : 'Add Favorite',
+                            tooltip: xhName ? null : 'Set xhName to enable favorites'
+                        };
+                    }
+                },
+                '-',
+                ...GridModel.defaults.contextMenu
+            ],
             columns: [
                 {
-                    ...actionCol,
-                    width: calcActionColWidth(3),
-                    actions: [
-                        {
-                            icon: Icon.terminal(),
-                            tooltip: 'Log to console',
-                            actionFn: ({record}) => this.logInstanceToConsole(record),
-                            displayFn: ({record}) => ({hidden: !record.data.alive})
-                        },
-                        {
-                            icon: Icon.favorite(),
-                            actionFn: ({record}) => this.toggleFavorite(record),
-                            displayFn: ({record}) => {
-                                const {xhName, isFavorite} = record.data;
-                                return {
-                                    disabled: !xhName,
-                                    tooltip: xhName
-                                        ? 'Toggle Favorite'
-                                        : 'Set xhName to enable favorites',
-                                    icon: isFavorite
-                                        ? Icon.favorite({intent: 'warning', prefix: 'fas'})
-                                        : Icon.favorite({className: 'xh-text-color-muted'})
-                                };
-                            }
-                        },
-                        {
-                            icon: Icon.refresh({intent: 'success'}),
-                            tooltip: 'Call loadAsync()',
-                            actionFn: ({record}) =>
-                                (this.getInstance(record.id as string) as any)?.loadAsync(),
-                            displayFn: ({record}) => ({hidden: !record.data.hasLoadSupport})
-                        }
-                    ]
+                    field: 'isFavorite',
+                    headerName: Icon.favorite(),
+                    headerTooltip: 'Favorite',
+                    ...boolCheckCol,
+                    width: 40,
+                    tooltip: v => (v ? 'Favorite' : ''),
+                    renderer: v => (v ? Icon.favorite({intent: 'warning', prefix: 'fas'}) : null)
                 },
                 {
                     field: 'id',
-                    displayName: 'xhId',
+                    displayName: 'ID',
                     renderer: (v, {record}) => (record.data.alive ? v : null)
                 },
+                {field: 'displayGroup', hidden: true},
+                {field: 'className', flex: 1, minWidth: 150},
+                {field: 'xhName', flex: 1, minWidth: 150},
                 {
                     field: 'syncRun',
                     displayName: 'Sync',
@@ -289,12 +299,9 @@ export class InstancesModel extends HoistModel {
                     ...boolCheckCol,
                     width: 40,
                     tooltip: v => (v ? 'Linked model' : ''),
-                    renderer: v => (v ? Icon.link() : null)
+                    renderer: v => (v ? Icon.link() : null),
+                    hidden: true
                 },
-                {field: 'displayGroup', hidden: true},
-                {field: 'isFavorite', ...boolCheckCol, hidden: true},
-                {field: 'xhName', flex: 1, minWidth: 150},
-                {field: 'className', flex: 1, minWidth: 150},
                 {
                     field: 'lastLoadCompleted',
                     displayName: 'Last Loaded',
@@ -352,6 +359,7 @@ export class InstancesModel extends HoistModel {
                 {
                     ...actionCol,
                     width: calcActionColWidth(2),
+                    actionsShowOnHoverOnly: true,
                     actions: [
                         {
                             icon: Icon.terminal(),
