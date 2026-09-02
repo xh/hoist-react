@@ -4,14 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {yesNoRenderer} from '@xh/hoist/admin/AdminUtils';
+import {jsonRenderer, yesNoRenderer} from '@xh/hoist/admin/AdminUtils';
 import {badgeRenderer} from '@xh/hoist/admin/columns';
-import {jsonDetailRenderer, restDetailPanel} from '@xh/hoist/admin/detail/RestDetailPanel';
+import {restDetailPanel} from '@xh/hoist/admin/detail/RestDetailPanel';
 import {formFieldSet} from '@xh/hoist/cmp/form';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {archivedDateRenderer} from './JsonBlobColumns';
 import {JsonBlobModel} from './JsonBlobModel';
@@ -59,18 +58,8 @@ export const jsonBlobDetailPanel = hoistCmp.factory<JsonBlobModel>({
                                 })
                             ),
                             hbox(
-                                formField({
-                                    field: 'dateCreated',
-                                    label: 'Created',
-                                    readonlyRenderer: dateTimeRenderer({}),
-                                    flex: 1
-                                }),
-                                formField({
-                                    field: 'lastUpdated',
-                                    label: 'Updated',
-                                    readonlyRenderer: dateTimeRenderer({}),
-                                    flex: 1
-                                }),
+                                formField({field: 'dateCreated', label: 'Created', flex: 1}),
+                                formField({field: 'lastUpdated', label: 'Updated', flex: 1}),
                                 formField({field: 'lastUpdatedBy', label: 'Updated By', flex: 1})
                             )
                         ]
@@ -83,7 +72,7 @@ export const jsonBlobDetailPanel = hoistCmp.factory<JsonBlobModel>({
                         item: formField({
                             field: 'value',
                             label: null,
-                            readonlyRenderer: jsonDetailRenderer
+                            readonlyRenderer: jsonRenderer
                         })
                     }),
                     formFieldSet({
@@ -94,7 +83,7 @@ export const jsonBlobDetailPanel = hoistCmp.factory<JsonBlobModel>({
                         item: formField({
                             field: 'meta',
                             label: null,
-                            readonlyRenderer: jsonDetailRenderer
+                            readonlyRenderer: jsonRenderer
                         })
                     })
                 ];

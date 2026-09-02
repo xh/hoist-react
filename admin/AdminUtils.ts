@@ -8,8 +8,11 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {markdown} from '@xh/hoist/cmp/markdown';
 import {XH} from '@xh/hoist/core';
+import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
+import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {ReactNode} from 'react';
+import {isString} from 'lodash';
+import {ReactElement, ReactNode} from 'react';
 
 /**
  * Generate a standardized filename for an Admin module grid export, without datestamp.
@@ -35,9 +38,41 @@ export function naSpan(): ReactNode {
     return span({item: 'N/A', className: 'xh-text-color-muted'});
 }
 
-/** Readonly renderer for detail forms - the value as-is, or {@link naSpan} when null. */
+/**
+ * Default readonly renderer for detail forms - FormField's standard formatting (dates, numbers,
+ * booleans, JSON, text), or {@link naSpan} when null.
+ */
 export function valOrNa(v: any): ReactNode {
-    return v != null ? v : naSpan();
+    return v != null ? defaultReadonlyRenderer(v) : naSpan();
+}
+
+/**
+ * Read-only JsonInput for detail displays - fixed to `height` if given, otherwise filling its
+ * container. Pair fill mode with the `xh-admin-readonly-form__fill` class on the enclosing
+ * `formFieldSet` to have it take the remaining panel height.
+ */
+export function readonlyJsonInput(value: any, height: number = null): ReactElement {
+    return jsonInput({
+        value: isString(value) ? value : JSON.stringify(value),
+        readonly: true,
+        autoFormat: true,
+        enableSearch: true,
+        width: '100%',
+        ...(height != null ? {height} : {flex: 1, height: '100%'})
+    });
+}
+
+/**
+ * Readonly renderer for stored scalar values (config / preference values) - the value as literal
+ * text, with no number or date formatting, or {@link naSpan} when null.
+ */
+export function rawValueRenderer(v: any): ReactNode {
+    return v == null ? naSpan() : v.toString();
+}
+
+/** Readonly renderer for JSON fields in detail forms - {@link readonlyJsonInput} in fill mode. */
+export function jsonRenderer(v: any): ReactNode {
+    return v == null ? naSpan() : readonlyJsonInput(v);
 }
 
 /** Readonly renderer for boolean fields in detail forms - "Yes" / "No", or {@link naSpan} when null. */

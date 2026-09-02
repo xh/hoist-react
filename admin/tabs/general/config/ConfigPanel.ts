@@ -63,10 +63,11 @@ export const configPanel = hoistCmp.factory({
     }
 });
 
-// Custom toolbar adds a Revert button to the standard record actions and Cancel/Save.
+// Custom toolbar adds a Revert button to the standard record actions and Cancel/Save. The dialog
+// is edit-only - viewing is handled by the docked detail panel.
 const configFormBbar = hoistCmp.factory<RestFormModel>(({model}) => {
     const {formModel, actions, currentRecord, gridModel} = model,
-        {isDirty, isValid, readonly} = formModel;
+        {isDirty, isValid} = formModel;
     return toolbar(
         recordActionBar({
             actions,
@@ -77,11 +78,11 @@ const configFormBbar = hoistCmp.factory<RestFormModel>(({model}) => {
             text: 'Revert',
             icon: Icon.reset(),
             onClick: () => formModel.reset(),
-            omit: readonly || !isDirty
+            omit: !isDirty
         }),
         filler(),
         button({
-            text: readonly ? 'Close' : 'Cancel',
+            text: 'Cancel',
             onClick: () => model.close()
         }),
         button({
@@ -90,8 +91,7 @@ const configFormBbar = hoistCmp.factory<RestFormModel>(({model}) => {
             intent: 'success',
             outlined: true,
             disabled: (!model.isAdd && !isDirty) || !isValid,
-            onClick: () => model.validateAndSaveAsync(),
-            omit: readonly
+            onClick: () => model.validateAndSaveAsync()
         })
     );
 });

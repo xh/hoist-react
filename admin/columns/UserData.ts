@@ -57,13 +57,13 @@ export function valueTypeRenderer(valueType: string): ReactElement {
 }
 
 const VALUE_TYPE_BADGES: Record<string, {icon: () => ReactElement; intent?: Intent}> = {
-    json: {icon: () => Icon.json(), intent: 'primary'},
-    bool: {icon: () => Icon.checkSquare(), intent: 'success'},
-    int: {icon: () => Icon.calculator(), intent: 'warning'},
-    long: {icon: () => Icon.calculator(), intent: 'warning'},
-    double: {icon: () => Icon.calculator(), intent: 'warning'},
-    pwd: {icon: () => Icon.lock(), intent: 'danger'},
-    string: {icon: () => Icon.list()}
+    json: {icon: Icon.json, intent: 'primary'},
+    bool: {icon: Icon.checkSquare, intent: 'success'},
+    int: {icon: Icon.calculator, intent: 'warning'},
+    long: {icon: Icon.calculator, intent: 'warning'},
+    double: {icon: Icon.calculator, intent: 'warning'},
+    pwd: {icon: Icon.lock, intent: 'danger'},
+    string: {icon: Icon.list}
 };
 
 export const groupName: ColumnSpec = {

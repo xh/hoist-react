@@ -11,9 +11,7 @@ import {formFieldSet} from '@xh/hoist/cmp/form';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import classNames from 'classnames';
 import {ConfigPanelModel} from './ConfigPanelModel';
 import {configValue} from './ConfigValue';
 
@@ -57,23 +55,15 @@ export const configDetailPanel = hoistCmp.factory<ConfigPanelModel>({
                             }),
                             hbox(
                                 formField({field: 'lastUpdatedBy', label: 'Updated By', flex: 1}),
-                                formField({
-                                    field: 'lastUpdated',
-                                    label: 'Updated',
-                                    readonlyRenderer: dateTimeRenderer({}),
-                                    flex: 2
-                                })
+                                formField({field: 'lastUpdated', label: 'Updated', flex: 2})
                             )
                         ]
                     }),
                     formFieldSet({
                         title: 'Value',
                         // JSON values stretch to fill the remaining height - scalars sit compactly.
-                        className: classNames(
-                            valueType === 'json' ? 'xh-admin-readonly-form__fill' : null
-                        ),
-                        // Keyed by record so the value's tab set rebuilds on selection change.
-                        item: configValue({key: record.id, formModel})
+                        className: valueType === 'json' ? 'xh-admin-readonly-form__fill' : null,
+                        item: configValue({formModel})
                     })
                 ];
             }

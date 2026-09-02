@@ -7,7 +7,8 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {placeholder, span} from '@xh/hoist/cmp/layout';
 import {tabContainer, TabContainerModel, TabConfig} from '@xh/hoist/cmp/tab';
-import {creates, hoistCmp, HoistModel, managed, PlainObject} from '@xh/hoist/core';
+import {readonlyJsonInput} from '@xh/hoist/admin/AdminUtils';
+import {creates, hoistCmp, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
     CodeInputLineStyles,
@@ -17,7 +18,7 @@ import {
     textInput
 } from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
+import {makeObservable, observable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isPlainObject, last, union} from 'lodash';
 import {ReactElement} from 'react';
@@ -50,7 +51,7 @@ export const configValue = hoistCmp.factory<ConfigValueModel>({
 class ConfigValueModel extends HoistModel {
     override xhImpl = true;
 
-    @managed tabContainerModel: TabContainerModel;
+    @managed @observable.ref tabContainerModel: TabContainerModel;
 
     get formModel(): FormModel {
         return this.componentProps.formModel;
@@ -95,10 +96,27 @@ class ConfigValueModel extends HoistModel {
     }
 
     override onLinked() {
-        if (this.usesTabs) this.buildTabs();
+        // Rebuild the tab set whenever the bound data changes - a new record selected into a
+        // shared FormModel (detail panel) or the same one re-saved. Tracks the value field's
+        // initialValue, not its live value, so typing in the editor does not tear down the tabs.
+        this.addReaction({
+            track: () => [
+                this.resolvedValue,
+                this.defaultValue,
+                this.overrideValue,
+                this.valueType,
+                this.valueField?.initialValue
+            ],
+            run: () => this.buildTabs(),
+            fireImmediately: true
+        });
     }
 
     private buildTabs() {
+        XH.safeDestroy(this.tabContainerModel);
+        this.tabContainerModel = null;
+        if (!this.usesTabs) return;
+
         const {
                 resolvedValue,
                 defaultValue,
@@ -246,14 +264,7 @@ function valueInput(valueType: string, height: number | null): ReactElement {
 function readonlyValue(valueType: string, value: any, height: number | null): ReactElement {
     switch (valueType) {
         case 'json':
-            return jsonInput({
-                value,
-                readonly: true,
-                autoFormat: true,
-                enableSearch: true,
-                width: null,
-                ...sizeProps(height)
-            });
+            return readonlyJsonInput(value, height);
         case 'pwd':
             return span(value == null ? '' : '*****');
         default:

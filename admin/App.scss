@@ -52,7 +52,8 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    min-height: 0;
+    // Floor the editor's height - past this the form scrolls rather than squeezing it further.
+    min-height: 250px;
 
     > .xh-card__content,
     .xh-form-field,

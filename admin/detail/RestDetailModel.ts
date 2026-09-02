@@ -11,9 +11,9 @@ import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 
 /**
- * Backs a {@link restDetailPanel}. Locates the enclosing RestGridModel from context, tracks its
- * single selection, and mirrors the selected record into a read-only FormModel with a field for
- * every field in the grid's store.
+ * Backs a {@link restDetailPanel}. Resolves the host RestGridModel via `@lookup` - the model of an
+ * enclosing component must expose it as a public property - then tracks its single selection and
+ * mirrors the selected record into a read-only FormModel with a field for every store field.
  */
 export class RestDetailModel extends HoistModel {
     override xhImpl = true;
@@ -41,12 +41,12 @@ export class RestDetailModel extends HoistModel {
     }
 
     override onLinked() {
-        const {gridModel, componentProps} = this;
-        this.persistWith = componentProps.persistWith ?? null;
-
         this.formModel = new FormModel({
             readonly: true,
-            fields: gridModel.store.fields.map(f => ({name: f.name, displayName: f.displayName}))
+            fields: this.gridModel.store.fields.map(f => ({
+                name: f.name,
+                displayName: f.displayName
+            }))
         });
 
         // Record identity changes on selection and on store reload (e.g. after a save), so the

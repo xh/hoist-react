@@ -4,15 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {jsonRenderer, rawValueRenderer} from '@xh/hoist/admin/AdminUtils';
 import {valueTypeRenderer} from '@xh/hoist/admin/columns';
-import {jsonDetailRenderer, restDetailPanel} from '@xh/hoist/admin/detail/RestDetailPanel';
+import {restDetailPanel} from '@xh/hoist/admin/detail/RestDetailPanel';
 import {formFieldSet} from '@xh/hoist/cmp/form';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import classNames from 'classnames';
 import {UserPreferenceModel} from './UserPreferenceModel';
 
 /** Read-only detail view of the user preference value selected in the grid. */
@@ -43,22 +42,17 @@ export const userPreferenceDetailPanel = hoistCmp.factory<UserPreferenceModel>({
                             ),
                             hbox(
                                 formField({field: 'lastUpdatedBy', label: 'Updated By', flex: 1}),
-                                formField({
-                                    field: 'lastUpdated',
-                                    label: 'Updated',
-                                    readonlyRenderer: dateTimeRenderer({}),
-                                    flex: 2
-                                })
+                                formField({field: 'lastUpdated', label: 'Updated', flex: 2})
                             )
                         ]
                     }),
                     formFieldSet({
                         title: 'Value',
-                        className: classNames(isJson ? 'xh-admin-readonly-form__fill' : null),
+                        className: isJson ? 'xh-admin-readonly-form__fill' : null,
                         item: formField({
                             field: 'userValue',
                             label: null,
-                            readonlyRenderer: isJson ? jsonDetailRenderer : undefined
+                            readonlyRenderer: isJson ? jsonRenderer : rawValueRenderer
                         })
                     })
                 ];

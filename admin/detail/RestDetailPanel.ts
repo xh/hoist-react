@@ -4,17 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {naSpan, valOrNa} from '@xh/hoist/admin/AdminUtils';
+import {valOrNa} from '@xh/hoist/admin/AdminUtils';
 import {form, FormModel} from '@xh/hoist/cmp/form';
 import {filler, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistProps, PersistOptions} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {isString, startCase} from 'lodash';
+import {startCase} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {RestDetailModel} from './RestDetailModel';
 
@@ -40,12 +39,12 @@ export interface RestDetailPanelProps extends HoistProps<RestDetailModel> {
 }
 
 /**
- * Read-only detail view of the record selected in an enclosing RestGrid, docked to its right.
- * Tracks the grid's selection, refreshes when the grid reloads, and offers an Edit button to open
- * the grid's editor dialog for the selected record.
+ * Read-only detail view of the record selected in a RestGrid, docked to its right. Tracks the
+ * grid's selection, refreshes when the grid reloads, and offers an Edit button to open the grid's
+ * editor dialog for the selected record.
  *
- * Render as a sibling of `restGrid()` within an `hframe`, where the RestGridModel is available
- * from context.
+ * Render as a sibling of `restGrid()` within an `hframe`. The host RestGridModel is resolved via
+ * `@lookup`, so the model of an enclosing component must expose it as a public property.
  */
 export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
     displayName: 'RestDetailPanel',
@@ -56,9 +55,10 @@ export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
         const {
                 emptyText = 'Select a record to view its details.',
                 defaultSize = 550,
-                minSize = 400
+                minSize = 400,
+                persistWith
             } = props,
-            {hasSelection, readonly, record, formModel, persistWith, gridModel} = model;
+            {hasSelection, readonly, record, formModel, gridModel} = model;
 
         return panel({
             className,
@@ -67,13 +67,23 @@ export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
                 : `${startCase(gridModel.unit)} Detail`,
             icon,
             compactHeader: true,
-            modelConfig: {side: 'right', defaultSize, minSize, persistWith},
+            modelConfig: {
+                side: 'right',
+                defaultSize,
+                minSize,
+                persistWith,
+                // Skip per-selection form work while collapsed.
+                renderMode: 'unmountOnHide'
+            },
             item: hasSelection
                 ? form({
                       model: formModel,
                       fieldDefaults: {readonlyRenderer: valOrNa},
                       item: vframe({
                           className: 'xh-admin-rest-detail__form xh-admin-readonly-form',
+                          // Scroll when content outgrows the panel - inline to beat the frame's
+                          // own overflow: hidden.
+                          overflowY: 'auto',
                           items: renderForm(record, formModel)
                       })
                   })
@@ -94,21 +104,3 @@ export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
         });
     }
 });
-
-/**
- * Readonly renderer for a JSON field within a {@link restDetailPanel} - a read-only JsonInput that
- * fills its container. Pair with the `xh-admin-readonly-form__fill` class on the enclosing
- * `formFieldSet` to have it take the remaining panel height.
- */
-export function jsonDetailRenderer(v: any): ReactNode {
-    if (v == null) return naSpan();
-    return jsonInput({
-        value: isString(v) ? v : JSON.stringify(v),
-        readonly: true,
-        autoFormat: true,
-        enableSearch: true,
-        flex: 1,
-        width: '100%',
-        height: '100%'
-    });
-}

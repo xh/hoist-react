@@ -9,7 +9,7 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
-import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
+import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 
 export class UserPreferenceModel extends HoistModel {
@@ -39,6 +39,12 @@ export class UserPreferenceModel extends HoistModel {
             selModel: 'multiple',
             sortBy: 'name',
             unit: 'user preference',
+            // Docked detail panel covers viewing - double-click and actions are edit-only.
+            onRowDoubleClicked: ({data}) => {
+                if (data && !this.gridModel.readonly) this.gridModel.editRecord(data);
+            },
+            toolbarActions: [addAction, editAction, deleteAction],
+            menuActions: [addAction, editAction, deleteAction],
             // Store + fields
             store: {
                 url: 'rest/userPreferenceAdmin',
@@ -67,7 +73,7 @@ export class UserPreferenceModel extends HoistModel {
             // Cols + editors
             columns: [
                 {...Col.name},
-                {...Col.type},
+                {...Col.type, renderer: Col.valueTypeRenderer, align: 'center'},
                 {...Col.username},
                 {...Col.groupName, hidden},
                 {...Col.userValue},
