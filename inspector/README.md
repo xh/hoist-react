@@ -5,9 +5,9 @@
 
 The Inspector is a built-in developer and admin tool for real-time inspection of a running Hoist
 application's `HoistModel`, `HoistService`, and `Store` instances, along with memory and
-performance statistics. It renders by default as a resizable bottom panel within the desktop
-application UI, driven by the `InspectorService` in [`/svc/`](../svc/README.md), and can also be
-popped out into a separate browser window (see [Pop-Out Window](#pop-out-window) below).
+performance statistics. It renders in its own browser window alongside the desktop application,
+driven by the `InspectorService` in [`/svc/`](../svc/README.md) (see
+[Inspector Window](#inspector-window) below).
 
 ## Overview
 
@@ -26,7 +26,7 @@ The Inspector provides two main views: **Stats** (timeseries of model counts and
 ```
 inspector/
 ├── InspectorPanel.ts                # Top-level container (renders Stats + Instances panels)
-├── InspectorModel.ts                # Hosts the UI docked in the app or in a popped-out window
+├── InspectorModel.ts                # Hosts the UI in a separate browser window
 ├── Inspector.scss                   # Inspector-specific styles
 ├── instances/
 │   ├── InstancesPanel.ts            # Instance grid (left) + tabbed properties/diagnostics (right)
@@ -77,25 +77,25 @@ The Inspector can be toggled via:
 2. **Programmatic** — `XH.inspectorService.activate()` / `XH.inspectorService.deactivate()` /
    `XH.inspectorService.toggleActive()`
 
-The `active` state is persisted to `localStorage`, so the Inspector will remain open across page
-refreshes.
+The `active` state is persisted to `localStorage`, so the Inspector will attempt to reopen across
+page refreshes (see below).
 
-## Pop-Out Window
+## Inspector Window
 
-Because the docked Inspector renders as a standard part of the app's component tree, app-level
-masks and modal dialogs will cover and block it. A button in the Inspector's header pops it out
-into a separate browser window (e.g. onto a second monitor), leaving the app's viewport entirely
-to the app while keeping the Inspector fully live, with direct access to all app state.
+The Inspector renders in a separate browser window (e.g. on a second monitor), leaving the app's
+viewport entirely to the app and keeping the Inspector clear of app-level masks and modal dialogs.
+The Inspector remains part of the main app's component tree via a cross-document React portal, so
+it stays fully live with direct access to all app state.
 
-Hosting and window lifecycle are managed by `InspectorModel`, which portals the same component
-tree rendered when docked into the popped-out window. Notes and limitations:
+Hosting and window lifecycle are managed by `InspectorModel`. Notes and limitations:
 
-- The popped-out state is not restored on app load - browsers require a user gesture to open a
-  window, so the Inspector returns docked after a refresh.
-- Closing the popped-out window directly returns the Inspector to its docked state. Reloading or
-  closing the main app window closes the popped-out window.
+- Activating the service opens the window; deactivating it (or closing the window directly) closes
+  it. Reloading or closing the main app window also closes the Inspector window.
+- Browsers require a user gesture to open a window. If the Inspector was active before a page
+  refresh, Hoist attempts to reopen it on load - if the browser blocks the open, the service is
+  deactivated with a toast. Allow popups for the app's origin to restore the Inspector on reload.
 - Toasts and framework dialogs (e.g. the "Restore Defaults" confirm) always render within the main
-  app window, even when triggered from a popped-out Inspector.
+  app window, even when triggered from the Inspector.
 
 ## Stats View
 

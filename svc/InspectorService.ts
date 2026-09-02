@@ -21,9 +21,9 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
  * (with a minimal throttle) on each change to the Hoist registry, as well as an array of model
  * count / memory usage stats, also updated on model changes and periodically in the background.
  *
- * When running in a Desktop application, activating this service will trigger the display of the
- * Hoist Inspector UI - {@link inspectorPanel}. A built-in control to activate/deactivate this
- * service is provided within the Desktop versionBar component.
+ * When running in a Desktop application, activating this service will open the Hoist Inspector UI
+ * - {@link inspectorPanel} - in a separate browser window. A built-in control to activate/deactivate
+ * this service is provided within the Desktop versionBar component.
  *
  * This service may be completely disabled via an optional `xhInspectorConfig` appConfig, although
  * note that this config does *not* disable the backing registry within XH. Access to Inspector can

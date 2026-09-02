@@ -19,64 +19,26 @@ import './Inspector.scss';
 /**
  * See {@link InspectorService} for an explanation of the Hoist Inspector tool.
  *
- * In addition to its default rendering as a panel docked within the app viewport, the Inspector
- * can be popped out into a separate browser window ('window' mode), leaving the app's viewport
- * entirely to the app. Hosting is managed by {@link InspectorModel}.
+ * The Inspector renders in a separate browser window, leaving the app's viewport entirely to the
+ * app. Window hosting is managed by {@link InspectorModel}.
  */
 export const inspectorPanel = hoistCmp.factory({
     displayName: 'InspectorPanel',
     model: creates(InspectorModel),
 
     render({model}) {
-        if (!XH.inspectorService.active) return null;
-
         const {windowContainer} = model;
-
-        // Key by mode to remount the view (and recreate its mode-specific PanelModel) on change.
-        return windowContainer
-            ? createPortal(inspectorView({key: 'window'}), windowContainer)
-            : inspectorView({key: 'dock'});
-    }
-});
-
-const inspectorView = hoistCmp.factory<InspectorModel>({
-    displayName: 'InspectorView',
-
-    render({model}) {
-        const {windowContainer, isWindowed} = model;
+        if (!XH.inspectorService.active || !windowContainer) return null;
 
         const ret = panel({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
             icon: Icon.search(),
             className: 'xh-inspector',
             headerClassName: 'xh-inspector-panel-header',
-            flex: isWindowed ? 1 : undefined,
-            modelConfig: isWindowed
-                ? {collapsible: false, resizable: false, errorBoundary: true, xhImpl: true}
-                : {
-                      defaultSize: 400,
-                      side: 'bottom',
-                      persistWith: XH.inspectorService.persistWith,
-                      errorBoundary: true,
-                      showHeaderCollapseButton: false,
-                      xhImpl: true
-                  },
+            flex: 1,
+            modelConfig: {collapsible: false, resizable: false, errorBoundary: true, xhImpl: true},
             compactHeader: true,
             headerItems: [
-                button({
-                    omit: !isWindowed,
-                    icon: Icon.arrowDownToSquare(),
-                    text: 'Dock',
-                    tooltip: 'Return Inspector to the main app window',
-                    onClick: () => model.dock()
-                }),
-                button({
-                    omit: isWindowed,
-                    icon: Icon.openExternal(),
-                    text: 'Pop-out',
-                    tooltip: 'Open Inspector in a separate window',
-                    onClick: () => model.openWindow()
-                }),
                 button({
                     icon: Icon.x(),
                     text: 'Close',
@@ -91,10 +53,10 @@ const inspectorView = hoistCmp.factory<InspectorModel>({
             item: hframe(statsPanel(), instancesPanel())
         });
 
-        // When popped out, redirect Blueprint portals (tooltips, popovers, dialogs) into the
-        // child window, alongside the Inspector itself.
-        return windowContainer
-            ? portalProvider({portalContainer: windowContainer, item: ret})
-            : ret;
+        // Redirect Blueprint portals (tooltips, popovers, dialogs) into the Inspector window.
+        return createPortal(
+            portalProvider({portalContainer: windowContainer, item: ret}),
+            windowContainer
+        );
     }
 });

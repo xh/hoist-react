@@ -17,7 +17,7 @@
   color: white;
 }
 
-// Popped-out window layout - these rules reach the child window via its synced stylesheets.
+// Inspector window layout - these rules reach the child window via its synced stylesheets.
 // The Inspector panel itself flexes to fill the host (see `flex` prop in InspectorPanel).
 body.xh-inspector-window {
   margin: 0;
