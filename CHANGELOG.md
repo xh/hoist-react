@@ -42,6 +42,9 @@
 
 * Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
   the control now sizes to its options.
+* Fixed desktop `Select` not reliably scrolling the selected option into view when opening its
+  menu - a regression from the v86 react-select upgrade. Selects with `enableFilter: false` never
+  scrolled; others did so intermittently.
 
 ### ⚙️ Technical
 
@@ -64,6 +67,13 @@
   and defaults to `true`. Pair with `showTrayBackground: false` for the previous appearance.
 * Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
+
+## 87.1.1 - 2026-09-02
+
+### 🐞 Bug Fixes
+
+* Fixed `GridModel.getSortedRecords()` throwing e.g. grid exports when grouped by a non-string
+  field. Group values are now coerced to string keys before sorting.
 
 ## 87.1.0 - 2026-08-28
 
