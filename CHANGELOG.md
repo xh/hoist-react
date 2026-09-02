@@ -12,6 +12,13 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+## 87.1.1 - 2026-09-02
+
+### 🐞 Bug Fixes
+
+* Fixed `GridModel.getSortedRecords()` throwing e.g. grid exports when grouped by a non-string
+  field. Group values are now coerced to string keys before sorting.
+
 ## 87.1.0 - 2026-08-28
 
 ### 🎁 New Features
