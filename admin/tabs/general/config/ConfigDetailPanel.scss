@@ -1,0 +1,27 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-admin-config-detail {
+  &__form {
+    padding: var(--xh-pad-px);
+    gap: var(--xh-pad-px);
+  }
+
+  // Value set for JSON fills the remaining height, with its content box passing the flex down to
+  // the tabbed value display. `.xh-card` renders as a <fieldset>, so make it an explicit flex column.
+  &__value--fill {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
+    > .xh-card__content {
+      flex: 1;
+      min-height: 0;
+    }
+  }
+}

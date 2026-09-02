@@ -7,7 +7,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {placeholder, span} from '@xh/hoist/cmp/layout';
 import {tabContainer, TabContainerModel, TabConfig} from '@xh/hoist/cmp/tab';
-import {creates, hoistCmp, HoistModel, managed} from '@xh/hoist/core';
+import {creates, hoistCmp, HoistModel, managed, PlainObject} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
     CodeInputLineStyles,
@@ -25,9 +25,13 @@ import {buildResolvedJson, changedKeysFromStored} from './ConfigUtils';
 import './ConfigValue.scss';
 
 /**
- * Presentation of a config's value within the config editor, bound to the enclosing RestForm's
- * `value` field. Plain configs render a single editor by type; configs with a typedClass and/or
- * an active instance-config override render a tab set over the applicable views of the value.
+ * Presentation of a config's value, bound to the `value` field of an enclosing Form. Plain configs
+ * render a single editor by type; configs with a typedClass and/or an active instance-config
+ * override render a tab set over the applicable views of the value.
+ *
+ * Used within the RestGrid editor dialog (editable, opening on the Database tab) and the docked
+ * detail panel (read-only, opening on the most-derived view). Pass `height` for a fixed-height
+ * display, or omit it to fill the available space.
  */
 export const configValue = hoistCmp.factory<ConfigValueModel>({
     displayName: 'ConfigValue',
@@ -35,9 +39,11 @@ export const configValue = hoistCmp.factory<ConfigValueModel>({
     model: creates(() => new ConfigValueModel()),
 
     render({model, className}) {
+        const {height} = model;
+        className = classNames(className, height == null ? 'xh-config-value--fill' : null);
         return model.usesTabs
             ? tabContainer({model: model.tabContainerModel, className})
-            : valueFormField(model.valueType, model.height, className);
+            : valueFormField(model.valueType, height, className);
     }
 });
 
@@ -49,8 +55,12 @@ class ConfigValueModel extends HoistModel {
     get formModel(): FormModel {
         return this.componentProps.formModel;
     }
-    get height(): number {
-        return this.componentProps.height ?? 250;
+    /** Fixed height for the value display, or null to fill available space. */
+    get height(): number | null {
+        return this.componentProps.height ?? null;
+    }
+    get readonly(): boolean {
+        return this.formModel?.readonly ?? false;
     }
     get valueField() {
         return this.formModel?.fields?.value;
@@ -89,7 +99,15 @@ class ConfigValueModel extends HoistModel {
     }
 
     private buildTabs() {
-        const {resolvedValue, defaultValue, overrideValue, valueType, valueField, height} = this,
+        const {
+                resolvedValue,
+                defaultValue,
+                overrideValue,
+                valueType,
+                valueField,
+                height,
+                readonly
+            } = this,
             hasOverride = overrideValue != null,
             hasResolved = resolvedValue != null,
             hasDefaults = defaultValue != null,
@@ -111,7 +129,7 @@ class ConfigValueModel extends HoistModel {
                 id: 'resolved',
                 title: 'Resolved',
                 icon: Icon.bolt(),
-                content: () => resolvedTab({text, lineStyles, height})
+                content: () => resolvedTab({text, lineStyles, ...sizeProps(height)})
             });
         }
 
@@ -146,15 +164,19 @@ class ConfigValueModel extends HoistModel {
                         autoFormat: true,
                         enableSearch: true,
                         className: 'xh-config-value__defaults',
-                        height
+                        ...sizeProps(height)
                     })
             });
         }
 
-        // Built most- to least-derived above, but displayed the other way round - opening on the
-        // last tab, i.e. the most derived view available.
+        // Built most- to least-derived above, but displayed the other way round. Editable forms
+        // open on Database - the one view that can actually be edited. Read-only displays open on
+        // the last tab, i.e. the most derived view available.
         tabs.reverse();
-        this.tabContainerModel = new TabContainerModel({defaultTabId: last(tabs).id, tabs});
+        this.tabContainerModel = new TabContainerModel({
+            defaultTabId: readonly ? last(tabs).id : 'db',
+            tabs
+        });
     }
 }
 
@@ -182,7 +204,11 @@ const resolvedTab = hoistCmp.factory<ConfigValueModel>(({model, text, lineStyles
 
 // Label-less FormField for `value`, bound via the enclosing Form context for standard validation
 // display and read-only rendering. The plain branch passes `className` for the full-width rule.
-function valueFormField(valueType: string, height: number, className?: string): ReactElement {
+function valueFormField(
+    valueType: string,
+    height: number | null,
+    className?: string
+): ReactElement {
     return formField({
         field: 'value',
         label: null,
@@ -193,13 +219,13 @@ function valueFormField(valueType: string, height: number, className?: string): 
 }
 
 // Editable input for a config value, by type. Bound by the enclosing FormField.
-function valueInput(valueType: string, height: number): ReactElement {
+function valueInput(valueType: string, height: number | null): ReactElement {
     switch (valueType) {
         case 'json':
             return jsonInput({
                 autoFormat: true,
                 enableSearch: true,
-                height
+                ...sizeProps(height)
             });
         case 'bool':
             return select({options: [true, false], enableClear: false});
@@ -217,7 +243,7 @@ function valueInput(valueType: string, height: number): ReactElement {
 }
 
 // Read-only display of a raw stored value, by type. Masks pwd.
-function readonlyValue(valueType: string, value: any, height: number): ReactElement {
+function readonlyValue(valueType: string, value: any, height: number | null): ReactElement {
     switch (valueType) {
         case 'json':
             return jsonInput({
@@ -226,13 +252,18 @@ function readonlyValue(valueType: string, value: any, height: number): ReactElem
                 autoFormat: true,
                 enableSearch: true,
                 width: null,
-                height
+                ...sizeProps(height)
             });
         case 'pwd':
-            return textInput({value: value == null ? '' : '*****', disabled: true});
+            return span(value == null ? '' : '*****');
         default:
-            return textInput({value: value?.toString() ?? '', disabled: true});
+            return span(value?.toString() ?? '');
     }
+}
+
+// Layout props for a JSON editor - fixed to `height` if given, otherwise filling its container.
+function sizeProps(height: number | null): PlainObject {
+    return height != null ? {height} : {flex: 1, height: '100%', width: '100%'};
 }
 
 // Muting styles for pre-rendered JSON `text` - every line NOT in `highlightLines`.

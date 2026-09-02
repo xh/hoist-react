@@ -77,3 +77,24 @@
     padding: 0;
   }
 }
+
+// Fill mode (no fixed `height`) - the tab set / single field stretches to its container, with
+// the nested layers passing the flex down to the JSON editor.
+.xh-config-value--fill {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+
+  .xh-form-field__inner,
+  .xh-form-field__inner--flex {
+    flex: 1;
+    min-height: 0;
+  }
+
+  // Frame the editor - it otherwise floats borderless within the detail panel's field set.
+  .xh-code-input {
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius-px);
+  }
+}

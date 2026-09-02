@@ -23,6 +23,27 @@
     background-color: var(--xh-intent-primary-darker);
     font-family: var(--xh-font-family-mono);
   }
+
+  // Value type badges - shown in grid cells and detail forms, so drop Badge's inline-text offset.
+  // Fixed width keeps a column of mixed types from looking ragged.
+  .xh-value-type-badge {
+    --xh-badge-font-size: 0.85em;
+    --xh-badge-font-weight: normal;
+    margin-left: 0;
+    width: 64px;
+  }
+}
+
+// Read-only detail forms within the Admin Console - stacked fields with small, muted, uppercase
+// labels sitting directly above their values. Apply to the container of a read-only `form`.
+// Styled entirely via the framework's form-field CSS vars - see `styles/vars.scss`.
+.xh-admin-readonly-form {
+  --xh-form-field-margin: 0 0 var(--xh-pad-half-px) 0;
+  --xh-form-field-label-color: var(--xh-text-color-muted);
+  --xh-form-field-label-font-size: var(--xh-font-size-small-px);
+  --xh-form-field-label-font-weight: 600;
+  --xh-form-field-label-text-transform: uppercase;
+  --xh-form-field-readonly-label-margin: 0;
 }
 
 .xh-units-label {

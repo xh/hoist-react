@@ -62,6 +62,10 @@ export class ConfigPanelModel extends HoistModel {
             selModel: 'multiple',
             sortBy: 'name',
             unit: 'config',
+            // Docked detail panel covers viewing - double-click is edit-only.
+            onRowDoubleClicked: ({data}) => {
+                if (data && !this.gridModel.readonly) this.gridModel.editRecord(data);
+            },
             // Store + fields
             store: {
                 url: 'rest/configAdmin',
