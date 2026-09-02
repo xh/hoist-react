@@ -27,7 +27,7 @@ import {
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
-import {debouncePromise, wait} from '@xh/hoist/promise';
+import {debouncePromise, wait, waitFor} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -820,13 +820,18 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.inputValue = model.inputValue || '';
         rsProps.onInputChange = model.onInputChange;
         rsProps.controlShouldRenderValue = !model.hasFocus;
+    }
+
+    // Scroll the selected option into view on menu open. Required for all single-selects, as
+    // react-select's built-in equivalent does not fire for portalled menus (which we always use).
+    // Poll for the option element - the portalled menu mounts over multiple render passes.
+    if (!model.multiMode) {
         rsProps.onMenuOpen = () => {
-            wait().then(() => {
-                const selectedEl = document.getElementsByClassName(
-                    'xh-select__option--is-selected'
-                )[0];
-                selectedEl?.scrollIntoView({block: 'end'});
-            });
+            const getSelectedEl = () =>
+                document.getElementsByClassName('xh-select__option--is-selected')[0];
+            waitFor(() => !!getSelectedEl())
+                .then(() => getSelectedEl()?.scrollIntoView({block: 'end'}))
+                .catch(() => {}); // Timeout expected when no option selected - nothing to scroll to.
         };
     }
 
