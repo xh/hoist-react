@@ -188,7 +188,7 @@ Inspector state is persisted to `localStorage` under the key
 - Store filter text
 - Active/inactive state
 
-The "Restore Defaults" button in the Inspector header clears all persisted state and restarts.
+The "Restore Defaults" button in the Stats panel toolbar clears all persisted state and restarts.
 
 ## Usage Patterns
 

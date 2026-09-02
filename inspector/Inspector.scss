@@ -12,11 +12,6 @@
   }
 }
 
-.xh-inspector-panel-header {
-  background-color: hsl(33, 93%, 40%);
-  color: white;
-}
-
 // Inspector window layout - these rules reach the child window via its synced stylesheets.
 // The Inspector panel itself flexes to fill the host (see `flex` prop in InspectorPanel).
 body.xh-inspector-window {

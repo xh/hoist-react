@@ -6,9 +6,7 @@
  */
 import {hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {Icon} from '@xh/hoist/icon';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
 import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
@@ -31,25 +29,9 @@ export const inspectorPanel = hoistCmp.factory({
         if (!XH.inspectorService.active || !windowContainer) return null;
 
         const ret = panel({
-            title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
-            icon: Icon.search(),
             className: 'xh-inspector',
-            headerClassName: 'xh-inspector-panel-header',
             flex: 1,
             modelConfig: {collapsible: false, resizable: false, errorBoundary: true, xhImpl: true},
-            compactHeader: true,
-            headerItems: [
-                button({
-                    icon: Icon.x(),
-                    text: 'Close',
-                    onClick: () => XH.inspectorService.deactivate()
-                }),
-                button({
-                    icon: Icon.reset(),
-                    tooltip: 'Restore Defaults',
-                    onClick: () => XH.inspectorService.restoreDefaultsAsync()
-                })
-            ],
             item: hframe(statsPanel(), instancesPanel())
         });
 

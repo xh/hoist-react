@@ -27,8 +27,9 @@
   across reloads, so the same set of objects can be followed session to session; those with no live
   instance show as placeholder rows until un-starred.
 * Hoist Inspector now opens directly in its own browser window when activated, replacing the docked
-  panel and its pop-out/dock controls. If the browser blocks the window on reload, the Inspector is
-  deactivated with a toast.
+  panel and its pop-out/dock controls. Each browser tab gets its own Inspector window, labelled with
+  the tab's `XH.tabId`. If the browser blocks the window on reload, the Inspector is deactivated
+  with a toast.
 * Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
   mobile) to provide more structure by default to the input control with easy options to customize.
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile

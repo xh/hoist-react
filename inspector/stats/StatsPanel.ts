@@ -20,8 +20,8 @@ export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
     render({model}) {
-        // Re-parent grid popups (context/column menus) when Inspector is detached.
-        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
+        const inspectorModel = useContextModel(InspectorModel),
+            popupParent = inspectorModel?.windowContainer ?? undefined;
 
         return panel({
             title: 'Stats',
@@ -55,14 +55,31 @@ export const statsPanel = hoistCmp.factory({
                     }),
                     filler(),
                     button({
-                        tooltip: 'Reset stats',
-                        icon: Icon.reset(),
-                        onClick: () => XH.inspectorService.clearStats()
+                        text: `Tab ${XH.tabId}`,
+                        icon: Icon.window(),
+                        tooltip: 'Focus the app tab this Inspector is attached to',
+                        onClick: () => inspectorModel.focusApp()
                     }),
+                    '-',
                     button({
                         tooltip: 'Take stat snapshot now',
                         icon: Icon.camera(),
                         onClick: () => XH.inspectorService.updateStats()
+                    }),
+                    button({
+                        tooltip: 'Clear stats',
+                        icon: Icon.trash(),
+                        onClick: () => XH.inspectorService.clearStats()
+                    }),
+                    '-',
+                    button({
+                        tooltip: "Restore Inspector's layout and options to their defaults",
+                        icon: Icon.reset(),
+                        onClick: () => {
+                            // Confirm dialog renders in the app window - bring it forward.
+                            inspectorModel.focusApp();
+                            XH.inspectorService.restoreDefaultsAsync();
+                        }
                     })
                 ]
             })

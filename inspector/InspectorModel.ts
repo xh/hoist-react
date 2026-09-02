@@ -53,6 +53,28 @@ export class InspectorModel extends HoistModel {
         });
     }
 
+    /**
+     * Bring the main app tab/window to the front. Chrome will not switch tabs via `focus()`, but
+     * will activate an existing named window targeted by `window.open()` from a user gesture. The
+     * app window is named transiently and the call is issued from within the Inspector window's
+     * realm, where the user's click is credited.
+     */
+    focusApp() {
+        const win = this.childWindow;
+        if (!win || win.closed) return;
+
+        const prevName = window.name,
+            name = `xhInspectorApp_${XH.tabId}`;
+        window.name = name;
+        try {
+            new (win as any).Function(`window.open('', '${name}')`)();
+        } catch {
+            window.focus();
+        } finally {
+            window.name = prevName;
+        }
+    }
+
     //------------------
     // Implementation
     //------------------
@@ -65,7 +87,7 @@ export class InspectorModel extends HoistModel {
 
         const win = window.open(
             '',
-            `xhInspector_${XH.clientAppCode}`,
+            `xhInspector_${XH.clientAppCode}_${XH.tabId}`,
             'popup=yes,width=1400,height=500'
         );
         if (!win) {
@@ -103,7 +125,7 @@ export class InspectorModel extends HoistModel {
         // Reset any stale content from a previously-opened window reused via its name.
         doc.head.innerHTML = '';
         doc.body.innerHTML = '';
-        doc.title = `${XH.appName} - Hoist Inspector`;
+        doc.title = `${XH.appName} Inspector - Tab ${XH.tabId}`;
 
         this.syncChildStyles();
         this.syncChildBodyClass();
