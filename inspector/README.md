@@ -168,7 +168,8 @@ The right side shows details for the instances selected in whichever left tab is
 - **Observable tracking** — Observable properties (via `@observable`, `@bindable`) are marked with
   an eye icon and their values update reactively in the grid
 - **Getter evaluation** — Getter properties show as `get(?)` by default to avoid side effects.
-  Click to evaluate on demand, or use "Load all getters" in the context menu to evaluate all at once
+  Click to evaluate on demand, use "Load all getters" in the context menu for a one-off, or toggle
+  "Getters" to evaluate them all automatically. A throwing getter shows its error as its value
 - **Watchlist star** — Star properties to add them to the Watchlist tab's properties grid, which
   aggregates watched properties across instances (grouped by instance) regardless of the property
   filters. Properties of named instances persist across reloads

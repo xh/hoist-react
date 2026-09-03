@@ -29,6 +29,9 @@ export class PropertiesModel extends BasePropsModel {
     get ownPropsOnly() {
         return this.quickFilters?.includes('ownPropsOnly');
     }
+    get autoLoadGetters() {
+        return this.quickFilters?.includes('autoLoadGetters');
+    }
 
     constructor(parent: InstancesModel) {
         super(parent, false);
@@ -72,6 +75,10 @@ export class PropertiesModel extends BasePropsModel {
             },
             delay: 300
         });
+    }
+
+    protected override shouldLoadGetter(instanceXhId: string, property: string): boolean {
+        return this.autoLoadGetters || super.shouldLoadGetter(instanceXhId, property);
     }
 
     protected override shouldInclude(

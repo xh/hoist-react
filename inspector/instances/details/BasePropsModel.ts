@@ -77,6 +77,11 @@ export abstract class BasePropsModel extends HoistModel {
         return true;
     }
 
+    /** Hook for subclasses to evaluate getters beyond those loaded on demand. */
+    protected shouldLoadGetter(instanceXhId: string, property: string): boolean {
+        return this.isLoadedGetter(instanceXhId, property);
+    }
+
     protected getRecData(instance: HoistBase, property: string, isGetter: boolean) {
         const isOwnProperty = Object.hasOwn(instance, property),
             isObservable = isObservableProp(instance, property);
@@ -86,8 +91,8 @@ export abstract class BasePropsModel extends HoistModel {
         const {xhId} = instance,
             key = instanceKey(instance.constructor.name, instance.xhName, xhId),
             instanceDisplayName = parseNameSource(instance),
-            isLoadedGetter = isGetter && this.isLoadedGetter(xhId, property),
-            v = !isGetter || isLoadedGetter ? instance[property] : null,
+            isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
+            v = !isGetter || isLoadedGetter ? readProp(instance, property) : null,
             // Detect FormModel.values Proxy object - throws otherwise on attempt to render in grid.
             isProxy = !!v?._xhIsProxy,
             isHoistModel = v?.isHoistModel,
@@ -270,6 +275,15 @@ export abstract class BasePropsModel extends HoistModel {
             },
             xhImpl: true
         });
+    }
+}
+
+/** Read a property, surfacing a throwing getter as its error rather than breaking the grid. */
+function readProp(instance: HoistBase, property: string) {
+    try {
+        return instance[property];
+    } catch (e) {
+        return `[throws: ${e?.message ?? e}]`;
     }
 }
 

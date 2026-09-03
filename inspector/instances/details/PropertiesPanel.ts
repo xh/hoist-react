@@ -59,6 +59,12 @@ const bbar = hoistCmp.factory<PropertiesModel>(({model}) => {
                         text: '_ props',
                         value: 'showUnderscoreProps',
                         tooltip: 'Include properties that begin with an underscore'
+                    }),
+                    button({
+                        text: 'Getters',
+                        value: 'autoLoadGetters',
+                        tooltip:
+                            'Evaluate all getters automatically. Off by default as getters can be expensive or have side effects - click (...) to evaluate one on demand.'
                     })
                 ]
             }),
