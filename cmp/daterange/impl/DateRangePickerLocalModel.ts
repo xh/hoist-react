@@ -7,7 +7,7 @@
 import {type TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, type Intent, lookup, managed} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import type {LocalDate} from '@xh/hoist/utils/datetime';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {clamp, isEqual} from 'lodash';
 import {createRef, type ReactElement} from 'react';
 import {DateRangePickerModel} from '../DateRangePickerModel';
@@ -248,13 +248,27 @@ export class DateRangePickerLocalModel extends HoistModel {
         return activeTabId === 'presets' || activeTabId === 'relative';
     }
 
-    /** Default footer note - tells the user what relative periods resolve against. */
+    /**
+     * Default footer note - tells the user what periods resolve against, and which clock decides
+     * it. A live anchor names its source, so a user whose day differs from the application's can
+     * see why the picker's "today" is not theirs. A pinned or computed anchor is just its date.
+     */
     get anchorNote(): string {
         const {anchorDate, parentModel} = this,
+            {anchorDay, businessDayMode, today} = parentModel,
             date = anchorDate.format(parentModel.dateFormat);
-        return parentModel.isAnchorToday
-            ? `Periods resolve against today, ${date}.`
-            : `Periods resolve against ${date}.`;
+
+        let source = '';
+        if (anchorDay === 'localDay' || anchorDay === 'appDay') {
+            const day = anchorDay === 'appDay' ? LocalDate.currentAppDay() : today;
+            source =
+                anchorDate !== day && businessDayMode
+                    ? 'the most recent business day, '
+                    : anchorDay === 'appDay'
+                      ? 'the current application day, '
+                      : 'your current day, ';
+        }
+        return `Periods resolve against ${source}${date}.`;
     }
 
     private get anchorNoun(): string {
