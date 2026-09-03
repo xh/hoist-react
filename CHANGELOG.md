@@ -17,11 +17,10 @@
 ### 🎁 New Features
 
 * Added `DateRangePicker` (`desktop/cmp/daterange`), a compact control for selecting a period as a
-  preset (MTD, Prev 30 Days, ...), a relative lookback, a calendar month or year, or a custom date
-  range. Its `DateRangePickerModel` persists the selection as plain JSON and resolves it to concrete
-  date ranges and `FieldFilterSpec`s for querying. The model keeps its `anchorDay` on the current
-  day as midnight passes, steps presets and lookbacks back and forth without losing their kind, and
-  offers a `businessDayMode` for desks that walk single days by business day.
+  preset (Today, MTD, Prev 30 Days, ...), a relative lookback, a calendar month or year, or a custom
+  date range. Its `DateRangePickerModel` persists the selection as plain JSON, resolves it to date
+  ranges and `FieldFilterSpec`s, keeps a live `anchorDay` current across midnight, steps periods
+  back and forth without changing their kind, and offers a `businessDayMode` for single-day walks.
 * The Admin Console's Activity Tracking tab now selects its query period with a `DateRangePicker`.
   Periods saved in existing views reset to Today on first load.
 * Added `Icon.calendarDays` and `Icon.calendarRange`.
