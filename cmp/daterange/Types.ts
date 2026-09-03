@@ -100,14 +100,22 @@ export interface DateRangePreset {
     /**
      * Resolve the comparable prior range for a given current range. Default is the immediately
      * preceding range of equal duration in days, or null when the current range is unbounded.
-     * Also drives stepping: a selection at `offset` -n is this applied n times.
+     * Also drives stepping back: a selection at `offset` -n is this applied n times.
      */
     resolvePrior?: (current: LocalDateRange, ctx: DateRangeContext) => LocalDateRange | null;
 
     /**
-     * Label for this preset once stepped back to a non-zero `offset`, when the trigger's dates
-     * locate the range and the label need only describe its shape - e.g. `7 Days` for a rolling
-     * window, or the month itself for a previous-month preset. Default is the label with the
+     * Resolve the comparable range immediately after a given current range - the mirror of
+     * `resolvePrior`, driving stepping forward when `maxDate` allows dates beyond the anchor.
+     * Default is the immediately following range of equal duration in days, or null when the
+     * current range is unbounded.
+     */
+    resolveNext?: (current: LocalDateRange, ctx: DateRangeContext) => LocalDateRange | null;
+
+    /**
+     * Label for this preset once stepped to a non-zero `offset`, when the trigger's dates locate
+     * the range and the label need only describe its shape - e.g. `7 Days` for a rolling window,
+     * or the month itself for a previous-month preset. Default is the label with the signed
      * offset appended, e.g. `MTD −1`.
      */
     shiftedLabel?: (range: LocalDateRange, offset: number, ctx: DateRangeContext) => string;
@@ -119,8 +127,9 @@ export interface PresetDateRangeSelection {
     /** Token of a preset configured on the owning model. */
     token: string;
     /**
-     * Number of periods stepped back from the preset's natural range, zero or negative - each step
-     * applies the preset's prior-range logic once. Omitted when zero. See `stepRange()`.
+     * Number of periods stepped from the preset's natural range - negative for earlier periods,
+     * each applying the preset's prior-range logic once, positive for later ones (reachable only
+     * when `maxDate` allows dates beyond the anchor). Omitted when zero. See `stepRange()`.
      */
     offset?: number;
 }
@@ -138,7 +147,7 @@ export interface RelativeDateRangeSelection {
      * ending on the anchor date. Has no effect for days, where each day is its own boundary.
      */
     snap?: boolean;
-    /** Periods stepped back from the natural window, zero or negative. Omitted when zero. */
+    /** Periods stepped from the natural window - negative earlier, positive later. Omitted when zero. */
     offset?: number;
 }
 

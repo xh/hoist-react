@@ -462,9 +462,9 @@ export class DateRangePickerModel extends HoistModel {
 
     /**
      * Move the applied range by `steps` periods - e.g. `stepRange(-1)` for the previous period.
-     * No selection changes kind: presets and relative lookbacks step through their own prior-range
-     * logic via `offset`, months and years by calendar unit, and custom ranges by their length.
-     * Clamped to `minDate` and `maxDate`, and a no-op when the range cannot move - see
+     * No selection changes kind: presets and relative lookbacks step through their own prior- and
+     * next-range logic via `offset`, months and years by calendar unit, and custom ranges by their
+     * length. Stops at `minDate` and `maxDate`, and a no-op when the range cannot move - see
      * {@link stepDateRangeSelection}.
      */
     @action

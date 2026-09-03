@@ -161,9 +161,10 @@ true whatever the anchor is, where "Last 7 Days" quietly claims the window ends 
 wherever the label would otherwise stand alone.
 
 An app-defined preset is a `DateRangePreset`: a unique `token`, a `label` (string or function of
-the context), an optional longer `name` for its row in the picker, a `resolve` function, an
-optional `resolvePrior`, and an optional `shiftedLabel` for the preset once stepped back (see
-Stepping). The default prior is the preceding range of equal length in days.
+the context), an optional longer `name` for its row in the picker, a `resolve` function, optional
+`resolvePrior` and `resolveNext` for the adjacent ranges, and an optional `shiftedLabel` for the
+preset once stepped (see Stepping). The default adjacent ranges are the preceding and following
+ranges of equal length in days.
 
 ```typescript
 const FISCAL_YTD: DateRangePreset = {
@@ -221,11 +222,12 @@ query body. `getRangeFilter(range, field)` builds filters for any range and fiel
 `stepRange(steps)` moves the applied range by one period per step: `-1` for the previous period,
 `1` for the next. No selection changes kind:
 
-- **Preset and relative** selections adjust their `offset`, stepping through their own prior-range
-  logic - a lookback in months steps by months, MTD steps to the prior MTD, a single day steps by
-  business day in `businessDayMode`. The offset is zero or negative, since the natural range
-  already ends on the anchor date, and is omitted from the value when zero. A stepped selection
-  is still live: `mtd` at offset `-1` becomes the new prior MTD when the month turns.
+- **Preset and relative** selections adjust their `offset`, stepping through their own prior- and
+  next-range logic - a lookback in months steps by months, MTD steps to the prior MTD, a single
+  day steps by business day in `businessDayMode`. Negative offsets are earlier periods. Positive
+  ones are later, and reachable only when `maxDate` allows dates beyond the anchor, since the
+  natural range already ends there. The offset is omitted from the value when zero. A stepped
+  selection is still live: `mtd` at offset `-1` becomes the new prior MTD when the month turns.
 - **Month and year** selections step by calendar unit.
 - **Custom** selections step by their length in days, or by business day when a single day in
   `businessDayMode`.
@@ -235,9 +237,9 @@ step buttons, and the trigger's left and right arrow keys.
 
 Once stepped, the trigger's dates locate the range, so the label describes only its shape: a
 rolling window reads as its length (`7 Days`, `3 Months`), a previous-unit preset as the period it
-now covers (`Jul 2026`), and a to-date preset as its name with the offset (`MTD −1`) - its length
-is set by the calendar, not the selection, so a length alone would mislead. App-defined presets
-control this via `shiftedLabel`; the default appends the offset.
+now covers (`Jul 2026`), and a to-date preset as its name with the signed offset (`MTD −1`,
+`MTD +1`) - its length is set by the calendar, not the selection, so a length alone would
+mislead. App-defined presets control this via `shiftedLabel`; the default appends the offset.
 
 ### Anchor Day and Bounds
 
