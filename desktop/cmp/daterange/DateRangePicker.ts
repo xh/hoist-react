@@ -744,7 +744,7 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
 //------------------
 // Tabs
 //------------------
-/** Rail entry + content for each tab, in rail order. Filtered by the model's `tabs` config. */
+/** Switcher entry + content for each tab. The model's `tabs` config selects and orders them. */
 const TAB_SPECS: DateRangePickerTabSpec[] = [
     {id: 'presets', title: 'Presets', icon: Icon.bolt(), content: presetsTab},
     {id: 'relative', title: 'Relative', icon: Icon.history(), content: relativeTab},

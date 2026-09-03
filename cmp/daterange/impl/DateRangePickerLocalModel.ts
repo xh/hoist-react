@@ -422,16 +422,12 @@ export class DateRangePickerLocalModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
+    /** Tab configs in the order the app configured them - the model's `tabs` sets the order. */
     private buildTabs(): TabConfig[] {
-        const {tabs} = this.parentModel;
-        return this.tabSpecs
-            .filter(spec => tabs.includes(spec.id))
-            .map(({id, title, icon, content}) => ({
-                id,
-                title,
-                icon,
-                content: () => content({model: this, testId: this.testId})
-            }));
+        return this.parentModel.tabs.map(id => {
+            const {title, icon, content} = this.tabSpecs.find(spec => spec.id === id);
+            return {id, title, icon, content: () => content({model: this, testId: this.testId})};
+        });
     }
 
     private commitDraftIfLive() {

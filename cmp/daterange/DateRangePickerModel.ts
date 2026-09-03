@@ -119,7 +119,7 @@ export interface DateRangePickerConfig {
     presets?: Array<DateRangePresetToken | DateRangePreset>;
 
     /**
-     * Tabs to offer within the picker popover, in rail order. Default: all tabs, less the
+     * Tabs to offer within the picker popover, in display order. Default: all tabs, less the
      * Presets tab when `presets` is empty. A single tab renders without a rail.
      */
     tabs?: DateRangePickerTab[];
@@ -183,7 +183,7 @@ export class DateRangePickerModel extends HoistModel {
     /** The applied selection, always in normalized form. Set via `setValue()`. */
     @observable.ref value: DateRangeSelection;
 
-    /** Tabs offered in the popover, in rail order. Set via `setTabs()` - the picker follows. */
+    /** Tabs offered in the popover, in display order. Set via `setTabs()` - the picker follows. */
     @observable.ref tabs: DateRangePickerTab[];
 
     /** Presets offered on the Presets tab, in display order. Set via `setPresets()`. */

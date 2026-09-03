@@ -19,7 +19,7 @@ import type {
     ResolvedDateRange
 } from './Types';
 
-/** All picker tabs, in their default rail order. */
+/** All picker tabs, in their default display order. */
 export const DATE_RANGE_PICKER_TABS: DateRangePickerTab[] = [
     'presets',
     'relative',
