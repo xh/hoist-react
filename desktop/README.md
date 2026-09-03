@@ -113,6 +113,7 @@ Desktop form inputs with Blueprint styling:
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
 | `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |
+| `IntentInput` | Compact swatch row for selecting a Hoist `Intent`, with optional intent names |
 | `CodeInput` | Code editor with syntax highlighting |
 | `JsonInput` | JSON editor with validation |
 

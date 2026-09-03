@@ -698,6 +698,13 @@ body {
     --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, #{mc('blue-grey', '700')});
   }
 
+  //------------------------
+  // Intent Input
+  //------------------------
+  --xh-intent-input-swatch-size-px: var(--intent-input-swatch-size-px, 20px);
+  --xh-intent-input-compact-swatch-size-px: var(--intent-input-compact-swatch-size-px, 16px);
+  --xh-intent-input-gap-px: var(--intent-input-gap-px, var(--xh-pad-half-px));
+  --xh-intent-input-border-radius-px: var(--intent-input-border-radius-px, var(--xh-border-radius-px));
 
   //------------------------
   // Mask + LoadingIndicator
