@@ -146,9 +146,22 @@ jobs:
               done
               echo "Confirmed: @xh/hoist@next now resolves to $SNAPSHOT_VERSION"
 
+        # Mint a short-lived installation token for the org-owned "XH Build Bot" GitHub App, scoped
+        # to the toolbox repo with Contents: write (required by the repository_dispatch endpoint).
+        # Credentials live in the team 1Password vault under "GitHub App: XH Build Bot".
+        - name: Mint Toolbox dispatch token
+          id: toolbox-token
+          uses: actions/create-github-app-token@v3
+          with:
+              client-id: ${{ vars.XH_BUILD_BOT_CLIENT_ID }}
+              private-key: ${{ secrets.XH_BUILD_BOT_PRIVATE_KEY }}
+              owner: xh
+              repositories: toolbox
+              permission-contents: write
+
         - name: Trigger Toolbox snapshot build
           env:
-              GH_TOKEN: ${{ secrets.TOOLBOX_DISPATCH_TOKEN }}
+              GH_TOKEN: ${{ steps.toolbox-token.outputs.token }}
           run: |
               gh api repos/xh/toolbox/dispatches \
                   -f event_type=hoist-react-snapshot
