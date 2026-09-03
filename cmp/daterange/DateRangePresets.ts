@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {LocalDate} from '@xh/hoist/utils/datetime';
-import {nextDayInMode, previousDayInMode, singleDay} from './DateRangeUtils';
+import {fmtDateRangeOffset, nextDayInMode, previousDayInMode, singleDay} from './DateRangeUtils';
 import type {
     DateRangeContext,
     DateRangePreset,
@@ -74,6 +74,15 @@ const periodLabel =
         start.format(format);
 
 const isAnchorToday = ({anchorDate, today}: DateRangeContext) => anchorDate === today;
+const anchorLabel = (ctx: DateRangeContext) => (isAnchorToday(ctx) ? 'Today' : 'As Of');
+
+/**
+ * A single day `n` steps from the anchor day, in the T-1 idiom finance users speak - `Today −2`,
+ * `As Of −1` - so a walk through single days reads the same however it began. Zero is the anchor
+ * day itself.
+ */
+const dayFromAnchor = (n: number, ctx: DateRangeContext): string =>
+    n ? `${anchorLabel(ctx)} ${fmtDateRangeOffset(n)}` : anchorLabel(ctx);
 
 /**
  * Presets shipped with Hoist, keyed by token. Offer any subset (in any order) via the `presets`
@@ -98,12 +107,12 @@ const isAnchorToday = ({anchorDate, today}: DateRangeContext) => anchorDate === 
 export const dateRangePresets: Record<DateRangePresetToken, DateRangePreset> = {
     anchorDay: {
         token: 'anchorDay',
-        label: ctx => (isAnchorToday(ctx) ? 'Today' : 'As Of'),
+        label: anchorLabel,
         name: ctx => (isAnchorToday(ctx) ? 'Today' : 'As Of Date'),
         resolve: ({anchorDate}) => singleDay(anchorDate),
         resolvePrior: priorDay,
         resolveNext: nextDay,
-        shiftedLabel: lengthLabel('1 Day')
+        shiftedLabel: (range, offset, ctx) => dayFromAnchor(offset, ctx)
     },
     prevDay: {
         token: 'prevDay',
@@ -111,7 +120,8 @@ export const dateRangePresets: Record<DateRangePresetToken, DateRangePreset> = {
         resolve: ctx => singleDay(previousDayInMode(ctx.anchorDate, ctx)),
         resolvePrior: priorDay,
         resolveNext: nextDay,
-        shiftedLabel: lengthLabel('1 Day')
+        // Already one step back - stepped, it reads from the anchor like `anchorDay` does.
+        shiftedLabel: (range, offset, ctx) => dayFromAnchor(offset - 1, ctx)
     },
     wtd: {
         token: 'wtd',
@@ -239,6 +249,7 @@ export const DATE_RANGE_PRESET_TOKENS = Object.keys(dateRangePresets) as DateRan
 /** Presets offered by {@link DateRangePickerModel} when none are configured. */
 export const DEFAULT_DATE_RANGE_PRESETS: DateRangePresetToken[] = [
     'anchorDay',
+    'prevDay',
     'mtd',
     'qtd',
     'ytd',

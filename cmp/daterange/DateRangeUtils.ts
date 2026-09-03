@@ -362,7 +362,7 @@ export function getDateRangeLabel(sel: DateRangeSelection, ctx: DateRangeContext
             if (!offset) return evalLabel(preset.label, ctx);
             return preset.shiftedLabel
                 ? preset.shiftedLabel(resolveDateRange(sel, ctx).current, offset, ctx)
-                : `${evalLabel(preset.label, ctx)} ${fmtOffset(offset)}`;
+                : `${evalLabel(preset.label, ctx)} ${fmtDateRangeOffset(offset)}`;
         }
         case 'relative': {
             const length = `${sel.count} ${getDateRangeUnitLabel(sel.unit, sel.count)}`;
@@ -392,8 +392,8 @@ function evalLabel(label: DateRangePreset['label'], ctx: DateRangeContext): stri
     return isFunction(label) ? label(ctx) : label;
 }
 
-/** A signed offset as `−n` or `+n`, with a true minus sign. */
-function fmtOffset(offset: number): string {
+/** A signed offset as `−n` or `+n`, with a true minus sign - the default suffix for a stepped label. */
+export function fmtDateRangeOffset(offset: number): string {
     return `${offset < 0 ? '−' : '+'}${Math.abs(offset)}`;
 }
 

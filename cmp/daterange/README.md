@@ -240,7 +240,9 @@ Once stepped, the trigger's dates locate the range, so the label describes only 
 rolling window reads as its length (`7 Days`, `3 Months`), a previous-unit preset as the period it
 now covers (`Jul 2026`), and a to-date preset as its name with the signed offset (`MTD −1`,
 `MTD +1`) - its length is set by the calendar, not the selection, so a length alone would
-mislead. App-defined presets control this via `shiftedLabel`; the default appends the offset.
+mislead. Single days read from the anchor in the T-1 idiom: `Today −1`, `Today −2`, or `As Of −1`,
+whether the walk began from `anchorDay` or `prevDay`. App-defined presets control this via
+`shiftedLabel`; the default appends the offset.
 
 ### Anchor Day and Bounds
 
