@@ -50,10 +50,9 @@
   // explicit flex column.
   &__fill {
     display: flex;
-    flex: 1;
+    // Floor via flex-basis, not min-height - a min-height-clamped <fieldset> collapses its content.
+    flex: 1 0 250px;
     flex-direction: column;
-    // Floor the editor's height - past this the form scrolls rather than squeezing it further.
-    min-height: 250px;
 
     > .xh-card__content,
     .xh-form-field,
