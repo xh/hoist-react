@@ -7,7 +7,7 @@
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, p, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -20,6 +20,8 @@ import type {InstancesModel} from './InstancesModel';
 /** The All tab - every live instance, subject to the quick filters. */
 export const allPanel = hoistCmp.factory<InstancesModel>({
     displayName: 'AllPanel',
+    model: uses('InstancesModel'),
+
     render({model}) {
         const popupParent = useContextModel(InspectorModel).windowContainer;
         return panel({
