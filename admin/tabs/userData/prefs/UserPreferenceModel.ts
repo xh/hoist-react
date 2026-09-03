@@ -39,7 +39,6 @@ export class UserPreferenceModel extends HoistModel {
             selModel: 'multiple',
             sortBy: 'name',
             unit: 'user preference',
-            // Docked detail panel covers viewing - double-click and actions are edit-only.
             onRowDoubleClicked: ({data}) => {
                 if (data && !this.gridModel.readonly) this.gridModel.editRecord(data);
             },

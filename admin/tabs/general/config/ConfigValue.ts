@@ -131,6 +131,42 @@ class ConfigValueModel extends HoistModel {
             hasDefaults = defaultValue != null,
             tabs: TabConfig[] = [];
 
+        // Tabs run least- to most-derived: Defaults, Database, Instance, Resolved.
+        if (hasDefaults) {
+            tabs.push({
+                id: 'defaults',
+                title: 'Defaults',
+                icon: Icon.code(),
+                content: () =>
+                    jsonInput({
+                        value: JSON.stringify(defaultValue),
+                        readonly: true,
+                        autoFormat: true,
+                        enableSearch: true,
+                        className: 'xh-config-value__defaults',
+                        ...sizeProps(height)
+                    })
+            });
+        }
+
+        tabs.push({
+            id: 'db',
+            title: hasOverride
+                ? span({className: 'xh-config-value__overridden', item: 'Database'})
+                : 'Database',
+            icon: Icon.edit(),
+            content: () => valueFormField(valueType, height)
+        });
+
+        if (hasOverride) {
+            tabs.push({
+                id: 'instance',
+                title: 'Instance',
+                icon: Icon.warning({intent: 'warning'}),
+                content: () => readonlyValue(valueType, overrideValue, height)
+            });
+        }
+
         // Resolved - effective value with typedClass defaults applied.
         if (hasResolved) {
             // Highlight keys explicitly set in the database value or an instance override - all
@@ -151,46 +187,7 @@ class ConfigValueModel extends HoistModel {
             });
         }
 
-        if (hasOverride) {
-            tabs.push({
-                id: 'instance',
-                title: 'Instance',
-                icon: Icon.warning({intent: 'warning'}),
-                content: () => readonlyValue(valueType, overrideValue, height)
-            });
-        }
-
-        tabs.push({
-            id: 'db',
-            title: hasOverride
-                ? span({className: 'xh-config-value__overridden', item: 'Database'})
-                : 'Database',
-            icon: Icon.edit(),
-            content: () => valueFormField(valueType, height)
-        });
-
-        // Defaults - the typedClass defaults as declared in code.
-        if (hasDefaults) {
-            tabs.push({
-                id: 'defaults',
-                title: 'Defaults',
-                icon: Icon.code(),
-                content: () =>
-                    jsonInput({
-                        value: JSON.stringify(defaultValue),
-                        readonly: true,
-                        autoFormat: true,
-                        enableSearch: true,
-                        className: 'xh-config-value__defaults',
-                        ...sizeProps(height)
-                    })
-            });
-        }
-
-        // Built most- to least-derived above, but displayed the other way round. Editable forms
-        // open on Database - the one view that can actually be edited. Read-only displays open on
-        // the last tab, i.e. the most derived view available.
-        tabs.reverse();
+        // Open on Database if editable, else the most-derived view.
         this.tabContainerModel = new TabContainerModel({
             defaultTabId: readonly ? last(tabs).id : 'db',
             tabs

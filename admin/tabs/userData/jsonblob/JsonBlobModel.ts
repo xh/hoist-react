@@ -68,7 +68,6 @@ export class JsonBlobModel extends HoistModel {
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
-            // Docked detail panel covers viewing - double-click and actions are edit-only.
             onRowDoubleClicked: ({data}) => {
                 if (data && !this.gridModel.readonly) this.gridModel.editRecord(data);
             },
