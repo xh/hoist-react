@@ -11,8 +11,8 @@ import {BasePropsModel} from './BasePropsModel';
 import type {InstancesModel} from '../InstancesModel';
 
 /**
- * Lists the properties (including getters) of the instances selected in the Instances grid,
- * grouped by instance and subject to the quick filters.
+ * Properties (including getters) of the selected instances, grouped by instance and subject to
+ * the quick filters.
  *
  * @internal
  */

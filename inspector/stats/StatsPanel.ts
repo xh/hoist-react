@@ -20,7 +20,6 @@ export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
     render({model}) {
-        // Parent grid popups (context/column menus) into the Inspector window.
         const popupParent = useContextModel(InspectorModel).windowContainer;
 
         return panel({

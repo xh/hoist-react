@@ -172,7 +172,7 @@ The right side shows details for the instances selected in whichever left tab is
   underscore-prefixed properties
 - **Navigation** — When a property value is a HoistModel, HoistService, Store, Cube, or View,
   clicking its value navigates to that instance in the instances grid
-- **Console logging** — Double-click a property or use the action button to log its value to the
+- **Console logging** — Double-click a property or use its context menu to log its value to the
   browser devtools console
 
 ### Diagnostics Panel

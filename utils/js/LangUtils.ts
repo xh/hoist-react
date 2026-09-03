@@ -303,10 +303,9 @@ export function parseNameSource(source: NameSource): string {
 }
 
 /**
- * Label for a HoistBase instance - `ClassName [xhName]`, or `ClassName [id]` (its `xhId` minus the
- * `xh-id-` prefix) when unnamed, so peers of the same class can be told apart. An `xhName` that
- * matches the class name case-insensitively (e.g. `fetchService`) declares a singleton and is
- * omitted, leaving the bare class name.
+ * Label for a HoistBase instance - `ClassName [xhName]`, or `ClassName [id]` (short `xhId`) when
+ * unnamed. An `xhName` matching the class name (e.g. `fetchService`) marks a singleton and is
+ * omitted.
  */
 export function formatInstanceLabel(className: string, xhName: string, xhId: string): string {
     if (!xhName) return `${className} [${xhId.replace(/^xh-id-/, '')}]`;

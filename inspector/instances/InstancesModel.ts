@@ -32,7 +32,6 @@ export class InstancesModel extends HoistModel {
 
     override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
-    /** Left-hand All / Watchlist tabs - the active tab's grid drives the detail tabs. */
     @managed navTabModel: TabContainerModel;
     instancesGridModel: GridModel;
     instancesPanelModel: PanelModel;
@@ -62,7 +61,7 @@ export class InstancesModel extends HoistModel {
         return this.instQuickFilters?.includes('showXhImpl');
     }
 
-    /** Grid of the active left-hand tab - source of the selection driving the detail tabs. */
+    /** Grid of the active All/Watchlist tab - its selection drives the detail tabs. */
     get activeGridModel(): GridModel {
         return this.navTabModel.activeTabId === 'watchlist'
             ? this.watchlistModel.instancesGridModel

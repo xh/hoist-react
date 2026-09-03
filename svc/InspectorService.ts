@@ -55,10 +55,7 @@ export class InspectorService extends HoistService {
     @bindable.ref
     activeInstances: InspectorInstanceData[] = [];
 
-    /**
-     * Timestamped model counts w/memory usage (when active). The last hour is persisted per
-     * browser tab, so the trend leading up to a reload survives it.
-     */
+    /** Timestamped model counts w/memory usage (when active). Last hour persisted per tab. */
     @observable.ref
     @persist.with({localStorageKey: `xhInspector.${XH.clientAppCode}.${XH.tabId}`})
     stats: InspectorStat[] = [];
@@ -282,4 +279,4 @@ interface NonStandardPerformance extends Performance {
     };
 }
 
-const STATS_RETENTION = 1 * HOURS;
+const STATS_RETENTION = HOURS;

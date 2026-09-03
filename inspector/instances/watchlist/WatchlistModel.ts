@@ -34,7 +34,6 @@ import {instanceKey, isNamedKey, watchInstanceCol} from './WatchlistUtils';
  */
 export class WatchlistModel extends HoistModel {
     override xhImpl = true;
-    override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
     parent: InstancesModel;
     @managed instancesGridModel: GridModel;
@@ -60,7 +59,7 @@ export class WatchlistModel extends HoistModel {
 
         // Persist named entries only - xhId keys are meaningless after a reload.
         PersistenceProvider.create({
-            persistOptions: persistOptions({path: 'watchlist'}, this.persistWith),
+            persistOptions: persistOptions({path: 'watchlist'}, parent.persistWith),
             owner: this,
             target: {
                 getPersistableState: () =>
@@ -167,7 +166,7 @@ export class WatchlistModel extends HoistModel {
     private createInstancesGridModel() {
         const {parent} = this;
         return new GridModel({
-            persistWith: {...this.persistWith, path: 'watchlistInstancesGrid'},
+            persistWith: {...parent.persistWith, path: 'watchlistInstancesGrid'},
             autosizeOptions: {mode: 'managed'},
             headerMenuDisplay: 'hover',
             emptyText: 'Star an instance to add it to the Watchlist.',

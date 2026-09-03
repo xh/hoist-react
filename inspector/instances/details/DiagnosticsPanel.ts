@@ -27,7 +27,6 @@ export const diagnosticsPanel = hoistCmp.factory({
     model: uses(DiagnosticsModel, {fromContext: false}),
 
     render({model}) {
-        // Parent grid popups (context/column menus) into the Inspector window.
         const popupParent = useContextModel(InspectorModel).windowContainer,
             hasTracked = !isEmpty(model.trackedDiagnostics);
 

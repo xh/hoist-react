@@ -25,7 +25,6 @@ export const watchlistPanel = hoistCmp.factory({
     model: uses(WatchlistModel, {fromContext: false}),
 
     render({model}) {
-        // Parent grid popups (context/column menus) into the Inspector window.
         const popupParent = useContextModel(InspectorModel).windowContainer,
             {instancesGridModel, propsModel} = model;
 
@@ -58,7 +57,7 @@ export const watchlistPanel = hoistCmp.factory({
                     side: 'bottom',
                     defaultSize: '50%',
                     collapsible: false,
-                    persistWith: {...model.persistWith, path: 'watchlistPropsPanel'},
+                    persistWith: {...model.parent.persistWith, path: 'watchlistPropsPanel'},
                     xhImpl: true
                 },
                 item: grid({model: propsModel.gridModel, agOptions: {popupParent}})

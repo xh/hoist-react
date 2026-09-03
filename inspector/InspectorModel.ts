@@ -39,7 +39,7 @@ export class InspectorModel extends HoistModel {
     @observable.ref
     windowContainer: HTMLElement = null;
 
-    /** Top-level Objects / Memory tabs - switched via the picker in the Inspector header. */
+    /** Top-level Objects / Memory tabs, switched from the Inspector header. */
     @managed
     tabContainerModel: TabContainerModel = new TabContainerModel({
         persistWith: {localStorageKey: `xhInspector.${XH.clientAppCode}.tabs`},
