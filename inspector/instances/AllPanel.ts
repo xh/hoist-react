@@ -15,12 +15,12 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {popover} from '@xh/hoist/kit/blueprint';
-import type {InstancesModel} from './InstancesModel';
+import {InstancesModel} from './InstancesModel';
 
 /** The All tab - every live instance, subject to the quick filters. */
 export const allPanel = hoistCmp.factory<InstancesModel>({
     displayName: 'AllPanel',
-    model: uses('InstancesModel'),
+    model: uses(() => InstancesModel),
 
     render({model}) {
         const popupParent = useContextModel(InspectorModel).windowContainer;
