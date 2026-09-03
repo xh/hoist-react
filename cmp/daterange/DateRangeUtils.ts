@@ -8,13 +8,14 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFinite, isFunction, isPlainObject, isString} from 'lodash';
 import type {
-    DateRangeCalendarUnit,
     DateRangeContext,
     DateRangePickerTab,
     DateRangePreset,
     DateRangeSelection,
     DateRangeUnit,
     LocalDateRange,
+    PresetDateRangeSelection,
+    RelativeDateRangeSelection,
     ResolvedDateRange
 } from './Types';
 
@@ -26,20 +27,14 @@ export const DATE_RANGE_PICKER_TABS: DateRangePickerTab[] = [
     'custom'
 ];
 
-/** Calendar units offered on the Relative tab's unit control, in display order. */
-export const DATE_RANGE_CALENDAR_UNITS: DateRangeCalendarUnit[] = [
-    'days',
-    'weeks',
-    'months',
-    'quarters',
-    'years'
-];
-
-/** All units valid for a relative selection. */
-export const DATE_RANGE_UNITS: DateRangeUnit[] = [...DATE_RANGE_CALENDAR_UNITS, 'businessDays'];
+/** Units offered on the Relative tab's unit control, in display order. */
+export const DATE_RANGE_UNITS: DateRangeUnit[] = ['days', 'weeks', 'months', 'quarters', 'years'];
 
 /** Largest `count` accepted for a relative selection. */
 export const MAX_RELATIVE_COUNT = 999;
+
+/** Furthest back a preset or relative selection can be stepped. */
+export const MAX_STEP_OFFSET = 9999;
 
 /** Year bounds for month and year selections - shared by validation and picker navigation. */
 export const MIN_SELECTION_YEAR = 1900;
@@ -58,51 +53,29 @@ export function resolveDateRange(
 
     switch (sel.kind) {
         case 'preset': {
-            const preset = ctx.presets[sel.token];
-            throwIf(!preset, `Unknown date range preset: '${sel.token}'.`);
-            const current = preset.resolve(ctx),
-                prior = preset.resolvePrior
-                    ? preset.resolvePrior(current, ctx)
-                    : equalDurationPrior(current);
-            return {current, prior};
+            const preset = getPreset(sel.token, ctx);
+            return applyOffset(
+                preset.resolve(ctx),
+                range => resolvePresetPrior(preset, range, ctx),
+                sel.offset
+            );
         }
 
         case 'relative': {
             const {unit} = sel,
-                count = Math.max(1, sel.count);
-
-            if (unit === 'businessDays') {
-                // The window ends on the anchor date, business day or not, and reaches back far
-                // enough to hold `count` business days. The prior window holds the `count`
-                // business days before it.
-                const start = businessDayWindowStart(anchorDate, count, ctx),
-                    priorEnd = start.previousDay();
-                return {
-                    current: {start, end: anchorDate},
-                    prior: {start: businessDayWindowStart(priorEnd, count, ctx), end: priorEnd}
-                };
-            }
-
-            // Days need no special case: a day is already a calendar boundary, so both
-            // expressions below reduce to `anchorDate - count + 1` for that unit.
-            const start = sel.snap
+                count = Math.max(1, sel.count),
+                // Days need no special case: a day is already a calendar boundary, so both
+                // expressions below reduce to `anchorDate - count + 1` for that unit.
+                start = sel.snap
                     ? // Calendar-aligned - the current (partial) unit counts as one.
                       anchorDate.startOf(unit).subtract(count - 1, unit)
                     : // Rolling window of exactly `count` units ending on the anchor date.
-                      anchorDate.subtract(count, unit).nextDay(),
-                current = {start, end: anchorDate},
-                // Compare like against like: a lookback in months, quarters, weeks, or years steps
-                // its prior back by the same units, matching the equivalent presets - so 3 months
-                // ending May 31 compares against 3 months ending Feb 28, not 92 days. Days keep
-                // an equal number of days.
-                prior =
-                    unit === 'days'
-                        ? equalDurationPrior(current)
-                        : {
-                              start: start.subtract(count, unit),
-                              end: anchorDate.subtract(count, unit)
-                          };
-            return {current, prior};
+                      anchorDate.subtract(count, unit).nextDay();
+            return applyOffset(
+                {start, end: anchorDate},
+                range => resolveRelativePrior(sel, range, ctx),
+                sel.offset
+            );
         }
 
         case 'month':
@@ -126,6 +99,52 @@ export function resolveDateRange(
             return {current, prior: equalDurationPrior(current)};
         }
     }
+}
+
+/**
+ * Step a natural range back `|offset|` periods via its prior-range logic, then compute the prior
+ * of where it lands. Stops early if the range becomes unbounded - `stepDateRangeSelection` refuses
+ * offsets the range cannot reach.
+ */
+function applyOffset(
+    current: LocalDateRange,
+    priorFn: (range: LocalDateRange) => LocalDateRange | null,
+    offset: number = 0
+): ResolvedDateRange {
+    for (let i = 0; i < -offset; i++) {
+        const prior = priorFn(current);
+        if (!prior) break;
+        current = prior;
+    }
+    return {current, prior: priorFn(current)};
+}
+
+function resolvePresetPrior(
+    preset: DateRangePreset,
+    range: LocalDateRange,
+    ctx: DateRangeContext
+): LocalDateRange | null {
+    return preset.resolvePrior ? preset.resolvePrior(range, ctx) : equalDurationPrior(range);
+}
+
+/**
+ * Compare like against like: a lookback in weeks or larger units steps its prior back by the same
+ * units, matching the equivalent presets - so 3 months ending May 31 compares against 3 months
+ * ending Feb 28, not 92 days. Days keep an equal number of days, with a single day walking by
+ * business day when the model is in `businessDayMode`.
+ */
+function resolveRelativePrior(
+    sel: RelativeDateRangeSelection,
+    {start, end}: LocalDateRange,
+    ctx: DateRangeContext
+): LocalDateRange {
+    const {unit} = sel,
+        count = Math.max(1, sel.count);
+    if (unit !== 'days') {
+        return {start: start.subtract(count, unit), end: end.subtract(count, unit)};
+    }
+    if (count === 1 && ctx.businessDayMode) return singleDay(previousBusinessDay(start, ctx));
+    return equalDurationPrior({start, end});
 }
 
 /**
@@ -155,25 +174,48 @@ function resolveCalendarUnit(
     };
 }
 
-/**
- * Start of the window ending on `end` (inclusive) that holds `count` business days per the
- * context. Bounded, to guard against an `isBusinessDay` that never returns true.
- */
-function businessDayWindowStart(end: LocalDate, count: number, ctx: DateRangeContext): LocalDate {
-    let day = end,
-        found = ctx.isBusinessDay(day) ? 1 : 0;
-    for (let i = 0, limit = count * 10 + 366; found < count && i < limit; i++) {
-        day = day.previousDay();
-        if (ctx.isBusinessDay(day)) found++;
-    }
-    return day;
-}
-
 /** The immediately preceding range of equal duration in days, or null if `current` is unbounded. */
 function equalDurationPrior({start, end}: LocalDateRange): LocalDateRange | null {
     if (!start || !end) return null;
     const dayCount = end.diff(start, 'days') + 1;
     return {start: start.subtract(dayCount, 'days'), end: end.subtract(dayCount, 'days')};
+}
+
+/** A range of the one given day. */
+export function singleDay(day: LocalDate): LocalDateRange {
+    return {start: day, end: day};
+}
+
+/**
+ * The nearest business day strictly before `date`, per the context's `isBusinessDay`. Bounded, to
+ * guard against a test that never returns true.
+ */
+export function previousBusinessDay(date: LocalDate, ctx: BusinessDayContext): LocalDate {
+    let ret = date.previousDay();
+    for (let i = 0; i < 366 && !ctx.isBusinessDay(ret); i++) ret = ret.previousDay();
+    return ret;
+}
+
+/** The nearest business day strictly after `date`, per the context's `isBusinessDay`. Bounded. */
+export function nextBusinessDay(date: LocalDate, ctx: BusinessDayContext): LocalDate {
+    let ret = date.nextDay();
+    for (let i = 0; i < 366 && !ctx.isBusinessDay(ret); i++) ret = ret.nextDay();
+    return ret;
+}
+
+/** `date` itself if it is a business day, else the nearest business day before it. */
+export function businessDayOnOrBefore(date: LocalDate, ctx: BusinessDayContext): LocalDate {
+    return ctx.isBusinessDay(date) ? date : previousBusinessDay(date, ctx);
+}
+
+type BusinessDayContext = Pick<DateRangeContext, 'isBusinessDay'>;
+
+/**
+ * The day before `date` - the previous business day in `businessDayMode`, else the previous
+ * calendar day. The step taken by single-day presets and their prior ranges.
+ */
+export function previousDayInMode(date: LocalDate, ctx: DateRangeContext): LocalDate {
+    return ctx.businessDayMode ? previousBusinessDay(date, ctx) : date.previousDay();
 }
 
 /**
@@ -191,21 +233,27 @@ export function parseDateRangeSelection(
 
     const obj = raw as any;
     switch (obj.kind) {
-        case 'preset':
-            return isString(obj.token) && presets[obj.token]
-                ? {kind: 'preset', token: obj.token}
+        case 'preset': {
+            const offset = parseOffset(obj.offset);
+            return isString(obj.token) && presets[obj.token] && offset != null
+                ? withOffset({kind: 'preset', token: obj.token}, offset)
                 : null;
+        }
 
         case 'relative': {
             const count = Math.round(obj.count),
-                {unit} = obj,
-                isDayUnit = unit === 'days' || unit === 'businessDays';
+                offset = parseOffset(obj.offset),
+                {unit} = obj;
             return isFinite(count) &&
                 count >= 1 &&
                 count <= MAX_RELATIVE_COUNT &&
-                DATE_RANGE_UNITS.includes(unit)
+                DATE_RANGE_UNITS.includes(unit) &&
+                offset != null
                 ? // Snap has no meaning at day grain - normalize it away so values compare equal.
-                  {kind: 'relative', count, unit, snap: !isDayUnit && obj.snap === true}
+                  withOffset(
+                      {kind: 'relative', count, unit, snap: unit !== 'days' && obj.snap === true},
+                      offset
+                  )
                 : null;
         }
 
@@ -233,6 +281,23 @@ export function parseDateRangeSelection(
     }
 }
 
+/** A missing offset is zero. Anything else must be an integer within [-MAX_STEP_OFFSET, 0]. */
+function parseOffset(raw: unknown): number | null {
+    if (raw == null) return 0;
+    return Number.isInteger(raw) && (raw as number) <= 0 && (raw as number) >= -MAX_STEP_OFFSET
+        ? (raw as number)
+        : null;
+}
+
+/** The selection at the given offset, in normalized form - `offset` present only when non-zero. */
+function withOffset<T extends PresetDateRangeSelection | RelativeDateRangeSelection>(
+    sel: T,
+    offset: number
+): T {
+    const {offset: _, ...rest} = sel;
+    return (offset ? {...rest, offset} : rest) as T;
+}
+
 function isValidYear(year: unknown): year is number {
     return (
         Number.isInteger(year) &&
@@ -251,22 +316,31 @@ function parseIsoDate(s: unknown): LocalDate | null {
 }
 
 /**
- * Short label for a selection, suitable for the picker trigger - e.g. `MTD`, `Last 6 Months`,
+ * Short label for a selection, suitable for the picker trigger - e.g. `MTD`, `Prev 6 Months`,
  * `Aug 2026`, `2025`, or `Custom`.
  *
  * A period that can be selected two ways reads the same either way: the `ytd` preset and a
- * current-year pick on the Months & Years tab both read `YTD`, and `lastYear` and a prior-year
+ * current-year pick on the Months & Years tab both read `YTD`, and `prevYear` and a prior-year
  * pick both read as that year.
+ *
+ * Once stepped back to a non-zero offset, the trigger's dates locate the range and the label
+ * describes only its shape: a rolling window reads as its length (`7 Days`, `3 Months`), a named
+ * period as the period (`Jul 2026`), and a to-date preset as its name with the offset (`MTD −1`).
  */
 export function getDateRangeLabel(sel: DateRangeSelection, ctx: DateRangeContext): string {
     switch (sel.kind) {
         case 'preset': {
-            const preset = ctx.presets[sel.token];
-            throwIf(!preset, `Unknown date range preset: '${sel.token}'.`);
-            return evalLabel(preset.label, ctx);
+            const preset = getPreset(sel.token, ctx),
+                {offset} = sel;
+            if (!offset) return evalLabel(preset.label, ctx);
+            return preset.shiftedLabel
+                ? preset.shiftedLabel(resolveDateRange(sel, ctx).current, offset, ctx)
+                : `${evalLabel(preset.label, ctx)} ${fmtOffset(offset)}`;
         }
-        case 'relative':
-            return `Last ${sel.count} ${getDateRangeUnitLabel(sel.unit, sel.count)}`;
+        case 'relative': {
+            const length = `${sel.count} ${getDateRangeUnitLabel(sel.unit, sel.count)}`;
+            return sel.offset ? length : `Prev ${length}`;
+        }
         case 'month':
             return getMonthStart(sel.year, sel.month).format('MMM YYYY');
         case 'year': {
@@ -291,16 +365,26 @@ function evalLabel(label: DateRangePreset['label'], ctx: DateRangeContext): stri
     return isFunction(label) ? label(ctx) : label;
 }
 
+/** A negative offset as `−n`, with a true minus sign. */
+function fmtOffset(offset: number): string {
+    return `−${Math.abs(offset)}`;
+}
+
+function getPreset(token: string, ctx: DateRangeContext): DateRangePreset {
+    const preset = ctx.presets[token];
+    throwIf(!preset, `Unknown date range preset: '${token}'.`);
+    return preset;
+}
+
 const UNIT_LABELS: Record<DateRangeUnit, string> = {
     days: 'Day',
     weeks: 'Week',
     months: 'Month',
     quarters: 'Quarter',
-    years: 'Year',
-    businessDays: 'Business Day'
+    years: 'Year'
 };
 
-/** Title-case unit label, singular when count is 1 - e.g. `Days`, `Month`, `Business Days`. */
+/** Title-case unit label, singular when count is 1 - e.g. `Days`, `Month`. */
 export function getDateRangeUnitLabel(unit: DateRangeUnit, count: number = 2): string {
     const singular = UNIT_LABELS[unit];
     return count === 1 ? singular : `${singular}s`;
@@ -323,14 +407,19 @@ export function getMonthStart(year: number, month: number): LocalDate {
 }
 
 /**
- * Move a selection by `steps` periods of its own length - negative to go back, positive to go
- * forward. Month and year selections step by calendar unit and keep their kind. All other
- * selections step by their resolved length in days and become `custom` selections, as their dates
- * are now fixed rather than relative.
+ * Move a selection by `steps` periods - negative to go back, positive to go forward. No selection
+ * changes kind:
  *
- * Steps are clamped to the context's `minDate` and `maxDate` - a range that would overshoot a bound
- * slides up against it instead. Returns null when the selection cannot move at all: it is already
- * at the bound, or is unbounded.
+ * - Preset and relative selections adjust their `offset`, stepping through their own prior-range
+ *   logic - so a lookback in months steps by months, and a single day steps by business day in
+ *   `businessDayMode`. Their offset never exceeds zero, as the natural range already ends on the
+ *   anchor date.
+ * - Month and year selections step by calendar unit.
+ * - Custom selections step by their length in days - or by business day when a single day in
+ *   `businessDayMode`.
+ *
+ * Steps are clamped to the context's `minDate` and `maxDate`. Returns null when the selection
+ * cannot move that way: it is already at a bound, at offset zero, or unbounded.
  */
 export function stepDateRangeSelection(
     sel: DateRangeSelection,
@@ -339,6 +428,21 @@ export function stepDateRangeSelection(
 ): DateRangeSelection | null {
     if (!steps) return null;
     const {minDate, maxDate} = ctx;
+
+    if (sel.kind === 'preset' || sel.kind === 'relative') {
+        const offset = sel.offset ?? 0,
+            nextOffset = Math.max(-MAX_STEP_OFFSET, Math.min(0, offset + steps));
+        if (nextOffset === offset) return null;
+
+        const next = withOffset(sel, nextOffset),
+            {current} = resolveDateRange(next, ctx),
+            {current: prev} = resolveDateRange(sel, ctx);
+        // Unbounded, or the prior logic could not reach the requested offset.
+        if (!current.start || !current.end) return null;
+        if (current.start === prev.start && current.end === prev.end) return null;
+        if (minDate && current.end < minDate) return null;
+        return next;
+    }
 
     if (sel.kind === 'month' || sel.kind === 'year') {
         const unit = sel.kind === 'month' ? 'months' : 'years',
@@ -365,6 +469,16 @@ export function stepDateRangeSelection(
 
     const {start, end} = resolveDateRange(sel, ctx).current;
     if (!start || !end) return null;
+
+    // A single day walks by business day in that mode - stopping at a bound rather than crossing it.
+    if (start === end && ctx.businessDayMode) {
+        let day = start;
+        for (let i = 0; i < Math.abs(steps); i++) {
+            day = steps > 0 ? nextBusinessDay(day, ctx) : previousBusinessDay(day, ctx);
+        }
+        if (day > maxDate || (minDate && day < minDate)) return null;
+        return {kind: 'custom', start: day.isoString, end: day.isoString};
+    }
 
     const dayCount = end.diff(start, 'days') + 1;
     let nextStart = start.add(dayCount * steps, 'days'),

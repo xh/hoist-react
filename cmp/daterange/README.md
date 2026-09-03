@@ -8,12 +8,14 @@ time and reading it back as concrete dates and filters. Its desktop UI, `DateRan
 period and its dates, opening a popover with a tab for each way of choosing a period.
 
 **Key features:**
-- One value that can express a preset (MTD, Last 30 Days, ...), a relative lookback, a calendar
+- One value that can express a preset (MTD, Prev 30 Days, ...), a relative lookback, a calendar
   month or year, or a custom range of dates
-- Resolution against an anchor date, so a persisted "month to date" stays month to date
+- Resolution against a live anchor day, so a persisted "month to date" stays month to date - and
+  rolls over at midnight without app involvement
 - A comparable prior range for every selection, for period-over-period comparisons
+- Stepping back and forth through periods without a selection losing what it is
 - Ready-made `FieldFilterSpec`s for filtering a Store, Cube View, or server query
-- Built-in presets, app-defined presets, and business-day-aware lookbacks
+- Built-in presets, app-defined presets, and a business-day mode for single-day navigation
 - Plain JSON value that persists through `persistWith`, including ViewManager views
 
 The model is cross-platform. Only the desktop component exists today.
@@ -28,7 +30,9 @@ the Hoist symbol tools surface.
 ```
 DateRangePickerModel
 ├── value: DateRangeSelection          # The applied period, always normalized
-├── anchorDate, minDate, maxDate       # The dates selections resolve against
+├── anchorDay: DateRangeAnchorDay      # How the anchor date is determined - live by default
+├── anchorDate, today, minDate, maxDate  # The dates selections resolve against
+├── businessDayMode, isBusinessDay     # Single-day handling
 ├── presets: DateRangePreset[]         # Offered on the Presets tab
 ├── tabs: DateRangePickerTab[]         # Offered in the popover
 ├── currentRange: LocalDateRange       # Resolved {start, end}
@@ -39,18 +43,18 @@ DateRangePickerModel
     ├── setValue()                     # Apply a selection or preset token
     ├── stepRange()                    # Previous / next period
     ├── resolve(), parseValue()        # Work with selections other than the applied one
-    └── setAnchorDate(), setMaxDate(), setPresets(), setTabs(), ...
+    └── setAnchorDay(), setMaxDate(), setPresets(), setTabs(), ...
 
 DateRangeSelection (plain JSON, discriminated on `kind`)
-├── {kind: 'preset', token}
-├── {kind: 'relative', count, unit, snap}
+├── {kind: 'preset', token, offset?}
+├── {kind: 'relative', count, unit, snap, offset?}
 ├── {kind: 'month', year, month}
 ├── {kind: 'year', year}
 └── {kind: 'custom', start, end}       # 'YYYY-MM-DD' strings
 
 DateRangeContext                       # What selections resolve against
-├── anchorDate, minDate, maxDate
-├── isBusinessDay(date)
+├── anchorDate, today, minDate, maxDate
+├── isBusinessDay(date), businessDayMode
 └── presets: Record<token, DateRangePreset>
 ```
 
@@ -102,22 +106,22 @@ touch:
 
 - `tabs` and `presets` select which of the four tabs appear and which presets the Presets tab
   lists, in order. Presets may be built-in tokens, app-defined `DateRangePreset` objects, or both.
-- `anchorDate`, `minDate`, and `maxDate` set the dates everything resolves against - see Anchor
-  Date and Bounds below.
+- `anchorDay`, `minDate`, and `maxDate` set the dates everything resolves against - see Anchor
+  Day and Bounds below.
 - `filterField` names the field for `currentRangeFilter` and `priorRangeFilter`.
 - `initialValue` is the starting selection, given as a selection object or a preset token, and
   the fallback for missing or invalid persisted state. It defaults to the first configured preset,
   or a rolling 30 days when there are none.
 - `persistWith` persists the value - see Persistence below.
 
-`commitOnChange`, `dateFormat`, and `isBusinessDay` round out the config; the first two can be
-defaulted app-wide via `DateRangePickerModel.defaults`.
+`businessDayMode`, `commitOnChange`, `dateFormat`, and `isBusinessDay` round out the config. All
+but the last can be defaulted app-wide via `DateRangePickerModel.defaults`, as can `anchorDay`.
 
 ### The Selection Value
 
 `value` is always a normalized `DateRangeSelection`. Set it with `setValue()`, which accepts a
 selection object or a bare preset token and ignores (with a logged warning) anything that fails
-validation: an unknown preset, an out-of-range count or year, or a malformed date.
+validation: an unknown preset, an out-of-range count, year, or offset, or a malformed date.
 
 | Kind | Shape | Resolves to |
 |------|-------|-------------|
@@ -127,7 +131,8 @@ validation: an unknown preset, an out-of-range count or year, or a malformed dat
 | `year` | `{kind: 'year', year: 2026}` | The calendar year, clamped likewise |
 | `custom` | `{kind: 'custom', start: '2026-08-10', end: '2026-08-20'}` | Exactly those dates |
 
-Preset and relative selections re-resolve as the anchor date moves. Month and year selections
+Preset and relative selections re-resolve as the anchor date moves, and carry an optional
+`offset` when stepped back from their natural range - see Stepping. Month and year selections
 name a fixed period, though one containing `maxDate` is clamped to it. Custom selections name
 fixed dates. All are plain JSON, so the value round-trips through persistence without custom
 serialization.
@@ -137,27 +142,28 @@ serialization.
 Built-in presets live in `dateRangePresets`, keyed by token. Offer any subset in any order via
 the `presets` config.
 
-| Token | Resolves to |
-|-------|-------------|
-| `today`, `yesterday` | That single day |
-| `wtd`, `mtd`, `qtd`, `ytd` | Start of the unit containing the anchor, through the anchor |
-| `last7Days`, `last30Days`, `last90Days` | Rolling window ending on the anchor |
-| `last3Months`, `last6Months`, `last12Months` | Rolling window ending on the anchor |
-| `lastWeek`, `lastMonth`, `lastQuarter`, `lastYear` | The full unit before the one containing the anchor |
-| `lastBusinessDay` | The nearest business day before the anchor |
-| `priorMtd`, `priorQtd`, `priorYtd` | The same elapsed span one unit earlier |
-| `all` | `minDate` (or unbounded) through `maxDate` |
+| Token | Resolves to | Label |
+|-------|-------------|-------|
+| `anchorDay` | The anchor date itself | `Today` when the anchor is the current day, else `As Of` |
+| `prevDay` | The day before the anchor - the previous business day in `businessDayMode` | `Prev Day` |
+| `wtd`, `mtd`, `qtd`, `ytd` | Start of the unit containing the anchor, through the anchor | `MTD`, ... |
+| `prev7Days`, `prev30Days`, `prev90Days` | Rolling window ending on the anchor | `Prev 7 Days`, ... |
+| `prev3Months`, `prev6Months`, `prev12Months` | Rolling window ending on the anchor | `Prev 3 Months`, ... |
+| `prevWeek`, `prevMonth`, `prevQuarter`, `prevYear` | The full unit before the one containing the anchor | The period: `Aug 2026`, `Q2 2026`, `2025` |
+| `all` | `minDate` (or unbounded) through `maxDate` | `All` |
 
-`DEFAULT_DATE_RANGE_PRESETS` is `today`, `mtd`, `qtd`, `ytd`, `last7Days`, `last30Days`,
-`last90Days`, `last12Months`, `lastMonth`, and `lastYear`.
+`DEFAULT_DATE_RANGE_PRESETS` is `anchorDay`, `mtd`, `qtd`, `ytd`, `prev7Days`, `prev30Days`,
+`prev90Days`, `prev12Months`, `prevMonth`, and `prevYear`.
 
-Presets that name a specific period label as that period - `lastMonth` reads `Aug 2026`,
-`lastYear` reads `2025` - so the trigger describes the same period the same way however it was
-chosen.
+Labels say "Prev" rather than "Last" because the anchor date need not be today: "Prev 7 Days" is
+true whatever the anchor is, where "Last 7 Days" quietly claims the window ends now. Only
+`anchorDay` reads differently by context, and when it reads `As Of` the picker shows its date
+wherever the label would otherwise stand alone.
 
 An app-defined preset is a `DateRangePreset`: a unique `token`, a `label` (string or function of
-the context), an optional longer `name` for its row in the picker, a `resolve` function, and an
-optional `resolvePrior`. The default prior is the preceding range of equal length in days.
+the context), an optional longer `name` for its row in the picker, a `resolve` function, an
+optional `resolvePrior`, and an optional `shiftedLabel` for the preset once stepped back (see
+Stepping). The default prior is the preceding range of equal length in days.
 
 ```typescript
 const FISCAL_YTD: DateRangePreset = {
@@ -171,21 +177,19 @@ const FISCAL_YTD: DateRangePreset = {
     })
 };
 
-new DateRangePickerModel({presets: [FISCAL_YTD, 'qtd', 'ytd', 'last90Days']});
+new DateRangePickerModel({presets: [FISCAL_YTD, 'qtd', 'ytd', 'prev90Days']});
 ```
 
 ### Relative Lookbacks
 
-A relative selection is `count` units ending on the anchor date. Units are `days`,
-`businessDays`, `weeks`, `months`, `quarters`, and `years`.
+A relative selection is `count` units ending on the anchor date. Units are `days`, `weeks`,
+`months`, `quarters`, and `years`.
 
 - **Rolling** (`snap: false`, the default) is exactly `count` units back from the anchor: 3 months
   ending Sep 2 starts Jun 3.
 - **Calendar** (`snap: true`) aligns to unit boundaries and counts the current partial unit as one:
-  3 calendar months ending Sep 2 starts Jul 1.
-- **Business days** count only days that pass `isBusinessDay`. The window still ends on the anchor
-  even when that is a weekend, so 2 business days ending on a Saturday spans Thursday through
-  Saturday. Snap does not apply to either day unit and is normalized to `false`.
+  3 calendar months ending Sep 2 starts Jul 1. Snap does not apply to days and is normalized to
+  `false` for that unit.
 
 ### Prior Ranges
 
@@ -195,14 +199,14 @@ comparison. It is `null` when the current range is unbounded.
 | Selection | Prior range |
 |-----------|-------------|
 | Period-to-date presets (`mtd`, `ytd`, ...) | The same span one unit earlier: MTD on the 12th compares against the 1st through 12th of last month |
-| Previous-unit presets (`lastMonth`, ...) | The unit before that |
+| Previous-unit presets (`prevMonth`, ...) | The unit before that |
 | Lookbacks in weeks, months, quarters, or years | The same span `count` units earlier, matching the equivalent presets |
 | Lookbacks in days, and `custom` | The preceding window of equal length in days |
-| `businessDays` lookbacks | The preceding window with the same number of business days |
+| Single days in `businessDayMode` | The previous business day |
 | `month`, `year` | The previous month or year, clamped the same way if the current one is |
 
-Apps that want the prior period as the *selected* value, rather than as a comparison, can offer
-the `priorMtd`, `priorQtd`, and `priorYtd` presets.
+The same logic drives stepping, so the prior period is always one step back. An app that wants
+the prior MTD as the *selected* value can set `{kind: 'preset', token: 'mtd', offset: -1}`.
 
 ### Filters
 
@@ -214,24 +218,65 @@ query body. `getRangeFilter(range, field)` builds filters for any range and fiel
 
 ### Stepping
 
-`stepRange(steps)` moves the applied range by its own length: `-1` for the previous period, `1`
-for the next. Month and year selections keep their kind and step by calendar unit. Every other
-selection becomes a `custom` selection of the shifted dates, since they are now fixed. Steps clamp
-to `minDate` and `maxDate`. `canStepBack` and `canStepForward` drive the component's step buttons.
+`stepRange(steps)` moves the applied range by one period per step: `-1` for the previous period,
+`1` for the next. No selection changes kind:
 
-### Anchor Date and Bounds
+- **Preset and relative** selections adjust their `offset`, stepping through their own prior-range
+  logic - a lookback in months steps by months, MTD steps to the prior MTD, a single day steps by
+  business day in `businessDayMode`. The offset is zero or negative, since the natural range
+  already ends on the anchor date, and is omitted from the value when zero. A stepped selection
+  is still live: `mtd` at offset `-1` becomes the new prior MTD when the month turns.
+- **Month and year** selections step by calendar unit.
+- **Custom** selections step by their length in days, or by business day when a single day in
+  `businessDayMode`.
 
-`anchorDate` defaults to today in the browser's time zone, as of construction. Pass a function to
-track an observable source, such as the as-of date of the data on display. For long-lived screens
-that must roll over at midnight, update it explicitly. This example anchors to the app time zone;
-pass `anchorDate: LocalDate.currentAppDay()` in the config to match from the start.
+Steps clamp to `minDate` and `maxDate`. `canStepBack` and `canStepForward` drive the component's
+step buttons, and the trigger's left and right arrow keys.
+
+Once stepped, the trigger's dates locate the range, so the label describes only its shape: a
+rolling window reads as its length (`7 Days`, `3 Months`), a previous-unit preset as the period it
+now covers (`Jul 2026`), and a to-date preset as its name with the offset (`MTD −1`) - its length
+is set by the calendar, not the selection, so a length alone would mislead. App-defined presets
+control this via `shiftedLabel`; the default appends the offset.
+
+### Anchor Day and Bounds
+
+`anchorDay` determines the date that relative and to-date selections resolve against, exposed as
+`anchorDate`. It is live by default: the model re-evaluates it every few seconds, and everything
+derived from it - ranges, labels, filters, step enablement - follows the day over as midnight
+passes, with no app code.
+
+| `anchorDay` | Anchor date |
+|-------------|-------------|
+| `'localDay'` (default) | The current day in the browser's time zone, kept current |
+| `'appDay'` | The current day in the app's time zone (`LocalDate.currentAppDay()`), kept current |
+| A `LocalDate` | That day, pinned. Never moves, never snapped |
+| `() => LocalDate` | Re-evaluated every few seconds and whenever observables it reads change. Must be pure and cheap |
+
+The function form covers as-of dates with their own rule. A desk whose day rolls to the next
+business day at an evening cutoff, for example:
 
 ```typescript
-Timer.create({
-    runFn: () => model.setAnchorDate(LocalDate.currentAppDay()),
-    interval: ONE_MINUTE
-});
+anchorDay: () => {
+    const now = moment(),
+        day = LocalDate.today(),
+        afterCutoff = now.hour() >= 18;
+    let ret = afterCutoff ? day.nextDay() : day;
+    while (!ret.isWeekday) ret = ret.nextDay();
+    return ret;
+}
 ```
+
+The `anchorDay` preset labels itself `Today` only when the anchor date is the current day (per
+`today`, in the app or browser zone to match the mode). Otherwise it reads `As Of`, and the trigger
+shows the date. So on the Friday evening above the picker reads `As Of | 2026-09-07` until Monday
+morning, when it reads `Today`.
+
+**`businessDayMode`** is for users who think in calendar-length windows but stand on business
+days. It has two effects and no others: a live `anchorDay` (`'localDay'` or `'appDay'`) snaps back
+to the most recent business day per `isBusinessDay`, and single-day selections step by business
+day. Seven days is still seven days, and a month is still a month. A pinned or computed
+`anchorDay` is honored verbatim - a month-end that falls on a Sunday stays the 31st.
 
 Nothing beyond `maxDate` is selectable: later months and days are disabled in the popover, and
 month and year selections spanning `maxDate` are clamped to it, which is how the current year
@@ -257,9 +302,9 @@ falls back to `defaultValue` rather than carrying a previous value over.
 
 | Property | Example | Use |
 |----------|---------|-----|
-| `label` | `MTD`, `Last 6 Months`, `Aug 2026`, `Custom` | The trigger |
+| `label` | `MTD`, `Prev 6 Months`, `Aug 2026`, `Custom` | The trigger |
 | `rangeLabel` | `2026-08-01 ▸ 2026-09-02` | The trigger's dates, per `dateFormat`. A single day reads as one date. |
-| `displayName` | `MTD`, `August 2026`, the dates for a custom range | Panel titles - the label, with months spelled out and custom ranges as their dates |
+| `displayName` | `MTD`, `August 2026`, the dates for a custom range or `As Of` | Panel titles - the label, with months spelled out and unnamed periods as their dates |
 
 ## DateRangePicker
 
@@ -282,9 +327,10 @@ A model configured with one tab renders without the rail, and its popover shrink
 
 A trigger sized by its content never truncates. A stretched trigger (`flex: 1`, or an explicit
 `width`) measures itself and drops the dates when it is too narrow to show them, leaving the
-period label alone. Whenever the dates are not shown, a custom range shows its dates in place of
-the uninformative `Custom` label. The full label and dates remain available in the trigger's
-tooltip.
+period label alone. Whenever the dates are not shown, a custom range - and the anchor day when it
+reads `As Of` - shows its dates in place of the uninformative label. The full label and dates
+remain available in the trigger's tooltip. With the trigger focused, the left and right arrow keys
+step the period.
 
 ### Styling
 
@@ -337,6 +383,20 @@ new DateRangePickerModel({
 });
 ```
 
+### A Business-Day Desk
+
+```typescript
+new DateRangePickerModel({
+    anchorDay: 'appDay',
+    businessDayMode: true,
+    isBusinessDay: d => d.isWeekday && !XH.holidayService.isHoliday(d),
+    presets: ['anchorDay', 'prevDay', 'wtd', 'mtd', 'qtd', 'ytd', 'prevMonth']
+});
+```
+
+On a Saturday this resolves everything as of Friday, and the step buttons walk `anchorDay` from
+Friday to Thursday and back.
+
 ## Common Pitfalls
 
 - **`filterField` is required for filters.** The filter getters throw without it. Use
@@ -348,6 +408,9 @@ new DateRangePickerModel({
   accept that users will see the default after a change.
 - **`all` can be unbounded.** Without `minDate`, its start is `null`, `priorRange` is `null`, and
   `currentRangeFilter` has one entry.
+- **A computed `anchorDay` runs often.** It is re-evaluated every few seconds. Keep it to clock
+  reads and observable reads - derive anything expensive once, store it on an observable, and read
+  that.
 
 ## Related Packages
 

@@ -20,39 +20,42 @@ export interface ResolvedDateRange {
 }
 
 /** Calendar units supported by relative selections. */
-export type DateRangeCalendarUnit = 'days' | 'weeks' | 'months' | 'quarters' | 'years';
-
-/**
- * Units supported by relative selections. Business days are counted per the context's
- * `isBusinessDay` - weekdays by default - skipping the days that fail it.
- */
-export type DateRangeUnit = DateRangeCalendarUnit | 'businessDays';
+export type DateRangeUnit = 'days' | 'weeks' | 'months' | 'quarters' | 'years';
 
 /** Tabs available within the DateRangePicker popover. */
 export type DateRangePickerTab = 'presets' | 'relative' | 'monthYear' | 'custom';
 
+/**
+ * The day that relative and to-date selections resolve against - see the `anchorDay` config of
+ * {@link DateRangePickerModel}.
+ *
+ * - `'localDay'` - the current day in the browser's time zone, kept current as the day rolls.
+ * - `'appDay'` - the current day in the app's time zone (`LocalDate.currentAppDay()`), likewise.
+ * - A `LocalDate` - a pinned day that never moves, honored verbatim.
+ * - A function returning a `LocalDate` - re-evaluated every few seconds and whenever any
+ *   observables it reads change. Must be pure and cheap. For as-of dates with their own rule, e.g.
+ *   the latest loaded data date, or a day that rolls forward at an evening cutoff.
+ */
+export type DateRangeAnchorDay = 'localDay' | 'appDay' | LocalDate | (() => LocalDate);
+
 /** Tokens for the presets shipped with Hoist - see {@link dateRangePresets}. */
 export type DateRangePresetToken =
-    | 'today'
-    | 'yesterday'
+    | 'anchorDay'
+    | 'prevDay'
     | 'wtd'
     | 'mtd'
     | 'qtd'
     | 'ytd'
-    | 'last7Days'
-    | 'last30Days'
-    | 'last90Days'
-    | 'last3Months'
-    | 'last6Months'
-    | 'last12Months'
-    | 'lastWeek'
-    | 'lastMonth'
-    | 'lastQuarter'
-    | 'lastYear'
-    | 'lastBusinessDay'
-    | 'priorMtd'
-    | 'priorQtd'
-    | 'priorYtd'
+    | 'prev7Days'
+    | 'prev30Days'
+    | 'prev90Days'
+    | 'prev3Months'
+    | 'prev6Months'
+    | 'prev12Months'
+    | 'prevWeek'
+    | 'prevMonth'
+    | 'prevQuarter'
+    | 'prevYear'
     | 'all';
 
 /**
@@ -62,12 +65,16 @@ export type DateRangePresetToken =
 export interface DateRangeContext {
     /** Date that relative and to-date selections resolve against. */
     anchorDate: LocalDate;
+    /** The current day, per the model's `anchorDay` mode - app day for `'appDay'`, else local. */
+    today: LocalDate;
     /** Earliest selectable date, or null if unbounded. */
     minDate: LocalDate | null;
     /** Latest selectable date. Month and year selections spanning it are clamped to it. */
     maxDate: LocalDate;
     /** Whether a date is a business day - weekdays by default, or the model's `isBusinessDay`. */
     isBusinessDay: (date: LocalDate) => boolean;
+    /** True if single-day selections step by business day - see the model config of that name. */
+    businessDayMode: boolean;
     /** Presets available for selection, keyed by token. */
     presets: Record<string, DateRangePreset>;
 }
@@ -93,8 +100,17 @@ export interface DateRangePreset {
     /**
      * Resolve the comparable prior range for a given current range. Default is the immediately
      * preceding range of equal duration in days, or null when the current range is unbounded.
+     * Also drives stepping: a selection at `offset` -n is this applied n times.
      */
     resolvePrior?: (current: LocalDateRange, ctx: DateRangeContext) => LocalDateRange | null;
+
+    /**
+     * Label for this preset once stepped back to a non-zero `offset`, when the trigger's dates
+     * locate the range and the label need only describe its shape - e.g. `7 Days` for a rolling
+     * window, or the month itself for a previous-month preset. Default is the label with the
+     * offset appended, e.g. `MTD −1`.
+     */
+    shiftedLabel?: (range: LocalDateRange, offset: number, ctx: DateRangeContext) => string;
 }
 
 /** A one-click preset, re-resolved against the anchor date as time passes. */
@@ -102,6 +118,11 @@ export interface PresetDateRangeSelection {
     kind: 'preset';
     /** Token of a preset configured on the owning model. */
     token: string;
+    /**
+     * Number of periods stepped back from the preset's natural range, zero or negative - each step
+     * applies the preset's prior-range logic once. Omitted when zero. See `stepRange()`.
+     */
+    offset?: number;
 }
 
 /** A lookback of `count` units ending on the anchor date. */
@@ -114,10 +135,11 @@ export interface RelativeDateRangeSelection {
      * True to snap the window to calendar boundaries of `unit`, counting the current (partial)
      * unit as one - e.g. 3 calendar months ending today covers the prior two full months plus
      * the current month to date. False (default) for a rolling window of exactly `count` units
-     * ending on the anchor date. Has no effect for days or business days, where each day is its own
-     * boundary.
+     * ending on the anchor date. Has no effect for days, where each day is its own boundary.
      */
     snap?: boolean;
+    /** Periods stepped back from the natural window, zero or negative. Omitted when zero. */
+    offset?: number;
 }
 
 /** A calendar month, clamped to the context's `maxDate` when that date falls within it. */

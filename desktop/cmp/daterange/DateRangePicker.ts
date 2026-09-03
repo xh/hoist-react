@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
-    DATE_RANGE_CALENDAR_UNITS,
+    DATE_RANGE_UNITS,
     DateRangePickerModel,
     getDateRangePresetName,
     getDateRangeUnitLabel
@@ -219,19 +219,23 @@ const stepButton = hoistCmp.factory<DateRangePickerLocalModel>(
 const trigger = hoistCmp.factory<DateRangePickerLocalModel>(
     ({model, testId, intent, showRange, styleButtonAsInput, buttonProps}) => {
         const {parentModel} = model,
-            {label, rangeLabel, value} = parentModel,
-            // Without its dates, a custom range has no meaningful short label - show the dates.
-            text = !showRange && value.kind === 'custom' ? rangeLabel : label,
+            {label, rangeLabel, labelNeedsDates} = parentModel,
+            // Without its dates, `Custom` or `As Of` says nothing - show the dates in their place.
+            text = !showRange && labelNeedsDates ? rangeLabel : label,
             base = 'xh-date-range-picker__trigger';
 
         return button({
-            className: classNames(base, styleButtonAsInput && `${base}--as-input`),
             // Input mode relies on the `--as-input` class for its chrome, so renders minimal.
             ...(styleButtonAsInput ? {minimal: true} : {outlined: true}),
             intent,
             icon: Icon.calendar(),
             title: `${label} | ${rangeLabel}`,
             ...buttonProps,
+            className: classNames(
+                base,
+                styleButtonAsInput && `${base}--as-input`,
+                buttonProps?.className
+            ),
             active: model.isOpen,
             testId: getTestId(testId, 'trigger'),
             items: [
@@ -239,7 +243,15 @@ const trigger = hoistCmp.factory<DateRangePickerLocalModel>(
                 span({omit: !showRange, className: `${base}-divider`, item: '|'}),
                 span({omit: !showRange, className: `${base}-range`, item: rangeLabel})
             ],
-            onClick: () => model.toggleOpen()
+            onClick: () => model.toggleOpen(),
+            // Arrow keys step the period without opening the popover.
+            onKeyDown: (e: KeyboardEvent) => {
+                const steps = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
+                if (steps) {
+                    e.preventDefault();
+                    parentModel.stepRange(steps);
+                }
+            }
         });
     }
 );
@@ -362,9 +374,9 @@ const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId}
                     }),
                     segmentedControl({
                         model,
-                        bind: 'relativeDisplayUnit',
+                        bind: 'relativeUnit',
                         testId: getTestId(testId, 'unit'),
-                        options: DATE_RANGE_CALENDAR_UNITS.map(unit => ({
+                        options: DATE_RANGE_UNITS.map(unit => ({
                             value: unit,
                             label: getDateRangeUnitLabel(unit)
                         }))
@@ -375,30 +387,19 @@ const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId}
                 className: 'xh-date-range-picker-popover__snap-box',
                 items: [
                     // Two ways of counting, named as peers - a checkbox would frame one as a
-                    // modifier on the other, inviting the read that it widens the range. For day
-                    // units the same slot chooses calendar vs. business days instead of snapping,
-                    // which has nothing to round out at that grain.
-                    model.isDayUnit
-                        ? segmentedControl({
-                              model,
-                              bind: 'relativeDayType',
-                              fill: false,
-                              testId: getTestId(testId, 'day-type'),
-                              options: [
-                                  {value: 'calendar', label: 'Calendar'},
-                                  {value: 'business', label: 'Business'}
-                              ]
-                          })
-                        : segmentedControl({
-                              model,
-                              bind: 'relativeSnap',
-                              fill: false,
-                              testId: getTestId(testId, 'snap'),
-                              options: [
-                                  {value: false, label: 'Rolling'},
-                                  {value: true, label: 'Calendar'}
-                              ]
-                          }),
+                    // modifier on the other, inviting the read that it widens the range. Days have
+                    // nothing to round out, so offer no choice at that grain.
+                    segmentedControl({
+                        omit: !model.snapApplies,
+                        model,
+                        bind: 'relativeSnap',
+                        fill: false,
+                        testId: getTestId(testId, 'snap'),
+                        options: [
+                            {value: false, label: 'Rolling'},
+                            {value: true, label: 'Calendar'}
+                        ]
+                    }),
                     div({
                         className: 'xh-date-range-picker-popover__snap-help',
                         item: model.relativeModeHelpText
