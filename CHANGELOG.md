@@ -17,29 +17,31 @@
 ### 🎁 New Features
 
 * Added `HoistBase.xhName`, an optional developer-facing name shown alongside the class name in
-  log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
+  log output, trace spans (new `xh.name` tag), and the Inspector. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
   `PanelModel`, etc.), which also name the child models they create. Services are named with their
   `XH` key (e.g. `fetchService`), and `XH.appModel` and the app container's models by their property
   (`appModel`, `routerModel`, `pageStateModel`, ...). Instances log as `ClassName [xhName]`, or
   `ClassName [id]` when unnamed, so peers of the same class can be told apart. A name matching the
   class name (as for services and `appModel`) declares a singleton and logs as the bare class name.
-  The Inspector shows this same label in a new `Label` column, with class name, name, and ID
-  hidden by default.
-* Added a Watchlist to the Inspector's Objects tab. Star any instance or property to add it to the
-  new `Watchlist` tab alongside `All`, where starred instances (top) and properties (bottom) stay in
-  view regardless of selection or filters, and selecting a watched instance drives the Properties
-  and Diagnostics tabs as usual. Entries for instances with an `xhName` persist across reloads and
-  show as placeholder rows until the instance is alive again; unnamed entries last for the page
-  load. In the `All` grid, unnamed instances are hidden by default behind a new `Anon` quick
-  filter. `Log to console` and `Load all getters` moved to the property grids' right-click menu.
-* The Inspector's Memory tab now keeps the last hour of stats across reloads (persisted per browser
-  tab), so the model count and heap trend leading up to a reload is still visible afterwards.
-* Hoist Inspector now opens directly in its own browser window when activated, replacing the docked
-  panel and its pop-out/dock controls. Each browser tab gets its own Inspector window, labelled with
-  the tab's `XH.tabId`, and its Stats and Instances views are now top-level `Memory` and `Objects`
-  tabs switched from the Inspector header. If the browser blocks the window on reload, the Inspector
-  is deactivated with a toast.
+  The Inspector labels instances the same way.
+* Overhauled the Hoist Inspector into a standalone developer tool that stays out of the app's way
+  and keeps its context across reloads. It now opens in its own browser window, one per app tab,
+  with top-level `Objects` and `Memory` tabs.
+    * Objects: a left-hand `All` grid of live instances sits beside a new `Watchlist` tab. Star any
+      instance or property to add it to the Watchlist, where starred instances (top) and properties
+      (bottom) stay in view regardless of selection or filters. Selecting a watched instance drives
+      the Properties and Diagnostics detail tabs just as the All grid does. Entries for instances
+      with an `xhName` persist across reloads and show as placeholder rows until alive again;
+      unnamed entries last for the page load.
+    * Instances are labelled as in log output (`ClassName [xhName]` / `ClassName [id]`), grouped by
+      type, sorted by label, and unnamed instances are hidden by default behind an `Anon` quick
+      filter. `Log to console` and `Load all getters` live in the property grids' right-click menu.
+    * Memory: the last hour of stats is persisted per browser tab, so the model count and heap
+      trend leading up to a reload is still visible afterwards. The chart takes the full remaining
+      width beside a fixed-width stats grid.
+    * If the browser blocks the Inspector window on reload, the Inspector is deactivated with a
+      toast. Allow popups for the app's origin to restore it automatically.
 * Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
   mobile) to provide more structure by default to the input control with easy options to customize.
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile
