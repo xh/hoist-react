@@ -48,7 +48,7 @@ export interface DateRangePickerProps
 
     /**
      * Text rendered in the popover footer, or null to suppress. Default is a note on the date that
-     * relative periods anchor to, shown when the Presets or Relative tab is offered. Not shown by
+     * relative periods anchor to, shown while the Presets or Relative tab is active. Not shown by
      * a single-tab picker, whose footer carries the resolved dates instead.
      */
     footerNote?: ReactNode;

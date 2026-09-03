@@ -242,10 +242,10 @@ export class DateRangePickerLocalModel extends HoistModel {
         return !this.parentModel.commitOnChange;
     }
 
-    /** Whether the default footer note about anchoring applies to the configured tabs. */
+    /** Whether the default footer note about anchoring applies to the active tab. */
     get showAnchorNote(): boolean {
-        const {tabs} = this.parentModel;
-        return tabs.includes('presets') || tabs.includes('relative');
+        const {activeTabId} = this;
+        return activeTabId === 'presets' || activeTabId === 'relative';
     }
 
     /** Default footer note - tells the user what relative periods resolve against. */
