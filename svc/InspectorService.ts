@@ -9,7 +9,8 @@ import {Cube, Store, View} from '@xh/hoist/data';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {HOURS, SECONDS} from '@xh/hoist/utils/datetime';
+import {parseNameSource} from '@xh/hoist/utils/js';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 
 /**
@@ -54,8 +55,12 @@ export class InspectorService extends HoistService {
     @bindable.ref
     activeInstances: InspectorInstanceData[] = [];
 
-    /** Timestamped model counts w/memory usage (when active). */
+    /**
+     * Timestamped model counts w/memory usage (when active). The last hour is persisted per
+     * browser tab, so the trend leading up to a reload survives it.
+     */
     @observable.ref
+    @persist.with({localStorageKey: `xhInspector.${XH.clientAppCode}.${XH.tabId}`})
     stats: InspectorStat[] = [];
 
     @managed
@@ -134,10 +139,11 @@ export class InspectorService extends HoistService {
             now = Date.now();
 
         this.stats = [
-            ...this.stats,
+            ...this.stats.filter(it => it.timestamp > now - STATS_RETENTION),
             {
                 id: now,
                 timestamp: now,
+                loadId: XH.loadId,
                 modelCount,
                 modelCountChange: modelCount - prevModelCount,
                 totalJSHeapSize,
@@ -194,6 +200,7 @@ export class InspectorService extends HoistService {
 
                 return {
                     id: xhId,
+                    label: parseNameSource(inst),
                     className: inst.constructor.name,
                     xhName: inst.xhName,
                     created: inst._created,
@@ -233,6 +240,10 @@ export class InspectorService extends HoistService {
 }
 
 interface InspectorInstanceData {
+    /** The instance's `xhId`. */
+    id: string;
+    /** Display label - matches the source label used by `LogUtils`. */
+    label: string;
     className: string;
     xhName: string;
     created: number;
@@ -252,6 +263,8 @@ interface InspectorInstanceData {
 interface InspectorStat {
     id: number;
     timestamp: number;
+    /** `XH.loadId` of the page load that recorded this stat. */
+    loadId: string;
     modelCount: number;
     modelCountChange: number;
     totalJSHeapSize: number;
@@ -268,3 +281,5 @@ interface NonStandardPerformance extends Performance {
         jsHeapSizeLimit: number;
     };
 }
+
+const STATS_RETENTION = 1 * HOURS;

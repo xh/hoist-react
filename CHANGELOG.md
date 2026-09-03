@@ -16,16 +16,25 @@
 
 ### 🎁 New Features
 
-* Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
+* Added `HoistBase.xhName`, an optional developer-facing name shown alongside the class name in
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
   `PanelModel`, etc.), which also name the child models they create. Services are named with their
   `XH` key (e.g. `fetchService`), and `XH.appModel` and the app container's models by their property
-  (`appModel`, `routerModel`, `pageStateModel`, ...), so they now log under those labels.
-* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin it,
-  and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
-  across reloads, so the same set of objects can be followed session to session; those with no live
-  instance show as placeholder rows until un-starred.
+  (`appModel`, `routerModel`, `pageStateModel`, ...). Instances log as `ClassName [xhName]`, or
+  `ClassName [id]` when unnamed, so peers of the same class can be told apart. A name matching the
+  class name (as for services and `appModel`) declares a singleton and logs as the bare class name.
+  The Inspector shows this same label in a new `Label` column, with class name, name, and ID
+  hidden by default.
+* Added a Watchlist to the Inspector's Objects tab. Star any instance or property to add it to the
+  new `Watchlist` tab alongside `All`, where starred instances (top) and properties (bottom) stay in
+  view regardless of selection or filters, and selecting a watched instance drives the Properties
+  and Diagnostics tabs as usual. Entries for instances with an `xhName` persist across reloads and
+  show as placeholder rows until the instance is alive again; unnamed entries last for the page
+  load. In the `All` grid, unnamed instances are hidden by default behind a new `Anon` quick
+  filter. `Log to console` and `Load all getters` moved to the property grids' right-click menu.
+* The Inspector's Memory tab now keeps the last hour of stats across reloads (persisted per browser
+  tab), so the model count and heap trend leading up to a reload is still visible afterwards.
 * Hoist Inspector now opens directly in its own browser window when activated, replacing the docked
   panel and its pop-out/dock controls. Each browser tab gets its own Inspector window, labelled with
   the tab's `XH.tabId`, and its Stats and Instances views are now top-level `Memory` and `Objects`

@@ -20,8 +20,10 @@ export class StatsModel extends HoistModel {
     gridModel: GridModel;
     chartModel: ChartModel;
 
+    /** Sync run of the selected stat - null for stats recorded by a previous page load. */
     get selectedSyncRun(): number {
-        return this.gridModel.selectedRecord?.data.syncRun;
+        const {data} = this.gridModel.selectedRecord ?? {};
+        return data?.loadId === XH.loadId ? data.syncRun : null;
     }
 
     constructor() {
@@ -96,13 +98,13 @@ export class StatsModel extends HoistModel {
                         title: {text: '# Models'},
                         allowDecimals: false,
                         opposite: true,
-                        height: '70%'
+                        height: '80%'
                     },
-                    {title: {text: 'Used JS Heap (mb)'}, height: '70%'},
+                    {title: {text: 'Used JS Heap (mb)'}, height: '80%'},
                     {
                         title: {text: '#Δ'},
-                        height: '20%',
-                        top: '80%',
+                        height: '15%',
+                        top: '85%',
                         offset: 0,
                         opposite: true,
                         plotLines: [

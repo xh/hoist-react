@@ -4,34 +4,40 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
-import {a} from '@xh/hoist/cmp/layout';
-import {HoistBase, hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
-import {Cube, StoreRecord, View} from '@xh/hoist/data';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
+import {boolCheckCol, GridModel} from '@xh/hoist/cmp/grid';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {HoistBase, HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import {StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, isObservableProp, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {bindable, makeObservable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {trimToDepth} from '@xh/hoist/utils/js';
-import {compact, find, forIn, head, without} from 'lodash';
-import {instanceLabel} from '../impl/InspectorUtils';
+import {compact, head} from 'lodash';
 import {StatsModel} from '../stats/StatsModel';
-import {DiagnosticsModel} from './DiagnosticsModel';
+import {DiagnosticsModel} from './details/DiagnosticsModel';
+import {PropertiesModel} from './details/PropertiesModel';
+import {allPanel} from './AllPanel';
+import {WatchlistModel} from './watchlist/WatchlistModel';
+import {watchlistPanel} from './watchlist/WatchlistPanel';
+import {instanceKey, watchInstanceCol} from './watchlist/WatchlistUtils';
 
 /**
- * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
- * view properties (including reactive updates) for a selected instance.
+ * Displays current HoistModel, HoistService, Store, Cube, and View instances - all of them, or a
+ * starred Watchlist - with the ability to view properties (including reactive updates) and
+ * diagnostics for the selected instances.
  */
 export class InstancesModel extends HoistModel {
     override xhImpl = true;
 
     override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
+    /** Left-hand All / Watchlist tabs - the active tab's grid drives the detail tabs. */
+    @managed navTabModel: TabContainerModel;
     instancesGridModel: GridModel;
-    propertiesGridModel: GridModel;
     instancesPanelModel: PanelModel;
+    @managed watchlistModel: WatchlistModel;
+    @managed propertiesModel: PropertiesModel;
     @managed diagnosticsModel: DiagnosticsModel;
 
     get statsModel(): StatsModel {
@@ -42,50 +48,50 @@ export class InstancesModel extends HoistModel {
         return this.statsModel?.selectedSyncRun;
     }
 
-    @bindable.ref propsWatchlist = [];
-    @bindable.ref loadedGetters = [];
-
-    // Persisted storeFilterFields (convenient across frequent page refreshes when developing)
+    // Persisted storeFilterField (convenient across frequent page refreshes when developing)
     @bindable @persist instancesStoreFilter;
-    @bindable @persist propertiesStoreFilter;
 
-    /** Keys of favorited instances (`{className}:{xhName}`) - requires an `xhName` to pin. */
-    @bindable.ref @persist favorites: string[] = [];
-
-    @bindable @persist instQuickFilters = ['showInGroups'];
+    @bindable @persist instQuickFilters: string[] = ['showInGroups'];
     get showInGroups() {
         return this.instQuickFilters?.includes('showInGroups');
+    }
+    get showAnon() {
+        return this.instQuickFilters?.includes('showAnon');
     }
     get showXhImpl() {
         return this.instQuickFilters?.includes('showXhImpl');
     }
-    get favoritesOnly() {
-        return this.instQuickFilters?.includes('favoritesOnly');
-    }
 
-    @bindable @persist propQuickFilters = [];
-    get showUnderscoreProps() {
-        return this.propQuickFilters?.includes('showUnderscoreProps');
-    }
-    get observablePropsOnly() {
-        return this.propQuickFilters?.includes('observablePropsOnly');
-    }
-    get ownPropsOnly() {
-        return this.propQuickFilters?.includes('ownPropsOnly');
+    /** Grid of the active left-hand tab - source of the selection driving the detail tabs. */
+    get activeGridModel(): GridModel {
+        return this.navTabModel.activeTabId === 'watchlist'
+            ? this.watchlistModel.instancesGridModel
+            : this.instancesGridModel;
     }
 
     get selectedInstances(): HoistBase[] {
-        return compact(
-            this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it))
-        );
+        return compact(this.activeGridModel.selectedIds.map((it: string) => this.getInstance(it)));
     }
 
     constructor() {
         super();
         makeObservable(this);
 
+        this.navTabModel = new TabContainerModel({
+            persistWith: {...this.persistWith, path: 'navTabs'},
+            tabs: [
+                {id: 'all', title: 'All', content: allPanel},
+                {
+                    id: 'watchlist',
+                    title: 'Watchlist',
+                    content: () => watchlistPanel({model: this.watchlistModel})
+                }
+            ],
+            xhImpl: true
+        });
+        this.watchlistModel = new WatchlistModel(this);
         this.instancesGridModel = this.createInstancesGridModel();
-        this.propertiesGridModel = this.createPropertiesGridModel();
+        this.propertiesModel = new PropertiesModel(this);
         this.diagnosticsModel = new DiagnosticsModel(this);
         this.instancesPanelModel = new PanelModel({
             defaultSize: 575,
@@ -96,38 +102,52 @@ export class InstancesModel extends HoistModel {
 
         this.addReaction(
             {
-                track: () => this.instancesGridModel.selectedIds,
-                run: ids => {
-                    this.propertiesGridModel.emptyText = ids.length
-                        ? 'No matching properties found.'
-                        : 'Select an instance to view properties.';
-                },
-                delay: 300,
-                fireImmediately: true
-            },
-            {
                 track: () => this.showInGroups,
                 run: showInGroups =>
                     this.instancesGridModel.setGroupBy(showInGroups ? 'displayGroup' : null)
+            },
+            {
+                track: () => this.watchlistModel.count,
+                run: count => {
+                    const tab = this.navTabModel.tabs.find(it => it.id === 'watchlist');
+                    tab.title = count ? `Watchlist (${count})` : 'Watchlist';
+                },
+                fireImmediately: true
             }
         );
 
         this.autoLoadInstancesGrid();
-        this.autoLoadPropertiesGrid();
     }
 
+    /**
+     * Select an instance - in the Watchlist tab if active and it holds the instance, otherwise
+     * in the All tab, widening its quick filters as needed to bring the instance into view.
+     */
     async selectInstanceAsync(xhId: string) {
         const inst = this.getInstance(xhId);
+        if (!inst) return;
 
-        if (inst.xhImpl && !this.showXhImpl) {
+        const {navTabModel, watchlistModel, instancesGridModel} = this,
+            watchRec = watchlistModel.instancesGridModel.store.getById(xhId);
+
+        if (navTabModel.activeTabId === 'watchlist' && watchRec) {
+            await watchlistModel.instancesGridModel.selectAsync(watchRec);
+            return;
+        }
+
+        const needed = compact([
+            inst.xhImpl && !this.showXhImpl ? 'showXhImpl' : null,
+            !inst.xhName && !this.showAnon ? 'showAnon' : null
+        ]);
+        if (needed.length || navTabModel.activeTabId !== 'all') {
             runInAction(() => {
-                this.instQuickFilters = [...this.instQuickFilters, 'showXhImpl'];
+                this.instQuickFilters = [...this.instQuickFilters, ...needed];
+                navTabModel.setActiveTabId('all');
             });
             await wait();
         }
 
-        const {instancesGridModel} = this,
-            {store} = instancesGridModel,
+        const {store} = instancesGridModel,
             rec = store.getById(xhId);
 
         if (!rec) return;
@@ -144,46 +164,12 @@ export class InstancesModel extends HoistModel {
         if (!instance) {
             this.logWarn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
-            console.log(`[${xhId}]`, instance);
+            console.log(`[${rec.data.label}]`, instance);
             XH.toast({
                 icon: Icon.terminal(),
-                message: `Logged ${rec.data.className} ${xhId} to devtools console`
+                message: `Logged ${rec.data.label} to devtools console`
             });
         }
-    }
-
-    logPropToConsole(rec: StoreRecord) {
-        if (!rec) return;
-
-        const {instanceXhId, instanceDisplayName, property} = rec.data,
-            instance = this.getInstance(instanceXhId);
-
-        if (!instance) {
-            this.logWarn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
-        } else {
-            console.log(`[${instanceDisplayName}].${property}`, instance[property]);
-            XH.toast({
-                icon: Icon.terminal(),
-                message: `Logged [${instanceDisplayName}].${property} to devtools console`
-            });
-        }
-    }
-
-    toggleFavorite(record: StoreRecord) {
-        const key = favoriteKey(record?.data);
-        if (!key) return;
-        const {favorites} = this;
-        this.favorites = favorites.includes(key) ? without(favorites, key) : [...favorites, key];
-    }
-
-    togglePropsWatchlistItem(record: StoreRecord) {
-        const {instanceXhId, property, isGetter} = record.data,
-            {propsWatchlist} = this,
-            currItem = this.getWatchlistItem(instanceXhId, property);
-
-        this.propsWatchlist = currItem
-            ? without(propsWatchlist, currItem)
-            : [...propsWatchlist, {instanceXhId, property, isGetter}];
     }
 
     getInstance(xhId: string): HoistBase {
@@ -210,9 +196,11 @@ export class InstancesModel extends HoistModel {
             emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
+                    {name: 'label', type: 'string'},
                     {name: 'className', type: 'string'},
                     {name: 'xhName', displayName: 'Name', type: 'string'},
-                    {name: 'isFavorite', type: 'bool'},
+                    {name: 'watchKey', type: 'string'},
+                    {name: 'isWatched', type: 'bool'},
                     {name: 'alive', type: 'bool'},
                     {name: 'displayGroup', type: 'string'},
                     {name: 'created', type: 'date'},
@@ -229,7 +217,7 @@ export class InstancesModel extends HoistModel {
                     {name: 'lastLoadException', type: 'auto'}
                 ]
             },
-            sortBy: ['created|desc'],
+            sortBy: 'label',
             groupBy: this.showInGroups ? 'displayGroup' : null,
             groupSortFn: (a, b) => GROUP_SORT_ORDER.indexOf(a) - GROUP_SORT_ORDER.indexOf(b),
             selModel: {mode: 'multiple'},
@@ -239,8 +227,7 @@ export class InstancesModel extends HoistModel {
                     text: 'Log to console',
                     icon: Icon.terminal(),
                     recordsRequired: 1,
-                    actionFn: ({record}) => this.logInstanceToConsole(record),
-                    displayFn: ({record}) => ({disabled: !record?.data.alive})
+                    actionFn: ({record}) => this.logInstanceToConsole(record)
                 },
                 {
                     text: 'Call loadAsync()',
@@ -251,43 +238,28 @@ export class InstancesModel extends HoistModel {
                     displayFn: ({record}) => ({disabled: !record?.data.hasLoadSupport})
                 },
                 {
-                    text: 'Toggle Favorite',
+                    text: 'Toggle Watchlist',
                     icon: Icon.favorite(),
                     recordsRequired: 1,
-                    actionFn: ({record}) => this.toggleFavorite(record),
-                    displayFn: ({record}) => {
-                        const {xhName, isFavorite} = record?.data ?? {};
-                        return {
-                            disabled: !xhName,
-                            text: isFavorite ? 'Remove Favorite' : 'Add Favorite',
-                            tooltip: xhName ? null : 'Set xhName to enable favorites'
-                        };
-                    }
+                    actionFn: ({record}) => this.watchlistModel.toggleInstance(record),
+                    displayFn: ({record}) => ({
+                        text: record?.data.isWatched ? 'Remove from Watchlist' : 'Add to Watchlist'
+                    })
                 },
                 '-',
                 ...GridModel.defaults.contextMenu
             ],
             columns: [
-                {
-                    field: 'isFavorite',
-                    headerName: Icon.favorite(),
-                    headerTooltip: 'Favorite',
-                    ...boolCheckCol,
-                    width: 40,
-                    tooltip: v => (v ? 'Favorite' : ''),
-                    renderer: v => (v ? Icon.favorite({intent: 'warning', prefix: 'fas'}) : null)
-                },
-                {
-                    field: 'id',
-                    displayName: 'ID',
-                    renderer: (v, {record}) => (record.data.alive ? v : null)
-                },
+                watchInstanceCol(this.watchlistModel),
+                {field: 'label', flex: 1, minWidth: 150},
+                {field: 'id', displayName: 'ID', hidden: true},
                 {field: 'displayGroup', hidden: true},
-                {field: 'className', flex: 1, minWidth: 150},
-                {field: 'xhName', flex: 1, minWidth: 150},
+                {field: 'className', flex: 1, minWidth: 150, hidden: true},
+                {field: 'xhName', flex: 1, minWidth: 150, hidden: true},
                 {
                     field: 'syncRun',
                     displayName: 'Sync',
+                    hidden: true,
                     headerTooltip:
                         'Sync run in which this instance first appeared. Inspector increments its sync run counter each time it detects newly-created instances, grouping instances that were created together.',
                     autosizeIncludeHeaderIcons: false
@@ -312,141 +284,24 @@ export class InstancesModel extends HoistModel {
                 },
                 {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
-            rowClassFn: rec => (rec?.data.isXhImpl || !rec?.data.alive ? 'xh-impl-row' : null),
-            onRowDoubleClicked: ({data: rec}) => rec?.data.alive && this.logInstanceToConsole(rec),
-            xhImpl: true
-        });
-    }
-
-    private createPropertiesGridModel() {
-        const iconCol: ColumnSpec = {width: 40, align: 'center', resizable: false};
-        return new GridModel({
-            persistWith: {...this.persistWith, path: 'propertiesGrid'},
-            autosizeOptions: {mode: 'managed'},
-            filterModel: true,
-            headerMenuDisplay: 'hover',
-            colDefaults: {filterable: true},
-            sortBy: 'displayProperty',
-            groupBy: 'displayGroup',
-            showGroupRowCounts: false,
-            groupRowRenderer: ({value, node}) => propsGridGroupRenderer({value, node, model: this}),
-            groupSortFn: (a, b) => {
-                const sortValA = a === 'Watchlist' ? 0 : 1,
-                    sortValB = b === 'Watchlist' ? 0 : 1;
-                return sortValA - sortValB;
-            },
-            store: {
-                fields: [
-                    {name: 'instanceXhId', type: 'string'},
-                    {name: 'instanceDisplayName', type: 'string'},
-                    {name: 'property', type: 'string'},
-                    {name: 'displayProperty', displayName: 'Property', type: 'string'},
-                    {name: 'displayGroup', type: 'string'},
-                    {name: 'valueType', type: 'string'},
-                    {name: 'value', type: 'auto'},
-                    {name: 'isWatchlistItem', type: 'bool'},
-                    {name: 'isObservable', type: 'bool'},
-                    {name: 'isHoistModel', type: 'bool'},
-                    {name: 'isHoistService', type: 'bool'},
-                    {name: 'isStore', type: 'bool'},
-                    {name: 'isCube', type: 'bool'},
-                    {name: 'isView', type: 'bool'},
-                    {name: 'isGetter', type: 'bool'},
-                    {name: 'isLoadedGetter', type: 'bool'}
-                ]
-            },
-            columns: [
-                {
-                    ...actionCol,
-                    width: calcActionColWidth(2),
-                    actionsShowOnHoverOnly: true,
-                    actions: [
-                        {
-                            icon: Icon.terminal(),
-                            tooltip: 'Log to console',
-                            actionFn: ({record}) => this.logPropToConsole(record)
-                        },
-                        {
-                            icon: Icon.favorite(),
-                            tooltip: 'Toggle Watchlist',
-                            actionFn: ({record}) => this.togglePropsWatchlistItem(record),
-                            displayFn: ({record}) => ({
-                                icon: record.data.isWatchlistItem
-                                    ? Icon.favorite({intent: 'warning', prefix: 'fas'})
-                                    : Icon.favorite({className: 'xh-text-color-muted'})
-                            })
-                        }
-                    ]
-                },
-                {
-                    field: 'displayProperty',
-                    width: 200,
-                    renderer: (v, {record}) => {
-                        return record.data.displayGroup === 'Watchlist'
-                            ? a({
-                                  item: v,
-                                  onClick: () => this.selectInstanceAsync(record.data.instanceXhId)
-                              })
-                            : v;
-                    }
-                },
-                {
-                    field: 'isObservable',
-                    headerName: Icon.eye(),
-                    ...iconCol,
-                    renderer: v => (v ? Icon.eye({title: 'Observable'}) : '')
-                },
-                {field: 'valueType', width: 130},
-                {
-                    field: 'value',
-                    cellClass: 'xh-font-family-mono',
-                    flex: 1,
-                    minWidth: 150,
-                    highlightOnChange: true,
-                    rendererIsComplex: true,
-                    renderer: (v, {record}) => {
-                        const {data} = record;
-                        if (data.isGetter && !data.isLoadedGetter) {
-                            return a({item: '(...)', onClick: () => this.loadGetter(record)});
-                        }
-                        if (
-                            data.isHoistModel ||
-                            data.isHoistService ||
-                            data.isStore ||
-                            data.isCube ||
-                            data.isView
-                        ) {
-                            return a({item: v, onClick: () => this.selectInstanceAsync(v)});
-                        }
-                        return JSON.stringify(trimToDepth(v, 2));
-                    }
-                },
-                {field: 'displayGroup', hidden: true}
-            ],
-            onRowDoubleClicked: ({data: rec}) => {
-                if (!rec) return;
-                if (rec.data.isGetter && !rec.data.isLoadedGetter) this.loadGetter(rec);
-                this.logPropToConsole(rec);
-            },
+            rowClassFn: rec => (rec?.data.isXhImpl ? 'xh-impl-row' : null),
+            onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec),
             xhImpl: true
         });
     }
 
     private autoLoadInstancesGrid() {
-        this.addAutorun({
-            run: () => {
-                const {showXhImpl, favoritesOnly, favorites, instancesGridModel, selectedSyncRun} =
-                        this,
-                    data = [];
+        this.addAutorun(() => {
+            const {showXhImpl, showAnon, watchlistModel, instancesGridModel, selectedSyncRun} =
+                    this,
+                data = [];
 
-                XH.inspectorService.activeInstances.forEach(inst => {
-                    const isFavorite = favorites.includes(favoriteKey(inst));
+            XH.inspectorService.activeInstances.forEach(inst => {
+                if (!showXhImpl && inst.isXhImpl) return;
+                if (!showAnon && !inst.xhName) return;
+                if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
 
-                    // A star is an explicit opt-in, so favorites show regardless of the xhImpl filter.
-                    if (favoritesOnly ? !isFavorite : !showXhImpl && inst.isXhImpl) return;
-                    if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
-
-                    const displayGroup = inst.isHoistService
+                const displayGroup = inst.isHoistService
                         ? 'Services'
                         : inst.isStore
                           ? 'Stores'
@@ -454,189 +309,23 @@ export class InstancesModel extends HoistModel {
                             ? 'Cubes'
                             : inst.isView
                               ? 'Views'
-                              : 'Models';
-                    data.push({...inst, displayGroup, isFavorite, alive: true});
+                              : 'Models',
+                    watchKey = instanceKey(inst.className, inst.xhName, inst.id);
+
+                data.push({
+                    ...inst,
+                    displayGroup,
+                    watchKey,
+                    isWatched: watchlistModel.hasInstance(watchKey),
+                    alive: true
                 });
+            });
 
-                // Favorites with no live instance - shown so they can be seen and un-starred.
-                if (favoritesOnly && !selectedSyncRun) {
-                    const aliveKeys = new Set(data.map(favoriteKey));
-                    favorites
-                        .filter(key => !aliveKeys.has(key))
-                        .forEach(key => {
-                            const sep = key.indexOf(':'),
-                                className = key.slice(0, sep),
-                                xhName = key.slice(sep + 1);
-                            data.push({
-                                id: key,
-                                className,
-                                xhName,
-                                displayGroup: 'Not Alive',
-                                isFavorite: true,
-                                alive: false
-                            });
-                        });
-                }
-
-                instancesGridModel.loadData(data);
-            }
+            instancesGridModel.loadData(data);
         });
-    }
-
-    private autoLoadPropertiesGrid() {
-        this.addAutorun({
-            run: () => {
-                const {propertiesGridModel, selectedInstances, propsWatchlist} = this,
-                    data = [];
-
-                // Read properties (including getters) off of selected instances.
-                selectedInstances.forEach(instance => {
-                    const descriptors = this.getDescriptors(instance);
-
-                    forIn(descriptors, (descriptor, property) => {
-                        // Extract data from enumerable props and getters. Exclude prototype, as
-                        // that renders as a confusing link to the superclass as if it were a
-                        // distinct instance (which, you know, it kinda is but let's not go there).
-                        if (property !== '__proto__' && (descriptor.enumerable || descriptor.get)) {
-                            data.push(
-                                this.getRecData({
-                                    instance,
-                                    property,
-                                    isGetter: !!descriptor.get
-                                })
-                            );
-                        }
-                    });
-                });
-
-                // As well as any watchlist items.
-                propsWatchlist.forEach(it => {
-                    const wlInstance = this.getInstance(it.instanceXhId);
-                    if (wlInstance) {
-                        data.push(
-                            this.getRecData({
-                                instance: wlInstance,
-                                property: it.property,
-                                fromWatchlistItem: true,
-                                isGetter: it.isGetter
-                            })
-                        );
-                    }
-                });
-
-                propertiesGridModel.loadData(compact(data));
-            },
-            delay: 300
-        });
-    }
-
-    private getDescriptors(instance) {
-        let ret = Object.getOwnPropertyDescriptors(instance),
-            proto = Object.getPrototypeOf(instance);
-
-        if (proto) {
-            ret = {...ret, ...this.getDescriptors(proto)};
-        }
-
-        return ret;
-    }
-
-    private getRecData({instance, property, fromWatchlistItem = false, isGetter = false}) {
-        const {ownPropsOnly, observablePropsOnly, showUnderscoreProps} = this,
-            isOwnProperty = Object.hasOwn(instance, property),
-            isObservable = isObservableProp(instance, property);
-
-        if (
-            (ownPropsOnly && !isOwnProperty) ||
-            (observablePropsOnly && !isObservable) ||
-            (!showUnderscoreProps && property.startsWith('_'))
-        )
-            return null;
-
-        const {xhId} = instance,
-            instanceDisplayName = instanceLabel(instance),
-            isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
-            v = !isGetter || isLoadedGetter ? instance[property] : null,
-            // Detect FormModel.values Proxy object - throws otherwise on attempt to render in grid.
-            isProxy = !!v?._xhIsProxy,
-            isHoistModel = v?.isHoistModel,
-            isHoistService = v?.isHoistService,
-            isStore = v?.isStore,
-            isCube = Cube.isCube(v),
-            isView = View.isView(v);
-
-        const valueType =
-            isGetter && !isLoadedGetter
-                ? 'get(?)'
-                : isProxy
-                  ? 'Proxy'
-                  : (v?.constructor?.name ?? typeof v);
-
-        return {
-            id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,
-            instanceXhId: xhId,
-            instanceDisplayName,
-            property,
-            // Watchlist items are shown under a single group - differentiate by prepending instDisplayName
-            displayProperty: fromWatchlistItem ? `${instanceDisplayName}.${property}` : property,
-            displayGroup: fromWatchlistItem ? 'Watchlist' : instanceDisplayName,
-            value:
-                isHoistModel || isHoistService || isStore || isCube || isView
-                    ? v.xhId
-                    : isProxy
-                      ? '[cannot render]'
-                      : v,
-            valueType,
-            isOwnProperty,
-            isObservable,
-            isHoistModel,
-            isHoistService,
-            isStore,
-            isCube,
-            isView,
-            isGetter,
-            isLoadedGetter,
-            isWatchlistItem: !!this.getWatchlistItem(xhId, property)
-        };
-    }
-
-    private shouldLoadGetter(instanceXhId, property) {
-        return !!find(this.loadedGetters, {instanceXhId, property});
-    }
-
-    @action
-    private loadGetter(rec) {
-        const {instanceXhId, property} = rec.data;
-        if (!this.shouldLoadGetter(instanceXhId, property)) {
-            this.loadedGetters = [...this.loadedGetters, {instanceXhId, property}];
-        }
-    }
-
-    @action
-    loadAllCurrentGetters() {
-        this.propertiesGridModel.store.records.forEach(rec => {
-            const {isGetter, isLoadedGetter} = rec.data;
-            if (isGetter && !isLoadedGetter) this.loadGetter(rec);
-        });
-    }
-
-    private getWatchlistItem(instanceXhId, property) {
-        return find(this.propsWatchlist, {instanceXhId, property});
     }
 }
 
-const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores', 'Not Alive'];
-
-/** Persistent identity for Favorites - null when the instance has no `xhName` to pin by. */
-const favoriteKey = (inst: {className?: string; xhName?: string}): string =>
-    inst?.xhName ? `${inst.className}:${inst.xhName}` : null;
+const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores'];
 
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
-
-const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(({value, node, model}) => {
-    if (model.selectedInstances.length === 1 || value === 'Watchlist') return value;
-
-    const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
-        {instanceXhId, instanceDisplayName} = firstRecData;
-    return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
-});

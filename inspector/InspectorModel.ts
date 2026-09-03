@@ -116,7 +116,7 @@ export class InspectorModel extends HoistModel {
         const win = window.open(
             '',
             `xhInspector_${XH.clientAppCode}_${XH.tabId}`,
-            'popup=yes,width=1400,height=500'
+            'popup=yes,width=1400,height=800'
         );
         if (!win) {
             XH.dangerToast('Unable to open Inspector window - check for a popup blocker.');

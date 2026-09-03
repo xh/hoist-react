@@ -140,7 +140,7 @@ export class DockViewModel extends HoistModel {
 
         this.id = id;
         this.containerModel = containerModel;
-        this.xhName = xhName ?? containerModel?.childXhName(id) ?? id;
+        this.xhName = xhName ?? containerModel?.childXhName(id);
         this.title = title;
         this.icon = icon;
         this.content = content;

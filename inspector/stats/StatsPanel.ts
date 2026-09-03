@@ -20,21 +20,22 @@ export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
     render({model}) {
-        // Re-parent grid popups (context/column menus) when Inspector is detached.
-        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
+        // Parent grid popups (context/column menus) into the Inspector window.
+        const popupParent = useContextModel(InspectorModel).windowContainer;
 
         return panel({
             item: hframe(
-                grid({agOptions: {popupParent}}),
                 panel({
-                    item: chart(),
+                    item: grid({agOptions: {popupParent}}),
                     modelConfig: {
-                        side: 'right',
-                        defaultSize: '50%',
+                        side: 'left',
+                        defaultSize: 550,
                         collapsible: false,
+                        persistWith: {...model.persistWith, path: 'statsGridPanel'},
                         xhImpl: true
                     }
-                })
+                }),
+                chart()
             ),
             bbar: toolbar({
                 items: [
