@@ -198,7 +198,7 @@ export class DateRangePickerModel extends HoistModel {
      */
     @observable.ref anchorDate: LocalDate;
 
-    /** The current day, in the app time zone for `anchorDay: 'appDay'`, else the browser's. */
+    /** The current day in the browser's time zone - the reader's "today". Kept current. */
     @observable.ref today: LocalDate;
 
     /** Earliest selectable date, or null if unbounded. Set via `setMinDate()`. */
@@ -223,7 +223,13 @@ export class DateRangePickerModel extends HoistModel {
         return this.explicitMaxDate ?? this.anchorDate;
     }
 
-    /** True if the anchor date is the current day - when `anchorDay` reads as "Today". */
+    /**
+     * True if the anchor date is the reader's current day - when `anchorDay` reads as "Today".
+     * False whenever the anchor sits on any other day, whether pinned there by the app, snapped
+     * by `businessDayMode`, or drawn from an app time zone a day apart from the browser's - in
+     * each case the picker reads "As Of" and shows the date, so the reader is never told a day
+     * that is not theirs is "today".
+     */
     get isAnchorToday(): boolean {
         return this.anchorDate === this.today;
     }
@@ -537,13 +543,14 @@ export class DateRangePickerModel extends HoistModel {
     @action
     private refreshAnchorDate() {
         const {anchorDay, businessDayMode, isBusinessDay} = this,
-            today = anchorDay === 'appDay' ? LocalDate.currentAppDay() : LocalDate.today();
+            today = LocalDate.today();
 
         let anchorDate: LocalDate;
         if (isString(anchorDay)) {
             // Only a clock-derived anchor is snapped. A pinned or computed date is what the app
             // asked for - e.g. a month-end that falls on a Sunday.
-            anchorDate = businessDayMode ? businessDayOnOrBefore(today, {isBusinessDay}) : today;
+            const day = anchorDay === 'appDay' ? LocalDate.currentAppDay() : today;
+            anchorDate = businessDayMode ? businessDayOnOrBefore(day, {isBusinessDay}) : day;
         } else {
             anchorDate = isFunction(anchorDay) ? anchorDay() : anchorDay;
         }

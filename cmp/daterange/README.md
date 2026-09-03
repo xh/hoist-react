@@ -31,7 +31,8 @@ the Hoist symbol tools surface.
 DateRangePickerModel
 ├── value: DateRangeSelection          # The applied period, always normalized
 ├── anchorDay: DateRangeAnchorDay      # How the anchor date is determined - live by default
-├── anchorDate, today, minDate, maxDate  # The dates selections resolve against
+├── anchorDate, minDate, maxDate       # The dates selections resolve against
+├── today                              # The reader's current day - what "Today" means
 ├── businessDayMode, isBusinessDay     # Single-day handling
 ├── presets: DateRangePreset[]         # Offered on the Presets tab
 ├── tabs: DateRangePickerTab[]         # Offered in the popover
@@ -269,10 +270,11 @@ anchorDay: () => {
 }
 ```
 
-The `anchorDay` preset labels itself `Today` only when the anchor date is the current day (per
-`today`, in the app or browser zone to match the mode). Otherwise it reads `As Of`, and the trigger
-shows the date. So on the Friday evening above the picker reads `As Of | 2026-09-07` until Monday
-morning, when it reads `Today`.
+The `anchorDay` preset labels itself `Today` only when the anchor date is the reader's current day
+- the browser's, always, whatever zone the anchor is drawn from. Otherwise it reads `As Of`, and the
+trigger shows the date. So on the Friday evening above the picker reads `As Of | 2026-09-07` until
+Monday morning, when it reads `Today`. Likewise a user whose browser is a day ahead of an
+`'appDay'` anchor sees `As Of` with the app's date rather than a "Today" that is not theirs.
 
 **`businessDayMode`** is for users who think in calendar-length windows but stand on business
 days. It has two effects and no others: a live `anchorDay` (`'localDay'` or `'appDay'`) snaps back

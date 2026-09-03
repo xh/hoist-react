@@ -65,7 +65,10 @@ export type DateRangePresetToken =
 export interface DateRangeContext {
     /** Date that relative and to-date selections resolve against. */
     anchorDate: LocalDate;
-    /** The current day, per the model's `anchorDay` mode - app day for `'appDay'`, else local. */
+    /**
+     * The current day in the browser's time zone - what "Today" means to the person looking at
+     * the screen, whatever zone the anchor date is drawn from.
+     */
     today: LocalDate;
     /** Earliest selectable date, or null if unbounded. */
     minDate: LocalDate | null;
