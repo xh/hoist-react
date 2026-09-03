@@ -62,6 +62,9 @@ export class ConfigPanelModel extends HoistModel {
             selModel: 'multiple',
             sortBy: 'name',
             unit: 'config',
+            onRowDoubleClicked: ({data}) => {
+                if (data && !this.gridModel.readonly) this.gridModel.editRecord(data);
+            },
             // Store + fields
             store: {
                 url: 'rest/configAdmin',
