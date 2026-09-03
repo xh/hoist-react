@@ -48,8 +48,8 @@ inspector/
     └── StatsModel.ts                # Model tracking model count, heap memory, sync runs
 ```
 
-The Inspector UI is rendered by `InspectorPanel`, which hosts two top-level tabs switched via a
-picker in its header: **Memory** (`StatsPanel`) and **Objects** (`InstancesPanel`). Both are backed
+The Inspector UI is rendered by `InspectorPanel`, which hosts two top-level tabs switched from its
+header: **Memory** (`StatsPanel`) and **Objects** (`InstancesPanel`). Both are backed
 by dedicated `HoistModel` subclasses.
 
 The actual data collection happens in `InspectorService` (in [`/svc/`](../svc/README.md)), which:
@@ -126,6 +126,10 @@ Instances view to show only instances created during that sync batch.
 **Sync runs:** Each time the Inspector detects new instances in the registry, it increments a sync
 run counter. This groups instances by when they appeared, making it easier to identify which
 navigation or load action created them.
+
+**Forcing GC:** The toolbar's trash button runs `window.gc()` and takes a snapshot, separating
+genuine leaks from garbage not yet collected. It is enabled only when Chrome exposes that hook -
+launch with `--js-flags=--expose-gc`.
 
 ## Objects Tab (Instances)
 

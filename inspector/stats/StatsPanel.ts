@@ -20,7 +20,8 @@ export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
     render({model}) {
-        const popupParent = useContextModel(InspectorModel).windowContainer;
+        const popupParent = useContextModel(InspectorModel).windowContainer,
+            {canForceGC} = XH.inspectorService;
 
         return panel({
             item: hframe(
@@ -51,6 +52,14 @@ export const statsPanel = hoistCmp.factory({
                         })
                     }),
                     filler(),
+                    button({
+                        icon: Icon.trash(),
+                        disabled: !canForceGC,
+                        tooltip: canForceGC
+                            ? 'Force garbage collection'
+                            : 'Force garbage collection - requires Chrome launched with --js-flags=--expose-gc',
+                        onClick: () => XH.inspectorService.forceGC()
+                    }),
                     button({
                         tooltip: 'Reset stats',
                         icon: Icon.reset(),

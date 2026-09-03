@@ -12,6 +12,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {HOURS, SECONDS} from '@xh/hoist/utils/datetime';
 import {parseNameSource} from '@xh/hoist/utils/js';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {isFunction} from 'lodash';
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
@@ -155,6 +156,17 @@ export class InspectorService extends HoistService {
     @action
     clearStats() {
         this.stats = [];
+    }
+
+    /** True if the browser exposes `window.gc` - Chrome launched with `--js-flags=--expose-gc`. */
+    get canForceGC(): boolean {
+        return isFunction((window as any).gc);
+    }
+
+    /** Force a garbage collection, then snapshot stats to show its effect. */
+    forceGC() {
+        (window as any).gc();
+        this.updateStats();
     }
 
     /** Clear all persisted Inspector state and reopen the Inspector. Callers should confirm first. */

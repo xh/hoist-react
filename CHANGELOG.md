@@ -39,7 +39,8 @@
       filter. `Log to console` and `Load all getters` live in the property grids' right-click menu.
     * Memory: the last hour of stats is persisted per browser tab, so the model count and heap
       trend leading up to a reload is still visible afterwards. The chart takes the full remaining
-      width beside a fixed-width stats grid.
+      width beside a fixed-width stats grid, and a new button forces a GC when Chrome is launched
+      with `--js-flags=--expose-gc`.
     * If the browser blocks the Inspector window on reload, the Inspector is deactivated with a
       toast. Allow popups for the app's origin to restore it automatically.
 * Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
