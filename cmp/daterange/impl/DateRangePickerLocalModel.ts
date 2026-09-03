@@ -153,10 +153,11 @@ export class DateRangePickerLocalModel extends HoistModel {
         if (this.relativeSnap) {
             // The window stops at the anchor date, so the last unit is normally incomplete -
             // unless the anchor happens to fall on its final day.
-            const partial = anchorDate.endOf(unit) === anchorDate ? '' : ' (partial)';
+            const partial = anchorDate.endOf(unit) === anchorDate ? '' : ' (partial)',
+                containing = this.parentModel.isAnchorToday ? 'today' : 'the anchor date';
             return n === 1
-                ? `The current${partial} calendar ${singular}.`
-                : `${n} calendar ${units}, including the current${partial} one.`;
+                ? `The${partial} calendar ${singular} containing ${containing}.`
+                : `${n} calendar ${units}, ending with the${partial} one containing ${containing}.`;
         }
         return `Rolling window of exactly ${n} ${units} ending ${anchorNoun}.`;
     }
