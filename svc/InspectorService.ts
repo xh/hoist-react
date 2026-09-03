@@ -57,7 +57,6 @@ export class InspectorService extends HoistService {
 
     /** Timestamped model counts w/memory usage (when active). Last hour persisted per tab. */
     @observable.ref
-    @persist.with({localStorageKey: `xhInspector.${XH.clientAppCode}.${XH.tabId}`})
     stats: InspectorStat[] = [];
 
     @managed
@@ -69,6 +68,7 @@ export class InspectorService extends HoistService {
     constructor() {
         super();
         makeObservable(this);
+        this.markPersist('stats', {localStorageKey: `xhInspector.${XH.clientAppCode}.${XH.tabId}`});
     }
 
     override async initAsync(ctx: InitContext) {
