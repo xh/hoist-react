@@ -253,8 +253,8 @@ export class DateRangePickerLocalModel extends HoistModel {
         const {anchorDate, parentModel} = this,
             date = anchorDate.format(parentModel.dateFormat);
         return parentModel.isAnchorToday
-            ? `Relative periods anchor to today, ${date}.`
-            : `Relative periods anchor to ${date}.`;
+            ? `Periods resolve against today, ${date}.`
+            : `Periods resolve against ${date}.`;
     }
 
     private get anchorNoun(): string {
