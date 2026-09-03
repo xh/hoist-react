@@ -220,7 +220,7 @@ export class InspectorModel extends HoistModel {
 
     private onChildWindowPagehide = () => XH.inspectorService.deactivate();
 
-    private onMainWindowPagehide = () => this.childWindow?.close();
+    private onMainWindowPagehide = () => this.closeWindow();
 
     override destroy() {
         this.closeWindow();

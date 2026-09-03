@@ -122,7 +122,6 @@ export class InspectorService extends HoistService {
     deactivate() {
         this.active = false;
         this.activeInstances = [];
-        this.clearStats();
     }
 
     @action
