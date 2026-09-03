@@ -127,6 +127,25 @@ jobs:
                 fi
               } >> "$GITHUB_STEP_SUMMARY"
 
+        # The publish step above returns as soon as npm accepts the tarball, but the new version is
+        # not guaranteed to be resolvable from the registry at that moment. Toolbox's
+        # buildSnapshot.yml runs `pnpm update --no-save` on receipt of the dispatch below to pick up
+        # `@xh/hoist@next` - if the registry has not yet caught up, that command silently keeps the
+        # previous snapshot rather than erroring, and Toolbox deploys without the changes this run
+        # was meant to carry. Poll until the registry itself resolves `next` to this run's version
+        # before dispatching, so the deploy is not "done" until Toolbox can actually consume it.
+        - name: Wait for snapshot to be resolvable on npm
+          timeout-minutes: 10
+          env:
+              SNAPSHOT_VERSION: ${{ steps.snapshot.outputs.snapshot-version }}
+          run: |
+              echo "Waiting for @xh/hoist@next to resolve to $SNAPSHOT_VERSION..."
+              until [ "$(npm view @xh/hoist@next version 2>/dev/null)" = "$SNAPSHOT_VERSION" ]; do
+                  echo "Not yet available - retrying in 10s"
+                  sleep 10
+              done
+              echo "Confirmed: @xh/hoist@next now resolves to $SNAPSHOT_VERSION"
+
         - name: Trigger Toolbox snapshot build
           env:
               GH_TOKEN: ${{ secrets.TOOLBOX_DISPATCH_TOKEN }}
