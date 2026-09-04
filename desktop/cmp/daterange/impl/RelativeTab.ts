@@ -11,7 +11,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {numberInput, segmentedControl} from '@xh/hoist/desktop/cmp/input';
 import {controlGroup} from '@xh/hoist/kit/blueprint';
-import {getTestId} from '@xh/hoist/utils/js';
+import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {sectionHeader} from './TabUtils';
 
 /** Relative tab - a lookback of N units ending on the anchor date, drafted until applied. */
@@ -81,6 +81,7 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
                     }),
                     div({
                         className: 'xh-date-range-picker-popover__snap-help',
+                        [TEST_ID]: getTestId(testId, 'snap-help'),
                         item: model.relativeModeHelpText
                     })
                 ]

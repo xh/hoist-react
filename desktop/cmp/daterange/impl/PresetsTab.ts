@@ -11,7 +11,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {clickable, dataAttrs, sectionHeader} from './TabUtils';
+import {clickable, sectionHeader} from './TabUtils';
 
 /** Presets tab - one row per configured preset, committing on click. */
 export const presetsTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId}) => {
@@ -32,7 +32,7 @@ export const presetsTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, t
                         'xh-date-range-picker-popover__preset-row',
                         selected && 'xh-date-range-picker-popover__preset-row--selected'
                     ),
-                    ...dataAttrs({[TEST_ID]: getTestId(testId, `preset-${token}`)}),
+                    [TEST_ID]: getTestId(testId, `preset-${token}`),
                     ...clickable(() => model.commit({kind: 'preset', token})),
                     items: [
                         Icon.check({

@@ -27,5 +27,8 @@ export const clickable = (onClick: () => void) =>
           }
         : {role: 'button', 'aria-disabled': true};
 
-/** Data attributes for a plain element spec - React's HTML attribute types omit them. */
+/**
+ * Spread arbitrary `data-*` attributes onto a plain element spec. Needed only for attributes
+ * `ElementSpec` does not declare - `data-testid` is declared, so pass that as `[TEST_ID]` directly.
+ */
 export const dataAttrs = (attrs: Record<string, string>) => attrs as object;

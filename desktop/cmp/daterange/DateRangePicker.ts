@@ -260,6 +260,7 @@ const popoverContent = hoistCmp.factory<DateRangePickerLocalModel>(
     ({model, testId, intent, footerNote}) => {
         return vbox({
             className: 'xh-date-range-picker-popover__content',
+            testId: getTestId(testId, 'popover'),
             onKeyDown: e => {
                 // Enter applies the active draft - except on buttons, whose Enter is their click.
                 const onButton = !!(e.target as HTMLElement).closest('button');
