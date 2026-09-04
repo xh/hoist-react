@@ -39,6 +39,7 @@
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile
   prop. Defaults to `true`, so a filled control now divides its width into equal segments rather
   than sizing each option to its own label.
+* Added `IntentInput` (desktop), a compact input for selecting a Hoist `Intent`.
 * Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
   tabs, docked to the right of each grid and tracking its selection. The Config panel shows every
   view of a config's value - resolved, instance override, database, and typedClass defaults -
@@ -78,6 +79,11 @@
 * Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
 * Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
+
+### 📚 Libraries
+
+* @daypicker/react `added @ 10.0` (replaces react-day-picker under its new package name)
+* react-day-picker `removed`
 
 ## 87.1.1 - 2026-09-02
 
