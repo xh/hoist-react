@@ -78,7 +78,7 @@ export interface DateRangeContext {
     today: LocalDate;
     /** Earliest selectable date, or null if unbounded. */
     minDate: LocalDate | null;
-    /** Latest selectable date. Month and year selections spanning it are clamped to it. */
+    /** Latest selectable date. Month, quarter and year selections spanning it are clamped to it. */
     maxDate: LocalDate;
     /** Whether a date is a business day - weekdays by default, or the model's `isBusinessDay`. */
     isBusinessDay: (date: LocalDate) => boolean;
@@ -156,7 +156,7 @@ export interface RelativeDateRangeSelection {
      * ending on the anchor date. Has no effect for days, where each day is its own boundary.
      */
     snap?: boolean;
-    /** Periods stepped from the natural window - negative earlier, positive later. Omitted when zero. */
+    /** Periods stepped from the natural window - negative back, positive forward. Omitted when zero. */
     offset?: number;
 }
 

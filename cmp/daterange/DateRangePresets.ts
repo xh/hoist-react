@@ -14,76 +14,6 @@ import type {
     LocalDateRange
 } from './Types';
 
-type Resolver = DateRangePreset['resolve'];
-type Shifter = DateRangePreset['resolvePrior'];
-type ShiftedLabel = DateRangePreset['shiftedLabel'];
-
-/** From the start of the unit containing the anchor date, through the anchor date. */
-const toDate =
-    (unit: DateRangeUnit): Resolver =>
-    ({anchorDate}) => ({start: anchorDate.startOf(unit), end: anchorDate});
-
-/** A rolling window of `n` days ending on the anchor date. */
-const prevDays =
-    (n: number): Resolver =>
-    ({anchorDate}) => ({start: anchorDate.subtract(n - 1, 'days'), end: anchorDate});
-
-/** A rolling window of `n` months ending on the anchor date. */
-const prevMonths =
-    (n: number): Resolver =>
-    ({anchorDate}) => ({start: anchorDate.subtract(n, 'months').nextDay(), end: anchorDate});
-
-/** The full calendar unit before the one containing the anchor date. */
-const previousUnit =
-    (unit: DateRangeUnit): Resolver =>
-    ctx => {
-        const start = previousUnitStart(ctx, unit);
-        return {start, end: start.endOf(unit)};
-    };
-
-const previousUnitStart = ({anchorDate}: DateRangeContext, unit: DateRangeUnit): LocalDate =>
-    anchorDate.startOf(unit).subtract(1, unit);
-
-/** The current range shifted by `n` units - negative back, positive forward - keeping its shape. */
-const shiftedBy =
-    (unit: DateRangeUnit, n: number): Shifter =>
-    ({start, end}) => ({start: start.add(n, unit), end: end.add(n, unit)});
-
-/** The full calendar unit `n` units from a current range that is itself a full unit. */
-const adjacentUnit =
-    (unit: DateRangeUnit, n: number): Shifter =>
-    ({start}) => {
-        const next = start.add(n, unit);
-        return {start: next, end: next.endOf(unit)};
-    };
-
-/** The day before or after a single-day range - by business day in `businessDayMode`. */
-const priorDay: Shifter = ({start}, ctx) => singleDay(previousDayInMode(start, ctx));
-const nextDay: Shifter = ({start}, ctx) => singleDay(nextDayInMode(start, ctx));
-
-/** Shifted label for a rolling window - its length alone, e.g. `7 Days`. */
-const lengthLabel =
-    (length: string): ShiftedLabel =>
-    () =>
-        length;
-
-/** Shifted label for a previous-unit preset - the period the range now covers. */
-const periodLabel =
-    (format: string): ShiftedLabel =>
-    ({start}: LocalDateRange) =>
-        start.format(format);
-
-const isAnchorToday = ({anchorDate, today}: DateRangeContext) => anchorDate === today;
-const anchorLabel = (ctx: DateRangeContext) => (isAnchorToday(ctx) ? 'Today' : 'As Of');
-
-/**
- * A single day `n` steps from the anchor day, in the T-1 idiom finance users speak - `Today −2`,
- * `As Of −1` - so a walk through single days reads the same however it began. Zero is the anchor
- * day itself.
- */
-const dayFromAnchor = (n: number, ctx: DateRangeContext): string =>
-    n ? `${anchorLabel(ctx)} ${fmtDateRangeOffset(n)}` : anchorLabel(ctx);
-
 /**
  * Presets shipped with Hoist, keyed by token. Offer any subset (in any order) via the `presets`
  * config of {@link DateRangePickerModel}, alongside any app-defined {@link DateRangePreset}s.
@@ -249,7 +179,6 @@ export const DATE_RANGE_PRESET_TOKENS = Object.keys(dateRangePresets) as DateRan
 /** Presets offered by {@link DateRangePickerModel} when none are configured. */
 export const DEFAULT_DATE_RANGE_PRESETS: DateRangePresetToken[] = [
     'anchorDay',
-    'prevDay',
     'mtd',
     'qtd',
     'ytd',
@@ -260,3 +189,86 @@ export const DEFAULT_DATE_RANGE_PRESETS: DateRangePresetToken[] = [
     'prevMonth',
     'prevYear'
 ];
+
+//------------------
+// Implementation
+//------------------
+type Resolver = DateRangePreset['resolve'];
+type Shifter = DateRangePreset['resolvePrior'];
+type ShiftedLabel = DateRangePreset['shiftedLabel'];
+
+/** From the start of the unit containing the anchor date, through the anchor date. */
+function toDate(unit: DateRangeUnit): Resolver {
+    return ({anchorDate}) => ({start: anchorDate.startOf(unit), end: anchorDate});
+}
+
+/** A rolling window of `n` days ending on the anchor date. */
+function prevDays(n: number): Resolver {
+    return ({anchorDate}) => ({start: anchorDate.subtract(n - 1, 'days'), end: anchorDate});
+}
+
+/** A rolling window of `n` months ending on the anchor date. */
+function prevMonths(n: number): Resolver {
+    return ({anchorDate}) => ({start: anchorDate.subtract(n, 'months').nextDay(), end: anchorDate});
+}
+
+/** The full calendar unit before the one containing the anchor date. */
+function previousUnit(unit: DateRangeUnit): Resolver {
+    return ctx => {
+        const start = previousUnitStart(ctx, unit);
+        return {start, end: start.endOf(unit)};
+    };
+}
+
+function previousUnitStart({anchorDate}: DateRangeContext, unit: DateRangeUnit): LocalDate {
+    return anchorDate.startOf(unit).subtract(1, unit);
+}
+
+/** The current range shifted by `n` units - negative back, positive forward - keeping its shape. */
+function shiftedBy(unit: DateRangeUnit, n: number): Shifter {
+    return ({start, end}) => ({start: start.add(n, unit), end: end.add(n, unit)});
+}
+
+/** The full calendar unit `n` units from a current range that is itself a full unit. */
+function adjacentUnit(unit: DateRangeUnit, n: number): Shifter {
+    return ({start}) => {
+        const next = start.add(n, unit);
+        return {start: next, end: next.endOf(unit)};
+    };
+}
+
+/** The day before or after a single-day range - by business day in `businessDayMode`. */
+function priorDay({start}: LocalDateRange, ctx: DateRangeContext): LocalDateRange {
+    return singleDay(previousDayInMode(start, ctx));
+}
+
+function nextDay({start}: LocalDateRange, ctx: DateRangeContext): LocalDateRange {
+    return singleDay(nextDayInMode(start, ctx));
+}
+
+/** Shifted label for a rolling window - its length alone, e.g. `7 Days`. */
+function lengthLabel(length: string): ShiftedLabel {
+    return () => length;
+}
+
+/** Shifted label for a previous-unit preset - the period the range now covers. */
+function periodLabel(format: string): ShiftedLabel {
+    return ({start}) => start.format(format);
+}
+
+function isAnchorToday({anchorDate, today}: DateRangeContext): boolean {
+    return anchorDate === today;
+}
+
+function anchorLabel(ctx: DateRangeContext): string {
+    return isAnchorToday(ctx) ? 'Today' : 'As Of';
+}
+
+/**
+ * A single day `n` steps from the anchor day, in the T-1 idiom finance users speak - `Today −2`,
+ * `As Of −1` - so a walk through single days reads the same however it began. Zero is the anchor
+ * day itself.
+ */
+function dayFromAnchor(n: number, ctx: DateRangeContext): string {
+    return n ? `${anchorLabel(ctx)} ${fmtDateRangeOffset(n)}` : anchorLabel(ctx);
+}

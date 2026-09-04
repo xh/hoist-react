@@ -238,11 +238,9 @@ export class DateRangePickerModel extends HoistModel {
     }
 
     /**
-     * True if the anchor date is the reader's current day - when `anchorDay` reads as "Today".
-     * False whenever the anchor sits on any other day, whether pinned there by the app, snapped
-     * by `businessDayMode`, or drawn from an app time zone a day apart from the browser's - in
-     * each case the picker reads "As Of" and shows the date, so the reader is never told a day
-     * that is not theirs is "today".
+     * True if the anchor date is the reader's current day - when `anchorDay` reads "Today". False
+     * for any other day, however the anchor got there (pinned, business-day snapped, or an app
+     * time zone a day apart from the browser's) - the picker then reads "As Of" with the date.
      */
     get isAnchorToday(): boolean {
         return this.anchorDate === this.today;

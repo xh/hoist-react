@@ -15,9 +15,12 @@ import type {
     DateRangeSelection,
     DateRangeUnit,
     LocalDateRange,
+    MonthDateRangeSelection,
     PresetDateRangeSelection,
+    QuarterDateRangeSelection,
     RelativeDateRangeSelection,
-    ResolvedDateRange
+    ResolvedDateRange,
+    YearDateRangeSelection
 } from './Types';
 
 /** All picker tabs, in their default display order. */
@@ -37,8 +40,8 @@ export const MAX_RELATIVE_COUNT = 999;
 /** Furthest a preset or relative selection can be stepped from its natural range, either way. */
 export const MAX_STEP_OFFSET = 9999;
 
-/** The calendar unit each pinned-period selection kind steps by. */
-const CALENDAR_KIND_UNITS = {month: 'months', quarter: 'quarters', year: 'years'} as const;
+/** The calendar unit of each pinned-period selection kind. */
+const PERIOD_UNITS = {month: 'months', quarter: 'quarters', year: 'years'} as const;
 
 /** Year bounds for month and year selections - shared by validation and picker navigation. */
 export const MIN_SELECTION_YEAR = 1900;
@@ -85,32 +88,13 @@ export function resolveDateRange(
         }
 
         case 'month':
-            return resolveCalendarUnit(
-                getMonthStart(sel.year, sel.month),
-                'months',
-                minDate,
-                maxDate
-            );
-
         case 'quarter':
-            return resolveCalendarUnit(
-                getQuarterStart(sel.year, sel.quarter),
-                'quarters',
-                minDate,
-                maxDate
-            );
-
         case 'year':
-            return resolveCalendarUnit(
-                LocalDate.get(`${sel.year}-01-01`),
-                'years',
-                minDate,
-                maxDate
-            );
+            return resolveCalendarUnit(periodStart(sel), PERIOD_UNITS[sel.kind], minDate, maxDate);
 
         case 'custom': {
             const current = {start: LocalDate.get(sel.start), end: LocalDate.get(sel.end)};
-            return {current, prior: equalDurationPrior(current)};
+            return {current, prior: shiftByDuration(current, -1)};
         }
     }
 }
@@ -173,15 +157,14 @@ function shiftRelative(
 }
 
 /**
- * A full calendar month or year, clamped to `maxDate` (and `minDate`) when those dates fall
- * within it - so the current month covers the 1st through the anchor, and the current year Jan 1
- * through the anchor.
- * A period entirely beyond `maxDate` (e.g. a persisted pick from a user with a later anchor)
- * keeps its natural bounds rather than producing an inverted range.
+ * A full calendar month, quarter or year, clamped to `maxDate` (and `minDate`) when those fall
+ * within it - so the current month covers the 1st through the anchor. A period entirely beyond
+ * `maxDate` (e.g. a persisted pick from a user with a later anchor) keeps its natural bounds
+ * rather than producing an inverted range.
  */
 function resolveCalendarUnit(
     naturalStart: LocalDate,
-    unit: 'months' | 'quarters' | 'years',
+    unit: PeriodUnit,
     minDate: LocalDate,
     maxDate: LocalDate
 ): ResolvedDateRange {
@@ -208,11 +191,6 @@ function shiftByDuration({start, end}: LocalDateRange, dir: 1 | -1): LocalDateRa
     if (!start || !end) return null;
     const days = (end.diff(start, 'days') + 1) * dir;
     return {start: start.add(days, 'days'), end: end.add(days, 'days')};
-}
-
-/** The immediately preceding range of equal duration in days, or null if `current` is unbounded. */
-function equalDurationPrior(range: LocalDateRange): LocalDateRange | null {
-    return shiftByDuration(range, -1);
 }
 
 /** A range of the one given day. */
@@ -466,6 +444,21 @@ export function getQuarterStart(year: number, quarter: number): LocalDate {
     return getMonthStart(year, quarter * 3 - 2);
 }
 
+type PeriodSelection = MonthDateRangeSelection | QuarterDateRangeSelection | YearDateRangeSelection;
+type PeriodUnit = (typeof PERIOD_UNITS)[PeriodSelection['kind']];
+
+/** Natural (unclamped) first day of a month, quarter or year selection. */
+function periodStart(sel: PeriodSelection): LocalDate {
+    switch (sel.kind) {
+        case 'month':
+            return getMonthStart(sel.year, sel.month);
+        case 'quarter':
+            return getQuarterStart(sel.year, sel.quarter);
+        case 'year':
+            return LocalDate.get(`${sel.year}-01-01`);
+    }
+}
+
 /**
  * Move a selection by `steps` periods - negative to go back, positive to go forward. No selection
  * changes kind:
@@ -474,7 +467,7 @@ export function getQuarterStart(year: number, quarter: number): LocalDate {
  *   next-range logic - so a lookback in months steps by months, and a single day steps by
  *   business day in `businessDayMode`. Their natural range ends on the anchor date, so a positive
  *   offset is reachable only when `maxDate` allows dates beyond it.
- * - Month and year selections step by calendar unit.
+ * - Month, quarter and year selections step by calendar unit.
  * - Custom selections step by their length in days - or by business day when a single day in
  *   `businessDayMode`.
  *
@@ -506,9 +499,8 @@ export function stepDateRangeSelection(
     }
 
     if (sel.kind === 'month' || sel.kind === 'quarter' || sel.kind === 'year') {
-        const unit = CALENDAR_KIND_UNITS[sel.kind],
-            start = resolveDateRange({...sel}, {...ctx, minDate: null, maxDate: null}).current
-                .start,
+        const unit = PERIOD_UNITS[sel.kind],
+            start = periodStart(sel),
             // Never step beyond the period containing a bound, or below the supported years.
             maxStart = maxDate.startOf(unit),
             minStart = (minDate ?? LocalDate.get(`${MIN_SELECTION_YEAR}-01-01`)).startOf(unit);

@@ -10,15 +10,18 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import type {LocalDate} from '@xh/hoist/utils/datetime';
 import {clamp, isEqual} from 'lodash';
 import {createRef, type ReactElement} from 'react';
-import {DateRangePickerModel} from '../DateRangePickerModel';
 import {
+    DateRangePickerModel,
+    type DateRangePickerTab,
+    type DateRangeSelection,
+    type DateRangeUnit,
     getDateRangeUnitLabel,
     getMonthStart,
     getQuarterStart,
+    type LocalDateRange,
     MAX_RELATIVE_COUNT,
     MIN_SELECTION_YEAR
-} from '../DateRangeUtils';
-import type {DateRangePickerTab, DateRangeSelection, DateRangeUnit, LocalDateRange} from '../Types';
+} from '@xh/hoist/cmp/daterange';
 
 /**
  * A tab within the picker popover - its rail entry and its content component. Declared by the
@@ -230,9 +233,7 @@ export class DateRangePickerLocalModel extends HoistModel {
     //------------------
     // Footer
     //------------------
-    /**
-     * True when the active tab holds a draft to apply. Preset and month/year picks commit on click.
-     */
+    /** True when the active tab holds a draft to apply - preset and period picks commit on click. */
     get applyEnabled(): boolean {
         return this.activeTabId === 'relative' || this.activeTabId === 'custom';
     }
@@ -249,10 +250,9 @@ export class DateRangePickerLocalModel extends HoistModel {
     }
 
     /**
-     * Default footer note - tells the user what periods are relative to, and which clock decides
-     * it, as a prose prefix and the date for the component to set apart. A live anchor names its
-     * source, so a user whose day differs from the application's can see why the picker's "today"
-     * is not theirs. A pinned or computed anchor is just its date.
+     * Default footer note, as a prose prefix plus the date for the component to set apart. A live
+     * anchor names its clock, so a user whose day differs from the app's sees why. A pinned or
+     * computed anchor is just its date.
      */
     get anchorNote(): {prefix: string; date: string} {
         const {anchorDate, parentModel} = this,
@@ -294,9 +294,7 @@ export class DateRangePickerLocalModel extends HoistModel {
             run: () => this.tabModel.setTabs(this.buildTabs())
         });
 
-        // Never hold a snap that does nothing: it would persist into the committed value and make
-        // `relativeModeHelpText` describe an alignment that is not happening. Tracks both sides -
-        // the unit can change under a set snap.
+        // Never hold a snap that does nothing - it would persist into the committed value.
         this.addReaction({
             track: () => [this.snapApplies, this.relativeSnap],
             run: ([applies, snap]) => {
