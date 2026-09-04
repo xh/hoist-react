@@ -49,6 +49,8 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed misalignment of both the `leftIcon` and the right-side buttons in a desktop `DateInput`
+  when a `leftIcon` is specified.
 * Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
   the control now sizes to its options.
 * Fixed desktop `Select` not reliably scrolling the selected option into view when opening its

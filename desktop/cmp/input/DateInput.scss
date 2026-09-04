@@ -10,7 +10,8 @@
     height: 100%;
   }
 
-  .bp6-input-group .xh-icon {
+  // Scoped to right-side buttons only - leftIcon relies on global .bp6-input-group .xh-icon styles.
+  .bp6-input-action .xh-icon {
     position: relative;
     margin: 0 !important;
   }
