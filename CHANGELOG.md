@@ -18,35 +18,25 @@
 
 * Added `DateRangePicker` (`desktop/cmp/daterange`), a compact control for selecting a period as a
   preset (Today, MTD, Prev 30 Days, ...), a relative lookback, a calendar month or year, or a custom
-  date range. Its `DateRangePickerModel` persists the selection as plain JSON, resolves it to date
-  ranges and `FieldFilterSpec`s, keeps a live `anchorDay` current across midnight, steps periods
-  back and forth without changing their kind, and offers a `businessDayMode` for single-day walks.
-* The Admin Console's Activity Tracking tab now selects its query period with a `DateRangePicker`.
-  Periods saved in existing views reset to Today on first load.
-* Added `Icon.calendarDays` and `Icon.calendarRange`.
-* Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
-  log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
-  Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
-  `PanelModel`, etc.), which also name the child models they create. Services are named with their
-  `XH` key (e.g. `fetchService`), and `XH.appModel` and the app container's models by their property
-  (`appModel`, `routerModel`, `pageStateModel`, ...), so they now log under those labels.
-* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin it,
-  and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
-  across reloads, so the same set of objects can be followed session to session; those with no live
-  instance show as placeholder rows until un-starred.
+  date range. Its `DateRangePickerModel` persists the selection as JSON and resolves it to date
+  ranges and `FieldFilterSpec`s.
+* Added `IntentInput` (desktop), a compact input for selecting a Hoist `Intent`.
 * Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
   mobile) to provide more structure by default to the input control with easy options to customize.
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile
   prop. Defaults to `true`, so a filled control now divides its width into equal segments rather
   than sizing each option to its own label.
-* Added `IntentInput` (desktop), a compact input for selecting a Hoist `Intent`.
+* Added `HoistBase.xhName`, an optional developer-facing name for an instance, shown in log output,
+  trace spans (new `xh.name` tag), and the Inspector. Set it on any Hoist model config to tell peers
+  of the same class apart - instances log as `ClassName [xhName]`, or `ClassName [id]` when unnamed.
+  Hoist names services, `XH.appModel`, and models created by a named parent automatically.
+* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin it,
+  and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
+  across reloads, showing as placeholder rows when no instance is live.
 * Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
-  tabs, docked to the right of each grid and tracking its selection. The Config panel shows every
-  view of a config's value - resolved, instance override, database, and typedClass defaults -
-  opening on the most-derived view, and renders config notes as Markdown. Each panel offers an
-  `Edit` button to open the grid's editor, which is now dedicated to editing: the Config editor
-  opens JSON values on the `Database` tab, and double-click no longer opens a view-only dialog for
-  read-only admins.
+  tabs. The Config panel shows every view of a config's value - resolved, instance override,
+  database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
+  grid's editor: double-click no longer opens a view-only dialog for read-only admins.
 
 ### 🐞 Bug Fixes
 
@@ -59,15 +49,6 @@
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
-
-### ⚙️ Technical
-
-* The desktop `GroupingChooser` (in both input and button modes), `ColChooserButton`, and
-  `ZoneMapperButton` trigger buttons now render in their `active` state while their popover is open.
-  These popovers are controlled by Hoist, so Blueprint does not flag their triggers automatically -
-  see the Styles note below for the uncontrolled case.
-* The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
-  (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
 
 ### ✨ Styles
 
@@ -82,6 +63,8 @@
 * Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
 * Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
+* The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
+  (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
 
 ### 📚 Libraries
 
