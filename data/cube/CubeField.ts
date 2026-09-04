@@ -37,9 +37,7 @@ export interface CubeFieldSpec extends FieldSpec {
      * first three args. Values are recomputed for any field whose eligibility changes as a result.
      *
      * A row for which this returns false publishes a null value and contributes nothing to the
-     * aggregations of its ancestors. Prefer testing `appliedDims` (e.g. "this measure is only
-     * meaningful once grouped by symbol") - such a test holds for all rows below the one that
-     * first satisfies it, keeping non-aggregating rows above aggregating ones.
+     * aggregations of its ancestors.
      */
     canAggregateFn?: CanAggregateFn;
 

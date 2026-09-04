@@ -27,11 +27,7 @@
 * Cube `Aggregator` implementations can now hold per-row state via new
   `AggregationContext.setAggState()` / `getAggState()`, allowing custom aggregations that cannot be
   derived from their children's published values alone - e.g. a weighted average - to compose from
-  their direct children instead of walking their entire subtree of leaves. See the
-  [Cube README](data/cube/README.md#custom-aggregators) for a worked example.
-* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
-  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
-  their rows with unexported internal classes. `RowUpdate` is now exported as well.
+  their direct children instead of walking their entire subtree of leaves.
 * Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
@@ -85,6 +81,12 @@
   see the Styles note below for the uncontrolled case.
 * The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
   (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
+
+### ⚙️ Typescript API Adjustments
+
+* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
+  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
+  their rows with unexported internal classes. `RowUpdate` is now exported as well.
 
 ### ✨ Styles
 
