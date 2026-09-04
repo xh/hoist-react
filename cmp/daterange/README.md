@@ -9,7 +9,7 @@ period and its dates, opening a popover with a tab for each way of choosing a pe
 
 **Key features:**
 - One value that can express a preset (MTD, Prev 30 Days, ...), a relative lookback, a calendar
-  month or year, or a custom range of dates
+  month, quarter, or year, or a custom range of dates
 - Resolution against a live anchor day, so a persisted "month to date" stays month to date - and
   rolls over at midnight without app involvement
 - A comparable prior range for every selection, for period-over-period comparisons
@@ -50,6 +50,7 @@ DateRangeSelection (plain JSON, discriminated on `kind`)
 ├── {kind: 'preset', token, offset?}
 ├── {kind: 'relative', count, unit, snap, offset?}
 ├── {kind: 'month', year, month}
+├── {kind: 'quarter', year, quarter}
 ├── {kind: 'year', year}
 └── {kind: 'custom', start, end}       # 'YYYY-MM-DD' strings
 
@@ -133,14 +134,15 @@ validation: an unknown preset, an out-of-range count, year, or offset, or a malf
 | `preset` | `{kind: 'preset', token: 'mtd'}` | Whatever the preset's resolver returns for the current context |
 | `relative` | `{kind: 'relative', count: 6, unit: 'months', snap: false}` | A window of `count` units ending on the anchor date |
 | `month` | `{kind: 'month', year: 2026, month: 8}` | The calendar month, clamped to `maxDate` if it falls inside |
+| `quarter` | `{kind: 'quarter', year: 2026, quarter: 3}` | The calendar quarter, clamped likewise |
 | `year` | `{kind: 'year', year: 2026}` | The calendar year, clamped likewise |
 | `custom` | `{kind: 'custom', start: '2026-08-10', end: '2026-08-20'}` | Exactly those dates |
 
 Preset and relative selections re-resolve as the anchor date moves, and carry an optional
-`offset` when stepped back from their natural range - see Stepping. Month and year selections
-name a fixed period, though one containing `maxDate` is clamped to it. Custom selections name
-fixed dates. All are plain JSON, so the value round-trips through persistence without custom
-serialization.
+`offset` when stepped from their natural range - see Stepping. Month, quarter, and year
+selections name a fixed period, though one containing `maxDate` is clamped to it. Custom
+selections name fixed dates. All are plain JSON, so the value round-trips through persistence
+without custom serialization.
 
 ### Presets
 
@@ -209,7 +211,7 @@ comparison. It is `null` when the current range is unbounded.
 | Lookbacks in weeks, months, quarters, or years | The same span `count` units earlier, matching the equivalent presets |
 | Lookbacks in days, and `custom` | The preceding window of equal length in days |
 | Single days in `businessDayMode` | The previous business day |
-| `month`, `year` | The previous month or year, clamped the same way if the current one is |
+| `month`, `quarter`, `year` | The previous month, quarter, or year, clamped the same way if the current one is |
 
 The same logic drives stepping, so the prior period is always one step back. An app that wants
 the prior MTD as the *selected* value can set `{kind: 'preset', token: 'mtd', offset: -1}`.
@@ -233,7 +235,7 @@ query body. `getRangeFilter(range, field)` builds filters for any range and fiel
   ones are later, and reachable only when `maxDate` allows dates beyond the anchor, since the
   natural range already ends there. The offset is omitted from the value when zero. A stepped
   selection is still live: `mtd` at offset `-1` becomes the new prior MTD when the month turns.
-- **Month and year** selections step by calendar unit.
+- **Month, quarter, and year** selections step by calendar unit.
 - **Custom** selections step by their length in days, or by business day when a single day in
   `businessDayMode`.
 
@@ -289,9 +291,10 @@ day. Seven days is still seven days, and a month is still a month. A pinned or c
 `anchorDay` is honored verbatim - a month-end that falls on a Sunday stays the 31st.
 
 Nothing beyond `maxDate` is selectable: later months and days are disabled in the popover, and
-month and year selections spanning `maxDate` are clamped to it, which is how the current year
-reads as YTD. `maxDate` defaults to `anchorDate`. Set it later to allow future dates, or set
-`minDate` to bound the past.
+month and year selections spanning `maxDate` are clamped to it, so the current year covers Jan 1
+through the anchor. It still reads as its year, `2026` - `YTD` is the preset, which steps to the
+same partial span a year earlier, where a year pick steps by whole years. `maxDate` defaults to
+`anchorDate`. Set it later to allow future dates, or set `minDate` to bound the past.
 
 ### Persistence
 
@@ -388,7 +391,7 @@ both dates, or handle a `null` edge in the query.
 
 ```typescript
 new DateRangePickerModel({
-    tabs: ['monthYear'],
+    tabs: ['period'],
     initialValue: {kind: 'month', year: 2026, month: 1}
 });
 ```

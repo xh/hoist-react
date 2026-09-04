@@ -29,7 +29,7 @@ export type DateRangeUnit = 'days' | 'weeks' | 'months' | 'quarters' | 'years';
 export type DateRangeFormat = string | ((date: LocalDate) => string);
 
 /** Tabs available within the DateRangePicker popover. */
-export type DateRangePickerTab = 'presets' | 'relative' | 'monthYear' | 'custom';
+export type DateRangePickerTab = 'presets' | 'relative' | 'period' | 'custom';
 
 /**
  * The day that relative and to-date selections resolve against - see the `anchorDay` config of
@@ -168,6 +168,14 @@ export interface MonthDateRangeSelection {
     month: number;
 }
 
+/** A calendar quarter, clamped to the context's `maxDate` when that date falls within it. */
+export interface QuarterDateRangeSelection {
+    kind: 'quarter';
+    year: number;
+    /** Quarter of the year, 1-4. */
+    quarter: number;
+}
+
 /** A calendar year, clamped to the context's `maxDate` when that date falls within it. */
 export interface YearDateRangeSelection {
     kind: 'year';
@@ -190,5 +198,6 @@ export type DateRangeSelection =
     | PresetDateRangeSelection
     | RelativeDateRangeSelection
     | MonthDateRangeSelection
+    | QuarterDateRangeSelection
     | YearDateRangeSelection
     | CustomDateRangeSelection;

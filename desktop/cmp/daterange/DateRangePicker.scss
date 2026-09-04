@@ -373,20 +373,27 @@ $drp-transition-dur: 120ms;
       text-align: center;
     }
 
+    // A row per quarter - its three months across the left, its button in a narrow trailing column.
     &__month-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr) minmax(44px, auto);
       gap: 6px;
       padding: 4px 6px 0;
     }
 
     // Grid cells stretch; the buttons bring their own chrome, hover, active and disabled states.
-    &__month-btn.xh-button {
+    &__month-btn.xh-button,
+    &__quarter-btn.xh-button {
       width: 100%;
     }
 
+    // The quarter reads as the row's label - quieter than the months it contains, until selected.
+    &__quarter-btn.xh-button:not(.xh-button--active) {
+      color: var(--xh-text-color-muted);
+    }
+
     &__year-row.xh-button {
-      margin: 6px 6px 0;
+      margin: 14px 6px 0;
 
       // Blueprint wraps `items` in a non-flex text span - lay them out, as the trigger does.
       > .bp6-button-text {

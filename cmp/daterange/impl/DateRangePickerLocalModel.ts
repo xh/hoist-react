@@ -12,9 +12,9 @@ import {clamp, isEqual} from 'lodash';
 import {createRef, type ReactElement} from 'react';
 import {DateRangePickerModel} from '../DateRangePickerModel';
 import {
-    getDateRangeLabel,
     getDateRangeUnitLabel,
     getMonthStart,
+    getQuarterStart,
     MAX_RELATIVE_COUNT,
     MIN_SELECTION_YEAR
 } from '../DateRangeUtils';
@@ -185,15 +185,15 @@ export class DateRangePickerLocalModel extends HoistModel {
         return start > maxDate || (minDate && start.endOfMonth() < minDate);
     }
 
+    isQuarterDisabled(quarter: number): boolean {
+        const {minDate, maxDate} = this,
+            start = getQuarterStart(this.gridYear, quarter);
+        return start > maxDate || (minDate && start.endOfQuarter() < minDate);
+    }
+
     get yearSelectable(): boolean {
         const {gridYear, minDate, maxDate} = this;
         return gridYear <= yearOf(maxDate) && (!minDate || gridYear >= yearOf(minDate));
-    }
-
-    get yearRowLabel(): string {
-        const {gridYear: year, parentModel} = this,
-            toDate = getDateRangeLabel({kind: 'year', year}, parentModel.context) === 'YTD';
-        return toDate ? `${year} Year to Date` : `Full Year ${year}`;
     }
 
     //------------------
@@ -340,8 +340,7 @@ export class DateRangePickerLocalModel extends HoistModel {
             this.relativeSnap = false;
         }
 
-        this.gridYear =
-            value.kind === 'month' || value.kind === 'year' ? value.year : yearOf(anchorDate);
+        this.gridYear = 'year' in value ? value.year : yearOf(anchorDate);
 
         // Seed the custom draft from the applied resolved range, clamped to selectable bounds.
         const {start: curStart, end: curEnd} = parentModel.currentRange;
@@ -482,8 +481,9 @@ function tabForKind(kind: DateRangeSelection['kind']): DateRangePickerTab {
         case 'preset':
             return 'presets';
         case 'month':
+        case 'quarter':
         case 'year':
-            return 'monthYear';
+            return 'period';
         default:
             return kind;
     }

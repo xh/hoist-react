@@ -24,7 +24,7 @@ import type {
 export const DATE_RANGE_PICKER_TABS: DateRangePickerTab[] = [
     'presets',
     'relative',
-    'monthYear',
+    'period',
     'custom'
 ];
 
@@ -36,6 +36,9 @@ export const MAX_RELATIVE_COUNT = 999;
 
 /** Furthest a preset or relative selection can be stepped from its natural range, either way. */
 export const MAX_STEP_OFFSET = 9999;
+
+/** The calendar unit each pinned-period selection kind steps by. */
+const CALENDAR_KIND_UNITS = {month: 'months', quarter: 'quarters', year: 'years'} as const;
 
 /** Year bounds for month and year selections - shared by validation and picker navigation. */
 export const MIN_SELECTION_YEAR = 1900;
@@ -85,6 +88,14 @@ export function resolveDateRange(
             return resolveCalendarUnit(
                 getMonthStart(sel.year, sel.month),
                 'months',
+                minDate,
+                maxDate
+            );
+
+        case 'quarter':
+            return resolveCalendarUnit(
+                getQuarterStart(sel.year, sel.quarter),
+                'quarters',
                 minDate,
                 maxDate
             );
@@ -163,13 +174,14 @@ function shiftRelative(
 
 /**
  * A full calendar month or year, clamped to `maxDate` (and `minDate`) when those dates fall
- * within it - so the current month reads as month-to-date, and the current year as year-to-date.
+ * within it - so the current month covers the 1st through the anchor, and the current year Jan 1
+ * through the anchor.
  * A period entirely beyond `maxDate` (e.g. a persisted pick from a user with a later anchor)
  * keeps its natural bounds rather than producing an inverted range.
  */
 function resolveCalendarUnit(
     naturalStart: LocalDate,
-    unit: 'months' | 'years',
+    unit: 'months' | 'quarters' | 'years',
     minDate: LocalDate,
     maxDate: LocalDate
 ): ResolvedDateRange {
@@ -291,6 +303,13 @@ export function parseDateRangeSelection(
                 : null;
         }
 
+        case 'quarter': {
+            const {year, quarter} = obj;
+            return isValidYear(year) && Number.isInteger(quarter) && quarter >= 1 && quarter <= 4
+                ? {kind: 'quarter', year, quarter}
+                : null;
+        }
+
         case 'year':
             return isValidYear(obj.year) ? {kind: 'year', year: obj.year} : null;
 
@@ -346,9 +365,11 @@ function parseIsoDate(s: unknown): LocalDate | null {
  * Short label for a selection, suitable for the picker trigger - e.g. `MTD`, `Prev 6 Months`,
  * `Aug 2026`, `2025`, or `Custom`.
  *
- * A period that can be selected two ways reads the same either way: the `ytd` preset and a
- * current-year pick on the Months & Years tab both read `YTD`, and `prevYear` and a prior-year
- * pick both read as that year.
+ * Month and year picks read as the period they name - `Sep 2026`, `2026` - even when clamped to
+ * the anchor date, with the trigger's dates showing the clamp. `MTD` and `YTD` are reserved for
+ * the presets, which are live and step to the same partial span a unit earlier, where a pinned
+ * month or year steps by whole units. The `prevMonth` and `prevYear` presets read as the period
+ * too, since they resolve to a full one.
  *
  * Once stepped to a non-zero offset, the trigger's dates locate the range and the label describes
  * only its shape: a rolling window reads as its length (`7 Days`, `3 Months`), a named period as
@@ -371,14 +392,10 @@ export function getDateRangeLabel(sel: DateRangeSelection, ctx: DateRangeContext
         }
         case 'month':
             return getMonthStart(sel.year, sel.month).format('MMM YYYY');
-        case 'year': {
-            // A year cut short at the anchor date is the same range as the `ytd` preset, so it
-            // takes the same name. A year clamped by an explicit `maxDate` is not "to date".
-            const {current} = resolveDateRange(sel, ctx);
-            return current.end === ctx.anchorDate && current.end < current.start.endOfYear()
-                ? 'YTD'
-                : String(sel.year);
-        }
+        case 'quarter':
+            return `Q${sel.quarter} ${sel.year}`;
+        case 'year':
+            return String(sel.year);
         case 'custom':
             return 'Custom';
     }
@@ -444,6 +461,11 @@ export function getMonthStart(year: number, month: number): LocalDate {
     return LocalDate.get(`${year}-${String(month).padStart(2, '0')}-01`);
 }
 
+/** First day of the given quarter (1-4) of the given year. */
+export function getQuarterStart(year: number, quarter: number): LocalDate {
+    return getMonthStart(year, quarter * 3 - 2);
+}
+
 /**
  * Move a selection by `steps` periods - negative to go back, positive to go forward. No selection
  * changes kind:
@@ -483,12 +505,10 @@ export function stepDateRangeSelection(
         return next;
     }
 
-    if (sel.kind === 'month' || sel.kind === 'year') {
-        const unit = sel.kind === 'month' ? 'months' : 'years',
-            start =
-                sel.kind === 'month'
-                    ? getMonthStart(sel.year, sel.month)
-                    : LocalDate.get(`${sel.year}-01-01`),
+    if (sel.kind === 'month' || sel.kind === 'quarter' || sel.kind === 'year') {
+        const unit = CALENDAR_KIND_UNITS[sel.kind],
+            start = resolveDateRange({...sel}, {...ctx, minDate: null, maxDate: null}).current
+                .start,
             // Never step beyond the period containing a bound, or below the supported years.
             maxStart = maxDate.startOf(unit),
             minStart = (minDate ?? LocalDate.get(`${MIN_SELECTION_YEAR}-01-01`)).startOf(unit);
@@ -501,9 +521,14 @@ export function stepDateRangeSelection(
         if (steps > 0 ? next <= start : next >= start) return null;
 
         const year = next.moment.year();
-        return sel.kind === 'month'
-            ? {kind: 'month', year, month: next.moment.month() + 1}
-            : {kind: 'year', year};
+        switch (sel.kind) {
+            case 'month':
+                return {kind: 'month', year, month: next.moment.month() + 1};
+            case 'quarter':
+                return {kind: 'quarter', year, quarter: next.moment.quarter()};
+            case 'year':
+                return {kind: 'year', year};
+        }
     }
 
     const {start, end} = resolveDateRange(sel, ctx).current;

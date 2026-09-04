@@ -429,7 +429,7 @@ const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId}
 });
 
 //------------------
-// Tab - Months & Years
+// Tab - Period (months, quarters, years)
 //------------------
 const MONTH_LABELS = [
     'Jan',
@@ -446,7 +446,7 @@ const MONTH_LABELS = [
     'Dec'
 ];
 
-const monthYearTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId}) => {
+const periodTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId}) => {
     const {parentModel, gridYear} = model,
         {value} = parentModel,
         yearRange = parentModel.resolve({kind: 'year', year: gridYear}).current,
@@ -483,29 +483,52 @@ const monthYearTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId
                 ]
             }),
             div({
+                // One row per quarter: its three months, then the quarter itself - so the quarter
+                // labels the months it contains, and both are a click away.
                 className: 'xh-date-range-picker-popover__month-grid',
-                items: MONTH_LABELS.map((label, idx) => {
-                    const month = idx + 1,
-                        active =
-                            value.kind === 'month' &&
-                            value.month === month &&
-                            value.year === gridYear;
-                    return button({
-                        key: label,
-                        className: 'xh-date-range-picker-popover__month-btn',
-                        text: label,
-                        // Selected reads as a solid accent fill, like the unit selector's
-                        // selected segment. Unselected keeps the outlined treatment used
-                        // elsewhere in the picker - note Hoist buttons are minimal by default,
-                        // so a solid fill needs `minimal: false`, not just `outlined: false`.
-                        outlined: !active,
-                        minimal: !active,
-                        active,
-                        intent: active ? (model.intent ?? 'primary') : undefined,
-                        disabled: model.isMonthDisabled(month),
-                        testId: getTestId(testId, `month-${month}`),
-                        onClick: () => model.commit({kind: 'month', year: gridYear, month})
-                    });
+                items: [1, 2, 3, 4].flatMap(quarter => {
+                    const quarterActive =
+                            value.kind === 'quarter' &&
+                            value.quarter === quarter &&
+                            value.year === gridYear,
+                        months = [quarter * 3 - 2, quarter * 3 - 1, quarter * 3];
+                    return [
+                        ...months.map(month => {
+                            const active =
+                                value.kind === 'month' &&
+                                value.month === month &&
+                                value.year === gridYear;
+                            return button({
+                                key: month,
+                                className: 'xh-date-range-picker-popover__month-btn',
+                                text: MONTH_LABELS[month - 1],
+                                // Selected reads as a solid accent fill, like the unit selector's
+                                // selected segment. Unselected keeps the outlined treatment used
+                                // elsewhere in the picker - note Hoist buttons are minimal by
+                                // default, so a solid fill needs `minimal: false`, not just
+                                // `outlined: false`.
+                                outlined: !active,
+                                minimal: !active,
+                                active,
+                                intent: active ? (model.intent ?? 'primary') : undefined,
+                                disabled: model.isMonthDisabled(month),
+                                testId: getTestId(testId, `month-${month}`),
+                                onClick: () => model.commit({kind: 'month', year: gridYear, month})
+                            });
+                        }),
+                        button({
+                            key: `q${quarter}`,
+                            className: 'xh-date-range-picker-popover__quarter-btn',
+                            text: `Q${quarter}`,
+                            outlined: !quarterActive,
+                            minimal: !quarterActive,
+                            active: quarterActive,
+                            intent: quarterActive ? (model.intent ?? 'primary') : undefined,
+                            disabled: model.isQuarterDisabled(quarter),
+                            testId: getTestId(testId, `quarter-${quarter}`),
+                            onClick: () => model.commit({kind: 'quarter', year: gridYear, quarter})
+                        })
+                    ];
                 })
             }),
             button({
@@ -521,7 +544,7 @@ const monthYearTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId
                     Icon.calendar(),
                     span({
                         className: 'xh-date-range-picker-popover__year-row-label',
-                        item: model.yearRowLabel
+                        item: String(gridYear)
                     }),
                     span({
                         // As on the Presets tab - the single-tab popover is too narrow for dates.
@@ -761,7 +784,7 @@ const anchorNote = hoistCmp.factory<DateRangePickerLocalModel>(({model}) => {
 const TAB_SPECS: DateRangePickerTabSpec[] = [
     {id: 'presets', title: 'Presets', icon: Icon.bolt(), content: presetsTab},
     {id: 'relative', title: 'Relative', icon: Icon.history(), content: relativeTab},
-    {id: 'monthYear', title: 'Months & Years', icon: Icon.calendarDays(), content: monthYearTab},
+    {id: 'period', title: 'Months & Years', icon: Icon.calendarDays(), content: periodTab},
     {id: 'custom', title: 'Custom Range', icon: Icon.calendarRange(), content: customTab}
 ];
 
