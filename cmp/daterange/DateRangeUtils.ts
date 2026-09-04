@@ -420,18 +420,18 @@ export function fmtDate(date: LocalDate, format: DateRangeFormat): string {
 
 /**
  * Format a range as `start ▸ end` per `dateFormat`, with `…` for an unbounded edge. A single-day
- * range formats as that one date per `dayFormat`, which defaults to `dateFormat`. Returns an empty
+ * range formats as that one date per `singleDayFormat`, which defaults to `dateFormat`. Returns an empty
  * string for a null range.
  */
 export function fmtDateRange(
     range: LocalDateRange,
     dateFormat: DateRangeFormat = 'YYYY-MM-DD',
-    dayFormat: DateRangeFormat = dateFormat
+    singleDayFormat: DateRangeFormat = dateFormat
 ): string {
     if (!range) return '';
     const {start, end} = range,
         fmt = (d: LocalDate) => (d ? fmtDate(d, dateFormat) : '…');
-    return start && start === end ? fmtDate(start, dayFormat) : `${fmt(start)} ▸ ${fmt(end)}`;
+    return start && start === end ? fmtDate(start, singleDayFormat) : `${fmt(start)} ▸ ${fmt(end)}`;
 }
 
 /** First day of the given month (1-12) of the given year. */

@@ -116,10 +116,10 @@ touch:
   or a rolling 30 days when there are none.
 - `persistWith` persists the value - see Persistence below.
 
-`businessDayMode`, `commitOnChange`, `dateFormat`, `dayFormat`, and `isBusinessDay` round out the
-config. All but the last can be defaulted app-wide via `DateRangePickerModel.defaults`, as can
-`anchorDay`. The two formats split along what they show: `dateFormat` (default `YYYY-MM-DD`) for
-the ends of a range, where the year earns its place, and `dayFormat` (default `ddd MMM D`) for a
+`businessDayMode`, `commitOnChange`, `dateFormat`, `singleDayFormat`, and `isBusinessDay` round out
+the config. All but the last can be defaulted app-wide via `DateRangePickerModel.defaults`, as can
+`anchorDay`. The two formats split along what they show: `dateFormat` (default `YYYY-MM-DD`) for the
+ends of a range, where the year earns its place, and `singleDayFormat` (default `ddd MMM D`) for a
 single day, where the weekday matters more. Either may be a function of the date - e.g. to add the
 year only when it is not the current one.
 
@@ -316,7 +316,7 @@ falls back to `defaultValue` rather than carrying a previous value over.
 | Property | Example | Use |
 |----------|---------|-----|
 | `label` | `MTD`, `Prev 6 Months`, `Aug 2026`, `Custom` | The trigger |
-| `rangeLabel` | `2026-08-01 ▸ 2026-09-02`, `Fri Sep 4` | The trigger's dates, per `dateFormat`. A single day reads as one date, per `dayFormat`. |
+| `rangeLabel` | `2026-08-01 ▸ 2026-09-02`, `Fri Sep 4` | The trigger's dates, per `dateFormat`. A single day reads as one date, per `singleDayFormat`. |
 | `displayName` | `MTD`, `August 2026`, the dates for a custom range or `As Of` | Panel titles - the label, with months spelled out and unnamed periods as their dates |
 
 ## DateRangePicker

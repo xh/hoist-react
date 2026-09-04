@@ -25,7 +25,7 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
             hbox({
                 className: 'xh-date-range-picker-popover__rel-row',
                 items: [
-                    span({className: 'xh-date-range-picker-popover__rel-last', item: 'Last'}),
+                    span({className: 'xh-date-range-picker-popover__rel-prefix', item: 'Prev'}),
                     controlGroup({
                         items: [
                             button({

@@ -45,8 +45,8 @@ export interface DateRangePickerProps
 
     /**
      * Text rendered in the popover footer, or null to suppress. Default is a note on the date that
-     * periods are relative to, shown while the Presets or Relative tab is active. Not shown by
-     * a single-tab picker, whose footer carries the resolved dates instead.
+     * periods are relative to. Not shown by a single-tab picker, whose footer carries the resolved
+     * dates instead.
      */
     footerNote?: ReactNode;
 
@@ -285,26 +285,23 @@ const popoverContent = hoistCmp.factory<DateRangePickerLocalModel>(
 //------------------
 const footer = hoistCmp.factory<DateRangePickerLocalModel>(
     ({model, testId, intent, footerNote}) => {
-        const {parentModel, singleTab, showApplyControls} = model,
+        const {parentModel, singleTab} = model,
             // Explicit null suppresses the note; undefined takes the default.
-            note =
-                footerNote === undefined
-                    ? model.showAnchorNote
-                        ? anchorNote({model})
-                        : null
-                    : footerNote,
-            showNote = !singleTab && note != null && note !== false;
+            note = footerNote === undefined ? anchorNote({model}) : footerNote,
+            showNote = !singleTab && note != null && note !== false,
+            // Apply and Cancel only where there is a draft to apply - presets and periods commit
+            // on click, and drafts commit as they change under `commitOnChange`.
+            showControls = model.showApplyControls && model.applyEnabled;
 
         // A single tab with nothing to apply - or that applies as it changes - needs no buttons.
-        if (singleTab && (!model.applyEnabled || !showApplyControls)) {
+        if (singleTab && !showControls) {
             return div({
                 className: 'xh-date-range-picker-popover__single-footer',
                 item: parentModel.rangeLabel
             });
         }
 
-        // Nothing to show - e.g. multi-tab with `commitOnChange` and the note suppressed.
-        if (!showNote && !showApplyControls) return null;
+        if (!showNote && !showControls) return null;
 
         return hbox({
             className: 'xh-date-range-picker-popover__footer',
@@ -320,13 +317,13 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
                 }),
                 filler(),
                 button({
-                    omit: !showApplyControls,
+                    omit: !showControls,
                     text: 'Cancel',
                     testId: getTestId(testId, 'cancel'),
                     onClick: () => model.close()
                 }),
                 button({
-                    omit: !showApplyControls,
+                    omit: !showControls,
                     text: 'Apply',
                     outlined: true,
                     intent: intent ?? 'primary',

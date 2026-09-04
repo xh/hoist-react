@@ -84,7 +84,7 @@ export interface DateRangePickerConfig {
      * where the weekday matters more than the year. A moment.js format string, or a function of
      * the date. Default `ddd MMM D`, overridable app-wide via `DateRangePickerModel.defaults`.
      */
-    dayFormat?: DateRangeFormat;
+    singleDayFormat?: DateRangeFormat;
 
     /**
      * Name of the field to filter in the {@link FieldFilterSpec}s produced by
@@ -158,7 +158,7 @@ export interface DateRangePickerModelDefaults {
     businessDayMode?: boolean;
     commitOnChange?: boolean;
     dateFormat?: DateRangeFormat;
-    dayFormat?: DateRangeFormat;
+    singleDayFormat?: DateRangeFormat;
 }
 
 /**
@@ -190,7 +190,7 @@ export class DateRangePickerModel extends HoistModel {
         businessDayMode: false,
         commitOnChange: false,
         dateFormat: 'YYYY-MM-DD',
-        dayFormat: 'ddd MMM D'
+        singleDayFormat: 'ddd MMM D'
     };
 
     /** The applied selection, always in normalized form. Set via `setValue()`. */
@@ -223,7 +223,7 @@ export class DateRangePickerModel extends HoistModel {
     @bindable businessDayMode: boolean;
     @bindable commitOnChange: boolean;
     @bindable.ref dateFormat: DateRangeFormat;
-    @bindable.ref dayFormat: DateRangeFormat;
+    @bindable.ref singleDayFormat: DateRangeFormat;
     @bindable filterField: string;
 
     /** The initial value, and the fallback for a missing or invalid persisted value. */
@@ -289,7 +289,7 @@ export class DateRangePickerModel extends HoistModel {
 
     /**
      * Resolved range as `start ▸ end` per `dateFormat`, with `…` for an unbounded edge. A single
-     * day reads as that one date, per `dayFormat`.
+     * day reads as that one date, per `singleDayFormat`.
      */
     get rangeLabel(): string {
         return this.fmtRange(this.currentRange);
@@ -351,7 +351,7 @@ export class DateRangePickerModel extends HoistModel {
         isBusinessDay = isWeekday,
         filterField = null,
         dateFormat = DateRangePickerModel.defaults.dateFormat,
-        dayFormat = DateRangePickerModel.defaults.dayFormat,
+        singleDayFormat = DateRangePickerModel.defaults.singleDayFormat,
         persistWith = null,
         xhName = null
     }: DateRangePickerConfig = {}) {
@@ -362,7 +362,7 @@ export class DateRangePickerModel extends HoistModel {
         this.businessDayMode = businessDayMode;
         this.commitOnChange = commitOnChange;
         this.dateFormat = dateFormat;
-        this.dayFormat = dayFormat;
+        this.singleDayFormat = singleDayFormat;
         this.filterField = filterField;
         this.minDate = minDate;
         this.explicitMaxDate = maxDate;
@@ -532,14 +532,14 @@ export class DateRangePickerModel extends HoistModel {
         return ret;
     }
 
-    /** Format a range as `start ▸ end` per this model's `dateFormat` - a single day per `dayFormat`. */
+    /** Format a range as `start ▸ end` per this model's `dateFormat` - a single day per `singleDayFormat`. */
     fmtRange(range: LocalDateRange): string {
-        return fmtDateRange(range, this.dateFormat, this.dayFormat);
+        return fmtDateRange(range, this.dateFormat, this.singleDayFormat);
     }
 
-    /** Format a single day per this model's `dayFormat`. */
-    fmtDay(date: LocalDate): string {
-        return fmtDate(date, this.dayFormat);
+    /** Format a single day per this model's `singleDayFormat`. */
+    fmtSingleDay(date: LocalDate): string {
+        return fmtDate(date, this.singleDayFormat);
     }
 
     //------------------------

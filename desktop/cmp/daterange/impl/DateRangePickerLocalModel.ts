@@ -243,12 +243,6 @@ export class DateRangePickerLocalModel extends HoistModel {
         return !this.parentModel.commitOnChange;
     }
 
-    /** Whether the default footer note about anchoring applies to the active tab. */
-    get showAnchorNote(): boolean {
-        const {activeTabId} = this;
-        return activeTabId === 'presets' || activeTabId === 'relative';
-    }
-
     /**
      * Default footer note, as a prose prefix plus the date for the component to set apart. A live
      * anchor names its clock, so a user whose day differs from the app's sees why. A pinned or
@@ -257,7 +251,7 @@ export class DateRangePickerLocalModel extends HoistModel {
     get anchorNote(): {prefix: string; date: string} {
         const {anchorDate, parentModel} = this,
             {anchorDay, businessDayMode} = parentModel,
-            date = parentModel.fmtDay(anchorDate),
+            date = parentModel.fmtSingleDay(anchorDate),
             day = businessDayMode ? 'business day' : 'day';
 
         let source = '';
@@ -372,15 +366,11 @@ export class DateRangePickerLocalModel extends HoistModel {
         this.close();
     }
 
+    /** Commit the active tab's draft - a no-op on tabs whose picks commit on click. */
     apply() {
         const {activeTabId} = this;
-        if (activeTabId === 'relative') {
-            this.commit(this.relativeDraft);
-        } else if (activeTabId === 'custom') {
-            this.commit(this.customDraft);
-        } else {
-            this.close();
-        }
+        if (activeTabId === 'relative') this.commit(this.relativeDraft);
+        else if (activeTabId === 'custom') this.commit(this.customDraft);
     }
 
     //------------------
