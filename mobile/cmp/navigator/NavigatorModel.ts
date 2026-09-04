@@ -67,7 +67,7 @@ export class NavigatorModel extends HoistModel {
     @bindable.ref
     stack: PageModel[] = [];
 
-    /** Index of the active page within the stack - kept in sync with the Swiper instance. */
+    /** Index of the active page within the stack, synced from Swiper. */
     @bindable activePageIdx: number = 0;
 
     pages: PageConfig[] = [];
@@ -156,8 +156,7 @@ export class NavigatorModel extends HoistModel {
 
         swiper.on('transitionEnd', () => this.onPageChange());
 
-        // Swiper's own activeIndex is not observable - mirror it into state so that the slide
-        // locks and active page re-render as soon as it changes.
+        // Swiper's activeIndex is not observable - mirror it into state.
         swiper.on('activeIndexChange', () => (this.activePageIdx = swiper.activeIndex));
 
         // Ensure Swiper's touch move is initially disabled, and capture
@@ -324,9 +323,8 @@ export class NavigatorModel extends HoistModel {
             this._swiper.allowSlidePrev = true;
             this._swiper.slidePrev(transitionMs);
 
-            // The route has already changed, so a missed `transitionEnd` would leave the stack
-            // and the route permanently out of sync - process the change ourselves if the
-            // event has not arrived in time.
+            // The route has already changed - backstop a missed `transitionEnd`, which would
+            // otherwise leave the stack and the route permanently out of sync.
             wait(transitionMs + 100).then(() => {
                 if (this.stack.length > this.activePageIdx + 1) this.onPageChange();
             });

@@ -60,9 +60,7 @@
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
 * Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
-  sync if a page transition failed to report its completion. The stack is now reconciled on a
-  timeout, `NavigatorModel.activePageIdx` is observable state synced from Swiper rather than a read
-  of its non-observable `activeIndex`, and back-navigation unlocks Swiper at the call site.
+  sync when a page transition failed to report its completion.
 
 ### ⚙️ Technical
 
