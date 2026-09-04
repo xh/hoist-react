@@ -7,16 +7,28 @@
 import {CubeField} from '../CubeField';
 
 /**
- * @internal
+ * A single field value change, propagated up a row's ancestors to adjust their aggregations.
+ *
+ * Passed to {@link Aggregator.replace}, which may use it to update an aggregate incrementally
+ * rather than re-aggregating from scratch.
  */
 export class RowUpdate {
     readonly field: CubeField;
+
+    /** Values of the child row that changed - rewritten by each ancestor as the update propagates. */
     oldValue: any;
     newValue: any;
 
+    /**
+     * Values at the leaf this update originated from. Aggregator state that is a running total
+     * over leaves can apply this delta unchanged at any level of the hierarchy.
+     */
+    readonly leafOldValue: any;
+    readonly leafNewValue: any;
+
     constructor(field: CubeField, oldValue: any, newValue: any) {
         this.field = field;
-        this.oldValue = oldValue;
-        this.newValue = newValue;
+        this.oldValue = this.leafOldValue = oldValue;
+        this.newValue = this.leafNewValue = newValue;
     }
 }

@@ -10,14 +10,15 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {isArray, isEmpty} from 'lodash';
 import {View} from '../View';
+import type {ViewRow} from '../ViewRow';
 import type {ParentRow} from './ParentRow';
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
  *
- * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
+ * This is an internal data structure - {@link ViewRow} is the public row-level API.
  */
-export abstract class BaseRow {
+export abstract class BaseRow implements ViewRow {
     readonly view: View = null;
     readonly id: string = null;
 
@@ -79,7 +80,7 @@ export abstract class BaseRow {
         }
 
         // 2) If omitting ourselves, we are done, return visible children.
-        if (!isLeaf && query.omitFn?.(this as any)) return dataChildren;
+        if (!isLeaf && query.omitFn?.(this)) return dataChildren;
 
         // 3) Otherwise, we can attach this data to the children data and return.
 
@@ -116,7 +117,7 @@ export abstract class BaseRow {
         // Skip all children in a locked node - only parent rows can get this far.
         if (query.lockFn) {
             const row = this as unknown as ParentRow;
-            row.locked = query.lockFn(row as any);
+            row.locked = query.lockFn(row);
             if (row.locked) return null;
         }
 

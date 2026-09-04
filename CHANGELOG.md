@@ -24,6 +24,14 @@
 * The Admin Console's Activity Tracking tab now selects its query period with a `DateRangePicker`.
   Periods saved in existing views reset to Today on first load.
 * Added `Icon.calendarDays` and `Icon.calendarRange`.
+* Cube `Aggregator` implementations can now hold per-row state via new
+  `AggregationContext.setAggState()` / `getAggState()`, allowing custom aggregations that cannot be
+  derived from their children's published values alone - e.g. a weighted average - to compose from
+  their direct children instead of walking their entire subtree of leaves. See the
+  [Cube README](data/cube/README.md#custom-aggregators) for a worked example.
+* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
+  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
+  their rows with unexported internal classes. `RowUpdate` is now exported as well.
 * Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
@@ -62,6 +70,15 @@
 
 ### ⚙️ Technical
 
+* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children, holding a
+  running total and count as internal aggregator state rather than walking their entire subtree of
+  leaves on every aggregation. Builds, regroups and incremental updates of views with averaged
+  fields are now as cheap as those with `SUM` fields - benched at 6x faster single-record updates on
+  a 200k-row, four-dimension cube with six averaged fields.
+    * A row for which `CubeField.canAggregateFn` returns false now contributes nothing to the
+      averages of its ancestors, matching how incremental updates have always treated such rows.
+      Previously, a full rebuild would compute an ancestor's average from all descendant leaves,
+      including those under non-aggregating rows.
 * The desktop `GroupingChooser` (in both input and button modes), `ColChooserButton`, and
   `ZoneMapperButton` trigger buttons now render in their `active` state while their popover is open.
   These popovers are controlled by Hoist, so Blueprint does not flag their triggers automatically -
