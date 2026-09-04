@@ -112,7 +112,7 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
         this.title = title ?? viewSpec.title;
         this.viewState = viewState;
         this.containerModel = containerModel;
-        this.xhName = xhName ?? containerModel?.childXhName(id) ?? id;
+        this.xhName = xhName ?? containerModel?.childXhName(id);
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
         this.refreshContextModel.xhName = this.childXhName('refreshContextModel');
