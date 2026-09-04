@@ -59,6 +59,8 @@
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
+* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
+  sync when a page transition failed to report its completion.
 
 ### ⚙️ Technical
 
