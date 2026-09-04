@@ -25,9 +25,10 @@
   Periods saved in existing views reset to Today on first load.
 * Added `Icon.calendarDays` and `Icon.calendarRange`.
 * Cube `Aggregator` implementations can now hold per-row state via new
-  `AggregationContext.setAggState()` / `getAggState()`, allowing custom aggregations that cannot be
-  derived from their children's published values alone - e.g. a weighted average - to compose from
-  their direct children instead of walking their entire subtree of leaves.
+  `AggregationContext.setAggState()` / `getAggState()`, letting custom aggregations that cannot be
+  derived from their children's published values alone - e.g. a weighted average - compose from
+  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
+  example.
 * Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
@@ -70,9 +71,8 @@
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
   regroup and update as those with `SUM` fields.
     * A row for which `CubeField.canAggregateFn` returns false now contributes nothing to the
-      averages of its ancestors, matching how incremental updates have always treated such rows.
-      Previously, a full rebuild would compute an ancestor's average from all descendant leaves,
-      including those under non-aggregating rows.
+      averages of its ancestors, matching every other aggregator and how incremental updates have
+      always treated such rows.
 * The desktop `GroupingChooser` (in both input and button modes), `ColChooserButton`, and
   `ZoneMapperButton` trigger buttons now render in their `active` state while their popover is open.
   These popovers are controlled by Hoist, so Blueprint does not flag their triggers automatically -
