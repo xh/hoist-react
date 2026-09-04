@@ -78,13 +78,6 @@
 * Fixed `GridModel.getSortedRecords()` throwing e.g. grid exports when grouped by a non-string
   field. Group values are now coerced to string keys before sorting.
 
-## 87.1.1 - 2026-09-02
-
-### 🐞 Bug Fixes
-
-* Fixed `GridModel.getSortedRecords()` throwing e.g. grid exports when grouped by a non-string
-  field. Group values are now coerced to string keys before sorting.
-
 ## 87.1.0 - 2026-08-28
 
 ### 🎁 New Features
@@ -103,9 +96,6 @@
 
 * Upgraded `react-dropzone` to v20, which drops its UMD build and ships as an ESM + CJS package with
   an `exports` map. Requires Node >= 22 to install.
-* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
-  value to the current `options` and dropping any selection no longer found there. Enforced once
-  `options` is non-null, so pass null while options load.
 * Extended the package `sideEffects` declaration to cover the vendored golden-layout implementation
   and the barrels with registration or configuration side effects on import - icon, mobx, blueprint
   kit, golden-layout kit, and persist. ~~Required by the tree-shaking in hoist-dev-utils v15.~~
