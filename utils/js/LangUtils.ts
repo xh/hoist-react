@@ -290,12 +290,28 @@ export type NameSource = string | HoistBase | {displayName: string} | {construct
 
 /**
  * Resolve a {@link NameSource} to a string, or null if unresolvable.
- * Prefers an instance-level `xhName` when set - see {@link parseTypeName} to skip it.
+ *
+ * A HoistBase instance is labelled per {@link formatInstanceLabel}. Other sources resolve via
+ * `xhName` or {@link parseTypeName}.
  */
 export function parseNameSource(source: NameSource): string {
     if (!source) return null;
     if (isString(source)) return source;
-    return source['xhName'] || parseTypeName(source);
+    const typeName = parseTypeName(source);
+    if (!source['isHoistBase']) return source['xhName'] || typeName;
+    return formatInstanceLabel(typeName, source['xhName'], source['xhId']);
+}
+
+/**
+ * Label for a HoistBase instance - `ClassName [xhName]`, or `ClassName [id]` (short `xhId`) when
+ * unnamed. An `xhName` matching the class name (e.g. `fetchService`) marks a singleton and is
+ * omitted.
+ */
+export function formatInstanceLabel(className: string, xhName: string, xhId: string): string {
+    if (!xhName) return `${className} [${xhId.replace(/^xh-id-/, '')}]`;
+    return xhName.toLowerCase() === className.toLowerCase()
+        ? className
+        : `${className} [${xhName}]`;
 }
 
 /**

@@ -131,7 +131,7 @@ export class PageModel extends HoistModel {
 
         this.id = id;
         this.navigatorModel = navigatorModel;
-        this.xhName = xhName ?? navigatorModel?.childXhName(id) ?? id;
+        this.xhName = xhName ?? navigatorModel?.childXhName(id);
         this.content = content;
         this.props = withDefault(props, {});
         this.disableDirectLink = withDefault(disableDirectLink, false);

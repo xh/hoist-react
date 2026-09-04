@@ -137,7 +137,7 @@ export class TabModel extends HoistModel {
         );
 
         this.id = id.toString();
-        this.xhName = xhName ?? containerModel.childXhName(this.id) ?? this.id;
+        this.xhName = xhName ?? containerModel.childXhName(this.id);
         this.title = title;
         this.icon = icon;
         this.tooltip = tooltip;
