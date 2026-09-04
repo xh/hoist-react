@@ -79,6 +79,11 @@
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
 * Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
 
+### 📚 Libraries
+
+* @daypicker/react `added @ 10.0` (replaces react-day-picker under its new package name)
+* react-day-picker `removed`
+
 ## 87.1.1 - 2026-09-02
 
 ### 🐞 Bug Fixes
