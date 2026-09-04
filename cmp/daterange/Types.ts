@@ -22,6 +22,12 @@ export interface ResolvedDateRange {
 /** Calendar units supported by relative selections. */
 export type DateRangeUnit = 'days' | 'weeks' | 'months' | 'quarters' | 'years';
 
+/**
+ * How the picker renders a date - a moment.js format string, or a function for formats that
+ * depend on the date itself, e.g. one that adds the year only when it is not the current year.
+ */
+export type DateRangeFormat = string | ((date: LocalDate) => string);
+
 /** Tabs available within the DateRangePicker popover. */
 export type DateRangePickerTab = 'presets' | 'relative' | 'monthYear' | 'custom';
 

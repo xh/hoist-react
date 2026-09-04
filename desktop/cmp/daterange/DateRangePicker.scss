@@ -554,6 +554,13 @@ $drp-transition-dur: 120ms;
       @include drp-secondary-prose;
     }
 
+    // The date the note names - in the date font, receding with the prose around it.
+    &__footer-date {
+      @include drp-date-secondary;
+
+      margin-left: 4px;
+    }
+
     &__single-footer {
       @include drp-footer-shell;
 

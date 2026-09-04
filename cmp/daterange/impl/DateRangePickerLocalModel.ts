@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, type Intent, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, type Intent, lookup, managed, XH} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {LocalDate} from '@xh/hoist/utils/datetime';
+import type {LocalDate} from '@xh/hoist/utils/datetime';
 import {clamp, isEqual} from 'lodash';
 import {createRef, type ReactElement} from 'react';
 import {DateRangePickerModel} from '../DateRangePickerModel';
@@ -249,26 +249,24 @@ export class DateRangePickerLocalModel extends HoistModel {
     }
 
     /**
-     * Default footer note - tells the user what periods resolve against, and which clock decides
-     * it. A live anchor names its source, so a user whose day differs from the application's can
-     * see why the picker's "today" is not theirs. A pinned or computed anchor is just its date.
+     * Default footer note - tells the user what periods are relative to, and which clock decides
+     * it, as a prose prefix and the date for the component to set apart. A live anchor names its
+     * source, so a user whose day differs from the application's can see why the picker's "today"
+     * is not theirs. A pinned or computed anchor is just its date.
      */
-    get anchorNote(): string {
+    get anchorNote(): {prefix: string; date: string} {
         const {anchorDate, parentModel} = this,
-            {anchorDay, businessDayMode, today} = parentModel,
-            date = anchorDate.format(parentModel.dateFormat);
+            {anchorDay, businessDayMode} = parentModel,
+            date = parentModel.fmtDay(anchorDate),
+            day = businessDayMode ? 'business day' : 'day';
 
         let source = '';
-        if (anchorDay === 'localDay' || anchorDay === 'appDay') {
-            const day = anchorDay === 'appDay' ? LocalDate.currentAppDay() : today;
-            source =
-                anchorDate !== day && businessDayMode
-                    ? 'the most recent business day, '
-                    : anchorDay === 'appDay'
-                      ? 'the current application day, '
-                      : 'your current day, ';
+        if (anchorDay === 'localDay') {
+            source = ` your current ${day}`;
+        } else if (anchorDay === 'appDay') {
+            source = ` the current ${day} in ${XH.environmentService.get('appTimeZone')}`;
         }
-        return `Periods resolve against ${source}${date}.`;
+        return {prefix: `Relative to${source}: `, date};
     }
 
     private get anchorNoun(): string {

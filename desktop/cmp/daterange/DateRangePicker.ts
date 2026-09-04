@@ -14,7 +14,7 @@ import {
     DateRangePickerLocalModel,
     type DateRangePickerTabSpec
 } from '@xh/hoist/cmp/daterange/impl/DateRangePickerLocalModel';
-import {box, div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {box, div, filler, fragment, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {
     hoistCmp,
@@ -35,6 +35,7 @@ import type {LocalDate} from '@xh/hoist/utils/datetime';
 import {elemWithin, getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {composeRefs, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {isString} from 'lodash';
 import type {KeyboardEvent, ReactNode} from 'react';
 import './DateRangePicker.scss';
 
@@ -48,7 +49,7 @@ export interface DateRangePickerProps
 
     /**
      * Text rendered in the popover footer, or null to suppress. Default is a note on the date that
-     * periods resolve against, shown while the Presets or Relative tab is active. Not shown by
+     * periods are relative to, shown while the Presets or Relative tab is active. Not shown by
      * a single-tab picker, whose footer carries the resolved dates instead.
      */
     footerNote?: ReactNode;
@@ -556,7 +557,10 @@ const customTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, testId}) 
                     onCommit: v =>
                         edge === 'start' ? model.commitStartInput(v) : model.commitEndInput(v),
                     valueType: 'localDate',
-                    formatString: parentModel.dateFormat,
+                    // Inputs need a parseable string format - a function format cannot be typed into.
+                    formatString: isString(parentModel.dateFormat)
+                        ? parentModel.dateFormat
+                        : 'YYYY-MM-DD',
                     enablePicker: false,
                     rightElement: null,
                     width: '100%',
@@ -691,7 +695,7 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
             note =
                 footerNote === undefined
                     ? model.showAnchorNote
-                        ? model.anchorNote
+                        ? anchorNote({model})
                         : null
                     : footerNote,
             showNote = !singleTab && note != null && note !== false;
@@ -740,6 +744,15 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
         });
     }
 );
+
+/** The default footer note - muted prose, with the date it names set apart as on the trigger. */
+const anchorNote = hoistCmp.factory<DateRangePickerLocalModel>(({model}) => {
+    const {prefix, date} = model.anchorNote;
+    return fragment(
+        prefix,
+        span({className: 'xh-date-range-picker-popover__footer-date', item: date})
+    );
+});
 
 //------------------
 // Tabs

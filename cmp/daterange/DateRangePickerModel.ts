@@ -22,6 +22,7 @@ import {dateRangePresets, DEFAULT_DATE_RANGE_PRESETS} from './DateRangePresets';
 import {
     businessDayOnOrBefore,
     DATE_RANGE_PICKER_TABS,
+    fmtDate,
     fmtDateRange,
     getDateRangeLabel,
     parseDateRangeSelection,
@@ -31,6 +32,7 @@ import {
 import type {
     DateRangeAnchorDay,
     DateRangeContext,
+    DateRangeFormat,
     DateRangePickerTab,
     DateRangePreset,
     DateRangePresetToken,
@@ -70,10 +72,19 @@ export interface DateRangePickerConfig {
     commitOnChange?: boolean;
 
     /**
-     * Format for dates shown by the picker and in `rangeLabel`, as a moment.js format string.
-     * Default `YYYY-MM-DD`, overridable app-wide via `DateRangePickerModel.defaults`.
+     * Format for the dates of a range - the two ends shown on the trigger, beside presets, and in
+     * `rangeLabel`. A moment.js format string, or a function of the date. Default `YYYY-MM-DD`,
+     * overridable app-wide via `DateRangePickerModel.defaults`. The Custom tab's date inputs use
+     * it when it is a string, else `YYYY-MM-DD`.
      */
-    dateFormat?: string;
+    dateFormat?: DateRangeFormat;
+
+    /**
+     * Format for a single day - a one-day range, and the anchor date in the popover footer -
+     * where the weekday matters more than the year. A moment.js format string, or a function of
+     * the date. Default `ddd MMM D`, overridable app-wide via `DateRangePickerModel.defaults`.
+     */
+    dayFormat?: DateRangeFormat;
 
     /**
      * Name of the field to filter in the {@link FieldFilterSpec}s produced by
@@ -146,7 +157,8 @@ export interface DateRangePickerModelDefaults {
     anchorDay?: DateRangeAnchorDay;
     businessDayMode?: boolean;
     commitOnChange?: boolean;
-    dateFormat?: string;
+    dateFormat?: DateRangeFormat;
+    dayFormat?: DateRangeFormat;
 }
 
 /**
@@ -177,7 +189,8 @@ export class DateRangePickerModel extends HoistModel {
         anchorDay: 'localDay',
         businessDayMode: false,
         commitOnChange: false,
-        dateFormat: 'YYYY-MM-DD'
+        dateFormat: 'YYYY-MM-DD',
+        dayFormat: 'ddd MMM D'
     };
 
     /** The applied selection, always in normalized form. Set via `setValue()`. */
@@ -209,7 +222,8 @@ export class DateRangePickerModel extends HoistModel {
 
     @bindable businessDayMode: boolean;
     @bindable commitOnChange: boolean;
-    @bindable dateFormat: string;
+    @bindable.ref dateFormat: DateRangeFormat;
+    @bindable.ref dayFormat: DateRangeFormat;
     @bindable filterField: string;
 
     /** The initial value, and the fallback for a missing or invalid persisted value. */
@@ -277,7 +291,7 @@ export class DateRangePickerModel extends HoistModel {
 
     /**
      * Resolved range as `start ▸ end` per `dateFormat`, with `…` for an unbounded edge. A single
-     * day reads as that one date.
+     * day reads as that one date, per `dayFormat`.
      */
     get rangeLabel(): string {
         return this.fmtRange(this.currentRange);
@@ -339,6 +353,7 @@ export class DateRangePickerModel extends HoistModel {
         isBusinessDay = isWeekday,
         filterField = null,
         dateFormat = DateRangePickerModel.defaults.dateFormat,
+        dayFormat = DateRangePickerModel.defaults.dayFormat,
         persistWith = null,
         xhName = null
     }: DateRangePickerConfig = {}) {
@@ -349,6 +364,7 @@ export class DateRangePickerModel extends HoistModel {
         this.businessDayMode = businessDayMode;
         this.commitOnChange = commitOnChange;
         this.dateFormat = dateFormat;
+        this.dayFormat = dayFormat;
         this.filterField = filterField;
         this.minDate = minDate;
         this.explicitMaxDate = maxDate;
@@ -518,9 +534,14 @@ export class DateRangePickerModel extends HoistModel {
         return ret;
     }
 
-    /** Format a range as `start ▸ end`, per this model's `dateFormat`. */
+    /** Format a range as `start ▸ end` per this model's `dateFormat` - a single day per `dayFormat`. */
     fmtRange(range: LocalDateRange): string {
-        return fmtDateRange(range, this.dateFormat);
+        return fmtDateRange(range, this.dateFormat, this.dayFormat);
+    }
+
+    /** Format a single day per this model's `dayFormat`. */
+    fmtDay(date: LocalDate): string {
+        return fmtDate(date, this.dayFormat);
     }
 
     //------------------------
