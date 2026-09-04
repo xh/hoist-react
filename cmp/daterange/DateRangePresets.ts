@@ -5,219 +5,162 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {LocalDate} from '@xh/hoist/utils/datetime';
+import {fmtDateRangeOffset, nextDayInMode, previousDayInMode, singleDay} from './DateRangeUtils';
 import type {
     DateRangeContext,
     DateRangePreset,
     DateRangePresetToken,
-    DateRangeCalendarUnit
+    DateRangeUnit,
+    LocalDateRange
 } from './Types';
-
-type Resolver = DateRangePreset['resolve'];
-type PriorResolver = DateRangePreset['resolvePrior'];
-
-/** From the start of the unit containing the anchor date, through the anchor date. */
-const toDate =
-    (unit: DateRangeCalendarUnit): Resolver =>
-    ({anchorDate}) => ({start: anchorDate.startOf(unit), end: anchorDate});
-
-/** A rolling window of `n` days ending on the anchor date. */
-const lastDays =
-    (n: number): Resolver =>
-    ({anchorDate}) => ({start: anchorDate.subtract(n - 1, 'days'), end: anchorDate});
-
-/** A rolling window of `n` months ending on the anchor date. */
-const lastMonths =
-    (n: number): Resolver =>
-    ({anchorDate}) => ({start: anchorDate.subtract(n, 'months').nextDay(), end: anchorDate});
-
-/**
- * The same elapsed span as period-to-date, one unit earlier - e.g. prior MTD on the 12th is the
- * 1st through 12th of last month.
- */
-const priorToDate =
-    (unit: DateRangeCalendarUnit): Resolver =>
-    ({anchorDate}) => ({
-        start: anchorDate.startOf(unit).subtract(1, unit),
-        end: anchorDate.subtract(1, unit)
-    });
-
-/** The nearest business day strictly before `date`, per the context's `isBusinessDay`. */
-const previousBusinessDay = (date: LocalDate, ctx: DateRangeContext): LocalDate => {
-    let ret = date.previousDay();
-    // Bounded walk - guards against an `isBusinessDay` that never returns true.
-    for (let i = 0; i < 366 && !ctx.isBusinessDay(ret); i++) ret = ret.previousDay();
-    return ret;
-};
-
-/** The full calendar unit before the one containing the anchor date. */
-const previousUnit =
-    (unit: DateRangeCalendarUnit): Resolver =>
-    ctx => {
-        const start = previousUnitStart(ctx, unit);
-        return {start, end: start.endOf(unit)};
-    };
-
-const previousUnitStart = (
-    {anchorDate}: DateRangeContext,
-    unit: DateRangeCalendarUnit
-): LocalDate => anchorDate.startOf(unit).subtract(1, unit);
-
-/** The current range shifted back `n` units - a prior of equal calendar shape. */
-const shiftedPrior =
-    (unit: DateRangeCalendarUnit, n: number = 1): PriorResolver =>
-    ({start, end}) => ({start: start.subtract(n, unit), end: end.subtract(n, unit)});
-
-/** The full calendar unit before a current range that is itself a full unit. */
-const previousUnitPrior =
-    (unit: DateRangeCalendarUnit): PriorResolver =>
-    ({start}) => {
-        const priorStart = start.subtract(1, unit);
-        return {start: priorStart, end: priorStart.endOf(unit)};
-    };
 
 /**
  * Presets shipped with Hoist, keyed by token. Offer any subset (in any order) via the `presets`
  * config of {@link DateRangePickerModel}, alongside any app-defined {@link DateRangePreset}s.
  *
+ * Labels describe a range without claiming it ends today, since the anchor date need not be
+ * today: `Prev 7 Days` rather than `Last 7 Days`. The one exception is `anchorDay`, which reads
+ * `Today` when the anchor date is the current day and `As Of` otherwise - the trigger's dates
+ * supply the day itself.
+ *
  * Period-to-date presets (`wtd`, `mtd`, `qtd`, `ytd`) resolve their prior range as the same span
  * one unit earlier - e.g. MTD on the 12th compares against the 1st through 12th of the prior
- * month. Previous-unit presets (`lastWeek`, `lastMonth`, ...) compare against the unit before.
- * Rolling windows compare against the window of equal length immediately preceding them.
- *
- * Prior period-to-date presets (`priorMtd`, `priorQtd`, `priorYtd`) select the comparison period
- * itself - the same elapsed span one unit earlier, as also exposed by `priorRange` for the
- * current-period presets. `lastBusinessDay` walks back from the anchor date over non-business days
- * per the context's `isBusinessDay` - weekdays by default, or a model-supplied calendar.
+ * month. Previous-unit presets (`prevWeek`, `prevMonth`, ...) compare against the unit before.
+ * Rolling windows compare against the window of equal length immediately preceding them. The
+ * same logic, mirrored by `resolveNext`, drives stepping: `mtd` stepped back once is the prior MTD.
  *
  * A preset that names a specific period reads the same as a pick of that period on the Months &
- * Years tab - `lastMonth` labels as e.g. `Aug 2026` and `lastYear` as `2025` - so the trigger
+ * Years tab - `prevMonth` labels as e.g. `Aug 2026` and `prevYear` as `2025` - so the trigger
  * describes the period, whichever way it was chosen. The underlying values stay distinct: a preset
  * re-resolves against the anchor date as time passes, where a pinned month or year does not.
  */
 export const dateRangePresets: Record<DateRangePresetToken, DateRangePreset> = {
-    today: {
-        token: 'today',
-        label: 'Today',
-        resolve: ({anchorDate}) => ({start: anchorDate, end: anchorDate}),
-        resolvePrior: shiftedPrior('days')
+    anchorDay: {
+        token: 'anchorDay',
+        label: anchorLabel,
+        name: ctx => (isAnchorToday(ctx) ? 'Today' : 'As Of Date'),
+        resolve: ({anchorDate}) => singleDay(anchorDate),
+        resolvePrior: priorDay,
+        resolveNext: nextDay,
+        shiftedLabel: (range, offset, ctx) => dayFromAnchor(offset, ctx)
     },
-    yesterday: {
-        token: 'yesterday',
-        label: 'Yesterday',
-        resolve: ({anchorDate}) => {
-            const day = anchorDate.previousDay();
-            return {start: day, end: day};
-        },
-        resolvePrior: shiftedPrior('days')
+    prevDay: {
+        token: 'prevDay',
+        label: 'Prev Day',
+        resolve: ctx => singleDay(previousDayInMode(ctx.anchorDate, ctx)),
+        resolvePrior: priorDay,
+        resolveNext: nextDay,
+        // Already one step back - stepped, it reads from the anchor like `anchorDay` does.
+        shiftedLabel: (range, offset, ctx) => dayFromAnchor(offset - 1, ctx)
     },
     wtd: {
         token: 'wtd',
         label: 'WTD',
         name: 'Week to Date',
         resolve: toDate('weeks'),
-        resolvePrior: shiftedPrior('weeks')
+        resolvePrior: shiftedBy('weeks', -1),
+        resolveNext: shiftedBy('weeks', 1)
     },
     mtd: {
         token: 'mtd',
         label: 'MTD',
         name: 'Month to Date',
         resolve: toDate('months'),
-        resolvePrior: shiftedPrior('months')
+        resolvePrior: shiftedBy('months', -1),
+        resolveNext: shiftedBy('months', 1)
     },
     qtd: {
         token: 'qtd',
         label: 'QTD',
         name: 'Quarter to Date',
         resolve: toDate('quarters'),
-        resolvePrior: shiftedPrior('quarters')
+        resolvePrior: shiftedBy('quarters', -1),
+        resolveNext: shiftedBy('quarters', 1)
     },
     ytd: {
         token: 'ytd',
         label: 'YTD',
         name: 'Year to Date',
         resolve: toDate('years'),
-        resolvePrior: shiftedPrior('years')
+        resolvePrior: shiftedBy('years', -1),
+        resolveNext: shiftedBy('years', 1)
     },
-    last7Days: {token: 'last7Days', label: 'Last 7 Days', resolve: lastDays(7)},
-    last30Days: {token: 'last30Days', label: 'Last 30 Days', resolve: lastDays(30)},
-    last90Days: {token: 'last90Days', label: 'Last 90 Days', resolve: lastDays(90)},
-    last3Months: {
-        token: 'last3Months',
-        label: 'Last 3 Months',
-        resolve: lastMonths(3),
-        resolvePrior: shiftedPrior('months', 3)
+    prev7Days: {
+        token: 'prev7Days',
+        label: 'Prev 7 Days',
+        resolve: prevDays(7),
+        shiftedLabel: lengthLabel('7 Days')
     },
-    last6Months: {
-        token: 'last6Months',
-        label: 'Last 6 Months',
-        resolve: lastMonths(6),
-        resolvePrior: shiftedPrior('months', 6)
+    prev30Days: {
+        token: 'prev30Days',
+        label: 'Prev 30 Days',
+        resolve: prevDays(30),
+        shiftedLabel: lengthLabel('30 Days')
     },
-    last12Months: {
-        token: 'last12Months',
-        label: 'Last 12 Months',
-        resolve: lastMonths(12),
-        resolvePrior: shiftedPrior('years')
+    prev90Days: {
+        token: 'prev90Days',
+        label: 'Prev 90 Days',
+        resolve: prevDays(90),
+        shiftedLabel: lengthLabel('90 Days')
     },
-    lastWeek: {
-        token: 'lastWeek',
-        label: 'Last Week',
+    prev3Months: {
+        token: 'prev3Months',
+        label: 'Prev 3 Months',
+        resolve: prevMonths(3),
+        resolvePrior: shiftedBy('months', -3),
+        resolveNext: shiftedBy('months', 3),
+        shiftedLabel: lengthLabel('3 Months')
+    },
+    prev6Months: {
+        token: 'prev6Months',
+        label: 'Prev 6 Months',
+        resolve: prevMonths(6),
+        resolvePrior: shiftedBy('months', -6),
+        resolveNext: shiftedBy('months', 6),
+        shiftedLabel: lengthLabel('6 Months')
+    },
+    prev12Months: {
+        token: 'prev12Months',
+        label: 'Prev 12 Months',
+        resolve: prevMonths(12),
+        resolvePrior: shiftedBy('years', -1),
+        resolveNext: shiftedBy('years', 1),
+        shiftedLabel: lengthLabel('12 Months')
+    },
+    prevWeek: {
+        token: 'prevWeek',
+        label: 'Prev Week',
         resolve: previousUnit('weeks'),
-        resolvePrior: previousUnitPrior('weeks')
+        resolvePrior: adjacentUnit('weeks', -1),
+        resolveNext: adjacentUnit('weeks', 1),
+        shiftedLabel: periodLabel('[Wk of] MMM D')
     },
-    lastMonth: {
-        token: 'lastMonth',
+    prevMonth: {
+        token: 'prevMonth',
         label: ctx => previousUnitStart(ctx, 'months').format('MMM YYYY'),
-        name: ctx => `Last Month (${previousUnitStart(ctx, 'months').format('MMM YYYY')})`,
+        name: ctx => `Prev Month (${previousUnitStart(ctx, 'months').format('MMM YYYY')})`,
         resolve: previousUnit('months'),
-        resolvePrior: previousUnitPrior('months')
+        resolvePrior: adjacentUnit('months', -1),
+        resolveNext: adjacentUnit('months', 1),
+        shiftedLabel: periodLabel('MMM YYYY')
     },
-    lastQuarter: {
-        token: 'lastQuarter',
+    prevQuarter: {
+        token: 'prevQuarter',
         label: ctx => previousUnitStart(ctx, 'quarters').format('[Q]Q YYYY'),
-        name: ctx => `Last Quarter (${previousUnitStart(ctx, 'quarters').format('[Q]Q YYYY')})`,
+        name: ctx => `Prev Quarter (${previousUnitStart(ctx, 'quarters').format('[Q]Q YYYY')})`,
         resolve: previousUnit('quarters'),
-        resolvePrior: previousUnitPrior('quarters')
+        resolvePrior: adjacentUnit('quarters', -1),
+        resolveNext: adjacentUnit('quarters', 1),
+        shiftedLabel: periodLabel('[Q]Q YYYY')
     },
-    lastYear: {
-        token: 'lastYear',
+    prevYear: {
+        token: 'prevYear',
         label: ctx => previousUnitStart(ctx, 'years').format('YYYY'),
-        name: ctx => `Last Year (${previousUnitStart(ctx, 'years').format('YYYY')})`,
+        name: ctx => `Prev Year (${previousUnitStart(ctx, 'years').format('YYYY')})`,
         resolve: previousUnit('years'),
-        resolvePrior: previousUnitPrior('years')
-    },
-    lastBusinessDay: {
-        token: 'lastBusinessDay',
-        label: 'Last Business Day',
-        resolve: ctx => {
-            const day = previousBusinessDay(ctx.anchorDate, ctx);
-            return {start: day, end: day};
-        },
-        resolvePrior: ({start}, ctx) => {
-            const day = previousBusinessDay(start, ctx);
-            return {start: day, end: day};
-        }
-    },
-    priorMtd: {
-        token: 'priorMtd',
-        label: 'Prior MTD',
-        name: 'Prior Month to Date',
-        resolve: priorToDate('months'),
-        resolvePrior: shiftedPrior('months')
-    },
-    priorQtd: {
-        token: 'priorQtd',
-        label: 'Prior QTD',
-        name: 'Prior Quarter to Date',
-        resolve: priorToDate('quarters'),
-        resolvePrior: shiftedPrior('quarters')
-    },
-    priorYtd: {
-        token: 'priorYtd',
-        label: 'Prior YTD',
-        name: 'Prior Year to Date',
-        resolve: priorToDate('years'),
-        resolvePrior: shiftedPrior('years')
+        resolvePrior: adjacentUnit('years', -1),
+        resolveNext: adjacentUnit('years', 1),
+        shiftedLabel: periodLabel('YYYY')
     },
     all: {
         token: 'all',
@@ -225,7 +168,8 @@ export const dateRangePresets: Record<DateRangePresetToken, DateRangePreset> = {
         name: 'All Dates',
         // Everything selectable - unbounded at the start unless the model sets a `minDate`.
         resolve: ({minDate, maxDate}) => ({start: minDate, end: maxDate}),
-        resolvePrior: () => null
+        resolvePrior: () => null,
+        resolveNext: () => null
     }
 };
 
@@ -234,14 +178,97 @@ export const DATE_RANGE_PRESET_TOKENS = Object.keys(dateRangePresets) as DateRan
 
 /** Presets offered by {@link DateRangePickerModel} when none are configured. */
 export const DEFAULT_DATE_RANGE_PRESETS: DateRangePresetToken[] = [
-    'today',
+    'anchorDay',
     'mtd',
     'qtd',
     'ytd',
-    'last7Days',
-    'last30Days',
-    'last90Days',
-    'last12Months',
-    'lastMonth',
-    'lastYear'
+    'prev7Days',
+    'prev30Days',
+    'prev90Days',
+    'prev12Months',
+    'prevMonth',
+    'prevYear'
 ];
+
+//------------------
+// Implementation
+//------------------
+type Resolver = DateRangePreset['resolve'];
+type Shifter = DateRangePreset['resolvePrior'];
+type ShiftedLabel = DateRangePreset['shiftedLabel'];
+
+/** From the start of the unit containing the anchor date, through the anchor date. */
+function toDate(unit: DateRangeUnit): Resolver {
+    return ({anchorDate}) => ({start: anchorDate.startOf(unit), end: anchorDate});
+}
+
+/** A rolling window of `n` days ending on the anchor date. */
+function prevDays(n: number): Resolver {
+    return ({anchorDate}) => ({start: anchorDate.subtract(n - 1, 'days'), end: anchorDate});
+}
+
+/** A rolling window of `n` months ending on the anchor date. */
+function prevMonths(n: number): Resolver {
+    return ({anchorDate}) => ({start: anchorDate.subtract(n, 'months').nextDay(), end: anchorDate});
+}
+
+/** The full calendar unit before the one containing the anchor date. */
+function previousUnit(unit: DateRangeUnit): Resolver {
+    return ctx => {
+        const start = previousUnitStart(ctx, unit);
+        return {start, end: start.endOf(unit)};
+    };
+}
+
+function previousUnitStart({anchorDate}: DateRangeContext, unit: DateRangeUnit): LocalDate {
+    return anchorDate.startOf(unit).subtract(1, unit);
+}
+
+/** The current range shifted by `n` units - negative back, positive forward - keeping its shape. */
+function shiftedBy(unit: DateRangeUnit, n: number): Shifter {
+    return ({start, end}) => ({start: start.add(n, unit), end: end.add(n, unit)});
+}
+
+/** The full calendar unit `n` units from a current range that is itself a full unit. */
+function adjacentUnit(unit: DateRangeUnit, n: number): Shifter {
+    return ({start}) => {
+        const next = start.add(n, unit);
+        return {start: next, end: next.endOf(unit)};
+    };
+}
+
+/** The day before or after a single-day range - by business day in `businessDayMode`. */
+function priorDay({start}: LocalDateRange, ctx: DateRangeContext): LocalDateRange {
+    return singleDay(previousDayInMode(start, ctx));
+}
+
+function nextDay({start}: LocalDateRange, ctx: DateRangeContext): LocalDateRange {
+    return singleDay(nextDayInMode(start, ctx));
+}
+
+/** Shifted label for a rolling window - its length alone, e.g. `7 Days`. */
+function lengthLabel(length: string): ShiftedLabel {
+    return () => length;
+}
+
+/** Shifted label for a previous-unit preset - the period the range now covers. */
+function periodLabel(format: string): ShiftedLabel {
+    return ({start}) => start.format(format);
+}
+
+function isAnchorToday({anchorDate, today}: DateRangeContext): boolean {
+    return anchorDate === today;
+}
+
+function anchorLabel(ctx: DateRangeContext): string {
+    return isAnchorToday(ctx) ? 'Today' : 'As Of';
+}
+
+/**
+ * A single day `n` steps from the anchor day, in the T-1 idiom finance users speak - `Today −2`,
+ * `As Of −1` - so a walk through single days reads the same however it began. Zero is the anchor
+ * day itself.
+ */
+function dayFromAnchor(n: number, ctx: DateRangeContext): string {
+    return n ? `${anchorLabel(ctx)} ${fmtDateRangeOffset(n)}` : anchorLabel(ctx);
+}

@@ -5,26 +5,23 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, type Intent, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, type Intent, lookup, managed, XH} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import type {LocalDate} from '@xh/hoist/utils/datetime';
 import {clamp, isEqual} from 'lodash';
 import {createRef, type ReactElement} from 'react';
-import {DateRangePickerModel} from '../DateRangePickerModel';
 import {
-    getDateRangeLabel,
+    DateRangePickerModel,
+    type DateRangePickerTab,
+    type DateRangeSelection,
+    type DateRangeUnit,
     getDateRangeUnitLabel,
     getMonthStart,
+    getQuarterStart,
+    type LocalDateRange,
     MAX_RELATIVE_COUNT,
     MIN_SELECTION_YEAR
-} from '../DateRangeUtils';
-import type {
-    DateRangeCalendarUnit,
-    DateRangePickerTab,
-    DateRangeSelection,
-    DateRangeUnit,
-    LocalDateRange
-} from '../Types';
+} from '@xh/hoist/cmp/daterange';
 
 /**
  * A tab within the picker popover - its rail entry and its content component. Declared by the
@@ -138,62 +135,40 @@ export class DateRangePickerLocalModel extends HoistModel {
         return end.diff(start, 'days') + 1;
     }
 
-    /** Unit shown on the Relative tab's unit control - business days display as days. */
-    get relativeDisplayUnit(): DateRangeCalendarUnit {
-        return this.relativeUnit === 'businessDays' ? 'days' : this.relativeUnit;
-    }
-
-    /** How days are counted - the Relative tab's secondary choice when the unit is days. */
-    get relativeDayType(): 'calendar' | 'business' {
-        return this.relativeUnit === 'businessDays' ? 'business' : 'calendar';
-    }
-
-    get isDayUnit(): boolean {
-        return this.relativeDisplayUnit === 'days';
-    }
-
     /**
-     * False for day units, where a day is already a calendar boundary - snapping has nothing to
-     * round out, so days resolve identically either way. The Relative tab offers the calendar vs.
-     * business day choice in its place.
+     * False for days, where a day is already a calendar boundary - snapping has nothing to round
+     * out, so days resolve identically either way.
      */
     get snapApplies(): boolean {
-        return !this.isDayUnit;
+        return this.relativeUnit !== 'days';
     }
 
-    /** Explains the Relative tab's secondary choice - snap mode, or day type for day units. */
+    /** Explains the Relative tab's snap choice, or the day window when snap does not apply. */
     get relativeModeHelpText(): string {
         const {relativeUnit: unit, anchorDate, anchorNoun} = this,
             n = this.clampedCount,
             singular = getDateRangeUnitLabel(unit, 1).toLowerCase(),
             units = getDateRangeUnitLabel(unit, n).toLowerCase();
 
-        if (unit === 'businessDays') {
-            return `The last ${n} ${units} ending ${anchorNoun}. Non-business days are skipped.`;
-        }
         if (unit === 'days') {
             return `Rolling window of exactly ${n} calendar ${units} ending ${anchorNoun}.`;
         }
         if (this.relativeSnap) {
             // The window stops at the anchor date, so the last unit is normally incomplete -
             // unless the anchor happens to fall on its final day.
-            const partial = anchorDate.endOf(unit) === anchorDate ? '' : ' (partial)';
+            const partial = anchorDate.endOf(unit) === anchorDate ? '' : ' (partial)',
+                containing = this.parentModel.isAnchorToday ? 'today' : 'the anchor date';
             return n === 1
-                ? `The current${partial} calendar ${singular}.`
-                : `${n} calendar ${units}, including the current${partial} one.`;
+                ? `The${partial} calendar ${singular} containing ${containing}.`
+                : `${n} calendar ${units}, ending with the${partial} one containing ${containing}.`;
         }
         return `Rolling window of exactly ${n} ${units} ending ${anchorNoun}.`;
     }
 
     /** Secondary line for the Relative tab's preview - the window's length. */
     get relativePreviewCountText(): string {
-        const days = this.relativeDayCount,
-            dayLabel = days === 1 ? 'day' : 'days';
-        if (this.relativeUnit === 'businessDays') {
-            const n = this.clampedCount;
-            return `${n} business ${n === 1 ? 'day' : 'days'} (${days} calendar ${dayLabel})`;
-        }
-        return `${days} ${dayLabel}`;
+        const days = this.relativeDayCount;
+        return `${days} ${days === 1 ? 'day' : 'days'}`;
     }
 
     //------------------
@@ -213,15 +188,15 @@ export class DateRangePickerLocalModel extends HoistModel {
         return start > maxDate || (minDate && start.endOfMonth() < minDate);
     }
 
+    isQuarterDisabled(quarter: number): boolean {
+        const {minDate, maxDate} = this,
+            start = getQuarterStart(this.gridYear, quarter);
+        return start > maxDate || (minDate && start.endOfQuarter() < minDate);
+    }
+
     get yearSelectable(): boolean {
         const {gridYear, minDate, maxDate} = this;
         return gridYear <= yearOf(maxDate) && (!minDate || gridYear >= yearOf(minDate));
-    }
-
-    get yearRowLabel(): string {
-        const {gridYear: year, parentModel} = this,
-            toDate = getDateRangeLabel({kind: 'year', year}, parentModel.context) === 'YTD';
-        return toDate ? `${year} Year to Date` : `Full Year ${year}`;
     }
 
     //------------------
@@ -258,9 +233,7 @@ export class DateRangePickerLocalModel extends HoistModel {
     //------------------
     // Footer
     //------------------
-    /**
-     * True when the active tab holds a draft to apply. Preset and month/year picks commit on click.
-     */
+    /** True when the active tab holds a draft to apply - preset and period picks commit on click. */
     get applyEnabled(): boolean {
         return this.activeTabId === 'relative' || this.activeTabId === 'custom';
     }
@@ -270,23 +243,28 @@ export class DateRangePickerLocalModel extends HoistModel {
         return !this.parentModel.commitOnChange;
     }
 
-    /** Whether the default footer note about anchoring applies to the configured tabs. */
-    get showAnchorNote(): boolean {
-        const {tabs} = this.parentModel;
-        return tabs.includes('presets') || tabs.includes('relative');
-    }
-
-    /** Default footer note - tells the user what relative periods resolve against. */
-    get anchorNote(): string {
+    /**
+     * Default footer note, as a prose prefix plus the date for the component to set apart. A live
+     * anchor names its clock, so a user whose day differs from the app's sees why. A pinned or
+     * computed anchor is just its date.
+     */
+    get anchorNote(): {prefix: string; date: string} {
         const {anchorDate, parentModel} = this,
-            date = anchorDate.format(parentModel.dateFormat);
-        return anchorDate.isToday
-            ? `Relative periods anchor to today, ${date}.`
-            : `Relative periods anchor to ${date}.`;
+            {anchorDay, businessDayMode} = parentModel,
+            date = parentModel.fmtSingleDay(anchorDate),
+            day = businessDayMode ? 'business day' : 'day';
+
+        let source = '';
+        if (anchorDay === 'localDay') {
+            source = ` your current ${day}`;
+        } else if (anchorDay === 'appDay') {
+            source = ` the current ${day} in ${XH.environmentService.get('appTimeZone')}`;
+        }
+        return {prefix: `Relative to${source}: `, date};
     }
 
     private get anchorNoun(): string {
-        return this.anchorDate.isToday ? 'today' : 'on the anchor date';
+        return this.parentModel.isAnchorToday ? 'today' : 'on the anchor date';
     }
 
     constructor(testId: string, tabSpecs: DateRangePickerTabSpec[]) {
@@ -310,10 +288,7 @@ export class DateRangePickerLocalModel extends HoistModel {
             run: () => this.tabModel.setTabs(this.buildTabs())
         });
 
-        // Never hold a snap that does nothing: it would persist into the committed value and make
-        // `relativeModeHelpText` describe an alignment that is not happening. Tracks both sides -
-        // the unit can change under a set snap, and a persisted `{unit: 'days', snap: true}` can
-        // seed one while the unit is already days.
+        // Never hold a snap that does nothing - it would persist into the committed value.
         this.addReaction({
             track: () => [this.snapApplies, this.relativeSnap],
             run: ([applies, snap]) => {
@@ -346,6 +321,7 @@ export class DateRangePickerLocalModel extends HoistModel {
 
         this.tabModel.activateTab(openTabId);
 
+        // A draft starts at offset zero - stepping is done from the trigger, not the tab.
         if (value.kind === 'relative') {
             this.relativeCount = value.count;
             this.relativeUnit = value.unit;
@@ -356,8 +332,7 @@ export class DateRangePickerLocalModel extends HoistModel {
             this.relativeSnap = false;
         }
 
-        this.gridYear =
-            value.kind === 'month' || value.kind === 'year' ? value.year : yearOf(anchorDate);
+        this.gridYear = 'year' in value ? value.year : yearOf(anchorDate);
 
         // Seed the custom draft from the applied resolved range, clamped to selectable bounds.
         const {start: curStart, end: curEnd} = parentModel.currentRange;
@@ -391,15 +366,11 @@ export class DateRangePickerLocalModel extends HoistModel {
         this.close();
     }
 
+    /** Commit the active tab's draft - a no-op on tabs whose picks commit on click. */
     apply() {
         const {activeTabId} = this;
-        if (activeTabId === 'relative') {
-            this.commit(this.relativeDraft);
-        } else if (activeTabId === 'custom') {
-            this.commit(this.customDraft);
-        } else {
-            this.close();
-        }
+        if (activeTabId === 'relative') this.commit(this.relativeDraft);
+        else if (activeTabId === 'custom') this.commit(this.customDraft);
     }
 
     //------------------
@@ -408,17 +379,6 @@ export class DateRangePickerLocalModel extends HoistModel {
     @action
     stepCount(delta: number) {
         this.relativeCount = clamp(this.clampedCount + delta, 1, MAX_RELATIVE_COUNT);
-    }
-
-    /** Switching units resets the day-type choice - business days apply to days only. */
-    @action
-    setRelativeDisplayUnit(unit: DateRangeCalendarUnit) {
-        this.relativeUnit = unit;
-    }
-
-    @action
-    setRelativeDayType(type: 'calendar' | 'business') {
-        this.relativeUnit = type === 'business' ? 'businessDays' : 'days';
     }
 
     @action
@@ -462,16 +422,12 @@ export class DateRangePickerLocalModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
+    /** Tab configs in the order the app configured them - the model's `tabs` sets the order. */
     private buildTabs(): TabConfig[] {
-        const {tabs} = this.parentModel;
-        return this.tabSpecs
-            .filter(spec => tabs.includes(spec.id))
-            .map(({id, title, icon, content}) => ({
-                id,
-                title,
-                icon,
-                content: () => content({model: this, testId: this.testId})
-            }));
+        return this.parentModel.tabs.map(id => {
+            const {title, icon, content} = this.tabSpecs.find(spec => spec.id === id);
+            return {id, title, icon, content: () => content({model: this, testId: this.testId})};
+        });
     }
 
     private commitDraftIfLive() {
@@ -513,8 +469,9 @@ function tabForKind(kind: DateRangeSelection['kind']): DateRangePickerTab {
         case 'preset':
             return 'presets';
         case 'month':
+        case 'quarter':
         case 'year':
-            return 'monthYear';
+            return 'period';
         default:
             return kind;
     }

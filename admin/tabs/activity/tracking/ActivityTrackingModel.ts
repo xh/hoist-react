@@ -20,8 +20,7 @@ import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec, getCubeLeaves, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {Timer} from '@xh/hoist/utils/async';
-import {LocalDate, ONE_MINUTE} from '@xh/hoist/utils/datetime';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
@@ -107,7 +106,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     @observable.ref trackLogs: PlainObject[] = [];
 
     private _monthFormat = 'MMM YYYY';
-    @managed private anchorTimer: Timer;
 
     constructor() {
         super();
@@ -201,30 +199,22 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     }
 
     private createDateRangePickerModel(): DateRangePickerModel {
-        const ret = new DateRangePickerModel({
+        return new DateRangePickerModel({
             persistWith: this.persistWith,
             presets: [
-                'today',
-                'yesterday',
-                'last7Days',
-                'last30Days',
-                'last90Days',
+                'anchorDay',
+                'prevDay',
+                'prev7Days',
+                'prev30Days',
+                'prev90Days',
                 'mtd',
-                'lastMonth',
+                'prevMonth',
                 'ytd'
             ],
-            initialValue: 'today',
-            anchorDate: LocalDate.currentAppDay()
+            initialValue: 'anchorDay',
+            // Track logs are stamped in the app time zone - follow its day, across midnight too.
+            anchorDay: 'appDay'
         });
-
-        // Admin sessions can stay open across midnight - keep the anchor on the current app day so
-        // relative periods (and the latest selectable date) follow it.
-        this.anchorTimer = Timer.create({
-            runFn: () => ret.setAnchorDate(LocalDate.currentAppDay()),
-            interval: ONE_MINUTE
-        });
-
-        return ret;
     }
 
     private async loadGridAsync() {

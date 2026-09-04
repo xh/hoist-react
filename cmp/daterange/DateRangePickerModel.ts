@@ -6,6 +6,7 @@
  */
 import {
     HoistModel,
+    managed,
     PersistableState,
     PersistenceProvider,
     type PersistOptions,
@@ -13,12 +14,15 @@ import {
 } from '@xh/hoist/core';
 import type {FieldFilterSpec} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {LocalDate} from '@xh/hoist/utils/datetime';
+import {Timer} from '@xh/hoist/utils/async';
+import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty, isEqual, isFunction, isObject, isString, keyBy, uniq, uniqBy} from 'lodash';
 import {dateRangePresets, DEFAULT_DATE_RANGE_PRESETS} from './DateRangePresets';
 import {
+    businessDayOnOrBefore,
     DATE_RANGE_PICKER_TABS,
+    fmtDate,
     fmtDateRange,
     getDateRangeLabel,
     parseDateRangeSelection,
@@ -26,7 +30,9 @@ import {
     stepDateRangeSelection
 } from './DateRangeUtils';
 import type {
+    DateRangeAnchorDay,
     DateRangeContext,
+    DateRangeFormat,
     DateRangePickerTab,
     DateRangePreset,
     DateRangePresetToken,
@@ -41,11 +47,20 @@ import type {
  */
 export interface DateRangePickerConfig {
     /**
-     * Date that relative and to-date selections resolve against, and (unless `maxDate` is set)
-     * the latest selectable date. Supply a function to track a live, observable source - e.g.
-     * the as-of date of the data on display. Default: today, as of construction.
+     * The day that relative and to-date selections resolve against, and (unless `maxDate` is set)
+     * the latest selectable date. Default `'localDay'` - the current day in the browser's time
+     * zone, kept current as the day rolls. See {@link DateRangeAnchorDay} for the app-day, pinned,
+     * and computed alternatives.
      */
-    anchorDate?: LocalDate | (() => LocalDate);
+    anchorDay?: DateRangeAnchorDay;
+
+    /**
+     * True to treat single days by business day: a live `anchorDay` (`'localDay'` or `'appDay'`)
+     * snaps back to the most recent business day, and single-day selections step by business day
+     * rather than calendar day. Multi-day ranges are unaffected - seven days is still seven days.
+     * A pinned or computed `anchorDay` is honored verbatim, never snapped. Default false.
+     */
+    businessDayMode?: boolean;
 
     /**
      * False (default) waits for the user to apply a relative or custom draft before updating the
@@ -57,10 +72,19 @@ export interface DateRangePickerConfig {
     commitOnChange?: boolean;
 
     /**
-     * Format for dates shown by the picker and in `rangeLabel`, as a moment.js format string.
-     * Default `YYYY-MM-DD`, overridable app-wide via `DateRangePickerModel.defaults`.
+     * Format for the dates of a range - the two ends shown on the trigger, beside presets, and in
+     * `rangeLabel`. A moment.js format string, or a function of the date. Default `YYYY-MM-DD`,
+     * overridable app-wide via `DateRangePickerModel.defaults`. The Custom tab's date inputs use
+     * it when it is a string, else `YYYY-MM-DD`.
      */
-    dateFormat?: string;
+    dateFormat?: DateRangeFormat;
+
+    /**
+     * Format for a single day - a one-day range, and the anchor date in the popover footer -
+     * where the weekday matters more than the year. A moment.js format string, or a function of
+     * the date. Default `ddd MMM D`, overridable app-wide via `DateRangePickerModel.defaults`.
+     */
+    singleDayFormat?: DateRangeFormat;
 
     /**
      * Name of the field to filter in the {@link FieldFilterSpec}s produced by
@@ -77,15 +101,15 @@ export interface DateRangePickerConfig {
     initialValue?: DateRangeSelection | DateRangePresetToken | string;
 
     /**
-     * Test for whether a date is a business day, consulted by presets such as `lastBusinessDay`
-     * and available to app-defined presets via {@link DateRangeContext}. Default: weekdays. Supply
-     * to honor a holiday calendar.
+     * Test for whether a date is a business day, consulted by `businessDayMode` and available to
+     * app-defined presets via {@link DateRangeContext}. Default: weekdays. Supply to honor a
+     * holiday calendar.
      */
     isBusinessDay?: (date: LocalDate) => boolean;
 
     /**
-     * Latest selectable date. Default: `anchorDate`, so nothing beyond the anchor can be
-     * selected. Set later than the anchor to allow selection of future dates.
+     * Latest selectable date. Default: the anchor date, so nothing beyond it can be selected. Set
+     * later than the anchor to allow selection of future dates.
      */
     maxDate?: LocalDate;
 
@@ -106,7 +130,7 @@ export interface DateRangePickerConfig {
     presets?: Array<DateRangePresetToken | DateRangePreset>;
 
     /**
-     * Tabs to offer within the picker popover, in rail order. Default: all tabs, less the
+     * Tabs to offer within the picker popover, in display order. Default: all tabs, less the
      * Presets tab when `presets` is empty. A single tab renders without a rail.
      */
     tabs?: DateRangePickerTab[];
@@ -118,6 +142,9 @@ export interface DateRangePickerConfig {
 /** Default `isBusinessDay` - Monday through Friday. */
 const isWeekday = (date: LocalDate): boolean => date.isWeekday;
 
+/** How often a live `anchorDay` is re-evaluated. Cheap: a no-op until the day actually changes. */
+const ANCHOR_REFRESH_INTERVAL = 10 * SECONDS;
+
 export interface DateRangePickerPersistOptions extends PersistOptions {
     /** True (default) to persist the value, or provide value-specific PersistOptions. */
     persistValue?: boolean | PersistOptions;
@@ -127,13 +154,16 @@ export interface DateRangePickerPersistOptions extends PersistOptions {
  * App-wide overridable defaults for {@link DateRangePickerModel}. Instance config takes precedence.
  */
 export interface DateRangePickerModelDefaults {
+    anchorDay?: DateRangeAnchorDay;
+    businessDayMode?: boolean;
     commitOnChange?: boolean;
-    dateFormat?: string;
+    dateFormat?: DateRangeFormat;
+    singleDayFormat?: DateRangeFormat;
 }
 
 /**
- * Model for a control that allows users to select a period of time - a preset (e.g. MTD, Last
- * 30 Days), a relative lookback (e.g. Last 6 Months), a calendar month or year, or a custom
+ * Model for a control that allows users to select a period of time - a preset (e.g. MTD, Prev
+ * 30 Days), a relative lookback (e.g. Prev 6 Months), a calendar month or year, or a custom
  * range of dates - and the API through which an app reads the applied period.
  *
  * The value is a single compound {@link DateRangeSelection}, which this model resolves to a
@@ -141,6 +171,9 @@ export interface DateRangePickerModelDefaults {
  * The value is plain JSON, so it persists via `persistWith` (including through saved views)
  * without custom serialization, and re-resolves as the anchor date moves forward - a persisted
  * `mtd` stays month-to-date.
+ *
+ * The anchor date is live by default: this model keeps it on the current day as midnight passes,
+ * so every derived range, label, and filter follows without app intervention. See `anchorDay`.
  *
  * Construct one within an app model and render a {@link DateRangePicker} bound to it to let users
  * view and change the value. The value and its derived ranges and filters stay live whether or
@@ -153,40 +186,64 @@ export interface DateRangePickerModelDefaults {
 export class DateRangePickerModel extends HoistModel {
     /** App-level defaults for DateRangePickerModel. Instance config takes precedence. */
     static defaults: DateRangePickerModelDefaults = {
+        anchorDay: 'localDay',
+        businessDayMode: false,
         commitOnChange: false,
-        dateFormat: 'YYYY-MM-DD'
+        dateFormat: 'YYYY-MM-DD',
+        singleDayFormat: 'ddd MMM D'
     };
 
     /** The applied selection, always in normalized form. Set via `setValue()`. */
     @observable.ref value: DateRangeSelection;
 
-    /** Tabs offered in the popover, in rail order. Set via `setTabs()` - the picker follows. */
+    /** Tabs offered in the popover, in display order. Set via `setTabs()` - the picker follows. */
     @observable.ref tabs: DateRangePickerTab[];
 
     /** Presets offered on the Presets tab, in display order. Set via `setPresets()`. */
     @observable.ref presets: DateRangePreset[];
 
-    /** Date that relative and to-date selections resolve against. Set via `setAnchorDate()`. */
+    /** How the anchor date is determined - see {@link DateRangeAnchorDay}. Set via `setAnchorDay()`. */
+    @observable.ref anchorDay: DateRangeAnchorDay;
+
+    /**
+     * Date that relative and to-date selections resolve against - `anchorDay` resolved, and (in
+     * `businessDayMode`) snapped to a business day when live. Kept current by this model.
+     */
     @observable.ref anchorDate: LocalDate;
+
+    /** The current day in the browser's time zone - the reader's "today". Kept current. */
+    @observable.ref today: LocalDate;
 
     /** Earliest selectable date, or null if unbounded. Set via `setMinDate()`. */
     @observable.ref minDate: LocalDate | null;
 
-    /** Business-day test used by presets. Set via `setIsBusinessDay()`. */
+    /** Business-day test used by `businessDayMode` and presets. Set via `setIsBusinessDay()`. */
     @observable.ref isBusinessDay: (date: LocalDate) => boolean;
 
+    @bindable businessDayMode: boolean;
     @bindable commitOnChange: boolean;
-    @bindable dateFormat: string;
+    @bindable.ref dateFormat: DateRangeFormat;
+    @bindable.ref singleDayFormat: DateRangeFormat;
     @bindable filterField: string;
 
     /** The initial value, and the fallback for a missing or invalid persisted value. */
     readonly defaultValue: DateRangeSelection;
 
     @observable.ref private explicitMaxDate: LocalDate | null;
+    @managed private anchorTimer: Timer;
 
     /** Latest selectable date - the explicit `maxDate` config if set, otherwise `anchorDate`. */
     get maxDate(): LocalDate {
         return this.explicitMaxDate ?? this.anchorDate;
+    }
+
+    /**
+     * True if the anchor date is the reader's current day - when `anchorDay` reads "Today". False
+     * for any other day, however the anchor got there (pinned, business-day snapped, or an app
+     * time zone a day apart from the browser's) - the picker then reads "As Of" with the date.
+     */
+    get isAnchorToday(): boolean {
+        return this.anchorDate === this.today;
     }
 
     /** Configured presets, keyed by token. */
@@ -198,8 +255,16 @@ export class DateRangePickerModel extends HoistModel {
     /** The live context that selections resolve against. */
     @computed
     get context(): DateRangeContext {
-        const {anchorDate, minDate, maxDate, isBusinessDay, presetMap: presets} = this;
-        return {anchorDate, minDate, maxDate, isBusinessDay, presets};
+        const {anchorDate, today, minDate, maxDate, isBusinessDay, businessDayMode} = this;
+        return {
+            anchorDate,
+            today,
+            minDate,
+            maxDate,
+            isBusinessDay,
+            businessDayMode,
+            presets: this.presetMap
+        };
     }
 
     /** Resolved date range for the applied value. */
@@ -217,14 +282,14 @@ export class DateRangePickerModel extends HoistModel {
         return this.resolvedValue.prior;
     }
 
-    /** Short label for the applied value - e.g. `MTD`, `Last 6 Months`, `Aug 2026`, `Custom`. */
+    /** Short label for the applied value - e.g. `MTD`, `Prev 6 Months`, `Aug 2026`, `Custom`. */
     get label(): string {
         return this.getLabel(this.value);
     }
 
     /**
      * Resolved range as `start ▸ end` per `dateFormat`, with `…` for an unbounded edge. A single
-     * day reads as that one date.
+     * day reads as that one date, per `singleDayFormat`.
      */
     get rangeLabel(): string {
         return this.fmtRange(this.currentRange);
@@ -232,14 +297,26 @@ export class DateRangePickerModel extends HoistModel {
 
     /**
      * Longer-form name for the applied value, suitable for panel titles - the period's name
-     * rather than its dates, with months spelled out (e.g. `August 2026`). A custom range is the
-     * one selection with no name, so it falls back to its dates.
+     * rather than its dates, with months spelled out (e.g. `August 2026`). A custom range, and the
+     * anchor day when it is not today, have no name beyond their dates, so they read as those.
      */
     get displayName(): string {
         const {value, currentRange} = this;
-        if (value.kind === 'custom') return this.rangeLabel;
+        if (value.kind === 'custom' || this.labelNeedsDates) return this.rangeLabel;
         if (value.kind === 'month') return currentRange.start.format('MMMM YYYY');
         return this.label;
+    }
+
+    /**
+     * True when `label` alone does not identify the period - a custom range, or the anchor day
+     * when it is not today and so reads only as `As Of`. The picker shows the dates instead.
+     */
+    get labelNeedsDates(): boolean {
+        const {value} = this;
+        return (
+            value.kind === 'custom' ||
+            (value.kind === 'preset' && value.token === 'anchorDay' && !this.isAnchorToday)
+        );
     }
 
     /** True if `stepRange(-1)` would move the applied range - bounded and not yet at `minDate`. */
@@ -266,13 +343,15 @@ export class DateRangePickerModel extends HoistModel {
         tabs,
         presets = DEFAULT_DATE_RANGE_PRESETS,
         initialValue,
-        anchorDate,
+        anchorDay = DateRangePickerModel.defaults.anchorDay,
+        businessDayMode = DateRangePickerModel.defaults.businessDayMode,
         commitOnChange = DateRangePickerModel.defaults.commitOnChange,
         minDate = null,
         maxDate = null,
         isBusinessDay = isWeekday,
         filterField = null,
         dateFormat = DateRangePickerModel.defaults.dateFormat,
+        singleDayFormat = DateRangePickerModel.defaults.singleDayFormat,
         persistWith = null,
         xhName = null
     }: DateRangePickerConfig = {}) {
@@ -280,19 +359,15 @@ export class DateRangePickerModel extends HoistModel {
         makeObservable(this);
         this.xhName = xhName;
 
+        this.businessDayMode = businessDayMode;
         this.commitOnChange = commitOnChange;
         this.dateFormat = dateFormat;
+        this.singleDayFormat = singleDayFormat;
         this.filterField = filterField;
         this.minDate = minDate;
         this.explicitMaxDate = maxDate;
         this.isBusinessDay = isBusinessDay;
-
-        if (isFunction(anchorDate)) {
-            this.anchorDate = anchorDate();
-            this.addReaction({track: anchorDate, run: v => this.setAnchorDate(v)});
-        } else {
-            this.anchorDate = anchorDate ?? LocalDate.today();
-        }
+        this.setAnchorDay(anchorDay);
 
         this.setPresets(presets);
         this.setTabs(
@@ -307,6 +382,25 @@ export class DateRangePickerModel extends HoistModel {
         this.value = this.defaultValue;
 
         if (persistWith) this.initPersist(persistWith);
+
+        // Keep a live anchor on the current day. Idle for a pinned date - nothing to track.
+        this.anchorTimer = Timer.create({
+            runFn: () => this.refreshAnchorDate(),
+            interval: () => (this.isLiveAnchor ? ANCHOR_REFRESH_INTERVAL : 0)
+        });
+
+        this.addReaction(
+            {
+                // A computed anchor may read observables - follow those immediately, not on the
+                // next tick of the timer.
+                track: () => (isFunction(this.anchorDay) ? this.anchorDay() : null),
+                run: () => this.refreshAnchorDate()
+            },
+            {
+                track: () => [this.businessDayMode, this.isBusinessDay],
+                run: () => this.refreshAnchorDate()
+            }
+        );
     }
 
     /**
@@ -358,10 +452,16 @@ export class DateRangePickerModel extends HoistModel {
         if (this.value && !this.parseValue(this.value)) this.value = this.fallbackValue;
     }
 
+    /** Set how the anchor date is determined - see {@link DateRangeAnchorDay}. */
     @action
-    setAnchorDate(anchorDate: LocalDate) {
-        throwIf(!anchorDate, 'DateRangePickerModel requires an anchorDate.');
-        this.anchorDate = anchorDate;
+    setAnchorDay(anchorDay: DateRangeAnchorDay) {
+        throwIf(
+            !anchorDay ||
+                (isString(anchorDay) && anchorDay !== 'localDay' && anchorDay !== 'appDay'),
+            `Invalid DateRangePickerModel anchorDay: '${anchorDay}'.`
+        );
+        this.anchorDay = anchorDay;
+        this.refreshAnchorDate();
     }
 
     @action
@@ -381,10 +481,11 @@ export class DateRangePickerModel extends HoistModel {
     }
 
     /**
-     * Move the applied range by `steps` periods of its own length - e.g. `stepRange(-1)` for the
-     * previous period. Month and year selections keep their kind. All others become a `custom`
-     * selection of the shifted dates. Clamped to `minDate` and `maxDate`, and a no-op when the
-     * range cannot move - see {@link stepDateRangeSelection}.
+     * Move the applied range by `steps` periods - e.g. `stepRange(-1)` for the previous period.
+     * No selection changes kind: presets and relative lookbacks step through their own prior- and
+     * next-range logic via `offset`, months and years by calendar unit, and custom ranges by their
+     * length. Stops at `minDate` and `maxDate`, and a no-op when the range cannot move - see
+     * {@link stepDateRangeSelection}.
      */
     @action
     stepRange(steps: number) {
@@ -431,9 +532,14 @@ export class DateRangePickerModel extends HoistModel {
         return ret;
     }
 
-    /** Format a range as `start ▸ end`, per this model's `dateFormat`. */
+    /** Format a range as `start ▸ end` per this model's `dateFormat` - a single day per `singleDayFormat`. */
     fmtRange(range: LocalDateRange): string {
-        return fmtDateRange(range, this.dateFormat);
+        return fmtDateRange(range, this.dateFormat, this.singleDayFormat);
+    }
+
+    /** Format a single day per this model's `singleDayFormat`. */
+    fmtSingleDay(date: LocalDate): string {
+        return fmtDate(date, this.singleDayFormat);
     }
 
     //------------------------
@@ -442,6 +548,35 @@ export class DateRangePickerModel extends HoistModel {
     @computed.struct
     private get resolvedValue(): ResolvedDateRange {
         return this.resolve(this.value);
+    }
+
+    /** True unless `anchorDay` is a pinned LocalDate. */
+    private get isLiveAnchor(): boolean {
+        return !LocalDate.isLocalDate(this.anchorDay);
+    }
+
+    /**
+     * Re-evaluate `today` and `anchorDate` from `anchorDay`. Assignments are identity no-ops until
+     * the day actually changes, as LocalDate instances are memoized.
+     */
+    @action
+    private refreshAnchorDate() {
+        const {anchorDay, businessDayMode, isBusinessDay} = this,
+            today = LocalDate.today();
+
+        let anchorDate: LocalDate;
+        if (isString(anchorDay)) {
+            // Only a clock-derived anchor is snapped. A pinned or computed date is what the app
+            // asked for - e.g. a month-end that falls on a Sunday.
+            const day = anchorDay === 'appDay' ? LocalDate.currentAppDay() : today;
+            anchorDate = businessDayMode ? businessDayOnOrBefore(day, {isBusinessDay}) : day;
+        } else {
+            anchorDate = isFunction(anchorDay) ? anchorDay() : anchorDay;
+        }
+        throwIf(!anchorDate, 'DateRangePickerModel anchorDay function must return a LocalDate.');
+
+        if (this.today !== today) this.today = today;
+        if (this.anchorDate !== anchorDate) this.anchorDate = anchorDate;
     }
 
     private initPersist({
