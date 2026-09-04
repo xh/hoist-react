@@ -66,11 +66,9 @@
 
 ### ⚙️ Technical
 
-* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children, holding a
-  running total and count as internal aggregator state rather than walking their entire subtree of
-  leaves on every aggregation. Builds, regroups and incremental updates of views with averaged
-  fields are now as cheap as those with `SUM` fields - benched at 6x faster single-record updates on
-  a 200k-row, four-dimension cube with six averaged fields.
+* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
+  walking their entire subtree of leaves, making views with averaged fields as cheap to build,
+  regroup and update as those with `SUM` fields.
     * A row for which `CubeField.canAggregateFn` returns false now contributes nothing to the
       averages of its ancestors, matching how incremental updates have always treated such rows.
       Previously, a full rebuild would compute an ancestor's average from all descendant leaves,
