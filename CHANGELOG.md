@@ -56,6 +56,9 @@
 * Fixed desktop `Select` not reliably scrolling the selected option into view when opening its
   menu - a regression from the v86 react-select upgrade. Selects with `enableFilter: false` never
   scrolled; others did so intermittently.
+* `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
+  names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
+  creating a `View` that exposes leaves.
 
 ### ⚙️ Technical
 
