@@ -318,9 +318,8 @@ Supporting lookups:
 
 All of these accept either a factory name (`'add'`, `'invoice'`) or an FA name (`'plus'`).
 
-A catalog entry carries both forms: `iconName` is the FA name of the glyph, and `name` is its
-primary `Icon` factory name — the pair `IconPicker` chooses between via its `valueField` prop.
-`names` holds every name that resolves to the icon, aliases included.
+A catalog entry carries each form: `iconName` is the FA name of the glyph, `name` is its primary
+`Icon` factory name, and `names` holds every name that resolves to it, aliases included.
 
 ## Letting Users Pick an Icon
 
@@ -337,37 +336,21 @@ formField({
 })
 ```
 
-Filtering matches display names, factory names, aliases, and any `keywords` supplied at
-registration.
+The control's value is the selected icon's FA name (`'cog'`, not `'gear'`) — render it back with
+`Icon.get()`. Filtering matches display names, factory names, aliases, and any `keywords` supplied
+at registration.
 
-### Choosing What Gets Persisted
+The FA name is used rather than the friendlier `Icon` factory name because it does not belong to
+the app. Factory names do: rename a registration from `invoice` to `invoiceIcon` and every value
+already persisted under the old name is dead, silently. FA names come from FontAwesome and are
+unaffected by anything an app does to its own factories.
 
-The control's value is a stable identifier for the selected icon, and `valueField` decides which
-one:
+If an app does want to store its own names, `Icon.getCatalogEntry(iconName).name` converts on the
+way out — but understand what that couples the stored data to.
 
-| `valueField`         | Value for the gear icon | Notes                                                   |
-|----------------------|-------------------------|---------------------------------------------------------|
-| `'iconName'` (default) | `'cog'`               | The FA name of the glyph. Unambiguous, and unaffected by how Hoist or the app names its factories. |
-| `'name'`             | `'gear'`                | The `Icon` factory name. More readable in stored data, and follows the app if it later re-points that factory at a different glyph. |
-
-```typescript
-// Persist 'gear' rather than 'cog'
-iconPicker({valueField: 'name'})
-```
-
-Both forms round-trip through `Icon.get()`, and both are accepted as an incoming value regardless
-of the setting — so switching `valueField` will not orphan values already persisted.
-
-The trade-off is what should happen if the app later changes its mind about an icon. Persisting
-`iconName` pins the user's choice to the glyph they actually saw. Persisting `name` follows the
-app: override `Icon.gear()` via `Icon.register({replace: true})` and every stored `'gear'` renders
-the new glyph.
-
-### Other Props
-
-`compact` for dense layouts, `columns` to size the grid, `prefix` to render the grid in a specific
-weight, and `icons` to restrict the offering to a curated subset. Register an icon with
-`hidden: true` to keep it out of pickers while leaving it usable in code.
+Useful props: `compact` for dense layouts, `columns` to size the grid, `prefix` to render the grid
+in a specific weight, and `icons` to restrict the offering to a curated subset. Register an icon
+with `hidden: true` to keep it out of pickers while leaving it usable in code.
 
 ## IconProps Reference
 
