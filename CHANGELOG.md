@@ -79,6 +79,13 @@
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
 * Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
 
+### 📚 Libraries
+
+* @daypicker/react `added @ 10.0` - the mobile `DateInput` calendar, replacing `react-day-picker`
+  9.x under the library's new scoped package name. Hoist's `kit/react-day-picker` import path and
+  the `dayPickerProps` escape hatch are unchanged.
+* react-day-picker `removed`
+
 ## 87.1.1 - 2026-09-02
 
 ### 🐞 Bug Fixes
