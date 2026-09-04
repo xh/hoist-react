@@ -18,44 +18,30 @@
 
 * Added `DateRangePicker` (`desktop/cmp/daterange`), a compact control for selecting a period as a
   preset (Today, MTD, Prev 30 Days, ...), a relative lookback, a calendar month or year, or a custom
-  date range. Its `DateRangePickerModel` persists the selection as plain JSON, resolves it to date
-  ranges and `FieldFilterSpec`s, keeps a live `anchorDay` current across midnight, steps periods
-  back and forth without changing their kind, and offers a `businessDayMode` for single-day walks.
-* The Admin Console's Activity Tracking tab now selects its query period with a `DateRangePicker`.
-  Periods saved in existing views reset to Today on first load.
-* Added `Icon.calendarDays` and `Icon.calendarRange`.
-* Added `HoistBase.xhName`, an optional developer-facing name shown alongside the class name in log
-  output, trace spans (new `xh.name` tag), and the Inspector. Accepted as a config by Hoist's
-  config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`, `PanelModel`, etc.),
-  which also name the child models they create. Services are named with their `XH` key (e.g.
-  `fetchService`), and `XH.appModel` and the app container's models by their property (`appModel`,
-  `routerModel`, `pageStateModel`, ...). Instances log as `ClassName [xhName]`, or `ClassName [id]`
-  when unnamed, so peers of the same class can be told apart. A name matching the class name (as for
-  services and `appModel`) declares a singleton and logs as the bare class name. The Inspector
-  labels instances the same way.
-* Overhauled the Hoist Inspector into a standalone developer tool, now opening in its own browser
-  window (one per app tab) with top-level `Objects` and `Memory` tabs. Allow popups for the app's
-  origin - if the window is blocked, the Inspector deactivates with a toast.
-    * Objects: star any instance or property to pin it to a new `Watchlist` tab, which drives the
-      Properties and Diagnostics details just as the `All` grid does. Starred instances with an
-      `xhName` persist across reloads, showing as placeholder rows until alive again.
-    * Instances are labelled as in log output (`ClassName [xhName]` / `ClassName [id]`) and grouped
-      by type, with unnamed instances hidden behind a new `Anon` quick filter.
-    * Memory: stats are persisted per browser tab, so trends leading up to a reload survive it, and
-      a new button forces a GC when Chrome is launched with `--js-flags=--expose-gc`.
+  date range. Its `DateRangePickerModel` persists the selection as JSON and resolves it to date
+  ranges and `FieldFilterSpec`s.
+* Added `IntentInput` (desktop), a compact input for selecting a Hoist `Intent`.
 * Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
   mobile) to provide more structure by default to the input control with easy options to customize.
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile
   prop. Defaults to `true`, so a filled control now divides its width into equal segments rather
   than sizing each option to its own label.
-* Added `IntentInput` (desktop), a compact input for selecting a Hoist `Intent`.
+* Added `HoistBase.xhName`, an optional developer-facing name for an instance, shown in log output,
+  trace spans (new `xh.name` tag), and the Inspector. Set it on any Hoist model config to tell peers
+  of the same class apart - instances log as `ClassName [xhName]`, or `ClassName [id]` when unnamed.
+  Hoist names services, `XH.appModel`, and models created by a named parent automatically.
+* Overhauled the Hoist Inspector into a standalone developer tool, now opening in its own browser
+  window (one per app tab) with top-level `Objects` and `Memory` tabs. Allow popups for the app's
+  origin - if the window is blocked, the Inspector deactivates with a toast.
+    * Objects: star any instance or property to keep it in view on a new `Watchlist` tab - starred
+      instances with an `xhName` persist across reloads. Unnamed instances are now hidden by
+      default, behind an `Anon` quick filter.
+    * Memory: stats are persisted per browser tab, so trends leading up to a reload survive it, and
+      a new button forces a GC when Chrome is launched with `--js-flags=--expose-gc`.
 * Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
-  tabs, docked to the right of each grid and tracking its selection. The Config panel shows every
-  view of a config's value - resolved, instance override, database, and typedClass defaults -
-  opening on the most-derived view, and renders config notes as Markdown. Each panel offers an
-  `Edit` button to open the grid's editor, which is now dedicated to editing: the Config editor
-  opens JSON values on the `Database` tab, and double-click no longer opens a view-only dialog for
-  read-only admins.
+  tabs. The Config panel shows every view of a config's value - resolved, instance override,
+  database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
+  grid's editor: double-click no longer opens a view-only dialog for read-only admins.
 
 ### 🐞 Bug Fixes
 
@@ -68,15 +54,6 @@
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
-
-### ⚙️ Technical
-
-* The desktop `GroupingChooser` (in both input and button modes), `ColChooserButton`, and
-  `ZoneMapperButton` trigger buttons now render in their `active` state while their popover is open.
-  These popovers are controlled by Hoist, so Blueprint does not flag their triggers automatically -
-  see the Styles note below for the uncontrolled case.
-* The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
-  (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
 
 ### ✨ Styles
 
@@ -91,6 +68,8 @@
 * Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
 * Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
+* The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
+  (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
 
 ### 📚 Libraries
 
