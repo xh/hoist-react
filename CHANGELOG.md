@@ -70,9 +70,6 @@
 * Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
   regroup and update as those with `SUM` fields.
-    * A row for which `CubeField.canAggregateFn` returns false now contributes nothing to the
-      averages of its ancestors, matching every other aggregator and how incremental updates have
-      always treated such rows.
 * The desktop `GroupingChooser` (in both input and button modes), `ColChooserButton`, and
   `ZoneMapperButton` trigger buttons now render in their `active` state while their popover is open.
   These popovers are controlled by Hoist, so Blueprint does not flag their triggers automatically -
