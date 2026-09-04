@@ -6,9 +6,8 @@
  */
 
 import {AggregationContext} from './AggregationContext';
-import {BaseRow} from '../row/BaseRow';
-import {LeafRow} from '../row/LeafRow';
 import {RowUpdate} from '../row/RowUpdate';
+import {ViewRow} from '../ViewRow';
 
 /**
  * Abstract base class for Cube field aggregation functions.
@@ -43,7 +42,7 @@ export abstract class Aggregator {
      * @param fieldName - name of field to perform the aggregation on.
      * @param context - current aggregation context
      */
-    abstract aggregate(rows: BaseRow[], fieldName: string, context: AggregationContext);
+    abstract aggregate(rows: ViewRow[], fieldName: string, context: AggregationContext);
 
     /**
      * Adjust an aggregated value, by replacing one of its constituent components.
@@ -56,7 +55,7 @@ export abstract class Aggregator {
      * @param context - current aggregation context
      * @returns new aggregate value
      */
-    replace(rows: BaseRow[], currVal: any, update: RowUpdate, context: AggregationContext): any {
+    replace(rows: ViewRow[], currVal: any, update: RowUpdate, context: AggregationContext): any {
         return this.aggregate(rows, update.field.name, context);
     }
 
@@ -66,10 +65,10 @@ export abstract class Aggregator {
      * @param rows - array of child rows
      * @param fn - the function to call on each leaf.
      */
-    protected forEachLeaf(rows: BaseRow[], fn: (leaf: LeafRow) => boolean | void): boolean {
+    protected forEachLeaf(rows: ViewRow[], fn: (leaf: ViewRow) => boolean | void): boolean {
         for (const row of rows) {
             if (row.isLeaf) {
-                const res = fn(row as LeafRow);
+                const res = fn(row);
                 if (res === false) return false;
             } else {
                 const res = this.forEachLeaf(row.children, fn);

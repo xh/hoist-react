@@ -31,6 +31,10 @@ export abstract class ParentRow extends BaseRow {
     // `canAggregateFn` results by field name - null unless the view has such fields.
     private canAggResults: PlainObject = null;
 
+    // Aggregator state by field name, written by the aggregator via `setAggState` - null unless
+    // the view has fields that compose from their children's state.
+    aggStates: PlainObject = null;
+
     // Level of this row within the query's dimensions - bucket rows share the level of the
     // aggregate row above them. Keys the View's per-level field lists.
     private depth: number = null;
@@ -68,7 +72,7 @@ export abstract class ParentRow extends BaseRow {
         view._aggFieldsByDepth[this.depth].forEach(field => {
             const {name} = field;
             if (canAggResults?.[name] !== false) {
-                data[name] = ctx.aggregate(children, field);
+                data[name] = ctx.aggregate(children, field, this);
             }
         });
     }
@@ -86,7 +90,7 @@ export abstract class ParentRow extends BaseRow {
                 {name} = field;
             if (aggFieldNames.has(name) && canAggResults?.[name] !== false) {
                 const oldValue = data[name],
-                    newValue = ctx.replace(children, oldValue, update);
+                    newValue = ctx.replace(children, oldValue, update, this);
                 update.oldValue = oldValue;
                 update.newValue = newValue;
                 myUpdates.push(update);
@@ -173,12 +177,15 @@ export abstract class ParentRow extends BaseRow {
 
     // Re-aggregate a single field in place, returning true if its value changed.
     private recomputeAggregate(field: CubeField): boolean {
-        const {children, data, view} = this,
-            {name} = field,
-            val =
-                this.canAggResults?.[name] !== false
-                    ? view._aggContext.aggregate(children, field)
-                    : null;
+        const {children, data, view, aggStates} = this,
+            {name} = field;
+
+        let val = null;
+        if (this.canAggResults?.[name] !== false) {
+            val = view._aggContext.aggregate(children, field, this);
+        } else if (aggStates) {
+            aggStates[name] = null;
+        }
 
         if (data[name] === val) return false;
 

@@ -5,6 +5,7 @@
 | [Overview](#overview) | Architecture, dimensions vs. measures, CubeField configuration |
 | [Creating a Cube](#creating-a-cube) | Field definitions, data loading |
 | [Built-in Aggregators](#built-in-aggregators) | SUM, AVG, MIN, MAX, and counting aggregators |
+| [Custom Aggregators](#custom-aggregators) | Extending `Aggregator`, weighted averages via aggregator state |
 | [Querying with Views](#querying-with-views) | Grouped queries, grand totals, leaf drill-down, dynamic updates |
 | [Accessing View Data](#accessing-view-data) | Connected stores vs. direct result access |
 
@@ -76,6 +77,72 @@ const cube = new Cube({
 | `'UNIQUE'` | Count of unique values |
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
+
+## Custom Aggregators
+
+Extend `Aggregator` and implement `aggregate()` to add application-specific aggregations. Values
+arrive as the row's direct children - a mix of leaf rows and already-aggregated parent rows, typed
+as `ViewRow` - so most aggregations compose naturally from `row.data[fieldName]`.
+
+Aggregations that cannot be derived from their children's published values alone (a weighted
+average, a standard deviation) can keep the extra terms they need as **aggregator state**, via
+`AggregationContext.setAggState()` / `getAggState()`. This keeps each row's work proportional to
+its child count rather than to its entire subtree of leaves:
+
+```typescript
+export class WeightedAverageAggregator extends Aggregator {
+    readonly weightField: string;
+
+    constructor(weightField: string) {
+        super();
+        this.weightField = weightField;
+    }
+
+    override aggregate(rows, fieldName, context) {
+        let weighted = 0,
+            weight = 0;
+
+        for (const row of rows) {
+            if (row.isLeaf) {
+                const val = row.data[fieldName],
+                    w = row.data[this.weightField];
+                if (val != null && w != null) {
+                    weighted += val * w;
+                    weight += w;
+                }
+            } else {
+                // Parents publish an average - compose from their state instead.
+                const state = context.getAggState(row);
+                if (state) {
+                    weighted += state.weighted;
+                    weight += state.weight;
+                }
+            }
+        }
+
+        context.setAggState({weighted, weight});
+        return weight ? weighted / weight : null;
+    }
+}
+```
+
+Then reference it from a field: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`.
+
+The rows handed to an aggregator are typed as `ViewRow` - the row-level API shared by aggregators
+and the `lockFn` / `omitFn` / `bucketSpecFn` hooks. Note the distinction from `ViewRowData`, which
+is a row's *data* as published to a View's result and its connected stores.
+
+Two rules to observe:
+
+* **Write state on every `aggregate()` call.** Rows are recomputed in place when reused across
+  query results, so a state value left over from a prior result would be read as current.
+* **Override `replace()` only if you can keep state consistent** with the value you return. The
+  inherited implementation re-aggregates from direct children, which is correct and already cheap;
+  see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
+
+Aggregators that depend on values beyond their own children (e.g. percent-of-total) must also
+override `dependsOnChildrenOnly` to return false, which gives them access to
+`AggregationContext.filteredRecords`.
 
 ## Querying with Views
 

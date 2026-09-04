@@ -35,6 +35,9 @@ export interface CubeFieldSpec extends FieldSpec {
      * Evaluated when a row is built and re-evaluated on each subsequent query result for rows
      * that are reused - so may depend on the current {@link AggregationContext} as well as on its
      * first three args. Values are recomputed for any field whose eligibility changes as a result.
+     *
+     * A row for which this returns false publishes a null value and contributes nothing to the
+     * aggregations of its ancestors.
      */
     canAggregateFn?: CanAggregateFn;
 

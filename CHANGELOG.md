@@ -38,6 +38,12 @@
   database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
   grid's editor: double-click no longer opens a view-only dialog for read-only admins.
 
+* Cube `Aggregator` implementations can now hold per-row state via new
+  `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
+  derived from their children's published values alone - e.g. a weighted average - compose from
+  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
+  example.
+
 ### 🐞 Bug Fixes
 
 * Fixed icon misalignment in desktop `DateInput` when a `leftIcon` is specified.
@@ -49,6 +55,18 @@
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
+
+### ⚙️ Technical
+
+* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
+  walking their entire subtree of leaves, making views with averaged fields as cheap to build,
+  regroup and update as those with `SUM` fields.
+
+### ⚙️ Typescript API Adjustments
+
+* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
+  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
+  their rows with unexported internal classes. `RowUpdate` is now exported as well.
 
 ### ✨ Styles
 
