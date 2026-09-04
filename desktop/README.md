@@ -157,8 +157,9 @@ picker({
 
 `IconPicker` lets end users choose an icon, rendering a trigger button that opens a searchable
 grid. Its options come from `Icon.getCatalog()` — Hoist's built-in set plus any icons the app has
-registered via `Icon.register()` — and its value is the selected icon's FontAwesome name, ready to
-persist and render back with `Icon.get()`.
+registered via `Icon.register()` — and its value is a stable identifier ready to persist and render
+back with `Icon.get()`. Use `valueField` to choose which identifier: the icon's FontAwesome name
+(`'cog'`, the default) or its `Icon` factory name (`'gear'`).
 
 ```typescript
 import {iconPicker} from '@xh/hoist/desktop/cmp/input';

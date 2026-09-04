@@ -132,8 +132,18 @@ export interface IconRegistrationConfig {
  * name. Returned by {@link Icon.getCatalog} and used to populate {@link IconPicker}.
  */
 export interface IconCatalogEntry {
-    /** FA name of the underlying glyph - the canonical, persistable identifier for this icon. */
+    /**
+     * FA name of the underlying glyph (e.g. `cog`) - stable across FA versions and independent of
+     * how Hoist or an app happens to name it.
+     */
     iconName: IconName;
+
+    /**
+     * Primary factory name on {@link Icon} for this icon (e.g. `gear`, `invoice`) - Hoist's own
+     * name for a built-in, or the registered `name` for a custom icon. Falls back to `iconName`
+     * for an icon reachable only by its FA name.
+     */
+    name: string;
 
     /** User-facing name for this icon. */
     displayName: string;
@@ -144,7 +154,10 @@ export interface IconCatalogEntry {
     /** All weights/families registered with FA for this icon. */
     prefixes: HoistIconPrefix[];
 
-    /** All factory names on {@link Icon} that resolve to this icon (e.g. `plus` and `add`). */
+    /**
+     * Every name that resolves to this icon - its `iconName`, its `name`, and any semantic aliases
+     * (e.g. `arrows-rotate`, `arrowsRotate`, `sync`). All are accepted by {@link Icon.get}.
+     */
     names: string[];
 
     /** Additional search terms for this icon. */

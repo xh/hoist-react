@@ -12,7 +12,18 @@ import {
 } from '@fortawesome/fontawesome-svg-core';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {castArray, forOwn, isEmpty, isFunction, pull, sortBy, startCase, union, uniq} from 'lodash';
+import {
+    camelCase,
+    castArray,
+    forOwn,
+    isEmpty,
+    isFunction,
+    pull,
+    sortBy,
+    startCase,
+    union,
+    uniq
+} from 'lodash';
 import type {
     HoistIconPrefix,
     Icon as IconSingleton,
@@ -91,6 +102,7 @@ class IconRegistry {
         const factory = this.makeFactory(iconName, props);
         this.upsertEntry({
             iconName,
+            name,
             prefix: config.prefix,
             prefixes: this.detectPrefixes(iconName),
             displayName: displayName ?? startCase(name),
@@ -134,10 +146,17 @@ class IconRegistry {
         forOwn(iconFactories, (factory, name) => {
             const iconName = probeIconName(factory);
             if (!iconName) return;
+
+            // A handful of glyphs have more than one factory (e.g. `folder` and `tab`). Take the
+            // one whose name matches the FA name as the entry's primary, else the first seen, so
+            // pickers label the icon by its most literal name rather than an incidental synonym.
+            const existing = this.entries.get(iconName),
+                isPrimary = !existing || camelCase(iconName) === name;
+
             this.upsertEntry({
                 iconName,
                 prefixes: this.detectPrefixes(iconName),
-                displayName: startCase(name)
+                ...(isPrimary ? {name, displayName: startCase(name)} : {})
             });
             this.addName(name, iconName);
         });
@@ -173,6 +192,7 @@ class IconRegistry {
         if (!entry) {
             entry = {
                 iconName,
+                name: cfg.name ?? iconName,
                 displayName: cfg.displayName ?? startCase(iconName),
                 prefix: cfg.prefix ?? preferredPrefix(cfg.prefixes),
                 prefixes: cfg.prefixes ?? ['far'],
@@ -185,6 +205,7 @@ class IconRegistry {
             this.entries.set(iconName, entry);
             this.addName(iconName, iconName);
         } else {
+            if (cfg.name) entry.name = cfg.name;
             if (cfg.displayName) entry.displayName = cfg.displayName;
             if (cfg.prefix) entry.prefix = cfg.prefix;
             if (cfg.prefixes) entry.prefixes = union(entry.prefixes, cfg.prefixes);

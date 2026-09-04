@@ -34,8 +34,9 @@
   an existing factory, including Hoist's own semantic aliases (`Icon.refresh()`, `Icon.add()`, ...).
 * Added `IconPicker`, a desktop input for choosing an icon, rendering a trigger button that opens a
   searchable grid. Options come from the new `Icon.getCatalog()` - Hoist's built-in set plus
-  anything the app has registered - and its value is the icon's FA name, ready to persist and
-  render back with `Icon.get()`.
+  anything the app has registered. Its value is a stable identifier for the icon, ready to persist
+  and render back with `Icon.get()` - set `valueField` to persist either the FA name (`cog`,
+  the default) or the `Icon` factory name (`gear`).
 * Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
   mobile) to provide more structure by default to the input control with easy options to customize.
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile

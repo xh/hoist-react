@@ -72,6 +72,21 @@ export interface IconPickerProps extends HoistProps, HoistInputProps, LayoutProp
 
     /** True (default) to style trigger button background and borders to match inputs. */
     styleButtonAsInput?: boolean;
+
+    /**
+     * Which identifier from the selected icon's {@link IconCatalogEntry} to use as this control's
+     * value. Defaults to `'iconName'`.
+     *
+     * - `'iconName'` persists the FontAwesome name of the glyph (e.g. `'cog'`) - unambiguous, and
+     *   unaffected by an app later renaming or re-pointing its own factories.
+     * - `'name'` persists the `Icon` factory name (e.g. `'gear'`, `'invoice'`) - more readable in
+     *   stored data, and follows the app if it later re-points that factory at a different glyph
+     *   via `Icon.register({replace: true})`.
+     *
+     * Either form round-trips through `Icon.get()`, and both are accepted as an incoming value
+     * regardless of this setting - so switching it will not orphan values already persisted.
+     */
+    valueField?: 'iconName' | 'name';
 }
 
 /**
@@ -82,8 +97,9 @@ export interface IconPickerProps extends HoistProps, HoistInputProps, LayoutProp
  * custom icons the app has registered via {@link Icon.register}. Apps therefore get their own
  * icons in this picker for free, with no additional wiring.
  *
- * The control's value is the selected icon's FontAwesome name (e.g. `'gear'`) - a stable,
- * persistable identifier that can be rendered back via `Icon.get(value)`.
+ * The control's value is a stable, persistable identifier for the selected icon, rendered back
+ * via `Icon.get(value)`. By default that is the icon's FontAwesome name (e.g. `'cog'`) - set
+ * `valueField: 'name'` to persist its `Icon` factory name (e.g. `'gear'`) instead.
  */
 export const [IconPicker, iconPicker] = hoistCmp.withFactory<IconPickerProps>({
     displayName: 'IconPicker',
@@ -152,6 +168,11 @@ class IconPickerModel extends HoistInputModel {
         return withDefault(this.componentProps.columns, 8);
     }
 
+    /** The identifier this control persists for the given icon - see `IconPickerProps.valueField`. */
+    valueFor(entry: IconCatalogEntry): string {
+        return this.componentProps.valueField === 'name' ? entry.name : entry.iconName;
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -216,7 +237,7 @@ class IconPickerModel extends HoistInputModel {
     }
 
     onIconClick(entry: IconCatalogEntry) {
-        this.noteValueChange(entry.iconName);
+        this.noteValueChange(this.valueFor(entry));
         this.closePopover();
     }
 
