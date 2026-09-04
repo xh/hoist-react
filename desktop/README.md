@@ -107,6 +107,7 @@ Desktop form inputs with Blueprint styling:
 | `DateInput` | Date picker with calendar popup |
 | `Select` | Dropdown/autocomplete selection |
 | `Picker` | Popover-based option picker for space-constrained areas |
+| `IconPicker` | Popover-based picker for choosing a Hoist/FontAwesome icon |
 | `Checkbox` | Boolean checkbox |
 | `SwitchInput` | Toggle switch |
 | `RadioInput` | Radio button group |
@@ -153,6 +154,25 @@ picker({
     placeholder: 'Regions...'
 })
 ```
+
+`IconPicker` lets end users choose an icon, rendering a trigger button that opens a searchable
+grid. Its options come from `Icon.getCatalog()` — Hoist's built-in set plus any icons the app has
+registered via `Icon.register()` — and its value is the selected icon's FontAwesome name, ready to
+persist and render back with `Icon.get()`.
+
+```typescript
+import {iconPicker} from '@xh/hoist/desktop/cmp/input';
+
+formField({
+    field: 'icon',
+    item: iconPicker({compact: true})
+})
+
+// Render the persisted choice
+Icon.get(view.icon)
+```
+
+See [`/icon/README.md`](../icon/README.md) for icon registration and the full `Icon` API.
 
 ### Panel (`/cmp/panel/`)
 

@@ -3,8 +3,9 @@
 Hoist's icon system provides a factory-based API for
 rendering [FontAwesome](https://fontawesome.com/) Pro icons throughout an application. Rather than
 importing individual FA icon definitions in each file that uses them, applications use the `Icon`
-singleton — a centralized catalog of 150+ direct icon factories and ~40 semantic aliases, all
-pre-registered with the FA library in four weight variants (regular, solid, light, thin).
+singleton — a centralized catalog of 200+ direct icon factories and ~40 semantic aliases, all
+pre-registered with the FA library in four weight variants (regular, solid, light, thin). Apps
+extend that catalog with their own icons via `Icon.register()`.
 
 ## Overview
 
@@ -12,7 +13,7 @@ Icons are a core visual element across Hoist UIs — they appear in buttons, too
 menus, tabs, tree nodes, toast messages, and more. The `Icon` singleton standardizes access to a
 curated set of FA Pro icons and provides:
 
-- **Named factory methods** — 150+ direct factories (`Icon.check()`, `Icon.gear()`,
+- **Named factory methods** — 200+ direct factories (`Icon.check()`, `Icon.gear()`,
   `Icon.user()`, etc.) plus ~40 semantic aliases
 - **Semantic aliases** — `Icon.add()`, `Icon.edit()`, `Icon.delete()`, `Icon.search()`,
   `Icon.save()`, `Icon.refresh()` that delegate to specific visual icons, providing a consistent
@@ -28,6 +29,10 @@ curated set of FA Pro icons and provides:
   automatically, ensuring consistent spacing in menus, buttons, and toolbars
 - **HTML mode** — Render as raw SVG strings for non-React contexts (e.g. Highcharts tooltips)
 - **File-type icons** — `Icon.fileIcon({filename})` maps extensions to appropriate icons
+- **Custom icon registration** — `Icon.register()` imports an app's own FA icons, installs
+  factories for them, and makes them available for name-based lookup and user-facing pickers
+- **Name-based lookup** — `Icon.get(name)` renders any registered icon from a dynamic string,
+  e.g. a user's choice persisted to the server
 
 ## Architecture
 
@@ -38,7 +43,8 @@ icon/
 ├── index.ts             # Barrel exports + FA library registration (all icon imports)
 └── impl/
     ├── IconCmp.ts       # React component wrapping FontAwesomeIcon
-    └── IconHtml.ts      # Raw SVG string renderer for asHtml mode
+    ├── IconHtml.ts      # Raw SVG string renderer for asHtml mode
+    └── IconRegistry.ts  # Catalog of all known icons - built-ins plus app registrations
 ```
 
 The `index.ts` barrel file is where all FontAwesome icon definitions are imported from the
@@ -50,6 +56,11 @@ methods is available at runtime.
 Each factory method on `Icon` delegates to `Icon.icon()`, which creates either an `IconCmp` (a
 React component wrapping FA's `FontAwesomeIcon`) or an `IconHtml` (a raw SVG string), depending on
 the `asHtml` flag.
+
+`IconRegistry` maintains a catalog of every icon Hoist knows about, keyed by FA name. Hoist's own
+icons are cataloged lazily, by calling each factory in `Icon.ts` and reading the icon it renders —
+so the catalog stays in sync with that file automatically. Apps add to it via `Icon.register()`.
+The catalog powers `Icon.get()`, `Icon.getCatalog()`, and the desktop `IconPicker` component.
 
 ## Usage Patterns
 
@@ -180,51 +191,155 @@ menuItem({icon: Icon.check(), text: 'Option A'}),
 menuItem({icon: Icon.placeholder(), text: 'Option B'})  // aligned with A
 ```
 
-## App-Level Icon Catalogs
+## Registering Custom Icons
 
-Applications are strongly encouraged to create their own `Icons.ts` file (typically in a `core/` or
-`common/` directory) to centralize icon usage across the app. This file serves two purposes:
+Hoist's built-in set covers most needs, but apps regularly want glyphs of their own. `Icon.register()`
+is the supported way to add them: pass the FA definitions your app imports and Hoist will add them
+to the FA library, install a factory for them on the `Icon` singleton, and include them in the
+catalog that `IconPicker` offers to users.
 
-1. **Register custom FA icons** not included in Hoist's built-in set — import from the
-   `@fortawesome/pro-*-svg-icons` packages and call `library.add()` to make them available at
-   runtime. (This can also be done in `Bootstrap.ts`, but co-locating registration with the
-   factories that use them keeps things organized.)
-2. **Define app-specific semantic factories** that map domain concepts to consistent icons
-
-This pattern ensures that domain-specific icons are used consistently throughout the app. When a
-concept like "loan" or "invoice" always maps to the same icon, the app's visual language becomes
-more coherent — and changing an icon later requires only a single edit.
+It returns the generated factory, so the idiomatic pattern is to export it directly:
 
 ```typescript
 // src/core/Icons.ts
-import {library} from '@fortawesome/fontawesome-svg-core';
 import {faFileInvoiceDollar} from '@fortawesome/pro-regular-svg-icons';
-import {Icon, IconProps} from '@xh/hoist/icon';
+import {faFileInvoiceDollar as faFileInvoiceDollarSolid} from '@fortawesome/pro-solid-svg-icons';
+import {Icon} from '@xh/hoist/icon';
 
-// 1. Register custom FA icons not in Hoist's built-in set
-library.add(faFileInvoiceDollar);
-
-// 2. Define app-specific semantic factories
-//    Use Icon.icon() with iconName for custom-registered icons
-export const invoiceIcon = (opts: IconProps = {}) =>
-    Icon.icon({iconName: 'file-invoice-dollar', ...opts});
-
-//    Delegate to existing Hoist factories to give them app-specific names
-export const dealIcon = (opts: IconProps = {}) =>
-    Icon.handshake(opts);
-export const dashboardIcon = (opts: IconProps = {}) =>
-    Icon.layout(opts);
-
-// Factories can embed defaults for intent, size, or weight
-export const approvedIcon = (opts: IconProps = {}) =>
-    Icon.checkCircle({intent: 'success', ...opts});
-export const rejectedIcon = (opts: IconProps = {}) =>
-    Icon.xCircle({intent: 'danger', ...opts});
+export const invoiceIcon = Icon.register({
+    name: 'invoice',
+    defs: [faFileInvoiceDollar, faFileInvoiceDollarSolid],
+    keywords: ['billing', 'receivable']
+});
 ```
 
-App-level factories follow the same `(opts?) => Icon.xxx(opts)` signature as Hoist's own
-factories, so they can be used interchangeably — in buttons, grid columns, menus, and anywhere
-else that accepts an icon element.
+That single call gives the app four equivalent ways to use the icon:
+
+```typescript
+invoiceIcon()                    // the returned factory - typed, and IDE-discoverable
+invoiceIcon({prefix: 'fas'})     // the solid variant registered above
+Icon.invoice()                   // installed on the Icon singleton
+Icon.get('invoice')              // resolved dynamically by name
+```
+
+Registration is a one-time, app-bootstrap concern — import your `Icons.ts` from `Bootstrap.ts` (or
+anywhere that runs before your first render) so the factories are installed before use.
+
+### Registering Multiple Weights
+
+Pass every weight your app intends to use in `defs` — they are all variants of the same icon, so
+Hoist registers them together under one entry. If a caller asks for a weight that was not imported,
+Hoist renders the icon's default variant rather than the blank space FA would otherwise produce.
+
+`prefix` sets that default explicitly. Otherwise Hoist picks the best available, preferring regular,
+then solid, light, thin and brands — so an app that imports only the solid variant gets solid by
+default, with no need to remember a `prefix` at every call site.
+
+### Baked-In Props
+
+Use `props` to bake defaults into the generated factory. Callers can override any of them, and
+`className` values are merged rather than replaced:
+
+```typescript
+export const approvedIcon = Icon.register({
+    name: 'approved',
+    iconName: 'circle-check',
+    props: {intent: 'success'}
+});
+
+approvedIcon()                    // green check
+approvedIcon({intent: 'primary'}) // caller wins
+```
+
+Note this example uses `iconName` rather than `defs` — an alternative form that aliases an icon
+already registered with FA (typically one of Hoist's own) under an app-specific name, with no
+import required.
+
+### Overriding Hoist's Icons
+
+Any factory can be replaced, including Hoist's own. `replace: true` is required — without it,
+registering over an existing name throws, guarding against a typo silently clobbering a built-in:
+
+```typescript
+import {faArrowRotateRight} from '@fortawesome/pro-regular-svg-icons';
+
+// Every Icon.refresh() in Hoist and the app now renders this glyph.
+Icon.register({name: 'refresh', defs: [faArrowRotateRight], replace: true});
+```
+
+Hoist's ~40 semantic aliases (`refresh`, `add`, `delete`, `save`, ...) are the natural targets here,
+since they exist precisely to give apps a single place to change a concept's icon.
+
+### Registering Several at Once
+
+```typescript
+Icon.registerAll([
+    {name: 'invoice', defs: [faFileInvoiceDollar]},
+    {name: 'deal', defs: [faHandshake]},
+    {name: 'dashboard', iconName: 'table-layout'}
+]);
+```
+
+### App-Specific Names for Hoist Icons
+
+Not every app icon needs an FA import. Plain factory functions remain the lightest way to give a
+Hoist icon a domain-specific name:
+
+```typescript
+export const dealIcon = (opts: IconProps = {}) => Icon.handshake(opts);
+```
+
+Reach for `Icon.register()` when the icon is not in Hoist's set, when it should appear in an
+`IconPicker`, or when it needs to be resolvable by name.
+
+## Rendering Icons by Name
+
+`Icon.get()` renders any registered icon from a string, which is what makes dynamic icon values -
+a user's choice persisted to the server, a config-driven menu - practical:
+
+```typescript
+Icon.get('invoice')                        // custom icon, by its registered name
+Icon.get('plus')                           // built-in, by FA name
+Icon.get('add', {intent: 'success'})       // built-in, by semantic alias
+```
+
+Unknown names return `null` and log a warning rather than throwing, so a stale persisted value
+degrades gracefully. Use `Icon.exists()` to test a name without the warning.
+
+Supporting lookups:
+
+| Method                        | Returns                                                        |
+|-------------------------------|----------------------------------------------------------------|
+| `Icon.get(name, props?)`      | Rendered icon element, or null if not registered                |
+| `Icon.getFactory(name)`       | The icon's factory, or null                                     |
+| `Icon.getCatalogEntry(name)`  | Metadata for one icon (display name, FA name, weights, aliases) |
+| `Icon.exists(name)`           | True if the name resolves to a registered icon                  |
+| `Icon.getCatalog()`           | Metadata for every known icon, sorted by display name           |
+
+All of these accept either a factory name (`'add'`, `'invoice'`) or an FA name (`'plus'`).
+
+## Letting Users Pick an Icon
+
+The desktop `IconPicker` input renders a trigger button that opens a searchable grid of icons. Its
+options come straight from `Icon.getCatalog()`, so anything the app registers shows up with no
+additional wiring:
+
+```typescript
+import {iconPicker} from '@xh/hoist/desktop/cmp/input';
+
+formField({
+    field: 'icon',
+    item: iconPicker()
+})
+```
+
+The control's value is the selected icon's FA name — a stable identifier to persist and render
+back with `Icon.get()`. Filtering matches display names, factory names, aliases, and any
+`keywords` supplied at registration.
+
+Useful props: `compact` for dense layouts, `columns` to size the grid, `prefix` to render the
+grid in a specific weight, and `icons` to restrict the offering to a curated subset. Register an
+icon with `hidden: true` to keep it out of pickers while leaving it usable in code.
 
 ## IconProps Reference
 
@@ -244,7 +359,9 @@ else that accepts an icon element.
 ### Importing FA Icons Directly Instead of Using Icon Factories
 
 The `Icon` singleton pre-registers all its icons with the FA library. Importing individual FA icons
-in application code is only needed for icons *not* already in Hoist's set.
+in application code is only needed for icons *not* already in Hoist's set — and those should go
+through `Icon.register()` rather than `library.add()`, so they get a factory, a name, and a place
+in `IconPicker`.
 
 ```typescript
 // ✅ Do: Use the Icon singleton
@@ -253,24 +370,37 @@ Icon.check()
 
 // ❌ Don't: Import FA icons directly for icons Hoist already provides
 import {faCheck} from '@fortawesome/pro-regular-svg-icons';
+
+// ❌ Don't: Add icons to the FA library by hand - Hoist can't see them
+import {library} from '@fortawesome/fontawesome-svg-core';
+library.add(faFileInvoiceDollar);
+
+// ✅ Do: Register them with Hoist
+Icon.register({name: 'invoice', defs: [faFileInvoiceDollar]});
 ```
 
 ### Forgetting `prefix` with `Icon.icon()`
 
-When using `Icon.icon()` directly for custom icons, the default prefix is `'far'` (regular). If
-you registered a solid-only icon, you must specify `prefix: 'fas'`:
+`Icon.icon()` defaults to `prefix: 'far'` (regular) and renders nothing if that weight was never
+imported — a silent failure that is easy to miss with a solid-only custom icon.
+
+Factories generated by `Icon.register()` do not have this problem: they know which weights they
+were registered in and fall back to the icon's default rather than rendering blank. Prefer them
+(or `Icon.get()`) over calling `Icon.icon()` with a raw name.
 
 ```typescript
-// ✅ Do: Match the prefix to how you registered the icon
-Icon.icon({iconName: 'custom-icon', prefix: 'fas'})
+// ✅ Do: Register the icon, then use the factory it returns
+const invoiceIcon = Icon.register({name: 'invoice', defs: [faFileInvoiceDollarSolid]});
+invoiceIcon()                                        // solid, its only registered weight
 
-// ❌ Don't: Assume regular prefix when you registered a solid icon — renders blank
-Icon.icon({iconName: 'custom-icon'})
+// ❌ Don't: Assume regular weight for a solid-only icon — renders blank
+Icon.icon({iconName: 'file-invoice-dollar'})
 ```
 
 ### Using Non-FontAwesome Icon Libraries
 
-Always use FontAwesome icons via Hoist's `Icon` singleton or the app-level `Icons.ts` pattern.
+Always use FontAwesome icons via Hoist's `Icon` singleton or an app-level `Icons.ts` of registered
+icons.
 Do not pull icons from other libraries (e.g. Blueprint icons, Material icons) unless the app has
 an explicit directive to do so. Mixing icon libraries breaks the cohesive visual language that FA
 provides, and FontAwesome Pro's catalog is extensive enough to cover virtually any use case. If
@@ -290,13 +420,20 @@ dependency up to date, but always verify the version before spending time wiring
 
 ### Using Brand Icons Without Registration
 
-The `'fab'` (brands) prefix is supported but requires a separate import of
-`@fortawesome/free-brands-svg-icons` in your app's bootstrap code. Brand icons are not bundled
-with Hoist by default.
+The `'fab'` (brands) prefix is supported but brand icons are not bundled with Hoist. Import them
+from `@fortawesome/free-brands-svg-icons` and register them like any other custom icon:
+
+```typescript
+import {faGithub} from '@fortawesome/free-brands-svg-icons';
+
+Icon.register({name: 'github', defs: [faGithub]});
+```
 
 ## Related Packages
 
 - [`/cmp/spinner/`](../cmp/spinner/) — Spinner component renders an animated FA icon, configurable
   via static defaults on the `Spinner` class
+- [`/desktop/cmp/input/`](../desktop/README.md#input-components-cmpinput) — `IconPicker` lets end
+  users choose from the registered icon catalog
 - [`/desktop/`](../desktop/README.md) — Desktop components use icons extensively in buttons,
   toolbars, menus, and grid columns

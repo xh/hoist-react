@@ -1,0 +1,181 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-icon-picker {
+  display: inline-flex;
+
+  // Ensure popover target stretches to fill layout width.
+  > .bp6-popover-target {
+    display: flex;
+    flex: 1;
+  }
+
+  &__trigger {
+    justify-content: flex-start;
+
+    .bp6-button-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      text-align: left;
+    }
+
+    &--empty .bp6-button-text {
+      color: var(--xh-input-placeholder-text-color);
+    }
+  }
+
+  // Selector needs parent .xh-icon-picker class for specificity (0,3,0) to beat Blueprint's
+  // `.bp6-dark .bp6-button.bp6-minimal { box-shadow: none }` - see Picker.scss for the same
+  // treatment on its trigger.
+  .xh-icon-picker__trigger--as-input.xh-button {
+    background-color: var(--xh-input-bg) !important;
+    border: none;
+    box-shadow: var(--xh-form-field-box-shadow);
+    padding-left: var(--xh-pad-px) !important;
+    padding-right: var(--xh-pad-px) !important;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--xh-input-bg) 94%, gray) !important;
+      box-shadow: var(--xh-form-field-box-shadow) !important;
+    }
+
+    &:active,
+    &.bp6-active {
+      background-color: color-mix(in srgb, var(--xh-input-bg) 88%, gray) !important;
+      box-shadow: var(--xh-form-field-box-shadow) !important;
+    }
+  }
+
+  // Compact mode - trigger button matches compact toolbar button sizing.
+  // .xh-button qualifier needed to beat `.xh-app .xh-button.bp6-button` font-size (0,3,0).
+  &--compact &__trigger.xh-button {
+    min-height: var(--xh-tbar-compact-item-height-px);
+    max-height: var(--xh-tbar-compact-item-height-px);
+    font-size: var(--xh-tbar-compact-font-size-px);
+    padding: 3px var(--xh-pad-half-px);
+  }
+
+  &--compact .xh-icon-picker__trigger--as-input.xh-button {
+    padding: 3px var(--xh-pad-half-px) !important;
+  }
+}
+
+// Popover content renders in a portal, outside the root DOM of the control above.
+.xh-icon-picker__popover.bp6-popover {
+  --xh-icon-picker-cell-size: 30px;
+
+  .bp6-popover-content {
+    padding: 0;
+    border-radius: var(--xh-border-radius-px);
+    box-shadow: var(--xh-popup-shadow);
+    background: var(--xh-bg);
+  }
+
+  &.xh-icon-picker__popover--compact {
+    --xh-icon-picker-cell-size: 24px;
+
+    font-size: var(--xh-tbar-compact-font-size-px);
+
+    .xh-icon-picker__filter,
+    .xh-icon-picker__footer {
+      padding: 3px var(--xh-pad-half-px);
+    }
+  }
+
+  .xh-icon-picker__menu:focus {
+    outline: none;
+  }
+
+  .xh-icon-picker__filter {
+    padding: var(--xh-pad-half-px);
+    border-bottom: 1px solid var(--xh-border-color);
+  }
+
+  .xh-icon-picker__grid {
+    display: grid;
+    gap: 2px;
+    padding: var(--xh-pad-half-px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .xh-icon-picker__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--xh-icon-picker-cell-size);
+    height: var(--xh-icon-picker-cell-size);
+    padding: 0;
+    border: none;
+    border-radius: var(--xh-border-radius-px);
+    background: none;
+    color: var(--xh-text-color);
+    cursor: pointer;
+
+    // Keyboard highlight and hover share a single treatment - hovering moves the highlight, so
+    // the two never disagree.
+    &--active {
+      background-color: var(--xh-bg-alt);
+      color: var(--xh-text-color-highlight);
+    }
+
+    &--selected {
+      background-color: var(--xh-intent-primary-trans2);
+      color: var(--xh-intent-primary);
+    }
+  }
+
+  .xh-icon-picker__no-results {
+    padding: var(--xh-pad-px);
+    color: var(--xh-text-color-muted);
+    font-style: italic;
+    text-align: center;
+  }
+
+  .xh-icon-picker__footer {
+    display: flex;
+    align-items: center;
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    border-top: 1px solid var(--xh-border-color);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  // Reserve the footer's height even when empty, so the popover does not resize as the
+  // highlighted icon changes.
+  .xh-icon-picker__footer-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:empty::before {
+      content: '\00a0';
+    }
+  }
+
+  .xh-icon-picker__footer-action {
+    cursor: pointer;
+    color: var(--xh-intent-primary);
+    padding-left: var(--xh-pad-px);
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &--disabled {
+      cursor: default;
+      color: var(--xh-text-color-muted);
+      opacity: 0.5;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+}

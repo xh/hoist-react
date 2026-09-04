@@ -26,6 +26,16 @@
   and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
   across reloads, so the same set of objects can be followed session to session; those with no live
   instance show as placeholder rows until un-starred.
+* Added `Icon.register()` and `Icon.registerAll()`, a supported API for apps to add their own
+  FontAwesome icons. Pass the imported definitions (any mix of weights) and Hoist adds them to the
+  FA library, installs a factory on `Icon`, and returns that factory for direct export. Registered
+  icons resolve by name via the new `Icon.get()`, and requests for an unimported weight now fall
+  back to the icon's default variant rather than rendering blank. Pass `replace: true` to override
+  an existing factory, including Hoist's own semantic aliases (`Icon.refresh()`, `Icon.add()`, ...).
+* Added `IconPicker`, a desktop input for choosing an icon, rendering a trigger button that opens a
+  searchable grid. Options come from the new `Icon.getCatalog()` - Hoist's built-in set plus
+  anything the app has registered - and its value is the icon's FA name, ready to persist and
+  render back with `Icon.get()`.
 * Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
   mobile) to provide more structure by default to the input control with easy options to customize.
 * Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile

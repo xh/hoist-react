@@ -4,16 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {IconName} from '@fortawesome/fontawesome-svg-core';
+import {IconDefinition, IconName} from '@fortawesome/fontawesome-svg-core';
 import {FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {div} from '@xh/hoist/cmp/layout';
 import {HoistProps, Intent, Thunkable} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
+import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {last, split, toLower} from 'lodash';
 import {ReactElement} from 'react';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
+import {iconRegistry} from './impl/IconRegistry';
 import {SetRequired} from 'type-fest';
 import './Icon.scss';
 
@@ -72,51 +73,99 @@ export type HoistIconPrefix =
     | 'fat' // thin
     | 'fab'; // brands (requires optional import, see Toolbox)
 
-/**
- * Singleton class to provide factories for creating standard FontAwesome-based icons.
- *
- * Hoist imports the licensed "pro" library with additional icons - note this requires fetching the
- * FA npm package via a registry URL w/license token.
- *
- * See https://fontawesome.com/pro#license.
- */
-export const Icon = {
-    /**
-     * Return a Hoist element wrapper around a FontAwesome-based icon.
-     *
-     * Note that for an app to use an icon with this factory, its definition must have been already
-     * imported and registered with FontAwesome. Apps will find many/most of the icons they need
-     * pre-registered and enumerated by the Hoist factories below. Favor those ready-made factories
-     * wherever possible for consistency across and within apps.
-     *
-     * If the FA icon of your dreams is not available, however, you can do a one-time import within
-     * your app bootstrap code, eg:
-     * ```
-     *   import {library} from '@fortawesome/fontawesome-svg-core';
-     *   import {faDreamIcon} from '@fortawesome/pro-regular-svg-icons';
-     *   library.add(faDreamIcon);
-     * ```
-     * and then pass its string name to this factory: `icon({iconName: 'dream-icon'})`
-     */
-    icon(opts: SetRequired<IconProps, 'iconName'>): any {
-        let {
-            iconName,
-            prefix = 'far',
-            className,
-            intent,
-            title,
-            size,
-            asHtml = false,
-            ...rest
-        } = opts ?? {};
-        if (intent) {
-            className = classNames(className, `xh-intent-${intent}`);
-        }
-        return asHtml
-            ? iconHtml({iconName, prefix, className, title, size})
-            : iconCmp({iconName, prefix, className, title, size, ...rest});
-    },
+/** Factory function for a Hoist Icon - returns a rendered icon element for the given props. */
+export type IconFactory = (p?: IconProps) => any;
 
+/**
+ * Config for registering a custom icon with Hoist via {@link Icon.register}.
+ *
+ * Provide either `defs` (FontAwesome icon definitions imported by the app) or `iconName` (to
+ * alias a glyph that has already been registered with the FA library, e.g. by Hoist itself).
+ */
+export interface IconRegistrationConfig {
+    /**
+     * Name for this icon - installed as a factory method on {@link Icon} (e.g. `Icon.invoice()`)
+     * and usable as a key for {@link Icon.get}. Use camelCase, matching Hoist's built-in factories.
+     */
+    name: string;
+
+    /**
+     * FontAwesome icon definition(s), as imported from the `@fortawesome/pro-*-svg-icons` packages.
+     * Pass multiple weight variants of the *same* icon to make them all available - Hoist will add
+     * them to the FA library and select the best available variant at render time.
+     */
+    defs?: IconDefinition | IconDefinition[];
+
+    /**
+     * FA name of an icon already registered with the FA library. Use as an alternative to `defs`
+     * to alias an existing icon (e.g. one of Hoist's built-ins) under an app-specific name.
+     */
+    iconName?: IconName;
+
+    /**
+     * Default weight/family for this icon. Defaults to the best available variant, preferring
+     * regular, then solid, light, thin and brands.
+     */
+    prefix?: HoistIconPrefix;
+
+    /** Default props baked into the generated factory - can be overridden by callers. */
+    props?: IconProps;
+
+    /** User-facing name, as shown by {@link IconPicker}. Defaults to a start-cased `name`. */
+    displayName?: string;
+
+    /** Additional search terms for this icon, used by {@link IconPicker}. */
+    keywords?: string[];
+
+    /** True to exclude this icon from user-facing pickers. Defaults to false. */
+    hidden?: boolean;
+
+    /**
+     * True to replace an existing factory of the same name - required when intentionally
+     * overriding one of Hoist's built-in icons, to guard against accidental clobbering.
+     */
+    replace?: boolean;
+}
+
+/**
+ * An icon known to Hoist - i.e. registered with the FA library and available for rendering by
+ * name. Returned by {@link Icon.getCatalog} and used to populate {@link IconPicker}.
+ */
+export interface IconCatalogEntry {
+    /** FA name of the underlying glyph - the canonical, persistable identifier for this icon. */
+    iconName: IconName;
+
+    /** User-facing name for this icon. */
+    displayName: string;
+
+    /** Default weight/family used when rendering this icon. */
+    prefix: HoistIconPrefix;
+
+    /** All weights/families registered with FA for this icon. */
+    prefixes: HoistIconPrefix[];
+
+    /** All factory names on {@link Icon} that resolve to this icon (e.g. `plus` and `add`). */
+    names: string[];
+
+    /** Additional search terms for this icon. */
+    keywords: string[];
+
+    /** True if registered by the application via {@link Icon.register}. */
+    isCustom: boolean;
+
+    /** True to exclude from user-facing pickers. */
+    hidden: boolean;
+
+    /** Factory for rendering this icon. */
+    factory: IconFactory;
+}
+
+/**
+ * Direct factories for each icon in Hoist's built-in set. Exported for internal use by the
+ * icon registry - apps should call these via the {@link Icon} singleton.
+ * @internal
+ */
+export const iconFactories = {
     addressCard(p?: IconProps) {
         return Icon.icon({...p, iconName: 'address-card'});
     },
@@ -795,11 +844,16 @@ export const Icon = {
     },
     xHexagon(p?: IconProps) {
         return Icon.icon({...p, iconName: 'times-hexagon'});
-    },
+    }
+};
 
-    /**
-     * Allows apps to override Hoist choices for given icons.
-     */
+/**
+ * Semantic aliases mapping common Hoist concepts to specific icons in the set above.
+ * Apps can override any of these (or any direct factory) via {@link Icon.register} with
+ * `replace: true`. Exported for internal use by the icon registry.
+ * @internal
+ */
+export const aliasFactories = {
     accessDenied(p?: IconProps) {
         return Icon.slashedCircle(p);
     },
@@ -922,6 +976,137 @@ export const Icon = {
     },
     upload(p?: IconProps) {
         return Icon.arrowUpFromBracket(p);
+    }
+};
+
+/**
+ * Singleton class to provide factories for creating standard FontAwesome-based icons.
+ *
+ * Hoist imports the licensed "pro" library with additional icons - note this requires fetching the
+ * FA npm package via a registry URL w/license token.
+ *
+ * See https://fontawesome.com/pro#license.
+ */
+export const Icon = {
+    ...iconFactories,
+    ...aliasFactories,
+
+    /**
+     * Return a Hoist element wrapper around a FontAwesome-based icon.
+     *
+     * Note that for an app to use an icon with this factory, its definition must have been already
+     * imported and registered with FontAwesome. Apps will find many/most of the icons they need
+     * pre-registered and enumerated by the Hoist factories below. Favor those ready-made factories
+     * wherever possible for consistency across and within apps.
+     *
+     * If the FA icon of your dreams is not available, register it once in your app's bootstrap
+     * code via {@link Icon.register} - that will import it into the FA library, install a typed
+     * factory for it on `Icon`, and make it available to {@link IconPicker}.
+     */
+    icon(opts: SetRequired<IconProps, 'iconName'>): any {
+        let {
+            iconName,
+            prefix = 'far',
+            className,
+            intent,
+            title,
+            size,
+            asHtml = false,
+            ...rest
+        } = opts ?? {};
+        if (intent) {
+            className = classNames(className, `xh-intent-${intent}`);
+        }
+        return asHtml
+            ? iconHtml({iconName, prefix, className, title, size})
+            : iconCmp({iconName, prefix, className, title, size, ...rest});
+    },
+
+    /**
+     * Register a custom icon with Hoist, for apps that need glyphs beyond Hoist's built-in set.
+     *
+     * Pass one or more FontAwesome definitions imported by the app and Hoist will add them to the
+     * FA library, install a factory for them on this `Icon` singleton, and include them in the
+     * catalog offered by {@link IconPicker}. Returns the generated factory, so apps can export it
+     * directly for typed, IDE-discoverable use:
+     *
+     * ```typescript
+     *   // src/core/Icons.ts
+     *   import {faFileInvoiceDollar} from '@fortawesome/pro-regular-svg-icons';
+     *   import {faFileInvoiceDollar as faFileInvoiceDollarSolid} from '@fortawesome/pro-solid-svg-icons';
+     *
+     *   export const invoiceIcon = Icon.register({
+     *       name: 'invoice',
+     *       defs: [faFileInvoiceDollar, faFileInvoiceDollarSolid]
+     *   });
+     *
+     *   invoiceIcon();                    // regular variant
+     *   invoiceIcon({prefix: 'fas'});     // solid variant
+     *   Icon.get('invoice');              // same, resolved dynamically by name
+     * ```
+     *
+     * Note that Hoist will select the best *available* weight for a registered icon, so apps only
+     * need to import the variants they actually intend to use - a request for an unregistered
+     * weight will render the icon's default variant instead of failing silently.
+     *
+     * Existing factories (including Hoist's own) can be replaced by passing `replace: true`,
+     * providing a supported way for apps to swap Hoist's choices for their own.
+     */
+    register(config: IconRegistrationConfig): IconFactory {
+        return iconRegistry.register(config);
+    },
+
+    /** Register multiple custom icons - see {@link Icon.register}. */
+    registerAll(configs: IconRegistrationConfig[]): IconFactory[] {
+        return configs.map(it => iconRegistry.register(it));
+    },
+
+    /**
+     * Render a registered icon by name, for use with dynamic values - e.g. an icon choice
+     * persisted by a user via {@link IconPicker}.
+     *
+     * Accepts either a factory name (`'add'`, `'invoice'`) or an FA name (`'plus'`). Returns null
+     * and logs a warning if the requested icon has not been registered.
+     */
+    get(name: string, props?: IconProps): any {
+        const factory = Icon.getFactory(name);
+        if (!factory) {
+            logWarn(
+                `Icon '${name}' not found - has it been registered via Icon.register()?`,
+                'Icon'
+            );
+            return null;
+        }
+        return factory(props);
+    },
+
+    /** Return the factory for a registered icon, or null if not found - see {@link Icon.get}. */
+    getFactory(name: string): IconFactory {
+        return iconRegistry.getEntry(name)?.factory ?? null;
+    },
+
+    /**
+     * Return metadata for a single registered icon, or null if not found. Accepts either a factory
+     * name or an FA name - see {@link Icon.get}.
+     */
+    getCatalogEntry(name: string): IconCatalogEntry {
+        return iconRegistry.getEntry(name);
+    },
+
+    /** True if an icon with the given factory or FA name has been registered. */
+    exists(name: string): boolean {
+        return !!iconRegistry.getEntry(name);
+    },
+
+    /**
+     * Return metadata for all icons known to Hoist - its built-in set plus any registered by the
+     * app via {@link Icon.register} - sorted by display name.
+     *
+     * Used to populate {@link IconPicker}. Note that entries flagged `hidden` are included here
+     * but excluded from pickers by default.
+     */
+    getCatalog(): IconCatalogEntry[] {
+        return iconRegistry.getCatalog();
     },
 
     /**
@@ -949,6 +1134,11 @@ export const Icon = {
         return asHtml ? `<div class="${className}"></div>` : div({className});
     }
 };
+
+// Provide the registry with the singleton and factory maps it needs to catalog Hoist's built-in
+// icons and install app-registered additions. Done here (rather than via an import within the
+// registry) to avoid a circular dependency between the two modules.
+iconRegistry.setSource({Icon, iconFactories, aliasFactories});
 
 /**
  * Translate an icon into an HTML `<svg>` tag.

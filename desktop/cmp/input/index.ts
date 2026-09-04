@@ -3,6 +3,7 @@ export * from './Checkbox';
 export * from './CheckboxButton';
 export * from './CodeInput';
 export * from './DateInput';
+export * from './IconPicker';
 export * from './JsonInput';
 export * from './NumberInput';
 export * from './Picker';

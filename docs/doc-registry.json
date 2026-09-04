@@ -220,8 +220,8 @@
             "title": "Icon System",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "Factory-based icon system wrapping FontAwesome Pro.",
-            "keywords": ["Icon singleton", "IconProps", "intent coloring", "size variants", "asHtml", "fileIcon"]
+            "description": "Factory-based icon system wrapping FontAwesome Pro, including registration of custom app icons and a user-facing icon picker.",
+            "keywords": ["Icon singleton", "IconProps", "intent coloring", "size variants", "asHtml", "fileIcon", "Icon.register", "custom icons", "IconPicker", "Icon.get", "icon catalog"]
         },
         {
             "id": "security/README.md",
