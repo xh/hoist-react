@@ -16,6 +16,14 @@
 
 ### 🎁 New Features
 
+* Added `DateRangePicker` (`desktop/cmp/daterange`), a compact control for selecting a period as a
+  preset (Today, MTD, Prev 30 Days, ...), a relative lookback, a calendar month or year, or a custom
+  date range. Its `DateRangePickerModel` persists the selection as plain JSON, resolves it to date
+  ranges and `FieldFilterSpec`s, keeps a live `anchorDay` current across midnight, steps periods
+  back and forth without changing their kind, and offers a `businessDayMode` for single-day walks.
+* The Admin Console's Activity Tracking tab now selects its query period with a `DateRangePicker`.
+  Periods saved in existing views reset to Today on first load.
+* Added `Icon.calendarDays` and `Icon.calendarRange`.
 * Added `HoistBase.xhName`, an optional developer-facing name shown in place of the class name in
   log output, trace spans (new `xh.name` tag), and a new Inspector column. Accepted as a config by
   Hoist's config-driven models (`Store`, `GridModel`, `FormModel`, `TabContainerModel`,
@@ -68,6 +76,14 @@
   and defaults to `true`. Pair with `showTrayBackground: false` for the previous appearance.
 * Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
   replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
+* Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
+
+## 87.1.1 - 2026-09-02
+
+### 🐞 Bug Fixes
+
+* Fixed `GridModel.getSortedRecords()` throwing e.g. grid exports when grouped by a non-string
+  field. Group values are now coerced to string keys before sorting.
 
 ## 87.1.1 - 2026-09-02
 
