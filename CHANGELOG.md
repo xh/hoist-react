@@ -25,7 +25,7 @@
   Periods saved in existing views reset to Today on first load.
 * Added `Icon.calendarDays` and `Icon.calendarRange`.
 * Cube `Aggregator` implementations can now hold per-row state via new
-  `AggregationContext.setAggState()` / `getAggState()`, letting custom aggregations that cannot be
+  `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
   derived from their children's published values alone - e.g. a weighted average - compose from
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
