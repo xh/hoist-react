@@ -5,9 +5,9 @@
 
 The Inspector is a built-in developer and admin tool for real-time inspection of a running Hoist
 application's `HoistModel`, `HoistService`, and `Store` instances, along with memory and
-performance statistics. It renders by default as a resizable bottom panel within the desktop
-application UI, driven by the `InspectorService` in [`/svc/`](../svc/README.md), and can also be
-popped out into a separate browser window (see [Pop-Out Window](#pop-out-window) below).
+performance statistics. It renders in its own browser window alongside the desktop application,
+driven by the `InspectorService` in [`/svc/`](../svc/README.md) (see
+[Inspector Window](#inspector-window) below).
 
 ## Overview
 
@@ -26,21 +26,31 @@ The Inspector provides two main views: **Stats** (timeseries of model counts and
 ```
 inspector/
 ├── InspectorPanel.ts                # Top-level container (renders Stats + Instances panels)
-├── InspectorModel.ts                # Hosts the UI docked in the app or in a popped-out window
+├── InspectorModel.ts                # Hosts the UI in a separate browser window
 ├── Inspector.scss                   # Inspector-specific styles
 ├── instances/
-│   ├── InstancesPanel.ts            # Instance grid (left) + tabbed properties/diagnostics (right)
-│   ├── InstancesModel.ts            # Model managing instance/property grids, watchlist, getters
-│   ├── DiagnosticsPanel.ts          # Data-pipeline diagnostics readout for selected instances
-│   └── DiagnosticsModel.ts          # Model syncing op stats from selected instance diagnostics
+│   ├── InstancesPanel.ts            # All/Watchlist tabs (left) + detail tabs (right)
+│   ├── InstancesModel.ts            # Model managing the All grid, nav tabs, and selection
+│   ├── AllPanel.ts                  # All tab - every live instance, with quick filters
+│   ├── watchlist/                   # Watchlist tab - starred instances and properties
+│   │   ├── WatchlistPanel.ts
+│   │   ├── WatchlistModel.ts        # Watched instance/property keys, persisted when named
+│   │   ├── WatchlistPropsModel.ts   # Starred properties grid
+│   │   └── WatchlistUtils.ts        # Instance keys, star icon, shared star column
+│   └── details/                     # Detail tabs for the selected instances
+│       ├── BasePropsModel.ts        # Shared property grid: getters, logging, watchlist star
+│       ├── PropertiesPanel.ts       # Properties of selected instances, with quick filters
+│       ├── PropertiesModel.ts
+│       ├── DiagnosticsPanel.ts      # Data-pipeline diagnostics readout for selected instances
+│       └── DiagnosticsModel.ts      # Model syncing op stats from selected instance diagnostics
 └── stats/
     ├── StatsPanel.ts                # Chart + grid combo for timeseries stats
     └── StatsModel.ts                # Model tracking model count, heap memory, sync runs
 ```
 
-The Inspector UI is rendered by `InspectorPanel`, which composes two side-by-side panels: a
-`StatsPanel` (resizable left) and an `InstancesPanel`. Both are backed by dedicated `HoistModel`
-subclasses.
+The Inspector UI is rendered by `InspectorPanel`, which hosts two top-level tabs switched from its
+header: **Memory** (`StatsPanel`) and **Objects** (`InstancesPanel`). Both are backed
+by dedicated `HoistModel` subclasses.
 
 The actual data collection happens in `InspectorService` (in [`/svc/`](../svc/README.md)), which:
 - Maintains an observable `activeInstances` array synced from Hoist's internal instance registry
@@ -77,27 +87,27 @@ The Inspector can be toggled via:
 2. **Programmatic** — `XH.inspectorService.activate()` / `XH.inspectorService.deactivate()` /
    `XH.inspectorService.toggleActive()`
 
-The `active` state is persisted to `localStorage`, so the Inspector will remain open across page
-refreshes.
+The `active` state is persisted to `localStorage`, so the Inspector will attempt to reopen across
+page refreshes (see below).
 
-## Pop-Out Window
+## Inspector Window
 
-Because the docked Inspector renders as a standard part of the app's component tree, app-level
-masks and modal dialogs will cover and block it. A button in the Inspector's header pops it out
-into a separate browser window (e.g. onto a second monitor), leaving the app's viewport entirely
-to the app while keeping the Inspector fully live, with direct access to all app state.
+The Inspector renders in a separate browser window (e.g. on a second monitor), leaving the app's
+viewport entirely to the app and keeping the Inspector clear of app-level masks and modal dialogs.
+The Inspector remains part of the main app's component tree via a cross-document React portal, so
+it stays fully live with direct access to all app state.
 
-Hosting and window lifecycle are managed by `InspectorModel`, which portals the same component
-tree rendered when docked into the popped-out window. Notes and limitations:
+Hosting and window lifecycle are managed by `InspectorModel`. Notes and limitations:
 
-- The popped-out state is not restored on app load - browsers require a user gesture to open a
-  window, so the Inspector returns docked after a refresh.
-- Closing the popped-out window directly returns the Inspector to its docked state. Reloading or
-  closing the main app window closes the popped-out window.
+- Activating the service opens the window; deactivating it (or closing the window directly) closes
+  it. Reloading or closing the main app window also closes the Inspector window.
+- Browsers require a user gesture to open a window. If the Inspector was active before a page
+  refresh, Hoist attempts to reopen it on load - if the browser blocks the open, the service is
+  deactivated with a toast. Allow popups for the app's origin to restore the Inspector on reload.
 - Toasts and framework dialogs (e.g. the "Restore Defaults" confirm) always render within the main
-  app window, even when triggered from a popped-out Inspector.
+  app window, even when triggered from the Inspector.
 
-## Stats View
+## Memory Tab (Stats)
 
 The Stats panel shows a timeseries chart and grid tracking:
 
@@ -117,29 +127,40 @@ Instances view to show only instances created during that sync batch.
 run counter. This groups instances by when they appeared, making it easier to identify which
 navigation or load action created them.
 
-## Instances View
+**Forcing GC:** The toolbar's trash button runs `window.gc()` and takes a snapshot, separating
+genuine leaks from garbage not yet collected. It is enabled only when Chrome exposes that hook -
+launch with `--js-flags=--expose-gc`.
 
-The Instances panel is a split layout with:
+## Objects Tab (Instances)
 
-- **Instances grid** (left, resizable) — Lists all live `HoistModel`, `HoistService`, `Store`,
-  `Cube`, and `View` instances with their `xhName` (when set), class name, creation time,
-  linked status, and sync run
-- **Properties grid** (right) — Shows properties of the selected instance(s), including observable
-  values with live updates
-- **Diagnostics panel** (tabbed with properties) — Live readout of the data-pipeline
-  `diagnostics` published by selected Stores, Cube Views, and GridModels
+The Instances panel is a split layout. The left side chooses instances, via two tabs:
 
-### Instance Grid Features
+- **All** — Lists all live `HoistModel`, `HoistService`, `Store`, `Cube`, and `View` instances
+  with their label (the same `ClassName [xhName]` or `ClassName [id]` used in log output),
+  creation time, linked status, and sync run. Class name, name, and ID are available as hidden
+  columns
+- **Watchlist** — Starred instances (top) and starred properties (bottom), independent of the
+  current selection and filters. The tab title shows the entry count
 
-- **Grouping** — Toggle "Show in Groups" to group by type (Models, Services, Stores)
-- **XH impl filtering** — Toggle "Show XH Impl" to show/hide Hoist's internal framework instances
+The right side shows details for the instances selected in whichever left tab is active:
+
+- **Properties** — Properties of the selected instance(s), including observable values with
+  live updates
+- **Diagnostics** — Live readout of the data-pipeline `diagnostics` published by selected Stores,
+  Cube Views, and GridModels
+
+### All Tab Features
+
+- **Grouping** — Toggle "Grouped" to group by type (Models, Services, Cubes, Views, Stores)
+- **Anon filtering** — Toggle "Anon" to include instances without an `xhName`, hidden by default
+- **XH impl filtering** — Toggle "xhImpl" to include Hoist's internal framework instances
   (marked with `xhImpl = true`)
-- **Favorites** — Star any instance with an `xhName` to pin it, then toggle "Favorites" to show
-  only pinned instances. Keyed by `{className}:{xhName}` and persisted, so the same set of objects
-  can be followed across reloads. Favorites with no live instance show as muted placeholder rows -
-  un-star one to drop it
-- **Actions** — Log instance to devtools console, trigger `loadAsync()` on models with
-  `LoadSupport`
+- **Watchlist star** — Star any instance (via its star or context menu) to add it to the
+  Watchlist tab. Named instances are keyed by `{className}:{xhName}` and persist across reloads;
+  unnamed ones are keyed by `xhId` and last for the page load only. Watched instances with no live
+  instance show as muted placeholder rows in the Watchlist - un-star one to drop it
+- **Context menu** — Log instance to devtools console, trigger `loadAsync()` on models with
+  `LoadSupport`, toggle Watchlist
 - **Multi-select** — Select multiple instances to compare their properties side-by-side
 
 ### Properties Grid Features
@@ -147,14 +168,16 @@ The Instances panel is a split layout with:
 - **Observable tracking** — Observable properties (via `@observable`, `@bindable`) are marked with
   an eye icon and their values update reactively in the grid
 - **Getter evaluation** — Getter properties show as `get(?)` by default to avoid side effects.
-  Click to evaluate on demand, or use "Load All Getters" to evaluate all at once
-- **Watchlist** — Star properties to pin them to a persistent "Watchlist" group that aggregates
-  watched properties across multiple instances
+  Click to evaluate on demand, use "Load all getters" in the context menu for a one-off, or toggle
+  "Getters" to evaluate them all automatically. A throwing getter shows its error as its value
+- **Watchlist star** — Star properties to add them to the Watchlist tab's properties grid, which
+  aggregates watched properties across instances (grouped by instance) regardless of the property
+  filters. Properties of named instances persist across reloads
 - **Filtering** — Toggle filters for: own properties only, observable properties only, hide
   underscore-prefixed properties
 - **Navigation** — When a property value is a HoistModel, HoistService, Store, Cube, or View,
   clicking its value navigates to that instance in the instances grid
-- **Console logging** — Double-click a property or use the action button to log its value to the
+- **Console logging** — Double-click a property or use its context menu to log its value to the
   browser devtools console
 
 ### Diagnostics Panel
@@ -181,14 +204,15 @@ responsible for it.
 Inspector state is persisted to `localStorage` under the key
 `xhInspector.{clientAppCode}.*`. This includes:
 
-- Panel sizes (stats panel, instances panel)
-- Grid column state for both grids
-- Quick filter selections (grouping, xhImpl visibility, favorites, property filters)
-- Favorited instances
+- Active top-level, All/Watchlist, and detail tabs, plus panel sizes
+- Grid column state for all grids
+- Quick filter selections (grouping, Anon and xhImpl visibility, property filters)
+- Watchlist entries for named instances and their properties
 - Store filter text
 - Active/inactive state
+- The last hour of memory stats, per browser tab, so the trend before a reload is kept
 
-The "Restore Defaults" button in the Inspector header clears all persisted state and restarts.
+The "Restore Defaults" button in the Inspector toolbar clears all persisted state and restarts.
 
 ## Usage Patterns
 
