@@ -16,7 +16,7 @@ import type {ParentRow} from './ParentRow';
 /**
  * Base class for a row within a dataset produced by a Cube / View.
  *
- * This is an internal data structure - {@link ViewRow} is the public row-level API.
+ * @internal
  */
 export abstract class BaseRow implements ViewRow {
     readonly view: View = null;

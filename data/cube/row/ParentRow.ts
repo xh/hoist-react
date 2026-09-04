@@ -31,10 +31,8 @@ export abstract class ParentRow extends BaseRow {
     // `canAggregateFn` results by field name - null unless the view has such fields.
     private canAggResults: PlainObject = null;
 
-    // Aggregator state by field name, for aggregators that compose from their children's state
-    // rather than their published values - see `AggregationContext.setAggState`. Written by the
-    // aggregator itself, and so null unless the view has such fields.
-    // @internal
+    // Aggregator state by field name, written by the aggregator via `setAggState` - null unless
+    // the view has fields that compose from their children's state.
     aggStates: PlainObject = null;
 
     // Level of this row within the query's dimensions - bucket rows share the level of the

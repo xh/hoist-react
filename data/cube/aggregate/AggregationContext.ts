@@ -99,15 +99,13 @@ export class AggregationContext {
      * Store state for the row and field currently being aggregated, to be read by the
      * aggregations of ancestor rows via {@link getAggState}.
      *
-     * This is the supported way to write an aggregator that cannot be composed from its
-     * children's published values alone - e.g. a weighted average, which needs running weighted
-     * and weight totals to combine its children. Such aggregators can then compose from their
-     * direct children rather than walking their entire subtree of leaves. See the Cube package
-     * README for a worked example.
+     * Lets an aggregator that cannot be composed from its children's published values alone -
+     * e.g. a weighted average - compose from its direct children rather than walking its entire
+     * subtree of leaves. See the Cube package README for a worked example.
      *
-     * State must be written on every call to {@link Aggregator.aggregate}, as rows are recomputed
-     * in place when reused across query results. An {@link Aggregator.replace} override must
-     * likewise leave state consistent with the value it returns, or delegate to `super`.
+     * Write state on every call to {@link Aggregator.aggregate}, as rows are recomputed in place
+     * when reused. An {@link Aggregator.replace} override must likewise keep state consistent with
+     * the value it returns, or delegate to `super`.
      */
     setAggState<T>(state: T) {
         const {activeRow, activeField} = this;

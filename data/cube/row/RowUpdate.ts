@@ -19,10 +19,7 @@ export class RowUpdate {
     oldValue: any;
     newValue: any;
 
-    /**
-     * Values at the leaf this update originated from. Aggregator state that is a running total
-     * over leaves can apply this delta unchanged at any level of the hierarchy.
-     */
+    /** Values at the originating leaf - a running total over leaves can apply this delta at any level. */
     readonly leafOldValue: any;
     readonly leafNewValue: any;
 

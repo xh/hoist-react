@@ -52,9 +52,6 @@ export abstract class Aggregator {
      * @param update - update that occurred to child of this aggregation.
      *      Sub-classes may use this method to provide efficient implementations for dynamic changes
      *      to an aggregation.  The default implementation will simply re-aggregate.
-     *      Note that `oldValue`/`newValue` are the changed *child's* values, while
-     *      `leafOldValue`/`leafNewValue` are those of the leaf the update originated from - the
-     *      latter apply unchanged at any level for state that is a running total over leaves.
      * @param context - current aggregation context
      * @returns new aggregate value
      */
