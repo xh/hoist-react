@@ -698,6 +698,36 @@ body {
     --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, #{mc('blue-grey', '700')});
   }
 
+  //------------------------
+  // Intent Input
+  //------------------------
+  --xh-intent-input-swatch-size-px: var(--intent-input-swatch-size-px, 20px);
+  --xh-intent-input-compact-swatch-size-px: var(--intent-input-compact-swatch-size-px, 16px);
+  --xh-intent-input-gap-px: var(--intent-input-gap-px, var(--xh-pad-half-px));
+  --xh-intent-input-border-radius-px: var(--intent-input-border-radius-px, var(--xh-border-radius-px));
+
+  //------------------------
+  // Date Range Picker
+  //------------------------
+  --xh-date-range-picker-popover-width: var(--date-range-picker-popover-width, 640px);
+  --xh-date-range-picker-popover-single-width: var(--date-range-picker-popover-single-width, 300px);
+  --xh-date-range-picker-popover-min-height: var(--date-range-picker-popover-min-height, 322px);
+  --xh-date-range-picker-accent: var(--date-range-picker-accent, var(--xh-intent-primary));
+  --xh-date-range-picker-accent-text-color: var(--date-range-picker-accent-text-color, var(--xh-white));
+  --xh-date-range-picker-selected-bg: var(--date-range-picker-selected-bg, var(--xh-bg-highlight));
+  --xh-date-range-picker-hover-bg: var(--date-range-picker-hover-bg, var(--xh-grid-bg-hover));
+  --xh-date-range-picker-date-font-family: var(--date-range-picker-date-font-family, var(--xh-font-family-mono));
+  --xh-date-range-picker-date-font-size: var(--date-range-picker-date-font-size, 12px);
+  --xh-date-range-picker-row-height: var(--date-range-picker-row-height, 32px);
+  --xh-date-range-picker-day-size: var(--date-range-picker-day-size, 26px);
+  --xh-date-range-picker-footer-bg: var(--date-range-picker-footer-bg, var(--xh-tbar-bg));
+  // Tab rail stays on the popover background in light theme, where a distinct fill would set
+  // muted tab labels on grey and lose contrast. In dark theme a distinct fill reads well.
+  --xh-date-range-picker-rail-bg: var(--date-range-picker-rail-bg, transparent);
+
+  &.xh-dark {
+    --xh-date-range-picker-rail-bg: var(--date-range-picker-rail-bg, var(--xh-tbar-bg));
+  }
 
   //------------------------
   // Mask + LoadingIndicator

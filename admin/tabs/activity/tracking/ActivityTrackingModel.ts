@@ -11,21 +11,12 @@ import {
     ActivityTrackingDataFieldSpec,
     DataFieldsEditorModel
 } from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
+import {DateRangePickerModel} from '@xh/hoist/cmp/daterange';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {
-    HoistModel,
-    LoadSpec,
-    LocalDateUnit,
-    managed,
-    PersistableState,
-    PersistenceProvider,
-    persistOptions,
-    PlainObject,
-    XH
-} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec, getCubeLeaves, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -34,28 +25,14 @@ import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
-/**
- * A relative time interval (e.g. 7 days) ending on the current app day. Drives the quick-select
- * buttons and the persisted time period, which rolls forward to end on today on restore.
- */
-export interface ActivityInterval {
-    value: number;
-    unit: LocalDateUnit;
-}
-
-/** Quick-select intervals offered in the toolbar - labels are derived as `${value}${unit[0]}`. */
-export const INTERVALS: ActivityInterval[] = [
-    {value: 6, unit: 'months'},
-    {value: 1, unit: 'months'},
-    {value: 7, unit: 'days'},
-    {value: 1, unit: 'days'}
-];
-
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
     override telemetryPrefix = 'xh.client.admin.tracking';
 
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
+
+    /** Period to query, resolved against the current app day. */
+    @managed dateRangePickerModel: DateRangePickerModel;
 
     /** Models for data-handling components - can be rebuilt due to change in dataFields. */
     @managed @observable.ref groupingChooserModel: GroupingChooserModel;
@@ -90,10 +67,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     get dimensions(): string[] {
         return this.groupingChooserModel.value;
-    }
-
-    get endDay(): LocalDate {
-        return this.formModel.values.endDay;
     }
 
     @computed
@@ -142,7 +115,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         this.markPersist('showFilterChooser');
 
         this.formModel = this.createQueryFormModel();
-        this.setupPeriodPersistence();
+        this.dateRangePickerModel = this.createDateRangePickerModel();
 
         this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
         this.markPersist('dataFields');
@@ -211,39 +184,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         this.showFilterChooser = !this.showFilterChooser;
     }
 
-    adjustDates(dir: 'add' | 'subtract') {
-        const {startDay, endDay} = this.formModel.fields,
-            appDay = LocalDate.currentAppDay(),
-            start: LocalDate = startDay.value,
-            end: LocalDate = endDay.value,
-            diff = end.diff(start),
-            incr = diff + 1;
-
-        let newStart = start[dir](incr),
-            newEnd = end[dir](incr);
-
-        if (newEnd > appDay) {
-            newStart = appDay.subtract(Math.abs(diff));
-            newEnd = appDay;
-        }
-
-        startDay.setValue(newStart);
-        endDay.setValue(newEnd);
-    }
-
-    // Set the start date by taking the end date and pushing back the interval - then pushing
-    // forward one day as the day range query is inclusive.
-    adjustStartDate(interval: ActivityInterval) {
-        this.formModel.setValues({
-            startDay: this.endDay.subtract(interval.value, interval.unit).nextDay()
-        });
-    }
-
-    isInterval(interval: ActivityInterval) {
-        const {startDay, endDay} = this.formModel.values;
-        return startDay === endDay.subtract(interval.value, interval.unit).nextDay();
-    }
-
     getDisplayName(fieldName: string) {
         return fieldName ? (this.cube.store.getField(fieldName)?.displayName ?? fieldName) : null;
     }
@@ -254,33 +194,26 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     private createQueryFormModel(): FormModel {
         return new FormModel({
             persistWith: {...this.persistWith, path: 'queryFormValues', includeFields: ['maxRows']},
-            fields: [
-                {name: 'startDay', initialValue: () => LocalDate.currentAppDay()},
-                {name: 'endDay', initialValue: () => LocalDate.currentAppDay()},
-                {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
-            ]
+            fields: [{name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}]
         });
     }
 
-    // Persist the selected time period as part of the active view, if endDay is currentDay
-    private setupPeriodPersistence() {
-        PersistenceProvider.create<ActivityInterval>({
-            persistOptions: persistOptions({path: 'queryPeriod'}, this.persistWith),
-            owner: this,
-            target: {
-                getPersistableState: () => {
-                    const currDay = this.endDay === LocalDate.currentAppDay(),
-                        interval = currDay ? INTERVALS.find(it => this.isInterval(it)) : null;
-                    return new PersistableState(interval ?? null);
-                },
-                setPersistableState: ({value}) => {
-                    if (value) {
-                        const endDay = LocalDate.currentAppDay();
-                        this.formModel.setValues({endDay});
-                        this.adjustStartDate(value);
-                    }
-                }
-            }
+    private createDateRangePickerModel(): DateRangePickerModel {
+        return new DateRangePickerModel({
+            persistWith: this.persistWith,
+            presets: [
+                'anchorDay',
+                'prevDay',
+                'prev7Days',
+                'prev30Days',
+                'prev90Days',
+                'mtd',
+                'prevMonth',
+                'ytd'
+            ],
+            initialValue: 'anchorDay',
+            // Track logs are stamped in the app time zone - follow its day, across midnight too.
+            anchorDay: 'appDay'
         });
     }
 
@@ -324,11 +257,11 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     @computed
     private get query() {
-        const {values} = this.formModel;
+        const {start, end} = this.dateRangePickerModel.currentRange;
         return {
-            startDay: values.startDay,
-            endDay: values.endDay,
-            maxRows: values.maxRows,
+            startDay: start,
+            endDay: end,
+            maxRows: this.formModel.values.maxRows,
             filters: this.filterChooserModel.value
         };
     }

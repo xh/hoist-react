@@ -128,6 +128,14 @@
             "keywords": ["ViewManagerModel", "views", "sharing", "pinning", "auto-save", "JsonBlob persistence"]
         },
         {
+            "id": "cmp/daterange/README.md",
+            "title": "Date Range Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters.",
+            "keywords": ["DateRangePickerModel", "DateRangePicker", "DateRangeSelection", "dateRangePresets", "DateRangePreset", "LocalDateRange", "anchorDate", "currentRangeFilter", "priorRange", "business days"]
+        },
+        {
             "id": "desktop/cmp/dash/README.md",
             "title": "Dashboard System",
             "mcpCategory": "package",
