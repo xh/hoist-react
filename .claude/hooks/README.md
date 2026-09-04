@@ -39,14 +39,22 @@ already installed by the setup script.
 ### Network policy domain allowlist
 
 The environment's default `Trusted` network policy allows common package registries but not
-everything these scripts need. Set the policy to `Custom` and ensure the following domains are
-allowed (see [Cloud environments - Access levels](https://code.claude.com/docs/en/cloud-environments#access-levels)):
+everything these scripts need. In the environment dialog, set **Network access** to `Custom`,
+check **Also include default list of common package managers**, and list the missing domains one
+per line in **Allowed domains** (see
+[Cloud environments - Allow specific domains](https://code.claude.com/docs/en/cloud-environments#allow-specific-domains)):
+
+```
+npm.fontawesome.com
+central.sonatype.com
+repo.grails.org
+```
 
 | Domain | Needed for | In default `Trusted` list? |
 |--------|-----------|----------------------------|
 | `npm.fontawesome.com` | FontAwesome Pro packages (`pnpm install` - both repos) | **No - must add** |
 | `central.sonatype.com` | Maven snapshots, e.g. `hoist-core` SNAPSHOT builds (Toolbox server) | **No - must add** |
-| `repo.grails.org` | Grails framework artifacts (Toolbox server) | Not confirmed - add to be safe |
+| `repo.grails.org` | Grails framework artifacts (Toolbox server) | **No - must add** |
 | `registry.npmjs.org` | npm packages (`pnpm install` - both repos) | Yes |
 | `github.com` | `git clone` of `xh/toolbox` (`setup-toolbox.sh`) | Yes |
 | `services.gradle.org` | Gradle wrapper distribution (Toolbox server) | Yes |
