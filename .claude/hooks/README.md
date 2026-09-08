@@ -42,13 +42,15 @@ per line in **Allowed domains** (see
 
 ```
 npm.fontawesome.com
+dl.fontawesome.com
 central.sonatype.com
 repo.grails.org
 ```
 
 | Domain | Needed for | In default `Trusted` list? |
 |--------|-----------|----------------------------|
-| `npm.fontawesome.com` | FontAwesome Pro packages (`pnpm install` - both repos) | **No - must add** |
+| `npm.fontawesome.com` | FontAwesome Pro registry metadata (`pnpm install` - both repos) | **No - must add** |
+| `dl.fontawesome.com` | FontAwesome Pro tarballs - the registry 307-redirects downloads here | **No - must add** |
 | `central.sonatype.com` | Maven snapshots, e.g. `hoist-core` SNAPSHOT builds (Toolbox server) | **No - must add** |
 | `repo.grails.org` | Grails framework artifacts (Toolbox server) | **No - must add** |
 | `registry.npmjs.org` | npm packages (`pnpm install` - both repos) | Yes |
