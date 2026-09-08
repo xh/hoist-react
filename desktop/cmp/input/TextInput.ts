@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    getPasswordManagerAttrs,
+    HoistInputModel,
+    HoistInputProps,
+    PasswordManagerSupportProps,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -17,7 +23,8 @@ import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
 
-export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
+export interface TextInputProps
+    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, LayoutProps, StyleProps {
     value?: string;
 
     /**
@@ -155,6 +162,7 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
                     textAlign: withDefault(props.textAlign, 'left')
                 },
                 [TEST_ID]: props.testId,
+                ...getPasswordManagerAttrs(props.enablePasswordManagers),
                 ...props.domAttrs,
                 onChange: model.onChange,
                 onKeyDown: model.onKeyDown

@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    getPasswordManagerAttrs,
+    HoistInputModel,
+    HoistInputProps,
+    PasswordManagerSupportProps,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
@@ -16,7 +22,8 @@ import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
 
-export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
+export interface NumberInputProps
+    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, StyleProps, LayoutProps {
     value?: number;
 
     /** True to commit on every change/keystroke, default false. */
@@ -257,6 +264,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             },
             spellCheck: false,
             [TEST_ID]: props.testId,
+            ...getPasswordManagerAttrs(props.enablePasswordManagers),
             ...props.domAttrs,
 
             onInput: model.onValueChange,

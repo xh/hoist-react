@@ -42,6 +42,10 @@
   Supported by `Box` and the layout components built on it (and therefore `Panel`, `Toolbar`, and
   similar containers), `Button`, `ButtonGroup`, `Card`, `Badge`, `FormField`, and the desktop and
   mobile inputs.
+* Added `enablePasswordManagers` to `TextInput`, `TextArea`, and `NumberInput` (desktop and mobile).
+  Defaults to `false`, applying `data-1p-ignore`, `data-lpignore`, and `data-bwignore` so password
+  managers stop offering saved logins on ordinary data-entry fields. Apps with hand-rolled login
+  forms should set it `true` on their credential inputs - Hoist's own `LoginPanel` already does.
 
 ### 🐞 Bug Fixes
 

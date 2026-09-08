@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    getPasswordManagerAttrs,
+    HoistInputModel,
+    HoistInputProps,
+    PasswordManagerSupportProps,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {box, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -18,7 +24,8 @@ import {isEmpty} from 'lodash';
 import {ReactElement} from 'react';
 import './TextInput.scss';
 
-export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
+export interface TextInputProps
+    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, StyleProps, LayoutProps {
     value?: string;
 
     /**
@@ -145,6 +152,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
                 className: 'xh-text-input__input',
                 style: {textAlign: withDefault(props.textAlign, 'left')},
                 [TEST_ID]: props.testId,
+                ...getPasswordManagerAttrs(props.enablePasswordManagers),
                 ...props.domAttrs,
 
                 onInput: model.onChange,
