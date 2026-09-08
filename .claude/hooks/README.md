@@ -20,15 +20,11 @@ Cloud environments) so every developer gets the same variables, network policy, 
 without configuring anything themselves. Environment variables, network policy, and setup scripts
 cannot be checked into the repo - only the hooks and settings in `.claude/` are.
 
-Recommended setup script for the environment (runs once, cached across sessions):
-
-```bash
-echo "//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
-pnpm install
-```
-
-`session-start.sh` remains as a per-session fallback; its `pnpm install` is quick when deps are
-already installed by the setup script.
+**Leave the environment's setup script empty** (or limit it to VM-level provisioning such as
+`apt install`). Setup scripts run in `/workspace`, *above* the cloned repo, so a `pnpm install`
+there fails with `ERR_PNPM_NO_PKG_MANIFEST` and blocks the session from starting. Dependency
+installs belong in `session-start.sh`, which runs inside the repo after Claude Code launches and
+already writes the FontAwesome auth to `~/.npmrc`.
 
 ### Environment variables
 
