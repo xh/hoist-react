@@ -54,6 +54,9 @@
 * Fixed icon misalignment in desktop `DateInput` when a `leftIcon` is specified.
 * Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
   the control now sizes to its options.
+* Fixed desktop `SegmentedControl` keeping the last clicked segment highlighted after its bound
+  value was cleared programmatically - the control now renders no selection, with `aria-checked`
+  cleared, whenever its value matches no option.
 * Fixed desktop `Select` not reliably scrolling the selected option into view when opening its
   menu - a regression from the v86 react-select upgrade. Selects with `enableFilter: false` never
   scrolled; others did so intermittently.

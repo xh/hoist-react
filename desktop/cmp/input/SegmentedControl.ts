@@ -101,6 +101,14 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 //-----------------------
 // Implementation
 //-----------------------
+
+/**
+ * Key handed to the Blueprint control when no option is selected. Option keys are always
+ * `String(index)`, so this cannot collide with a real option - and unlike a nullish value, it
+ * keeps Blueprint from falling back to its own internal selection state. See usage note below.
+ */
+const NO_SELECTION_KEY = '__xh_no_selection__';
+
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
     intent?: Intent;
@@ -133,11 +141,15 @@ class SegmentedControlModel extends HoistInputModel {
         });
     }
 
-    /** Map the current render value to the string key used by the Blueprint control. */
+    /**
+     * Key of the option matching the current render value, or null if no option matches -
+     * including whenever the bound value is itself null. Note this is the model's own view of
+     * the selection: the key actually handed to Blueprint is resolved at its point of use below.
+     */
     @computed
-    get selectedKey(): string {
+    get selectedKey(): string | null {
         const {renderValue, normalizedOptions} = this;
-        return normalizedOptions.find(o => o.value === renderValue)?._key;
+        return normalizedOptions.find(o => o.value === renderValue)?._key ?? null;
     }
 
     get enabledButtons(): HTMLButtonElement[] {
@@ -231,7 +243,13 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
             fill,
             size: compact ? 'small' : undefined,
             options: bpOptions,
-            value: model.selectedKey,
+            // Blueprint resolves its selection as `value ?? internalState`, where the internal
+            // state is set on every click even when controlled. Passing a nullish value for a
+            // selection matching no option would fall back to the last-clicked segment,
+            // leaving it highlighted after the bound value is cleared. Pass a sentinel key
+            // instead, keeping the control fully controlled - Blueprint handles a value matching
+            // no option natively (see `isAnySelected`) and emits no warning.
+            value: model.selectedKey ?? NO_SELECTION_KEY,
             onValueChange: model.onValueChange,
             disabled
         })
