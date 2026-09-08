@@ -35,12 +35,13 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
         // Note `model` destructured off of non-layout props to avoid setting
         // model as a bogus DOM attribute. This low-level component may easily be passed one from
         // a parent that has not properly managed its own props.
-        let [layoutProps, {children, model, testId, ...restProps}] = splitLayoutProps(props);
+        let [layoutProps, {children, model, testId, domAttrs, ...restProps}] =
+            splitLayoutProps(props);
 
         restProps = mergeDeep(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
             {style: layoutProps},
-            {[TEST_ID]: testId},
+            {[TEST_ID]: testId, ...domAttrs},
             restProps
         );
 

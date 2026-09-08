@@ -155,6 +155,7 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
                     textAlign: withDefault(props.textAlign, 'left')
                 },
                 [TEST_ID]: props.testId,
+                ...props.domAttrs,
                 onChange: model.onChange,
                 onKeyDown: model.onKeyDown
             }),

@@ -37,9 +37,16 @@
   tabs. The Config panel shows every view of a config's value - resolved, instance override,
   database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
   grid's editor: double-click no longer opens a view-only dialog for read-only admins.
+* Added `domAttrs`, a prop for applying arbitrary `data-*` and `aria-*` attributes to the primary
+  DOM element a component renders - the same element that receives `data-testid` from `testId`.
+  Supported by `Box` and the layout components built on it (and therefore `Panel`, `Toolbar`, and
+  similar containers), `Button`, `ButtonGroup`, `Card`, `Badge`, `FormField`, and the desktop and
+  mobile inputs.
 
 ### 🐞 Bug Fixes
 
+* Fixed `testId` being silently dropped by desktop `Slider`, desktop `FileChooser`, and mobile
+  `Label` - all accepted the prop but never emitted a `data-testid` attribute.
 * Fixed icon misalignment in desktop `DateInput` when a `leftIcon` is specified.
 * Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
   the control now sizes to its options.

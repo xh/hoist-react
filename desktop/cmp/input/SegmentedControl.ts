@@ -185,6 +185,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         showTrayBackground = true,
         showOptionDividers = 'auto',
         testId,
+        domAttrs,
         // Remainder passed to BP SegmentedControl
         ...bpProps
     } = getNonLayoutProps(props);
@@ -224,6 +225,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         onBlur: model.onBlur,
         ...getLayoutProps(props),
         [TEST_ID]: props.testId,
+        ...domAttrs,
         item: bpSegmentedControl({
             ...bpProps,
             fill,

@@ -47,6 +47,7 @@ const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, re
         className,
         style: props.style,
         [TEST_ID]: props.testId,
+        ...props.domAttrs,
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,

@@ -875,6 +875,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             }
         },
         testId: props.testId,
+        domAttrs: props.domAttrs,
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,
