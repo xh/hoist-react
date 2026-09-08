@@ -1,4 +1,26 @@
 .xh-inspector {
+  // Size Blueprint's 30px tabs down to the compact toolbar.
+  &__bar .xh-tab-switcher {
+    .bp6-tab-list,
+    .bp6-tab {
+      height: var(--xh-tbar-compact-min-size-px);
+      line-height: var(--xh-tbar-compact-min-size-px);
+    }
+  }
+
+  &__title {
+    font-size: var(--xh-font-size-px);
+    font-weight: 600;
+    white-space: nowrap;
+    padding-left: var(--xh-pad-half-px);
+  }
+
+  // Specificity matches Toolbar's compact separator rule so this override wins.
+  &__bar.xh-toolbar--compact:not(.xh-toolbar--vertical) .xh-toolbar__separator {
+    height: 16px;
+    border-left-color: var(--xh-text-color-muted);
+  }
+
   .xh-font-family-mono {
     font-size: 0.9em;
   }
@@ -12,12 +34,7 @@
   }
 }
 
-.xh-inspector-panel-header {
-  background-color: hsl(33, 93%, 40%);
-  color: white;
-}
-
-// Popped-out window layout - these rules reach the child window via its synced stylesheets.
+// Inspector window layout - these rules reach the child window via its synced stylesheets.
 // The Inspector panel itself flexes to fill the host (see `flex` prop in InspectorPanel).
 body.xh-inspector-window {
   margin: 0;

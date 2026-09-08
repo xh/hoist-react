@@ -30,9 +30,14 @@
   trace spans (new `xh.name` tag), and the Inspector. Set it on any Hoist model config to tell peers
   of the same class apart - instances log as `ClassName [xhName]`, or `ClassName [id]` when unnamed.
   Hoist names services, `XH.appModel`, and models created by a named parent automatically.
-* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin it,
-  and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
-  across reloads, showing as placeholder rows when no instance is live.
+* Overhauled the Hoist Inspector into a standalone developer tool, now opening in its own browser
+  window (one per app tab) with top-level `Objects` and `Memory` tabs. Allow popups for the app's
+  origin - if the window is blocked, the Inspector deactivates with a toast.
+    * Objects: star any instance or property to keep it in view on a new `Watchlist` tab - starred
+      instances with an `xhName` persist across reloads. Unnamed instances are now hidden by
+      default, behind an `Anon` quick filter.
+    * Memory: stats are persisted per browser tab, so trends leading up to a reload survive it, and
+      a new button forces a GC when Chrome is launched with `--js-flags=--expose-gc`.
 * Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
   tabs. The Config panel shows every view of a config's value - resolved, instance override,
   database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the

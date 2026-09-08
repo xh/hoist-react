@@ -6,7 +6,7 @@
  */
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid} from '@xh/hoist/cmp/grid';
-import {code, div, filler, span} from '@xh/hoist/cmp/layout';
+import {code, div, filler, hframe, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, useContextModel, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -20,25 +20,23 @@ export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
     render({model}) {
-        // Re-parent grid popups (context/column menus) when Inspector is detached.
-        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
+        const popupParent = useContextModel(InspectorModel).windowContainer,
+            {canForceGC} = XH.inspectorService;
 
         return panel({
-            title: 'Stats',
-            icon: Icon.chartArea(),
-            compactHeader: true,
-            model: model.panelModel,
-            items: [
-                grid({agOptions: {popupParent}}),
+            item: hframe(
                 panel({
-                    item: chart(),
+                    item: grid({agOptions: {popupParent}}),
                     modelConfig: {
-                        side: 'bottom',
-                        defaultSize: 200,
+                        side: 'left',
+                        defaultSize: 550,
+                        collapsible: false,
+                        persistWith: {...model.persistWith, path: 'statsGridPanel'},
                         xhImpl: true
                     }
-                })
-            ],
+                }),
+                chart()
+            ),
             bbar: toolbar({
                 items: [
                     popover({
@@ -54,6 +52,14 @@ export const statsPanel = hoistCmp.factory({
                         })
                     }),
                     filler(),
+                    button({
+                        icon: Icon.trash(),
+                        disabled: !canForceGC,
+                        tooltip: canForceGC
+                            ? 'Force garbage collection'
+                            : 'Force garbage collection - requires Chrome launched with --js-flags=--expose-gc',
+                        onClick: () => XH.inspectorService.forceGC()
+                    }),
                     button({
                         tooltip: 'Reset stats',
                         icon: Icon.reset(),

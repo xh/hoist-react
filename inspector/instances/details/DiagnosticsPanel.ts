@@ -12,7 +12,7 @@ import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {DiagnosticsModel} from '@xh/hoist/inspector/instances/DiagnosticsModel';
+import {DiagnosticsModel} from '@xh/hoist/inspector/instances/details/DiagnosticsModel';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {isEmpty} from 'lodash';
 
@@ -27,8 +27,7 @@ export const diagnosticsPanel = hoistCmp.factory({
     model: uses(DiagnosticsModel, {fromContext: false}),
 
     render({model}) {
-        // Re-parent grid popups (context/column menus) when Inspector is popped out.
-        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined,
+        const popupParent = useContextModel(InspectorModel).windowContainer,
             hasTracked = !isEmpty(model.trackedDiagnostics);
 
         return panel({
@@ -39,21 +38,20 @@ export const diagnosticsPanel = hoistCmp.factory({
                       'Select a Store, Cube, Cube View, or GridModel to view data-pipeline diagnostics.'
                   ),
             bbar: toolbar({
+                omit: !hasTracked,
                 items: [
                     span({
                         title: 'Stream each op performed by the selected instances to the devtools console, without raising the app-wide log level. Sticky per instance - logging continues when the selection moves elsewhere.',
                         item: switchInput({
                             value: model.logOps,
                             onChange: v => model.setLogOps(v),
-                            label: 'Log operations to console',
-                            disabled: !hasTracked
+                            label: 'Log operations to console'
                         })
                     }),
                     filler(),
                     button({
                         icon: Icon.reset(),
                         tooltip: 'Reset op counts and timings for the selected instances',
-                        disabled: !hasTracked,
                         onClick: () => model.resetAll()
                     })
                 ]
