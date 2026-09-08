@@ -139,6 +139,30 @@ The common props interface extended by all input components.
 | `onCommit` | `(value, oldValue) => void` | Called when value is committed |
 | `tabIndex` | `number` | Tab order for focus (-1 to skip) |
 | `id` | `string` | DOM ID for the input element |
+| `testId` | `string` | Emits `data-testid` on the input's primary DOM element |
+| `domAttrs` | `data-*` / `aria-*` / `role` keys | Extra HTML attributes for that same element |
+
+### Extra DOM Attributes with `domAttrs`
+
+Input components pass an explicit, named set of props to the element they render, so any other
+attribute is dropped. Use `domAttrs` to apply `data-*` or `aria-*` attributes that Hoist does not
+model with a dedicated prop.
+
+```typescript
+textInput({
+    bind: 'email',
+    domAttrs: {'data-analytics-id': 'signup-email', 'aria-describedby': 'email-help'}
+});
+```
+
+Keys are constrained by type to `data-*` and `aria-*` attributes, plus `role`, so the prop cannot
+reach attributes the component manages itself.
+
+> **Mobile caveat:** `TextInput` and `NumberInput` on mobile render Onsen's `<ons-input>` custom
+> element, and `SearchInput` renders `<ons-search-input>`. Both mirror only a fixed allowlist of
+> attributes onto the real `<input>` they create. Attributes supplied via `domAttrs` are applied to the `<ons-input>` wrapper,
+> not to the inner `<input>`. This matches where `testId` lands today. Mobile `TextArea` is
+> unaffected - it renders a native `<textarea>`.
 
 ## Integration with Forms
 

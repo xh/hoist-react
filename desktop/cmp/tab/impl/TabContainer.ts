@@ -24,6 +24,7 @@ export function tabContainerImpl({
     childContainerProps,
     className,
     testId,
+    domAttrs,
     ...props
 }: TabContainerProps) {
     const switcherProps = getSwitcherProps(props),
@@ -40,6 +41,7 @@ export function tabContainerImpl({
         ...layoutProps,
         className,
         testId,
+        domAttrs,
         item: getChildren(model, switcherProps, testId, childContainerProps)
     });
 }

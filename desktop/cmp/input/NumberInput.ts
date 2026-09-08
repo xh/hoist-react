@@ -278,6 +278,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
             textAlign: withDefault(props.textAlign, 'right')
         },
         [TEST_ID]: props.testId,
+        ...props.domAttrs,
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown,

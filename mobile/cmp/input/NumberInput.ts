@@ -257,6 +257,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             },
             spellCheck: false,
             [TEST_ID]: props.testId,
+            ...props.domAttrs,
 
             onInput: model.onValueChange,
             onKeyDown: model.onKeyDown,

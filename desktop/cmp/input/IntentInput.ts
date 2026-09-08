@@ -148,6 +148,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
         compact,
         showNames,
         testId,
+        domAttrs,
         // Remainder passed to the container div
         ...rest
     } = getNonLayoutProps(props);
@@ -168,6 +169,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
         onKeyDown: disabled ? null : model.onKeyDown,
         ...getLayoutProps(props),
         [TEST_ID]: testId,
+        ...domAttrs,
         items: model.options.map(intent => {
             const isSelected = renderValue === intent,
                 isNull = intent == null,

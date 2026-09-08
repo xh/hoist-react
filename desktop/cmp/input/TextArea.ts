@@ -91,6 +91,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         spellCheck: withDefault(props.spellCheck, false),
         tabIndex: props.tabIndex,
         [TEST_ID]: props.testId,
+        ...props.domAttrs,
         id: props.id,
         className,
         style: {
