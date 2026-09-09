@@ -14,6 +14,11 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
+  too narrowly - options now hold their own content width, sharing equally only where there is room.
+
 ## 87.2.0 - 2026-09-08
 
 ### 🎁 New Features
