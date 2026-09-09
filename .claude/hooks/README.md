@@ -117,15 +117,20 @@ populate under any configuration, including for repos that *are* in scope:
 GitHubService [ERROR] | Failure fetching commits for hoist-react | api.github.com/graphql : null
 ```
 
-**Recommendation: leave `APP_TOOLBOX_GIT_HUB_ACCESS_TOKEN` unset.** `GitHubService` skips all work
-when `gitHubAccessToken` is absent or `none`. With a token set it instead attempts 4 repos x 2
-doomed GraphQL calls, costing ~180s of startup time for the same empty panels:
+**Recommendation: set `APP_TOOLBOX_GIT_HUB_ACCESS_TOKEN=none`.** `GitHubService` skips all work
+when `gitHubAccessToken` is `none`, logging a single warning instead of attempting 4 repos x 2
+doomed GraphQL calls. Note that *unsetting* the variable does not achieve this - `ConfigService`
+then creates the config from its BootStrap default of `realTokenGoesHere`, which is not `none`, so
+the service runs anyway and merely fails faster. Measured startup cost of the GitHub refresh:
 
-```
-GitHubService [INFO] | Refreshing GitHub commits for 4 configured repositories | completed | 182303ms
-```
+| `APP_TOOLBOX_GIT_HUB_ACCESS_TOKEN` | Behaviour | Cost |
+|------------------------------------|-----------|------|
+| A real PAT | 8 calls, hang, then `CancellationException` | ~182s |
+| Unset | 8 calls, fast `401 Bad credentials` | ~1.1s |
+| `none` | No calls at all - clean skip warning | none |
 
-Leaving it unset also keeps a real PAT out of the environment config, where it would go unused.
+Setting it to `none` also keeps a real PAT out of the environment config, where the proxy's
+credential injection means it would go unused anyway.
 
 The Docs tab is a *separate* code path that falls back to REST, so it would fail the same way for
 any repo not in the session's scope:
