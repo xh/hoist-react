@@ -4,15 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {useHotkeys as useHotkeysBp} from '@xh/hoist/kit/blueprint';
-import {isEmpty} from 'lodash';
-import {cloneElement, ReactElement, useMemo, useRef} from 'react';
+import {isEqualWith, isFunction} from 'lodash';
+import {cloneElement, ReactElement, useRef} from 'react';
 import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
-
-/* eslint-disable react-hooks/exhaustive-deps */
-
-/** Stable-identity placeholder - see note on Blueprint re-registration below. */
-const NO_HOTKEYS: HotkeyConfig[] = [];
 
 /**
  * Hook to add Key handling support to a component.
@@ -20,24 +16,46 @@ const NO_HOTKEYS: HotkeyConfig[] = [];
  * The implementation of this hook is based on BlueprintJS.
  * See their docs {@link https://blueprintjs.com/docs/#core/components/hotkeys} for more info.
  *
- * Note that `hotkeys` are captured on the first render of the calling component and held for its
- * lifetime - later changes to the array are not picked up.
+ * Both args may change across renders - keys are (de)registered as they do.
  *
  * @param child - element to be given hotkey support.  Must specify Component
  *      that takes react key events as props (e.g. boxes, panel, div, etc).
- * @param hotkeys - An array of hotkeys, or configs for hotkeys,
- *      as prescribed by blueprint. A Hotkeys element may also be provided.
+ * @param hotkeys - configs for the hotkeys to be installed, as prescribed by blueprint.
  */
-export function useHotkeys(child?: ReactElement<any>, hotkeys?: HotkeyConfig[]) {
-    // Whether this component installs hotkey support must be decided on its first render
-    // and held stable thereafter.
-    const enabled = useRef(!isEmpty(hotkeys)).current;
-    if (!enabled) return child;
-
-    // Blueprint re-registers its handlers whenever the identity of its `keys` arg changes. Pass the
-    // stable empty array while we have no child.
-    const memoHotkeys = useMemo(() => hotkeys, []),
-        {handleKeyDown, handleKeyUp} = useHotkeysBp(child ? memoHotkeys : NO_HOTKEYS);
-
-    return child ? cloneElement(child, {onKeyDown: handleKeyDown, onKeyUp: handleKeyUp}) : child;
+export function useHotkeys(child?: ReactElement<any>, hotkeys?: HotkeyConfig[]): ReactElement {
+    return child && hotkeys ? hotkeysHost({child, hotkeys}) : child;
 }
+
+//------------------------
+// Implementation
+//------------------------
+interface HotkeysHostProps extends HoistProps {
+    child: ReactElement<any>;
+    hotkeys: HotkeyConfig[];
+}
+
+// Hosts BP's hooks, mounted only for callers that pass hotkeys, and only while they have a child
+// to bind them to - BP adds document listeners and warns re. its missing `HotkeysProvider` for
+// every caller of its hook, so it is not run on behalf of the many `Panel`s that specify no keys.
+const hotkeysHost = hoistCmp.factory<HotkeysHostProps>({
+    displayName: 'HotkeysHost',
+    model: false,
+    memo: false,
+    observer: false,
+
+    render({child, hotkeys}) {
+        // Hold configs stable, refreshing handlers in place - BP re-registers on array identity.
+        const ref = useRef<HotkeyConfig[]>(null),
+            prev = ref.current;
+        if (prev && isEqualWith(prev, hotkeys, fnEquals)) {
+            prev.forEach((hk, idx) => Object.assign(hk, hotkeys[idx]));
+        } else {
+            ref.current = hotkeys.map(hk => ({...hk}));
+        }
+
+        const {handleKeyDown, handleKeyUp} = useHotkeysBp(ref.current);
+        return cloneElement(child, {onKeyDown: handleKeyDown, onKeyUp: handleKeyUp});
+    }
+});
+
+const fnEquals = (a, b) => (isFunction(a) && isFunction(b) ? true : undefined);
