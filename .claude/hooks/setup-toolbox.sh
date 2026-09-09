@@ -32,7 +32,11 @@ if [ ! -d "$TOOLBOX_DIR/.git" ]; then
     echo "setup-toolbox: cloning xh/toolbox to $TOOLBOX_DIR..."
     git clone --depth 1 https://github.com/xh/toolbox "$TOOLBOX_DIR"
 else
-    echo "setup-toolbox: found existing toolbox checkout at $TOOLBOX_DIR."
+    # A pre-cloned checkout (e.g. from the environment setup script's cached snapshot) can be up
+    # to a week stale - bring it current. Non-fatal so an offline or dirty checkout still works.
+    echo "setup-toolbox: found existing toolbox checkout at $TOOLBOX_DIR - updating..."
+    git -C "$TOOLBOX_DIR" pull --ff-only \
+        || echo 'setup-toolbox: WARNING - could not fast-forward toolbox; continuing with the existing checkout.' >&2
 fi
 
 # Toolbox's DocsService serves hoist-react and hoist-core docs, preferring a local sibling

@@ -69,8 +69,8 @@ fi
 ```
 
 The cache is rebuilt whenever the setup script or the allowlist changes, and roughly weekly, so
-the pre-cloned Toolbox can be up to a week stale. Sessions should `git -C ../toolbox pull` before
-relying on it, or `setup-toolbox.sh` can be taught to do so.
+the pre-cloned Toolbox can be up to a week stale; `setup-toolbox.sh` fast-forwards an existing
+checkout before using it.
 
 ### Environment variables
 
