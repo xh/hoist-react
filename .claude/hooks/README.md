@@ -86,36 +86,15 @@ earlier error below` and cascades into dozens of unrelated resolution failures. 
 limiting, not a blocked domain: a manual `curl` of the identical URL returns the artifact.
 
 Retrying converges only slowly, since each attempt caches whatever it managed to fetch. The
-reliable fix is to prefer a mirror. `repo.grails.org/grails/core` is an Artifactory virtual repo
-that proxies Maven Central and is already on the allowlist above; it serves the full dependency
-set, the Gradle plugin portal artifacts included. Drop this in
-`~/.gradle/init.d/central-mirror.gradle` - it touches no project files, so there is nothing to
-commit:
+reliable fix is to prefer a mirror, and `setup-toolbox.sh` installs one for you:
+`repo.grails.org/grails/core` is an Artifactory virtual repo that proxies Maven Central and is
+already on the allowlist above, serving the full dependency set including the Gradle plugin portal
+artifacts. With the mirror in place a cold `bootRun` completes with zero 429s.
 
-```groovy
-def MIRROR = 'https://repo.grails.org/grails/core'
-
-def prepend = { rh ->
-    if (rh.findByName('centralMirror') == null) {
-        def repo = rh.maven { name = 'centralMirror'; url = MIRROR }
-        rh.remove(repo)
-        rh.addFirst(repo)
-    }
-}
-
-beforeSettings { settings ->
-    prepend(settings.pluginManagement.repositories)
-    settings.pluginManagement.repositories.gradlePluginPortal()
-    settings.pluginManagement.repositories.mavenCentral()
-}
-
-allprojects { p ->
-    prepend(p.buildscript.repositories)
-    prepend(p.repositories)
-}
-```
-
-With the mirror in place a cold `bootRun` completes with zero 429s.
+The mirror is written to `~/.gradle/init.d/central-mirror.gradle` - global Gradle config, so it
+applies to any build in the session without touching project files. The hook only writes it when
+`CLAUDE_CODE_REMOTE=true`, and never overwrites an existing file, so a local developer's Gradle
+setup is left alone. Delete the file to opt back out.
 
 ### The GitHub API is restricted, so the home page GitHub panels stay empty
 
@@ -148,24 +127,28 @@ GitHubService [INFO] | Refreshing GitHub commits for 4 configured repositories |
 
 Leaving it unset also keeps a real PAT out of the environment config, where it would go unused.
 
-The Docs tab is a *separate* code path that falls back to REST, and will fail for any repo not in
-the session's scope:
+The Docs tab is a *separate* code path that falls back to REST, so it would fail the same way for
+any repo not in the session's scope:
 
 ```
 DocsService [ERROR] | Failed to resolve hoist-core content source
   | GitHub API returned 403 for https://api.github.com/repos/xh/hoist-core/tarball/develop
 ```
 
-Do not fix this by widening repo scope. `DocsService.resolveSource` prefers a **local sibling
-checkout** over GitHub whenever `isLocalDevelopment` is set, so the fix is simply to have
-`../hoist-core/docs/README.md` on disk. This is how `hoist-react` docs already resolve in a web
-session - only `hoist-core` falls through to the API, purely because it is not cloned. Cloning it
-alongside `xh/toolbox` in `setup-toolbox.sh` needs no API access at all: plain `git clone` from
-`github.com` is already allowlisted, and the hook does exactly this for `xh/toolbox` today.
+That fallback is avoided rather than fixed. `DocsService.resolveSource` prefers a **local sibling
+checkout** over GitHub whenever `isLocalDevelopment` is set, so it is enough to have
+`../hoist-core/docs/README.md` on disk - which is why `setup-toolbox.sh` clones `xh/hoist-core`
+alongside `xh/toolbox`. Plain `git clone` from `github.com` is already allowlisted, so this needs no
+API access at all. Both sources then resolve from disk, exactly as they do on a developer's laptop:
 
-Widening repo scope is also the more costly option, and not a targeted one - the proxy injects its
-own credential for every allowlisted repo, so scope granted for the app is equally available to the
-agent driving the session. There is no app-only grant.
+```
+LocalContentSource [INFO] | Using local content source: /workspace/hoist-react
+LocalContentSource [INFO] | Using local content source: /workspace/hoist-core
+```
+
+Do not reach for repo scope here. It is the more costly option and not a targeted one - the proxy
+injects its own credential for every allowlisted repo, so scope granted for the app is equally
+available to the agent driving the session. There is no app-only grant.
 
 ### The running app is not reachable from a browser
 
