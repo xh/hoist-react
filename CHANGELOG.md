@@ -18,6 +18,9 @@
 
 * Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
   too narrowly - options now hold their own content width, sharing equally only where there is room.
+* Fixed `useHotkeys()` throwing a React hook-count error when its arguments changed across
+  renders - a collapsible `Panel` given `hotkeys` no longer crashes when first expanded. Hotkeys
+  may now also be changed after the first render.
 
 ## 87.2.0 - 2026-09-08
 
