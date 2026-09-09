@@ -67,7 +67,11 @@ export class NavigatorModel extends HoistModel {
     @bindable.ref
     stack: PageModel[] = [];
 
-    /** Index of the active page within the stack, synced from Swiper. */
+    /**
+     * Index of the active page within the stack. Synced from Swiper only once a page transition
+     * has completed (see `onPageChange`) - never mid-gesture, as re-rendering while a swipe is
+     * in progress unmounts the page under the user's finger and cancels the gesture.
+     */
     @bindable activePageIdx: number = 0;
 
     pages: PageConfig[] = [];
@@ -156,9 +160,6 @@ export class NavigatorModel extends HoistModel {
 
         swiper.on('transitionEnd', () => this.onPageChange());
 
-        // Swiper's activeIndex is not observable - mirror it into state.
-        swiper.on('activeIndexChange', () => (this.activePageIdx = swiper.activeIndex));
-
         // Ensure Swiper's touch move is initially disabled, and capture
         // the initial touch position. This is required to allow touch move
         // to propagate to scrollable elements within the page.
@@ -220,7 +221,9 @@ export class NavigatorModel extends HoistModel {
     /** @internal */
     @action
     onPageChange = () => {
-        // 1) Clear any pages after the active page. These can be left over from a back swipe.
+        // 1) Sync the active index from Swiper, then clear any pages after the active page.
+        // These can be left over from a back swipe.
+        this.activePageIdx = this._swiper.activeIndex;
         this.stack = this.stack.slice(0, this.activePageIdx + 1);
 
         // 2) Sync route to match the current page stack
@@ -326,7 +329,7 @@ export class NavigatorModel extends HoistModel {
             // The route has already changed - backstop a missed `transitionEnd`, which would
             // otherwise leave the stack and the route permanently out of sync.
             wait(transitionMs + 100).then(() => {
-                if (this.stack.length > this.activePageIdx + 1) this.onPageChange();
+                if (this.stack.length > this._swiper.activeIndex + 1) this.onPageChange();
             });
         } else {
             // Otherwise, update the stack immediately and navigate to the new page.
