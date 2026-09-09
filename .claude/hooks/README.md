@@ -20,17 +20,64 @@ Cloud environments) so every developer gets the same variables, network policy, 
 without configuring anything themselves. Environment variables, network policy, and setup scripts
 cannot be checked into the repo - only the hooks and settings in `.claude/` are.
 
-**Leave the environment's setup script empty** (or limit it to VM-level provisioning such as
-`apt install`). Setup scripts run in `/workspace`, *above* the cloned repo, so a `pnpm install`
-there fails with `ERR_PNPM_NO_PKG_MANIFEST` and blocks the session from starting. Dependency
-installs belong in `session-start.sh`, which runs inside the repo after Claude Code launches and
-already writes the FontAwesome auth to `~/.npmrc`.
+### Setup script
+
+Setup scripts run as root in `/workspace`, *above* the cloned repo, once per environment cache
+build (the filesystem is then snapshotted and reused by later sessions). Do **not** run
+`pnpm install` here - there is no `package.json` in `/workspace`, so it fails with
+`ERR_PNPM_NO_PKG_MANIFEST` and blocks every session from starting. hoist-react's dependency
+install belongs in `session-start.sh`.
+
+Use the setup script for two things that make Toolbox runs fast and reliable:
+
+1. **Maven Central mirror.** The sandbox's shared egress IPs get rate-limited by Maven Central
+   (Cloudflare `HTTP 429`) on cold dependency bursts, and a single 429 makes Gradle disable the
+   repository for the rest of the build. `repo.grails.org/grails/core` is an Artifactory virtual
+   repo that proxies Central and is already on the allowlist below; a Gradle init script puts it
+   first. This is sandbox-only and does not touch either repo's `build.gradle`.
+2. **Pre-clone Toolbox and warm the Gradle cache** so per-session `bootRun` skips the downloads
+   entirely. `setup-toolbox.sh` reuses a checkout it finds at `/workspace/toolbox`.
+
+Recommended setup script (must exit 0 and finish in under ~5 minutes; every step is non-fatal):
+
+```bash
+#!/bin/bash
+# hoist-react cloud environment setup. Runs once per environment cache build, as root, in /workspace.
+
+# 1. Prefer repo.grails.org (proxies Maven Central) to avoid Central's 429 rate limits in the sandbox.
+mkdir -p ~/.gradle/init.d
+cat > ~/.gradle/init.d/central-mirror.gradle <<'EOF'
+def MIRROR = 'https://repo.grails.org/grails/core'
+allprojects { p ->
+    [p.buildscript.repositories, p.repositories].each { handler ->
+        def m = handler.maven { url = MIRROR }
+        handler.remove(m)
+        handler.addFirst(m)
+    }
+}
+EOF
+
+# 2. Pre-clone Toolbox and warm the Gradle dependency cache. `assemble` resolves the full runtime
+#    classpath; if it pushes the script past the 5-minute limit, fall back to `dependencies`.
+if [ ! -d /workspace/toolbox/.git ]; then
+    git clone --depth 1 https://github.com/xh/toolbox /workspace/toolbox || true
+fi
+if [ -d /workspace/toolbox ]; then
+    (cd /workspace/toolbox && ./gradlew --no-daemon -q assemble -x test) \
+        || echo 'setup: Gradle warm-up failed (non-fatal); bootRun will download on first run.'
+fi
+```
+
+The cache is rebuilt whenever the setup script or the allowlist changes, and roughly weekly, so
+the pre-cloned Toolbox can be up to a week stale. Sessions should `git -C ../toolbox pull` before
+relying on it, or `setup-toolbox.sh` can be taught to do so.
 
 ### Environment variables
 
 | Variable | Purpose |
 |----------|---------|
 | `FONTAWESOME_NPM_AUTH_TOKEN` | Auth token for the FontAwesome Pro npm registry. Required for `pnpm install`. |
+| `APP_TOOLBOX_JS_LICENSES` | Optional. Hoist instance-config override for Toolbox's `jsLicenses` app config, e.g. `{"agGrid":"<key>"}`. Without it the fresh H2 database starts unlicensed and ag-Grid shows its watermark. Only needed if sessions run Toolbox. |
 
 ### Network policy domain allowlist
 
