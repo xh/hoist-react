@@ -65,3 +65,121 @@ The Toolbox server rows are only needed if sessions will run the full Toolbox ap
 Note that a blocked domain may surface as an HTTP error from the sandbox proxy rather than a
 connection failure, in which case `session-start.sh`'s reachability probe passes and the
 subsequent `pnpm install` fails instead - the hook still exits cleanly with a warning.
+
+## Known sandbox limitations
+
+Verified against a live web session. These are properties of the sandbox, not of the hooks or of
+Toolbox itself - allowlisting more domains will not resolve them.
+
+### Maven Central rate-limits Gradle hard enough to block `bootRun`
+
+Dependency resolution routinely fails with a Cloudflare rate limit:
+
+```
+> Could not GET 'https://repo.maven.apache.org/maven2/.../grails-data-hibernate5-7.2.2.jar'.
+  Received status code 429 from server: Too Many Requests
+```
+
+A single 429 poisons the whole build - Gradle reports `Repository MavenRepo is disabled due to
+earlier error below` and cascades into dozens of unrelated resolution failures. Both
+`repo.maven.apache.org` and `repo1.maven.org` are affected (same Cloudflare edge). This is rate
+limiting, not a blocked domain: a manual `curl` of the identical URL returns the artifact.
+
+Retrying converges only slowly, since each attempt caches whatever it managed to fetch. The
+reliable fix is to prefer a mirror. `repo.grails.org/grails/core` is an Artifactory virtual repo
+that proxies Maven Central and is already on the allowlist above; it serves the full dependency
+set, the Gradle plugin portal artifacts included. Drop this in
+`~/.gradle/init.d/central-mirror.gradle` - it touches no project files, so there is nothing to
+commit:
+
+```groovy
+def MIRROR = 'https://repo.grails.org/grails/core'
+
+def prepend = { rh ->
+    if (rh.findByName('centralMirror') == null) {
+        def repo = rh.maven { name = 'centralMirror'; url = MIRROR }
+        rh.remove(repo)
+        rh.addFirst(repo)
+    }
+}
+
+beforeSettings { settings ->
+    prepend(settings.pluginManagement.repositories)
+    settings.pluginManagement.repositories.gradlePluginPortal()
+    settings.pluginManagement.repositories.mavenCentral()
+}
+
+allprojects { p ->
+    prepend(p.buildscript.repositories)
+    prepend(p.repositories)
+}
+```
+
+With the mirror in place a cold `bootRun` completes with zero 429s.
+
+### The GitHub API is restricted, so the home page GitHub panels stay empty
+
+The sandbox proxy intercepts all `api.github.com` traffic and applies two independent
+restrictions:
+
+| Restriction | Effect |
+|-------------|--------|
+| **GraphQL blocked outright** | `POST /graphql` returns 403 - only pinned PR-review ops are served |
+| **REST gated by repo scope** | Repos not attached to the session return 403, *even when public* |
+
+The proxy also strips the caller's `Authorization` header and injects its own credential, so the
+token supplied by the app is never consulted - a deliberately bogus token still succeeds against
+an in-scope repo.
+
+`GitHubService` uses GraphQL exclusively, so the Hoist Commits and Hoist Releases panels cannot
+populate under any configuration, including for repos that *are* in scope:
+
+```
+GitHubService [ERROR] | Failure fetching commits for hoist-react | api.github.com/graphql : null
+```
+
+**Recommendation: leave `APP_TOOLBOX_GIT_HUB_ACCESS_TOKEN` unset.** `GitHubService` skips all work
+when `gitHubAccessToken` is absent or `none`. With a token set it instead attempts 4 repos x 2
+doomed GraphQL calls, costing ~180s of startup time for the same empty panels:
+
+```
+GitHubService [INFO] | Refreshing GitHub commits for 4 configured repositories | completed | 182303ms
+```
+
+Leaving it unset also keeps a real PAT out of the environment config, where it would go unused.
+
+The Docs tab is a *separate* code path that falls back to REST, and will fail for any repo not in
+the session's scope:
+
+```
+DocsService [ERROR] | Failed to resolve hoist-core content source
+  | GitHub API returned 403 for https://api.github.com/repos/xh/hoist-core/tarball/develop
+```
+
+Do not fix this by widening repo scope. `DocsService.resolveSource` prefers a **local sibling
+checkout** over GitHub whenever `isLocalDevelopment` is set, so the fix is simply to have
+`../hoist-core/docs/README.md` on disk. This is how `hoist-react` docs already resolve in a web
+session - only `hoist-core` falls through to the API, purely because it is not cloned. Cloning it
+alongside `xh/toolbox` in `setup-toolbox.sh` needs no API access at all: plain `git clone` from
+`github.com` is already allowlisted, and the hook does exactly this for `xh/toolbox` today.
+
+Widening repo scope is also the more costly option, and not a targeted one - the proxy injects its
+own credential for every allowlisted repo, so scope granted for the app is equally available to the
+agent driving the session. There is no app-only grant.
+
+### The running app is not reachable from a browser
+
+`localhost:3000` and `localhost:8080` live inside the session container with no port forwarding
+out. Verifying UI changes means driving a headless browser from inside the session and capturing
+screenshots. Chromium is pre-installed at `/opt/pw-browsers` with `PLAYWRIGHT_BROWSERS_PATH`
+already pointing at it - do not run `playwright install`. The `playwright` npm package itself is
+not present in either repo and needs a one-off `npm i playwright` in a scratch directory.
+
+Note also that `webpack-dev-server` compiles silently, so grepping its log for a "compiled" line
+will hang. Poll for readiness instead:
+
+```bash
+curl -s -m 30 -o /dev/null -w '%{http_code}' http://localhost:3000/app
+```
+
+Expect a first-compile time of roughly 60-90s.
