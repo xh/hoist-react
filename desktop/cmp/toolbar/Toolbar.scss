@@ -155,7 +155,7 @@
         }
       }
 
-      // BP baseline-aligns control indicators, clipping them when compact - flex to center.
+      // BP baseline-aligns control indicators, overhanging the bar when compact - flex to center.
       &.xh-switch-input,
       &.xh-check-box,
       &.xh-radio-input .xh-radio-input-option {
@@ -176,6 +176,12 @@
             margin: 0 0 0 var(--xh-pad-half-px);
           }
         }
+      }
+
+      // BP's unlabeled slider (labelRenderer: false) is 16px - center it. Labeled ones are 40px
+      // and overhang the bar.
+      &.xh-slider .bp6-slider-unlabeled {
+        margin-top: calc((var(--xh-tbar-compact-item-height-px) - 16px) / 2);
       }
 
       &.xh-select {
