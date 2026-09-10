@@ -75,6 +75,9 @@ export interface TabConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -119,6 +122,7 @@ export class TabModel extends HoistModel {
             content,
             refreshMode,
             renderMode,
+            xhName = null,
             xhImpl = false
         }: TabConfig,
         containerModel: TabContainerModel
@@ -132,6 +136,7 @@ export class TabModel extends HoistModel {
         );
 
         this.id = id.toString();
+        this.xhName = xhName ?? containerModel.childXhName(this.id);
         this.title = title;
         this.icon = icon;
         this.tooltip = tooltip;
@@ -183,7 +188,7 @@ export class TabModel extends HoistModel {
         if (!content) return null;
 
         // Recognize if content is a child container spec.
-        let childConfig: TabContainerConfig = null;
+        let childConfig: TabContainerConfig;
         if (isArray(content)) {
             childConfig = {tabs: content};
         } else if ('tabs' in content) {

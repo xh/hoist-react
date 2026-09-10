@@ -66,6 +66,9 @@ export interface DockViewConfig {
     allowDialog?: boolean;
     /** Awaitable callback invoked on close. Return false to prevent close. */
     onClose?: () => Awaitable<boolean | void>;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -128,13 +131,15 @@ export class DockViewModel extends HoistModel {
         collapsed = false,
         allowClose = true,
         allowDialog = true,
-        onClose
+        onClose,
+        xhName = null
     }: DockViewConfig) {
         super();
         throwIf(!id, 'DockViewModel requires an id');
 
         this.id = id;
         this.containerModel = containerModel;
+        this.xhName = xhName ?? containerModel?.childXhName(id);
         this.title = title;
         this.icon = icon;
         this.content = content;

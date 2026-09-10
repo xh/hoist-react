@@ -17,12 +17,21 @@ import {MessageModel} from './MessageModel';
  */
 export class MessageSourceModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'messageSourceModel';
 
     @managed
     @observable.ref
     accessor msgModels: MessageModel[] = [];
 
     message(config: MessageSpec) {
+        // Resolve immediately to any previously saved response the user has opted to suppress
+        // this message with - see MessageSpec.suppress.
+        const suppressed = MessageModel.getSuppressedResult(config);
+        if (suppressed) {
+            this.logDebug(`Suppressed message '${config.messageKey}'`, suppressed.value);
+            return Promise.resolve(suppressed.value);
+        }
+
         // Default autoFocus on any confirm button, if no input control and developer has made no explicit request
         const {confirmProps, cancelProps, input} = config;
 

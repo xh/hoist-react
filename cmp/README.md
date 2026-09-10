@@ -174,6 +174,7 @@ techniques.
 
 | Sub-package | Description |
 |-------------|-------------|
+| `/daterange/` | DateRangePickerModel for period selection - presets, relative lookbacks, months and years, custom ranges. [See README](./daterange/README.md) |
 | `/filter/` | FilterChooserModel for building filter UIs |
 | `/grouping/` | GroupingChooserModel for dimension selection |
 | `/store/` | Store-related UI components (count label, filter field) |

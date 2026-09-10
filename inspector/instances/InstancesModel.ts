@@ -16,6 +16,7 @@ import {action, bindable, isObservableProp, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
+import {instanceLabel} from '../impl/InspectorUtils';
 import {StatsModel} from '../stats/StatsModel';
 import {DiagnosticsModel} from './DiagnosticsModel';
 
@@ -48,12 +49,18 @@ export class InstancesModel extends HoistModel {
     @bindable @persist accessor instancesStoreFilter;
     @bindable @persist accessor propertiesStoreFilter;
 
+    /** Keys of favorited instances (`{className}:{xhName}`) - requires an `xhName` to pin. */
+    @bindable.ref @persist accessor favorites: string[] = [];
+
     @bindable @persist accessor instQuickFilters = ['showInGroups'];
     get showInGroups() {
         return this.instQuickFilters?.includes('showInGroups');
     }
     get showXhImpl() {
         return this.instQuickFilters?.includes('showXhImpl');
+    }
+    get favoritesOnly() {
+        return this.instQuickFilters?.includes('favoritesOnly');
     }
 
     @bindable @persist accessor propQuickFilters = [];
@@ -68,7 +75,9 @@ export class InstancesModel extends HoistModel {
     }
 
     get selectedInstances(): HoistBase[] {
-        return this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it));
+        return compact(
+            this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it))
+        );
     }
 
     constructor() {
@@ -159,6 +168,13 @@ export class InstancesModel extends HoistModel {
         }
     }
 
+    toggleFavorite(record: StoreRecord) {
+        const key = favoriteKey(record?.data);
+        if (!key) return;
+        const {favorites} = this;
+        this.favorites = favorites.includes(key) ? without(favorites, key) : [...favorites, key];
+    }
+
     togglePropsWatchlistItem(record: StoreRecord) {
         const {instanceXhId, property, isGetter} = record.data,
             {propsWatchlist} = this,
@@ -194,6 +210,9 @@ export class InstancesModel extends HoistModel {
             store: {
                 fields: [
                     {name: 'className', type: 'string'},
+                    {name: 'xhName', type: 'string'},
+                    {name: 'isFavorite', type: 'bool'},
+                    {name: 'alive', type: 'bool'},
                     {name: 'displayGroup', type: 'string'},
                     {name: 'created', type: 'date'},
                     {name: 'syncRun', type: 'number'},
@@ -217,12 +236,29 @@ export class InstancesModel extends HoistModel {
             columns: [
                 {
                     ...actionCol,
-                    width: calcActionColWidth(2),
+                    width: calcActionColWidth(3),
                     actions: [
                         {
                             icon: Icon.terminal(),
                             tooltip: 'Log to console',
-                            actionFn: ({record}) => this.logInstanceToConsole(record)
+                            actionFn: ({record}) => this.logInstanceToConsole(record),
+                            displayFn: ({record}) => ({hidden: !record.data.alive})
+                        },
+                        {
+                            icon: Icon.favorite(),
+                            actionFn: ({record}) => this.toggleFavorite(record),
+                            displayFn: ({record}) => {
+                                const {xhName, isFavorite} = record.data;
+                                return {
+                                    disabled: !xhName,
+                                    tooltip: xhName
+                                        ? 'Toggle Favorite'
+                                        : 'Set xhName to enable favorites',
+                                    icon: isFavorite
+                                        ? Icon.favorite({intent: 'warning', prefix: 'fas'})
+                                        : Icon.favorite({className: 'xh-text-color-muted'})
+                                };
+                            }
                         },
                         {
                             icon: Icon.refresh({intent: 'success'}),
@@ -233,7 +269,11 @@ export class InstancesModel extends HoistModel {
                         }
                     ]
                 },
-                {field: 'id', displayName: 'xhId'},
+                {
+                    field: 'id',
+                    displayName: 'xhId',
+                    renderer: (v, {record}) => (record.data.alive ? v : null)
+                },
                 {
                     field: 'syncRun',
                     displayName: 'Sync',
@@ -251,6 +291,8 @@ export class InstancesModel extends HoistModel {
                     renderer: v => (v ? Icon.link() : null)
                 },
                 {field: 'displayGroup', hidden: true},
+                {field: 'isFavorite', ...boolCheckCol, hidden: true},
+                {field: 'xhName', flex: 1, minWidth: 150},
                 {field: 'className', flex: 1, minWidth: 150},
                 {
                     field: 'lastLoadCompleted',
@@ -262,10 +304,8 @@ export class InstancesModel extends HoistModel {
                 },
                 {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
-            rowClassFn: rec => {
-                return rec?.data.isXhImpl ? 'xh-impl-row' : null;
-            },
-            onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec),
+            rowClassFn: rec => (rec?.data.isXhImpl || !rec?.data.alive ? 'xh-impl-row' : null),
+            onRowDoubleClicked: ({data: rec}) => rec?.data.alive && this.logInstanceToConsole(rec),
             xhImpl: true
         });
     }
@@ -386,11 +426,15 @@ export class InstancesModel extends HoistModel {
     private autoLoadInstancesGrid() {
         this.addAutorun({
             run: () => {
-                const {showXhImpl, instancesGridModel, selectedSyncRun} = this,
+                const {showXhImpl, favoritesOnly, favorites, instancesGridModel, selectedSyncRun} =
+                        this,
                     data = [];
 
                 XH.inspectorService.activeInstances.forEach(inst => {
-                    if (!showXhImpl && inst.isXhImpl) return;
+                    const isFavorite = favorites.includes(favoriteKey(inst));
+
+                    // A star is an explicit opt-in, so favorites show regardless of the xhImpl filter.
+                    if (favoritesOnly ? !isFavorite : !showXhImpl && inst.isXhImpl) return;
                     if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
 
                     const displayGroup = inst.isHoistService
@@ -402,8 +446,28 @@ export class InstancesModel extends HoistModel {
                             : inst.isView
                               ? 'Views'
                               : 'Models';
-                    data.push({...inst, displayGroup});
+                    data.push({...inst, displayGroup, isFavorite, alive: true});
                 });
+
+                // Favorites with no live instance - shown so they can be seen and un-starred.
+                if (favoritesOnly && !selectedSyncRun) {
+                    const aliveKeys = new Set(data.map(favoriteKey));
+                    favorites
+                        .filter(key => !aliveKeys.has(key))
+                        .forEach(key => {
+                            const sep = key.indexOf(':'),
+                                className = key.slice(0, sep),
+                                xhName = key.slice(sep + 1);
+                            data.push({
+                                id: key,
+                                className,
+                                xhName,
+                                displayGroup: 'Not Alive',
+                                isFavorite: true,
+                                alive: false
+                            });
+                        });
+                }
 
                 instancesGridModel.loadData(data);
             }
@@ -481,8 +545,7 @@ export class InstancesModel extends HoistModel {
             return null;
 
         const {xhId} = instance,
-            ctorName = instance.constructor.name,
-            instanceDisplayName = `${ctorName} [${xhId}]`,
+            instanceDisplayName = instanceLabel(instance),
             isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
             v = !isGetter || isLoadedGetter ? instance[property] : null,
             // Detect FormModel.values Proxy object - throws otherwise on attempt to render in grid.
@@ -553,7 +616,11 @@ export class InstancesModel extends HoistModel {
     }
 }
 
-const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores'];
+const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores', 'Not Alive'];
+
+/** Persistent identity for Favorites - null when the instance has no `xhName` to pin by. */
+const favoriteKey = (inst: {className?: string; xhName?: string}): string =>
+    inst?.xhName ? `${inst.className}:${inst.xhName}` : null;
 
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
 

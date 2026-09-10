@@ -65,11 +65,13 @@ export class GridFilterModel extends HoistModel {
             commitOnChange = false,
             fieldSpecs,
             fieldSpecDefaults,
-            activeFilterIcon
+            activeFilterIcon,
+            xhName = null
         }: GridFilterModelConfig,
         gridModel: GridModel
     ) {
         super();
+        this.xhName = xhName;
         this.gridModel = gridModel;
         this.bind = bind;
         this.commitOnChange = commitOnChange;

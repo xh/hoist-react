@@ -52,6 +52,9 @@ export interface NavigatorConfig {
      * See enum for description of supported modes.
      */
     refreshMode?: RefreshMode;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -62,6 +65,12 @@ export class NavigatorModel extends HoistModel {
     @bindable accessor disableAppRefreshButton: boolean;
 
     @bindable.ref accessor stack: PageModel[] = [];
+
+    /**
+     * Index of the active page, synced from Swiper as each transition completes. Observable so
+     * `allowSlideNext`/`allowSlidePrev` stay current - Swiper silently skips locked directions.
+     */
+    @bindable accessor activePageIdx: number = 0;
 
     pages: PageConfig[] = [];
     track: boolean;
@@ -82,10 +91,6 @@ export class NavigatorModel extends HoistModel {
         return this.stack[this.activePageIdx];
     }
 
-    get activePageIdx(): number {
-        return this._swiper?.activeIndex ?? 0;
-    }
-
     get allowSlideNext(): boolean {
         return this.activePageIdx < this.stack.length - 1;
     }
@@ -100,9 +105,11 @@ export class NavigatorModel extends HoistModel {
         pullDownToRefresh = true,
         transitionMs = 500,
         renderMode = 'lazy',
-        refreshMode = 'onShowLazy'
+        refreshMode = 'onShowLazy',
+        xhName = null
     }: NavigatorConfig) {
         super();
+        this.xhName = xhName;
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
@@ -211,8 +218,9 @@ export class NavigatorModel extends HoistModel {
     /** @internal */
     @action
     onPageChange = () => {
-        // 1) Clear any pages after the active page. These can be left over from a back swipe.
-        this.stack = this.stack.slice(0, this._swiper.activeIndex + 1);
+        // 1) Sync the active index, then clear any pages after it - left over from a back swipe.
+        this.activePageIdx = this._swiper.activeIndex;
+        this.stack = this.stack.slice(0, this.activePageIdx + 1);
 
         // 2) Sync route to match the current page stack
         const newRouteName = this.stack.map(it => it.id).join('.'),
@@ -296,7 +304,8 @@ export class NavigatorModel extends HoistModel {
         if (init) {
             this.stack = stack;
             this._swiper.update();
-            this._swiper.activeIndex = this.stack.length - 1;
+            this.activePageIdx = this.stack.length - 1;
+            this._swiper.activeIndex = this.activePageIdx;
             return;
         }
 
@@ -308,6 +317,9 @@ export class NavigatorModel extends HoistModel {
             forwardOnePage = isEqual(newKeyStack.slice(0, -1), currKeyStack);
 
         if (backOnePage) {
+            // Set directly - a stale `false` here makes slidePrev() a silent no-op.
+            this._swiper.allowSlidePrev = true;
+
             // Don't update the stack yet. Instead, wait until after the animation has
             // completed in onPageChange().
             this._swiper.slidePrev(transitionMs);

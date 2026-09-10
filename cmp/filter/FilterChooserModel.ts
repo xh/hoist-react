@@ -136,6 +136,9 @@ export interface FilterChooserConfig {
 
     /** Options governing persistence. */
     persistWith?: FilterChooserPersistOptions;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -198,9 +201,11 @@ export class FilterChooserModel extends HoistModel {
         maxTags = 100,
         maxResults = 50,
         persistWith,
-        introHelpText
+        introHelpText,
+        xhName = null
     }: FilterChooserConfig = {}) {
         super();
+        this.xhName = xhName;
 
         this.bind = bind;
 
@@ -655,6 +660,4 @@ export type FilterChooserFilterSpec = CompoundFilterSpec | FieldFilterSpec;
 
 /** A variant of {@link FilterLike} that excludes FunctionFilters and FilterTestFn. */
 export type FilterChooserFilterLike =
-    | FilterChooserFilter
-    | FilterChooserFilterSpec
-    | FilterChooserFilterLike[];
+    FilterChooserFilter | FilterChooserFilterSpec | FilterChooserFilterLike[];

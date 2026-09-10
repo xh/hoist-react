@@ -92,7 +92,15 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
         return this.viewSpec.refreshMode ?? this.containerModel.refreshMode;
     }
 
-    constructor({id, viewSpec, icon, title, viewState = null, containerModel}: DashViewConfig<T>) {
+    constructor({
+        id,
+        viewSpec,
+        icon,
+        title,
+        viewState = null,
+        containerModel,
+        xhName = null
+    }: DashViewConfig<T>) {
         super();
         throwIf(!id, 'DashViewModel requires an id');
         throwIf(!viewSpec, 'DashViewModel requires an DashViewSpec');
@@ -103,8 +111,10 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
         this.title = title ?? viewSpec.title;
         this.viewState = viewState;
         this.containerModel = containerModel;
+        this.xhName = xhName ?? containerModel?.childXhName(id);
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
+        this.refreshContextModel.xhName = this.childXhName('refreshContextModel');
     }
 
     /**
@@ -153,4 +163,7 @@ export interface DashViewConfig<T extends DashViewSpec = DashViewSpec> {
     title?: string;
     viewState?: DashViewState;
     containerModel?: any;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }

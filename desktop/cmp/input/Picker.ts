@@ -473,6 +473,7 @@ const triggerButton = hoistCmp.factory<PickerModel>(({model, props, nothingSelec
         width: withDefault(width, 160),
         style: props.style,
         [TEST_ID]: getTestId(props, 'trigger'),
+        ...props.domAttrs,
         onClick: () => {
             if (model.popoverIsOpen) {
                 model.closePopover();

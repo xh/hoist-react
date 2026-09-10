@@ -207,9 +207,11 @@ export class DashContainerModel
         persistWith = null,
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View',
-        extraMenuItems
+        extraMenuItems,
+        xhName = null
     }: DashContainerConfig) {
         super();
+        this.xhName = xhName;
         viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {

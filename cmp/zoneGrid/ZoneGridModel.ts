@@ -301,6 +301,9 @@ export interface ZoneGridConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -360,8 +363,10 @@ export class ZoneGridModel extends HoistModel {
             restoreDefaultsFn,
             restoreDefaultsWarning,
             persistWith,
+            xhName = null,
             ...rest
         } = config;
+        this.xhName = xhName;
 
         this.availableColumns = columns
             .filter(it => !executeIfFunction(it.omit))
@@ -388,6 +393,7 @@ export class ZoneGridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.mapperModel = this.parseMapperModel(zoneMapperModel);
+        if (this.mapperModel) this.mapperModel.xhName = this.childXhName('mapperModel');
         if (persistWith) initPersist(this, persistWith);
 
         this.addReaction({
@@ -565,6 +571,7 @@ export class ZoneGridModel extends HoistModel {
     //-----------------------
     private createGridModel(config: GridConfig): GridModel {
         return new GridModel({
+            xhName: this.childXhName('gridModel'),
             ...config,
             xhImpl: true,
             contextMenu: withDefault(config.contextMenu, this.getDefaultContextMenu),

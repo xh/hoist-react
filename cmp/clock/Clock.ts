@@ -78,7 +78,7 @@ class ClockLocalModel extends HoistModel {
 
     override onLinked() {
         this.addReaction({
-            track: () => this.componentProps.timeZone,
+            track: () => this.componentProps.timezone,
             run: () => this.loadTimezoneOffsetAsync(),
             fireImmediately: true
         });

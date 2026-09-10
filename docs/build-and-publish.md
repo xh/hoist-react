@@ -24,6 +24,14 @@ Publishes a SNAPSHOT build to npm on every push to `develop`. Can also be trigge
 - Linting runs as part of this workflow — a lint failure will block the publish.
 - Uses `concurrency` with `cancel-in-progress: true` to avoid redundant builds when multiple pushes
   land in quick succession.
+- After publishing, polls `npm view @xh/hoist@next` until the registry resolves the `next` dist-tag
+  to the version just published (10 minute limit). Publishing returns once npm accepts the tarball,
+  but the new version is not guaranteed to be resolvable at that moment.
+- Finally fires a `repository_dispatch` (`hoist-react-snapshot`) to `xh/toolbox`, which rebuilds
+  and redeploys Toolbox against the new snapshot. The dispatch authenticates as the org-owned
+  **XH Build Bot** GitHub App via a short-lived installation token minted by
+  `actions/create-github-app-token`, scoped to the toolbox repo with Contents: write. Toolbox runs
+  triggered this way show `xh-build-bot[bot]` as the actor.
 
 ## Deploy Release (`deployRelease.yml`)
 
@@ -62,13 +70,21 @@ Inputs:
 Automated dependency update PRs are configured for both GitHub Actions and npm dependencies, each
 checking weekly.
 
-## Required Secrets
+## Required Secrets and Variables
 
-| Secret | Used By | Purpose |
-|--------|---------|---------|
-| `FONTAWESOME_PACKAGE_TOKEN` | CI, Snapshot, Release | Auth token for the Font Awesome Pro npm registry (`npm.fontawesome.com`) |
-| `NPM_TOKEN` | Snapshot, Release, Unpublish | Auth token for publishing to the npm public registry |
-| `GITHUB_TOKEN` | Release | Provided automatically by GitHub Actions; used for `gh release create` |
+| Name | Type | Used By | Purpose |
+|------|------|---------|---------|
+| `FONTAWESOME_PACKAGE_TOKEN` | Secret | CI, Snapshot, Release | Auth token for the Font Awesome Pro npm registry (`npm.fontawesome.com`) |
+| `NPM_TOKEN` | Secret | Snapshot, Release, Unpublish | Auth token for publishing to the npm public registry |
+| `XH_BUILD_BOT_PRIVATE_KEY` | Secret | Snapshot | Private key for the XH Build Bot GitHub App, used to mint the Toolbox dispatch token |
+| `XH_BUILD_BOT_CLIENT_ID` | Variable | Snapshot | Client ID of the XH Build Bot GitHub App |
+| `GITHUB_TOKEN` | Secret | Release | Provided automatically by GitHub Actions; used for `gh release create` |
+
+The XH Build Bot app is registered under the xh GitHub org and installed org-wide. Its credentials
+(app ID, client ID, and private key) are kept in the team 1Password vault under
+"GitHub App: XH Build Bot". To rotate, generate a new private key on the app's settings page, update
+the 1Password item and the `XH_BUILD_BOT_PRIVATE_KEY` secret here and in hoist-core, then revoke the
+old key.
 
 Font Awesome Pro packages are sourced from the official Font Awesome registry at
 `npm.fontawesome.com` (configured in `.npmrc`). The `FONTAWESOME_PACKAGE_TOKEN` secret is appended

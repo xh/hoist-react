@@ -62,6 +62,9 @@ export interface PageConfig {
      * no need to specify manually.
      */
     navigatorModel?: NavigatorModel;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -116,7 +119,8 @@ export class PageModel extends HoistModel {
         renderMode,
         refreshMode,
         disableDirectLink,
-        disableAppRefreshButton
+        disableAppRefreshButton,
+        xhName = null
     }: PageConfig) {
         super();
         warnIf(
@@ -126,6 +130,7 @@ export class PageModel extends HoistModel {
 
         this.id = id;
         this.navigatorModel = navigatorModel;
+        this.xhName = xhName ?? navigatorModel?.childXhName(id);
         this.content = content;
         this.props = withDefault(props, {});
         this.disableDirectLink = withDefault(disableDirectLink, false);

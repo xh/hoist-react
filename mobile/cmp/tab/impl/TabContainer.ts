@@ -20,7 +20,13 @@ import {TabContainerProps, TabModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
  *
  * @internal
  */
-export function tabContainerImpl({model, className, testId, ...props}: TabContainerProps) {
+export function tabContainerImpl({
+    model,
+    className,
+    testId,
+    domAttrs,
+    ...props
+}: TabContainerProps) {
     const switcherProps = getSwitcherProps(props),
         {activeTab} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
@@ -34,6 +40,7 @@ export function tabContainerImpl({model, className, testId, ...props}: TabContai
     if (isEmpty(tabs)) {
         return page({
             [TEST_ID]: testId,
+            ...domAttrs,
             className: 'xh-tab-page',
             item: placeholder(model.emptyText)
         });
@@ -41,6 +48,7 @@ export function tabContainerImpl({model, className, testId, ...props}: TabContai
 
     return onsenTabbar({
         [TEST_ID]: testId,
+        ...domAttrs,
         className: classNames(className, `xh-tab-container--${switcherProps?.orientation}`),
         position: switcherProps?.orientation,
         activeIndex: activeTab ? tabs.indexOf(activeTab) : 0,

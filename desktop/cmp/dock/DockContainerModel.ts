@@ -20,6 +20,9 @@ interface DockContainerConfig {
     renderMode?: RenderMode;
     /** Strategy for refreshing DockViews. Can also be set per-view via `DockViewModelConfig.refreshMode` */
     refreshMode?: RefreshMode;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -38,9 +41,11 @@ export class DockContainerModel extends HoistModel {
         views = [],
         direction = 'rtl',
         renderMode = 'lazy',
-        refreshMode = 'onShowLazy'
+        refreshMode = 'onShowLazy',
+        xhName = null
     }: DockContainerConfig = {}) {
         super();
+        this.xhName = xhName;
         views = views.filter(v => !isOmitted(v));
 
         ensureUniqueBy(views as [], 'id', 'Multiple DockContainerModel views have the same id.');

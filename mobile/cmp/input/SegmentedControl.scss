@@ -86,21 +86,51 @@
       flex-basis: 0;
     }
 
-    // Outlined mode - border around the tray with no inner background fill.
+    // Outlined mode (default) - a border around the tray. Independent of the tray fill, which is
+    // governed by --no-tray-bg below.
     &.xh-segmented-control--outlined {
-      background-color: transparent;
       border: 1px solid var(--xh-border-color);
+    }
 
-      // Reserve border space on every option so selecting one does not shift the row. The
-      // transparent tray offers no recessed backdrop to set a filled tile against, so indicate
-      // selection with a ring instead - currentColor keeps it in step with the option's
-      // text / intent color.
+    // Tray background suppressed - a lighter presentation, with no fill behind the options.
+    &.xh-segmented-control--no-tray-bg {
+      background-color: transparent;
+
+      // Reserve border space on every option so selecting one does not shift the row. With no
+      // tray there is no recessed backdrop to set a filled tile against, so indicate selection
+      // with a ring instead - currentColor keeps it in step with the option's text / intent color.
       .xh-button.xh-segmented-control-option {
         border: 1px solid transparent;
       }
 
       .xh-button.xh-segmented-control-option--selected {
         border-color: currentColor;
+        background-color: transparent;
+      }
+    }
+
+    // Option dividers - internal structure for a tray whose options are otherwise undifferentiated,
+    // most notably in the empty state where no selected option breaks up the row. Drawn in the gap
+    // to the left of each option after the first, and suppressed on either side of the selected
+    // option so they never crowd it.
+    &.xh-segmented-control--dividers {
+      .xh-button.xh-segmented-control-option {
+        position: relative;
+      }
+
+      .xh-segmented-control-option + .xh-segmented-control-option::before {
+        content: '';
+        position: absolute;
+        left: calc(var(--xh-segmented-control-pad-px) / -2);
+        top: 20%;
+        bottom: 20%;
+        width: 1px;
+        background-color: var(--xh-border-color);
+      }
+
+      .xh-segmented-control-option--selected::before,
+      .xh-segmented-control-option--selected + .xh-segmented-control-option::before {
+        display: none;
       }
     }
 

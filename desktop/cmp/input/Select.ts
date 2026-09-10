@@ -27,7 +27,7 @@ import {
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {debouncePromise, wait} from '@xh/hoist/promise';
+import {debouncePromise, wait, waitFor} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -90,6 +90,14 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * Applications should use this option with care.
      */
     enableWindowed?: boolean;
+
+    /**
+     * True to constrain the value to the current `options` - any selected value not found there is
+     * removed whenever the value or the list changes. Enforced only once `options` is non-null, so
+     * pass null (not `[]`) while options load - `[]` means "no valid choices" and clears the value.
+     * Throws if combined with `enableCreate` or `queryFn`.
+     */
+    enforceValueInOptions?: boolean;
 
     /**
      * Function called to filter available options for a given query string input.
@@ -318,6 +326,18 @@ class SelectInputModel extends HoistInputModel {
             },
             fireImmediately: true
         });
+
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
     }
 
     reactSelectRef = createObservableRef<any>();
@@ -477,6 +497,22 @@ class SelectInputModel extends HoistInputModel {
             this.componentProps.generateOptionFn?.(value) ??
             this.valueToOption(value)
         );
+    }
+
+    // Enforce `enforceValueInOptions` - drop any current value not present in internalOptions.
+    // Null options signal that they have yet to load, and are not yet enforced against.
+    private pruneValueToOptions() {
+        const {externalValue, multiMode, emptyValue} = this;
+        if (isNil(this.componentProps.options)) return;
+        if (isNil(externalValue) || isEqual(externalValue, emptyValue)) return;
+
+        if (multiMode) {
+            const curr = castArray(externalValue),
+                keptOpts = curr.map(v => this.findOption(v, false)).filter(Boolean);
+            if (keptOpts.length !== curr.length) this.noteValueChange(keptOpts);
+        } else if (!this.findOption(externalValue, false)) {
+            this.noteValueChange(null);
+        }
     }
 
     override toExternal(internal) {
@@ -779,13 +815,14 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.inputValue = model.inputValue || '';
         rsProps.onInputChange = model.onInputChange;
         rsProps.controlShouldRenderValue = !model.hasFocus;
+    }
+
+    // Scroll selected option into view on open - react-select's own does not fire for portalled menus.
+    if (!model.multiMode && model.renderValue) {
         rsProps.onMenuOpen = () => {
-            wait().then(() => {
-                const selectedEl = document.getElementsByClassName(
-                    'xh-select__option--is-selected'
-                )[0];
-                selectedEl?.scrollIntoView({block: 'end'});
-            });
+            const getSel = () =>
+                document.getElementsByClassName('xh-select__option--is-selected')[0];
+            waitFor(() => !!getSel()).then(() => getSel().scrollIntoView({block: 'end'}));
         };
     }
 
@@ -833,6 +870,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             }
         },
         testId: props.testId,
+        domAttrs: props.domAttrs,
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,

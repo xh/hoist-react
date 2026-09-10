@@ -15,6 +15,7 @@ import {ToastModel} from './ToastModel';
  */
 export class ToastSourceModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'toastSourceModel';
 
     @managed
     @observable.ref
