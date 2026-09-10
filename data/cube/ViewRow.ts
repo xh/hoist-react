@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PlainObject} from '@xh/hoist/core';
+import type {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 
 /**
  * A row within a dataset produced by a Cube / View, as passed to application-provided hooks -
@@ -48,4 +49,17 @@ export interface ViewRow {
 
     /** True if this row's children have been hidden from results by the Query's `lockFn`. */
     locked?: boolean;
+}
+
+/**
+ * A leaf-level {@link ViewRow} - one holding a single source record loaded into the Cube. Passed
+ * to the callback of {@link Aggregator.forEachLeaf}, and the type to narrow any `ViewRow` to when
+ * its `isLeaf` is true.
+ */
+export interface ViewLeafRow extends ViewRow {
+    /** Source record in the Cube, current as of the last applied update. */
+    cubeRecord: StoreRecord;
+
+    /** ID of the source record within the Cube. */
+    cubeRecordId: StoreRecordId;
 }

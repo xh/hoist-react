@@ -75,6 +75,7 @@ export abstract class ParentRow extends BaseRow {
                 data[name] = ctx.aggregate(children, field, this);
             }
         });
+        this.aggStamp = view.nextDigest();
     }
 
     // -----------
@@ -121,22 +122,25 @@ export abstract class ParentRow extends BaseRow {
             children.forEach(it => (it.parent = this));
         }
 
-        // 2) Re-aggregate, only if needed, and mark if changes resulted.
+        // 2) Re-aggregate, only if needed, and stamp if anything our parent aggregates over
+        // changed. Note the test is on the children's `aggStamp` - not their `cubeRowDigest`, which
+        // a child re-aggregating to an unchanged published value from changed aggregator state
+        // leaves untouched, while its parent must still compose from that new state.
         let changed = false;
         const simpleAggsAreCurrent =
-            childrenEqual &&
-            !isBucket &&
-            !children.some(it => it.data.cubeRowDigest > genStartDigest);
+            childrenEqual && !isBucket && !children.some(it => it.aggStamp > genStartDigest);
         if (!simpleAggsAreCurrent) {
-            this.recomputeCanAggregate();
+            if (this.recomputeCanAggregate()) changed = true;
             view._aggFieldsByDepth[this.depth].forEach(field => {
                 if (this.recomputeAggregate(field)) changed = true;
             });
         } else if (view.hasContextDependentFields) {
-            changed = this.recomputeAggregatesForContextChange(this.recomputeCanAggregate());
+            const canAggChanges = this.recomputeCanAggregate();
+            if (canAggChanges) changed = true;
+            if (this.recomputeAggregatesForContextChange(canAggChanges)) changed = true;
         }
 
-        if (changed) view.assignDigest(this.data);
+        if (changed) this.aggStamp = view.nextDigest();
         return this;
     }
 
@@ -175,21 +179,27 @@ export abstract class ParentRow extends BaseRow {
         return changed;
     }
 
-    // Re-aggregate a single field in place, returning true if its value changed.
+    // Re-aggregate a single field in place, stamping this row's data if its published value
+    // changed. Returns true if anything our parent aggregates over changed - the published value,
+    // or aggregator state written or cleared for the field, which a parent composes from and which
+    // may well differ behind an unchanged value.
     private recomputeAggregate(field: CubeField): boolean {
-        const {children, data, view, aggStates} = this,
-            {name} = field;
+        const {children, data, view} = this,
+            {name} = field,
+            prevState = this.aggStates?.[name];
 
         let val = null;
         if (this.canAggResults?.[name] !== false) {
             val = view._aggContext.aggregate(children, field, this);
-        } else if (aggStates) {
-            aggStates[name] = null;
+        } else if (prevState != null) {
+            this.aggStates[name] = null;
         }
 
-        if (data[name] === val) return false;
+        const stateful = prevState != null || this.aggStates?.[name] != null;
+        if (data[name] === val) return stateful;
 
         data[name] = val;
+        view.assignDigest(data);
         return true;
     }
 

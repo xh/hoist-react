@@ -70,12 +70,15 @@ export class AggregationContext {
      * @internal
      */
     aggregate(rows: ViewRow[], field: CubeField, row: ParentRow): any {
+        const {activeField, activeRow} = this;
         this.activeField = field;
         this.activeRow = row;
         try {
             return field.aggregator.aggregate(rows, field.name, this);
         } finally {
-            this.activeField = this.activeRow = null;
+            // Restore rather than clear - an aggregator may delegate to another via this method.
+            this.activeField = activeField;
+            this.activeRow = activeRow;
         }
     }
 
@@ -85,13 +88,15 @@ export class AggregationContext {
      * @internal
      */
     replace(rows: ViewRow[], currVal: any, update: RowUpdate, row: ParentRow): any {
-        const {field} = update;
+        const {field} = update,
+            {activeField, activeRow} = this;
         this.activeField = field;
         this.activeRow = row;
         try {
             return field.aggregator.replace(rows, currVal, update, this);
         } finally {
-            this.activeField = this.activeRow = null;
+            this.activeField = activeField;
+            this.activeRow = activeRow;
         }
     }
 
@@ -114,8 +119,12 @@ export class AggregationContext {
 
     /**
      * Read the state stored by a row's aggregation of the active field - the row being aggregated
-     * if not specified. Null for leaf rows, and for rows that did not aggregate the field because
-     * their {@link CubeField.canAggregateFn} returned false.
+     * if not specified.
+     *
+     * Null for any row that did not aggregate the field: a leaf, a row whose
+     * {@link CubeField.canAggregateFn} returned false for it, or a row grouped by the field itself
+     * (a dimension is never aggregated at its own level). Such a row publishes a value to read in
+     * place of state - null in all but the last case.
      */
     getAggState<T>(row: ViewRow = this.activeRow): T {
         return (row as ParentRow).aggStates?.[this.activeField.name];

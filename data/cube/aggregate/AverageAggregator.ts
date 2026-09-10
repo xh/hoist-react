@@ -11,7 +11,14 @@ import {Aggregator} from './Aggregator';
  * Averages numeric values across all leaf rows, skipping nulls.
  *
  * Composes from its direct children, using a running total and count held as aggregator state -
- * an average cannot be derived from its children's published averages alone.
+ * an average cannot be derived from its children's published averages alone. A child without
+ * state (a leaf, or a row that did not aggregate the field - see
+ * {@link AggregationContext.getAggState}) contributes its published value as a single term.
+ *
+ * Note that {@link replace} adjusts the running total by leaf deltas without ever re-deriving it
+ * from leaf values, so floating-point error accumulates over the life of a connected view - as it
+ * does for `SUM`. Its magnitude is that of a sum over the values seen, so is negligible for
+ * typical measures, but an average expected to net to exactly zero may report a residue instead.
  */
 export class AverageAggregator extends Aggregator {
     override aggregate(rows, fieldName, context) {
@@ -19,17 +26,15 @@ export class AverageAggregator extends Aggregator {
             count = 0;
 
         for (const row of rows) {
-            if (row.isLeaf) {
+            const state = row.isLeaf ? null : context.getAggState(row);
+            if (state) {
+                total += state.total;
+                count += state.count;
+            } else {
                 const val = row.data[fieldName];
                 if (val != null) {
                     total += val;
                     count++;
-                }
-            } else {
-                const state = context.getAggState(row);
-                if (state) {
-                    total += state.total;
-                    count += state.count;
                 }
             }
         }

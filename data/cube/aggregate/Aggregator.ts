@@ -7,7 +7,7 @@
 
 import {AggregationContext} from './AggregationContext';
 import {RowUpdate} from '../row/RowUpdate';
-import {ViewRow} from '../ViewRow';
+import {ViewLeafRow, ViewRow} from '../ViewRow';
 
 /**
  * Abstract base class for Cube field aggregation functions.
@@ -65,10 +65,10 @@ export abstract class Aggregator {
      * @param rows - array of child rows
      * @param fn - the function to call on each leaf.
      */
-    protected forEachLeaf(rows: ViewRow[], fn: (leaf: ViewRow) => boolean | void): boolean {
+    protected forEachLeaf(rows: ViewRow[], fn: (leaf: ViewLeafRow) => boolean | void): boolean {
         for (const row of rows) {
             if (row.isLeaf) {
-                const res = fn(row);
+                const res = fn(row as ViewLeafRow);
                 if (res === false) return false;
             } else {
                 const res = this.forEachLeaf(row.children, fn);

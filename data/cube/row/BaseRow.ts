@@ -28,6 +28,17 @@ export abstract class BaseRow implements ViewRow {
     parent: ParentRow = null;
     children: BaseRow[] = null;
 
+    /**
+     * Stamp of the last generation in which anything this row's parent aggregates over changed -
+     * its published values, its aggregator state, or its `canAggregateFn` results. Read by
+     * {@link ParentRow.reuse} to decide whether a parent must re-aggregate.
+     *
+     * Distinct from `data.cubeRowDigest`, which bumps on published value change alone and is read
+     * by connected stores for record reuse. Leaves never bump this - a leaf whose record changes is
+     * rebuilt as a new row, so its parent sees a change of children instead.
+     */
+    aggStamp = 0;
+
     get isLeaf() {
         return false;
     }

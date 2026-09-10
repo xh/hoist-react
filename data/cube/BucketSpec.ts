@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {BaseRow} from './row/BaseRow';
 import {SetOptional} from '@xh/hoist/core';
+import type {ViewRow} from './ViewRow';
 
 /**
  * Spec to define a bucketing level within the hierarchy of data returned by a Query, as identified
@@ -23,7 +23,7 @@ export class BucketSpec {
      * Function returning the bucketed value (if any) into which the given row should be placed -
      * equivalent to a dimension value. Return null/undefined to exclude the row from bucketing.
      */
-    bucketFn: (row: BaseRow) => string;
+    bucketFn: (row: ViewRow) => string;
 
     /**
      * Function returning bucket row label from the bucket value string returned by bucketFn.
