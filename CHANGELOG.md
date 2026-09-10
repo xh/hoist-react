@@ -74,7 +74,7 @@
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
 * Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
-  sync when a page transition failed to report its completion.
+  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
 
 ### ✨ Styles
 

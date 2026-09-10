@@ -68,9 +68,8 @@ export class NavigatorModel extends HoistModel {
     stack: PageModel[] = [];
 
     /**
-     * Index of the active page within the stack. Synced from Swiper only once a page transition
-     * has completed (see `onPageChange`) - never mid-gesture, as re-rendering while a swipe is
-     * in progress unmounts the page under the user's finger and cancels the gesture.
+     * Index of the active page, synced from Swiper as each transition completes. Observable so
+     * `allowSlideNext`/`allowSlidePrev` stay current - Swiper silently skips locked directions.
      */
     @bindable activePageIdx: number = 0;
 
@@ -221,8 +220,7 @@ export class NavigatorModel extends HoistModel {
     /** @internal */
     @action
     onPageChange = () => {
-        // 1) Sync the active index from Swiper, then clear any pages after the active page.
-        // These can be left over from a back swipe.
+        // 1) Sync the active index, then clear any pages after it - left over from a back swipe.
         this.activePageIdx = this._swiper.activeIndex;
         this.stack = this.stack.slice(0, this.activePageIdx + 1);
 
@@ -321,16 +319,12 @@ export class NavigatorModel extends HoistModel {
             forwardOnePage = isEqual(newKeyStack.slice(0, -1), currKeyStack);
 
         if (backOnePage) {
+            // Set directly - a stale `false` here makes slidePrev() a silent no-op.
+            this._swiper.allowSlidePrev = true;
+
             // Don't update the stack yet. Instead, wait until after the animation has
             // completed in onPageChange().
-            this._swiper.allowSlidePrev = true;
             this._swiper.slidePrev(transitionMs);
-
-            // The route has already changed - backstop a missed `transitionEnd`, which would
-            // otherwise leave the stack and the route permanently out of sync.
-            wait(transitionMs + 100).then(() => {
-                if (this.stack.length > this._swiper.activeIndex + 1) this.onPageChange();
-            });
         } else {
             // Otherwise, update the stack immediately and navigate to the new page.
             this.stack = stack;
