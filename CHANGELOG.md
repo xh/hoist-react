@@ -30,9 +30,6 @@
   un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. Prefer
   `import * as Col from '@xh/hoist/cmp/grid/columns'` (then `Col.number`) to avoid shadowing the
   built-in `number` type.
-* Removed the `apiRemoved` guard on the desktop and mobile `RefreshButton.model` prop, replaced by
-  `target` back in v72. Apps still passing `model` now have it silently ignored, rather than
-  throwing a targeted error.
 
 ### ⚙️ Typescript API Adjustments
 
