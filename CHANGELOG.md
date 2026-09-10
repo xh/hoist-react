@@ -27,9 +27,10 @@
   - the popover behavior is a built-in mode of `FilterChooser`.
 * Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
   `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use the
-  un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. Prefer
-  `import * as Col from '@xh/hoist/cmp/grid/columns'` (then `Col.number`) to avoid shadowing the
-  built-in `number` type.
+  un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. For the
+  more generically named specs, consider
+  `import * as Col from '@xh/hoist/cmp/grid/columns'` and `Col.number` - the convention already
+  used across the Hoist Admin Console.
 
 ### ⚙️ Typescript API Adjustments
 
