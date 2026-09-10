@@ -170,6 +170,29 @@
         padding-right: 0;
       }
 
+      // BP aligns checkbox/radio indicators to the text baseline, leaving them clipped
+      // when compact - lay them out with flex instead to center within it.
+      &.xh-check-box,
+      &.xh-radio-input .xh-radio-input-option {
+        display: flex;
+        align-items: center;
+        padding-inline-start: 0;
+
+        .bp6-control-indicator {
+          margin: 0 var(--xh-pad-half-px) 0 0;
+        }
+
+        &.bp6-align-right {
+          flex-direction: row-reverse;
+          padding-right: 0;
+
+          .bp6-control-indicator {
+            float: none;
+            margin: 0 0 0 var(--xh-pad-half-px);
+          }
+        }
+      }
+
       &.xh-select {
         display: flex;
         align-items: center;
