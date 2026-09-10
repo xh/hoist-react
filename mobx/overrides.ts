@@ -23,6 +23,17 @@ export function makeObservable(
     annotations?: AnnotationsMap<any, never>,
     options?: CreateObservableOptions
 ) {
+    // Finish installing '@persist' properties declared under TypeScript-style legacy decorator
+    // emit (see HoistBaseDecorators), now that this class's field initializers have run. Skip any
+    // not yet initialized (declared by a subclass whose constructor has not yet reached this
+    // point) or already installed by an earlier call up the constructor chain. Must run ahead of
+    // the bindable processing below, which captures each property's current value.
+    forEach(target._xhPersistProperties, ({options, install}, name) => {
+        if (!target.hasOwnProperty(name) || isPersistInstalled(target, name)) return;
+        target[name] = install(target, name, options, target[name]);
+        markPersistInstalled(target, name);
+    });
+
     // Finish creating 'bindable' properties for this instance.
     forEach(target._xhBindableProperties, ({isRef}, name) => {
         // makeObservable is called by each constructor in the class hierarchy.
@@ -92,4 +103,15 @@ export function checkMakeObservable(target: any) {
 //--------------------
 function isBindableCreated(target: any, name: string): boolean {
     return target.hasOwnProperty(`_${name}_bindable`);
+}
+
+const persistInstalledKey = '_xhPersistInstalled';
+function isPersistInstalled(target: any, name: string): boolean {
+    return target[persistInstalledKey]?.has(name) ?? false;
+}
+function markPersistInstalled(target: any, name: string) {
+    if (!target.hasOwnProperty(persistInstalledKey)) {
+        Object.defineProperty(target, persistInstalledKey, {value: new Set(), enumerable: false});
+    }
+    target[persistInstalledKey].add(name);
 }

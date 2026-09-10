@@ -15,6 +15,18 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* `@persist` (and `@persist.with`) now works under TypeScript-style legacy decorator emit, as
+  produced by SWC and `tsc`, where field decorators receive no property descriptor. Previously the
+  decorator required Babel's non-standard `descriptor.initializer`, throwing a `TypeError` at class
+  definition under any other transpiler. Under that emit the property is recorded on the class and
+  bound to its `PersistenceProvider` by Hoist's `makeObservable(this)`, once field initializers
+  have run - so a persisted value is in place before the declaring constructor continues. Behavior
+  under Babel (current `@xh/hoist-dev-utils` `configureWebpack()` builds) is unchanged. Required
+  by the Rspack/Rsbuild build path introduced with hoist-dev-utils v16
+  ([hoist-dev-utils #73](https://github.com/xh/hoist-dev-utils/issues/73)).
+
 
 ## 87.3.0 - 2026-09-10
 
