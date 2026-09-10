@@ -200,7 +200,7 @@ Import from `@xh/hoist/utils/js`.
 
 ### Decorators
 
-Hoist uses **TC39 Stage 3 modern decorators** (2022.3 / Babel `2023-05`). TypeScript's
+Hoist uses **TC39 Stage 3 modern decorators** (Babel `2023-11`, the current spec revision). TypeScript's
 `experimentalDecorators` flag is **off**. This is the two-argument `(value, context)` API — any
 custom decorator must use this signature. `@observable` and `@bindable` fields require the
 `accessor` keyword; method/getter decorators below do not.

@@ -16,10 +16,10 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* **Migrated to TC39 Stage 3 (2023-05) decorators**, retiring `experimentalDecorators`. Drops
+* **Migrated to TC39 Stage 3 (2023-11) decorators**, retiring `experimentalDecorators`. Drops
   `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
   `accessor` to `@observable`/`@bindable` fields and run the codemods in `docs/codemod/v87/`.
-  Requires `@xh/hoist-dev-utils >= 15` - upgrade both packages together, as a legacy-decorator app
+  Requires `@xh/hoist-dev-utils >= 16` - upgrade both packages together, as a legacy-decorator app
   built against the new dev-utils silently loses every `@observable` and `@bindable` field.
     * `@observable accessor` fields are now prototype getter/setters rather than own enumerable
       properties, which changes `Object.keys` and spread (`{...model}`) over model instances.
