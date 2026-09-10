@@ -12,6 +12,23 @@ sessions on this repo. They no-op in local sessions.
   in-memory database and form-based login, no MySQL or OAuth required. Enables live verification
   of hoist-react changes via `./gradlew bootRun` + `pnpm startWithHoist`.
 
+## Multi-repository sessions: run the hook by hand
+
+Claude Code loads `SessionStart` hooks from the `.claude/settings.json` at the *session root*. In
+a web session that attaches more than one repository (hoist-react plus Toolbox is the common
+case), the root is `/workspace`, above both checkouts, so neither repo's hook fires and
+`pnpm install` fails against `npm.fontawesome.com` with a 401 even though
+`FONTAWESOME_NPM_AUTH_TOKEN` is set. The script resolves its repo from its own location, so run
+it directly to get the same result the hook would have produced:
+
+```bash
+/workspace/hoist-react/.claude/hooks/session-start.sh
+```
+
+It also installs a sibling `../toolbox/client-app` when one exists, so the one script gets a
+two-repo session working. Toolbox has no hook of its own; in a Toolbox-rooted session with this
+repo attached as a sibling, run the same script.
+
 ## Required environment configuration (claude.ai/code)
 
 Configure the web environment used for hoist-react sessions as follows. On Team/Enterprise plans,
@@ -112,6 +129,11 @@ The Toolbox server rows are only needed if sessions will run the full Toolbox ap
 Note that a blocked domain may surface as an HTTP error from the sandbox proxy rather than a
 connection failure, in which case `session-start.sh`'s reachability probe passes and the
 subsequent `pnpm install` fails instead - the hook still exits cleanly with a warning.
+
+If the environment's setup script writes `~/.npmrc`, do not have it write the FontAwesome auth
+line: it runs once per environment cache build and leaves an empty `_authToken=` value behind
+whenever the variable is not in scope. `session-start.sh` owns that line and rewrites it on every
+session.
 
 ## Known sandbox limitations
 
