@@ -14,6 +14,17 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Upgraded to AG Grid 36.
+    * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
+      `ag-grid-enterprise` dependencies to `36.x`.
+    * AG Grid 36 restructures the grid into a single scrollable container and renames its internal
+      layout classes. Apps with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
+      `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
+      theme defaults now resolve against an inner `.ag-styled-root` element. See the
+      [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+
 ### 🐞 Bug Fixes
 
 * Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
@@ -25,6 +36,23 @@
   sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
 * Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
   the editor now defaults its `valueType` from the Store field type.
+
+### ⚙️ Technical
+
+* Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
+  full-width horizontal scrollbar spanning all columns, so Hoist's custom implementation was
+  removed.
+
+### ✨ Styles
+
+* Migrated internal grid SCSS to AG Grid 36's restructured DOM and renamed layout classes.
+* Re-bound Hoist grid/DataView styling onto AG Grid 36's inner `ag-styled-root`, which otherwise
+  shadows Hoist's wrapper bindings for cell font, grid background, `rowBorders`, and `showHover`.
+
+### 📚 Libraries
+
+* ag-grid-community `35.3 -> 36.1`
+* ag-grid-react `35.3 -> 36.1`
 
 ## 87.2.0 - 2026-09-08
 

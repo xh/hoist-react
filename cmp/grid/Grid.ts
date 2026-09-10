@@ -8,9 +8,8 @@ import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
-import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, hframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -104,19 +103,11 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     className: 'xh-grid',
 
     render({model, className, testId, ...props}, ref) {
-        const {
-                store,
-                treeMode,
-                treeStyle,
-                highlightRowOnClick,
-                colChooserModel,
-                filterModel,
-                enableFullWidthScroll
-            } = model,
+        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
+                model,
             impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
-            maxDepth = impl.isHierarchical ? store.maxDepth : null,
-            container = enableFullWidthScroll ? vframe : frame;
+            maxDepth = impl.isHierarchical ? store.maxDepth : null;
 
         className = classNames(
             className,
@@ -127,17 +118,13 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
-        const gridContainer = container({
+        const gridContainer = frame({
             className,
             items: [
                 agGrid({
                     model: model.agGridModel,
                     ...getLayoutProps(props),
                     ...impl.agOptions
-                }),
-                gridHScrollbar({
-                    omit: !enableFullWidthScroll,
-                    gridLocalModel: impl
                 })
             ],
             testId,
@@ -182,7 +169,7 @@ export class GridLocalModel extends HoistModel {
 
     // Structural "empty" grid space.
     private static EMPTY_SPACE_SELECTOR =
-        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
+        '.ag-grid-viewport, .ag-grid-scrollable-area, .ag-grid-scrolling-container, .ag-row';
 
     @lookup(GridModel)
     private model: GridModel;
@@ -351,11 +338,6 @@ export class GridLocalModel extends HoistModel {
                 treeData: true,
                 getDataPath: this.getDataPath
             };
-        }
-
-        // Support for FullWidthScroll
-        if (model.enableFullWidthScroll) {
-            ret.suppressHorizontalScroll = true;
         }
 
         return ret;

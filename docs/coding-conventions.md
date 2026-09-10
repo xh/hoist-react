@@ -533,8 +533,8 @@ particularly common when destructuring alongside additional computed variables:
 ```typescript
 const {store, treeMode, filterModel} = model,
     impl = useLocalModel(GridLocalModel),
-    maxDepth = impl.isHierarchical ? store.maxDepth : null,
-    container = enableFullWidthScroll ? vframe : frame;
+    platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
+    maxDepth = impl.isHierarchical ? store.maxDepth : null;
 ```
 
 This pattern keeps related declarations together as a single logical group.

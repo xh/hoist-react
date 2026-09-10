@@ -86,8 +86,7 @@ export class HoistInputModel extends HoistModel {
      */
     get inputEl(): HTMLInputElement | HTMLTextAreaElement {
         return (this.inputRef.current ?? this.domEl?.querySelector('input')) as
-            | HTMLInputElement
-            | HTMLTextAreaElement;
+            HTMLInputElement | HTMLTextAreaElement;
     }
 
     /** Bound model, if any.*/
