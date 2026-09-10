@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {boolCheck, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
 import {HoistBase, hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {Cube, StoreRecord, View} from '@xh/hoist/data';
@@ -286,13 +286,13 @@ export class InstancesModel extends HoistModel {
                     field: 'isLinked',
                     headerName: Icon.link(),
                     headerTooltip: 'Linked model',
-                    ...boolCheckCol,
+                    ...boolCheck,
                     width: 40,
                     tooltip: v => (v ? 'Linked model' : ''),
                     renderer: v => (v ? Icon.link() : null)
                 },
                 {field: 'displayGroup', hidden: true},
-                {field: 'isFavorite', ...boolCheckCol, hidden: true},
+                {field: 'isFavorite', ...boolCheck, hidden: true},
                 {field: 'xhName', flex: 1, minWidth: 150},
                 {field: 'className', flex: 1, minWidth: 150},
                 {

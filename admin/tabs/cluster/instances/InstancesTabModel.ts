@@ -16,7 +16,8 @@ import {
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
 import {badge} from '@xh/hoist/cmp/badge';
-import {GridContextMenuSpec, GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import * as Col from '@xh/hoist/cmp/grid/columns';
+import {GridContextMenuSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
@@ -172,7 +173,7 @@ export class InstancesTabModel extends HoistModel {
                         description: 'Active Websocket Connections'
                     },
                     headerName: Icon.bolt(),
-                    ...numberCol
+                    ...Col.number
                 },
                 {
                     ...timestampNoYear,

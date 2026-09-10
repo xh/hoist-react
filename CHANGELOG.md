@@ -14,6 +14,29 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
+
+* Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`
+  chain instead. Note that `TraceService.withSpan()` remains available for advanced use.
+* Removed the `FetchOptions.span` and `FetchOptions.loadSpec` fields, deprecated in v86. Pass a
+  `CallContextLike` as the fetch method's second argument instead - e.g.
+  `XH.fetchJson({url}, {loadSpec})`.
+* Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use the `persistOptions()`
+  function instead.
+* Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})` instead
+  - the popover behavior is a built-in mode of `FilterChooser`.
+* Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
+  `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use the
+  un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. For the
+  more generically named specs, consider
+  `import * as Col from '@xh/hoist/cmp/grid/columns'` and `Col.number` - the convention already
+  used across the Hoist Admin Console.
+
+### ⚙️ Typescript API Adjustments
+
+* Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
+  `@xh/hoist/utils/js` entry point) instead.
+
 ### 🐞 Bug Fixes
 
 * Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray

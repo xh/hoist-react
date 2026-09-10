@@ -6,7 +6,7 @@
  */
 
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     debounce as lodashDebounce,
@@ -23,7 +23,7 @@ import {
 import {IReactionDisposer, reaction} from 'mobx';
 import {Class} from 'type-fest';
 import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
-import {PersistenceProviderType, PersistOptions, persistOptions} from './PersistOptions';
+import {PersistenceProviderType, PersistOptions} from './PersistOptions';
 
 export type PersistenceProviderConfig<S = any> = {
     persistOptions: PersistOptions;
@@ -113,18 +113,6 @@ export abstract class PersistenceProvider<S = any> {
             ret?.destroy();
             return null;
         }
-    }
-
-    /** @deprecated Use the {@link persistOptions} function instead. */
-    static mergePersistOptions(
-        defaults: PersistOptions,
-        ...overrides: PersistOptions[]
-    ): PersistOptions {
-        apiDeprecated('PersistenceProvider.mergePersistOptions', {
-            v: 'v87',
-            msg: "Use the 'persistOptions' function instead."
-        });
-        return persistOptions(defaults, ...overrides);
     }
 
     /** Read persisted state at this provider's path. */
