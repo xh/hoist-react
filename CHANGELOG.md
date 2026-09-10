@@ -21,6 +21,8 @@
 * Fixed `useHotkeys()` throwing a React hook-count error when its arguments changed across
   renders - a collapsible `Panel` given `hotkeys` no longer crashes when first expanded. Hotkeys
   may now also be changed after the first render.
+* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
+  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
 
 ## 87.2.0 - 2026-09-08
 
@@ -40,9 +42,6 @@
   trace spans (new `xh.name` tag), and the Inspector. Set it on any Hoist model config to tell peers
   of the same class apart - instances log as `ClassName [xhName]`, or `ClassName [id]` when unnamed.
   Hoist names services, `XH.appModel`, and models created by a named parent automatically.
-* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin it,
-  and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
-  across reloads, showing as placeholder rows when no instance is live.
 * Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
   tabs. The Config panel shows every view of a config's value - resolved, instance override,
   database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
@@ -73,8 +72,6 @@
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
-* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
-  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
 
 ### ✨ Styles
 
