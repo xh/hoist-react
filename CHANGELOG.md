@@ -15,6 +15,20 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
+  the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
+  record, returning the `Intent` to draw, or null for no flag.
+
+### ✨ Styles
+
+* Grid cell flag styles are now keyed by `Intent` (`.xh-cell--flag-{intent}`), with size driven by
+  the new `--xh-grid-cell-flag-size` custom property. The classes previously emitted for cell
+  validation state - `.xh-cell--invalid`, `.xh-cell--warning`, and `.xh-cell--info` - are
+  deprecated but still styled, so apps applying them directly continue to render a flag. Retarget
+  any CSS overriding these at the new class names.
+
 
 ## 87.3.0 - 2026-09-10
 
