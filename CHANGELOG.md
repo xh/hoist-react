@@ -12,6 +12,7 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+
 ## 88.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
@@ -21,16 +22,6 @@
   derived from their children's published values alone - e.g. a weighted average - compose from
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
-
-### 🐞 Bug Fixes
-
-* Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
-  too narrowly - options now hold their own content width, sharing equally only where there is room.
-* Fixed `useHotkeys()` throwing a React hook-count error when its arguments changed across
-  renders - a collapsible `Panel` given `hotkeys` no longer crashes when first expanded. Hotkeys
-  may now also be changed after the first render.
-* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
-  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
 
 ### ⚙️ Technical
 
@@ -43,6 +34,25 @@
 * Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
   implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
   their rows with unexported internal classes. `RowUpdate` is now exported as well.
+
+## 87.3.0 - 2026-09-10
+
+### 🐞 Bug Fixes
+
+* Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
+  too narrowly - options now hold their own content width, sharing equally only where there is room.
+* Fixed `useHotkeys()` throwing a React hook-count error when its arguments changed across
+  renders - a collapsible `Panel` given `hotkeys` no longer crashes when first expanded. Hotkeys
+  may now also be changed after the first render.
+* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
+  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
+* Fixed `RadioInput` and `Checkbox` options overhanging the top of the `Toolbar` - they
+  are now centered within the compact item height, sharing one rule with `SwitchInput`.
+* Fixed an unlabeled `Slider` (`labelRenderer: false`) sitting high in a compact `Toolbar`.
+* Fixed `SegmentedControl` overflowing a compact `Toolbar` - it now takes its compact sizing from
+  the toolbar, without needing its own `compact: true`.
+* Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
+  the editor now defaults its `valueType` from the Store field type.
 
 ## 87.2.0 - 2026-09-08
 
