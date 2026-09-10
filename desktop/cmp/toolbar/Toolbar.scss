@@ -155,23 +155,9 @@
         }
       }
 
-      &.xh-switch-input {
-        display: flex;
-        align-items: center;
-
-        .bp6-control-indicator {
-          margin-top: 1px;
-          margin-right: var(--xh-pad-half-px);
-        }
-      }
-
-      &.xh-switch-input.bp6-align-right {
-        flex-direction: row-reverse;
-        padding-right: 0;
-      }
-
-      // BP aligns checkbox/radio indicators to the text baseline, leaving them clipped
-      // when compact - lay them out with flex instead to center within it.
+      // BP aligns control indicators to the text baseline, leaving them clipped when compact -
+      // lay them out with flex instead to center within the reduced item height.
+      &.xh-switch-input,
       &.xh-check-box,
       &.xh-radio-input .xh-radio-input-option {
         display: flex;
