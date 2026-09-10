@@ -23,6 +23,11 @@
   may now also be changed after the first render.
 * Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
   sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
+* Fixed `RadioInput` and `Checkbox` options overhanging the top of the `Toolbar` - they
+  are now centered within the compact item height, sharing one rule with `SwitchInput`.
+* Fixed an unlabeled `Slider` (`labelRenderer: false`) sitting high in a compact `Toolbar`.
+* Fixed `SegmentedControl` overflowing a compact `Toolbar` - it now takes its compact sizing from
+  the toolbar, without needing its own `compact: true`.
 * Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
   the editor now defaults its `valueType` from the Store field type.
 

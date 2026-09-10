@@ -120,8 +120,10 @@
     }
   }
 
-  // Compact mode - reduced sizing for toolbars and space-constrained contexts.
-  &--compact .bp6-segmented-control {
+  // Compact mode - via the `compact` prop, or implicitly within a compact Toolbar, whose
+  // item height the standard sizing above would overflow.
+  &--compact .bp6-segmented-control,
+  .xh-toolbar--compact & .bp6-segmented-control {
     padding: 0;
     gap: 0;
 
@@ -138,7 +140,8 @@
   }
 
   // Compact + outlined - shrink buttons to account for the border.
-  &--compact#{&}--outlined .bp6-segmented-control > .bp6-button {
+  &--compact#{&}--outlined .bp6-segmented-control > .bp6-button,
+  .xh-toolbar--compact &#{&}--outlined .bp6-segmented-control > .bp6-button {
     --compact-btn-h: calc(var(--xh-tbar-compact-item-height-px) - 2px);
     min-height: var(--compact-btn-h);
     max-height: var(--compact-btn-h);
