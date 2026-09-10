@@ -8,6 +8,7 @@
 import {box, fieldset} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
+    DomAttrsProps,
     hoistCmp,
     HoistProps,
     Intent,
@@ -26,7 +27,7 @@ import {CardModel} from './CardModel';
 import './Card.scss';
 
 export interface CardProps<M extends CardModel = CardModel>
-    extends HoistProps<M>, TestSupportProps, LayoutProps {
+    extends HoistProps<M>, TestSupportProps, DomAttrsProps, LayoutProps {
     /** An icon placed left of the title. */
     icon?: ReactElement;
     /** Intent to apply to the inline header and border. */
@@ -75,9 +76,9 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
         const wasDisplayed = useRef(false),
             {collapsed, renderMode} = model;
 
-        let [layoutProps, {testId, ...restProps}] = splitLayoutProps(rest);
+        let [layoutProps, {testId, domAttrs, ...restProps}] = splitLayoutProps(rest);
 
-        restProps = mergeDeep({style: layoutProps}, {[TEST_ID]: testId}, restProps);
+        restProps = mergeDeep({style: layoutProps}, {[TEST_ID]: testId, ...domAttrs}, restProps);
 
         const classes: string[] = [];
 

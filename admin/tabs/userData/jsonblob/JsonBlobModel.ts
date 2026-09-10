@@ -68,6 +68,10 @@ export class JsonBlobModel extends HoistModel {
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
+            onRowDoubleClicked: ({data}) => {
+                if (data && !this.gridModel.readonly) this.gridModel.editRecord(data);
+            },
+            toolbarActions: [addAction, editAction, cloneAction, deleteAction],
             menuActions: [addAction, editAction, cloneAction, deleteAction],
             prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
             sortBy: ['owner', 'name'],

@@ -161,6 +161,9 @@ export interface GridFilterModelConfig {
      * Defaults to `Icon.filter()` (the standard funnel icon in regular/outline style).
      */
     activeFilterIcon?: ReactElement;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
