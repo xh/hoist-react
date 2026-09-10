@@ -14,6 +14,14 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Cube `Aggregator` implementations can now hold per-row state via new
+  `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
+  derived from their children's published values alone - e.g. a weighted average - compose from
+  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
+  example.
+
 ### 🐞 Bug Fixes
 
 * Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
@@ -23,6 +31,18 @@
   may now also be changed after the first render.
 * Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
   sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
+
+### ⚙️ Technical
+
+* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
+  walking their entire subtree of leaves, making views with averaged fields as cheap to build,
+  regroup and update as those with `SUM` fields.
+
+### ⚙️ Typescript API Adjustments
+
+* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
+  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
+  their rows with unexported internal classes. `RowUpdate` is now exported as well.
 
 ## 87.2.0 - 2026-09-08
 
@@ -56,12 +76,6 @@
   managers stop offering saved logins on ordinary data-entry fields. Apps with hand-rolled login
   forms should set it `true` on their credential inputs - Hoist's own `LoginPanel` already does.
 
-* Cube `Aggregator` implementations can now hold per-row state via new
-  `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
-  derived from their children's published values alone - e.g. a weighted average - compose from
-  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
-  example.
-
 ### 🐞 Bug Fixes
 
 * Fixed `testId` being silently dropped by desktop `Slider`, desktop `FileChooser`, and mobile
@@ -78,18 +92,6 @@
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
-
-### ⚙️ Technical
-
-* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
-  walking their entire subtree of leaves, making views with averaged fields as cheap to build,
-  regroup and update as those with `SUM` fields.
-
-### ⚙️ Typescript API Adjustments
-
-* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
-  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
-  their rows with unexported internal classes. `RowUpdate` is now exported as well.
 
 ### ✨ Styles
 
