@@ -5,9 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, XH, MessageSpec, managed} from '@xh/hoist/core';
+import {HoistModel, XH, MessageSpec, MessageSuppressSpec, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {warnIf} from '@xh/hoist/utils/js';
+import {DAYS, HOURS, MINUTES} from '@xh/hoist/utils/datetime';
+import {pluralize, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
@@ -27,6 +28,7 @@ export class MessageModel extends HoistModel {
     messageKey;
     className;
     input;
+    suppress: MessageSuppressSpec;
     extraConfirmLabel: ReactNode;
     confirmProps;
     cancelProps;
@@ -45,6 +47,18 @@ export class MessageModel extends HoistModel {
 
     @observable isOpen = true;
 
+    /**
+     * Previously saved response for a message the user has opted to suppress, or null if no
+     * response saved, saved response expired, or suppression not enabled for this message.
+     */
+    static getSuppressedResult(spec: MessageSpec): {value: unknown} | null {
+        const {messageKey} = spec,
+            suppress = parseSuppress(spec.suppress);
+        if (!suppress || !messageKey) return null;
+        const saved = getSuppressStore(suppress).get(getSuppressKey(messageKey), null);
+        return saved && (!saved.expiry || Date.now() <= saved.expiry) ? saved : null;
+    }
+
     constructor({
         title,
         icon,
@@ -52,6 +66,7 @@ export class MessageModel extends HoistModel {
         messageKey,
         className,
         input,
+        suppress,
         extraConfirmText,
         extraConfirmLabel,
         confirmProps = {},
@@ -65,6 +80,11 @@ export class MessageModel extends HoistModel {
         super();
         makeObservable(this);
 
+        throwIf(
+            suppress && !messageKey,
+            'Must specify a "messageKey" when "suppress" is enabled for a message.'
+        );
+
         this.title = title;
         this.icon = icon;
         this.message = message;
@@ -72,6 +92,7 @@ export class MessageModel extends HoistModel {
         this.className = className;
         this.dismissable = dismissable;
         this.cancelOnDismiss = cancelOnDismiss;
+        this.suppress = parseSuppress(suppress);
 
         const fields = [];
 
@@ -87,6 +108,10 @@ export class MessageModel extends HoistModel {
                 name: 'extraConfirm',
                 rules: [({value}) => (value === extraConfirmText ? null : `Confirmation required`)]
             });
+        }
+
+        if (this.suppress) {
+            fields.push({name: 'suppress', initialValue: !!this.suppress.initialValue});
         }
 
         if (!isEmpty(fields)) {
@@ -109,15 +134,32 @@ export class MessageModel extends HoistModel {
         });
     }
 
+    /** Label for the suppress checkbox, as configured or an auto-generated default. */
+    get suppressLabel(): ReactNode {
+        const {suppress} = this;
+        if (!suppress) return null;
+        if (suppress.label) return suppress.label;
+        const expiryLabel = this.suppressExpiryLabel;
+        if (expiryLabel) return `Don't show this message again for ${expiryLabel}`;
+        return suppress.storage === 'session'
+            ? `Don't show this message again this session`
+            : `Don't show this message again`;
+    }
+
     @action
     async doConfirmAsync() {
         let resolvedVal = true;
 
-        if (this.formModel) {
-            await this.formModel.validateAsync();
-            if (!this.formModel.isValid) return;
-            if (this.formModel.getField('value')) {
-                resolvedVal = this.formModel.getData().value;
+        const {formModel} = this;
+        if (formModel) {
+            await formModel.validateAsync();
+            if (!formModel.isValid) return;
+            const data = formModel.getData();
+            if (formModel.getField('value')) {
+                resolvedVal = data.value;
+            }
+            if (data.suppress) {
+                this.saveSuppressedResult(resolvedVal);
             }
         }
 
@@ -168,4 +210,38 @@ export class MessageModel extends HoistModel {
         const ret = {...props, onClick: handler};
         return ret.text || ret.icon ? ret : null;
     }
+
+    private saveSuppressedResult(value: unknown) {
+        const {suppress} = this,
+            {expiry} = suppress;
+        getSuppressStore(suppress).set(getSuppressKey(this.messageKey), {
+            value,
+            expiry: expiry ? Date.now() + expiry : null
+        });
+    }
+
+    // Humanized suppress expiry duration, expressed in the largest unit that divides it evenly.
+    private get suppressExpiryLabel(): string {
+        const {expiry} = this.suppress;
+        if (!expiry) return null;
+        const units: Array<[string, number]> = [
+            ['day', DAYS],
+            ['hour', HOURS],
+            ['minute', MINUTES]
+        ];
+        for (const [unit, unitMs] of units) {
+            if (expiry >= unitMs && expiry % unitMs === 0) {
+                return pluralize(unit, expiry / unitMs, true);
+            }
+        }
+        return pluralize('minute', Math.ceil(expiry / MINUTES), true);
+    }
 }
+
+const parseSuppress = (suppress: boolean | MessageSuppressSpec): MessageSuppressSpec =>
+    suppress ? (suppress === true ? {} : suppress) : null;
+
+const getSuppressStore = (suppress: MessageSuppressSpec) =>
+    suppress.storage === 'session' ? XH.sessionStorageService : XH.localStorageService;
+
+const getSuppressKey = (messageKey: string) => `xhSuppressedMessage.${messageKey}`;

@@ -545,3 +545,12 @@
   icons on future library upgrades.
 - Indexed in `docs/README.md` (Supporting Packages), the roadmap Priority 4 table (Done), and
   `docs/doc-registry.json`; cross-linked from the `/kit/` README's Blueprint section.
+
+### 2026-09-02
+- Added `cmp/daterange/README.md` covering the new `DateRangePicker` and `DateRangePickerModel`:
+  the selection value, built-in and app-defined presets, relative lookbacks (including business
+  days), prior ranges, filters, stepping, anchor date and bounds, persistence, the desktop
+  component's props and CSS variables, and common patterns.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` and `/desktop/` README
+  package tables.

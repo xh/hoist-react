@@ -15,6 +15,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
  */
 export class ColChooserOptionsModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'colChooserOptionsModel';
     override persistWith = {localStorageKey: 'xhColChooser'};
 
     @bindable showGroups: boolean = true;

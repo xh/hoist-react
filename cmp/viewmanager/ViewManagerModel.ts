@@ -154,6 +154,9 @@ export interface ViewManagerConfig {
      * ViewManager menu.
      */
     viewMenuItemFn?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -328,10 +331,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         enableGlobal = true,
         enableSharing = true,
         preserveUnsavedChanges = true,
-        initialViewSpec = null
+        initialViewSpec = null,
+        xhName = null
     }: ViewManagerConfig) {
         super();
         makeObservable(this);
+        this.xhName = xhName ?? type;
 
         throwIf(
             !enableDefault && !initialViewSpec,

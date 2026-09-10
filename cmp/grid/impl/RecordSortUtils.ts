@@ -105,13 +105,21 @@ function getGroupSorters(gridModel: GridModel): RecordSorter[] {
             const column = gridModel.getColumn(colId);
             if (!column) return null;
 
-            const {field} = column;
+            const {field} = column,
+                {getValueFn, ctx} = sorterFor(gridModel, column);
             return {
-                ...sorterFor(gridModel, column),
+                ctx,
+                // groupSortFn expects ag-Grid group keys - always string or null, never raw values.
+                getValueFn: params => toGroupKey(getValueFn(params)),
                 compare: (a, b, nodeA, nodeB) => groupSortFn(a, b, field, {gridModel, nodeA, nodeB})
             };
         })
     );
+}
+
+/** Mirror ag-Grid's ValueService.getKeyForNode - string/null pass through, else String(). */
+function toGroupKey(value: any): string {
+    return value == null || typeof value === 'string' ? value : String(value);
 }
 
 /** Value-resolution half of a sorter - the caller supplies the comparator. */

@@ -122,7 +122,8 @@ navigation or load action created them.
 The Instances panel is a split layout with:
 
 - **Instances grid** (left, resizable) — Lists all live `HoistModel`, `HoistService`, `Store`,
-  `Cube`, and `View` instances with their class name, creation time, linked status, and sync run
+  `Cube`, and `View` instances with their `xhName` (when set), class name, creation time,
+  linked status, and sync run
 - **Properties grid** (right) — Shows properties of the selected instance(s), including observable
   values with live updates
 - **Diagnostics panel** (tabbed with properties) — Live readout of the data-pipeline
@@ -133,6 +134,10 @@ The Instances panel is a split layout with:
 - **Grouping** — Toggle "Show in Groups" to group by type (Models, Services, Stores)
 - **XH impl filtering** — Toggle "Show XH Impl" to show/hide Hoist's internal framework instances
   (marked with `xhImpl = true`)
+- **Favorites** — Star any instance with an `xhName` to pin it, then toggle "Favorites" to show
+  only pinned instances. Keyed by `{className}:{xhName}` and persisted, so the same set of objects
+  can be followed across reloads. Favorites with no live instance show as muted placeholder rows -
+  un-star one to drop it
 - **Actions** — Log instance to devtools console, trigger `loadAsync()` on models with
   `LoadSupport`
 - **Multi-select** — Select multiple instances to compare their properties side-by-side
@@ -178,7 +183,8 @@ Inspector state is persisted to `localStorage` under the key
 
 - Panel sizes (stats panel, instances panel)
 - Grid column state for both grids
-- Quick filter selections (grouping, xhImpl visibility, property filters)
+- Quick filter selections (grouping, xhImpl visibility, favorites, property filters)
+- Favorited instances
 - Store filter text
 - Active/inactive state
 
