@@ -176,7 +176,7 @@ export class FormModel extends HoistModel {
         forOwn(this.fields, f => {
             f.formModel = this;
             f.xhImpl = xhImpl;
-            f.xhName ??= this.childXhName(f.name) ?? f.name;
+            f.xhName ??= this.childXhName(f.name);
         });
     }
 

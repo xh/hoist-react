@@ -114,6 +114,8 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
         ...layoutProps,
         width: withDefault(width, 200),
         className,
+        testId: props.testId,
+        domAttrs: props.domAttrs,
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,

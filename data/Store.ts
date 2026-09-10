@@ -45,6 +45,7 @@ import {
     partition,
     remove as lodashRemove,
     uniq,
+    uniqBy,
     values
 } from 'lodash';
 import type {View} from './cube/View';
@@ -1442,6 +1443,7 @@ export class Store
             `Applications must not specify a field named '__proto__' - assigning it would replace the
             prototype of each record's data object rather than setting a value on it.`
         );
+        throwIf(uniqBy(ret, 'name').length !== ret.length, 'Field names must be unique.');
         return ret;
     }
 

@@ -67,6 +67,12 @@ export class NavigatorModel extends HoistModel {
     @bindable.ref
     stack: PageModel[] = [];
 
+    /**
+     * Index of the active page, synced from Swiper as each transition completes. Observable so
+     * `allowSlideNext`/`allowSlidePrev` stay current - Swiper silently skips locked directions.
+     */
+    @bindable activePageIdx: number = 0;
+
     pages: PageConfig[] = [];
     track: boolean;
     pullDownToRefresh: boolean;
@@ -84,10 +90,6 @@ export class NavigatorModel extends HoistModel {
 
     get activePage(): PageModel {
         return this.stack[this.activePageIdx];
-    }
-
-    get activePageIdx(): number {
-        return this._swiper?.activeIndex ?? 0;
     }
 
     get allowSlideNext(): boolean {
@@ -218,8 +220,9 @@ export class NavigatorModel extends HoistModel {
     /** @internal */
     @action
     onPageChange = () => {
-        // 1) Clear any pages after the active page. These can be left over from a back swipe.
-        this.stack = this.stack.slice(0, this._swiper.activeIndex + 1);
+        // 1) Sync the active index, then clear any pages after it - left over from a back swipe.
+        this.activePageIdx = this._swiper.activeIndex;
+        this.stack = this.stack.slice(0, this.activePageIdx + 1);
 
         // 2) Sync route to match the current page stack
         const newRouteName = this.stack.map(it => it.id).join('.'),
@@ -303,7 +306,8 @@ export class NavigatorModel extends HoistModel {
         if (init) {
             this.stack = stack;
             this._swiper.update();
-            this._swiper.activeIndex = this.stack.length - 1;
+            this.activePageIdx = this.stack.length - 1;
+            this._swiper.activeIndex = this.activePageIdx;
             return;
         }
 
@@ -315,6 +319,9 @@ export class NavigatorModel extends HoistModel {
             forwardOnePage = isEqual(newKeyStack.slice(0, -1), currKeyStack);
 
         if (backOnePage) {
+            // Set directly - a stale `false` here makes slidePrev() a silent no-op.
+            this._swiper.allowSlidePrev = true;
+
             // Don't update the stack yet. Instead, wait until after the animation has
             // completed in onPageChange().
             this._swiper.slidePrev(transitionMs);

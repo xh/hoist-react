@@ -28,6 +28,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
     buttonGroupInput,
     dateInput,
+    intentInput,
     select,
     switchInput,
     textArea
@@ -112,19 +113,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                         }),
                         formField({
                             field: 'intent',
-                            item: buttonGroupInput({
-                                items: model.intentOptions.map(intent =>
-                                    button({
-                                        intent,
-                                        minimal: false,
-                                        // Opacity solution to account for Icon.placeholder() causing label to move when primary deselected
-                                        icon: Icon.check({
-                                            opacity: formModel.values.intent === intent ? 1 : 0
-                                        }),
-                                        value: intent
-                                    })
-                                )
-                            })
+                            item: intentInput({intents: model.intentOptions})
                         }),
                         formField({
                             field: 'iconName',

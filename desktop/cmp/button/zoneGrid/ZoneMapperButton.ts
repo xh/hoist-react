@@ -61,6 +61,7 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
                 title: withDefault(title, 'Customize fields...'),
                 className,
                 disabled,
+                active: isOpen,
                 ...rest
             }),
             disabled,
