@@ -42,7 +42,15 @@ body.xh-app {
 
 Component SCSS files reference these variables for all themeable properties. Because `--xh-*` vars
 are defined on `body` and inherited by default, an override on `body.xh-app` (which has higher
-specificity than `body`) takes precedence over the framework defaults.
+specificity than `body`) takes precedence over the framework defaults. Always override on
+`body.xh-app` (or a more specific selector) rather than on bare `body`, where an app declaration
+would tie with the framework's and win only by source order.
+
+Hoist redefines some variables for the dark theme and for mobile under `body.xh-dark` and
+`body.xh-mobile`, which have the same specificity as `body.xh-app`. Application stylesheets load
+after Hoist's, so a `body.xh-app` override still wins in both themes - but when an app wants a
+value that differs per theme, it should say so explicitly with an `&.xh-dark` block (see
+[App-Level Dark Overrides](#app-level-dark-overrides) below).
 
 Scoped overrides also work — setting a variable on a more specific selector limits the change to
 that subtree:
@@ -56,7 +64,7 @@ that subtree:
 
 ### Variable Categories
 
-The `vars.scss` file organizes ~300 CSS custom properties into these categories:
+The `vars.scss` file organizes ~470 CSS custom properties into these categories:
 
 | Category | Prefix Pattern | Examples |
 |----------|---------------|----------|
@@ -448,13 +456,17 @@ computed derivation, and its relationship to other variables.
 ### Maintaining `css-data.json`
 
 The file is checked into source control and included in the published npm package. A pre-commit
-hook validates it stays in sync whenever `.scss` files change — if stale, the commit is blocked
-with instructions to regenerate:
+hook validates it stays in sync whenever `styles/vars.scss` (or the generator) changes — if stale,
+the commit is blocked with instructions to regenerate:
 
 ```bash
-node bin/generate-css-data.mjs          # regenerate
+pnpm generate:css-data                  # regenerate (alias for node bin/generate-css-data.mjs)
 node bin/generate-css-data.mjs --check  # validate without writing
 ```
+
+Only `vars.scss` is scanned. A `--xh-*` variable that a component stylesheet sets locally for its
+own subtree is a scoped override, not a new override point, and does not appear in the file - to
+publish a new variable, declare it in `vars.scss`.
 
 ### Documenting Variables with `///` Comments
 
