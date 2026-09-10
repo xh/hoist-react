@@ -83,19 +83,17 @@ export class ClientsModel extends BaseAdminTabModel {
             .span('load')
             .run(async ctx => {
                 const data = await XH.fetchJson({url: 'clientAdmin/allClients'}, ctx);
-                if (loadSpec.isStale) return;
-
                 gridModel.loadData(data);
                 gridModel.preSelectFirstAsync();
                 runInAction(() => {
                     this.lastRefresh = Date.now();
                 });
-            })
-            .catch(e => {
-                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-                gridModel.clear();
-                XH.handleException(e, {alertType: 'toast'});
             });
+    }
+
+    override handleLoadException(e: unknown) {
+        this.gridModel.clear();
+        XH.handleException(e, {alertType: 'toast'});
     }
 
     async forceSuspendAsync(toRecs: StoreRecord[]) {
