@@ -74,8 +74,14 @@
 
   // Equal segment widths - zeroing the flex basis makes each option take an identical share of the
   // tray. BP's flex-grow alone divides only the leftover space, leaving options at differing widths.
+  // The min-width keeps that equal share from shrinking an option below its own label. A zero
+  // basis otherwise lets each option fall to BP's fixed 30px floor, which is unrelated to its
+  // content: the horizontal padding is eaten first, then a single-word label spills past the
+  // border, since it can neither wrap nor ellipsize. Options only stop sharing equally once there
+  // is genuinely not enough room, and then only the ones that need the space keep it.
   &--fill#{&}--equal-widths .bp6-segmented-control > .bp6-button {
     flex-basis: 0;
+    min-width: min-content;
   }
 
   // Tray background suppressed - a lighter presentation, with no fill behind the options.

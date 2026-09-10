@@ -14,6 +14,16 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
+  too narrowly - options now hold their own content width, sharing equally only where there is room.
+* Fixed `useHotkeys()` throwing a React hook-count error when its arguments changed across
+  renders - a collapsible `Panel` given `hotkeys` no longer crashes when first expanded. Hotkeys
+  may now also be changed after the first render.
+
+## 87.2.0 - 2026-09-08
+
 ### 🎁 New Features
 
 * Added `DateRangePicker` (`desktop/cmp/daterange`), a compact control for selecting a period as a
@@ -37,6 +47,15 @@
   tabs. The Config panel shows every view of a config's value - resolved, instance override,
   database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
   grid's editor: double-click no longer opens a view-only dialog for read-only admins.
+* Added `domAttrs`, a prop for applying arbitrary `data-*` and `aria-*` attributes to the primary
+  DOM element a component renders - the same element that receives `data-testid` from `testId`.
+  Supported by `Box` and the layout components built on it (and therefore `Panel`, `Toolbar`, and
+  similar containers), `Button`, `ButtonGroup`, `Card`, `Badge`, `FormField`, and the desktop and
+  mobile inputs.
+* Added `enablePasswordManagers` to `TextInput`, `TextArea`, and `NumberInput` (desktop and mobile).
+  Defaults to `false`, applying `data-1p-ignore`, `data-lpignore`, and `data-bwignore` so password
+  managers stop offering saved logins on ordinary data-entry fields. Apps with hand-rolled login
+  forms should set it `true` on their credential inputs - Hoist's own `LoginPanel` already does.
 
 * Cube `Aggregator` implementations can now hold per-row state via new
   `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
@@ -46,15 +65,22 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed `testId` being silently dropped by desktop `Slider`, desktop `FileChooser`, and mobile
+  `Label` - all accepted the prop but never emitted a `data-testid` attribute.
 * Fixed icon misalignment in desktop `DateInput` when a `leftIcon` is specified.
 * Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
   the control now sizes to its options.
+* Fixed desktop `SegmentedControl` keeping the last clicked segment highlighted after its bound
+  value was cleared programmatically - the control now renders no selection, with `aria-checked`
+  cleared, whenever its value matches no option.
 * Fixed desktop `Select` not reliably scrolling the selected option into view when opening its
   menu - a regression from the v86 react-select upgrade. Selects with `enableFilter: false` never
   scrolled; others did so intermittently.
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
+* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
+  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
 
 ### ⚙️ Technical
 
