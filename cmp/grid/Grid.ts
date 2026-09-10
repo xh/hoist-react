@@ -715,8 +715,9 @@ export class GridLocalModel extends HoistModel {
             transaction = newRs.diffFrom(prevRs);
         model.diagnostics.noteGenTransaction(transaction, newRs, prevRs, start);
 
-        const applyStart = performance.now();
-        if (!this.transactionIsEmpty(transaction)) {
+        const applyStart = performance.now(),
+            isEmptyTxn = this.transactionIsEmpty(transaction);
+        if (!isEmptyTxn) {
             this.transactionMgr.apply(transaction, prevRs, newRs);
         } else if (!prevRs) {
             // AG Grid needs rowData (even if empty) to exit its initial loading state.
@@ -740,6 +741,26 @@ export class GridLocalModel extends HoistModel {
                         .filter(n => n != null),
                     columns = refreshCols.map(c => c.colId);
                 agApi.refreshCells({rowNodes, columns, force: true});
+            }
+        }
+
+        const calcNames = store.calculatedFieldNames;
+        if (calcNames.size) {
+            // Calculated values can move via inputs outside transacted rows - repaint their columns.
+            const columns = model
+                .getVisibleLeafColumns()
+                .filter(c => calcNames.has(c.field))
+                .map(c => c.colId);
+            if (!isEmpty(columns)) agApi.refreshCells({columns});
+
+            // An empty sync (e.g. summary-only) could still require calc cols resort.
+            if (
+                isEmptyTxn &&
+                prevRs &&
+                !model.externalSort &&
+                model.sortBy.some(s => calcNames.has(model.getColumn(s.colId)?.field))
+            ) {
+                this.transactionMgr.noteSortStale();
             }
         }
 

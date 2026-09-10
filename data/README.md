@@ -432,6 +432,51 @@ apps with large datasets. Set `enableXssProtection` per field, or app-wide via
 | `'tags'` | String array | Splits comma-separated |
 | `'pwd'` | Password | Marks as sensitive |
 
+### Calculated Fields
+
+Declare a field with a `calculatedFn` to compute its value on the client at read time, from the
+record's other field values and the Store - no source data or server round-trip required:
+
+```typescript
+const store = new Store({
+    fields: [
+        'commission',
+        {
+            name: 'pctCommission',
+            calculatedFn: (data, store) =>
+                (data.commission / store.summaryRecords[0]?.data.commission) * 100
+        }
+    ]
+});
+```
+
+Calculated values are read through lazy prototype getters on record `data` objects - never
+stored, parsed, or included in the equality/digest comparisons used to detect unchanged records,
+and always current when read. Key characteristics:
+
+- **Read-only** - grid columns bound to calculated fields are never editable, and
+  `modifyRecords()` throws on any attempt to write one. `type` is display/metadata only, as
+  parsing never applies.
+- **Works with `projectionOnly`** - record `data` becomes a generated wrapper over the adopted
+  raw object, adding the calculated getters with no per-record copy of source values.
+- **Read by name, never enumerated** - calculated values live behind prototype getters, invisible
+  to own-property enumeration: `Object.keys()`, spread and `JSON.stringify()` omit them (record
+  `data` should never be enumerated in any case). `StoreRecord.getValues()` returns a plain-object
+  copy of all field values, calculated included.
+- **Automatic grid repaint** - grids bound to the Store refresh columns displaying calculated
+  fields after each transaction, repainting visible cells whose value moved via an input outside
+  their own row (e.g. a summary denominator).
+- **Automatic filter refresh** - a `FieldFilter` testing a calculated field triggers a full
+  re-filter on each transaction, keeping membership current. `FunctionFilter`s are opaque to this
+  detection - one reading calculated values may require a manual `refreshFilter()`.
+- Sorting and exporting read through the getters and work naturally - keep `calculatedFn` a fast,
+  pure function, as it can run once per visible cell per paint and once per comparison when
+  sorting. Prefer returning primitives or stable references - a fresh object or array per read
+  defeats the value-equality check grids use to skip repainting unchanged cells.
+
+See `CubeFieldSpec.calculatedFn` (`data/cube/README.md`) for the Cube-layer form of the same
+concept, computed on View rows with an `AggregationContext`.
+
 ## Filter System
 
 **Files**: `filter/Filter.ts`, `filter/FieldFilter.ts`, `filter/CompoundFilter.ts`, `filter/FunctionFilter.ts`
@@ -960,21 +1005,17 @@ parses and owns. Store then uses each incoming raw object *as* its record's `dat
 This collapses the usual two objects per row to one, and skips the per-row parse on every load and
 update.
 
-Use this config for stores connected to a Cube `View`, or fed by an endpoint that returns data in
-its final client-side form. A View logs a warning when a connected store leaves the config unset.
-Set it explicitly to `false` to opt out and silence that warning.
+Use this config for stores fed by an endpoint that returns data in its final client-side form.
+Stores connected to a Cube `View` (constructed with `StoreConfig.view`) are always projections -
+the flag is set automatically, and conflicting config throws.
 
 ```typescript
-const store = new Store({
-    fields: [...],
-    projectionOnly: true
-});
-
 const view = cube.createView({
     query: {dimensions: ['region', 'product']},
-    stores: store,
     connect: true
 });
+
+const store = new Store({view, fields: [...]});
 ```
 
 This mode carries real constraints:

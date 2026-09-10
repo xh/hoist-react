@@ -77,6 +77,45 @@ const cube = new Cube({
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
 
+## Calculated Fields
+
+Declare a `CubeField` with a `calculatedFn` to compute its value at read time on every View row,
+from the row's other values and the View's `AggregationContext` - the Cube-layer form of
+`FieldSpec.calculatedFn` (see `data/README.md`), with a widened signature:
+
+```typescript
+{
+    name: 'pctCommission',
+    calculatedFn: (row, ctx) => {
+        // Memoize per-update intermediates in ctx.appData - the context is replaced whenever
+        // the record set changes in any way.
+        const total = (ctx.appData.totalCommission ??= sumBy(
+            ctx.filteredRecords,
+            r => r.data.commission
+        ));
+        return total ? (row.commission / total) * 100 : null;
+    }
+}
+```
+
+Calculated values are read through lazy prototype getters on the `ViewRowData` objects a View
+publishes and are never stored or aggregated. Because they carry no aggregator, they never
+disqualify a View from its incremental data-only update path - making them the recommended way to
+express globally-dependent values like percent-of-total, in place of an eagerly-computed
+aggregator reading beyond its own children. `ctx.filteredRecords` stays readable and fresh on
+those incremental updates, rebuilt lazily from the View's leaves (at most one O(n) pass per
+update, and only if read). As at the Store layer, values are read by name - never own-property
+enumeration - and fns should return primitives or stable references so grid change detection can
+skip unchanged cells.
+
+Note when the needed global is already published as a row - e.g. a View with `includeRoot`
+loading a store with `loadRootAsSummary` - prefer a Store-layer `calculatedFn` reading
+`store.summaryRecords`, with no Cube API needed at all.
+
+Constraints: `calculatedFn` is mutually exclusive with `aggregator`, `canAggregateFn` and
+`isDimension`; calculated fields may not feed other aggregators or appear in a `BucketSpec`'s
+`dependentFields`.
+
 ## Querying with Views
 
 Views are the primary interface for consuming Cube data. Create them via `Cube.createView()`
@@ -90,7 +129,6 @@ const view = cube.createView({
         dimensions: ['region', 'product'],
         filter: {field: 'year', op: '=', value: 2024}
     },
-    stores: store,
     connect: true  // Auto-update when cube data changes
 });
 ```
@@ -110,12 +148,11 @@ const view = cube.createView({
         dimensions: ['region', 'product'],
         includeRoot: true
     },
-    stores: new Store({loadRootAsSummary: true}),
     connect: true
 });
 
 // The connected GridModel can then show the root as a summary row:
-const gridModel = new GridModel({store, showSummary: true, ...});
+const gridModel = new GridModel({store: {view, loadRootAsSummary: true}, showSummary: true, ...});
 ```
 
 **Leaf-level drill-down with `includeLeaves`:**
@@ -128,7 +165,6 @@ const view = cube.createView({
         dimensions: ['region'],
         includeLeaves: true
     },
-    stores: store,
     connect: true
 });
 // In a tree grid, expanding "North America" shows its aggregated children,
@@ -146,7 +182,6 @@ const view = cube.createView({
         dimensions: ['region', 'product'],
         provideLeaves: true
     },
-    stores: store,
     connect: true
 });
 ```
@@ -161,7 +196,6 @@ const view = cube.createView({
         includeRoot: true,   // Single row with grand totals
         filter: {field: 'region', op: '=', value: 'EMEA'}
     },
-    stores: store,
     connect: true
 });
 ```
@@ -211,22 +245,33 @@ There are two ways to consume View results:
 
 **Option 1: Connected stores (recommended for grids)**
 
-Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
-into them whenever the query results change. Configure connected stores with
-`projectionOnly: true` (adopt View rows as record data without re-parsing). Record reuse is
+Construct stores against the View via `StoreConfig.view` - each registers with the View at
+construction and is auto-loaded whenever the query results change. Connected stores are always `projectionOnly`
+projections - the View sets this itself - adopting View rows as record data without re-parsing.
+Record reuse is
 automatic - the View installs its own row-based digest on each connected store, so rows
-republished without change skip record rebuilds:
+republished without change skip record rebuilds.
+
+Field metadata flows from the View as well: at construction (and on query changes), the store's
+`fields` are reconciled to the query's own `CubeField`s - types, `displayName`s, and calculated
+status carry through to everything reading field metadata off the store (filter fields, choosers,
+editability). There is no need to redeclare view-published fields on the store - declare only
+extras, such as store-layer calculated fields composed over view rows. An app field sharing a
+view field's name is superseded by the view's; customize display metadata for view-published
+fields on the `CubeField` itself.
 
 ```typescript
-const store = new Store({
-    fields: [...],
-    projectionOnly: true
-});
-
 const view = cube.createView({
     query: {dimensions: ['region', 'product']},
-    stores: store,
     connect: true
+});
+
+const store = new Store({
+    view,
+    fields: [
+        // View-published fields adopted automatically - declare only store-layer extras, e.g.:
+        {name: 'pctOfTotal', calculatedFn: (data, store) => ...}
+    ]
 });
 
 // Use the store with a GridModel

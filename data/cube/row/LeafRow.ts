@@ -61,7 +61,7 @@ export abstract class LeafRow extends BaseRow {
             updates = [];
 
         // 1) Calculate diff.
-        view.fields.forEach(field => {
+        view._nonCalcFields.forEach(field => {
             const name = field.name,
                 oldValue = data[name],
                 newValue = newData[name];

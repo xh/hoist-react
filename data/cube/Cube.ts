@@ -274,30 +274,28 @@ export class Cube extends HoistBase {
      * returned by {@link Cube.executeQuery}, a View created with this method can be configured
      * with `connect:true` to automatically update as the underlying data in the Cube changes.
      *
-     * Provide one or more `stores` to automatically populate them with the aggregated data returned
-     * by the query, or read the returned {@link View.result} directly.
+     * Construct Stores against the returned View via {@link StoreConfig.view} to automatically
+     * populate them with the aggregated data returned by the query, or read the returned
+     * {@link View.result} directly.
      *
      * When the returned View is no longer needed, call {@link View.destroy} (or save a reference
      * via an `@managed` model property) to avoid unnecessary processing.
      *
      * @param query - query to be used to construct this view.
-     * @param stores - Stores to be automatically loaded/reloaded with View results.
      * @param connect - true to update View automatically when data in the underlying Cube changes.
+     * @param xhName - see {@link HoistBase.xhName}.
      */
     createView({
         query,
-        stores,
         connect = false,
         xhName = null
     }: {
         query: QueryConfig;
-        stores?: Store[] | Store;
         connect?: boolean;
         xhName?: string;
     }): View {
         return new View({
             query: new Query({...query, cube: this}),
-            stores,
             connect,
             xhName
         });

@@ -35,27 +35,32 @@ export class AggregationContext {
      */
     activeField: CubeField = null;
 
+    // Filtered-records source supplied by the owning View - read lazily, memoized per context.
+    private readonly getRecordsFn: () => StoreRecord[];
+    private _filteredRecords: StoreRecord[] = null;
+
     /**
      * All records currently meeting the filter for this view.
      *
-     * Available only when an aggregator on the view overrides
-     * {@link Aggregator.dependsOnChildrenOnly} to return false.
-     * Views with children-only aggregators update incrementally without
-     * refreshing that collection, so reading it here throws.
+     * Available to calculated field functions ({@link CubeFieldSpec.calculatedFn}) and to
+     * aggregators that override {@link Aggregator.dependsOnChildrenOnly} to return false.
+     * Reading from a children-only aggregator throws - such aggregators must declare their
+     * wider dependency for the View to keep this collection consistent with their reads.
      */
     get filteredRecords(): StoreRecord[] {
-        const {activeField, view} = this;
+        const {activeField} = this;
         if (activeField?.aggregator.dependsOnChildrenOnly) {
             throw XH.exception(
                 `The aggregator for the '${activeField.name}' field read \`filteredRecords\`, but does not override \`dependsOnChildrenOnly\` to return false - aggregators depending on records beyond their own children must do so.`
             );
         }
-        return view._records.list;
+        return (this._filteredRecords ??= this.getRecordsFn());
     }
 
-    constructor(view: View) {
+    constructor(view: View, getRecordsFn: () => StoreRecord[]) {
         this.view = view;
         this.appData = {};
+        this.getRecordsFn = getRecordsFn;
     }
 
     /**

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {PlainObject, XH} from '@xh/hoist/core';
 import {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -13,6 +13,8 @@ import {Rule} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
+import type {Store} from './Store';
+import type {CubeCalculatedFn} from './cube/CubeField';
 
 /**
  * Constructor arguments for a Hoist data package Field.
@@ -61,7 +63,50 @@ export interface FieldSpec {
      * building secured internal apps with large datasets and tight performance tolerances.
      */
     enableXssProtection?: boolean;
+
+    /**
+     * Function computing this field's value at read time from the record's other values and the
+     * Store, making this a *calculated* field - derived on the client rather than loaded:
+     *
+     * ```ts
+     * {
+     *     name: 'pctCommission',
+     *     calculatedFn: (data, store) =>
+     *         (data.commission / store.summaryRecords[0]?.data.commission) * 100
+     * }
+     * ```
+     *
+     * Values are read via lazy prototype getters on record `data` - never stored, parsed, or
+     * compared for record reuse, and always current, even when inputs live outside the record
+     * (e.g. a summary denominator). Grids repaint calculated columns after each transaction,
+     * and a `FieldFilter` on one triggers a full re-filter. (`FunctionFilter`s are opaque and
+     * may need a manual {@link Store.refreshFilter}.)
+     *
+     * Calculated fields are read-only ({@link Store.modifyRecords} throws, columns are never
+     * editable, `type` is display-only) and invisible to own-property enumeration - read values
+     * by name, or via {@link StoreRecord.getValues}. Keep the fn pure and fast (it runs per
+     * cell paint and per sort comparison), return primitives or stable references, and avoid
+     * cycles when reading other calculated fields.
+     *
+     * See {@link CubeFieldSpec.calculatedFn} for the Cube View form - the union type keeps
+     * `CubeFieldSpec` assignable wherever `FieldSpec` is accepted; on a plain Store, always
+     * supply the {@link StoreCalculatedFn} form.
+     */
+    calculatedFn?: StoreCalculatedFn | CubeCalculatedFn;
 }
+
+/**
+ * Function computing a Store-level calculated field value at read time.
+ * See {@link FieldSpec.calculatedFn}.
+ */
+export type StoreCalculatedFn = (data: PlainObject, store: Store) => any;
+
+/**
+ * Function computing a calculated field value at read time - the union of the layer-specific
+ * signatures declared by {@link FieldSpec.calculatedFn} (Store) and `CubeFieldSpec.calculatedFn`
+ * (Cube View).
+ */
+export type CalculatedFn = (data: any, context: any) => any;
 
 /**
  * Metadata for an individual data field within a {@link StoreRecord}.
@@ -73,6 +118,11 @@ export class Field {
         return true;
     }
 
+    /** True for {@link CubeField} instances - see that subclass. */
+    get isCubeField() {
+        return false;
+    }
+
     readonly name: string;
     readonly type: FieldType;
     readonly displayName: string;
@@ -82,6 +132,19 @@ export class Field {
     readonly rules: Rule[];
     readonly enableXssProtection: boolean;
 
+    /**
+     * Function computing this field's value at read time, marking it as a calculated field.
+     * Layer-specific signatures - see {@link FieldSpec.calculatedFn} (Store) and
+     * `CubeFieldSpec.calculatedFn` (Cube View). Not readonly to support subclass assignment
+     * and anticipated runtime updates to calculated field specs.
+     */
+    calculatedFn: CalculatedFn;
+
+    /** True if this field's value is computed at read time - see {@link FieldSpec.calculatedFn}. */
+    get isCalculated(): boolean {
+        return !!this.calculatedFn;
+    }
+
     constructor({
         name,
         type = 'auto',
@@ -90,7 +153,8 @@ export class Field {
         defaultValue = null,
         isDimension = false,
         rules = [],
-        enableXssProtection = XH.appSpec.enableXssProtection
+        enableXssProtection = XH.appSpec.enableXssProtection,
+        calculatedFn = null
     }: FieldSpec) {
         this.name = name;
         this.type = type;
@@ -100,6 +164,7 @@ export class Field {
         this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
+        this.calculatedFn = calculatedFn;
     }
 
     parseVal(val: any): any {

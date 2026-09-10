@@ -6,44 +6,53 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {isEqual} from 'lodash';
+import {
+    installCalculatedFieldGetters,
+    installSourceFieldGetters
+} from '@xh/hoist/data/impl/FieldGetterSupport';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl';
+import type {CubeField} from '../CubeField';
 import type {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 
 /**
  * Generates the `ViewRowData` objects published by a View. Owned by its View, with
- * query-dependent templates rebuilt when the query's field set or leaf exposure changes. The
+ * query-dependent classes rebuilt when the query's field set or leaf exposure changes. The
  * View stamps each minted or mutated row with its monotonic `cubeRowDigest` post-construction -
  * every row is minted with a `cubeRowDigest` slot so the stamp is an overwrite, never a
  * shape-changing property add.
  *
  * Row shapes are fixed per query, keeping them in V8's compact fast-properties mode rather than
  * "dictionary mode":
- *  - Aggregate and bucket row data is cloned from a shared template carrying a slot for every
- *    ViewRowData property and query field. Rows are only ever written via overwrites of these
- *    slots - never property adds.
+ *  - Aggregate and bucket row data objects are instances of a generated class whose constructor
+ *    assigns a slot for every ViewRowData property and aggregable query field in a fixed order.
+ *    Rows are only ever written via overwrites of these slots - never property adds.
  *  - Exposed-leaf row data holds no per-leaf copy of field values - queried fields are read
  *    through prototype getters over an own `_src` reference to the leaf's cube record data. One
  *    generated class per query keeps all leaf datas on a single shape with monomorphic,
  *    inlinable reads.
  *
+ * Calculated fields (`CubeFieldSpec.calculatedFn`) hold no slot on either class - their values
+ * are read through prototype getters computing against the View's current AggregationContext,
+ * so they are always current and never participate in slot writes or digest bumps.
+ *
  * @internal
  */
 export class RowDataGenerator {
     private view: View;
-    private fieldNames: string[];
+    private fields: CubeField[];
     private exposesLeaves: boolean;
-    private parentDataTemplate: ViewRowData = null;
-    private leafDataClass: LeafDataClass = null;
+    private parentDataClass: GeneratedDataClass = null;
+    private leafDataClass: GeneratedLeafDataClass = null;
 
     constructor(view: View) {
         this.view = view;
         this.init();
     }
 
-    /** Create a new aggregate or bucket row data object as a clone of the shared template. */
+    /** Create a new aggregate or bucket row data object. */
     newParentRowData(id: string): ViewRowData {
-        return {...this.parentDataTemplate, id};
+        return new this.parentDataClass(id);
     }
 
     /** Create an exposed-leaf data object - fields read via prototype getters over `src`. */
@@ -57,7 +66,7 @@ export class RowDataGenerator {
     onQueryChange() {
         const {view} = this;
         if (
-            !isEqual(view.fieldNames, this.fieldNames) ||
+            !shallowEqualArrays(view.fields, this.fields) ||
             view.exposesLeaves !== this.exposesLeaves
         ) {
             this.init();
@@ -65,43 +74,63 @@ export class RowDataGenerator {
     }
 
     private init() {
-        this.fieldNames = this.view.fieldNames;
+        this.fields = this.view.fields;
         this.exposesLeaves = this.view.exposesLeaves;
-        this.parentDataTemplate = this.buildParentDataTemplate();
+        this.parentDataClass = this.buildParentDataClass();
         this.leafDataClass = this.buildLeafDataClass();
     }
 
-    private buildParentDataTemplate(): ViewRowData {
-        const rowData: PlainObject = {
-            id: null,
-            cubeRowType: null,
-            cubeLabel: null,
-            cubeDimension: null,
-            cubeBuckets: null,
-            children: null,
-            isCubeLeaf: false,
-            cubeRowDigest: null,
-            _cubeLeafChildren: null
-        };
-        this.view.fields.forEach(({name}) => (rowData[name] = null));
+    private buildParentDataClass(): GeneratedDataClass {
+        const {view} = this,
+            {_nonCalcFields, _calcFields} = view,
+            slotNames = _nonCalcFields.map(it => it.name);
 
-        // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
-        return {...rowData} as ViewRowData;
+        class ParentRowData extends BaseParentRowData {
+            constructor(id: string) {
+                super(id);
+                // Constructor assignments in fixed order - all instances share one shape.
+                for (let i = 0; i < slotNames.length; i++) this[slotNames[i]] = null;
+            }
+        }
+        installCalculatedFieldGetters(ParentRowData.prototype, _calcFields, () => view._aggContext);
+        return ParentRowData;
     }
 
-    private buildLeafDataClass(): LeafDataClass {
+    private buildLeafDataClass(): GeneratedLeafDataClass {
         if (!this.exposesLeaves) return null;
 
+        const {view} = this,
+            {_nonCalcFields, _calcFields} = view;
         class LeafRowData extends BaseLeafRowData {}
-        this.view.fields.forEach(({name}) => {
-            Object.defineProperty(LeafRowData.prototype, name, {
-                get(this: PlainObject) {
-                    return this._src[name];
-                },
-                enumerable: true
-            });
-        });
+        installSourceFieldGetters(
+            LeafRowData.prototype,
+            _nonCalcFields.map(it => it.name)
+        );
+        installCalculatedFieldGetters(LeafRowData.prototype, _calcFields, () => view._aggContext);
         return LeafRowData;
+    }
+}
+
+/**
+ * Fixed portion of a View's aggregate/bucket data class - `buildParentDataClass` extends this
+ * with a slot per aggregable query field.
+ */
+class BaseParentRowData implements ViewRowData {
+    id: string;
+    cubeRowType: 'leaf' | 'aggregate' | 'bucket' = null;
+    cubeLabel: string = null;
+    cubeDimension: string = null;
+    cubeBuckets: PlainObject = null;
+    children: ViewRowData[] = null;
+    isCubeLeaf: boolean = false;
+    cubeRowDigest: number = null;
+    _cubeLeafChildren: ViewRowData[] = null;
+
+    // Type-only, erased: the interface's index signature.
+    [key: string]: any;
+
+    constructor(id: string) {
+        this.id = id;
     }
 }
 
@@ -141,4 +170,5 @@ class BaseLeafRowData implements ViewRowData {
     }
 }
 
-type LeafDataClass = new (id: string, src: PlainObject) => ViewRowData;
+type GeneratedDataClass = new (id: string) => ViewRowData;
+type GeneratedLeafDataClass = new (id: string, src: PlainObject) => ViewRowData;
