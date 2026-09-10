@@ -6,3 +6,8 @@ pnpm exec lint-staged
 if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '\.(ts|tsx|js|jsx)$|package\.json$|pnpm-(lock|workspace)\.yaml$|tsconfig.*\.json$'; then
   pnpm typecheck
 fi
+
+# Ensure css-data.json stays in sync when SCSS files change
+if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '\.scss$'; then
+  node bin/generate-css-data.mjs --check
+fi
