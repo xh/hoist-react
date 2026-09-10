@@ -735,7 +735,7 @@ export class GridModel extends HoistModel {
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         apiDeprecated('GridModel.enableFullWidthScroll', {
-            v: 'v88',
+            v: 'v90',
             test: enableFullWidthScroll,
             source: this,
             msg: 'It no longer has any effect - AG Grid 36 renders a full-width scrollbar natively.'
