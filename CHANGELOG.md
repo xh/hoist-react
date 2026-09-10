@@ -47,8 +47,8 @@
 
 ### 📚 Libraries
 
-* ag-grid-community `35.3 -> 36.0`
-* ag-grid-react `35.3 -> 36.0`
+* ag-grid-community `35.3 -> 36.1`
+* ag-grid-react `35.3 -> 36.1`
 
 ## 87.2.0 - 2026-09-08
 
