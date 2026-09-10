@@ -6,7 +6,7 @@
  */
 import {type TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, type Intent, lookup, managed, XH} from '@xh/hoist/core';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import type {LocalDate} from '@xh/hoist/utils/datetime';
 import {clamp, isEqual} from 'lodash';
 import {createRef, type ReactElement} from 'react';
@@ -50,7 +50,7 @@ export class DateRangePickerLocalModel extends HoistModel {
 
     @lookup(DateRangePickerModel) parentModel: DateRangePickerModel;
 
-    @bindable isOpen: boolean = false;
+    @bindable accessor isOpen: boolean = false;
 
     /** Drives the popover's tab rail + content. Tab ids are {@link DateRangePickerTab} values. */
     @managed tabModel: TabContainerModel;
@@ -59,7 +59,7 @@ export class DateRangePickerLocalModel extends HoistModel {
     testId: string;
 
     /** Measured width of the whole control - drives the compact variant in a narrow host. */
-    @bindable measuredWidth: number = null;
+    @bindable accessor measuredWidth: number = null;
 
     /** Intent of the host picker as of its last render - accents selected months and years. */
     intent: Intent = null;
@@ -68,19 +68,19 @@ export class DateRangePickerLocalModel extends HoistModel {
     viewRef = createRef<HTMLDivElement>();
 
     // Relative tab draft.
-    @bindable relativeCount: number = 30;
-    @bindable relativeUnit: DateRangeUnit = 'days';
-    @bindable relativeSnap: boolean = false;
+    @bindable accessor relativeCount: number = 30;
+    @bindable accessor relativeUnit: DateRangeUnit = 'days';
+    @bindable accessor relativeSnap: boolean = false;
 
     // Months & Years tab - year currently shown in the grid.
-    @bindable gridYear: number;
+    @bindable accessor gridYear: number;
 
     // Custom tab draft.
-    @observable.ref customStart: LocalDate;
-    @observable.ref customEnd: LocalDate;
-    @bindable nextEdge: 'start' | 'end' = 'start';
+    @observable.ref accessor customStart: LocalDate;
+    @observable.ref accessor customEnd: LocalDate;
+    @bindable accessor nextEdge: 'start' | 'end' = 'start';
     /** Start-of-month for the left-hand calendar. Right-hand shows the following month. */
-    @observable.ref leftMonth: LocalDate;
+    @observable.ref accessor leftMonth: LocalDate;
 
     private tabSpecs: DateRangePickerTabSpec[];
 
@@ -269,7 +269,6 @@ export class DateRangePickerLocalModel extends HoistModel {
 
     constructor(testId: string, tabSpecs: DateRangePickerTabSpec[]) {
         super();
-        makeObservable(this);
         this.testId = testId;
         this.tabSpecs = tabSpecs;
     }

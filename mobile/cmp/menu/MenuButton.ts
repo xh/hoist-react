@@ -9,7 +9,7 @@ import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {popover, PopoverProps} from '@xh/hoist/mobile/cmp/popover';
 import '@xh/hoist/mobile/register';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {ReactNode} from 'react';
 import {menu} from './impl/Menu';
 
@@ -86,10 +86,5 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
 class MenuButtonLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable isOpen = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor isOpen = false;
 }

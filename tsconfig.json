@@ -13,7 +13,6 @@
     "skipLibCheck": true,
 
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
     "noImplicitOverride": true,
     "resolveJsonModule": true,
     "useDefineForClassFields": true,

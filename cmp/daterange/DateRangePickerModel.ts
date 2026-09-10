@@ -13,7 +13,7 @@ import {
     persistOptions
 } from '@xh/hoist/core';
 import type {FieldFilterSpec} from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -194,42 +194,42 @@ export class DateRangePickerModel extends HoistModel {
     };
 
     /** The applied selection, always in normalized form. Set via `setValue()`. */
-    @observable.ref value: DateRangeSelection;
+    @observable.ref accessor value: DateRangeSelection;
 
     /** Tabs offered in the popover, in display order. Set via `setTabs()` - the picker follows. */
-    @observable.ref tabs: DateRangePickerTab[];
+    @observable.ref accessor tabs: DateRangePickerTab[];
 
     /** Presets offered on the Presets tab, in display order. Set via `setPresets()`. */
-    @observable.ref presets: DateRangePreset[];
+    @observable.ref accessor presets: DateRangePreset[];
 
     /** How the anchor date is determined - see {@link DateRangeAnchorDay}. Set via `setAnchorDay()`. */
-    @observable.ref anchorDay: DateRangeAnchorDay;
+    @observable.ref accessor anchorDay: DateRangeAnchorDay;
 
     /**
      * Date that relative and to-date selections resolve against - `anchorDay` resolved, and (in
      * `businessDayMode`) snapped to a business day when live. Kept current by this model.
      */
-    @observable.ref anchorDate: LocalDate;
+    @observable.ref accessor anchorDate: LocalDate;
 
     /** The current day in the browser's time zone - the reader's "today". Kept current. */
-    @observable.ref today: LocalDate;
+    @observable.ref accessor today: LocalDate;
 
     /** Earliest selectable date, or null if unbounded. Set via `setMinDate()`. */
-    @observable.ref minDate: LocalDate | null;
+    @observable.ref accessor minDate: LocalDate | null;
 
     /** Business-day test used by `businessDayMode` and presets. Set via `setIsBusinessDay()`. */
-    @observable.ref isBusinessDay: (date: LocalDate) => boolean;
+    @observable.ref accessor isBusinessDay: (date: LocalDate) => boolean;
 
-    @bindable businessDayMode: boolean;
-    @bindable commitOnChange: boolean;
-    @bindable.ref dateFormat: DateRangeFormat;
-    @bindable.ref singleDayFormat: DateRangeFormat;
-    @bindable filterField: string;
+    @bindable accessor businessDayMode: boolean;
+    @bindable accessor commitOnChange: boolean;
+    @bindable.ref accessor dateFormat: DateRangeFormat;
+    @bindable.ref accessor singleDayFormat: DateRangeFormat;
+    @bindable accessor filterField: string;
 
     /** The initial value, and the fallback for a missing or invalid persisted value. */
     readonly defaultValue: DateRangeSelection;
 
-    @observable.ref private explicitMaxDate: LocalDate | null;
+    @observable.ref private accessor explicitMaxDate: LocalDate | null;
     @managed private anchorTimer: Timer;
 
     /** Latest selectable date - the explicit `maxDate` config if set, otherwise `anchorDate`. */
@@ -356,7 +356,6 @@ export class DateRangePickerModel extends HoistModel {
         xhName = null
     }: DateRangePickerConfig = {}) {
         super();
-        makeObservable(this);
         this.xhName = xhName;
 
         this.businessDayMode = businessDayMode;

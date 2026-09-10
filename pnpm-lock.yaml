@@ -306,8 +306,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1(jiti@2.7.0)(supports-color@10.2.2)
       '@xh/hoist-dev-utils':
-        specifier: ^15.0.1
-        version: 15.0.1(clean-css@5.3.3)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(jiti@2.7.0)(js-yaml@4.3.2)(json5@2.2.3)(sass@1.103.1)(supports-color@10.2.2)(typescript@5.9.3)
+        specifier: ^16.0.0-SNAPSHOT
+        version: 16.0.0-SNAPSHOT.1788353486567(clean-css@5.3.3)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(jiti@2.7.0)(js-yaml@4.3.2)(json5@2.2.3)(sass@1.103.1)(supports-color@10.2.2)(typescript@5.9.3)
       ag-grid-community:
         specifier: ^35.3.1
         version: 35.3.1
@@ -2102,8 +2102,8 @@ packages:
   '@xh/eslint-config@8.0.1':
     resolution: {integrity: sha512-t+1R6My3ntLLJKqr5vtF6MF6r73ylwiLwI3UKj/mpz4oKfLB5NHws98kxKNDxYgCLWevVEkGStHo/6SXzVtx/A==}
 
-  '@xh/hoist-dev-utils@15.0.1':
-    resolution: {integrity: sha512-uuR6+3r6GZNpvTZeT6BPgF7x1iKdQtsLH2+EWyY5yiboxp9HfEy4K4KLtTNo66nDICmAH/d2394HCZ71gy99CQ==}
+  '@xh/hoist-dev-utils@16.0.0-SNAPSHOT.1788353486567':
+    resolution: {integrity: sha512-AIw3J8ztAaeL5BmIy3v7fhPfyDCifVaHgA6XIXGctVNEPo3galdNoZGCL0fHcR9ddq2a26cf7vQPx5tU+PWgkg==}
     engines: {node: '>=22.15.0'}
 
   '@xtuc/ieee754@1.2.0':
@@ -7199,7 +7199,7 @@ snapshots:
       - jiti
       - supports-color
 
-  '@xh/hoist-dev-utils@15.0.1(clean-css@5.3.3)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(jiti@2.7.0)(js-yaml@4.3.2)(json5@2.2.3)(sass@1.103.1)(supports-color@10.2.2)(typescript@5.9.3)':
+  '@xh/hoist-dev-utils@16.0.0-SNAPSHOT.1788353486567(clean-css@5.3.3)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(jiti@2.7.0)(js-yaml@4.3.2)(json5@2.2.3)(sass@1.103.1)(supports-color@10.2.2)(typescript@5.9.3)':
     dependencies:
       '@babel/core': 7.29.7(supports-color@10.2.2)
       '@babel/plugin-proposal-decorators': 7.29.7(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)

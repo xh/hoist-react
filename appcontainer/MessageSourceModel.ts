@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, MessageSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {filter, isUndefined, partition} from 'lodash';
 import {MessageModel} from './MessageModel';
 
@@ -21,12 +21,7 @@ export class MessageSourceModel extends HoistModel {
 
     @managed
     @observable.ref
-    msgModels: MessageModel[] = [];
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    accessor msgModels: MessageModel[] = [];
 
     message(config: MessageSpec) {
         // Resolve immediately to any previously saved response the user has opted to suppress

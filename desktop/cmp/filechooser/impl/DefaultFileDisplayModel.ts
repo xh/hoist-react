@@ -3,7 +3,6 @@ import {HoistModel, lookup, managed, ReactionSpec} from '@xh/hoist/core';
 import {FileChooserModel} from '../FileChooserModel';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
 import {filesize} from 'filesize';
 
 export class FileDisplayModel extends HoistModel {
@@ -20,7 +19,6 @@ export class FileDisplayModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.gridModel = this.createGridModel();
     }
 

@@ -12,7 +12,7 @@ import {
     FieldFilterSpec,
     FilterLike
 } from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {compact, first, flatMap, forEach, groupBy, isArray, isEmpty, uniq} from 'lodash';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 
@@ -26,8 +26,8 @@ export class CustomTabModel extends HoistModel {
 
     headerFilterModel: HeaderFilterModel;
 
-    @bindable op: CompoundFilterOperator = 'AND';
-    @observable.ref rowModels: CustomRowModel[] = [];
+    @bindable accessor op: CompoundFilterOperator = 'AND';
+    @observable.ref accessor rowModels: CustomRowModel[] = [];
 
     /** Filter config output by this model. */
     @computed.struct
@@ -62,7 +62,6 @@ export class CustomTabModel extends HoistModel {
 
     constructor(headerFilterModel: HeaderFilterModel) {
         super();
-        makeObservable(this);
         this.headerFilterModel = headerFilterModel;
     }
 

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {DifferModel} from './DifferModel';
 import {StoreRecord} from '@xh/hoist/data';
 
@@ -15,11 +15,10 @@ import {StoreRecord} from '@xh/hoist/data';
 export class DifferDetailModel extends HoistModel {
     parent: DifferModel = null;
 
-    @observable.ref record: StoreRecord = null;
+    @observable.ref accessor record: StoreRecord = null;
 
     constructor({parent}) {
         super();
-        makeObservable(this);
         this.parent = parent;
     }
 

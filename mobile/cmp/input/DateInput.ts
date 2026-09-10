@@ -13,7 +13,7 @@ import {dayPicker, DayPickerProps} from '@xh/hoist/kit/react-day-picker';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import '@xh/hoist/mobile/register';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -85,12 +85,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 class DateInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    @bindable pickerIsOpen: boolean = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor pickerIsOpen: boolean = false;
 
     get valueType(): 'date' | 'localDate' {
         return withDefault(this.componentProps.valueType, 'date');

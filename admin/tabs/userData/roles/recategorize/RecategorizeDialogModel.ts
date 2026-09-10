@@ -8,7 +8,7 @@ import {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
 import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {compact, every, filter, map, uniq} from 'lodash';
 
 export class RecategorizeDialogModel extends HoistModel {
@@ -19,8 +19,8 @@ export class RecategorizeDialogModel extends HoistModel {
 
     readonly savingTask = TaskObserver.trackLast();
 
-    @bindable categoryName = null;
-    @observable isOpen = false;
+    @bindable accessor categoryName = null;
+    @observable accessor isOpen = false;
 
     recategorizeAction() {
         return {
@@ -46,7 +46,6 @@ export class RecategorizeDialogModel extends HoistModel {
 
     constructor(parent) {
         super();
-        makeObservable(this);
         this.parent = parent;
     }
 

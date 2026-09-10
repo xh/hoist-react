@@ -8,7 +8,7 @@ import {DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashViewConfig, DashViewModel} from '../DashViewModel';
 import '@xh/hoist/desktop/register';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, observable} from '@xh/hoist/mobx';
 import {ReactNode} from 'react';
 
 /**
@@ -16,25 +16,24 @@ import {ReactNode} from 'react';
  */
 export class DashCanvasViewModel extends DashViewModel<DashCanvasViewSpec> {
     /** True (default) to allow duplicating the view. */
-    @observable allowDuplicate: boolean;
+    @observable accessor allowDuplicate: boolean;
 
     /** Hide the Header Panel for the view? Default false. */
-    @observable hidePanelHeader: boolean;
+    @observable accessor hidePanelHeader: boolean;
 
     /** Hide the menu button for the view? Default false. */
-    @observable hideMenuButton: boolean;
+    @observable accessor hideMenuButton: boolean;
 
     /** Should the view resize its height to fit its contents? */
-    @observable autoHeight: boolean;
+    @observable accessor autoHeight: boolean;
 
     /** Additional items to include in header. */
-    @bindable.ref headerItems: ReactNode[] = [];
+    @bindable.ref accessor headerItems: ReactNode[] = [];
 
     ref = createObservableRef<HTMLElement>();
 
     constructor(cfg: DashViewConfig<DashCanvasViewSpec>) {
         super(cfg);
-        makeObservable(this);
         this.allowDuplicate = cfg.viewSpec.allowDuplicate ?? true;
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;

@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {DockViewModel, DockViewConfig} from './DockViewModel';
@@ -32,7 +32,7 @@ interface DockContainerConfig {
  * and expanding / collapsing views programmatically.
  */
 export class DockContainerModel extends HoistModel {
-    @managed @observable.ref views: DockViewModel[] = [];
+    @managed @observable.ref accessor views: DockViewModel[] = [];
     direction: DockViewDirection;
     renderMode: RenderMode;
     refreshMode: RefreshMode;
@@ -45,7 +45,6 @@ export class DockContainerModel extends HoistModel {
         xhName = null
     }: DockContainerConfig = {}) {
         super();
-        makeObservable(this);
         this.xhName = xhName;
         views = views.filter(v => !isOmitted(v));
 

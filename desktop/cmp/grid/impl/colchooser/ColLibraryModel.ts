@@ -10,7 +10,6 @@ import {hoistCmp, HoistModel, managed} from '@xh/hoist/core';
 import type {Filter} from '@xh/hoist/data';
 import {StoreRecordId} from '@xh/hoist/data';
 import type {GridOptions, IRowNode, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
-import {makeObservable} from '@xh/hoist/mobx';
 import {castArray} from 'lodash';
 
 import type {ColChooserModel} from './ColChooserModel';
@@ -80,7 +79,6 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
         autoExpandOnFilter: number;
     }) {
         super();
-        makeObservable(this);
         this.parent = parent;
         this.collapseGroups = collapseGroups;
         this.autoExpandOnFilter = autoExpandOnFilter;
