@@ -33,11 +33,14 @@ export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
 export * from './cube/aggregate/UniqueAggregator';
 
+export * from './cube/BucketSpec';
 export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
+export * from './cube/ViewRow';
 export * from './cube/ViewRowData';
+export * from './cube/row/RowUpdate';
 
 export * from './validation/constraints';
 export * from './validation/Rule';

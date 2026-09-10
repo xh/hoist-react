@@ -16,8 +16,7 @@ import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
 import {Query, QueryConfig} from './Query';
-import {BaseRow} from './row/BaseRow';
-import {AggregateRow, BucketRow} from './row/ParentRow';
+import {ViewRow} from './ViewRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
@@ -112,19 +111,19 @@ export type CubeStoreConfig = Omit<
 >;
 
 /**
- * Function to be called for each node to aggregate to determine if it should be "locked",
+ * Function to be called for each aggregate or bucket row to determine if it should be "locked",
  * preventing drilldown into its children. If true returned for a node, no drilldown will be
  * allowed, and the row will be marked with a boolean "locked" property.
  */
-export type LockFn = (row: AggregateRow | BucketRow) => boolean;
+export type LockFn = (row: ViewRow) => boolean;
 
 /**
- * Function to be called for each node during row generation to determine if it should be
- * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
+ * Function to be called for each aggregate or bucket row during row generation to determine if
+ * it should be skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
  * Note that skipping in this way has no effect on aggregations -- all children of this node are
  * simply promoted to their parent node.
  */
-export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
+export type OmitFn = (row: ViewRow) => boolean;
 
 /**
  * Function to be called for rows making up an aggregated dimension to determine if the children of
@@ -138,7 +137,7 @@ export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
  * @param rows - the rows being checked for bucketing
  * @returns {@link BucketSpec} for dynamic sub-aggregations, or null to perform no bucketing.
  */
-export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
+export type BucketSpecFn = (rows: ViewRow[]) => BucketSpec;
 
 /**
  * Client-side OLAP-style data structure for multi-dimensional grouping and aggregation.

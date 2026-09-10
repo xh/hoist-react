@@ -8,8 +8,9 @@
 import {XH} from '@xh/hoist/core';
 import {StoreRecord} from '../../StoreRecord';
 import type {CubeField} from '../CubeField';
-import type {BaseRow} from '../row/BaseRow';
+import type {ParentRow} from '../row/ParentRow';
 import type {RowUpdate} from '../row/RowUpdate';
+import type {ViewRow} from '../ViewRow';
 import {View} from '../View';
 
 /**
@@ -34,6 +35,12 @@ export class AggregationContext {
      * @internal
      */
     activeField: CubeField = null;
+
+    /**
+     * Row currently being aggregated, or null if not within a call to an aggregator.
+     * @internal
+     */
+    activeRow: ParentRow = null;
 
     /**
      * All records currently meeting the filter for this view.
@@ -62,12 +69,16 @@ export class AggregationContext {
      * Aggregate the given rows for a field, tracking the field as active for the duration.
      * @internal
      */
-    aggregate(rows: BaseRow[], field: CubeField): any {
+    aggregate(rows: ViewRow[], field: CubeField, row: ParentRow): any {
+        const {activeField, activeRow} = this;
         this.activeField = field;
+        this.activeRow = row;
         try {
             return field.aggregator.aggregate(rows, field.name, this);
         } finally {
-            this.activeField = null;
+            // Restore rather than clear - an aggregator may delegate to another via this method.
+            this.activeField = activeField;
+            this.activeRow = activeRow;
         }
     }
 
@@ -76,13 +87,46 @@ export class AggregationContext {
      * for the duration.
      * @internal
      */
-    replace(rows: BaseRow[], currVal: any, update: RowUpdate): any {
-        const {field} = update;
+    replace(rows: ViewRow[], currVal: any, update: RowUpdate, row: ParentRow): any {
+        const {field} = update,
+            {activeField, activeRow} = this;
         this.activeField = field;
+        this.activeRow = row;
         try {
             return field.aggregator.replace(rows, currVal, update, this);
         } finally {
-            this.activeField = null;
+            this.activeField = activeField;
+            this.activeRow = activeRow;
         }
+    }
+
+    /**
+     * Store state for the row and field currently being aggregated, to be read by the
+     * aggregations of ancestor rows via {@link getAggState}.
+     *
+     * Lets an aggregator that cannot be composed from its children's published values alone -
+     * e.g. a weighted average - compose from its direct children rather than walking its entire
+     * subtree of leaves. See the Cube package README for a worked example.
+     *
+     * Write state on every call to {@link Aggregator.aggregate}, as rows are recomputed in place
+     * when reused. An {@link Aggregator.replace} override must likewise keep state consistent with
+     * the value it returns, or delegate to `super`.
+     */
+    setAggState<T>(state: T) {
+        const {activeRow, activeField} = this;
+        (activeRow.aggStates ??= {})[activeField.name] = state;
+    }
+
+    /**
+     * Read the state stored by a row's aggregation of the active field - the row being aggregated
+     * if not specified.
+     *
+     * Null for any row that did not aggregate the field: a leaf, a row whose
+     * {@link CubeField.canAggregateFn} returned false for it, or a row grouped by the field itself
+     * (a dimension is never aggregated at its own level). Such a row publishes a value to read in
+     * place of state - null in all but the last case.
+     */
+    getAggState<T>(row: ViewRow = this.activeRow): T {
+        return (row as ParentRow).aggStates?.[this.activeField.name];
     }
 }

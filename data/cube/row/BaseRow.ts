@@ -10,14 +10,15 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {isArray, isEmpty} from 'lodash';
 import {View} from '../View';
+import type {ViewRow} from '../ViewRow';
 import type {ParentRow} from './ParentRow';
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
  *
- * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
+ * @internal
  */
-export abstract class BaseRow {
+export abstract class BaseRow implements ViewRow {
     readonly view: View = null;
     readonly id: string = null;
 
@@ -26,6 +27,17 @@ export abstract class BaseRow {
     data: PlainObject;
     parent: ParentRow = null;
     children: BaseRow[] = null;
+
+    /**
+     * Stamp of the last generation in which anything this row's parent aggregates over changed -
+     * its published values, its aggregator state, or its `canAggregateFn` results. Read by
+     * {@link ParentRow.reuse} to decide whether a parent must re-aggregate.
+     *
+     * Distinct from `data.cubeRowDigest`, which bumps on published value change alone and is read
+     * by connected stores for record reuse. Leaves never bump this - a leaf whose record changes is
+     * rebuilt as a new row, so its parent sees a change of children instead.
+     */
+    aggStamp = 0;
 
     get isLeaf() {
         return false;
@@ -79,7 +91,7 @@ export abstract class BaseRow {
         }
 
         // 2) If omitting ourselves, we are done, return visible children.
-        if (!isLeaf && query.omitFn?.(this as any)) return dataChildren;
+        if (!isLeaf && query.omitFn?.(this)) return dataChildren;
 
         // 3) Otherwise, we can attach this data to the children data and return.
 
@@ -116,7 +128,7 @@ export abstract class BaseRow {
         // Skip all children in a locked node - only parent rows can get this far.
         if (query.lockFn) {
             const row = this as unknown as ParentRow;
-            row.locked = query.lockFn(row as any);
+            row.locked = query.lockFn(row);
             if (row.locked) return null;
         }
 
