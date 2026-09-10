@@ -33,8 +33,3 @@ export const fileExt: ColumnSpec = {
 export const tags: ColumnSpec = {
     renderer: tagsRenderer
 };
-
-// Deprecated aliases with `Col` suffix
-export const boolCheckCol = boolCheck;
-export const numberCol = number;
-export const fileExtCol = fileExt;

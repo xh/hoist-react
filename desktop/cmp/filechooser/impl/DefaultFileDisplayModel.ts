@@ -1,4 +1,4 @@
-import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
+import {fileExt, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, ReactionSpec} from '@xh/hoist/core';
 import {FileChooserModel} from '../FileChooserModel';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
@@ -39,7 +39,7 @@ export class FileDisplayModel extends HoistModel {
                 {
                     colId: 'icon',
                     field: 'name',
-                    ...fileExtCol
+                    ...fileExt
                 },
                 {field: 'name', flex: 1},
                 {
