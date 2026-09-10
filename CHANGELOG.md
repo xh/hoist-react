@@ -23,6 +23,8 @@
   may now also be changed after the first render.
 * Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
   sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
+* Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
+  the editor now defaults its `valueType` from the Store field type.
 
 ## 87.2.0 - 2026-09-08
 
