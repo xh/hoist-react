@@ -155,8 +155,7 @@
         }
       }
 
-      // BP aligns control indicators to the text baseline, leaving them clipped when compact -
-      // lay them out with flex instead to center within the reduced item height.
+      // BP baseline-aligns control indicators, clipping them when compact - flex to center.
       &.xh-switch-input,
       &.xh-check-box,
       &.xh-radio-input .xh-radio-input-option {

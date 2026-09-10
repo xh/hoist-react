@@ -120,9 +120,8 @@
     }
   }
 
-  // Compact mode - reduced sizing for toolbars and space-constrained contexts. Applied via the
-  // `compact` prop, or implicitly when hosted by a compact Toolbar, whose item height the
-  // default sizing above (keyed to a standard Toolbar) would otherwise overflow.
+  // Compact mode - via the `compact` prop, or implicitly within a compact Toolbar, whose
+  // item height the standard sizing above would overflow.
   &--compact .bp6-segmented-control,
   .xh-toolbar--compact & .bp6-segmented-control {
     padding: 0;
