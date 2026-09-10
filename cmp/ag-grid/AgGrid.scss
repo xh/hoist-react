@@ -145,7 +145,7 @@
     }
 
     // Keep full-width rows (e.g. group rows) pinned in view during horizontal scroll, restoring
-    // the sticky anchor that ag-Grid own `.ag-row.ag-full-width-row > *` rule overrides.
+    // the sticky anchor that ag-Grid's own `.ag-row.ag-full-width-row > *` rule overrides.
     &.ag-full-width-row > .ag-full-width-anchor {
       position: sticky;
     }

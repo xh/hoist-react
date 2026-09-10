@@ -444,6 +444,8 @@ export interface GridModelDefaults {
     emptyText?: ReactNode | null;
     enableColumnPinning?: boolean;
     enableExport?: boolean;
+    /** @deprecated - no longer has any effect. See {@link GridConfig.enableFullWidthScroll}. */
+    enableFullWidthScroll?: boolean;
     exportOptions?: ExportOptions;
     headerMenuDisplay?: 'always' | 'hover';
     lockColumnGroups?: boolean;
@@ -705,7 +707,7 @@ export class GridModel extends HoistModel {
             expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
-            enableFullWidthScroll, // deprecated, no-op - see apiDeprecated warning below
+            enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll, // deprecated no-op
             experimental,
             appData,
             xhName = null,
