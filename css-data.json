@@ -431,7 +431,7 @@
     },
     {
       "name": "--xh-appbar-height-px",
-      "description": "Pixel value of `--xh-appbar-height`. Derived — override `--xh-appbar-height` instead."
+      "description": "Pixel value of `--xh-appbar-height`. Derived - override `--xh-appbar-height` instead."
     },
     {
       "name": "--xh-appbar-title-color",
@@ -439,11 +439,11 @@
     },
     {
       "name": "--xh-appbar-title-font-size",
-      "description": "1.9x scale of `--xh-font-size`. Derived — override `--xh-font-size` instead."
+      "description": "1.9x scale of `--xh-font-size`. Derived - override `--xh-font-size` instead."
     },
     {
       "name": "--xh-appbar-title-font-size-px",
-      "description": "Pixel value of `--xh-appbar-title-font-size`. Derived — override `--xh-appbar-title-font-size` instead."
+      "description": "Pixel value of `--xh-appbar-title-font-size`. Derived - override `--xh-appbar-title-font-size` instead."
     },
     {
       "name": "--xh-appbar-user-profile-hover-color",
@@ -515,7 +515,7 @@
     },
     {
       "name": "--xh-border-width-px",
-      "description": "Pixel value of `--xh-border-width`. Derived — override `--xh-border-width` instead."
+      "description": "Pixel value of `--xh-border-width`. Derived - override `--xh-border-width` instead."
     },
     {
       "name": "--xh-border-solid",
@@ -531,7 +531,7 @@
     },
     {
       "name": "--xh-border-radius-px",
-      "description": "Pixel value of `--xh-border-radius`. Derived — override `--xh-border-radius` instead."
+      "description": "Pixel value of `--xh-border-radius`. Derived - override `--xh-border-radius` instead."
     },
     {
       "name": "--xh-button-border-color",
@@ -559,7 +559,7 @@
     },
     {
       "name": "--xh-button-border-radius-px",
-      "description": "Button border radius px. Defaults to `--xh-border-radius-px`."
+      "description": "Button border radius (px). Defaults to `--xh-border-radius-px`."
     },
     {
       "name": "--xh-button-disabled-opacity",
@@ -575,7 +575,7 @@
     },
     {
       "name": "--xh-button-font-size-px",
-      "description": "Pixel value of `--xh-button-font-size`. Derived — override `--xh-button-font-size` instead."
+      "description": "Pixel value of `--xh-button-font-size`. Derived - override `--xh-button-font-size` instead."
     },
     {
       "name": "--xh-button-text-color",
@@ -615,7 +615,7 @@
     },
     {
       "name": "--xh-card-border-radius-px",
-      "description": "Pixel value of `--xh-card-border-radius`. Derived — override `--xh-card-border-radius` instead."
+      "description": "Pixel value of `--xh-card-border-radius`. Derived - override `--xh-card-border-radius` instead."
     },
     {
       "name": "--xh-card-danger-color",
@@ -627,7 +627,7 @@
     },
     {
       "name": "--xh-card-header-font-size-px",
-      "description": "Pixel value of `--xh-card-header-font-size`. Derived — override `--xh-card-header-font-size` instead."
+      "description": "Pixel value of `--xh-card-header-font-size`. Derived - override `--xh-card-header-font-size` instead."
     },
     {
       "name": "--xh-card-header-gap",
@@ -635,7 +635,7 @@
     },
     {
       "name": "--xh-card-header-gap-px",
-      "description": "Pixel value of `--xh-card-header-gap`. Derived — override `--xh-card-header-gap` instead."
+      "description": "Pixel value of `--xh-card-header-gap`. Derived - override `--xh-card-header-gap` instead."
     },
     {
       "name": "--xh-card-header-min-height",
@@ -643,7 +643,7 @@
     },
     {
       "name": "--xh-card-header-min-height-px",
-      "description": "Pixel value of `--xh-card-header-min-height`. Derived — override `--xh-card-header-min-height` instead."
+      "description": "Pixel value of `--xh-card-header-min-height`. Derived - override `--xh-card-header-min-height` instead."
     },
     {
       "name": "--xh-card-header-text-color",
@@ -671,7 +671,7 @@
     },
     {
       "name": "--xh-menu-item-font-size-px",
-      "description": "Menu item font size px. Defaults to `--xh-font-size-px`."
+      "description": "Menu item font size (px). Defaults to `--xh-font-size-px`."
     },
     {
       "name": "--xh-menu-item-highlight-bg",
@@ -683,7 +683,7 @@
     },
     {
       "name": "--xh-menu-item-height-px",
-      "description": "Menu item height px."
+      "description": "Menu item height (px)."
     },
     {
       "name": "--xh-chart-bg",
@@ -695,11 +695,11 @@
     },
     {
       "name": "--xh-focus-outline-width-px",
-      "description": "Focus outline width px."
+      "description": "Focus outline width (px)."
     },
     {
       "name": "--xh-focus-outline-offset-px",
-      "description": "Focus outline offset px."
+      "description": "Focus outline offset (px)."
     },
     {
       "name": "--xh-focus-outline-color",
@@ -747,7 +747,7 @@
     },
     {
       "name": "--xh-font-size-px",
-      "description": "Pixel value of `--xh-font-size`. Derived — override `--xh-font-size` instead."
+      "description": "Pixel value of `--xh-font-size`. Derived - override `--xh-font-size` instead."
     },
     {
       "name": "--xh-font-size-large",
@@ -755,7 +755,7 @@
     },
     {
       "name": "--xh-font-size-large-px",
-      "description": "Pixel value of `--xh-font-size-large`. Derived — override `--xh-font-size-large` instead."
+      "description": "Pixel value of `--xh-font-size-large`. Derived - override `--xh-font-size-large` instead."
     },
     {
       "name": "--xh-font-size-small",
@@ -763,7 +763,7 @@
     },
     {
       "name": "--xh-font-size-small-px",
-      "description": "Pixel value of `--xh-font-size-small`. Derived — override `--xh-font-size-small` instead."
+      "description": "Pixel value of `--xh-font-size-small`. Derived - override `--xh-font-size-small` instead."
     },
     {
       "name": "--xh-mobile-input-font-size",
@@ -771,11 +771,11 @@
     },
     {
       "name": "--xh-mobile-input-font-size-px",
-      "description": "Pixel value of `--xh-mobile-input-font-size`. Derived — override `--xh-mobile-input-font-size` instead."
+      "description": "Pixel value of `--xh-mobile-input-font-size`. Derived - override `--xh-mobile-input-font-size` instead."
     },
     {
       "name": "--xh-mobile-input-height-px",
-      "description": "Mobile input height px."
+      "description": "Mobile input height (px)."
     },
     {
       "name": "--xh-mobile-input-label-font-size",
@@ -783,7 +783,7 @@
     },
     {
       "name": "--xh-mobile-input-label-font-size-px",
-      "description": "Pixel value of `--xh-mobile-input-label-font-size`. Derived — override `--xh-mobile-input-label-font-size` instead."
+      "description": "Pixel value of `--xh-mobile-input-label-font-size`. Derived - override `--xh-mobile-input-label-font-size` instead."
     },
     {
       "name": "--xh-form-field-margin",
@@ -899,7 +899,7 @@
     },
     {
       "name": "--xh-form-field-info-border-width-px",
-      "description": "Pixel value of `--xh-form-field-info-border-width`. Derived — override `--xh-form-field-info-border-width` instead."
+      "description": "Pixel value of `--xh-form-field-info-border-width`. Derived - override `--xh-form-field-info-border-width` instead."
     },
     {
       "name": "--xh-form-field-info-box-shadow",
@@ -923,7 +923,7 @@
     },
     {
       "name": "--xh-form-field-invalid-border-width-px",
-      "description": "Pixel value of `--xh-form-field-invalid-border-width`. Derived — override `--xh-form-field-invalid-border-width` instead."
+      "description": "Pixel value of `--xh-form-field-invalid-border-width`. Derived - override `--xh-form-field-invalid-border-width` instead."
     },
     {
       "name": "--xh-form-field-invalid-box-shadow",
@@ -947,7 +947,7 @@
     },
     {
       "name": "--xh-form-field-warning-border-width-px",
-      "description": "Pixel value of `--xh-form-field-warning-border-width`. Derived — override `--xh-form-field-warning-border-width` instead."
+      "description": "Pixel value of `--xh-form-field-warning-border-width`. Derived - override `--xh-form-field-warning-border-width` instead."
     },
     {
       "name": "--xh-form-field-warning-box-shadow",
@@ -1003,7 +1003,7 @@
     },
     {
       "name": "--xh-grid-cell-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-cell-lr-pad`. Derived — override `--xh-grid-cell-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-cell-lr-pad`. Derived - override `--xh-grid-cell-lr-pad` instead."
     },
     {
       "name": "--xh-grid-cell-lr-pad",
@@ -1019,7 +1019,7 @@
     },
     {
       "name": "--xh-grid-font-size-px",
-      "description": "Pixel value of `--xh-grid-font-size`. Derived — override `--xh-grid-font-size` instead."
+      "description": "Pixel value of `--xh-grid-font-size`. Derived - override `--xh-grid-font-size` instead."
     },
     {
       "name": "--xh-grid-font-size",
@@ -1111,7 +1111,7 @@
     },
     {
       "name": "--xh-grid-header-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-header-lr-pad`. Derived — override `--xh-grid-header-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-header-lr-pad`. Derived - override `--xh-grid-header-lr-pad` instead."
     },
     {
       "name": "--xh-grid-header-font-family",
@@ -1123,7 +1123,7 @@
     },
     {
       "name": "--xh-grid-header-font-size-px",
-      "description": "Pixel value of `--xh-grid-header-font-size`. Derived — override `--xh-grid-header-font-size` instead."
+      "description": "Pixel value of `--xh-grid-header-font-size`. Derived - override `--xh-grid-header-font-size` instead."
     },
     {
       "name": "--xh-grid-header-font-weight",
@@ -1179,7 +1179,7 @@
     },
     {
       "name": "--xh-grid-tree-icon-px",
-      "description": "Grid tree icon px."
+      "description": "Grid tree icon (px)."
     },
     {
       "name": "--xh-grid-large-cell-lr-pad",
@@ -1187,7 +1187,7 @@
     },
     {
       "name": "--xh-grid-large-cell-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-large-cell-lr-pad`. Derived — override `--xh-grid-large-cell-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-large-cell-lr-pad`. Derived - override `--xh-grid-large-cell-lr-pad` instead."
     },
     {
       "name": "--xh-grid-large-font-size",
@@ -1195,7 +1195,7 @@
     },
     {
       "name": "--xh-grid-large-font-size-px",
-      "description": "Pixel value of `--xh-grid-large-font-size`. Derived — override `--xh-grid-large-font-size` instead."
+      "description": "Pixel value of `--xh-grid-large-font-size`. Derived - override `--xh-grid-large-font-size` instead."
     },
     {
       "name": "--xh-grid-large-header-font-size",
@@ -1203,7 +1203,7 @@
     },
     {
       "name": "--xh-grid-large-header-font-size-px",
-      "description": "Pixel value of `--xh-grid-large-header-font-size`. Derived — override `--xh-grid-large-header-font-size` instead."
+      "description": "Pixel value of `--xh-grid-large-header-font-size`. Derived - override `--xh-grid-large-header-font-size` instead."
     },
     {
       "name": "--xh-grid-large-header-lr-pad",
@@ -1211,7 +1211,7 @@
     },
     {
       "name": "--xh-grid-large-header-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-large-header-lr-pad`. Derived — override `--xh-grid-large-header-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-large-header-lr-pad`. Derived - override `--xh-grid-large-header-lr-pad` instead."
     },
     {
       "name": "--xh-grid-compact-cell-lr-pad",
@@ -1219,7 +1219,7 @@
     },
     {
       "name": "--xh-grid-compact-cell-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-compact-cell-lr-pad`. Derived — override `--xh-grid-compact-cell-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-compact-cell-lr-pad`. Derived - override `--xh-grid-compact-cell-lr-pad` instead."
     },
     {
       "name": "--xh-grid-compact-font-size",
@@ -1227,7 +1227,7 @@
     },
     {
       "name": "--xh-grid-compact-font-size-px",
-      "description": "Pixel value of `--xh-grid-compact-font-size`. Derived — override `--xh-grid-compact-font-size` instead."
+      "description": "Pixel value of `--xh-grid-compact-font-size`. Derived - override `--xh-grid-compact-font-size` instead."
     },
     {
       "name": "--xh-grid-compact-header-font-size",
@@ -1235,7 +1235,7 @@
     },
     {
       "name": "--xh-grid-compact-header-font-size-px",
-      "description": "Pixel value of `--xh-grid-compact-header-font-size`. Derived — override `--xh-grid-compact-header-font-size` instead."
+      "description": "Pixel value of `--xh-grid-compact-header-font-size`. Derived - override `--xh-grid-compact-header-font-size` instead."
     },
     {
       "name": "--xh-grid-compact-header-lr-pad",
@@ -1243,7 +1243,7 @@
     },
     {
       "name": "--xh-grid-compact-header-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-compact-header-lr-pad`. Derived — override `--xh-grid-compact-header-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-compact-header-lr-pad`. Derived - override `--xh-grid-compact-header-lr-pad` instead."
     },
     {
       "name": "--xh-grid-tiny-cell-lr-pad",
@@ -1251,7 +1251,7 @@
     },
     {
       "name": "--xh-grid-tiny-cell-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-tiny-cell-lr-pad`. Derived — override `--xh-grid-tiny-cell-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-tiny-cell-lr-pad`. Derived - override `--xh-grid-tiny-cell-lr-pad` instead."
     },
     {
       "name": "--xh-grid-tiny-font-size",
@@ -1259,7 +1259,7 @@
     },
     {
       "name": "--xh-grid-tiny-font-size-px",
-      "description": "Pixel value of `--xh-grid-tiny-font-size`. Derived — override `--xh-grid-tiny-font-size` instead."
+      "description": "Pixel value of `--xh-grid-tiny-font-size`. Derived - override `--xh-grid-tiny-font-size` instead."
     },
     {
       "name": "--xh-grid-tiny-header-font-size",
@@ -1267,7 +1267,7 @@
     },
     {
       "name": "--xh-grid-tiny-header-font-size-px",
-      "description": "Pixel value of `--xh-grid-tiny-header-font-size`. Derived — override `--xh-grid-tiny-header-font-size` instead."
+      "description": "Pixel value of `--xh-grid-tiny-header-font-size`. Derived - override `--xh-grid-tiny-header-font-size` instead."
     },
     {
       "name": "--xh-grid-tiny-header-lr-pad",
@@ -1275,7 +1275,7 @@
     },
     {
       "name": "--xh-grid-tiny-header-lr-pad-px",
-      "description": "Pixel value of `--xh-grid-tiny-header-lr-pad`. Derived — override `--xh-grid-tiny-header-lr-pad` instead."
+      "description": "Pixel value of `--xh-grid-tiny-header-lr-pad`. Derived - override `--xh-grid-tiny-header-lr-pad` instead."
     },
     {
       "name": "--xh-zone-grid-top-text-color",
@@ -1287,7 +1287,7 @@
     },
     {
       "name": "--xh-zone-grid-top-font-size-px",
-      "description": "Pixel value of `--xh-zone-grid-top-font-size`. Derived — override `--xh-zone-grid-top-font-size` instead."
+      "description": "Pixel value of `--xh-zone-grid-top-font-size`. Derived - override `--xh-zone-grid-top-font-size` instead."
     },
     {
       "name": "--xh-zone-grid-bottom-text-color",
@@ -1299,11 +1299,11 @@
     },
     {
       "name": "--xh-zone-grid-bottom-font-size-px",
-      "description": "Pixel value of `--xh-zone-grid-bottom-font-size`. Derived — override `--xh-zone-grid-bottom-font-size` instead."
+      "description": "Pixel value of `--xh-zone-grid-bottom-font-size`. Derived - override `--xh-zone-grid-bottom-font-size` instead."
     },
     {
       "name": "--xh-zone-grid-cell-lr-pad-px",
-      "description": "ZoneGrid cell lr pad px. Defaults to `--xh-grid-cell-lr-pad-px`."
+      "description": "ZoneGrid cell lr pad (px). Defaults to `--xh-grid-cell-lr-pad-px`."
     },
     {
       "name": "--xh-zone-grid-delimiter-color",
@@ -1315,11 +1315,11 @@
     },
     {
       "name": "--xh-grid-filter-popover-height-px",
-      "description": "Grid filter popover height px."
+      "description": "Grid filter popover height (px)."
     },
     {
       "name": "--xh-grid-filter-popover-width-px",
-      "description": "Grid filter popover width px."
+      "description": "Grid filter popover width (px)."
     },
     {
       "name": "--xh-input-bg",
@@ -1355,103 +1355,103 @@
     },
     {
       "name": "--xh-segmented-control-bg",
-      "description": "Segmented control background. Defaults to `--xh-bg-alt`."
+      "description": "SegmentedControl background. Defaults to `--xh-bg-alt`."
     },
     {
       "name": "--xh-segmented-control-selected-bg",
-      "description": "Segmented control selected background. Defaults to `--xh-bg`."
+      "description": "SegmentedControl selected background. Defaults to `--xh-bg`."
     },
     {
       "name": "--xh-segmented-control-text-color",
-      "description": "Segmented control text color."
+      "description": "SegmentedControl text color."
     },
     {
       "name": "--xh-segmented-control-selected-text-color",
-      "description": "Segmented control selected text color. Defaults to `--xh-text-color`."
+      "description": "SegmentedControl selected text color. Defaults to `--xh-text-color`."
     },
     {
       "name": "--xh-segmented-control-border-radius",
-      "description": "Segmented control border radius. Defaults to `--xh-border-radius`."
+      "description": "SegmentedControl border radius. Defaults to `--xh-border-radius`."
     },
     {
       "name": "--xh-segmented-control-border-radius-px",
-      "description": "Pixel value of `--xh-segmented-control-border-radius`. Derived — override `--xh-segmented-control-border-radius` instead."
+      "description": "Pixel value of `--xh-segmented-control-border-radius`. Derived - override `--xh-segmented-control-border-radius` instead."
     },
     {
       "name": "--xh-segmented-control-pad",
-      "description": "Segmented control pad."
+      "description": "SegmentedControl pad."
     },
     {
       "name": "--xh-segmented-control-pad-px",
-      "description": "Pixel value of `--xh-segmented-control-pad`. Derived — override `--xh-segmented-control-pad` instead."
+      "description": "Pixel value of `--xh-segmented-control-pad`. Derived - override `--xh-segmented-control-pad` instead."
     },
     {
       "name": "--xh-intent-input-swatch-size-px",
-      "description": "Intent input swatch size px."
+      "description": "IntentInput swatch size (px)."
     },
     {
       "name": "--xh-intent-input-compact-swatch-size-px",
-      "description": "Intent input compact swatch size px."
+      "description": "IntentInput compact swatch size (px)."
     },
     {
       "name": "--xh-intent-input-gap-px",
-      "description": "Intent input gap px. Defaults to `--xh-pad-half-px`."
+      "description": "IntentInput gap (px). Defaults to `--xh-pad-half-px`."
     },
     {
       "name": "--xh-intent-input-border-radius-px",
-      "description": "Intent input border radius px. Defaults to `--xh-border-radius-px`."
+      "description": "IntentInput border radius (px). Defaults to `--xh-border-radius-px`."
     },
     {
       "name": "--xh-date-range-picker-popover-width",
-      "description": "Date range picker popover width."
+      "description": "DateRangePicker popover width."
     },
     {
       "name": "--xh-date-range-picker-popover-single-width",
-      "description": "Date range picker popover single width."
+      "description": "DateRangePicker popover single width."
     },
     {
       "name": "--xh-date-range-picker-popover-min-height",
-      "description": "Date range picker popover minimum height."
+      "description": "DateRangePicker popover minimum height."
     },
     {
       "name": "--xh-date-range-picker-accent",
-      "description": "Date range picker accent. Defaults to `--xh-intent-primary`."
+      "description": "DateRangePicker accent. Defaults to `--xh-intent-primary`."
     },
     {
       "name": "--xh-date-range-picker-accent-text-color",
-      "description": "Date range picker accent text color. Defaults to `--xh-white`."
+      "description": "DateRangePicker accent text color. Defaults to `--xh-white`."
     },
     {
       "name": "--xh-date-range-picker-selected-bg",
-      "description": "Date range picker selected background. Defaults to `--xh-bg-highlight`."
+      "description": "DateRangePicker selected background. Defaults to `--xh-bg-highlight`."
     },
     {
       "name": "--xh-date-range-picker-hover-bg",
-      "description": "Date range picker hover background. Defaults to `--xh-grid-bg-hover`."
+      "description": "DateRangePicker hover background. Defaults to `--xh-grid-bg-hover`."
     },
     {
       "name": "--xh-date-range-picker-date-font-family",
-      "description": "Date range picker date font family. Defaults to `--xh-font-family-mono`."
+      "description": "DateRangePicker date font family. Defaults to `--xh-font-family-mono`."
     },
     {
       "name": "--xh-date-range-picker-date-font-size",
-      "description": "Date range picker date font size."
+      "description": "DateRangePicker date font size."
     },
     {
       "name": "--xh-date-range-picker-row-height",
-      "description": "Date range picker row height."
+      "description": "DateRangePicker row height."
     },
     {
       "name": "--xh-date-range-picker-day-size",
-      "description": "Date range picker day size."
+      "description": "DateRangePicker day size."
     },
     {
       "name": "--xh-date-range-picker-footer-bg",
-      "description": "Date range picker footer background. Defaults to `--xh-tbar-bg`."
+      "description": "DateRangePicker footer background. Defaults to `--xh-tbar-bg`."
     },
     {
       "name": "--xh-date-range-picker-rail-bg",
-      "description": "Date range picker rail background."
+      "description": "DateRangePicker rail background."
     },
     {
       "name": "--xh-mask-bg",
@@ -1499,23 +1499,23 @@
     },
     {
       "name": "--xh-pad-px",
-      "description": "Pixel value of `--xh-pad`. Derived — override `--xh-pad` instead."
+      "description": "Pixel value of `--xh-pad`. Derived - override `--xh-pad` instead."
     },
     {
       "name": "--xh-pad-double",
-      "description": "2x scale of `--xh-pad`. Derived — override `--xh-pad` instead."
+      "description": "2x scale of `--xh-pad`. Derived - override `--xh-pad` instead."
     },
     {
       "name": "--xh-pad-double-px",
-      "description": "Pixel value of `--xh-pad-double`. Derived — override `--xh-pad-double` instead."
+      "description": "Pixel value of `--xh-pad-double`. Derived - override `--xh-pad-double` instead."
     },
     {
       "name": "--xh-pad-half",
-      "description": "0.5x scale of `--xh-pad`. Derived — override `--xh-pad` instead."
+      "description": "0.5x scale of `--xh-pad`. Derived - override `--xh-pad` instead."
     },
     {
       "name": "--xh-pad-half-px",
-      "description": "Pixel value of `--xh-pad-half`. Derived — override `--xh-pad-half` instead."
+      "description": "Pixel value of `--xh-pad-half`. Derived - override `--xh-pad-half` instead."
     },
     {
       "name": "--xh-pad-safe-top",
@@ -1551,7 +1551,7 @@
     },
     {
       "name": "--xh-panel-border-width-px",
-      "description": "Pixel value of `--xh-panel-border-width`. Derived — override `--xh-panel-border-width` instead."
+      "description": "Pixel value of `--xh-panel-border-width`. Derived - override `--xh-panel-border-width` instead."
     },
     {
       "name": "--xh-panel-title-bg",
@@ -1567,7 +1567,7 @@
     },
     {
       "name": "--xh-panel-title-font-size-px",
-      "description": "Pixel value of `--xh-panel-title-font-size`. Derived — override `--xh-panel-title-font-size` instead."
+      "description": "Pixel value of `--xh-panel-title-font-size`. Derived - override `--xh-panel-title-font-size` instead."
     },
     {
       "name": "--xh-panel-title-text-color",
@@ -1587,7 +1587,7 @@
     },
     {
       "name": "--xh-popup-border-width-px",
-      "description": "Pixel value of `--xh-popup-border-width`. Derived — override `--xh-popup-border-width` instead."
+      "description": "Pixel value of `--xh-popup-border-width`. Derived - override `--xh-popup-border-width` instead."
     },
     {
       "name": "--xh-popup-title-bg",
@@ -1603,7 +1603,7 @@
     },
     {
       "name": "--xh-popup-title-font-size-px",
-      "description": "Pixel value of `--xh-popup-title-font-size`. Derived — override `--xh-popup-title-font-size` instead."
+      "description": "Pixel value of `--xh-popup-title-font-size`. Derived - override `--xh-popup-title-font-size` instead."
     },
     {
       "name": "--xh-popup-title-text-color",
@@ -1623,7 +1623,7 @@
     },
     {
       "name": "--xh-resizable-border-width-px",
-      "description": "Pixel value of `--xh-resizable-border-width`. Derived — override `--xh-resizable-border-width` instead."
+      "description": "Pixel value of `--xh-resizable-border-width`. Derived - override `--xh-resizable-border-width` instead."
     },
     {
       "name": "--xh-resizable-button-bg",
@@ -1639,7 +1639,7 @@
     },
     {
       "name": "--xh-resizable-size-px",
-      "description": "Pixel value of `--xh-resizable-size`. Derived — override `--xh-resizable-size` instead."
+      "description": "Pixel value of `--xh-resizable-size`. Derived - override `--xh-resizable-size` instead."
     },
     {
       "name": "--xh-scrollbar-bg",
@@ -1651,7 +1651,7 @@
     },
     {
       "name": "--xh-scrollbar-size-px",
-      "description": "Scrollbar size px."
+      "description": "Scrollbar size (px)."
     },
     {
       "name": "--xh-spinner-color",
@@ -1675,7 +1675,7 @@
     },
     {
       "name": "--xh-tab-border-width-px",
-      "description": "Pixel value of `--xh-tab-border-width`. Derived — override `--xh-tab-border-width` instead."
+      "description": "Pixel value of `--xh-tab-border-width`. Derived - override `--xh-tab-border-width` instead."
     },
     {
       "name": "--xh-tab-font-family",
@@ -1687,55 +1687,55 @@
     },
     {
       "name": "--xh-tab-font-size-px",
-      "description": "Pixel value of `--xh-tab-font-size`. Derived — override `--xh-tab-font-size` instead."
+      "description": "Pixel value of `--xh-tab-font-size`. Derived - override `--xh-tab-font-size` instead."
     },
     {
       "name": "--xh-tab-switcher-vertical-min-width",
-      "description": "Tab switcher vertical minimum width."
+      "description": "TabSwitcher vertical minimum width."
     },
     {
       "name": "--xh-tab-switcher-vertical-padding",
-      "description": "Tab switcher vertical padding. Defaults to `--xh-pad-half-px`."
+      "description": "TabSwitcher vertical padding. Defaults to `--xh-pad-half-px`."
     },
     {
       "name": "--xh-tab-switcher-vertical-border",
-      "description": "Tab switcher vertical border. Defaults to `--xh-border-solid`."
+      "description": "TabSwitcher vertical border. Defaults to `--xh-border-solid`."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-gap",
-      "description": "Tab switcher vertical item gap."
+      "description": "TabSwitcher vertical item gap."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-padding",
-      "description": "Tab switcher vertical item padding."
+      "description": "TabSwitcher vertical item padding."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-border-radius",
-      "description": "Tab switcher vertical item border radius. Defaults to `--xh-border-radius-px`."
+      "description": "TabSwitcher vertical item border radius. Defaults to `--xh-border-radius-px`."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-text-color",
-      "description": "Tab switcher vertical item text color. Defaults to `--xh-text-color-muted`."
+      "description": "TabSwitcher vertical item text color. Defaults to `--xh-text-color-muted`."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-active-text-color",
-      "description": "Tab switcher vertical item active text color. Defaults to `--xh-tab-active-text-color`."
+      "description": "TabSwitcher vertical item active text color. Defaults to `--xh-tab-active-text-color`."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-hover-bg",
-      "description": "Tab switcher vertical item hover background. Defaults to `--xh-bg-alt`."
+      "description": "TabSwitcher vertical item hover background. Defaults to `--xh-bg-alt`."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-active-bg",
-      "description": "Tab switcher vertical item active background. Defaults to `--xh-bg-highlight`."
+      "description": "TabSwitcher vertical item active background. Defaults to `--xh-bg-highlight`."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-font-weight",
-      "description": "Tab switcher vertical item font weight."
+      "description": "TabSwitcher vertical item font weight."
     },
     {
       "name": "--xh-tab-switcher-vertical-item-active-font-weight",
-      "description": "Tab switcher vertical item active font weight."
+      "description": "TabSwitcher vertical item active font weight."
     },
     {
       "name": "--xh-text-color",
@@ -1775,7 +1775,7 @@
     },
     {
       "name": "--xh-title-font-size-px",
-      "description": "Pixel value of `--xh-title-font-size`. Derived — override `--xh-title-font-size` instead."
+      "description": "Pixel value of `--xh-title-font-size`. Derived - override `--xh-title-font-size` instead."
     },
     {
       "name": "--xh-title-height",
@@ -1783,7 +1783,7 @@
     },
     {
       "name": "--xh-title-height-px",
-      "description": "Pixel value of `--xh-title-height`. Derived — override `--xh-title-height` instead."
+      "description": "Pixel value of `--xh-title-height`. Derived - override `--xh-title-height` instead."
     },
     {
       "name": "--xh-title-icon-size",
@@ -1791,7 +1791,7 @@
     },
     {
       "name": "--xh-title-icon-size-px",
-      "description": "Pixel value of `--xh-title-icon-size`. Derived — override `--xh-title-icon-size` instead."
+      "description": "Pixel value of `--xh-title-icon-size`. Derived - override `--xh-title-icon-size` instead."
     },
     {
       "name": "--xh-title-pad",
@@ -1799,7 +1799,7 @@
     },
     {
       "name": "--xh-title-pad-px",
-      "description": "Pixel value of `--xh-title-pad`. Derived — override `--xh-title-pad` instead."
+      "description": "Pixel value of `--xh-title-pad`. Derived - override `--xh-title-pad` instead."
     },
     {
       "name": "--xh-title-compact-font-size",
@@ -1807,7 +1807,7 @@
     },
     {
       "name": "--xh-title-compact-font-size-px",
-      "description": "Pixel value of `--xh-title-compact-font-size`. Derived — override `--xh-title-compact-font-size` instead."
+      "description": "Pixel value of `--xh-title-compact-font-size`. Derived - override `--xh-title-compact-font-size` instead."
     },
     {
       "name": "--xh-title-compact-height",
@@ -1815,7 +1815,7 @@
     },
     {
       "name": "--xh-title-compact-height-px",
-      "description": "Pixel value of `--xh-title-compact-height`. Derived — override `--xh-title-compact-height` instead."
+      "description": "Pixel value of `--xh-title-compact-height`. Derived - override `--xh-title-compact-height` instead."
     },
     {
       "name": "--xh-tbar-bg",
@@ -1831,7 +1831,7 @@
     },
     {
       "name": "--xh-tbar-item-pad-px",
-      "description": "Pixel value of `--xh-tbar-item-pad`. Derived — override `--xh-tbar-item-pad` instead."
+      "description": "Pixel value of `--xh-tbar-item-pad`. Derived - override `--xh-tbar-item-pad` instead."
     },
     {
       "name": "--xh-tbar-font-size",
@@ -1839,7 +1839,7 @@
     },
     {
       "name": "--xh-tbar-font-size-px",
-      "description": "Pixel value of `--xh-tbar-font-size`. Derived — override `--xh-tbar-font-size` instead."
+      "description": "Pixel value of `--xh-tbar-font-size`. Derived - override `--xh-tbar-font-size` instead."
     },
     {
       "name": "--xh-tbar-min-size",
@@ -1847,7 +1847,7 @@
     },
     {
       "name": "--xh-tbar-min-size-px",
-      "description": "Pixel value of `--xh-tbar-min-size`. Derived — override `--xh-tbar-min-size` instead."
+      "description": "Pixel value of `--xh-tbar-min-size`. Derived - override `--xh-tbar-min-size` instead."
     },
     {
       "name": "--xh-tbar-separator-color",
@@ -1863,7 +1863,7 @@
     },
     {
       "name": "--xh-tbar-compact-font-size-px",
-      "description": "Pixel value of `--xh-tbar-compact-font-size`. Derived — override `--xh-tbar-compact-font-size` instead."
+      "description": "Pixel value of `--xh-tbar-compact-font-size`. Derived - override `--xh-tbar-compact-font-size` instead."
     },
     {
       "name": "--xh-tbar-compact-min-size",
@@ -1871,11 +1871,11 @@
     },
     {
       "name": "--xh-tbar-compact-min-size-px",
-      "description": "Pixel value of `--xh-tbar-compact-min-size`. Derived — override `--xh-tbar-compact-min-size` instead."
+      "description": "Pixel value of `--xh-tbar-compact-min-size`. Derived - override `--xh-tbar-compact-min-size` instead."
     },
     {
       "name": "--xh-tbar-compact-item-height-px",
-      "description": "Toolbar compact item height px."
+      "description": "Toolbar compact item height (px)."
     },
     {
       "name": "--xh-viewport-bg",

@@ -20,7 +20,7 @@
     "lint:all": "pnpm lint:code && pnpm lint:styles",
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
-    "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
+    "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs bin/generate-css-data.mjs",
     "typecheck": "tsc --noEmit",
     "generate:css-data": "node bin/generate-css-data.mjs",
     "prepack": "node bin/generate-css-data.mjs && tsc --build",

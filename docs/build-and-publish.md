@@ -74,7 +74,7 @@ custom properties. Generated from `styles/vars.scss` by `bin/generate-css-data.m
 into source control so it ships with the npm package.
 
 The `prepack` script regenerates this file before every `npm publish`, and a pre-commit hook
-validates it stays in sync whenever `.scss` files are staged. See
+validates it stays in sync whenever `styles/vars.scss` or the generator itself is staged. See
 [`styles/README.md`](../styles/README.md#ide-and-agent-support-css-datajson) for full details
 on usage and the `///` doc comment convention.
 

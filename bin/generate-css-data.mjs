@@ -3,8 +3,7 @@
 /**
  * Generates a VS Code css-data.json file from hoist-react's SCSS variable definitions.
  *
- * For each `--xh-*` CSS custom property declaration found in `styles/vars.scss` (and any
- * other SCSS files that define `--xh-*` vars), this script extracts:
+ * For each `--xh-*` CSS custom property declared in `styles/vars.scss`, this script extracts:
  *
  *  1. An explicit description from `///` doc comments immediately above the declaration.
  *  2. An auto-generated description from the variable name and value when no doc comment exists.
@@ -33,12 +32,13 @@
  * See docs/build-and-publish.md for how this integrates with the pre-commit hook and npm publish.
  */
 
-import {readFileSync, readdirSync, writeFileSync, existsSync} from 'fs';
+import {readFileSync, writeFileSync, existsSync} from 'fs';
 import {join, dirname, relative} from 'path';
 import {fileURLToPath} from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const SOURCE_PATH = join(ROOT, 'styles/vars.scss');
 const OUTPUT_PATH = join(ROOT, 'css-data.json');
 
 //------------------------------------------------------------------
@@ -49,14 +49,10 @@ function main() {
         check = args.includes('--check'),
         stdout = args.includes('--stdout');
 
-    const scssFiles = findScssFiles();
-    const entries = [];
+    const entries = parseFile(SOURCE_PATH);
 
-    for (const file of scssFiles) {
-        entries.push(...parseFile(file));
-    }
-
-    // Deduplicate by name — first definition wins (vars.scss comes first).
+    // Deduplicate by name - the base (light theme, desktop) definition comes first and wins over
+    // any later mobile redefinition of the same var.
     const seen = new Set();
     const unique = entries.filter(e => {
         if (seen.has(e.name)) return false;
@@ -64,7 +60,6 @@ function main() {
         return true;
     });
 
-    // Build a Set of all known var names for relationship detection.
     const output = {
         version: 1.1,
         properties: unique.map(e => ({
@@ -81,9 +76,14 @@ function main() {
     }
 
     if (check) {
-        const existing = existsSync(OUTPUT_PATH) ? readFileSync(OUTPUT_PATH, 'utf-8') : '';
+        // Normalize line endings so a CRLF checkout does not read as stale.
+        const existing = existsSync(OUTPUT_PATH)
+            ? readFileSync(OUTPUT_PATH, 'utf-8').replace(/\r\n/g, '\n')
+            : '';
         if (existing !== json) {
-            console.error('css-data.json is out of date. Run `node bin/generate-css-data.mjs` to update.');
+            console.error(
+                'css-data.json is out of date. Run `node bin/generate-css-data.mjs` to update.'
+            );
             process.exit(1);
         }
         console.log('css-data.json is up to date.');
@@ -93,47 +93,6 @@ function main() {
     writeFileSync(OUTPUT_PATH, json);
     console.log(`Wrote ${unique.length} CSS custom properties to ${relative(ROOT, OUTPUT_PATH)}`);
 }
-
-
-//------------------------------------------------------------------
-// File discovery
-//------------------------------------------------------------------
-function findScssFiles() {
-    const primary = join(ROOT, 'styles/vars.scss');
-    const others = findFilesWithXhVarDefinitions().filter(f => f !== primary);
-    return [primary, ...others];
-}
-
-function findFilesWithXhVarDefinitions() {
-    const result = [];
-    const scssFiles = globRecursive(ROOT);
-    for (const file of scssFiles) {
-        if (file.includes('node_modules')) continue;
-        const content = readFileSync(file, 'utf-8');
-        if (/^\s+--xh-[a-z][a-z0-9-]*\s*:/m.test(content)) {
-            result.push(file);
-        }
-    }
-    return result;
-}
-
-function globRecursive(dir) {
-    const results = [];
-    function walk(d) {
-        for (const entry of readdirSync(d, {withFileTypes: true})) {
-            const full = join(d, entry.name);
-            if (entry.isDirectory()) {
-                if (entry.name === 'node_modules' || entry.name === '.git') continue;
-                walk(full);
-            } else if (entry.name.endsWith('.scss')) {
-                results.push(full);
-            }
-        }
-    }
-    walk(dir);
-    return results;
-}
-
 
 //------------------------------------------------------------------
 // SCSS parsing
@@ -155,7 +114,7 @@ function parseFile(filePath) {
         const opens = (trimmed.match(/{/g) || []).length;
         const closes = (trimmed.match(/}/g) || []).length;
 
-        // Skip dark-theme override blocks — redefinitions, not new vars.
+        // Skip dark-theme override blocks - redefinitions, not new vars.
         // Mobile blocks are NOT skipped: they introduce mobile-only vars.
         if (/&\.xh-dark/.test(trimmed) && opens > 0) {
             overrideStack.push(nestingDepth);
@@ -186,7 +145,9 @@ function parseFile(filePath) {
         if (!varMatch) continue;
 
         const name = varMatch[1];
-        const value = trimmed.replace(/^--xh-[a-z][a-z0-9-]*\s*:\s*/, '').replace(/;?\s*$/, '');
+        const value = trimmed
+            .replace(/^--xh-[a-z][a-z0-9-]*\s*:\s*/, '')
+            .replace(/;\s*(\/\/.*)?$/, '');
         const docComment = extractDocComment(lines, i);
 
         entries.push({name, value, docComment, file: relPath});
@@ -216,7 +177,6 @@ function extractDocComment(lines, lineIndex) {
     return commentLines.length > 0 ? commentLines.join(' ').trim() : null;
 }
 
-
 //------------------------------------------------------------------
 // Description auto-generation
 //------------------------------------------------------------------
@@ -240,7 +200,6 @@ function generateDescription(entry) {
     return buildNameBasedDescription(raw);
 }
 
-
 /**
  * Detect computed/derived vars from their values. These reference a parent var via `calc()`
  * or `var()` and should describe the relationship rather than repeat the component+property.
@@ -249,21 +208,23 @@ function tryDerivedDescription(entry) {
     const {name, value} = entry;
     const raw = name.replace(/^--xh-/, '');
 
-    // Pattern: `calc(var(--xh-foo) * 1px)` → pixel derivation
+    // Pattern: `calc(var(--xh-foo) * 1px)` -> pixel derivation
     const pxCalc = value.match(/^calc\(var\((--xh-[a-z][a-z0-9-]*)\)\s*\*\s*1px\)$/);
     if (pxCalc) {
-        return `Pixel value of \`${pxCalc[1]}\`. Derived — override \`${pxCalc[1]}\` instead.`;
+        return `Pixel value of \`${pxCalc[1]}\`. Derived - override \`${pxCalc[1]}\` instead.`;
     }
 
-    // Pattern: `calc(var(--xh-foo) * N)` → scaled derivation
+    // Pattern: `calc(var(--xh-foo) * N)` -> scaled derivation
     const scaledCalc = value.match(/^calc\(var\((--xh-[a-z][a-z0-9-]*)\)\s*\*\s*([\d.]+)\)$/);
     if (scaledCalc) {
         const [, parent, factor] = scaledCalc;
-        return `${factor}x scale of \`${parent}\`. Derived — override \`${parent}\` instead.`;
+        return `${factor}x scale of \`${parent}\`. Derived - override \`${parent}\` instead.`;
     }
 
-    // Pattern: `calc(var(--xh-foo) * var(--xh-bar))` → product of two vars
-    const productCalc = value.match(/^calc\(var\((--xh-[a-z][a-z0-9-]*)\)\s*\*\s*var\((--xh-[a-z][a-z0-9-]*)\)\)$/);
+    // Pattern: `calc(var(--xh-foo) * var(--xh-bar))` -> product of two vars
+    const productCalc = value.match(
+        /^calc\(var\((--xh-[a-z][a-z0-9-]*)\)\s*\*\s*var\((--xh-[a-z][a-z0-9-]*)\)\)$/
+    );
     if (productCalc) {
         return `Product of \`${productCalc[1]}\` and \`${productCalc[2]}\`. Derived.`;
     }
@@ -279,17 +240,17 @@ function tryDerivedDescription(entry) {
     return null;
 }
 
-
 /**
  * Handle variable names with well-known structure that the generic name parser
- * doesn't handle well — intent HSL components, core palette colors, etc.
+ * doesn't handle well - intent HSL components, core palette colors, etc.
  */
 function trySpecialPattern(raw) {
     // Intent HSL components: --xh-intent-{name}-{h|s|l1-l5}
     const intentHsl = raw.match(/^intent-(neutral|primary|success|warning|danger)-(h|s|l[1-5])$/);
     if (intentHsl) {
         const [, intent, comp] = intentHsl;
-        const compName = comp === 'h' ? 'hue' : comp === 's' ? 'saturation' : `lightness level ${comp[1]}`;
+        const compName =
+            comp === 'h' ? 'hue' : comp === 's' ? 'saturation' : `lightness level ${comp[1]}`;
         return `HSL ${compName} for the ${intent} intent. Override to shift all derived ${intent} colors.`;
     }
 
@@ -300,17 +261,19 @@ function trySpecialPattern(raw) {
     }
 
     // Intent computed colors: --xh-intent-{name}[-variant]
-    const intentColor = raw.match(/^intent-(neutral|primary|success|warning|danger)(?:-(darkest|darker|lighter|lightest|trans1|trans2|text-color))?$/);
+    const intentColor = raw.match(
+        /^intent-(neutral|primary|success|warning|danger)(?:-(darkest|darker|lighter|lightest|trans1|trans2|text-color))?$/
+    );
     if (intentColor) {
         const [, intent, variant] = intentColor;
         if (!variant) return `Base color for the ${intent} intent. Composed from HSL components.`;
         const variantDesc = {
-            'darkest': 'Darkest shade',
-            'darker': 'Darker shade',
-            'lighter': 'Lighter shade',
-            'lightest': 'Lightest shade',
-            'trans1': 'Semi-transparent (lower opacity)',
-            'trans2': 'Semi-transparent (higher opacity)',
+            darkest: 'Darkest shade',
+            darker: 'Darker shade',
+            lighter: 'Lighter shade',
+            lightest: 'Lightest shade',
+            trans1: 'Semi-transparent (lower opacity)',
+            trans2: 'Semi-transparent (higher opacity)',
             'text-color': 'Text-optimized color (lighter in dark theme for legibility)'
         };
         return `${variantDesc[variant]} of the ${intent} intent. Composed from HSL components.`;
@@ -318,7 +281,16 @@ function trySpecialPattern(raw) {
 
     // Core palette colors: --xh-{color}[-variant]
     const PALETTE_COLORS = [
-        'blue-gray', 'blue', 'black', 'white', 'green', 'red', 'orange', 'purple', 'yellow', 'gray'
+        'blue-gray',
+        'blue',
+        'black',
+        'white',
+        'green',
+        'red',
+        'orange',
+        'purple',
+        'yellow',
+        'gray'
     ];
     for (const color of PALETTE_COLORS) {
         if (raw === color) return `Core palette color: ${color}.`;
@@ -336,43 +308,48 @@ function trySpecialPattern(raw) {
     return null;
 }
 
-
 /** Known component prefixes and their display names. */
 const COMPONENT_NAMES = {
-    'appbar': 'AppBar',
-    'backdrop': 'Backdrop',
-    'badge': 'Badge',
-    'border': 'Border',
-    'button': 'Button',
-    'card': 'Card',
-    'chart': 'Chart',
+    appbar: 'AppBar',
+    backdrop: 'Backdrop',
+    badge: 'Badge',
+    border: 'Border',
+    button: 'Button',
+    card: 'Card',
+    chart: 'Chart',
     'dash-canvas': 'DashCanvas',
-    'focus': 'Focus',
-    'font': 'Font',
+    'date-range-picker': 'DateRangePicker',
+    focus: 'Focus',
+    font: 'Font',
     'form-field': 'FormField',
-    'grid': 'Grid',
-    'input': 'Input',
+    grid: 'Grid',
+    input: 'Input',
+    'intent-input': 'IntentInput',
     'loading-indicator': 'LoadingIndicator',
-    'mask': 'Mask',
-    'menu': 'Menu',
-    'pad': 'Padding',
-    'panel': 'Panel',
-    'popover': 'Popover',
-    'popup': 'Popup',
-    'resizable': 'Resizable',
-    'scrollbar': 'Scrollbar',
-    'slider': 'Slider',
-    'tab': 'Tab',
-    'tbar': 'Toolbar',
-    'text': 'Text',
-    'title': 'Title',
-    'viewport': 'Viewport',
+    mask: 'Mask',
+    menu: 'Menu',
+    pad: 'Padding',
+    panel: 'Panel',
+    popover: 'Popover',
+    popup: 'Popup',
+    resizable: 'Resizable',
+    scrollbar: 'Scrollbar',
+    'segmented-control': 'SegmentedControl',
+    slider: 'Slider',
+    spinner: 'Spinner',
+    tab: 'Tab',
+    'tab-switcher': 'TabSwitcher',
+    tbar: 'Toolbar',
+    toolbar: 'Toolbar',
+    text: 'Text',
+    title: 'Title',
+    viewport: 'Viewport',
     'zone-grid': 'ZoneGrid'
 };
 
 /** Known property suffixes and how to render them in descriptions. */
 const PROPERTY_TERMS = {
-    'bg': 'background',
+    bg: 'background',
     'bg-alt': 'alt background',
     'bg-hover': 'hover background',
     'bg-odd': 'odd-row background',
@@ -393,7 +370,6 @@ const PROPERTY_TERMS = {
     'text-color': 'text color',
     'text-transform': 'text transform'
 };
-
 
 /**
  * Build a description from the variable name structure.
@@ -438,6 +414,11 @@ function buildNameBasedDescription(raw) {
         description = humanize(description);
     }
 
+    // A trailing `-px` names a pixel-valued var - read it as a unit hint, not a word.
+    if (/-px$/.test(raw) && / px$/.test(description)) {
+        description = description.slice(0, -3) + ' (px)';
+    }
+
     const parts = [];
     if (component) parts.push(component);
     if (description) parts.push(description);
@@ -455,7 +436,6 @@ function buildNameBasedDescription(raw) {
 function humanize(str) {
     return str.replace(/-/g, ' ');
 }
-
 
 //------------------------------------------------------------------
 // Entry point
