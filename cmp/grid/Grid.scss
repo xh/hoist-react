@@ -104,40 +104,63 @@
     padding-right: 0;
   }
 
-  // Render badge on cells with validation issues
-  .ag-cell.xh-cell--invalid,
-  .ag-cell.xh-cell--warning,
+  // Cell corner flags - small triangular markers in a cell's top-right corner, colored by Intent.
+  // Driven by `Column.cellFlag`, and by the framework to surface cell validation state.
+  .ag-cell.xh-cell--flag-primary {
+    --xh-grid-cell-flag-color: var(--xh-intent-primary);
+  }
+
+  .ag-cell.xh-cell--flag-success {
+    --xh-grid-cell-flag-color: var(--xh-intent-success);
+  }
+
+  .ag-cell.xh-cell--flag-warning {
+    --xh-grid-cell-flag-color: var(--xh-intent-warning);
+  }
+
+  .ag-cell.xh-cell--flag-danger {
+    --xh-grid-cell-flag-color: var(--xh-intent-danger);
+  }
+
+  // DEPRECATED - legacy validation flag classes, superseded by the intent-keyed classes above.
+  // Hoist no longer emits these; they are retained only so that an app applying them directly
+  // (e.g. via its own `cellClassRules`) continues to render a flag. Remove in a future major.
   .ag-cell.xh-cell--info {
+    --xh-grid-cell-flag-color: var(--xh-intent-primary);
+  }
+
+  .ag-cell.xh-cell--warning {
+    --xh-grid-cell-flag-color: var(--xh-intent-warning);
+  }
+
+  .ag-cell.xh-cell--invalid {
+    --xh-grid-cell-flag-color: var(--xh-intent-danger);
+  }
+
+  .ag-cell[class*='xh-cell--flag-'],
+  .ag-cell.xh-cell--info,
+  .ag-cell.xh-cell--warning,
+  .ag-cell.xh-cell--invalid {
+    // Drawn as a triangle via two colored borders meeting at the cell's top-right corner.
     &::before {
       content: '';
       position: absolute;
       top: 0;
       right: 0;
       border-color: transparent;
+      border-top-color: var(--xh-grid-cell-flag-color, transparent);
+      border-right-color: var(--xh-grid-cell-flag-color, transparent);
       border-style: solid;
+      // Sized per grid sizing mode - see the size-mode blocks below.
+      border-width: var(--xh-grid-cell-flag-size, 5px);
     }
 
-    // Render badge on top of nested editor, and move to account for padding while editing
+    // Render flag on top of a nested editor, nudged to clear the editor's padding.
     &.ag-cell-inline-editing::before {
       z-index: 1;
       margin-top: 1px;
       margin-right: 3px;
     }
-  }
-
-  .ag-cell.xh-cell--invalid::before {
-    border-right-color: var(--xh-intent-danger);
-    border-top-color: var(--xh-intent-danger);
-  }
-
-  .ag-cell.xh-cell--warning::before {
-    border-right-color: var(--xh-intent-warning);
-    border-top-color: var(--xh-intent-warning);
-  }
-
-  .ag-cell.xh-cell--info::before {
-    border-right-color: var(--xh-intent-primary);
-    border-top-color: var(--xh-intent-primary);
   }
 
   // Render left / right group borders
@@ -149,37 +172,23 @@
     @include AgGrid.group-border(right);
   }
 
+  // Corner flag size by grid sizing mode. Apps may override per mode, e.g.
+  // `.xh-ag-grid--standard {--xh-grid-cell-flag-size: 8px;}`.
   .xh-ag-grid {
     &--tiny {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 3px;
-      }
+      --xh-grid-cell-flag-size: 3px;
     }
 
     &--compact {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 4px;
-      }
+      --xh-grid-cell-flag-size: 4px;
     }
 
     &--standard {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 5px;
-      }
+      --xh-grid-cell-flag-size: 5px;
     }
 
     &--large {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 6px;
-      }
+      --xh-grid-cell-flag-size: 6px;
     }
   }
 }
