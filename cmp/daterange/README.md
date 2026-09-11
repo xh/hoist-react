@@ -350,13 +350,13 @@ step the period.
 Block classes are `xh-date-range-picker` (the control: trigger and step buttons) and
 `xh-date-range-picker-popover`. The picker's own colors and key sizes come from
 `--xh-date-range-picker-*` variables, declared in the `Date Range Picker` block of
-`styles/vars.scss`, each with an unprefixed override hook. The ones an app is most likely to set:
+`styles/vars.scss`. The ones an app is most likely to override:
 
 ```scss
 body.xh-app {
-  --date-range-picker-popover-width: 720px;                 // default 640px
-  --date-range-picker-accent: var(--xh-intent-success);     // selection accent, default primary
-  --date-range-picker-date-font-family: var(--xh-font-family);  // default the mono font
+  --xh-date-range-picker-popover-width: 720px;                 // default 640px
+  --xh-date-range-picker-accent: var(--xh-intent-success);     // selection accent, default primary
+  --xh-date-range-picker-date-font-family: var(--xh-font-family);  // default the mono font
 }
 ```
 
