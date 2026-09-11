@@ -886,7 +886,7 @@ body {
   --xh-tab-font-size-px: calc(var(--xh-tab-font-size) * 1px);
 
   // Vertical (left/right) TabSwitcher - the styled "rail" of rounded, hoverable items with a
-  // filled active "pill". All overridable via the unprefixed hooks.
+  // filled active "pill".
   --xh-tab-switcher-vertical-min-width: auto;
   --xh-tab-switcher-vertical-padding: var(--xh-pad-half-px);
   --xh-tab-switcher-vertical-border: var(--xh-border-solid);

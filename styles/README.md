@@ -48,7 +48,7 @@ would tie with the framework's and win only by source order.
 
 Hoist redefines some variables for the dark theme and for mobile under `body.xh-dark` and
 `body.xh-mobile`, which have the same specificity as `body.xh-app`. Application stylesheets load
-after Hoist's, so a `body.xh-app` override still wins in both themes - but when an app wants a
+after Hoist's, so a `body.xh-app` override wins in both themes - but when an app wants a
 value that differs per theme, it should say so explicitly with an `&.xh-dark` block (see
 [App-Level Dark Overrides](#app-level-dark-overrides) below).
 

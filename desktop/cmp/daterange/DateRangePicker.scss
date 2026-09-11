@@ -7,7 +7,7 @@
 
 // DateRangePicker - trigger + popover styling. Colors and key sizes come from the
 // `--xh-date-range-picker-*` vars declared in styles/vars.scss, so both themes work without any
-// theme-specific overrides here and apps can re-key the picker via the unprefixed hooks.
+// theme-specific overrides here and apps re-key the picker by overriding those vars.
 
 // Fixed type scale for the picker's secondary text - tuned to the popover's layout, rather than
 // derived from the app font size.
