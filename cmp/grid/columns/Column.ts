@@ -941,9 +941,9 @@ export class Column {
                             }
                         }
                     }
-                    wrapperRef.current
-                        ?.closest('.ag-react-container')
-                        .classList.add(...xhToolTipClassNames);
+                    const container = wrapperRef.current?.closest('.ag-react-container');
+                    container?.classList.add(...xhToolTipClassNames);
+                    return () => container?.classList.remove(...xhToolTipClassNames);
                 }, [isCustom, validationCount, location]);
 
                 // Required by agGrid, even though empty.
