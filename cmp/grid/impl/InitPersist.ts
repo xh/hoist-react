@@ -25,6 +25,7 @@ export function initPersist(
     gridModel: GridModel,
     {
         persistColumns = true,
+        persistColumnGroups = true,
         persistGrouping = true,
         persistSort = true,
         persistExpandToLevel = true,
@@ -60,6 +61,22 @@ export function initPersist(
                             gridModel.autosizeAsync({columns});
                         }
                     })
+            },
+            owner: gridModel
+        });
+    }
+
+    if (persistColumnGroups) {
+        PersistenceProvider.create({
+            persistOptions: persistOptions(
+                {path: `${path}.columnGroups`},
+                rootPersistWith,
+                isObject(persistColumnGroups) ? persistColumnGroups : null
+            ),
+            target: {
+                getPersistableState: () =>
+                    new PersistableState(gridModel.persistableColumnGroupState),
+                setPersistableState: ({value}) => gridModel.setColumnGroupState(value)
             },
             owner: gridModel
         });

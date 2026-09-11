@@ -35,6 +35,9 @@ export * from './cube/aggregate/UniqueAggregator';
 
 export * from './cube/Cube';
 export * from './cube/CubeField';
+export * from './cube/PivotPath';
+export * from './cube/PivotQuery';
+export * from './cube/PivotView';
 export * from './cube/Query';
 export * from './cube/View';
 export * from './cube/ViewRowData';
