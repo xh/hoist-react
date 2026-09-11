@@ -1552,9 +1552,201 @@ All done with the phase 3 rewire: copyright headers, the `[Component, factory]` 
 `hoistCmp.withFactory`, `GridOptions` from `@xh/hoist/kit/ag-grid`, JSDoc on every public config
 member, the constant `headerName` thunk, and a documented `PivotSort`.
 
+## Rebase onto the data-package rework (v88 `develop`)
+
+**Merge landed 2026-09-11** — 118 commits of `develop` into `pivot-grid`, in
+`Merge branch 'develop' into pivot-grid`. `pnpm typecheck` and `pnpm lint:code` are clean and the
+unit tier is 49/49. **Nothing in the Toolbox tier has been re-run**, so treat every behavioural claim
+below as designed-for, not verified — see [Verification](#verification-after-the-rebase).
+
+This rework is a much deeper change to `data/` than
+[the `store-simple` rebase](#rebase-onto-the-store-rework-store-simple) was. The headline items, all
+of which the pivot layer sits directly on top of:
+
+- **`RowDataGenerator`** (`data/cube/impl/RowDataGenerator.ts`) now mints all View row data.
+  `View.newRowData` split into `newParentRowData` (template clone, as before) and `newLeafRowData`.
+  **Exposed leaf data is no longer a copy** — it is an instance of a per-query generated class whose
+  queried fields are *prototype getters* over a single own `_src` reference to the cube record's
+  data. `ExposedLeafRow.applyUpdatedData` is now just `data._src = newData`.
+- **`View.noteRowDataMutated` → `View.assignDigest`**, and `Store.setDigestFn` / `reuseRecords` →
+  the settable `Store.digestSpec`. `View.parseStores` installs `digestSpec = 'cubeRowDigest'`.
+- **`StoreTransaction.changedFields`** — a producer-supplied set of the field names an update
+  touched, carried through `RecordSetDelta` into `GridTransactionManager`, which uses it to prove a
+  transaction cannot reorder rows and skip ag-Grid's model refresh entirely. `View.dataOnlyUpdate`
+  supplies it from the leaf-level diff.
+- **`PatchableRecordSet` folded into `RecordSet`**, gated by `experimental.maxPatchRatio`
+  (default 0). With it on, `View.filterRecords` gets an incremental arm and record order becomes
+  stable-by-incumbency rather than source-order.
+- **Diagnostics** — `StoreDiagnostics`, `ViewDiagnostics`, `GridModelDiagnostics`, plus
+  `HoistBase.xhName` / `childXhName` and `instanceManager.registerView/registerCube` for Inspector.
+- **Grid** — `GridTransactionManager`, `DeferredWorkScheduler`, `RecordSortUtils`,
+  `Column.buildFastValueGetter`, and the `colChooserModel` / `ColChooserMode` rework that retired
+  `colChooserPanelModel`.
+
+### What the merge itself resolved
+
+- `View` keeps every subclassing hook phase 2/3 added — `protected` members, `_rootRows`,
+  `loadUpdatedRows()`, `createResult()`, null-tolerant `parseStores()`, and `endGeneration()` hoisted
+  out of `generateRows()` — layered onto develop's `RowDataGenerator`, `buildIndices()`,
+  `ViewDiagnostics` and `instanceManager` registration.
+- `View.dataOnlyUpdate` keeps the branch's `Set<BaseRow>` rather than develop's `Set<ViewRowData>`:
+  `PivotView.loadUpdatedRows` needs the *rows* to tell a `PivotCellRow` from a group row. The new
+  `changedFields` set threads through `loadUpdatedRows(updatedRows, changedFields)` into
+  `Store.updateData`.
+- **`PivotView` now reports its synthetic cell fields into `changedFields`.** This is a correctness
+  fix, not a tidy-up: `GridTransactionManager.sortUnchanged` treats `changedFields` as a complete
+  assertion, so a grid sorted on a pivot value column would have been left mis-sorted after any tick
+  that moved a cell but not the underlying cube field. `projectCell`, `projectLeaf` and
+  `clearCellSlots` all take the set on the incremental path.
+- `Store` keeps `_fieldDefaults` / `setFields()` and the early `_fieldMap` build; the `digestSpec`
+  setter now installs the digest fn, so the old explicit `createDigestFn()` call is gone.
+- `GridModel` — the branch's `ColumnGroupState` work merged with develop's chooser rework; `find` was
+  re-imported for `isColumnGroupExpanded()`.
+
+### Follow-up: correctness and contract
+
+1. **Exposed-leaf row shape is the real conflict this time, and it wants a deliberate answer.**
+   [The open decision](#open-decision-fixed-shape-rows-vs-sparse-cells) was resolved against
+   templating cell fields, on the view-heap argument — and that resolution still stands *for group
+   rows*. Leaves are a different case now. Before the rework an exposed leaf carried a full copy of
+   every queried field, so `projectLeaf` writing a cell slot was one more property on an already
+   large object. After it, leaf data is a ~5-own-slot instance of one generated class per query, and
+   `projectLeaf` adds own properties to it — **and adds a different subset per leaf**, since a leaf
+   carries only its own full-path cell. That does not merely give up fast-properties mode; it makes
+   leaf data polymorphic across the one axis `RowDataGenerator` exists to keep monomorphic, which is
+   also the hot path for `Column.buildFastValueGetter`'s `record.data[fieldPath]`.
+
+   The fix that costs nothing in heap: **stop writing leaf cells entirely.** Give the generated leaf
+   class one extra own slot, `_pivotPathKey`, and a prototype getter per cell field returning
+   `this._pivotPathKey === <that path's key> ? this._src[<valueField>] : null`. Own-slot count is
+   unchanged, all leaves keep one shape, `projectLeaf` and its `projectedCellNames` bookkeeping both
+   disappear, and vacated-cell clearing on leaves becomes impossible by construction. The cost is
+   that `RowDataGenerator` must learn the current cell-field list from `PivotView` and rebuild the
+   leaf class when it moves, with `RowCache` invalidating exposed leaves at that point — model it on
+   the existing `newExposed && fieldsGained` wholesale-clear rule. Note cell fields are only
+   discovered during `generateCells`, so the first build mints leaves before the class can carry
+   them; the rebuild path has to cover that generation too.
+
+   This only binds when `includeLeaves` / `provideLeaves` is set. If drill-down is judged rare
+   enough, the honest alternative is to accept it and say so here — but it should not stay
+   undecided.
+
+2. **`PivotView.hasDimOrBucketUpdates` reads `this._leafMap.get(rec.id).data`** where the base now
+   reads `this._records.getById(rec.id).data`. Both yield pre-update values, but the leaf route is an
+   extra indirection that on an exposed leaf now resolves through `_src`, and it assumes every
+   updated record has a leaf. Align it with the base's form.
+
+3. **Verify `pivotParent` is cleared on every path that clears cells.** `RowCache.removeParentRows`
+   and `doEvictUnusedParents` both null it, and `PivotQuery.orphansParents` / `invalidatesParents`
+   route the query-change cases into them. What is *not* obviously covered is `generateCells`
+   bailing to `clearCells()` without a query change — `isEmpty(_rootRows)` or `isEmpty(leafRows)`.
+   A leaf left pointing at a discarded cell routes the next tick into a dead row, where
+   `cellFieldNames` throws. Add a Toolbox-tier scenario that forces that bail with live leaves.
+
+4. **`PivotView.createStore` should pass `xhName: this.childXhName('store')`**, and should install
+   `digestSpec = 'cubeRowDigest'` even for `connect: false` stores — today only `parseStores` does,
+   so an unconnected store falls back to the `projectionOnly` value-comparison reuse path.
+
+5. **`Store.setFields` against the reworked Store.** It drops all records, so a cell-field change
+   costs a full record rebuild with no digest reuse. Acceptable, but it is now the only caller-facing
+   hole in develop's reuse story and should be measured on Wide before it is assumed cheap. `develop`
+   also added a duplicate-field-name throw to `parseFields`; `syncStore`'s retained/added split is
+   dup-free today, but the root-path-cell-field-is-the-value-field aliasing makes that a live edge —
+   cover it.
+
+### Follow-up: optimizations to adopt
+
+6. **Mint cell row data through `RowDataGenerator`.** `PivotCellRow` still does `this.data = {}` and
+   builds its shape by property adds. Cells are the most numerous rows in a pivot — view heap runs
+   15.4 → 42.0 → 74.7MB across 1 → 2 → 3 pivot dimensions
+   ([matrix](#result--the-phase-3-matrix)) — and a `newCellRowData()` template is cheap here precisely
+   because cells aggregate `_cellAggFields` alone, not the full query field set. This is the cell-row
+   analogue of the parent template, and none of the heap argument that resolved the group-row
+   question applies to it.
+
+7. **Use `changedFields` off the incoming delta to short-circuit the dimension scan.**
+   `View.getSimpleUpdates` ignores `RecordSetDelta.changedFields` entirely. When it is present and
+   names no dimension, bucket-dependent or pivot-dimension field, `hasDimOrBucketUpdates` can return
+   false without touching a record. `Cube.loadDataAsync` now hands views a `deltaFrom` delta, so this
+   reaches the *load* path too, not just ticks. Worth doing in `View`, with `PivotView` extending the
+   name set.
+
+8. **Index lookups through the new field maps.** `PivotView.buildCellAggFields` filters
+   `this.fields` per build; `PivotQuery.parseValueFields` / `parsePivotDimensions` `find` over
+   `cube.fields`. `View.getField` is now a `Map` lookup and `Cube.getField` delegates to
+   `Store._fieldMap` — use them.
+
+9. **Measure with `experimental.maxPatchRatio` on.** It makes `View.filterRecords` incremental,
+   which is the largest remaining per-tick cost a pivot inherits. It also makes `_records.list`
+   incumbency-ordered, and `discoverPivotPaths` consumes that order — so **pivot column order would
+   start depending on record arrival order**. Fix that independently by giving `syncPaths` a
+   deterministic sort of its own, rather than leaving column order to the record set.
+
+10. **`PivotGridModel.buildLabelColumn` sets a function `sortValue`**, and
+    `GridTransactionManager.computeSortPaths` bails to `null` for the whole grid if any active sorter
+    has one. The label column is the tree column and the natural default sort, so as written a pivot
+    grid gives up the `suppress` refresh mode — develop's single largest grid-tick win — in its most
+    common configuration. Re-express the label sort as a real field or a string `sortValue`, or
+    accept it knowingly.
+
+11. **Re-tune the new grid pacing flags for pivot shapes.** `deltaSortRatio`,
+    `deferredSortFactor` and `deferredAutosizeFactor` were calibrated on nested cube grids; pivot
+    grids are much wider and autosize is correspondingly more expensive. Add them to the bench matrix.
+
+12. **Pivot diagnostics.** `ViewDiagnostics` counts rows off `RowCache`, which does include cell
+    rows, but there is no pivot-specific readout — path count, cell count, lattice build time.
+    A `PivotViewDiagnostics extends ViewDiagnostics` would surface those in Inspector. Thread
+    `xhName` through `Cube.createPivotView` at the same time.
+
+### Follow-up: documentation
+
+13. **There is still no pivot documentation outside this plan** — `data/README.md`,
+    `data/cube/README.md` and `cmp/grid/README.md` do not mention `PivotView`, `PivotQuery` or
+    `PivotGrid`, and `docs/doc-registry.json` has no entry. That is phase 4 work, but the rework
+    moved the sections it has to slot into: `data/README.md` now carries "Declaring changed fields",
+    "Digest-Based Reuse with `digestSpec`", "Read-Only Projections with `projectionOnly`",
+    "Incremental Patching for Large Datasets" and "Diagnostics", all of which a pivot section must
+    reference rather than restate.
+
+14. **Stale references in this document.** The `store-simple` section still describes
+    `View.parseStores` throwing on `s.reuseRecords` and reuse installed via `setDigestFn` (both
+    renamed), and the correctness bug list still carries the `SumAggregator.replace` item — check it
+    against `develop` before re-filing.
+
+### Verification after the rebase
+
+The Toolbox `pivot-grid` branch has **not** been merged from Toolbox `develop`, and none of its 262
+checks or the benchmark have been re-run. Do that before trusting anything above. hoist-react has no
+node-side harness for framework classes — the decorator and SCSS imports make `tsx` a dead end for
+anything touching `HoistBase` — so the unit tier covers the pure lattice only and everything else is
+browser-tier by construction.
+
+Three assertions the rework specifically calls for, none of which exist yet:
+
+- A tick that moves a **pivot cell value without moving the underlying cube field** on a grid sorted
+  by that cell's column, asserting the row order is correct afterwards. This is the `changedFields`
+  contract, and it fails silently — wrong order, right values.
+- The refresh mode `GridTransactionManager` actually chose, asserted per scenario. Per the standing
+  anti-vacuity rule under [Verification vehicle](#verification-vehicle), a silent fall back to
+  `'full'` produces correct output and hides the regression.
+- Own-key count on exposed leaf row data, to pin whatever is decided in item 1.
+
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-09-11 — Merged `develop` (118 commits), and the data package moved underneath us.** No pivot
+implementation. The merge is in and green on `tsc`, `eslint` and the 49-check unit tier; the Toolbox
+tier is untouched and unverified. One correctness fix rode along: `PivotView` now reports its
+synthetic cell fields into the new `changedFields` set, without which a grid sorted on a pivot value
+column silently keeps a stale row order after any tick that moves a cell alone. The open question
+this rework reopens is **exposed-leaf row shape** — leaf data is now a prototype-getter projection
+over the cube record rather than a copy, and `projectLeaf` writes a *different* subset of own
+properties onto each leaf, which is the one thing `RowDataGenerator` exists to prevent. The
+group-row half of [that decision](#open-decision-fixed-shape-rows-vs-sparse-cells) still stands; the
+leaf half needs a fresh answer, and there is a no-heap-cost option. Pick up at
+[Rebase onto the data-package rework](#rebase-onto-the-data-package-rework-v88-develop), item 1, and
+at merging Toolbox before believing any of it.
 
 **2026-08-10 — Day-1 triage, and phase 4 got much bigger.** No implementation.
 [Extras](#extras-and-nice-to-haves) is now split day-1 / follow-up, with twelve items on day 1 - two
