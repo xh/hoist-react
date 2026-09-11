@@ -116,12 +116,6 @@ errors, so a genuine type error passes `pnpm lint`. CI runs the two as distinct 
 This is a library — it has no dev server or standalone build. To run locally, use a wrapper
 application project (e.g., Toolbox) that includes `@xh/hoist` as a dependency.
 
-**Claude Code on the web:** `pnpm install` needs the FontAwesome Pro registry token, which the
-`SessionStart` hook in `.claude/hooks/session-start.sh` writes to `~/.npmrc` before installing. In a
-multi-repository session (hoist-react plus Toolbox) that hook does not fire, so if `pnpm install`
-returns a 401 from `npm.fontawesome.com`, run the script directly - it also installs a sibling
-Toolbox checkout. Details in [`.claude/hooks/README.md`](./.claude/hooks/README.md).
-
 ## Architecture
 
 ### Core Artifacts
