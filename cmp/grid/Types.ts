@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import type {HoistModel, HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {HoistModel, HSide, Intent, PersistOptions, Some} from '@xh/hoist/core';
 import type {PanelConfig} from '@xh/hoist/desktop/cmp/panel';
 import type {
     FilterBindTarget,
@@ -382,6 +382,14 @@ export type ColumnCellClassFn<T = any> = (
  *      it should be removed.
  */
 export type ColumnCellClassRuleFn = (agParams: CellClassParams) => boolean;
+
+/**
+ * Function to determine the corner flag, if any, to render on a grid cell's top-right corner.
+ * @param value - cell data value (column + row).
+ * @param context - additional data about the column, row and GridModel.
+ * @returns the Intent to draw the flag in, or null for no flag.
+ */
+export type ColumnCellFlagFn<T = any> = (value: T, context: CellContext) => Intent | null;
 
 /**
  * Function to produce a grid column tooltip.

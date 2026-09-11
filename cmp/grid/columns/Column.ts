@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
-import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
+import {HAlign, HSide, Intent, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
     CubeFieldSpec,
     FieldSpec,
@@ -52,6 +52,7 @@ import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
+    ColumnCellFlagFn,
     ColumnComparator,
     ColumnEditableFn,
     ColumnEditorFn,
@@ -69,6 +70,7 @@ import {
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
+    CellClassParams,
     ColDef,
     ITooltipParams,
     ValueGetterParams,
@@ -158,6 +160,14 @@ export interface ColumnSpec {
      * See Ag-Grid docs on "cell styles" for details.
      */
     cellClassRules?: Record<string, ColumnCellClassRuleFn>;
+
+    /**
+     * Render a small triangular flag in the top-right corner of each cell, in the color of the
+     * returned Intent - a compact marker for values warranting attention. Return null for no flag.
+     * Called per record on every cell refresh and deliberately not cached, so keep it cheap.
+     * On an editable column, a cell failing validation shows its validation flag instead.
+     */
+    cellFlag?: ColumnCellFlagFn;
 
     /** True to suppress default display of the column.*/
     hidden?: boolean;
@@ -492,6 +502,7 @@ export class Column {
     headerClass: ColumnHeaderClassFn | Some<string>;
     cellClass: ColumnCellClassFn | Some<string>;
     cellClassRules: Record<string, ColumnCellClassRuleFn>;
+    cellFlag: ColumnCellFlagFn;
     align: HAlign;
     hidden: boolean;
     flex: boolean | number;
@@ -566,6 +577,7 @@ export class Column {
             headerClass,
             cellClass,
             cellClassRules,
+            cellFlag,
             hidden,
             align,
             width,
@@ -647,6 +659,7 @@ export class Column {
 
         this.cellClass = cellClass;
         this.cellClassRules = cellClassRules || {};
+        this.cellFlag = cellFlag;
 
         this.align = align;
         this.omit = omit;
@@ -1059,17 +1072,41 @@ export class Column {
             });
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
-                'xh-cell--invalid': agParams =>
-                    maxSeverity(agParams.data?.validationResults[field]) === 'error',
-                'xh-cell--warning': agParams =>
-                    maxSeverity(agParams.data?.validationResults[field]) === 'warning',
-                'xh-cell--info': agParams =>
-                    maxSeverity(agParams.data?.validationResults[field]) === 'info',
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },
                 ...ret.cellClassRules
             };
+        }
+
+        // Flags must go via cellClassRules (removable) rather than cellClass (sticky), and must be
+        // composed into the ag colDef here rather than `this.cellClassRules` - the latter feeds
+        // ColumnWidthCalculator, and these pseudo-elements cannot affect measured width.
+        const {cellFlag} = this;
+        if (cellFlag || editor) {
+            // Not memoized by record - `validationResults` can settle while the record and its
+            // value stay identical, and a captured record would be pinned for the colDef's life.
+            const intentForCell = (agParams: CellClassParams): Intent => {
+                const record = agParams.data as StoreRecord,
+                    {value} = agParams;
+
+                // Validation state wins - it reports an error, not an annotation.
+                if (editor) {
+                    const severity = maxSeverity(record?.validationResults[field]);
+                    if (severity) return SEVERITY_FLAG_INTENTS[severity];
+                }
+
+                return cellFlag ? cellFlag(value, {record, column: this, gridModel}) : null;
+            };
+
+            const flagRules: Record<string, ColumnCellClassRuleFn> = {};
+            CELL_FLAG_INTENTS.forEach(intent => {
+                flagRules[`xh-cell--flag-${intent}`] = agParams =>
+                    intentForCell(agParams) === intent;
+            });
+
+            // Flag rules first, so app-supplied cellClassRules continue to win.
+            ret.cellClassRules = {...flagRules, ...ret.cellClassRules};
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
@@ -1195,3 +1232,14 @@ export class Column {
             : (record?.data[sortValue] ?? v);
     }
 }
+
+//------------------------
+// Cell flag implementation
+//------------------------
+const CELL_FLAG_INTENTS: Intent[] = ['primary', 'success', 'warning', 'danger'];
+
+const SEVERITY_FLAG_INTENTS: Record<ValidationSeverity, Intent> = {
+    error: 'danger',
+    warning: 'warning',
+    info: 'primary'
+};
