@@ -264,6 +264,31 @@ columns: [
 ]
 ```
 
+### Tooltips
+
+Hoist styles the tooltip content it renders itself - a plain value or string, and the validation
+messages shown on an editable cell - with `xh-grid-tooltip-frame` (background, border, radius,
+padding, max-width) and `xh-grid-tooltip--prewrap` (honors `\n` line breaks while still wrapping at
+max-width).
+
+A `tooltip` that returns an **element** is left unstyled, so that a custom tooltip can supply its
+own chrome. To take Hoist's frame instead, add `xh-grid-tooltip-frame` to your own root:
+
+```typescript
+{
+    field: 'volume',
+    tooltip: volume =>
+        vbox({
+            className: 'xh-grid-tooltip-frame',
+            items: [fmtNumberTooltip(volume), div('Unusually high volume')]
+        })
+}
+```
+
+`xh-grid-tooltip-frame` is a standalone utility class, usable on any element - a custom tooltip is
+not nested in anything that provides the frame for it. (`--prewrap` is an ordinary modifier that
+Hoist applies to its own tooltips; set `white-space` directly if a custom tooltip needs it.)
+
 ### Cell Corner Flags
 
 `cellFlag` marks a cell with a small triangle in its top-right corner, in the color of a standard
