@@ -38,12 +38,10 @@ export class RowCache {
     private lastQuery: Query = null;
     private usedParents: Set<BaseRow> = null;
 
-    // Stats for the current generation - logged by endGeneration()
-    private reused = 0;
-    private rebuilt = 0;
-    private created = 0;
-    private removed = 0;
-    private sweepTime = 0;
+    // Row disposition for the current generation - for ViewDiagnostics
+    reused = 0;
+    rebuilt = 0;
+    created = 0;
 
     constructor(view: View) {
         this.view = view;
@@ -98,7 +96,6 @@ export class RowCache {
         this.genStartDigest = view._rowDigest;
         this.exposedLeaves = view.exposesLeaves;
         this.reused = this.rebuilt = this.created = 0;
-        this.removed = this.sweepTime = 0;
     }
 
     endGeneration() {
@@ -107,11 +104,6 @@ export class RowCache {
             this.usedParents = null;
         }
         this.sweep();
-        this.view.logDebug(
-            `Generated rows: reused=${this.reused} rebuilt=${this.rebuilt} ` +
-                `created=${this.created} cached=${this.size} removed=${this.removed} ` +
-                `sweepTime=${this.sweepTime.toFixed(1)}ms`
-        );
     }
 
     clear() {
@@ -143,8 +135,8 @@ export class RowCache {
             parentsInvalid = query.invalidatesParents(oldQuery);
 
         // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate
-        // wholesale - gained fields hold null/stale values on existing rows. (Dropped fields do
-        // NOT invalidate: their slots remain, stop updating, and are out of contract.)
+        // wholesale - existing rows' data was minted without the gained fields. (Dropped fields
+        // do NOT invalidate: they remain readable on existing rows, but are out of contract.)
         if (oldExposed !== newExposed || (newExposed && fieldsGained) || bucketsRemoved) {
             this.rows.clear();
             return;
@@ -184,13 +176,14 @@ export class RowCache {
     // chains are not pinned in memory.
     private doEvictUnusedParents() {
         const {rows, usedParents} = this;
+        let removed = 0;
         rows.forEach((row, id) => {
             if (!row.isLeaf && !usedParents.has(row)) {
                 rows.delete(id);
-                this.removed++;
+                removed++;
             }
         });
-        if (!this.removed) return;
+        if (!removed) return;
         rows.forEach(row => {
             const {parent, pivotParent} = row;
             if (parent && rows.get(parent.id) !== parent) row.parent = null;
@@ -227,7 +220,10 @@ export class RowCache {
         });
 
         this.sweptAsOf = asOf;
-        this.removed += startSize - rows.size;
-        this.sweepTime = performance.now() - start;
+
+        this.view.logDebug(
+            `Swept ${startSize - rows.size} of ${startSize} cached rows`,
+            `${(performance.now() - start).toFixed(1)}ms`
+        );
     }
 }

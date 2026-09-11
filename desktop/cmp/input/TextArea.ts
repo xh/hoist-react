@@ -4,16 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    getPasswordManagerAttrs,
+    HoistInputModel,
+    HoistInputProps,
+    PasswordManagerSupportProps,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
-import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
+import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
+export interface TextAreaProps
+    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, LayoutProps, StyleProps {
     value?: string;
 
     /** True to focus the control on render. */
@@ -86,11 +93,13 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
 
         autoFocus: props.autoFocus,
         disabled: props.disabled,
-        inputRef: composeRefs(model.inputRef as Ref<HTMLTextAreaElement>, props.inputRef),
+        inputRef: useComposedRefs(model.inputRef as Ref<HTMLTextAreaElement>, props.inputRef),
         placeholder: props.placeholder,
         spellCheck: withDefault(props.spellCheck, false),
         tabIndex: props.tabIndex,
         [TEST_ID]: props.testId,
+        ...getPasswordManagerAttrs(props.enablePasswordManagers),
+        ...props.domAttrs,
         id: props.id,
         className,
         style: {

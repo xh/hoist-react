@@ -50,8 +50,8 @@ import {
     StoreTransaction
 } from '@xh/hoist/data';
 import {
-    ColChooserModalModel as DesktopColChooserModalModel,
-    ColChooserPanelModel as DesktopColChooserPanelModel
+    DockedColChooserModel as DesktopDockedColChooserModel,
+    ModalColChooserModel as DesktopModalColChooserModel
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -66,6 +66,7 @@ import {
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
+import type {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
@@ -73,7 +74,6 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     deepFreeze,
     executeIfFunction,
-    logWithDebug,
     sharePendingPromise,
     throwIf,
     warnIf,
@@ -110,13 +110,15 @@ import {
 import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
+import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
 import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
+import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
     ColChooserConfig,
-    ColChooserPanelConfig,
+    ColChooserMode,
     ColumnGroupState,
     ColumnState,
     ColumnStateOptions,
@@ -163,15 +165,11 @@ export interface GridConfig {
     filterModel?: GridFilterModelConfig | boolean;
 
     /**
-     * Config for the modal (dialog/popover) column chooser, or boolean `true` to enable default.
+     * Config for this grid's column chooser, a bare {@link ColChooserMode} to enable the default
+     * config for that presentation, or boolean `true` for an all-default (modal) chooser. Note that
+     * `mode: 'docked'` is desktop only and will throw in a mobile app.
      */
-    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean;
-
-    /**
-     * Config for the docked, non-modal side-panel column chooser, or boolean `true` to enable
-     * default. Desktop only - ignored on mobile.
-     */
-    colChooserPanelModel?: Omit<ColChooserPanelConfig, 'gridModel'> | boolean;
+    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean;
 
     /**
      * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
@@ -396,33 +394,52 @@ export interface GridConfig {
     /** Extra app-specific data for the GridModel. */
     appData?: PlainObject;
 
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
+
     /** @internal */
     xhImpl?: boolean;
 }
 
 interface GridExperimentalFlags {
     /**
-     * Set to true to enable more optimal row sorting in cases where only small subsets of rows are
-     * updated in configurations where rows have many siblings.
-     * See https://www.ag-grid.com/javascript-data-grid/grid-options/#reference-sort-deltaSort for
-     * more details on where this option may improve (or degrade) performance.
-     */
-    deltaSort?: boolean;
-
-    /**
      * Set to true to disable scroll optimization for large grids, where we proactively update the
      * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
      * through large grids.
      */
     disableScrollOptimization?: boolean;
+
+    /**
+     * Percentage [0-90] of changed rows above which a managed re-sort runs a full sort rather
+     * than an ag-Grid delta sort. Delta cost is ~linear in changed rows while full cost is ~flat
+     * in them, with measured break-even near 55% on nested cube grids - erring toward delta
+     * yields smaller, smoother chunks. Default 50.
+     */
+    deltaSortRatio?: number;
+
+    /**
+     * Multiplier pacing the managed re-sort of updating grids - a re-sort costing E ms defers
+     * the next for `E * factor`, bounding sort work to a fraction of main-thread time regardless
+     * of grid size or hardware. Set 0 to disable deferral entirely and re-sort synchronously on
+     * every change. Default 4.
+     */
+    deferredSortFactor?: number;
+
+    /**
+     * Multiplier pacing the managed re-autosize of updating grids, as `deferredSortFactor` does
+     * for re-sorts - an autosize costing E ms defers the next for `E * factor`, bounding autosize
+     * to ~`1/factor` of main-thread time. Loads and filter changes always autosize immediately.
+     * Set 0 to autosize on every change. Higher than `deferredSortFactor` because stale column
+     * widths are cosmetic where a stale sort is incorrect. Default 10.
+     */
+    deferredAutosizeFactor?: number;
 }
 
 export interface GridModelDefaults {
     autosizeMode?: GridAutosizeMode;
     cellBorders?: boolean;
     clicksToExpand?: number | null;
-    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean | null;
-    colChooserPanelModel?: Omit<ColChooserPanelConfig, 'gridModel'> | boolean | null;
+    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
@@ -463,13 +480,23 @@ export interface GridModelDefaults {
  * @mcpHint model backing all grid components
  */
 export class GridModel extends HoistModel {
+    /**
+     * Ceilings (ms) on how long deferred grid work may be held back, calibrated to what going
+     * stale costs the user: a deferred sort leaves row order wrong, while a deferred autosize
+     * only leaves columns a little off. The autosize ceiling is rarely binding - reached only
+     * above a 3s autosize. See `DeferredWorkScheduler`.
+     * @internal
+     */
+    static readonly MAX_DEFERRED_SORT = 10 * SECONDS;
+    /** @internal */
+    static readonly MAX_DEFERRED_AUTOSIZE = 30 * SECONDS;
+
     /** App-level defaults for GridModel. Instance config takes precedence. */
     static defaults: GridModelDefaults = {
         autosizeMode: 'onSizingModeChange',
         cellBorders: false,
         clicksToExpand: null,
         colChooserModel: null,
-        colChooserPanelModel: null,
         colDefaults: null,
         contextMenu: [
             'filter',
@@ -517,7 +544,6 @@ export class GridModel extends HoistModel {
     selModel: StoreSelectionModel;
     treeMode: boolean;
     colChooserModel: IColChooserModel;
-    colChooserPanelModel: IColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
@@ -573,6 +599,9 @@ export class GridModel extends HoistModel {
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
+
+    /** @internal - latest RecordSet applied to ag-Grid, maintained by the Grid component. */
+    @observable.ref _syncedRs: RecordSet = null;
 
     // Kept alive, as the primary reader `getColumn()` is often called outside of a reaction.
     @computed({keepAlive: true})
@@ -644,6 +673,9 @@ export class GridModel extends HoistModel {
     /** Tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
 
+    /** @internal */
+    readonly diagnostics = new GridModelDiagnostics(this);
+
     constructor(config: GridConfig) {
         super();
         makeObservable(this);
@@ -656,7 +688,6 @@ export class GridModel extends HoistModel {
             selModel,
             filterModel,
             colChooserModel = GridModel.defaults.colChooserModel,
-            colChooserPanelModel = GridModel.defaults.colChooserPanelModel,
             emptyText = GridModel.defaults.emptyText,
             hideEmptyTextBeforeLoad = true,
             sortBy = [],
@@ -702,11 +733,13 @@ export class GridModel extends HoistModel {
             enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll,
             experimental,
             appData,
+            xhName = null,
             xhImpl,
             ...rest
         }: GridConfig = config;
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this._defaultState = {columns, sortBy, groupBy, expandLevel};
 
@@ -771,6 +804,7 @@ export class GridModel extends HoistModel {
         sizingMode = this.parseSizingMode(sizingMode);
 
         this.agGridModel = new AgGridModel({
+            xhName: this.childXhName('agGridModel'),
             sizingMode,
             showHover,
             rowBorders,
@@ -782,7 +816,6 @@ export class GridModel extends HoistModel {
         });
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
-        this.colChooserPanelModel = this.parsePanelChooserModel(colChooserPanelModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
         if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
@@ -1097,6 +1130,14 @@ export class GridModel extends HoistModel {
         return this.store.empty;
     }
 
+    /**
+     * Records in the order this grid renders them - sorted by {@link groupBy} and {@link sortBy},
+     * and flattened depth-first for tree grids. Leaf records only - group rows have no StoreRecord.
+     */
+    getSortedRecords(): StoreRecord[] {
+        return computeSortedRecords(this);
+    }
+
     get isReady(): boolean {
         return this.agGridModel.isReady;
     }
@@ -1401,10 +1442,6 @@ export class GridModel extends HoistModel {
         this.colChooserModel?.open();
     }
 
-    showColChooserPanel() {
-        this.colChooserPanelModel?.open();
-    }
-
     noteAgColumnStateChanged(agColState: AgColumnState[]) {
         const colStateChanges: Partial<ColumnState>[] = agColState.map(
             ({colId, width, hide, pinned}) => {
@@ -1500,6 +1537,17 @@ export class GridModel extends HoistModel {
 
     getColumn(colId: string): Column {
         return this.leafColumnMap.get(colId) ?? null;
+    }
+
+    /**
+     * @returns the current GridSorter for the given column, or null if it is not sorted.
+     * Optimized for hot loops, should be a search in a collection of 1-3.
+     */
+    getSorter(colId: string): GridSorter {
+        for (const it of this.sortBy) {
+            if (it.colId === colId) return it;
+        }
+        return null;
     }
 
     getColumnGroup(groupId: string): ColumnGroup {
@@ -1625,7 +1673,7 @@ export class GridModel extends HoistModel {
      * current value of any state-tracked property is required.
      */
     getStateForColumn(colId: string): ColumnState {
-        return find(this.columnState, {colId});
+        return this.columnState.find(it => it.colId === colId) ?? null;
     }
 
     /**
@@ -1637,7 +1685,6 @@ export class GridModel extends HoistModel {
      *
      * @param overrideOpts - optional overrides of this model's {@link GridAutosizeOptions}.
      */
-    @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
         const {columns, ...options}: GridAutosizeOptions = {
             ...this.autosizeOptions,
@@ -1728,10 +1775,12 @@ export class GridModel extends HoistModel {
             return;
         }
 
-        agApi.startEditingCell({
-            rowIndex,
-            colKey: colToEdit.colId
-        });
+        // Focus the cell before starting the editor - ag-Grid's `startEditingCell` opens the
+        // editor but does not move browser focus, so an edit begun from outside the grid (e.g. a
+        // toolbar button) would otherwise leave focus behind and require a click to type.
+        const colKey = colToEdit.colId;
+        agApi.setFocusedCell(rowIndex, colKey);
+        agApi.startEditingCell({rowIndex, colKey});
     }
 
     /**
@@ -1781,21 +1830,26 @@ export class GridModel extends HoistModel {
      *   within this class re-check `isReady` directly. We have observed this method returning
      *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
      *
-     * This method will introduce a minimal delay for all calls.  This is useful to ensure
-     * that the grid has had the opportunity to process any pending data updates, which are also
-     * subject to a minimal async debounce.
+     * This method also waits for all current (filtered) Store data to be applied to the
+     * underlying ag-Grid - data changes apply in their own macrotask - and introduces a minimal
+     * delay for all calls.
      *
      * @param timeout - timeout in ms
      */
     async whenReadyAsync(timeout: number = 3 * SECONDS): Promise<boolean> {
         try {
-            await when(() => this.isReady, {timeout});
+            await when(() => this.isReady && this.isDataSynced, {timeout});
         } catch (ignored) {
-            this.logDebug(`Grid failed to enter ready state after waiting ${timeout}ms`);
+            this.logDebug(`Grid not ready with data applied after waiting ${timeout}ms`);
         }
         await wait();
 
         return this.isReady;
+    }
+
+    /** True when the Store's current data has been fully applied to ag-Grid. */
+    get isDataSynced(): boolean {
+        return this._syncedRs === this.store._filtered;
     }
 
     /**
@@ -1809,11 +1863,6 @@ export class GridModel extends HoistModel {
         if (b === '') return -1;
         return a.localeCompare(b);
     };
-
-    /** @internal */
-    get deltaSort() {
-        return !!this.experimental.deltaSort;
-    }
 
     /** @internal */
     get disableScrollOptimization() {
@@ -1941,7 +1990,11 @@ export class GridModel extends HoistModel {
             store = storeOrConfig;
         } else {
             storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
-            store = new Store({loadTreeData: this.treeMode, ...storeOrConfig});
+            store = new Store({
+                xhName: this.childXhName('store'),
+                loadTreeData: this.treeMode,
+                ...storeOrConfig
+            });
             store.xhImpl = this.xhImpl;
             this.markManaged(store);
         }
@@ -2177,7 +2230,12 @@ export class GridModel extends HoistModel {
         }
 
         return this.markManaged(
-            new StoreSelectionModel({...selModel, store: this.store, xhImpl: true})
+            new StoreSelectionModel({
+                xhName: this.childXhName('selModel'),
+                ...selModel,
+                store: this.store,
+                xhImpl: true
+            })
         );
     }
 
@@ -2185,7 +2243,10 @@ export class GridModel extends HoistModel {
         if (XH.isMobileApp || !filterModel) return null;
 
         filterModel = filterModel === true ? {} : filterModel;
-        return new GridFilterModel({bind: this.store, ...filterModel}, this);
+        return new GridFilterModel(
+            {xhName: this.childXhName('filterModel'), bind: this.store, ...filterModel},
+            this
+        );
     }
 
     private parseExperimental(experimental: GridExperimentalFlags) {
@@ -2198,20 +2259,28 @@ export class GridModel extends HoistModel {
     private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
-        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModalModel;
-        chooserModel = chooserModel === true ? {} : chooserModel;
-        return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
-    }
+        const config: ColChooserConfig =
+            chooserModel === true
+                ? {mode: 'modal'}
+                : isString(chooserModel)
+                  ? {mode: chooserModel}
+                  : chooserModel;
 
-    private parsePanelChooserModel(
-        chooserModel: GridConfig['colChooserPanelModel']
-    ): IColChooserModel {
-        if (XH.isMobileApp || !chooserModel) return null;
-
-        chooserModel = chooserModel === true ? {} : chooserModel;
-        return this.markManaged(
-            new DesktopColChooserPanelModel({...chooserModel, gridModel: this})
+        const isDocked = config.mode === 'docked';
+        throwIf(
+            isDocked && XH.isMobileApp,
+            "ColChooser `mode: 'docked'` is not supported on mobile - use the default 'modal'."
         );
+
+        const modelClass = XH.isMobileApp
+            ? MobileColChooserModel
+            : isDocked
+              ? DesktopDockedColChooserModel
+              : DesktopModalColChooserModel;
+
+        const ret = this.markManaged(new modelClass({...config, gridModel: this}));
+        ret.xhName = this.childXhName('colChooserModel');
+        return ret;
     }
 
     private isGroupSpec(col: ColumnOrGroupSpec): col is ColumnGroupSpec {

@@ -90,6 +90,9 @@ export interface TreeMapConfig {
 
     /** Data filter to apply to records. */
     filter?: FilterLike;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface TreeMapModelDefaults {
@@ -178,8 +181,10 @@ export class TreeMapModel extends HoistModel {
             onDoubleClick,
             tooltip = true,
             emptyText,
-            filter
+            filter,
+            xhName = null
         }: TreeMapConfig = config ?? {};
+        this.xhName = xhName;
 
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;

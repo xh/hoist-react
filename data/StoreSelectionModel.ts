@@ -22,6 +22,9 @@ export interface StoreSelectionConfig {
     mode?: 'single' | 'multiple' | 'disabled';
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -50,11 +53,12 @@ export class StoreSelectionModel extends HoistModel {
         return this.mode !== 'disabled';
     }
 
-    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig) {
+    constructor({store, mode = 'single', xhName = null, xhImpl = false}: StoreSelectionConfig) {
         super();
         makeObservable(this);
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
@@ -150,11 +154,10 @@ export class StoreSelectionModel extends HoistModel {
     // Implementation
     //------------------------
     private cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store. Cleanup array in place without
-        // modifying observable -- the 'records' getter provides all observable state.
+        // Remove recs from selection if they are no longer in store.
         const {store} = this;
         return {
-            track: () => store.records,
+            track: () => store._filtered,
             run: () => remove(this._ids, id => !store.getById(id, true))
         };
     }

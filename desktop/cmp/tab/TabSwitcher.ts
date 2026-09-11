@@ -25,9 +25,9 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
-    composeRefs,
     createObservableRef,
     getLayoutProps,
+    useComposedRefs,
     useOnResize,
     useOnScroll,
     useOnVisibleChange
@@ -76,16 +76,19 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             vertical = ['left', 'right'].includes(orientation),
             impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
 
-        // Implement overflow
-        ref = impl.enableOverflow
-            ? composeRefs(
-                  ref,
-                  impl.switcherRef,
-                  useOnResize(() => impl.updateOverflowTabs()),
-                  useOnVisibleChange(() => impl.updateOverflowTabs()),
-                  useOnScroll(() => impl.updateOverflowTabs())
-              )
-            : composeRefs(ref, impl.switcherRef);
+        // Implement overflow. The tracking hooks run unconditionally to keep hook order stable -
+        // their refs are composed onto the switcher only when overflow is enabled.
+        const resizeRef = useOnResize(() => impl.updateOverflowTabs()),
+            visibleRef = useOnVisibleChange(() => impl.updateOverflowTabs()),
+            scrollRef = useOnScroll(() => impl.updateOverflowTabs());
+
+        ref = useComposedRefs(
+            ref,
+            impl.switcherRef,
+            impl.enableOverflow ? resizeRef : null,
+            impl.enableOverflow ? visibleRef : null,
+            impl.enableOverflow ? scrollRef : null
+        );
 
         // Create tabs
         const tabStyle: CSSProperties = {};

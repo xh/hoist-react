@@ -6,23 +6,23 @@
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {ColChooserPanelModel} from './ColChooserPanelModel';
+import {DockedColChooserModel} from './DockedColChooserModel';
 import {colChooser} from './ColChooser';
 
 /**
  * Docked, non-modal side-panel column chooser - a resizable, header-less dock rendered alongside the
- * grid while open. Desktop only; Grid mounts this in an `hframe` when a {@link ColChooserPanelModel} is
- * configured.
+ * grid while open. Desktop only; Grid mounts this in an `hframe` when its chooser is configured
+ * with `mode: 'docked'`.
  * @internal
  */
-export const colChooserPanel = hoistCmp.factory({
-    displayName: 'ColChooserPanel',
-    model: uses(ColChooserPanelModel),
+export const dockedColChooser = hoistCmp.factory({
+    displayName: 'DockedColChooser',
+    model: uses(DockedColChooserModel),
 
     render({model}) {
         if (!model.isOpen) return null;
         return panel({
-            className: 'xh-col-chooser-panel',
+            className: 'xh-docked-col-chooser',
             model: model.panelModel,
             item: colChooser({model})
         });

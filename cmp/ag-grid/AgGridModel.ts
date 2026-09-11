@@ -58,6 +58,9 @@ export interface AgGridModelConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -125,11 +128,13 @@ export class AgGridModel extends HoistModel {
         stripeRows = true,
         showCellFocus = false,
         hideHeaders = false,
+        xhName = null,
         xhImpl = false
     }: AgGridModelConfig = {}) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.sizingMode = sizingMode;
         this.showHover = showHover;
@@ -489,12 +494,17 @@ export class AgGridModel extends HoistModel {
     setSelectedRowNodeIds(ids: string[]) {
         this.throwIfNotReady();
 
-        const {agApi} = this;
-        agApi.deselectAll();
+        const {agApi} = this,
+            idSet = new Set(ids),
+            toDeselect = agApi.getSelectedNodes().filter(it => !idSet.has(it.id)),
+            toSelect: IRowNode[] = [];
         ids.forEach(id => {
             const node = agApi.getRowNode(id);
-            if (node) node.setSelected(true);
+            if (node && !node.isSelected()) toSelect.push(node);
         });
+
+        if (!isEmpty(toDeselect)) agApi.setNodesSelected({nodes: toDeselect, newValue: false});
+        if (!isEmpty(toSelect)) agApi.setNodesSelected({nodes: toSelect, newValue: true});
     }
 
     /**

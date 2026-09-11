@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {form} from '@xh/hoist/cmp/form';
-import {div, frame, placeholder, span, vframe} from '@xh/hoist/cmp/layout';
+import {valOrNa} from '@xh/hoist/admin/AdminUtils';
+import {form, formFieldSet} from '@xh/hoist/cmp/form';
+import {frame, hbox, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -31,21 +32,20 @@ export const roleDetails = hoistCmp.factory({
 
 const details = hoistCmp.factory(() =>
     form({
-        fieldDefaults: {inline: true},
-        item: div({
-            className: 'xh-admin-role-details__form',
+        fieldDefaults: {readonlyRenderer: valOrNa},
+        item: formFieldSet({
+            title: 'Role',
+            className: 'xh-admin-role-details__form xh-admin-readonly-form',
             items: [
-                formField({field: 'name'}),
-                formField({field: 'category'}),
+                hbox(formField({field: 'name', flex: 1}), formField({field: 'category', flex: 1})),
                 formField({
                     field: 'notes',
-                    readonlyRenderer: v => {
-                        return frame({
+                    readonlyRenderer: v =>
+                        frame({
                             style: {overflowY: 'auto'},
-                            height: 50,
-                            item: v ?? span({item: 'N/A', className: 'xh-text-color-muted'})
-                        });
-                    }
+                            maxHeight: 80,
+                            item: valOrNa(v)
+                        })
                 }),
                 formField({field: 'lastUpdated'})
             ]

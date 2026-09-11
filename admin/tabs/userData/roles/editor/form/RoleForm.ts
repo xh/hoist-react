@@ -170,9 +170,7 @@ const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
                 tooltipText = `All users listed here will be directly granted ${roleName}.`;
                 break;
             case 'DIRECTORY_GROUP':
-                tooltipText =
-                    model.moduleConfig?.directoryGroupsDescription ??
-                    `All members of these directory groups will be granted ${roleName}.`;
+                tooltipText = `All members of these directory groups will be granted ${roleName}.`;
                 break;
             case 'ROLE':
                 tooltipText = `All users holding these roles will also be granted ${roleName}.`;

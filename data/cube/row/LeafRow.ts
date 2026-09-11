@@ -41,12 +41,20 @@ export abstract class LeafRow extends BaseRow {
         return true;
     }
 
+    override getVisibleDatas(): ViewRowData {
+        return this.data as ViewRowData;
+    }
+
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);
         this.cubeRecord = rawRecord;
     }
 
-    applyLeafDataUpdate(newRec: StoreRecord, updatedRows: Set<BaseRow>) {
+    applyLeafDataUpdate(
+        newRec: StoreRecord,
+        updatedRows: Set<BaseRow>,
+        changedFields: Set<string>
+    ) {
         this.cubeRecord = newRec;
         const {view, data} = this,
             newData = newRec.data,
@@ -59,6 +67,7 @@ export abstract class LeafRow extends BaseRow {
                 newValue = newData[name];
             if (oldValue !== newValue) {
                 updates.push(new RowUpdate(field, oldValue, newValue));
+                changedFields.add(name);
             }
         });
 
@@ -81,8 +90,9 @@ export abstract class LeafRow extends BaseRow {
 
 /**
  * Leaf row exposed on results - i.e. when the Query sets {@link Query.includeLeaves} or
- * {@link Query.provideLeaves}. Holds a per-View {@link ViewRowData} copy of its source record's
- * data, limited to the queried fields.
+ * {@link Query.provideLeaves}. Holds a per-View {@link ViewRowData} whose queried field values
+ * are read through prototype getters over an own `_src` reference to the source record's data,
+ * avoiding a per-leaf copy. See {@link View.newLeafRowData}.
  */
 export class ExposedLeafRow extends LeafRow {
     declare data: ViewRowData;
@@ -90,14 +100,8 @@ export class ExposedLeafRow extends LeafRow {
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id, rawRecord);
 
-        const data = (this.data = view.newRowData(id));
-        data.cubeRowType = 'leaf';
+        const data = (this.data = view.newLeafRowData(id, rawRecord.data));
         data.cubeLabel = rawRecord.id.toString();
-        data.isCubeLeaf = true;
-
-        view.fields.forEach(({name}) => {
-            data[name] = rawRecord.data[name];
-        });
     }
 
     protected override applyUpdatedData(
@@ -105,8 +109,7 @@ export class ExposedLeafRow extends LeafRow {
         newData: PlainObject,
         updatedRows: Set<BaseRow>
     ) {
-        const {data} = this;
-        updates.forEach(({field, newValue}) => (data[field.name] = newValue));
+        this.data._src = newData;
         if (!isEmpty(updates)) updatedRows.add(this);
     }
 }
@@ -129,8 +132,6 @@ export class HiddenLeafRow extends LeafRow {
     override syncBuckets() {}
 
     protected override applyUpdatedData(updates: RowUpdate[], newData: PlainObject) {
-        // Always swap reference to avoid retaining the old record. Never registered in
-        // updatedRows - hidden leaves are not published to stores or results.
         this.data = newData;
     }
 }

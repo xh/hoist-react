@@ -34,6 +34,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Configure a desktop panel (toolbars, masks, collapse) | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md)                                                             |
 | Build a mobile app | [`/mobile/`](../mobile/README.md)                                                                                   |
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
+| Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
@@ -72,7 +73,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, and tree data | Store, StoreRecord, Field, Filter, tree data, loadData, processRawData |
+| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, tree data, and memory tuning | Store, StoreRecord, Field, Filter, tree data, loadData, loadDataAsync, updateData, digestSpec, projectionOnly, diagnostics |
 | [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
 | [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
@@ -87,6 +88,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
+| [`/cmp/daterange/`](../cmp/daterange/README.md) | Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters | DateRangePickerModel, DateRangePicker, DateRangeSelection, presets, anchorDate, LocalDateRange, currentRangeFilter, priorRange |
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
@@ -127,7 +129,8 @@ Cross-cutting documentation that spans multiple packages:
 | [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
 | [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
-| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
+| [`/kit/blueprint/`](../kit/blueprint/README.md) | Blueprint integration - wrapped components, element factories, and build-time icon stubbing | Blueprint, Popover, Dialog, element factories, blueprint icons, loadAllBlueprintJsIcons, upgrade checklist |
+| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, InspectorModel, StatsModel, InstancesModel, DiagnosticsModel, property watchlist, model leak detection |
 | [`/styles/`](../styles/README.md) | CSS custom properties, theming, BEM naming, SCSS conventions, and utility classes | `--xh-*` CSS vars, vars.scss, XH.scss, dark theme, ThemeModel, BEM, `xh-` prefix, intent colors, utility classes |
 
 ### Other Packages
@@ -165,7 +168,8 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v86](./upgrade-notes/v86-upgrade-notes.md) | TBD | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
+| [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |
+| [v86](./upgrade-notes/v86-upgrade-notes.md) | 2026-06-12 | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
 | [v85](./upgrade-notes/v85-upgrade-notes.md) | 2026-04-23 | 🟢 LOW | `InitContext` on `HoistService.initAsync()` / `HoistAppModel.initAsync()`, nested app-load spans, Swiper 11→12 |
 | [v84](./upgrade-notes/v84-upgrade-notes.md) | 2026-04-15 | 🟢 LOW | FontAwesome v7, icon-based Spinner, `getClassName` removal, hoistCmp `defaults` |
 | [v83](./upgrade-notes/v83-upgrade-notes.md) | 2026-03-24 | 🟢 LOW | TraceService, static defaults pattern, `downloadjs` removal, `SegmentedControl` |

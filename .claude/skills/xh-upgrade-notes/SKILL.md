@@ -184,6 +184,19 @@ If the row already has an empty Upgrade column, add the link. If the row doesn't
 this is a new release — add it following the existing pattern. Also update the reverse lookup
 table (hoist-core → hoist-react) if a new core minimum is introduced.
 
+**If the Min Core Required value changes, update `MIN_HOIST_CORE_VERSION` in `core/XH.ts` to
+match.** That constant is what `EnvironmentService` enforces at app startup. The CHANGELOG entry
+and the matrix row document the minimum; neither enforces it.
+
+Set the floor to the lowest core version the client genuinely cannot run without, not the newest
+core the release pairs with. Features that detect a missing endpoint and degrade gracefully do not
+justify raising the floor - document those in the Recommended Core column instead.
+
+Then test the floor against the core snapshot that development actually runs against, using
+`checkMinVersion`. Semver sorts prereleases below the release, and `normalizeVersion` handles only
+`X.0-SNAPSHOT`, not `X.Y-SNAPSHOT`. A three-part floor therefore rejects a server reporting a
+SNAPSHOT of that same `X.Y`; the two-part form (`NN.0`) accepts both.
+
 **Important:** The Notes columns in both tables should describe features that drive the
 **core/react pairing** — server-side features that the react version needs to support (e.g.
 span sampling, admin panel features backed by new core endpoints, OTEL tag alignment). Do not

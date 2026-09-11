@@ -9,7 +9,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {Field, Store, StoreConfig, StoreRecord} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {VIEW_ROW_DATA_FIELDS} from './ViewRowData';
+import {VIEW_ROW_DATA_FIELDS, ViewRowData} from './ViewRowData';
 import {
     buildPivotLattice,
     CHILD_KIND_LEAF,
@@ -228,21 +228,21 @@ export class PivotView extends View {
      * Rewrite the cells touched by a tick onto their owning group rows, then push only group rows to
      * connected stores - cell rows are never published.
      */
-    protected override loadUpdatedRows(updatedRows: Set<BaseRow>) {
+    protected override loadUpdatedRows(updatedRows: Set<BaseRow>, changedFields: Set<string>) {
         const groupRows = new Set<BaseRow>(),
             {exposesLeaves} = this;
 
         updatedRows.forEach(row => {
             if (row instanceof PivotCellRow) {
-                this.projectCell(row);
+                this.projectCell(row, changedFields);
                 groupRows.add(row.ownerRow);
             } else {
-                if (exposesLeaves && row.isLeaf) this.projectLeaf(row as LeafRow);
+                if (exposesLeaves && row.isLeaf) this.projectLeaf(row as LeafRow, changedFields);
                 groupRows.add(row);
             }
         });
 
-        super.loadUpdatedRows(groupRows);
+        super.loadUpdatedRows(groupRows, changedFields);
     }
 
     private clearCells() {
@@ -313,7 +313,7 @@ export class PivotView extends View {
         prev?.forEach(cell => {
             if (live.has(cell)) return;
             const {data} = cell.ownerRow;
-            if (clearCellSlots(cell, data, EMPTY_NAMES)) this.noteRowDataMutated(data);
+            if (clearCellSlots(cell, data, EMPTY_NAMES)) this.assignDigest(data as ViewRowData);
         });
     }
 
@@ -469,8 +469,12 @@ export class PivotView extends View {
         if (this.exposesLeaves) leafRows.forEach(leaf => this.projectLeaf(leaf));
     }
 
-    /** A leaf's own full-path cell is exactly its `pivotParent`, so no extra bookkeeping is needed. */
-    private projectLeaf(leaf: LeafRow) {
+    /**
+     * A leaf's own full-path cell is exactly its `pivotParent`, so no extra bookkeeping is needed.
+     *
+     * `changedFields` is passed on the incremental path only - see {@link projectCell}.
+     */
+    private projectLeaf(leaf: LeafRow, changedFields?: Set<string>) {
         const cell = leaf.pivotParent as PivotCellRow;
         if (!cell) return;
 
@@ -478,9 +482,16 @@ export class PivotView extends View {
             {valueFields} = this.query,
             {data} = leaf;
 
-        if (clearCellSlots(leaf, data, names)) this.noteRowDataMutated(data);
+        if (clearCellSlots(leaf, data, names, changedFields)) {
+            this.assignDigest(data as ViewRowData);
+        }
         for (let i = 0; i < valueFields.length; i++) {
-            data[names[i]] = data[valueFields[i].name];
+            const name = names[i],
+                val = data[valueFields[i].name];
+            if (data[name] !== val) {
+                data[name] = val;
+                changedFields?.add(name);
+            }
         }
     }
 
@@ -491,23 +502,24 @@ export class PivotView extends View {
      * owner's own aggregates can be entirely unchanged while its cells move (leaves shifting between
      * pivot paths), and a `canAggregateFn` can keep it out of an incremental update's row set.
      */
-    private projectCell(cell: PivotCellRow) {
+    private projectCell(cell: PivotCellRow, changedFields?: Set<string>) {
         const names = this.cellFieldNames(cell),
             {data, ownerRow} = cell,
             ownerData = ownerRow.data,
             {valueFields} = this.query;
 
-        let changed = clearCellSlots(cell, ownerData, names);
+        let changed = clearCellSlots(cell, ownerData, names, changedFields);
         for (let i = 0; i < valueFields.length; i++) {
             const name = names[i],
                 val = data[valueFields[i].name];
             if (ownerData[name] !== val) {
                 ownerData[name] = val;
+                changedFields?.add(name);
                 changed = true;
             }
         }
 
-        if (changed) this.noteRowDataMutated(ownerData);
+        if (changed) this.assignDigest(ownerData as ViewRowData);
     }
 
     /** A miss means a cached cell outlived its path - `buildCellRows` should have rebound it. */
@@ -555,7 +567,12 @@ function arraysEqual(a: string[], b: string[]): boolean {
  * Name arrays hold their identity while the pivot structure does, so this is an identity check on the
  * common path.
  */
-function clearCellSlots(row: BaseRow, data: PlainObject, names: string[]): boolean {
+function clearCellSlots(
+    row: BaseRow,
+    data: PlainObject,
+    names: string[],
+    changedFields?: Set<string>
+): boolean {
     const prior = row.projectedCellNames;
     row.projectedCellNames = names;
     if (!prior || prior === names) return false;
@@ -564,6 +581,7 @@ function clearCellSlots(row: BaseRow, data: PlainObject, names: string[]): boole
     prior.forEach(name => {
         if (!names.includes(name) && data[name] != null) {
             data[name] = null;
+            changedFields?.add(name);
             changed = true;
         }
     });

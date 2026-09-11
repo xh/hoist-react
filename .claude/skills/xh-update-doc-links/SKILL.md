@@ -121,7 +121,11 @@ the single source of truth for both the MCP server (which loads it at startup vi
      `components`, `desktop`, `mobile`, `utilities`, `supporting`, `devops`, or `upgrade`.
    - `description`: concise one-sentence summary matching existing entry style.
    - `keywords`: 5–12 key terms as a JSON array of strings — include API names, class names,
-     and topic terms.
+     and topic terms. Every keyword must pass this test: a reader searching that term should
+     find this doc to be the right destination. Prefer distinctive terms — exported symbols
+     and phrases specific to the package. Avoid broad or generic words, and take particular
+     care with terms that name a concept owned by another part of the framework, where a match
+     would misroute the search.
 
 3. **Place entries** in logical order within the `entries` array (grouped by category).
 

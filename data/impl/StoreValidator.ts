@@ -11,12 +11,12 @@ import {
     StoreValidationResultsMap,
     ValidationState
 } from '@xh/hoist/data';
-import {computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
-import {sumBy, chunk} from 'lodash';
+import {comparer, computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
+import {sumBy, chunk, isEmpty} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
 import {RecordValidator} from './RecordValidator';
 import {Store} from '../Store';
-import {StoreRecordId} from '../StoreRecord';
+import {StoreRecord, StoreRecordId} from '../StoreRecord';
 
 /**
  * Computes validation state for a Store's uncommitted Records.
@@ -24,6 +24,9 @@ import {StoreRecordId} from '../StoreRecord';
  */
 export class StoreValidator extends HoistBase {
     store: Store;
+
+    /** True if any Field has Rules - when false, all validation is skipped. */
+    readonly hasRules: boolean;
 
     /** True if the store is confirmed to be Valid. */
     @computed
@@ -76,13 +79,18 @@ export class StoreValidator extends HoistBase {
     constructor(config: {store: Store}) {
         super();
         makeObservable(this);
-        this.store = config.store;
 
-        this.addReaction({
-            track: () => this.uncommittedRecords,
-            run: () => this.syncValidatorsAsync(),
-            fireImmediately: true
-        });
+        const {store} = config;
+        this.store = store;
+        this.hasRules = store.fields.some(f => !isEmpty(f.rules));
+
+        if (this.hasRules) {
+            this.addReaction({
+                track: () => this.uncommittedRecords,
+                run: recs => this.syncValidatorsAsync(recs),
+                fireImmediately: true
+            });
+        }
     }
 
     /**
@@ -124,18 +132,19 @@ export class StoreValidator extends HoistBase {
     //---------------------------------------
     // Implementation
     //---------------------------------------
-    private get uncommittedRecords() {
+    @computed({equals: comparer.shallow})
+    private get uncommittedRecords(): StoreRecord[] {
         const {store} = this;
         return store.isDirty ? store.allRecords.filter(it => !it.isCommitted) : [];
     }
 
-    private async syncValidatorsAsync() {
+    private async syncValidatorsAsync(records: StoreRecord[]) {
         const isComplex = this.store.validationIsComplex,
             currValidators = this._validators,
             newValidators = new Map(),
             toValidate = [];
 
-        this.uncommittedRecords.forEach(record => {
+        records.forEach(record => {
             const {id} = record;
 
             // Re-use existing validators to preserve validation state and avoid churn.

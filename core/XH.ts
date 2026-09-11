@@ -6,7 +6,7 @@
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
 import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
-import {Store} from '@xh/hoist/data';
+import {Cube, Store, View} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never} from '@xh/hoist/promise';
@@ -75,7 +75,7 @@ import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
-export const MIN_HOIST_CORE_VERSION = '31.2';
+export const MIN_HOIST_CORE_VERSION = '40.5.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -663,6 +663,10 @@ export class XHApi {
      * button instead (e.g. for confirming risky operations), applications should specify a
      * `cancelProps` argument of the following form `cancelProps: {..., autoFocus: true}`.
      *
+     * If `suppress` is specified and the user has previously opted to suppress this message,
+     * this method will resolve immediately to their previously saved response, without showing
+     * a dialog. This also applies to the `alert`, `confirm`, and `prompt` variants below.
+     *
      * @returns true if user confirms, false if user cancels. If an input is provided, the
      * returned Promise will resolve to the input value if user confirms, false if user cancels.
      */
@@ -873,6 +877,16 @@ export class XHApi {
     /** All Stores registered with this application. */
     getStores(): Store[] {
         return Array.from(instanceManager.stores);
+    }
+
+    /** All Cubes registered with this application. */
+    getCubes(): Cube[] {
+        return Array.from(instanceManager.cubes);
+    }
+
+    /** All Cube Views registered with this application. */
+    getViews(): View[] {
+        return Array.from(instanceManager.views);
     }
 
     /**

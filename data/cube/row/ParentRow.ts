@@ -152,7 +152,7 @@ export abstract class ParentRow extends BaseRow {
             changed = this.recomputeAggregatesForContextChange(this.recomputeCanAggregate());
         }
 
-        if (changed) view.noteRowDataMutated(this.data);
+        if (changed) view.assignDigest(this.data as ViewRowData);
         return this;
     }
 
@@ -257,7 +257,7 @@ export class AggregateRow extends ParentRow {
 
         this.dim = dim;
         this.dimName = dimName;
-        const data = (this.data = view.newRowData(id));
+        const data = (this.data = view.newParentRowData(id));
         data.cubeRowType = 'aggregate';
         data.cubeLabel = strVal;
         data.cubeDimension = dimName;
@@ -301,7 +301,7 @@ export class BucketRow extends ParentRow {
 
         this.bucketSpec = bucketSpec;
         this.bucketVal = bucketVal;
-        const data = (this.data = view.newRowData(id));
+        const data = (this.data = view.newParentRowData(id));
         data.cubeRowType = 'bucket';
         data.cubeLabel = bucketSpec.labelFn(bucketVal);
         data.cubeDimension = bucketSpec.name;

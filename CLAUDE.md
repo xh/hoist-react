@@ -342,6 +342,13 @@ when explicitly requested or when it points to extensive context that doesn't fi
 scope (issue/PR references belong in the commit message and PR description). Hard-wrap changelog
 entries at 100 characters (unlike commit messages and PR descriptions, which should not be wrapped).
 
+**Declaring a new hoist-core minimum:** a `Requires hoist-core >= X` changelog entry is not
+self-enforcing. Also update `MIN_HOIST_CORE_VERSION` in `core/XH.ts` (checked at startup by
+`EnvironmentService`) and the matching row in
+[`docs/version-compatibility.md`](docs/version-compatibility.md). Set the floor only to what the
+client genuinely cannot run without - features that detect a missing endpoint and degrade belong in
+that doc's Recommended Core column, not the floor.
+
 ## Key Dependencies
 
 - **MobX** - Reactive state management
