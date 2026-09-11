@@ -47,3 +47,107 @@
     }
   }
 }
+
+.xh-differ-host-picker {
+  &__target {
+    justify-content: flex-start;
+
+    .bp6-button-text {
+      flex: 1;
+      overflow: hidden;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__popover {
+    .bp6-popover-content {
+      padding: 0;
+    }
+  }
+
+  &__list {
+    max-height: 400px;
+    min-width: 420px;
+    overflow-y: auto;
+  }
+
+  &__empty {
+    color: var(--xh-text-color-muted);
+    padding: var(--xh-pad-px);
+  }
+
+  &__row {
+    align-items: center;
+    border-bottom: var(--xh-border-solid);
+    padding-right: var(--xh-pad-half-px);
+
+    &__main {
+      align-items: center;
+      cursor: pointer;
+      flex: 1;
+      gap: var(--xh-pad-px);
+      min-width: 0;
+      padding: var(--xh-pad-px);
+
+      &:hover {
+        background-color: var(--xh-menu-item-highlight-bg);
+      }
+    }
+
+    &__status {
+      align-items: center;
+      display: flex;
+      flex: none;
+      justify-content: center;
+      width: 20px;
+    }
+
+    &__text {
+      min-width: 0;
+    }
+
+    &__url {
+      align-items: baseline;
+      gap: var(--xh-pad-half-px);
+
+      > span:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    &__version {
+      color: var(--xh-text-color-muted);
+      flex: none;
+      font-size: var(--xh-font-size-small-px);
+    }
+
+    &__meta {
+      color: var(--xh-text-color-muted);
+      font-size: var(--xh-font-size-small-px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &__selected {
+      margin-right: var(--xh-pad-half-px);
+    }
+
+    &__mismatch {
+      align-items: center;
+      color: var(--xh-intent-warning);
+      font-size: var(--xh-font-size-small-px);
+      gap: var(--xh-pad-half-px);
+    }
+  }
+
+  &__checked {
+    color: var(--xh-text-color-muted);
+    font-size: var(--xh-font-size-small-px);
+    padding-right: var(--xh-pad-px);
+  }
+}

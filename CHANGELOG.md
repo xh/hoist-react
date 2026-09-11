@@ -15,6 +15,13 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Replaced the instance selector in the Admin Console's "Compare w/ Remote" tools with a status
+  popover. Each instance configured via `xhAppInstances` is now probed on open - the popover reports
+  whether it is reachable and whether you hold an authenticated session there with the
+  `HOIST_ADMIN_READER` role, and offers a "Visit" link to open an instance in a new tab and
+  authenticate via SSO before running the diff.
 
 ## 87.3.0 - 2026-09-10
 

@@ -12,11 +12,13 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {cloneDeep, isEqual, isNil, isString, omit, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isNil, isString, omit, remove} from 'lodash';
 import {hspacer} from '../../cmp/layout';
 import {DifferDetailModel} from './DifferDetailModel';
+import {DifferHostModel} from './DifferHostModel';
+import {DifferHostsModel} from './DifferHostsModel';
 
 /**
  * @internal
@@ -38,10 +40,10 @@ export class DifferModel extends HoistModel {
     detailModel = new DifferDetailModel({parent: this});
 
     @managed
-    gridModel: GridModel;
+    hostsModel = new DifferHostsModel();
 
-    @bindable
-    remoteHost: string = null;
+    @managed
+    gridModel: GridModel;
 
     @observable
     hasLoaded = false;
@@ -62,14 +64,9 @@ export class DifferModel extends HoistModel {
         recordsRequired: true
     };
 
-    /**
-     * All other configured appInstances URLs, excepting the current one.
-     * (Use of startsWith allows configs to end in trailing /)
-     */
-    get remoteHosts(): string[] {
-        return XH.getConf('xhAppInstances', []).filter(
-            (it: string) => !it.startsWith(window.location.origin)
-        );
+    /** Remote instance currently selected for comparison. */
+    get remoteHost(): DifferHostModel {
+        return this.hostsModel.selectedHost;
     }
 
     constructor({
@@ -90,9 +87,6 @@ export class DifferModel extends HoistModel {
         this.valueRenderer = valueRenderer ?? (v => (isNil(v) ? '' : v.value));
 
         this.url = entityName + 'DiffAdmin';
-
-        // Default to first available remote for comparison
-        this.remoteHost = this.remoteHosts[0];
 
         const rendererIsComplex = true;
         this.gridModel = new GridModel({
@@ -144,6 +138,8 @@ export class DifferModel extends HoistModel {
             when: () => this.hasLoaded && this.gridModel.isReady,
             run: () => this.gridModel.autosizeAsync()
         });
+
+        this.hostsModel.checkHostsAsync();
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -152,10 +148,7 @@ export class DifferModel extends HoistModel {
         await this.runner({loadSpec})
             .span('load')
             .run(async ctx => {
-                const remoteHost = trimEnd(this.remoteHost, '/'),
-                    // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
-                    apiAffix = XH.isDevelopmentMode ? '/api/' : XH.baseUrl,
-                    remoteBaseUrl = remoteHost + apiAffix,
+                const remoteBaseUrl = this.remoteHost?.baseUrl,
                     {entityName, url} = this;
 
                 const resp = await Promise.all([
@@ -168,12 +161,14 @@ export class DifferModel extends HoistModel {
             })
             .catch(e => {
                 this.processFailedLoad();
-                if (e.httpStatus === 401) {
+                if (e.httpStatus === 401 || e.httpStatus === 403) {
+                    // Re-check so the instance picker reflects what just went wrong.
+                    this.remoteHost?.checkAsync();
                     XH.alert({
                         title: 'Access Denied',
                         icon: Icon.accessDenied(),
                         message:
-                            'Access denied when querying records. Are you logged in to an account with admin rights on the remote instance?'
+                            'Access denied when querying records. Check the instance picker - you may need to visit the remote instance in a new tab to log in, or use an account with admin rights there.'
                     });
                 } else {
                     XH.handleException(e, {showAsError: false, logOnServer: false});

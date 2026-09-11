@@ -9,16 +9,16 @@ import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
-import {identity, startCase} from 'lodash';
+import {startCase} from 'lodash';
 import {storeFilterField} from '../../cmp/store';
 import {differDetail} from './DifferDetail';
+import {differHostPicker} from './DifferHostPicker';
 import {DifferModel} from './DifferModel';
 
 export const differ = hoistCmp.factory({
@@ -59,14 +59,7 @@ const contents = hoistCmp.factory<DifferModel>(({model}) => {
 const tbar = hoistCmp.factory<DifferModel>(({model}) => {
     return toolbar(
         span('Compare with'),
-        select({
-            bind: 'remoteHost',
-            placeholder: 'https://remote-host/',
-            enableCreate: true,
-            createMessageFn: identity,
-            width: 350,
-            options: model.remoteHosts
-        }),
+        differHostPicker({model: model.hostsModel}),
         button({
             text: 'Diff from Remote',
             icon: Icon.diff(),
