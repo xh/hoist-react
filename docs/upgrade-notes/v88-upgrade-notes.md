@@ -21,8 +21,6 @@ The most significant app-level impacts are:
   name.
 - **Nine hook names did not match their `--xh-` variable** - these need the table in Step 3, not
   a plain prefix.
-- **`css-data.json` ships in the package** - a VS Code Custom Data file giving autocomplete and
-  hover docs for every `--xh-*` variable (optional, Step 6).
 
 There is no hoist-core change in this release.
 
@@ -73,7 +71,7 @@ grep -rnE "['\"]--[a-z][a-z0-9-]*['\"]\s*:" --include='*.ts' --include='*.tsx' c
 
 Any hit that names a Hoist variable is an override to migrate. Your app's own variables (with your
 own prefix) and third-party variables (`--ag-*`, `--bp*-*`) are unaffected. When in doubt whether
-a name is a Hoist variable, search for `--xh-<name>` in `node_modules/@xh/hoist/css-data.json`.
+a name is a Hoist variable, search for `--xh-<name>` in `node_modules/@xh/hoist/styles/vars.scss`.
 
 **For most variables**, the migration is simply adding the `xh-` prefix:
 
@@ -192,22 +190,6 @@ body.xh-app {
   --xh-appbar-height: 48;
 }
 ```
-
-### 6. Enable IDE Autocomplete (optional)
-
-Hoist now ships `css-data.json`, a [VS Code Custom Data](https://code.visualstudio.com/blogs/2020/02/24/custom-data-format)
-file describing every `--xh-*` variable. Point VS Code at it to get autocomplete and hover
-documentation in your SCSS:
-
-**File:** `.vscode/settings.json`
-```json
-{
-  "css.customData": ["./client-app/node_modules/@xh/hoist/css-data.json"]
-}
-```
-
-Adjust the path to wherever your app's `node_modules` lives. The same file is a convenient
-machine-readable index of Hoist's variables for coding agents.
 
 ## Verification Checklist
 

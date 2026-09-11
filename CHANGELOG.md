@@ -26,15 +26,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `--xh-font-size`). This is a mechanical find-and-replace for most apps. Nine unprefixed hook
   names did not match their `--xh-` counterpart - see the upgrade notes for the complete mapping.
 
-### 🤖 AI Docs + Tooling
-
-* Added `css-data.json`, a VS Code Custom Data file providing autocomplete and hover documentation
-  for every `--xh-*` CSS custom property, and a machine-readable index of the same for coding
-  agents. Generated from `styles/vars.scss` by `pnpm generate:css-data`, kept in sync by a
-  pre-commit hook, and shipped in the npm package - point VS Code's `css.customData` setting at
-  `node_modules/@xh/hoist/css-data.json`. Document a variable with a `///` comment above its
-  declaration in `vars.scss` to replace its auto-generated description.
-
 
 ## 87.3.0 - 2026-09-10
 

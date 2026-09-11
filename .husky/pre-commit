@@ -6,9 +6,3 @@ pnpm exec lint-staged
 if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '\.(ts|tsx|js|jsx)$|package\.json$|pnpm-(lock|workspace)\.yaml$|tsconfig.*\.json$'; then
   pnpm typecheck
 fi
-
-# Ensure css-data.json stays in sync with the CSS custom properties declared in styles/vars.scss.
-# Regenerate with `pnpm generate:css-data` and stage the result if this check fails.
-if git diff --cached --name-only --diff-filter=ACMRD | grep -qE '^styles/vars\.scss$|^bin/generate-css-data\.mjs$'; then
-  node bin/generate-css-data.mjs --check
-fi

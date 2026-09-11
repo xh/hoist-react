@@ -525,7 +525,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v87.x to v88.0.0. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "css variables", "custom properties", "override hooks", "--xh-", "css-data.json"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "css variables", "custom properties", "override hooks", "--xh-"]
         }
     ]
 }
