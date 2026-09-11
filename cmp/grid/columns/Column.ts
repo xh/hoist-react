@@ -162,19 +162,10 @@ export interface ColumnSpec {
     cellClassRules?: Record<string, ColumnCellClassRuleFn>;
 
     /**
-     * Render a small triangular flag in a cell's top-right corner - a compact marker for values
-     * warranting attention, without consuming a column or altering cell contents.
-     *
-     * Called per record. Return the Intent to draw the flag in, or null for no flag. Flags
-     * always render in the cell's top-right corner.
-     *
-     * Keep this cheap - it is called once per candidate Intent on every rendered cell,
-     * whenever the cell refreshes. It is intentionally not cached, so that a flag reflects
-     * current state even when that state (e.g. an async validation result) changes without the
-     * record or its value changing.
-     *
-     * At most one flag is rendered per cell. On an editable column, a cell failing validation
-     * always shows its validation flag, taking precedence over any flag returned here.
+     * Render a small triangular flag in the top-right corner of each cell, in the color of the
+     * returned Intent - a compact marker for values warranting attention. Return null for no flag.
+     * Called per record on every cell refresh and deliberately not cached, so keep it cheap.
+     * On an editable column, a cell failing validation shows its validation flag instead.
      */
     cellFlag?: ColumnCellFlagFn;
 
@@ -1088,21 +1079,13 @@ export class Column {
             };
         }
 
-        // Cell flags, from `cellFlag` and/or the validation state of an editable cell. Always
-        // emitted via cellClassRules, never cellClass, so that a flag is *removed* when record
-        // data changes or when validation supersedes it - see the note on ColumnSpec.cellClass.
-        //
-        // Deliberately composed into the ag colDef here and never onto `this.cellClassRules`,
-        // which is what ColumnWidthCalculator reads. Flags are absolutely-positioned pseudo-
-        // elements and cannot affect measured width, so keeping them out of that config spares
-        // every flagged column the calculator's expensive class-permutation path.
+        // Flags must go via cellClassRules (removable) rather than cellClass (sticky), and must be
+        // composed into the ag colDef here rather than `this.cellClassRules` - the latter feeds
+        // ColumnWidthCalculator, and these pseudo-elements cannot affect measured width.
         const {cellFlag} = this;
         if (cellFlag || editor) {
-            // Resolved fresh on every evaluation, holding no state between calls. Deliberately
-            // NOT memoized on the record: `validationResults` is populated asynchronously and can
-            // change while a record and its value stay identical, so a record-keyed cache serves
-            // a stale flag once an async rule settles. Holding no record reference also keeps this
-            // closure - which lives as long as the ag colDef - from pinning a StoreRecord.
+            // Not memoized by record - `validationResults` can settle while the record and its
+            // value stay identical, and a captured record would be pinned for the colDef's life.
             const intentForCell = (agParams: CellClassParams): Intent => {
                 const record = agParams.data as StoreRecord,
                     {value} = agParams;
@@ -1255,7 +1238,6 @@ export class Column {
 //------------------------
 const CELL_FLAG_INTENTS: Intent[] = ['primary', 'success', 'warning', 'danger'];
 
-// Validation severity to the Intent used for its flag - preserves long-standing flag colors.
 const SEVERITY_FLAG_INTENTS: Record<ValidationSeverity, Intent> = {
     error: 'danger',
     warning: 'warning',
