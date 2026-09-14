@@ -64,8 +64,8 @@
   standard styling. Overrides are applied on top of Hoist's own theme, so grids keep their bindings
   to the `--xh-grid-*` variables. Also settable app-wide via `GridModel.defaults.theme`. Preferred
   over reaching for `agOptions.theme`.
-    * A theme is set once, at construction, and is read-only thereafter - each distinct set of params
-      carries its own copy of AG Grid's generated stylesheet. To vary a grid's appearance at runtime,
+    * A theme is set once, at construction, and cannot be changed thereafter - each distinct set of
+      params carries its own copy of AG Grid's generated stylesheet. To vary a grid's appearance at runtime,
       set the underlying `--xh-grid-*` (or `--ag-*`) CSS variables on an ancestor element.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per

@@ -9,7 +9,8 @@ import {themeBalham} from 'ag-grid-community';
 import {isEmpty, sortBy, toPairs} from 'lodash';
 
 /**
- * Param overrides for Hoist's AG Grid theme - see `GridModel.theme` and {@link createAgGridTheme}.
+ * Param overrides for Hoist's AG Grid theme - see the `theme` config on {@link GridConfig}
+ * and {@link AgGridModelConfig}, and {@link createAgGridTheme}.
  *
  * Any of AG Grid's documented theme params, e.g. `{headerBackgroundColor: 'navy', spacing: 4}`.
  */
@@ -83,11 +84,12 @@ export const xhAgGridTheme = themeBalham.withParams({
 const themeCache = new Map<string, Theme<ThemeDefaultParams>>();
 
 /**
- * Derive a variant of {@link xhAgGridTheme} with the given param overrides - backs `GridModel.theme`.
+ * Derive a variant of {@link xhAgGridTheme} with the given param overrides - backs the `theme` config
+ * on {@link GridConfig} and {@link AgGridModelConfig}.
  *
  * Results are cached by param value: AG Grid injects a full copy of its params CSS per distinct theme
  * object, so identically-configured grids should share one. The cache is never evicted - safe because
- * `AgGridModel.theme` is set once at construction, bounding it by the app's distinct grid configs.
+ * the `theme` config is set once at construction, bounding it by the app's distinct grid configs.
  */
 export function createAgGridTheme(params: AgGridThemeParams): Theme<ThemeDefaultParams> {
     if (isEmpty(params)) return xhAgGridTheme;

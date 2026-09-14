@@ -243,7 +243,7 @@ export interface GridConfig {
      * standard grid styling.
      *
      * Set once, at construction - to vary a grid's appearance at runtime, set the underlying
-     * `--xh-grid-*` CSS variables on an ancestor element. See {@link AgGridModel.theme}.
+     * `--xh-grid-*` CSS variables on an ancestor element.
      */
     theme?: AgGridThemeParams;
 
@@ -1225,11 +1225,6 @@ export class GridModel extends HoistModel {
 
     setHideHeaders(v: boolean) {
         this.agGridModel.hideHeaders = v;
-    }
-
-    /** Theme param overrides for this grid - read-only, see {@link AgGridModel.theme}. */
-    get theme(): AgGridThemeParams {
-        return this.agGridModel.theme;
     }
 
     /**

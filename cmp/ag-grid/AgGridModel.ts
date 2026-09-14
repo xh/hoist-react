@@ -70,7 +70,8 @@ export interface AgGridModelConfig {
      * `--xh-grid-*` CSS variables. Prefer overriding those variables for app-wide changes - use this
      * for one-off grids that need to depart from the app's standard grid styling.
      *
-     * Set once, at construction - see {@link AgGridModel.theme}.
+     * Set once, at construction - to vary a grid's appearance at runtime, set the underlying
+     * `--xh-grid-*` (or `--ag-*`) CSS variables on an ancestor element instead.
      */
     theme?: AgGridThemeParams;
 
@@ -135,19 +136,14 @@ export class AgGridModel extends HoistModel {
     @bindable hideHeaders: boolean;
 
     /**
-     * Theme param overrides for this grid, as provided to the constructor.
+     * The resolved AG Grid theme - Hoist's standard theme with any `theme` config overrides applied.
+     * Shared across grids configured alike, so they also share one copy of AG Grid's stylesheet.
      *
      * Deliberately read-only - unlike the style flags above, a theme is fixed for the life of the
      * grid. Each distinct set of params produces a theme object with its own copy of AG Grid's
      * generated stylesheet, so a settable theme invites unbounded style churn. Vary a grid's
      * appearance at runtime by setting the underlying `--xh-grid-*` (or `--ag-*`) CSS variables on
      * an ancestor element instead - cheaper, reactive, and how Hoist's own style flags work.
-     */
-    readonly theme: AgGridThemeParams;
-
-    /**
-     * The resolved AG Grid theme - Hoist's standard theme with any `theme` overrides applied. Shared
-     * across grids configured alike, so they also share one copy of AG Grid's stylesheet.
      *
      * @internal - consumed by the `AgGrid` component.
      */
@@ -181,7 +177,6 @@ export class AgGridModel extends HoistModel {
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;
         this.hideHeaders = hideHeaders;
-        this.theme = theme;
         this.agTheme = createAgGridTheme(theme);
 
         this.addReaction({
