@@ -24,6 +24,15 @@
       `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
       theme defaults now resolve against an inner `.ag-styled-root` element. See the
       [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+    * Hoist now styles grids with AG Grid's JS Theming API rather than the legacy balham CSS theme.
+      Legacy CSS themes are mutually exclusive with the `theme` grid option Hoist now supplies, so
+      apps must remove both the `provideGlobalGridOptions({theme: 'legacy'})` call and the
+      `ag-grid-community/styles/ag-grid.css` / `ag-theme-balham.css` imports from their `Bootstrap`,
+      or AG Grid will log an error and grids will render unstyled.
+    * Hoist no longer applies the `.ag-theme-balham` / `.ag-theme-balham-dark` classes. Apps with
+      custom CSS targeting either must retarget, using Hoist's own `.xh-ag-grid` wrapper class.
+      Prefer the new `GridModel.theme` config (below) or the `--xh-grid-*` variables over CSS
+      wherever they suffice.
 
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`
@@ -50,12 +59,26 @@
 
 ### 🎁 New Features
 
+* Added a `theme` config to `GridModel` and `AgGridModel`, accepting AG Grid theme param overrides
+  (e.g. `{headerBackgroundColor: 'navy', spacing: 4}`) for grids that need to depart from the app's
+  standard styling. Overrides are applied on top of Hoist's own theme, so grids keep their bindings
+  to the `--xh-grid-*` variables. Also settable app-wide via `GridModel.defaults.theme`. Preferred
+  over reaching for `agOptions.theme`.
+    * A theme is set once, at construction, and is read-only thereafter - each distinct set of params
+      carries its own copy of AG Grid's generated stylesheet. To vary a grid's appearance at runtime,
+      set the underlying `--xh-grid-*` (or `--ag-*`) CSS variables on an ancestor element.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
 
 ### ✨ Styles
 
+* Grid styling moves from AgGrid.scss to AG Grid theme params, exported as `xhAgGridTheme` from
+  `@xh/hoist/cmp/ag-grid`. Params remain bound to the same `--xh-grid-*` variables, so apps
+  overriding those see no change. The stylesheet retains only what params cannot express -
+  structural rules, the independent header padding token, and the per-instance `.xh-ag-grid--*`
+  modifiers, which now set the documented `--ag-*` variable for a param rather than targeting AG
+  Grid's internal DOM.
 * Added `.xh-grid-tooltip-frame`, a standalone utility class carrying Hoist's standard tooltip
   chrome - background, border, radius, padding and max-width. Hoist applies it to the tooltip
   content it renders itself, and apps can add it to a custom (element) tooltip's own root to match.

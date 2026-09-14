@@ -8,7 +8,7 @@
 // Override standard grid default for cell padding to support distinct CSS var for ZoneGrid.
 // (High degree of specificity required here.)
 .xh-grid.xh-zone-grid {
-  .ag-theme-balham.xh-ag-grid {
+  .xh-ag-grid {
     .ag-cell {
       padding-left: var(--xh-zone-grid-cell-lr-pad-px);
       padding-right: var(--xh-zone-grid-cell-lr-pad-px);

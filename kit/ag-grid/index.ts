@@ -25,6 +25,8 @@ export let agGridVersion = null;
 export type {
     GridOptions,
     GridApi,
+    Theme,
+    ThemeDefaultParams,
     SortDirection,
     ColDef,
     ColGroupDef,
