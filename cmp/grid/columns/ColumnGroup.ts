@@ -56,7 +56,7 @@ export interface ColumnGroupSpec {
 
     /**
      * False to render this group collapsed until the user expands it. Defaults to true.
-     * Applies only to an expandable group - i.e. one with a descendant specifying
+     * Applies only to an expandable group - i.e. one with a direct child specifying
      * `showWhenGroup`.
      *
      * Note this is the *default* only: once rendered, expand/collapse state is tracked on
