@@ -160,6 +160,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         return box({
             ref,
             testId,
+            domAttrs: props.domAttrs,
             className: classNames(className, classes),
             ...layoutProps,
             items: [

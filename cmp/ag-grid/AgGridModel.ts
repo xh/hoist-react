@@ -58,6 +58,9 @@ export interface AgGridModelConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -125,11 +128,13 @@ export class AgGridModel extends HoistModel {
         stripeRows = true,
         showCellFocus = false,
         hideHeaders = false,
+        xhName = null,
         xhImpl = false
     }: AgGridModelConfig = {}) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.sizingMode = sizingMode;
         this.showHover = showHover;

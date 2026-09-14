@@ -18,7 +18,7 @@ export const resizeContainer = hoistCmp.factory({
     model: false,
     className: 'xh-resizable',
 
-    render({className, children, testId}, ref) {
+    render({className, children, testId, domAttrs}, ref) {
         const panelModel = useContextModel(PanelModel),
             {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
@@ -53,6 +53,7 @@ export const resizeContainer = hoistCmp.factory({
             [maxDim]: '100%',
             [minDim]: dragBarWidth,
             testId,
+            domAttrs,
             items
         });
     }

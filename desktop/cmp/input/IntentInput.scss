@@ -1,0 +1,202 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-intent-input {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--xh-intent-input-gap-px);
+
+  // Selection ring geometry. Drawn as an outline on the swatch fill, so it takes no part in
+  // layout - the container reserves room for it with matching padding, derived from these two
+  // values so the two cannot drift apart.
+  --ring-offset: 2px;
+  --ring-width: 1px;
+
+  padding: calc(var(--ring-offset) + var(--ring-width));
+  // Pin the box against the line rather than letting its own baseline drive the line box. An
+  // inline-flex box takes its baseline from its first flex item, so the baseline would otherwise
+  // shift as the first swatch gains or loses the check - moving neighboring content (e.g. a
+  // FormField label) by a couple of pixels on every selection change.
+  vertical-align: middle;
+
+  &__swatch {
+    // Inset hairline color, shared by every fill state below. Overridden by the --none variant,
+    // whose transparent fill needs a visible outline rather than a darkening edge.
+    --swatch-hairline-color: rgba(0, 0, 0, 0.15);
+
+    // Reset the UA button styling - the swatch fill below is the entire control.
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--xh-pad-half-px);
+    cursor: pointer;
+    color: var(--xh-text-color);
+    font-family: inherit;
+    font-size: var(--xh-font-size-px);
+    line-height: 1;
+
+    // Focus ring - drawn in the primary intent so it reads as focus rather than as selection.
+    // Higher specificity than the selected/hover rules below, so focus wins where they coincide.
+    &:focus-visible {
+      outline: none;
+
+      .xh-intent-input__swatch__fill {
+        outline: var(--ring-width) solid var(--xh-intent-primary);
+        outline-offset: var(--ring-offset);
+      }
+    }
+
+    // The color chip itself. Sized identically whether or not it holds the check, so selecting
+    // an option never shifts the row.
+    &__fill {
+      flex: none;
+      width: var(--xh-intent-input-swatch-size-px);
+      height: var(--xh-intent-input-swatch-size-px);
+      border-radius: var(--xh-intent-input-border-radius-px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      // Inner hairline keeps a swatch legible where its color sits close to the surface behind it.
+      box-shadow: inset 0 0 0 1px var(--swatch-hairline-color);
+      transition:
+        box-shadow 100ms,
+        outline-color 100ms;
+    }
+
+    // Check is rendered for every swatch and merely hidden when unselected. This keeps each
+    // swatch's box AND its baseline identical in both states: a flex container takes its baseline
+    // from its first flex item, so a fill that gained/lost the check would move the whole control's
+    // baseline, shifting baseline-aligned siblings - most visibly an inline FormField label, which
+    // aligns its row with `align-items: baseline`.
+    &__check {
+      color: var(--xh-white);
+      font-size: calc(var(--xh-intent-input-swatch-size-px) * 0.6);
+
+      &--hidden {
+        visibility: hidden;
+      }
+    }
+
+    &__name {
+      white-space: nowrap;
+    }
+
+    // Selected / hover - a ring offset from the swatch, echoing its own color. Drawn as an
+    // outline rather than a second box-shadow: the offset gap then shows the actual surface
+    // behind the control, instead of a band painted in --xh-bg that would be the wrong color on
+    // any other surface (a panel, a toolbar, a grid cell).
+    &--selected .xh-intent-input__swatch__fill,
+    &:hover:not(:disabled) .xh-intent-input__swatch__fill {
+      outline: var(--ring-width) solid currentColor;
+      outline-offset: var(--ring-offset);
+    }
+
+    &:disabled {
+      cursor: default;
+      color: var(--xh-input-disabled-text-color);
+
+      .xh-intent-input__swatch__fill {
+        opacity: 0.5;
+      }
+    }
+
+    // The null option, shown when `enableClear` is set - an empty outlined box standing in for
+    // "no intent". Keeps the shared geometry, so it selects and checks exactly like the others.
+    &--none {
+      // With no fill behind it, this outline IS the swatch, so it needs real contrast against the
+      // surface - the standard border color is too faint to read as a selectable target. Mixed
+      // from the text color so it adapts per theme; --xh-text-color-muted resolves to the same
+      // mid-gray in both, which lands too light against a white background.
+      --swatch-hairline-color: color-mix(in srgb, var(--xh-text-color) 60%, var(--xh-bg));
+
+      color: var(--xh-text-color-muted);
+
+      .xh-intent-input__swatch__fill {
+        background-color: transparent;
+      }
+
+      // No colored fill to sit on, so the check takes the normal text color instead of white.
+      .xh-intent-input__swatch__check {
+        color: var(--xh-text-color);
+      }
+    }
+
+    // Per-intent coloring. `color` carries the intent so the selected ring and the label can
+    // both pick it up via currentColor - the check reasserts white against the fill.
+    @each $intent in (primary, success, warning, danger) {
+      &--#{$intent} {
+        color: var(--xh-intent-#{$intent});
+
+        .xh-intent-input__swatch__fill {
+          background-color: var(--xh-intent-#{$intent});
+        }
+      }
+    }
+  }
+
+  // Names shown - label text returns to the standard text color, leaving the swatch to carry
+  // the intent's color. Selected names are emphasized instead.
+  &--with-names .xh-intent-input__swatch {
+    margin-right: var(--xh-pad-half-px);
+
+    &__name {
+      color: var(--xh-text-color);
+    }
+
+    &--selected .xh-intent-input__swatch__name {
+      font-weight: 600;
+    }
+
+    &:disabled .xh-intent-input__swatch__name {
+      color: var(--xh-input-disabled-text-color);
+    }
+  }
+
+  // Compact mode - reduced sizing for toolbars and space-constrained contexts. The ring offset
+  // tightens too, keeping the control inside the compact toolbar's item height.
+  &--compact {
+    --ring-offset: 1px;
+
+    gap: calc(var(--xh-intent-input-gap-px) / 2);
+
+    .xh-intent-input__swatch {
+      font-size: var(--xh-tbar-compact-font-size-px);
+
+      &__fill {
+        width: var(--xh-intent-input-compact-swatch-size-px);
+        height: var(--xh-intent-input-compact-swatch-size-px);
+      }
+
+      &__check {
+        font-size: calc(var(--xh-intent-input-compact-swatch-size-px) * 0.6);
+      }
+    }
+  }
+
+  // Validation borders - drawn on the container, as the swatches themselves are borderless.
+  &.xh-input--invalid,
+  &.xh-input--warning,
+  &.xh-input--info {
+    border-radius: var(--xh-intent-input-border-radius-px);
+  }
+
+  &.xh-input--invalid {
+    border: var(--xh-form-field-invalid-border);
+  }
+
+  &.xh-input--warning {
+    border: var(--xh-form-field-warning-border);
+  }
+
+  &.xh-input--info {
+    border: var(--xh-form-field-info-border);
+  }
+}

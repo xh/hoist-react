@@ -75,7 +75,7 @@ jobs:
           id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@71d46b39323491a7fd5090e7b651958b05630fa0 # master
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@a7698bfb83cd6b75f956c0a4d82fb3d6b07eab83 # master
           with:
               version: ${{ inputs.version }}
 
@@ -127,9 +127,41 @@ jobs:
                 fi
               } >> "$GITHUB_STEP_SUMMARY"
 
+        # The publish step above returns as soon as npm accepts the tarball, but the new version is
+        # not guaranteed to be resolvable from the registry at that moment. Toolbox's
+        # buildSnapshot.yml runs `pnpm update --no-save` on receipt of the dispatch below to pick up
+        # `@xh/hoist@next` - if the registry has not yet caught up, that command silently keeps the
+        # previous snapshot rather than erroring, and Toolbox deploys without the changes this run
+        # was meant to carry. Poll until the registry itself resolves `next` to this run's version
+        # before dispatching, so the deploy is not "done" until Toolbox can actually consume it.
+        - name: Wait for snapshot to be resolvable on npm
+          timeout-minutes: 10
+          env:
+              SNAPSHOT_VERSION: ${{ steps.snapshot.outputs.snapshot-version }}
+          run: |
+              echo "Waiting for @xh/hoist@next to resolve to $SNAPSHOT_VERSION..."
+              until [ "$(npm view @xh/hoist@next version 2>/dev/null)" = "$SNAPSHOT_VERSION" ]; do
+                  echo "Not yet available - retrying in 10s"
+                  sleep 10
+              done
+              echo "Confirmed: @xh/hoist@next now resolves to $SNAPSHOT_VERSION"
+
+        # Mint a short-lived installation token for the org-owned "XH Build Bot" GitHub App, scoped
+        # to the toolbox repo with Contents: write (required by the repository_dispatch endpoint).
+        # Credentials live in the team 1Password vault under "GitHub App: XH Build Bot".
+        - name: Mint Toolbox dispatch token
+          id: toolbox-token
+          uses: actions/create-github-app-token@v3
+          with:
+              client-id: ${{ vars.XH_BUILD_BOT_CLIENT_ID }}
+              private-key: ${{ secrets.XH_BUILD_BOT_PRIVATE_KEY }}
+              owner: xh
+              repositories: toolbox
+              permission-contents: write
+
         - name: Trigger Toolbox snapshot build
           env:
-              GH_TOKEN: ${{ secrets.TOOLBOX_DISPATCH_TOKEN }}
+              GH_TOKEN: ${{ steps.toolbox-token.outputs.token }}
           run: |
               gh api repos/xh/toolbox/dispatches \
                   -f event_type=hoist-react-snapshot

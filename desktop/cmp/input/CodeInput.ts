@@ -671,6 +671,7 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
             model: model.modalSupportModel,
             item: inputCmp({
                 testId: props.testId,
+                domAttrs: props.domAttrs,
                 width: '100%',
                 height: '100%',
                 className,

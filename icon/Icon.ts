@@ -189,6 +189,9 @@ export const Icon = {
     arrowsUpDown(p?: IconProps) {
         return Icon.icon({...p, iconName: 'arrows-v'});
     },
+    asterisk(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'asterisk'});
+    },
     balanceScale(p?: IconProps) {
         return Icon.icon({...p, iconName: 'balance-scale'});
     },
@@ -230,6 +233,12 @@ export const Icon = {
     },
     calendar(p?: IconProps) {
         return Icon.icon({...p, iconName: 'calendar-day'});
+    },
+    calendarDays(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'calendar-days'});
+    },
+    calendarRange(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'calendar-range'});
     },
     camera(p?: IconProps) {
         return Icon.icon({...p, iconName: 'camera'});

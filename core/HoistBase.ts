@@ -92,6 +92,12 @@ export abstract class HoistBase {
      */
     xhImpl: boolean = undefined;
 
+    /**
+     * Optional developer-facing name for this instance, shown in place of its class name in log
+     * output, telemetry, and the Inspector. Uniqueness is not enforced.
+     */
+    xhName: string = null;
+
     // Internal State
     private managedInstances = [];
     private disposers = [];
@@ -270,6 +276,11 @@ export abstract class HoistBase {
     /** @returns a unique id for this object within the lifetime of this document. */
     get xhId(): string {
         return getOrCreate(this, '_xhId', XH.genId);
+    }
+
+    /** Name for a child of this object - `{xhName}.{key}`, or null if this object is unnamed. */
+    childXhName(key: string): string {
+        return this.xhName ? `${this.xhName}.${key}` : null;
     }
 
     /**

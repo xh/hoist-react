@@ -273,6 +273,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             className: classNames(className, classes),
             ...getLayoutProps(props),
             testId,
+            domAttrs: props.domAttrs,
             items: [
                 labelEl({
                     omit: !label,

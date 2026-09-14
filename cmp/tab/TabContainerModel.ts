@@ -93,6 +93,9 @@ export interface TabContainerConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -149,6 +152,7 @@ export class TabContainerModel extends HoistModel {
             refreshMode = 'onShowLazy',
             persistWith,
             emptyText = 'No tabs to display.',
+            xhName = null,
             xhImpl = false,
             switcher = {mode: 'static'}
         }: TabContainerConfig,
@@ -157,6 +161,7 @@ export class TabContainerModel extends HoistModel {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.depth = depth;
         this.renderMode = renderMode;
@@ -168,6 +173,7 @@ export class TabContainerModel extends HoistModel {
         this.setTabs(tabs);
         this.refreshContextModel = new RefreshContextModel();
         this.refreshContextModel.xhImpl = xhImpl;
+        this.refreshContextModel.xhName = this.childXhName('refreshContextModel');
         this.switcherConfig = switcher;
         this.dynamicTabSwitcherModel = this.parseSwitcher(switcher);
 
@@ -419,7 +425,9 @@ export class TabContainerModel extends HoistModel {
         if (!switcher || switcher.mode === 'static') return null;
         throwIf(XH.isMobileApp, 'DynamicTabSwitcherModel not supported for mobile TabContainer.');
 
-        return this.markManaged(new DynamicTabSwitcherModel(switcher, this));
+        const ret = this.markManaged(new DynamicTabSwitcherModel(switcher, this));
+        ret.xhName = this.childXhName('dynamicTabSwitcherModel');
+        return ret;
     }
 
     private initPersist({

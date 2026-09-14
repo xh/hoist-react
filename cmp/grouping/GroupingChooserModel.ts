@@ -76,6 +76,9 @@ export interface GroupingChooserConfig {
      * provided in the `dimensions` config.
      */
     sortDimensions?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface GroupingChooserModelDefaults {
@@ -159,10 +162,12 @@ export class GroupingChooserModel extends HoistModel {
         initialValue = [],
         maxDepth = null,
         persistWith = null,
-        sortDimensions = true
+        sortDimensions = true,
+        xhName = null
     }: GroupingChooserConfig) {
         super();
         makeObservable(this);
+        this.xhName = xhName;
 
         this.allowEmpty = allowEmpty;
         this.bind = bind;

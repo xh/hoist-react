@@ -10,6 +10,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 
 export class ChangelogDialogModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'changelogDialogModel';
 
     @observable isOpen: boolean = false;
 

@@ -163,6 +163,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 style: {textAlign},
                 tabIndex: props.tabIndex,
                 [TEST_ID]: props.testId,
+                ...props.domAttrs,
                 item: model.formattedRenderValue,
                 onClick: () => model.openPicker()
             }),

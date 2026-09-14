@@ -76,6 +76,7 @@ export interface BoxProps
     extends
         LayoutProps,
         TestSupportProps,
+        DomAttrsProps,
         Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {}
 
 /**
@@ -97,6 +98,32 @@ export interface TestSupportProps {
      * and apply additional child testIds to support testing of nested elements.
      */
     testId?: string;
+}
+
+/**
+ * Props to support applying arbitrary HTML attributes to the primary DOM element rendered by a
+ * component.
+ *
+ * Intended as an escape hatch for `data-*` and `aria-*` attributes that Hoist does not model with
+ * a dedicated prop - e.g. attributes read by analytics libraries, browser extensions, or
+ * third-party test tooling. Hoist components pick the props they pass to the elements they render,
+ * so attributes specified any other way are typically dropped and never reach the DOM.
+ */
+export interface DomAttrsProps {
+    /**
+     * Additional HTML attributes to apply to the primary DOM element rendered by this component -
+     * the same element that receives `data-testid` when {@link TestSupportProps.testId} is set.
+     *
+     * Keys are constrained to `data-*` and `aria-*` attributes, plus `role`, so this cannot be
+     * used to override attributes the component manages itself (`className`, `style`, `value`).
+     * Note the constraint applies to object literals only - a pre-built `Record<string, string>`
+     * will still assign, for the rare case that calls for an attribute outside this set. Take care
+     * there: precedence against component-managed attributes is not guaranteed and varies by
+     * component.
+     */
+    domAttrs?: Record<`data-${string}` | `aria-${string}`, string | number | boolean> & {
+        role?: string;
+    };
 }
 
 export interface LayoutProps {

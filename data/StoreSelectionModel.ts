@@ -22,6 +22,9 @@ export interface StoreSelectionConfig {
     mode?: 'single' | 'multiple' | 'disabled';
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -50,11 +53,12 @@ export class StoreSelectionModel extends HoistModel {
         return this.mode !== 'disabled';
     }
 
-    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig) {
+    constructor({store, mode = 'single', xhName = null, xhImpl = false}: StoreSelectionConfig) {
         super();
         makeObservable(this);
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());

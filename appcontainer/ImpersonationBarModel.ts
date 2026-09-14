@@ -17,6 +17,7 @@ export class ImpersonationBarModel extends HoistModel {
     override telemetryPrefix = 'xh.client.identity';
 
     override xhImpl = true;
+    override xhName = 'impersonationBarModel';
 
     @observable showRequested: boolean = false;
     @observable.ref targets: string[] = [];

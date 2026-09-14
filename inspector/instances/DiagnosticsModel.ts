@@ -11,6 +11,7 @@ import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {Cube} from '@xh/hoist/data';
 import {forIn, isEmpty, isFinite} from 'lodash';
+import {instanceLabel} from '../impl/InspectorUtils';
 import type {InstancesModel} from './InstancesModel';
 
 /**
@@ -55,7 +56,7 @@ export class DiagnosticsModel extends HoistModel {
     private get diagnosticSources(): DiagnosticSource[] {
         const ret: DiagnosticSource[] = [];
         this.parent.selectedInstances.forEach(inst => {
-            const label = `${inst.constructor.name} [${inst.xhId}]`,
+            const label = instanceLabel(inst),
                 diag = (inst as any).diagnostics;
             if (diag instanceof BaseDiagnostics) {
                 ret.push({xhId: inst.xhId, diag, label});
@@ -63,7 +64,7 @@ export class DiagnosticsModel extends HoistModel {
                 ret.push({
                     xhId: inst.xhId,
                     diag: inst.store.diagnostics,
-                    label: `${label} › Store [${inst.store.xhId}]`
+                    label: `${label} › ${instanceLabel(inst.store)}`
                 });
             }
         });

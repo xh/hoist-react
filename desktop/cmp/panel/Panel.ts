@@ -129,7 +129,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
         compactHeader: false
     },
 
-    render({model, className, testId, ...props}, ref) {
+    render({model, className, testId, domAttrs, ...props}, ref) {
         const contextModel = useContextModel('*');
 
         let wasDisplayed = useRef(false),
@@ -264,16 +264,19 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
                 item: frame({
                     item,
                     className: model.isModal ? className : undefined,
-                    testId: model.isModal ? testId : undefined
+                    testId: model.isModal ? testId : undefined,
+                    domAttrs: model.isModal ? domAttrs : undefined
                 })
             });
         }
 
-        testId = model.isModal ? undefined : testId; // Only apply testId once
+        // Only apply testId / domAttrs once - to the modal frame above, or here.
+        testId = model.isModal ? undefined : testId;
+        domAttrs = model.isModal ? undefined : domAttrs;
 
         return useResizeContainer
-            ? resizeContainer({ref, item, className, testId})
-            : box({ref, item, className, testId, ...layoutProps});
+            ? resizeContainer({ref, item, className, testId, domAttrs})
+            : box({ref, item, className, testId, domAttrs, ...layoutProps});
     }
 });
 

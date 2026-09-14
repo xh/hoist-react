@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {naSpan, valOrNa} from '@xh/hoist/admin/AdminUtils';
 import {badgeRenderer} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
@@ -205,6 +206,4 @@ const additionalDataPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     });
 });
 
-const valOrNa = v => (v != null ? v : naSpan());
-const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});
 const hyperlinkVal = v => (v ? a({href: v, item: v, target: '_blank'}) : '-');

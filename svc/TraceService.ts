@@ -6,7 +6,7 @@
  */
 import {HoistService, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {debounced, parseNameSource} from '@xh/hoist/utils/js';
+import {debounced, parseTypeName} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy, takeRight} from 'lodash';
 import {terminationSafePostJson} from './impl/Fetch';
 
@@ -119,12 +119,15 @@ export class TraceService extends HoistService {
 
         // Apply default tags - safe to call even before identity is resolved (getUsername is null).
         // Remove nulls they are used in this API to just prevent defaults
+        const {caller} = ret,
+            xhName = caller?.['xhName'];
         ret.tags = {
             'xh.clientApp': XH.clientAppCode,
             'xh.loadId': XH.loadId,
             'xh.tabId': XH.tabId,
             'xh.source': ret.name.startsWith('xh.') ? 'hoist' : 'app',
-            ...(ret.caller ? {'code.namespace': parseNameSource(ret.caller)} : {}),
+            ...(caller ? {'code.namespace': parseTypeName(caller)} : {}),
+            ...(xhName ? {'xh.name': xhName} : {}),
             ...this.identityTags(),
             ...ret.tags
         };

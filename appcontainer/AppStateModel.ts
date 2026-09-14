@@ -16,6 +16,7 @@ import {camelCase, isBoolean, isString, mapKeys, pick} from 'lodash';
  */
 export class AppStateModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'appStateModel';
 
     @observable state: AppState = 'PRE_AUTH';
 

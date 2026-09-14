@@ -696,6 +696,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                     item: factory(rsProps),
                     className,
                     testId: props.testId,
+                    domAttrs: props.domAttrs,
                     ref
                 })
             }),
@@ -708,6 +709,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             ...layoutProps,
             width: withDefault(width, null),
             testId: props.testId,
+            domAttrs: props.domAttrs,
             ref
         });
     }

@@ -22,19 +22,26 @@ if [ -z "${FONTAWESOME_NPM_AUTH_TOKEN:-}" ]; then
     echo 'session-start: Add it as an environment variable on your claude.ai/code environment.' >&2
     exit 0
 fi
-if ! grep -qs 'npm.fontawesome.com/:_authToken' ~/.npmrc; then
-    echo "//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
+# Replace (not just append) the auth line - a stale or empty line left by e.g. an environment
+# setup script would otherwise shadow the real token.
+if [ -f ~/.npmrc ]; then
+    grep -v 'npm.fontawesome.com/:_authToken' ~/.npmrc > ~/.npmrc.tmp || true
+    mv ~/.npmrc.tmp ~/.npmrc
 fi
+echo "//npm.fontawesome.com/:_authToken=${FONTAWESOME_NPM_AUTH_TOKEN}" >> ~/.npmrc
 
-# Quick reachability probe - the environment's network policy must allow npm.fontawesome.com.
+# Quick reachability probe - the environment's network policy must allow both the registry
+# (npm.fontawesome.com) and the download host it redirects tarballs to (dl.fontawesome.com).
 # An HTTP status of 000 means the connection itself failed (typically a policy denial); any
-# real HTTP response means the registry is reachable.
-status=$(curl -s -m 10 -o /dev/null -w '%{http_code}' https://npm.fontawesome.com/ || true)
-if [ "$status" = "000" ]; then
-    echo 'session-start: WARNING - npm.fontawesome.com is unreachable; skipping pnpm install.' >&2
-    echo 'session-start: Allow the domain in the environment network policy (see .claude/hooks/README.md).' >&2
-    exit 0
-fi
+# real HTTP response means the host is reachable.
+for host in npm.fontawesome.com dl.fontawesome.com; do
+    status=$(curl -s -m 10 -o /dev/null -w '%{http_code}' "https://$host/" || true)
+    if [ "$status" = "000" ]; then
+        echo "session-start: WARNING - $host is unreachable; skipping pnpm install." >&2
+        echo 'session-start: Allow the domain in the environment network policy (see .claude/hooks/README.md).' >&2
+        exit 0
+    fi
+done
 
 pnpm install || {
     echo 'session-start: WARNING - pnpm install failed; lint/typecheck will not run until deps install.' >&2

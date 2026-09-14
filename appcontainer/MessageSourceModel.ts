@@ -17,6 +17,7 @@ import {MessageModel} from './MessageModel';
  */
 export class MessageSourceModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'messageSourceModel';
 
     @managed
     @observable.ref

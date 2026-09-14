@@ -50,4 +50,7 @@ export interface DashConfig<VSPEC extends DashViewSpec, VSTATE extends DashViewS
      * including when the dash container is empty.
      */
     extraMenuItems?: MenuItemLike[];
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }

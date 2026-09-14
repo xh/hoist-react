@@ -117,6 +117,19 @@ class MyModel extends HoistModel {
 }
 ```
 
+**Instance Naming**
+
+Set `xhName` to distinguish instances of the same class in logs, telemetry, and the Inspector.
+Config-driven models accept it as a config; any `HoistBase` can set it directly.
+
+```typescript
+new GridModel({xhName: 'positionsGrid', store: {...}});
+
+export class PositionsModel extends HoistModel {
+    override xhName = 'positions';
+}
+```
+
 ### Core API
 
 | Method | Purpose |
@@ -128,6 +141,8 @@ class MyModel extends HoistModel {
 | `setBindable(prop, val)` | Set value via conventional setter |
 | `destroy()` | Clean up all managed resources |
 | `xhId` | Unique identifier for this instance |
+| `xhName` | Optional developer-facing name for logs, telemetry, and Inspector |
+| `childXhName(key)` | `{xhName}.{key}`, for naming child objects |
 
 ## HoistModel
 
@@ -537,6 +552,37 @@ Button.defaults.minimal = false;
 
 This pattern is analogous to `static defaults` on Model and Service classes (e.g.
 `GridModel.defaults`), adapted for functional components created via `hoistCmp`.
+
+### Extra DOM Attributes with `domAttrs`
+
+Hoist components choose which props they pass along to the elements they render. An attribute that
+a component does not model with a dedicated prop is therefore dropped and never reaches the DOM.
+
+`DomAttrsProps` provides the escape hatch. Components that support it accept a `domAttrs` object
+and apply its entries to their primary DOM element - the same element that receives `data-testid`
+when `testId` is set.
+
+```typescript
+textInput({
+    bind: 'email',
+    testId: 'signup-email',
+    domAttrs: {'data-analytics-id': 'signup-email', 'aria-describedby': 'email-help'}
+});
+```
+
+Keys are constrained by type to `data-*` and `aria-*` attributes, plus `role`, so the prop cannot
+be used to reach for attributes the component manages itself (`className`, `style`, `value`). The
+constraint applies to object literals only; a pre-built `Record<string, string>` still assigns, for
+the rare attribute outside that set. Take care there - precedence against component-managed
+attributes is not guaranteed and varies by component.
+
+As with `style`, an inline `domAttrs` literal is a new object on each render, so hoist a constant
+out of the render function when passing one to a component that relies on `memo`.
+
+Support is provided by `Box` and the layout components built on it (and therefore by `Panel`,
+`Toolbar`, and similar containers), by `Button` and `ButtonGroup`, by `Card` and `Badge`, and by
+the input components in `/cmp/input/`. See [`/cmp/input/README.md`](../cmp/input/README.md) for
+notes specific to inputs.
 
 ## Element Factories
 

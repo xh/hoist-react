@@ -12,7 +12,135 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+
 ## 88.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
+  the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
+  record, returning the `Intent` to draw, or null for no flag.
+
+### ✨ Styles
+
+* Added `.xh-grid-tooltip-frame`, a standalone utility class carrying Hoist's standard tooltip
+  chrome - background, border, radius, padding and max-width. Hoist applies it to the tooltip
+  content it renders itself, and apps can add it to a custom (element) tooltip's own root to match.
+  Line-break handling moves alongside it to a `.xh-grid-tooltip--prewrap` modifier.
+    * ⚠️The `.xh-grid-tooltip--default` and `--custom` classes have been removed. They carried
+      the styling that now lives in the utility classes above, and nothing consumed them once it
+      moved out. Apps with CSS targeting either should retarget `.xh-grid-tooltip`, still applied
+      to every grid tooltip, or the new utility classes.
+* Fixed validation tooltips on an editable column rendering without rounded corners or a max-width
+  when that column also defined a custom (element) `tooltip`. Validation messages now always use
+  the standard frame, since they supersede the column's own tooltip entirely.
+    * ⚠️`.xh-grid-tooltip--validation` now sits on the tooltip itself rather than the message
+      list inside it, making it a true modifier of `.xh-grid-tooltip`, and `--validation--single`
+      is renamed `--validation-single` to match. The list carries no class of its own.
+* Grid cell flag styles are now keyed by `Intent` (`.xh-cell--flag-{intent}`), with size driven by
+  the new `--xh-grid-cell-flag-size` custom property. The classes previously emitted for cell
+  validation state - `.xh-cell--invalid`, `.xh-cell--warning`, and `.xh-cell--info` - are
+  deprecated but still styled, so apps applying them directly continue to render a flag. Retarget
+  any CSS overriding these at the new class names.
+
+
+## 87.3.0 - 2026-09-10
+
+### 🐞 Bug Fixes
+
+* Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
+  too narrowly - options now hold their own content width, sharing equally only where there is room.
+* Fixed `useHotkeys()` throwing a React hook-count error when its arguments changed across
+  renders - a collapsible `Panel` given `hotkeys` no longer crashes when first expanded. Hotkeys
+  may now also be changed after the first render.
+* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
+  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
+* Fixed `RadioInput` and `Checkbox` options overhanging the top of the `Toolbar` - they
+  are now centered within the compact item height, sharing one rule with `SwitchInput`.
+* Fixed an unlabeled `Slider` (`labelRenderer: false`) sitting high in a compact `Toolbar`.
+* Fixed `SegmentedControl` overflowing a compact `Toolbar` - it now takes its compact sizing from
+  the toolbar, without needing its own `compact: true`.
+* Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
+  the editor now defaults its `valueType` from the Store field type.
+
+## 87.2.0 - 2026-09-08
+
+### 🎁 New Features
+
+* Added `DateRangePicker` (`desktop/cmp/daterange`), a compact control for selecting a period as a
+  preset (Today, MTD, Prev 30 Days, ...), a relative lookback, a calendar month or year, or a custom
+  date range. Its `DateRangePickerModel` persists the selection as JSON and resolves it to date
+  ranges and `FieldFilterSpec`s.
+* Added `IntentInput` (desktop), a compact input for selecting a Hoist `Intent`.
+* Added `SegmentedControl.showOptionDividers` and `SegmentedControl.showTrayBackground` (desktop and
+  mobile) to provide more structure by default to the input control with easy options to customize.
+* Added `SegmentedControl.equalSegmentWidths` to the desktop control, matching the existing mobile
+  prop. Defaults to `true`, so a filled control now divides its width into equal segments rather
+  than sizing each option to its own label.
+* Added `HoistBase.xhName`, an optional developer-facing name for an instance, shown in log output,
+  trace spans (new `xh.name` tag), and the Inspector. Set it on any Hoist model config to tell peers
+  of the same class apart - instances log as `ClassName [xhName]`, or `ClassName [id]` when unnamed.
+  Hoist names services, `XH.appModel`, and models created by a named parent automatically.
+* Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
+  tabs. The Config panel shows every view of a config's value - resolved, instance override,
+  database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
+  grid's editor: double-click no longer opens a view-only dialog for read-only admins.
+* Added `domAttrs`, a prop for applying arbitrary `data-*` and `aria-*` attributes to the primary
+  DOM element a component renders - the same element that receives `data-testid` from `testId`.
+  Supported by `Box` and the layout components built on it (and therefore `Panel`, `Toolbar`, and
+  similar containers), `Button`, `ButtonGroup`, `Card`, `Badge`, `FormField`, and the desktop and
+  mobile inputs.
+* Added `enablePasswordManagers` to `TextInput`, `TextArea`, and `NumberInput` (desktop and mobile).
+  Defaults to `false`, applying `data-1p-ignore`, `data-lpignore`, and `data-bwignore` so password
+  managers stop offering saved logins on ordinary data-entry fields. Apps with hand-rolled login
+  forms should set it `true` on their credential inputs - Hoist's own `LoginPanel` already does.
+
+### 🐞 Bug Fixes
+
+* Fixed `testId` being silently dropped by desktop `Slider`, desktop `FileChooser`, and mobile
+  `Label` - all accepted the prop but never emitted a `data-testid` attribute.
+* Fixed icon misalignment in desktop `DateInput` when a `leftIcon` is specified.
+* Fixed `SegmentedControl.fill: false` leaving an empty run of tray to the right of its options -
+  the control now sizes to its options.
+* Fixed desktop `SegmentedControl` keeping the last clicked segment highlighted after its bound
+  value was cleared programmatically - the control now renders no selection, with `aria-checked`
+  cleared, whenever its value matches no option.
+* Fixed desktop `Select` not reliably scrolling the selected option into view when opening its
+  menu - a regression from the v86 react-select upgrade. Selects with `enableFilter: false` never
+  scrolled; others did so intermittently.
+* `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
+  names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
+  creating a `View` that exposes leaves.
+
+### ✨ Styles
+
+* Desktop `Button` active styling now also keys on Blueprint's `bp6-active` class, so any button
+  that opens an *uncontrolled* popover renders in its `active` state while that popover is showing,
+  with no per-component code. This brings Hoist's own menu triggers into line (`AppMenuButton`,
+  `ExpandToLevelButton`, `DashCanvasAddViewButton`, `DashContainerMenuButton`, and the `Toolbar`,
+  `TabSwitcher`, and `DashCanvas` overflow menus) and applies to app buttons as well. A button that
+  needs full control of its appearance can opt out by taking ownership of its popover's `isOpen`.
+* `SegmentedControl.outlined` now adds a border to the tray without also removing its background,
+  and defaults to `true`. Pair with `showTrayBackground: false` for the previous appearance.
+* Restyled the `SegmentedControl` tray to draw its background from `--xh-bg-alt` in both themes,
+  replacing a bespoke blue-grey mix that read heavier than the surrounding theme.
+* Added `--xh-date-range-picker-*` CSS variables for the new `DateRangePicker`.
+* The desktop `GroupingChooser` trigger button now renders `outlined` when in button mode
+  (`styleButtonAsInput: false`), matching the `ViewManager` trigger.
+
+### 📚 Libraries
+
+* @daypicker/react `added @ 10.0` (replaces react-day-picker under its new package name)
+* react-day-picker `removed`
+
+## 87.1.1 - 2026-09-02
+
+### 🐞 Bug Fixes
+
+* Fixed `GridModel.getSortedRecords()` throwing e.g. grid exports when grouped by a non-string
+  field. Group values are now coerced to string keys before sorting.
+
+## 87.1.0 - 2026-08-28
 
 ### 🎁 New Features
 
@@ -30,12 +158,11 @@
 
 * Upgraded `react-dropzone` to v20, which drops its UMD build and ships as an ESM + CJS package with
   an `exports` map. Requires Node >= 22 to install.
-* Added an opt-in `enforceValueInOptions` prop to the desktop and mobile `Select`, constraining the
-  value to the current `options` and dropping any selection no longer found there. Enforced once
-  `options` is non-null, so pass null while options load.
 * Extended the package `sideEffects` declaration to cover the vendored golden-layout implementation
   and the barrels with registration or configuration side effects on import - icon, mobx, blueprint
-  kit, golden-layout kit, and persist. Required by the tree-shaking in hoist-dev-utils v15.
+  kit, golden-layout kit, and persist. ~~Required by the tree-shaking in hoist-dev-utils v15.~~
+  (Tree-shaking reverted in dev-utils 15.0.1 - take 15.0.1+, see
+  [#4640](https://github.com/xh/hoist-react/issues/4640).)
 * Restructured `PersistenceProvider` provider registration to remove a base/subclass import cycle
   that breaks under tree-shaking bundlers' re-export optimization. No API change.
 
@@ -126,11 +253,11 @@ and performance optimizations, grouped by topic below.
 
 #### Grid - Data Update Timing
 
-* Grids now always apply `Store` data changes to ag-Grid in a fresh macrotask - pending UI
-  updates (e.g. load masks) paint first, and rapid changes coalesce. This strengthens an existing
-  requirement: grid reads after a data change were already subject to a minimal async debounce
-  and should already route through `GridModel.whenReadyAsync()`, which now provides a hard
-  guarantee that all store data has been applied to ag-Grid.
+* Grids now always apply `Store` data changes to ag-Grid in a fresh macrotask - pending UI updates
+  (e.g. load masks) paint first, and rapid changes coalesce. This strengthens an existing
+  requirement: grid reads after a data change were already subject to a minimal async debounce and
+  should already route through `GridModel.whenReadyAsync()`, which now provides a hard guarantee
+  that all store data has been applied to ag-Grid.
 * Grids now pace update-driven re-sorts and managed autosizes off their own measured cost, instead
   of re-running them every tick. Managed autosize still runs immediately on a `Store` load or filter
   change. Tune via the `deferredSortFactor` and `deferredAutosizeFactor` experimental flags.
@@ -243,13 +370,13 @@ columns.
   `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
   see the new `GridModelPersistOptions.persistColumnGroups`.
 * Improved `Grid` data update performance with tiered ag-Grid transaction handling. Update
-  transactions that provably cannot affect row order, grouping, or tree structure now skip
-  ag-Grid's model refresh entirely, and transactions that would re-order rows apply their cell
-  values immediately, with row order restored by a managed, idle-scheduled re-sort. New records
-  still sort into place on arrival.
+  transactions that provably cannot affect row order, grouping, or tree structure now skip ag-Grid's
+  model refresh entirely, and transactions that would re-order rows apply their cell values
+  immediately, with row order restored by a managed, idle-scheduled re-sort. New records still sort
+  into place on arrival.
 * Added `StoreTransaction.changedFields`, letting data producers assert exactly which fields a
-  value-only update touched. Cube `View`s supply this automatically, extending the no-re-sort
-  Grid fast path to view-connected stores. See the data package README for details.
+  value-only update touched. Cube `View`s supply this automatically, extending the no-re-sort Grid
+  fast path to view-connected stores. See the data package README for details.
 
 #### Admin Console
 
@@ -294,8 +421,8 @@ columns.
   stores, and adds a Diagnostics panel - a live readout of the data-pipeline `diagnostics`
   published by selected Stores, Cubes, Cube Views, and GridModels, with controls to reset counters
   and stream ops to the devtools console.
-* Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances,
-  now registered with Hoist's instance registry.
+* Added `XH.getCubes()` and `XH.getViews()` to enumerate all active `Cube` and `View` instances, now
+  registered with Hoist's instance registry.
 * Added `useComposedRefs` - a hook variant of `composeRefs` that manages identity via `useCallback`
   and forwards React 19 ref-callback cleanups. Prefer it when composing refs within a component
   render function.
@@ -362,9 +489,9 @@ columns.
 * Removed the deprecated webpack-only `~` prefix from bare-module SCSS imports and the `inter-ui`
   font-path URL in framework styles. Modern sass-loader and css-loader resolve the same package
   paths without it, and the prefix breaks under other bundlers.
-* Replaced `GridExperimentalFlags.deltaSort` with `deltaSortRatio` - Hoist now manages ag-Grid
-  delta sorting automatically, using it for re-sorts touching fewer than this percentage of rows
-  (default 50). See the Grid transaction handling entry under New Features.
+* Replaced `GridExperimentalFlags.deltaSort` with `deltaSortRatio` - Hoist now manages ag-Grid delta
+  sorting automatically, using it for re-sorts touching fewer than this percentage of rows (default
+  50). See the Grid transaction handling entry under New Features.
 * Added `GridExperimentalFlags.deferredSortFactor` to tune the pacing of the managed re-sort on
   updating grids - a re-sort costing E ms defers the next for `E * factor` (default 4). Set 0 to
   disable deferral and re-sort synchronously on every change.

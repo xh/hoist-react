@@ -2,6 +2,13 @@
 #
 # Triggered manually via workflow_dispatch. Defaults to DRY RUN mode — select "execute"
 # to actually unpublish. Filters to SNAPSHOT versions at or below a configurable major version.
+#
+# ⚠️ DISABLED as of Sept 2026 — npm blocks unpublish from granular access tokens configured to
+# bypass 2FA (which NPM_TOKEN is), so every call fails with E403. There is no unattended-CI fix:
+# npm removed classic/automation tokens in Nov 2025, and the sole remaining token type either
+# bypasses 2FA (blocked from this action) or requires an interactive OTP per write. The guard step
+# below fails the run immediately rather than grinding through ~5 minutes of errors. Logic is left
+# intact pending a decision. See https://github.com/xh/hoist-react/issues/4646
 
 name: Unpublish Snapshots
 
@@ -39,6 +46,16 @@ jobs:
             contents: read
 
         steps:
+        # Remove this step to re-enable, once a working auth path has been confirmed. See #4646.
+        - name: Workflow disabled
+          run: |
+              echo "::error::Disabled - see https://github.com/xh/hoist-react/issues/4646"
+              echo ""
+              echo "npm blocks 'npm unpublish' from granular access tokens that bypass 2FA, which"
+              echo "is what NPM_TOKEN is. Every unpublish call fails with E403, and no unattended"
+              echo "CI fix exists today. Issue #4646 has the analysis and the remaining options."
+              exit 1
+
         - uses: actions/checkout@v7
 
         - name: Setup Node.js

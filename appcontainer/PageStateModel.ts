@@ -16,6 +16,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  */
 export class PageStateModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'pageStateModel';
 
     @observable state: PageState = null;
 

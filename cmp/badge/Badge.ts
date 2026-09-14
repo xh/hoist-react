@@ -37,8 +37,10 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
 
     render(props, ref) {
         const classes = [],
-            [layoutProps, {className, intent, compact, icon, children, testId, ...restProps}] =
-                splitLayoutProps(props);
+            [
+                layoutProps,
+                {className, intent, compact, icon, children, testId, domAttrs, ...restProps}
+            ] = splitLayoutProps(props);
 
         if (intent) {
             classes.push(`xh-bg-intent-${intent}`);
@@ -51,7 +53,7 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
         const divProps = mergeDeep(
             {className: classNames(className, classes)},
             {style: layoutProps},
-            {[TEST_ID]: testId},
+            {[TEST_ID]: testId, ...domAttrs},
             restProps
         );
 

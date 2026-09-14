@@ -14,6 +14,7 @@ import {stripTags} from '@xh/hoist/utils/js';
  */
 export class FeedbackDialogModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'feedbackDialogModel';
 
     @observable isOpen: boolean = false;
     @observable message: string = null;

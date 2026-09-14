@@ -201,6 +201,7 @@ export class InspectorService extends HoistService {
                 return {
                     id: xhId,
                     className: inst.constructor.name,
+                    xhName: inst.xhName,
                     created: inst._created,
                     isHoistService: inst.isHoistService,
                     isHoistModel: inst.isHoistModel,
@@ -239,6 +240,7 @@ export class InspectorService extends HoistService {
 
 interface InspectorInstanceData {
     className: string;
+    xhName: string;
     created: number;
     isHoistModel: boolean;
     isHoistService: boolean;

@@ -94,6 +94,7 @@ const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, re
             textAlign: withDefault(props.textAlign, 'left')
         },
         [TEST_ID]: props.testId,
+        ...props.domAttrs,
 
         onInput: model.onChange,
         onKeyDown: model.onKeyDown,

@@ -49,6 +49,9 @@ export interface LeftRightChooserConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /** Data record object for a LeftRightChooser value item. */
@@ -146,11 +149,13 @@ export class LeftRightChooserModel extends HoistModel {
         rightGroupingExpanded = true,
         rightEmptyText = null,
         showCounts = true,
+        xhName = null,
         xhImpl = false
     }: LeftRightChooserConfig) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;

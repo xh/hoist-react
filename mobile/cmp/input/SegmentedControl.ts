@@ -17,7 +17,6 @@ import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {TEST_ID} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
@@ -34,8 +33,8 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     equalSegmentWidths?: boolean;
 
     /**
-     * True (default) to stretch the control to fill available width,
-     * distributing space equally among options.
+     * True (default) to stretch the control to fill available width. Set false to size the control
+     * to its options. See `equalSegmentWidths` for how the filled width is divided up.
      */
     fill?: boolean;
 
@@ -54,10 +53,26 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     options: Array<SegmentedControlOption | SegmentedControlNullOption | OptionPrimitive>;
 
     /**
-     * True to render with an outlined style - a border around the control tray
-     * with no inner background fill. Border color follows the current intent.
+     * True (default) to render a border around the control tray. Border color follows the current
+     * intent. Note this controls the tray border only - it does not remove the tray background,
+     * which is governed independently by `showTrayBackground`.
      */
     outlined?: boolean;
+
+    /**
+     * True (default) to fill the control tray with a background, setting it off from the surface
+     * behind it. Set false to omit that fill for a lighter presentation. With no tray to set a
+     * filled tile against, the selected option is indicated with a ring instead.
+     */
+    showTrayBackground?: boolean;
+
+    /**
+     * True to render dividers between options, adding internal structure to the tray. Dividers
+     * are suppressed on either side of the selected option so they do not compete with it.
+     * Defaults to 'auto', showing dividers only while no option is selected - the state in which
+     * the tray offers no other cue that its options are separate and selectable.
+     */
+    showOptionDividers?: boolean | 'auto';
 }
 
 /**
@@ -114,11 +129,14 @@ class SegmentedControlModel extends HoistInputModel {
         });
     }
 
-    /** Map the current render value to the string key used to identify the selected option. */
+    /**
+     * Key of the option matching the current render value, or null if no option matches -
+     * including whenever the bound value is itself null.
+     */
     @computed
-    get selectedKey(): string {
+    get selectedKey(): string | null {
         const {renderValue, normalizedOptions} = this;
-        return normalizedOptions.find(o => o.value === renderValue)?._key;
+        return normalizedOptions.find(o => o.value === renderValue)?._key ?? null;
     }
 
     get enabledButtons(): HTMLButtonElement[] {
@@ -160,13 +178,18 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         equalSegmentWidths = true,
         fill = true,
         intent,
-        outlined,
+        outlined = true,
+        showTrayBackground = true,
+        showOptionDividers = 'auto',
         testId,
+        domAttrs,
         ...rest
     } = getNonLayoutProps(props);
 
     const {selectedKey} = model,
-        defaultIntent = intent && intent !== 'none' ? intent : null;
+        defaultIntent = intent && intent !== 'none' ? intent : null,
+        // 'auto' dividers track the empty state - shown only while nothing is selected.
+        dividers = showOptionDividers === 'auto' ? selectedKey == null : showOptionDividers;
 
     const buttons = model.normalizedOptions.map(opt => {
         const optIntent = opt.intent ?? defaultIntent,
@@ -200,6 +223,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
             className,
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
             outlined && 'xh-segmented-control--outlined',
+            !showTrayBackground && 'xh-segmented-control--no-tray-bg',
+            dividers && 'xh-segmented-control--dividers',
             fill && 'xh-segmented-control--fill',
             fill && equalSegmentWidths && 'xh-segmented-control--equal-widths'
         ),
@@ -207,7 +232,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         onFocus: model.onFocus,
         onBlur: model.onBlur,
         ...getLayoutProps(props),
-        [TEST_ID]: testId,
+        testId,
+        domAttrs,
         items: buttons,
         ...rest
     });

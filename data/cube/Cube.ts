@@ -76,6 +76,9 @@ export interface CubeConfig {
      * Return true to omit the row.
      */
     omitFn?: OmitFn;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -187,11 +190,14 @@ export class Cube extends HoistBase {
         info = {},
         lockFn,
         bucketSpecFn,
-        omitFn
+        omitFn,
+        xhName = null
     }: CubeConfig) {
         super();
         makeObservable(this);
+        this.xhName = xhName;
         this.store = new Store({
+            xhName: this.childXhName('store'),
             ...store,
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
@@ -281,16 +287,19 @@ export class Cube extends HoistBase {
     createView({
         query,
         stores,
-        connect = false
+        connect = false,
+        xhName = null
     }: {
         query: QueryConfig;
         stores?: Store[] | Store;
         connect?: boolean;
+        xhName?: string;
     }): View {
         return new View({
             query: new Query({...query, cube: this}),
             stores,
-            connect
+            connect,
+            xhName
         });
     }
 

@@ -113,6 +113,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         inline: props.inline,
         selectedValue: model.renderValue,
         onChange: model.onChange,
-        [TEST_ID]: props.testId
+        [TEST_ID]: props.testId,
+        ...props.domAttrs
     });
 });

@@ -29,6 +29,7 @@ interacts with Hoist.
 | `/desktop/` | 240 | Desktop-specific components and app container | [Done](../../desktop/README.md) |
 | `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../../desktop/cmp/panel/README.md) |
 | `/desktop/cmp/dash/` | 14 | Dashboard system — DashContainer (GoldenLayout) and DashCanvas (react-grid-layout), widget persistence, ViewManager integration | [Done](../../desktop/cmp/dash/README.md) |
+| `/cmp/daterange/` | 9 | DateRangePicker - period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters; desktop component in `/desktop/cmp/daterange/` | [Done](../../cmp/daterange/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |
 
 ## Priority 3 - Key Utilities
