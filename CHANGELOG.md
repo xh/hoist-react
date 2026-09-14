@@ -12,6 +12,7 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+
 ## 88.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
@@ -37,6 +38,37 @@
 * Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
   `@xh/hoist/utils/js` entry point) instead.
 
+### 🎁 New Features
+
+* Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
+  the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
+  record, returning the `Intent` to draw, or null for no flag.
+
+### ✨ Styles
+
+* Added `.xh-grid-tooltip-frame`, a standalone utility class carrying Hoist's standard tooltip
+  chrome - background, border, radius, padding and max-width. Hoist applies it to the tooltip
+  content it renders itself, and apps can add it to a custom (element) tooltip's own root to match.
+  Line-break handling moves alongside it to a `.xh-grid-tooltip--prewrap` modifier.
+    * ⚠️The `.xh-grid-tooltip--default` and `--custom` classes have been removed. They carried
+      the styling that now lives in the utility classes above, and nothing consumed them once it
+      moved out. Apps with CSS targeting either should retarget `.xh-grid-tooltip`, still applied
+      to every grid tooltip, or the new utility classes.
+* Fixed validation tooltips on an editable column rendering without rounded corners or a max-width
+  when that column also defined a custom (element) `tooltip`. Validation messages now always use
+  the standard frame, since they supersede the column's own tooltip entirely.
+    * ⚠️`.xh-grid-tooltip--validation` now sits on the tooltip itself rather than the message
+      list inside it, making it a true modifier of `.xh-grid-tooltip`, and `--validation--single`
+      is renamed `--validation-single` to match. The list carries no class of its own.
+* Grid cell flag styles are now keyed by `Intent` (`.xh-cell--flag-{intent}`), with size driven by
+  the new `--xh-grid-cell-flag-size` custom property. The classes previously emitted for cell
+  validation state - `.xh-cell--invalid`, `.xh-cell--warning`, and `.xh-cell--info` - are
+  deprecated but still styled, so apps applying them directly continue to render a flag. Retarget
+  any CSS overriding these at the new class names.
+
+
+## 87.3.0 - 2026-09-10
+
 ### 🐞 Bug Fixes
 
 * Fixed `SegmentedControl` clipping an option's label when `equalSegmentWidths` divided the tray
@@ -44,6 +76,15 @@
 * Fixed `useHotkeys()` throwing a React hook-count error when its arguments changed across
   renders - a collapsible `Panel` given `hotkeys` no longer crashes when first expanded. Hotkeys
   may now also be changed after the first render.
+* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
+  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
+* Fixed `RadioInput` and `Checkbox` options overhanging the top of the `Toolbar` - they
+  are now centered within the compact item height, sharing one rule with `SwitchInput`.
+* Fixed an unlabeled `Slider` (`labelRenderer: false`) sitting high in a compact `Toolbar`.
+* Fixed `SegmentedControl` overflowing a compact `Toolbar` - it now takes its compact sizing from
+  the toolbar, without needing its own `compact: true`.
+* Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
+  the editor now defaults its `valueType` from the Store field type.
 
 ## 87.2.0 - 2026-09-08
 
@@ -63,9 +104,6 @@
   trace spans (new `xh.name` tag), and the Inspector. Set it on any Hoist model config to tell peers
   of the same class apart - instances log as `ClassName [xhName]`, or `ClassName [id]` when unnamed.
   Hoist names services, `XH.appModel`, and models created by a named parent automatically.
-* Added Favorites to the Inspector's Instances grid - star any instance with an `xhName` to pin it,
-  and toggle the new `Favorites` quick filter to show only pinned instances. Favorites persist
-  across reloads, showing as placeholder rows when no instance is live.
 * Added read-only detail panels to the Admin Console's Config, User Preferences, and JSON Blobs
   tabs. The Config panel shows every view of a config's value - resolved, instance override,
   database, and typedClass defaults - and renders notes as Markdown. Editing is now confined to the
@@ -96,8 +134,6 @@
 * `Store` and `Cube` now throw a clear error at construction when given fields with duplicate
   names. Previously such a `Cube` failed later with a cryptic `Cannot redefine property` error when
   creating a `View` that exposes leaves.
-* Fixed mobile `Navigator` back-navigation leaving the page stack and the route permanently out of
-  sync when a stale `allowSlidePrev` caused Swiper to silently skip the transition.
 
 ### ✨ Styles
 
