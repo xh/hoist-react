@@ -155,19 +155,33 @@
         }
       }
 
-      &.xh-switch-input {
+      // BP baseline-aligns control indicators, overhanging the bar when compact - flex to center.
+      &.xh-switch-input,
+      &.xh-check-box,
+      &.xh-radio-input .xh-radio-input-option {
         display: flex;
         align-items: center;
+        padding-inline-start: 0;
 
         .bp6-control-indicator {
-          margin-top: 1px;
-          margin-right: var(--xh-pad-half-px);
+          margin: 0 var(--xh-pad-half-px) 0 0;
+        }
+
+        &.bp6-align-right {
+          flex-direction: row-reverse;
+          padding-right: 0;
+
+          .bp6-control-indicator {
+            float: none;
+            margin: 0 0 0 var(--xh-pad-half-px);
+          }
         }
       }
 
-      &.xh-switch-input.bp6-align-right {
-        flex-direction: row-reverse;
-        padding-right: 0;
+      // BP's unlabeled slider (labelRenderer: false) is 16px - center it. Labeled ones are 40px
+      // and overhang the bar.
+      &.xh-slider .bp6-slider-unlabeled {
+        margin-top: calc((var(--xh-tbar-compact-item-height-px) - 16px) / 2);
       }
 
       &.xh-select {
