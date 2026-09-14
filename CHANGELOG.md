@@ -20,6 +20,20 @@
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
+* Added support for collapsible grid column groups via a new `showWhenGroup` config on
+  `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
+  group is `'expanded'` or `'collapsed'`. Groups render expanded unless set otherwise with the new
+  `ColumnGroupSpec.expandedByDefault`.
+* `GridModel` now tracks column group expand/collapse state as `columnGroupState`, with
+  `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
+  `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
+  see the new `GridModelPersistOptions.persistColumnGroups`.
+
+### 🐞 Bug Fixes
+
+* Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
+  without cancelling any pending debounced write, so state returned to its default within the
+  debounce interval (250ms by default) was re-persisted by the stale write that followed.
 
 ### ✨ Styles
 
@@ -361,14 +375,6 @@ columns.
   `ensureSelectionVisibleAsync()`, and `selectAsync()`. Callers can now request that a row be
   scrolled to the `top`, `middle`, or `bottom` of the viewport, instead of scrolling only the
   minimum amount required.
-* Added support for collapsible grid column groups via a new `showWhenGroup` config on
-  `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
-  group is `'expanded'` or `'collapsed'`. Groups render expanded unless set otherwise with the new
-  `ColumnGroupSpec.expandedByDefault`.
-* `GridModel` now tracks column group expand/collapse state as `columnGroupState`, with
-  `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
-  `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
-  see the new `GridModelPersistOptions.persistColumnGroups`.
 * Improved `Grid` data update performance with tiered ag-Grid transaction handling. Update
   transactions that provably cannot affect row order, grouping, or tree structure now skip ag-Grid's
   model refresh entirely, and transactions that would re-order rows apply their cell values
@@ -437,9 +443,6 @@ columns.
 
 ### 🐞 Bug Fixes
 
-* Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
-  without cancelling any pending debounced write, so state returned to its default within the
-  debounce interval (250ms by default) was re-persisted by the stale write that followed.
 * Fixed `GridModel.beginEditAsync()` opening an inline editor that never took keyboard focus,
   requiring an extra click on the cell before the user could type.
 * Fixed `View.getDimensionValues()` returning sets of `undefined` instead of the actual unique
