@@ -242,6 +242,9 @@ export interface GridConfig {
      * container) for broad changes - use this for one-off grids that need to depart from the app's
      * standard grid styling.
      *
+     * Merged on top of any app-wide {@link GridModel.defaults}`.theme` - params set here win, and
+     * those only in the defaults still apply.
+     *
      * Set once, at construction - to vary a grid's appearance at runtime, set the underlying
      * `--xh-grid-*` CSS variables on an ancestor element.
      */
@@ -697,7 +700,7 @@ export class GridModel extends HoistModel {
             stripeRows = GridModel.defaults.stripeRows ?? (!treeMode || treeStyle === 'none'),
             showCellFocus = GridModel.defaults.showCellFocus,
             hideHeaders = false,
-            theme = GridModel.defaults.theme,
+            theme,
             headerMenuDisplay = GridModel.defaults.headerMenuDisplay,
             lockColumnGroups = GridModel.defaults.lockColumnGroups,
             enableColumnPinning = GridModel.defaults.enableColumnPinning,
@@ -810,7 +813,10 @@ export class GridModel extends HoistModel {
             cellBorders,
             showCellFocus,
             hideHeaders,
-            theme,
+            // Unlike the other defaults, params are merged rather than replaced - an app-wide
+            // default is a baseline for every grid, including those (e.g. DataView) that set their
+            // own params. Reset an inherited param explicitly if a grid needs to opt out.
+            theme: {...GridModel.defaults.theme, ...theme},
             xhImpl
         });
 

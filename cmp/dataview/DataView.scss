@@ -88,14 +88,23 @@
 
     //------------------------
     // Zebra striping + hover highlight supported by DV
-    // (Both default to `transparent` in the theme.)
+    // (Both default to `transparent` in the theme - the `--no-*` rules restate that so a view with
+    // the flag off stays off under an ancestor that sets the param. Mirrors AgGrid.scss.)
     //------------------------
     &--stripe-rows {
       --ag-odd-row-background-color: var(--xh-grid-bg-odd);
     }
 
+    &--no-stripe-rows {
+      --ag-odd-row-background-color: transparent;
+    }
+
     &--show-hover {
       --ag-row-hover-color: var(--xh-grid-bg-hover);
+    }
+
+    &--no-hover {
+      --ag-row-hover-color: transparent;
     }
 
     // ag-Grid also hovers full-width group rows - DataView never has.

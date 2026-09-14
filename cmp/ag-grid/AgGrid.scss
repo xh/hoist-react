@@ -143,7 +143,9 @@
   }
 
   // Zebra striping + hover highlight, both defaulted to `transparent` in the theme. ag-Grid layers
-  // stripe, hover and selection itself - hence no `:not(.ag-row-selected)` guards.
+  // stripe, hover and selection itself - hence no `:not(.ag-row-selected)` guards. The `--no-*`
+  // rules restate the default so a grid with the flag off stays off even under an ancestor (or an
+  // app-wide `GridModel.defaults.theme`) that sets the param.
   &--stripe-rows {
     --ag-odd-row-background-color: var(--xh-grid-bg-odd);
   }
