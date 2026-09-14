@@ -15,7 +15,7 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW, ag-Grid upgrade, scheduled removals)
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
       `ag-grid-enterprise` dependencies to `36.x`.
@@ -24,6 +24,29 @@
       `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
       theme defaults now resolve against an inner `.ag-styled-root` element. See the
       [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+
+* Scheduled Removals
+    * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`
+      chain instead. Note that `TraceService.withSpan()` remains available for advanced use.
+    * Removed the `FetchOptions.span` and `FetchOptions.loadSpec` fields, deprecated in v86. Pass a
+      `CallContextLike` as the fetch method's second argument instead - e.g.
+      `XH.fetchJson({url}, {loadSpec})`.
+    * Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use the `persistOptions()`
+      function instead.
+    * Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})` instead
+      - the popover behavior is a built-in mode of `FilterChooser`.
+    * Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
+      `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use the
+      un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. For the
+      more generically named specs, consider
+      `import * as Col from '@xh/hoist/cmp/grid/columns'` and `Col.number` - the convention already
+      used across the Hoist Admin Console.
+
+### ⚙️ Typescript API Adjustments
+
+* Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
+  `@xh/hoist/utils/js` entry point) instead.
+
 
 ### 🎁 New Features
 
