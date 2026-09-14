@@ -323,7 +323,14 @@ export type ColumnGroupShowMode = 'expanded' | 'collapsed';
  * @internal
  */
 export function toAgColumnGroupShow(mode: ColumnGroupShowMode): 'open' | 'closed' {
-    return mode == null ? null : mode === 'expanded' ? 'open' : 'closed';
+    switch (mode) {
+        case 'expanded':
+            return 'open';
+        case 'collapsed':
+            return 'closed';
+        default:
+            return null;
+    }
 }
 
 /**
