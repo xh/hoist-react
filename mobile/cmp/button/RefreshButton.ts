@@ -8,7 +8,6 @@ import {hoistCmp, Loadable, RefreshContextModel, useContextModel} from '@xh/hois
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {apiRemoved} from '@xh/hoist/utils/js';
 
 export interface RefreshButtonProps extends ButtonProps {
     /** Object to refresh when clicked. */
@@ -18,17 +17,15 @@ export interface RefreshButtonProps extends ButtonProps {
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
- * If a model is provided it will be directly refreshed.  Alternatively an onClick handler
- * may be provided.  If neither of these props are provided, the contextual RefreshContextModel
- * for this button will be used.
+ * If an onClick handler is provided it will be used. Otherwise, this button will be linked to
+ * the `target` in props with LoadSupport enabled, or to the contextual
+ * {@link RefreshContextModel}.
  */
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',
     model: false,
 
     render({target, icon = Icon.sync(), onClick, ...props}) {
-        apiRemoved('model', {test: props.model, msg: 'Use target instead.'});
-
         const refreshContextModel = useContextModel(RefreshContextModel);
         if (!onClick) {
             target ??= refreshContextModel;

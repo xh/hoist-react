@@ -15,6 +15,84 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW, ag-Grid upgrade, scheduled removals)
+* Upgraded to AG Grid 36.
+    * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
+      `ag-grid-enterprise` dependencies to `36.x`.
+    * AG Grid 36 restructures the grid into a single scrollable container and renames its internal
+      layout classes. Apps with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
+      `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
+      theme defaults now resolve against an inner `.ag-styled-root` element. See the
+      [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+
+* Scheduled Removals
+    * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`
+      chain instead. Note that `TraceService.withSpan()` remains available for advanced use.
+    * Removed the `FetchOptions.span` and `FetchOptions.loadSpec` fields, deprecated in v86. Pass a
+      `CallContextLike` as the fetch method's second argument instead - e.g.
+      `XH.fetchJson({url}, {loadSpec})`.
+    * Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use the `persistOptions()`
+      function instead.
+    * Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})` instead
+      - the popover behavior is a built-in mode of `FilterChooser`.
+    * Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
+      `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use the
+      un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. For the
+      more generically named specs, consider
+      `import * as Col from '@xh/hoist/cmp/grid/columns'` and `Col.number` - the convention already
+      used across the Hoist Admin Console.
+
+### ⚙️ Typescript API Adjustments
+
+* Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
+  `@xh/hoist/utils/js` entry point) instead.
+* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
+  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
+  their rows with unexported internal classes. `BucketSpec.bucketFn` now takes a `ViewRow` as
+  well, and `BucketSpec` and `RowUpdate` are now exported from `@xh/hoist/data`.
+* `Aggregator.forEachLeaf()` now types its callback's leaf as the new `ViewLeafRow` interface,
+  which extends `ViewRow` with the leaf's source `cubeRecord` and `cubeRecordId`. Callbacks typed
+  against the previous, unexported `LeafRow` class should switch to `ViewLeafRow`.
+
+### 🎁 New Features
+
+* Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
+  the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
+  record, returning the `Intent` to draw, or null for no flag.
+* Cube `Aggregator` implementations can now hold per-row state via new
+  `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
+  derived from their children's published values alone - e.g. a weighted average - compose from
+  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
+  example.
+
+### ⚙️ Technical
+
+* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
+  walking their entire subtree of leaves, making views with averaged fields as cheap to build,
+  regroup and update as those with `SUM` fields.
+
+### ✨ Styles
+
+* Added `.xh-grid-tooltip-frame`, a standalone utility class carrying Hoist's standard tooltip
+  chrome - background, border, radius, padding and max-width. Hoist applies it to the tooltip
+  content it renders itself, and apps can add it to a custom (element) tooltip's own root to match.
+  Line-break handling moves alongside it to a `.xh-grid-tooltip--prewrap` modifier.
+    * ⚠️The `.xh-grid-tooltip--default` and `--custom` classes have been removed. They carried
+      the styling that now lives in the utility classes above, and nothing consumed them once it
+      moved out. Apps with CSS targeting either should retarget `.xh-grid-tooltip`, still applied
+      to every grid tooltip, or the new utility classes.
+* Fixed validation tooltips on an editable column rendering without rounded corners or a max-width
+  when that column also defined a custom (element) `tooltip`. Validation messages now always use
+  the standard frame, since they supersede the column's own tooltip entirely.
+    * ⚠️`.xh-grid-tooltip--validation` now sits on the tooltip itself rather than the message
+      list inside it, making it a true modifier of `.xh-grid-tooltip`, and `--validation--single`
+      is renamed `--validation-single` to match. The list carries no class of its own.
+* Grid cell flag styles are now keyed by `Intent` (`.xh-cell--flag-{intent}`), with size driven by
+  the new `--xh-grid-cell-flag-size` custom property. The classes previously emitted for cell
+  validation state - `.xh-cell--invalid`, `.xh-cell--warning`, and `.xh-cell--info` - are
+  deprecated but still styled, so apps applying them directly continue to render a flag. Retarget
+  any CSS overriding these at the new class names.
+
 
 ## 87.3.0 - 2026-09-10
 
@@ -34,6 +112,23 @@
   the toolbar, without needing its own `compact: true`.
 * Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
   the editor now defaults its `valueType` from the Store field type.
+
+### ⚙️ Technical
+
+* Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
+  full-width horizontal scrollbar spanning all columns, so Hoist's custom implementation was
+  removed.
+
+### ✨ Styles
+
+* Migrated internal grid SCSS to AG Grid 36's restructured DOM and renamed layout classes.
+* Re-bound Hoist grid/DataView styling onto AG Grid 36's inner `ag-styled-root`, which otherwise
+  shadows Hoist's wrapper bindings for cell font, grid background, `rowBorders`, and `showHover`.
+
+### 📚 Libraries
+
+* ag-grid-community `35.3 -> 36.1`
+* ag-grid-react `35.3 -> 36.1`
 
 ## 87.2.0 - 2026-09-08
 

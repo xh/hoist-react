@@ -303,6 +303,56 @@ columns: [
 ]
 ```
 
+### Tooltips
+
+Hoist styles the tooltip content it renders itself - a plain value or string, and the validation
+messages shown on an editable cell - with `xh-grid-tooltip-frame` (background, border, radius,
+padding, max-width) and `xh-grid-tooltip--prewrap` (honors `\n` line breaks while still wrapping at
+max-width).
+
+A `tooltip` that returns an **element** is left unstyled, so that a custom tooltip can supply its
+own chrome. To take Hoist's frame instead, add `xh-grid-tooltip-frame` to your own root:
+
+```typescript
+{
+    field: 'volume',
+    tooltip: volume =>
+        vbox({
+            className: 'xh-grid-tooltip-frame',
+            items: [fmtNumberTooltip(volume), div('Unusually high volume')]
+        })
+}
+```
+
+`xh-grid-tooltip-frame` is a standalone utility class, usable on any element - a custom tooltip is
+not nested in anything that provides the frame for it. (`--prewrap` is an ordinary modifier that
+Hoist applies to its own tooltips; set `white-space` directly if a custom tooltip needs it.)
+
+### Cell Corner Flags
+
+`cellFlag` marks a cell with a small triangle in its top-right corner, in the color of a standard
+Hoist `Intent` - a compact alternative to spending a column or restyling the cell. Called per
+record, returning an `Intent` or `null`.
+
+```typescript
+columns: [
+    {
+        field: 'volume',
+        cellFlag: volume => (volume >= 9_000_000_000 ? 'warning' : null)
+    },
+    {
+        field: 'price',
+        cellFlag: (value, {record}) => (record.data.isStale ? 'warning' : null)
+    }
+]
+```
+
+One flag renders per cell, and on an editable column a failing validation always wins. Keep the
+function cheap - it runs once per candidate `Intent` on each rendered cell and is deliberately
+uncached, so a flag still reflects state that changes without the record, such as an async
+validation result. Size follows the grid's `sizingMode` via the `--xh-grid-cell-flag-size` custom
+property. Flags are CSS pseudo-elements, so they add no width and do not appear in grid exports.
+
 ## Column Properties Reference
 
 Every column within a `GridModel` must resolve to a **unique ID**. The `colId` defaults to `field`
@@ -322,7 +372,7 @@ Key categories of `ColumnSpec` properties:
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |
 | Export | `exportName`, `exportValue`, `excludeFromExport`, `excelFormat`, `excelWidth`                                |
 | Chooser | `chooserName`, `chooserGroup`, `chooserDescription`\*, `excludeFromChooser`, `hideable`                      |
-| Rendering | `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`                                    |
+| Rendering | `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`, `cellFlag`                         |
 | Tree | `isTreeColumn`, `headerHasExpandCollapse`                                                                    |
 | Autosize | `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`, `autosizeMinWidth`, `autosizeMaxWidth` |
 

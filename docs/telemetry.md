@@ -205,18 +205,22 @@ forgettable beats ambient-but-wrong until a real propagation primitive lands.
 Forgetting to thread `ctx` into a nested fetch or runner produces a detached root span instead of
 a child — silently, with no error. See [Threading context](#threading-context).
 
-### Using deprecated fetch/span APIs
+### Carrying over the removed fetch/span APIs
 
-`HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields are **deprecated** (removal
-in **v88**). Use `runner().span(...)` and pass context via the fetch method's second argument:
+`HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields were deprecated in v86 and
+**removed in v88**. Use `runner().span(...)` and pass context via the fetch method's second
+argument:
 
 ```typescript
-// ❌ Don't (deprecated)
+// ❌ Don't (removed in v88)
 await XH.fetchJson({url: 'api/data', loadSpec});
 
 // ✅ Do
 await XH.fetchJson({url: 'api/data'}, {loadSpec});
 ```
+
+Note that `TraceService.withSpan()` remains as the low-level API for advanced use - only the
+`HoistBase` convenience wrapper was removed.
 
 ### Expecting metrics without the server endpoint
 
