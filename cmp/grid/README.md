@@ -134,6 +134,39 @@ gridModel.collapseAll();
 gridModel.expandToLevel(2);
 ```
 
+### Column Groups
+
+```typescript
+new GridModel({
+    columns: [
+        {field: 'name', flex: 1},
+        {
+            headerName: 'Q1',
+            expandedByDefault: false,          // Render collapsed until the user expands
+            children: [
+                {field: 'q1Jan', groupShowMode: 'expanded'},
+                {field: 'q1Feb', groupShowMode: 'expanded'},
+                {field: 'q1Total', groupShowMode: 'collapsed'}
+            ]
+        }
+    ]
+});
+```
+
+`groupShowMode` is what makes a group expandable, and it takes a mix of values to do so: the group's
+children must resolve to at least one column shown while expanded *and* one shown while collapsed.
+Columns default to `'always'`, shown in either state. A group of always-shown columns is a static
+header, as is one where every child specifies the same value.
+This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
+group non-expandable.
+
+Expand/collapse state is tracked on `GridModel.columnGroupState`, one entry per configured group.
+Read it with `isColumnGroupExpanded(groupId)`, drive it with `setColumnGroupExpanded()` or
+`setColumnGroupState()`, and persist it via `persistWith` (on by default, alongside column state -
+see `GridModelPersistOptions.persistColumnGroups`).
+
+Collapsing affects display only: `columnState`, `isColumnVisible()`, and export are all unaffected.
+
 ### Tree Mode
 
 ```typescript
@@ -327,7 +360,7 @@ Key categories of `ColumnSpec` properties:
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
 | Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
-| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                    |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `groupShowMode` |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |

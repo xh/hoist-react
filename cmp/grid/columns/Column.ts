@@ -59,13 +59,15 @@ import {
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
+    ColumnGroupShowMode,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
     ColumnRenderer,
     ColumnSetValueFn,
     ColumnSortSpec,
     ColumnSortValueFn,
-    ColumnTooltipFn
+    ColumnTooltipFn,
+    toAgColumnGroupShow
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
@@ -170,6 +172,13 @@ export interface ColumnSpec {
 
     /** True to suppress default display of the column.*/
     hidden?: boolean;
+
+    /**
+     * Show this column only while its containing {@link ColumnGroup} is 'expanded' or 'collapsed',
+     * or 'always' (default) to show it in either state. Ignored for a column with no containing
+     * group.
+     */
+    groupShowMode?: ColumnGroupShowMode;
 
     /**
      * Flex columns stretch to fill the width of the grid after all columns with a set pixel-width
@@ -504,6 +513,7 @@ export class Column {
     cellFlag: ColumnCellFlagFn;
     align: HAlign;
     hidden: boolean;
+    groupShowMode: ColumnGroupShowMode;
     flex: boolean | number;
     width: number;
     minWidth: number;
@@ -578,6 +588,7 @@ export class Column {
             cellClassRules,
             cellFlag,
             hidden,
+            groupShowMode,
             align,
             width,
             minWidth,
@@ -664,6 +675,7 @@ export class Column {
         this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
+        this.groupShowMode = groupShowMode;
 
         warnIf(
             flex && width,
@@ -784,6 +796,7 @@ export class Column {
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
+                columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,

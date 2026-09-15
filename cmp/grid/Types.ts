@@ -42,6 +42,15 @@ export interface ColumnState {
     pinned?: HSide;
 }
 
+/**
+ * Expand/collapse state for a single {@link ColumnGroup}, as tracked by
+ * {@link GridModel.columnGroupState}.
+ */
+export interface ColumnGroupState {
+    groupId: string;
+    expanded: boolean;
+}
+
 /** Options for {@link GridModel.setColumnState}. */
 export interface ColumnStateOptions {
     /**
@@ -99,6 +108,11 @@ export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
 export interface GridModelPersistOptions extends PersistOptions {
     /** True (default) to include column state or provide column-specific PersistOptions. */
     persistColumns?: boolean | PersistOptions;
+    /**
+     * True (default) to include column group expand/collapse state, or provide group-specific
+     * PersistOptions. Nothing is written while every group sits at its `expandedByDefault`.
+     */
+    persistColumnGroups?: boolean | PersistOptions;
     /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
@@ -292,6 +306,33 @@ export type ColumnOrGroupSpec = ColumnSpec | ColumnGroupSpec;
 
 export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
     return !('children' in spec);
+}
+
+/**
+ * Expand/collapse state of a containing ColumnGroup, within which a Column or nested ColumnGroup
+ * should be shown - see {@link ColumnSpec.groupShowMode}. 'always' (the default) shows it in
+ * either state.
+ *
+ * Note that this config is what makes a ColumnGroup expandable, and requires a mix of values to do
+ * so: the group must have a visible child shown while expanded *and* one shown while collapsed,
+ * with at least one child that is not shown 'always'. Groups not meeting that bar render as static
+ * headers.
+ */
+export type ColumnGroupShowMode = 'expanded' | 'collapsed' | 'always';
+
+/**
+ * Map a {@link ColumnGroupShowMode} to the ag-Grid `columnGroupShow` value.
+ * @internal
+ */
+export function toAgColumnGroupShow(mode: ColumnGroupShowMode): 'open' | 'closed' {
+    switch (mode) {
+        case 'expanded':
+            return 'open';
+        case 'collapsed':
+            return 'closed';
+        default:
+            return null;
+    }
 }
 
 /**
