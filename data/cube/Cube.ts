@@ -317,16 +317,19 @@ export class Cube extends HoistBase {
     createPivotView({
         query,
         stores,
-        connect = false
+        connect = false,
+        xhName = null
     }: {
         query: PivotQueryConfig;
         stores?: Store[] | Store;
         connect?: boolean;
+        xhName?: string;
     }): PivotView {
         return new PivotView({
             query: new PivotQuery({...query, cube: this}),
             stores,
-            connect
+            connect,
+            xhName
         });
     }
 

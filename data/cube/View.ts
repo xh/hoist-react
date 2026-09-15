@@ -142,7 +142,7 @@ export class View
     lastUpdated: number;
 
     /** @internal */
-    readonly diagnostics = new ViewDiagnostics(this);
+    readonly diagnostics: ViewDiagnostics;
 
     _created = Date.now();
 
@@ -177,6 +177,7 @@ export class View
             {query, stores = [], connect = false, xhName = null} = config;
 
         this.xhName = xhName;
+        this.diagnostics = this.createDiagnostics();
         this.query = query;
         this.stores = this.parseStores(stores);
         this._rowCache = new RowCache(this);
@@ -364,6 +365,11 @@ export class View
     /** Factory for this view's row data generator - overridden to extend the row shapes it mints. */
     protected createRowDataGenerator(): RowDataGenerator {
         return new RowDataGenerator(this);
+    }
+
+    /** Factory for this view's diagnostics - overridden to report more than the base ops. */
+    protected createDiagnostics(): ViewDiagnostics {
+        return new ViewDiagnostics(this);
     }
 
     private buildIndices() {

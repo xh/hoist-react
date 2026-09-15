@@ -21,6 +21,7 @@ import {
     type PivotPathSpec
 } from './impl/PivotLattice';
 import {PivotRowDataGenerator} from './impl/PivotRowDataGenerator';
+import {PivotViewDiagnostics} from './impl/PivotViewDiagnostics';
 import {CubeField} from './CubeField';
 import {PivotCellField, PivotPath} from './PivotPath';
 import {PivotQuery, PivotQueryConfig} from './PivotQuery';
@@ -166,6 +167,10 @@ export class PivotView extends View {
         return new PivotRowDataGenerator(this);
     }
 
+    protected override createDiagnostics(): PivotViewDiagnostics {
+        return new PivotViewDiagnostics(this);
+    }
+
     private get pivotRowDataGenerator(): PivotRowDataGenerator {
         return this._rowDataGenerator as PivotRowDataGenerator;
     }
@@ -181,9 +186,21 @@ export class PivotView extends View {
     }
 
     protected override generateRows() {
+        const start = performance.now();
         this.discoverPaths();
+        const discovered = performance.now();
+
         super.generateRows();
+
+        const cellStart = performance.now();
         this.generateCells(this._records.list);
+
+        // Pivot work alone - base row generation is already reported by the op it ran under.
+        (this.diagnostics as PivotViewDiagnostics).notePivot({
+            paths: this._allPaths?.length ?? 0,
+            cells: this._cellRows?.length ?? 0,
+            elapsed: discovered - start + (performance.now() - cellStart)
+        });
     }
 
     /**
