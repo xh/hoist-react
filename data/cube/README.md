@@ -78,6 +78,11 @@ const cube = new Cube({
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
 
+A field is never aggregated at or below the level at which it is applied as a dimension - rows
+there publish the dimension value, and rows above aggregate over those values, one per grouped row.
+`MIN`, `MAX` and `UNIQUE` remain meaningful for such a field; `SUM` and `AVG` do not. To average a
+field you also group by, add a second measure field over the same value.
+
 ## Custom Aggregators
 
 Extend `Aggregator` and implement `aggregate()` to add application-specific aggregations. Values

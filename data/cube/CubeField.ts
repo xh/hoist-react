@@ -26,7 +26,15 @@ import {
 import {isString} from 'lodash';
 
 export interface CubeFieldSpec extends FieldSpec {
-    /** Instance of a Hoist Cube {@link Aggregator} or string token alias for one. */
+    /**
+     * Instance of a Hoist Cube {@link Aggregator} or string token alias for one.
+     *
+     * A field is never aggregated at or below the level at which it is applied as a dimension -
+     * rows there publish the dimension value. Rows above aggregate over those published values,
+     * one per grouped row, so aggregations that depend on the leaf population (`SUM`, `AVG`) are
+     * not meaningful for a grouping field. To average a field you also group by, add a second
+     * measure field over the same value.
+     */
     aggregator?: Aggregator | AggregatorToken;
 
     /**
