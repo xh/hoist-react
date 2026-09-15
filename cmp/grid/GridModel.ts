@@ -72,6 +72,7 @@ import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
+    apiDeprecated,
     deepFreeze,
     executeIfFunction,
     sharePendingPromise,
@@ -377,9 +378,9 @@ export interface GridConfig {
     highlightRowOnClick?: boolean;
 
     /**
-     *  Set to true to ensure that the grid will have a single horizontal scrollbar spanning the
-     *  width of all columns, including any pinned columns.  A value of false (default) will show
-     *  the scrollbar only under the scrollable area.
+     * @deprecated - no longer has any effect. As of ag-Grid v36, the grid natively renders a
+     *      single horizontal scrollbar spanning the full width of all columns, including any
+     *      pinned columns, so Hoist's custom full-width scrollbar is no longer required.
      */
     enableFullWidthScroll?: boolean;
 
@@ -443,6 +444,7 @@ export interface GridModelDefaults {
     emptyText?: ReactNode | null;
     enableColumnPinning?: boolean;
     enableExport?: boolean;
+    /** @deprecated - no longer has any effect. See {@link GridConfig.enableFullWidthScroll}. */
     enableFullWidthScroll?: boolean;
     exportOptions?: ExportOptions;
     headerMenuDisplay?: 'always' | 'hover';
@@ -516,7 +518,6 @@ export class GridModel extends HoistModel {
         emptyText: null,
         enableColumnPinning: true,
         enableExport: false,
-        enableFullWidthScroll: false,
         exportOptions: {},
         headerMenuDisplay: 'always',
         lockColumnGroups: true,
@@ -551,7 +552,6 @@ export class GridModel extends HoistModel {
     showGroupRowCounts: boolean;
     enableColumnPinning: boolean;
     enableExport: boolean;
-    enableFullWidthScroll: boolean;
     externalSort: boolean;
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
@@ -641,7 +641,7 @@ export class GridModel extends HoistModel {
     }
 
     get bodyViewport(): HTMLElement {
-        return this.viewRef.current?.querySelector('.ag-body-viewport') as HTMLElement;
+        return this.viewRef.current?.querySelector('.ag-grid-viewport') as HTMLElement;
     }
 
     /** Tracks execution of filtering operations.*/
@@ -707,7 +707,7 @@ export class GridModel extends HoistModel {
             expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
-            enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll,
+            enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll, // deprecated no-op
             experimental,
             appData,
             xhName = null,
@@ -736,7 +736,12 @@ export class GridModel extends HoistModel {
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
-        this.enableFullWidthScroll = enableFullWidthScroll;
+        apiDeprecated('GridModel.enableFullWidthScroll', {
+            v: 'v90',
+            test: enableFullWidthScroll,
+            source: this,
+            msg: 'It no longer has any effect - AG Grid 36 renders a full-width scrollbar natively.'
+        });
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
