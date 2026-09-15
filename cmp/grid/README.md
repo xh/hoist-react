@@ -144,16 +144,16 @@ new GridModel({
             headerName: 'Q1',
             expandedByDefault: false,          // Render collapsed until the user expands
             children: [
-                {field: 'q1Jan', showWhenGroup: 'expanded'},
-                {field: 'q1Feb', showWhenGroup: 'expanded'},
-                {field: 'q1Total', showWhenGroup: 'collapsed'}
+                {field: 'q1Jan', groupShowMode: 'expanded'},
+                {field: 'q1Feb', groupShowMode: 'expanded'},
+                {field: 'q1Total', groupShowMode: 'collapsed'}
             ]
         }
     ]
 });
 ```
 
-`showWhenGroup` is what makes a group expandable, and it takes a mix of values to do so: the group's
+`groupShowMode` is what makes a group expandable, and it takes a mix of values to do so: the group's
 children must resolve to at least one column shown while expanded *and* one shown while collapsed.
 Columns default to `'always'`, shown in either state. A group of always-shown columns is a static
 header, as is one where every child specifies the same value.
@@ -360,7 +360,7 @@ Key categories of `ColumnSpec` properties:
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
 | Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
-| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `showWhenGroup` |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `groupShowMode` |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |

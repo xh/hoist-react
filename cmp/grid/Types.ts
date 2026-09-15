@@ -310,7 +310,7 @@ export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
 
 /**
  * Expand/collapse state of a containing ColumnGroup, within which a Column or nested ColumnGroup
- * should be shown - see {@link ColumnSpec.showWhenGroup}. 'always' (the default) shows it in
+ * should be shown - see {@link ColumnSpec.groupShowMode}. 'always' (the default) shows it in
  * either state.
  *
  * Note that this config is what makes a ColumnGroup expandable, and requires a mix of values to do

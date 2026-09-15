@@ -52,12 +52,12 @@ export interface ColumnGroupSpec {
      * Show this group only while its containing parent ColumnGroup is 'expanded' or 'collapsed',
      * or 'always' (default) to show it in either state. Ignored for a top-level group.
      */
-    showWhenGroup?: ColumnGroupShowMode;
+    groupShowMode?: ColumnGroupShowMode;
 
     /**
      * False to render this group collapsed until the user expands it. Defaults to true.
      * Applies only to an expandable group - i.e. one with a direct child specifying
-     * `showWhenGroup`.
+     * `groupShowMode`.
      *
      * Note this is the *default* only: once rendered, expand/collapse state is tracked on
      * {@link GridModel.columnGroupState} and is persisted with the grid's `persistWith`.
@@ -91,7 +91,7 @@ export class ColumnGroup {
     readonly headerAlign: HAlign;
     readonly headerTooltip: string;
     readonly borders: boolean;
-    readonly showWhenGroup: ColumnGroupShowMode;
+    readonly groupShowMode: ColumnGroupShowMode;
     readonly expandedByDefault: boolean;
     readonly omit: Thunkable<boolean>;
 
@@ -123,7 +123,7 @@ export class ColumnGroup {
             headerTooltip,
             agOptions,
             borders,
-            showWhenGroup,
+            groupShowMode,
             expandedByDefault,
             appData,
             omit,
@@ -142,7 +142,7 @@ export class ColumnGroup {
         this.headerAlign = headerAlign;
         this.headerTooltip = headerTooltip;
         this.borders = withDefault(borders, true);
-        this.showWhenGroup = showWhenGroup;
+        this.groupShowMode = groupShowMode;
         this.expandedByDefault = withDefault(expandedByDefault, true);
         this.children = children;
         this.gridModel = gridModel;
@@ -150,14 +150,14 @@ export class ColumnGroup {
         this.appData = appData ? clone(appData) : {};
         this.omit = omit;
 
-        const changeable = children.some(it => it.showWhenGroup && it.showWhenGroup !== 'always'),
-            showsWhenExpanded = children.some(it => it.showWhenGroup !== 'collapsed'),
-            showsWhenCollapsed = children.some(it => it.showWhenGroup !== 'expanded'),
+        const changeable = children.some(it => it.groupShowMode && it.groupShowMode !== 'always'),
+            showsWhenExpanded = children.some(it => it.groupShowMode !== 'collapsed'),
+            showsWhenCollapsed = children.some(it => it.groupShowMode !== 'expanded'),
             expandable = changeable && showsWhenExpanded && showsWhenCollapsed;
 
         warnIf(
             changeable && !expandable,
-            `Column group '${this.groupId}' specifies 'showWhenGroup' on its children but cannot be expanded - that requires at least one child shown when expanded and one shown when collapsed.`
+            `Column group '${this.groupId}' specifies 'groupShowMode' on its children but cannot be expanded - that requires at least one child shown when expanded and one shown when collapsed.`
         );
 
         warnIf(
@@ -188,7 +188,7 @@ export class ColumnGroup {
             },
             headerClass: getAgHeaderClassFn(this),
             headerTooltip: this.headerTooltip,
-            columnGroupShow: toAgColumnGroupShow(this.showWhenGroup),
+            columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
             openByDefault: this.expandedByDefault,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),

@@ -59,7 +59,7 @@
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
-* Added support for collapsible grid column groups via a new `showWhenGroup` config on
+* Added support for collapsible grid column groups via a new `groupShowMode` config on
   `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
   group is `'expanded'` or `'collapsed'`. Groups render expanded unless set otherwise with the new
   `ColumnGroupSpec.expandedByDefault`.

@@ -178,7 +178,7 @@ export interface ColumnSpec {
      * or 'always' (default) to show it in either state. Ignored for a column with no containing
      * group.
      */
-    showWhenGroup?: ColumnGroupShowMode;
+    groupShowMode?: ColumnGroupShowMode;
 
     /**
      * Flex columns stretch to fill the width of the grid after all columns with a set pixel-width
@@ -513,7 +513,7 @@ export class Column {
     cellFlag: ColumnCellFlagFn;
     align: HAlign;
     hidden: boolean;
-    showWhenGroup: ColumnGroupShowMode;
+    groupShowMode: ColumnGroupShowMode;
     flex: boolean | number;
     width: number;
     minWidth: number;
@@ -588,7 +588,7 @@ export class Column {
             cellClassRules,
             cellFlag,
             hidden,
-            showWhenGroup,
+            groupShowMode,
             align,
             width,
             minWidth,
@@ -675,7 +675,7 @@ export class Column {
         this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
-        this.showWhenGroup = showWhenGroup;
+        this.groupShowMode = groupShowMode;
 
         warnIf(
             flex && width,
@@ -796,7 +796,7 @@ export class Column {
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
-                columnGroupShow: toAgColumnGroupShow(this.showWhenGroup),
+                columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
