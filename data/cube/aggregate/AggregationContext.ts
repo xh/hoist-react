@@ -70,15 +70,13 @@ export class AggregationContext {
      * @internal
      */
     aggregate(rows: ViewRow[], field: CubeField, row: ParentRow): any {
-        const {activeField, activeRow} = this;
         this.activeField = field;
         this.activeRow = row;
         try {
             return field.aggregator.aggregate(rows, field.name, this);
         } finally {
-            // Restore rather than clear - an aggregator may delegate to another via this method.
-            this.activeField = activeField;
-            this.activeRow = activeRow;
+            this.activeField = null;
+            this.activeRow = null;
         }
     }
 
@@ -88,15 +86,14 @@ export class AggregationContext {
      * @internal
      */
     replace(rows: ViewRow[], currVal: any, update: RowUpdate, row: ParentRow): any {
-        const {field} = update,
-            {activeField, activeRow} = this;
+        const {field} = update;
         this.activeField = field;
         this.activeRow = row;
         try {
             return field.aggregator.replace(rows, currVal, update, this);
         } finally {
-            this.activeField = activeField;
-            this.activeRow = activeRow;
+            this.activeField = null;
+            this.activeRow = null;
         }
     }
 
