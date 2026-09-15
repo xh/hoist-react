@@ -46,13 +46,30 @@
 
 * Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
   `@xh/hoist/utils/js` entry point) instead.
-
+* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
+  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
+  their rows with unexported internal classes. `BucketSpec.bucketFn` now takes a `ViewRow` as
+  well, and `BucketSpec` and `RowUpdate` are now exported from `@xh/hoist/data`.
+* `Aggregator.forEachLeaf()` now types its callback's leaf as the new `ViewLeafRow` interface,
+  which extends `ViewRow` with the leaf's source `cubeRecord` and `cubeRecordId`. Callbacks typed
+  against the previous, unexported `LeafRow` class should switch to `ViewLeafRow`.
 
 ### 🎁 New Features
 
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
+* Cube `Aggregator` implementations can now hold per-row state via new
+  `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
+  derived from their children's published values alone - e.g. a weighted average - compose from
+  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
+  example.
+
+### ⚙️ Technical
+
+* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
+  walking their entire subtree of leaves, making views with averaged fields as cheap to build,
+  regroup and update as those with `SUM` fields.
 
 ### ✨ Styles
 
