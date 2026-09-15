@@ -129,11 +129,17 @@ export class PivotView extends View {
         const store = new Store({
             loadTreeData: true,
             projectionOnly: true,
+            xhName: this.childXhName('store'),
             ...rest,
             fields: [...VIEW_ROW_DATA_FIELDS, ...this.fields, ...fields]
         });
 
-        if (connect) this.stores = this.parseStores([...this.stores, store]);
+        // Run `parseStores` either way - it installs the row digest and rejects a conflicting one,
+        // and an unconnected store still loads from this view. Adopt the result only when
+        // connecting; without the digest it would fall back to per-field value comparison, which a
+        // pivot store pays for across every cell field.
+        const stores = this.parseStores([...this.stores, store]);
+        if (connect) this.stores = stores;
 
         this.syncStore(store);
         this.loadStore(store);
@@ -471,7 +477,11 @@ export class PivotView extends View {
             f.dependsOn?.forEach(n => names.add(n));
         });
 
-        const fields = this.fields.filter(f => f.aggregator && names.has(f.name));
+        const fields: CubeField[] = [];
+        names.forEach(name => {
+            const field = this.getField(name);
+            if (field?.aggregator) fields.push(field);
+        });
         this._cellAggFields = fields;
         this._cellAggFieldNames = new Set(fields.map(f => f.name));
         this._cellCanAggregateFnFields = fields.filter(f => f.canAggregateFn);

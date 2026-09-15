@@ -7,7 +7,7 @@
 
 import {appendFilter, Filter, FilterLike, parseFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {compact, find, isEmpty, isEqual, isString, uniq} from 'lodash';
+import {compact, isEmpty, isEqual, isString, uniq} from 'lodash';
 import {CubeField} from './CubeField';
 import {Query, QueryConfig} from './Query';
 
@@ -159,9 +159,9 @@ export class PivotQuery extends Query {
         if (isEmpty(raw)) return [];
         if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
 
-        const {fields} = this.cube;
+        const {cube} = this;
         return (raw as string[]).map(name => {
-            const field = find(fields, {name});
+            const field = cube.getField(name);
             throwIf(
                 !field?.isDimension,
                 `Pivot dimension '${name}' is not a Field on this Cube, or is not specified with isDimension:true.`
@@ -174,9 +174,9 @@ export class PivotQuery extends Query {
         throwIf(isEmpty(raw), 'PivotQuery requires at least one entry in `valueFields`.');
         if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
 
-        const {fields} = this.cube;
+        const {cube} = this;
         return (raw as string[]).map(name => {
-            const field = find(fields, {name});
+            const field = cube.getField(name);
             throwIf(!field, `Value field '${name}' is not a Field on this Cube.`);
             return field;
         });
