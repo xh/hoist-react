@@ -1555,9 +1555,12 @@ member, the constant `headerName` thunk, and a documented `PivotSort`.
 ## Rebase onto the data-package rework (v88 `develop`)
 
 **Merge landed 2026-09-11** — 118 commits of `develop` into `pivot-grid`, in
-`Merge branch 'develop' into pivot-grid`. `pnpm typecheck` and `pnpm lint:code` are clean and the
-unit tier is 49/49. **Nothing in the Toolbox tier has been re-run**, so treat every behavioural claim
-below as designed-for, not verified — see [Verification](#verification-after-the-rebase).
+`Merge branch 'develop' into pivot-grid`. **A second merge landed 2026-09-15**, bringing ag-Grid v36,
+the v88 deprecation sweep, and compositional AVG / AVG_STRICT (#4659). `pnpm typecheck` and
+`pnpm lint:code` are clean and the unit tier is 49/49. **Nothing in the Toolbox tier has been
+re-run** — Toolbox `pivot-grid` is still on pre-merge hoist-react and 51 commits behind its own
+`develop` — so treat every behavioural claim below as designed-for, not verified. See
+[Verification](#verification-after-the-rebase).
 
 This rework is a much deeper change to `data/` than
 [the `store-simple` rebase](#rebase-onto-the-store-rework-store-simple) was. The headline items, all
@@ -1603,6 +1606,44 @@ of which the pivot layer sits directly on top of:
 - `GridModel` — the branch's `ColumnGroupState` work merged with develop's chooser rework; `find` was
   re-imported for `isColumnGroupExpanded()`.
 
+### New with the 2026-09-15 merge: compositional AVG broke the pivot axis
+
+**Fixed in `Preserve originating leaf values when forking a RowUpdate for the pivot axis`.** Recorded
+because the shape of the bug generalises to any future aggregator state.
+
+#4659 gave AVG / AVG_STRICT a running `{total, count}` composed from direct children, and their
+`replace` reads `RowUpdate.leafOldValue` / `leafNewValue` — values pinned at the originating leaf,
+because the running total is over leaves and the delta must apply at any depth.
+`propagateUpdate` forked the second route with `new RowUpdate(field, oldValue, newValue)`, and
+`ParentRow.applyDataUpdate` rewrites `oldValue` / `newValue` in place to its *own* aggregate delta
+before propagating — so the fork re-seeded the leaf values from an aggregate. `RowUpdate.clone()`
+now carries them through.
+
+Reachable only where a row has both parents below the leaf level, i.e. a cell at pivot depth 2+, so
+it needs two pivot dimensions and an averaging measure. It surfaces as drift, not an error. **The
+general rule: anything a row forks for the second route must preserve leaf-level provenance.**
+
+### Extension-point surface: what this may touch outside the pivot layer
+
+The standing constraint is that pivot work stays in its own lane — extension points on `View` are
+fine, per-row or per-tick cost on plain Views is not. The adopted items need exactly this much, and
+nothing else in `data/` changes shape:
+
+| Change | Cost to a plain View |
+| ------ | -------------------- |
+| `RowUpdate.clone()`, used by `propagateUpdate` | none — the two-parent arm is pivot-only |
+| `protected createRowDataGenerator()` factory in the `View` ctor | none — lets `PivotRowDataGenerator` own all leaf-class logic |
+| `protected createDiagnostics()` factory | none — converts a field initializer to a ctor call |
+| `RowCache.invalidateExposedLeaves()` | none — additive |
+| `Cube.createPivotView({xhName})` | none — additive, and `createView` already takes it |
+| `changedFields` early-out in `getSimpleUpdates` (item 7) | **net win** — skips the dimension scan |
+| `cubeLabelValue` on the parent row template (item 10) | one slot per parent row, one write per aggregate row — the only real cost, taken deliberately |
+
+Everything else — cell row templates, `_pivotPathIdx`, the discarded-cell route cut, field-map
+lookups, `createStore`, the label column — lives in `PivotView` / `PivotCellRow` / `PivotGridModel`
+or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `ParentRow.reuse`, or
+`RowDataGenerator.newParentRowData` beyond the one slot above.
+
 ### Follow-up: correctness and contract
 
 1. **Exposed-leaf row shape is the real conflict this time, and it wants a deliberate answer.**
@@ -1627,32 +1668,51 @@ of which the pivot layer sits directly on top of:
    discovered during `generateCells`, so the first build mints leaves before the class can carry
    them; the rebuild path has to cover that generation too.
 
-   This only binds when `includeLeaves` / `provideLeaves` is set. If drill-down is judged rare
-   enough, the honest alternative is to accept it and say so here — but it should not stay
-   undecided.
+   The regression is sharper than "gives up fast-properties mode". `Column.buildFastValueGetter`
+   compiles one closure per column and *group rows and leaf rows share it*
+   (`record.data[fieldPath]`), so a drill-down pushes that column's inline cache megamorphic for
+   every row in the grid, not just the leaves. Pre-rework the site was 2-shape (one leaf class, one
+   parent template); `projectLeaf` takes it to one shape per distinct full-depth path.
+
+   **Decided 2026-09-15: adopt the prototype-getter design**, with two refinements.
+
+   - Compare an **integer path index**, not the path key string — `PivotView` already holds path
+     indices and the getter body is cheaper.
+   - The chicken-and-egg is avoidable rather than something the rebuild path must cover.
+     `discoverPivotPaths` and `syncPaths` need only `_records.list` and `query.pivotDimensionNames`;
+     only `buildPivotLattice` needs the group tree. Move discovery **above** `super.generateRows()`
+     in the `generateRows` override and the leaf class is correct before any leaf is minted.
+
+   The rebuild cost is already paid at that moment: a cell-field change runs `syncStore` →
+   `Store.setFields` → `resetRecords()`, which drops every record regardless — which is also why
+   item 5 folds into this one rather than standing alone.
 
 2. **`PivotView.hasDimOrBucketUpdates` reads `this._leafMap.get(rec.id).data`** where the base now
-   reads `this._records.getById(rec.id).data`. Both yield pre-update values, but the leaf route is an
-   extra indirection that on an exposed leaf now resolves through `_src`, and it assumes every
-   updated record has a leaf. Align it with the base's form.
+   reads `this._records.getById(rec.id).data`. Audited 2026-09-15 and the two are equivalent, not
+   merely both pre-update: `_records` is stale by design after a `dataOnly` run, but any dimension
+   change is still caught against that baseline by induction, and `_leafMap` is populated for every
+   record on both `getSimpleUpdates` branches. Cosmetic — align for one form, expect nothing.
 
-3. **Verify `pivotParent` is cleared on every path that clears cells.** `RowCache.removeParentRows`
-   and `doEvictUnusedParents` both null it, and `PivotQuery.orphansParents` / `invalidatesParents`
-   route the query-change cases into them. What is *not* obviously covered is `generateCells`
-   bailing to `clearCells()` without a query change — `isEmpty(_rootRows)` or `isEmpty(leafRows)`.
-   A leaf left pointing at a discarded cell routes the next tick into a dead row, where
-   `cellFieldNames` throws. Add a Toolbox-tier scenario that forces that bail with live leaves.
+3. ~~**Verify `pivotParent` is cleared on every path that clears cells.**~~ **Was a real hole; fixed
+   2026-09-15** in `Cut the pivot update route when a cell is discarded`. `clearVacatedCells` now
+   nulls `pivotParent` on the children of every cell it discards. The normal path was covered only
+   by accident (`buildCellRows` reassigns `pivotParent` for the whole new lattice); a generation
+   that builds no cells reassigns nothing, and `RowCache` evicts orphaned parents only for the query
+   changes `orphansParents` / `invalidatesParents` name. Reachable by toggling `includeRoot` off on
+   a pivoted, dimensionless query with leaves — neither predicate covers `includeRoot`.
+   **Still owed a Toolbox-tier scenario** that forces the bail with live leaves.
 
 4. **`PivotView.createStore` should pass `xhName: this.childXhName('store')`**, and should install
    `digestSpec = 'cubeRowDigest'` even for `connect: false` stores — today only `parseStores` does,
    so an unconnected store falls back to the `projectionOnly` value-comparison reuse path.
 
 5. **`Store.setFields` against the reworked Store.** It drops all records, so a cell-field change
-   costs a full record rebuild with no digest reuse. Acceptable, but it is now the only caller-facing
-   hole in develop's reuse story and should be measured on Wide before it is assumed cheap. `develop`
-   also added a duplicate-field-name throw to `parseFields`; `syncStore`'s retained/added split is
-   dup-free today, but the root-path-cell-field-is-the-value-field aliasing makes that a live edge —
-   cover it.
+   costs a full record rebuild with no digest reuse. Not an independent decision — it is the same
+   event as item 1, and item 1's leaf-class rebuild rides along free. Still worth one bench number
+   on Wide. On the duplicate-field-name throw `develop` added to `parseFields`: `syncStore`'s
+   retained/added split round-trips the root-path aliasing cleanly (audited), but a caller passing
+   `fields` to `createStore` that collide with a generated cell name still hits it.
+   `validateCellFieldNames` guards cell-vs-*Cube*-field collisions only.
 
 ### Follow-up: optimizations to adopt
 
@@ -1677,17 +1737,30 @@ of which the pivot layer sits directly on top of:
    `Store._fieldMap` — use them.
 
 9. **Measure with `experimental.maxPatchRatio` on.** It makes `View.filterRecords` incremental,
-   which is the largest remaining per-tick cost a pivot inherits. It also makes `_records.list`
-   incumbency-ordered, and `discoverPivotPaths` consumes that order — so **pivot column order would
-   start depending on record arrival order**. Fix that independently by giving `syncPaths` a
-   deterministic sort of its own, rather than leaving column order to the record set.
+   which is the largest remaining per-tick cost a pivot inherits. ~~It also makes `_records.list`
+   incumbency-ordered, so pivot column order would start depending on record arrival order.~~
+   **Wrong, corrected 2026-09-15** — `discoverPivotPaths` already assigns indices depth-first in
+   sorted order (`compareValues`), so path order never depended on record order. Only
+   `pathIdxOfRecord` follows arrival order, and it is order-insensitive. No `syncPaths` sort needed.
+   Nothing to do here but measure.
 
 10. **`PivotGridModel.buildLabelColumn` sets a function `sortValue`**, and
     `GridTransactionManager.computeSortPaths` bails to `null` for the whole grid if any active sorter
     has one. The label column is the tree column and the natural default sort, so as written a pivot
     grid gives up the `suppress` refresh mode — develop's single largest grid-tick win — in its most
-    common configuration. Re-express the label sort as a real field or a string `sortValue`, or
-    accept it knowingly.
+    common configuration.
+
+    **This is a framework gap, not a pivot one**: `ActivityTrackingModel` sorts a plain cube grid's
+    label column through a custom `comparator`, which disqualifies `computeSortPaths` the same way.
+    A string `sortValue` cannot express it because the field holding the typed value varies by row
+    depth.
+
+    **Decided 2026-09-15: publish the raw dimension value on row data** as `cubeLabelValue` — a slot
+    on the `RowDataGenerator` parent template, written by the `AggregateRow` constructor. Both
+    `PivotGridModel` and `ActivityTrackingModel` then use `sortValue: 'cubeLabelValue'`, which
+    `computeSortPaths` can prove. This is the one adopted item that adds cost to the base View (one
+    slot per parent row, one write per aggregate row); taken deliberately, because it closes the
+    framework gap rather than working around it in the pivot layer.
 
 11. **Re-tune the new grid pacing flags for pivot shapes.** `deltaSortRatio`,
     `deferredSortFactor` and `deferredAutosizeFactor` were calibrated on nested cube grids; pivot
@@ -1729,11 +1802,46 @@ Three assertions the rework specifically calls for, none of which exist yet:
 - The refresh mode `GridTransactionManager` actually chose, asserted per scenario. Per the standing
   anti-vacuity rule under [Verification vehicle](#verification-vehicle), a silent fall back to
   `'full'` produces correct output and hides the regression.
-- Own-key count on exposed leaf row data, to pin whatever is decided in item 1.
+- Own-key count on exposed leaf row data, to pin item 1's `_pivotPathIdx` design — one shape for
+  every leaf, no per-path own properties.
+- **An AVG (and AVG_STRICT) measure on a 2-pivot-dimension view, ticked, asserted against a
+  from-scratch recompute.** This is what the `RowUpdate` fork bug corrupted, and it drifts silently.
+- A generation that builds no cells while leaves are live — toggle `includeRoot` off on a pivoted,
+  dimensionless query with leaves — then tick, asserting no throw. Pins the discarded-cell route cut.
 
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-09-15 — Merged `develop` again, audited the rebase list, fixed two correctness bugs.** Eight
+commits of `develop`: ag-Grid v36, v88 deprecations, compositional AVG / AVG_STRICT (#4659), grid
+tooltip split, `Column.cellFlag`. One merge conflict, in `Grid.ts` imports — the v36 upgrade deleted
+`impl/GridHScrollbar.ts`.
+
+Two bugs found and fixed, each its own commit. **The AVG one arrived with the merge itself**:
+`propagateUpdate` forked the pivot route through `new RowUpdate(...)`, which re-seeds the leaf-level
+values #4659's running total depends on from the forking row's *aggregate* delta — see
+[New with the 2026-09-15 merge](#new-with-the-2026-09-15-merge-compositional-avg-broke-the-pivot-axis).
+The second was rebase item 3, which turned out to be a real hole rather than a thing to verify.
+
+Two open decisions closed, both toward the more invasive option and for the same reason — the
+cheap version leaves a framework-level defect in place. Item 1 takes the `_pivotPathIdx` prototype
+getters (sharper than the doc had it: the megamorphic call site is *shared with group rows*, so a
+drill-down degrades the whole grid), with path discovery moving above `super.generateRows()` so the
+chicken-and-egg never arises. Item 10 publishes `cubeLabelValue` on row data, which also retires
+`ActivityTrackingModel`'s custom label comparator.
+
+Two items audited away: item 9's column-order worry never applied (`discoverPivotPaths` already
+sorts), and item 2 is cosmetic, not a robustness fix. Item 5 folds into item 1.
+
+The
+[extension-point surface](#extension-point-surface-what-this-may-touch-outside-the-pivot-layer)
+now records what the remaining work costs a plain View — one slot on the parent row template, and
+nothing else.
+
+Pick up at the optimization set (items 1, 4, 6, 7, 8, 12), and at **merging Toolbox `pivot-grid`**,
+which is still on pre-merge hoist-react and 51 commits behind its own `develop`. Nothing below the
+unit tier has been re-run.
 
 **2026-09-11 — Merged `develop` (118 commits), and the data package moved underneath us.** No pivot
 implementation. The merge is in and green on `tsc`, `eslint` and the 49-check unit tier; the Toolbox
