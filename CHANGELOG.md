@@ -15,6 +15,45 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW, ag-Grid upgrade, scheduled removals)
+* Upgraded to AG Grid 36.
+    * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
+      `ag-grid-enterprise` dependencies to `36.x`.
+    * AG Grid 36 restructures the grid into a single scrollable container and renames its internal
+      layout classes. Apps with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
+      `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
+      theme defaults now resolve against an inner `.ag-styled-root` element. See the
+      [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+
+* Scheduled Removals
+    * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`
+      chain instead. Note that `TraceService.withSpan()` remains available for advanced use.
+    * Removed the `FetchOptions.span` and `FetchOptions.loadSpec` fields, deprecated in v86. Pass a
+      `CallContextLike` as the fetch method's second argument instead - e.g.
+      `XH.fetchJson({url}, {loadSpec})`.
+    * Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use the `persistOptions()`
+      function instead.
+    * Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})` instead
+      - the popover behavior is a built-in mode of `FilterChooser`.
+    * Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
+      `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use the
+      un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. For the
+      more generically named specs, consider
+      `import * as Col from '@xh/hoist/cmp/grid/columns'` and `Col.number` - the convention already
+      used across the Hoist Admin Console.
+
+### ⚙️ Typescript API Adjustments
+
+* Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
+  `@xh/hoist/utils/js` entry point) instead.
+* Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
+  implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
+  their rows with unexported internal classes. `BucketSpec.bucketFn` now takes a `ViewRow` as
+  well, and `BucketSpec` and `RowUpdate` are now exported from `@xh/hoist/data`.
+* `Aggregator.forEachLeaf()` now types its callback's leaf as the new `ViewLeafRow` interface,
+  which extends `ViewRow` with the leaf's source `cubeRecord` and `cubeRecordId`. Callbacks typed
+  against the previous, unexported `LeafRow` class should switch to `ViewLeafRow`.
+
 ### 🎁 New Features
 
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
@@ -28,12 +67,23 @@
   `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
   `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
   see the new `GridModelPersistOptions.persistColumnGroups`.
+* Cube `Aggregator` implementations can now hold per-row state via new
+  `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
+  derived from their children's published values alone - e.g. a weighted average - compose from
+  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
+  example.
 
 ### 🐞 Bug Fixes
 
 * Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.
+
+### ⚙️ Technical
+
+* Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
+  walking their entire subtree of leaves, making views with averaged fields as cheap to build,
+  regroup and update as those with `SUM` fields.
 
 ### ✨ Styles
 
@@ -76,6 +126,23 @@
   the toolbar, without needing its own `compact: true`.
 * Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
   the editor now defaults its `valueType` from the Store field type.
+
+### ⚙️ Technical
+
+* Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
+  full-width horizontal scrollbar spanning all columns, so Hoist's custom implementation was
+  removed.
+
+### ✨ Styles
+
+* Migrated internal grid SCSS to AG Grid 36's restructured DOM and renamed layout classes.
+* Re-bound Hoist grid/DataView styling onto AG Grid 36's inner `ag-styled-root`, which otherwise
+  shadows Hoist's wrapper bindings for cell font, grid background, `rowBorders`, and `showHover`.
+
+### 📚 Libraries
+
+* ag-grid-community `35.3 -> 36.1`
+* ag-grid-react `35.3 -> 36.1`
 
 ## 87.2.0 - 2026-09-08
 

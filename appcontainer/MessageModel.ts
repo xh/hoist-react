@@ -199,7 +199,7 @@ export class MessageModel extends HoistModel {
         super.destroy();
     }
 
-    // Merge handler and deprecated props into consolidated object.
+    // Merge handler into consolidated button props object.
     // Return null if neither text nor icon provided - button should not be displayed.
     private parseButtonProps(props, handler) {
         warnIf(
