@@ -303,15 +303,26 @@ export class PivotView extends View {
     }
 
     /**
-     * Null the slots of cells present in `prev` but not in `live`.
+     * Null the slots of cells present in `prev` but not in `live`, and cut any update route still
+     * pointing at one.
      *
      * Cells are sparse - a `(group, path)` pair holding no leaves is simply not built - so a cell
      * vacated by a re-partitioning would otherwise leave its last value on a reused owner row forever,
      * where it reads as a real cell and breaks `total == sum of cells`.
+     *
+     * Retained children must also give up their `pivotParent`. `buildCellRows` reassigns it for every
+     * row in the new lattice, but a generation that produces no cells at all reassigns nothing - a
+     * live leaf would keep routing ticks into a discarded cell, where `cellFieldNames` throws.
+     * `RowCache` covers only the query-change cases; this bail can follow from data alone.
      */
     private clearVacatedCells(prev: PivotCellRow[], live: Set<PivotCellRow>) {
         prev?.forEach(cell => {
             if (live.has(cell)) return;
+
+            cell.children?.forEach(child => {
+                if (child.pivotParent === cell) child.pivotParent = null;
+            });
+
             const {data} = cell.ownerRow;
             if (clearCellSlots(cell, data, EMPTY_NAMES)) this.assignDigest(data as ViewRowData);
         });
