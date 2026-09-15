@@ -1694,13 +1694,24 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
    record on both `getSimpleUpdates` branches. Cosmetic — align for one form, expect nothing.
 
 3. ~~**Verify `pivotParent` is cleared on every path that clears cells.**~~ **Was a real hole; fixed
-   2026-09-15** in `Cut the pivot update route when a cell is discarded`. `clearVacatedCells` now
-   nulls `pivotParent` on the children of every cell it discards. The normal path was covered only
-   by accident (`buildCellRows` reassigns `pivotParent` for the whole new lattice); a generation
-   that builds no cells reassigns nothing, and `RowCache` evicts orphaned parents only for the query
-   changes `orphansParents` / `invalidatesParents` name. Reachable by toggling `includeRoot` off on
-   a pivoted, dimensionless query with leaves — neither predicate covers `includeRoot`.
-   **Still owed a Toolbox-tier scenario** that forces the bail with live leaves.
+   2026-09-15**, and it had a second half. `clearVacatedCells` now nulls `pivotParent` on the
+   children of every cell it discards (`Cut the pivot update route when a cell is discarded`). The
+   normal path was covered only by accident (`buildCellRows` reassigns `pivotParent` for the whole
+   new lattice); a generation that builds no cells reassigns nothing, and `RowCache` evicts orphaned
+   parents only for the query changes `orphansParents` / `invalidatesParents` name — neither of
+   which covers `includeRoot`.
+
+   **Cutting the route then made the cell stale**, which the new Toolbox scenario caught
+   immediately: `ParentRow.reuse` takes unchanged children as proof that a row's aggregates are
+   current, and `RowCache` can revive a cell generations later with values from before every tick it
+   missed. Fixed by a `ParentRow.staleAggs` flag set on discard and cleared on the next reuse
+   (`Recompute a pivot cell's aggregates when it is revived after sitting out`). The digest bump
+   from recomputing cascades, so only directly-discarded cells need marking.
+
+   **Marking rather than evicting from `RowCache` is load-bearing, and was measured.** Eviction is
+   equally correct and was tried first; it rebuilds every vacated cell outright, and cells are the
+   most numerous rows in a pivot — the `storeFactory` scenario went from ~30s to over 150s without
+   finishing. Do not "simplify" this to an evict.
 
 4. **`PivotView.createStore` should pass `xhName: this.childXhName('store')`**, and should install
    `digestSpec = 'cubeRowDigest'` even for `connect: false` stores — today only `parseStores` does,
@@ -1803,11 +1814,15 @@ Three assertions the rework specifically calls for, none of which exist yet:
   anti-vacuity rule under [Verification vehicle](#verification-vehicle), a silent fall back to
   `'full'` produces correct output and hides the regression.
 - Own-key count on exposed leaf row data, to pin item 1's `_pivotPathIdx` design — one shape for
-  every leaf, no per-path own properties.
-- **An AVG (and AVG_STRICT) measure on a 2-pivot-dimension view, ticked, asserted against a
-  from-scratch recompute.** This is what the `RowUpdate` fork bug corrupted, and it drifts silently.
-- A generation that builds no cells while leaves are live — toggle `includeRoot` off on a pivoted,
-  dimensionless query with leaves — then tick, asserting no throw. Pins the discarded-cell route cut.
+  every leaf, no per-path own properties. **Still owed.**
+- ~~An AVG measure on a 2-pivot-dimension view, ticked, asserted against a from-scratch recompute.~~
+  **Landed** — plain `AVG` added to the reference and to `MIXED_FIELDS`, with moving sprinkled nulls
+  so the running count is exercised, not just the total.
+- ~~A generation that builds no cells while leaves are live.~~ **Landed** as the `cellBail` scenario,
+  which ticks in the cell-less state *and* after restoring the root — the second half is what caught
+  the staleness the first fix introduced.
+- The refresh mode `GridTransactionManager` actually chose, asserted per scenario. **Still owed**,
+  and still the standing anti-vacuity risk.
 
 ## Session log
 
@@ -1839,9 +1854,21 @@ The
 now records what the remaining work costs a plain View — one slot on the parent row template, and
 nothing else.
 
-Pick up at the optimization set (items 1, 4, 6, 7, 8, 12), and at **merging Toolbox `pivot-grid`**,
-which is still on pre-merge hoist-react and 51 commits behind its own `develop`. Nothing below the
-unit tier has been re-run.
+Toolbox merged up (56 commits, clean) and the suite re-run for real. The harness needed its own
+v88 migration first - `experimental.patchableRecordSet` is now `maxPatchRatio`, and `Store.patchStats`
+went with the move to `Store.diagnostics`, which keeps only the last op.
+
+**Both bugs were caught red before being fixed**, on a baseline run with the fixes reverted: 8 of 330
+checks failed, the cell-bail scenario throwing exactly as predicted and seven AVG / AVG_STRICT drift
+failures across the two 2-pivot-dimension scenarios. **335/335 green after**, 2.85M values compared,
+with record patching both off (~12s) and on (~32s).
+
+The third bug is the one worth remembering: **the first fix created it**. Cutting a discarded cell's
+update route stopped it dangling and started it going stale, and only the second half of the new
+scenario - restoring the root and ticking again - could see it. A fix that removes a route has to ask
+what the route was keeping current.
+
+Pick up at the optimization set (items 1, 4, 6, 7, 8, 12).
 
 **2026-09-11 — Merged `develop` (118 commits), and the data package moved underneath us.** No pivot
 implementation. The merge is in and green on `tsc`, `eslint` and the 49-check unit tier; the Toolbox
