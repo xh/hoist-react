@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import {AgGridModel, AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
     ColumnCellClassRuleFn,
@@ -234,6 +234,22 @@ export interface GridConfig {
     /** True to suppress display of the grid's header row. */
     hideHeaders?: boolean;
 
+    /**
+     * AG Grid theme param overrides for this grid, e.g. `{headerBackgroundColor: 'navy'}`.
+     *
+     * Applied on top of Hoist's standard grid theme, so the grid retains its bindings to Hoist's
+     * `--xh-grid-*` CSS variables. Prefer overriding those variables (app-wide, or scoped to a
+     * container) for broad changes - use this for one-off grids that need to depart from the app's
+     * standard grid styling.
+     *
+     * Merged on top of any app-wide {@link GridModel.defaults}`.theme` - params set here win, and
+     * those only in the defaults still apply.
+     *
+     * Set once, at construction - to vary a grid's appearance at runtime, set the underlying
+     * `--xh-grid-*` CSS variables on an ancestor element.
+     */
+    theme?: AgGridThemeParams;
+
     /** 'hover' to only show column header menu icons on hover. */
     headerMenuDisplay?: 'always' | 'hover';
 
@@ -456,6 +472,7 @@ export interface GridModelDefaults {
     showHover?: boolean;
     sizingMode?: SizingMode | null;
     stripeRows?: boolean | null;
+    theme?: AgGridThemeParams | null;
     treeStyle?: TreeStyle;
 }
 
@@ -533,6 +550,7 @@ export class GridModel extends HoistModel {
         showHover: false,
         sizingMode: null,
         stripeRows: null,
+        theme: null,
         treeStyle: 'highlights'
     };
 
@@ -682,6 +700,7 @@ export class GridModel extends HoistModel {
             stripeRows = GridModel.defaults.stripeRows ?? (!treeMode || treeStyle === 'none'),
             showCellFocus = GridModel.defaults.showCellFocus,
             hideHeaders = false,
+            theme,
             headerMenuDisplay = GridModel.defaults.headerMenuDisplay,
             lockColumnGroups = GridModel.defaults.lockColumnGroups,
             enableColumnPinning = GridModel.defaults.enableColumnPinning,
@@ -794,6 +813,10 @@ export class GridModel extends HoistModel {
             cellBorders,
             showCellFocus,
             hideHeaders,
+            // Unlike the other defaults, params are merged rather than replaced - an app-wide
+            // default is a baseline for every grid, including those (e.g. DataView) that set their
+            // own params. Reset an inherited param explicitly if a grid needs to opt out.
+            theme: {...GridModel.defaults.theme, ...theme},
             xhImpl
         });
 

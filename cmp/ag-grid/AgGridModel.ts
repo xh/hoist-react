@@ -5,7 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
-import type {GridApi, IRowNode, SortDirection} from '@xh/hoist/kit/ag-grid';
+import type {
+    GridApi,
+    IRowNode,
+    SortDirection,
+    Theme,
+    ThemeDefaultParams
+} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -24,6 +30,7 @@ import {
     startCase
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
+import {AgGridThemeParams, createAgGridTheme} from './AgGridTheme';
 
 /**
  * Configuration for an {@link AgGridModel} - the low-level model backing the Hoist `AgGrid`
@@ -55,6 +62,18 @@ export interface AgGridModelConfig {
 
     /** True to suppress display of the grid's header row. */
     hideHeaders?: boolean;
+
+    /**
+     * AG Grid theme param overrides for this grid, e.g. `{headerBackgroundColor: 'navy'}`.
+     *
+     * Applied on top of Hoist's standard grid theme, so the grid retains its bindings to Hoist's
+     * `--xh-grid-*` CSS variables. Prefer overriding those variables for app-wide changes - use this
+     * for one-off grids that need to depart from the app's standard grid styling.
+     *
+     * Set once, at construction - to vary a grid's appearance at runtime, set the underlying
+     * `--xh-grid-*` (or `--ag-*`) CSS variables on an ancestor element instead.
+     */
+    theme?: AgGridThemeParams;
 
     /** @internal */
     xhImpl?: boolean;
@@ -116,6 +135,20 @@ export class AgGridModel extends HoistModel {
     @bindable showCellFocus: boolean;
     @bindable hideHeaders: boolean;
 
+    /**
+     * The resolved AG Grid theme - Hoist's standard theme with any `theme` config overrides applied.
+     * Shared across grids configured alike, so they also share one copy of AG Grid's stylesheet.
+     *
+     * Deliberately read-only - unlike the style flags above, a theme is fixed for the life of the
+     * grid. Each distinct set of params produces a theme object with its own copy of AG Grid's
+     * generated stylesheet, so a settable theme invites unbounded style churn. Vary a grid's
+     * appearance at runtime by setting the underlying `--xh-grid-*` (or `--ag-*`) CSS variables on
+     * an ancestor element instead - cheaper, reactive, and how Hoist's own style flags work.
+     *
+     * @internal - consumed by the `AgGrid` component.
+     */
+    readonly agTheme: Theme<ThemeDefaultParams>;
+
     @observable.ref agApi: GridApi = null;
 
     private _prevSortBy: GridSorter[];
@@ -128,6 +161,7 @@ export class AgGridModel extends HoistModel {
         stripeRows = true,
         showCellFocus = false,
         hideHeaders = false,
+        theme = null,
         xhName = null,
         xhImpl = false
     }: AgGridModelConfig = {}) {
@@ -143,6 +177,7 @@ export class AgGridModel extends HoistModel {
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;
         this.hideHeaders = hideHeaders;
+        this.agTheme = createAgGridTheme(theme);
 
         this.addReaction({
             track: () => this.sizingMode,

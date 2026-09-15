@@ -62,9 +62,10 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 stripeRows,
                 cellBorders,
                 showCellFocus,
-                hideHeaders
+                hideHeaders,
+                agTheme
             } = model,
-            {darkTheme, isDesktop} = XH;
+            {isDesktop} = XH;
 
         const impl = useLocalModel(AgGridLocalModel);
 
@@ -72,7 +73,6 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             ref,
             className: classNames(
                 className,
-                darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 `xh-ag-grid--${sizingMode}`,
                 rowBorders ? 'xh-ag-grid--row-borders' : 'xh-ag-grid--no-row-borders',
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
@@ -86,6 +86,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             item: createElement(AgGridReact, {
                 ...AgGrid['DEFAULT_PROPS'],
                 // Default some ag-grid props, but allow overriding.
+                theme: agTheme,
                 getRowHeight: impl.getRowHeight,
                 // Pass others on directly.
                 ...agGridProps,
