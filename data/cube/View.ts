@@ -356,12 +356,7 @@ export class View
     }
 
     assignDigest(data: ViewRowData) {
-        data.cubeRowDigest = this.nextDigest();
-    }
-
-    /** Next value of the monotonic digest counter, shared by `cubeRowDigest` and `aggStamp`. */
-    nextDigest(): number {
-        return ++this._rowDigest;
+        data.cubeRowDigest = ++this._rowDigest;
     }
 
     private buildIndices() {

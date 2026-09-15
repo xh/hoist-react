@@ -27,9 +27,7 @@
 
 * Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
-  regroup and update as those with `SUM` fields. One edge case follows the other composing
-  aggregators as a result: an average of a field that is also a dimension of the query now
-  averages the values published by the rows grouped on it, one term each, above that level.
+  regroup and update as those with `SUM` fields.
 
 ### ⚙️ Typescript API Adjustments
 
