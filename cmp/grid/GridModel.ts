@@ -1401,6 +1401,7 @@ export class GridModel extends HoistModel {
         return find(this.columnGroupState, {groupId})?.expanded ?? false;
     }
 
+    /** @internal */
     @action
     noteAgColumnGroupStateChanged(agGroupState: Array<{groupId: string; open: boolean}>) {
         const expandedById = new Map(agGroupState.map(it => [it.groupId, it.open]));
@@ -2007,6 +2008,7 @@ export class GridModel extends HoistModel {
      * compares equal to state this model produced.
      */
     private cleanColumnGroupState(groupState: ColumnGroupState[]): ColumnGroupState[] {
+        if (!isArray(groupState)) groupState = [];
         const expandedById = new Map(groupState.map(it => [it.groupId, it.expanded]));
         return this.getColumnGroups().map(group =>
             expandedById.has(group.groupId)
