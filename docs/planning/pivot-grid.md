@@ -1687,11 +1687,15 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
    `Store.setFields` → `resetRecords()`, which drops every record regardless — which is also why
    item 5 folds into this one rather than standing alone.
 
+   **Landed 2026-09-15**, in `Mint pivot cell and exposed-leaf row data on fixed shapes`. Pinned by a
+   Toolbox check on exposed leaves' own-key shape, which is the only observable difference between
+   the two designs.
+
 2. **`PivotView.hasDimOrBucketUpdates` reads `this._leafMap.get(rec.id).data`** where the base now
    reads `this._records.getById(rec.id).data`. Audited 2026-09-15 and the two are equivalent, not
    merely both pre-update: `_records` is stale by design after a `dataOnly` run, but any dimension
    change is still caught against that baseline by induction, and `_leafMap` is populated for every
-   record on both `getSimpleUpdates` branches. Cosmetic — align for one form, expect nothing.
+   record on both `getSimpleUpdates` branches. Cosmetic — aligned for one form, landed with item 7.
 
 3. ~~**Verify `pivotParent` is cleared on every path that clears cells.**~~ **Was a real hole; fixed
    2026-09-15**, and it had a second half. `clearVacatedCells` now nulls `pivotParent` on the
@@ -1713,9 +1717,9 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
    most numerous rows in a pivot — the `storeFactory` scenario went from ~30s to over 150s without
    finishing. Do not "simplify" this to an evict.
 
-4. **`PivotView.createStore` should pass `xhName: this.childXhName('store')`**, and should install
-   `digestSpec = 'cubeRowDigest'` even for `connect: false` stores — today only `parseStores` does,
-   so an unconnected store falls back to the `projectionOnly` value-comparison reuse path.
+4. ~~**`PivotView.createStore` should pass `xhName`**, and install `digestSpec` even for
+   `connect: false` stores.~~ **Landed 2026-09-15.** Both cases now route through `parseStores`,
+   which installs the digest and rejects a conflicting one.
 
 5. **`Store.setFields` against the reworked Store.** It drops all records, so a cell-field change
    costs a full record rebuild with no digest reuse. Not an independent decision — it is the same
@@ -1727,7 +1731,8 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
 
 ### Follow-up: optimizations to adopt
 
-6. **Mint cell row data through `RowDataGenerator`.** `PivotCellRow` still does `this.data = {}` and
+6. ~~**Mint cell row data through `RowDataGenerator`.**~~ **Landed 2026-09-15**, via a
+   `PivotRowDataGenerator` reached through a new `View.createRowDataGenerator` factory. `PivotCellRow` still does `this.data = {}` and
    builds its shape by property adds. Cells are the most numerous rows in a pivot — view heap runs
    15.4 → 42.0 → 74.7MB across 1 → 2 → 3 pivot dimensions
    ([matrix](#result--the-phase-3-matrix)) — and a `newCellRowData()` template is cheap here precisely
@@ -1735,14 +1740,15 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
    analogue of the parent template, and none of the heap argument that resolved the group-row
    question applies to it.
 
-7. **Use `changedFields` off the incoming delta to short-circuit the dimension scan.**
+7. ~~**Use `changedFields` off the incoming delta to short-circuit the dimension scan.**~~
+   **Landed 2026-09-15**, with `View.hasStructuralChange` as the seam `PivotView` widens.
    `View.getSimpleUpdates` ignores `RecordSetDelta.changedFields` entirely. When it is present and
    names no dimension, bucket-dependent or pivot-dimension field, `hasDimOrBucketUpdates` can return
    false without touching a record. `Cube.loadDataAsync` now hands views a `deltaFrom` delta, so this
    reaches the *load* path too, not just ticks. Worth doing in `View`, with `PivotView` extending the
    name set.
 
-8. **Index lookups through the new field maps.** `PivotView.buildCellAggFields` filters
+8. ~~**Index lookups through the new field maps.**~~ **Landed 2026-09-15.** `PivotView.buildCellAggFields` filters
    `this.fields` per build; `PivotQuery.parseValueFields` / `parsePivotDimensions` `find` over
    `cube.fields`. `View.getField` is now a `Map` lookup and `Cube.getField` delegates to
    `Store._fieldMap` — use them.
@@ -1766,18 +1772,25 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
     A string `sortValue` cannot express it because the field holding the typed value varies by row
     depth.
 
-    **Decided 2026-09-15: publish the raw dimension value on row data** as `cubeLabelValue` — a slot
-    on the `RowDataGenerator` parent template, written by the `AggregateRow` constructor. Both
-    `PivotGridModel` and `ActivityTrackingModel` then use `sortValue: 'cubeLabelValue'`, which
-    `computeSortPaths` can prove. This is the one adopted item that adds cost to the base View (one
-    slot per parent row, one write per aggregate row); taken deliberately, because it closes the
-    framework gap rather than working around it in the pivot layer.
+    **Decided and landed 2026-09-15: publish the raw dimension value on row data** as
+    `cubeLabelValue` — a slot on the `RowDataGenerator` parent template, written by the `AggregateRow`
+    and `BucketRow` constructors, and a prototype getter returning the record id on leaves.
+    `PivotGridModel` binds `sortValue: 'cubeLabelValue'`, which `computeSortPaths` can prove. This is
+    the one adopted item that adds cost to a plain View (one slot per parent row, one write per
+    aggregate row); taken deliberately, because it closes a framework gap rather than working around
+    it in the pivot layer.
+
+    **Correction:** this does *not* retire `ActivityTrackingModel`'s comparator, as first claimed.
+    That one also reverses sort direction for the `day` and `month` dimensions, which no raw value
+    expresses — it stays as it is.
 
 11. **Re-tune the new grid pacing flags for pivot shapes.** `deltaSortRatio`,
     `deferredSortFactor` and `deferredAutosizeFactor` were calibrated on nested cube grids; pivot
     grids are much wider and autosize is correspondingly more expensive. Add them to the bench matrix.
 
-12. **Pivot diagnostics.** `ViewDiagnostics` counts rows off `RowCache`, which does include cell
+12. ~~**Pivot diagnostics.**~~ **Landed 2026-09-15** as `PivotViewDiagnostics`, reached through a
+    new `View.createDiagnostics` factory, with `xhName` threaded through `Cube.createPivotView`.
+    `ViewDiagnostics` counts rows off `RowCache`, which does include cell
     rows, but there is no pivot-specific readout — path count, cell count, lattice build time.
     A `PivotViewDiagnostics extends ViewDiagnostics` would surface those in Inspector. Thread
     `xhName` through `Cube.createPivotView` at the same time.
@@ -1868,7 +1881,15 @@ update route stopped it dangling and started it going stale, and only the second
 scenario - restoring the root and ticking again - could see it. A fix that removes a route has to ask
 what the route was keeping current.
 
-Pick up at the optimization set (items 1, 4, 6, 7, 8, 12).
+**The optimization set then landed too** - items 1, 4, 6, 7, 8, 10 and 12, one commit each, with
+the suite green (336/336, patching off and on) after each. Two things worth carrying forward: MobX
+rejects re-annotating an inherited `@action` in a subclass, so `PivotViewDiagnostics.reset` needs
+`@override`; and the extension-point table's prediction held - the only cost a plain View takes from
+the whole set is `cubeLabelValue`'s one slot on the parent row template.
+
+Pick up at what remains of phase 4: the day-1 set triaged out of
+[Extras](#extras-and-nice-to-haves), the two verification items still owed (asserted grid refresh
+mode, and a re-measured bench matrix per items 9 and 11), then docs and a CHANGELOG entry.
 
 **2026-09-11 — Merged `develop` (118 commits), and the data package moved underneath us.** No pivot
 implementation. The merge is in and green on `tsc`, `eslint` and the 49-check unit tier; the Toolbox
