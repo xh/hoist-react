@@ -314,6 +314,12 @@ export class PivotView extends View {
      * row in the new lattice, but a generation that produces no cells at all reassigns nothing - a
      * live leaf would keep routing ticks into a discarded cell, where `cellFieldNames` throws.
      * `RowCache` covers only the query-change cases; this bail can follow from data alone.
+     *
+     * Cutting that route is what then makes the cell's own aggregates stale, so it is also marked -
+     * `RowCache` may revive it generations later, and unchanged children would otherwise pass for
+     * proof that its values are current. Marking rather than evicting keeps the cell and its data
+     * object reusable: cells are the most numerous rows in a pivot, and rebuilding every vacated one
+     * outright costs far more than re-aggregating the few that come back.
      */
     private clearVacatedCells(prev: PivotCellRow[], live: Set<PivotCellRow>) {
         prev?.forEach(cell => {
@@ -322,6 +328,7 @@ export class PivotView extends View {
             cell.children?.forEach(child => {
                 if (child.pivotParent === cell) child.pivotParent = null;
             });
+            cell.staleAggs = true;
 
             const {data} = cell.ownerRow;
             if (clearCellSlots(cell, data, EMPTY_NAMES)) this.assignDigest(data as ViewRowData);

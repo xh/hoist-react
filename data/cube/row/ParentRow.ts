@@ -43,6 +43,16 @@ export abstract class ParentRow extends BaseRow {
     /** True if this row's children have been hidden from results by the Query's `lockFn`. */
     locked: boolean = false;
 
+    /**
+     * True if this row stopped receiving updates while it sat out a generation, set by whatever
+     * discarded it. {@link reuse} otherwise takes unchanged children as proof that a row's
+     * aggregates are still current - sound only for a row that stayed live throughout.
+     *
+     * Never set in a plain View, where a discarded row keeps its `parent` links and so keeps
+     * receiving updates. See {@link PivotView} - cells are discarded outright.
+     */
+    staleAggs: boolean = false;
+
     /** The dimension or bucket by which this row groups its children, and its value here. */
     protected abstract get dimOrBucketName(): string;
     protected abstract get dimOrBucketVal(): any;
@@ -132,8 +142,10 @@ export abstract class ParentRow extends BaseRow {
     //--------------------
     /** Reuse this row for a new generation, recomputing in place as needed - null to rebuild. */
     reuse(children: BaseRow[], genStartDigest: number): ParentRow {
-        const {view, isBucket} = this,
+        const {view, isBucket, staleAggs} = this,
             childrenEqual = shallowEqualArrays(this.children, children);
+
+        this.staleAggs = false;
 
         // 0) Can't reuse a bucket with different children
         if (!childrenEqual && isBucket) return null;
@@ -144,6 +156,7 @@ export abstract class ParentRow extends BaseRow {
         // 2) Re-aggregate, only if needed, and mark if changes resulted.
         let changed = false;
         const simpleAggsAreCurrent =
+            !staleAggs &&
             childrenEqual &&
             !isBucket &&
             !children.some(it => it.data.cubeRowDigest > genStartDigest);
