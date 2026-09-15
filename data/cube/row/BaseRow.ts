@@ -12,7 +12,7 @@ import {isArray, isEmpty} from 'lodash';
 import {View} from '../View';
 import type {ViewRow} from '../ViewRow';
 import type {ParentRow} from './ParentRow';
-import {RowUpdate} from './RowUpdate';
+import type {RowUpdate} from './RowUpdate';
 
 /**
  * Send a set of updates up both aggregation routes.
@@ -20,6 +20,10 @@ import {RowUpdate} from './RowUpdate';
  * `applyDataUpdate` rewrites each {@link RowUpdate}'s `oldValue` / `newValue` in place as it walks,
  * and `Aggregator.replace` reads them - so when a row has two parents the second must get its own
  * copies, or it would apply the first route's aggregated delta instead of this row's.
+ *
+ * Copies via `clone()`, never a fresh `RowUpdate`: the latter would re-seed `leafOldValue` /
+ * `leafNewValue` from this row's *aggregated* values, silently corrupting every aggregator that
+ * composes from a running leaf total (AVG, AVG_STRICT).
  *
  * @internal
  */
@@ -30,7 +34,7 @@ export function propagateUpdate(
     updatedRows: Set<BaseRow>
 ) {
     if (parent && pivotParent) {
-        const forPivot = updates.map(u => new RowUpdate(u.field, u.oldValue, u.newValue));
+        const forPivot = updates.map(u => u.clone());
         parent.applyDataUpdate(updates, updatedRows);
         pivotParent.applyDataUpdate(forPivot, updatedRows);
     } else {
