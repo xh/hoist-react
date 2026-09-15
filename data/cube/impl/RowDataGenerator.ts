@@ -30,9 +30,9 @@ import {ViewRowData} from '../ViewRowData';
  * @internal
  */
 export class RowDataGenerator {
-    private view: View;
+    protected view: View;
+    protected exposesLeaves: boolean;
     private fieldNames: string[];
-    private exposesLeaves: boolean;
     private parentDataTemplate: ViewRowData = null;
     private leafDataClass: LeafDataClass = null;
 
@@ -64,7 +64,7 @@ export class RowDataGenerator {
         }
     }
 
-    private init() {
+    protected init() {
         this.fieldNames = this.view.fieldNames;
         this.exposesLeaves = this.view.exposesLeaves;
         this.parentDataTemplate = this.buildParentDataTemplate();
@@ -89,19 +89,24 @@ export class RowDataGenerator {
         return {...rowData} as ViewRowData;
     }
 
-    private buildLeafDataClass(): LeafDataClass {
+    protected buildLeafDataClass(): LeafDataClass {
         if (!this.exposesLeaves) return null;
 
         class LeafRowData extends BaseLeafRowData {}
+        this.defineFieldGetters(LeafRowData);
+        return LeafRowData;
+    }
+
+    /** Install a prototype getter per queried field, reading through the own `_src` reference. */
+    protected defineFieldGetters(cls: LeafDataClass) {
         this.view.fields.forEach(({name}) => {
-            Object.defineProperty(LeafRowData.prototype, name, {
+            Object.defineProperty(cls.prototype, name, {
                 get(this: PlainObject) {
                     return this._src[name];
                 },
                 enumerable: true
             });
         });
-        return LeafRowData;
     }
 }
 
@@ -110,7 +115,7 @@ export class RowDataGenerator {
  * per-query field getters reading through the own `_src` reference to the leaf's cube record
  * data.
  */
-class BaseLeafRowData implements ViewRowData {
+export class BaseLeafRowData implements ViewRowData {
     id: string;
     cubeLabel: string = null;
     cubeBuckets: PlainObject = null;
@@ -141,4 +146,4 @@ class BaseLeafRowData implements ViewRowData {
     }
 }
 
-type LeafDataClass = new (id: string, src: PlainObject) => ViewRowData;
+export type LeafDataClass = new (id: string, src: PlainObject) => ViewRowData;

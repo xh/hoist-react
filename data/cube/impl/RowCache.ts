@@ -112,6 +112,20 @@ export class RowCache {
         this.usedParents = null;
     }
 
+    /**
+     * Drop cached exposed leaves, whose data objects were minted against a leaf class that has since
+     * been rebuilt. Parents are retained - the regeneration rewires them onto the fresh leaves and
+     * re-aggregates, as it does for any change of children.
+     *
+     * Modelled on the wholesale clear `pruneForQueryChange` applies on a field gain, for the same
+     * reason: existing leaf data cannot answer for fields its class never declared.
+     */
+    invalidateExposedLeaves() {
+        this.rows.forEach((row, id) => {
+            if (row.isLeaf) this.rows.delete(id);
+        });
+    }
+
     //------------------
     // Implementation
     //------------------

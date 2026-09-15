@@ -73,7 +73,7 @@ export class PivotCellRow extends ParentRow {
     ) {
         super(view, id);
 
-        this.data = {};
+        this.data = view.newCellRowData();
         this.ownerRow = ownerRow;
         this.path = path;
 

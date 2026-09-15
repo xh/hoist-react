@@ -180,7 +180,7 @@ export class View
         this.query = query;
         this.stores = this.parseStores(stores);
         this._rowCache = new RowCache(this);
-        this._rowDataGenerator = new RowDataGenerator(this);
+        this._rowDataGenerator = this.createRowDataGenerator();
         this.buildIndices();
         this.fullUpdate('query', start);
 
@@ -359,6 +359,11 @@ export class View
 
     assignDigest(data: ViewRowData) {
         data.cubeRowDigest = ++this._rowDigest;
+    }
+
+    /** Factory for this view's row data generator - overridden to extend the row shapes it mints. */
+    protected createRowDataGenerator(): RowDataGenerator {
+        return new RowDataGenerator(this);
     }
 
     private buildIndices() {

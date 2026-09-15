@@ -17,8 +17,10 @@ import {
     PATH_DELIMITER,
     pivotCellFieldName,
     type PivotLatticeResult,
+    type PivotPathDiscoveryResult,
     type PivotPathSpec
 } from './impl/PivotLattice';
+import {PivotRowDataGenerator} from './impl/PivotRowDataGenerator';
 import {CubeField} from './CubeField';
 import {PivotCellField, PivotPath} from './PivotPath';
 import {PivotQuery, PivotQueryConfig} from './PivotQuery';
@@ -85,9 +87,14 @@ export class PivotView extends View {
     declare protected _pathLabels: string[];
     declare protected _valueFieldNames: string[];
     declare protected _paths: PivotPath[];
-    declare protected _cellFields: PivotCellField[];
+    /** Published cell fields - also read by `PivotRowDataGenerator` to shape exposed leaves. */
+    declare _cellFields: PivotCellField[];
     /** Keyed on path *identity*, so a cell can never resolve names for a path it no longer holds. */
     declare protected _cellFieldNames: Map<PivotPath, string[]>;
+    /** Index of each path within `_allPaths` - what an exposed leaf's `_pivotPathIdx` names. */
+    declare _pathIdx: Map<PivotPath, number>;
+    /** This generation's path discovery, run ahead of row generation - see `discoverPaths`. */
+    declare protected _discovery: PivotPathDiscoveryResult;
     declare protected _cellRows: PivotCellRow[];
     /** Cell fields last declared on each store, by identity - the structural-change signal. */
     declare protected _syncedCellFields: WeakMap<Store, PivotCellField[]>;
@@ -155,9 +162,52 @@ export class PivotView extends View {
     //------------------------
     // Implementation
     //------------------------
+    protected override createRowDataGenerator(): PivotRowDataGenerator {
+        return new PivotRowDataGenerator(this);
+    }
+
+    private get pivotRowDataGenerator(): PivotRowDataGenerator {
+        return this._rowDataGenerator as PivotRowDataGenerator;
+    }
+
+    /**
+     * Create the data object for a cell row.
+     * @internal
+     */
+    newCellRowData(): PlainObject {
+        const ret = this.pivotRowDataGenerator.newCellRowData();
+        this.assignDigest(ret as ViewRowData);
+        return ret;
+    }
+
     protected override generateRows() {
+        this.discoverPaths();
         super.generateRows();
         this.generateCells(this._records.list);
+    }
+
+    /**
+     * Discover the pivot path tree and publish the cell fields it implies, ahead of row generation.
+     *
+     * Runs *before* `super.generateRows()` because the exposed-leaf class is built from the cell
+     * fields and leaves are minted during that call. Discovery needs only the filtered records and
+     * the pivot dimension names - never the row tree - so nothing forces it to wait. Only the
+     * lattice needs groups, and that stays in `generateCells`.
+     */
+    private discoverPaths() {
+        const {query} = this;
+        if (query.isPivoted) {
+            this._discovery = discoverPivotPaths(this._records.list, query.pivotDimensionNames, {
+                emptyPathLabel: query.emptyPathLabel,
+                maxPivotPaths: query.maxPivotPaths
+            });
+            this.syncPaths(this._discovery.paths);
+        } else {
+            this._discovery = null;
+            this.clearCells();
+        }
+
+        this.pivotRowDataGenerator.onCellFieldsChange();
     }
 
     protected override createResult(): PivotViewResult {
@@ -254,7 +304,9 @@ export class PivotView extends View {
                 this.projectCell(row, changedFields);
                 groupRows.add(row.ownerRow);
             } else {
-                if (exposesLeaves && row.isLeaf) this.projectLeaf(row as LeafRow, changedFields);
+                if (exposesLeaves && row.isLeaf) {
+                    this.noteLeafCellFields(row as LeafRow, changedFields);
+                }
                 groupRows.add(row);
             }
         });
@@ -271,33 +323,37 @@ export class PivotView extends View {
         this._paths = [];
         this._cellFields = [];
         this._cellFieldNames = new Map();
+        this._pathIdx = new Map();
         this._cellRows = [];
     }
 
     private generateCells(records: StoreRecord[]) {
-        const {query, _rootRows} = this,
+        const {_discovery, _rootRows, exposesLeaves} = this,
             prevCells = this._cellRows;
-        if (!query.isPivoted || isEmpty(_rootRows)) return this.clearCells();
+        if (!_discovery || isEmpty(_rootRows)) return this.clearCells();
 
         const {groups, parentOfGroup, innermost, groupIdxOf} = this.enumerateGroups();
         if (isEmpty(groups)) return this.clearCells();
-
-        const discovery = discoverPivotPaths(records, query.pivotDimensionNames, {
-            emptyPathLabel: query.emptyPathLabel,
-            maxPivotPaths: query.maxPivotPaths
-        });
 
         // Leaves, aligned to the record order discovery used so path indices carry across.
         const leafRows: LeafRow[] = [],
             leafOwnerGroup: number[] = [],
             leafPathIdx: number[] = [];
         for (let i = 0; i < records.length; i++) {
-            const leaf = this._leafMap.get(records[i].id),
-                owner = leaf ? groupIdxOf.get(leaf.parent) : null;
+            const leaf = this._leafMap.get(records[i].id);
+            if (!leaf) continue;
+
+            const pathIdx = _discovery.pathIdxOfRecord[i];
+
+            // Stamped on every leaf, owned or not - this is what its cell-field getters read, so a
+            // leaf the lattice skips must not keep publishing a previous generation's column.
+            if (exposesLeaves) leaf.data._pivotPathIdx = pathIdx;
+
+            const owner = groupIdxOf.get(leaf.parent);
             if (owner == null) continue;
             leafRows.push(leaf);
             leafOwnerGroup.push(owner);
-            leafPathIdx.push(discovery.pathIdxOfRecord[i]);
+            leafPathIdx.push(pathIdx);
         }
         if (isEmpty(leafRows)) return this.clearCells();
 
@@ -307,16 +363,15 @@ export class PivotView extends View {
             innermost: Uint8Array.from(innermost),
             leafOwnerGroup: Int32Array.from(leafOwnerGroup),
             leafPathIdx: Int32Array.from(leafPathIdx),
-            pathCount: discovery.paths.length,
-            pathParentIdx: discovery.pathParentIdx,
-            pathDepth: discovery.pathDepth,
-            maxDepth: discovery.maxDepth
+            pathCount: _discovery.paths.length,
+            pathParentIdx: _discovery.pathParentIdx,
+            pathDepth: _discovery.pathDepth,
+            maxDepth: _discovery.maxDepth
         });
 
-        this.syncPaths(discovery.paths);
         this.buildCellRows(lattice, groups, leafRows);
         this.clearVacatedCells(prevCells, new Set(this._cellRows));
-        this.projectCells(leafRows);
+        this._cellRows.forEach(cell => this.projectCell(cell));
     }
 
     /**
@@ -391,10 +446,12 @@ export class PivotView extends View {
         });
 
         const cellFields: PivotCellField[] = [],
-            cellFieldNames = new Map<PivotPath, string[]>();
-        all.forEach(path => {
+            cellFieldNames = new Map<PivotPath, string[]>(),
+            pathIdx = new Map<PivotPath, number>();
+        all.forEach((path, idx) => {
             const names = valueFields.map(vf => pivotCellFieldName(path.key, vf.name));
             cellFieldNames.set(path, names);
+            pathIdx.set(path, idx);
             valueFields.forEach((valueField, i) => {
                 cellFields.push({name: names[i], path, valueField});
             });
@@ -409,6 +466,7 @@ export class PivotView extends View {
         this._paths = all[0].children;
         this._cellFields = cellFields;
         this._cellFieldNames = cellFieldNames;
+        this._pathIdx = pathIdx;
     }
 
     /**
@@ -497,41 +555,20 @@ export class PivotView extends View {
         this._cellAggFieldNames = new Set(fields.map(f => f.name));
         this._cellCanAggregateFnFields = fields.filter(f => f.canAggregateFn);
         this._cellComplexAggFields = fields.filter(f => !f.aggregator.dependsOnChildrenOnly);
-    }
 
-    private projectCells(leafRows: LeafRow[]) {
-        this._cellRows.forEach(cell => this.projectCell(cell));
-
-        // An exposed leaf carries a value for its own path only, so a drilled-down row reads as a
-        // single populated pivot column rather than a blank one. Hidden leaves are skipped - their
-        // data is a shared reference to Cube record data and must never be mutated.
-        if (this.exposesLeaves) leafRows.forEach(leaf => this.projectLeaf(leaf));
+        this.pivotRowDataGenerator.onCellAggFieldsChange();
     }
 
     /**
-     * A leaf's own full-path cell is exactly its `pivotParent`, so no extra bookkeeping is needed.
+     * Name an updated leaf's own cell fields into `changedFields`.
      *
-     * `changedFields` is passed on the incremental path only - see {@link projectCell}.
+     * A leaf's cell values are prototype getters over the same measures it already reports, so they
+     * move without being written - but `GridTransactionManager` reads `changedFields` as a complete
+     * assertion, and a grid sorted on a pivot value column would otherwise keep a stale row order.
      */
-    private projectLeaf(leaf: LeafRow, changedFields?: Set<string>) {
+    private noteLeafCellFields(leaf: LeafRow, changedFields: Set<string>) {
         const cell = leaf.pivotParent as PivotCellRow;
-        if (!cell) return;
-
-        const names = this.cellFieldNames(cell),
-            {valueFields} = this.query,
-            {data} = leaf;
-
-        if (clearCellSlots(leaf, data, names, changedFields)) {
-            this.assignDigest(data as ViewRowData);
-        }
-        for (let i = 0; i < valueFields.length; i++) {
-            const name = names[i],
-                val = data[valueFields[i].name];
-            if (data[name] !== val) {
-                data[name] = val;
-                changedFields?.add(name);
-            }
-        }
+        if (cell) this.cellFieldNames(cell).forEach(name => changedFields.add(name));
     }
 
     /**
@@ -600,8 +637,8 @@ function arraysEqual(a: string[], b: string[]): boolean {
 }
 
 /**
- * Point `row` at the cell fields it is about to write, nulling any it wrote last generation and no
- * longer covers. Returns true if a value moved.
+ * Point `cell` at the cell fields it is about to write onto its owner, nulling any it wrote last
+ * generation and no longer covers. Returns true if a value moved.
  *
  * Name arrays hold their identity while the pivot structure does, so this is an identity check on the
  * common path.
