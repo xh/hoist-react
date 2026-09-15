@@ -153,9 +153,10 @@ new GridModel({
 });
 ```
 
-`showWhenGroup` is what makes a group expandable, and it takes both values to do so: the group's
+`showWhenGroup` is what makes a group expandable, and it takes a mix of values to do so: the group's
 children must resolve to at least one column shown while expanded *and* one shown while collapsed.
-A group of plain columns is a static header, as is one where every child specifies the same value.
+Columns default to `'always'`, shown in either state. A group of always-shown columns is a static
+header, as is one where every child specifies the same value.
 This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
 group non-expandable.
 

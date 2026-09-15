@@ -174,8 +174,9 @@ export interface ColumnSpec {
     hidden?: boolean;
 
     /**
-     * Show this column only while its containing {@link ColumnGroup} is 'expanded' or 'collapsed'.
-     * Default is to always show it. Ignored for a column with no containing group.
+     * Show this column only while its containing {@link ColumnGroup} is 'expanded' or 'collapsed',
+     * or 'always' (default) to show it in either state. Ignored for a column with no containing
+     * group.
      */
     showWhenGroup?: ColumnGroupShowMode;
 

@@ -310,13 +310,15 @@ export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
 
 /**
  * Expand/collapse state of a containing ColumnGroup, within which a Column or nested ColumnGroup
- * should be shown - see {@link ColumnSpec.showWhenGroup}.
+ * should be shown - see {@link ColumnSpec.showWhenGroup}. 'always' (the default) shows it in
+ * either state.
  *
- * Note that this config is what makes a ColumnGroup expandable, and takes both values to do so: the
- * group must have a visible child shown while expanded *and* one shown while collapsed. Groups not
- * meeting that bar render as static headers.
+ * Note that this config is what makes a ColumnGroup expandable, and requires a mix of values to do
+ * so: the group must have a visible child shown while expanded *and* one shown while collapsed,
+ * with at least one child that is not shown 'always'. Groups not meeting that bar render as static
+ * headers.
  */
-export type ColumnGroupShowMode = 'expanded' | 'collapsed';
+export type ColumnGroupShowMode = 'expanded' | 'collapsed' | 'always';
 
 /**
  * Map a {@link ColumnGroupShowMode} to the ag-Grid `columnGroupShow` value.

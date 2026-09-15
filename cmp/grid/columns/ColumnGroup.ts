@@ -49,8 +49,8 @@ export interface ColumnGroupSpec {
     borders?: boolean;
 
     /**
-     * Show this group only while its containing parent ColumnGroup is 'expanded' or 'collapsed'.
-     * Default is to always show it. Ignored for a top-level group.
+     * Show this group only while its containing parent ColumnGroup is 'expanded' or 'collapsed',
+     * or 'always' (default) to show it in either state. Ignored for a top-level group.
      */
     showWhenGroup?: ColumnGroupShowMode;
 
@@ -150,7 +150,7 @@ export class ColumnGroup {
         this.appData = appData ? clone(appData) : {};
         this.omit = omit;
 
-        const changeable = children.some(it => it.showWhenGroup),
+        const changeable = children.some(it => it.showWhenGroup && it.showWhenGroup !== 'always'),
             showsWhenExpanded = children.some(it => it.showWhenGroup !== 'collapsed'),
             showsWhenCollapsed = children.some(it => it.showWhenGroup !== 'expanded'),
             expandable = changeable && showsWhenExpanded && showsWhenCollapsed;
