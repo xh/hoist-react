@@ -274,8 +274,10 @@ export class PivotGridModel extends HoistModel {
             isTreeColumn: true,
             pinned: false,
             headerName: () => this.query.dimensions.map(it => it.displayName).join(' › '),
-            // Labels are stringified dimension values - sort them as their source field would.
-            sortValue: (v, {record}) => this.store.getField(record.data.cubeDimension)?.parseVal(v),
+            // Labels are stringified dimension values - sort on the raw value the View publishes
+            // alongside them. A *field* rather than a function, so `GridTransactionManager` can still
+            // prove a tick leaves row order alone and take its cheapest refresh mode.
+            sortValue: 'cubeLabelValue',
             renderer: v => (isEmpty(v) || v === 'null' ? '(empty)' : v)
         };
     }

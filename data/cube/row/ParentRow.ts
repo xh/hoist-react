@@ -288,6 +288,10 @@ export class AggregateRow extends ParentRow {
         data.cubeDimension = dimName;
 
         this.init(children, appliedDimensions, depth);
+
+        // After `init`, which assigns `appliedDimensions` onto data - so this reads the raw, typed
+        // value the View grouped on, rather than the stringified group key in `cubeLabel`.
+        data.cubeLabelValue = dim ? data[dimName] : null;
     }
 }
 
@@ -329,6 +333,7 @@ export class BucketRow extends ParentRow {
         const data = (this.data = view.newParentRowData(id));
         data.cubeRowType = 'bucket';
         data.cubeLabel = bucketSpec.labelFn(bucketVal);
+        data.cubeLabelValue = bucketVal;
         data.cubeDimension = bucketSpec.name;
 
         this.init(children, appliedDimensions, depth);

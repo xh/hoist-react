@@ -76,6 +76,7 @@ export class RowDataGenerator {
             id: null,
             cubeRowType: null,
             cubeLabel: null,
+            cubeLabelValue: null,
             cubeDimension: null,
             cubeBuckets: null,
             children: null,
@@ -135,6 +136,11 @@ export class BaseLeafRowData implements ViewRowData {
     }
     get cubeDimension(): string {
         return null;
+    }
+    // A leaf's label is its record id - so is the value behind it. A getter, not an own slot: the
+    // id is already one, and every leaf must keep the same shape.
+    get cubeLabelValue(): any {
+        return this.id;
     }
     get children(): ViewRowData[] {
         return null;
