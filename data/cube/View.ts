@@ -645,7 +645,9 @@ export class View
 
         // 1) Simple case: no filter
         if (!query.filter) {
-            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimOrBucketUpdates(t.update)
+            return isEmpty(t.add) &&
+                isEmpty(t.remove) &&
+                !this.hasDimOrBucketUpdates(t.update, t.changedFields)
                 ? t.update
                 : false;
         }
@@ -668,17 +670,26 @@ export class View
         }
 
         // 2c) Examine the final set of updates for any changes to dimension field values which would
-        //     require rebuilding the row hierarchy
-        if (this.hasDimOrBucketUpdates(ret)) return false;
+        //     require rebuilding the row hierarchy. `changedFields` covers all of `t.update`, a
+        //     superset of `ret` - so "no structural field moved" still holds for the subset.
+        if (this.hasDimOrBucketUpdates(ret, t.changedFields)) return false;
 
         return ret;
     }
 
-    protected hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
+    /**
+     * True if any update moves a field that restructures the row hierarchy, forcing a full rebuild.
+     *
+     * `changedFields` is its producer's assertion of every field the transaction touched - when it
+     * names nothing structural, no record need be examined at all. It reaches the *load* path too,
+     * via the delta `Cube.loadDataAsync` derives.
+     */
+    protected hasDimOrBucketUpdates(update: StoreRecord[], changedFields?: Set<string>): boolean {
         const {dimensions} = this.query,
             bucketFields = this._bucketDependentFields;
 
         if (isEmpty(dimensions) && !bucketFields.size) return false;
+        if (changedFields && !this.hasStructuralChange(changedFields)) return false;
 
         for (const rec of update) {
             const curData = this._records.getById(rec.id).data,
@@ -691,6 +702,15 @@ export class View
             }
         }
 
+        return false;
+    }
+
+    /** True if any named field could restructure the row hierarchy. Widened by {@link PivotView}. */
+    protected hasStructuralChange(changedFields: Set<string>): boolean {
+        if (this.query.dimensions?.some(it => changedFields.has(it.name))) return true;
+        for (const name of this._bucketDependentFields) {
+            if (changedFields.has(name)) return true;
+        }
         return false;
     }
 
