@@ -15,9 +15,9 @@ import {isMenuSeparator} from './Separators';
 import {isOmitted} from './IsOmitted';
 
 /**
- * `Array.filter()` function to exclude menu entries that should not be shown - i.e. items and
- * headings flagged `hidden` or `omit`, along with the nulls left behind by a heading that its own
- * `displayFn` has hidden. Tokens and raw elements always pass through.
+ * `Array.filter()` function to exclude menu entries that must not appear. This covers items and
+ * headings that set `hidden` or `omit`, and the nulls that remain when a `displayFn` hides its own
+ * heading. Tokens and raw elements always pass through.
  * @internal
  */
 export function isVisibleMenuEntry(it: MenuItemLike | any): boolean {
@@ -28,8 +28,8 @@ export function isVisibleMenuEntry(it: MenuItemLike | any): boolean {
 }
 
 /**
- * Resolve a MenuHeading for display, applying its `displayFn` over the statically configured
- * props. Returns null if the heading should not be shown.
+ * Resolve a MenuHeading for display. Applies its `displayFn` over the static props, and returns
+ * null if the heading must not appear.
  * @internal
  */
 export function resolveMenuHeading<C>(heading: MenuHeading<C>, context?: C): MenuHeading<C> {
@@ -38,17 +38,17 @@ export function resolveMenuHeading<C>(heading: MenuHeading<C>, context?: C): Men
 }
 
 /**
- * `Array.filter()` function to tidy up menu headings and the separators around them:
+ * `Array.filter()` function to tidy menu headings and the separators around them:
  *
- *  - Drops headings with nothing below them - i.e. at the end of a menu, or immediately followed
- *    by another heading. Note this runs *after* hidden items have been removed, so a heading whose
- *    entire section hides itself drops along with it.
- *  - Drops separators directly above or below a heading, as headings render their own rule.
+ *  - Drops a heading with nothing below it, either at the end of a menu or immediately before
+ *    another heading. This runs *after* the filter that removes hidden items, so a heading drops
+ *    with its section when that whole section hides itself.
+ *  - Drops a separator directly above or below a heading, because a heading draws its own rule.
  *
- * Run ahead of {@link filterConsecutiveMenuSeparators} to clean up any separators left behind.
+ * Run this before {@link filterConsecutiveMenuSeparators}, which clears any separator left behind.
  *
- * @param isHeading - identifies a heading within the list being filtered. Callers work with menu
- *      entries at different stages of processing, so each supplies its own test.
+ * @param isHeading - identifies a heading within the list. Each caller works with menu entries at
+ *      a different stage, so each one supplies its own test.
  * @internal
  */
 export function filterMenuHeadings(isHeading: (it: any) => boolean) {

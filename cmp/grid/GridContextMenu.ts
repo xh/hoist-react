@@ -12,12 +12,12 @@ import {DefaultMenuItem, GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid'
 /**
  * An entry within a grid context menu.
  *
- * Strings are tokens - either one of Hoist's own {@link GridContextMenuToken} (which includes '-'
- * for a separator) or one of ag-Grid's built-in `DefaultMenuItem` tokens.
+ * A string is a token. Use either a Hoist {@link GridContextMenuToken}, which includes '-' for a
+ * separator, or an ag-Grid `DefaultMenuItem` token.
  * {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items}
  *
- * Note that `RecordActionLike` also admits a {@link MenuHeading} - i.e. `{heading: 'Section'}` -
- * to label and group the items below it.
+ * Note that `RecordActionLike` also accepts a {@link MenuHeading} - i.e. `{heading: 'Section'}` -
+ * which labels and groups the items below it.
  */
 export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | DefaultMenuItem;
 

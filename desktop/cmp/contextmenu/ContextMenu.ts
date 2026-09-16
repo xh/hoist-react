@@ -18,8 +18,8 @@ export interface ContextMenuProps extends HoistProps {
 /**
  * Component for a right-click context menu. Not typically used directly by applications - use
  * the {@link useContextMenu} hook to add a context menu to an app component, or leverage Panel's
- * built-in support via {@link PanelProps.contextMenu}. For a menu anchored to a button, see
- * {@link Menu}.
+ * built-in support via {@link PanelProps.contextMenu}. For a menu on a button, see
+ * {@link MenuButton}.
  *
  * See {@link GridContextMenuSpec} to specify a context menu on `Grid` and `DataView` components.
  * That API will receive specific information about the current selection

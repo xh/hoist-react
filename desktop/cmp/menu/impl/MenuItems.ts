@@ -22,9 +22,9 @@ export interface ParseMenuItemsOptions {
     context?: MenuContext;
 
     /**
-     * Props for the popover hosting any submenu. Defaults to `{openOnTargetFocus: false}`, as
-     * wanted by menus anchored to a button. Menus anchored at the cursor pass
-     * `{usePortal: true}` instead, without which their submenus mis-position.
+     * Props for the popover that hosts a submenu. Defaults to `{openOnTargetFocus: false}`, which
+     * suits a menu anchored to a button. A menu anchored at the cursor passes `{usePortal: true}`
+     * instead, because its submenus mis-position without a portal.
      */
     submenuPopoverProps?: MenuItemProps['popoverProps'];
 }
@@ -32,10 +32,10 @@ export interface ParseMenuItemsOptions {
 /**
  * Parse MenuItem configs into Blueprint MenuItems.
  *
- * Shared by the {@link Menu} and {@link ContextMenu} components. Note this is not applied to every
- * menu-like component in Hoist - in particular it is not used by the `menu` component re-exported
- * from Blueprint, and there is no Hoist menu *button* on desktop. See
- * https://github.com/xh/hoist-react/issues/2400 for the remaining standardization work.
+ * The {@link Menu} and {@link ContextMenu} components share this function. Note that Hoist does
+ * not apply it to every menu-like component. In particular, the `menu` component re-exported from
+ * Blueprint does not use it. See https://github.com/xh/hoist-react/issues/2400 for the remaining
+ * standardization work.
  *
  * @internal
  */

@@ -363,10 +363,10 @@ interface MenuHeadingItemProps extends HoistProps, CustomMenuItemProps {
 /**
  * A non-interactive heading within an ag-Grid context menu.
  *
- * Mirrors the four-part cell structure of {@link RecordActionMenuItem} so that the rule each cell
- * draws spans the full menu width - the same approach ag-Grid takes for its own separators - and
- * so the row keeps the menu's column widths intact. The label sits in the text cell but is shifted
- * left in CSS to sit outside the item text, so it reads as a heading rather than an item.
+ * This mirrors the four-part cell structure of {@link RecordActionMenuItem} for two reasons. The
+ * rule that each cell draws then spans the full menu width, the same approach ag-Grid takes for
+ * its own separators. The row also keeps the menu's column widths intact. The label sits in the
+ * text cell, but CSS shifts it left of the item text, so it reads as a heading and not an item.
  *
  * @internal
  */

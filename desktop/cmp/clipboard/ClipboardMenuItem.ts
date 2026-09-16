@@ -17,7 +17,7 @@ export interface ClipboardMenuItemProps extends Omit<MenuItemProps, 'onClick'>, 
 /**
  * Menu item to copy text to the clipboard.
  *
- * Renders a true Blueprint menu item, so it aligns and highlights with the items around it.
+ * It renders a true Blueprint menu item, so it aligns and highlights with the items around it.
  */
 export const [ClipboardMenuItem, clipboardMenuItem] = hoistCmp.withFactory<ClipboardMenuItemProps>({
     displayName: 'ClipboardMenuItem',

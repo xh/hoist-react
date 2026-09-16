@@ -32,11 +32,11 @@ export interface MenuButtonProps extends ButtonProps {
 /**
  * Button preconfigured as the trigger for a dropdown {@link Menu}.
  *
- * Accepts the same {@link MenuItemLike} entries as `Menu` - item configs, `'-'` separators, and
- * {@link MenuHeading} entries - and takes Button props directly for its own display.
+ * It takes the same {@link MenuItemLike} entries as `Menu` - item configs, `'-'` separators, and
+ * {@link MenuHeading} entries. It also takes Button props directly, for its own display.
  *
- * See {@link AppMenuButton} for the app-level menu in the header, and {@link useContextMenu} or
- * {@link PanelProps.contextMenu} for right-click menus.
+ * For the app-level menu in the header, use {@link AppMenuButton}. For a right-click menu, use
+ * {@link useContextMenu} or {@link PanelProps.contextMenu}.
  */
 export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',

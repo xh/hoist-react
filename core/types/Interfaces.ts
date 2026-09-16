@@ -343,14 +343,14 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
 }
 
 /**
- * A non-interactive heading, used to label and visually group the items below it within a menu.
+ * A non-interactive heading that labels and visually groups the items below it within a menu.
  *
- * Rendered with its own divider rule, so there is no need to pair a heading with a '-' token.
- * Headings with no items below them - i.e. at the end of a menu, or immediately followed by
- * another heading - are dropped at render time, as are separators directly adjacent to one.
+ * A heading draws its own divider rule, so it needs no adjacent '-' token. Hoist drops a heading
+ * with no items below it, either at the end of a menu or immediately before another heading. It
+ * also drops any separator directly adjacent to a heading.
  *
- * Supported by grid context menus (via {@link RecordActionLike}) as well as the desktop and
- * mobile menus that accept {@link MenuItemLike}.
+ * Grid context menus accept a heading via {@link RecordActionLike}. The desktop and mobile menus
+ * that take {@link MenuItemLike} accept one too.
  */
 export interface MenuHeading<C = MenuContext> {
     /** Text to display. May be overridden by `displayFn`. */
@@ -366,13 +366,13 @@ export interface MenuHeading<C = MenuContext> {
     omit?: Thunkable<boolean>;
 
     /**
-     * Function called to append / override display properties prior to each render, allowing
-     * dynamic control over the heading's display.
+     * Function called before each render, to add or override display properties. Use it for
+     * dynamic control of the heading.
      *
-     * The context provided varies by menu - grid context menus supply the same `ActionFnData`
-     * passed to a RecordAction's own `displayFn`, including the clicked `record` and current
-     * `selectedRecords`. Menus without contextual data (e.g. dropdowns attached to a button)
-     * call this function with no argument.
+     * The context differs by menu. A grid context menu supplies the same `ActionFnData` that it
+     * passes to a RecordAction's own `displayFn`, including the clicked `record` and the current
+     * `selectedRecords`. A menu with no contextual data, such as a dropdown on a button, calls
+     * this function with no argument.
      */
     displayFn?: (context?: C) => Partial<MenuHeading<C>>;
 }

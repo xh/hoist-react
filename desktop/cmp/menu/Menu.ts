@@ -19,17 +19,15 @@ export interface MenuProps extends HoistProps {
 }
 
 /**
- * Renders a menu from Hoist {@link MenuItem} configs, tokens, and {@link MenuHeading} entries,
- * handling dynamic `prepareFn` preparation, hidden and omitted items, submenus, and the tidying
- * of separators and headings.
+ * Renders a menu from Hoist {@link MenuItem} configs, tokens, and {@link MenuHeading} entries. It
+ * runs each `prepareFn`, drops hidden and omitted items, builds submenus, and tidies separators
+ * and headings.
  *
- * Typically used as the content of a popover to build a menu button, as Hoist has no dedicated
- * desktop menu button component. Apps that need a right-click menu should reach for
- * {@link useContextMenu} or Panel's {@link PanelProps.contextMenu} instead of wiring this up
- * themselves.
+ * For the common case of a menu on a trigger button, use {@link MenuButton}. For a right-click
+ * menu, use {@link useContextMenu} or Panel's {@link PanelProps.contextMenu}.
  *
- * Note this component accepts only the base `'-'` separator token. Components with richer token
- * vocabularies - `Grid` and `Chart` - resolve those through their own menu APIs.
+ * This component accepts only the base `'-'` separator token. `Grid` and `Chart` carry richer
+ * token vocabularies, which they resolve through their own menu APIs.
  */
 export const [Menu, menu] = hoistCmp.withFactory<MenuProps>({
     displayName: 'Menu',
