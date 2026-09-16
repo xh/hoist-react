@@ -219,12 +219,15 @@ export class PivotGridModel extends HoistModel {
         });
     }
 
+    // `setColumns` resets state for every column. Cell field names are stable colIds, so re-applying
+    // the prior state keeps the user's widths and order; departed columns drop and new ones take
+    // their defaults at their defined index.
     @action
     private rebuildColumns() {
         const {gridModel} = this,
-            labelState = gridModel.getStateForColumn('cubeLabel');
+            priorState = gridModel.columnState;
         gridModel.setColumns(this.buildColumns());
-        gridModel.updateColumnState([labelState]);
+        gridModel.setColumnState(priorState);
     }
 
     private buildColumns(): Array<ColumnSpec | ColumnGroupSpec> {
