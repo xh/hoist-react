@@ -388,9 +388,10 @@ Hoist CSS vars for consistency:
 
 ```scss
 body.xh-app {
-    // ag-Grid integration — use Hoist var for consistent background
-    [class*='ag-theme-'] {
-        --ag-data-background-color: var(--xh-bg);
+    // ag-Grid integration — override a theme param on Hoist's grid wrapper. Prefer the
+    // `--xh-grid-*` vars where one exists, or `GridModel.defaults.theme` for typed params.
+    .xh-ag-grid {
+        --ag-header-column-resize-handle-color: var(--xh-border-color);
     }
 
     // Blueprint tooltip tweaks
