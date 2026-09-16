@@ -34,9 +34,9 @@ export interface RecordActionSpec extends TestSupportProps {
     actionFn?: (data: ActionFnData) => void;
 
     /**
-     * Function called to append / override display properties prior to each render. This function
-     * allows dynamic control over display properties.
-     * */
+     * Function called before each render, to add or override display properties. Use it for
+     * dynamic control of the action.
+     */
     displayFn?: (data: ActionFnData) => RecordActionSpec;
 
     /** Sub-actions for this action. */
@@ -98,8 +98,8 @@ export interface ActionFnData {
  * and call their `actionFn` when clicked, passing it a data object (if available) sourced from the
  * selected row(s) or node(s) on the underlying grid or data view.
  *
- * The `displayFn` callback allows apps to customize any display properties of the action prior to
- * each render by returning an object with keys/values to override (e.g. `{hidden: true}`).
+ * The `displayFn` callback lets apps customize any display property of the action. It runs before
+ * each render and returns an object of keys and values to override (e.g. `{hidden: true}`).
  *
  * NOTE that both `actionFn` and `displayFn` can be called with a null record - e.g. when showing a
  * context menu on a full-width grid group row, where there is no backing record for the row.
