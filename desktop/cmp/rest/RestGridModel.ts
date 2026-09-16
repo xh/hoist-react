@@ -9,7 +9,7 @@ import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {RecordAction, RecordActionLike, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {ExportOptions} from '@xh/hoist/svc';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -37,7 +37,7 @@ export interface RestGridConfig extends GridConfig {
     toolbarActions?: Array<RecordAction | RecordActionSpec>;
 
     /** Actions to display in the grid context menu. Defaults to add, edit, delete. */
-    menuActions?: Array<RecordAction | RecordActionSpec | '-'>;
+    menuActions?: RecordActionLike[];
 
     /** Actions to display in the form toolbar. Defaults to delete. */
     formActions?: Array<RecordAction | RecordActionSpec>;
@@ -118,7 +118,7 @@ export class RestGridModel extends HoistModel {
     readonly: boolean;
     editors: RestGridEditor[];
     toolbarActions: Array<RecordAction | RecordActionSpec>;
-    menuActions: Array<RecordAction | RecordActionSpec | '-'>;
+    menuActions: RecordActionLike[];
     formActions: Array<RecordAction | RecordActionSpec>;
     showRefreshButton: boolean;
     prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;

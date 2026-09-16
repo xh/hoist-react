@@ -23,6 +23,16 @@
     overflow-y: auto !important;
     border: var(--xh-menu-border);
 
+    // Non-interactive heading - see MenuHeading.
+    &__heading {
+      padding: var(--xh-pad-px) var(--xh-pad-double-px) var(--xh-pad-half-px) var(--xh-pad-px);
+      font-size: var(--xh-menu-heading-font-size-px);
+      font-weight: var(--xh-menu-heading-font-weight);
+      color: var(--xh-menu-heading-text-color);
+      background-color: var(--xh-menu-bg);
+      border-bottom: var(--xh-menu-heading-border);
+    }
+
     &__item {
       margin: 0;
       padding: 0 var(--xh-pad-double-px) 0 var(--xh-pad-px);

@@ -43,6 +43,7 @@ export type {
     ValueGetterParams,
     ValueSetterParams,
     MenuItemDef,
+    DefaultMenuItem,
     CellPosition,
     NavigateToNextCellParams,
     ColumnEvent,

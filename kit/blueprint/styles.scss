@@ -202,6 +202,31 @@
     }
   }
 
+  // Section headings - see MenuHeading, rendered here as a titled Blueprint divider. Label is
+  // aligned with the item text rather than the item icons, matching the grid context menu.
+  .bp6-menu-header {
+    // Blueprint puts the rule above its header - Hoist moves it below, tying the label to the
+    // items it introduces and sparing a leading header a stray rule at the top of the menu.
+    border-top: none;
+    border-bottom: var(--xh-menu-heading-border);
+    // Negative side margins cancel the menu's own 4px padding, so the rule runs edge to edge.
+    margin: var(--xh-pad-half-px) -4px 0;
+    padding: 0;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+
+    > h6 {
+      color: var(--xh-menu-heading-text-color);
+      font-size: var(--xh-menu-heading-font-size-px);
+      font-weight: var(--xh-menu-heading-font-weight);
+      line-height: normal;
+      // Left inset lines the label up with the item icons, not the item text.
+      padding: var(--xh-pad-half-px) 10px var(--xh-pad-half-px) 14px;
+    }
+  }
+
   .bp6-submenu {
     padding: 0;
   }

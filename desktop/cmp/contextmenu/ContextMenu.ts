@@ -4,11 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, isMenuItem, MenuContext, MenuItemLike} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistProps,
+    isMenuHeading,
+    isMenuItem,
+    MenuContext,
+    MenuItemLike
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
+import {
+    filterConsecutiveMenuSeparators,
+    filterMenuHeadings,
+    isVisibleMenuEntry,
+    resolveMenuHeading
+} from '@xh/hoist/utils/impl';
 import {clone, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
@@ -42,6 +54,7 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
 //---------------------------
 function parseItems(items: MenuItemLike[], context: MenuContext): ReactNode[] {
     items = items.map(item => {
+        if (isMenuHeading(item)) return resolveMenuHeading(item, context);
         if (!isMenuItem(item)) return item;
 
         item = clone(item);
@@ -51,11 +64,15 @@ function parseItems(items: MenuItemLike[], context: MenuContext): ReactNode[] {
     });
 
     return items
-        .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
+        .filter(isVisibleMenuEntry)
+        .filter(filterMenuHeadings(isMenuHeading))
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
-            // Process dividers
+            // Process dividers and headings
             if (item === '-') return menuDivider();
+            if (isMenuHeading(item)) {
+                return menuDivider({title: item.heading, className: item.className});
+            }
             if (!isMenuItem(item)) return item;
 
             // Process items

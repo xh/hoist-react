@@ -7,7 +7,7 @@
 
 import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
-import {isString} from 'lodash';
+import {isNil, isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 import {Intent, Thunkable} from './Types';
 
@@ -340,13 +340,49 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
 }
 
 /**
+ * A non-interactive heading, used to label and visually group the items below it within a menu.
+ *
+ * Rendered with its own divider rule, so there is no need to pair a heading with a '-' token.
+ * Headings with no items below them - i.e. at the end of a menu, or immediately followed by
+ * another heading - are dropped at render time, as are separators directly adjacent to one.
+ *
+ * Supported by grid context menus (via {@link RecordActionLike}) as well as the desktop and
+ * mobile menus that accept {@link MenuItemLike}.
+ */
+export interface MenuHeading<C = MenuContext> {
+    /** Text to display. May be overridden by `displayFn`. */
+    heading: ReactNode;
+
+    /** Css class name to be added when rendering the heading. */
+    className?: string;
+
+    /** True to hide this heading. May be set dynamically via `displayFn`. */
+    hidden?: boolean;
+
+    /** True to skip this heading. Alias for hidden. */
+    omit?: Thunkable<boolean>;
+
+    /**
+     * Function called to append / override display properties prior to each render, allowing
+     * dynamic control over the heading's display.
+     *
+     * The context provided varies by menu - grid context menus supply the same `ActionFnData`
+     * passed to a RecordAction's own `displayFn`, including the clicked `record` and current
+     * `selectedRecords`. Menus without contextual data (e.g. dropdowns attached to a button)
+     * call this function with no argument.
+     */
+    displayFn?: (context?: C) => Partial<MenuHeading<C>>;
+}
+
+/**
  * An item that can exist in a Menu.
  *
  * Components may accept token strings - in addition, '-' will be interpreted as the standard
  * textless divider that will also be de-duped if appearing at the beginning, or end, or adjacent
  * to another divider at render time. Also allows for a ReactNode for flexible display.
  */
-export type MenuItemLike<T = MenuToken, C = MenuContext> = MenuItem<T, C> | T | ReactElement;
+export type MenuItemLike<T = MenuToken, C = MenuContext> =
+    MenuItem<T, C> | MenuHeading<C> | T | ReactElement;
 
 /**
  * A context menu is specified as an array of items, a function to generate one from a click, or a
@@ -358,7 +394,11 @@ export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
     | boolean;
 
 export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, C> {
-    return !isString(item) && !isValidElement(item);
+    return !isString(item) && !isValidElement(item) && !isMenuHeading(item);
+}
+
+export function isMenuHeading<C>(item: any): item is MenuHeading<C> {
+    return !isString(item) && !isValidElement(item) && !isNil(item) && 'heading' in item;
 }
 
 //------------------------

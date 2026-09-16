@@ -5,10 +5,22 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, MenuItemLike, isMenuItem} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    useLocalModel,
+    MenuItemLike,
+    isMenuHeading,
+    isMenuItem
+} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
+import {
+    filterConsecutiveMenuSeparators,
+    filterMenuHeadings,
+    isVisibleMenuEntry,
+    resolveMenuHeading
+} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
 import {ReactNode, useEffect} from 'react';
@@ -68,6 +80,7 @@ class LocalMenuModel extends HoistModel {
         const {pressedIdx} = this;
 
         items = items.map(item => {
+            if (isMenuHeading(item)) return resolveMenuHeading(item);
             if (!isMenuItem(item)) return item;
 
             item = clone(item);
@@ -76,9 +89,19 @@ class LocalMenuModel extends HoistModel {
         });
 
         return items
-            .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
+            .filter(isVisibleMenuEntry)
+            .filter(filterMenuHeadings(isMenuHeading))
             .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
+                // Process headings
+                if (isMenuHeading(item)) {
+                    return div({
+                        key: idx,
+                        className: classNames('xh-menu__list__heading', item.className),
+                        item: item.heading
+                    });
+                }
+
                 // Process dividers
                 if (!isMenuItem(item)) return item;
 

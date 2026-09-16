@@ -7,7 +7,7 @@
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
-import {Intent, TestSupportProps} from '../core';
+import {Intent, isMenuHeading, MenuHeading, TestSupportProps} from '../core';
 import {StoreRecord} from './StoreRecord';
 import {Column, GridModel} from '../cmp/grid';
 
@@ -59,7 +59,13 @@ export interface RecordActionSpec extends TestSupportProps {
     recordsRequired?: boolean | number;
 }
 
-export type RecordActionLike = RecordAction | RecordActionSpec | '-';
+/**
+ * A non-interactive heading within a menu of RecordActions, with its `displayFn` receiving the
+ * same {@link ActionFnData} passed to the actions alongside it.
+ */
+export type RecordActionHeading = MenuHeading<ActionFnData>;
+
+export type RecordActionLike = RecordAction | RecordActionSpec | RecordActionHeading | '-';
 
 /**
  * Data passed to the Action Function of a RecordAction
@@ -148,7 +154,7 @@ export class RecordAction {
         this.testId = testId;
 
         this.items = items?.map(it => {
-            if (isString(it)) return it;
+            if (isString(it) || isMenuHeading(it)) return it;
             return it instanceof RecordAction ? it : new RecordAction(it);
         });
     }

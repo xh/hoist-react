@@ -53,6 +53,14 @@
 * `Aggregator.forEachLeaf()` now types its callback's leaf as the new `ViewLeafRow` interface,
   which extends `ViewRow` with the leaf's source `cubeRecord` and `cubeRecordId`. Callbacks typed
   against the previous, unexported `LeafRow` class should switch to `ViewLeafRow`.
+* `GridContextMenuItemLike` no longer admits an open `string`, which had collapsed the union and
+  left `GridContextMenuToken` providing no completions or typo-checking. It now accepts Hoist's
+  own tokens - `GridContextMenuToken`, which gains `'-'` - alongside ag-Grid's `DefaultMenuItem`
+  tokens, newly re-exported from `@xh/hoist/kit/ag-grid`. Apps assembling a menu from dynamic
+  strings must annotate or cast it as `GridContextMenuItemLike[]`.
+* `ClipboardMenuItem` now takes `ClipboardMenuItemProps` (Blueprint `MenuItemProps` plus the
+  clipboard-specific props) rather than `ClipboardButtonProps`. Apps passing button-only props
+  such as `minimal` or `outlined` should drop them - they had no meaning on a menu item.
 
 ### 🎁 New Features
 
@@ -72,12 +80,23 @@
   derived from their children's published values alone - e.g. a weighted average - compose from
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
+* Added `MenuHeading`, a non-interactive heading for labelling and grouping items within a menu -
+  e.g. `{heading: 'This Row'}`. Accepted anywhere a `RecordActionLike` or `MenuItemLike` is, so
+  grid context menus, desktop menus and context menus, and mobile menus all support it. A
+  `displayFn` can adjust the heading before each render, receiving the same `ActionFnData` as the
+  actions beside it when shown in a grid context menu.
+    * Headings render their own divider rule, so they need no adjacent `'-'` separator. Those left
+      with no items below them - at the end of a menu, or because their whole section hid itself -
+      are dropped automatically.
 
 ### 🐞 Bug Fixes
 
 * Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.
+* Fixed `ClipboardMenuItem` misaligning with the items around it. It rendered a `ClipboardButton`
+  styled to resemble a menu item, so it never picked up menu item padding or icon metrics. It now
+  renders a true menu item, with the copy behavior shared between it and `ClipboardButton`.
 
 ### ⚙️ Technical
 
@@ -87,6 +106,11 @@
 
 ### ✨ Styles
 
+* Added four custom properties styling the new `MenuHeading` - `--xh-menu-heading-text-color`,
+  `--xh-menu-heading-font-size-px`, `--xh-menu-heading-font-weight`, and
+  `--xh-menu-heading-border`. They drive headings in grid context menus, desktop menus, and mobile
+  menus alike, so a single override restyles all three. Blueprint's own `.bp6-menu-header` is now
+  themed from the same properties.
 * Added `.xh-grid-tooltip-frame`, a standalone utility class carrying Hoist's standard tooltip
   chrome - background, border, radius, padding and max-width. Hoist applies it to the tooltip
   content it renders itself, and apps can add it to a custom (element) tooltip's own root to match.

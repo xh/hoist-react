@@ -5,18 +5,24 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {MenuToken} from '@xh/hoist/core';
 import {RecordActionLike} from '@xh/hoist/data';
-import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
+import {DefaultMenuItem, GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 
 /**
- * If a String, value can be '-' for a separator, or a token supported by ag-Grid
- * for its native menu items, or a Hoist specific token.
+ * An entry within a grid context menu.
+ *
+ * Strings are tokens - either one of Hoist's own {@link GridContextMenuToken} (which includes '-'
+ * for a separator) or one of ag-Grid's built-in `DefaultMenuItem` tokens.
  * {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items}
+ *
+ * Note that `RecordActionLike` also admits a {@link MenuHeading} - i.e. `{heading: 'Section'}` -
+ * to label and group the items below it.
  */
-export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | string;
+export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | DefaultMenuItem;
 
 /**
- * Hoist tokens, all of which require a GridModel:
+ * Hoist tokens, all of which require a GridModel - plus {@link MenuToken} ('-') for a separator:
  *          `autosizeColumns` - autosize columns to fit their contents.
  *          `copyCell` - copy cell value to clipboard.
  *          `colChooser` - show the grid's column chooser, in whichever presentation it is
@@ -41,7 +47,8 @@ export type GridContextMenuToken =
     | 'exportCsv'
     | 'exportLocal'
     | 'filter'
-    | 'restoreDefaults';
+    | 'restoreDefaults'
+    | MenuToken;
 
 /**
  * Specification for a GridContextMenu.  Either a list of items, or a function to produce one.

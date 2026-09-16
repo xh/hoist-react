@@ -4,11 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ElementSpec, isMenuItem, MenuItemLike} from '@xh/hoist/core';
+import {ElementSpec, isMenuHeading, isMenuItem, MenuItemLike} from '@xh/hoist/core';
 import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
-import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
+import {
+    filterConsecutiveMenuSeparators,
+    filterMenuHeadings,
+    isVisibleMenuEntry,
+    resolveMenuHeading
+} from '@xh/hoist/utils/impl';
 import {clone, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
@@ -24,6 +29,7 @@ import {ReactNode} from 'react';
  */
 export function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
     items = items.map(item => {
+        if (isMenuHeading(item)) return resolveMenuHeading(item);
         if (!isMenuItem(item)) return item;
 
         item = clone(item);
@@ -33,10 +39,14 @@ export function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
     });
 
     return items
-        .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
+        .filter(isVisibleMenuEntry)
+        .filter(filterMenuHeadings(isMenuHeading))
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             if (item === '-') return menuDivider();
+            if (isMenuHeading(item)) {
+                return menuDivider({title: item.heading, className: item.className});
+            }
             if (!isMenuItem(item)) return item;
 
             const {actionFn} = item;

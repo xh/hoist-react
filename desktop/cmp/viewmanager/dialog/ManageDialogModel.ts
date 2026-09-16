@@ -6,7 +6,13 @@
  */
 
 import {badge} from '@xh/hoist/cmp/badge';
-import {dateTime, GridAutosizeMode, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {
+    dateTime,
+    GridAutosizeMode,
+    GridContextMenuItemLike,
+    GridModel,
+    TreeStyle
+} from '@xh/hoist/cmp/grid';
 import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
@@ -917,7 +923,7 @@ export class ManageDialogModel extends HoistModel {
             }
         };
 
-        const contextMenu =
+        const contextMenu: GridContextMenuItemLike[] =
             type === 'shared' ? ['expandCollapseAll'] : [renameGroupAction, 'expandCollapseAll'];
 
         const modifier =
