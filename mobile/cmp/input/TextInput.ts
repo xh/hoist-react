@@ -9,7 +9,6 @@ import {
     HoistInputModel,
     HoistInputProps,
     PasswordManagerSupportProps,
-    TrimWhitespaceSupportProps,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
 import {box, hbox} from '@xh/hoist/cmp/layout';
@@ -26,13 +25,7 @@ import {ReactElement} from 'react';
 import './TextInput.scss';
 
 export interface TextInputProps
-    extends
-        HoistProps,
-        HoistInputProps,
-        PasswordManagerSupportProps,
-        TrimWhitespaceSupportProps,
-        StyleProps,
-        LayoutProps {
+    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, StyleProps, LayoutProps {
     value?: string;
 
     /**
@@ -78,6 +71,14 @@ export interface TextInputProps
 
     /** Alignment of entry text within control, default 'left'. */
     textAlign?: Property.TextAlign;
+
+    /**
+     * True to trim leading/trailing whitespace from this input's value as committed to any bound
+     * model and reported to `onChange` / `onCommit`. Default true, except for `password` type
+     * inputs, where such whitespace can be intentional. A value that trims away to nothing commits
+     * null, as per an input the user cleared.
+     */
+    trimWhitespace?: boolean;
 
     /** Underlying HTML <input> element type. */
     type?: 'text' | 'password';

@@ -80,26 +80,3 @@ export const PW_MANAGER_IGNORE_ATTRS = Object.freeze({
 export function getPasswordManagerAttrs(enablePasswordManagers: boolean) {
     return enablePasswordManagers ? null : PW_MANAGER_IGNORE_ATTRS;
 }
-
-/**
- * Props for single-line text inputs that trim leading/trailing whitespace from their value.
- *
- * Extended by the inputs where such whitespace is essentially always unintentional and invisible
- * in the UI. Multi-line and free-text controls (`TextArea`, `CodeInput`, `JsonInput`) do not accept
- * this prop - whitespace can be meaningful there.
- */
-export interface TrimWhitespaceSupportProps {
-    /**
-     * True to trim leading and trailing whitespace from this input's value as it is committed to
-     * any bound model and reported to `onChange` / `onCommit` callbacks. Default true.
-     *
-     * Trimming applies to the input's *external* value only - the user sees exactly what they type
-     * while the control has focus, with any stray whitespace dropped from the display when the
-     * value is committed on blur or <enter>. This catches whitespace from pastes, autofill, IME
-     * input, and typing alike, where it would otherwise cause confusing validation failures - e.g.
-     * a pasted email address that fails the anchored {@link validEmail} rule for no visible reason.
-     *
-     * Set false to preserve whitespace exactly as entered.
-     */
-    trimWhitespace?: boolean;
-}

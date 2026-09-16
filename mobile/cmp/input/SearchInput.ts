@@ -4,12 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    HoistInputModel,
-    HoistInputProps,
-    TrimWhitespaceSupportProps,
-    useHoistInputModel
-} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -18,7 +13,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import './SearchInput.scss';
 import type {Property} from 'csstype';
 
-export interface SearchInputProps extends HoistProps, HoistInputProps, TrimWhitespaceSupportProps {
+export interface SearchInputProps extends HoistProps, HoistInputProps {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -38,6 +33,12 @@ export interface SearchInputProps extends HoistProps, HoistInputProps, TrimWhite
 
     /** Alignment of entry text within control, default 'left'. */
     textAlign?: Property.TextAlign;
+
+    /**
+     * True to trim leading/trailing whitespace from this input's value as committed to any bound
+     * model and reported to `onChange` / `onCommit`. Default true.
+     */
+    trimWhitespace?: boolean;
 }
 
 /**
