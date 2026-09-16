@@ -17,14 +17,29 @@ import {
 import {clone, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
+/**
+ * Popover defaults for every Hoist submenu.
+ *
+ * Blueprint's `MenuItem` hardcodes `hoverCloseDelay: 0`, so a submenu closes the moment the
+ * pointer leaves the parent item's row. That makes a diagonal move toward an entry lower in the
+ * submenu dismiss it, which is the standard failure of hover-driven submenus. Blueprint's own
+ * `Popover` default is 300ms, and caller props win over the `MenuItem` value, so Hoist restores it.
+ *
+ * @internal
+ */
+export const SUBMENU_POPOVER_DEFAULTS: MenuItemProps['popoverProps'] = {
+    hoverCloseDelay: 300,
+    openOnTargetFocus: false
+};
+
 export interface ParseMenuItemsOptions {
     /** Contextual data passed to each item's `prepareFn` and `actionFn`. */
     context?: MenuContext;
 
     /**
-     * Props for the popover that hosts a submenu. Defaults to `{openOnTargetFocus: false}`, which
-     * suits a menu anchored to a button. A menu anchored at the cursor passes `{usePortal: true}`
-     * instead, because its submenus mis-position without a portal.
+     * Props for the popover that hosts a submenu, merged over {@link SUBMENU_POPOVER_DEFAULTS}.
+     * A menu anchored at the cursor adds `{usePortal: true}`, because its submenus mis-position
+     * without a portal.
      */
     submenuPopoverProps?: MenuItemProps['popoverProps'];
 }
@@ -43,7 +58,8 @@ export function parseMenuItems(
     items: MenuItemLike[],
     opts: ParseMenuItemsOptions = {}
 ): ReactNode[] {
-    const {context, submenuPopoverProps = {openOnTargetFocus: false}} = opts;
+    const {context, submenuPopoverProps} = opts;
+    const popoverProps = {...SUBMENU_POPOVER_DEFAULTS, ...submenuPopoverProps};
 
     items = items.map(item => {
         if (isMenuHeading(item)) return resolveMenuHeading(item, context);
@@ -83,7 +99,7 @@ export function parseMenuItems(
             // Recursively parse any submenus
             if (!isEmpty(item.items)) {
                 cfg.items = parseMenuItems(item.items, opts);
-                cfg.popoverProps = submenuPopoverProps;
+                cfg.popoverProps = popoverProps;
             }
 
             return menuItem(cfg);
