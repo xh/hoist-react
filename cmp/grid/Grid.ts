@@ -870,9 +870,7 @@ export class GridLocalModel extends HoistModel {
         }
     };
 
-    // Catches column group expand/collapse, from our group header or the ag-Grid API. Note this
-    // event carries no `source`, so our own writes round-trip through here - the model's equality
-    // check is what stops the loop.
+    // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
     onColumnGroupOpened = ev => {
         this.model.noteAgColumnGroupStateChanged(ev.api.getColumnGroupState());
     };
