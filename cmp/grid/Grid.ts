@@ -7,7 +7,7 @@
 import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {ColumnGroupState, ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import {div, fragment, frame, hframe} from '@xh/hoist/cmp/layout';
 import {
@@ -217,6 +217,7 @@ export class GridLocalModel extends HoistModel {
             this.sortReaction(),
             this.columnsReaction(),
             this.columnStateReaction(),
+            this.columnGroupStateReaction(),
             this.dataReaction(),
             this.groupReaction(),
             this.rowHeightReaction(),
@@ -280,6 +281,7 @@ export class GridLocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onColumnGroupOpened: this.onColumnGroupOpened,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
             navigateToNextCell: this.navigateToNextCell,
@@ -522,6 +524,22 @@ export class GridLocalModel extends HoistModel {
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.updateGridOptions({columnDefs: this.getColumnDefs()});
                 });
+            }
+        };
+    }
+
+    columnGroupStateReaction(): ReactionSpec<[GridApi, ColumnGroupState[]]> {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.columnGroupState],
+            run: ([api, groupState]) => {
+                if (!api || isEmpty(groupState)) return;
+
+                // Pass the full set: ag-Grid skips any groupId it cannot resolve, and skips groups
+                // already in the requested state, so this neither throws nor re-enters.
+                api.setColumnGroupState(
+                    groupState.map(({groupId, expanded}) => ({groupId, open: expanded}))
+                );
             }
         };
     }
@@ -848,6 +866,11 @@ export class GridLocalModel extends HoistModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
+    };
+
+    // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
+    onColumnGroupOpened = ev => {
+        this.model.noteAgColumnGroupStateChanged(ev.api.getColumnGroupState());
     };
 
     groupSortComparator = ({nodeA, nodeB}) => {
