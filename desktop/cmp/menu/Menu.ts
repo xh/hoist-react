@@ -33,12 +33,13 @@ export interface MenuProps extends HoistProps {
  */
 export const [Menu, menu] = hoistCmp.withFactory<MenuProps>({
     displayName: 'Menu',
+    className: 'xh-menu',
     memo: false,
     model: false,
     observer: false,
 
-    render({menuItems, context}) {
+    render({menuItems, context, className}) {
         const items = parseMenuItems(menuItems, {context});
-        return isEmpty(items) ? null : bpMenu(items);
+        return isEmpty(items) ? null : bpMenu({className, items});
     }
 });

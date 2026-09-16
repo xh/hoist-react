@@ -5,3 +5,4 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 export * from './Menu';
+export * from './MenuButton';
