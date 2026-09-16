@@ -59,11 +59,25 @@
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
+* Added support for collapsible grid column groups via a new `groupShowMode` config on
+  `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
+  group is `'expanded'` or `'collapsed'`. Groups render expanded unless the new
+  `ColumnGroupSpec.collapsed` is set.
+* `GridModel` now tracks column group expand/collapse state as `columnGroupState`, with
+  `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
+  `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -
+  see the new `GridModelPersistOptions.persistColumnGroups`.
 * Cube `Aggregator` implementations can now hold per-row state via new
   `AggregationContext.setAggState()` / `getAggState()`, letting aggregations that cannot be
   derived from their children's published values alone - e.g. a weighted average - compose from
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
+
+### 🐞 Bug Fixes
+
+* Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
+  without cancelling any pending debounced write, so state returned to its default within the
+  debounce interval (250ms by default) was re-persisted by the stale write that followed.
 
 ### ⚙️ Technical
 
