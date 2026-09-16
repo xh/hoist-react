@@ -61,8 +61,8 @@
   record, returning the `Intent` to draw, or null for no flag.
 * Added support for collapsible grid column groups via a new `groupShowMode` config on
   `ColumnSpec` and `ColumnGroupSpec`, showing a column or nested group only while its containing
-  group is `'expanded'` or `'collapsed'`. Groups render expanded unless set otherwise with the new
-  `ColumnGroupSpec.expandedByDefault`.
+  group is `'expanded'` or `'collapsed'`. Groups render expanded unless the new
+  `ColumnGroupSpec.collapsed` is set.
 * `GridModel` now tracks column group expand/collapse state as `columnGroupState`, with
   `isColumnGroupExpanded()`, `setColumnGroupExpanded()`, `setColumnGroupState()` and
   `getColumnGroups()` to read and drive it. This state is persisted with `persistWith` by default -

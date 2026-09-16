@@ -55,14 +55,14 @@ export interface ColumnGroupSpec {
     groupShowMode?: ColumnGroupShowMode;
 
     /**
-     * False to render this group collapsed until the user expands it. Defaults to true.
+     * True to render this group collapsed until the user expands it. Defaults to false.
      * Applies only to an expandable group - i.e. one with a direct child specifying
      * `groupShowMode`.
      *
-     * Note this is the *default* only: once rendered, expand/collapse state is tracked on
+     * Note this is the initial state only: once rendered, expand/collapse state is tracked on
      * {@link GridModel.columnGroupState} and is persisted with the grid's `persistWith`.
      */
-    expandedByDefault?: boolean;
+    collapsed?: boolean;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -92,7 +92,7 @@ export class ColumnGroup {
     readonly headerTooltip: string;
     readonly borders: boolean;
     readonly groupShowMode: ColumnGroupShowMode;
-    readonly expandedByDefault: boolean;
+    readonly collapsed: boolean;
     readonly omit: Thunkable<boolean>;
 
     /**
@@ -124,7 +124,7 @@ export class ColumnGroup {
             agOptions,
             borders,
             groupShowMode,
-            expandedByDefault,
+            collapsed,
             appData,
             omit,
             ...rest
@@ -143,7 +143,7 @@ export class ColumnGroup {
         this.headerTooltip = headerTooltip;
         this.borders = withDefault(borders, true);
         this.groupShowMode = groupShowMode;
-        this.expandedByDefault = withDefault(expandedByDefault, true);
+        this.collapsed = withDefault(collapsed, false);
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -161,8 +161,8 @@ export class ColumnGroup {
         );
 
         warnIf(
-            !expandable && !this.expandedByDefault,
-            `Column group '${this.groupId}' specifies 'expandedByDefault: false' but cannot be expanded - this config will be ignored.`
+            !expandable && this.collapsed,
+            `Column group '${this.groupId}' specifies 'collapsed: true' but cannot be expanded - this config will be ignored.`
         );
 
         if (!isEmpty(rest)) {
@@ -189,7 +189,7 @@ export class ColumnGroup {
             headerClass: getAgHeaderClassFn(this),
             headerTooltip: this.headerTooltip,
             columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
-            openByDefault: this.expandedByDefault,
+            openByDefault: !this.collapsed,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: gridModel.lockColumnGroups,

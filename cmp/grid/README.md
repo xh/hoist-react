@@ -142,7 +142,7 @@ new GridModel({
         {field: 'name', flex: 1},
         {
             headerName: 'Q1',
-            expandedByDefault: false,          // Render collapsed until the user expands
+            collapsed: true,                   // Render collapsed until the user expands
             children: [
                 {field: 'q1Jan', groupShowMode: 'expanded'},
                 {field: 'q1Feb', groupShowMode: 'expanded'},

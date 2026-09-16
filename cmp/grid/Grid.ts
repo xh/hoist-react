@@ -528,8 +528,6 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
-    // Note ag-Grid retains a group's expanded state across a `columnDefs` replacement, keyed on
-    // groupId - so a `setColumns` reset only lands because a fresh state array re-fires this.
     columnGroupStateReaction(): ReactionSpec<[GridApi, ColumnGroupState[]]> {
         const {model} = this;
         return {

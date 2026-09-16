@@ -1358,6 +1358,8 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
+
+        // Ag-grid will recycle state below -- reactions forced by ref change below guarantee sync
         this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
         this.columnGroupState = this.getColumnGroups().map(it => this.getDefaultStateForGroup(it));
     }
@@ -1376,7 +1378,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Replace the current column group expand/collapse state with the state provided. Groups missing
-     * from `groupState` fall back to their `expandedByDefault` config, so an empty array restores
+     * from `groupState` fall back to their configured `collapsed` state, so an empty array restores
      * every group to its default.
      */
     @action
@@ -1384,10 +1386,9 @@ export class GridModel extends HoistModel {
         this.columnGroupState = this.cleanColumnGroupState(groupState);
     }
 
-    /** Expand or collapse a single ColumnGroup. */
+    /** Expand or collapse a single ColumnGroup. No-op if the groupId does not resolve to a group. */
     @action
     setColumnGroupExpanded(groupId: string, expanded: boolean) {
-        throwIf(!this.getColumnGroup(groupId), `Unknown column group '${groupId}'`);
         this.columnGroupState = this.columnGroupState.map(it =>
             it.groupId === groupId ? {...it, expanded} : it
         );
@@ -2335,7 +2336,7 @@ export class GridModel extends HoistModel {
     }
 
     private getDefaultStateForGroup(group: ColumnGroup): ColumnGroupState {
-        return {groupId: group.groupId, expanded: group.expandedByDefault};
+        return {groupId: group.groupId, expanded: !group.collapsed};
     }
 }
 
