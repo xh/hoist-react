@@ -55,11 +55,12 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
         ...rest
     }) {
         return popover({
-            className,
             disabled,
             position: menuPosition,
             minimal: true,
-            item: button({icon, disabled, ...rest}),
+            // `className` lands on the button, as `MenuButtonProps extends ButtonProps` implies.
+            // Use `popoverProps.className` to target the popover wrapper instead.
+            item: button({className, icon, disabled, ...rest}),
             content: menu({menuItems, context, className: menuClassName}),
             ...popoverProps
         });

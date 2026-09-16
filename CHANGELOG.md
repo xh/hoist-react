@@ -70,6 +70,7 @@
   taking `ButtonProps` directly alongside `menuItems`. Together they replace the popover plus
   Blueprint menu apps were assembling by hand, sometimes reaching into the internal
   `parseMenuItems` helper to do so. `ContextMenu` now shares the same parsing.
+* `MenuItem` gained an `active` flag, for marking the current selection within a menu.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.

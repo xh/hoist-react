@@ -332,6 +332,9 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
     /** True to disable this item. */
     disabled?: boolean;
 
+    /** True to render this item as active - e.g. to mark the current selection. */
+    active?: boolean;
+
     /** True to hide this item. May be set dynamically via prepareFn. */
     hidden?: boolean;
 
