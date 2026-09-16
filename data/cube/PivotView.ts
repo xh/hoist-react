@@ -284,28 +284,8 @@ export class PivotView extends View {
     }
 
     /** A change to a *pivot* dimension value restructures the columns - force a full rebuild. */
-    protected override hasDimOrBucketUpdates(
-        update: StoreRecord[],
-        changedFields?: Set<string>
-    ): boolean {
-        if (super.hasDimOrBucketUpdates(update, changedFields)) return true;
-
-        const names = this.query.pivotDimensionNames;
-        if (isEmpty(names)) return false;
-        if (changedFields && !names.some(name => changedFields.has(name))) return false;
-
-        for (const rec of update) {
-            const cur = this._records.getById(rec.id).data;
-            if (names.some(name => rec.data[name] !== cur[name])) return true;
-        }
-        return false;
-    }
-
-    protected override hasStructuralChange(changedFields: Set<string>): boolean {
-        return (
-            super.hasStructuralChange(changedFields) ||
-            this.query.pivotDimensionNames.some(name => changedFields.has(name))
-        );
+    protected override getStructuralDimensions(): CubeField[] {
+        return [...super.getStructuralDimensions(), ...this.query.pivotDimensions];
     }
 
     /**

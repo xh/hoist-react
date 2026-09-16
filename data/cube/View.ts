@@ -155,6 +155,8 @@ export class View
     protected _bucketDependentFields = new Set<string>();
 
     protected _fieldsByName: Map<string, CubeField> = null;
+    // Names of the fields whose values place a record in the row hierarchy - see `getStructuralDimensions`.
+    protected _structuralDimNames: string[] = null;
     protected _rowDataGenerator: RowDataGenerator = null;
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     _rowDigest = 0;
@@ -374,6 +376,7 @@ export class View
 
     private buildIndices() {
         this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
+        this._structuralDimNames = this.getStructuralDimensions().map(it => it.name);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
@@ -399,6 +402,16 @@ export class View
         this._complexAggFieldsByDepth = this._aggFieldsByDepth.map(fields =>
             fields.filter(it => !it.aggregator.dependsOnChildrenOnly)
         );
+    }
+
+    /**
+     * Fields whose values place a record within the row hierarchy, such that a change to one forces
+     * a full rebuild rather than an incremental update. The query's dimensions here; a subclass
+     * adding an axis of its own extends the list. Bucket dependencies are tracked separately, as
+     * they are only known once rows are generated.
+     */
+    protected getStructuralDimensions(): CubeField[] {
+        return this.query.dimensions ?? [];
     }
 
     protected fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {
@@ -696,17 +709,17 @@ export class View
      * via the delta `Cube.loadDataAsync` derives.
      */
     protected hasDimOrBucketUpdates(update: StoreRecord[], changedFields?: Set<string>): boolean {
-        const {dimensions} = this.query,
+        const dimNames = this._structuralDimNames,
             bucketFields = this._bucketDependentFields;
 
-        if (isEmpty(dimensions) && !bucketFields.size) return false;
+        if (!dimNames.length && !bucketFields.size) return false;
         if (changedFields && !this.hasStructuralChange(changedFields)) return false;
 
         for (const rec of update) {
             const curData = this._records.getById(rec.id).data,
                 {data} = rec;
-            for (const dim of dimensions) {
-                if (data[dim.name] !== curData[dim.name]) return true;
+            for (const name of dimNames) {
+                if (data[name] !== curData[name]) return true;
             }
             for (const name of bucketFields) {
                 if (data[name] !== curData[name]) return true;
@@ -716,9 +729,9 @@ export class View
         return false;
     }
 
-    /** True if any named field could restructure the row hierarchy. Widened by {@link PivotView}. */
-    protected hasStructuralChange(changedFields: Set<string>): boolean {
-        if (this.query.dimensions?.some(it => changedFields.has(it.name))) return true;
+    // True if any named field could restructure the row hierarchy.
+    private hasStructuralChange(changedFields: Set<string>): boolean {
+        if (this._structuralDimNames.some(name => changedFields.has(name))) return true;
         for (const name of this._bucketDependentFields) {
             if (changedFields.has(name)) return true;
         }
