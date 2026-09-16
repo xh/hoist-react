@@ -302,6 +302,30 @@ private fieldMap: Map<string, Field>;
 
 ## Class Structure
 
+### File Ordering
+
+Readers should meet the public API first. Within a file, exported interfaces, types, and classes
+come directly after the imports. Module-private constants and helper functions — anything not
+exported — go at the bottom, after the last export:
+
+```typescript
+import {...} from '...';
+
+export interface FooConfig { ... }
+
+export class FooModel extends HoistModel {
+    constructor() {
+        this.params = DEFAULT_PARAMS;   // resolved at runtime, so the declaration below is fine
+    }
+}
+
+// Implementation detail - not part of the public API.
+const DEFAULT_PARAMS = { ... };
+```
+
+A `const` used only inside constructors or methods can safely be declared below the class, as it is
+read at call time rather than at module evaluation.
+
 ### Member Ordering
 
 Hoist classes follow a canonical ordering for readability and consistency. Not every class has

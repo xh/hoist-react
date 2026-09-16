@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Theme, ThemeDefaultParams} from '@xh/hoist/kit/ag-grid';
-import {themeBalham} from 'ag-grid-community';
+import {themeBalham} from '@xh/hoist/kit/ag-grid';
 import {isEmpty, sortBy, toPairs} from 'lodash';
 
 /**
@@ -24,8 +24,6 @@ export type AgGridThemeParams = Partial<ThemeDefaultParams>;
  *
  * Prefer adding a param here over a rule in AgGrid.scss: params are typed, and unlike CSS scoped to
  * the grid wrapper they also reach ag-Grid's popups (menus, tooltips, popup editors).
- *
- * Note apps must not also enable legacy theming - see the v88 upgrade notes.
  */
 export const xhAgGridTheme = themeBalham.withParams({
     // Follow the `color-scheme` ThemeModel sets on <html>, so one theme serves light and dark.

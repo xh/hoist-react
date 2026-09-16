@@ -27,8 +27,7 @@
     * Hoist now styles grids with AG Grid's JS Theming API rather than the legacy balham CSS theme.
       Legacy CSS themes are mutually exclusive with the `theme` grid option Hoist now supplies, so
       apps must remove both the `provideGlobalGridOptions({theme: 'legacy'})` call and the
-      `ag-grid-community/styles/ag-grid.css` / `ag-theme-balham.css` imports from their `Bootstrap`,
-      or AG Grid will log an error and grids will render unstyled.
+      `ag-grid-community/styles/ag-grid.css` / `ag-theme-balham.css` imports from their `Bootstrap`.
     * Hoist no longer applies the `.ag-theme-balham` / `.ag-theme-balham-dark` classes. Apps with
       custom CSS targeting either must retarget, using Hoist's own `.xh-ag-grid` wrapper class.
       Prefer the new `GridModel.theme` config (below) or the `--xh-grid-*` variables over CSS
@@ -68,11 +67,10 @@
 * Added a `theme` config to `GridModel` and `AgGridModel`, accepting AG Grid theme param overrides
   (e.g. `{headerBackgroundColor: 'navy', spacing: 4}`) for grids that need to depart from the app's
   standard styling. Overrides are applied on top of Hoist's own theme, so grids keep their bindings
-  to the `--xh-grid-*` variables. Also settable app-wide via `GridModel.defaults.theme`, which a
+  to the `--xh-grid-*` variables. Also settable app-wide via `AgGridModel.defaults.theme`, which a
   per-grid `theme` merges with rather than replaces. Preferred over reaching for `agOptions.theme`.
-    * A theme is set once, at construction, and cannot be changed thereafter - each distinct set of
-      params carries its own copy of AG Grid's generated stylesheet. To vary a grid's appearance at
-      runtime, set the underlying `--xh-grid-*` (or `--ag-*`) CSS variables on an ancestor element.
+    * A theme is set once, at GridModel construction, and cannot be changed thereafter - each distinct
+      set of params carries its own copy of AG Grid's generated stylesheet.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
