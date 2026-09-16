@@ -57,6 +57,11 @@ jobs:
         - name: Type check
           run: pnpm typecheck
 
+        # The unit-tier specs under data/cube - the pure pivot structure module and the built-in
+        # aggregators, which load standalone under tsx. Everything needing a View runs in Toolbox.
+        - name: Unit tests
+          run: pnpm test:unit
+
         # Gates merges on a clean production-dependency audit for high and
         # critical advisories. The first, un-gated run prints lower-severity
         # findings in the step log for visibility without failing the build -

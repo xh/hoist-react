@@ -22,6 +22,7 @@
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
     "typecheck": "tsc --noEmit",
+    "test:unit": "tsx data/cube/impl/PivotStructure.spec.ts && tsx data/cube/aggregate/Aggregator.spec.ts",
     "prepack": "tsc --build",
     "prepare": "husky"
   },
