@@ -4,25 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    hoistCmp,
-    HoistProps,
-    isMenuHeading,
-    isMenuItem,
-    MenuContext,
-    MenuItemLike
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, MenuContext, MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import {wait} from '@xh/hoist/promise';
-import {
-    filterConsecutiveMenuSeparators,
-    filterMenuHeadings,
-    isVisibleMenuEntry,
-    resolveMenuHeading
-} from '@xh/hoist/utils/impl';
-import {clone, isEmpty} from 'lodash';
-import {ReactNode} from 'react';
+import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
+import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
+import {isEmpty} from 'lodash';
 
 export interface ContextMenuProps extends HoistProps {
     menuItems: MenuItemLike[];
@@ -32,7 +18,8 @@ export interface ContextMenuProps extends HoistProps {
 /**
  * Component for a right-click context menu. Not typically used directly by applications - use
  * the {@link useContextMenu} hook to add a context menu to an app component, or leverage Panel's
- * built-in support via {@link PanelProps.contextMenu}.
+ * built-in support via {@link PanelProps.contextMenu}. For a menu anchored to a button, see
+ * {@link Menu}.
  *
  * See {@link GridContextMenuSpec} to specify a context menu on `Grid` and `DataView` components.
  * That API will receive specific information about the current selection
@@ -44,48 +31,12 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
     observer: false,
 
     render({menuItems, context}) {
-        const items = parseItems(menuItems, context);
-        return isEmpty(items) ? null : menu(items);
+        // Anchored at the cursor rather than a target element, where submenus mis-position
+        // without a portal - see hoist-react #3724.
+        const items = parseMenuItems(menuItems, {
+            context,
+            submenuPopoverProps: {usePortal: true}
+        });
+        return isEmpty(items) ? null : bpMenu(items);
     }
 });
-
-//---------------------------
-// Implementation
-//---------------------------
-function parseItems(items: MenuItemLike[], context: MenuContext): ReactNode[] {
-    items = items.map(item => {
-        if (isMenuHeading(item)) return resolveMenuHeading(item, context);
-        if (!isMenuItem(item)) return item;
-
-        item = clone(item);
-        item.items = clone(item.items);
-        item.prepareFn?.(item, context);
-        return item;
-    });
-
-    return items
-        .filter(isVisibleMenuEntry)
-        .filter(filterMenuHeadings(isMenuHeading))
-        .filter(filterConsecutiveMenuSeparators())
-        .map(item => {
-            // Process dividers and headings
-            if (item === '-') return menuDivider();
-            if (isMenuHeading(item)) {
-                return menuDivider({title: item.heading, className: item.className});
-            }
-            if (!isMenuItem(item)) return item;
-
-            // Process items
-            const items = item.items ? parseItems(item.items, context) : null;
-            return menuItem({
-                text: item.text,
-                icon: item.icon,
-                intent: item.intent,
-                className: item.className,
-                onClick: item.actionFn ? e => wait().then(() => item.actionFn(e, context)) : null, // do async to allow menu to close
-                popoverProps: {usePortal: true},
-                disabled: item.disabled,
-                items
-            });
-        });
-}

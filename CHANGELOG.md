@@ -64,6 +64,11 @@
 
 ### 🎁 New Features
 
+* Added a desktop `Menu` component, rendering a menu from Hoist `MenuItem` configs, `'-'` tokens,
+  and `MenuHeading` entries - handling `prepareFn` preparation, hidden and omitted items, submenus,
+  and separator tidying. Intended as the content of a popover, for apps that previously reached
+  into the internal `parseMenuItems` helper to build a menu button. `ContextMenu` now shares the
+  same parsing.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
