@@ -9,6 +9,7 @@ import {
     HoistInputModel,
     HoistInputProps,
     PasswordManagerSupportProps,
+    TrimWhitespaceSupportProps,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
 import {box, hbox} from '@xh/hoist/cmp/layout';
@@ -25,7 +26,13 @@ import {ReactElement} from 'react';
 import './TextInput.scss';
 
 export interface TextInputProps
-    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, StyleProps, LayoutProps {
+    extends
+        HoistProps,
+        HoistInputProps,
+        PasswordManagerSupportProps,
+        TrimWhitespaceSupportProps,
+        StyleProps,
+        LayoutProps {
     value?: string;
 
     /**
@@ -96,6 +103,17 @@ class TextInputModel extends HoistInputModel {
 
     override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
+    }
+
+    override get trimWhitespace() {
+        const {trimWhitespace, type} = this.componentProps;
+        // Passwords can legitimately carry leading/trailing whitespace - never trim by default.
+        return withDefault(trimWhitespace, type !== 'password');
+    }
+
+    override toExternal(internal: string): string {
+        // Normalize a value that trims away to nothing to null, as per an input the user cleared.
+        return super.toExternal(internal) || null;
     }
 
     get showClearButton() {

@@ -15,7 +15,7 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW, ag-Grid upgrade, scheduled removals)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW, ag-Grid upgrade, input trimming, scheduled removals)
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
       `ag-grid-enterprise` dependencies to `36.x`.
@@ -24,6 +24,15 @@
       `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
       theme defaults now resolve against an inner `.ag-styled-root` element. See the
       [AG Grid 36 upgrade guide](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-36/).
+
+* Single-line text inputs now trim leading and trailing whitespace from their value - `TextInput`
+  (desktop + mobile) and mobile `SearchInput`.
+    * Trimming applies as the value is committed to any bound model and reported to `onChange` /
+      `onCommit`, catching whitespace from typing, pastes, autofill and IME input alike. A
+      `TextInput` whose value trims away to nothing now commits null, as when cleared.
+    * Pass the new `trimWhitespace: false` prop to preserve whitespace exactly as entered.
+      `TextInput`s with `type: 'password'` do not trim by default. `TextArea`, `CodeInput` and
+      `JsonInput` are unaffected.
 
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`

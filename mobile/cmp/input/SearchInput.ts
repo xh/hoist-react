@@ -4,7 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    HoistInputModel,
+    HoistInputProps,
+    TrimWhitespaceSupportProps,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -13,7 +18,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import './SearchInput.scss';
 import type {Property} from 'csstype';
 
-export interface SearchInputProps extends HoistProps, HoistInputProps {
+export interface SearchInputProps extends HoistProps, HoistInputProps, TrimWhitespaceSupportProps {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -55,6 +60,10 @@ class SearchInputModel extends HoistInputModel {
 
     override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
+    }
+
+    override get trimWhitespace() {
+        return withDefault(this.componentProps.trimWhitespace, true);
     }
 
     onChange = ev => {
