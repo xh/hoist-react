@@ -4,11 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, MenuContext, MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, type HoistProps, type MenuContext, type MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
-import {MENU_DEFAULTS, MenuDefaults, parseMenuItems} from './impl/MenuItems';
+import {MENU_DEFAULTS, type MenuDefaults, parseMenuItems} from './impl/MenuItems';
 
 export interface MenuProps extends HoistProps {
     /** Items to display. */

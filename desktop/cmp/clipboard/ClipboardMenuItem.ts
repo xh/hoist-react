@@ -4,13 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {MenuItemProps} from '@blueprintjs/core';
+import type {MenuItemProps} from '@blueprintjs/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {createCopyHandler, CopyTextSpec} from './impl/CopyText';
+import {createCopyHandler, type CopyTextSpec} from './impl/CopyText';
 
 export interface ClipboardMenuItemProps extends Omit<MenuItemProps, 'onClick'>, CopyTextSpec {}
 

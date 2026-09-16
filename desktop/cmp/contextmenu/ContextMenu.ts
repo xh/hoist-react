@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, MenuContext, MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, type HoistProps, type MenuContext, type MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {menu as bpMenu} from '@xh/hoist/kit/blueprint';

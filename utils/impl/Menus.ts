@@ -7,8 +7,8 @@
 import {
     isMenuHeading,
     isMenuItem,
-    MenuHeading,
-    MenuItemLike
+    type MenuHeading,
+    type MenuItemLike
 } from '@xh/hoist/core/types/Interfaces';
 import {isNil} from 'lodash';
 import {isMenuSeparator} from './Separators';

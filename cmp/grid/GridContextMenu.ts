@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {MenuToken} from '@xh/hoist/core';
-import {RecordActionLike} from '@xh/hoist/data';
-import {DefaultMenuItem, GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {MenuToken} from '@xh/hoist/core';
+import type {RecordActionLike} from '@xh/hoist/data';
+import type {DefaultMenuItem, GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 
 /**
  * An entry within a grid context menu.

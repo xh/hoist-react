@@ -4,9 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ElementSpec, isMenuHeading, isMenuItem, MenuContext, MenuItemLike} from '@xh/hoist/core';
+import {
+    type ElementSpec,
+    isMenuHeading,
+    isMenuItem,
+    type MenuContext,
+    type MenuItemLike
+} from '@xh/hoist/core';
 import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import {MenuItemProps} from '@blueprintjs/core';
+import type {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
 import {
     filterConsecutiveMenuSeparators,
@@ -15,7 +21,7 @@ import {
     resolveMenuHeading
 } from '@xh/hoist/utils/impl';
 import {clone, isEmpty} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface MenuDefaults {
     /**

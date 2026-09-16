@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopoverProps} from '@blueprintjs/core';
-import {hoistCmp, MenuContext, MenuItemLike} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {PopoverProps} from '@blueprintjs/core';
+import {hoistCmp, type MenuContext, type MenuItemLike} from '@xh/hoist/core';
+import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';

@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
-import {createCopyHandler, CopyTextSpec} from './impl/CopyText';
+import {createCopyHandler, type CopyTextSpec} from './impl/CopyText';
 
 export interface ClipboardButtonProps extends ButtonProps, CopyTextSpec {}
 

@@ -7,7 +7,7 @@
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
-import {Intent, isMenuHeading, MenuHeading, TestSupportProps} from '../core';
+import {type Intent, isMenuHeading, type MenuHeading, type TestSupportProps} from '../core';
 import {StoreRecord} from './StoreRecord';
 import {Column, GridModel} from '../cmp/grid';
 
