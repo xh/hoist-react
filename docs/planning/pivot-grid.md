@@ -136,7 +136,7 @@ Because the pivot subtrees are separate from `dimensions`, nothing is concatenat
 `PivotQuery.dimensions` keeps `Query.dimensions`' exact existing meaning — the ordered levels of the
 visible row hierarchy.
 
-### The cell lattice
+### The cell structure
 
 Write `C(G, P)` for the cell at row-hierarchy node `G` and pivot path `P`. `G` ranges over every node
 of the row hierarchy, including the synthetic root when `includeRoot` is set, and any `BucketRow`.
@@ -182,7 +182,7 @@ against the phase 0 profiles, alongside the dense figure the prototype pays:
 | Wide          |        3.0M |          ~100k |  ~30× |
 | Pathological  |       11.1M |          ~104k | ~107× |
 
-A synthetic run of the lattice module confirms Typical (15.0k cells against the ~16k estimate) but
+A synthetic run of the structure module confirms Typical (15.0k cells against the ~16k estimate) but
 puts **Wide at ~205k, roughly 2× the estimate**. That run used uniformly random dimension values,
 which is the pessimistic bound — skew reduces the populated set — so the estimate may still hold for
 realistic data. Re-measure against the harness's own generator before treating either figure as
@@ -411,7 +411,7 @@ materialized only where populated and read `null` elsewhere.
   **But a group node must decompose on exactly one axis**, and `bucketRows` can currently violate
   that: with `includeLeaves` set it buckets leaves (`View.ts:458`), leaving the innermost aggregate
   with a mix of `LeafRow` and `BucketRow` children. A mixed node gives a cell two update routes into
-  the same parent and double counts — worked through in the lattice module's rejection message, and
+  the same parent and double counts — worked through in the structure module's rejection message, and
   it is a genuine miscount, not a conservative refusal. `PivotQuery` must reject
   `bucketSpecFn` + `includeLeaves` + non-empty `pivotDimensions` at construction.
 - `includeLeaves` / `provideLeaves` — supported and unchanged, which is a direct benefit of keeping
@@ -447,13 +447,13 @@ are presentation concerns and stay in the grid layer, which retires the prototyp
 `PivotField` / `PivotFieldSpec` (see the phase 3 cleanup item). `PivotValue` is replaced by
 `PivotPath`; the prototype's `cmp/pivotgrid` `PivotQuery` is replaced by the `data/cube` one.
 
-### Factoring: a pure lattice module under `PivotView`
+### Factoring: a pure structure module under `PivotView`
 
-The pivot combinatorics live in `data/cube/impl/PivotLattice.ts`, a module with **no runtime
+The pivot combinatorics live in `data/cube/impl/PivotStructure.ts`, a module with **no runtime
 framework dependency** — plain data and integer indices only. `PivotView` is the adapter that
 instantiates rows from its output and wires them into `View`'s lifecycle.
 
-The split is on stable-vs-churning, not just testability: the lattice math is finished once correct,
+The split is on stable-vs-churning, not just testability: the structure math is finished once correct,
 while the `View` integration will churn through the perf work. Two rules keep the boundary real
 rather than nominal:
 
@@ -464,7 +464,7 @@ rather than nominal:
   sharing item below is trying to claw back. Children are CSR-encoded (`childStart` / `childIdx`),
   not arrays per cell.
 
-Module owns path discovery, key naming, the `(groupIdx, pathIdx)` lattice, and the update routing.
+Module owns path discovery, key naming, the `(groupIdx, pathIdx)` cell structure, and the update routing.
 `PivotView` owns `PivotCellRow` instantiation, `_rowCache` reuse, aggregation, projection onto row
 data, and store loading.
 
@@ -480,8 +480,8 @@ reaches `XH` → `AppContainerModel` → the whole service layer, and Hoist's `@
 importing `View` is therefore browser-only, and no amount of module stubbing fixes the decorator
 mismatch.
 
-- **Unit tier** — `npx tsx data/cube/impl/PivotLattice.spec.ts`, a self-contained exit-coded driver
-  in the style of `mcp/data/*.spec.ts`. Asserts the lattice against `PivotReference`, a brute-force
+- **Unit tier** — `npx tsx data/cube/impl/PivotStructure.spec.ts`, a self-contained exit-coded driver
+  in the style of `mcp/data/*.spec.ts`. Asserts the structure against `PivotReference`, a brute-force
   oracle computing each cell's leaf set from first principles. Covers the populated set, the
   partition invariant down both axes, exactly-once propagation, path ordering, key injectivity, and
   both guards. Aggregation is covered here too: the `Aggregator` classes import standalone under
@@ -510,7 +510,7 @@ dimension value equal to the empty label must not be able to impersonate an empt
 with a length no real segment can produce rather than with a sentinel string. A NUL-byte sentinel
 does achieve this, but it makes the file binary to git and every diff of it unreviewable; do not.
 
-**Mutation-test any addition to either tier.** A green suite proves nothing on its own. The lattice
+**Mutation-test any addition to either tier.** A green suite proves nothing on its own. The structure
 suite was validated by breaking the implementation six ways; the one mutant it missed was
 semantically equivalent, and chasing it surfaced a load-bearing invariant that had no assertion. Each
 Toolbox assertion added since is validated by reverting the fix it was written for and confirming it
@@ -699,7 +699,7 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
 - [x] Brute-force reference pivot (`data/cube/impl/PivotReference.ts`), for test assertions only.
 - [x] Path discovery: sorted global path tree, `maxPivotPaths`, injective key escaping, and a path
       index stamped per record so cell generation partitions by index rather than by rebuilt strings.
-- [x] Lattice planning: the populated `(group, path)` set, CSR children, and the `parent` /
+- [x] Structure planning: the populated `(group, path)` set, CSR children, and the `parent` /
       `pivotParent` routes — group-axis decomposition above the innermost level, pivot-axis below it.
 - [x] Unit suite over both, mutation-tested. See [Verification vehicle](#verification-vehicle).
 - [x] `View` / `BaseRow` / `Query` changes per
@@ -726,7 +726,7 @@ Work to the [pivot data design](#pivot-data-design); it names the classes and me
       17× row-count difference (8.3 vs 7.6), which is why the inherited 30/50 split was retired.
 - [x] Aggregator coverage beyond `SUM` — `AverageStrict`, `SumStrict`, `Unique`, `ChildCount`, plus
       lenient controls. Unit tier green and mutation-tested (28 → 49 checks, 19/23 aggregator mutants
-      and 4/4 lattice mutants killed; the 4 survivors are documented equivalences). Toolbox tier green
+      and 4/4 structure mutants killed; the 4 survivors are documented equivalences). Toolbox tier green
       in the 262-check run.
 - [x] Heap gate dropped deliberately — see [acceptance criteria](#acceptance-criteria).
 - [x] The drill-profile tick stall was background-tab timer throttling, not GC thrash and not a pivot
@@ -1257,7 +1257,7 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       4. State: synced value column order/width, then persistence - which depends on the synced model
          for its path-independent representation, and on 1 for collapse state.
       5. `maxPivotPaths` fail-soft and `buildPivotValuePath`, both independent of the rest.
-- [ ] **Full code review of the changeset, and a walkthrough of `PivotView` and `PivotLattice` with
+- [ ] **Full code review of the changeset, and a walkthrough of `PivotView` and `PivotStructure` with
       John, before any doc work.** The docs are written from that shared understanding, not ahead of
       it — a README written off the design sections would document what was designed rather than what
       shipped. Sequenced after the day-1 build, since that work still changes the code.
@@ -1478,7 +1478,7 @@ to own dimension-pool disjointness and the empty-`valueFields` guard, both of wh
 hand-rolls.
 
 **Top-N plus `(other)` on the pivot axis.** Much cheaper to build than this section previously assumed:
-`PivotLattice` stamps `pathIdxOfRecord` at discovery (`PivotLattice.ts:236`) and everything below is
+`PivotStructure` stamps `pathIdxOfRecord` at discovery (`PivotStructure.ts:236`) and everything below is
 pure integer indices, so routing overflow records to one reserved index yields a bucket that genuinely
 *contains* the tail, with no change beneath discovery and the totals invariant intact.
 
@@ -1680,7 +1680,7 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
      indices and the getter body is cheaper.
    - The chicken-and-egg is avoidable rather than something the rebuild path must cover.
      `discoverPivotPaths` and `syncPaths` need only `_records.list` and `query.pivotDimensionNames`;
-     only `buildPivotLattice` needs the group tree. Move discovery **above** `super.generateRows()`
+     only `buildPivotStructure` needs the group tree. Move discovery **above** `super.generateRows()`
      in the `generateRows` override and the leaf class is correct before any leaf is minted.
 
    The rebuild cost is already paid at that moment: a cell-field change runs `syncStore` →
@@ -1701,7 +1701,7 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
    2026-09-15**, and it had a second half. `clearVacatedCells` now nulls `pivotParent` on the
    children of every cell it discards (`Cut the pivot update route when a cell is discarded`). The
    normal path was covered only by accident (`buildCellRows` reassigns `pivotParent` for the whole
-   new lattice); a generation that builds no cells reassigns nothing, and `RowCache` evicts orphaned
+   new structure); a generation that builds no cells reassigns nothing, and `RowCache` evicts orphaned
    parents only for the query changes `orphansParents` / `invalidatesParents` name — neither of
    which covers `includeRoot`.
 
@@ -1791,7 +1791,7 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
 12. ~~**Pivot diagnostics.**~~ **Landed 2026-09-15** as `PivotViewDiagnostics`, reached through a
     new `View.createDiagnostics` factory, with `xhName` threaded through `Cube.createPivotView`.
     `ViewDiagnostics` counts rows off `RowCache`, which does include cell
-    rows, but there is no pivot-specific readout — path count, cell count, lattice build time.
+    rows, but there is no pivot-specific readout — path count, cell count, structure build time.
     A `PivotViewDiagnostics extends ViewDiagnostics` would surface those in Inspector. Thread
     `xhName` through `Cube.createPivotView` at the same time.
 
@@ -1815,7 +1815,7 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
 The Toolbox `pivot-grid` branch has **not** been merged from Toolbox `develop`, and none of its 262
 checks or the benchmark have been re-run. Do that before trusting anything above. hoist-react has no
 node-side harness for framework classes — the decorator and SCSS imports make `tsx` a dead end for
-anything touching `HoistBase` — so the unit tier covers the pure lattice only and everything else is
+anything touching `HoistBase` — so the unit tier covers the pure structure module only and everything else is
 browser-tier by construction.
 
 Three assertions the rework specifically calls for, none of which exist yet:
@@ -2145,7 +2145,7 @@ only once the metric excludes `Store`-wide record diffing, which the phase 0 wor
 drill-down builds regress ~1.9×, traced to per-cell-row allocation rather than to aggregation.
 Phase 3 not started. Pick up at the two bolded phase 2 items, then phase 3.
 
-**2026-08-04 — Phase 2 lattice engine.** Landed `data/cube/impl/` — the pure lattice module, the
+**2026-08-04 — Phase 2 structure module.** Landed `data/cube/impl/` — the pure structure module, the
 brute-force oracle, and a mutation-tested unit suite. Two corrections to the plan: the correctness
 suite is now a [two-tier arrangement](#verification-vehicle) rather than Toolbox-only, since the
 pivot combinatorics factor out cleanly and `data/cube`'s unloadability outside a bundler turns out to
@@ -2200,7 +2200,7 @@ shape until that is measured on a quiet machine. Pick up at phase 3.
 
 **2026-08-05 — Phase 2 coverage closed and verified.** Every actionable phase 2 item is done; only
 retiring `PivotDataModel` remains, and it is blocked on phase 3. Unit tier 28 → 49 checks, Toolbox tier
-99 → **262**, both green, both mutation-tested for real (19/23 aggregator mutants, 4/4 lattice mutants,
+99 → **262**, both green, both mutation-tested for real (19/23 aggregator mutants, 4/4 structure mutants,
 and the pivot-dim mutant kills 21 checks). Benchmark re-verified over three runs; both gated profiles
 pass and the delta-tick gate is set at 15ms.
 

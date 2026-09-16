@@ -53,7 +53,7 @@ export interface PivotOp {
     /** Cell rows materialized across the whole row hierarchy. */
     cells: number;
 
-    /** Path discovery plus lattice and cell build, excluding base row generation. */
+    /** Path discovery plus structure planning and cell build, excluding base row generation. */
     elapsed: number;
 
     timestamp: number;

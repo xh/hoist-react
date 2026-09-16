@@ -9,11 +9,11 @@ import type {PlainObject} from '@xh/hoist/core';
 
 /**
  * Pure combinatorial core of the Cube pivot view: discovers the pivot path tree from a set of
- * records, then plans the lattice of `(group node, pivot path)` cells that `PivotView` materializes
+ * records, then plans the structure of `(group node, pivot path)` cells that `PivotView` materializes
  * as rows in the aggregation network.
  *
  * Deliberately free of any runtime framework dependency - plain data and integer indices only, so
- * it can be exercised directly under `npx tsx` (see `PivotLattice.spec.ts`) and reasoned about
+ * it can be exercised directly under `npx tsx` (see `PivotStructure.spec.ts`) and reasoned about
  * without `View`'s lifecycle machinery. Callers hold the mapping from index to row object.
  *
  * Everything is expressed over indices rather than objects to keep planning allocation-light: at
@@ -73,7 +73,7 @@ export interface PivotPathDiscoveryResult {
     maxDepth: number;
 }
 
-export interface PivotLatticeSpec {
+export interface PivotStructureSpec {
     groupCount: number;
     /**
      * Group-axis parent of each group node; -1 for a root node.
@@ -95,7 +95,7 @@ export interface PivotLatticeSpec {
     maxDepth: number;
 }
 
-export interface PivotLatticeResult {
+export interface PivotStructure {
     cellCount: number;
     cellGroup: Int32Array;
     cellPath: Int32Array;
@@ -260,13 +260,13 @@ export function pivotCellFieldName(
 }
 
 /**
- * Plan the cell lattice: which `(group, path)` cells are populated, what each one's children are,
+ * Plan the cell structure: which `(group, path)` cells are populated, what each one's children are,
  * and how updates route up the group and pivot axes.
  *
  * Every cell's children are a strict partition of its own leaf set, which is what makes every
  * existing Cube aggregator correct by construction down either axis.
  */
-export function buildPivotLattice(spec: PivotLatticeSpec): PivotLatticeResult {
+export function buildPivotStructure(spec: PivotStructureSpec): PivotStructure {
     const {
             groupCount,
             parentOfGroup,
@@ -298,7 +298,7 @@ export function buildPivotLattice(spec: PivotLatticeSpec): PivotLatticeResult {
     for (let g = 0; g < groupCount; g++) {
         if (hasGroupChild[g] && hasLeafChild[g]) {
             throw new Error(
-                `Pivot group node ${g} has both leaf and group children, which the pivot lattice ` +
+                `Pivot group node ${g} has both leaf and group children, which the pivot structure ` +
                     `cannot decompose. Bucketing within the pivot axis is not supported.`
             );
         }

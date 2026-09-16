@@ -59,7 +59,7 @@ export abstract class BaseRow implements ViewRow {
      * Second aggregation parent, used by pivot views to propagate up the pivot axis in addition to
      * the group axis. Null for every row in a plain View.
      *
-     * The two routes must reach disjoint sets of ancestors - see {@link PivotLatticeResult}.
+     * The two routes must reach disjoint sets of ancestors - see {@link PivotStructure}.
      */
     pivotParent: ParentRow = null;
     children: BaseRow[] = null;

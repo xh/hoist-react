@@ -58,7 +58,7 @@ export class PivotCellRow extends ParentRow {
         return this.view._cellComplexAggFields;
     }
 
-    // `parent` / `pivotParent` are assigned by PivotView from the lattice - a cell's children do not
+    // `parent` / `pivotParent` are assigned by PivotView from the structure - a cell's children do not
     // uniformly treat it as their group-axis parent, and claiming them here would corrupt both axes.
     protected override adoptChildren(children: BaseRow[]) {
         this.children = children;

@@ -11,15 +11,15 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {VIEW_ROW_DATA_FIELDS, ViewRowData} from './ViewRowData';
 import {
-    buildPivotLattice,
+    buildPivotStructure,
     CHILD_KIND_LEAF,
     discoverPivotPaths,
     PATH_DELIMITER,
     pivotCellFieldName,
-    type PivotLatticeResult,
+    type PivotStructure,
     type PivotPathDiscoveryResult,
     type PivotPathSpec
-} from './impl/PivotLattice';
+} from './impl/PivotStructure';
 import {PivotRowDataGenerator} from './impl/PivotRowDataGenerator';
 import {PivotViewDiagnostics} from './impl/PivotViewDiagnostics';
 import {CubeField} from './CubeField';
@@ -209,7 +209,7 @@ export class PivotView extends View {
      * Runs *before* `super.generateRows()` because the exposed-leaf class is built from the cell
      * fields and leaves are minted during that call. Discovery needs only the filtered records and
      * the pivot dimension names - never the row tree - so nothing forces it to wait. Only the
-     * lattice needs groups, and that stays in `generateCells`.
+     * structure needs groups, and that stays in `generateCells`.
      */
     private discoverPaths() {
         const {query} = this;
@@ -363,7 +363,7 @@ export class PivotView extends View {
             const pathIdx = _discovery.pathIdxOfRecord[i];
 
             // Stamped on every leaf, owned or not - this is what its cell-field getters read, so a
-            // leaf the lattice skips must not keep publishing a previous generation's column.
+            // leaf that lands in no cell must not keep publishing a previous generation's column.
             if (exposesLeaves) leaf.data._pivotPathIdx = pathIdx;
 
             const owner = groupIdxOf.get(leaf.parent);
@@ -374,7 +374,7 @@ export class PivotView extends View {
         }
         if (isEmpty(leafRows)) return this.clearCells();
 
-        const lattice = buildPivotLattice({
+        const structure = buildPivotStructure({
             groupCount: groups.length,
             parentOfGroup: Int32Array.from(parentOfGroup),
             innermost: Uint8Array.from(innermost),
@@ -386,7 +386,7 @@ export class PivotView extends View {
             maxDepth: _discovery.maxDepth
         });
 
-        this.buildCellRows(lattice, groups, leafRows);
+        this.buildCellRows(structure, groups, leafRows);
         this.clearVacatedCells(prevCells, new Set(this._cellRows));
         this._cellRows.forEach(cell => this.projectCell(cell));
     }
@@ -400,7 +400,7 @@ export class PivotView extends View {
      * where it reads as a real cell and breaks `total == sum of cells`.
      *
      * Retained children must also give up their `pivotParent`. `buildCellRows` reassigns it for every
-     * row in the new lattice, but a generation that produces no cells at all reassigns nothing - a
+     * row in the new structure, but a generation that produces no cells at all reassigns nothing - a
      * live leaf would keep routing ticks into a discarded cell, where `cellFieldNames` throws.
      * `RowCache` covers only the query-change cases; this bail can follow from data alone.
      *
@@ -505,13 +505,13 @@ export class PivotView extends View {
     /**
      * Instantiate cell rows bottom-up, then wire the two aggregation routes.
      *
-     * Cells come out of the lattice ordered by (group, path), and both parents of a cell sit at a
+     * Cells come out of the structure ordered by (group, path), and both parents of a cell sit at a
      * *lower* index than it does - so reverse order is a valid bottom-up build for both axes.
      */
-    private buildCellRows(lattice: PivotLatticeResult, groups: BaseRow[], leafRows: LeafRow[]) {
+    private buildCellRows(structure: PivotStructure, groups: BaseRow[], leafRows: LeafRow[]) {
         this.buildCellAggFields();
 
-        const {cellCount, cellGroup, cellPath, childStart, childIdx, cellChildKind} = lattice,
+        const {cellCount, cellGroup, cellPath, childStart, childIdx, cellChildKind} = structure,
             {_allPaths} = this,
             cellRows: PivotCellRow[] = new Array(cellCount);
 
@@ -541,14 +541,14 @@ export class PivotView extends View {
 
         for (let c = 0; c < cellCount; c++) {
             const row = cellRows[c],
-                parent = lattice.cellParent[c],
-                pivotParent = lattice.cellPivotParent[c];
+                parent = structure.cellParent[c],
+                pivotParent = structure.cellPivotParent[c];
             row.parent = parent >= 0 ? cellRows[parent] : null;
             row.pivotParent = pivotParent >= 0 ? cellRows[pivotParent] : null;
         }
 
         for (let l = 0; l < leafRows.length; l++) {
-            const cell = lattice.leafPivotParentCell[l];
+            const cell = structure.leafPivotParentCell[l];
             leafRows[l].pivotParent = cell >= 0 ? cellRows[cell] : null;
         }
 

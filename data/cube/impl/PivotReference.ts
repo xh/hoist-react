@@ -6,11 +6,11 @@
  */
 
 import type {PlainObject} from '@xh/hoist/core';
-import type {PivotLatticeSpec} from './PivotLattice';
+import type {PivotStructureSpec} from './PivotStructure';
 
 /**
- * Brute-force reference implementation of the pivot lattice, used only to assert the behavior of
- * {@link buildPivotLattice}. Deliberately naive - O(groups x paths x leaves) - so that its
+ * Brute-force reference implementation of the pivot structure, used only to assert the behavior of
+ * {@link buildPivotStructure}. Deliberately naive - O(groups x paths x leaves) - so that its
  * correctness is self-evident by inspection. Never used in production code paths.
  *
  * Kept out of `data/index.ts`: import via deep path from test drivers and the Toolbox harness.
@@ -86,10 +86,10 @@ export function buildReferenceGroupTree(
  * belongs to cell `(g, p)` iff its owning group is `g` or a descendant of `g`, and `p` is a prefix
  * of the leaf's own path. Keyed by `groupIdx * pathCount + pathIdx`, root path (0) included.
  *
- * This is the definition the lattice must reproduce - it encodes both which cells are populated
+ * This is the definition the structure must reproduce - it encodes both which cells are populated
  * and what each one must aggregate.
  */
-export function referenceLeafSets(spec: PivotLatticeSpec): Map<number, number[]> {
+export function referenceLeafSets(spec: PivotStructureSpec): Map<number, number[]> {
     const {groupCount, pathCount, parentOfGroup, leafOwnerGroup, leafPathIdx, pathParentIdx} = spec,
         leafCount = leafOwnerGroup.length,
         ret = new Map<number, number[]>();

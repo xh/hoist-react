@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 /**
- * Correctness suite for the pure pivot lattice engine. Run with:
- *   npx tsx data/cube/impl/PivotLattice.spec.ts
+ * Correctness suite for the pure pivot structure module. Run with:
+ *   npx tsx data/cube/impl/PivotStructure.spec.ts
  *
  * hoist-react has no general test framework configured, so (matching the mcp/data/*.spec.ts style)
  * this is a self-contained, exit-coded driver, exiting 1 on any failure.
@@ -14,7 +14,7 @@
  * Every scenario is checked against `PivotReference`, which computes each cell's leaf set from
  * first principles. Three properties are asserted per scenario:
  *
- *   1. Populated - the lattice materializes a cell exactly where the reference finds leaves.
+ *   1. Populated - the structure materializes a cell exactly where the reference finds leaves.
  *   2. Partition - each cell's children are a strict partition of its own leaf set, down both the
  *      group and pivot axes. This is what makes every Cube aggregator correct by construction.
  *   3. Exactly-once - a leaf change credits each affected group row and cell precisely one time,
@@ -23,7 +23,7 @@
  * The `Aggregator` classes carry no decorators and only type-level framework imports, so they load
  * standalone here too. They are covered over duck-typed rows: `aggregate` / `replace` semantics per
  * aggregator, the same two checked against an independent oracle across a transition matrix, and
- * every aggregator run bottom-up over the lattice's own children to prove property 2 is sufficient.
+ * every aggregator run bottom-up over the structure's own children to prove property 2 is sufficient.
  * Routing those updates through real `BaseRow` instances needs a browser and lives in the Toolbox
  * tier.
  */
@@ -36,14 +36,14 @@ import {SumAggregator} from '../aggregate/SumAggregator';
 import {SumStrictAggregator} from '../aggregate/SumStrictAggregator';
 import {UniqueAggregator} from '../aggregate/UniqueAggregator';
 import {
-    buildPivotLattice,
+    buildPivotStructure,
     CHILD_KIND_LEAF,
     discoverPivotPaths,
     pivotCellFieldName,
     PATH_DELIMITER,
-    type PivotLatticeResult,
-    type PivotLatticeSpec
-} from './PivotLattice';
+    type PivotStructure,
+    type PivotStructureSpec
+} from './PivotStructure';
 import {
     buildReferenceGroupTree,
     groupAncestry,
@@ -238,8 +238,8 @@ const SCENARIOS: Scenario[] = [
 //------------------
 interface Built {
     tree: ReferenceGroupTree;
-    spec: PivotLatticeSpec;
-    lattice: PivotLatticeResult;
+    spec: PivotStructureSpec;
+    structure: PivotStructure;
     paths: ReturnType<typeof discoverPivotPaths>;
 }
 
@@ -247,7 +247,7 @@ function build(s: Scenario): Built {
     const paths = discoverPivotPaths(s.records, s.pivotDims),
         tree = buildReferenceGroupTree(s.records, s.groupDims);
 
-    const spec: PivotLatticeSpec = {
+    const spec: PivotStructureSpec = {
         groupCount: tree.groupCount,
         parentOfGroup: tree.parentOfGroup,
         innermost: tree.innermost,
@@ -259,14 +259,11 @@ function build(s: Scenario): Built {
         maxDepth: paths.maxDepth
     };
 
-    return {tree, spec, lattice: buildPivotLattice(spec), paths};
+    return {tree, spec, structure: buildPivotStructure(spec), paths};
 }
 
 /** Leaf set implied by a cell's children, plus any leaf double-counted across them. */
-function derivedLeafSet(
-    lat: PivotLatticeResult,
-    cell: number
-): {leaves: number[]; dupes: number[]} {
+function derivedLeafSet(lat: PivotStructure, cell: number): {leaves: number[]; dupes: number[]} {
     const seen = new Set<number>(),
         dupes: number[] = [];
 
@@ -293,7 +290,7 @@ function derivedLeafSet(
 //------------------
 for (const s of SCENARIOS) {
     const errs: string[] = [];
-    const {spec, lattice, paths, tree} = build(s);
+    const {spec, structure, paths, tree} = build(s);
     const ref = referenceLeafSets(spec);
 
     // Every populated non-root (group, path) pair must have exactly one cell, and no others.
@@ -303,8 +300,8 @@ for (const s of SCENARIOS) {
     });
 
     const gotKeys = new Set<number>();
-    for (let c = 0; c < lattice.cellCount; c++) {
-        const key = lattice.cellGroup[c] * spec.pathCount + lattice.cellPath[c];
+    for (let c = 0; c < structure.cellCount; c++) {
+        const key = structure.cellGroup[c] * spec.pathCount + structure.cellPath[c];
         if (gotKeys.has(key)) errs.push(`duplicate cell for key ${key}`);
         gotKeys.add(key);
     }
@@ -323,26 +320,26 @@ for (const s of SCENARIOS) {
     });
 
     // Each cell's children must strictly partition its reference leaf set.
-    for (let c = 0; c < lattice.cellCount && errs.length < 10; c++) {
-        const key = lattice.cellGroup[c] * spec.pathCount + lattice.cellPath[c],
+    for (let c = 0; c < structure.cellCount && errs.length < 10; c++) {
+        const key = structure.cellGroup[c] * spec.pathCount + structure.cellPath[c],
             expected = ref.get(key) ?? [],
-            {leaves, dupes} = derivedLeafSet(lattice, c);
+            {leaves, dupes} = derivedLeafSet(structure, c);
 
         if (dupes.length) {
             errs.push(`cell ${c} double-counts leaves [${dupes.slice(0, 5)}]`);
         }
         if (!arrEq(leaves, expected)) {
             errs.push(
-                `cell ${c} (group ${lattice.cellGroup[c]}, path "${
-                    paths.paths[lattice.cellPath[c]].key
+                `cell ${c} (group ${structure.cellGroup[c]}, path "${
+                    paths.paths[structure.cellPath[c]].key
                 }") leaves [${leaves.slice(0, 8)}] != reference [${expected.slice(0, 8)}]`
             );
         }
     }
 
     // `C(G, rootPath)` *is* G, never a cell of its own. The pivot-axis depth guard relies on this.
-    for (let c = 0; c < lattice.cellCount; c++) {
-        if (lattice.cellPath[c] === 0) {
+    for (let c = 0; c < structure.cellCount; c++) {
+        if (structure.cellPath[c] === 0) {
             errs.push(`cell ${c} materializes the root path, which must be the group row itself`);
             break;
         }
@@ -356,7 +353,7 @@ for (const s of SCENARIOS) {
 //------------------
 for (const s of SCENARIOS) {
     const errs: string[] = [];
-    const {spec, lattice, paths} = build(s);
+    const {spec, structure, paths} = build(s);
 
     for (let leaf = 0; leaf < spec.leafOwnerGroup.length && errs.length < 6; leaf++) {
         const groupHits = new Map<number, number>(),
@@ -371,10 +368,10 @@ for (const s of SCENARIOS) {
         const visitCell = (c: number) => {
             if (c < 0) return;
             cellHits.set(c, (cellHits.get(c) ?? 0) + 1);
-            visitCell(lattice.cellParent[c]);
-            visitCell(lattice.cellPivotParent[c]);
+            visitCell(structure.cellParent[c]);
+            visitCell(structure.cellPivotParent[c]);
         };
-        visitCell(lattice.leafPivotParentCell[leaf]);
+        visitCell(structure.leafPivotParentCell[leaf]);
 
         // Expected: every ancestor group once; every (ancestor group, non-root path prefix) once.
         const ancestors = groupAncestry(spec.leafOwnerGroup[leaf], spec.parentOfGroup),
@@ -397,7 +394,7 @@ for (const s of SCENARIOS) {
         const expectCells = new Set<number>();
         ancestors.forEach(g =>
             prefixes.forEach(p => {
-                const c = lattice.cellOfKey.get(g * spec.pathCount + p);
+                const c = structure.cellOfKey.get(g * spec.pathCount + p);
                 if (c == null) {
                     errs.push(`leaf ${leaf}: no cell for group ${g} path "${paths.paths[p].key}"`);
                 } else {
@@ -409,8 +406,8 @@ for (const s of SCENARIOS) {
         expectCells.forEach(c => {
             if (cellHits.get(c) !== 1) {
                 errs.push(
-                    `leaf ${leaf}: cell ${c} (group ${lattice.cellGroup[c]}, path "${
-                        paths.paths[lattice.cellPath[c]].key
+                    `leaf ${leaf}: cell ${c} (group ${structure.cellGroup[c]}, path "${
+                        paths.paths[structure.cellPath[c]].key
                     }") credited ${cellHits.get(c) ?? 0}x, expected 1`
                 );
             }
@@ -533,7 +530,7 @@ expectThrows(
     'mixed leaf and group children are rejected',
     () => {
         // Group 0 has a group child (1) and, illegally, leaves of its own.
-        buildPivotLattice({
+        buildPivotStructure({
             groupCount: 2,
             parentOfGroup: Int32Array.from([-1, 0]),
             innermost: Uint8Array.from([1, 1]),
@@ -553,14 +550,14 @@ expectThrows(
 //------------------
 {
     const errs: string[] = [],
-        {lattice, paths} = build({
+        {structure, paths} = build({
             name: 'none',
             groupDims: ['fund'],
             pivotDims: [],
             records: BASE
         });
 
-    if (lattice.cellCount !== 0) errs.push(`expected 0 cells, got ${lattice.cellCount}`);
+    if (structure.cellCount !== 0) errs.push(`expected 0 cells, got ${structure.cellCount}`);
     if (paths.paths.length !== 1) errs.push(`expected root path only, got ${paths.paths.length}`);
     if (paths.maxDepth !== 0) errs.push(`expected maxDepth 0, got ${paths.maxDepth}`);
     check('empty pivotDimensions degenerates to zero cells', errs);
@@ -568,9 +565,14 @@ expectThrows(
 
 {
     const errs: string[] = [],
-        {lattice} = build({name: 'none', groupDims: ['fund'], pivotDims: ['region'], records: []});
+        {structure} = build({
+            name: 'none',
+            groupDims: ['fund'],
+            pivotDims: ['region'],
+            records: []
+        });
 
-    if (lattice.cellCount !== 0) errs.push(`expected 0 cells, got ${lattice.cellCount}`);
+    if (structure.cellCount !== 0) errs.push(`expected 0 cells, got ${structure.cellCount}`);
     check('no records yields zero cells', errs);
 }
 
@@ -984,7 +986,7 @@ function nestedReplaceCase(
 }
 
 //------------------
-// Aggregation over the lattice - property 2 is sufficient for every aggregator
+// Aggregation over the structure - property 2 is sufficient for every aggregator
 //------------------
 /** Deterministic per-leaf values: `v` carries nulls, `u` repeats per path so some cells collapse. */
 function valuesFor(built: Built, field: string): any[] {
@@ -1001,16 +1003,21 @@ function valuesFor(built: Built, field: string): any[] {
     return ret;
 }
 
-interface LatticeAgg {
+interface StructureAgg {
     cellRows: AggRow[];
     groupRows: AggRow[];
     childGroupsOf: number[][];
     leavesOf: number[][];
 }
 
-/** Run `agg` bottom-up over the lattice's own children - every cell, plus every group row. */
-function aggregateLattice(agg: Aggregator, built: Built, vals: any[], field: string): LatticeAgg {
-    const {spec, lattice} = built,
+/** Run `agg` bottom-up over the structure's own children - every cell, plus every group row. */
+function aggregateStructure(
+    agg: Aggregator,
+    built: Built,
+    vals: any[],
+    field: string
+): StructureAgg {
+    const {spec, structure} = built,
         {groupCount, parentOfGroup, leafOwnerGroup} = spec,
         leafRows = vals.map(v => leafOf(v, field)),
         childGroupsOf: number[][] = Array.from({length: groupCount}, () => []),
@@ -1023,12 +1030,14 @@ function aggregateLattice(agg: Aggregator, built: Built, vals: any[], field: str
 
     // Children always carry a higher index than their parent, down both axes - so descending index
     // is a valid bottom-up walk for cells and for groups alike.
-    const cellRows: AggRow[] = new Array(lattice.cellCount);
-    for (let c = lattice.cellCount - 1; c >= 0; c--) {
-        const isLeafKind = lattice.cellChildKind[c] === CHILD_KIND_LEAF,
+    const cellRows: AggRow[] = new Array(structure.cellCount);
+    for (let c = structure.cellCount - 1; c >= 0; c--) {
+        const isLeafKind = structure.cellChildKind[c] === CHILD_KIND_LEAF,
             kids: AggRow[] = [];
-        for (let i = lattice.childStart[c]; i < lattice.childStart[c + 1]; i++) {
-            kids.push(isLeafKind ? leafRows[lattice.childIdx[i]] : cellRows[lattice.childIdx[i]]);
+        for (let i = structure.childStart[c]; i < structure.childStart[c + 1]; i++) {
+            kids.push(
+                isLeafKind ? leafRows[structure.childIdx[i]] : cellRows[structure.childIdx[i]]
+            );
         }
         cellRows[c] = aggOf(agg, kids, field);
     }
@@ -1047,7 +1056,7 @@ function aggregateLattice(agg: Aggregator, built: Built, vals: any[], field: str
 for (const s of SCENARIOS) {
     const errs: string[] = [],
         built = build(s),
-        {spec, lattice} = built,
+        {spec, structure} = built,
         ref = referenceLeafSets(spec);
 
     for (const [agg, field] of [
@@ -1060,7 +1069,7 @@ for (const s of SCENARIOS) {
         const name = AGG_NAME.get(agg),
             vals = valuesFor(built, field),
             oracle = ORACLE.get(agg),
-            {cellRows, groupRows} = aggregateLattice(agg, built, vals, field),
+            {cellRows, groupRows} = aggregateStructure(agg, built, vals, field),
             want = (leaves: number[]) => oracle(leaves.map(l => vals[l]));
 
         for (let g = 0; g < spec.groupCount; g++) {
@@ -1071,19 +1080,19 @@ for (const s of SCENARIOS) {
                 errs.push(`${name} group row ${g}: ${got} != ${want(leaves)}`);
             }
         }
-        for (let c = 0; c < lattice.cellCount; c++) {
-            const leaves = ref.get(lattice.cellGroup[c] * spec.pathCount + lattice.cellPath[c]),
+        for (let c = 0; c < structure.cellCount; c++) {
+            const leaves = ref.get(structure.cellGroup[c] * spec.pathCount + structure.cellPath[c]),
                 got = cellRows[c].data[field];
             if (!valEq(got, want(leaves))) {
                 errs.push(
-                    `${name} cell ${c} (group ${lattice.cellGroup[c]}, path "${
-                        built.paths.paths[lattice.cellPath[c]].key
+                    `${name} cell ${c} (group ${structure.cellGroup[c]}, path "${
+                        built.paths.paths[structure.cellPath[c]].key
                     }"): ${got} != ${want(leaves)}`
                 );
             }
         }
     }
-    check(`aggregation composes over the lattice: ${s.name}`, capped(errs));
+    check(`aggregation composes over the structure: ${s.name}`, capped(errs));
 }
 
 //------------------
@@ -1095,7 +1104,7 @@ for (const s of SCENARIOS) {
 
     for (const s of SCENARIOS) {
         const built = build(s),
-            {spec, lattice} = built,
+            {spec, structure} = built,
             {
                 groupCount,
                 pathCount,
@@ -1107,7 +1116,7 @@ for (const s of SCENARIOS) {
             } = spec,
             ref = referenceLeafSets(spec),
             vals = valuesFor(built, VF),
-            {cellRows, groupRows, childGroupsOf, leavesOf} = aggregateLattice(
+            {cellRows, groupRows, childGroupsOf, leavesOf} = aggregateStructure(
                 CHILD_COUNT,
                 built,
                 vals,
@@ -1126,12 +1135,12 @@ for (const s of SCENARIOS) {
             if (got !== want) errs.push(`${s.name}: group row ${g}: ${got} != ${want}`);
         }
 
-        for (let c = 0; c < lattice.cellCount; c++) {
-            const g = lattice.cellGroup[c],
-                p = lattice.cellPath[c],
+        for (let c = 0; c < structure.cellCount; c++) {
+            const g = structure.cellGroup[c],
+                p = structure.cellPath[c],
                 ownsLeaves = leavesOf[g].length > 0;
 
-            // Derived from the reference rather than from the lattice's own CSR counts.
+            // Derived from the reference rather than from the structure's own CSR counts.
             let want: number;
             if (!ownsLeaves) {
                 want = childGroupsOf[g].filter(cg => ref.has(cg * pathCount + p)).length;
