@@ -101,7 +101,7 @@ export class PivotView extends View {
     declare protected _syncedCellFields: WeakMap<Store, PivotCellField[]>;
 
     // Aggregation field lists for cell rows, in the shape View maintains per depth for group rows -
-    // see PivotCellRow. Derived on each build, as `updateQuery` can change `valueFields`.
+    // see PivotCellRow. Rebuilt with the base indices, as `updateQuery` can change `valueFields`.
     declare _cellAggFields: CubeField[];
     declare _cellAggFieldNames: Set<string>;
     declare _cellCanAggregateFnFields: CubeField[];
@@ -173,6 +173,11 @@ export class PivotView extends View {
 
     private get pivotRowDataGenerator(): PivotRowDataGenerator {
         return this._rowDataGenerator as PivotRowDataGenerator;
+    }
+
+    protected override buildIndices() {
+        super.buildIndices();
+        this.buildCellAggFields();
     }
 
     /**
@@ -489,8 +494,6 @@ export class PivotView extends View {
      * *lower* index than it does - so reverse order is a valid bottom-up build for both axes.
      */
     private buildCellRows(structure: PivotStructure, groups: BaseRow[], leafRows: LeafRow[]) {
-        this.buildCellAggFields();
-
         const {cellCount, cellGroup, cellPath, childStart, childIdx, cellChildKind} = structure,
             {_allPaths} = this,
             cellRows: PivotCellRow[] = new Array(cellCount);

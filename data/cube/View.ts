@@ -374,7 +374,8 @@ export class View
         return new ViewDiagnostics(this);
     }
 
-    private buildIndices() {
+    /** Derive the per-query lookup tables. Runs at construction and on every `updateQuery`. */
+    protected buildIndices() {
         this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
         this._structuralDimNames = this.getStructuralDimensions().map(it => it.name);
 
