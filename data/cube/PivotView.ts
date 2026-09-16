@@ -97,6 +97,8 @@ export class PivotView extends View {
     /** This generation's path discovery, run ahead of row generation - see `discoverPaths`. */
     declare protected _discovery: PivotPathDiscoveryResult;
     declare protected _cellRows: PivotCellRow[];
+    /** Time spent in `beforeGenerateRows`, carried to the diagnostics note in `afterGenerateRows`. */
+    declare private _discoveryElapsed: number;
     /** Cell fields last declared on each store, by identity - the structural-change signal. */
     declare protected _syncedCellFields: WeakMap<Store, PivotCellField[]>;
 
@@ -190,29 +192,29 @@ export class PivotView extends View {
         return ret;
     }
 
-    protected override generateRows() {
+    protected override beforeGenerateRows() {
         const start = performance.now();
         this.discoverPaths();
-        const discovered = performance.now();
+        this._discoveryElapsed = performance.now() - start;
+    }
 
-        super.generateRows();
-
-        const cellStart = performance.now();
+    protected override afterGenerateRows() {
+        const start = performance.now();
         this.generateCells(this._records.list);
 
         // Pivot work alone - base row generation is already reported by the op it ran under.
         (this.diagnostics as PivotViewDiagnostics).notePivot({
             paths: this._allPaths?.length ?? 0,
             cells: this._cellRows?.length ?? 0,
-            elapsed: discovered - start + (performance.now() - cellStart)
+            elapsed: this._discoveryElapsed + (performance.now() - start)
         });
     }
 
     /**
      * Discover the pivot path tree and publish the cell fields it implies, ahead of row generation.
      *
-     * Runs *before* `super.generateRows()` because the exposed-leaf class is built from the cell
-     * fields and leaves are minted during that call. Discovery needs only the filtered records and
+     * Runs *before* the rows are generated because the exposed-leaf class is built from the cell
+     * fields and leaves are minted during that pass. Discovery needs only the filtered records and
      * the pivot dimension names - never the row tree - so nothing forces it to wait. Only the
      * structure needs groups, and that stays in `generateCells`.
      */

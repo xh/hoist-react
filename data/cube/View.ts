@@ -418,10 +418,12 @@ export class View
     protected fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {
         this.filterRecords();
         this.createAggregationContext();
+        this.beforeGenerateRows();
         this.generateRows();
-        // Closed here, not inside generateRows - a subclass generating further rows in its
-        // override must land inside the generation, or its rows are uncounted and the sweep sees
-        // the cache as having outgrown a live count that never included them.
+        this.afterGenerateRows();
+        // Closed here, after the hook - rows a subclass generates there must land inside the
+        // generation, or they are uncounted and the sweep sees the cache as having outgrown a live
+        // count that never included them.
         this._rowCache.endGeneration();
         this.loadStores();
         this.updateResults();
@@ -510,8 +512,21 @@ export class View
         };
     }
 
+    /**
+     * Hook for a subclass to prepare for a full row generation, with `_records` filtered and the
+     * aggregation context current but no rows yet built - e.g. to derive anything the row data
+     * shapes depend on.
+     */
+    protected beforeGenerateRows() {}
+
+    /**
+     * Hook for a subclass to extend the generated network - `_rootRows`, `_leafMap` and `_rowDatas`
+     * are current, and the row cache's generation is still open.
+     */
+    protected afterGenerateRows() {}
+
     // Generate a new full data representation from the filtered records
-    protected generateRows() {
+    private generateRows() {
         const {query} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
