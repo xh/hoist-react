@@ -68,6 +68,7 @@ export interface PivotQueryConfig extends QueryConfig {
  */
 export class PivotQuery extends Query {
     readonly pivotDimensions: CubeField[];
+    readonly pivotDimensionNames: string[];
     readonly valueFields: CubeField[];
     readonly emptyPathLabel: string;
     readonly excludeEmptyPivotValues: boolean;
@@ -96,6 +97,7 @@ export class PivotQuery extends Query {
         } = config;
 
         this.pivotDimensions = this.parsePivotDimensions(pivotDimensions);
+        this.pivotDimensionNames = this.pivotDimensions.map(it => it.name);
         this.valueFields = this.parseValueFields(valueFields);
         this.emptyPathLabel = emptyPathLabel;
         this.excludeEmptyPivotValues = excludeEmptyPivotValues;
@@ -106,10 +108,6 @@ export class PivotQuery extends Query {
 
     get isPivoted(): boolean {
         return !isEmpty(this.pivotDimensions);
-    }
-
-    get pivotDimensionNames(): string[] {
-        return this.pivotDimensions.map(it => it.name);
     }
 
     override equalsExcludingFilter(other: PivotQuery): boolean {
