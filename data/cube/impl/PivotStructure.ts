@@ -114,7 +114,7 @@ export interface PivotStructure {
     childIdx: Int32Array;
     /** Per leaf, the cell it feeds - `C(G, fullPath)`; -1 when not pivoting. */
     leafPivotParentCell: Int32Array;
-    /** Maps `groupIdx * pathCount + pathIdx` to a cell index. */
+    /** Maps `groupIdx * pathCount + pathIdx` to a cell index. Retained for the reference spec. */
     cellOfKey: Map<number, number>;
 }
 

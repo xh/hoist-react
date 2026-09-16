@@ -145,11 +145,10 @@ export class PivotView extends View {
         });
 
         // Run `parseStores` either way - it installs the row digest and rejects a conflicting one,
-        // and an unconnected store still loads from this view. Adopt the result only when
-        // connecting; without the digest it would fall back to per-field value comparison, which a
-        // pivot store pays for across every cell field.
-        const stores = this.parseStores([...this.stores, store]);
-        if (connect) this.stores = stores;
+        // and an unconnected store still loads from this view. Without the digest it would fall
+        // back to per-field value comparison, which a pivot store pays for across every cell field.
+        const [parsed] = this.parseStores(store);
+        if (connect) this.stores = [...this.stores, parsed];
 
         this.syncStore(store);
         this.loadStore(store);
