@@ -17,19 +17,28 @@ import {
 import {clone, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
+export interface MenuDefaults {
+    /**
+     * Milliseconds a submenu stays open after the pointer leaves its parent item. Default 300.
+     *
+     * Blueprint's `MenuItem` hardcodes this to 0, so a submenu closes the moment the pointer
+     * leaves the parent item's row. A diagonal move toward an entry lower in the submenu then
+     * crosses a sibling item and dismisses the submenu, which is the standard failure of
+     * hover-driven submenus. Hoist restores Blueprint's own `Popover` default of 300.
+     *
+     * Raise it to make a diagonal easier, at the cost of a submenu that lingers longer after a
+     * deliberate move away. Set 0 to restore the Blueprint behavior.
+     */
+    submenuHoverCloseDelay?: number;
+}
+
 /**
- * Popover defaults for every Hoist submenu.
- *
- * Blueprint's `MenuItem` hardcodes `hoverCloseDelay: 0`, so a submenu closes the moment the
- * pointer leaves the parent item's row. That makes a diagonal move toward an entry lower in the
- * submenu dismiss it, which is the standard failure of hover-driven submenus. Blueprint's own
- * `Popover` default is 300ms, and caller props win over the `MenuItem` value, so Hoist restores it.
- *
+ * Backs {@link Menu.defaults}. Held here so that every caller of `parseMenuItems` reads the same
+ * object, including the components that do not render `Menu` themselves.
  * @internal
  */
-export const SUBMENU_POPOVER_DEFAULTS: MenuItemProps['popoverProps'] = {
-    hoverCloseDelay: 300,
-    openOnTargetFocus: false
+export const MENU_DEFAULTS: MenuDefaults = {
+    submenuHoverCloseDelay: 300
 };
 
 export interface ParseMenuItemsOptions {
@@ -37,9 +46,9 @@ export interface ParseMenuItemsOptions {
     context?: MenuContext;
 
     /**
-     * Props for the popover that hosts a submenu, merged over {@link SUBMENU_POPOVER_DEFAULTS}.
-     * A menu anchored at the cursor adds `{usePortal: true}`, because its submenus mis-position
-     * without a portal.
+     * Props for the popover that hosts a submenu, merged over the Hoist defaults. A menu
+     * anchored at the cursor adds `{usePortal: true}`, because its submenus mis-position without
+     * a portal.
      */
     submenuPopoverProps?: MenuItemProps['popoverProps'];
 }
@@ -59,7 +68,12 @@ export function parseMenuItems(
     opts: ParseMenuItemsOptions = {}
 ): ReactNode[] {
     const {context, submenuPopoverProps} = opts;
-    const popoverProps = {...SUBMENU_POPOVER_DEFAULTS, ...submenuPopoverProps};
+    // Read at call time, so an app that sets `Menu.defaults` at bootstrap takes effect.
+    const popoverProps = {
+        hoverCloseDelay: MENU_DEFAULTS.submenuHoverCloseDelay,
+        openOnTargetFocus: false,
+        ...submenuPopoverProps
+    };
 
     items = items.map(item => {
         if (isMenuHeading(item)) return resolveMenuHeading(item, context);

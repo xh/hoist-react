@@ -81,11 +81,9 @@
 * Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.
-* Fixed desktop submenus closing the moment the pointer left the parent item. A diagonal move
-  toward an entry lower in an open submenu crosses a sibling item, which dismissed the submenu
-  under the cursor. Blueprint's `MenuItem` hardcodes `hoverCloseDelay: 0`, so Hoist now restores
-  Blueprint's own 300ms default for every submenu it renders. Note this does not reach grid
-  context menus, which ag-Grid renders with its own fixed 80ms delay.
+* Fixed desktop submenus closing as soon as the pointer left the parent item, which dismissed them
+  mid-diagonal. Tune with `Menu.defaults.submenuHoverCloseDelay`. Does not apply to grid context
+  menus, which ag-Grid renders itself.
 * Fixed `ClipboardMenuItem` misaligning with the items around it. It rendered a `ClipboardButton`
   styled to look like a menu item, so it did not inherit menu item padding or icon metrics. It now
   renders a true menu item, and shares its copy behavior with `ClipboardButton`.

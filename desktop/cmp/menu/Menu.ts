@@ -8,7 +8,7 @@ import {hoistCmp, HoistProps, MenuContext, MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
-import {parseMenuItems} from './impl/MenuItems';
+import {MENU_DEFAULTS, MenuDefaults, parseMenuItems} from './impl/MenuItems';
 
 export interface MenuProps extends HoistProps {
     /** Items to display. */
@@ -29,9 +29,10 @@ export interface MenuProps extends HoistProps {
  * This component accepts only the base `'-'` separator token. `Grid` and `Chart` carry richer
  * token vocabularies, which they resolve through their own menu APIs.
  */
-export const [Menu, menu] = hoistCmp.withFactory<MenuProps>({
+export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
     displayName: 'Menu',
     className: 'xh-menu',
+    defaults: MENU_DEFAULTS,
     memo: false,
     model: false,
     observer: false,
@@ -41,3 +42,5 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps>({
         return isEmpty(items) ? null : bpMenu({className, items});
     }
 });
+
+export type {MenuDefaults};
