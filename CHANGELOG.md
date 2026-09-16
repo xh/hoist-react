@@ -72,13 +72,9 @@
   derived from their children's published values alone - e.g. a weighted average - compose from
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
-* Single-line text inputs - `TextInput` (desktop + mobile) and mobile `SearchInput` - now trim
-  leading and trailing whitespace from their value, dropping it as the value is committed to any
-  bound model and reported to `onChange` / `onCommit`. A `TextInput` whose value trims away to
-  nothing commits null, as when cleared.
-    * Pass the new `trimWhitespace: false` prop to preserve whitespace exactly as entered.
-      `TextInput`s with `type: 'password'` do not trim by default, and `TextArea`, `CodeInput` and
-      `JsonInput` are unaffected.
+* `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
+  their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
+  prop to opt out - `password` type inputs do not trim by default.
 
 ### 🐞 Bug Fixes
 
