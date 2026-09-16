@@ -64,16 +64,6 @@ export abstract class BaseRow implements ViewRow {
     pivotParent: ParentRow = null;
     children: BaseRow[] = null;
 
-    /**
-     * Cell field names a {@link PivotView} last projected onto this {@link PivotCellRow}'s owning
-     * group row. Retained so a later generation writing fewer of them can null what it no longer
-     * covers. Null on every other row, in a pivot View or a plain one - an exposed leaf reads its own
-     * cells through prototype getters and so has nothing to clear.
-     *
-     * @internal
-     */
-    projectedCellNames: string[] = null;
-
     get isLeaf() {
         return false;
     }

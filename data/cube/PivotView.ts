@@ -661,7 +661,7 @@ function arraysEqual(a: string[], b: string[]): boolean {
  * common path.
  */
 function clearCellSlots(
-    row: BaseRow,
+    row: PivotCellRow,
     data: PlainObject,
     names: string[],
     changedFields?: Set<string>

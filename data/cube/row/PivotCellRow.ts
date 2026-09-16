@@ -35,6 +35,13 @@ export class PivotCellRow extends ParentRow {
     ownerRow: BaseRow;
     path: PivotPath;
 
+    /**
+     * Cell field names last projected onto `ownerRow`, so a later generation writing fewer of them
+     * can null what it no longer covers. Exposed leaves need no equivalent - they read their own
+     * cells through prototype getters.
+     */
+    projectedCellNames: string[] = null;
+
     protected get dimOrBucketName(): string {
         return this.path.dimension?.name;
     }
