@@ -229,7 +229,9 @@ export class PivotView extends View {
             this.clearCells();
         }
 
-        this.pivotRowDataGenerator.onCellFieldsChange();
+        if (this.pivotRowDataGenerator.onCellFieldsChange()) {
+            this._rowCache.invalidateExposedLeaves();
+        }
     }
 
     protected override createResult(): PivotViewResult {

@@ -53,20 +53,20 @@ export class PivotRowDataGenerator extends RowDataGenerator {
     }
 
     /**
-     * Rebuild the exposed-leaf class if the cell field set has moved.
+     * Rebuild the exposed-leaf class if the cell field set has moved, returning true if it did.
      *
      * `PivotView` calls this once a generation's pivot structure is known and *before* any leaf is
-     * minted, so the class never lags the cells it has to describe. Cached leaves are dropped at the
-     * same moment - their data was built against the outgoing class.
+     * minted, so the class never lags the cells it has to describe - and drops its cached leaves on
+     * a true, as their data was built against the outgoing class.
      */
-    onCellFieldsChange() {
-        if (!this.view.exposesLeaves) return;
+    onCellFieldsChange(): boolean {
+        if (!this.view.exposesLeaves) return false;
         if (this.cellFieldNames && arraysEqual(this.cellFieldNames, this.cellFieldSignature())) {
-            return;
+            return false;
         }
 
         this.init();
-        this.view._rowCache.invalidateExposedLeaves();
+        return true;
     }
 
     //------------------
