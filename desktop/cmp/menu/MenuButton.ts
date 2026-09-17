@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PopoverProps} from '@blueprintjs/core';
-import {hoistCmp, type MenuContext, type MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, type MenuContext, type MenuItemLike, type Thunkable} from '@xh/hoist/core';
 import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -13,11 +13,14 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {menu} from './Menu';
 
 export interface MenuButtonProps extends ButtonProps {
-    /** Items to display in the menu. */
-    menuItems?: MenuItemLike[];
+    /** Items to display, or a function producing them each time the menu opens. */
+    menuItems?: Thunkable<MenuItemLike[]>;
 
-    /** Contextual data passed to each item's `actionFn` and `prepareFn`. */
-    context?: MenuContext;
+    /**
+     * Contextual data passed to each item's `actionFn` and `prepareFn`, or a function producing
+     * it each time the menu opens.
+     */
+    context?: Thunkable<MenuContext>;
 
     /** Css class name for the menu element itself. */
     menuClassName?: string;
