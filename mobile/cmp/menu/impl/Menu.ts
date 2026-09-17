@@ -42,7 +42,7 @@ export const menu = hoistCmp.factory({
     className: 'xh-menu',
 
     render({menuItems, context, onDismiss, title, ...props}, ref) {
-        const impl = useLocalModel(LocalMenuModel),
+        const impl = useLocalModel(MenuLocalModel),
             items = impl.parseMenuItems(menuItems, context, onDismiss);
 
         useEffect(() => {
@@ -67,7 +67,7 @@ export const menu = hoistCmp.factory({
     }
 });
 
-class LocalMenuModel extends HoistModel {
+class MenuLocalModel extends HoistModel {
     override xhImpl = true;
 
     @bindable pressedIdx: number;
