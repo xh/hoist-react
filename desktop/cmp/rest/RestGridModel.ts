@@ -36,7 +36,10 @@ export interface RestGridConfig extends GridConfig {
     /** Actions to display in the toolbar. Defaults to add, edit, delete. */
     toolbarActions?: RecordActionLike[];
 
-    /** Actions to display in the grid context menu. Defaults to add, edit, delete. */
+    /**
+     * Entries for the grid context menu, shown above the grid defaults. Accepts any
+     * `GridContextMenuItemLike` - actions, headings, `'-'`, or tokens. Defaults to add, edit, delete.
+     */
     menuActions?: GridContextMenuItemLike[];
 
     /** Actions to display in the form toolbar. Defaults to delete. */
