@@ -47,8 +47,9 @@
 * Added the desktop `Menu` and `MenuButton` components. `Menu` renders a menu from Hoist
   `MenuItem` configs, `'-'` tokens, and `MenuHeading` entries. It runs each `prepareFn`, drops
   hidden and omitted items, builds submenus, and tidies separators. `MenuButton` adds a trigger
-  button and takes `ButtonProps` directly alongside `menuItems`. Both accept `menuItems` and
-  `context` as values or as functions, evaluated when the menu mounts.
+  button and takes `ButtonProps` directly alongside `menuItems`. As with a `ContextMenuSpec`,
+  `MenuButton` accepts `menuItems` as a function of the menu's context, called each time the menu
+  opens.
     * Together they replace the popover and Blueprint menu that apps built by hand.  They take the
       same input as `ContextMenu` and use the same underlying parsing.
 * `MenuItem` now supports an `active` flag, to mark the current selection within a menu.
