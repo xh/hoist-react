@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import {AgGridModel, AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
     ColumnCellClassRuleFn,
@@ -235,6 +235,9 @@ export interface GridConfig {
 
     /** True to suppress display of the grid's header row. */
     hideHeaders?: boolean;
+
+    /** AG Grid theme param overrides for this grid - see {@link AgGridModelConfig.theme}. */
+    theme?: AgGridThemeParams;
 
     /** 'hover' to only show column header menu icons on hover. */
     headerMenuDisplay?: 'always' | 'hover';
@@ -685,6 +688,7 @@ export class GridModel extends HoistModel {
             stripeRows = GridModel.defaults.stripeRows ?? (!treeMode || treeStyle === 'none'),
             showCellFocus = GridModel.defaults.showCellFocus,
             hideHeaders = false,
+            theme,
             headerMenuDisplay = GridModel.defaults.headerMenuDisplay,
             lockColumnGroups = GridModel.defaults.lockColumnGroups,
             enableColumnPinning = GridModel.defaults.enableColumnPinning,
@@ -797,6 +801,7 @@ export class GridModel extends HoistModel {
             cellBorders,
             showCellFocus,
             hideHeaders,
+            theme,
             xhImpl
         });
 
