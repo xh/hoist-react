@@ -16,12 +16,12 @@ import {
 } from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {
-    filterConsecutiveMenuSeparators,
     filterMenuHeadings,
     isVisibleMenuEntry,
     resolveMenuHeading
-} from '@xh/hoist/utils/impl';
+} from '@xh/hoist/cmp/menu/impl/Menus';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
 import {ReactNode, useEffect} from 'react';

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {ChartMenuContext, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
-import {bindMenuHeadingContext} from '@xh/hoist/utils/impl';
+import {bindMenuHeadingContext} from '@xh/hoist/cmp/menu/impl/Menus';
 import {logWarn} from '@xh/hoist/utils/js';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';

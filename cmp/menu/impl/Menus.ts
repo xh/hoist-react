@@ -4,15 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    isMenuHeading,
-    isMenuItem,
-    type MenuHeading,
-    type MenuItemLike
-} from '@xh/hoist/core/types/Interfaces';
+import {isMenuHeading, isMenuItem, type MenuHeading, type MenuItemLike} from '@xh/hoist/core';
 import {isNil} from 'lodash';
-import {isMenuSeparator} from './Separators';
-import {isOmitted} from './IsOmitted';
+import {isMenuSeparator, isOmitted} from '@xh/hoist/utils/impl';
 
 /**
  * `Array.filter()` function to exclude menu entries that must not appear. This covers items and

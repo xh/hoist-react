@@ -6,7 +6,7 @@
  */
 import {TabSwitcherMenuContext} from '@xh/hoist/cmp/tab';
 import {isMenuHeading, isMenuItem, type MenuItemLike, MenuToken} from '@xh/hoist/core';
-import {bindMenuHeadingContext} from '@xh/hoist/utils/impl';
+import {bindMenuHeadingContext} from '@xh/hoist/cmp/menu/impl/Menus';
 
 /** @internal */
 export function getContextMenuItem(
