@@ -45,7 +45,8 @@
         border-bottom: var(--xh-menu-border);
       }
 
-      &--pressed {
+      &--pressed,
+      &--active {
         background-color: var(--xh-menu-item-highlight-bg) !important;
       }
 

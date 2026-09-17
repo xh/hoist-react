@@ -9,7 +9,7 @@ import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
-import {createCopyHandler, type CopyTextSpec} from './impl/CopyText';
+import {createCopyHandler, type CopyTextSpec} from '@xh/hoist/cmp/clipboard';
 
 export interface ClipboardButtonProps extends ButtonProps, CopyTextSpec {}
 

@@ -38,6 +38,17 @@ export function resolveMenuHeading<C>(heading: MenuHeading<C>, context?: C): Men
 }
 
 /**
+ * Bind a MenuHeading's `displayFn` to a specific context, for menus that supply richer context
+ * than the generic parser passes - e.g. a chart's hover point, or a tab switcher's tab. Returns
+ * the heading unchanged if it has no `displayFn`.
+ * @internal
+ */
+export function bindMenuHeadingContext<C>(heading: MenuHeading<C>, context: C): MenuHeading<C> {
+    const {displayFn} = heading;
+    return displayFn ? {...heading, displayFn: () => displayFn(context)} : heading;
+}
+
+/**
  * `Array.filter()` function to tidy menu headings and the separators around them:
  *
  *  - Drops a heading with nothing below it, either at the end of a menu or immediately before

@@ -5,10 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {ChartMenuContext, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
+import {bindMenuHeadingContext} from '@xh/hoist/utils/impl';
 import {logWarn} from '@xh/hoist/utils/js';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {isMenuItem, type MenuItem, type MenuItemLike} from '@xh/hoist/core';
+import {isMenuHeading, isMenuItem, type MenuItem, type MenuItemLike} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 
@@ -16,7 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 export function getContextMenuItems(
     items: MenuItemLike<ChartMenuToken>[],
     context: ChartMenuContext
-): (MenuItem<ChartMenuToken, ChartMenuContext> | '-')[] {
+): MenuItemLike<ChartMenuToken, ChartMenuContext>[] {
     return cloneDeep(items).map(it => buildMenuItemConfig(it, context));
 }
 
@@ -26,15 +27,14 @@ export function getContextMenuItems(
 function buildMenuItemConfig(
     item: MenuItemLike<ChartMenuToken, ChartMenuContext>,
     context: ChartMenuContext
-): MenuItem<ChartMenuToken, ChartMenuContext> | '-' {
+): MenuItemLike<ChartMenuToken, ChartMenuContext> {
     if (isString(item)) return parseToken(item, context.chartModel);
+    if (isMenuHeading(item)) return bindMenuHeadingContext(item, context);
 
     // build nested menu item configs
     if (isMenuItem(item)) {
         if (!isEmpty(item.items)) {
-            (item.items as (MenuItem<ChartMenuToken, ChartMenuContext> | '-')[]) = item.items.map(
-                it => buildMenuItemConfig(it as MenuItemLike, context)
-            );
+            item.items = item.items.map(it => buildMenuItemConfig(it, context));
         }
         if (item.actionFn) {
             const fn = item.actionFn;
@@ -46,7 +46,7 @@ function buildMenuItemConfig(
         }
     }
 
-    return item as MenuItem<ChartMenuToken, ChartMenuContext>;
+    return item;
 }
 
 function parseToken(

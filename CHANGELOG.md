@@ -48,8 +48,8 @@
   `MenuItem` configs, `'-'` tokens, and `MenuHeading` entries. It runs each `prepareFn`, drops
   hidden and omitted items, builds submenus, and tidies separators. `MenuButton` adds a trigger
   button and takes `ButtonProps` directly alongside `menuItems`.
-    * Together they replace the popover and Blueprint menu that apps built by hand, sometimes by
-      importing the internal `parseMenuItems` helper. `ContextMenu` now uses the same parsing.
+    * Together they replace the popover and Blueprint menu that apps built by hand.  They take the
+      same input as `ContextMenu` and use the same underlying parsing.
 * `MenuItem` now supports an `active` flag, to mark the current selection within a menu.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
@@ -85,11 +85,12 @@
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.
 * Fixed desktop submenus closing as soon as the pointer left the parent item, which dismissed them
-  mid-diagonal. Tune with `Menu.defaults.submenuHoverCloseDelay`. Does not apply to grid context
-  menus, which ag-Grid renders itself.
-* Fixed `ClipboardMenuItem` misaligning with the items around it. It rendered a `ClipboardButton`
-  styled to look like a menu item, so it did not inherit menu item padding or icon metrics. It now
-  renders a true menu item, and shares its copy behavior with `ClipboardButton`.
+  mid-diagonal. Submenus now linger briefly, aligning with grid context menus, where ag-Grid
+  already does the same. Tune with `Menu.defaults.submenuHoverCloseDelay`.
+* Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
+  `ClipboardButton` rather than a true menu item.  The function also now returns a proper `MenuItem`
+   config and takes a `ClipboardMenuItemSpec` in place of the poorly fitting `ClipboardButtonProps`.
+   The fixed implementation is available on mobile and desktop.
 
 ### ⚙️ Technical
 
@@ -113,9 +114,6 @@
   in `GridContextMenuToken`, which gains `'-'`, and the ag-Grid `DefaultMenuItem` tokens, newly
   re-exported from `@xh/hoist/kit/ag-grid`. Apps that build a menu from dynamic strings must
   annotate or cast the array as `GridContextMenuItemLike[]`.
-* `ClipboardMenuItem` now takes `ClipboardMenuItemProps` (Blueprint `MenuItemProps` plus the
-  clipboard props) instead of `ClipboardButtonProps`. Remove any button-only props such as
-  `minimal` or `outlined`. They had no meaning on a menu item.
 
 ### ✨ Styles
 
