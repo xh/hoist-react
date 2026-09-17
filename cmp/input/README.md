@@ -26,6 +26,7 @@ HoistInputModel (class)
 ├── externalValue: any    # Value from bound model or props
 ├── internalValue: any    # Cached internal representation
 ├── commitOnChange: bool  # Commit immediately on change?
+├── trimWhitespace: bool  # Trim leading/trailing whitespace?
 ├── Methods:
 │   ├── focus(), blur(), select()
 │   ├── noteValueChange(), doCommit()
@@ -100,6 +101,36 @@ class NumberInputModel extends HoistInputModel {
     }
 }
 ```
+
+### Whitespace Trimming
+
+Single-line text inputs - `TextInput` (desktop + mobile) and mobile `SearchInput` - trim leading
+and trailing whitespace from their value by default. Leading/trailing whitespace is essentially
+always unintentional in a single-line field, and it is invisible in the UI, so it tends to surface
+only as a confusing validation failure - e.g. a pasted email address that fails the anchored
+`validEmail` rule for no apparent reason.
+
+Trimming happens as the internal value is converted to its external form, so it applies to the
+value flushed to any bound model and to the values passed to `onChange` / `onCommit`. It catches
+whitespace from typing, pasting, autofill, and IME input alike. The user sees exactly what they
+type while the control has focus; any stray whitespace drops from the display when the value is
+committed on blur or <enter>. A `TextInput` whose value trims away to nothing commits `null`, the
+same as one the user has cleared.
+
+```typescript
+// Commits 'user@example.com' - the pasted padding never reaches the model.
+textInput({bind: 'email'})
+
+// Set false to preserve whitespace exactly as entered.
+textInput({bind: 'rawToken', trimWhitespace: false})
+```
+
+`TextInput` does *not* trim by default when `type: 'password'`, as passwords can legitimately
+carry leading or trailing whitespace. Pass `trimWhitespace: true` to opt such a field in.
+
+Multi-line and free-text controls - `TextArea`, `CodeInput`, `JsonInput` - never trim and do not
+accept the prop, since whitespace can be meaningful there. Custom inputs can opt in by overriding
+the `HoistInputModel.trimWhitespace` getter.
 
 ### Focus Management
 

@@ -14,7 +14,6 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {
-    apiDeprecated,
     getOrCreate,
     logDebug,
     logError,
@@ -43,9 +42,7 @@ import {
     PersistenceProvider,
     persistOptions,
     PersistOptions,
-    FullSpanConfig,
     Some,
-    Span,
     XH
 } from './';
 import {wait} from '@xh/hoist/promise';
@@ -138,20 +135,6 @@ export abstract class HoistBase {
 
     withDebug<T>(messages: Some<unknown>, fn: () => T): T {
         return withDebug<T>(messages, fn, this);
-    }
-
-    /** @deprecated - use {@link runner} to start a {@link Runner} chain. */
-    withSpan<T>(config: string | FullSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
-        apiDeprecated('HoistBase.withSpan', {
-            v: 'v88',
-            msg: 'Use runner().span() to start a Runner chain instead.',
-            source: this
-        });
-        let cfg = isString(config) ? {name: config} : config,
-            {telemetryPrefix} = this,
-            name = telemetryPrefix ? telemetryPrefix + '.' + cfg.name : cfg.name;
-        cfg = {caller: this, ...cfg, name};
-        return XH.traceService.withSpan(cfg, fn);
     }
 
     /**

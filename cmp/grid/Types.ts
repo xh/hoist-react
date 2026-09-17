@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import type {HoistModel, HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {HoistModel, HSide, Intent, PersistOptions, Some} from '@xh/hoist/core';
 import type {PanelConfig} from '@xh/hoist/desktop/cmp/panel';
 import type {
     FilterBindTarget,
@@ -40,6 +40,15 @@ export interface ColumnState {
     manuallySized?: boolean;
     /** Side if pinned, null if not. */
     pinned?: HSide;
+}
+
+/**
+ * Expand/collapse state for a single {@link ColumnGroup}, as tracked by
+ * {@link GridModel.columnGroupState}.
+ */
+export interface ColumnGroupState {
+    groupId: string;
+    expanded: boolean;
 }
 
 /** Options for {@link GridModel.setColumnState}. */
@@ -99,6 +108,11 @@ export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
 export interface GridModelPersistOptions extends PersistOptions {
     /** True (default) to include column state or provide column-specific PersistOptions. */
     persistColumns?: boolean | PersistOptions;
+    /**
+     * True (default) to include column group expand/collapse state, or provide group-specific
+     * PersistOptions. Nothing is written while every group sits at its configured `collapsed`.
+     */
+    persistColumnGroups?: boolean | PersistOptions;
     /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
@@ -295,6 +309,33 @@ export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
 }
 
 /**
+ * Expand/collapse state of a containing ColumnGroup, within which a Column or nested ColumnGroup
+ * should be shown - see {@link ColumnSpec.groupShowMode}. 'always' (the default) shows it in
+ * either state.
+ *
+ * Note that this config is what makes a ColumnGroup expandable, and requires a mix of values to do
+ * so: the group must have a visible child shown while expanded *and* one shown while collapsed,
+ * with at least one child that is not shown 'always'. Groups not meeting that bar render as static
+ * headers.
+ */
+export type ColumnGroupShowMode = 'expanded' | 'collapsed' | 'always';
+
+/**
+ * Map a {@link ColumnGroupShowMode} to the ag-Grid `columnGroupShow` value.
+ * @internal
+ */
+export function toAgColumnGroupShow(mode: ColumnGroupShowMode): 'open' | 'closed' {
+    switch (mode) {
+        case 'expanded':
+            return 'open';
+        case 'collapsed':
+            return 'closed';
+        default:
+            return null;
+    }
+}
+
+/**
  * Sort comparator function for a grid column. Note that this comparator will also be called if
  * agGrid-provided column filtering is enabled: it is used to sort values shown for set filter
  * options. In that case, some extra params will be null.
@@ -382,6 +423,14 @@ export type ColumnCellClassFn<T = any> = (
  *      it should be removed.
  */
 export type ColumnCellClassRuleFn = (agParams: CellClassParams) => boolean;
+
+/**
+ * Function to determine the corner flag, if any, to render on a grid cell's top-right corner.
+ * @param value - cell data value (column + row).
+ * @param context - additional data about the column, row and GridModel.
+ * @returns the Intent to draw the flag in, or null for no flag.
+ */
+export type ColumnCellFlagFn<T = any> = (value: T, context: CellContext) => Intent | null;
 
 /**
  * Function to produce a grid column tooltip.

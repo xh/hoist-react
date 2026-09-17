@@ -5,7 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
-import type {GridApi, IRowNode, SortDirection} from '@xh/hoist/kit/ag-grid';
+import type {
+    GridApi,
+    IRowNode,
+    SortDirection,
+    Theme,
+    ThemeDefaultParams
+} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -24,6 +30,19 @@ import {
     startCase
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
+import {AgGridThemeParams, createAgGridTheme} from './AgGridTheme';
+
+/** App-level defaults for {@link AgGridModel} - see {@link AgGridModel.defaults}. */
+export interface AgGridModelDefaults {
+    /**
+     * Theme param overrides applied to every grid in the app, on top of Hoist's standard theme.
+     * A grid's own `theme` config merges on top of these - see {@link AgGridModelConfig.theme}.
+     *
+     * Read once per grid at construction, so set at app startup before any grid is created. For
+     * styling that changes at runtime, use the `--xh-grid-*` (or `--ag-*`) CSS variables instead.
+     */
+    theme?: AgGridThemeParams | null;
+}
 
 /**
  * Configuration for an {@link AgGridModel} - the low-level model backing the Hoist `AgGrid`
@@ -55,6 +74,12 @@ export interface AgGridModelConfig {
 
     /** True to suppress display of the grid's header row. */
     hideHeaders?: boolean;
+
+    /**
+     * AG Grid theme param overrides for this grid, e.g. `{headerBackgroundColor: 'navy'}`. Layered
+     * on Hoist's standard theme - see {@link AgGridModel.defaults}`.theme`.
+     */
+    theme?: AgGridThemeParams;
 
     /** @internal */
     xhImpl?: boolean;
@@ -105,6 +130,11 @@ export interface AgGridState {
 export class AgGridModel extends HoistModel {
     static AUTO_GROUP_COL_ID = 'ag-Grid-AutoColumn';
 
+    /** App-level defaults for AgGridModel, and so for every Hoist grid. */
+    static defaults: AgGridModelDefaults = {
+        theme: null
+    };
+
     //------------------------
     // Grid Style
     //------------------------
@@ -115,6 +145,15 @@ export class AgGridModel extends HoistModel {
     @bindable showHover: boolean;
     @bindable showCellFocus: boolean;
     @bindable hideHeaders: boolean;
+
+    /**
+     * Resolved AG Grid theme, shared by grids configured alike. Read-only: each distinct theme
+     * carries its own copy of AG Grid's generated stylesheet, so a settable one invites unbounded
+     * style churn - vary appearance at runtime via CSS variables instead.
+     *
+     * @internal - consumed by the `AgGrid` component.
+     */
+    readonly agTheme: Theme<ThemeDefaultParams>;
 
     @observable.ref agApi: GridApi = null;
 
@@ -128,6 +167,7 @@ export class AgGridModel extends HoistModel {
         stripeRows = true,
         showCellFocus = false,
         hideHeaders = false,
+        theme = null,
         xhName = null,
         xhImpl = false
     }: AgGridModelConfig = {}) {
@@ -143,6 +183,7 @@ export class AgGridModel extends HoistModel {
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;
         this.hideHeaders = hideHeaders;
+        this.agTheme = createAgGridTheme({...AgGridModel.defaults.theme, ...theme});
 
         this.addReaction({
             track: () => this.sizingMode,

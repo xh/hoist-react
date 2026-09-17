@@ -6,34 +6,16 @@
  */
 
 /**
- * Note that the core Hoist AgGrid.scss sheet excludes xh-data-view at the top-level, as many of
- * its styles are N/A or would be disruptive in a DV context (notably sizing mode).
+ * DataView's look comes from AG Grid theme params - see `THEME_PARAMS` in DataViewModel.ts.
  *
- * That said, this stylesheet copies over several useful styles and behaviors from the core grid,
- * with some modifications specific to DataView.
+ * AgGrid.scss excludes xh-data-view at the top level, as many of its styles are N/A or disruptive
+ * here (notably sizing mode). What remains below is what the theme cannot express, plus the
+ * per-instance modifiers DataView supports - those mirror AgGrid.scss, so keep the two in step.
  */
 .xh-data-view {
-  .ag-theme-balham.xh-ag-grid,
-  .ag-theme-balham-dark.xh-ag-grid {
-    // Bind ag-grid's base bg to the DataView bg - prevents balham-dark default bleeding through.
-    --ag-background-color: var(--xh-bg);
-
-    // Standard app font family/sizing applied by default.
-    font-family: var(--xh-font-family);
-    font-size: var(--xh-font-size-px);
-
-    .ag-root-wrapper {
-      border: none;
-      background-color: var(--xh-bg);
-    }
-
-    // Header height fixed to zero - avoid 1px border creating a gap at top of grid.
-    .ag-header {
-      display: none;
-    }
-
+  .xh-ag-grid {
     // Always suppress agGrid-provided horizontal scrollbar - we never want it for DVs.
-    .ag-center-cols-viewport {
+    .ag-body-horizontal-scroll-viewport {
       overflow-x: hidden;
     }
 
@@ -41,18 +23,10 @@
     // Core Row Classes
     //------------------------
     .ag-row {
-      // Take general text color (not xh-grid-text-color, but also not ag-grid theme default).
-      color: var(--xh-text-color);
-
       // Container for DV items should take up all configured row height + flex contents.
       .xh-cell-inner-wrapper {
         height: 100%;
         display: flex;
-      }
-
-      // Default selection highlight supported by DV.
-      &.ag-row-selected {
-        background-color: var(--xh-grid-selected-row-bg);
       }
 
       // Carry over grouped header styles from grid.
@@ -86,25 +60,23 @@
     //------------------------
     // Row borders supported by DV
     //------------------------
+    // From the `rowBorder` param - full-width group rows keep their own color.
     &--row-borders {
-      .ag-row {
-        border-color: var(--xh-grid-border-color);
+      --ag-row-border: 1px solid var(--xh-grid-border-color);
 
-        &.ag-row-group {
-          border-color: var(--xh-grid-group-border-color);
-        }
+      .ag-row.ag-row-group.ag-full-width-row {
+        border-color: var(--xh-grid-group-border-color);
       }
     }
 
     &--no-row-borders {
-      .ag-row {
-        border-color: transparent;
+      --ag-row-border: none;
 
-        // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
-        // Without this collapsed groups (which don't stripe) blend together in a solid block.
-        &.ag-row-group.ag-full-width-row {
-          border-color: var(--xh-grid-group-border-color);
-        }
+      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
+      // Without this collapsed groups (which don't stripe) blend together in a solid block.
+      .ag-row.ag-row-group.ag-full-width-row {
+        border-bottom: 1px solid var(--xh-grid-group-border-color);
+        border-top: 1px solid var(--xh-grid-group-border-color);
       }
     }
 
@@ -115,42 +87,39 @@
     }
 
     //------------------------
-    // Zebra striping supported by DV
-    // (But unset default ag-grid striping if not enabled)
+    // Zebra striping + hover highlight supported by DV
+    // (Both default to `transparent` in the theme - the `--no-*` rules restate that so a view with
+    // the flag off stays off under an ancestor that sets the param. Mirrors AgGrid.scss.)
     //------------------------
-    .ag-row.ag-row-even:not(.ag-full-width-row):not(.ag-row-selected),
-    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-      background-color: unset;
-    }
-
     &--stripe-rows {
-      .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-        background-color: var(--xh-grid-bg-odd);
-      }
+      --ag-odd-row-background-color: var(--xh-grid-bg-odd);
     }
 
-    //------------------------
-    // Hover highlight supported by DV
-    //------------------------
+    &--no-stripe-rows {
+      --ag-odd-row-background-color: transparent;
+    }
+
     &--show-hover {
-      .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
-        background-color: var(--xh-grid-bg-hover);
-      }
+      --ag-row-hover-color: var(--xh-grid-bg-hover);
+    }
+
+    &--no-hover {
+      --ag-row-hover-color: transparent;
+    }
+
+    // ag-Grid also hovers full-width group rows - DataView never has.
+    .ag-row-hover.ag-full-width-row.ag-row-group::before {
+      background-color: transparent;
+      background-image: none;
     }
 
     //------------------------
     // Core Cell Classes
     //------------------------
+    // Items manage their own layout and wrap freely.
     .ag-cell {
       line-height: unset;
       white-space: normal;
-      padding: 0;
-    }
-
-    // No cell borders
-    .ag-cell,
-    .ag-has-focus .ag-cell-focus {
-      border-color: transparent;
     }
 
     //------------------------
@@ -160,16 +129,8 @@
       display: none;
     }
 
-    .ag-side-bar {
-      border: none;
-    }
-
     .ag-status-bar {
       border: none;
-    }
-
-    .ag-bl-overlay {
-      display: none;
     }
   }
 }

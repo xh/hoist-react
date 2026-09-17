@@ -7,9 +7,9 @@
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
-import {Intent, TestSupportProps} from '../core';
+import {type Intent, isMenuHeading, type MenuHeading, type TestSupportProps} from '../core';
 import {StoreRecord} from './StoreRecord';
-import {Column, GridModel} from '../cmp/grid';
+import {Column, type GridContextMenuItemLike, GridModel} from '../cmp/grid';
 
 export interface RecordActionSpec extends TestSupportProps {
     /** Label to be displayed. */
@@ -34,13 +34,13 @@ export interface RecordActionSpec extends TestSupportProps {
     actionFn?: (data: ActionFnData) => void;
 
     /**
-     * Function called to append / override display properties prior to each render. This function
-     * allows dynamic control over display properties.
-     * */
+     * Function called before each render, to add or override display properties. Use it for
+     * dynamic control of the action.
+     */
     displayFn?: (data: ActionFnData) => RecordActionSpec;
 
-    /** Sub-actions for this action. */
-    items?: RecordActionLike[];
+    /** Sub-menu entries for this action - actions, headings, separators, or tokens. */
+    items?: GridContextMenuItemLike[];
 
     /** True to disable this item. */
     disabled?: boolean;
@@ -59,7 +59,17 @@ export interface RecordActionSpec extends TestSupportProps {
     recordsRequired?: boolean | number;
 }
 
-export type RecordActionLike = RecordAction | RecordActionSpec | '-';
+/**
+ * A non-interactive heading within a menu of RecordActions, with its `displayFn` receiving the
+ * same {@link ActionFnData} passed to the actions alongside it.
+ */
+export type RecordActionHeading = MenuHeading<ActionFnData>;
+
+/**
+ * A RecordAction, or a spec to create one. For a menu entry that may also be a heading, separator,
+ * or token, see {@link GridContextMenuItemLike}.
+ */
+export type RecordActionLike = RecordAction | RecordActionSpec;
 
 /**
  * Data passed to the Action Function of a RecordAction
@@ -92,8 +102,8 @@ export interface ActionFnData {
  * and call their `actionFn` when clicked, passing it a data object (if available) sourced from the
  * selected row(s) or node(s) on the underlying grid or data view.
  *
- * The `displayFn` callback allows apps to customize any display properties of the action prior to
- * each render by returning an object with keys/values to override (e.g. `{hidden: true}`).
+ * The `displayFn` callback lets apps customize any display property of the action. It runs before
+ * each render and returns an object of keys and values to override (e.g. `{hidden: true}`).
  *
  * NOTE that both `actionFn` and `displayFn` can be called with a null record - e.g. when showing a
  * context menu on a full-width grid group row, where there is no backing record for the row.
@@ -113,7 +123,7 @@ export class RecordAction {
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
     displayFn: (data: ActionFnData) => RecordActionSpec;
-    items: RecordActionLike[];
+    items: GridContextMenuItemLike[];
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean | number;
@@ -148,7 +158,7 @@ export class RecordAction {
         this.testId = testId;
 
         this.items = items?.map(it => {
-            if (isString(it)) return it;
+            if (isString(it) || isMenuHeading(it)) return it;
             return it instanceof RecordAction ? it : new RecordAction(it);
         });
     }

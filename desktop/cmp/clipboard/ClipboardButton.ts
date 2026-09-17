@@ -4,29 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, XH} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {hoistCmp} from '@xh/hoist/core';
+import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {copyToClipboard, withDefault} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {withDefault} from '@xh/hoist/utils/js';
+import {createCopyHandler, type CopyTextSpec} from '@xh/hoist/cmp/clipboard';
 
-export interface ClipboardButtonProps extends ButtonProps {
-    /** Function returning the text to copy. May be async. */
-    getCopyText: () => string | Promise<string>;
-
-    /**
-     * Message to be displayed in a toast should the copy operation fail, or `true` (default) to
-     * show a toast-based alert from `XH.handleException`. Spec `false` to fail silently.
-     */
-    errorMessage?: string | boolean;
-
-    /**
-     * Message to be displayed in a toast when copy is complete, or `true` for a default success
-     * confirmation. Default `false`
-     */
-    successMessage?: string | boolean;
-}
+export interface ClipboardButtonProps extends ButtonProps, CopyTextSpec {}
 
 /**
  * Button to copy text to the clipboard.
@@ -36,42 +21,12 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory<Clipboard
     model: false,
 
     render(props) {
-        let {icon, onClick, text, getCopyText, errorMessage, successMessage, ...rest} = props;
-        let errMsg = withDefault(errorMessage, true),
-            successMsg = withDefault(successMessage, false);
-
-        if (!onClick) {
-            onClick = async () => {
-                try {
-                    const copyText = await getCopyText();
-                    await copyToClipboard(copyText);
-                    if (successMsg) {
-                        successMsg = isString(successMsg) ? successMsg : 'Copied to clipboard';
-                        XH.toast({
-                            icon: Icon.clipboard(),
-                            message: successMsg
-                        });
-                    }
-                } catch (e) {
-                    if (errMsg) {
-                        errMsg = isString(errMsg) ? errMsg : 'Error copying to clipboard';
-                        XH.dangerToast({
-                            icon: Icon.clipboard(),
-                            message: errMsg
-                        });
-                    }
-                    XH.handleException(e, {
-                        message: 'Error copying to clipboard',
-                        showAlert: false
-                    });
-                }
-            };
-        }
+        const {icon, onClick, text, getCopyText, errorMessage, successMessage, ...rest} = props;
 
         return button({
             icon: withDefault(icon, Icon.clipboard()),
             text: withDefault(text, 'Copy'),
-            onClick,
+            onClick: onClick ?? createCopyHandler({getCopyText, errorMessage, successMessage}),
             ...rest
         });
     }
