@@ -485,6 +485,45 @@
   }
 }
 
+// Non-interactive heading within a context menu - see MenuHeading.
+// Styled to match the Blueprint menu headers used by our other menus: a bold label with a rule
+// above it, suppressed when the heading leads the menu. The rule is drawn on each cell so that it
+// spans the full width of the menu, as ag-Grid does for its own separators.
+.xh-grid-menu-heading {
+  // Marked disabled to keep ag-Grid from activating it as a menu item - see MenuSupport. Undo the
+  // styling that comes with that, and the active highlight ag still applies on arrow-key nav.
+  &.ag-menu-option-disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  &.ag-menu-option-active {
+    background-color: transparent;
+  }
+
+  // Rule sits below the label, tying it to the items it introduces. Space above separates it from
+  // the section it closes - that gap, plus the absent icon, is what reads as a heading rather than
+  // an item. Drawn on each cell so it spans the full menu width, as ag-Grid does for separators.
+  .ag-menu-option-part {
+    border-bottom: var(--xh-menu-heading-border);
+    padding-top: calc(var(--ag-grid-size) * 2);
+    padding-bottom: var(--ag-grid-size);
+  }
+
+  // Outdent the label to start where the item icons do, rather than where their text does. The
+  // shift is applied to the label, not its cell - a table row paints its background only behind
+  // areas a cell still covers, so moving the cell itself punches a gap in the band. Keeping the
+  // cell in place also lets it reserve its natural width, so the menu sizes to a long heading
+  // rather than letting it overflow.
+  &__label {
+    position: relative;
+    left: calc(-1 * (var(--ag-icon-size) + var(--ag-grid-size) * 2));
+    color: var(--xh-menu-heading-text-color);
+    font-size: var(--xh-menu-heading-font-size-px);
+    font-weight: var(--xh-menu-heading-font-weight);
+  }
+}
+
 .xh-grid-menu-option {
   &--intent-success {
     color: var(--xh-intent-success-darker);

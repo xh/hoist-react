@@ -33,6 +33,12 @@ export interface SearchInputProps extends HoistProps, HoistInputProps {
 
     /** Alignment of entry text within control, default 'left'. */
     textAlign?: Property.TextAlign;
+
+    /**
+     * True to trim leading/trailing whitespace from this input's value as committed to any bound
+     * model and reported to `onChange` / `onCommit`. Default true.
+     */
+    trimWhitespace?: boolean;
 }
 
 /**
@@ -55,6 +61,10 @@ class SearchInputModel extends HoistInputModel {
 
     override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
+    }
+
+    override get trimWhitespace() {
+        return withDefault(this.componentProps.trimWhitespace, true);
     }
 
     onChange = ev => {

@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {PopoverProps} from '@blueprintjs/core';
 import {
     hoistCmp,
     HoistModel,
@@ -12,20 +13,16 @@ import {
     type Thunkable,
     useLocalModel
 } from '@xh/hoist/core';
+import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
-import {popover, PopoverProps} from '@xh/hoist/mobile/cmp/popover';
-import '@xh/hoist/mobile/register';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {executeIfFunction} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
-import {menu} from './impl/Menu';
+import {menu, swallowContextMenu} from './Menu';
 
-export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
-    /** Optional additional classname to apply to the menu element itself. */
-    menuClassName?: string;
-
+export interface MenuButtonProps extends ButtonProps {
     /**
      * Items to display, or a function producing them from the menu's context. As with a
      * `ContextMenuSpec`, a function is called each time the menu opens.
@@ -38,66 +35,54 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
      */
     context?: Thunkable<MenuContext>;
 
-    /** Position of menu relative to button */
-    menuPosition?:
-        | 'top-left'
-        | 'top'
-        | 'top-right'
-        | 'right-top'
-        | 'right'
-        | 'right-bottom'
-        | 'bottom-right'
-        | 'bottom'
-        | 'bottom-left'
-        | 'left-bottom'
-        | 'left'
-        | 'left-top'
-        | 'auto';
+    /** Css class name for the menu element itself. */
+    menuClassName?: string;
 
-    /** Optional title to display above the menu. */
-    title?: ReactNode;
-
-    /** True to disable user interaction. */
-    disabled?: boolean;
+    /** Position of the menu relative to the button. Defaults to 'bottom-left'. */
+    menuPosition?: PopoverProps['position'];
 
     /** Props passed to the internal popover. */
     popoverProps?: Partial<PopoverProps>;
 }
 
 /**
- * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.
+ * Button preconfigured as the trigger for a dropdown {@link Menu}.
+ *
+ * It takes the same {@link MenuItemLike} entries as `Menu` - item configs, `'-'` separators, and
+ * {@link MenuHeading} entries. It also takes Button props directly, for its own display.
+ *
+ * For the app-level menu in the header, use {@link AppMenuButton}. For a right-click menu, use
+ * {@link useContextMenu} or {@link PanelProps.contextMenu}.
  */
 export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
     className: 'xh-menu-button',
 
     render({
-        menuClassName,
+        className,
         menuItems,
         context,
-        menuPosition = 'auto',
-        title,
-        disabled,
+        menuClassName,
+        menuPosition = 'bottom-left',
         popoverProps,
         icon = Icon.menu(),
-        ...props
+        disabled,
+        ...rest
     }) {
         const impl = useLocalModel(MenuButtonLocalModel);
 
         return popover({
             isOpen: impl.isOpen,
+            onInteraction: nextOpenState => impl.setOpen(nextOpenState, menuItems, context),
+            disabled,
             position: menuPosition,
-            disabled: disabled,
-            item: button({icon, disabled, ...props}),
+            minimal: true,
+            item: button({className, icon, disabled, onContextMenu: swallowContextMenu, ...rest}),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
                 context: isFunction(context) ? impl.context : context,
-                className: menuClassName,
-                title,
-                onDismiss: () => (impl.isOpen = false)
+                className: menuClassName
             }),
-            onInteraction: nextOpenState => impl.setOpen(nextOpenState, menuItems, context),
-            backdrop: true,
             ...popoverProps
         });
     }
