@@ -13,17 +13,17 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
-import {executeIfFunction} from '@xh/hoist/utils/js';
-import {isEmpty} from 'lodash';
+import {isEmpty, isFunction} from 'lodash';
+import {useState} from 'react';
 import {MENU_DEFAULTS, type MenuDefaults, parseMenuItems} from './impl/MenuItems';
 
 export interface MenuProps extends HoistProps {
-    /** Items to display, or a function producing them each time the menu renders. */
+    /** Items to display, or a function producing them when the menu is shown. */
     menuItems: Thunkable<MenuItemLike[]>;
 
     /**
      * Contextual data passed to each item's `actionFn` and `prepareFn`, or a function producing
-     * it each time the menu renders.
+     * it when the menu is shown.
      */
     context?: Thunkable<MenuContext>;
 }
@@ -31,8 +31,8 @@ export interface MenuProps extends HoistProps {
 /**
  * Renders a menu from Hoist {@link MenuItem} configs, tokens, and {@link MenuHeading} entries. It
  * runs each `prepareFn`, drops hidden and omitted items, builds submenus, and tidies separators
- * and headings. Within a popover, it renders on each open - so `menuItems` and `context` given as
- * functions are evaluated fresh each time the menu is shown.
+ * and headings. `menuItems` and `context` given as functions are evaluated once each time the
+ * menu is shown - i.e. on mount - and not again should the menu re-render while open.
  *
  * For the common case of a menu on a trigger button, use {@link MenuButton}. For a right-click
  * menu, use {@link useContextMenu} or Panel's {@link PanelProps.contextMenu}.
@@ -49,9 +49,15 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
     observer: false,
 
     render({menuItems, context, className}) {
-        const items = parseMenuItems(executeIfFunction(menuItems), {
-            context: executeIfFunction(context)
-        });
+        // Function forms resolve once per mount. A popover mounts its content on open, so this is
+        // once per showing. Plain values pass through, leaving them under the parent's control.
+        const [shown] = useState(() => ({
+                menuItems: isFunction(menuItems) ? menuItems() : null,
+                context: isFunction(context) ? context() : null
+            })),
+            items = parseMenuItems(isFunction(menuItems) ? shown.menuItems : menuItems, {
+                context: isFunction(context) ? shown.context : context
+            });
         return isEmpty(items) ? null : bpMenu({className, items});
     }
 });

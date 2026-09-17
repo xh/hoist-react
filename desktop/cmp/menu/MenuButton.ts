@@ -13,12 +13,12 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {menu} from './Menu';
 
 export interface MenuButtonProps extends ButtonProps {
-    /** Items to display, or a function producing them each time the menu opens. */
+    /** Items to display, or a function producing them when the menu is shown. */
     menuItems?: Thunkable<MenuItemLike[]>;
 
     /**
      * Contextual data passed to each item's `actionFn` and `prepareFn`, or a function producing
-     * it each time the menu opens.
+     * it when the menu is shown.
      */
     context?: Thunkable<MenuContext>;
 
@@ -61,8 +61,6 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             disabled,
             position: menuPosition,
             minimal: true,
-            // `className` lands on the button, as `MenuButtonProps extends ButtonProps` implies.
-            // Use `popoverProps.className` to target the popover wrapper instead.
             item: button({className, icon, disabled, ...rest}),
             content: menu({menuItems, context, className: menuClassName}),
             ...popoverProps
