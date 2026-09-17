@@ -14,13 +14,14 @@ import {ReactElement} from 'react';
  * with createRoot, which is necessary for proper rendering in a React 18 environment.
  */
 export function showContextMenu(menu: ReactElement, offset?: Offset) {
+    const listener = installBackdropListener();
     bpShowContextMenu({
         content: menu,
         targetOffset: offset,
         isDarkTheme: XH.darkTheme,
-        onClose: removeBackdropListener
+        // Deferred - a right-click's mousedown closes the menu before its contextmenu event fires.
+        onClose: () => setTimeout(() => removeBackdropListener(listener), 500)
     });
-    installBackdropListener();
 }
 
 //------------------------
@@ -30,17 +31,18 @@ export function showContextMenu(menu: ReactElement, offset?: Offset) {
 // closes the menu, but the browser's own menu then appears and the app beneath never sees the
 // click. Intercept it and replay the click on whatever lies underneath, so a new context menu can
 // open at the new spot. The browser menu shows only if nothing beneath claims the click.
-let backdropListener: (e: MouseEvent) => void = null;
+type ContextMenuListener = (e: MouseEvent) => void;
+let backdropListener: ContextMenuListener = null;
 
-function installBackdropListener() {
-    removeBackdropListener();
-    backdropListener = e => {
+function installBackdropListener(): ContextMenuListener {
+    removeBackdropListener(backdropListener);
+    const listener: ContextMenuListener = e => {
         const backdrop = e.target as HTMLElement;
         if (!backdrop?.classList?.contains(Classes.CONTEXT_MENU_BACKDROP)) return;
 
         e.stopPropagation();
         hideContextMenu();
-        removeBackdropListener();
+        removeBackdropListener(listener);
 
         // The backdrop may linger through its exit transition - look past it.
         backdrop.style.pointerEvents = 'none';
@@ -54,11 +56,13 @@ function installBackdropListener() {
             });
         if (beneath?.dispatchEvent(replay) === false) e.preventDefault();
     };
-    document.addEventListener('contextmenu', backdropListener, true);
+    document.addEventListener('contextmenu', listener, true);
+    return (backdropListener = listener);
 }
 
-function removeBackdropListener() {
-    if (!backdropListener) return;
-    document.removeEventListener('contextmenu', backdropListener, true);
+// Removes only if still current - a stale deferred remover must not take down a newer menu's.
+function removeBackdropListener(listener: ContextMenuListener) {
+    if (!listener || listener !== backdropListener) return;
+    document.removeEventListener('contextmenu', listener, true);
     backdropListener = null;
 }
