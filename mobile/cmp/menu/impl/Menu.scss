@@ -23,11 +23,10 @@
     overflow-y: auto !important;
     border: var(--xh-menu-border);
 
-    // Textless '-' separator. Items already carry a bottom border, so this is a slim gap.
+    // Textless '-' separator. The item above already draws a rule, so this is just a slim gap.
     &__divider {
       height: var(--xh-pad-half-px);
       background-color: var(--xh-menu-bg);
-      border-bottom: var(--xh-menu-border);
     }
 
     // Non-interactive heading - see MenuHeading.
