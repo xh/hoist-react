@@ -20,7 +20,7 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {executeIfFunction} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {menu} from './Menu';
+import {menu, swallowContextMenu} from './Menu';
 
 export interface MenuButtonProps extends ButtonProps {
     /**
@@ -77,7 +77,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             disabled,
             position: menuPosition,
             minimal: true,
-            item: button({className, icon, disabled, ...rest}),
+            item: button({className, icon, disabled, onContextMenu: swallowContextMenu, ...rest}),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
                 context: isFunction(context) ? impl.context : context,
