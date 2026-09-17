@@ -70,8 +70,9 @@
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
 * Added `MenuHeading`, a non-interactive heading that labels and groups the items below it - e.g.
-  `{heading: 'This Row'}`. Every menu that takes a `RecordActionLike` or `MenuItemLike` accepts it,
-  so grid context menus, desktop menus and context menus, and mobile menus all support it. A
+  `{heading: 'This Row'}`. Every menu that takes a `GridContextMenuItemLike` or `MenuItemLike`
+  accepts it, so grid context menus, desktop menus and context menus, and mobile menus all support
+  it. A
   `displayFn` can adjust the heading before each render. In a grid context menu it receives the
   same `ActionFnData` as the actions beside it.
     * A heading draws its own divider rule, so it needs no adjacent `'-'` separator. Hoist drops a
@@ -104,6 +105,9 @@
 
 ### ⚙️ Typescript API Adjustments
 
+* `RecordActionLike` is now just `RecordAction | RecordActionSpec`. Menu entries that may also be a
+  `'-'` separator, heading, or token - `RecordAction.items` and `RestGridConfig.menuActions` - are
+  typed as `GridContextMenuItemLike`.
 * Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
   `@xh/hoist/utils/js` entry point) instead.
 * Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
