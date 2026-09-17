@@ -31,10 +31,14 @@ export class PivotViewDiagnostics extends ViewDiagnostics {
     @action
     notePivot(op: Omit<PivotOp, 'timestamp'>) {
         this.pivot = {...op, timestamp: Date.now()};
+
+        const phases = Object.entries(op.phases)
+            .map(([name, ms]) => `${name} ${ms.toFixed(1)}`)
+            .join(' ');
         this.logOp(
             'pivot',
             {type: 'build', total: op.cells, elapsed: op.elapsed},
-            `paths ${op.paths}`
+            `paths ${op.paths} | ${phases}`
         );
     }
 
@@ -53,8 +57,24 @@ export interface PivotOp {
     /** Cell rows materialized across the whole row hierarchy. */
     cells: number;
 
-    /** Path discovery plus structure planning and cell build, excluding base row generation. */
+    /** Sum of `phases` - all pivot work, excluding base row generation. */
     elapsed: number;
 
+    phases: PivotPhases;
+
     timestamp: number;
+}
+
+/** Elapsed ms per phase of one pivot generation. Zero for phases a degenerate build skipped. */
+export interface PivotPhases {
+    /** Path discovery over the filtered records, ahead of base row generation. */
+    discover: number;
+    /** Group enumeration and the per-record leaf alignment pass. */
+    align: number;
+    /** `buildPivotStructure` - planning the cell set and its links over integer arrays. */
+    plan: number;
+    /** Cell row instantiation or reuse, wiring, and clearing of vacated cells. */
+    build: number;
+    /** Projection of cell values onto owner rows. */
+    project: number;
 }

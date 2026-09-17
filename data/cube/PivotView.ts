@@ -21,7 +21,7 @@ import {
     type PivotPathSpec
 } from './impl/PivotStructure';
 import {PivotRowDataGenerator} from './impl/PivotRowDataGenerator';
-import {PivotViewDiagnostics} from './impl/PivotViewDiagnostics';
+import {PivotPhases, PivotViewDiagnostics} from './impl/PivotViewDiagnostics';
 import {CubeField} from './CubeField';
 import {PivotCellField, PivotPath} from './PivotPath';
 import {PivotQuery, PivotQueryConfig} from './PivotQuery';
@@ -97,8 +97,8 @@ export class PivotView extends View {
     /** This generation's path discovery, run ahead of row generation - see `discoverPaths`. */
     declare protected _discovery: PivotPathDiscoveryResult;
     declare protected _cellRows: PivotCellRow[];
-    /** Time spent in `beforeGenerateRows`, carried to the diagnostics note in `afterGenerateRows`. */
-    declare private _discoveryElapsed: number;
+    /** Phase timings for the generation in progress, reported by `afterGenerateRows`. */
+    declare private _phases: PivotPhases;
     /** Cell fields last declared on each store, by identity - the structural-change signal. */
     declare protected _syncedCellFields: WeakMap<Store, PivotCellField[]>;
 
@@ -194,18 +194,25 @@ export class PivotView extends View {
     protected override beforeGenerateRows() {
         const start = performance.now();
         this.discoverPaths();
-        this._discoveryElapsed = performance.now() - start;
+        this._phases = {
+            discover: performance.now() - start,
+            align: 0,
+            plan: 0,
+            build: 0,
+            project: 0
+        };
     }
 
     protected override afterGenerateRows() {
-        const start = performance.now();
         this.generateCells(this._records.list);
 
         // Pivot work alone - base row generation is already reported by the op it ran under.
+        const phases = this._phases;
         (this.diagnostics as PivotViewDiagnostics).notePivot({
             paths: this._allPaths?.length ?? 0,
             cells: this._cellRows?.length ?? 0,
-            elapsed: this._discoveryElapsed + (performance.now() - start)
+            phases,
+            elapsed: phases.discover + phases.align + phases.plan + phases.build + phases.project
         });
     }
 
@@ -333,9 +340,17 @@ export class PivotView extends View {
     }
 
     private generateCells(records: StoreRecord[]) {
-        const {_discovery, _rootRows, exposesLeaves} = this,
+        const {_discovery, _rootRows, exposesLeaves, _phases} = this,
             prevCells = this._cellRows;
         if (!_discovery || isEmpty(_rootRows)) return this.clearCells();
+
+        let mark = performance.now();
+        const lap = () => {
+            const now = performance.now(),
+                ret = now - mark;
+            mark = now;
+            return ret;
+        };
 
         const {groups, parentOfGroup, innermost, groupIdxOf} = this.enumerateGroups();
         if (isEmpty(groups)) return this.clearCells();
@@ -361,6 +376,7 @@ export class PivotView extends View {
             leafPathIdx.push(pathIdx);
         }
         if (isEmpty(leafRows)) return this.clearCells();
+        _phases.align = lap();
 
         const structure = buildPivotStructure({
             groupCount: groups.length,
@@ -374,9 +390,14 @@ export class PivotView extends View {
             maxDepth: _discovery.maxDepth
         });
 
+        _phases.plan = lap();
+
         this.buildCellRows(structure, groups, leafRows);
         this.clearVacatedCells(prevCells, new Set(this._cellRows));
+        _phases.build = lap();
+
         this._cellRows.forEach(cell => this.projectCell(cell));
+        _phases.project = lap();
     }
 
     /**
