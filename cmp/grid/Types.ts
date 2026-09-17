@@ -110,8 +110,7 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistColumns?: boolean | PersistOptions;
     /**
      * True (default) to include column group expand/collapse state, or provide group-specific
-     * PersistOptions. Only groups the user has moved off their `expandedByDefault` are written, so
-     * a grid whose groups are all at their defaults persists nothing here.
+     * PersistOptions. Nothing is written while every group sits at its configured `collapsed`.
      */
     persistColumnGroups?: boolean | PersistOptions;
     /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
@@ -310,14 +309,31 @@ export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
 }
 
 /**
- * Show a Column or ColumnGroup only while its containing ColumnGroup is expanded ('open') or
- * collapsed ('closed').
+ * Expand/collapse state of a containing ColumnGroup, within which a Column or nested ColumnGroup
+ * should be shown - see {@link ColumnSpec.groupShowMode}. 'always' (the default) shows it in
+ * either state.
  *
- * Note that this config is what makes a ColumnGroup expandable, and takes both values to do so: the
- * group must have a visible child shown while expanded *and* one shown while collapsed. Groups not
- * meeting that bar render as static headers.
+ * Note that this config is what makes a ColumnGroup expandable, and requires a mix of values to do
+ * so: the group must have a visible child shown while expanded *and* one shown while collapsed,
+ * with at least one child that is not shown 'always'. Groups not meeting that bar render as static
+ * headers.
  */
-export type ColumnGroupShow = 'open' | 'closed';
+export type ColumnGroupShowMode = 'expanded' | 'collapsed' | 'always';
+
+/**
+ * Map a {@link ColumnGroupShowMode} to the ag-Grid `columnGroupShow` value.
+ * @internal
+ */
+export function toAgColumnGroupShow(mode: ColumnGroupShowMode): 'open' | 'closed' {
+    switch (mode) {
+        case 'expanded':
+            return 'open';
+        case 'collapsed':
+            return 'closed';
+        default:
+            return null;
+    }
+}
 
 /**
  * Sort comparator function for a grid column. Note that this comparator will also be called if

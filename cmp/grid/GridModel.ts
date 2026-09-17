@@ -587,13 +587,6 @@ export class GridModel extends HoistModel {
     //------------------------
     @observable.ref columns: ColumnOrGroup[] = [];
     @observable.ref columnState: ColumnState[] = [];
-
-    /**
-     * Expand/collapse state for this grid's {@link ColumnGroup}s, one entry per configured group.
-     *
-     * Note that only groups with a `columnGroupShow` descendant can actually be collapsed - see
-     * {@link ColumnGroupShow}. Entries for other groups are inert.
-     */
     @observable.ref columnGroupState: ColumnGroupState[] = [];
     @observable.ref expandState: any = {};
     @observable.ref sortBy: GridSorter[] = [];
@@ -612,19 +605,6 @@ export class GridModel extends HoistModel {
     @computed.struct
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
-    }
-
-    /**
-     * Groups the user has moved off their configured default, and only those - a grid that mints new
-     * groups as its data changes must not read as dirty, or write anything, merely for having
-     * rebuilt its columns. Missing groups resolve to their default on restore.
-     */
-    @computed.struct
-    get persistableColumnGroupState(): ColumnGroupState[] {
-        const defaults = new Map(
-            this.getColumnGroups().map(it => [it.groupId, it.expandedByDefault])
-        );
-        return this.columnGroupState.filter(it => it.expanded !== defaults.get(it.groupId));
     }
 
     @bindable showSummary: boolean | VSide = false;
@@ -870,8 +850,6 @@ export class GridModel extends HoistModel {
 
         const {columns, sortBy, groupBy, filter, expandLevel} = this._defaultState;
         this.setColumns(columns);
-        // `setColumns` deliberately retains group state - restoring defaults is where it must not.
-        this.setColumnGroupState([]);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
         this.expandToLevel(expandLevel);
@@ -1366,15 +1344,11 @@ export class GridModel extends HoistModel {
      * Replace the columns for this grid, rebuilding all `Column` instances from the configs
      * provided.
      *
-     * Note this resets all column state - visibility, width, order, and pinning - to the defaults
-     * specified by the new configs. For a grid with persistence enabled, that reset is itself
-     * persisted, discarding any state the user had saved. Use {@link setColumnState} or
-     * {@link updateColumnState} to change how the *existing* columns are displayed.
-     *
-     * Column group expand/collapse state is the exception: it is *retained* for any group the new
-     * configs still define, since a rebuild that mints new columns (a pivot grid discovering a new
-     * value, say) should not spring the user's collapsed groups open. New groups take their
-     * `expandedByDefault` config.
+     * Note this resets all column state - visibility, width, order, pinning, and column group
+     * expand/collapse - to the defaults specified by the new configs. For a grid with persistence
+     * enabled, that reset is itself persisted, discarding any state the user had saved. Use
+     * {@link setColumnState}, {@link updateColumnState}, or {@link setColumnGroupState} to change
+     * how the *existing* columns are displayed.
      */
     @action
     setColumns(colConfigs: ColumnOrGroupSpec[]) {
@@ -1384,8 +1358,10 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
+
+        // Ag-grid will recycle state below -- reactions forced by ref change below guarantee sync
         this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
-        this.columnGroupState = this.cleanColumnGroupState(this.columnGroupState);
+        this.columnGroupState = this.getColumnGroups().map(it => this.getDefaultStateForGroup(it));
     }
 
     /**
@@ -1402,7 +1378,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Replace the current column group expand/collapse state with the state provided. Groups missing
-     * from `groupState` fall back to their `expandedByDefault` config, so an empty array restores
+     * from `groupState` fall back to their configured `collapsed` state, so an empty array restores
      * every group to its default.
      */
     @action
@@ -1410,10 +1386,9 @@ export class GridModel extends HoistModel {
         this.columnGroupState = this.cleanColumnGroupState(groupState);
     }
 
-    /** Expand or collapse a single ColumnGroup. */
+    /** Expand or collapse a single ColumnGroup. No-op if the groupId does not resolve to a group. */
     @action
     setColumnGroupExpanded(groupId: string, expanded: boolean) {
-        throwIf(!this.getColumnGroup(groupId), `Unknown column group '${groupId}'`);
         this.columnGroupState = this.columnGroupState.map(it =>
             it.groupId === groupId ? {...it, expanded} : it
         );
@@ -1427,6 +1402,7 @@ export class GridModel extends HoistModel {
         return find(this.columnGroupState, {groupId})?.expanded ?? false;
     }
 
+    /** @internal */
     @action
     noteAgColumnGroupStateChanged(agGroupState: Array<{groupId: string; open: boolean}>) {
         const expandedById = new Map(agGroupState.map(it => [it.groupId, it.open]));
@@ -2029,15 +2005,17 @@ export class GridModel extends HoistModel {
 
     /**
      * Normalize group state against the current columns: drop groups no longer defined, add any
-     * missing at their `expandedByDefault`, and order by the group tree so that state read back from
-     * ag-Grid compares equal to state this model produced.
+     * missing at their default, and order by the group tree so that state read back from ag-Grid
+     * compares equal to state this model produced.
      */
     private cleanColumnGroupState(groupState: ColumnGroupState[]): ColumnGroupState[] {
+        if (!isArray(groupState)) groupState = [];
         const expandedById = new Map(groupState.map(it => [it.groupId, it.expanded]));
-        return this.getColumnGroups().map(({groupId, expandedByDefault}) => ({
-            groupId,
-            expanded: expandedById.get(groupId) ?? expandedByDefault
-        }));
+        return this.getColumnGroups().map(group =>
+            expandedById.has(group.groupId)
+                ? {groupId: group.groupId, expanded: expandedById.get(group.groupId)}
+                : this.getDefaultStateForGroup(group)
+        );
     }
 
     private cleanColumnState(columnState, opts?: ColumnStateOptions) {
@@ -2366,6 +2344,10 @@ export class GridModel extends HoistModel {
             // See https://github.com/xh/hoist-react/issues/4102.
             manuallySized: !!(column.width && this.autosizeOptions.mode !== 'managed')
         };
+    }
+
+    private getDefaultStateForGroup(group: ColumnGroup): ColumnGroupState {
+        return {groupId: group.groupId, expanded: !group.collapsed};
     }
 }
 

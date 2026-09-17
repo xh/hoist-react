@@ -9,11 +9,17 @@ import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 
 import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
-import {ColumnGroupShow, ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
+import {
+    ColumnGroupShowMode,
+    ColumnHeaderClassFn,
+    ColumnHeaderNameFn,
+    ColumnOrGroup,
+    toAgColumnGroupShow
+} from '../Types';
 import {Column, ColumnSpec} from './Column';
 
 /**
@@ -43,21 +49,20 @@ export interface ColumnGroupSpec {
     borders?: boolean;
 
     /**
-     * Show this group only while its containing parent ColumnGroup is expanded ('open') or
-     * collapsed ('closed'). Default is to always show it. Ignored for a top-level group.
+     * Show this group only while its containing parent ColumnGroup is 'expanded' or 'collapsed',
+     * or 'always' (default) to show it in either state. Ignored for a top-level group.
      */
-    columnGroupShow?: ColumnGroupShow;
+    groupShowMode?: ColumnGroupShowMode;
 
     /**
-     * False to render this group collapsed until the user expands it. Defaults to true.
-     * Applies only to an expandable group - i.e. one with a descendant specifying
-     * `columnGroupShow`.
+     * True to render this group collapsed until the user expands it. Defaults to false.
+     * Applies only to an expandable group - i.e. one with a direct child specifying
+     * `groupShowMode`.
      *
-     * Note this is the *default* only: once rendered, expand/collapse state is tracked on
-     * {@link GridModel.columnGroupState}, survives a `setColumns()` rebuild, and is persisted with
-     * the grid's `persistWith`.
+     * Note this is the initial state only: once rendered, expand/collapse state is tracked on
+     * {@link GridModel.columnGroupState} and is persisted with the grid's `persistWith`.
      */
-    expandedByDefault?: boolean;
+    collapsed?: boolean;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -86,8 +91,8 @@ export class ColumnGroup {
     readonly headerAlign: HAlign;
     readonly headerTooltip: string;
     readonly borders: boolean;
-    readonly columnGroupShow: ColumnGroupShow;
-    readonly expandedByDefault: boolean;
+    readonly groupShowMode: ColumnGroupShowMode;
+    readonly collapsed: boolean;
     readonly omit: Thunkable<boolean>;
 
     /**
@@ -118,8 +123,8 @@ export class ColumnGroup {
             headerTooltip,
             agOptions,
             borders,
-            columnGroupShow,
-            expandedByDefault,
+            groupShowMode,
+            collapsed,
             appData,
             omit,
             ...rest
@@ -137,13 +142,28 @@ export class ColumnGroup {
         this.headerAlign = headerAlign;
         this.headerTooltip = headerTooltip;
         this.borders = withDefault(borders, true);
-        this.columnGroupShow = columnGroupShow;
-        this.expandedByDefault = withDefault(expandedByDefault, true);
+        this.groupShowMode = groupShowMode;
+        this.collapsed = withDefault(collapsed, false);
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
         this.appData = appData ? clone(appData) : {};
         this.omit = omit;
+
+        const changeable = children.some(it => it.groupShowMode && it.groupShowMode !== 'always'),
+            showsWhenExpanded = children.some(it => it.groupShowMode !== 'collapsed'),
+            showsWhenCollapsed = children.some(it => it.groupShowMode !== 'expanded'),
+            expandable = changeable && showsWhenExpanded && showsWhenCollapsed;
+
+        warnIf(
+            changeable && !expandable,
+            `Column group '${this.groupId}' specifies 'groupShowMode' on its children but cannot be expanded - that requires at least one child shown when expanded and one shown when collapsed.`
+        );
+
+        warnIf(
+            !expandable && this.collapsed,
+            `Column group '${this.groupId}' specifies 'collapsed: true' but cannot be expanded - this config will be ignored.`
+        );
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
@@ -168,8 +188,8 @@ export class ColumnGroup {
             },
             headerClass: getAgHeaderClassFn(this),
             headerTooltip: this.headerTooltip,
-            columnGroupShow: this.columnGroupShow,
-            openByDefault: this.expandedByDefault,
+            columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
+            openByDefault: !this.collapsed,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: gridModel.lockColumnGroups,

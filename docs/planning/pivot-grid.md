@@ -1241,15 +1241,13 @@ structural change, which is exactly that shape. Fix it before rewiring, not oppo
       of them framework-level.
 - [ ] **Build the day-1 set.** See [Extras](#extras-and-nice-to-haves) for each. Rough dependency
       order, since several interlock:
-      1. ~~Framework first.~~ **Done.** `columnGroupShow` on both specs, plus
-         `ColumnGroupSpec.expandedByDefault` (default true) rather than a grid-level default-expanded
+      1. ~~Framework first.~~ **Done.** `groupShowMode` on both specs, plus
+         `ColumnGroupSpec.collapsed` (default false) rather than a grid-level default-expanded
          depth - a model generating a group tree applies its own depth policy, and ag-Grid's own
          default is per-group. Collapse state is now `GridModel.columnGroupState`, persisted via
-         `persistColumnGroups` and retained across `setColumns` for groups the new configs still
-         define. Note **ag-Grid keeps a provided group's expanded flag keyed on `groupId` alone** -
-         verified across def replacement, reorder, and re-parenting - so the retention that matters
-         is the model's, and a group that leaves the column set and returns comes back at its
-         default (as a re-added `colId` does).
+         `persistColumnGroups`. Note **`setColumns` resets it**, exactly as it resets `columnState`,
+         so `rebuildColumns` must capture and re-apply it across a structural rebuild or a user's
+         collapsed groups spring open whenever new data mints a path.
       2. Column plumbing: `labelColumn`, `pivotGroupSpec`, qualified `exportName`, filter `fieldSpecs`
          and cell-field `displayName`, the `PivotSort` comparator, the single-value collapse toggle.
       3. Layout: `columnLayout: 'path' | 'value'` and group expand/collapse, which share the summary
@@ -1341,13 +1339,13 @@ parameterizes on one value field instead of iterating them.
 **Column group expand/collapse.** Standard pivot behavior and ag-Grid's default, which shows a group's
 totals *only* while it is collapsed. Adopt those semantics: a collapsed group always shows its summary
 column, and `pivotSummary` governs whether it also shows while expanded. Implementable by always
-building the summary column and setting `columnGroupShow: 'closed'` on it when `pivotSummary` is off.
+building the summary column and setting `groupShowMode: 'collapsed'` on it when `pivotSummary` is off.
 
-Two constraints. Hoist now has `columnGroupShow` on both specs (`agOptions` is reserved on value
+Two constraints. Hoist now has `groupShowMode` on both specs (`agOptions` is reserved on value
 columns, so apps could not otherwise reach it). **ag-Grid makes a group expandable only if it has a
-visible child shown when open *and* one shown when closed**, so `columnGroupShow: 'closed'` on the
-summary is not enough on its own when `pivotSummary` is on: the detail children need
-`columnGroupShow: 'open'` for the group to collapse to its always-visible summary. And **collapse is
+visible child shown while expanded *and* one shown while collapsed**, so `groupShowMode: 'collapsed'`
+on the summary is not enough on its own when `pivotSummary` is on: the detail children need
+`groupShowMode: 'expanded'` for the group to collapse to its always-visible summary. And **collapse is
 only meaningful where a summary exists**: parent pivot groups (showing pivot summaries) and, under
 value-major, the top-level value group (showing its row summary). A single pivot dimension in
 path-major layout has no collapsible groups at all. Say so, or it reads as broken.
@@ -1436,14 +1434,15 @@ against the current `result` is a separate, later utility - YAGNI for now.
 
 **Framework work this pulls in**, all of it useful beyond pivoting:
 
-- ~~`columnGroupShow` on `ColumnSpec` / `ColumnGroupSpec`, plus a default-expanded depth
-  (ag-Grid's `pivotDefaultExpanded`).~~ Done - `expandedByDefault` on `ColumnGroupSpec` covers the
+- ~~`groupShowMode` on `ColumnSpec` / `ColumnGroupSpec`, plus a default-expanded depth
+  (ag-Grid's `pivotDefaultExpanded`).~~ Done - `collapsed` on `ColumnGroupSpec` covers the
   default, so a depth config, if wanted, belongs on `PivotGridModel` where the groups are generated.
-- ~~Column group expand/collapse tracked as `GridModel` state, persisted, and surviving `setColumns` on a
-  structural rebuild - the problem `rebuildColumns` currently solves for `cubeLabel` alone.~~ Done -
+- ~~Column group expand/collapse tracked as `GridModel` state and persisted.~~ Done -
   `GridModel.columnGroupState`, kept separate from `columnState` as ag-Grid keeps it, and normalized
   against the current group tree on every read from ag-Grid (whose own report includes the padding
-  groups it mints to balance headers).
+  groups it mints to balance headers). It does *not* survive `setColumns` - carrying it across a
+  structural rebuild is `rebuildColumns`'s job, the same problem it currently solves for `cubeLabel`
+  alone.
 
 ### Follow-up
 
@@ -1962,7 +1961,7 @@ at merging Toolbox before believing any of it.
 
 **2026-08-10 — Day-1 triage, and phase 4 got much bigger.** No implementation.
 [Extras](#extras-and-nice-to-haves) is now split day-1 / follow-up, with twelve items on day 1 - two
-of them framework-level (`columnGroupShow`, persisted column group state), which is the reason the
+of them framework-level (`groupShowMode`, persisted column group state), which is the reason the
 phase grew rather than closed.
 
 Audited ag-Grid's four pivot doc pages against our surface. We match or beat them nearly everywhere -

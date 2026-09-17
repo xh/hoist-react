@@ -10,6 +10,7 @@ import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     debounce as lodashDebounce,
+    DebouncedFunc,
     get,
     isArray,
     isEmpty,
@@ -137,7 +138,7 @@ export abstract class PersistenceProvider<S = any> {
 
         // Drop any debounced write still pending - it holds pre-clear state and would otherwise
         // land after this call and resurrect it.
-        (this.writeInternal as any).cancel?.();
+        (this.writeInternal as DebouncedFunc<(data: S) => void>).cancel?.();
 
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
