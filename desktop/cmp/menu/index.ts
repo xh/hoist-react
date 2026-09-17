@@ -4,5 +4,5 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-export * from './ClipboardButton';
-export {clipboardMenuItem, type ClipboardMenuItemSpec} from '@xh/hoist/cmp/clipboard';
+export * from './Menu';
+export * from './MenuButton';

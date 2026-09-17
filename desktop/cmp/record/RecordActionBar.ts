@@ -7,7 +7,7 @@
 
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {RecordAction, RecordActionSpec, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
+import {RecordAction, RecordActionLike, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {getTestId, throwIf} from '@xh/hoist/utils/js';
@@ -16,7 +16,7 @@ import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionBu
 
 export interface RecordActionBarProps extends ButtonGroupProps {
     /** Actions to include. */
-    actions: Array<RecordActionSpec | RecordAction>;
+    actions: RecordActionLike[];
 
     /** The StoreRecord to associate with the actions. Required if selModel is omitted. */
     record?: StoreRecord;

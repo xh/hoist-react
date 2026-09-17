@@ -347,6 +347,50 @@ uncached, so a flag still reflects state that changes without the record, such a
 validation result. Size follows the grid's `sizingMode` via the `--xh-grid-cell-flag-size` custom
 property. Flags are CSS pseudo-elements, so they add no width and do not appear in grid exports.
 
+### Context Menus
+
+`GridModel.contextMenu` takes an array of entries, or a function returning one. Entries can be a
+`RecordAction` (or its config), a `'-'` separator, a `MenuHeading`, or a token - either one of
+Hoist's own (`copyCell`, `colChooser`, `export`, `filter`, `restoreDefaults`, and others) or one
+built into ag-Grid.
+
+A `MenuHeading` is a non-interactive label for the items below it, written as `{heading: '...'}`.
+Use it to break a long menu into sections.
+
+```typescript
+contextMenu: [
+    {heading: 'This Row'},
+    'copyCell',
+    editAction,
+    deleteAction,
+
+    {heading: 'Grid'},
+    'colChooser',
+    'export',
+    'restoreDefaults'
+]
+```
+
+Headings render their own divider rule, so they need no `'-'` alongside. A heading with nothing
+below it is dropped automatically - at the end of a menu, or when its entire section has hidden
+itself. That matters because actions commonly hide based on the clicked row, via `hidden`,
+`recordsRequired`, or `displayFn`: right-clicking empty space in the grid above drops the
+`This Row` heading along with the actions under it.
+
+A heading takes a `displayFn` of its own for dynamic text, receiving the same `ActionFnData` passed
+to the actions beside it:
+
+```typescript
+{
+    heading: 'This Row',
+    displayFn: ({record}) => (record ? {heading: `Row: ${record.get('company')}`} : {hidden: true})
+}
+```
+
+Headings are also accepted by the desktop and mobile menus that take `MenuItemLike` entries - e.g.
+a dropdown attached to a button. Those menus supply no record context, so a `displayFn` there is
+called with no argument.
+
 ## Column Properties Reference
 
 Every column within a `GridModel` must resolve to a **unique ID**. The `colId` defaults to `field`
