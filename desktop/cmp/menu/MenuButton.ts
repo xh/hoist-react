@@ -77,8 +77,6 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             disabled,
             position: menuPosition,
             minimal: true,
-            // `className` lands on the button, as `MenuButtonProps extends ButtonProps` implies.
-            // Use `popoverProps.className` to target the popover wrapper instead.
             item: button({className, icon, disabled, ...rest}),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
@@ -94,8 +92,6 @@ class MenuButtonLocalModel extends HoistModel {
     override xhImpl = true;
 
     @bindable isOpen = false;
-
-    // Function-form props, materialized on open.
     @bindable.ref menuItems: MenuItemLike[] = null;
     @bindable.ref context: MenuContext = null;
 

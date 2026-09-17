@@ -9,6 +9,7 @@ import {
     hoistCmp,
     HoistModel,
     useLocalModel,
+    type MenuContext,
     MenuItemLike,
     isMenuHeading,
     isMenuItem
@@ -40,9 +41,9 @@ export const menu = hoistCmp.factory({
     displayName: 'Menu',
     className: 'xh-menu',
 
-    render({menuItems, onDismiss, title, ...props}, ref) {
+    render({menuItems, context, onDismiss, title, ...props}, ref) {
         const impl = useLocalModel(LocalMenuModel),
-            items = impl.parseMenuItems(menuItems, onDismiss);
+            items = impl.parseMenuItems(menuItems, context, onDismiss);
 
         useEffect(() => {
             if (isEmpty(items)) onDismiss();
@@ -76,15 +77,19 @@ class LocalMenuModel extends HoistModel {
         makeObservable(this);
     }
 
-    parseMenuItems(items: MenuItemLike[], onDismiss: () => void): ReactNode[] {
+    parseMenuItems(
+        items: MenuItemLike[],
+        context: MenuContext,
+        onDismiss: () => void
+    ): ReactNode[] {
         const {pressedIdx} = this;
 
         items = items.map(item => {
-            if (isMenuHeading(item)) return resolveMenuHeading(item);
+            if (isMenuHeading(item)) return resolveMenuHeading(item, context);
             if (!isMenuItem(item)) return item;
 
             item = clone(item);
-            item.prepareFn?.(item);
+            item.prepareFn?.(item, context);
             return item;
         });
 
@@ -124,7 +129,7 @@ class LocalMenuModel extends HoistModel {
                     onTouchEnd: () => (this.pressedIdx = null),
                     onClick: e => {
                         this.pressedIdx = null;
-                        if (actionFn) actionFn(e);
+                        if (actionFn) actionFn(e, context);
                         onDismiss();
                     }
                 });

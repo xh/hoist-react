@@ -49,7 +49,7 @@
   hidden and omitted items, builds submenus, and tidies separators. `MenuButton` adds a trigger
   button and takes `ButtonProps` directly alongside `menuItems`. As with a `ContextMenuSpec`,
   `MenuButton` accepts `menuItems` as a function of the menu's context, called each time the menu
-  opens.
+  opens. The mobile `MenuButton` gains the same `context` prop and function form.
     * Together they replace the popover and Blueprint menu that apps built by hand.  They take the
       same input as `ContextMenu` and use the same underlying parsing.
 * `MenuItem` now supports an `active` flag, to mark the current selection within a menu.
