@@ -1795,9 +1795,44 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
     A `PivotViewDiagnostics extends ViewDiagnostics` would surface those in Inspector. Thread
     `xhName` through `Cube.createPivotView` at the same time.
 
+13. **`buildPivotStructure` is the largest phase of a rebuild, and its cost tracks leaves, not
+    cells.** Per-phase timings landed 2026-09-17 (`PivotViewDiagnostics.pivot.phases`). Steady
+    state on the Toolbox pivot test panel, ~16k leaves, base tree fully cache-reused, warm JIT:
+
+    | phase    | 6 paths, 280 cells | 51 paths, 2795 cells |
+    | -------- | -----------------: | -------------------: |
+    | discover |                0.8 |                  1.5 |
+    | align    |                2.8 |                  2.4 |
+    | plan     |                2.9 |                  5.7 |
+    | build    |                2.3 |                  5.4 |
+    | project  |                0.1 |                  0.8 |
+
+    Planning 280 cells in 2.9ms is per-leaf overhead: a `populated[g].push` per path prefix, a
+    `leavesOfKey` Map get and set and a `cellOfKey` Map get per leaf, then a comparator sort of one
+    small array per innermost group - ~50k Map operations on number keys plus thousands of tiny
+    sorts. **Fix: dense indexing when `groupCount × pathCount` is modest** (here ~128k) - an
+    `Int32Array` for `cellOfKey` and a `Uint8Array` bitmap for `populated`, OR'd up the group axis
+    and scanned in path order, which is already sorted. Every Map op and sort disappears; expect
+    `plan` near 1ms. Keep the Map path as a fallback above a size threshold - the Wide profile is
+    ~31k × 138 = 4.3M entries, a 17MB scratch array, and that needs a deliberate decision rather than
+    a default. Contained in `PivotStructure.ts`, with the spec's oracle checks behind it. Re-measure
+    on the Wide profile in `PivotPerfModel` afterwards, since that is where the threshold and the
+    fallback are actually exercised.
+
+14. **`align` is a flat ~2.5ms** - `_leafMap.get(id)` and `groupIdxOf.get(parent)` per record, plus
+    `enumerateGroups`. Fusing discovery and alignment into `groupAndInsertRecords` would remove it
+    but needs a `View` hook and a path slot on `LeafRow`; the cheaper first step is writing the group
+    index onto group rows in `enumerateGroups` and stamping the path index onto leaves at discovery,
+    then walking `_leafMap` rather than `records`. Second priority behind item 13, and only if it
+    still shows on Wide. **Discovery itself is not worth fusing** - under 1.5ms warm, and the
+    earlier estimate that it dominated the pivot slice was wrong.
+
+    `build` is inherent work - cell creation with initial aggregation, and on a shrink
+    `clearVacatedCells` walking the discarded cells - and nothing to chase.
+
 ### Follow-up: documentation
 
-13. **There is still no pivot documentation outside this plan** — `data/README.md`,
+15. **There is still no pivot documentation outside this plan** — `data/README.md`,
     `data/cube/README.md` and `cmp/grid/README.md` do not mention `PivotView`, `PivotQuery` or
     `PivotGrid`, and `docs/doc-registry.json` has no entry. That is phase 4 work, but the rework
     moved the sections it has to slot into: `data/README.md` now carries "Declaring changed fields",
@@ -1805,7 +1840,7 @@ or a new `PivotRowDataGenerator`. No change to `ViewRowData`'s contract, `Parent
     "Incremental Patching for Large Datasets" and "Diagnostics", all of which a pivot section must
     reference rather than restate.
 
-14. **Stale references in this document.** The `store-simple` section still describes
+16. **Stale references in this document.** The `store-simple` section still describes
     `View.parseStores` throwing on `s.reuseRecords` and reuse installed via `setDigestFn` (both
     renamed), and the correctness bug list still carries the `SumAggregator.replace` item — check it
     against `develop` before re-filing.
@@ -1840,6 +1875,27 @@ Three assertions the rework specifically calls for, none of which exist yet:
 ## Session log
 
 One entry per working session: date, what landed, where to pick up.
+
+**2026-09-16/17 — Review follow-ups landed, `PivotLattice` renamed, specs fixed and in CI.** Full
+review of the branch against `develop`; architecture held, fixes landed as one commit each.
+`PivotLattice` → `PivotStructure` throughout, including this document ("lattice" was a label nobody
+would search for). The unit spec had been crashing since the 09-15 merge - the aggregator harness
+passed a null `AggregationContext` and compositional AVG now calls `setAggState` - and was wired
+into nothing; it now runs under a fake context, the aggregator-only sections live in
+`aggregate/Aggregator.spec.ts` with the shared harness in `impl/SpecSupport.ts`, each block runs
+under `suite()` so a throw cannot abort the rest, and `pnpm test:unit` runs in CI after typecheck.
+`PivotGridModel.rebuildColumns` no longer wipes value-column state on a structural rebuild.
+Extension-point cleanups: `projectedCellNames` off `BaseRow`, `pivotDimensionNames` computed once,
+one `View.getStructuralDimensions()` hook replacing the paired `hasDimOrBucketUpdates` /
+`hasStructuralChange` overrides, cell agg fields built in a now-protected `buildIndices`, the row
+data generator no longer reaching into `_rowCache`, and `beforeGenerateRows` / `afterGenerateRows`
+hooks replacing the `generateRows` override (`generateRows` is private again). Per-phase pivot
+timings added to `PivotViewDiagnostics`; the measurements and the two optimizations they point at
+are items 13 and 14 under [optimizations to adopt](#follow-up-optimizations-to-adopt). **Pick up
+there.** Still open from the review: `groupAndInsertRecords`, `bucketRows`, `filterRecords` and
+`createAggregationContext` remain `protected` on `View` with nothing overriding them; and the
+Toolbox browser checks (pivot test panel run, column width surviving a new pivot value) have not
+been re-run since these commits.
 
 **2026-09-15 — Merged `develop` again, audited the rebase list, fixed two correctness bugs.** Eight
 commits of `develop`: ag-Grid v36, v88 deprecations, compositional AVG / AVG_STRICT (#4659), grid
