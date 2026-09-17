@@ -23,6 +23,13 @@
     overflow-y: auto !important;
     border: var(--xh-menu-border);
 
+    // Textless '-' separator. Items already carry a bottom border, so this is a slim gap.
+    &__divider {
+      height: var(--xh-pad-half-px);
+      background-color: var(--xh-menu-bg);
+      border-bottom: var(--xh-menu-border);
+    }
+
     // Non-interactive heading - see MenuHeading.
     &__heading {
       padding: var(--xh-pad-px) var(--xh-pad-double-px) var(--xh-pad-half-px) var(--xh-pad-px);

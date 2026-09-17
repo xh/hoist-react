@@ -98,7 +98,8 @@ class MenuLocalModel extends HoistModel {
             .filter(filterMenuHeadings(isMenuHeading))
             .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
-                // Process headings
+                // Process dividers and headings
+                if (item === '-') return div({key: idx, className: 'xh-menu__list__divider'});
                 if (isMenuHeading(item)) {
                     return div({
                         key: idx,
@@ -106,8 +107,6 @@ class MenuLocalModel extends HoistModel {
                         item: item.heading
                     });
                 }
-
-                // Process dividers
                 if (!isMenuItem(item)) return item;
 
                 // Process items
