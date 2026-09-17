@@ -72,6 +72,9 @@
   derived from their children's published values alone - e.g. a weighted average - compose from
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
+* `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
+  their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
+  prop to opt out - `password` type inputs do not trim by default.
 
 ### 🐞 Bug Fixes
 
