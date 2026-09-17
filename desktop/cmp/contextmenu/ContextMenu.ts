@@ -37,6 +37,13 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
             context,
             submenuPopoverProps: {usePortal: true}
         });
-        return isEmpty(items) ? null : bpMenu(items);
+        return isEmpty(items)
+            ? null
+            : bpMenu({
+                  items,
+                  // The menu renders in its own React root, outside the `useContextMenu` target
+                  // that would otherwise swallow a right-click. Keep the browser menu off it.
+                  onContextMenu: e => e.preventDefault()
+              });
     }
 });

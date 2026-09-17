@@ -90,6 +90,7 @@
 * Fixed desktop submenus closing as soon as the pointer left the parent item, which dismissed them
   mid-diagonal. Submenus now linger briefly, aligning with grid context menus, where ag-Grid
   already does the same. Tune with `Menu.defaults.submenuHoverCloseDelay`.
+* Fixed a right-click on an open desktop `ContextMenu` showing the browser's own context menu.
 * Fixed the mobile `MenuButton` menu rendering a `'-'` separator as a literal hyphen. It now draws a
   slim divider.
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
