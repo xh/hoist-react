@@ -75,6 +75,9 @@
     * A heading draws its own divider rule, so it needs no adjacent `'-'` separator. Hoist drops a
       heading with no items below it, either at the end of a menu or because its whole section hid
       itself.
+* `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
+  their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
+  prop to opt out - `password` type inputs do not trim by default.
 
 ### 🐞 Bug Fixes
 
