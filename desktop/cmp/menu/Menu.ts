@@ -8,6 +8,7 @@ import {hoistCmp, type HoistProps, type MenuContext, type MenuItemLike} from '@x
 import '@xh/hoist/desktop/register';
 import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
+import type {MouseEvent} from 'react';
 import {MENU_DEFAULTS, type MenuDefaults, parseMenuItems} from './impl/MenuItems';
 
 export interface MenuProps extends HoistProps {
@@ -39,8 +40,20 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
 
     render({menuItems, context, className}) {
         const items = parseMenuItems(menuItems, {context});
-        return isEmpty(items) ? null : bpMenu({className, items});
+        return isEmpty(items)
+            ? null
+            : bpMenu({className, items, onContextMenu: swallowContextMenu});
     }
 });
 
 export type {MenuDefaults};
+
+/**
+ * A right-click on a menu should neither show the browser menu nor reach a context menu on the
+ * component beneath. The popover renders in a portal, but React events still bubble up the tree.
+ * @internal
+ */
+export function swallowContextMenu(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+}

@@ -10,7 +10,7 @@ import {copyToClipboard, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 /**
- * Config for the copy behavior shared by {@link ClipboardButton} and {@link ClipboardMenuItem}.
+ * Config for the copy behavior shared by `ClipboardButton` and `clipboardMenuItem()`.
  */
 export interface CopyTextSpec {
     /** Function returning the text to copy. May be async. */
@@ -30,7 +30,7 @@ export interface CopyTextSpec {
 }
 
 /**
- * Build the click handler shared by the clipboard button and menu item.
+ * Build the click handler shared by the clipboard button and menu items.
  * @internal
  */
 export function createCopyHandler({getCopyText, errorMessage, successMessage}: CopyTextSpec) {

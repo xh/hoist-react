@@ -14,12 +14,12 @@ import {
 import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import type {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {
-    filterConsecutiveMenuSeparators,
     filterMenuHeadings,
     isVisibleMenuEntry,
     resolveMenuHeading
-} from '@xh/hoist/utils/impl';
+} from '@xh/hoist/cmp/menu/impl/Menus';
 import {clone, isEmpty} from 'lodash';
 import type {ReactNode} from 'react';
 

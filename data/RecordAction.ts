@@ -9,7 +9,7 @@ import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {type Intent, isMenuHeading, type MenuHeading, type TestSupportProps} from '../core';
 import {StoreRecord} from './StoreRecord';
-import {Column, GridModel} from '../cmp/grid';
+import {Column, type GridContextMenuItemLike, GridModel} from '../cmp/grid';
 
 export interface RecordActionSpec extends TestSupportProps {
     /** Label to be displayed. */
@@ -39,8 +39,8 @@ export interface RecordActionSpec extends TestSupportProps {
      */
     displayFn?: (data: ActionFnData) => RecordActionSpec;
 
-    /** Sub-actions for this action. */
-    items?: RecordActionLike[];
+    /** Sub-menu entries for this action - actions, headings, separators, or tokens. */
+    items?: GridContextMenuItemLike[];
 
     /** True to disable this item. */
     disabled?: boolean;
@@ -65,7 +65,11 @@ export interface RecordActionSpec extends TestSupportProps {
  */
 export type RecordActionHeading = MenuHeading<ActionFnData>;
 
-export type RecordActionLike = RecordAction | RecordActionSpec | RecordActionHeading | '-';
+/**
+ * A RecordAction, or a spec to create one. For a menu entry that may also be a heading, separator,
+ * or token, see {@link GridContextMenuItemLike}.
+ */
+export type RecordActionLike = RecordAction | RecordActionSpec;
 
 /**
  * Data passed to the Action Function of a RecordAction
@@ -119,7 +123,7 @@ export class RecordAction {
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
     displayFn: (data: ActionFnData) => RecordActionSpec;
-    items: RecordActionLike[];
+    items: GridContextMenuItemLike[];
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean | number;

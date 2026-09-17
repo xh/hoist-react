@@ -349,7 +349,7 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
  * with no items below it, either at the end of a menu or immediately before another heading. It
  * also drops any separator directly adjacent to a heading.
  *
- * Grid context menus accept a heading via {@link RecordActionLike}. The desktop and mobile menus
+ * Grid context menus accept a heading via {@link GridContextMenuItemLike}. The desktop and mobile menus
  * that take {@link MenuItemLike} accept one too.
  */
 export interface MenuHeading<C = MenuContext> {

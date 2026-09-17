@@ -4,15 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    isMenuHeading,
-    isMenuItem,
-    type MenuHeading,
-    type MenuItemLike
-} from '@xh/hoist/core/types/Interfaces';
+import {isMenuHeading, isMenuItem, type MenuHeading, type MenuItemLike} from '@xh/hoist/core';
 import {isNil} from 'lodash';
-import {isMenuSeparator} from './Separators';
-import {isOmitted} from './IsOmitted';
+import {isMenuSeparator, isOmitted} from '@xh/hoist/utils/impl';
 
 /**
  * `Array.filter()` function to exclude menu entries that must not appear. This covers items and
@@ -35,6 +29,17 @@ export function isVisibleMenuEntry(it: MenuItemLike | any): boolean {
 export function resolveMenuHeading<C>(heading: MenuHeading<C>, context?: C): MenuHeading<C> {
     const ret = heading.displayFn ? {...heading, ...heading.displayFn(context)} : heading;
     return ret.hidden || isOmitted(ret) ? null : ret;
+}
+
+/**
+ * Bind a MenuHeading's `displayFn` to a specific context, for menus that supply richer context
+ * than the generic parser passes - e.g. a chart's hover point, or a tab switcher's tab. Returns
+ * the heading unchanged if it has no `displayFn`.
+ * @internal
+ */
+export function bindMenuHeadingContext<C>(heading: MenuHeading<C>, context: C): MenuHeading<C> {
+    const {displayFn} = heading;
+    return displayFn ? {...heading, displayFn: () => displayFn(context)} : heading;
 }
 
 /**

@@ -17,11 +17,8 @@ import {
     StoreRecord
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {
-    filterConsecutiveMenuSeparators,
-    filterMenuHeadings,
-    resolveMenuHeading
-} from '@xh/hoist/utils/impl';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {filterMenuHeadings, resolveMenuHeading} from '@xh/hoist/cmp/menu/impl/Menus';
 import {wait} from '@xh/hoist/promise';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {

@@ -5,19 +5,35 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PopoverProps} from '@blueprintjs/core';
-import {hoistCmp, type MenuContext, type MenuItemLike} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    type MenuContext,
+    type MenuItemLike,
+    type Thunkable,
+    useLocalModel
+} from '@xh/hoist/core';
 import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {menu} from './Menu';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {executeIfFunction} from '@xh/hoist/utils/js';
+import {isFunction} from 'lodash';
+import {menu, swallowContextMenu} from './Menu';
 
 export interface MenuButtonProps extends ButtonProps {
-    /** Items to display in the menu. */
-    menuItems?: MenuItemLike[];
+    /**
+     * Items to display, or a function producing them from the menu's context. As with a
+     * `ContextMenuSpec`, a function is called each time the menu opens.
+     */
+    menuItems?: MenuItemLike[] | ((context: MenuContext) => MenuItemLike[]);
 
-    /** Contextual data passed to each item's `actionFn` and `prepareFn`. */
-    context?: MenuContext;
+    /**
+     * Contextual data passed to each item's `actionFn` and `prepareFn`, or a function producing
+     * it each time the menu opens.
+     */
+    context?: Thunkable<MenuContext>;
 
     /** Css class name for the menu element itself. */
     menuClassName?: string;
@@ -41,7 +57,6 @@ export interface MenuButtonProps extends ButtonProps {
 export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
     className: 'xh-menu-button',
-    model: false,
 
     render({
         className,
@@ -54,15 +69,46 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
         disabled,
         ...rest
     }) {
+        const impl = useLocalModel(MenuButtonLocalModel);
+
         return popover({
+            isOpen: impl.isOpen,
+            onInteraction: nextOpenState => impl.setOpen(nextOpenState, menuItems, context),
             disabled,
             position: menuPosition,
             minimal: true,
-            // `className` lands on the button, as `MenuButtonProps extends ButtonProps` implies.
-            // Use `popoverProps.className` to target the popover wrapper instead.
-            item: button({className, icon, disabled, ...rest}),
-            content: menu({menuItems, context, className: menuClassName}),
+            item: button({className, icon, disabled, onContextMenu: swallowContextMenu, ...rest}),
+            content: menu({
+                menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
+                context: isFunction(context) ? impl.context : context,
+                className: menuClassName
+            }),
             ...popoverProps
         });
     }
 });
+
+class MenuButtonLocalModel extends HoistModel {
+    override xhImpl = true;
+
+    @bindable isOpen = false;
+    @bindable.ref menuItems: MenuItemLike[] = null;
+    @bindable.ref context: MenuContext = null;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
+
+    setOpen(
+        isOpen: boolean,
+        menuItems: MenuButtonProps['menuItems'],
+        context: MenuButtonProps['context']
+    ) {
+        if (isOpen) {
+            this.context = executeIfFunction(context) ?? {};
+            this.menuItems = isFunction(menuItems) ? menuItems(this.context) : null;
+        }
+        this.isOpen = isOpen;
+    }
+}

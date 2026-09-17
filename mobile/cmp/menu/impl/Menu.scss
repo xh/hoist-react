@@ -23,6 +23,12 @@
     overflow-y: auto !important;
     border: var(--xh-menu-border);
 
+    // Textless '-' separator. The item above already draws a rule, so this is just a slim gap.
+    &__divider {
+      height: var(--xh-pad-half-px);
+      background-color: var(--xh-menu-bg);
+    }
+
     // Non-interactive heading - see MenuHeading.
     &__heading {
       padding: var(--xh-pad-px) var(--xh-pad-double-px) var(--xh-pad-half-px) var(--xh-pad-px);
@@ -45,7 +51,8 @@
         border-bottom: var(--xh-menu-border);
       }
 
-      &--pressed {
+      &--pressed,
+      &--active {
         background-color: var(--xh-menu-item-highlight-bg) !important;
       }
 

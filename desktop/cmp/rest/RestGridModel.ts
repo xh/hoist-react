@@ -6,10 +6,10 @@
  */
 
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
-import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {GridConfig, GridContextMenuItemLike, GridModel} from '@xh/hoist/cmp/grid';
 import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {RecordAction, RecordActionLike, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {RecordActionLike, StoreRecord} from '@xh/hoist/data';
 import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {ExportOptions} from '@xh/hoist/svc';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -34,13 +34,16 @@ export interface RestGridConfig extends GridConfig {
     readonly?: boolean;
 
     /** Actions to display in the toolbar. Defaults to add, edit, delete. */
-    toolbarActions?: Array<RecordAction | RecordActionSpec>;
+    toolbarActions?: RecordActionLike[];
 
-    /** Actions to display in the grid context menu. Defaults to add, edit, delete. */
-    menuActions?: RecordActionLike[];
+    /**
+     * Entries for the grid context menu, shown above the grid defaults. Accepts any
+     * `GridContextMenuItemLike` - actions, headings, `'-'`, or tokens. Defaults to add, edit, delete.
+     */
+    menuActions?: GridContextMenuItemLike[];
 
     /** Actions to display in the form toolbar. Defaults to delete. */
-    formActions?: Array<RecordAction | RecordActionSpec>;
+    formActions?: RecordActionLike[];
 
     /** Show a refresh button in the toolbar. Defaults to false. */
     showRefreshButton?: boolean;
@@ -117,9 +120,9 @@ export class RestGridModel extends HoistModel {
     //----------------
     readonly: boolean;
     editors: RestGridEditor[];
-    toolbarActions: Array<RecordAction | RecordActionSpec>;
-    menuActions: RecordActionLike[];
-    formActions: Array<RecordAction | RecordActionSpec>;
+    toolbarActions: RecordActionLike[];
+    menuActions: GridContextMenuItemLike[];
+    formActions: RecordActionLike[];
     showRefreshButton: boolean;
     prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;
     unit: string;

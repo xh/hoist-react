@@ -47,9 +47,11 @@
 * Added the desktop `Menu` and `MenuButton` components. `Menu` renders a menu from Hoist
   `MenuItem` configs, `'-'` tokens, and `MenuHeading` entries. It runs each `prepareFn`, drops
   hidden and omitted items, builds submenus, and tidies separators. `MenuButton` adds a trigger
-  button and takes `ButtonProps` directly alongside `menuItems`.
-    * Together they replace the popover and Blueprint menu that apps built by hand, sometimes by
-      importing the internal `parseMenuItems` helper. `ContextMenu` now uses the same parsing.
+  button and takes `ButtonProps` directly alongside `menuItems`. As with a `ContextMenuSpec`,
+  `MenuButton` accepts `menuItems` as a function of the menu's context, called each time the menu
+  opens. The mobile `MenuButton` gains the same `context` prop and function form.
+    * Together they replace the popover and Blueprint menu that apps built by hand.  They take the
+      same input as `ContextMenu` and use the same underlying parsing.
 * `MenuItem` now supports an `active` flag, to mark the current selection within a menu.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
@@ -68,8 +70,9 @@
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
 * Added `MenuHeading`, a non-interactive heading that labels and groups the items below it - e.g.
-  `{heading: 'This Row'}`. Every menu that takes a `RecordActionLike` or `MenuItemLike` accepts it,
-  so grid context menus, desktop menus and context menus, and mobile menus all support it. A
+  `{heading: 'This Row'}`. Every menu that takes a `GridContextMenuItemLike` or `MenuItemLike`
+  accepts it, so grid context menus, desktop menus and context menus, and mobile menus all support
+  it. A
   `displayFn` can adjust the heading before each render. In a grid context menu it receives the
   same `ActionFnData` as the actions beside it.
     * A heading draws its own divider rule, so it needs no adjacent `'-'` separator. Hoist drops a
@@ -85,11 +88,17 @@
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.
 * Fixed desktop submenus closing as soon as the pointer left the parent item, which dismissed them
-  mid-diagonal. Tune with `Menu.defaults.submenuHoverCloseDelay`. Does not apply to grid context
-  menus, which ag-Grid renders itself.
-* Fixed `ClipboardMenuItem` misaligning with the items around it. It rendered a `ClipboardButton`
-  styled to look like a menu item, so it did not inherit menu item padding or icon metrics. It now
-  renders a true menu item, and shares its copy behavior with `ClipboardButton`.
+  mid-diagonal. Submenus now linger briefly, aligning with grid context menus, where ag-Grid
+  already does the same. Tune with `Menu.defaults.submenuHoverCloseDelay`.
+* Fixed a right-click outside an open desktop `ContextMenu` showing the browser's own menu.
+* Fixed a right-click on a desktop `MenuButton`, or on its open menu, falling through to a context
+  menu on the component beneath.
+* Fixed the mobile `MenuButton` menu rendering a `'-'` separator as a literal hyphen. It now draws a
+  slim divider.
+* Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
+  `ClipboardButton` rather than a true menu item.  The function also now returns a proper `MenuItem`
+   config and takes a `ClipboardMenuItemSpec` in place of the poorly fitting `ClipboardButtonProps`.
+   The fixed implementation is available on mobile and desktop.
 
 ### ⚙️ Technical
 
@@ -99,6 +108,9 @@
 
 ### ⚙️ Typescript API Adjustments
 
+* `RecordActionLike` is now just `RecordAction | RecordActionSpec`. Menu entries that may also be a
+  `'-'` separator, heading, or token - `RecordAction.items` and `RestGridConfig.menuActions` - are
+  typed as `GridContextMenuItemLike`.
 * Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
   `@xh/hoist/utils/js` entry point) instead.
 * Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
@@ -113,9 +125,6 @@
   in `GridContextMenuToken`, which gains `'-'`, and the ag-Grid `DefaultMenuItem` tokens, newly
   re-exported from `@xh/hoist/kit/ag-grid`. Apps that build a menu from dynamic strings must
   annotate or cast the array as `GridContextMenuItemLike[]`.
-* `ClipboardMenuItem` now takes `ClipboardMenuItemProps` (Blueprint `MenuItemProps` plus the
-  clipboard props) instead of `ClipboardButtonProps`. Remove any button-only props such as
-  `minimal` or `outlined`. They had no meaning on a menu item.
 
 ### ✨ Styles
 

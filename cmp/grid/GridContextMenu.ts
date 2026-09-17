@@ -6,20 +6,19 @@
  */
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import type {MenuToken} from '@xh/hoist/core';
-import type {RecordActionLike} from '@xh/hoist/data';
+import type {RecordActionHeading, RecordActionLike} from '@xh/hoist/data';
 import type {DefaultMenuItem, GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 
 /**
- * An entry within a grid context menu.
+ * An entry within a grid context menu - a RecordAction or its spec, a {@link MenuHeading} such as
+ * `{heading: 'Section'}`, or a string token.
  *
- * A string is a token. Use either a Hoist {@link GridContextMenuToken}, which includes '-' for a
+ * For a token, use either a Hoist {@link GridContextMenuToken}, which includes '-' for a
  * separator, or an ag-Grid `DefaultMenuItem` token.
  * {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items}
- *
- * Note that `RecordActionLike` also accepts a {@link MenuHeading} - i.e. `{heading: 'Section'}` -
- * which labels and groups the items below it.
  */
-export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | DefaultMenuItem;
+export type GridContextMenuItemLike =
+    RecordActionLike | RecordActionHeading | GridContextMenuToken | DefaultMenuItem;
 
 /**
  * Hoist tokens, all of which require a GridModel - plus {@link MenuToken} ('-') for a separator:
