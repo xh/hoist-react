@@ -18,12 +18,12 @@ import {useState} from 'react';
 import {MENU_DEFAULTS, type MenuDefaults, parseMenuItems} from './impl/MenuItems';
 
 export interface MenuProps extends HoistProps {
-    /** Items to display, or a function producing them when the menu is shown. */
+    /** Items to display, or a function producing them when the menu mounts. */
     menuItems: Thunkable<MenuItemLike[]>;
 
     /**
      * Contextual data passed to each item's `actionFn` and `prepareFn`, or a function producing
-     * it when the menu is shown.
+     * it when the menu mounts.
      */
     context?: Thunkable<MenuContext>;
 }
@@ -31,8 +31,8 @@ export interface MenuProps extends HoistProps {
 /**
  * Renders a menu from Hoist {@link MenuItem} configs, tokens, and {@link MenuHeading} entries. It
  * runs each `prepareFn`, drops hidden and omitted items, builds submenus, and tidies separators
- * and headings. `menuItems` and `context` given as functions are evaluated once each time the
- * menu is shown - i.e. on mount - and not again should the menu re-render while open.
+ * and headings. `menuItems` and `context` given as functions are evaluated once, when the menu
+ * mounts, and not again on re-render. Within a popover, that is each time it opens.
  *
  * For the common case of a menu on a trigger button, use {@link MenuButton}. For a right-click
  * menu, use {@link useContextMenu} or Panel's {@link PanelProps.contextMenu}.
@@ -49,13 +49,13 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
     observer: false,
 
     render({menuItems, context, className}) {
-        // Function forms resolve once per mount - i.e. once per showing within a popover.
-        const [shown] = useState(() => ({
+        // Function forms resolve once per mount.
+        const [mounted] = useState(() => ({
                 menuItems: isFunction(menuItems) ? menuItems() : null,
                 context: isFunction(context) ? context() : null
             })),
-            items = parseMenuItems(isFunction(menuItems) ? shown.menuItems : menuItems, {
-                context: isFunction(context) ? shown.context : context
+            items = parseMenuItems(isFunction(menuItems) ? mounted.menuItems : menuItems, {
+                context: isFunction(context) ? mounted.context : context
             });
         return isEmpty(items) ? null : bpMenu({className, items});
     }

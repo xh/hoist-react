@@ -13,12 +13,12 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {menu} from './Menu';
 
 export interface MenuButtonProps extends ButtonProps {
-    /** Items to display, or a function producing them when the menu is shown. */
+    /** Items to display, or a function producing them each time the menu opens. */
     menuItems?: Thunkable<MenuItemLike[]>;
 
     /**
      * Contextual data passed to each item's `actionFn` and `prepareFn`, or a function producing
-     * it when the menu is shown.
+     * it each time the menu opens.
      */
     context?: Thunkable<MenuContext>;
 
