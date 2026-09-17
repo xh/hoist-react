@@ -49,8 +49,7 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
     observer: false,
 
     render({menuItems, context, className}) {
-        // Function forms resolve once per mount. A popover mounts its content on open, so this is
-        // once per showing. Plain values pass through, leaving them under the parent's control.
+        // Function forms resolve once per mount - i.e. once per showing within a popover.
         const [shown] = useState(() => ({
                 menuItems: isFunction(menuItems) ? menuItems() : null,
                 context: isFunction(context) ? context() : null
