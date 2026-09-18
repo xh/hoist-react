@@ -40,13 +40,14 @@ function createBindable(value: any, context: ClassAccessorDecoratorContext, isRe
         };
     }
 
-    // 3) Set up a setXxx() action on the prototype, if one does not exist.
+    // 3) Set up a setXxx() action on the prototype, if one does not exist anywhere on the chain.
     //    This is the original side effect of bindable, used for backward compat by `setBindable`.
+    //    Be sure not to shadow any explicit setter already in place
     context.addInitializer(function () {
         const target = Object.getPrototypeOf(this),
             name = context.name as string,
             setterName = 'set' + upperFirst(name);
-        if (!target.hasOwnProperty(setterName)) {
+        if (!(setterName in target)) {
             const value = function (v) {
                 this[name] = v;
             };

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
-import {isObservableProp, untracked} from '@xh/hoist/mobx';
+import {isComputedProp, isObservableProp, untracked} from '@xh/hoist/mobx';
 import {find} from 'lodash';
 import {createContext} from 'react';
 
@@ -91,7 +91,8 @@ export class ModelLookup {
                 if (
                     key === 'constructor' ||
                     !Object.getOwnPropertyDescriptor(proto, key)?.get ||
-                    !isObservableProp(model, key)
+                    !isObservableProp(model, key) ||
+                    isComputedProp(model, key)
                 )
                     continue;
                 const value = (model as any)[key];
