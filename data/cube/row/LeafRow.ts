@@ -10,7 +10,7 @@ import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
-import {BaseRow} from './BaseRow';
+import {BaseRow, propagateUpdate} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
@@ -52,7 +52,7 @@ export abstract class LeafRow extends BaseRow {
 
     applyLeafDataUpdate(
         newRec: StoreRecord,
-        updatedRowDatas: Set<PlainObject>,
+        updatedRows: Set<BaseRow>,
         changedFields: Set<string>
     ) {
         this.cubeRecord = newRec;
@@ -72,18 +72,19 @@ export abstract class LeafRow extends BaseRow {
         });
 
         // 2) Apply new values to our data, as per subclass strategy.
-        this.applyUpdatedData(updates, newData, updatedRowDatas);
+        this.applyUpdatedData(updates, newData, updatedRows);
 
-        // 3) Propagate any updates to ancestors and consumers.
+        // 3) Propagate any updates to ancestors and consumers. In a pivot view a leaf has two
+        //    parents - its innermost group row and its own full-path cell.
         if (!isEmpty(updates)) {
-            this.parent?.applyDataUpdate(updates, updatedRowDatas);
+            propagateUpdate(this.parent, this.pivotParent, updates, updatedRows);
         }
     }
 
     protected abstract applyUpdatedData(
         updates: RowUpdate[],
         newData: PlainObject,
-        updatedRowDatas: Set<PlainObject>
+        updatedRows: Set<BaseRow>
     ): void;
 }
 
@@ -106,10 +107,10 @@ export class ExposedLeafRow extends LeafRow {
     protected override applyUpdatedData(
         updates: RowUpdate[],
         newData: PlainObject,
-        updatedRowDatas: Set<PlainObject>
+        updatedRows: Set<BaseRow>
     ) {
         this.data._src = newData;
-        if (!isEmpty(updates)) updatedRowDatas.add(this.data);
+        if (!isEmpty(updates)) updatedRows.add(this);
     }
 }
 
