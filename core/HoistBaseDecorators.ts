@@ -8,9 +8,7 @@ import {throwIf} from '../utils/js';
 import {PersistableState, PersistenceProvider, PersistOptions, persistOptions} from './';
 
 type FieldOrAccessorOrGetterContext =
-    | ClassFieldDecoratorContext
-    | ClassAccessorDecoratorContext
-    | ClassGetterDecoratorContext;
+    ClassFieldDecoratorContext | ClassAccessorDecoratorContext | ClassGetterDecoratorContext;
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -24,7 +22,9 @@ type FieldOrAccessorOrGetterContext =
 export function managed(_value: any, context: FieldOrAccessorOrGetterContext): any {
     const {name, kind} = context;
 
-    // Babel's addInitializer callback fails for fields, so register in initial return.
+    // Field decorators register via the returned initializer rather than `addInitializer`:
+    // that callback is not reliably invoked for fields across transpilers, and the initializer
+    // return is the spec-standard hook. Works under both SWC and Babel.
     if (kind === 'field') {
         return function (initialValue: any) {
             registerManaged(this, name as string);

@@ -18,10 +18,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  *  - function taking a model and returning any of the above.
  */
 export type ModelSelector<T extends HoistModel = HoistModel> =
-    | HoistModelClass<T>
-    | string
-    | boolean
-    | ((model: HoistModel) => ModelSelector<T>);
+    HoistModelClass<T> | string | boolean | ((model: HoistModel) => ModelSelector<T>);
 
 /**
  * Ensure an object is a ModelSelector, or throw.
@@ -68,7 +65,8 @@ export function lookup(selector: ModelSelector) {
     ensureIsSelector(selector);
     return function (_value: any, context: ClassFieldDecoratorContext) {
         const {name} = context;
-        // Babel's addInitializer callback fails for fields, so register in initial return.
+        // Register via the returned initializer, not `addInitializer` - see the note in
+        // HoistBaseDecorators.managed().
         return function (this: any, initialValue: any) {
             throwIf(
                 !this.isHoistModel,
