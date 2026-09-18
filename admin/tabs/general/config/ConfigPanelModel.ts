@@ -19,7 +19,7 @@ import {
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
@@ -36,7 +36,7 @@ export class ConfigPanelModel extends HoistModel {
     gridModel: RestGridModel;
 
     @managed
-    @observable.ref
+    @observableRef
     accessor differModel: DifferModel;
 
     constructor() {

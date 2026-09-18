@@ -8,7 +8,7 @@ import {DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashViewConfig, DashViewModel} from '../DashViewModel';
 import '@xh/hoist/desktop/register';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {bindable, observable} from '@xh/hoist/mobx';
+import {observable, bindableRef} from '@xh/hoist/mobx';
 import {ReactNode} from 'react';
 
 /**
@@ -28,7 +28,7 @@ export class DashCanvasViewModel extends DashViewModel<DashCanvasViewSpec> {
     @observable accessor autoHeight: boolean;
 
     /** Additional items to include in header. */
-    @bindable.ref accessor headerItems: ReactNode[] = [];
+    @bindableRef accessor headerItems: ReactNode[] = [];
 
     ref = createObservableRef<HTMLElement>();
 

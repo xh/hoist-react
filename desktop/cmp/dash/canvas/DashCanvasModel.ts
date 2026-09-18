@@ -11,7 +11,7 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, observable, bindable} from '@xh/hoist/mobx';
+import {action, bindable, observableRef, computedStruct, bindableRef} from '@xh/hoist/mobx';
 import {ensureUniqueBy, observeResize, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -150,8 +150,8 @@ export class DashCanvasModel
     @bindable accessor columns: number;
     @bindable accessor rowHeight: number;
     @bindable accessor compact: 'vertical' | 'horizontal' | 'wrap';
-    @bindable.ref accessor margin: [number, number]; // [x, y]
-    @bindable.ref accessor containerPadding: [number, number]; // [x, y]
+    @bindableRef accessor margin: [number, number]; // [x, y]
+    @bindableRef accessor containerPadding: [number, number]; // [x, y]
     @bindable accessor showGridBackground: boolean;
     @bindable accessor rglHeight: number;
     @bindable accessor showAddViewButtonWhenEmpty: boolean;
@@ -164,7 +164,7 @@ export class DashCanvasModel
     onDropDone: (viewModel: DashCanvasViewModel) => void;
 
     /** The view currently being dragged in from an external source (e.g. a DashCanvasWidgetChooser). */
-    @observable.ref accessor draggedInView: DashCanvasItemState;
+    @observableRef accessor draggedInView: DashCanvasItemState;
 
     /** Current number of rows in the canvas. */
     get rows(): number {
@@ -179,7 +179,7 @@ export class DashCanvasModel
     //----------------------------
     // Implementation properties
     //----------------------------
-    @observable.ref accessor layout: any[] = [];
+    @observableRef accessor layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
     private _onDropDragOverFn: DashCanvasConfig['onDropDragOver'];
@@ -669,7 +669,7 @@ export class DashCanvasModel
         });
     }
 
-    @computed.struct
+    @computedStruct
     private get viewState() {
         const ret = {};
         this.viewModels.forEach(({id, viewSpec, title, viewState}) => {

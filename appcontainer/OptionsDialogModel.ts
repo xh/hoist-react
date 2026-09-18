@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {AppOptionSpec, HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {resolve} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {assign, mapValues, pickBy} from 'lodash';
@@ -21,7 +21,7 @@ export class OptionsDialogModel extends HoistModel {
     override xhName = 'optionsDialogModel';
 
     @observable accessor isOpen: boolean = false;
-    @observable.ref accessor options: AppOption[] = [];
+    @observableRef accessor options: AppOption[] = [];
 
     @managed
     loadTask: TaskObserver = TaskObserver.trackLast();

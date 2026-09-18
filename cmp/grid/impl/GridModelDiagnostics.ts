@@ -6,7 +6,7 @@
  */
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import type {GridModel} from '@xh/hoist/cmp/grid';
 
 /**
@@ -18,10 +18,10 @@ import type {GridModel} from '@xh/hoist/cmp/grid';
  * @internal
  */
 export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
-    @observable.ref accessor genTransaction: GridOpStats = this.emptyStats();
-    @observable.ref accessor applyTransaction: GridOpStats = this.emptyStats();
-    @observable.ref accessor sortFlush: SortFlushOpStats = this.emptyStats();
-    @observable.ref accessor autosize: AutosizeOpStats = this.emptyStats();
+    @observableRef accessor genTransaction: GridOpStats = this.emptyStats();
+    @observableRef accessor applyTransaction: GridOpStats = this.emptyStats();
+    @observableRef accessor sortFlush: SortFlushOpStats = this.emptyStats();
+    @observableRef accessor autosize: AutosizeOpStats = this.emptyStats();
 
     @action
     noteGenTransaction(txn: RecordSetDelta, newRs: RecordSet, prevRs: RecordSet, start: number) {

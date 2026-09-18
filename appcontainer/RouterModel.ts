@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, HoistRoute} from '../core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
@@ -23,7 +23,7 @@ export class RouterModel extends HoistModel {
     override xhName = 'routerModel';
 
     /** Router5 state object representing the current state. */
-    @observable.ref accessor currentState: State;
+    @observableRef accessor currentState: State;
 
     /** Underlying Router5 Router object implementing the routing state. */
     router: Router = this.createRouter();

@@ -6,7 +6,7 @@
  */
 
 import {sumBy, head} from 'lodash';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 /**
@@ -115,9 +115,9 @@ export class TaskObserver {
 class CompoundObserver extends TaskObserver {
     private _mode: 'last' | 'all';
 
-    @observable.ref private accessor _subtasks: TaskObserver[];
+    @observableRef private accessor _subtasks: TaskObserver[];
 
-    @observable.ref private accessor _message: ReactNode;
+    @observableRef private accessor _message: ReactNode;
 
     constructor(mode, subtasks, message) {
         super();

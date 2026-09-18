@@ -6,7 +6,7 @@
  */
 import type {HoistException} from '@xh/hoist/exception';
 import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable, bindable, observableRef} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -20,7 +20,7 @@ export class ExceptionDialogModel extends HoistModel {
     override xhImpl = true;
     override xhName = 'exceptionDialogModel';
 
-    @observable.ref accessor displayData: {
+    @observableRef accessor displayData: {
         exception: HoistException;
         options: ExceptionHandlerOptions;
     };

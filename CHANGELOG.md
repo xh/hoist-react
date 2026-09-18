@@ -28,6 +28,11 @@
       Reversed, it silently no-ops and the field stops persisting - no error, no type error.
       Decorator order was irrelevant under legacy decorators, and the codemods do not reorder
       them, so audit every `@persist` in app code by hand.
+* Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
+  exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
+  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, etc. Hoist's
+  `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump to `7.x`.
+  Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
       `ag-grid-enterprise` dependencies to `36.x`.
@@ -227,6 +232,8 @@
 
 * ag-grid-community `35.3 -> 36.1`
 * ag-grid-react `35.3 -> 36.1`
+* mobx `6.16 -> 7.0`
+* mobx-react-lite `4.1 -> 5.0`
 
 ## 87.2.0 - 2026-09-08
 

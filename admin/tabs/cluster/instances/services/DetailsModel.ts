@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindableRef} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
 export class DetailsModel extends HoistModel {
@@ -14,9 +14,9 @@ export class DetailsModel extends HoistModel {
     @lookup(ServiceModel)
     parent: ServiceModel;
 
-    @bindable.ref accessor svcName: String;
+    @bindableRef accessor svcName: String;
 
-    @bindable.ref accessor stats: PlainObject;
+    @bindableRef accessor stats: PlainObject;
 
     get selectedRecord() {
         return this.parent.gridModel.selectedRecord;

@@ -15,7 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, observable, computedStruct} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
@@ -125,7 +125,7 @@ class RelativeTimestampLocalModel extends HoistModel {
         return withDefault(timestamp, model && bind ? model[bind] : null);
     }
 
-    @computed.struct
+    @computedStruct
     get options(): RelativeTimestampOptions {
         return this.componentProps as RelativeTimestampProps;
     }

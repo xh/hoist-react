@@ -17,7 +17,7 @@ import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {menu, swallowContextMenu} from './Menu';
@@ -92,8 +92,8 @@ class MenuButtonLocalModel extends HoistModel {
     override xhImpl = true;
 
     @bindable accessor isOpen = false;
-    @bindable.ref accessor menuItems: MenuItemLike[] = null;
-    @bindable.ref accessor context: MenuContext = null;
+    @bindableRef accessor menuItems: MenuItemLike[] = null;
+    @bindableRef accessor context: MenuContext = null;
 
     setOpen(
         isOpen: boolean,

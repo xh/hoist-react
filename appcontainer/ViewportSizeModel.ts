@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, runInAction} from '@xh/hoist/mobx';
+import {action, observable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 import {isFinite, isString} from 'lodash';
 
@@ -18,7 +18,7 @@ export class ViewportSizeModel extends HoistModel {
     override xhImpl = true;
     override xhName = 'viewportSizeModel';
 
-    @observable.ref accessor size: {width: number; height: number};
+    @observableRef accessor size: {width: number; height: number};
 
     @observable accessor isPortrait: boolean;
 

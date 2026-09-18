@@ -8,7 +8,7 @@
 import {HoistService, HoistModel} from '../';
 import {isNil} from 'lodash';
 import type {Cube, Store, View} from '@xh/hoist/data';
-import {observable} from '@xh/hoist/mobx';
+import {observableShallow} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
 /**
@@ -16,15 +16,15 @@ import {wait} from '@xh/hoist/promise';
  * @internal
  */
 class InstanceManager {
-    @observable.shallow accessor services: Set<HoistService> = new Set();
+    @observableShallow accessor services: Set<HoistService> = new Set();
 
-    @observable.shallow accessor models: Set<HoistModel> = new Set();
+    @observableShallow accessor models: Set<HoistModel> = new Set();
 
-    @observable.shallow accessor stores: Set<Store> = new Set();
+    @observableShallow accessor stores: Set<Store> = new Set();
 
-    @observable.shallow accessor cubes: Set<Cube> = new Set();
+    @observableShallow accessor cubes: Set<Cube> = new Set();
 
-    @observable.shallow accessor views: Set<View> = new Set();
+    @observableShallow accessor views: Set<View> = new Set();
 
     private modelsByTestId: Map<string, HoistModel> = new Map();
     private testSupportedModels = new Set(['GridModel', 'DataViewModel', 'FormModel', 'TabModel']);

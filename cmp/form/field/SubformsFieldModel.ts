@@ -6,7 +6,7 @@
  */
 import {managed, PlainObject, Thunkable, XH} from '@xh/hoist/core';
 import {ValidationResult, ValidationState} from '@xh/hoist/data';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
 import {executeIfFunction, withDefault} from '../../../utils/js';
@@ -51,8 +51,8 @@ export interface SubformAddOptions {
  * the subforms will also bubble up to this field, affecting its overall validation state.
  */
 export class SubformsFieldModel extends BaseFieldModel {
-    @bindable.ref override accessor value: FormModel[] = [];
-    @observable.ref override accessor initialValue: FormModel[] = [];
+    @bindableRef override accessor value: FormModel[] = [];
+    @observableRef override accessor initialValue: FormModel[] = [];
 
     /** (Sub)FormModels created by this model, tracked to support cleanup. */
     @managed private createdModels: FormModel[] = [];

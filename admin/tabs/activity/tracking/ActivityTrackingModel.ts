@@ -19,7 +19,7 @@ import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec, getCubeLeaves, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
@@ -35,17 +35,17 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     @managed dateRangePickerModel: DateRangePickerModel;
 
     /** Models for data-handling components - can be rebuilt due to change in dataFields. */
-    @managed @observable.ref accessor groupingChooserModel: GroupingChooserModel;
-    @managed @observable.ref accessor cube: Cube;
-    @managed @observable.ref accessor filterChooserModel: FilterChooserModel;
-    @managed @observable.ref accessor gridModel: GridModel;
+    @managed @observableRef accessor groupingChooserModel: GroupingChooserModel;
+    @managed @observableRef accessor cube: Cube;
+    @managed @observableRef accessor filterChooserModel: FilterChooserModel;
+    @managed @observableRef accessor gridModel: GridModel;
     @managed dataFieldsEditorModel: DataFieldsEditorModel;
 
     /**
      * Optional spec for fields to be extracted from additional `data` returned by track entries
      * and promoted to top-level columns in the grids. Supports dot-delimited paths as names.
      */
-    @observable.ref accessor dataFields: ActivityTrackingDataFieldSpec[] = [];
+    @observableRef accessor dataFields: ActivityTrackingDataFieldSpec[] = [];
 
     // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
     //        detail grid and filter that replaces (potentially multiple) agg fields with a single
@@ -103,7 +103,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     readonly isActivityDetailProvider = true;
 
     /** Raw leaf-level log entries for the selected aggregate record, for detail. */
-    @observable.ref accessor trackLogs: PlainObject[] = [];
+    @observableRef accessor trackLogs: PlainObject[] = [];
 
     private _monthFormat = 'MMM YYYY';
 

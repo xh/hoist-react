@@ -14,7 +14,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {
     castArray,
     difference,
@@ -40,7 +40,7 @@ export class ValuesTabModel extends HoistModel {
     @managed gridModel: GridModel;
 
     /** List of currently checked values. */
-    @observable.ref accessor pendingValues: any[] = [];
+    @observableRef accessor pendingValues: any[] = [];
 
     /** Bound search term for `StoreFilterField`. */
     @bindable accessor filterText: string = null;
@@ -52,7 +52,7 @@ export class ValuesTabModel extends HoistModel {
     @bindable accessor combineCurrentFilters: boolean = false;
 
     /** FieldFilter output by this model. */
-    @computed.struct
+    @computedStruct
     get filter(): FieldFilterSpec {
         return this.getFilter();
     }

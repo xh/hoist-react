@@ -67,7 +67,16 @@ import {
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
 import type {RecordSet} from '@xh/hoist/data/impl/RecordSet';
-import {action, bindable, observable, when} from '@xh/hoist/mobx';
+import {
+    action,
+    bindable,
+    observable,
+    when,
+    observableRef,
+    computedStruct,
+    bindableRef,
+    computed
+} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -108,7 +117,6 @@ import {
     pull,
     take
 } from 'lodash';
-import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
@@ -588,16 +596,16 @@ export class GridModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable.ref accessor columns: ColumnOrGroup[] = [];
-    @observable.ref accessor columnState: ColumnState[] = [];
-    @observable.ref accessor columnGroupState: ColumnGroupState[] = [];
-    @observable.ref accessor expandState: any = {};
-    @observable.ref accessor sortBy: GridSorter[] = [];
-    @observable.ref accessor groupBy: string[] = null;
+    @observableRef accessor columns: ColumnOrGroup[] = [];
+    @observableRef accessor columnState: ColumnState[] = [];
+    @observableRef accessor columnGroupState: ColumnGroupState[] = [];
+    @observableRef accessor expandState: any = {};
+    @observableRef accessor sortBy: GridSorter[] = [];
+    @observableRef accessor groupBy: string[] = null;
     @observable accessor expandLevel: number = 0;
 
     /** @internal - latest RecordSet applied to ag-Grid, maintained by the Grid component. */
-    @observable.ref accessor _syncedRs: RecordSet = null;
+    @observableRef accessor _syncedRs: RecordSet = null;
 
     // Kept alive, as the primary reader `getColumn()` is often called outside of a reaction.
     @computed({keepAlive: true})
@@ -605,13 +613,13 @@ export class GridModel extends HoistModel {
         return new Map(this.getLeafColumns().map(it => [it.colId, it]));
     }
 
-    @computed.struct
+    @computedStruct
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
     }
 
     @bindable accessor showSummary: boolean | VSide = false;
-    @bindable.ref accessor emptyText: ReactNode;
+    @bindableRef accessor emptyText: ReactNode;
     @bindable accessor treeStyle: TreeStyle;
 
     /**
@@ -630,7 +638,7 @@ export class GridModel extends HoistModel {
      */
     @observable accessor isInEditingMode: boolean = false;
 
-    @observable.ref private accessor editingCell: {colId: string; rowIndex: number} = null;
+    @observableRef private accessor editingCell: {colId: string; rowIndex: number} = null;
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
     /**

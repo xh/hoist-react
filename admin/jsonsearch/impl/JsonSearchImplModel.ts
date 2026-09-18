@@ -7,7 +7,7 @@
 
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, zipWith} from 'lodash';
 
@@ -28,7 +28,7 @@ export class JsonSearchImplModel extends HoistModel {
     @observable accessor groupBy: string = null;
     @observable accessor isOpen: boolean = false;
 
-    @bindable.ref accessor error = null;
+    @bindableRef accessor error = null;
     @bindable accessor path: string = '';
     @bindable accessor readerContentType: 'document' | 'matches' = 'matches';
     @bindable accessor pathFormat: 'XPath' | 'JSONPath' = 'XPath';

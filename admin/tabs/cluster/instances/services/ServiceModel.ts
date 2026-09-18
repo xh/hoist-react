@@ -13,7 +13,7 @@ import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty, lowerFirst} from 'lodash';
 
@@ -22,7 +22,7 @@ export class ServiceModel extends BaseInstanceModel {
 
     @bindable accessor typeFilter: 'hoist' | 'app' | 'all' = 'all';
 
-    @bindable.ref accessor textFilter: FilterTestFn = null;
+    @bindableRef accessor textFilter: FilterTestFn = null;
 
     clearCachesAction: RecordActionSpec = {
         text: 'Clear Service Caches',

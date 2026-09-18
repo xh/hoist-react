@@ -14,7 +14,7 @@ import {
     PlainObject
 } from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     flatMap,
@@ -108,7 +108,7 @@ export interface FormValidateOptions {
  */
 export class FormModel extends HoistModel {
     /** Container object for FieldModel instances, keyed by field name.*/
-    @observable.ref accessor fields: Record<string, BaseFieldModel> = {};
+    @observableRef accessor fields: Record<string, BaseFieldModel> = {};
 
     /** All FieldModel instances. */
     @managed

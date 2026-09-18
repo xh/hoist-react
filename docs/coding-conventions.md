@@ -570,7 +570,7 @@ properties and return values. Properties are initialized to `null` rather than l
 
 ```typescript
 @observable accessor selectedId: string = null;
-@observable.ref accessor lastResponse: Response = null;
+@observableRef accessor lastResponse: Response = null;
 ```
 
 ### `== null` Pattern
@@ -671,7 +671,7 @@ When a property's observable behavior is significant to callers, annotate it in 
 
 ```typescript
 /** Currently selected record, or null if none. (observable) */
-@observable.ref accessor selectedRecord: StoreRecord = null;
+@observableRef accessor selectedRecord: StoreRecord = null;
 ```
 
 ### Step-Numbered Comments

@@ -8,7 +8,7 @@ import {ClusterObjectsModel} from '@xh/hoist/admin/tabs/cluster/objects/ClusterO
 import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {isEmpty, isEqual, without} from 'lodash';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 
@@ -17,7 +17,7 @@ export class DetailModel extends HoistModel {
     parent: ClusterObjectsModel;
 
     @managed
-    @observable.ref
+    @observableRef
     accessor gridModel: GridModel = null;
 
     //---------------------------------------------

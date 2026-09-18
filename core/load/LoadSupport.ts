@@ -14,7 +14,7 @@ import {
     TaskObserver
 } from '../';
 import {LoadSpec, Loadable} from './';
-import {observable, runInAction} from '@xh/hoist/mobx';
+import {runInAction, observableRef} from '@xh/hoist/mobx';
 import {logDebug, logError} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 
@@ -35,11 +35,11 @@ export class LoadSupport extends HoistBase implements Loadable {
     @managed
     loadObserver: TaskObserver = TaskObserver.trackLast();
 
-    @observable.ref accessor lastLoadRequested: Date = null;
+    @observableRef accessor lastLoadRequested: Date = null;
 
-    @observable.ref accessor lastLoadCompleted: Date = null;
+    @observableRef accessor lastLoadCompleted: Date = null;
 
-    @observable.ref accessor lastLoadException: any = null;
+    @observableRef accessor lastLoadException: any = null;
 
     target: Loadable;
 

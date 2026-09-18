@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {isFunction} from 'lodash';
 import {ReactNode} from 'react';
 
@@ -43,7 +43,7 @@ export class ErrorBoundaryModel extends HoistModel {
      * Caught error being displayed instead of the content.
      * Null if content rendering normally.
      */
-    @observable.ref accessor error: unknown;
+    @observableRef accessor error: unknown;
 
     constructor(config?: ErrorBoundaryConfig) {
         super();

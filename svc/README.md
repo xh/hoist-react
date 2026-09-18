@@ -604,7 +604,7 @@ import {HoistService, XH} from '@xh/hoist/core';
 import {observable} from '@xh/hoist/mobx';
 
 export class PortfolioService extends HoistService {
-    @observable.ref accessor portfolios: Portfolio[] = [];
+    @observableRef accessor portfolios: Portfolio[] = [];
 
     // Called during app startup
     override async initAsync() {

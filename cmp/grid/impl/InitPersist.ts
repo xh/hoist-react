@@ -13,7 +13,7 @@ import {
     ViewManagerProvider
 } from '@xh/hoist/core';
 import {isEqual, isObject} from 'lodash';
-import {runInAction} from 'mobx';
+import {runInAction} from '@xh/hoist/mobx';
 import {GridModel} from '../GridModel';
 import {ColumnState, GridModelPersistOptions} from '../Types';
 

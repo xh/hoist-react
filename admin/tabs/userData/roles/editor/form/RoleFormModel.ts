@@ -19,7 +19,7 @@ import {
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {compact, groupBy, isNil, isString, keyBy, map, sortBy, uniq, without} from 'lodash';
 import {ReactNode} from 'react';
 import {RoleModel} from '../../RoleModel';
@@ -41,11 +41,11 @@ export class RoleFormModel extends HoistModel {
 
     @observable accessor isEditingExistingRole = false;
 
-    @observable.ref accessor invalidNames: string[] = [];
-    @observable.ref accessor categoryOptions: string[] = [];
-    @observable.ref accessor userOptions: string[] = [];
-    @observable.ref accessor directoryGroupOptions: string[] = [];
-    @observable.ref accessor roleOptions: SelectOption[] = [];
+    @observableRef accessor invalidNames: string[] = [];
+    @observableRef accessor categoryOptions: string[] = [];
+    @observableRef accessor userOptions: string[] = [];
+    @observableRef accessor directoryGroupOptions: string[] = [];
+    @observableRef accessor roleOptions: SelectOption[] = [];
 
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly usersGridModel: GridModel = this.createGridModel('USER');

@@ -13,7 +13,14 @@ import {
     ValidationResult,
     ValidationState
 } from '@xh/hoist/data';
-import {action, bindable, computed, observable, runInAction} from '@xh/hoist/mobx';
+import {
+    action,
+    computed,
+    observable,
+    runInAction,
+    observableRef,
+    bindableRef
+} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -63,8 +70,8 @@ export abstract class BaseFieldModel extends HoistModel {
         return true;
     }
 
-    @observable.ref accessor initialValue: any;
-    @bindable.ref accessor value: any;
+    @observableRef accessor initialValue: any;
+    @bindableRef accessor value: any;
 
     name: string;
     @observable accessor displayName: string;

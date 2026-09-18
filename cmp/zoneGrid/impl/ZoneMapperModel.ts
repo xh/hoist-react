@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {StoreRecord} from '@xh/hoist/data';
 import {GridSorter} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -52,9 +52,9 @@ export class ZoneMapperModel extends HoistModel {
 
     @bindable accessor selectedZone: Zone = 'tl';
 
-    @observable.ref accessor mappings: Record<Zone, ZoneMapping[]>;
+    @observableRef accessor mappings: Record<Zone, ZoneMapping[]>;
 
-    @observable.ref accessor sortBy: GridSorter;
+    @observableRef accessor sortBy: GridSorter;
 
     fields: ZoneField[] = [];
     sampleRecord: StoreRecord;

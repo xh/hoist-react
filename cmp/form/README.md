@@ -530,8 +530,8 @@ class LocationFormModel extends HoistModel {
         ]
     });
 
-    @observable.ref accessor states = [];
-    @observable.ref accessor cities = [];
+    @observableRef accessor states = [];
+    @observableRef accessor cities = [];
 
     constructor() {
         super();

@@ -12,7 +12,7 @@ import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, PersistOptions, PlainObject} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {timestampReplacer} from '@xh/hoist/format';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {get, isString} from 'lodash';
 
 /**
@@ -33,8 +33,8 @@ export class ActivityDetailModel extends HoistModel {
     })
     parentModel: ActivityDetailProvider;
 
-    @managed @observable.ref accessor gridModel: GridModel;
-    @managed @observable.ref accessor formModel: FormModel;
+    @managed @observableRef accessor gridModel: GridModel;
+    @managed @observableRef accessor formModel: FormModel;
 
     /**
      * Optional dot-delimited path(s) to filter the displayed `data` payload down to a particular

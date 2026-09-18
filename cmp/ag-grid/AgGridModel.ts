@@ -12,7 +12,7 @@ import type {
     Theme,
     ThemeDefaultParams
 } from '@xh/hoist/kit/ag-grid';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -155,7 +155,7 @@ export class AgGridModel extends HoistModel {
      */
     readonly agTheme: Theme<ThemeDefaultParams>;
 
-    @observable.ref accessor agApi: GridApi = null;
+    @observableRef accessor agApi: GridApi = null;
 
     private _prevSortBy: GridSorter[];
 

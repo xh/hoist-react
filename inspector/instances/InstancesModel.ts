@@ -12,7 +12,7 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, isObservableProp, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, isObservableProp, runInAction, bindableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
@@ -42,15 +42,15 @@ export class InstancesModel extends HoistModel {
         return this.statsModel?.selectedSyncRun;
     }
 
-    @bindable.ref accessor propsWatchlist = [];
-    @bindable.ref accessor loadedGetters = [];
+    @bindableRef accessor propsWatchlist = [];
+    @bindableRef accessor loadedGetters = [];
 
     // Persisted storeFilterFields (convenient across frequent page refreshes when developing)
     @bindable @persist accessor instancesStoreFilter;
     @bindable @persist accessor propertiesStoreFilter;
 
     /** Keys of favorited instances (`{className}:{xhName}`) - requires an `xhName` to pin. */
-    @bindable.ref @persist accessor favorites: string[] = [];
+    @bindableRef @persist accessor favorites: string[] = [];
 
     @bindable @persist accessor instQuickFilters = ['showInGroups'];
     get showInGroups() {

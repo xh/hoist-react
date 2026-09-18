@@ -15,7 +15,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {CellClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, computed, runInAction, observableRef} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {groupBy} from 'lodash';
@@ -34,7 +34,7 @@ export class MetricsModel extends BaseAdminTabModel {
 
     @bindable accessor sourceFilter: SourceFilter = 'all';
 
-    @observable.ref accessor allMetrics: any[] = [];
+    @observableRef accessor allMetrics: any[] = [];
 
     get selectedMetricNames(): string[] {
         return this.gridModel.selectedRecords.map(r => r.data.name);

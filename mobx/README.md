@@ -33,9 +33,8 @@ The following are re-exported from MobX and mobx-react-lite:
 | `when` | mobx | Run a side-effect once when a condition becomes true |
 | `toJS` | mobx | Convert observable data to plain JavaScript |
 | `extendObservable` | mobx | Add observable properties to an existing object |
-| `trace` | mobx | Debugging: log why a computed/reaction re-evaluated |
 | `untracked` | mobx | Read observables without creating a dependency |
-| `comparer` | mobx | Built-in equality comparers for computed values |
+| `compareStructural`, `compareShallow`, `compareIdentity`, `compareDefault` | mobx | Built-in equality comparers for computed values and reactions |
 | `isObservableProp` | mobx | Check if a property is observable |
 | `observer` | mobx-react-lite | HOC that makes React components reactive to observable changes |
 
@@ -93,10 +92,10 @@ additional logic (validation, side-effects, coordinated updates):
 ```typescript
 class PortfolioModel extends HoistModel {
     // Internal state — updated only by the model's own methods
-    @observable.ref accessor records: StoreRecord[] = [];
+    @observableRef accessor records: StoreRecord[] = [];
 
     // Custom setter with coordinated side-effects
-    @observable.ref accessor activeFilter: Filter = null;
+    @observableRef accessor activeFilter: Filter = null;
 
     @action
     setActiveFilter(filter: Filter) {
@@ -111,14 +110,14 @@ class PortfolioModel extends HoistModel {
 }
 ```
 
-### @bindable.ref
+### @bindableRef
 
-Use `@bindable.ref` for properties where only reference changes should trigger reactions — not
-deep mutations within the value. This uses `observable.ref` semantics under the hood:
+Use `@bindableRef` for properties where only reference changes should trigger reactions — not
+deep mutations within the value. This uses `observableRef` semantics under the hood:
 
 ```typescript
-@bindable.ref accessor selectedRecord: StoreRecord = null;  // track reference only
-@bindable.ref accessor dimensions: {width: number, height: number} = null;
+@bindableRef accessor selectedRecord: StoreRecord = null;  // track reference only
+@bindableRef accessor dimensions: {width: number, height: number} = null;
 ```
 
 ### Setter Convention
@@ -164,13 +163,13 @@ This is especially valuable for:
 - **Boolean aggregations** — combining many observable flags into one (`isDirty`, `isValid`,
   `canEdit`). The output is a single boolean that changes far less often than any individual input.
 - **Filtered collections** — deriving a subset from an observable list. When used with
-  `@computed.struct`, the output only changes when the actual contents change.
+  `@computedStruct`, the output only changes when the actual contents change.
 - **Multi-observable conditions** — combining several observables into a derived state that
   downstream components and reactions depend on.
 
 ```typescript
 class TaskListModel extends HoistModel {
-    @observable.ref accessor tasks: Task[] = [];
+    @observableRef accessor tasks: Task[] = [];
     @observable accessor filterText: string = '';
     @observable accessor showCompleted: boolean = false;
 
@@ -197,14 +196,14 @@ class TaskListModel extends HoistModel {
 }
 ```
 
-### @computed.struct
+### @computedStruct
 
 By default, `@computed` uses reference equality (`===`) to compare old and new results. For
-getters that return new object or array instances on each evaluation, use `@computed.struct` to
+getters that return new object or array instances on each evaluation, use `@computedStruct` to
 compare by structural equality instead:
 
 ```typescript
-@computed.struct
+@computedStruct
 get persistableColumnState(): ColumnState[] {
     return this.cleanColumnState(this.columnState);
 }
@@ -225,7 +224,7 @@ the derivation is trivial and accessed from a single reactive context.
 ### Using `@observable` (deep) for non-primitives
 
 MobX's default `@observable` applies deep observation, recursively wrapping nested properties
-in proxies. This is rarely what you want for arrays, objects, or class instances. Use the `.ref`
+in proxies. This is rarely what you want for arrays, objects, or class instances. Use the `Ref`
 variant instead:
 
 ```typescript
@@ -233,7 +232,7 @@ variant instead:
 @observable accessor items: Item[] = [];
 
 // ✅ Do: ref observation tracks only the reference — no proxy wrapping
-@observable.ref accessor items: Item[] = [];
+@observableRef accessor items: Item[] = [];
 
 // ✅ Primitives are fine with plain @observable — no proxies involved
 @observable accessor isOpen: boolean = false;
@@ -241,19 +240,19 @@ variant instead:
 @observable accessor label: string = '';
 ```
 
-The same applies to `@bindable` vs `@bindable.ref` — use `@bindable.ref` for non-primitives.
+The same applies to `@bindable` vs `@bindableRef` — use `@bindableRef` for non-primitives.
 
 In hoist-react, bare `@observable` is used only for primitives (booleans, strings, numbers,
-enums). Everything else — arrays, objects, class instances — uses `@observable.ref` or
-`@bindable.ref`.
+enums). Everything else — arrays, objects, class instances — uses `@observableRef` or
+`@bindableRef`.
 
-### Mutating `.ref` values in place
+### Mutating `Ref` values in place
 
-When using `.ref` variants, MobX only tracks *reference changes* to the property, not mutations
+When using `Ref` variants, MobX only tracks *reference changes* to the property, not mutations
 within the value. To trigger reactions, you must replace the entire value with a new instance:
 
 ```typescript
-@observable.ref accessor filters: Filter[] = [];
+@observableRef accessor filters: Filter[] = [];
 
 // ❌ Don't: push mutates the existing array — MobX won't detect the change
 @action addFilter(f: Filter) {
@@ -266,7 +265,7 @@ within the value. To trigger reactions, you must replace the entire value with a
 }
 
 // ✅ Do: same pattern for objects — spread into a new object
-@observable.ref accessor settings: {theme: string, compact: boolean} = {theme: 'dark', compact: false};
+@observableRef accessor settings: {theme: string, compact: boolean} = {theme: 'dark', compact: false};
 
 @action updateTheme(theme: string) {
     this.settings = {...this.settings, theme};
