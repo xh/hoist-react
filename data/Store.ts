@@ -299,6 +299,13 @@ export interface StoreChangeLog {
     add?: StoreRecord[];
     remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
+
+    /**
+     * As supplied by the applied {@link StoreTransaction.changedFields}, when the transaction
+     * changed record values only - i.e. it added or removed nothing. See
+     * {@link RecordSetDelta.changedFields} for the resulting contract.
+     */
+    changedFields?: Set<string>;
 }
 
 export interface ChildRawData {
@@ -742,6 +749,9 @@ export class Store
             if (update) changeLog.update = update;
             if (add) changeLog.add = add;
             if (removeIds) changeLog.remove = compact(removeIds.map(id => this.getById(id)));
+            if (changedFields && update && !add && !removeIds) {
+                changeLog.changedFields = changedFields;
+            }
 
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
