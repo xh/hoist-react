@@ -17,6 +17,7 @@ import {
     ColumnSpec,
     Grid,
     GridConfig,
+    GridContextMenuItemLike,
     GridContextMenuSpec,
     GridGroupSortFn,
     GridModel,
@@ -444,7 +445,7 @@ export class ZoneGridModel extends HoistModel {
         this.gridModel.setColumns(this.getColumns());
     }
 
-    getDefaultContextMenu = () => [
+    getDefaultContextMenu = (): GridContextMenuItemLike[] => [
         'filter',
         '-',
         'copy',

@@ -5,10 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-// Override standard grid default for cell padding to support distinct CSS var for ZoneGrid.
-// (High degree of specificity required here.)
+// Override standard grid cell padding to support a distinct CSS var for ZoneGrid. Set directly on
+// the cell rather than via `--ag-cell-horizontal-padding`, which would take in header cells too.
 .xh-grid.xh-zone-grid {
-  .ag-theme-balham.xh-ag-grid {
+  .xh-ag-grid {
     .ag-cell {
       padding-left: var(--xh-zone-grid-cell-lr-pad-px);
       padding-right: var(--xh-zone-grid-cell-lr-pad-px);

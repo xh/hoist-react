@@ -571,13 +571,13 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     private installCrossBucketDropZones() {
         this.dropParticipants.forEach(source => {
             const sourceApi = source.chooserGridModel.agApi;
-            if (!sourceApi) return;
+            if (!sourceApi || sourceApi.isDestroyed()) return;
 
             this.dropParticipants.forEach(target => {
                 if (target === source) return;
 
                 const targetApi = target.chooserGridModel.agApi;
-                if (!targetApi) return;
+                if (!targetApi || targetApi.isDestroyed()) return;
 
                 const params = targetApi.getRowDropZoneParams({
                     onDragEnter: () => target.setDragOver?.(true),

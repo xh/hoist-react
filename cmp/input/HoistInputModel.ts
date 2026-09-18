@@ -10,7 +10,7 @@ import {maxSeverity} from '@xh/hoist/data';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEqual} from 'lodash';
+import {isEqual, isString} from 'lodash';
 import {FocusEvent, ForwardedRef, ReactElement, useImperativeHandle} from 'react';
 import './HoistInput.scss';
 
@@ -138,6 +138,19 @@ export class HoistInputModel extends HoistModel {
         return true;
     }
 
+    /**
+     * True if this input should trim leading/trailing whitespace from string values as they are
+     * converted to their external form - i.e. as reported to `onChange` and flushed to any bound
+     * model on commit.
+     *
+     * False in this base class, as whitespace can be meaningful for multi-line and free-text
+     * controls. Single-line text inputs override to enable by default, and provide a
+     * `trimWhitespace` prop to opt out.
+     */
+    get trimWhitespace(): boolean {
+        return false;
+    }
+
     /** The value to be rendered internally by control. */
     @computed
     get renderValue(): any {
@@ -189,7 +202,7 @@ export class HoistInputModel extends HoistModel {
 
     /** Hook to convert an internal representation of the value to an appropriate external one. */
     toExternal(internal: any) {
-        return internal;
+        return this.trimWhitespace && isString(internal) ? internal.trim() : internal;
     }
 
     /** Hook to convert an external representation of the value to an appropriate internal one. */

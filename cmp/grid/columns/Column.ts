@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
-import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
+import {HAlign, HSide, Intent, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
     CubeFieldSpec,
     FieldSpec,
@@ -18,7 +18,6 @@ import {
     ValidationSeverity
 } from '@xh/hoist/data';
 import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import classNames from 'classnames';
 import {
     castArray,
     clone,
@@ -52,6 +51,7 @@ import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
+    ColumnCellFlagFn,
     ColumnComparator,
     ColumnEditableFn,
     ColumnEditorFn,
@@ -59,16 +59,19 @@ import {
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
+    ColumnGroupShowMode,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
     ColumnRenderer,
     ColumnSetValueFn,
     ColumnSortSpec,
     ColumnSortValueFn,
-    ColumnTooltipFn
+    ColumnTooltipFn,
+    toAgColumnGroupShow
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
+    CellClassParams,
     ColDef,
     ITooltipParams,
     ValueGetterParams,
@@ -159,8 +162,23 @@ export interface ColumnSpec {
      */
     cellClassRules?: Record<string, ColumnCellClassRuleFn>;
 
+    /**
+     * Render a small triangular flag in the top-right corner of each cell, in the color of the
+     * returned Intent - a compact marker for values warranting attention. Return null for no flag.
+     * Called per record on every cell refresh and deliberately not cached, so keep it cheap.
+     * On an editable column, a cell failing validation shows its validation flag instead.
+     */
+    cellFlag?: ColumnCellFlagFn;
+
     /** True to suppress default display of the column.*/
     hidden?: boolean;
+
+    /**
+     * Show this column only while its containing {@link ColumnGroup} is 'expanded' or 'collapsed',
+     * or 'always' (default) to show it in either state. Ignored for a column with no containing
+     * group.
+     */
+    groupShowMode?: ColumnGroupShowMode;
 
     /**
      * Flex columns stretch to fill the width of the grid after all columns with a set pixel-width
@@ -492,8 +510,10 @@ export class Column {
     headerClass: ColumnHeaderClassFn | Some<string>;
     cellClass: ColumnCellClassFn | Some<string>;
     cellClassRules: Record<string, ColumnCellClassRuleFn>;
+    cellFlag: ColumnCellFlagFn;
     align: HAlign;
     hidden: boolean;
+    groupShowMode: ColumnGroupShowMode;
     flex: boolean | number;
     width: number;
     minWidth: number;
@@ -566,7 +586,9 @@ export class Column {
             headerClass,
             cellClass,
             cellClassRules,
+            cellFlag,
             hidden,
+            groupShowMode,
             align,
             width,
             minWidth,
@@ -647,11 +669,13 @@ export class Column {
 
         this.cellClass = cellClass;
         this.cellClassRules = cellClassRules || {};
+        this.cellFlag = cellFlag;
 
         this.align = align;
         this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
+        this.groupShowMode = groupShowMode;
 
         warnIf(
             flex && width,
@@ -772,6 +796,7 @@ export class Column {
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
+                columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
@@ -888,20 +913,51 @@ export class Column {
                     }
                 }
 
-                const isElement = isValidElement(ret);
+                // Validation state replaces a column's own tooltip entirely - resolve it here, so
+                // that the classes below describe what is actually rendered rather than the
+                // tooltip it supersedes.
+                let validationMessages: string[] = null;
+                if (hasRecord && editor) {
+                    const bySeverity = groupBy(
+                        record.validationResults[field],
+                        'severity'
+                    ) as Record<ValidationSeverity, ValidationResult[]>;
+                    const msgs = (bySeverity.error ?? bySeverity.warning ?? bySeverity.info)?.map(
+                        v => v.message
+                    );
+                    if (!isEmpty(msgs)) validationMessages = msgs;
+                }
+
+                // Hoist frames the content it renders itself - a plain value/string tooltip, or the
+                // validation list above. A custom element tooltip is left unframed, so that it can
+                // supply its own chrome (opting in with `xh-grid-tooltip-frame` if it wants ours).
+                const isElement = isValidElement(ret),
+                    isCustom = !validationMessages && isElement,
+                    validationCount = validationMessages?.length ?? 0;
 
                 useLayoutEffect(() => {
-                    const xhToolTipClassNames: string[] =
-                        location === 'header'
-                            ? ['ag-tooltip']
-                            : [
-                                  'xh-grid-tooltip',
-                                  isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'
-                              ];
-                    wrapperRef.current
-                        ?.closest('.ag-react-container')
-                        .classList.add(...xhToolTipClassNames);
-                }, [isElement, location]);
+                    let xhToolTipClassNames: string[];
+                    if (location === 'header') {
+                        xhToolTipClassNames = ['ag-tooltip'];
+                    } else if (isCustom) {
+                        xhToolTipClassNames = ['xh-grid-tooltip'];
+                    } else {
+                        xhToolTipClassNames = [
+                            'xh-grid-tooltip',
+                            'xh-grid-tooltip--prewrap',
+                            'xh-grid-tooltip-frame'
+                        ];
+                        if (validationCount) {
+                            xhToolTipClassNames.push('xh-grid-tooltip--validation');
+                            if (validationCount === 1) {
+                                xhToolTipClassNames.push('xh-grid-tooltip--validation-single');
+                            }
+                        }
+                    }
+                    const container = wrapperRef.current?.closest('.ag-react-container');
+                    container?.classList.add(...xhToolTipClassNames);
+                    return () => container?.classList.remove(...xhToolTipClassNames);
+                }, [isCustom, validationCount, location]);
 
                 // Required by agGrid, even though empty.
                 // If not present agGrid logs this warning:
@@ -911,33 +967,16 @@ export class Column {
                 if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
                 if (!hasRecord) return null;
 
-                // Override with validation errors, if present -- only show highest-severity level
-                if (editor) {
-                    const validationsBySeverity = groupBy(
-                            record.validationResults[field],
-                            'severity'
-                        ) as Record<ValidationSeverity, ValidationResult[]>,
-                        validationMessages = (
-                            validationsBySeverity.error ??
-                            validationsBySeverity.warning ??
-                            validationsBySeverity.info
-                        )?.map(v => v.message);
-                    if (!isEmpty(validationMessages)) {
-                        return div({
-                            ref: wrapperRef,
-                            item: ul({
-                                className: classNames(
-                                    'xh-grid-tooltip--validation',
-                                    validationMessages.length === 1
-                                        ? 'xh-grid-tooltip--validation--single'
-                                        : null
-                                ),
-                                items: validationMessages.map((it, idx) => li({key: idx, item: it}))
-                            })
-                        });
-                    }
-                    if (!tooltip) return null;
+                // Validation messages supersede the column's own tooltip - resolved above.
+                if (validationMessages) {
+                    return div({
+                        ref: wrapperRef,
+                        item: ul({
+                            items: validationMessages.map((it, idx) => li({key: idx, item: it}))
+                        })
+                    });
                 }
+                if (editor && !tooltip) return null;
 
                 if (isNil(ret) || ret === '') return null;
 
@@ -1059,17 +1098,41 @@ export class Column {
             });
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
-                'xh-cell--invalid': agParams =>
-                    maxSeverity(agParams.data?.validationResults[field]) === 'error',
-                'xh-cell--warning': agParams =>
-                    maxSeverity(agParams.data?.validationResults[field]) === 'warning',
-                'xh-cell--info': agParams =>
-                    maxSeverity(agParams.data?.validationResults[field]) === 'info',
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },
                 ...ret.cellClassRules
             };
+        }
+
+        // Flags must go via cellClassRules (removable) rather than cellClass (sticky), and must be
+        // composed into the ag colDef here rather than `this.cellClassRules` - the latter feeds
+        // ColumnWidthCalculator, and these pseudo-elements cannot affect measured width.
+        const {cellFlag} = this;
+        if (cellFlag || editor) {
+            // Not memoized by record - `validationResults` can settle while the record and its
+            // value stay identical, and a captured record would be pinned for the colDef's life.
+            const intentForCell = (agParams: CellClassParams): Intent => {
+                const record = agParams.data as StoreRecord,
+                    {value} = agParams;
+
+                // Validation state wins - it reports an error, not an annotation.
+                if (editor) {
+                    const severity = maxSeverity(record?.validationResults[field]);
+                    if (severity) return SEVERITY_FLAG_INTENTS[severity];
+                }
+
+                return cellFlag ? cellFlag(value, {record, column: this, gridModel}) : null;
+            };
+
+            const flagRules: Record<string, ColumnCellClassRuleFn> = {};
+            CELL_FLAG_INTENTS.forEach(intent => {
+                flagRules[`xh-cell--flag-${intent}`] = agParams =>
+                    intentForCell(agParams) === intent;
+            });
+
+            // Flag rules first, so app-supplied cellClassRules continue to win.
+            ret.cellClassRules = {...flagRules, ...ret.cellClassRules};
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
@@ -1195,3 +1258,14 @@ export class Column {
             : (record?.data[sortValue] ?? v);
     }
 }
+
+//------------------------
+// Cell flag implementation
+//------------------------
+const CELL_FLAG_INTENTS: Intent[] = ['primary', 'success', 'warning', 'danger'];
+
+const SEVERITY_FLAG_INTENTS: Record<ValidationSeverity, Intent> = {
+    error: 'danger',
+    warning: 'warning',
+    info: 'primary'
+};

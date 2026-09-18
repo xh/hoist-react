@@ -51,7 +51,7 @@ export const configValue = hoistCmp.factory<ConfigValueModel>({
 class ConfigValueModel extends HoistModel {
     override xhImpl = true;
 
-    @managed @observable.ref tabContainerModel: TabContainerModel;
+    @managed @observable.ref accessor tabContainerModel: TabContainerModel;
 
     get formModel(): FormModel {
         return this.componentProps.formModel;

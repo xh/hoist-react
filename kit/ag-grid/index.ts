@@ -20,11 +20,14 @@ export let agGridVersion = null;
 
 /**
  * However Hoist does import the following community-only TYPES to help validate its internal
- * implementations.
+ * implementations, plus a few unlicensed community VALUES: the React hooks below, and `themeBalham`.
+ * All ag-Grid imports route through this module.
  */
 export type {
     GridOptions,
     GridApi,
+    Theme,
+    ThemeDefaultParams,
     SortDirection,
     ColDef,
     ColGroupDef,
@@ -43,6 +46,7 @@ export type {
     ValueGetterParams,
     ValueSetterParams,
     MenuItemDef,
+    DefaultMenuItem,
     CellPosition,
     NavigateToNextCellParams,
     ColumnEvent,
@@ -76,9 +80,10 @@ export type {
     CustomMenuItemProps
 } from 'ag-grid-react';
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
+export {themeBalham} from 'ag-grid-community';
 
-const MIN_VERSION = '35.3.0';
-const MAX_VERSION = '35.*.*';
+const MIN_VERSION = '36.0.0';
+const MAX_VERSION = '36.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.

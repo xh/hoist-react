@@ -207,6 +207,7 @@ export class DataViewModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
+            theme: THEME_PARAMS,
             xhName: this.childXhName('gridModel'),
             store,
             sortBy,
@@ -302,3 +303,20 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.setSortBy(sorters);
     }
 }
+
+const THEME_PARAMS = {
+    // DataView items render app content rather than grid cells, so they take the app tokens.
+    backgroundColor: 'var(--xh-bg)',
+    foregroundColor: 'var(--xh-text-color)',
+    fontFamily: 'var(--xh-font-family)',
+    fontSize: 'var(--xh-font-size-px)',
+
+    // No header. The `headerHeight` grid option set by DataView drives layout; this keeps the themed
+    // side in sync, and suppressing the border stops the zero-height header leaving a 1px gap.
+    headerHeight: 0,
+    headerRowBorder: false,
+
+    // Items own their full cell - no padding, and no focus border (DataView has no cell navigation).
+    cellHorizontalPadding: 0,
+    rangeSelectionBorderColor: 'transparent'
+} as const;

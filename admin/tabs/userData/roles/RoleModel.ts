@@ -7,7 +7,7 @@
 import {getAppModel} from '@xh/hoist/admin/AdminUtils';
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
+import {GridContextMenuItemLike, GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -420,7 +420,7 @@ export class RoleModel extends HoistModel {
         });
     }
 
-    private getContextMenuItems() {
+    private getContextMenuItems(): GridContextMenuItemLike[] {
         return this.readonly
             ? [this.groupByAction(), '-', ...GridModel.defaults.contextMenu]
             : [

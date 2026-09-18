@@ -6,10 +6,11 @@
  */
 
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     debounce as lodashDebounce,
+    DebouncedFunc,
     get,
     isArray,
     isEmpty,
@@ -23,7 +24,7 @@ import {
 import {IReactionDisposer, reaction} from 'mobx';
 import {Class} from 'type-fest';
 import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
-import {PersistenceProviderType, PersistOptions, persistOptions} from './PersistOptions';
+import {PersistenceProviderType, PersistOptions} from './PersistOptions';
 
 export type PersistenceProviderConfig<S = any> = {
     persistOptions: PersistOptions;
@@ -115,18 +116,6 @@ export abstract class PersistenceProvider<S = any> {
         }
     }
 
-    /** @deprecated Use the {@link persistOptions} function instead. */
-    static mergePersistOptions(
-        defaults: PersistOptions,
-        ...overrides: PersistOptions[]
-    ): PersistOptions {
-        apiDeprecated('PersistenceProvider.mergePersistOptions', {
-            v: 'v87',
-            msg: "Use the 'persistOptions' function instead."
-        });
-        return persistOptions(defaults, ...overrides);
-    }
-
     /** Read persisted state at this provider's path. */
     read(): PersistableState<S> {
         const state = get(this.readRaw(), this.path);
@@ -146,6 +135,11 @@ export abstract class PersistenceProvider<S = any> {
     /** Clear any persisted data at a path. Also clears any parent objects that become empty. */
     clear() {
         logDebug('Clearing state', this.owner);
+
+        // Drop any debounced write still pending - it holds pre-clear state and would otherwise
+        // land after this call and resurrect it.
+        (this.writeInternal as DebouncedFunc<(data: S) => void>).cancel?.();
+
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
         do {
