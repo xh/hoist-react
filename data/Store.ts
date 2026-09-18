@@ -196,10 +196,8 @@ export interface StoreConfig {
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Recommended for stores connected to a Cube {@link View} for improved performance, when no
-     * additional record parsing or local data modification is required. Default null - a View
-     * logs a warning when its connected stores leave this unset. Set explicitly to `false` to
-     * opt out and silence the warning.
+     * Default null. Stores connected to a Cube {@link View} are always projections - the View
+     * sets this flag, and an explicit `false` throws.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -372,7 +370,7 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     retainRaw: boolean;
-    readonly projectionOnly: boolean;
+    projectionOnly: boolean;
     validationIsComplex: boolean;
 
     @observable.ref
@@ -411,8 +409,9 @@ export class Store
     @observable.ref
     _filtered: RecordSet;
 
-    private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
+    private _dataTemplate: PlainObject = null;
+    private _denseDataProto: PlainObject = null;
     private _denseRecordThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
@@ -485,6 +484,7 @@ export class Store
         this._fieldMap = this.createFieldMap();
         this._dataDefaults = this.createDataDefaults();
         this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this._denseDataProto = this.createDenseDataProto();
         this._denseRecordThreshold =
             this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
@@ -1525,7 +1525,7 @@ export class Store
             rescuable = !!cached;
         for (const name in data) {
             const field = _fieldMap.get(name);
-            if (field) {
+            if (field && !field.isDerived) {
                 const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
                     if (rescuable) {
@@ -1547,12 +1547,12 @@ export class Store
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
         // Merge updated values over current ones, then rebuild exactly as parseOrRescue() would.
         const {_recordBuildData} = this,
-            {names, vals} = _recordBuildData,
-            hasOwn = Object.prototype.hasOwnProperty;
+            {names, vals} = _recordBuildData;
         let n = 0;
         this.fields.forEach(field => {
+            if (field.isDerived) return;
             const {name} = field,
-                val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
+                val = Object.hasOwn(update, name) ? field.parseVal(update[name]) : data[name];
             if (val !== field.defaultValue) {
                 names[n] = name;
                 vals[n] = val;
@@ -1575,18 +1575,23 @@ export class Store
      *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
      *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
      *    (overwriting an existing property is not an add), so all dense records share the
-     *    template's one fixed shape.
+     *    template's one fixed shape. With derived fields, the clone also takes `_dataDefaults`
+     *    as its prototype to reach their getters - a slower clone, so only paid when needed.
      *
      * The representation is decided per record, from parsed content alone - records with equal
      * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
      * require.
      */
     private buildData(): PlainObject {
-        const {names, vals, n} = this._recordBuildData,
+        // Literal `__proto__` key sets the prototype at creation (ES Annex B).
+        const {_denseRecordThreshold, _denseDataProto, _dataTemplate, _dataDefaults} = this,
+            {names, vals, n} = this._recordBuildData,
             ret =
-                n >= this._denseRecordThreshold
-                    ? {...this._dataTemplate}
-                    : Object.create(this._dataDefaults);
+                n >= _denseRecordThreshold
+                    ? _denseDataProto
+                        ? {__proto__: _denseDataProto, ..._dataTemplate}
+                        : {..._dataTemplate}
+                    : Object.create(_dataDefaults);
         for (let i = 0; i < n; i++) {
             ret[names[i]] = vals[i];
         }
@@ -1600,16 +1605,30 @@ export class Store
         );
     }
 
-    /**
-     * Shared template for record `data` objects - an own property for every Field, holding its
-     * defaultValue. `parseOrRescue()` clones it per record, so all records in a Store share one
-     * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
-     * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
-     * past ~20 adds, costing several times more memory per record.
-     */
+    /** Prototype for all record `data` - a defaultValue per stored Field, plus derived getters. */
     private createDataDefaults() {
         const ret = {};
-        this.fields.forEach(({name, defaultValue}) => (ret[name] = defaultValue));
+        this.fields.forEach(({name, defaultValue, isDerived}) => {
+            if (!isDerived) ret[name] = defaultValue;
+        });
+        return ret;
+    }
+
+    // Install derived getters on `_dataDefaults`, returning it as the dense-record prototype -
+    // null without derived fields, leaving dense records prototype-free.
+    private createDenseDataProto(): PlainObject {
+        const derived = this.fields.filter(it => it.isDerived);
+        if (isEmpty(derived)) return null;
+        const ret = this._dataDefaults;
+        derived.forEach(({name, derivedFn}) => {
+            Object.defineProperty(ret, name, {
+                get(this: PlainObject) {
+                    return derivedFn(this);
+                },
+                enumerable: true,
+                configurable: true
+            });
+        });
         return ret;
     }
 

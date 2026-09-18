@@ -432,6 +432,21 @@ apps with large datasets. Set `enableXssProtection` per field, or app-wide via
 | `'tags'` | String array | Splits comma-separated |
 | `'pwd'` | Password | Marks as sensitive |
 
+### Derived Fields
+
+A field with a `derivedFn` computes its value from the record's other values, named in the
+required `dependsOn`. Values are read through a getter on record `data` - never loaded, parsed or
+written - so they are always current with their inputs, and sort, filter and export like any other
+field. Writes to one via `modifyRecords()` are ignored.
+
+```typescript
+{name: 'marketValue', dependsOn: ['quantity', 'price'], derivedFn: d => d.quantity * d.price}
+```
+
+A `projectionOnly` store adopts derived values from its provider rather than computing them. See
+the [Cube README](cube/README.md#derived-fields) for derived `CubeField`s, which also run on
+aggregated View rows.
+
 ## Filter System
 
 **Files**: `filter/Filter.ts`, `filter/FieldFilter.ts`, `filter/CompoundFilter.ts`, `filter/FunctionFilter.ts`
@@ -960,9 +975,9 @@ parses and owns. Store then uses each incoming raw object *as* its record's `dat
 This collapses the usual two objects per row to one, and skips the per-row parse on every load and
 update.
 
-Use this config for stores connected to a Cube `View`, or fed by an endpoint that returns data in
-its final client-side form. A View logs a warning when a connected store leaves the config unset.
-Set it explicitly to `false` to opt out and silence that warning.
+Use this config for stores fed by an endpoint that returns data in its final client-side form.
+Stores connected to a Cube `View` are always projections - the View sets the flag, and an explicit
+`false` throws.
 
 ```typescript
 const store = new Store({

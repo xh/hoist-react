@@ -173,7 +173,7 @@ export class Query {
         this.dimensions = this.parseDimensions(dimensions);
         // Ensure canonical field order so equivalent queries compare equal
         this.fields = sortBy(
-            uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]),
+            uniq(this.withDependencies([...this.parseFields(fields), ...(this.dimensions ?? [])])),
             'name'
         );
         this.includeRoot = includeRoot;
@@ -250,6 +250,24 @@ export class Query {
         if (raw[0] instanceof CubeField) return raw as CubeField[];
         const names = raw as String[];
         return fields.filter(f => names.includes(f.name));
+    }
+
+    private withDependencies(fields: CubeField[]): CubeField[] {
+        const ret = [...fields],
+            names = new Set(fields.map(it => it.name));
+        for (let i = 0; i < ret.length; i++) {
+            ret[i].dependsOn?.forEach(name => {
+                if (names.has(name)) return;
+                const field = find(this.cube.fields, {name});
+                throwIf(
+                    !field,
+                    `Field '${ret[i].name}' depends on '${name}', which is not a Field on this Cube.`
+                );
+                names.add(name);
+                ret.push(field);
+            });
+        }
+        return ret;
     }
 
     private parseDimensions(raw: CubeField[] | string[]): CubeField[] {

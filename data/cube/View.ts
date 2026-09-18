@@ -51,9 +51,8 @@ export interface ViewConfig {
      * Store(s) to be automatically (re)loaded with data from this view.
      * Optional - read {@link View.result} directly to use without a Store.
      *
-     * Connected stores should generally set {@link StoreConfig.projectionOnly} - view rows are
-     * already parsed and owned by this View, so adopting them directly improves performance
-     * when no additional record parsing or local data modification is required.
+     * Connected stores are read-only projections of this View's rows - the View sets
+     * {@link StoreConfig.projectionOnly} on them, and conflicting config throws.
      */
     stores?: Store[] | Store;
 
@@ -160,6 +159,8 @@ export class View
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
     _aggFieldsByDepth: CubeField[][] = null;
+    // Derived fields without an aggregator - computed by getter on every row from its aggregates.
+    _levelDerivedFields: CubeField[] = null;
     _aggFieldNamesByDepth: Set<string>[] = null;
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
@@ -361,6 +362,7 @@ export class View
 
     private buildIndices() {
         this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
+        this._levelDerivedFields = this.fields.filter(it => it.isDerived && !it.aggregator);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
@@ -421,6 +423,19 @@ export class View
         });
 
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
+
+        // Level-derived values move with their inputs, with no leaf-level diff to report them.
+        if (changedFields.size) {
+            for (let added = true; added;) {
+                added = false;
+                this._levelDerivedFields.forEach(({name, dependsOn}) => {
+                    if (!changedFields.has(name) && dependsOn.some(it => changedFields.has(it))) {
+                        changedFields.add(name);
+                        added = true;
+                    }
+                });
+            }
+        }
 
         this.createAggregationContext();
 
@@ -717,11 +732,11 @@ export class View
             '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
         );
 
-        if (ret.some(s => s.projectionOnly == null && !s.processRawData)) {
-            this.logWarn(
-                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. Set explicitly to false to opt out and silence this warning.'
-            );
-        }
+        throwIf(
+            ret.some(s => s.projectionOnly === false || s.processRawData),
+            'A Store connected to a Cube View is a read-only projection of its rows - remove conflicting `projectionOnly: false` or `processRawData` config.'
+        );
+        ret.forEach(s => (s.projectionOnly = true));
 
         return ret;
     }
