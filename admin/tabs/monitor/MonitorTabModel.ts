@@ -7,7 +7,7 @@
 import {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
 import {LoadSpec, managed, persist, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -19,7 +19,7 @@ export class MonitorTabModel extends BaseAdminTabModel {
 
     override persistWith = {localStorageKey: 'xhAdminClientMonitorState'};
 
-    @observable.ref accessor results: MonitorResults[] = [];
+    @observableRef accessor results: MonitorResults[] = [];
     @observable accessor lastRun: number = null;
 
     @managed readonly timer: Timer;

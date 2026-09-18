@@ -26,7 +26,7 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, observable, bindableRef} from '@xh/hoist/mobx';
 import {debouncePromise, wait, waitFor} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -251,7 +251,7 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @bindable.ref accessor internalOptions = [];
+    @bindableRef accessor internalOptions = [];
 
     @observable accessor windowedMenuWidth: number = null;
 

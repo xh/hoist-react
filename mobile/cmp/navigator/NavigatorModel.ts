@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, bindable} from '@xh/hoist/mobx';
+import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, mergeDeep} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 import {find, isEqual, keys} from 'lodash';
@@ -64,7 +64,7 @@ export interface NavigatorConfig {
 export class NavigatorModel extends HoistModel {
     @bindable accessor disableAppRefreshButton: boolean;
 
-    @bindable.ref accessor stack: PageModel[] = [];
+    @bindableRef accessor stack: PageModel[] = [];
 
     /**
      * Index of the active page, synced from Swiper as each transition completes. Observable so

@@ -24,7 +24,7 @@ import {
     ValidationResult
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
-import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
+import {action, computed, observable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -374,7 +374,7 @@ export class Store
     readonly projectionOnly: boolean;
     validationIsComplex: boolean;
 
-    @observable.ref accessor filter: Filter;
+    @observableRef accessor filter: Filter;
 
     /** Timestamp (ms) of the last time this store's data was changed. */
     @observable accessor lastUpdated: number;
@@ -387,7 +387,7 @@ export class Store
      * or any other custom aggregation(s) calculated and installed by the application. Set via
      * {@link loadData} or by loading a tree structure with `loadRootAsSummary` set to true.
      */
-    @observable.ref accessor summaryRecords: StoreRecord[] = null;
+    @observableRef accessor summaryRecords: StoreRecord[] = null;
 
     /** @internal - used internally by any StoreFilterField bound to this store. */
     @observable accessor xhFilterText: string = null;
@@ -398,9 +398,9 @@ export class Store
     //----------------------
     // Implementation State
     //----------------------
-    @observable.ref private accessor _committed: RecordSet;
-    @observable.ref private accessor _current: RecordSet;
-    @observable.ref accessor _filtered: RecordSet;
+    @observableRef private accessor _committed: RecordSet;
+    @observableRef private accessor _current: RecordSet;
+    @observableRef accessor _filtered: RecordSet;
 
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;

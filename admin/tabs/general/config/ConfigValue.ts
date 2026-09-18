@@ -18,7 +18,7 @@ import {
     textInput
 } from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {observable} from '@xh/hoist/mobx';
+import {observableRef} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isPlainObject, last, union} from 'lodash';
 import {ReactElement} from 'react';
@@ -51,7 +51,7 @@ export const configValue = hoistCmp.factory<ConfigValueModel>({
 class ConfigValueModel extends HoistModel {
     override xhImpl = true;
 
-    @managed @observable.ref accessor tabContainerModel: TabContainerModel;
+    @managed @observableRef accessor tabContainerModel: TabContainerModel;
 
     get formModel(): FormModel {
         return this.componentProps.formModel;

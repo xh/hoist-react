@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {action, computed, comparer, observable} from '@xh/hoist/mobx';
+import {action, computed, observableRef, compareShallow} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {
@@ -96,7 +96,7 @@ import {Class} from 'type-fest';
  * ```ts
  * // Linked model backing a Hoist component
  * class MyModel extends HoistModel {
- *   @observable.ref accessor data: SomeData = null;
+ *   @observableRef accessor data: SomeData = null;
  *
  *   override async doLoadAsync(loadSpec: LoadSpec) {
  *     this.data = await api.loadSomeData(loadSpec);
@@ -138,7 +138,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     // - `_componentProps` is only set for linked models and mirrors the current React props.
     // - `_modelLookup` is injected by Hoist when this model is linked into a component hierarchy.
     // - `_created` is basic lifecycle metadata (useful for diagnostics/ordering).
-    @observable.ref accessor _componentProps: DefaultHoistProps | null = null;
+    @observableRef accessor _componentProps: DefaultHoistProps | null = null;
     _modelLookup: any = null;
     _created: number = Date.now();
 
@@ -212,7 +212,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop will trigger observers to be notified).
      */
-    @computed({equals: comparer.shallow})
+    @computed({equals: compareShallow})
     get componentProps(): DefaultHoistProps {
         return this._componentProps ?? {};
     }

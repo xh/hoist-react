@@ -18,7 +18,7 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, FilterTestFn, Store, StoreRecord} from '@xh/hoist/data';
 import {getFilterMatchRanges} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEqual, isObject} from 'lodash';
 
@@ -75,7 +75,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @bindable accessor filterText: string = null;
 
     /** Active match predicate from the filter control - null when unfiltered. */
-    @bindable.ref accessor filterTestFn: FilterTestFn = null;
+    @bindableRef accessor filterTestFn: FilterTestFn = null;
 
     /**
      * Explanatory hint shown in the drag ghost while a drag is refused, so the user understands the
@@ -84,7 +84,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     @observable accessor dragHint: string = null;
 
     /** Pending working copy of the grid's columnState - the source of truth for the bucket grids. */
-    @observable.ref accessor workingState: ColumnState[] = null;
+    @observableRef accessor workingState: ColumnState[] = null;
 
     /**
      * True when the chooser sizes itself to its content (the popover and dialog overlays). False when an
@@ -421,7 +421,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     // Implementation
     //-----------------------
     /** Last grid columnState synced/committed against - the baseline for {@link isDirty}. */
-    @observable.ref private accessor baseline: ColumnState[] = null;
+    @observableRef private accessor baseline: ColumnState[] = null;
 
     /** Guards against stacking resolve-conflict prompts while one is already open. */
     private resolvingConflict = false;

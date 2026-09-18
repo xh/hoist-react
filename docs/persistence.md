@@ -532,7 +532,7 @@ class FilterPanelModel extends HoistModel {
 
     @bindable @persist showAdvanced = false;
     @bindable @persist includeArchived = false;
-    @observable.ref @persist selectedStatuses = ['active', 'pending'];
+    @observableRef @persist selectedStatuses = ['active', 'pending'];
 }
 ```
 

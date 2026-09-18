@@ -175,7 +175,7 @@ import {bindable, observable, runInAction} from '@xh/hoist/mobx';
 
 class UserListModel extends HoistModel {
     // Observable state
-    @observable.ref accessor users: User[] = [];
+    @observableRef accessor users: User[] = [];
     @bindable accessor selectedUserId: string = null;
 
     // Managed child model - we create it, so we manage it
@@ -910,7 +910,7 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 ### Forgetting the `accessor` Keyword on Observables
 
 TC39 decorators require the `accessor` keyword on properties decorated with `@observable`,
-`@observable.ref`, `@bindable`, or `@bindable.ref`. Without `accessor`, the decorator cannot
+`@observableRef`, `@bindable`, or `@bindableRef`. Without `accessor`, the decorator cannot
 intercept the property and observables silently won't react.
 
 ```typescript

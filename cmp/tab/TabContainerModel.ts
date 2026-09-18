@@ -21,7 +21,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {DynamicTabSwitcherModel} from '@xh/hoist/desktop/cmp/tab/dynamic/DynamicTabSwitcherModel';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -115,7 +115,7 @@ export class TabContainerModel extends HoistModel {
     declare config: TabContainerConfig;
 
     @managed
-    @observable.ref
+    @observableRef
     accessor tabs: TabModel[] = null;
 
     @observable accessor activeTabId: string;

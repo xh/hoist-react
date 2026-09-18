@@ -23,7 +23,7 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
@@ -116,19 +116,19 @@ export class View
     readonly isFilterValueSource = true;
 
     /** Query defining this View. Update via {@link updateQuery}. */
-    @observable.ref accessor query: Query = null;
+    @observableRef accessor query: Query = null;
 
     /**
      * Results of this view, an observable object with a `rows` property containing an array of
      * hierarchical {@link ViewRowData} objects.
      */
-    @observable.ref accessor result: ViewResult = null;
+    @observableRef accessor result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
 
     /** The source {@link Cube.info} as of the last time the view was updated. */
-    @observable.ref accessor info: PlainObject = null;
+    @observableRef accessor info: PlainObject = null;
 
     /** The source {@link Cube.lastUpdated} as of the last time the view was updated. */
     @observable accessor cubeUpdated: number;

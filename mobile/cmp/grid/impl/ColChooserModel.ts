@@ -7,7 +7,7 @@
 import {ColChooserMode, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, HSide, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {bindable, action, observable} from '@xh/hoist/mobx';
+import {bindable, action, observable, observableRef} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {clone, find, sortBy} from 'lodash';
 
@@ -25,7 +25,7 @@ export class ColChooserModel extends HoistModel implements IColChooserModel {
     showRestoreDefaults: boolean;
     autosizeOnCommit: boolean;
 
-    @observable.ref accessor columns: ColMeta[] = [];
+    @observableRef accessor columns: ColMeta[] = [];
     @bindable accessor pinFirst: boolean;
 
     @observable accessor isOpen = false;

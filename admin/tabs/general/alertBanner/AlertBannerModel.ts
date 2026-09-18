@@ -10,7 +10,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
@@ -18,7 +18,7 @@ export class AlertBannerModel extends HoistModel {
     override telemetryPrefix = 'xh.client.admin.alertBanner';
 
     savedValue: AlertBannerSpec;
-    @bindable.ref accessor savedPresets: PlainObject[] = [];
+    @bindableRef accessor savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
@@ -56,7 +56,7 @@ export class AlertBannerModel extends HoistModel {
     });
 
     @managed
-    @observable.ref
+    @observableRef
     accessor bannerModel = null;
 
     get intentOptions(): Intent[] {

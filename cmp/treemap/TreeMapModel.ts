@@ -9,7 +9,7 @@ import {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {FilterLike} from '@xh/hoist/data/filter/Types';
 import {numberRenderer} from '@xh/hoist/format';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
@@ -143,8 +143,8 @@ export class TreeMapModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @bindable.ref accessor highchartsConfig: any = {};
-    @observable.ref accessor data: TreeMapRecord[] = [];
+    @bindableRef accessor highchartsConfig: any = {};
+    @observableRef accessor data: TreeMapRecord[] = [];
     @bindable accessor labelField: string;
     @bindable accessor valueField: string;
     @bindable accessor heatField: string;

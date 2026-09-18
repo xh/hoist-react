@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, MessageSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {filter, isUndefined, partition} from 'lodash';
 import {MessageModel} from './MessageModel';
 
@@ -20,7 +20,7 @@ export class MessageSourceModel extends HoistModel {
     override xhName = 'messageSourceModel';
 
     @managed
-    @observable.ref
+    @observableRef
     accessor msgModels: MessageModel[] = [];
 
     message(config: MessageSpec) {

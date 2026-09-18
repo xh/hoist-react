@@ -9,7 +9,7 @@ import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
 import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
-import {action, bindable, comparer, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -48,7 +48,7 @@ export class GridFindFieldImplModel extends HoistModel {
         return this.componentProps.excludeFields;
     }
 
-    @observable.ref accessor results;
+    @observableRef accessor results;
     inputRef = createObservableRef<TextInputModel>();
     _records: StoreRecord[] = null;
 
@@ -120,7 +120,7 @@ export class GridFindFieldImplModel extends HoistModel {
             {
                 track: () => [this.includeFields, this.excludeFields, this.matchMode],
                 run: () => this.updateResults(),
-                equals: comparer.structural
+                equals: compareStructural
             }
         );
     }

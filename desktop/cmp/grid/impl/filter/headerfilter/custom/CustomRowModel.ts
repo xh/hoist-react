@@ -8,7 +8,7 @@ import type {GridFilterFieldSpec} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {HeaderFilterModel} from '../HeaderFilterModel';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable, computedStruct} from '@xh/hoist/mobx';
 import {isArray, isEmpty, isNil} from 'lodash';
 import {CustomTabModel} from './CustomTabModel';
 
@@ -44,7 +44,7 @@ export class CustomRowModel extends HoistModel {
     @bindable accessor inputVal: any;
 
     /** FieldFilter config output of this row. */
-    @computed.struct
+    @computedStruct
     get value(): FieldFilterSpec {
         const {field} = this.fieldSpec;
 

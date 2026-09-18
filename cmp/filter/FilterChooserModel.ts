@@ -26,7 +26,7 @@ import {
     parseFilter
 } from '@xh/hoist/data';
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -160,8 +160,8 @@ export interface FilterChooserConfig {
  * @see FilterChooserFieldSpec
  */
 export class FilterChooserModel extends HoistModel {
-    @observable.ref accessor value: FilterChooserFilter = null;
-    @observable.ref accessor favorites: FilterChooserFilter[] = [];
+    @observableRef accessor value: FilterChooserFilter = null;
+    @observableRef accessor favorites: FilterChooserFilter[] = [];
     bind: FilterBindTarget;
     valueSource: FilterValueSource;
 
@@ -179,8 +179,8 @@ export class FilterChooserModel extends HoistModel {
 
     // Implementation fields for Control
     @managed queryEngine: QueryEngine;
-    @observable.ref accessor selectOptions: FilterChooserOption[];
-    @observable.ref accessor selectValue: string[];
+    @observableRef accessor selectOptions: FilterChooserOption[];
+    @observableRef accessor selectValue: string[];
     @observable accessor favoritesIsOpen = false;
     @observable accessor unsupportedFilter = false;
     inputRef = createObservableRef<HTMLElement>();

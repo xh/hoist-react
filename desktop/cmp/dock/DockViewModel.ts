@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import '@xh/hoist/desktop/register';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
 import {DockContainerModel} from './DockContainerModel';
@@ -82,7 +82,7 @@ export interface DockViewConfig {
 export class DockViewModel extends HoistModel {
     id: string;
     @bindable accessor title: string;
-    @bindable.ref accessor icon: ReactElement;
+    @bindableRef accessor icon: ReactElement;
     @observable accessor docked: boolean;
     @observable accessor collapsed: boolean;
     content: Content;

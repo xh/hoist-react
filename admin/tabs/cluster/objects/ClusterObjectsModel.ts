@@ -11,7 +11,14 @@ import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, observable, runInAction} from '@xh/hoist/mobx';
+import {
+    bindable,
+    computed,
+    observable,
+    runInAction,
+    observableRef,
+    bindableRef
+} from '@xh/hoist/mobx';
 import {isDisplayed, pluralize} from '@xh/hoist/utils/js';
 import {groupBy, isEmpty, mapValues, size} from 'lodash';
 import {createRef} from 'react';
@@ -21,11 +28,11 @@ export class ClusterObjectsModel extends HoistModel {
 
     viewRef = createRef<HTMLElement>();
 
-    @observable.ref accessor startTimestamp: Date = null;
+    @observableRef accessor startTimestamp: Date = null;
     @observable accessor runDurationMs: number = 0;
 
     @bindable accessor hideUnchecked: boolean = false;
-    @bindable.ref accessor textFilter: FilterTestFn = null;
+    @bindableRef accessor textFilter: FilterTestFn = null;
 
     clearHibernateCachesAction: RecordActionSpec = {
         text: 'Clear Selected Hibernate Caches',

@@ -18,7 +18,7 @@ import {
     RenderMode
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, bindable} from '@xh/hoist/mobx';
+import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {DashViewSpec} from './DashViewSpec';
 
@@ -62,13 +62,13 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
     }
 
     /** Icon with which to initialize the view. */
-    @bindable.ref accessor icon: ReactElement;
+    @bindableRef accessor icon: ReactElement;
 
     /** State with which to initialize the view. */
-    @bindable.ref accessor viewState: DashViewState;
+    @bindableRef accessor viewState: DashViewState;
 
     /** Extra menu items for the context menu. */
-    @bindable.ref accessor extraMenuItems: MenuItemLike[] = [];
+    @bindableRef accessor extraMenuItems: MenuItemLike[] = [];
 
     @managed refreshContextModel;
     @bindable accessor isActive: boolean;

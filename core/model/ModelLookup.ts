@@ -67,7 +67,7 @@ export class ModelLookup {
     }
 
     // Scan this model's own props (plain class fields like `@managed grid = new GridModel()`)
-    // and accessor-defined fields (TC39 `@observable.ref accessor chartModel: ChartModel`).
+    // and accessor-defined fields (TC39 `@observableRef accessor chartModel: ChartModel`).
     private findChildMatch(
         model: HoistModel,
         selector: ModelSelector,

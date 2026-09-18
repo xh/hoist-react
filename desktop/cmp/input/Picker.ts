@@ -20,7 +20,7 @@ import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
 import {TEST_ID, getTestId, withDefault, pluralize, executeIfFunction} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -224,7 +224,7 @@ export const [Picker, picker] = hoistCmp.withFactory<PickerProps, PickerDefaults
 class PickerModel extends HoistInputModel {
     override xhImpl = true;
 
-    @bindable.ref accessor internalOptions: SelectOption[] = [];
+    @bindableRef accessor internalOptions: SelectOption[] = [];
     @observable accessor popoverIsOpen: boolean = false;
     @bindable accessor filterValue: string = '';
 

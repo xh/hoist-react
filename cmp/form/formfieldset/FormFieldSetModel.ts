@@ -10,7 +10,7 @@ import {FieldModel} from '@xh/hoist/cmp/form';
 import {type PersistOptions} from '@xh/hoist/core';
 import {maxSeverity, ValidationSeverity} from '@xh/hoist/data';
 import {uniq, without} from 'lodash';
-import {action, computed, observable} from 'mobx';
+import {action, computed, observable, observableRef} from 'mobx';
 
 /**
  * Configuration for a {@link FormFieldSetModel} - a collapsible container for grouping
@@ -47,13 +47,13 @@ export interface FormFieldSetConfig {
 export class FormFieldSetModel extends CardModel {
     declare config: FormFieldSetConfig;
 
-    @observable.ref accessor parent: FormFieldSetModel;
+    @observableRef accessor parent: FormFieldSetModel;
 
     //-----------------
     // Implementation
     //-----------------
-    @observable.ref private accessor childFormFieldSetModels: FormFieldSetModel[] = [];
-    @observable.ref private accessor childFieldModels: FieldModel[] = [];
+    @observableRef private accessor childFormFieldSetModels: FormFieldSetModel[] = [];
+    @observableRef private accessor childFieldModels: FieldModel[] = [];
     @observable private accessor isDisabled: boolean;
     @observable private accessor isReadonly: boolean;
 

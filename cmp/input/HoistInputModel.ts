@@ -7,7 +7,7 @@
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
 import {maxSeverity} from '@xh/hoist/data';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEqual, isString} from 'lodash';
@@ -97,7 +97,7 @@ export class HoistInputModel extends HoistModel {
     //-----------------------
     // Implementation State
     //------------------------
-    @observable.ref accessor internalValue: any = null; // Cached internal value
+    @observableRef accessor internalValue: any = null; // Cached internal value
     inputRef = createObservableRef<HTMLElement>(); // ref to internal <input> element, if any
     domRef = createObservableRef<HTMLElement>(); // ref to outermost rendered DOM element.
     isDirty: boolean = false;

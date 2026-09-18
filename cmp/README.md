@@ -113,7 +113,7 @@ render changes, the component efficiently re-renders.
 // Model defines observable state
 class MyComponentModel extends HoistModel {
     @observable selectedId: string = null;
-    @observable.ref data: MyData[] = [];
+    @observableRef data: MyData[] = [];
 
     @action
     setSelectedId(id: string) {

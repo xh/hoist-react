@@ -8,7 +8,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
 import {isValidJson, required} from '@xh/hoist/data';
 import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {createRef} from 'react';
@@ -21,7 +21,7 @@ export class RestFormModel extends HoistModel {
     parent: RestGridModel = null;
 
     // Mutable State
-    @observable.ref accessor currentRecord = null;
+    @observableRef accessor currentRecord = null;
     @observable accessor readonly: boolean = null;
     @observable accessor isAdd: boolean = null;
     @observable accessor isOpen: boolean = false;

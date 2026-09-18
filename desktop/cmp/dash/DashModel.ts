@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
-import {bindable, observable} from '@xh/hoist/mobx';
+import {bindable, observableRef} from '@xh/hoist/mobx';
 import {HoistModel, managed, RefreshContextModel} from '@xh/hoist/core';
 
 /**
@@ -16,8 +16,8 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL extends DashViewModel> ext
     // Core State
     //---------------------------
     viewSpecs: VSPEC[] = [];
-    @observable.ref accessor state: VSTATE[];
-    @managed @observable.ref accessor viewModels: VMODEL[] = [];
+    @observableRef accessor state: VSTATE[];
+    @managed @observableRef accessor viewModels: VMODEL[] = [];
 
     @managed readonly refreshContextModel: RefreshContextModel;
 

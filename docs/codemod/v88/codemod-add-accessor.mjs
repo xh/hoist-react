@@ -2,9 +2,9 @@
 /*
  * One-shot codemod for the hoist-react v88 TC39 decorator migration (xh/hoist-react#4321).
  *
- * Inserts the `accessor` keyword on every @observable / @observable.ref / @observable.shallow /
- * @observable.deep / @bindable / @bindable.ref field declaration. Handles both stylistic forms
- * used in the codebase:
+ * Inserts the `accessor` keyword on every @observable / @observableRef / @observableShallow /
+ * @observableDeep / @bindable / @bindableRef field declaration (the pre-MobX 7 dotted forms such
+ * as @observable.ref are matched too). Handles both stylistic forms used in the codebase:
  *
  *   Form A — decorator and field on same line:
  *     @observable foo = 0;            →   @observable accessor foo = 0;
@@ -35,7 +35,7 @@ const EXCLUDED_DIRS = new Set(['node_modules', 'build', '.git', '.idea', '.husky
 const EXCLUDED_PREFIXES = [];
 
 const ACCESS_MODIFIERS = '(?:public|private|protected|static|override)';
-const DECORATOR = '@(?:observable(?:\\.\\w+)?|bindable(?:\\.\\w+)?)';
+const DECORATOR = '@(?:observable(?:\\.\\w+|Ref|Shallow|Deep|Struct)?|bindable(?:\\.\\w+|Ref)?)';
 // Anything that can sit BETWEEN the observable/bindable decorator and the field name:
 //   other decorators (e.g. `@persist`) and/or TS access modifiers, stacked same-line or wrapped.
 const INTERVENING = `(?:(?:@[\\w.]+(?:\\([^)]*\\))?|${ACCESS_MODIFIERS})\\s+)*`;
