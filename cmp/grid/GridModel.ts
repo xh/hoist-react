@@ -74,7 +74,8 @@ import {
     when,
     observableRef,
     computedStruct,
-    bindableRef
+    bindableRef,
+    computed
 } from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
@@ -116,7 +117,6 @@ import {
     pull,
     take
 } from 'lodash';
-import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';

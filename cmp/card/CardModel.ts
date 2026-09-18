@@ -16,7 +16,7 @@ import {
 } from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
-import {action, observable} from 'mobx';
+import {action, observable} from '@xh/hoist/mobx';
 
 /**
  * Configuration for a {@link CardModel}. A CardModel is created automatically by {@link Card}

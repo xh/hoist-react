@@ -224,7 +224,7 @@ the derivation is trivial and accessed from a single reactive context.
 ### Using `@observable` (deep) for non-primitives
 
 MobX's default `@observable` applies deep observation, recursively wrapping nested properties
-in proxies. This is rarely what you want for arrays, objects, or class instances. Use the `.ref`
+in proxies. This is rarely what you want for arrays, objects, or class instances. Use the `Ref`
 variant instead:
 
 ```typescript
@@ -246,9 +246,9 @@ In hoist-react, bare `@observable` is used only for primitives (booleans, string
 enums). Everything else — arrays, objects, class instances — uses `@observableRef` or
 `@bindableRef`.
 
-### Mutating `.ref` values in place
+### Mutating `Ref` values in place
 
-When using `.ref` variants, MobX only tracks *reference changes* to the property, not mutations
+When using `Ref` variants, MobX only tracks *reference changes* to the property, not mutations
 within the value. To trigger reactions, you must replace the entire value with a new instance:
 
 ```typescript

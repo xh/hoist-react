@@ -28,7 +28,7 @@ import {consumeEvent, getTestId} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
-import {computed} from 'mobx';
+import {computed} from '@xh/hoist/mobx';
 import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';

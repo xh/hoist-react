@@ -14,7 +14,7 @@ import {HoistModel, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/c
 import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
 import {compact, find} from 'lodash';
-import {action, computed, when, observableRef} from 'mobx';
+import {action, computed, when, observableRef} from '@xh/hoist/mobx';
 import React from 'react';
 
 /**

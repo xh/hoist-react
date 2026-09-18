@@ -61,5 +61,6 @@ export {
     untracked,
     when
 };
+export type {IAutorunOptions, IEqualsComparer, IReactionDisposer, IReactionOptions} from 'mobx';
 
 export * from './decorators';

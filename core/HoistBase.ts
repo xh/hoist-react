@@ -11,6 +11,10 @@ import {
     compareIdentity,
     compareShallow,
     compareStructural,
+    IAutorunOptions,
+    IEqualsComparer,
+    IReactionDisposer,
+    IReactionOptions,
     reaction as mobxReaction,
     runInAction,
     when as mobxWhen
@@ -35,7 +39,6 @@ import {
     isString,
     upperFirst
 } from 'lodash';
-import {IAutorunOptions, IEqualsComparer, IReactionDisposer, IReactionOptions} from 'mobx';
 import {
     CallContextLike,
     DebounceSpec,

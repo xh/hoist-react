@@ -1,6 +1,6 @@
 import {HoistModel} from '@xh/hoist/core';
 import {isNil} from 'lodash';
-import {action, computed, observable} from 'mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {createRef} from 'react';
 
 /**

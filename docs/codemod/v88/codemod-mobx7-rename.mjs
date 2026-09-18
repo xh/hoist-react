@@ -4,7 +4,9 @@
  *
  * MobX 7 replaced its dotted annotation and comparer namespaces with named exports, and Hoist
  * follows suit for `@bindable.ref`. Rewrites every occurrence and fixes up the matching import
- * from 'mobx' or '@xh/hoist/mobx':
+ * from '@xh/hoist/mobx'. Imports from 'mobx' directly are redirected to '@xh/hoist/mobx' first
+ * (app code should always import MobX through Hoist) and merged into an existing Hoist import.
+ * A name Hoist does not re-export is left in place with a warning - `tsc` will flag it.
  *
  *   @observable.ref      →  @observableRef          comparer.structural  →  compareStructural
  *   @observable.shallow  →  @observableShallow      comparer.shallow     →  compareShallow
@@ -20,7 +22,8 @@
  * Skips node_modules, build/, and .git/. Run it before or after codemod-add-accessor.mjs - that
  * codemod accepts both the dotted and the renamed forms.
  *
- * Import cleanup is textual: a base name such as `observable` is dropped from the import only
+ * Import cleanup is textual: only the first import from each module is considered, and a base
+ * name such as `observable` is dropped from the import only
  * when the file no longer mentions it anywhere, so a JSDoc reference can leave it behind.
  * `eslint` (no-unused-vars) and `tsc` are the authoritative checks after running.
  */
@@ -48,7 +51,17 @@ const RENAMES = {
     'bindable.ref': 'bindableRef'
 };
 const OLD_ROOTS = ['observable', 'computed', 'action', 'flow', 'comparer', 'bindable'];
-const RE_IMPORT = /^import \{([^}]*)\} from '(mobx|@xh\/hoist\/mobx)';/m;
+const RE_IMPORT = /^import (?:type )?\{([^}]*)\} from '(@xh\/hoist\/mobx)';/m;
+const RE_MOBX_IMPORT = /^import (?:type )?\{([^}]*)\} from 'mobx';\n?/m;
+// Everything @xh/hoist/mobx re-exports - names outside this list stay on their 'mobx' import.
+const HOIST_EXPORTS = new Set([
+    'action', 'actionBound', 'autorun', 'bindable', 'bindableRef', 'compareDefault',
+    'compareIdentity', 'compareShallow', 'compareStructural', 'computed', 'computedStruct',
+    'extendObservable', 'isComputedProp', 'isObservableProp', 'observable', 'observableDeep',
+    'observableRef', 'observableShallow', 'observableStruct', 'observer', 'reaction', 'runInAction',
+    'toJS', 'untracked', 'when', 'IAutorunOptions', 'IEqualsComparer', 'IReactionDisposer',
+    'IReactionOptions'
+]);
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -94,6 +107,7 @@ async function processFile(filePath) {
             return to;
         });
     }
+    content = redirectMobxImport(content, filePath);
     if (content === original) return;
 
     const m = RE_IMPORT.exec(content);
@@ -107,11 +121,12 @@ async function processFile(filePath) {
         for (const to of Object.values(RENAMES)) {
             if (isUsed(to) && !names.includes(to)) names.push(to);
         }
+        names.sort((a, b) => a.localeCompare(b, 'en', {sensitivity: 'base'}));
         content =
             content.slice(0, m.index) +
             `import {${names.join(', ')}} from '${m[2]}';` +
             content.slice(m.index + m[0].length);
-    } else {
+    } else if (Object.values(RENAMES).some(to => new RegExp(`\\b${to}\\b`).test(content))) {
         console.log(`  WARN no mobx import found to update: ${path.relative(REPO_ROOT, filePath)}`);
     }
 
@@ -119,4 +134,53 @@ async function processFile(filePath) {
     renameCount += localCount;
     if (!DRY) await fs.writeFile(filePath, content);
     console.log(`  ${path.relative(REPO_ROOT, filePath)} — ${localCount} renamed`);
+}
+
+/** Move names imported from 'mobx' onto '@xh/hoist/mobx', merging into an existing Hoist import. */
+function redirectMobxImport(content, filePath) {
+    if (path.dirname(filePath) === path.join(REPO_ROOT, 'mobx')) return content;
+    const mm = RE_MOBX_IMPORT.exec(content);
+    if (!mm) return content;
+
+    const rest = content.slice(0, mm.index) + content.slice(mm.index + mm[0].length),
+        isUsed = name => new RegExp(`\\b${name}\\b`).test(rest),
+        names = mm[1]
+            .split(',')
+            .map(n => n.trim())
+            .filter(n => n && !(OLD_ROOTS.includes(n) && !isUsed(n))),
+        moved = names.filter(n => HOIST_EXPORTS.has(n.replace(/^type /, ''))),
+        kept = names.filter(n => !moved.includes(n));
+    // Renamed targets need a home too, in case this file has no Hoist import yet.
+    for (const to of Object.values(RENAMES)) {
+        if (isUsed(to) && !moved.includes(to)) moved.push(to);
+    }
+    if (kept.length) {
+        console.log(
+            `  WARN not re-exported by @xh/hoist/mobx, left on 'mobx': ${kept.join(', ')} ` +
+                `(${path.relative(REPO_ROOT, filePath)})`
+        );
+    }
+    if (!moved.length) {
+        // Nothing to redirect: keep the line as-is, or drop it if every name was pruned.
+        return names.length
+            ? content
+            : content.slice(0, mm.index) + content.slice(mm.index + mm[0].length);
+    }
+
+    const keptLine = kept.length ? `import {${kept.join(', ')}} from 'mobx';\n` : '';
+    content = content.slice(0, mm.index) + keptLine + content.slice(mm.index + mm[0].length);
+
+    const hm = RE_IMPORT.exec(content);
+    if (hm) {
+        const merged = [...hm[1].split(',').map(n => n.trim()).filter(Boolean)];
+        for (const n of moved) if (!merged.includes(n)) merged.push(n);
+        return (
+            content.slice(0, hm.index) +
+            `import {${merged.join(', ')}} from '@xh/hoist/mobx';` +
+            content.slice(hm.index + hm[0].length)
+        );
+    }
+    // No Hoist import yet - put one where the 'mobx' import was.
+    const at = mm.index + keptLine.length;
+    return content.slice(0, at) + `import {${moved.join(', ')}} from '@xh/hoist/mobx';\n` + content.slice(at);
 }

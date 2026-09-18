@@ -10,7 +10,7 @@ import {FieldModel} from '@xh/hoist/cmp/form';
 import {type PersistOptions} from '@xh/hoist/core';
 import {maxSeverity, ValidationSeverity} from '@xh/hoist/data';
 import {uniq, without} from 'lodash';
-import {action, computed, observable, observableRef} from 'mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 
 /**
  * Configuration for a {@link FormFieldSetModel} - a collapsible container for grouping
