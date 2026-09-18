@@ -3,6 +3,10 @@
 **Issue:** [xh/hoist-react#4321](https://github.com/xh/hoist-react/issues/4321)
 **Target release:** Hoist React v84 (coordinated with `hoist-dev-utils`)
 
+> **Historical note:** this is the original planning document. The migration shipped in Hoist React
+> **v88** with `@xh/hoist-dev-utils` 16, using Babel's `2023-11` decorator transform rather than
+> the `2023-05` version referenced below. Codemods live in `docs/codemod/v88/`.
+
 > This is the execution plan. The issue body contains the detailed design (API signatures,
 > reference implementations, and gotchas) — treat it as the authoritative spec and cite it
 > in commits rather than duplicating here.

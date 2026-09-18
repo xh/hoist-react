@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * One-shot codemod for the hoist-react v85 TC39 decorator migration (xh/hoist-react#4321).
+ * One-shot codemod for the hoist-react v88 TC39 decorator migration (xh/hoist-react#4321).
  *
  * Inserts the `accessor` keyword on every @observable / @observable.ref / @observable.shallow /
  * @observable.deep / @bindable / @bindable.ref field declaration. Handles both stylistic forms
@@ -16,7 +16,7 @@
  *     foo: T = ...;                       accessor foo: T = ...;
  *
  * Usage:
- *   node docs/codemod/v87/codemod-add-accessor.mjs [--dry] [path ...]
+ *   node docs/codemod/v88/codemod-add-accessor.mjs [--dry] [path ...]
  *
  * Paths default to the hoist-react repo root. Files are walked recursively, scanning .ts/.tsx.
  * Skips node_modules, build/, and .git/.

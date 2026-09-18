@@ -19,7 +19,7 @@
 
 * **Migrated to TC39 Stage 3 (2023-11) decorators**, retiring `experimentalDecorators`. Drops
   `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
-  `accessor` to `@observable`/`@bindable` fields and run the codemods in `docs/codemod/v87/`.
+  `accessor` to `@observable`/`@bindable` fields and run the codemods in `docs/codemod/v88/`.
   Requires `@xh/hoist-dev-utils >= 16` - upgrade both packages together, as a legacy-decorator app
   built against the new dev-utils silently loses every `@observable` and `@bindable` field.
     * `@observable accessor` fields are now prototype getter/setters rather than own enumerable
@@ -132,6 +132,11 @@
 * Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
   regroup and update as those with `SUM` fields.
+* Model lookup now subscribes only to slots that can affect resolution - the matched slot, or
+  nullish accessor candidates if no match. Computed getters and primitive observables are
+  excluded. Tighter than the prior walk, which subscribed indiscriminately and triggered
+  needless re-renders.
+* Misc. improvements to persistence in the Admin client.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -779,12 +784,6 @@ columns.
 * Added the exported `HoistRoute` type - Router5's `Route` extended with Hoist's `omit` key - and
   retyped `HoistAppModel.getRoutes()` to return it, so declarative route exclusion (e.g.
   `omit: !XH.getUser().isHoistAdmin`) now type-checks without a cast.
-
-### ⚙️ Technical
-* Model lookup now subscribes only to slots that can affect resolution — the matched slot, or
-  nullish/HoistModel candidates if no match. Primitive observables are excluded. Tighter than
-  the prior walk, which subscribed indiscriminately and triggered needless re-renders.
-* Misc. improvements to persistence in the Admin client.
 
 ### 🤖 AI Docs + Tooling
 
