@@ -90,6 +90,21 @@ export class RowCache {
         return ret as T;
     }
 
+    /**
+     * Cache a leaf created outside of a generation - see View incremental leaf population.
+     */
+    add(row: LeafRow) {
+        this.rows.set(row.id, row);
+    }
+
+    /**
+     * Drop a leaf that can never be reused - its record has left the cube, or been replaced by an
+     * instance the View no longer holds a row for.
+     */
+    remove(id: string) {
+        this.rows.delete(id);
+    }
+
     beginGeneration() {
         const {view} = this;
         this.pruneForQueryChange(view.query);

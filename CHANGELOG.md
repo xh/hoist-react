@@ -120,6 +120,13 @@
 * Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
   regroup and update as those with `SUM` fields.
+* Cube `View`s with no `dimensions` now add and remove leaves in place as records enter or leave
+  the query `filter`, re-aggregating the root over its new children, where previously any record
+  crossing the filter triggered a full rebuild. Makes `query.filter` viable for large, fast-ticking
+  leaves-only views filtered on the fields that tick. Grouped views still rebuild in that case.
+* Cube `View`s now diff only the fields a `Cube.updateDataAsync()` transaction declares via
+  `StoreTransaction.changedFields` when applying value-only updates to their leaves, rather than
+  every queried field. `StoreChangeLog` carries the set through for such transactions.
 
 ### ⚙️ Typescript API Adjustments
 

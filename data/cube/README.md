@@ -272,6 +272,15 @@ Query updates are highly incremental - the View caches its generated rows and re
 unchanged rows (and their record-reuse digests) across regrouping, refiltering, and field
 changes, so connected stores and grids only process rows that actually changed.
 
+Data updates to a connected View are incremental too. Value-only changes to records already in
+the View adjust its aggregates in place, diffing only the fields the source transaction declared
+via `StoreTransaction.changedFields` when it supplied them. A View with no `dimensions` - leaves
+only, with or without `includeRoot` - also adds and removes leaves in place as records enter or
+leave its `filter`, re-aggregating the root over its new children rather than rebuilding. That
+makes `query.filter` viable for large, fast-ticking leaves-only Views filtered on the very fields
+that tick. Grouped Views still regenerate (reusing unchanged rows) when leaves enter or leave, or
+when a dimension value changes.
+
 **One-shot queries with `executeQuery`:**
 
 For cases where you need aggregated data once without retaining a View — e.g. computing a
