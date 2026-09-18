@@ -18,7 +18,7 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, FilterTestFn, Store, StoreRecord} from '@xh/hoist/data';
 import {getFilterMatchRanges} from '@xh/hoist/data';
 import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEqual, isObject} from 'lodash';
 
@@ -72,21 +72,19 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     // Observable State
     //-----------------------
     /** Raw text of the single filter control, shared across all grids. */
-    @bindable filterText: string = null;
+    @bindable accessor filterText: string = null;
 
     /** Active match predicate from the filter control - null when unfiltered. */
-    @bindable.ref
-    filterTestFn: FilterTestFn = null;
+    @bindable.ref accessor filterTestFn: FilterTestFn = null;
 
     /**
      * Explanatory hint shown in the drag ghost while a drag is refused, so the user understands the
      * `notAllowed` cursor. Set by the hovered participant, cleared on drag end.
      */
-    @observable dragHint: string = null;
+    @observable accessor dragHint: string = null;
 
     /** Pending working copy of the grid's columnState - the source of truth for the bucket grids. */
-    @observable.ref
-    workingState: ColumnState[] = null;
+    @observable.ref accessor workingState: ColumnState[] = null;
 
     /**
      * True when the chooser sizes itself to its content (the popover and dialog overlays). False when an
@@ -203,7 +201,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         filterMatchMode = 'startWord'
     }: ColChooserConfig) {
         super();
-        makeObservable(this);
 
         throwIf(!gridModel, "ColChooserModel requires a GridModel via its 'gridModel' config.");
 
@@ -424,8 +421,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     // Implementation
     //-----------------------
     /** Last grid columnState synced/committed against - the baseline for {@link isDirty}. */
-    @observable.ref
-    private baseline: ColumnState[] = null;
+    @observable.ref private accessor baseline: ColumnState[] = null;
 
     /** Guards against stacking resolve-conflict prompts while one is already open. */
     private resolvingConflict = false;

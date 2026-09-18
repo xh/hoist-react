@@ -14,7 +14,7 @@ import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, isEmpty, isString, mapValues, uniq} from 'lodash';
 import {RoleEditorModel} from './editor/RoleEditorModel';
@@ -39,14 +39,14 @@ export class RoleModel extends HoistModel {
     @managed readonly roleEditorModel = new RoleEditorModel(this);
     @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
-    @observable.ref allRoles: HoistRole[] = [];
+    @observable.ref accessor allRoles: HoistRole[] = [];
 
     /**
      * Display info for directory groups, keyed by the identifier stored on the role. Values are
      * either a resolved {@link DirectoryGroupInfo} or a string describing a lookup error.
      * Loaded via `roleAdmin/directoryGroupsInfo` after each load of the role list. (observable)
      */
-    @observable.ref directoryGroupInfo: Record<string, DirectoryGroupInfo | string> = {};
+    @observable.ref accessor directoryGroupInfo: Record<string, DirectoryGroupInfo | string> = {};
 
     /**
      * Set to false if the server 404s the `directoryGroupsInfo` endpoint (i.e. app on an older
@@ -54,7 +54,7 @@ export class RoleModel extends HoistModel {
      */
     directoryGroupInfoAvailable = true;
 
-    @bindable showInGroups = true;
+    @bindable accessor showInGroups = true;
 
     /** Role-module config - loaded at init. */
     get moduleConfig(): RoleModuleConfig {
@@ -73,7 +73,6 @@ export class RoleModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.gridModel = this.createGridModel();
         this.filterChooserModel = this.createFilterChooserModel();

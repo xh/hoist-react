@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 
 /**
  * Manages where the Inspector UI renders. By default the Inspector renders as a resizable panel
@@ -31,8 +31,7 @@ export class InspectorModel extends HoistModel {
      * dropdowns) - popups portaled to the main `document.body` would otherwise render within
      * the wrong window entirely.
      */
-    @observable.ref
-    windowContainer: HTMLElement = null;
+    @observable.ref accessor windowContainer: HTMLElement = null;
 
     /** True when the Inspector is popped out into its own window. */
     get isWindowed(): boolean {
@@ -45,7 +44,6 @@ export class InspectorModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         // Close the popped-out window if the Inspector is deactivated.
         this.addReaction({

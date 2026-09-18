@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {required, StoreRecord} from '@xh/hoist/data';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {ManageDialogModel} from '../ManageDialogModel';
 import {confirmGroupMergeIfExistsAsync} from '../Utils';
@@ -32,7 +32,7 @@ export class RenameGroupDialogModel extends HoistModel {
     @managed formModel: FormModel;
 
     /** True to display the dialog. */
-    @bindable isRenameDialogOpen = false;
+    @bindable accessor isRenameDialogOpen = false;
 
     get groupRecord(): StoreRecord {
         return this.parent.selectedGroupRecord;
@@ -49,7 +49,6 @@ export class RenameGroupDialogModel extends HoistModel {
 
     constructor(parent: ManageDialogModel) {
         super();
-        makeObservable(this);
 
         this.parent = parent;
         this.formModel = this.createFormModel();

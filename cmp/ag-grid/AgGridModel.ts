@@ -12,7 +12,7 @@ import type {
     Theme,
     ThemeDefaultParams
 } from '@xh/hoist/kit/ag-grid';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -138,13 +138,13 @@ export class AgGridModel extends HoistModel {
     //------------------------
     // Grid Style
     //------------------------
-    @bindable sizingMode: SizingMode;
-    @bindable rowBorders: boolean;
-    @bindable stripeRows: boolean;
-    @bindable cellBorders: boolean;
-    @bindable showHover: boolean;
-    @bindable showCellFocus: boolean;
-    @bindable hideHeaders: boolean;
+    @bindable accessor sizingMode: SizingMode;
+    @bindable accessor rowBorders: boolean;
+    @bindable accessor stripeRows: boolean;
+    @bindable accessor cellBorders: boolean;
+    @bindable accessor showHover: boolean;
+    @bindable accessor showCellFocus: boolean;
+    @bindable accessor hideHeaders: boolean;
 
     /**
      * Resolved AG Grid theme, shared by grids configured alike. Read-only: each distinct theme
@@ -155,7 +155,7 @@ export class AgGridModel extends HoistModel {
      */
     readonly agTheme: Theme<ThemeDefaultParams>;
 
-    @observable.ref agApi: GridApi = null;
+    @observable.ref accessor agApi: GridApi = null;
 
     private _prevSortBy: GridSorter[];
 
@@ -172,7 +172,6 @@ export class AgGridModel extends HoistModel {
         xhImpl = false
     }: AgGridModelConfig = {}) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
         this.xhName = xhName;
 

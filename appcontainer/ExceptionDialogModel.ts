@@ -6,7 +6,7 @@
  */
 import type {HoistException} from '@xh/hoist/exception';
 import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -20,11 +20,12 @@ export class ExceptionDialogModel extends HoistModel {
     override xhImpl = true;
     override xhName = 'exceptionDialogModel';
 
-    @observable.ref
-    displayData: {exception: HoistException; options: ExceptionHandlerOptions};
+    @observable.ref accessor displayData: {
+        exception: HoistException;
+        options: ExceptionHandlerOptions;
+    };
 
-    @observable
-    detailsIsOpen = false;
+    @observable accessor detailsIsOpen = false;
 
     /** Exception currently being displayed */
     get exception(): HoistException {
@@ -37,13 +38,7 @@ export class ExceptionDialogModel extends HoistModel {
     }
 
     /** Optional user supplied message */
-    @bindable
-    userMessage: string = '';
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor userMessage: string = '';
 
     @action
     show(exception: HoistException, options: ExceptionHandlerOptions) {

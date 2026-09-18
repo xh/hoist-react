@@ -17,7 +17,7 @@ import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {executeIfFunction} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {menu, swallowContextMenu} from './Menu';
@@ -91,14 +91,9 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
 class MenuButtonLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable isOpen = false;
-    @bindable.ref menuItems: MenuItemLike[] = null;
-    @bindable.ref context: MenuContext = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor isOpen = false;
+    @bindable.ref accessor menuItems: MenuItemLike[] = null;
+    @bindable.ref accessor context: MenuContext = null;
 
     setOpen(
         isOpen: boolean,

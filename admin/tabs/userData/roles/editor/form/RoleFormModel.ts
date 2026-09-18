@@ -19,7 +19,7 @@ import {
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {compact, groupBy, isNil, isString, keyBy, map, sortBy, uniq, without} from 'lodash';
 import {ReactNode} from 'react';
 import {RoleModel} from '../../RoleModel';
@@ -39,21 +39,21 @@ export class RoleFormModel extends HoistModel {
     readonly directoryGroupLookupTask = TaskObserver.trackLast();
     readonly roleModel: RoleModel;
 
+    @observable accessor isEditingExistingRole = false;
+
+    @observable.ref accessor invalidNames: string[] = [];
+    @observable.ref accessor categoryOptions: string[] = [];
+    @observable.ref accessor userOptions: string[] = [];
+    @observable.ref accessor directoryGroupOptions: string[] = [];
+    @observable.ref accessor roleOptions: SelectOption[] = [];
+
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
     @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('DIRECTORY_GROUP');
     @managed readonly rolesGridModel: GridModel = this.createGridModel('ROLE');
 
-    @observable isEditingExistingRole = false;
-
     // Set to false if the server 404s the search endpoint (i.e. app on an older hoist-core).
     private directoryGroupSearchAvailable = true;
-
-    @observable.ref invalidNames: string[] = [];
-    @observable.ref categoryOptions: string[] = [];
-    @observable.ref userOptions: string[] = [];
-    @observable.ref directoryGroupOptions: string[] = [];
-    @observable.ref roleOptions: SelectOption[] = [];
 
     @computed
     get isDirty(): boolean {
@@ -89,7 +89,6 @@ export class RoleFormModel extends HoistModel {
 
     constructor(roleModel: RoleModel) {
         super();
-        makeObservable(this);
 
         this.roleModel = roleModel;
         this.addReaction(
