@@ -120,7 +120,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@xh/eslint-config": "^8.0.1",
-    "@xh/hoist-dev-utils": "^16.0.0-SNAPSHOT",
+    "@xh/hoist-dev-utils": "next",
     "ag-grid-community": "~36.1.0",
     "ag-grid-react": "~36.1.0",
     "csstype": "^3.2.3",

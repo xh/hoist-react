@@ -11,11 +11,10 @@ import {findLastIndex} from 'lodash';
 
 /**
  * Pure resolution engine for column-chooser drag-and-drop - plain `ColumnState[]` master data plus a
- * `chainOf` group lookup, with no ag-Grid, MobX, or model deps. Rules and worked cases:
- * `docs/planning/locked-group-dnd-spec.md`.
+ * `chainOf` group lookup, with no ag-Grid, MobX, or model deps.
  *
- * Keep every `@xh/hoist` import here type-only - a runtime import breaks bare-`tsx` execution of
- * `colChooserDropEngine.spec.ts`.
+ * Keep every `@xh/hoist` import here type-only. Runtime imports would pull the framework into what
+ * is otherwise a self-contained, side-effect-free module.
  */
 
 /** Maps a leaf colId to its group chain as groupIds, outermost (top-level) to innermost. */
