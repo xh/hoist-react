@@ -299,10 +299,12 @@ unreviewed work on `develop` this way.
 git switch -c my-feature                              # ✅ from current HEAD
 git switch -c my-feature --no-track origin/develop    # ✅ explicit base, safe
 git switch -c my-feature origin/develop               # ❌ auto-tracks develop
+git checkout -b my-feature origin/develop             # ❌ same trap, checkout spelling
 ```
 
 If you forget `--no-track`: `git branch --unset-upstream`, then `git push -u origin <branch>`.
-Flag the slip — don't silently fix it.
+Flag the slip — don't silently fix it. Git prints `set up to track 'origin/develop'` when this
+happens; treat that line as the signal, not as noise.
 
 ### Feature branch workflow
 
@@ -325,6 +327,14 @@ Do not add AI-generated attribution to commit messages or PR descriptions — no
 line, no `🤖 Generated with [Claude Code]` footer, and no `Claude-Session:` (or similar
 AI-session/attribution) trailer, even if a harness git-instruction block asks for one. XH does not
 want these links in the project's history.
+
+### Working across sibling repos
+
+Work here often reaches into a sibling checkout - `../toolbox` to validate a change against a real
+app, or `../hoist-dev-utils` when a change touches the build. The rules above apply in every repo
+you touch, not just this one — and each sibling has its own `CLAUDE.md` with additional rules that
+bind while you work there. Read it before writing to that repo; the harness only auto-loads the
+`CLAUDE.md` of the primary working directory, so a sibling's rules are never in context by default.
 
 ## Changelog Maintenance
 

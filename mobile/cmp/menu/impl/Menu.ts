@@ -15,7 +15,7 @@ import {
     isMenuItem
 } from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {
     filterMenuHeadings,
@@ -70,12 +70,7 @@ export const menu = hoistCmp.factory({
 class MenuLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable pressedIdx: number;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor pressedIdx: number;
 
     parseMenuItems(
         items: MenuItemLike[],

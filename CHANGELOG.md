@@ -15,7 +15,24 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW, ag-Grid upgrade, scheduled removals)
+### 💥 Breaking Changes (upgrade difficulty: 🟡 MEDIUM - TC39 decorators, ag-Grid 36, removals)
+
+* **Migrated to TC39 Stage 3 (2023-11) decorators**, retiring `experimentalDecorators`. Drops
+  `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
+  `accessor` to `@observable`/`@bindable` fields and run the codemods in `docs/codemod/v88/`.
+  Requires `@xh/hoist-dev-utils >= 16` - upgrade both packages together, as a legacy-decorator app
+  built against the new dev-utils silently loses every `@observable` and `@bindable` field.
+    * `@observable accessor` fields are now prototype getter/setters rather than own enumerable
+      properties, which changes `Object.keys` and spread (`{...model}`) over model instances.
+    * `@persist` must now be applied *after* the MobX decorator (`@bindable` then `@persist`).
+      Reversed, it silently no-ops and the field stops persisting - no error, no type error.
+      Decorator order was irrelevant under legacy decorators, and the codemods do not reorder
+      them, so audit every `@persist` in app code by hand.
+* Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
+  exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
+  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, etc. Hoist's
+  `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump to `7.x`.
+  Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
       `ag-grid-enterprise` dependencies to `36.x`.
@@ -128,6 +145,11 @@
 * Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
   regroup and update as those with `SUM` fields.
+* Model lookup now subscribes only to slots that can affect resolution - the matched slot, or
+  nullish accessor candidates if no match. Computed getters and primitive observables are
+  excluded. Tighter than the prior walk, which subscribed indiscriminately and triggered
+  needless re-renders.
+* Misc. improvements to persistence in the Admin client.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -218,6 +240,8 @@
 
 * ag-grid-community `35.3 -> 36.1`
 * ag-grid-react `35.3 -> 36.1`
+* mobx `6.16 -> 7.0`
+* mobx-react-lite `4.1 -> 5.0`
 
 ## 87.2.0 - 2026-09-08
 

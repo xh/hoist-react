@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed, BannerSpec} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {find, reject, sortBy, without, last} from 'lodash';
 
 import {BannerModel} from './BannerModel';
@@ -20,13 +20,8 @@ export class BannerSourceModel extends HoistModel {
     override xhName = 'bannerSourceModel';
 
     @managed
-    @observable.ref
-    bannerModels: BannerModel[] = [];
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observableRef
+    accessor bannerModels: BannerModel[] = [];
 
     @action
     show(spec: BannerSpec): BannerModel {

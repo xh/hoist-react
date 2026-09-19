@@ -22,12 +22,11 @@ export abstract class BaseDiagnostics<T extends HoistBase> {
      * the app's debug output, or set to 'info' to follow this object alone at any `XH.logLevel`.
      * Observable, to support UI toggles (e.g. the Hoist Inspector's Diagnostics panel).
      */
-    @observable
-    logLevel: 'info' | 'debug' = 'debug';
+    @observable accessor logLevel: 'info' | 'debug' = 'debug';
 
     protected owner: T;
 
-    protected constructor(owner: T) {
+    constructor(owner: T) {
         this.owner = owner;
     }
 

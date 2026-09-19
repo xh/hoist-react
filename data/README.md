@@ -1255,12 +1255,12 @@ problem when the app must persist the filter (e.g. via `@persist`):
 class MyModel extends HoistModel {
     // ❌ Problem: Hoist cannot serialize a FunctionFilter for persistence
     @persist
-    @observable.ref
+    @observableRef
     filter: Filter = new FunctionFilter({testFn: r => r.data.custom > 0});
 
     // ✅ Correct: FieldFilter/CompoundFilter are serializable
     @persist
-    @observable.ref
+    @observableRef
     filter: Filter = parseFilter({field: 'custom', op: '>', value: 0});
 }
 ```

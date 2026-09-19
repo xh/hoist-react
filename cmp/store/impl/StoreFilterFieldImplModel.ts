@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {appendFilter, getFilterRegex, Store} from '@xh/hoist/data';
-import {action, comparer, makeObservable} from '@xh/hoist/mobx';
+import {action, compareStructural} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     debounce,
@@ -40,11 +40,6 @@ export class StoreFilterFieldImplModel extends HoistModel {
         return this.componentProps.matchMode ?? 'startWord';
     }
 
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     override onLinked() {
         let {gridModel, store, includeFields, bind, filterBuffer = 200} = this.componentProps;
 
@@ -72,7 +67,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
             {
                 track: () => [this.componentProps.includeFields, this.componentProps.excludeFields],
                 run: () => this.regenerateFilter(),
-                equals: comparer.structural
+                equals: compareStructural
             }
         );
     }

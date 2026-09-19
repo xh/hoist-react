@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 
 /**
@@ -13,10 +13,10 @@ import {debounced} from '@xh/hoist/utils/js';
  * @internal
  */
 export class LoginPanelModel extends HoistModel {
-    @bindable username = '';
-    @bindable password = '';
-    @bindable warning = '';
-    @bindable loginInProgress = false;
+    @bindable accessor username = '';
+    @bindable accessor password = '';
+    @bindable accessor warning = '';
+    @bindable accessor loginInProgress = false;
 
     @managed
     loginTask = TaskObserver.trackLast();
@@ -24,11 +24,6 @@ export class LoginPanelModel extends HoistModel {
     @computed
     get isValid(): boolean {
         return !!(this.username && this.password);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     // Debounce to defend against double-click fast enough to get through masking + button disable.

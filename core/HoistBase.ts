@@ -7,8 +7,14 @@
 import {
     action,
     autorun as mobxAutorun,
-    checkMakeObservable,
-    comparer,
+    compareDefault,
+    compareIdentity,
+    compareShallow,
+    compareStructural,
+    IAutorunOptions,
+    IEqualsComparer,
+    IReactionDisposer,
+    IReactionOptions,
     reaction as mobxReaction,
     runInAction,
     when as mobxWhen
@@ -33,8 +39,6 @@ import {
     isString,
     upperFirst
 } from 'lodash';
-import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
-import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
 import {
     CallContextLike,
     DebounceSpec,
@@ -45,9 +49,6 @@ import {
     Some,
     XH
 } from './';
-import {wait} from '@xh/hoist/promise';
-
-declare const xhIsDevelopmentMode: boolean;
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
@@ -72,12 +73,6 @@ export abstract class HoistBase {
     }
     get isHoistBase(): boolean {
         return true;
-    }
-
-    constructor() {
-        if (xhIsDevelopmentMode) {
-            wait().then(() => checkMakeObservable(this));
-        }
     }
 
     /**
@@ -159,7 +154,7 @@ export abstract class HoistBase {
      *
      * Specify the property 'equals' to determine how successive outputs of track will be compared.
      * Hoist supports string specification of this (i.e. 'shallow','structural', or 'identity') and
-     * will map it to the underlying MobX `comparer` object.  For returns of arrays and objects,
+     * will map it to the corresponding MobX comparer function. For returns of arrays and objects,
      * consider using the value 'shallow' over the default 'identity' to avoid triggering spurious
      * changes. See MobX for more information.
      *
@@ -364,8 +359,8 @@ export interface ReactionSpec<T = any> extends Omit<IReactionOptions<T, any>, 'e
     /** Specify to debounce run function */
     debounce?: DebounceSpec;
 
-    /** Specify a default from {@link comparer} or a custom comparer function. */
-    equals?: keyof typeof comparer | IEqualsComparer<T>;
+    /** Specify a built-in MobX comparer by name or a custom comparer function. */
+    equals?: keyof typeof comparers | IEqualsComparer<T>;
 }
 
 /**
@@ -380,6 +375,13 @@ export interface AutoRunSpec extends IAutorunOptions {
 // Implementation
 // Externalized to make private, obj is the instance
 //--------------------------------------------------
+const comparers = {
+    identity: compareIdentity,
+    default: compareDefault,
+    structural: compareStructural,
+    shallow: compareShallow
+};
+
 function parseReactionOptions(options) {
     throwIf(
         !isNil(options.runImmediately),
@@ -387,7 +389,7 @@ function parseReactionOptions(options) {
     );
 
     if (isString(options.equals)) {
-        const equals = comparer[options.equals];
+        const equals = comparers[options.equals];
         throwIf(!isFunction(equals), `Unknown value for equals: '${options.equals}'`);
         options = {...options, equals};
     }

@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
@@ -46,8 +46,7 @@ export class StoreSelectionModel extends HoistModel {
     readonly store: Store;
     mode: 'single' | 'multiple' | 'disabled';
 
-    @observable.ref
-    private _ids = [];
+    @observableRef private accessor _ids = [];
 
     get isEnabled(): boolean {
         return this.mode !== 'disabled';
@@ -55,7 +54,6 @@ export class StoreSelectionModel extends HoistModel {
 
     constructor({store, mode = 'single', xhName = null, xhImpl = false}: StoreSelectionConfig) {
         super();
-        makeObservable(this);
 
         this.xhImpl = xhImpl;
         this.xhName = xhName;
@@ -64,12 +62,12 @@ export class StoreSelectionModel extends HoistModel {
         this.addReaction(this.cullSelectionReaction());
     }
 
-    @computed.struct
+    @computedStruct
     get selectedRecords(): StoreRecord[] {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
-    @computed.struct
+    @computedStruct
     get selectedIds(): StoreRecordId[] {
         return map(this.selectedRecords, 'id');
     }

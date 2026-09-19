@@ -21,7 +21,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {DynamicTabSwitcherModel} from '@xh/hoist/desktop/cmp/tab/dynamic/DynamicTabSwitcherModel';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -115,11 +115,10 @@ export class TabContainerModel extends HoistModel {
     declare config: TabContainerConfig;
 
     @managed
-    @observable.ref
-    tabs: TabModel[] = null;
+    @observableRef
+    accessor tabs: TabModel[] = null;
 
-    @observable
-    activeTabId: string;
+    @observable accessor activeTabId: string;
 
     depth: number; // Depth in hierarchy of nested TabContainerModels
     route: string;
@@ -159,7 +158,6 @@ export class TabContainerModel extends HoistModel {
         depth: number = 0
     ) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
         this.xhName = xhName;
 

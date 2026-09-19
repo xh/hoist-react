@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH, MessageSpec, MessageSuppressSpec, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {DAYS, HOURS, MINUTES} from '@xh/hoist/utils/datetime';
 import {pluralize, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -45,7 +45,7 @@ export class MessageModel extends HoistModel {
     @managed
     formModel: FormModel;
 
-    @observable isOpen = true;
+    @observable accessor isOpen = true;
 
     /**
      * Previously saved response for a message the user has opted to suppress, or null if no
@@ -78,7 +78,6 @@ export class MessageModel extends HoistModel {
         cancelOnDismiss = true
     }: MessageSpec) {
         super();
-        makeObservable(this);
 
         throwIf(
             suppress && !messageKey,

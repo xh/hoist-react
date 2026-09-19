@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
@@ -53,8 +53,7 @@ export interface ModalSupportConfig {
 export class ModalSupportModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable
-    isModal: boolean = false;
+    @bindable accessor isModal: boolean = false;
 
     width: string | number;
     height: string | number;
@@ -71,7 +70,6 @@ export class ModalSupportModel extends HoistModel {
         canOutsideClickClose = true
     }: ModalSupportConfig = {}) {
         super();
-        makeObservable(this);
         this.hostNode = this.createHostNode();
         this.width = width;
         this.height = height;
