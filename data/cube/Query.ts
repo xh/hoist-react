@@ -259,10 +259,7 @@ export class Query {
             ret[i].dependsOn?.forEach(name => {
                 if (names.has(name)) return;
                 const field = find(this.cube.fields, {name});
-                throwIf(
-                    !field,
-                    `Field '${ret[i].name}' depends on '${name}', which is not a Field on this Cube.`
-                );
+                if (!field) return;
                 names.add(name);
                 ret.push(field);
             });

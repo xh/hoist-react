@@ -7,7 +7,6 @@
 
 import {PlainObject} from '@xh/hoist/core';
 import {isEmpty, isEqual} from 'lodash';
-import type {CubeField} from '../CubeField';
 import type {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 
@@ -92,11 +91,16 @@ export class RowDataGenerator {
                 cubeRowDigest: null,
                 _cubeLeafChildren: null
             };
-        this.view.fields.forEach(field => {
-            if (field.isDerived && !field.aggregator) {
-                this.addDerivedGetter(field, proto);
+        this.view.fields.forEach(({name, isDerived, aggregator, derivedFn}) => {
+            if (isDerived && !aggregator) {
+                Object.defineProperty(proto, name, {
+                    get(this: ViewRowData) {
+                        return derivedFn(this);
+                    },
+                    enumerable: true
+                });
             } else {
-                data[field.name] = null;
+                data[name] = null;
             }
         });
 
@@ -104,15 +108,6 @@ export class RowDataGenerator {
             data: {...data} as ViewRowData, // Clone for fast-props mode.
             proto: isEmpty(proto) ? null : proto
         };
-    }
-
-    private addDerivedGetter({name, derivedFn}: CubeField, target: PlainObject) {
-        Object.defineProperty(target, name, {
-            get(this: ViewRowData) {
-                return derivedFn(this);
-            },
-            enumerable: true
-        });
     }
 
     private buildLeafClass(): LeafDataClass {

@@ -355,16 +355,17 @@ export class View
     }
 
     private buildIndices() {
-        this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
-        this._levelDerivedFields = this.fields.filter(it => it.isDerived && !it.aggregator);
+        const {fields, query} = this;
+        this._fieldsByName = new Map(fields.map(it => [it.name, it]));
+        this._levelDerivedFields = fields.filter(it => it.isDerived && !it.aggregator);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
         // dimensions, and so holds the unfiltered superset of each list. Queries need not specify
         // dimensions at all (e.g. a leaves-only or root-total-only query) - Query.dimensions is
         // null in that case, leaving only the depth-0 entry below.
-        const dimensions = this.query.dimensions ?? [],
-            aggFields = this.fields.filter(it => it.aggregator),
+        const dimensions = query.dimensions ?? [],
+            aggFields = fields.filter(it => it.aggregator),
             appliedDimNames = dimensions.map(
                 (v, idx) => new Set(dimensions.slice(0, idx + 1).map(it => it.name))
             );
@@ -418,7 +419,7 @@ export class View
 
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
 
-        // Level-derived values move with their inputs, with no leaf-level diff to report them.
+        // Level-derived values have no stored value to diff - report one changed whenever an input is.
         // Repeat until a pass adds nothing - derived fields may depend on other derived fields.
         if (changedFields.size) {
             for (let added = true; added;) {

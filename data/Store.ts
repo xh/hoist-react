@@ -1346,6 +1346,12 @@ export class Store
             prototype of each record's data object rather than setting a value on it.`
         );
         throwIf(uniqBy(ret, 'name').length !== ret.length, 'Field names must be unique.');
+
+        const names = new Set(ret.map(it => it.name));
+        ret.forEach(({name, dependsOn}) => {
+            const missing = dependsOn?.find(it => !names.has(it));
+            throwIf(missing, `Field '${name}' depends on '${missing}', which is not a Field.`);
+        });
         return ret;
     }
 
@@ -1537,13 +1543,14 @@ export class Store
             {names, vals} = _recordBuildData;
         let n = 0;
         this.fields.forEach(field => {
-            if (field.isDerived) return;
-            const {name} = field,
-                val = Object.hasOwn(update, name) ? field.parseVal(update[name]) : data[name];
-            if (val !== field.defaultValue) {
-                names[n] = name;
-                vals[n] = val;
-                n++;
+            if (!field.isDerived) {
+                const {name} = field,
+                    val = Object.hasOwn(update, name) ? field.parseVal(update[name]) : data[name];
+                if (val !== field.defaultValue) {
+                    names[n] = name;
+                    vals[n] = val;
+                    n++;
+                }
             }
         });
         _recordBuildData.n = n;
@@ -1577,7 +1584,6 @@ export class Store
         if (n < this._denseThreshold) {
             ret = Object.create(this._simpleProto);
         } else {
-            // Literal `__proto__` key sets the prototype at creation (ES Annex B).
             const {data, proto} = this._denseTemplate;
             ret = proto ? {__proto__: proto, ...data} : {...data};
         }
