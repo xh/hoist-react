@@ -248,7 +248,8 @@ export class StoreRecord {
 
         const {data, committedData} = this,
             ret: PlainObject = {};
-        this.fields.forEach(({name}) => {
+        this.fields.forEach(({name, isDerived}) => {
+            if (isDerived) return;
             const val = data[name];
             if (!equal(val, committedData[name])) ret[name] = val;
         });
