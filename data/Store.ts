@@ -400,10 +400,9 @@ export class Store
     @observableRef private accessor _current: RecordSet;
     @observableRef accessor _filtered: RecordSet;
 
-    private _dataDefaults: PlainObject = null;
-    private _dataTemplate: PlainObject = null;
-    private _denseDataProto: PlainObject = null;
-    private _denseRecordThreshold: number;
+    private _simpleProto: PlainObject = null;
+    private _denseTemplate: {data: PlainObject; proto: PlainObject} = null;
+    private _denseThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
 
@@ -472,11 +471,9 @@ export class Store
 
         this.validator = new StoreValidator({store: this});
         this._fieldMap = this.createFieldMap();
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
-        this._denseDataProto = this.createDenseDataProto();
-        this._denseRecordThreshold =
-            this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
+        this._simpleProto = this.createSimpleProto();
+        this._denseTemplate = this.createDenseTemplate();
+        this._denseThreshold = this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -1560,28 +1557,31 @@ export class Store
      * choosing its representation by their count:
      *
      *  - Below `denseRecordThreshold`, a sparse object - own properties for the buffered values
-     *    only, defaults reached through the shared `_dataDefaults` prototype. Costs nothing for
-     *    unpopulated fields, and stays safely inside V8's fast-properties mode at these counts.
-     *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
-     *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
-     *    (overwriting an existing property is not an add), so all dense records share the
-     *    template's one fixed shape. With derived fields, the clone also takes `_dataDefaults`
-     *    as its prototype to reach their getters - a slower clone, so only paid when needed.
+     *    only, defaults and derived getters reached through the shared `_simpleProto`. Costs
+     *    nothing for unpopulated fields, and stays safely inside V8's fast-properties mode at
+     *    these counts.
+     *  - At or above it, a clone of the shared `_denseTemplate`, carrying every stored Field.
+     *    Wide objects built by per-property adds are demoted to V8's dictionary mode - cloning
+     *    sidesteps the adds (overwriting an existing property is not an add), so all dense
+     *    records share the template's one fixed shape. With derived fields, the clone also takes
+     *    the template's prototype to reach their getters - a slower clone, so only paid when
+     *    needed.
      *
      * The representation is decided per record, from parsed content alone - records with equal
      * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
      * require.
      */
     private buildData(): PlainObject {
-        // Literal `__proto__` key sets the prototype at creation (ES Annex B).
-        const {_denseRecordThreshold, _denseDataProto, _dataTemplate, _dataDefaults} = this,
-            {names, vals, n} = this._recordBuildData,
-            ret =
-                n >= _denseRecordThreshold
-                    ? _denseDataProto
-                        ? {__proto__: _denseDataProto, ..._dataTemplate}
-                        : {..._dataTemplate}
-                    : Object.create(_dataDefaults);
+        const {names, vals, n} = this._recordBuildData;
+        let ret: PlainObject;
+        if (n < this._denseThreshold) {
+            ret = Object.create(this._simpleProto);
+        } else {
+            // Literal `__proto__` key sets the prototype at creation (ES Annex B).
+            const {data, proto} = this._denseTemplate;
+            ret = proto ? {__proto__: proto, ...data} : {...data};
+        }
+
         for (let i = 0; i < n; i++) {
             ret[names[i]] = vals[i];
         }
@@ -1595,31 +1595,47 @@ export class Store
         );
     }
 
-    /** Prototype for all record `data` - a defaultValue per stored Field, plus derived getters. */
-    private createDataDefaults() {
+    /** Prototype for simple record `data` - a defaultValue per stored Field, plus derived getters. */
+    private createSimpleProto(): PlainObject {
         const ret = {};
-        this.fields.forEach(({name, defaultValue, isDerived}) => {
-            if (!isDerived) ret[name] = defaultValue;
+        this.fields.forEach(field => {
+            if (field.isDerived) {
+                this.addDerivedGetter(field, ret);
+            } else {
+                ret[field.name] = field.defaultValue;
+            }
         });
         return ret;
     }
 
-    // Install derived getters on `_dataDefaults`, returning it as the dense-record prototype -
-    // null without derived fields, leaving dense records prototype-free.
-    private createDenseDataProto(): PlainObject {
-        const derived = this.fields.filter(it => it.isDerived);
-        if (isEmpty(derived)) return null;
-        const ret = this._dataDefaults;
-        derived.forEach(({name, derivedFn}) => {
-            Object.defineProperty(ret, name, {
-                get(this: PlainObject) {
-                    return derivedFn(this);
-                },
-                enumerable: true,
-                configurable: true
-            });
+    /**
+     * Template for dense record `data` - an own slot per stored Field, spread-cloned per record -
+     * plus the prototype those clones take to reach derived getters, null without derived fields.
+     */
+    private createDenseTemplate(): {data: PlainObject; proto: PlainObject} {
+        const data = {},
+            proto = {};
+        this.fields.forEach(field => {
+            if (field.isDerived) {
+                this.addDerivedGetter(field, proto);
+            } else {
+                data[field.name] = field.defaultValue;
+            }
         });
-        return ret;
+
+        return {
+            data: {...data}, // Clone for fast-props mode.
+            proto: isEmpty(proto) ? null : proto
+        };
+    }
+
+    private addDerivedGetter({name, derivedFn}: Field, target: PlainObject) {
+        Object.defineProperty(target, name, {
+            get(this: PlainObject) {
+                return derivedFn(this);
+            },
+            enumerable: true
+        });
     }
 
     private createFieldMap() {

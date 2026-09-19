@@ -419,6 +419,7 @@ export class View
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
 
         // Level-derived values move with their inputs, with no leaf-level diff to report them.
+        // Repeat until a pass adds nothing - derived fields may depend on other derived fields.
         if (changedFields.size) {
             for (let added = true; added;) {
                 added = false;

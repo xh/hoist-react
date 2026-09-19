@@ -7,6 +7,7 @@
 
 import {PlainObject} from '@xh/hoist/core';
 import {isEmpty, isEqual} from 'lodash';
+import type {CubeField} from '../CubeField';
 import type {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 
@@ -34,8 +35,7 @@ export class RowDataGenerator {
     private view: View;
     private fieldNames: string[];
     private exposesLeaves: boolean;
-    private parentTemplate: ViewRowData = null;
-    private parentProto: PlainObject = null;
+    private parentTemplate: {data: ViewRowData; proto: PlainObject} = null;
     private leafClass: LeafDataClass = null;
 
     constructor(view: View) {
@@ -45,10 +45,8 @@ export class RowDataGenerator {
 
     /** Create a new aggregate or bucket row data object as a clone of the shared template. */
     newParentRowData(id: string): ViewRowData {
-        const {parentTemplate, parentProto} = this;
-        return parentProto
-            ? {__proto__: parentProto, ...parentTemplate, id}
-            : {...parentTemplate, id};
+        const {data, proto} = this.parentTemplate;
+        return proto ? {__proto__: proto, ...data, id} : {...data, id};
     }
 
     /** Create an exposed-leaf data object - fields read via prototype getters over `src`. */
@@ -73,44 +71,48 @@ export class RowDataGenerator {
         this.fieldNames = this.view.fieldNames;
         this.exposesLeaves = this.view.exposesLeaves;
         this.parentTemplate = this.buildParentTemplate();
-        this.parentProto = this.buildParentProto();
         this.leafClass = this.buildLeafClass();
     }
 
-    private buildParentTemplate(): ViewRowData {
-        const rowData: PlainObject = {
-            id: null,
-            cubeRowType: null,
-            cubeLabel: null,
-            cubeDimension: null,
-            cubeBuckets: null,
-            children: null,
-            isCubeLeaf: false,
-            cubeRowDigest: null,
-            _cubeLeafChildren: null
-        };
-        this.view.fields.forEach(({name, isDerived, aggregator}) => {
-            if (!isDerived || aggregator) rowData[name] = null;
+    /**
+     * Template for aggregate and bucket row data - a slot per ViewRowData property and aggregated
+     * query field, spread-cloned per row - plus the prototype those clones take to reach the
+     * getters of derived fields with no aggregator, null without any.
+     */
+    private buildParentTemplate(): {data: ViewRowData; proto: PlainObject} {
+        const proto = {},
+            data: PlainObject = {
+                id: null,
+                cubeRowType: null,
+                cubeLabel: null,
+                cubeDimension: null,
+                cubeBuckets: null,
+                children: null,
+                isCubeLeaf: false,
+                cubeRowDigest: null,
+                _cubeLeafChildren: null
+            };
+        this.view.fields.forEach(field => {
+            if (field.isDerived && !field.aggregator) {
+                this.addDerivedGetter(field, proto);
+            } else {
+                data[field.name] = null;
+            }
         });
 
-        // Convert into V8 fast-properties mode that we'll need to mint additional fast objects
-        return {...rowData} as ViewRowData;
+        return {
+            data: {...data} as ViewRowData, // Clone for fast-props mode.
+            proto: isEmpty(proto) ? null : proto
+        };
     }
 
-    // Getters for derived fields with no aggregato
-    private buildParentProto(): PlainObject {
-        const derived = this.view.fields.filter(it => it.isDerived && !it.aggregator);
-        if (isEmpty(derived)) return null;
-        const ret = {};
-        derived.forEach(({name, derivedFn}) => {
-            Object.defineProperty(ret, name, {
-                get(this: ViewRowData) {
-                    return derivedFn(this);
-                },
-                enumerable: true
-            });
+    private addDerivedGetter({name, derivedFn}: CubeField, target: PlainObject) {
+        Object.defineProperty(target, name, {
+            get(this: ViewRowData) {
+                return derivedFn(this);
+            },
+            enumerable: true
         });
-        return ret;
     }
 
     private buildLeafClass(): LeafDataClass {
