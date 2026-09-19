@@ -49,6 +49,8 @@
       custom CSS targeting either must retarget, using Hoist's own `.xh-ag-grid` wrapper class.
       Prefer the new `GridModel.theme` config (below) or the `--xh-grid-*` variables over CSS
       wherever they suffice.
+* Raised the `react` and `react-dom` peer dependency floor to `19.3`. Apps must bump both to
+  `^19.3.0`. React 19.3 is a compatible minor with no breaking changes of its own.
 
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`
@@ -230,10 +232,13 @@
 
 ### 📚 Libraries
 
+* @blueprintjs/core `6.18 -> 6.20`
 * ag-grid-community `35.3 -> 36.1`
 * ag-grid-react `35.3 -> 36.1`
 * mobx `6.16 -> 7.0`
 * mobx-react-lite `4.1 -> 5.0`
+* react `19.2 -> 19.3`
+* zod `4.5 -> 4.6`
 
 ## 87.2.0 - 2026-09-08
 
