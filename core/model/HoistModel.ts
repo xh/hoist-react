@@ -280,8 +280,11 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      */
     matchesSelector(selector: ModelSelector, acceptWildcard: boolean = false): boolean {
         let sel: any = selector;
-        // 1) check class ref first, it's a function, but distinct from callable function below
-        if (sel.isHoistModel) return this instanceof sel;
+        // 1) check class ref first, it's a function, but distinct from callable function below.
+        // Nullish-safe: a predicate function that returns undefined (e.g. a duck-type check against
+        // a model lacking the marker property) recurses back through here, and should read as "no
+        // match" rather than throwing.
+        if (sel?.isHoistModel) return this instanceof sel;
 
         // 2) Recurse on any function.
         if (isFunction(sel)) {
@@ -292,7 +295,6 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         if (sel === true) return true;
         if (sel === '*') return acceptWildcard;
         if (sel === this.constructor.name) return true;
-        if (sel?.isHoistModel) return this instanceof sel;
 
         return false;
     }
