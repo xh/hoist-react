@@ -91,13 +91,30 @@ may show errors on startup — remove `"github"` from your local settings to res
 operations (`gh pr view`, `gh issue list`, `gh api`, `gh pr create`, etc.). Prefer `gh` over
 crafting raw `curl` calls to the GitHub API.
 
-### JetBrains IntelliJ MCP Server (opt-in)
+### JetBrains IntelliJ MCP Server (`idea`)
 
-A JetBrains MCP server is also configured in `.mcp.json`, providing tools for interacting with
-the IntelliJ IDE (file navigation, code inspections, refactoring, terminal commands, etc.).
-This server must be enabled within IntelliJ's settings and requires a running IDE instance to
-connect. Add `"jetbrains"` to `enabledMcpjsonServers` in `.claude/settings.local.json` to
-enable it for Claude Code.
+IntelliJ registers its own MCP server in `.mcp.json` under the name `idea`, providing tools for
+interacting with the IDE (file navigation, code inspections, refactoring, terminal commands, etc.).
+It requires a running IDE instance with the MCP server enabled in IntelliJ's settings.
+
+**Not enabled by default** - the server fails to connect when no IDE is running, which shows as a
+startup error. Add `"idea"` to `enabledMcpjsonServers` in `.claude/settings.local.json` to enable it
+for yourself (local settings merge with the shared `settings.json`):
+
+```json
+{
+  "enabledMcpjsonServers": ["hoist-react", "idea"]
+}
+```
+
+A read-only subset of its tools (search, read, symbol lookup, inspections) is pre-approved in the
+shared permissions allowlist, so no extra local config is needed once the server is on. Write and
+execute tools - `apply_patch`, `execute_terminal_command`, `execute_sql_query`, the `xdebug_*`
+family - are deliberately left out and still prompt.
+
+IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rather than reverting
+them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
+instance on another port needs a local override.
 
 ## Build Commands
 
