@@ -5,10 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {PlainObject, XH} from '@xh/hoist/core';
 import {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {Rule} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
@@ -61,7 +61,35 @@ export interface FieldSpec {
      * building secured internal apps with large datasets and tight performance tolerances.
      */
     enableXssProtection?: boolean;
+
+    /**
+     * Function computing this field's value from the record's other values, making it a *derived*
+     * field. Values are read through a getter on record `data` - never loaded, parsed, or written,
+     * and always current with their inputs:
+     *
+     * ```ts
+     * {name: 'marketValue', dependsOn: ['quantity', 'price'], derivedFn: d => d.quantity * d.price}
+     * ```
+     *
+     * Requires `dependsOn`. Derived fields are read-only - {@link Store.modifyRecords} ignores
+     * writes to them. A Store that is a `projectionOnly` view of another's data (e.g. one
+     * connected to a Cube View) adopts derived values from its provider rather than computing them.
+     *
+     * On a {@link CubeField}, the function also runs on every View row where the field is not
+     * aggregated - so a field with an `aggregator` derives at the leaves and rolls up (market
+     * value), while one without derives at every level from that row's aggregates (PnL in bps).
+     */
+    derivedFn?: DerivedFn;
+
+    /**
+     * Names of the fields a `derivedFn` reads - required with `derivedFn`, and may be empty. A
+     * Cube Query including a derived field includes these as well.
+     */
+    dependsOn?: string[];
 }
+
+/** Function computing a derived field's value from the other values on a record or View row. */
+export type DerivedFn = (data: PlainObject) => any;
 
 /**
  * Metadata for an individual data field within a {@link StoreRecord}.
@@ -73,6 +101,11 @@ export class Field {
         return true;
     }
 
+    /** True if this field's value is computed from other values - see {@link FieldSpec.derivedFn}. */
+    get isDerived(): boolean {
+        return !!this.derivedFn;
+    }
+
     readonly name: string;
     readonly type: FieldType;
     readonly displayName: string;
@@ -81,6 +114,8 @@ export class Field {
     readonly isDimension: boolean;
     readonly rules: Rule[];
     readonly enableXssProtection: boolean;
+    readonly derivedFn: DerivedFn;
+    readonly dependsOn: string[];
 
     constructor({
         name,
@@ -90,7 +125,9 @@ export class Field {
         defaultValue = null,
         isDimension = false,
         rules = [],
-        enableXssProtection = XH.appSpec.enableXssProtection
+        enableXssProtection = XH.appSpec.enableXssProtection,
+        derivedFn = null,
+        dependsOn = null
     }: FieldSpec) {
         this.name = name;
         this.type = type;
@@ -100,6 +137,12 @@ export class Field {
         this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
+        this.derivedFn = derivedFn;
+        this.dependsOn = dependsOn;
+        throwIf(
+            derivedFn && !dependsOn,
+            `Field '${name}' declares a 'derivedFn' but no 'dependsOn' - name the fields it reads, or pass [].`
+        );
     }
 
     parseVal(val: any): any {

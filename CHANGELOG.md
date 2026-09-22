@@ -51,6 +51,9 @@
 * Raised the `react` and `react-dom` peer dependency floor to `19.3`. Apps must bump both to
   `^19.3.0`. React 19.3 is a compatible minor with no breaking changes of its own.
 
+* Stores connected to a Cube `View` are now always `projectionOnly` - the View sets the flag, and
+  an explicit `false` or a `processRawData` config on a connected store throws. Apps parsing View
+  rows into their own records must instead declare the needed fields on the Cube.
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead. Note that
       `TraceService.withSpan()` remains available for advanced use.
@@ -66,6 +69,11 @@
 
 ### 🎁 New Features
 
+* Added `FieldSpec.derivedFn` - a field computed from the record's other values, named in the
+  required `dependsOn`, and read through a getter so it is always current. On a `CubeField` the
+  function also runs on every View row where the field is not aggregated: with an `aggregator` it
+  derives each leaf and rolls up (e.g. market value), without one it derives each level from that
+  row's aggregates (e.g. PnL in bps). A Query including a derived field includes its inputs.
 * Added a `theme` config to `GridModel` and `AgGridModel`, accepting AG Grid theme param overrides
   (e.g. `{headerBackgroundColor: 'navy', spacing: 4}`) for grids that need to depart from the app's
   standard styling. Overrides are applied on top of Hoist's own theme, so grids keep their bindings

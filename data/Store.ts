@@ -196,10 +196,8 @@ export interface StoreConfig {
 
     /**
      * True to mark this store as a read-only projection of data owned and parsed elsewhere.
-     * Recommended for stores connected to a Cube {@link View} for improved performance, when no
-     * additional record parsing or local data modification is required. Default null - a View
-     * logs a warning when its connected stores leave this unset. Set explicitly to `false` to
-     * opt out and silence the warning.
+     * Default null. Stores connected to a Cube {@link View} are always projections - the View
+     * sets this flag, and an explicit `false` throws.
      *
      * Each incoming raw object is used *as* its record's `data`, by reference, skipping the
      * per-record parse and copy on every load and update. Raw data must already match what the
@@ -371,7 +369,7 @@ export class Store
     idEncodesTreePath: boolean;
     freezeData: boolean;
     retainRaw: boolean;
-    readonly projectionOnly: boolean;
+    projectionOnly: boolean;
     validationIsComplex: boolean;
 
     @observableRef accessor filter: Filter;
@@ -402,9 +400,9 @@ export class Store
     @observableRef private accessor _current: RecordSet;
     @observableRef accessor _filtered: RecordSet;
 
-    private _dataTemplate: PlainObject = null;
-    private _dataDefaults: PlainObject = null;
-    private _denseRecordThreshold: number;
+    private _simpleProto: PlainObject = null;
+    private _denseTemplate: {data: PlainObject; proto: PlainObject} = null;
+    private _denseThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
 
@@ -473,10 +471,9 @@ export class Store
 
         this.validator = new StoreValidator({store: this});
         this._fieldMap = this.createFieldMap();
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
-        this._denseRecordThreshold =
-            this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
+        this._simpleProto = this.createSimpleProto();
+        this._denseTemplate = this.createDenseTemplate();
+        this._denseThreshold = this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
 
         instanceManager.registerStore(this);
@@ -1349,6 +1346,12 @@ export class Store
             prototype of each record's data object rather than setting a value on it.`
         );
         throwIf(uniqBy(ret, 'name').length !== ret.length, 'Field names must be unique.');
+
+        const names = new Set(ret.map(it => it.name));
+        ret.forEach(({name, dependsOn}) => {
+            const missing = dependsOn?.find(it => !names.has(it));
+            throwIf(missing, `Field '${name}' depends on '${missing}', which is not a Field.`);
+        });
         return ret;
     }
 
@@ -1515,7 +1518,7 @@ export class Store
             rescuable = !!cached;
         for (const name in data) {
             const field = _fieldMap.get(name);
-            if (field) {
+            if (field && !field.isDerived) {
                 const val = field.parseVal(data[name]);
                 if (val !== field.defaultValue) {
                     if (rescuable) {
@@ -1537,16 +1540,17 @@ export class Store
     private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
         // Merge updated values over current ones, then rebuild exactly as parseOrRescue() would.
         const {_recordBuildData} = this,
-            {names, vals} = _recordBuildData,
-            hasOwn = Object.prototype.hasOwnProperty;
+            {names, vals} = _recordBuildData;
         let n = 0;
         this.fields.forEach(field => {
-            const {name} = field,
-                val = hasOwn.call(update, name) ? field.parseVal(update[name]) : data[name];
-            if (val !== field.defaultValue) {
-                names[n] = name;
-                vals[n] = val;
-                n++;
+            if (!field.isDerived) {
+                const {name} = field,
+                    val = Object.hasOwn(update, name) ? field.parseVal(update[name]) : data[name];
+                if (val !== field.defaultValue) {
+                    names[n] = name;
+                    vals[n] = val;
+                    n++;
+                }
             }
         });
         _recordBuildData.n = n;
@@ -1560,23 +1564,30 @@ export class Store
      * choosing its representation by their count:
      *
      *  - Below `denseRecordThreshold`, a sparse object - own properties for the buffered values
-     *    only, defaults reached through the shared `_dataDefaults` prototype. Costs nothing for
-     *    unpopulated fields, and stays safely inside V8's fast-properties mode at these counts.
-     *  - At or above it, a clone of the shared template carrying every Field. Wide objects built
-     *    by per-property adds are demoted to V8's dictionary mode - cloning sidesteps the adds
-     *    (overwriting an existing property is not an add), so all dense records share the
-     *    template's one fixed shape.
+     *    only, defaults and derived getters reached through the shared `_simpleProto`. Costs
+     *    nothing for unpopulated fields, and stays safely inside V8's fast-properties mode at
+     *    these counts.
+     *  - At or above it, a clone of the shared `_denseTemplate`, carrying every stored Field.
+     *    Wide objects built by per-property adds are demoted to V8's dictionary mode - cloning
+     *    sidesteps the adds (overwriting an existing property is not an add), so all dense
+     *    records share the template's one fixed shape. With derived fields, the clone also takes
+     *    the template's prototype to reach their getters - a slower clone, so only paid when
+     *    needed.
      *
      * The representation is decided per record, from parsed content alone - records with equal
      * field values always take equal shapes, which the deep-equal comparisons in modifyRecords()
      * require.
      */
     private buildData(): PlainObject {
-        const {names, vals, n} = this._recordBuildData,
-            ret =
-                n >= this._denseRecordThreshold
-                    ? {...this._dataTemplate}
-                    : Object.create(this._dataDefaults);
+        const {names, vals, n} = this._recordBuildData;
+        let ret: PlainObject;
+        if (n < this._denseThreshold) {
+            ret = Object.create(this._simpleProto);
+        } else {
+            const {data, proto} = this._denseTemplate;
+            ret = proto ? {__proto__: proto, ...data} : {...data};
+        }
+
         for (let i = 0; i < n; i++) {
             ret[names[i]] = vals[i];
         }
@@ -1590,17 +1601,47 @@ export class Store
         );
     }
 
-    /**
-     * Shared template for record `data` objects - an own property for every Field, holding its
-     * defaultValue. `parseOrRescue()` clones it per record, so all records in a Store share one
-     * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
-     * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
-     * past ~20 adds, costing several times more memory per record.
-     */
-    private createDataDefaults() {
+    /** Prototype for simple record `data` - a defaultValue per stored Field, plus derived getters. */
+    private createSimpleProto(): PlainObject {
         const ret = {};
-        this.fields.forEach(({name, defaultValue}) => (ret[name] = defaultValue));
+        this.fields.forEach(field => {
+            if (field.isDerived) {
+                this.addDerivedGetter(field, ret);
+            } else {
+                ret[field.name] = field.defaultValue;
+            }
+        });
         return ret;
+    }
+
+    /**
+     * Template for dense record `data` - an own slot per stored Field, spread-cloned per record -
+     * plus the prototype those clones take to reach derived getters, null without derived fields.
+     */
+    private createDenseTemplate(): {data: PlainObject; proto: PlainObject} {
+        const data = {},
+            proto = {};
+        this.fields.forEach(field => {
+            if (field.isDerived) {
+                this.addDerivedGetter(field, proto);
+            } else {
+                data[field.name] = field.defaultValue;
+            }
+        });
+
+        return {
+            data: {...data}, // Clone for fast-props mode.
+            proto: isEmpty(proto) ? null : proto
+        };
+    }
+
+    private addDerivedGetter({name, derivedFn}: Field, target: PlainObject) {
+        Object.defineProperty(target, name, {
+            get(this: PlainObject) {
+                return derivedFn(this);
+            },
+            enumerable: true
+        });
     }
 
     private createFieldMap() {

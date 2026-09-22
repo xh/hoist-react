@@ -165,6 +165,31 @@ Rules to observe:
   that depend on values beyond their own children (e.g. percent-of-total) must return false for the
   same reason, and doing so also gives them access to `AggregationContext.filteredRecords`.
 
+## Derived Fields
+
+A field with a `derivedFn` computes its value from the row's other values wherever the field is
+not aggregated. `dependsOn` names the fields it reads and is required - a Query including a derived
+field includes its inputs as well. See `FieldSpec.derivedFn` in `data/README.md` for the Store-level
+form, which the Cube's own store uses to derive every leaf.
+
+```typescript
+// Derived at each leaf, then summed - a product belongs at the leaf.
+{name: 'notional', aggregator: 'SUM', dependsOn: ['qty', 'price'], derivedFn: d => d.qty * d.price},
+
+// Derived at every level from that row's sums - a ratio belongs at the level.
+{name: 'pnlBps', dependsOn: ['pnl', 'notional'], derivedFn: d => (d.pnl / d.notional) * 10000},
+
+// Derived at leaves only - parents publish null.
+{name: 'side', aggregator: 'NULL', dependsOn: ['qty'], derivedFn: d => (d.qty > 0 ? 'Buy' : 'Sell')}
+```
+
+A derived field with an aggregator is an ordinary measure whose leaf values are computed rather
+than loaded. One without an aggregator is read through a getter on each parent row, so it is
+always current with that row's aggregates. Derived fields may read other derived fields.
+
+Stores connected to a View adopt these values from the rows they receive and compute nothing
+themselves - connected stores are always `projectionOnly`.
+
 ## Querying with Views
 
 Views are the primary interface for consuming Cube data. Create them via `Cube.createView()`
