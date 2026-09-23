@@ -18,7 +18,7 @@ import {
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {isDate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import * as JBCol from './JsonBlobColumns';
@@ -30,12 +30,11 @@ export class JsonBlobModel extends HoistModel {
     gridModel: RestGridModel;
 
     @managed
-    @observable.ref
-    differModel: DifferModel;
+    @observableRef
+    accessor differModel: DifferModel;
 
     constructor() {
         super();
-        makeObservable(this);
 
         const required = true,
             enableCreate = true,

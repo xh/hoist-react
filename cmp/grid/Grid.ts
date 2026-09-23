@@ -7,10 +7,9 @@
 import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
-import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
+import {ColumnGroupState, ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, hframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -104,19 +103,11 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     className: 'xh-grid',
 
     render({model, className, testId, ...props}, ref) {
-        const {
-                store,
-                treeMode,
-                treeStyle,
-                highlightRowOnClick,
-                colChooserModel,
-                filterModel,
-                enableFullWidthScroll
-            } = model,
+        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
+                model,
             impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
-            maxDepth = impl.isHierarchical ? store.maxDepth : null,
-            container = enableFullWidthScroll ? vframe : frame;
+            maxDepth = impl.isHierarchical ? store.maxDepth : null;
 
         className = classNames(
             className,
@@ -127,17 +118,13 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
-        const gridContainer = container({
+        const gridContainer = frame({
             className,
             items: [
                 agGrid({
                     model: model.agGridModel,
                     ...getLayoutProps(props),
                     ...impl.agOptions
-                }),
-                gridHScrollbar({
-                    omit: !enableFullWidthScroll,
-                    gridLocalModel: impl
                 })
             ],
             testId,
@@ -182,7 +169,7 @@ export class GridLocalModel extends HoistModel {
 
     // Structural "empty" grid space.
     private static EMPTY_SPACE_SELECTOR =
-        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
+        '.ag-grid-viewport, .ag-grid-scrollable-area, .ag-grid-scrolling-container, .ag-row';
 
     @lookup(GridModel)
     private model: GridModel;
@@ -230,6 +217,7 @@ export class GridLocalModel extends HoistModel {
             this.sortReaction(),
             this.columnsReaction(),
             this.columnStateReaction(),
+            this.columnGroupStateReaction(),
             this.dataReaction(),
             this.groupReaction(),
             this.rowHeightReaction(),
@@ -293,6 +281,7 @@ export class GridLocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onColumnGroupOpened: this.onColumnGroupOpened,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
             navigateToNextCell: this.navigateToNextCell,
@@ -351,11 +340,6 @@ export class GridLocalModel extends HoistModel {
                 treeData: true,
                 getDataPath: this.getDataPath
             };
-        }
-
-        // Support for FullWidthScroll
-        if (model.enableFullWidthScroll) {
-            ret.suppressHorizontalScroll = true;
         }
 
         return ret;
@@ -540,6 +524,22 @@ export class GridLocalModel extends HoistModel {
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.updateGridOptions({columnDefs: this.getColumnDefs()});
                 });
+            }
+        };
+    }
+
+    columnGroupStateReaction(): ReactionSpec<[GridApi, ColumnGroupState[]]> {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.columnGroupState],
+            run: ([api, groupState]) => {
+                if (!api || isEmpty(groupState)) return;
+
+                // Pass the full set: ag-Grid skips any groupId it cannot resolve, and skips groups
+                // already in the requested state, so this neither throws nor re-enters.
+                api.setColumnGroupState(
+                    groupState.map(({groupId, expanded}) => ({groupId, open: expanded}))
+                );
             }
         };
     }
@@ -866,6 +866,11 @@ export class GridLocalModel extends HoistModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
+    };
+
+    // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
+    onColumnGroupOpened = ev => {
+        this.model.noteAgColumnGroupStateChanged(ev.api.getColumnGroupState());
     };
 
     groupSortComparator = ({nodeA, nodeB}) => {

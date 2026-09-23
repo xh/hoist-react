@@ -185,7 +185,7 @@ The `XH` singleton exposes the primary routing API used by application code:
 
 ### `XH.routerState`
 
-The most commonly used property. It is a MobX `@observable.ref` value that updates whenever
+The most commonly used property. It is a MobX `@observableRef` value that updates whenever
 the route changes, making it available for use in MobX reactions:
 
 ```typescript

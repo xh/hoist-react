@@ -11,7 +11,7 @@ import {
     StoreValidationResultsMap,
     ValidationState
 } from '@xh/hoist/data';
-import {comparer, computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
+import {computed, runInAction, observableRef, computedStruct, compareShallow} from '@xh/hoist/mobx';
 import {sumBy, chunk, isEmpty} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
 import {RecordValidator} from './RecordValidator';
@@ -47,7 +47,7 @@ export class StoreValidator extends HoistBase {
     }
 
     /** Map of StoreRecord IDs to StoreRecord-level error maps. */
-    @computed.struct
+    @computedStruct
     get errors(): StoreValidationMessagesMap {
         return this.getErrorMap();
     }
@@ -59,7 +59,7 @@ export class StoreValidator extends HoistBase {
     }
 
     /** Map of StoreRecord IDs to StoreRecord-level ValidationResults maps. */
-    @computed.struct
+    @computedStruct
     get validationResults(): StoreValidationResultsMap {
         return this.getValidationResultsMap();
     }
@@ -74,11 +74,10 @@ export class StoreValidator extends HoistBase {
         return this.mapValidators();
     }
 
-    @observable.ref _validators = new Map<StoreRecordId, RecordValidator>();
+    @observableRef accessor _validators = new Map<StoreRecordId, RecordValidator>();
 
     constructor(config: {store: Store}) {
         super();
-        makeObservable(this);
 
         const {store} = config;
         this.store = store;
@@ -132,7 +131,7 @@ export class StoreValidator extends HoistBase {
     //---------------------------------------
     // Implementation
     //---------------------------------------
-    @computed({equals: comparer.shallow})
+    @computed({equals: compareShallow})
     private get uncommittedRecords(): StoreRecord[] {
         const {store} = this;
         return store.isDirty ? store.allRecords.filter(it => !it.isCommitted) : [];

@@ -18,7 +18,6 @@ import {
     ValidationSeverity
 } from '@xh/hoist/data';
 import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import classNames from 'classnames';
 import {
     castArray,
     clone,
@@ -60,13 +59,15 @@ import {
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
+    ColumnGroupShowMode,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
     ColumnRenderer,
     ColumnSetValueFn,
     ColumnSortSpec,
     ColumnSortValueFn,
-    ColumnTooltipFn
+    ColumnTooltipFn,
+    toAgColumnGroupShow
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
@@ -171,6 +172,13 @@ export interface ColumnSpec {
 
     /** True to suppress default display of the column.*/
     hidden?: boolean;
+
+    /**
+     * Show this column only while its containing {@link ColumnGroup} is 'expanded' or 'collapsed',
+     * or 'always' (default) to show it in either state. Ignored for a column with no containing
+     * group.
+     */
+    groupShowMode?: ColumnGroupShowMode;
 
     /**
      * Flex columns stretch to fill the width of the grid after all columns with a set pixel-width
@@ -505,6 +513,7 @@ export class Column {
     cellFlag: ColumnCellFlagFn;
     align: HAlign;
     hidden: boolean;
+    groupShowMode: ColumnGroupShowMode;
     flex: boolean | number;
     width: number;
     minWidth: number;
@@ -579,6 +588,7 @@ export class Column {
             cellClassRules,
             cellFlag,
             hidden,
+            groupShowMode,
             align,
             width,
             minWidth,
@@ -665,6 +675,7 @@ export class Column {
         this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
+        this.groupShowMode = groupShowMode;
 
         warnIf(
             flex && width,
@@ -785,6 +796,7 @@ export class Column {
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
+                columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
@@ -873,7 +885,7 @@ export class Column {
         const {tooltip, editor} = this;
         if (tooltip || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
-            ret.tooltipValueGetter = () => 'tooltip';
+            ret.tooltip = () => 'tooltip';
             ret.tooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
                 const {location, data: record} = agParams,
                     hasRecord = record instanceof StoreRecord,
@@ -901,20 +913,51 @@ export class Column {
                     }
                 }
 
-                const isElement = isValidElement(ret);
+                // Validation state replaces a column's own tooltip entirely - resolve it here, so
+                // that the classes below describe what is actually rendered rather than the
+                // tooltip it supersedes.
+                let validationMessages: string[] = null;
+                if (hasRecord && editor) {
+                    const bySeverity = groupBy(
+                        record.validationResults[field],
+                        'severity'
+                    ) as Record<ValidationSeverity, ValidationResult[]>;
+                    const msgs = (bySeverity.error ?? bySeverity.warning ?? bySeverity.info)?.map(
+                        v => v.message
+                    );
+                    if (!isEmpty(msgs)) validationMessages = msgs;
+                }
+
+                // Hoist frames the content it renders itself - a plain value/string tooltip, or the
+                // validation list above. A custom element tooltip is left unframed, so that it can
+                // supply its own chrome (opting in with `xh-grid-tooltip-frame` if it wants ours).
+                const isElement = isValidElement(ret),
+                    isCustom = !validationMessages && isElement,
+                    validationCount = validationMessages?.length ?? 0;
 
                 useLayoutEffect(() => {
-                    const xhToolTipClassNames: string[] =
-                        location === 'header'
-                            ? ['ag-tooltip']
-                            : [
-                                  'xh-grid-tooltip',
-                                  isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'
-                              ];
-                    wrapperRef.current
-                        ?.closest('.ag-react-container')
-                        .classList.add(...xhToolTipClassNames);
-                }, [isElement, location]);
+                    let xhToolTipClassNames: string[];
+                    if (location === 'header') {
+                        xhToolTipClassNames = ['ag-tooltip'];
+                    } else if (isCustom) {
+                        xhToolTipClassNames = ['xh-grid-tooltip'];
+                    } else {
+                        xhToolTipClassNames = [
+                            'xh-grid-tooltip',
+                            'xh-grid-tooltip--prewrap',
+                            'xh-grid-tooltip-frame'
+                        ];
+                        if (validationCount) {
+                            xhToolTipClassNames.push('xh-grid-tooltip--validation');
+                            if (validationCount === 1) {
+                                xhToolTipClassNames.push('xh-grid-tooltip--validation-single');
+                            }
+                        }
+                    }
+                    const container = wrapperRef.current?.closest('.ag-react-container');
+                    container?.classList.add(...xhToolTipClassNames);
+                    return () => container?.classList.remove(...xhToolTipClassNames);
+                }, [isCustom, validationCount, location]);
 
                 // Required by agGrid, even though empty.
                 // If not present agGrid logs this warning:
@@ -924,33 +967,16 @@ export class Column {
                 if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
                 if (!hasRecord) return null;
 
-                // Override with validation errors, if present -- only show highest-severity level
-                if (editor) {
-                    const validationsBySeverity = groupBy(
-                            record.validationResults[field],
-                            'severity'
-                        ) as Record<ValidationSeverity, ValidationResult[]>,
-                        validationMessages = (
-                            validationsBySeverity.error ??
-                            validationsBySeverity.warning ??
-                            validationsBySeverity.info
-                        )?.map(v => v.message);
-                    if (!isEmpty(validationMessages)) {
-                        return div({
-                            ref: wrapperRef,
-                            item: ul({
-                                className: classNames(
-                                    'xh-grid-tooltip--validation',
-                                    validationMessages.length === 1
-                                        ? 'xh-grid-tooltip--validation--single'
-                                        : null
-                                ),
-                                items: validationMessages.map((it, idx) => li({key: idx, item: it}))
-                            })
-                        });
-                    }
-                    if (!tooltip) return null;
+                // Validation messages supersede the column's own tooltip - resolved above.
+                if (validationMessages) {
+                    return div({
+                        ref: wrapperRef,
+                        item: ul({
+                            items: validationMessages.map((it, idx) => li({key: idx, item: it}))
+                        })
+                    });
                 }
+                if (editor && !tooltip) return null;
 
                 if (isNil(ret) || ret === '') return null;
 

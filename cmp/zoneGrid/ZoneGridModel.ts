@@ -17,6 +17,7 @@ import {
     ColumnSpec,
     Grid,
     GridConfig,
+    GridContextMenuItemLike,
     GridContextMenuSpec,
     GridGroupSortFn,
     GridModel,
@@ -53,7 +54,7 @@ import {
     StoreTransaction
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
@@ -330,16 +331,13 @@ export class ZoneGridModel extends HoistModel {
     @managed
     mapperModel: ZoneMapperModel;
 
-    @observable.ref
-    mappings: Record<Zone, ZoneMapping[]>;
+    @observableRef accessor mappings: Record<Zone, ZoneMapping[]>;
 
     labelRenderers: Record<string, ColumnRenderer>;
 
-    @bindable.ref
-    leftColumnSpec: Partial<ColumnSpec>;
+    @bindableRef accessor leftColumnSpec: Partial<ColumnSpec>;
 
-    @bindable.ref
-    rightColumnSpec: Partial<ColumnSpec>;
+    @bindableRef accessor rightColumnSpec: Partial<ColumnSpec>;
 
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
@@ -351,7 +349,6 @@ export class ZoneGridModel extends HoistModel {
 
     constructor(config: ZoneGridConfig) {
         super();
-        makeObservable(this);
 
         const {
             columns,
@@ -448,7 +445,7 @@ export class ZoneGridModel extends HoistModel {
         this.gridModel.setColumns(this.getColumns());
     }
 
-    getDefaultContextMenu = () => [
+    getDefaultContextMenu = (): GridContextMenuItemLike[] => [
         'filter',
         '-',
         'copy',

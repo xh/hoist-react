@@ -109,7 +109,7 @@ import {ReactNode} from 'react';
 import {frame, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 
 // Relative imports
 import {MyHelper} from './impl/MyHelper';
@@ -302,6 +302,30 @@ private fieldMap: Map<string, Field>;
 
 ## Class Structure
 
+### File Ordering
+
+Readers should meet the public API first. Within a file, exported interfaces, types, and classes
+come directly after the imports. Module-private constants and helper functions — anything not
+exported — go at the bottom, after the last export:
+
+```typescript
+import {...} from '...';
+
+export interface FooConfig { ... }
+
+export class FooModel extends HoistModel {
+    constructor() {
+        this.params = DEFAULT_PARAMS;   // resolved at runtime, so the declaration below is fine
+    }
+}
+
+// Implementation detail - not part of the public API.
+const DEFAULT_PARAMS = { ... };
+```
+
+A `const` used only inside constructors or methods can safely be declared below the class, as it is
+read at call time rather than at module evaluation.
+
 ### Member Ordering
 
 Hoist classes follow a canonical ordering for readability and consistency. Not every class has
@@ -336,12 +360,11 @@ export class MyModel extends HoistModel {
     //---------------------
     // Observable State
     //---------------------
-    @observable selectedId: string = null;
-    @bindable filter: string = '';
+    @observable accessor selectedId: string = null;
+    @bindable accessor filter: string = '';
 
     constructor(config: MyModelConfig) {
         super();
-        makeObservable(this);
         // ...
     }
 
@@ -363,13 +386,12 @@ for visual balance.
 
 ### Constructor Pattern
 
-Model constructors call `super()`, then `makeObservable(this)`, then initialize properties from
-config:
+Model constructors call `super()`, then initialize properties from config. TC39 decorators handle
+observable registration at class-definition time, so no `makeObservable` call is needed:
 
 ```typescript
 constructor(config: MyModelConfig) {
     super();
-    makeObservable(this);
     const {name, sortable = true, defaultFilter = ''} = config;
     this.name = name;
     this.sortable = sortable;
@@ -533,8 +555,8 @@ particularly common when destructuring alongside additional computed variables:
 ```typescript
 const {store, treeMode, filterModel} = model,
     impl = useLocalModel(GridLocalModel),
-    maxDepth = impl.isHierarchical ? store.maxDepth : null,
-    container = enableFullWidthScroll ? vframe : frame;
+    platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
+    maxDepth = impl.isHierarchical ? store.maxDepth : null;
 ```
 
 This pattern keeps related declarations together as a single logical group.
@@ -547,8 +569,8 @@ Hoist uses `null` (not `undefined`) as the conventional "no value" sentinel for 
 properties and return values. Properties are initialized to `null` rather than left `undefined`:
 
 ```typescript
-@observable selectedId: string = null;
-@observable.ref lastResponse: Response = null;
+@observable accessor selectedId: string = null;
+@observableRef accessor lastResponse: Response = null;
 ```
 
 ### `== null` Pattern
@@ -649,7 +671,7 @@ When a property's observable behavior is significant to callers, annotate it in 
 
 ```typescript
 /** Currently selected record, or null if none. (observable) */
-@observable.ref selectedRecord: StoreRecord = null;
+@observableRef accessor selectedRecord: StoreRecord = null;
 ```
 
 ### Step-Numbered Comments

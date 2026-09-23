@@ -23,7 +23,6 @@ Construction → Linking (onLinked) → Post-Link (afterLinked, initial load) �
 
 The constructor runs before the model is associated with any component. At this point:
 
-- `makeObservable(this)` has been called by the `HoistModel` base constructor
 - `LoadSupport` is auto-created if the class overrides `doLoadAsync()`
 - MobX observables declared with `@observable` or `@bindable` are active
 - Persistence decorators (`@persist`) read from the backing store and apply saved values
@@ -39,7 +38,6 @@ class OrderPanelModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.gridModel = new GridModel({columns: [...]});
         this.filterModel = new FilterChooserModel({...});
     }
@@ -450,7 +448,6 @@ class OrderListModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.gridModel = new GridModel({columns: [...]});
         this.filterModel = new FilterChooserModel({...});
 

@@ -84,10 +84,10 @@
     }
   }
 
-  // Floating viewports host total rows.
-  .ag-floating-bottom,
-  .ag-floating-top {
-    // Background on viewport itself covers area left blank by presence of a flex column.
+  // Pinned-row containers host total rows.
+  .ag-grid-pinned-bottom-rows-container,
+  .ag-grid-pinned-top-rows-container {
+    // Background on container itself covers area left blank by presence of a flex column.
     background-color: var(--xh-grid-total-row-bg);
 
     .ag-row-pinned.ag-row-first {
@@ -260,8 +260,8 @@
 
     // With colors
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
-      .ag-floating-bottom,
-      .ag-floating-top {
+      .ag-grid-pinned-bottom-rows-container,
+      .ag-grid-pinned-top-rows-container {
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 
@@ -283,12 +283,12 @@
       }
     }
 
-    // Floating viewports host total rows.
-    .ag-floating-bottom {
+    // Pinned-row containers host total rows.
+    .ag-grid-pinned-bottom-rows-container {
       border-color: var(--xh-grid-tree-group-border-color);
     }
 
-    .ag-floating-top {
+    .ag-grid-pinned-top-rows-container {
       border-color: var(--xh-grid-tree-group-border-color);
     }
   }
@@ -332,8 +332,8 @@
 
     // With colors
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
-      .ag-floating-bottom,
-      .ag-floating-top {
+      .ag-grid-pinned-bottom-rows-container,
+      .ag-grid-pinned-top-rows-container {
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 
@@ -367,45 +367,38 @@
     display: none;
   }
 
-  // Default minimal styling. Not applied when using a custom tooltip.
-  // Uses pre-wrap to honor intentional \n line breaks in tooltip content
-  // while still wrapping long lines at the max-width boundary.
-  &--default {
-    padding: var(--xh-grid-tooltip-padding);
-    background: var(--xh-grid-tooltip-bg);
-    border: var(--xh-grid-tooltip-border);
-    border-radius: var(--xh-grid-tooltip-border-radius);
-    max-width: var(--xh-grid-tooltip-max-width);
+  // Honors intentional \n line breaks in tooltip content, while still wrapping long lines at the
+  // max-width boundary. Applied by Hoist to the tooltip content it renders itself.
+  &--prewrap {
     white-space: pre-wrap;
   }
 
-  // Validation tooltip styling. Adjust depending on if within a default or custom tooltip.
-  &--validation {
+  // Validation messages, which Hoist renders in place of a column's own tooltip, as a list within
+  // the tooltip. Framed by the wrapper in every case, so this only needs list padding - the 2em
+  // reserves room for the markers, which a lone message does without.
+  &--validation ul {
     margin: 0;
-
-    &--single {
-      list-style-type: none;
-    }
-  }
-
-  &--default > div > .xh-grid-tooltip--validation {
     padding: 0 var(--xh-pad-half-px) 0 2em;
-
-    &--single {
-      padding: 0 var(--xh-pad-half-px);
-    }
   }
 
-  &--custom > div > .xh-grid-tooltip--validation {
-    padding: var(--xh-grid-tooltip-padding) var(--xh-grid-tooltip-padding)
-      var(--xh-grid-tooltip-padding) 2em;
-    background: var(--xh-grid-tooltip-bg);
-    border: var(--xh-grid-tooltip-border);
-
-    &--single {
-      padding: var(--xh-grid-tooltip-padding);
-    }
+  &--validation-single ul {
+    list-style-type: none;
+    padding: 0 var(--xh-pad-half-px);
   }
+}
+
+// Standard grid-tooltip chrome, applied by Hoist to any tooltip content it renders itself, and
+// available to apps for a custom (element) tooltip - which is otherwise left unframed so that it
+// can supply its own chrome.
+// Note this is a standalone utility class, not a BEM element or modifier of `.xh-grid-tooltip`:
+// unlike `--prewrap` above, it is applied to elements an app may own, and so must be valid with no
+// `.xh-grid-tooltip` ancestor.
+.xh-grid-tooltip-frame {
+  padding: var(--xh-grid-tooltip-padding);
+  background: var(--xh-grid-tooltip-bg);
+  border: var(--xh-grid-tooltip-border);
+  border-radius: var(--xh-grid-tooltip-border-radius);
+  max-width: var(--xh-grid-tooltip-max-width);
 }
 
 //-----------
@@ -489,6 +482,45 @@
   &--tiny {
     font-size: var(--xh-grid-tiny-header-font-size-px);
     padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+  }
+}
+
+// Non-interactive heading within a context menu - see MenuHeading.
+// Styled to match the Blueprint menu headers used by our other menus: a bold label with a rule
+// above it, suppressed when the heading leads the menu. The rule is drawn on each cell so that it
+// spans the full width of the menu, as ag-Grid does for its own separators.
+.xh-grid-menu-heading {
+  // Marked disabled to keep ag-Grid from activating it as a menu item - see MenuSupport. Undo the
+  // styling that comes with that, and the active highlight ag still applies on arrow-key nav.
+  &.ag-menu-option-disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  &.ag-menu-option-active {
+    background-color: transparent;
+  }
+
+  // Rule sits below the label, tying it to the items it introduces. Space above separates it from
+  // the section it closes - that gap, plus the absent icon, is what reads as a heading rather than
+  // an item. Drawn on each cell so it spans the full menu width, as ag-Grid does for separators.
+  .ag-menu-option-part {
+    border-bottom: var(--xh-menu-heading-border);
+    padding-top: calc(var(--ag-grid-size) * 2);
+    padding-bottom: var(--ag-grid-size);
+  }
+
+  // Outdent the label to start where the item icons do, rather than where their text does. The
+  // shift is applied to the label, not its cell - a table row paints its background only behind
+  // areas a cell still covers, so moving the cell itself punches a gap in the band. Keeping the
+  // cell in place also lets it reserve its natural width, so the menu sizes to a long heading
+  // rather than letting it overflow.
+  &__label {
+    position: relative;
+    left: calc(-1 * (var(--ag-icon-size) + var(--ag-grid-size) * 2));
+    color: var(--xh-menu-heading-text-color);
+    font-size: var(--xh-menu-heading-font-size-px);
+    font-weight: var(--xh-menu-heading-font-weight);
   }
 }
 

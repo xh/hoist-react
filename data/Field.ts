@@ -33,7 +33,10 @@ export interface FieldSpec {
     /** Supplementary descriptive text for this field, for use in tooltips and other UI. */
     description?: string;
 
-    /** Value to be used for records with a null, or non-existent value. */
+    /**
+     * Value to be used for records with a null, or non-existent value. Parsed per `type` when the
+     * Field is constructed.
+     */
     defaultValue?: any;
 
     /** True if this field is intended to be used for grouping.  Defaults to false. */
@@ -96,15 +99,14 @@ export class Field {
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.description = description;
-        this.defaultValue = defaultValue;
         this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
+        this.defaultValue = this.parseValueInternal(defaultValue);
     }
 
     parseVal(val: any): any {
-        const {type, defaultValue, enableXssProtection} = this;
-        return parseFieldValue(val, type, defaultValue, enableXssProtection);
+        return val == null ? this.defaultValue : this.parseValueInternal(val);
     }
 
     isEqual(val1: any, val2: any): boolean {
@@ -121,13 +123,17 @@ export class Field {
             return new Rule(spec);
         });
     }
+
+    private parseValueInternal(raw: any): any {
+        return parseFieldValue(raw, this.type, null, this.enableXssProtection);
+    }
 }
 
 /**
  * Parse a value according to a field type.
  * @param val - raw value to parse.
  * @param type - data type of the field to use for possible conversion.
- * @param defaultValue - typed value to return if `val` undefined or null.
+ * @param defaultValue - value to parse and return if `val` undefined or null.
  * @param enableXssProtection - true to enable XSS (cross-site scripting) protection.
  *      See {@link FieldSpec.enableXssProtection} for additional details.
  * @returns resulting value, potentially parsed or cast as per type.

@@ -134,6 +134,39 @@ gridModel.collapseAll();
 gridModel.expandToLevel(2);
 ```
 
+### Column Groups
+
+```typescript
+new GridModel({
+    columns: [
+        {field: 'name', flex: 1},
+        {
+            headerName: 'Q1',
+            collapsed: true,                   // Render collapsed until the user expands
+            children: [
+                {field: 'q1Jan', groupShowMode: 'expanded'},
+                {field: 'q1Feb', groupShowMode: 'expanded'},
+                {field: 'q1Total', groupShowMode: 'collapsed'}
+            ]
+        }
+    ]
+});
+```
+
+`groupShowMode` is what makes a group expandable, and it takes a mix of values to do so: the group's
+children must resolve to at least one column shown while expanded *and* one shown while collapsed.
+Columns default to `'always'`, shown in either state. A group of always-shown columns is a static
+header, as is one where every child specifies the same value.
+This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
+group non-expandable.
+
+Expand/collapse state is tracked on `GridModel.columnGroupState`, one entry per configured group.
+Read it with `isColumnGroupExpanded(groupId)`, drive it with `setColumnGroupExpanded()` or
+`setColumnGroupState()`, and persist it via `persistWith` (on by default, alongside column state -
+see `GridModelPersistOptions.persistColumnGroups`).
+
+Collapsing affects display only: `columnState`, `isColumnVisible()`, and export are all unaffected.
+
 ### Tree Mode
 
 ```typescript
@@ -264,6 +297,31 @@ columns: [
 ]
 ```
 
+### Tooltips
+
+Hoist styles the tooltip content it renders itself - a plain value or string, and the validation
+messages shown on an editable cell - with `xh-grid-tooltip-frame` (background, border, radius,
+padding, max-width) and `xh-grid-tooltip--prewrap` (honors `\n` line breaks while still wrapping at
+max-width).
+
+A `tooltip` that returns an **element** is left unstyled, so that a custom tooltip can supply its
+own chrome. To take Hoist's frame instead, add `xh-grid-tooltip-frame` to your own root:
+
+```typescript
+{
+    field: 'volume',
+    tooltip: volume =>
+        vbox({
+            className: 'xh-grid-tooltip-frame',
+            items: [fmtNumberTooltip(volume), div('Unusually high volume')]
+        })
+}
+```
+
+`xh-grid-tooltip-frame` is a standalone utility class, usable on any element - a custom tooltip is
+not nested in anything that provides the frame for it. (`--prewrap` is an ordinary modifier that
+Hoist applies to its own tooltips; set `white-space` directly if a custom tooltip needs it.)
+
 ### Cell Corner Flags
 
 `cellFlag` marks a cell with a small triangle in its top-right corner, in the color of a standard
@@ -289,6 +347,50 @@ uncached, so a flag still reflects state that changes without the record, such a
 validation result. Size follows the grid's `sizingMode` via the `--xh-grid-cell-flag-size` custom
 property. Flags are CSS pseudo-elements, so they add no width and do not appear in grid exports.
 
+### Context Menus
+
+`GridModel.contextMenu` takes an array of entries, or a function returning one. Entries can be a
+`RecordAction` (or its config), a `'-'` separator, a `MenuHeading`, or a token - either one of
+Hoist's own (`copyCell`, `colChooser`, `export`, `filter`, `restoreDefaults`, and others) or one
+built into ag-Grid.
+
+A `MenuHeading` is a non-interactive label for the items below it, written as `{heading: '...'}`.
+Use it to break a long menu into sections.
+
+```typescript
+contextMenu: [
+    {heading: 'This Row'},
+    'copyCell',
+    editAction,
+    deleteAction,
+
+    {heading: 'Grid'},
+    'colChooser',
+    'export',
+    'restoreDefaults'
+]
+```
+
+Headings render their own divider rule, so they need no `'-'` alongside. A heading with nothing
+below it is dropped automatically - at the end of a menu, or when its entire section has hidden
+itself. That matters because actions commonly hide based on the clicked row, via `hidden`,
+`recordsRequired`, or `displayFn`: right-clicking empty space in the grid above drops the
+`This Row` heading along with the actions under it.
+
+A heading takes a `displayFn` of its own for dynamic text, receiving the same `ActionFnData` passed
+to the actions beside it:
+
+```typescript
+{
+    heading: 'This Row',
+    displayFn: ({record}) => (record ? {heading: `Row: ${record.get('company')}`} : {hidden: true})
+}
+```
+
+Headings are also accepted by the desktop and mobile menus that take `MenuItemLike` entries - e.g.
+a dropdown attached to a button. Those menus supply no record context, so a `displayFn` there is
+called with no argument.
+
 ## Column Properties Reference
 
 Every column within a `GridModel` must resolve to a **unique ID**. The `colId` defaults to `field`
@@ -302,7 +404,7 @@ Key categories of `ColumnSpec` properties:
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
 | Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
-| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                    |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `groupShowMode` |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |

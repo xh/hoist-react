@@ -9,10 +9,6 @@
   border-#{$side}: var(--xh-border-solid);
 }
 
-@mixin pinned-border($side) {
-  border-#{$side}: 1px solid var(--xh-grid-pinned-column-border-color);
-}
-
 // Ag-grid installs an outer div around itself.
 .xh-ag-grid > div {
   width: 100%;
@@ -20,30 +16,27 @@
 
 .xh-mobile {
   // ag-grid adds these when the center viewport has overflow, so that the space taken by the scrollbar is consistent in
-  // the top and bottom floating divs. On mobile we do not render scrollbars for the center viewport, so force hiding
-  // in the top and bottom floating divs.
-  .ag-floating-top,
-  .ag-floating-bottom {
+  // the top and bottom pinned-row divs. On mobile we do not render scrollbars for the center viewport, so force hiding
+  // in the top and bottom pinned-row divs.
+  .ag-grid-pinned-top-rows-container,
+  .ag-grid-pinned-bottom-rows-container {
     overflow-y: hidden !important;
   }
 
   // Prevent the "bounce" overscroll effect for horizontal scrolling on mobile devices, as it
   // conflicts with the drag management in the Navigator.
-  .ag-center-cols-viewport {
+  .ag-body-horizontal-scroll-viewport {
     overscroll-behavior-x: none;
   }
 }
 
-// Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
-// Note DataView excluded from these style customizations to give those views control over their
-// component-based item styling w/o being affected by default grid styles / sizing modes.
-// Please review DataView.scss when adjusting these styles, however, as some have been carried over
-// or modified for use with that component.
-*:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
-*:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
-  // Bind ag-grid's base bg to Hoist's grid bg - prevents balham-dark default bleeding through.
-  --ag-background-color: var(--xh-grid-bg);
-
+// Hoist's grid look comes from AG Grid theme params - see AgGridTheme.ts. What remains here is what
+// params cannot express: structural overrides, the separate header padding token, and the
+// per-instance `.xh-ag-grid--*` modifiers, which set the `--ag-*` variable for a param.
+// DataView is excluded throughout - it has its own params and stylesheet, and mirrors several of the
+// modifiers below. Keep the two in step.
+*:not(.xh-data-view) > .xh-ag-grid {
+  // For non-cell children (custom renderers, em-based sizing) - cell text is themed via params.
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
@@ -58,38 +51,21 @@
   }
 
   // using content-box here rather than border-box increases the height of
-  // the floating top just enough to prevent bleeding through of underlying rows
+  // the pinned top just enough to prevent bleeding through of underlying rows
   // as user scrolls down.
-  .ag-floating-top {
+  .ag-grid-pinned-top-rows-container {
     box-sizing: content-box;
-  }
-
-  .ag-root-wrapper {
-    background-color: var(--xh-grid-bg);
-    // Remove default outer border - we usually render grids in bordered components such as panels.
-    border: none;
   }
 
   // This ensures that rows will take up at least the full width of the grid in cases where there
   // is no horizontal scrollbar.
-  .ag-center-cols-container {
+  .ag-grid-scrolling-container {
     min-width: 100%;
   }
 
   //------------------------
   // Core Header Classes
   //------------------------
-  .ag-header {
-    background-color: var(--xh-grid-header-bg);
-    border-color: var(--xh-grid-header-border-color);
-    font-family: var(--xh-grid-header-font-family);
-
-    .ag-header-row {
-      font-size: var(--xh-grid-header-font-size-px);
-      font-weight: var(--xh-grid-header-font-weight);
-      color: var(--xh-grid-header-text-color);
-    }
-  }
   &--hide-headers .ag-header {
     display: none;
   }
@@ -97,16 +73,11 @@
   //------------------------
   // Core Row Classes
   //------------------------
+  // Row colors come from params - these are the states with no param equivalent: selected-row *text*
+  // color, and group rows.
   .ag-row {
-    background-color: var(--xh-grid-bg);
-    color: var(--xh-grid-text-color);
-
-    // Selected row styling.
-    &.ag-row-selected {
-      background-color: var(--xh-grid-selected-row-bg);
-      .ag-cell {
-        color: var(--xh-grid-selected-row-text-color);
-      }
+    &.ag-row-selected .ag-cell {
+      color: var(--xh-grid-selected-row-text-color);
     }
 
     &.ag-row-group.ag-full-width-row {
@@ -117,6 +88,12 @@
       .ag-group-contracted {
         color: var(--xh-grid-group-text-color);
       }
+    }
+
+    // Keep full-width rows (e.g. group rows) pinned in view during horizontal scroll, restoring
+    // the sticky anchor that ag-Grid's own `.ag-row.ag-full-width-row > *` rule overrides.
+    &.ag-full-width-row > .ag-full-width-anchor {
+      position: sticky;
     }
 
     // Set a constant width, since the two icons are different sizes.
@@ -132,22 +109,15 @@
     }
   }
 
-  // Docked summary
-  .ag-floating-top,
-  .ag-floating-bottom {
-    border-color: var(--xh-grid-summary-row-border-color);
-  }
-
-  // Row borders
+  // Row borders, from the `rowBorder` param. Regular rows draw theirs on the inner cell containers;
+  // full-width group rows are not split into containers and keep theirs on `.ag-row`.
   &--row-borders {
-    .ag-row {
-      border-color: var(--xh-grid-border-color);
+    --ag-row-border: 1px solid var(--xh-grid-border-color);
 
-      // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
-      // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
-      &.ag-row-group.ag-full-width-row {
-        border-color: var(--xh-grid-group-border-color);
-      }
+    // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
+    // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
+    .ag-row.ag-row-group.ag-full-width-row {
+      border-bottom: 1px solid var(--xh-grid-group-border-color);
     }
     .ag-cell {
       border-bottom: none;
@@ -156,10 +126,7 @@
   }
 
   &--no-row-borders {
-    .ag-row {
-      border-bottom: none;
-      border-top: none;
-    }
+    --ag-row-border: none;
 
     // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
     // Without this collapsed groups (which don't stripe) blend together in a solid block.
@@ -175,47 +142,46 @@
     border-bottom-width: 0;
   }
 
-  // Row zebra striping
+  // Zebra striping + hover highlight, both defaulted to `transparent` in the theme. ag-Grid layers
+  // stripe, hover and selection itself - hence no `:not(.ag-row-selected)` guards. The `--no-*`
+  // rules restate the default so a grid with the flag off stays off even under an ancestor (or an
+  // app-wide `AgGridModel.defaults.theme`) that sets the param.
   &--stripe-rows {
-    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-      background-color: var(--xh-grid-bg-odd);
-    }
+    --ag-odd-row-background-color: var(--xh-grid-bg-odd);
   }
 
-  // When striping disabled, remove default ag-Grid striping.
   &--no-stripe-rows {
-    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-      background-color: unset;
-    }
+    --ag-odd-row-background-color: transparent;
   }
 
-  // Hover highlight
   &--show-hover {
-    .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
-      background-color: var(--xh-grid-bg-hover);
-    }
+    --ag-row-hover-color: var(--xh-grid-bg-hover);
   }
 
-  // Disable native ag-grid hover and selection colors
-  .ag-row-hover:not(.ag-full-width-row)::before,
+  &--no-hover {
+    --ag-row-hover-color: transparent;
+  }
+
+  // ag-Grid also hovers full-width group rows and pinned (summary) rows - Hoist never has.
   .ag-row-hover.ag-full-width-row.ag-row-group::before,
-  .ag-row-hover.ag-row-selected::before,
-  .ag-row-selected::before {
-    background: none;
+  .ag-row-hover.ag-row-pinned::before {
+    background-color: transparent;
+    background-image: none;
   }
 
   //------------------------
   // Core Cell Classes
   //------------------------
-  .ag-cell {
-    padding-left: var(--xh-grid-cell-lr-pad-px);
-    padding-right: var(--xh-grid-cell-lr-pad-px);
-  }
-
+  // `cellHorizontalPadding` lands on header cells too - override for Hoist's separate header token.
   .ag-header-cell,
   .ag-header-group-cell {
     padding-left: var(--xh-grid-header-lr-pad-px);
     padding-right: var(--xh-grid-header-lr-pad-px);
+
+    // Data cells carry a 1px transparent l/r border that insets their content - match it here so
+    // header labels align with the cells below.
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
 
     // Override ag-Grid defaults for the header separator to make it responsive to different header heights
     &::after {
@@ -225,14 +191,11 @@
     }
   }
 
-  .ag-cell {
-    &.ag-cell-last-left-pinned:not(.ag-cell-focus) {
-      @include pinned-border(right);
-    }
-
-    &.ag-cell-first-right-pinned:not(.ag-cell-focus) {
-      @include pinned-border(left);
-    }
+  // Workaround for ag-Grid 36: its column separator (`::before`) doubles up with a section's
+  // boundary border on the section's last column. Suppress it there so only the boundary shows.
+  .ag-grid-scrolling-cells .ag-header-cell:last-child::before,
+  .ag-grid-container-wrapper .ag-header-cell:last-child::before {
+    display: none;
   }
 
   // We use flexbox to consistently vertically center cell contents across
@@ -257,90 +220,53 @@
     }
   }
 
-  // Cell borders
+  // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to
+  // `--row-borders` above - setting `--ag-row-border` here too would win over it, as both modifier
+  // classes land on the same element.
   &--cell-borders {
-    .ag-cell {
-      border-right-color: var(--xh-grid-border-color);
-      border-bottom-color: var(--xh-grid-border-color);
-    }
-
-    .ag-row {
-      border-color: var(--xh-grid-border-color);
-    }
+    --ag-column-border: 1px solid var(--xh-grid-border-color);
   }
 
   &--no-cell-borders {
-    .ag-cell,
-    .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
-      // Preserve left and right borders to avoid jumpiness upon cell focus
-      border-top: none;
-      border-bottom: none;
-      border-left-color: transparent;
-      border-right-color: transparent;
-    }
+    --ag-column-border: none;
   }
 
-  // Cell focus
+  // Cell focus draws from `rangeSelectionBorderColor`, so hiding it is a matter of going transparent
+  // (and `--show-cell-focus` needs no rule at all).
   &--no-cell-focus {
-    // Preserve cell borders when enabled upon "invisible" cell focus
-    &.xh-ag-grid--cell-borders .ag-has-focus .ag-cell-focus:not(.ag-cell-range-selected) {
-      border-right-color: var(--xh-grid-border-color);
-    }
+    --ag-range-selection-border-color: transparent;
 
-    .ag-has-focus {
-      .ag-cell-focus:not(.ag-cell-range-selected) {
-        // Preserve left and right borders to avoid jumpiness upon cell focus
-        border-top: none;
-        border-bottom: none;
-        border-left-color: transparent;
-        border-right-color: transparent;
+    // ag-Grid drops the pinned-column border on a focused cell, and outranks the group borders in
+    // Grid.scss. Restore both, or they vanish as focus moves across the grid.
+    .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      &.ag-cell-last-left-pinned {
+        border-right: var(--ag-pinned-column-border);
+      }
 
-        &.ag-cell {
-          &.ag-cell-last-left-pinned {
-            @include pinned-border(right);
-          }
+      &.ag-cell-first-right-pinned {
+        border-left: var(--ag-pinned-column-border);
+      }
 
-          &.ag-cell-first-right-pinned {
-            @include pinned-border(left);
-          }
+      &.xh-cell--group-border-left {
+        @include group-border(left);
+      }
 
-          &.xh-cell--group-border-left {
-            @include group-border(left);
-          }
-
-          &.xh-cell--group-border-right {
-            @include group-border(right);
-          }
-        }
+      &.xh-cell--group-border-right {
+        @include group-border(right);
       }
     }
   }
 
-  &--show-cell-focus {
-    .ag-cell-focus:focus-within {
-      border-color: var(--xh-grid-cell-focus-border-color) !important;
-    }
-  }
-
-  // Change highlighting
-  .ag-cell-data-changed {
-    background-color: var(--xh-grid-cell-change-bg-highlight) !important;
-  }
-
   //------------------------
-  // Large Sizing Mode
+  // Sizing Modes
   //------------------------
+  // Each mode rebinds the font-size and padding params. The wrapper `font-size` is additionally
+  // needed to scale em-based children, which sit outside the themed cell text.
   &--large {
     font-size: var(--xh-grid-large-font-size-px);
-
-    .ag-header .ag-header-row {
-      font-size: var(--xh-grid-large-header-font-size-px);
-    }
-
-    .ag-cell {
-      padding-left: var(--xh-grid-large-cell-lr-pad-px);
-      padding-right: var(--xh-grid-large-cell-lr-pad-px);
-    }
+    --ag-font-size: var(--xh-grid-large-font-size-px);
+    --ag-header-font-size: var(--xh-grid-large-header-font-size-px);
+    --ag-cell-horizontal-padding: var(--xh-grid-large-cell-lr-pad-px);
 
     .ag-header-cell,
     .ag-header-group-cell {
@@ -349,20 +275,11 @@
     }
   }
 
-  //------------------------
-  // Compact Sizing Mode
-  //------------------------
   &--compact {
     font-size: var(--xh-grid-compact-font-size-px);
-
-    .ag-header .ag-header-row {
-      font-size: var(--xh-grid-compact-header-font-size-px);
-    }
-
-    .ag-cell {
-      padding-left: var(--xh-grid-compact-cell-lr-pad-px);
-      padding-right: var(--xh-grid-compact-cell-lr-pad-px);
-    }
+    --ag-font-size: var(--xh-grid-compact-font-size-px);
+    --ag-header-font-size: var(--xh-grid-compact-header-font-size-px);
+    --ag-cell-horizontal-padding: var(--xh-grid-compact-cell-lr-pad-px);
 
     .ag-header-cell,
     .ag-header-group-cell {
@@ -371,20 +288,11 @@
     }
   }
 
-  //------------------------
-  // Tiny Sizing Mode
-  //------------------------
   &--tiny {
     font-size: var(--xh-grid-tiny-font-size-px);
-
-    .ag-header .ag-header-row {
-      font-size: var(--xh-grid-tiny-header-font-size-px);
-    }
-
-    .ag-cell {
-      padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
-      padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
-    }
+    --ag-font-size: var(--xh-grid-tiny-font-size-px);
+    --ag-header-font-size: var(--xh-grid-tiny-header-font-size-px);
+    --ag-cell-horizontal-padding: var(--xh-grid-tiny-cell-lr-pad-px);
 
     .ag-header-cell,
     .ag-header-group-cell {
@@ -402,26 +310,10 @@
     display: none;
   }
 
-  // Restore right border on cells - not included by default with ag-grid but
-  // causes right-aligned content to shift by one pixel when focused.
-  .ag-cell.ag-cell-no-focus {
-    border-right: 1px solid transparent;
-  }
-
-  // Hiding borders on typically-collapsed accessory panels. This avoids unexpected borders on the
-  // right and bottom edges of the grids. Custom grids that wish to use these panels will likely
-  // want to override and restore borders.
-  .ag-side-bar {
-    border: none;
-  }
-
+  // As done for the side bar via the `sidePanelBorder` param - avoids a border on the grid's bottom
+  // edge. Grids that do use these panels will likely want to restore both.
   .ag-status-bar {
     border: none;
-  }
-
-  // Disabling the "row loading" render overlay
-  .ag-bl-overlay {
-    display: none;
   }
 
   // Adds padding to select all checkbox option in column set filter
@@ -433,13 +325,9 @@
   // Overlay masks
   //------------------------
   .ag-overlay {
-    // Match loading overlay color to mask, suppress display of text in center.
-    .ag-overlay-loading-wrapper {
-      background-color: var(--xh-mask-bg);
-
-      .ag-overlay-loading-center {
-        display: none;
-      }
+    // Overlay color comes from `modalOverlayBackgroundColor` - just suppress its centered text.
+    .ag-overlay-loading-wrapper .ag-overlay-loading-center {
+      display: none;
     }
 
     // Reduce default contrast of emptyText.
@@ -457,8 +345,7 @@
 //------------------------
 // Tree Mode
 //------------------------
-.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
-.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
+.xh-grid--hierarchical:not(.xh-data-view) > .xh-ag-grid {
   // Vertically center tree grid affordances
   .ag-row .ag-cell-wrapper.ag-row-group {
     align-items: center;
@@ -466,10 +353,11 @@
 }
 
 body.xh-app {
-  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
-  // appear over bp dialogs with z-index of 20.
-  .ag-theme-balham.ag-popup,
-  .ag-theme-balham-dark.ag-popup {
+  // Popups render in a portal outside the `.xh-ag-grid` wrapper, so they are scoped directly here.
+  // They do get their own themed root, so anything with a param belongs in AgGridTheme.ts instead.
+
+  // Ensure ag-grid popups with default z-index of 5 appear over bp dialogs with z-index of 20.
+  .ag-popup {
     .ag-popup-child {
       z-index: 30;
     }
@@ -481,21 +369,10 @@ body.xh-app {
   //------------------------
   // Context Menu
   //------------------------
-  .ag-theme-balham .ag-menu,
-  .ag-theme-balham-dark .ag-menu {
+  .ag-menu {
+    // No param equivalent for menu typography.
     font-family: var(--xh-font-family);
     font-size: var(--xh-menu-item-font-size-px);
-    color: var(--xh-menu-item-text-color);
-
-    // Minimal/high-contrast bg
-    background-color: var(--xh-menu-bg);
-    border: var(--xh-menu-border);
-
-    // Matching box-shadow of Blueprint context menu popover
-    box-shadow:
-      0 0 0 1px rgba(16, 22, 26, 0.2),
-      0 2px 4px rgba(16, 22, 26, 0.4),
-      0 8px 24px rgba(16, 22, 26, 0.4);
 
     .ag-menu-option.ag-menu-option-active {
       background-color: var(--xh-menu-item-highlight-bg);

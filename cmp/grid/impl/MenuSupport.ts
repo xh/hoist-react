@@ -6,11 +6,19 @@
  */
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {copyToClipboard} from '@xh/hoist/utils/js';
-import {hoistCmp, type HoistProps, type Some, XH} from '@xh/hoist/core';
+import {hoistCmp, type HoistProps, isMenuHeading, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {RecordAction, type RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
+import {
+    type ActionFnData,
+    RecordAction,
+    type RecordActionHeading,
+    type RecordActionSpec,
+    Store,
+    StoreRecord
+} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {filterMenuHeadings, resolveMenuHeading} from '@xh/hoist/cmp/menu/impl/Menus';
 import {wait} from '@xh/hoist/promise';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {
@@ -47,12 +55,21 @@ function buildMenuItems(
     column: Column,
     agParams: GetContextMenuItemsParams
 ) {
-    // Transform to actions or ag-Grid ready strings.
-    const actions: Array<RecordAction | string> = menuItems.flatMap(it => {
+    // Transform to actions, headings, or ag-Grid ready strings.
+    const actions: Array<RecordAction | RecordActionHeading | string> = menuItems.flatMap(it => {
         if (isString(it)) return replaceHoistToken(it, gridModel);
         if (it instanceof RecordAction) return it;
+        if (isMenuHeading(it)) return it;
         return new RecordAction(it);
     });
+
+    const actionParams: ActionFnData = {
+        record,
+        selectedRecords: gridModel.selectedRecords,
+        gridModel,
+        column,
+        agParams
+    };
 
     const ret = [];
     actions.forEach(action => {
@@ -63,13 +80,22 @@ function buildMenuItems(
             return;
         }
 
-        const actionParams = {
-            record,
-            selectedRecords: gridModel.selectedRecords,
-            gridModel,
-            column,
-            agParams
-        };
+        if (isMenuHeading(action)) {
+            const heading = resolveMenuHeading(action, actionParams);
+            if (heading) {
+                ret.push({
+                    menuItem: MenuHeadingItem,
+                    menuItemParams: {heading},
+                    cssClasses: ['xh-grid-menu-heading', heading.className].filter(Boolean),
+                    // ag-Grid has no concept of a non-item entry - it registers every MenuItemDef
+                    // as navigable and auto-activates the first one on open. Flagging the heading
+                    // disabled is what keeps it out of that, and out of mouse activation. Its
+                    // `disabled` and `active` styling is suppressed in Grid.scss.
+                    disabled: true
+                });
+            }
+            return;
+        }
 
         const displaySpec = action.getDisplaySpec(actionParams);
         if (displaySpec.hidden) return;
@@ -99,7 +125,9 @@ function buildMenuItems(
         });
     });
 
-    return ret.filter(filterConsecutiveMenuSeparators());
+    return ret
+        .filter(filterMenuHeadings(it => it?.menuItem === MenuHeadingItem))
+        .filter(filterConsecutiveMenuSeparators());
 }
 
 /** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. */
@@ -324,6 +352,46 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
 interface RecordActionMenuItemProps extends HoistProps, CustomMenuItemProps {
     displaySpec: RecordActionSpec;
 }
+
+interface MenuHeadingItemProps extends HoistProps, CustomMenuItemProps {
+    heading: RecordActionHeading;
+}
+
+/**
+ * A non-interactive heading within an ag-Grid context menu.
+ *
+ * This mirrors the four-part cell structure of {@link RecordActionMenuItem} for two reasons. The
+ * rule that each cell draws then spans the full menu width, the same approach ag-Grid takes for
+ * its own separators. The row also keeps the menu's column widths intact. The label sits in the
+ * text cell, but CSS shifts it left of the item text, so it reads as a heading and not an item.
+ *
+ * @internal
+ */
+const MenuHeadingItem = hoistCmp<MenuHeadingItemProps>({
+    render({heading}: MenuHeadingItemProps) {
+        useGridMenuItem({
+            configureDefaults: () => ({
+                suppressClick: true,
+                suppressMouseDown: true,
+                suppressMouseOver: true,
+                suppressKeyboardSelect: true,
+                suppressTabIndex: true,
+                suppressFocus: true,
+                suppressTooltip: true
+            })
+        });
+
+        return div(
+            span({className: 'ag-menu-option-part ag-menu-option-icon'}),
+            span({
+                className: 'ag-menu-option-part ag-menu-option-text',
+                item: span({className: 'xh-grid-menu-heading__label', item: heading.heading})
+            }),
+            span({className: 'ag-menu-option-part ag-menu-option-shortcut'}),
+            span({className: 'ag-menu-option-part ag-menu-option-popup-pointer'})
+        );
+    }
+});
 
 const RecordActionMenuItem = hoistCmp<RecordActionMenuItemProps>({
     render({displaySpec, subMenu}: RecordActionMenuItemProps) {
