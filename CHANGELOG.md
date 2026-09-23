@@ -128,6 +128,10 @@
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
   `ClipboardButton` rather than a true menu item. The function also now returns a proper `MenuItem`
   config and takes a `ClipboardMenuItemSpec`.
+* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string                               
+  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted                    
+  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is                                
+  constructed, so `Field.defaultValue` and record data always hold the typed value.
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 
 ### ⚙️ Technical
