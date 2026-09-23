@@ -34,7 +34,7 @@
   Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
-      `ag-grid-enterprise` dependencies to `36.x`.
+      `ag-grid-enterprise` dependencies to `36.2` or later.
     * AG Grid 36 restructures the grid into a single scrollable container and renames its internal
       layout classes. Apps with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
       `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
@@ -197,8 +197,8 @@
 * @types/react `19.2 -> 19.3`
 * @types/react-dom `19.2 -> 19.3`
 * @xh/hoist-dev-utils `15.x -> 16.x`
-* ag-grid-community `35.3 -> 36.1`
-* ag-grid-react `35.3 -> 36.1`
+* ag-grid-community `35.3 -> 36.2`
+* ag-grid-react `35.3 -> 36.2`
 * mobx `6.16 -> 7.0`
 * mobx-react-lite `4.1 -> 5.0`
 * react `19.2 -> 19.3`
