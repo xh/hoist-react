@@ -128,6 +128,10 @@
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
   `ClipboardButton` rather than a true menu item. The function also now returns a proper `MenuItem`
   config and takes a `ClipboardMenuItemSpec`.
+* Fixed a `Field.defaultValue` needing parsing (e.g. a string default on a `localDate` field)
+  reaching `StoreRecord.data` raw when the source omitted the key, but parsed when it sent `null`.
+  `Field` now parses its default once on construction, so `Field.defaultValue` and record data
+  always hold the typed value - apps relying on the raw form will see the parsed one instead.
 
 ### ⚙️ Technical
 
