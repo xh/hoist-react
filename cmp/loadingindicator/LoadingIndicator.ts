@@ -16,6 +16,7 @@ import {
     TaskObserver,
     useLocalModel
 } from '@xh/hoist/core';
+import {computed} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isString, truncate} from 'lodash';
@@ -85,15 +86,12 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 });
 
 class LocalMaskModel extends HoistModel {
-    task: TaskObserver;
+    override xhImpl = true;
 
-    override onLinked() {
+    @computed
+    get task(): TaskObserver {
         const {bind} = this.componentProps;
-        if (bind) {
-            this.task =
-                bind instanceof TaskObserver
-                    ? bind
-                    : this.markManaged(TaskObserver.trackAll({tasks: bind}));
-        }
+        if (!bind) return null;
+        return bind instanceof TaskObserver ? bind : TaskObserver.trackAll({tasks: bind});
     }
 }

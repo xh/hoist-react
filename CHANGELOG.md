@@ -128,6 +128,7 @@
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
   `ClipboardButton` rather than a true menu item. The function also now returns a proper `MenuItem`
   config and takes a `ClipboardMenuItemSpec`.
+* Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 
 ### ⚙️ Technical
 
