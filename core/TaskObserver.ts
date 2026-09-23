@@ -191,6 +191,7 @@ class PromiseObserver extends TaskObserver {
     constructor(promise, message) {
         super();
         this._message = message;
-        promise.finally(action(() => (this._isPending = false)));
+        const onSettled = action(() => (this._isPending = false));
+        promise.then(onSettled, onSettled);
     }
 }

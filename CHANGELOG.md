@@ -142,6 +142,8 @@
 * Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
   full-width horizontal scrollbar spanning all columns, so Hoist's custom implementation was
   removed.
+* `Promise.linkTo()` no longer logs a spurious "Uncaught (in promise)" error when a linked promise
+  rejects and the caller handles the rejection.
 
 ### ⚙️ Typescript API Adjustments
 
