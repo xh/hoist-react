@@ -91,6 +91,14 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     enableSearch?: boolean;
 
     /**
+     * Additional CodeMirror extensions to install alongside Hoist's own - e.g. `autocompletion()`
+     * from `@codemirror/autocomplete`, `closeBrackets()`, or a custom `keymap`. Appended after
+     * Hoist's extensions, so Hoist wins on conflicts unless an app extension is wrapped in
+     * `Prec.high()`. Read once at editor creation - not reactive as a prop.
+     */
+    extensions?: Extension[];
+
+    /**
      * Callback to autoformat the code. Given the unformatted code, this should return a
      * properly-formatted copy.
      */
@@ -454,7 +462,8 @@ class CodeInputModel extends HoistInputModel {
                 lineStyles,
                 linter,
                 lineNumbers = true,
-                lineWrapping = false
+                lineWrapping = false,
+                extensions: appExtensions
             } = this.componentProps,
             extensions = [
                 // Switches between dark/light theme using GitHub theme presets.
@@ -543,6 +552,11 @@ class CodeInputModel extends HoistInputModel {
         }
         extensions.push(foldGutterExtension());
         extensions.push(lintGutterExtension());
+
+        // App extensions last, so Hoist's take precedence unless the app opts in via `Prec`.
+        if (appExtensions?.length) {
+            extensions.push(...appExtensions);
+        }
         return extensions.filter(it => !isNil(it));
     }
 
