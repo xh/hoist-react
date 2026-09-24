@@ -23,9 +23,28 @@ export class RowUpdate {
     readonly leafOldValue: any;
     readonly leafNewValue: any;
 
-    constructor(field: CubeField, oldValue: any, newValue: any) {
+    constructor(
+        field: CubeField,
+        oldValue: any,
+        newValue: any,
+        leafOldValue: any = oldValue,
+        leafNewValue: any = newValue
+    ) {
         this.field = field;
-        this.oldValue = this.leafOldValue = oldValue;
-        this.newValue = this.leafNewValue = newValue;
+        this.oldValue = oldValue;
+        this.newValue = newValue;
+        this.leafOldValue = leafOldValue;
+        this.leafNewValue = leafNewValue;
+    }
+
+    /** Independent copy for a second aggregation route - see {@link propagateUpdate}. */
+    clone(): RowUpdate {
+        return new RowUpdate(
+            this.field,
+            this.oldValue,
+            this.newValue,
+            this.leafOldValue,
+            this.leafNewValue
+        );
     }
 }

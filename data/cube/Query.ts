@@ -189,8 +189,13 @@ export class Query {
         this.hasFilter = this._testFn != null;
     }
 
-    clone(overrides: Partial<QueryConfig>) {
-        const conf = {
+    clone(overrides: Partial<QueryConfig>): this {
+        return new (this.constructor as any)(this.cloneConfig(overrides));
+    }
+
+    /** Config for `clone`. Subclasses extend to carry their own members across. */
+    protected cloneConfig(overrides: Partial<QueryConfig>): QueryConfig {
+        return {
             dimensions: this.dimensions,
             fields: this._rawFields, // NOT this.fields - would retain stale dimensions
             filter: this.filter,
@@ -204,8 +209,6 @@ export class Query {
             cube: this.cube,
             ...overrides
         };
-
-        return new Query(conf);
     }
 
     test(record: StoreRecord): boolean {
@@ -239,6 +242,25 @@ export class Query {
             this.omitFn == other.omitFn &&
             this.lockFn == other.lockFn
         );
+    }
+
+    /**
+     * True if a change from `other` to this query can leave cached parent rows unused - i.e. it moves
+     * the ids those rows are generated under, so retaining them would keep values that no later
+     * generation maintains. See {@link RowCache}.
+     * @internal
+     */
+    orphansParents(other: Query): boolean {
+        return !isEqual(this.dimensions, other.dimensions);
+    }
+
+    /**
+     * True if a change from `other` to this query leaves cached parent rows holding state it no longer
+     * asks for - so they must be rebuilt rather than recomputed in place. See {@link RowCache}.
+     * @internal
+     */
+    invalidatesParents(other: Query): boolean {
+        return this.bucketSpecFn !== other.bucketSpecFn;
     }
 
     //------------------------

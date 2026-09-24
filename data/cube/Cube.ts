@@ -15,6 +15,8 @@ import {RecordSetDelta} from '../impl/RecordSet';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
+import {PivotQuery, PivotQueryConfig} from './PivotQuery';
+import {PivotView} from './PivotView';
 import {Query, QueryConfig} from './Query';
 import {ViewRow} from './ViewRow';
 import {View} from './View';
@@ -294,6 +296,35 @@ export class Cube extends HoistBase {
     }): View {
         return new View({
             query: new Query({...query, cube: this}),
+            stores,
+            connect,
+            xhName
+        });
+    }
+
+    /**
+     * Create a {@link PivotView} - a View that additionally slices its measures across a pivot axis
+     * of extra dimensions, producing a compact table of `(group row, pivot path)` cells.
+     *
+     * Mirrors {@link createView} in all other respects, including `connect` for live updates.
+     *
+     * @param query - pivot query to be used to construct this view.
+     * @param stores - Stores to be automatically loaded/reloaded with View results.
+     * @param connect - true to update View automatically when data in the underlying Cube changes.
+     */
+    createPivotView({
+        query,
+        stores,
+        connect = false,
+        xhName = null
+    }: {
+        query: PivotQueryConfig;
+        stores?: Store[] | Store;
+        connect?: boolean;
+        xhName?: string;
+    }): PivotView {
+        return new PivotView({
+            query: new PivotQuery({...query, cube: this}),
             stores,
             connect,
             xhName
