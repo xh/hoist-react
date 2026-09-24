@@ -17,9 +17,13 @@
     // prettier-ignore
     --seg-btn-h: calc(var(--xh-tbar-min-size-px) - var(--xh-pad-half-px) * 2 - var(--xh-segmented-control-pad-px) * 2 - 1px);
 
+    // Keep each label on one line. A zero flex basis (equal widths) in a shrink-to-fit tray
+    // otherwise lets an option fall to its min-content width, breaking a multi-word label at its
+    // spaces - the tray should widen or overflow instead.
     > .bp6-button {
       min-height: var(--seg-btn-h);
       max-height: var(--seg-btn-h);
+      white-space: nowrap;
     }
 
     // Selected option - solid button standing out from the tray.

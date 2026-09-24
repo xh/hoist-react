@@ -137,6 +137,8 @@
   the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is                                
   constructed, so `Field.defaultValue` and record data always hold the typed value.
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
+* Fixed desktop `SegmentedControl` wrapping a multi-word option label (e.g. "Not Included") onto
+  two lines when `equalSegmentWidths` squeezed the option to its min-content width.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
 
 ### ⚙️ Technical
