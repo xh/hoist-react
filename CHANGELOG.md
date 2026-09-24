@@ -66,6 +66,10 @@
 
 ### 🎁 New Features
 
+* Added a `CodeInput.extensions` prop to install additional CodeMirror extensions alongside Hoist's
+  own - e.g. `autocompletion()` from `@codemirror/autocomplete`, `closeBrackets()`, or a custom
+  keymap. App extensions are appended after Hoist's, so Hoist wins on conflicts unless the app
+  wraps its extension in `Prec.high()`.
 * Added a `theme` config to `GridModel` and `AgGridModel`, accepting AG Grid theme param overrides
   (e.g. `{headerBackgroundColor: 'navy', spacing: 4}`) for grids that need to depart from the app's
   standard styling. Overrides are applied on top of Hoist's own theme, so grids keep their bindings
