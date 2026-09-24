@@ -405,8 +405,9 @@ export class View
 
     // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
     private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
-        const {_leafMap, stores} = this,
-            checkFields = this.getCheckFields(changedFields),
+        const {_leafMap, stores, fields} = this,
+            // A producer supplying changedFields asserts no field outside the set moved.
+            checkFields = changedFields ? fields.filter(it => changedFields.has(it.name)) : fields,
             changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
@@ -645,12 +646,6 @@ export class View
         if (this.hasDimOrBucketUpdates(ret)) return false;
 
         return ret;
-    }
-
-    // Fields to diff on updated leaves - narrowed to those the delta reports changed, when known.
-    // A producer supplying changedFields asserts no field outside the set moved.
-    private getCheckFields(changedFields: Set<string>): CubeField[] {
-        return changedFields ? this.fields.filter(it => changedFields.has(it.name)) : this.fields;
     }
 
     private hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
