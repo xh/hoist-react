@@ -133,6 +133,7 @@
   the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is                                
   constructed, so `Field.defaultValue` and record data always hold the typed value.
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
+* Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
 
 ### ⚙️ Technical
 
@@ -206,6 +207,7 @@
 * @xh/hoist-dev-utils `15.x -> 16.x`
 * ag-grid-community `35.3 -> 36.2`
 * ag-grid-react `35.3 -> 36.2`
+* date-fns `added @ 4.4`
 * mobx `6.16 -> 7.0`
 * mobx-react-lite `4.1 -> 5.0`
 * react `19.2 -> 19.3`
