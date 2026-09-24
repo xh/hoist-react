@@ -299,8 +299,6 @@ export interface StoreChangeLog {
     add?: StoreRecord[];
     remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
-
-    /** As supplied by {@link StoreTransaction.changedFields}, for value-only transactions. */
     changedFields?: Set<string>;
 }
 

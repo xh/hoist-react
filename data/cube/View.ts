@@ -424,7 +424,6 @@ export class View
             changed.rows.forEach(rowData => {
                 if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
-            // Value-only by construction - see LeafUpdateChanges.fields.
             store.updateData({update: recordUpdates, changedFields: changed.fields});
         });
         this.updateResults();
