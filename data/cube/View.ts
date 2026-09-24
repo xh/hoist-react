@@ -423,7 +423,7 @@ export class View
     // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
     private dataOnlyUpdate(delta: LeafDelta, start: number) {
         const {_leafMap, stores} = this,
-            fields = this.getDiffFields(delta),
+            fields = this.getDiffFields(delta.changedFields),
             updatedRowDatas = new Set<ViewRowData>(),
             changedFields = new Set<string>();
 
@@ -455,7 +455,7 @@ export class View
     private leafPopulationUpdate(delta: LeafDelta, start: number) {
         const {_leafMap, _rowCache, _rootRow, query, stores} = this,
             {update, add, remove} = delta,
-            fields = this.getDiffFields(delta),
+            fields = this.getDiffFields(delta.changedFields),
             updatedRowDatas = new Set<ViewRowData>(),
             wasEmpty = _leafMap.size === 0;
 
@@ -785,7 +785,7 @@ export class View
 
     // Fields to diff on updated leaves - narrowed to those the delta reports changed, when known.
     // A producer supplying changedFields asserts no field outside the set moved.
-    private getDiffFields({changedFields}: LeafDelta): CubeField[] {
+    private getDiffFields(changedFields: Set<string>): CubeField[] {
         if (!changedFields) return this.fields;
         const ret = [];
         changedFields.forEach(name => {
