@@ -524,7 +524,7 @@
             "title": "v88 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v87.x to v88.0.0. Low difficulty.",
+            "description": "Upgrade guide from v87.x to v88.0.0 - partial draft covering only the CSS variable override changes. High difficulty overall; see CHANGELOG for the full v88 breaking changes.",
             "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "css variables", "custom properties", "override hooks", "--xh-"]
         }
     ]

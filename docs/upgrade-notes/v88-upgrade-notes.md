@@ -1,8 +1,17 @@
 # Hoist React v88 Upgrade Notes
 
-> **From:** v87.x → v88.0.0 | **Released:** TBD | **Difficulty:** 🟢 LOW
+> **From:** v87.x → v88.0.0 | **Released:** TBD | **Difficulty:** 🔴 HIGH (full release - see
+> CHANGELOG)
 
-## Overview
+> **⚠️ Partial draft - CSS variables section only.** This file currently covers just one of v88's
+> breaking changes: the removal of the two-tier CSS variable override system. It is the first
+> section of the full v88 upgrade notes, which are still to be written. The other v88 breaking
+> changes - TC39 decorators and the `@xh/hoist-dev-utils` 16 requirement, MobX 7, AG Grid 36, the
+> React 19.3 floor, and the scheduled removals - are not yet covered here. Until they are, see the
+> v88 entry in [`CHANGELOG.md`](../../CHANGELOG.md) for the complete list, and treat the
+> Prerequisites and Step 1 below as incomplete.
+
+## Overview - CSS Variables
 
 Hoist React v88 removes the two-tier CSS custom property override system. Previously, Hoist
 defined each framework variable as `--xh-grid-bg: var(--grid-bg, var(--xh-bg))`, where the
@@ -22,7 +31,7 @@ The most significant app-level impacts are:
 - **Nine hook names did not match their `--xh-` variable** - these need the table in Step 3, not
   a plain prefix.
 
-There is no hoist-core change in this release.
+The CSS variable change requires no hoist-core change.
 
 ## Prerequisites
 
