@@ -156,8 +156,8 @@ Rules to observe:
 * **Override `replace()` only if you can keep state consistent** with the value you return. The
   inherited implementation re-aggregates from direct children, which is correct and already cheap;
   see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
-  The same applies to `add()` and `remove()`, called on a leaves-only View's root as leaves enter
-  and leave its filter.
+  An override must also handle a leaf joining or leaving, flagged by `RowUpdate.leafChange` with a
+  null old or new value - or delegate to `super` for those.
 * **Override `dependsOnChildrenOnly` to return false if the aggregate reads any field other than
   its own**, as the weighted average above reads `qty`. A View whose aggregators all depend on
   their children only applies a record update incrementally, re-aggregating a field up the

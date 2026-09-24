@@ -23,9 +23,17 @@ export class RowUpdate {
     readonly leafOldValue: any;
     readonly leafNewValue: any;
 
-    constructor(field: CubeField, oldValue: any, newValue: any) {
+    /**
+     * Set when the originating leaf joined or left the aggregation rather than changing value - its
+     * old or new value, respectively, is then null. Aggregators that count leaves, or treat a null
+     * value as significant, must distinguish the two.
+     */
+    readonly leafChange: 'add' | 'remove' = null;
+
+    constructor(field: CubeField, oldValue: any, newValue: any, leafChange?: 'add' | 'remove') {
         this.field = field;
         this.oldValue = this.leafOldValue = oldValue;
         this.newValue = this.leafNewValue = newValue;
+        if (leafChange) this.leafChange = leafChange;
     }
 }

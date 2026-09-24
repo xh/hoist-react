@@ -13,7 +13,6 @@ import {CubeField} from '../CubeField';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 import {BaseRow} from './BaseRow';
-import type {LeafRow, LeafUpdateChanges} from './LeafRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
@@ -102,47 +101,6 @@ export abstract class ParentRow extends BaseRow {
         if (!isEmpty(myUpdates)) {
             updatedRowDatas.add(this.data);
             if (parent) parent.applyDataUpdate(myUpdates, updatedRowDatas);
-        }
-    }
-
-    /**
-     * Adopt leaves entering and leaving this row's children, adjusting aggregates in place via
-     * {@link Aggregator.add} / {@link Aggregator.remove} and propagating to ancestors. The
-     * children must remain non-empty - see View incremental leaf population.
-     */
-    applyLeafPopulation(entering: LeafRow[], leaving: LeafRow[], changed: LeafUpdateChanges) {
-        const {view, data, canAggResults} = this,
-            ctx = view._aggContext,
-            leavingSet = new Set<BaseRow>(leaving),
-            updates = [];
-
-        const children = (this.children = [
-            ...this.children.filter(it => !leavingSet.has(it)),
-            ...entering
-        ]);
-        entering.forEach(it => (it.parent = this));
-        leaving.forEach(it => (it.parent = null));
-
-        view._aggFieldsByDepth[this.depth].forEach(field => {
-            const {name} = field;
-            if (canAggResults?.[name] === false) return;
-            const oldValue = data[name];
-            let val = oldValue;
-            leaving.forEach(
-                it => (val = ctx.adjust('remove', children, val, it.data[name], field, this))
-            );
-            entering.forEach(
-                it => (val = ctx.adjust('add', children, val, it.data[name], field, this))
-            );
-            if (val !== oldValue) {
-                updates.push(new RowUpdate(field, oldValue, val));
-                data[name] = val;
-            }
-        });
-
-        if (!isEmpty(updates)) {
-            changed.rows.add(data);
-            this.parent?.applyDataUpdate(updates, changed.rows);
         }
     }
 

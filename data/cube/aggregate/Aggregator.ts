@@ -60,34 +60,6 @@ export abstract class Aggregator {
     }
 
     /**
-     * Adjust an aggregated value for a leaf row joining its constituents.
-     *
-     * @param rows - current rows in aggregation, including the new leaf. Will never be empty.
-     * @param currVal - current value of aggregation
-     * @param value - the joining leaf's value for the field.
-     *      Sub-classes may override to adjust incrementally. The default implementation will
-     *      simply re-aggregate.
-     * @param context - current aggregation context
-     * @returns new aggregate value
-     */
-    add(rows: ViewRow[], currVal: any, value: any, context: AggregationContext): any {
-        return this.aggregate(rows, context.activeField.name, context);
-    }
-
-    /**
-     * Adjust an aggregated value for a leaf row leaving its constituents.
-     *
-     * @param rows - current rows in aggregation, without the leaf. Will never be empty.
-     * @param currVal - current value of aggregation
-     * @param value - the leaving leaf's value for the field.
-     * @param context - current aggregation context
-     * @returns new aggregate value
-     */
-    remove(rows: ViewRow[], currVal: any, value: any, context: AggregationContext): any {
-        return this.aggregate(rows, context.activeField.name, context);
-    }
-
-    /**
      * Call function on all *leaf* children of a set of children.
      *
      * @param rows - array of child rows

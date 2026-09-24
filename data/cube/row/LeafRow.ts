@@ -93,6 +93,17 @@ export abstract class LeafRow extends BaseRow {
         }
     }
 
+    /** Updates presenting this leaf's values as joining or leaving its parent's aggregation. */
+    leafChangeUpdates(change: 'add' | 'remove'): RowUpdate[] {
+        const {data} = this;
+        return this.view._aggFieldsByDepth[0].map(field => {
+            const val = data[field.name];
+            return change === 'add'
+                ? new RowUpdate(field, null, val, change)
+                : new RowUpdate(field, val, null, change);
+        });
+    }
+
     protected abstract applyUpdatedData(
         updates: RowUpdate[],
         newData: PlainObject,

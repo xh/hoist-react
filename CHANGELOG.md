@@ -165,8 +165,9 @@
   typed as `GridContextMenuItemLike`.
 * Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
   `@xh/hoist/utils/js` entry point) instead.
-* Added `Aggregator.add()` and `Aggregator.remove()`, adjusting an aggregate for a leaf joining or
-  leaving its constituents. The defaults re-aggregate; the built-in aggregators adjust in place.
+* Added `RowUpdate.leafChange`, set when a leaf joins or leaves an aggregation rather than changing
+  value. Custom `Aggregator.replace()` overrides that count leaves or treat nulls as significant
+  must check it.
 * Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
   implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
   their rows with unexported internal classes. `BucketSpec.bucketFn` now takes a `ViewRow` as

@@ -22,20 +22,9 @@ export class SumAggregator extends Aggregator {
         const {oldValue, newValue, field} = update;
         if (oldValue != null) currAgg -= oldValue;
         if (newValue != null) return currAgg + newValue;
-        return this.nullUnlessAny(rows, currAgg, field.name);
-    }
 
-    override add(rows, currAgg, value, context) {
-        return value == null ? currAgg : (currAgg ?? 0) + value;
-    }
-
-    override remove(rows, currAgg, value, context) {
-        if (value == null) return currAgg;
-        return this.nullUnlessAny(rows, currAgg - value, context.activeField.name);
-    }
-
-    // A delta cannot tell "sums to zero" from "nothing left to sum".
-    private nullUnlessAny(rows, currAgg, name) {
+        // A delta cannot tell "sums to zero" from "nothing left to sum".
+        const {name} = field;
         for (const row of rows) {
             if (row.data[name] != null) return currAgg;
         }

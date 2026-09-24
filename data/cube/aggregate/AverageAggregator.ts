@@ -56,30 +56,7 @@ export class AverageAggregator extends Aggregator {
             state.total += leafNewValue;
             state.count++;
         }
-        return this.fromState(state);
-    }
 
-    override add(rows, currAgg, value, context) {
-        const state = context.getAggState();
-        if (!state) return super.add(rows, currAgg, value, context);
-        if (value != null) {
-            state.total += value;
-            state.count++;
-        }
-        return this.fromState(state);
-    }
-
-    override remove(rows, currAgg, value, context) {
-        const state = context.getAggState();
-        if (!state) return super.remove(rows, currAgg, value, context);
-        if (value != null) {
-            state.total -= value;
-            state.count--;
-        }
-        return this.fromState(state);
-    }
-
-    private fromState(state) {
         const {total, count} = state;
         return count ? total / count : null;
     }

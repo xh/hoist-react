@@ -473,18 +473,26 @@ export class View
             return leaf;
         });
 
-        // 2) The root adopts the new population as aggregate deltas, unless it is emptying or was
-        // empty - a re-aggregation over nothing, or from nothing, is not a delta.
+        // 2) The root rewires to the new population and takes each leaf's values as an aggregate
+        // delta - unless it is emptying or was empty, where a re-aggregation over nothing, or
+        // from nothing, is not a delta.
+        remove.forEach(leaf => (leaf.parent = null));
         if (_rootRow) {
-            if (wasEmpty || _leafMap.size === 0) {
+            const children = Array.from(_leafMap.values());
+            if (wasEmpty || !children.length) {
                 const prevDigest = _rootRow.data.cubeRowDigest;
-                _rootRow.reuse(Array.from(_leafMap.values()), this._rowDigest);
+                _rootRow.reuse(children, this._rowDigest);
                 if (_rootRow.data.cubeRowDigest !== prevDigest) changed.rows.add(_rootRow.data);
             } else {
-                _rootRow.applyLeafPopulation(entering, remove, changed);
+                _rootRow.children = children;
+                entering.forEach(it => (it.parent = _rootRow));
+                remove.forEach(it =>
+                    _rootRow.applyDataUpdate(it.leafChangeUpdates('remove'), changed.rows)
+                );
+                entering.forEach(it =>
+                    _rootRow.applyDataUpdate(it.leafChangeUpdates('add'), changed.rows)
+                );
             }
-        } else {
-            remove.forEach(leaf => (leaf.parent = null));
         }
 
         // 3) Updated leaves adopt their new data, adjusting the root as usual.

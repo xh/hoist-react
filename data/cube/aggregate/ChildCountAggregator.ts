@@ -14,14 +14,6 @@ export class ChildCountAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        return currAgg;
-    }
-
-    override add(rows, currAgg, value, context) {
-        return rows.length;
-    }
-
-    override remove(rows, currAgg, value, context) {
         return rows.length;
     }
 }

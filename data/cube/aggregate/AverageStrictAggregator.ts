@@ -45,39 +45,28 @@ export class AverageStrictAggregator extends Aggregator {
 
     override replace(rows, currAgg, update, context) {
         const state = context.getAggState(),
-            {leafOldValue, leafNewValue} = update;
+            {leafOldValue, leafNewValue, leafChange} = update;
 
-        // `hasNull` is not a running total - a null arriving or clearing needs a re-scan.
-        if (!state || leafOldValue == null || leafNewValue == null) {
+        // `hasNull` is not a running total - a null arriving or clearing needs a re-scan, except
+        // for a null leaf joining, which simply sets it.
+        if (
+            !state ||
+            (leafOldValue == null && leafChange !== 'add') ||
+            (leafNewValue == null && leafChange !== 'remove')
+        ) {
             return super.replace(rows, currAgg, update, context);
         }
 
-        state.total += leafNewValue - leafOldValue;
-        return this.fromState(state);
-    }
-
-    override add(rows, currAgg, value, context) {
-        const state = context.getAggState();
-        if (!state) return super.add(rows, currAgg, value, context);
-        if (value == null) {
-            state.hasNull = true;
-        } else {
-            state.total += value;
+        if (leafChange === 'add') {
+            state.total += leafNewValue;
             state.count++;
+        } else if (leafChange === 'remove') {
+            state.total -= leafOldValue;
+            state.count--;
+        } else {
+            state.total += leafNewValue - leafOldValue;
         }
-        return this.fromState(state);
-    }
 
-    // A leaving null may or may not have been the only one - re-scan.
-    override remove(rows, currAgg, value, context) {
-        const state = context.getAggState();
-        if (!state || value == null) return super.remove(rows, currAgg, value, context);
-        state.total -= value;
-        state.count--;
-        return this.fromState(state);
-    }
-
-    private fromState(state) {
         const {total, count, hasNull} = state;
         return hasNull || !count ? null : total / count;
     }

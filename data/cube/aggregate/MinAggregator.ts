@@ -35,16 +35,4 @@ export class MinAggregator extends Aggregator {
 
         return currAgg;
     }
-
-    override add(rows, currAgg, value, context) {
-        if (value == null) return currAgg;
-        return currAgg == null || value <= currAgg ? value : currAgg;
-    }
-
-    // Only losing the extreme itself needs a re-scan.
-    override remove(rows, currAgg, value, context) {
-        return value != null && value <= currAgg
-            ? this.aggregate(rows, context.activeField.name)
-            : currAgg;
-    }
 }

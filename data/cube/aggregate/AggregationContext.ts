@@ -98,29 +98,6 @@ export class AggregationContext {
     }
 
     /**
-     * Adjust an aggregated value for a leaf joining or leaving, tracking the field as active for
-     * the duration.
-     * @internal
-     */
-    adjust(
-        op: 'add' | 'remove',
-        rows: ViewRow[],
-        currVal: any,
-        value: any,
-        field: CubeField,
-        row: ParentRow
-    ): any {
-        this.activeField = field;
-        this.activeRow = row;
-        try {
-            return field.aggregator[op](rows, currVal, value, this);
-        } finally {
-            this.activeField = null;
-            this.activeRow = null;
-        }
-    }
-
-    /**
      * Store state for the row and field currently being aggregated, to be read by the
      * aggregations of ancestor rows via {@link getAggState}.
      *
