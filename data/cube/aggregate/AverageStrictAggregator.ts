@@ -53,7 +53,31 @@ export class AverageStrictAggregator extends Aggregator {
         }
 
         state.total += leafNewValue - leafOldValue;
+        return this.fromState(state);
+    }
 
+    override add(rows, currAgg, value, context) {
+        const state = context.getAggState();
+        if (!state) return super.add(rows, currAgg, value, context);
+        if (value == null) {
+            state.hasNull = true;
+        } else {
+            state.total += value;
+            state.count++;
+        }
+        return this.fromState(state);
+    }
+
+    // A leaving null may or may not have been the only one - re-scan.
+    override remove(rows, currAgg, value, context) {
+        const state = context.getAggState();
+        if (!state || value == null) return super.remove(rows, currAgg, value, context);
+        state.total -= value;
+        state.count--;
+        return this.fromState(state);
+    }
+
+    private fromState(state) {
         const {total, count, hasNull} = state;
         return hasNull || !count ? null : total / count;
     }

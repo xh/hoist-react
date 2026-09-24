@@ -460,22 +460,12 @@ export class View
         this.createAggregationContext();
 
         // 1) Leaving leaves drop out of the cache as well - their records are gone or replaced, so
-        // they can never be reused.
-        const leaving = new Set<BaseRow>(remove);
+        // they can never be reused. Entering leaves are always minted anew - a record enters via a
+        // new instance, which no cached leaf can match.
         remove.forEach(leaf => {
             _leafMap.delete(leaf.cubeRecordId);
             _rowCache.remove(leaf.id);
-            leaf.parent = null;
         });
-
-        // 2) Updated leaves adopt their new data without propagating - the root re-aggregates
-        // from scratch below regardless.
-        update.forEach(rec => {
-            _leafMap.get(rec.id).applyLeafDataUpdate(rec, checkFields, changed, false);
-        });
-
-        // 3) Entering leaves are always minted anew - a record enters via a new instance, which no
-        // cached leaf can match.
         const entering = add.map(rec => {
             const leaf = this.newLeafRow(rec);
             _leafMap.set(rec.id, leaf);
@@ -483,15 +473,29 @@ export class View
             return leaf;
         });
 
+        // 2) The root adopts the new population as aggregate deltas, unless it is emptying or was
+        // empty - a re-aggregation over nothing, or from nothing, is not a delta.
+        if (_rootRow) {
+            if (wasEmpty || _leafMap.size === 0) {
+                const prevDigest = _rootRow.data.cubeRowDigest;
+                _rootRow.reuse(Array.from(_leafMap.values()), this._rowDigest);
+                if (_rootRow.data.cubeRowDigest !== prevDigest) changed.rows.add(_rootRow.data);
+            } else {
+                _rootRow.applyLeafPopulation(entering, remove, changed);
+            }
+        } else {
+            remove.forEach(leaf => (leaf.parent = null));
+        }
+
+        // 3) Updated leaves adopt their new data, adjusting the root as usual.
+        update.forEach(rec => {
+            _leafMap.get(rec.id).applyLeafDataUpdate(rec, checkFields, changed);
+        });
+
         changed.rows.forEach(rowData => this.assignDigest(rowData));
 
-        // 4) Rewire and re-aggregate the root over its new children, then republish rows via the
-        // same visibility logic as a full generation.
+        // 4) Republish rows via the same visibility logic as a full generation.
         if (_rootRow) {
-            const children = [..._rootRow.children.filter(it => !leaving.has(it)), ...entering],
-                prevDigest = _rootRow.data.cubeRowDigest;
-            _rootRow.reuse(children, this._rowDigest);
-            if (_rootRow.data.cubeRowDigest !== prevDigest) changed.rows.add(_rootRow.data);
             this._rowDatas = [_rootRow].flatMap(it => it.getVisibleDatas());
         } else {
             this._rowDatas = query.includeLeaves
@@ -728,8 +732,9 @@ export class View
         });
 
         // ...while updated records already present that still pass are data-only changes. Any
-        // other combination crosses the filter boundary, entering or leaving.
-        t.update?.forEach(rec => {
+        // other combination crosses the filter boundary, entering or leaving. A transaction may
+        // name a record more than once - the last wins, as in the Store.
+        new Map(t.update?.map(rec => [rec.id, rec])).forEach(rec => {
             const passes = query.test(rec),
                 leaf = _leafMap.get(rec.id);
             if (passes && leaf) {

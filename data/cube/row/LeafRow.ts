@@ -67,16 +67,7 @@ export abstract class LeafRow extends BaseRow {
         this.cubeRecord = rawRecord;
     }
 
-    /**
-     * @param propagate - false to skip adjusting ancestor aggregates, when the caller will
-     *      re-aggregate them from scratch regardless - see View incremental leaf population.
-     */
-    applyLeafDataUpdate(
-        newRec: StoreRecord,
-        checkFields: CubeField[],
-        changed: LeafUpdateChanges,
-        propagate: boolean = true
-    ) {
+    applyLeafDataUpdate(newRec: StoreRecord, checkFields: CubeField[], changed: LeafUpdateChanges) {
         this.cubeRecord = newRec;
         const {data} = this,
             newData = newRec.data,
@@ -97,7 +88,7 @@ export abstract class LeafRow extends BaseRow {
         this.applyUpdatedData(updates, newData, changed.rows);
 
         // 3) Propagate any updates to ancestors and consumers.
-        if (propagate && !isEmpty(updates)) {
+        if (!isEmpty(updates)) {
             this.parent?.applyDataUpdate(updates, changed.rows);
         }
     }

@@ -156,6 +156,8 @@ Rules to observe:
 * **Override `replace()` only if you can keep state consistent** with the value you return. The
   inherited implementation re-aggregates from direct children, which is correct and already cheap;
   see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
+  The same applies to `add()` and `remove()`, called on a leaves-only View's root as leaves enter
+  and leave its filter.
 * **Override `dependsOnChildrenOnly` to return false if the aggregate reads any field other than
   its own**, as the weighted average above reads `qty`. A View whose aggregators all depend on
   their children only applies a record update incrementally, re-aggregating a field up the
@@ -276,8 +278,8 @@ Data updates to a connected View are incremental too. Value-only changes to reco
 the View adjust its aggregates in place, diffing only the fields the source transaction declared
 via `StoreTransaction.changedFields` when it supplied them. A View with no `dimensions` - leaves
 only, with or without `includeRoot` - also adds and removes leaves in place as records enter or
-leave its `filter`, re-aggregating the root over its new children rather than rebuilding. That
-makes `query.filter` viable for large, fast-ticking leaves-only Views filtered on the very fields
+leave its `filter`, adjusting the root's aggregates for each leaf joining or leaving rather than
+rebuilding. That makes `query.filter` viable for large, fast-ticking leaves-only Views filtered on the very fields
 that tick. Grouped Views still regenerate (reusing unchanged rows) when leaves enter or leave, or
 when a dimension value changes.
 

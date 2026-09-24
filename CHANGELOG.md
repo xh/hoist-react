@@ -144,7 +144,7 @@
   `StoreTransaction.changedFields` rather than every queried field. `StoreChangeLog` carries the
   set through for such transactions.
 * Cube `View`s with no `dimensions` now add and remove leaves in place as records enter or leave
-  the query `filter`, re-aggregating the root over its new children, where previously any record
+  the query `filter`, adjusting the root's aggregates by delta, where previously any record
   crossing the filter triggered a full rebuild. Makes `query.filter` viable for large, fast-ticking
   leaves-only views filtered on the fields that tick. Grouped views still rebuild in that case.
 * Model lookup now subscribes only to slots that can affect resolution - the matched slot, or
@@ -165,6 +165,8 @@
   typed as `GridContextMenuItemLike`.
 * Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
   `@xh/hoist/utils/js` entry point) instead.
+* Added `Aggregator.add()` and `Aggregator.remove()`, adjusting an aggregate for a leaf joining or
+  leaving its constituents. The defaults re-aggregate; the built-in aggregators adjust in place.
 * Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
   implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
   their rows with unexported internal classes. `BucketSpec.bucketFn` now takes a `ViewRow` as
