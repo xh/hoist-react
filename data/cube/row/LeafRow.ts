@@ -8,6 +8,7 @@
 import {PlainObject} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
+import {CubeField} from '../CubeField';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 import {BaseRow} from './BaseRow';
@@ -50,18 +51,28 @@ export abstract class LeafRow extends BaseRow {
         this.cubeRecord = rawRecord;
     }
 
+    /**
+     * Adopt an updated source record, diffing the given fields against this leaf's current data.
+     *
+     * @param newRec - the updated record.
+     * @param fields - queried fields to diff. Narrowed by the View to those its source reports
+     *      changed, when known - otherwise all queried fields.
+     * @param updatedRowDatas - accumulates the data objects of every row changed by the update.
+     * @param changedFields - accumulates the names of every field changed on any leaf.
+     */
     applyLeafDataUpdate(
         newRec: StoreRecord,
+        fields: CubeField[],
         updatedRowDatas: Set<PlainObject>,
         changedFields: Set<string>
     ) {
         this.cubeRecord = newRec;
-        const {view, data} = this,
+        const {data} = this,
             newData = newRec.data,
             updates = [];
 
         // 1) Calculate diff.
-        view.fields.forEach(field => {
+        fields.forEach(field => {
             const name = field.name,
                 oldValue = data[name],
                 newValue = newData[name];

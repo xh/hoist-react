@@ -304,7 +304,7 @@ export class View
         if (!simpleUpdates) {
             this.fullUpdate('update', start);
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdate(simpleUpdates, start);
+            this.dataOnlyUpdate(simpleUpdates, changes.changedFields, start);
         } else {
             this.dataUnchangedUpdate(start);
         }
@@ -403,15 +403,18 @@ export class View
         }
     }
 
-    private dataOnlyUpdate(updates: StoreRecord[], start: number) {
+    // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
+    // Diffs only the fields the delta reports changed, when known.
+    private dataOnlyUpdate(updates: StoreRecord[], deltaFields: Set<string>, start: number) {
         const {_leafMap, stores} = this,
+            fields = this.getDiffFields(deltaFields),
             updatedRowDatas = new Set<ViewRowData>(),
             changedFields = new Set<string>();
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
             const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas, changedFields);
+            leaf?.applyLeafDataUpdate(rec, fields, updatedRowDatas, changedFields);
         });
 
         updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
@@ -646,6 +649,18 @@ export class View
         //     require rebuilding the row hierarchy
         if (this.hasDimOrBucketUpdates(ret)) return false;
 
+        return ret;
+    }
+
+    // Fields to diff on updated leaves - narrowed to those the delta reports changed, when known.
+    // A producer supplying changedFields asserts no field outside the set moved.
+    private getDiffFields(changedFields: Set<string>): CubeField[] {
+        if (!changedFields) return this.fields;
+        const ret = [];
+        changedFields.forEach(name => {
+            const field = this._fieldsByName.get(name);
+            if (field) ret.push(field);
+        });
         return ret;
     }
 

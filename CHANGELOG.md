@@ -140,6 +140,9 @@
 * Cube `AVG` and `AVG_STRICT` aggregations now compose from their direct children rather than
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
   regroup and update as those with `SUM` fields.
+* Cube `View`s now diff only the fields a `Cube.updateDataAsync()` transaction declares via
+  `StoreTransaction.changedFields` when applying value-only updates to their leaves, rather than
+  every queried field. `StoreChangeLog` carries the set through for such transactions.
 * Model lookup now subscribes only to slots that can affect resolution - the matched slot, or
   nullish accessor candidates if no match. Computed getters and primitive observables are
   excluded. Tighter than the prior walk, which subscribed indiscriminately and triggered
