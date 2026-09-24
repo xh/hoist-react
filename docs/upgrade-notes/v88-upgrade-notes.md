@@ -142,14 +142,21 @@ grep -rnE -- '--(form-field-(info|invalid|warning)-border-color|grid-cell-bg-hig
 
 ### 4. Check Override Selectors
 
-Set overrides on `body.xh-app` (or a more specific selector), not on bare `body`. Hoist declares
-its defaults on `body`, so an app declaration on `body` has equal specificity and wins only by
-source order. Under the old system this did not matter, because the unprefixed hook had no
-competing framework declaration.
+Set overrides on `body.xh-app`. Hoist declares its defaults on `body`, wrapping its dark-theme and
+mobile variants in `:where()` so every framework declaration has the specificity of a bare `body`
+selector. A `body.xh-app` override therefore wins in every theme and platform combination - the
+same reach the old unprefixed hooks had.
+
+Two selectors that worked with the old hooks no longer do:
+
+- **Bare `body`** ties with Hoist's declarations and wins only by source order.
+- **`:root` or `html`** has no effect at all. Values set there reach `body` only by inheritance,
+  and Hoist's own declarations on `body` take precedence. The old hooks were read wherever Hoist
+  declared its variables, so an inherited hook value worked; an inherited `--xh-*` value does not.
 
 Before:
 ```scss
-body {
+:root {
   --grid-large-font-size: 16;
 }
 ```
@@ -161,20 +168,17 @@ body.xh-app {
 }
 ```
 
-Hoist also redefines a subset of variables for the dark theme and for mobile, under `body.xh-dark`
-and `body.xh-mobile`. These have the same specificity as `body.xh-app`, and application
-stylesheets load after Hoist's, so a `body.xh-app` override applies in both themes exactly as the
-old hooks did. Where you want per-theme values, keep using an `&.xh-dark` block as in the example
-in Step 2.
+Where you want per-theme values, keep using an `&.xh-dark` block as in the example in Step 2.
 
-Scoped overrides are now a first-class option as well - set a `--xh-*` variable on any container
-to restyle only that subtree:
+**Scoped overrides** - setting a variable on a container rather than `body.xh-app` - only reach CSS
+that reads that exact variable. Variables derived from it were resolved once on `body`, so
+`.my-panel { --xh-pad: 4; }` does not change `--xh-pad-px` within the panel. See "Base vs. Derived
+Variables" in [`styles/README.md`](../../styles/README.md#base-vs-derived-variables).
 
-```scss
-.my-special-panel {
-  --xh-grid-bg: #fafafa;
-}
-```
+Note that an unprefixed hook set on a container rather than on `body` never had any effect - Hoist
+read the hooks only where it declared its variables, on `body`. Once renamed to `--xh-*`, such an
+override *starts* applying within that subtree. Review any scoped hooks the Step 2 search turns up
+before renaming them, and drop any whose effect you do not want.
 
 ### 5. Check for Unitless Number Overrides
 

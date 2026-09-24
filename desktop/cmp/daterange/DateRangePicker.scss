@@ -439,9 +439,9 @@ $drp-transition-dur: 120ms;
         font-family: var(--xh-date-range-picker-date-font-family);
       }
 
-      // Accents the field whose edge the next calendar click will set. Overrides the resolved
-      // `--xh-` var, not the `--form-field-` hook: the hook is only read where Hoist declares
-      // these vars, on `body`, so it has no effect scoped to a descendant.
+      // Accents the field whose edge the next calendar click will set. Sets the box-shadow var
+      // itself, not the `-box-shadow-color-*` vars it derives from: derived vars resolve once, on
+      // `body`, so re-setting an upstream var on a descendant would not reach it.
       &--armed {
         --xh-form-field-box-shadow: inset 0 0 0 1px var(--xh-date-range-picker-accent);
       }

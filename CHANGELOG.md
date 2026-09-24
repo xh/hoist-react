@@ -14,7 +14,7 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟡 MEDIUM - TC39 decorators, ag-Grid 36, CSS variables, removals)
+### 💥 Breaking Changes (upgrade difficulty: 🔴 HIGH - TC39 decorators, ag-Grid 36, CSS variables, removals)
 
 See [`docs/upgrade-notes/v88-upgrade-notes.md`](docs/upgrade-notes/v88-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -58,6 +58,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   now set the `--xh-` prefixed variables directly (e.g. `--xh-grid-bg`, `--xh-pad`,
   `--xh-font-size`). This is a mechanical find-and-replace for most apps. Nine unprefixed hook
   names did not match their `--xh-` counterpart - see the upgrade notes for the complete mapping.
+    * Set overrides on `body.xh-app`, which now wins over Hoist's defaults in every theme and
+      platform combination. Overrides set on `:root` or `html` no longer have any effect.
 
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead. Note that
@@ -205,6 +207,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added four custom properties for the new `MenuHeading` to style headings in grid context menus,
   desktop menus, and mobile menus, so a single override restyles all three. Blueprint's own
   `.bp6-menu-header` now uses the same properties.
+* Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
+  inline labels - it referenced stale names left behind by an earlier rename.
 
 ### 📚 Libraries
 

@@ -40,27 +40,64 @@ body.xh-app {
 }
 ```
 
-Component SCSS files reference these variables for all themeable properties. Because `--xh-*` vars
-are defined on `body` and inherited by default, an override on `body.xh-app` (which has higher
-specificity than `body`) takes precedence over the framework defaults. Always override on
-`body.xh-app` (or a more specific selector) rather than on bare `body`, where an app declaration
-would tie with the framework's and win only by source order.
+Component SCSS files reference these variables for all themeable properties. Hoist declares every
+default on `body` with the specificity of a bare `body` selector - its dark-theme and mobile
+variants are wrapped in `:where()` (e.g. `body:where(.xh-dark)`), which adds no specificity. An app
+override on `body.xh-app` therefore beats every framework default, in light and dark themes and on
+desktop and mobile alike, without relying on stylesheet order.
 
-Hoist redefines some variables for the dark theme and for mobile under `body.xh-dark` and
-`body.xh-mobile`, which have the same specificity as `body.xh-app`. Application stylesheets load
-after Hoist's, so a `body.xh-app` override wins in both themes - but when an app wants a
-value that differs per theme, it should say so explicitly with an `&.xh-dark` block (see
-[App-Level Dark Overrides](#app-level-dark-overrides) below).
+Where to set overrides:
 
-Scoped overrides also work — setting a variable on a more specific selector limits the change to
-that subtree:
+* **`body.xh-app`** - the recommended selector for app-wide overrides.
+* **Not bare `body`** - an app declaration there ties with Hoist's and wins only by source order.
+* **Not `:root` or `html`** - Hoist's own declarations on `body` take precedence over any value
+  `body` would otherwise inherit, so overrides set on an ancestor of `body` have no effect.
+
+For values that differ per theme, nest an `&.xh-dark` block (see
+[App-Level Dark Overrides](#app-level-dark-overrides) below). Nest `&.xh-mobile` the same way for
+mobile-only values.
+
+#### Base vs. Derived Variables
+
+Many variables derive from others - `--xh-pad-px` from `--xh-pad`, `--xh-grid-header-bg` from
+`--xh-grid-bg`, `--xh-intent-primary` from the `--xh-intent-primary-*` HSL components, and so on.
+CSS resolves a `var()` reference on the element where the referencing variable is declared, and
+descendants inherit the *resolved* value. Because Hoist declares all of these on `body`:
+
+* **Overriding a base variable on `body.xh-app` flows through to everything derived from it.**
+  Setting `--xh-pad: 8` updates `--xh-pad-px`, `--xh-pad-half-px`, and every component spacing
+  built on them.
+* **Overriding a base variable on a descendant does not.** Setting `--xh-pad: 4` on
+  `.my-panel` changes `--xh-pad` within that subtree, but `--xh-pad-px` there is still the value
+  computed on `body` - and component SCSS typically reads the derived `-px` form.
+
+#### Scoped Overrides
+
+Setting a variable on a more specific selector limits the change to that subtree. Given the above,
+set the variable the components actually read, not one upstream of it:
 
 ```scss
-// Only grids within this panel get a different background
+// Works for grid rows, which read `--xh-grid-bg` directly. Headers read `--xh-grid-header-bg`,
+// derived from `--xh-grid-bg` on `body` - set it as well if headers should follow.
 .my-special-panel {
     --xh-grid-bg: #fafafa;
+    --xh-grid-header-bg: #fafafa;
+}
+
+// Does NOT work - `--xh-pad-px` (and the half/double variants) were already resolved on `body`.
+.my-dense-panel {
+    --xh-pad: 4;
 }
 ```
+
+Derivation can run several levels deep. `--xh-form-field-margin` is itself built from
+`--xh-pad-px` on `body`, so even overriding `--xh-pad-px` within a subtree leaves form field margins
+unchanged there - it reaches only CSS that reads `--xh-pad-px` directly. Scoped overrides are best
+suited to leaf variables such as colors; for broad changes like density, override the base variable
+app-wide on `body.xh-app` or use a component's built-in sizing options (e.g. grid `sizingMode`).
+
+When unsure which variable a component reads, check its SCSS or search `vars.scss` for the
+variable's name to see what references it.
 
 ### Variable Categories
 
@@ -153,15 +190,15 @@ Hoist's dark theme is implemented via CSS class toggling on the `<body>` element
    preference (values: `'light'`, `'dark'`, `'system'`)
 2. When dark mode activates, `ThemeModel` adds the class `xh-dark` (and `bp6-dark` for Blueprint
    compatibility) to `document.body`
-3. In `vars.scss`, `&.xh-dark { ... }` blocks override the relevant `--xh-*` variables with
-   dark-appropriate values
+3. In `vars.scss`, `&:where(.xh-dark) { ... }` blocks override the relevant `--xh-*` variables
+   with dark-appropriate values
 4. All component styles automatically adapt because they reference CSS vars, not static colors
 
 ```scss
 // vars.scss — framework defaults
 --xh-bg: white;
 
-&.xh-dark {
+&:where(.xh-dark) {
     --xh-bg: var(--xh-black);
 }
 ```
@@ -210,14 +247,14 @@ SCSS files use the `.xh-dark &` selector pattern:
 
 ### Mobile Variants
 
-Several variables also have `&.xh-mobile` overrides for platform-specific defaults (e.g. larger
-font sizes, taller toolbars, different AppBar colors). These combine with dark theme:
+Several variables also have `&:where(.xh-mobile)` overrides for platform-specific defaults (e.g.
+larger font sizes, taller toolbars, different AppBar colors). These combine with dark theme:
 
 ```scss
-&.xh-mobile {
+&:where(.xh-mobile) {
     --xh-font-size: 16;
 
-    &.xh-dark {
+    &:where(.xh-dark) {
         --xh-appbar-bg: #{mc('blue-grey', '700')};
     }
 }

@@ -354,8 +354,8 @@ Block classes are `xh-date-range-picker` (the control: trigger and step buttons)
 
 ```scss
 body.xh-app {
-  --xh-date-range-picker-popover-width: 720px;                 // default 640px
-  --xh-date-range-picker-accent: var(--xh-intent-success);     // selection accent, default primary
+  --xh-date-range-picker-popover-width: 720px;                     // default 640px
+  --xh-date-range-picker-accent: var(--xh-intent-success);         // selection accent, default primary
   --xh-date-range-picker-date-font-family: var(--xh-font-family);  // default the mono font
 }
 ```

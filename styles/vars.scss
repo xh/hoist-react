@@ -24,6 +24,10 @@
   @return color.adjust(mc($color-name, $color-variant), $alpha: -1 * $amount);
 }
 
+// All defaults are declared on `body`, with theme and platform variants wrapped in `:where()` so
+// that every declaration below - including nested `.xh-mobile.xh-dark` variants - carries the
+// specificity of a bare `body` selector. An app override on `body.xh-app` therefore wins in every
+// theme/platform combination. Do not add variant blocks here without `:where()`.
 body {
 
   //------------------------
@@ -51,7 +55,7 @@ body {
   --xh-yellow: #{mc('yellow', '800')};
   --xh-yellow-light: #{mc('yellow', '50')};
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-black: hsl(202, 17%, 9%);
     --xh-gray-dark: #{mc('grey', '900')};
     --xh-green: hsl(120, 100%, 40%);
@@ -59,7 +63,7 @@ body {
     --xh-red: hsl(357, 100%, 65%);
   }
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-accent-color: var(--xh-blue-light);
     --xh-list-select-color: var(--xh-blue-light);
   }
@@ -115,7 +119,7 @@ body {
   --xh-intent-danger-l4: 85%;
   --xh-intent-danger-l5: 95%;
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     // Dark theme Neutral intent
     --xh-intent-neutral-h: 180;
     --xh-intent-neutral-s: 10%;
@@ -205,7 +209,7 @@ body {
   --xh-intent-warning-text-color: var(--xh-intent-warning);
   --xh-intent-danger-text-color: var(--xh-intent-danger);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-intent-primary-text-color: var(--xh-intent-primary-lighter);
     --xh-intent-success-text-color: hsl(123, 60%, 55%);
     --xh-intent-warning-text-color: var(--xh-intent-warning-lighter);
@@ -227,18 +231,18 @@ body {
   --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
   --xh-appbar-user-profile-hover-color: var(--xh-orange);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-appbar-border-color: #{mc('blue-grey', '700')};
     --xh-appbar-title-color: #{mc('blue-grey', '50')};
   }
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-appbar-bg: #{mc('blue-grey', '600')};
     --xh-appbar-color: #{mc('blue-grey', '50')};
     --xh-appbar-title-color: var(--xh-appbar-color);
     --xh-appbar-title-font-size: 19;
 
-    &.xh-dark {
+    &:where(.xh-dark) {
       --xh-appbar-bg: #{mc('blue-grey', '700')};
     }
   }
@@ -250,7 +254,7 @@ body {
   // Light mode uses neutral gray + higher opacity for stronger masking relative to `--xh-mask-bg`.
   --xh-backdrop-bg: rgb(128, 128, 128, 0.6);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     // Dark mode applies higher opacity only.
     --xh-backdrop-bg: rgb(0, 0, 0, 0.6);
   }
@@ -268,7 +272,7 @@ body {
   // Alternate background highlight color for secondary emphasis.
   --xh-bg-highlight-alt: hsl(45, 100%, 70%);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-bg: var(--xh-black);
     --xh-bg-alt: var(--xh-blue-gray-dark);
     --xh-bg-highlight: hsl(200, 40%, 20%);
@@ -297,7 +301,7 @@ body {
   --xh-border-width: 1;
   --xh-border-width-px: calc(var(--xh-border-width) * 1px);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-border-color: #{mc('blue-grey', '800')};
   }
 
@@ -331,7 +335,7 @@ body {
   --xh-button-active-text-color: var(--xh-button-text-color);
   --xh-button-active-box-shadow: #{inset 0 0 0 1px rgba(16, 22, 26, 0.2), inset 0 1px 2px rgba(16, 22, 26, 0.2)};
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-button-bg: hsl(200, 8%, 22%);
     --xh-button-bg-darker: hsl(200, 8%, 18%);
     --xh-button-bg-darkest: hsl(200, 8%, 14%);
@@ -346,7 +350,7 @@ body {
     --xh-button-disabled-opacity: 0.3;
   }
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-button-active-bg: #{color.mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)};
     --xh-button-active-text-color: white;
     --xh-button-bg: #{mc('blue-grey', '600')};
@@ -368,7 +372,7 @@ body {
     // Dark theme pressed bg for 'standard'
     --xh-button-bg-lightest: #{mc('blue-grey', '400')};
 
-    &.xh-dark {
+    &:where(.xh-dark) {
       --xh-button-active-bg: #{color.mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)};
     }
   }
@@ -408,7 +412,7 @@ body {
   --xh-menu-heading-font-weight: 600;
   --xh-menu-heading-text-color: var(--xh-text-color);
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-menu-item-height-px: 40px;
   }
 
@@ -456,7 +460,7 @@ body {
   --xh-font-size-small: calc(var(--xh-font-size) * var(--xh-font-size-small-mult));
   --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-font-size: 16;
     // Important: Do not override to be less than 16px as this will make Safari auto-zoom on focus
     --xh-mobile-input-font-size: var(--xh-font-size);
@@ -537,7 +541,7 @@ body {
   --xh-input-intent-warning-box-shadow: #{inset 0 0 0 1px var(--xh-intent-warning-text-color), inset 0 1px 1px var(--xh-intent-warning-text-color)};
   --xh-input-intent-danger-box-shadow: #{inset 0 0 0 1px var(--xh-intent-danger-text-color), inset 0 1px 1px var(--xh-intent-danger-text-color)};
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-form-field-box-shadow-color-top: #{mc-trans('blue-grey', '800', 0.15)};
     --xh-form-field-box-shadow-color-bottom: #{mc-trans('blue-grey', '800', 0.2)};
   }
@@ -651,7 +655,7 @@ body {
   --xh-grid-filter-popover-width-px: 280px;
 
   // Dark Grid
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-grid-bg-hover: hsl(200, 50%, 22%);
     --xh-grid-bg-odd: hsl(200, 26%, 11%);
     --xh-grid-border-color: hsl(186, 11%, 18%);
@@ -670,7 +674,7 @@ body {
   }
 
   // Mobile Grid
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-grid-font-size: 14;
     --xh-grid-compact-font-size: 13;
   }
@@ -688,7 +692,7 @@ body {
   --xh-input-placeholder-text-color: rgb(175, 183, 191);
   --xh-input-disabled-checkmark-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(92, 112, 128, 0.5)'/%3e%3c/svg%3e");
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-input-bg: rgba(0, 0, 0, 0.3); // Allow some blending w/backgrounds - e.g. in dialog.
     --xh-input-disabled-bg: rgba(57, 75, 89, 0.5); // This and below currently matched from Blueprint defaults
     --xh-input-disabled-text-color: rgba(191, 204, 214, 0.5);
@@ -707,7 +711,7 @@ body {
   --xh-segmented-control-pad: 3;
   --xh-segmented-control-pad-px: calc(var(--xh-segmented-control-pad) * 1px);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     // Tray bg follows --xh-bg-alt in both themes - no dark-mode override needed.
     --xh-segmented-control-selected-bg: #{mc('blue-grey', '700')};
   }
@@ -739,7 +743,7 @@ body {
   // muted tab labels on grey and lose contrast. In dark theme a distinct fill reads well.
   --xh-date-range-picker-rail-bg: transparent;
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-date-range-picker-rail-bg: var(--xh-tbar-bg);
   }
 
@@ -755,7 +759,7 @@ body {
   --xh-loading-indicator-color: #{mc('blue-grey', '600')};
   --xh-loading-indicator-spinner-color: var(--xh-loading-indicator-color);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-mask-bg: rgba(0, 0, 0, 0.4);
     --xh-loading-indicator-bg: #{mc('blue-grey', '700')};
     --xh-loading-indicator-color: #{mc('blue-grey', '200')};
@@ -766,11 +770,11 @@ body {
   // Popovers - e.g. mobile app menu.
   // Applicable to mobile only at this time
   //---------------------------------------
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-popover-backdrop-bg: rgb(128, 128, 128, 0.2);
     --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.4)};
 
-    &.xh-dark {
+    &:where(.xh-dark) {
       --xh-popover-backdrop-bg: rgb(0, 0, 0, 0.2);
       --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.7)};
     }
@@ -809,11 +813,11 @@ body {
   --xh-panel-title-font-size-px: calc(var(--xh-panel-title-font-size) * 1px);
   --xh-panel-title-text-color: var(--xh-title-text-color);
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-panel-title-bg: #{mc('blue-grey', '100')};
     --xh-panel-title-text-color: #{mc('blue-grey', '800')};
 
-    &.xh-dark {
+    &:where(.xh-dark) {
       --xh-panel-title-bg: #{mc('blue-grey', '900')};
       --xh-panel-title-text-color: #{mc('blue-grey', '50')};
     }
@@ -832,7 +836,7 @@ body {
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--xh-title-text-color);
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-popup-border-width: 2;
   }
 
@@ -848,7 +852,7 @@ body {
   --xh-resizable-size: 8;
   --xh-resizable-size-px: calc(var(--xh-resizable-size) * 1px);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-resizable-bg: #{mc('blue-grey', '800')};
     --xh-resizable-border-color: #{mc('blue-grey', '900')};
     --xh-resizable-button-bg: rgba(255, 255, 255, 0.08);
@@ -863,7 +867,7 @@ body {
   --xh-scrollbar-thumb: #{mc('blue-grey', '300')};
   --xh-scrollbar-size-px: 10px;
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-scrollbar-bg: var(--xh-black);
     --xh-scrollbar-thumb: #{mc('blue-grey', '900')};
   }
@@ -874,7 +878,7 @@ body {
   //------------------------
   --xh-spinner-color: #{mc('blue-grey', '400')};
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-spinner-color: var(--xh-blue-gray);
   }
 
@@ -905,7 +909,7 @@ body {
   --xh-tab-switcher-vertical-item-font-weight: 500;
   --xh-tab-switcher-vertical-item-active-font-weight: 600;
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-tab-active-text-color: var(--xh-intent-primary-lighter);
   }
 
@@ -924,7 +928,7 @@ body {
   // Muted/secondary text color for labels, placeholders, and de-emphasized content.
   --xh-text-color-muted: var(--xh-gray);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-text-color: white;
     --xh-text-color-accent: var(--xh-orange);
     --xh-text-color-highlight: white;
@@ -951,7 +955,7 @@ body {
   --xh-title-compact-height: 28;
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     --xh-title-font-size: var(--xh-font-size);
   }
 
@@ -975,18 +979,18 @@ body {
   --xh-tbar-compact-min-size-px: calc(var(--xh-tbar-compact-min-size) * 1px);
   --xh-tbar-compact-item-height-px: calc(var(--xh-tbar-compact-min-size-px) - 4px);
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-tbar-bg: #{mc('blue-grey', '900')};
     --xh-tbar-border-color: #{mc('blue-grey', '800')};
     --xh-tbar-separator-color: #{mc('blue-grey', '600')};
   }
 
-  &.xh-mobile {
+  &:where(.xh-mobile) {
     // Larger toolbars on mobile to account for relatively larger inputs that can be nested within them.
     --xh-tbar-min-size: 44;
     --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
 
-    &.xh-dark {
+    &:where(.xh-dark) {
       --xh-tbar-bg: #{mc('blue-grey', '900')};
     }
   }
@@ -994,7 +998,7 @@ body {
   //------------------------
   // Viewport
   //------------------------
-    &.xh-mobile {
+    &:where(.xh-mobile) {
       // Customize the background color of "unreachable" safe areas on the phone - i.e. the space
       // we reserve (via padding on .xh-viewport) for the iOS task switcher. Will also show through
       // on left/right letterboxing when in landscape mode. Default to black to have these areas
@@ -1008,7 +1012,7 @@ body {
   //------------------------
   --xh-dash-canvas-grid-cell-color: #{mc-muted('blue-grey', '50', 0%, 4%)};
 
-  &.xh-dark {
+  &:where(.xh-dark) {
     --xh-dash-canvas-grid-cell-color: hsl(202, 17%, 8%);
   }
 }
