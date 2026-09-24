@@ -173,7 +173,7 @@
             "mcpCategory": "package",
             "viewerCategory": "utilities",
             "description": "Number, date, and miscellaneous formatting for grids and display.",
-            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "ledger", "colorSpec", "column renderer", "currency", "auto-precision"]
+            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "ledger", "colorSpec", "column renderer", "currency", "auto-precision", "localization", "locale", "i18n"]
         },
         {
             "id": "appcontainer/README.md",

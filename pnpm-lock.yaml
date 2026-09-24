@@ -244,6 +244,9 @@ importers:
       core-js:
         specifier: ^3.50.0
         version: 3.50.0
+      date-fns:
+        specifier: ^4.4.0
+        version: 4.4.0
       dompurify:
         specifier: ^3.4.15
         version: 3.4.15
