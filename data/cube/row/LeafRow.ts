@@ -15,6 +15,22 @@ import {BaseRow} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
+ * Accumulates the effects of value-only leaf updates across a View - see
+ * {@link LeafRow.applyLeafDataUpdate}.
+ */
+export interface LeafUpdateChanges {
+    /** Data objects of every row rewritten by the update - leaves and their ancestors alike. */
+    rows: Set<ViewRowData>;
+    /**
+     * Names of every field changed by the update. Collected at the leaves only, which suffices
+     * because this path runs only with simple aggregators and no derived fields - a parent then
+     * rewrites a field only in response to a child update on that same field. See
+     * {@link View.aggregatorsAreSimple}.
+     */
+    fields: Set<string>;
+}
+
+/**
  * Row within a dataset produced by a Cube or View representing leaf-level data. These rows have a
  * 1-1 relationship with the source records loaded into the Cube's internal store - i.e. they are
  * not computed aggregates.
@@ -52,21 +68,13 @@ export abstract class LeafRow extends BaseRow {
     }
 
     /**
-     * Adopt an updated source record, diffing the given fields against this leaf's current data.
-     *
-     * @param newRec - the updated record.
-     * @param fields - queried fields to diff. Narrowed by the View to those its source reports
-     *      changed, when known - otherwise all queried fields.
-     * @param updatedRowDatas - accumulates the data objects of every row changed by the update.
-     * @param changedFields - accumulates the names of every field changed on any leaf, if provided.
      * @param propagate - false to skip adjusting ancestor aggregates, when the caller will
      *      re-aggregate them from scratch regardless - see View incremental leaf population.
      */
     applyLeafDataUpdate(
         newRec: StoreRecord,
-        fields: CubeField[],
-        updatedRowDatas: Set<PlainObject>,
-        changedFields: Set<string> = null,
+        checkFields: CubeField[],
+        changed: LeafUpdateChanges,
         propagate: boolean = true
     ) {
         this.cubeRecord = newRec;
@@ -75,22 +83,22 @@ export abstract class LeafRow extends BaseRow {
             updates = [];
 
         // 1) Calculate diff.
-        fields.forEach(field => {
+        checkFields.forEach(field => {
             const name = field.name,
                 oldValue = data[name],
                 newValue = newData[name];
             if (oldValue !== newValue) {
                 updates.push(new RowUpdate(field, oldValue, newValue));
-                changedFields?.add(name);
+                changed.fields.add(name);
             }
         });
 
         // 2) Apply new values to our data, as per subclass strategy.
-        this.applyUpdatedData(updates, newData, updatedRowDatas);
+        this.applyUpdatedData(updates, newData, changed.rows);
 
         // 3) Propagate any updates to ancestors and consumers.
         if (propagate && !isEmpty(updates)) {
-            this.parent?.applyDataUpdate(updates, updatedRowDatas);
+            this.parent?.applyDataUpdate(updates, changed.rows);
         }
     }
 

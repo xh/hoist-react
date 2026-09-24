@@ -299,12 +299,6 @@ export interface StoreChangeLog {
     add?: StoreRecord[];
     remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
-
-    /**
-     * As supplied by the applied {@link StoreTransaction.changedFields}, when the transaction
-     * changed record values only - i.e. it added or removed nothing. See
-     * {@link RecordSetDelta.changedFields} for the resulting contract.
-     */
     changedFields?: Set<string>;
 }
 

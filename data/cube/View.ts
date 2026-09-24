@@ -30,7 +30,7 @@ import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
-import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
+import {ExposedLeafRow, HiddenLeafRow, LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
 import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
@@ -99,8 +99,8 @@ interface LeafDelta {
     add: StoreRecord[];
     /** Leaves leaving the view - their records removed from the cube, or no longer passing. */
     remove: LeafRow[];
-    /** See {@link RecordSetDelta.changedFields}. */
-    changedFields: Set<string>;
+    /** Queried fields to diff on updated leaves - see {@link RecordSetDelta.changedFields}. */
+    checkFields: CubeField[];
 }
 
 /**
@@ -423,27 +423,24 @@ export class View
     // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
     private dataOnlyUpdate(delta: LeafDelta, start: number) {
         const {_leafMap, stores} = this,
-            fields = this.getDiffFields(delta.changedFields),
-            updatedRowDatas = new Set<ViewRowData>(),
-            changedFields = new Set<string>();
+            {update, checkFields} = delta,
+            changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
-        delta.update.forEach(rec => {
-            _leafMap.get(rec.id).applyLeafDataUpdate(rec, fields, updatedRowDatas, changedFields);
+        update.forEach(rec => {
+            _leafMap.get(rec.id).applyLeafDataUpdate(rec, checkFields, changed);
         });
 
-        updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
+        changed.rows.forEach(rowData => this.assignDigest(rowData));
 
         this.createAggregationContext();
 
         stores.forEach(store => {
             const recordUpdates = [];
-            updatedRowDatas.forEach(rowData => {
+            changed.rows.forEach(rowData => {
                 if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
-            // Parents only rewrite fields reported changed by leaves, so the leaf-level union
-            // covers every value written - and this path never touches structure.
-            store.updateData({update: recordUpdates, changedFields});
+            store.updateData({update: recordUpdates, changedFields: changed.fields});
         });
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);
@@ -454,9 +451,8 @@ export class View
     // over its new children. Compare `fullUpdate`, which re-filters and regenerates everything.
     private leafPopulationUpdate(delta: LeafDelta, start: number) {
         const {_leafMap, _rowCache, _rootRow, query, stores} = this,
-            {update, add, remove} = delta,
-            fields = this.getDiffFields(delta.changedFields),
-            updatedRowDatas = new Set<ViewRowData>(),
+            {update, add, remove, checkFields} = delta,
+            changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()},
             wasEmpty = _leafMap.size === 0;
 
         // `_records` left stale by design, as for dataOnlyUpdate - a leaves-only view never reads
@@ -475,7 +471,7 @@ export class View
         // 2) Updated leaves adopt their new data without propagating - the root re-aggregates
         // from scratch below regardless.
         update.forEach(rec => {
-            _leafMap.get(rec.id).applyLeafDataUpdate(rec, fields, updatedRowDatas, null, false);
+            _leafMap.get(rec.id).applyLeafDataUpdate(rec, checkFields, changed, false);
         });
 
         // 3) Entering leaves are always minted anew - a record enters via a new instance, which no
@@ -487,7 +483,7 @@ export class View
             return leaf;
         });
 
-        updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
+        changed.rows.forEach(rowData => this.assignDigest(rowData));
 
         // 4) Rewire and re-aggregate the root over its new children, then republish rows via the
         // same visibility logic as a full generation.
@@ -495,7 +491,7 @@ export class View
             const children = [..._rootRow.children.filter(it => !leaving.has(it)), ...entering],
                 prevDigest = _rootRow.data.cubeRowDigest;
             _rootRow.reuse(children, this._rowDigest);
-            if (_rootRow.data.cubeRowDigest !== prevDigest) updatedRowDatas.add(_rootRow.data);
+            if (_rootRow.data.cubeRowDigest !== prevDigest) changed.rows.add(_rootRow.data);
             this._rowDatas = [_rootRow].flatMap(it => it.getVisibleDatas());
         } else {
             this._rowDatas = query.includeLeaves
@@ -515,7 +511,7 @@ export class View
                 // Leaves load as children of the root, unless the store adopts it as its summary.
                 const parentId = _rootRow && !store.loadRootAsSummary ? _rootRow.id : null,
                     recordUpdates = [];
-                updatedRowDatas.forEach(rowData => {
+                changed.rows.forEach(rowData => {
                     if (store.getById(rowData.id)) recordUpdates.push(rowData);
                 });
                 store.updateData({
@@ -714,7 +710,7 @@ export class View
     // in place: aggregations are complex, dimension or bucket values moved, or leaves would enter
     // or leave a view with grouped rows (see `supportsIncrementalLeafChanges`).
     private getLeafDelta(t: RecordSetDelta): LeafDelta | false {
-        if (!t) return {update: [], add: [], remove: [], changedFields: null};
+        if (!t) return {update: [], add: [], remove: [], checkFields: []};
         if (!this.aggregatorsAreSimple) return false;
 
         const {_leafMap, query} = this,
@@ -748,7 +744,12 @@ export class View
         if ((add.length || remove.length) && !this.supportsIncrementalLeafChanges) return false;
         if (this.hasDimOrBucketUpdates(update)) return false;
 
-        return {update, add, remove, changedFields: t.changedFields ?? null};
+        // A producer supplying changedFields asserts no field outside the set moved.
+        const {changedFields} = t,
+            checkFields = changedFields
+                ? this.fields.filter(it => changedFields.has(it.name))
+                : this.fields;
+        return {update, add, remove, checkFields};
     }
 
     // Changes to dimension or bucket field values on leaves already in the view would require
@@ -781,18 +782,6 @@ export class View
     get supportsIncrementalLeafChanges(): boolean {
         const {dimensions, bucketSpecFn, includeLeaves} = this.query;
         return isEmpty(dimensions) && !(bucketSpecFn && includeLeaves);
-    }
-
-    // Fields to diff on updated leaves - narrowed to those the delta reports changed, when known.
-    // A producer supplying changedFields asserts no field outside the set moved.
-    private getDiffFields(changedFields: Set<string>): CubeField[] {
-        if (!changedFields) return this.fields;
-        const ret = [];
-        changedFields.forEach(name => {
-            const field = this._fieldsByName.get(name);
-            if (field) ret.push(field);
-        });
-        return ret;
     }
 
     private newLeafRow(rec: StoreRecord): LeafRow {

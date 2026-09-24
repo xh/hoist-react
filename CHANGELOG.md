@@ -128,9 +128,9 @@
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
   `ClipboardButton` rather than a true menu item. The function also now returns a proper `MenuItem`
   config and takes a `ClipboardMenuItemSpec`.
-* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string                               
-  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted                    
-  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is                                
+* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string
+  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted
+  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is
   constructed, so `Field.defaultValue` and record data always hold the typed value.
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
@@ -141,8 +141,8 @@
   walking their entire subtree of leaves, making views with averaged fields as cheap to build,
   regroup and update as those with `SUM` fields.
 * Cube `View`s now diff only the fields a `Cube.updateDataAsync()` transaction declares via
-  `StoreTransaction.changedFields` when applying value-only updates to their leaves, rather than
-  every queried field. `StoreChangeLog` carries the set through for such transactions.
+  `StoreTransaction.changedFields` rather than every queried field. `StoreChangeLog` carries the
+  set through for such transactions.
 * Cube `View`s with no `dimensions` now add and remove leaves in place as records enter or leave
   the query `filter`, re-aggregating the root over its new children, where previously any record
   crossing the filter triggered a full rebuild. Makes `query.filter` viable for large, fast-ticking
