@@ -19,9 +19,15 @@ export class SumStrictAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        const {oldValue, newValue} = update;
+        const {oldValue, newValue, leafChange} = update;
+        // A leaving null may have been the only one - re-aggregate to find out.
+        if (leafChange === 'remove') {
+            return currAgg == null
+                ? super.replace(rows, currAgg, update, context)
+                : currAgg - oldValue;
+        }
         if (newValue == null) return null;
         if (currAgg == null) return super.replace(rows, currAgg, update, context);
-        return currAgg - oldValue + newValue;
+        return currAgg - (oldValue ?? 0) + newValue;
     }
 }

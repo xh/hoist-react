@@ -156,6 +156,8 @@ Rules to observe:
 * **Override `replace()` only if you can keep state consistent** with the value you return. The
   inherited implementation re-aggregates from direct children, which is correct and already cheap;
   see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
+  An override must also handle a leaf joining or leaving, flagged by `RowUpdate.leafChange` with a
+  null old or new value - or delegate to `super` for those.
 * **Override `dependsOnChildrenOnly` to return false if the aggregate reads any field other than
   its own**, as the weighted average above reads `qty`. A View whose aggregators all depend on
   their children only applies a record update incrementally, re-aggregating a field up the
@@ -271,6 +273,15 @@ view.setFilter({field: 'year', op: '=', value: 2025});
 Query updates are highly incremental - the View caches its generated rows and republishes
 unchanged rows (and their record-reuse digests) across regrouping, refiltering, and field
 changes, so connected stores and grids only process rows that actually changed.
+
+Data updates to a connected View are incremental too. Value-only changes to records already in
+the View adjust its aggregates in place, diffing only the fields the source transaction declared
+via `StoreTransaction.changedFields` when it supplied them. A View with no `dimensions` - leaves
+only, with or without `includeRoot` - also adds and removes leaves in place as records enter or
+leave its `filter`, adjusting the root's aggregates for each leaf joining or leaving rather than
+rebuilding. That makes `query.filter` viable for large, fast-ticking leaves-only Views filtered on the very fields
+that tick. Grouped Views still regenerate (reusing unchanged rows) when leaves enter or leave, or
+when a dimension value changes.
 
 **One-shot queries with `executeQuery`:**
 

@@ -18,6 +18,7 @@ export class LeafCountAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        return currAgg;
+        const {leafChange} = update;
+        return leafChange === 'add' ? currAgg + 1 : leafChange === 'remove' ? currAgg - 1 : currAgg;
     }
 }

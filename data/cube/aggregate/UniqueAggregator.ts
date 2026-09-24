@@ -16,7 +16,9 @@ export class UniqueAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        const {newValue, field} = update;
+        const {newValue, field, leafChange} = update;
+        // Rows that all agreed still do without one of them - otherwise they may agree now.
+        if (leafChange === 'remove') return currAgg ?? this.aggregate(rows, field.name);
         if (rows.length === 1 || isEqual(newValue, currAgg)) return newValue;
         return this.aggregate(rows, field.name);
     }

@@ -45,14 +45,27 @@ export class AverageStrictAggregator extends Aggregator {
 
     override replace(rows, currAgg, update, context) {
         const state = context.getAggState(),
-            {leafOldValue, leafNewValue} = update;
+            {leafOldValue, leafNewValue, leafChange} = update;
 
-        // `hasNull` is not a running total - a null arriving or clearing needs a re-scan.
-        if (!state || leafOldValue == null || leafNewValue == null) {
+        // `hasNull` is not a running total - a null arriving or clearing needs a re-scan, except
+        // for a null leaf joining, which simply sets it.
+        if (
+            !state ||
+            (leafOldValue == null && leafChange !== 'add') ||
+            (leafNewValue == null && leafChange !== 'remove')
+        ) {
             return super.replace(rows, currAgg, update, context);
         }
 
-        state.total += leafNewValue - leafOldValue;
+        if (leafChange === 'add') {
+            state.total += leafNewValue;
+            state.count++;
+        } else if (leafChange === 'remove') {
+            state.total -= leafOldValue;
+            state.count--;
+        } else {
+            state.total += leafNewValue - leafOldValue;
+        }
 
         const {total, count, hasNull} = state;
         return hasNull || !count ? null : total / count;

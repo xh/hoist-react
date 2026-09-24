@@ -27,8 +27,8 @@ export class ViewDiagnostics extends BaseDiagnostics<View> {
     }
 
     @action
-    noteUpdate(type: ViewOp['type'], start: number) {
-        this.update = this.note('update', this.update, type, start);
+    noteUpdate(type: ViewOp['type'], start: number, counts?: ViewRowCounts) {
+        this.update = this.note('update', this.update, type, start, counts);
     }
 
     @action
@@ -47,9 +47,10 @@ export class ViewDiagnostics extends BaseDiagnostics<View> {
         kind: string,
         stats: ViewOpStats,
         type: ViewOp['type'],
-        start: number
+        start: number,
+        counts?: ViewRowCounts
     ): ViewOpStats {
-        const ret = this.accumulate(stats, type, start);
+        const ret = this.accumulate(stats, type, start, counts);
         if (ret !== stats)
             this.logOp(
                 kind,
@@ -59,20 +60,27 @@ export class ViewDiagnostics extends BaseDiagnostics<View> {
         return ret;
     }
 
-    // Row counts come from the last generation - without one of its own, an op left the row set as
-    // it found it, and every row was in effect reused.
-    private accumulate(stats: ViewOpStats, type: ViewOp['type'], start: number): ViewOpStats {
+    // Row counts come from the last generation unless the op supplies its own - without either, an
+    // op left the row set as it found it, and every row was in effect reused.
+    private accumulate(
+        stats: ViewOpStats,
+        type: ViewOp['type'],
+        start: number,
+        counts: ViewRowCounts
+    ): ViewOpStats {
         const {reused, rebuilt, created} = this.owner._rowCache,
-            total = reused + rebuilt + created,
-            op: ViewOp = {
-                type,
-                ...(type === 'fullUpdate'
-                    ? {reused, rebuilt, created}
-                    : {reused: total, rebuilt: 0, created: 0}),
-                total,
-                elapsed: performance.now() - start,
-                timestamp: Date.now()
-            };
+            genTotal = reused + rebuilt + created;
+        counts ??=
+            type === 'fullUpdate'
+                ? {reused, rebuilt, created}
+                : {reused: genTotal, rebuilt: 0, created: 0};
+        const op: ViewOp = {
+            type,
+            ...counts,
+            total: counts.reused + counts.rebuilt + counts.created,
+            elapsed: performance.now() - start,
+            timestamp: Date.now()
+        };
         return {last: op, count: stats.count + 1, elapsed: stats.elapsed + op.elapsed};
     }
 
@@ -87,11 +95,18 @@ export interface ViewOpStats {
     elapsed: number;
 }
 
-export interface ViewOp {
-    type: 'dataOnly' | 'fullUpdate' | 'unchanged';
+export interface ViewRowCounts {
     reused: number;
     rebuilt: number;
     created: number;
+}
+
+export interface ViewOp extends ViewRowCounts {
+    /**
+     * `fullUpdate` regenerates all rows, `dataOnly` applies value changes to existing rows, and
+     * `leafPopulation` adds and removes leaves in a leaves-only view in place - see View.
+     */
+    type: 'dataOnly' | 'leafPopulation' | 'fullUpdate' | 'unchanged';
     total: number;
     elapsed: number;
     timestamp: number;

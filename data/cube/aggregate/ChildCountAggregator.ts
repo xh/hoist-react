@@ -14,6 +14,6 @@ export class ChildCountAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        return currAgg;
+        return rows.length;
     }
 }

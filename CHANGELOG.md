@@ -143,6 +143,10 @@
 * Cube `View`s now diff only the fields a `Cube.updateDataAsync()` transaction declares via
   `StoreTransaction.changedFields` rather than every queried field. `StoreChangeLog` carries the
   set through for such transactions.
+* Cube `View`s with no `dimensions` now add and remove leaves in place as records enter or leave
+  the query `filter`, adjusting the root's aggregates by delta, where previously any record
+  crossing the filter triggered a full rebuild. Makes `query.filter` viable for large, fast-ticking
+  leaves-only views filtered on the fields that tick. Grouped views still rebuild in that case.
 * Model lookup now subscribes only to slots that can affect resolution - the matched slot, or
   nullish accessor candidates if no match. Computed getters and primitive observables are
   excluded. Tighter than the prior walk, which subscribed indiscriminately and triggered
@@ -161,6 +165,9 @@
   typed as `GridContextMenuItemLike`.
 * Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
   `@xh/hoist/utils/js` entry point) instead.
+* Added `RowUpdate.leafChange`, set when a leaf joins or leaves an aggregation rather than changing
+  value. Custom `Aggregator.replace()` overrides that count leaves or treat nulls as significant
+  must check it.
 * Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
   implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks - these previously typed
   their rows with unexported internal classes. `BucketSpec.bucketFn` now takes a `ViewRow` as
