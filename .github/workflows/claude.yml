@@ -46,7 +46,7 @@ jobs:
         id: claude
         # Pinned to the commit SHA of the v1 tag at time of pinning.
         # Bumped by Dependabot when newer versions of the action are released.
-        uses: anthropics/claude-code-action@19dda84776b3518d98b8798e591daee763049ed3 # v1
+        uses: anthropics/claude-code-action@7b0b255830a1fab6e602658672acad11c12d841d # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 

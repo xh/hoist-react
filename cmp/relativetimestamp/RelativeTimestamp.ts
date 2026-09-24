@@ -15,7 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable, computedStruct} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
@@ -108,7 +108,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
 class RelativeTimestampLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @observable display: string = '';
+    @observable accessor display: string = '';
 
     model: HoistModel;
 
@@ -125,14 +125,9 @@ class RelativeTimestampLocalModel extends HoistModel {
         return withDefault(timestamp, model && bind ? model[bind] : null);
     }
 
-    @computed.struct
+    @computedStruct
     get options(): RelativeTimestampOptions {
         return this.componentProps as RelativeTimestampProps;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

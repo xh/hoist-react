@@ -9,7 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {elementFactory, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -92,11 +92,6 @@ class IntentInputModel extends HoistInputModel {
     get enabledButtons(): HTMLButtonElement[] {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
         return filter(btns, (b: HTMLButtonElement) => !b.disabled) as HTMLButtonElement[];
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     onSwatchClick = (intent: Intent) => {

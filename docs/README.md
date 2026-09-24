@@ -41,6 +41,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
 | Add tracing, metrics, or activity tracking | [Telemetry & Observability](./telemetry.md)                                                                                         |
 | Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
+| Understand localization / locale support | [`/format/` Localization](../format/README.md#localization) |
 | Understand app lifecycle (startup sequence) | [Lifecycle: App](./lifecycle-app.md)                                                                                |
 | Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md)                                                  |
 | Add authentication (OAuth, login) | [Authentication](./authentication.md)                                                                               |
@@ -98,11 +99,11 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/format/`](../format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, ledger, colorSpec, auto-precision |
+| [`/format/`](../format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, ledger, colorSpec, auto-precision, localization |
 | [`/appcontainer/`](../appcontainer/README.md) | Application shell — lifecycle, dialogs, toasts, banners, theming, and environment | AppContainerModel, MessageSpec, ToastSpec, BannerSpec, ExceptionDialogModel, ThemeModel, RouterModel, AppOption |
 | [`/utils/`](../utils/README.md) | Async, datetime, JS, and React utility functions used throughout hoist-react | Timer, LocalDate, forEachAsync, decorators (@debounced, @computeOnce, @sharePendingPromise), logging, hooks |
 | [`/promise/`](../promise/README.md) | Promise prototype extensions for error handling, tracking, masking, and timeouts | catchDefault, catchWhen, track, linkTo, timeout, thenAction, wait, waitFor, tap |
-| [`/mobx/`](../mobx/README.md) | MobX integration layer — re-exports, action enforcement, and @bindable decorator | @bindable, @bindable.ref, makeObservable, observer, action, observable, computed, enforceActions |
+| [`/mobx/`](../mobx/README.md) | MobX integration layer — re-exports, action enforcement, and @bindable decorator | @bindable, @bindableRef, makeObservable, observer, action, observable, computed, enforceActions |
 
 ### Concepts
 

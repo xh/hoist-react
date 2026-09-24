@@ -82,7 +82,7 @@ export type {
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
 export {themeBalham} from 'ag-grid-community';
 
-const MIN_VERSION = '36.0.0';
+const MIN_VERSION = '36.2.0';
 const MAX_VERSION = '36.*.*';
 
 /**

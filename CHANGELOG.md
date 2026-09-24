@@ -12,13 +12,29 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW, ag-Grid upgrade, scheduled removals)
+### 💥 Breaking Changes (upgrade difficulty: 🟡 MEDIUM - TC39 decorators, ag-Grid 36, removals)
+
+* **Migrated to TC39 Stage 3 (2023-11) decorators**, retiring `experimentalDecorators`. Drops
+  `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
+  `accessor` to `@observable`/`@bindable` fields and run the codemods in `docs/codemod/v88/`.
+  Requires `@xh/hoist-dev-utils >= 16` - upgrade both packages together, as a legacy-decorator app
+  built against the new dev-utils silently loses every `@observable` and `@bindable` field.
+    * `@observable accessor` fields are now prototype getter/setters rather than own enumerable
+      properties, which changes `Object.keys` and spread (`{...model}`) over model instances.
+    * `@persist` must now be applied *after* the MobX decorator (`@bindable` then `@persist`).
+      Reversed, it silently no-ops and the field stops persisting - no error, no type error.
+      Decorator order was irrelevant under legacy decorators, and the codemods do not reorder
+      them, so audit every `@persist` in app code by hand.
+* Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
+  exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
+  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, etc. Hoist's
+  `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump to `7.x`.
+  Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
-      `ag-grid-enterprise` dependencies to `36.x`.
+      `ag-grid-enterprise` dependencies to `36.2` or later.
     * AG Grid 36 restructures the grid into a single scrollable container and renames its internal
       layout classes. Apps with custom SCSS targeting AG Grid internals (e.g. `ag-floating-top`,
       `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new names, and note that
@@ -32,23 +48,21 @@
       custom CSS targeting either must retarget, using Hoist's own `.xh-ag-grid` wrapper class.
       Prefer the new `GridModel.theme` config (below) or the `--xh-grid-*` variables over CSS
       wherever they suffice.
+* Raised the `react` and `react-dom` peer dependency floor to `19.3`. Apps must bump both to
+  `^19.3.0`. React 19.3 is a compatible minor with no breaking changes of its own.
 
 * Scheduled Removals
-    * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` to start a `Runner`
-      chain instead. Note that `TraceService.withSpan()` remains available for advanced use.
+    * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead. Note that
+      `TraceService.withSpan()` remains available for advanced use.
     * Removed the `FetchOptions.span` and `FetchOptions.loadSpec` fields, deprecated in v86. Pass a
-      `CallContextLike` as the fetch method's second argument instead - e.g.
-      `XH.fetchJson({url}, {loadSpec})`.
-    * Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use the `persistOptions()`
-      function instead.
-    * Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})` instead
-      as the popover behavior is a built-in mode of `FilterChooser`.
+      `CallContextLike` as a second argument - e.g. `XH.fetchJson({url}, {loadSpec})`.
+    * Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use `persistOptions()`
+      instead.
+    * Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})`
+      instead as the popover behavior is a built-in mode of `FilterChooser`.
     * Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
-      `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use the
-      un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on. For the
-      more generically named specs, consider
-      `import * as Col from '@xh/hoist/cmp/grid/columns'` and `Col.number` - the convention already
-      used across the Hoist Admin Console.
+      `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use
+      the un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on.
 
 ### 🎁 New Features
 
@@ -57,17 +71,9 @@
   standard styling. Overrides are applied on top of Hoist's own theme, so grids keep their bindings
   to the `--xh-grid-*` variables. Also settable app-wide via `AgGridModel.defaults.theme`, which a
   per-grid `theme` merges with rather than replaces. Preferred over reaching for `agOptions.theme`.
-    * A theme is set once, at GridModel construction, and cannot be changed thereafter - each distinct
+    * A theme is set once, at GridModel construction, and cannot be changed thereafter - each
+      distinct
       set of params carries its own copy of AG Grid's generated stylesheet.
-* Added the desktop `Menu` and `MenuButton` components. `Menu` renders a menu from Hoist
-  `MenuItem` configs, `'-'` tokens, and `MenuHeading` entries. It runs each `prepareFn`, drops
-  hidden and omitted items, builds submenus, and tidies separators. `MenuButton` adds a trigger
-  button and takes `ButtonProps` directly alongside `menuItems`. As with a `ContextMenuSpec`,
-  `MenuButton` accepts `menuItems` as a function of the menu's context, called each time the menu
-  opens. The mobile `MenuButton` gains the same `context` prop and function form.
-    * Together they replace the popover and Blueprint menu that apps built by hand.  They take the
-      same input as `ContextMenu` and use the same underlying parsing.
-* `MenuItem` now supports an `active` flag, to mark the current selection within a menu.
 * Added `Column.cellFlag`, rendering a small triangular flag in a grid cell's top-right corner in
   the color of a Hoist `Intent` - a compact marker for values warranting attention. Called per
   record, returning the `Intent` to draw, or null for no flag.
@@ -84,6 +90,15 @@
   derived from their children's published values alone - e.g. a weighted average - compose from
   their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
   example.
+* Added the desktop `Menu` and `MenuButton` components. `Menu` renders a menu from Hoist
+  `MenuItem` configs, `'-'` tokens, and `MenuHeading` entries. It runs each `prepareFn`, drops
+  hidden and omitted items, builds submenus, and tidies separators. `MenuButton` adds a trigger
+  button and takes `ButtonProps` directly alongside `menuItems`. As with a `ContextMenuSpec`,
+  `MenuButton` accepts `menuItems` as a function of the menu's context, called each time the menu
+  opens. The mobile `MenuButton` gains the same `context` prop and function form.
+    * Together they replace the popover and Blueprint menu that apps built by hand. They take the
+      same input as `ContextMenu` and use the same underlying parsing.
+* `MenuItem` now supports an `active` flag, to mark the current selection within a menu.
 * Added `MenuHeading`, a non-interactive heading that labels and groups the items below it - e.g.
   `{heading: 'This Row'}`. Every menu that takes a `GridContextMenuItemLike` or `MenuItemLike`
   accepts it, so grid context menus, desktop menus and context menus, and mobile menus all support
@@ -111,9 +126,14 @@
 * Fixed the mobile `MenuButton` menu rendering a `'-'` separator as a literal hyphen. It now draws a
   slim divider.
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
-  `ClipboardButton` rather than a true menu item.  The function also now returns a proper `MenuItem`
-   config and takes a `ClipboardMenuItemSpec` in place of the poorly fitting `ClipboardButtonProps`.
-   The fixed implementation is available on mobile and desktop.
+  `ClipboardButton` rather than a true menu item. The function also now returns a proper `MenuItem`
+  config and takes a `ClipboardMenuItemSpec`.
+* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string                               
+  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted                    
+  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is                                
+  constructed, so `Field.defaultValue` and record data always hold the typed value.
+* Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
+* Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
 
 ### ⚙️ Technical
 
@@ -127,6 +147,16 @@
 * Cube `View`s now diff only the fields a `Cube.updateDataAsync()` transaction declares via
   `StoreTransaction.changedFields` when applying value-only updates to their leaves, rather than
   every queried field. `StoreChangeLog` carries the set through for such transactions.
+* Model lookup now subscribes only to slots that can affect resolution - the matched slot, or
+  nullish accessor candidates if no match. Computed getters and primitive observables are
+  excluded. Tighter than the prior walk, which subscribed indiscriminately and triggered
+  needless re-renders.
+* Misc. improvements to persistence in the Admin client.
+* Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
+  full-width horizontal scrollbar spanning all columns, so Hoist's custom implementation was
+  removed.
+* `Promise.linkTo()` no longer logs a spurious "Uncaught (in promise)" error when a linked promise
+  rejects and the caller handles the rejection.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -152,19 +182,16 @@
 
 * Grid styling moves from AgGrid.scss to AG Grid theme params, exported as `xhAgGridTheme` from
   `@xh/hoist/cmp/ag-grid`. Params remain bound to the same `--xh-grid-*` variables, so apps
-  overriding those see no change. The stylesheet retains only what params cannot express -
-  structural rules, the independent header padding token, and the per-instance `.xh-ag-grid--*`
-  modifiers, which now set the documented `--ag-*` variable for a param rather than targeting AG
-  Grid's internal DOM.
-* Added four custom properties for the new `MenuHeading` - `--xh-menu-heading-text-color`,
-  `--xh-menu-heading-font-size-px`, `--xh-menu-heading-font-weight`, and
-  `--xh-menu-heading-border`. They style headings in grid context menus, desktop menus, and mobile
-  menus, so a single override restyles all three. Blueprint's own `.bp6-menu-header` now uses the
-  same properties.
+  overriding those see no change. The stylesheet retains only what params cannot express.
+* Grid cell flag styles are now keyed by `Intent` (`.xh-cell--flag-{intent}`), with size driven by
+  the new `--xh-grid-cell-flag-size` custom property. The classes previously emitted for cell
+  validation state - `.xh-cell--invalid`, `.xh-cell--warning`, and `.xh-cell--info` - are
+  deprecated but still styled, so apps applying them directly continue to render a flag. Retarget
+  any CSS overriding these at the new class names.
 * Added `.xh-grid-tooltip-frame`, a standalone utility class carrying Hoist's standard tooltip
-  chrome - background, border, radius, padding and max-width. Hoist applies it to the tooltip
-  content it renders itself, and apps can add it to a custom (element) tooltip's own root to match.
-  Line-break handling moves alongside it to a `.xh-grid-tooltip--prewrap` modifier.
+  chrome. Hoist applies it to the tooltip content it renders itself, and apps can add it to a custom
+  (element) tooltip's own root to match. Line-break handling moves alongside it to a
+  `.xh-grid-tooltip--prewrap` modifier.
     * ⚠️The `.xh-grid-tooltip--default` and `--custom` classes have been removed. They carried
       the styling that now lives in the utility classes above, and nothing consumed them once it
       moved out. Apps with CSS targeting either should retarget `.xh-grid-tooltip`, still applied
@@ -175,12 +202,25 @@
     * ⚠️`.xh-grid-tooltip--validation` now sits on the tooltip itself rather than the message
       list inside it, making it a true modifier of `.xh-grid-tooltip`, and `--validation--single`
       is renamed `--validation-single` to match. The list carries no class of its own.
-* Grid cell flag styles are now keyed by `Intent` (`.xh-cell--flag-{intent}`), with size driven by
-  the new `--xh-grid-cell-flag-size` custom property. The classes previously emitted for cell
-  validation state - `.xh-cell--invalid`, `.xh-cell--warning`, and `.xh-cell--info` - are
-  deprecated but still styled, so apps applying them directly continue to render a flag. Retarget
-  any CSS overriding these at the new class names.
+* Added four custom properties for the new `MenuHeading` to style headings in grid context menus,
+  desktop menus, and mobile menus, so a single override restyles all three. Blueprint's own
+  `.bp6-menu-header` now uses the same properties.
 
+### 📚 Libraries
+
+* @blueprintjs/core `6.18 -> 6.20`
+* @types/react `19.2 -> 19.3`
+* @types/react-dom `19.2 -> 19.3`
+* @xh/hoist-dev-utils `15.x -> 16.x`
+* ag-grid-community `35.3 -> 36.2`
+* ag-grid-react `35.3 -> 36.2`
+* date-fns `added @ 4.4`
+* mobx `6.16 -> 7.0`
+* mobx-react-lite `4.1 -> 5.0`
+* react `19.2 -> 19.3`
+* react-dom `19.2 -> 19.3`
+* type-fest `5.9 -> 5.10`
+* zod `4.5 -> 4.6`
 
 ## 87.3.0 - 2026-09-10
 
@@ -200,23 +240,6 @@
   the toolbar, without needing its own `compact: true`.
 * Fixed `dateEditor` crashing when opening its picker on a column backed by a `localDate` field -
   the editor now defaults its `valueType` from the Store field type.
-
-### ⚙️ Technical
-
-* Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
-  full-width horizontal scrollbar spanning all columns, so Hoist's custom implementation was
-  removed.
-
-### ✨ Styles
-
-* Migrated internal grid SCSS to AG Grid 36's restructured DOM and renamed layout classes.
-* Re-bound Hoist grid/DataView styling onto AG Grid 36's inner `ag-styled-root`, which otherwise
-  shadows Hoist's wrapper bindings for cell font, grid background, `rowBorders`, and `showHover`.
-
-### 📚 Libraries
-
-* ag-grid-community `35.3 -> 36.1`
-* ag-grid-react `35.3 -> 36.1`
 
 ## 87.2.0 - 2026-09-08
 
