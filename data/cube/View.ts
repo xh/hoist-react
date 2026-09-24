@@ -404,7 +404,6 @@ export class View
     }
 
     // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
-    // Diffs only the fields the delta reports changed, when known.
     private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
         const {_leafMap, stores} = this,
             checkFields = this.getCheckFields(changedFields),
@@ -649,16 +648,9 @@ export class View
     }
 
     // Fields to diff on updated leaves - narrowed to those the delta reports changed, when known.
-    // A producer supplying changedFields asserts no field outside the set moved. Once derived
-    // fields exist, this set must also be closed over their `dependsOn` inputs.
+    // A producer supplying changedFields asserts no field outside the set moved.
     private getCheckFields(changedFields: Set<string>): CubeField[] {
-        if (!changedFields) return this.fields;
-        const ret = [];
-        changedFields.forEach(name => {
-            const field = this._fieldsByName.get(name);
-            if (field) ret.push(field);
-        });
-        return ret;
+        return changedFields ? this.fields.filter(it => changedFields.has(it.name)) : this.fields;
     }
 
     private hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
