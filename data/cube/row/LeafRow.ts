@@ -67,14 +67,6 @@ export abstract class LeafRow extends BaseRow {
         this.cubeRecord = rawRecord;
     }
 
-    /**
-     * Adopt an updated source record, diffing it against this leaf's current data.
-     *
-     * @param newRec - the updated record.
-     * @param checkFields - queried fields to diff. Narrowed by the View to those its source reports
-     *      changed, when known - otherwise all queried fields.
-     * @param changed - accumulates the rows and fields changed by this and sibling updates.
-     */
     applyLeafDataUpdate(newRec: StoreRecord, checkFields: CubeField[], changed: LeafUpdateChanges) {
         this.cubeRecord = newRec;
         const {data} = this,

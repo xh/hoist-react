@@ -406,7 +406,6 @@ export class View
     // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
     private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
         const {_leafMap, stores, fields} = this,
-            // A producer supplying changedFields asserts no field outside the set moved.
             checkFields = changedFields ? fields.filter(it => changedFields.has(it.name)) : fields,
             changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
 
