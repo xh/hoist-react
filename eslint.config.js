@@ -1,7 +1,8 @@
 const {defineConfig, globalIgnores} = require('eslint/config'),
     xhEslintConfig = require('@xh/eslint-config'),
     tsdocEslint = require('eslint-plugin-tsdoc'),
-    prettier = require('eslint-config-prettier');
+    prettier = require('eslint-config-prettier'),
+    globals = require('globals');
 
 module.exports = defineConfig([
     {
@@ -10,6 +11,10 @@ module.exports = defineConfig([
         rules: {
             'tsdoc/syntax': 'warn'
         }
+    },
+    {
+        files: ['scripts/**/*'],
+        languageOptions: {globals: globals.node}
     },
     globalIgnores([
         'build/**/*',

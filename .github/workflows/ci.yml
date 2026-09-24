@@ -57,6 +57,11 @@ jobs:
         - name: Type check
           run: pnpm typecheck
 
+        # Files copied from dependencies into the repo (e.g. public/msal-redirect-bridge.min.js)
+        # have no install or build step keeping them current - fail if any drift from the source.
+        - name: Check vendored files
+          run: pnpm check:vendored
+
         # Gates merges on a clean production-dependency audit for high and
         # critical advisories. The first, un-gated run prints lower-severity
         # findings in the step log for visibility without failing the build -

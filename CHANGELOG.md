@@ -150,6 +150,8 @@
   removed.
 * `Promise.linkTo()` no longer logs a spurious "Uncaught (in promise)" error when a linked promise
   rejects and the caller handles the rejection.
+* Updated the vendored `public/msal-redirect-bridge.min.js` from MSAL 5.11 to 5.22 to match the
+  installed `@azure/msal-browser`. Added a `check:vendored` CI step to catch future drift.
 
 ### ⚙️ Typescript API Adjustments
 
