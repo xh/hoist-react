@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -15,6 +15,7 @@ import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuI
 import {Icon} from '@xh/hoist/icon';
 import {
     menu,
+    menuDivider,
     menuItem,
     popover,
     showContextMenu,
@@ -23,7 +24,14 @@ import {
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
 import {bindableRef} from '@xh/hoist/mobx';
-import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
+import {
+    consumeEvent,
+    debounced,
+    getTestId,
+    isDisplayed,
+    TEST_ID,
+    throwIf
+} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -33,8 +41,8 @@ import {
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, isFinite} from 'lodash';
-import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
+import {compact, find, isEmpty, isFinite} from 'lodash';
+import {CSSProperties, ReactElement, ReactNode, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -96,7 +104,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
         if (!vertical && isFinite(tabMinWidth)) tabStyle.minWidth = tabMinWidth + 'px';
         if (!vertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
 
-        const items = tabs.map(tab => {
+        const tabItems = tabs.map(tab => {
             const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab,
                 testId = getTestId(props, id);
 
@@ -141,6 +149,18 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             });
         });
 
+        // Headers are non-Tab children, which Blueprint passes through to its tab list in order.
+        const items = vertical
+            ? withGroupHeaders(tabs, tabItems, (group, key) =>
+                  groupHeader({
+                      key,
+                      group,
+                      spec: find(switcherConfig.groups, {key: group}),
+                      testId: getTestId(props, `group-${group}`)
+                  })
+              )
+            : tabItems;
+
         return box({
             ...layoutProps,
             testId: props.testId,
@@ -175,11 +195,23 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 //-----------------
 // Implementation
 //-----------------
+const groupHeader = hoistCmp.factory({
+    model: false,
+    render({group, spec, testId}) {
+        return div({
+            className: 'xh-tab-switcher__group-header',
+            role: 'presentation',
+            [TEST_ID]: testId,
+            items: [spec?.icon, span(spec?.title ?? group)]
+        });
+    }
+});
+
 const overflowMenu = hoistCmp.factory<TabContainerModel>({
     render({model, tabs, vertical}) {
         if (isEmpty(tabs)) return null;
 
-        const items = tabs.map(tab => {
+        const menuItems = tabs.map(tab => {
             const {id, title: text, icon, disabled, showRemoveAction} = tab;
             return menuItem({
                 icon,
@@ -196,6 +228,15 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 })
             });
         });
+
+        const items = vertical
+            ? withGroupHeaders(tabs, menuItems, (group, key) =>
+                  menuDivider({
+                      key,
+                      title: find(model.switcherConfig.groups, {key: group})?.title ?? group
+                  })
+              )
+            : menuItems;
 
         return popover({
             popoverClassName: 'xh-tab-switcher__overflow-popover',
@@ -325,6 +366,27 @@ class TabSwitcherLocalModel extends HoistModel {
 
         return {length, start, end};
     }
+}
+
+/**
+ * Interleave header elements into a list of rendered items (aligned by index with `tabs`), placing
+ * one before each contiguous run of tabs sharing a non-null group. Null items are skipped.
+ */
+function withGroupHeaders(
+    tabs: TabModel[],
+    items: ReactNode[],
+    headerFn: (group: string, key: string) => ReactNode
+): ReactNode[] {
+    const ret = [];
+    let prevGroup: string = null;
+    items.forEach((item, idx) => {
+        if (!item) return;
+        const {group} = tabs[idx];
+        if (group != null && group !== prevGroup) ret.push(headerFn(group, `xh-group-${idx}`));
+        prevGroup = group;
+        ret.push(item);
+    });
+    return ret;
 }
 
 function flipOrientation(orientation) {

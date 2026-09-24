@@ -894,6 +894,14 @@ body {
   --xh-tab-switcher-vertical-item-active-bg: var(--tab-switcher-vertical-item-active-bg, var(--xh-bg-highlight));
   --xh-tab-switcher-vertical-item-font-weight: var(--tab-switcher-vertical-item-font-weight, 500);
   --xh-tab-switcher-vertical-item-active-font-weight: var(--tab-switcher-vertical-item-active-font-weight, 600);
+  // Display-only group headers, rendered above runs of tabs sharing a `TabConfig.group`.
+  --xh-tab-switcher-vertical-group-gap: var(--tab-switcher-vertical-group-gap, var(--xh-pad-px));
+  --xh-tab-switcher-vertical-group-header-padding: var(--tab-switcher-vertical-group-header-padding, var(--xh-pad-half-px) var(--xh-pad-px));
+  --xh-tab-switcher-vertical-group-header-text-color: var(--tab-switcher-vertical-group-header-text-color, var(--xh-text-color-muted));
+  --xh-tab-switcher-vertical-group-header-font-size: var(--tab-switcher-vertical-group-header-font-size, var(--xh-font-size-small-px));
+  --xh-tab-switcher-vertical-group-header-font-weight: var(--tab-switcher-vertical-group-header-font-weight, 600);
+  --xh-tab-switcher-vertical-group-header-letter-spacing: var(--tab-switcher-vertical-group-header-letter-spacing, 0.05em);
+  --xh-tab-switcher-vertical-group-header-text-transform: var(--tab-switcher-vertical-group-header-text-transform, uppercase);
 
   &.xh-dark {
     --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary-lighter));

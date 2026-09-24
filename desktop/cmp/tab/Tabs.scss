@@ -167,6 +167,32 @@
     }
   }
 
+  // Display-only header above a run of grouped tabs - only rendered in vertical orientations.
+  &__group-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4em;
+    padding: var(--xh-tab-switcher-vertical-group-header-padding);
+    color: var(--xh-tab-switcher-vertical-group-header-text-color);
+    font-family: var(--xh-tab-font-family);
+    font-size: var(--xh-tab-switcher-vertical-group-header-font-size);
+    font-weight: var(--xh-tab-switcher-vertical-group-header-font-weight);
+    letter-spacing: var(--xh-tab-switcher-vertical-group-header-letter-spacing);
+    text-transform: var(--xh-tab-switcher-vertical-group-header-text-transform);
+    white-space: nowrap;
+    user-select: none;
+    cursor: default;
+
+    &:not(:first-child) {
+      margin-top: var(--xh-tab-switcher-vertical-group-gap);
+    }
+
+    & > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
   &__overflow-menu {
     min-width: unset;
 

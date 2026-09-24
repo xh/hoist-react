@@ -223,6 +223,40 @@ const tabModel = new TabContainerModel({
 });
 ```
 
+### Grouped Tabs (Vertical Switchers) - Desktop Only
+
+Long `left` / `right` switcher rails can be broken up with display-only group headers. Assign a
+`group` key to each tab, and optionally provide titles and icons via `switcher.groups` - a group
+without an entry there uses its key as its title.
+
+```typescript
+const tabModel = new TabContainerModel({
+    switcher: {
+        mode: 'static',
+        groups: [
+            {key: 'forms', title: 'Forms'},
+            {key: 'inputs', title: 'Inputs', icon: Icon.edit()}
+        ]
+    },
+    tabs: [
+        {id: 'overview', content: overviewPanel},  // Ungrouped - no header
+        {id: 'form', group: 'forms', content: formPanel},
+        {id: 'toolbarForms', group: 'forms', content: toolbarFormPanel},
+        {id: 'textInput', group: 'inputs', content: textInputPanel},
+        {id: 'select', group: 'inputs', content: selectPanel}
+    ]
+});
+```
+
+Tabs render in their declared order, with a header emitted wherever the group changes - so declare
+grouped tabs contiguously, and place any ungrouped tabs first (an ungrouped tab following a group
+would otherwise read as part of it). Headers are not tabs: they are not focusable or routable, and
+arrow-key navigation and `activateNextTab()` / `activatePrevTab()` skip over them. When
+`enableOverflow` is set, overflowed tabs are grouped under matching dividers in the overflow menu.
+
+Horizontal (`top` / `bottom`) switchers, the dynamic switcher, and mobile ignore groups. Style
+headers via the `--xh-tab-switcher-vertical-group-*` CSS variables.
+
 ### Persistence
 
 Persist active tab and/or favorite tabs:
@@ -255,6 +289,7 @@ Configuration for individual tabs within a container.
 | `disabled` | `boolean` | Prevent activation |
 | `excludeFromSwitcher` | `boolean` | Hide from UI but allow programmatic/routed access |
 | `showRemoveAction` | `boolean` | Show close button (desktop only) |
+| `group` | `string` | Group key - see [Grouped Tabs](#grouped-tabs-vertical-switchers---desktop-only) |
 | `content` | `Content` | Tab body - function, element, or nested tabs |
 | `renderMode` | `RenderMode` | Override container's render mode |
 | `refreshMode` | `RefreshMode` | Override container's refresh mode |
