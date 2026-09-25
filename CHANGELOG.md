@@ -121,6 +121,10 @@
 * `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
   their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
   prop to opt out - `password` type inputs do not trim by default.
+* Improved coverage of sensitive data redaction in exceptions. Matching keys are now redacted at any
+  depth within request bodies, params, and headers, and common secret names are redacted by default.
+  See `ExceptionHandler.defaults.redactPaths` and new `ExceptionHandlerOptions.redactPaths`, which
+  replaces the now-deprecated `hideParams`.
 
 ### 🐞 Bug Fixes
 

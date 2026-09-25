@@ -114,7 +114,7 @@ try {
 | `showAlert` | `boolean` | `true` (false for auto-refresh and aborted fetches) | Display any alert to the user |
 | `alertType` | `'dialog' \| 'toast'` | `'dialog'` | How to display the error. Configurable app-wide via `ExceptionHandler.defaults.alertType` |
 | `requireReload` | `boolean` | `false` (true for session mismatches) | Force user to reload the app to dismiss the error |
-| `hideParams` | `string[]` | none | Parameter names to redact from the exception log and alert display |
+| `redactPaths` | `string[]` | none | Additional values to redact - see [Sensitive Data Redaction](#sensitive-data-redaction) |
 
 ### Smart Defaults
 
@@ -501,21 +501,30 @@ The logged payload includes:
 
 ### Sensitive Data Redaction
 
-The handler automatically redacts values at paths listed in
-`ExceptionHandler.defaults.redactPaths`. By default this includes `Authorization` headers. Applications
-can add additional paths:
+The handler redacts values listed in `ExceptionHandler.defaults.redactPaths` from logged,
+displayed, and reported exceptions. Entries come in two forms:
+
+- **Key names** (e.g. `password`, `Authorization`) match case-insensitively at any depth within
+  the `params`, `body`, and `headers` of an exception's `fetchOptions`. JSON bodies are redacted
+  key by key; any other body is redacted in full. Common secret names are included by default.
+- **Paths** (containing `.` or `[`) redact one exact location in the serialized exception - e.g.
+  `serverDetails.accountPin`.
 
 ```typescript
-ExceptionHandler.defaults.redactPaths.push('fetchOptions.params.apiKey');
+ExceptionHandler.defaults.redactPaths.push('secretPin', 'serverDetails.accountPin');
 ```
 
-The `hideParams` option provides per-call redaction of specific request parameters:
+The `redactPaths` option adds per-call entries, with the same matching (`hideParams` is a
+deprecated alias):
 
 ```typescript
 XH.handleException(e, {
-    hideParams: ['password', 'ssn']
+    redactPaths: ['ssn']
 });
 ```
+
+Redaction is by key only. It does not scrub values echoed within the text of an exception's
+`message` or `serverDetails` - avoid putting sensitive values into exception messages.
 
 ### User Error Reports
 
