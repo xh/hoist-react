@@ -30,6 +30,7 @@ export const appBanner = hoistCmp.factory({
             message,
             intent,
             filled: true,
+            wrap: false,
             actionButtonProps: model.actionButtonProps,
             onClick: onClick ? () => onClick(model) : null,
             onClose: enableClose

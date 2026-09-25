@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, hframe} from '@xh/hoist/cmp/layout';
+import {div, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {markdown} from '@xh/hoist/cmp/markdown';
 import {hoistCmp, HoistProps, Intent, StyleProps, TestSupportProps} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
@@ -41,7 +41,7 @@ export interface BannerProps extends HoistProps<null>, StyleProps, TestSupportPr
     /** True to render with reduced padding, height and font size. */
     compact?: boolean;
 
-    /** True to allow a long message to wrap onto multiple lines. Default truncates. */
+    /** False to truncate a long message to a single line. Default true to wrap. */
     wrap?: boolean;
 
     /** Props for a button rendered within the banner, for a related action. */
@@ -77,20 +77,20 @@ export const [Banner, banner] = hoistCmp.withFactory<BannerProps>({
         intent = 'primary',
         filled = false,
         compact = false,
-        wrap = false,
+        wrap = true,
         actionButtonProps,
         onClick,
         onClose
     }) {
         if (icon === undefined) icon = defaultIcon(intent);
 
-        return hframe({
+        return hbox({
             className: classNames(
                 className,
                 `xh-banner--${intent ?? 'none'}`,
                 filled ? ['xh-banner--filled', `xh-bg-intent-${intent ?? 'none'}`] : null,
                 compact ? 'xh-banner--compact' : null,
-                wrap ? 'xh-banner--wrap' : null,
+                wrap ? null : 'xh-banner--nowrap',
                 onClick ? 'xh-banner--clickable' : null
             ),
             style,

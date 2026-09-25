@@ -33,9 +33,6 @@
   &__message {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 
     // Disallow most markdown styling except **bold**, *italics* and (links)
     h1,
@@ -63,8 +60,10 @@
     }
   }
 
-  &--wrap &__message {
-    white-space: normal;
+  &--nowrap &__message {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   &__action-button,
