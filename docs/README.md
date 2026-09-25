@@ -32,6 +32,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Build a desktop app or explore desktop components | [`/desktop/`](../desktop/README.md)                                                                                 |
 | Build a configurable dashboard | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md)                                                               |
 | Configure a desktop panel (toolbars, masks, collapse) | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md)                                                             |
+| Show an info or warning banner within a panel | [Panel Banners](../desktop/cmp/panel/README.md#banners) |
 | Build a mobile app | [`/mobile/`](../mobile/README.md)                                                                                   |
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
@@ -92,7 +93,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/daterange/`](../cmp/daterange/README.md) | Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters | DateRangePickerModel, DateRangePicker, DateRangeSelection, presets, anchorDate, LocalDateRange, currentRangeFilter, priorRange |
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
-| [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
+| [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, banners, masks, and collapsible behavior | Panel, PanelModel, Toolbar, Banner, mask, collapse/resize, persistence, modal support |
 | [`/mobile/`](../mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
 
 ### Utilities

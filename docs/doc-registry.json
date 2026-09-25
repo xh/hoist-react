@@ -148,8 +148,8 @@
             "title": "Desktop Panel",
             "mcpCategory": "package",
             "viewerCategory": "desktop",
-            "description": "Desktop panel container with toolbars, masks, and collapsible behavior.",
-            "keywords": ["Panel", "PanelModel", "Toolbar", "mask", "loading indicator", "collapse/resize", "persistence", "modal support", "splitter", "compactHeader"]
+            "description": "Desktop panel container with toolbars, banners, masks, and collapsible behavior.",
+            "keywords": ["Panel", "PanelModel", "Toolbar", "Banner", "banner", "warning", "alert", "mask", "loading indicator", "collapse/resize", "persistence", "modal support", "splitter", "compactHeader"]
         },
         {
             "id": "desktop/README.md",

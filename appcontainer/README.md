@@ -341,6 +341,11 @@ XH.hideBanner('maintenance');
 `AlertBannerService` automatically manages admin-configured banners (configured via the Admin
 Console), displaying them without application code.
 
+App-wide banners are rendered by the public `banner()` component. For a banner local to one part of
+the app - e.g. a stale-data warning above a single grid - render `banner()` directly or set
+`Panel.banner` rather than calling `XH.showBanner()`. See
+[Panel Banners](../desktop/cmp/panel/README.md#banners).
+
 ### BannerSpec Reference
 
 | Config | Type | Description |
