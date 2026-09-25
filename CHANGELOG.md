@@ -66,6 +66,12 @@
 
 ### 🎁 New Features
 
+* Added a public `Banner` component (desktop + mobile) for info, warning, and error states local
+  to part of an app. It supports intents with default icons, `filled` and `compact` styles, an
+  action button, and a close button via `onClose`. Messages wrap by default.
+* Added a `Panel.banner` prop (desktop + mobile) to show one or more banners within a panel. It
+  accepts a `PanelBannerSpec`, a message string, or an element. Banners render below `tbar` by
+  default, or above `bbar` with `position: 'bottom'`.
 * Added a `CodeInput.extensions` prop to install additional CodeMirror extensions alongside Hoist's
   own - e.g. `autocompletion()` from `@codemirror/autocomplete`, `closeBrackets()`, or a custom
   keymap. App extensions are appended after Hoist's, so Hoist wins on conflicts unless the app
@@ -177,6 +183,9 @@
 
 ### ✨ Styles
 
+* App-wide banners shown via `XH.showBanner()` now render with the new `Banner` component. The
+  banner root is no longer a `Toolbar`, and `.xh-banner__click_target` is now
+  `.xh-banner__content`. Apps with custom CSS targeting either must retarget.
 * Grid styling moves from AgGrid.scss to AG Grid theme params, exported as `xhAgGridTheme` from
   `@xh/hoist/cmp/ag-grid`. Params remain bound to the same `--xh-grid-*` variables, so apps
   overriding those see no change. The stylesheet retains only what params cannot express.
