@@ -112,6 +112,12 @@
     * A heading draws its own divider rule, so it needs no adjacent `'-'` separator. Hoist drops a
       heading with no items below it, either at the end of a menu or because its whole section hid
       itself.
+* Added a public `Banner` component (desktop + mobile) for info, warning, and error states local
+  to part of an app. It supports intents with default icons, `filled` and `compact` styles, an
+  action button, and a close button via `onClose`. Messages wrap by default.
+* Added a `Panel.banner` prop (desktop + mobile) to show one or more banners within a panel. It
+  accepts a `PanelBannerSpec`, a message string, or an element. Banners render below `tbar` by
+  default, or above `bbar` with `position: 'bottom'`.
 * `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
   their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
   prop to opt out - `password` type inputs do not trim by default.
@@ -132,9 +138,9 @@
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
   `ClipboardButton` rather than a true menu item. The function also now returns a proper `MenuItem`
   config and takes a `ClipboardMenuItemSpec`.
-* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string                               
-  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted                    
-  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is                                
+* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string
+  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted
+  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is
   constructed, so `Field.defaultValue` and record data always hold the typed value.
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
@@ -189,6 +195,9 @@
 
 ### ✨ Styles
 
+* App-wide banners shown via `XH.showBanner()` now render with the new `Banner` component. The
+  banner root is no longer a `Toolbar`, and `.xh-banner__click_target` is now
+  `.xh-banner__content`. Apps with custom CSS targeting either must retarget.
 * Grid styling moves from AgGrid.scss to AG Grid theme params, exported as `xhAgGridTheme` from
   `@xh/hoist/cmp/ag-grid`. Params remain bound to the same `--xh-grid-*` variables, so apps
   overriding those see no change. The stylesheet retains only what params cannot express.
