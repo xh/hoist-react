@@ -148,6 +148,7 @@
   constructed, so `Field.defaultValue` and record data always hold the typed value.
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
+* Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
 
 ### ⚙️ Technical
 
