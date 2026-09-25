@@ -30,7 +30,7 @@ import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
-import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
+import {ExposedLeafRow, HiddenLeafRow, LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
 import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
@@ -304,7 +304,7 @@ export class View
         if (!simpleUpdates) {
             this.fullUpdate('update', start);
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdate(simpleUpdates, start);
+            this.dataOnlyUpdate(simpleUpdates, changes.changedFields, start);
         } else {
             this.dataUnchangedUpdate(start);
         }
@@ -403,29 +403,27 @@ export class View
         }
     }
 
-    private dataOnlyUpdate(updates: StoreRecord[], start: number) {
-        const {_leafMap, stores} = this,
-            updatedRowDatas = new Set<ViewRowData>(),
-            changedFields = new Set<string>();
+    // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
+    private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
+        const {_leafMap, stores, fields} = this,
+            checkFields = changedFields ? fields.filter(it => changedFields.has(it.name)) : fields,
+            changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
-            const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas, changedFields);
+            _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
         });
 
-        updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
+        changed.rows.forEach(rowData => this.assignDigest(rowData));
 
         this.createAggregationContext();
 
         stores.forEach(store => {
             const recordUpdates = [];
-            updatedRowDatas.forEach(rowData => {
+            changed.rows.forEach(rowData => {
                 if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
-            // Parents only rewrite fields reported changed by leaves, so the leaf-level union
-            // covers every value written - and this path never touches structure.
-            store.updateData({update: recordUpdates, changedFields});
+            store.updateData({update: recordUpdates, changedFields: changed.fields});
         });
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);
