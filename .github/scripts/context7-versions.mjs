@@ -4,7 +4,8 @@
 // Context7 (https://context7.com) indexes only the versions declared in context7.json (or in the
 // library's admin panel) - it does not discover new git tags on its own. This script lists the
 // newest release tag of each of the most recent majors, so the Context7 workflow can open a PR
-// whenever a release adds or moves a major.
+// whenever a release adds or moves a major. Branch-based entries (e.g. `{"branch": "develop"}`)
+// are hand-maintained and preserved ahead of the tag entries.
 //
 // Usage: node .github/scripts/context7-versions.mjs [--majors N] [--check]
 //   --majors N  number of most recent majors to keep (default 6)
@@ -34,28 +35,36 @@ for (const t of tags) {
     if (!current || compare(t.parts, current.parts) > 0) newestPerMajor.set(major, t);
 }
 
-const previousVersions = [...newestPerMajor.keys()]
-    .sort((a, b) => b - a)
-    .slice(0, majorCount)
-    .map(major => ({tag: newestPerMajor.get(major).tag}));
-
 const raw = readFileSync(file, 'utf8'),
-    config = JSON.parse(raw);
+    config = JSON.parse(raw),
+    branchEntries = (config.previousVersions ?? []).filter(v => v.branch);
+
+const previousVersions = [
+    ...branchEntries,
+    ...[...newestPerMajor.keys()]
+        .sort((a, b) => b - a)
+        .slice(0, majorCount)
+        .map(major => ({tag: newestPerMajor.get(major).tag}))
+];
 
 if (JSON.stringify(config.previousVersions ?? []) === JSON.stringify(previousVersions)) {
-    console.log(`${file} previousVersions already current: ${previousVersions.map(v => v.tag).join(', ')}`);
+    console.log(`${file} previousVersions already current: ${previousVersions.map(label).join(', ')}`);
     process.exit(0);
 }
 
 if (checkOnly) {
-    console.error(`${file} previousVersions out of date. Expected: ${previousVersions.map(v => v.tag).join(', ')}`);
+    console.error(`${file} previousVersions out of date. Expected: ${previousVersions.map(label).join(', ')}`);
     process.exit(1);
 }
 
 // Preserve key order and 4-space formatting, keep url/public_key (the ownership claim) last.
 config.previousVersions = previousVersions;
 writeFileSync(file, JSON.stringify(config, null, 4) + '\n');
-console.log(`Updated ${file} previousVersions: ${previousVersions.map(v => v.tag).join(', ')}`);
+console.log(`Updated ${file} previousVersions: ${previousVersions.map(label).join(', ')}`);
+
+function label(v) {
+    return v.tag ?? `branch:${v.branch}`;
+}
 
 function compare(a, b) {
     for (let i = 0; i < 3; i++) {

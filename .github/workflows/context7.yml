@@ -5,19 +5,21 @@
 # requested it recently, and it never discovers new release tags by itself. Two jobs close that gap:
 #
 # - refresh: asks Context7 to re-index the library whenever docs or context7.json change on develop
-#   (or on demand). Requires the CONTEXT7_API_KEY repository secret - create a key at
+#   or master (or on demand). The main Context7 entry parses master (latest release); develop is
+#   exposed as a selectable branch version. Requires the CONTEXT7_API_KEY repository secret - create a key at
 #   https://context7.com/dashboard. Without the secret the job logs a warning and exits cleanly.
 #
 # - sync-versions: daily, rewrites `previousVersions` in context7.json to the newest release tag of
 #   each recent major and opens a PR when that list changed. Merging the PR is a push to develop
-#   that touches context7.json, which runs `refresh`. The PR is opened with the XH Build Bot token so
+#   that touches context7.json, which runs `refresh`. The PR targets develop, so the new list reaches
+#   master (and the main entry) with the next release. The PR is opened with the XH Build Bot token so
 #   CI runs on it (PRs opened with GITHUB_TOKEN do not trigger workflows).
 
 name: Context7
 
 on:
     push:
-        branches: [develop]
+        branches: [develop, master]
         paths:
             - '**/*.md'
             - 'context7.json'
