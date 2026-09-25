@@ -149,15 +149,20 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             });
         });
 
-        // Headers are non-Tab children, which Blueprint passes through to its tab list in order.
+        // Headers and spacers are non-Tab children, which Blueprint passes through to its tab
+        // list in order.
         const items = vertical
-            ? withGroupHeaders(tabs, tabItems, (group, key) =>
-                  groupHeader({
-                      key,
-                      group,
-                      spec: find(switcherConfig.groups, {key: group}),
-                      testId: getTestId(props, `group-${group}`)
-                  })
+            ? withGroupHeaders(
+                  tabs,
+                  tabItems,
+                  (group, key) =>
+                      groupHeader({
+                          key,
+                          group,
+                          spec: find(switcherConfig?.groups, {key: group}),
+                          testId: getTestId(props, `group-${group}`)
+                      }),
+                  key => div({key, className: 'xh-tab-switcher__group-end', role: 'presentation'})
               )
             : tabItems;
 
@@ -230,11 +235,15 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
         });
 
         const items = vertical
-            ? withGroupHeaders(tabs, menuItems, (group, key) =>
-                  menuDivider({
-                      key,
-                      title: find(model.switcherConfig.groups, {key: group})?.title ?? group
-                  })
+            ? withGroupHeaders(
+                  tabs,
+                  menuItems,
+                  (group, key) =>
+                      menuDivider({
+                          key,
+                          title: find(model.switcherConfig?.groups, {key: group})?.title ?? group
+                      }),
+                  key => menuDivider({key})
               )
             : menuItems;
 
@@ -369,13 +378,15 @@ class TabSwitcherLocalModel extends HoistModel {
 }
 
 /**
- * Interleave header elements into a list of rendered items (aligned by index with `tabs`), placing
- * one before each contiguous run of tabs sharing a non-null group. Null items are skipped.
+ * Interleave separators into a list of rendered items (aligned by index with `tabs`): a header
+ * before each contiguous run of tabs sharing a non-null group, and a spacer before an ungrouped tab
+ * that follows such a run. Null items are skipped.
  */
 function withGroupHeaders(
     tabs: TabModel[],
     items: ReactNode[],
-    headerFn: (group: string, key: string) => ReactNode
+    headerFn: (group: string, key: string) => ReactNode,
+    spacerFn: (key: string) => ReactNode
 ): ReactNode[] {
     const ret = [];
     let prevGroup: string = null;
@@ -383,6 +394,7 @@ function withGroupHeaders(
         if (!item) return;
         const {group} = tabs[idx];
         if (group != null && group !== prevGroup) ret.push(headerFn(group, `xh-group-${idx}`));
+        else if (group == null && prevGroup != null) ret.push(spacerFn(`xh-group-end-${idx}`));
         prevGroup = group;
         ret.push(item);
     });

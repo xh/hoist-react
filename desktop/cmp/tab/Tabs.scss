@@ -170,6 +170,7 @@
   // Display-only header above a run of grouped tabs - only rendered in vertical orientations.
   &__group-header {
     display: flex;
+    align-self: stretch;
     align-items: baseline;
     gap: 0.4em;
     padding: var(--xh-tab-switcher-vertical-group-header-padding);
@@ -183,14 +184,28 @@
     user-select: none;
     cursor: default;
 
+    // Rule line + extra space separate each group from the tabs above it.
     &:not(:first-child) {
       margin-top: var(--xh-tab-switcher-vertical-group-gap);
+      padding-top: var(--xh-tab-switcher-vertical-group-gap);
+      border-top: var(--xh-tab-switcher-vertical-group-border);
     }
 
     & > span {
+      flex: 1;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+  }
+
+  // Spacer before an ungrouped tab that follows a grouped run - only rendered in vertical
+  // orientations.
+  &__group-end {
+    align-self: stretch;
+    margin-top: var(--xh-tab-switcher-vertical-group-gap);
+    height: var(--xh-tab-switcher-vertical-group-gap);
+    border-top: var(--xh-tab-switcher-vertical-group-border);
   }
 
   &__overflow-menu {

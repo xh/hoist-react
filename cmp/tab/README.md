@@ -249,8 +249,8 @@ const tabModel = new TabContainerModel({
 ```
 
 Tabs render in their declared order, with a header emitted wherever the group changes - so declare
-grouped tabs contiguously, and place any ungrouped tabs first (an ungrouped tab following a group
-would otherwise read as part of it). Headers are not tabs: they are not focusable or routable, and
+grouped tabs contiguously. Ungrouped tabs can appear anywhere; one that follows a grouped run is
+set off by a small gap. Headers are not tabs: they are not focusable or routable, and
 arrow-key navigation and `activateNextTab()` / `activatePrevTab()` skip over them. When
 `enableOverflow` is set, overflowed tabs are grouped under matching dividers in the overflow menu.
 
