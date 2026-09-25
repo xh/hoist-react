@@ -269,8 +269,8 @@ in the same process are fast, but each CLI invocation pays the cold start cost.
 
 ### Prerequisites
 
-- Node.js 18+
-- `tsx` available (included in hoist-react's devDependencies)
+- Node.js 22.12+ (the floor set by `commander`; hoist-dev-utils requires 22.15+ for app builds)
+- `tsx` available (included in hoist-react's dependencies)
 - A checked-out hoist-react repository
 
 ### Starting the Server
@@ -675,13 +675,15 @@ just display without the extra hint. The `@mcpHint` tag is declared in the proje
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
 | Add or revise the search-result hint for a key framework class | `@mcpHint` tag on the class/interface JSDoc (in its source file) |
 | Change which owners have members indexed | `mcp/data/ts-registry.ts` (`shouldIndexClassMembers` / `shouldIndexInterfaceMembers`) |
+| Raise the supported Node floor (tracks `engines` in hoist-dev-utils) | `@types/node` major in `package.json`, Node version under [Prerequisites](#prerequisites) |
 | Change doc search ranking, or add a doc that deserves golden-set coverage | `mcp/data/doc-search.ts`, `mcp/data/doc-search.spec.ts` - then run `pnpm test:mcp` |
 
 ### Testing
 
 The repo has no general test framework, so MCP tests are self-contained spec scripts, each an
 exit-coded driver run with `npx tsx`. `pnpm test:mcp` runs them all, and CI runs it alongside lint
-and typecheck:
+and typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own ESLint config and
+`mcp/tsconfig.json` (with Node types from the root `@types/node` devDependency).
 
 | Spec | Covers |
 |------|--------|

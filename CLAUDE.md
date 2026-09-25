@@ -122,10 +122,12 @@ instance on another port needs a local override.
 
 ```bash
 pnpm install                     # Install dependencies
-pnpm lint                        # Lint all code (JS/TS + SCSS)
-pnpm lint:code                   # Lint JavaScript/TypeScript only
+pnpm lint                        # Lint all code (library JS/TS, MCP tools, SCSS)
+pnpm lint:code                   # Lint library JavaScript/TypeScript only
+pnpm lint:mcp                    # Lint MCP server and CLI tools (mcp/) only
 pnpm lint:styles                 # Lint SCSS only
-pnpm typecheck                   # Type check (tsc --noEmit)
+pnpm typecheck                   # Type check library and MCP tools
+pnpm test:mcp                    # Run MCP spec scripts, incl. the doc-search golden set
 ```
 
 Linting and type-checking are separate concerns, and neither subsumes the other — run both. ESLint
