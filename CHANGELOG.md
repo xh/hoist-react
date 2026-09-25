@@ -66,12 +66,6 @@
 
 ### 🎁 New Features
 
-* Added a public `Banner` component (desktop + mobile) for info, warning, and error states local
-  to part of an app. It supports intents with default icons, `filled` and `compact` styles, an
-  action button, and a close button via `onClose`. Messages wrap by default.
-* Added a `Panel.banner` prop (desktop + mobile) to show one or more banners within a panel. It
-  accepts a `PanelBannerSpec`, a message string, or an element. Banners render below `tbar` by
-  default, or above `bbar` with `position: 'bottom'`.
 * Added a `CodeInput.extensions` prop to install additional CodeMirror extensions alongside Hoist's
   own - e.g. `autocompletion()` from `@codemirror/autocomplete`, `closeBrackets()`, or a custom
   keymap. App extensions are appended after Hoist's, so Hoist wins on conflicts unless the app
@@ -118,14 +112,18 @@
     * A heading draws its own divider rule, so it needs no adjacent `'-'` separator. Hoist drops a
       heading with no items below it, either at the end of a menu or because its whole section hid
       itself.
+* Added a public `Banner` component (desktop + mobile) for info, warning, and error states local
+  to part of an app. It supports intents with default icons, `filled` and `compact` styles, an
+  action button, and a close button via `onClose`. Messages wrap by default.
+* Added a `Panel.banner` prop (desktop + mobile) to show one or more banners within a panel. It
+  accepts a `PanelBannerSpec`, a message string, or an element. Banners render below `tbar` by
+  default, or above `bbar` with `position: 'bottom'`.
 * `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
   their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
   prop to opt out - `password` type inputs do not trim by default.
 
 ### 🐞 Bug Fixes
 
-* `BannerSpec.onClick` is now called with the banner's `BannerModel`, as documented, rather than
-  the click event.
 * Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.
@@ -140,9 +138,9 @@
 * Fixed `clipboardMenuItem()` misaligning with the items around it - it rendered a styled
   `ClipboardButton` rather than a true menu item. The function also now returns a proper `MenuItem`
   config and takes a `ClipboardMenuItemSpec`.
-* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string                               
-  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted                    
-  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is                                
+* Fixed inconsistent parsing of `Field.defaultValue`. A default that needs parsing, such as a string
+  default on a `localDate` field, was stored raw in`StoreRecord.data` when the source data omitted
+  the key, but parsed when the source sent `null`. `Field` now parses its default once, when it is
   constructed, so `Field.defaultValue` and record data always hold the typed value.
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
