@@ -8,7 +8,7 @@
     border-bottom: var(--xh-border-solid);
     flex: none;
     font-family: var(--xh-panel-title-font-family);
-    padding: var(--xh-title-pad-px);
+    padding: var(--xh-title-padding);
     user-select: none;
 
     &__title {
@@ -16,7 +16,7 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      font-size: var(--xh-panel-title-font-size-px);
+      font-size: var(--xh-panel-title-font-size);
     }
 
     & > .xh-icon {

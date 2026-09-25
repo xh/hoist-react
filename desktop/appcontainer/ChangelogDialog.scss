@@ -14,11 +14,11 @@
   &__inner {
     flex: 1;
     overflow-y: scroll;
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
   }
 
   &__version {
-    padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-double-px) var(--xh-pad-px);
+    padding: var(--xh-spacing) var(--xh-spacing) var(--xh-spacing-double) var(--xh-spacing);
 
     h2 {
       border-bottom: var(--xh-border-solid);
@@ -29,12 +29,12 @@
     &--current {
       background-color: var(--xh-bg-alt);
       border: var(--xh-border-solid);
-      border-radius: var(--xh-border-radius-px);
-      margin-bottom: var(--xh-pad-px);
+      border-radius: var(--xh-border-radius);
+      margin-bottom: var(--xh-spacing);
     }
 
     &__category {
-      padding: 0 var(--xh-pad-px);
+      padding: 0 var(--xh-spacing);
 
       h3 {
         border: 1px solid var(--xh-text-color-muted);
@@ -75,7 +75,7 @@
     }
 
     &__no-category h3 {
-      padding: 0 var(--xh-pad-px);
+      padding: 0 var(--xh-spacing);
       font-weight: normal;
       font-style: italic;
       font-size: 1em;

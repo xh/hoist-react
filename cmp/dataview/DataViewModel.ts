@@ -309,7 +309,7 @@ const THEME_PARAMS = {
     backgroundColor: 'var(--xh-bg)',
     foregroundColor: 'var(--xh-text-color)',
     fontFamily: 'var(--xh-font-family)',
-    fontSize: 'var(--xh-font-size-px)',
+    fontSize: 'var(--xh-font-size)',
 
     // No header. The `headerHeight` grid option set by DataView drives layout; this keeps the themed
     // side in sync, and suppressing the border stops the zero-height header leaving a 1px gap.

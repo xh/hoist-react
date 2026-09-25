@@ -108,7 +108,7 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                         grid({
                             model,
                             agOptions: {
-                                // Icon size is set via --xh-grid-tree-icon-px in ViewManager.scss.
+                                // Icon size is set via --xh-grid-tree-icon-size in ViewManager.scss.
                                 icons: {
                                     groupExpanded: Icon.folderOpen({
                                         asHtml: true,

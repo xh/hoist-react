@@ -9,14 +9,14 @@
     }
 
     label {
-      font-size: var(--xh-grid-compact-header-font-size-px);
+      font-size: var(--xh-grid-compact-header-font-size);
       color: var(--xh-grid-header-text-color);
       cursor: pointer;
     }
 
     &__sort-icon {
       border-left: var(--xh-menu-border);
-      padding-left: var(--xh-pad-half-px);
+      padding-left: var(--xh-spacing-half);
       color: var(--xh-grid-header-text-color);
     }
   }
@@ -26,14 +26,14 @@
     border-top: var(--xh-border-solid);
     color: var(--xh-text-color-muted);
     display: flex;
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
 
     .xh-icon {
-      margin-right: var(--xh-pad-half-px);
+      margin-right: var(--xh-spacing-half);
     }
 
     div {
-      font-size: var(--xh-font-size-small-px);
+      font-size: var(--xh-font-size-small);
     }
   }
 
@@ -43,7 +43,7 @@
     align-items: center;
 
     .xh-button {
-      margin-top: var(--xh-pad-px);
+      margin-top: var(--xh-spacing);
     }
   }
 

@@ -14,7 +14,10 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟡 MEDIUM - TC39 decorators, ag-Grid 36, removals)
+### 💥 Breaking Changes (upgrade difficulty: 🔴 HIGH - TC39 decorators, ag-Grid 36, CSS variables, removals)
+
+See [`docs/upgrade-notes/v88-upgrade-notes.md`](docs/upgrade-notes/v88-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
 * **Migrated to TC39 Stage 3 (2023-11) decorators**, retiring `experimentalDecorators`. Drops
   `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
@@ -50,6 +53,18 @@
       wherever they suffice.
 * Raised the `react` and `react-dom` peer dependency floor to `19.3`. Apps must bump both to
   `^19.3.0`. React 19.3 is a compatible minor with no breaking changes of its own.
+* Overhauled Hoist's CSS custom properties onto a simpler, consistently named baseline. Run
+  `docs/codemod/v88/codemod-css-vars.mjs` to migrate app stylesheets and code.
+    * Removed the unprefixed override hooks (e.g. `--grid-bg`, `--pad`). Apps now set the `--xh-*`
+      variables directly on `body.xh-app`, which now wins over Hoist's defaults in every theme and
+      platform combination. Overrides set on `:root` or `html` no longer have any effect.
+    * Size variables now hold lengths with units (`--xh-spacing: 10px`), and every `-px` companion
+      (`--xh-pad-px`, `--xh-font-size-px`, etc.) was removed - read the base variable instead.
+      Hoist logs a development-mode warning if a size variable resolves to a bare number.
+    * Renamed about 40 variables to follow one naming grammar, e.g. `--xh-pad` -> `--xh-spacing`,
+      `--xh-tbar-*` -> `--xh-toolbar-*`, `--xh-grid-bg-hover` -> `--xh-grid-row-hover-bg`.
+    * Removed `--xh-chart-bg`, `--xh-tab-border-width`, and `--xh-toolbar-button-bg`, none of which
+      had any effect.
 
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead. Note that
@@ -202,6 +217,8 @@
 * Added four custom properties for the new `MenuHeading` to style headings in grid context menus,
   desktop menus, and mobile menus, so a single override restyles all three. Blueprint's own
   `.bp6-menu-header` now uses the same properties.
+* Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
+  inline labels - it referenced stale names left behind by an earlier rename.
 
 ### 📚 Libraries
 

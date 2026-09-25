@@ -6,7 +6,7 @@
 
     &__role {
       &:not(:last-child) {
-        margin-right: var(--xh-pad-half-px);
+        margin-right: var(--xh-spacing-half);
       }
 
       &--effective {

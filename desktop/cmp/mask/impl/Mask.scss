@@ -15,10 +15,10 @@
     .xh-mask-text {
       background-color: var(--xh-mask-text-bg);
       border: var(--xh-mask-text-border);
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
       color: var(--xh-mask-text-color);
       max-width: 200px;
-      padding: var(--xh-pad-half-px);
+      padding: var(--xh-spacing-half);
       text-align: center;
     }
   }

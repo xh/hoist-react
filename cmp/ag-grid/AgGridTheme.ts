@@ -33,7 +33,7 @@ export const xhAgGridTheme = themeBalham.withParams({
     backgroundColor: 'var(--xh-grid-bg)',
     foregroundColor: 'var(--xh-grid-text-color)',
     fontFamily: 'var(--xh-grid-font-family)',
-    fontSize: 'var(--xh-grid-font-size-px)',
+    fontSize: 'var(--xh-grid-font-size)',
 
     // Hoist grids usually sit inside bordered components such as panels.
     wrapperBorder: false,
@@ -42,19 +42,19 @@ export const xhAgGridTheme = themeBalham.withParams({
     headerBackgroundColor: 'var(--xh-grid-header-bg)',
     headerTextColor: 'var(--xh-grid-header-text-color)',
     headerFontFamily: 'var(--xh-grid-header-font-family)',
-    headerFontSize: 'var(--xh-grid-header-font-size-px)',
+    headerFontSize: 'var(--xh-grid-header-font-size)',
     headerFontWeight: 'var(--xh-grid-header-font-weight)',
     headerRowBorder: '1px solid var(--xh-grid-header-border-color)',
 
     // Hover and striping are opt-in per grid - the `--show-hover` / `--stripe-rows` modifiers in
     // AgGrid.scss supply the color.
-    selectedRowBackgroundColor: 'var(--xh-grid-selected-row-bg)',
+    selectedRowBackgroundColor: 'var(--xh-grid-row-selected-bg)',
     rowHoverColor: 'transparent',
     oddRowBackgroundColor: 'transparent',
 
     // Also covers header cells - AgGrid.scss overrides those to keep Hoist's separate header token.
-    cellHorizontalPadding: 'var(--xh-grid-cell-lr-pad-px)',
-    valueChangeValueHighlightBackgroundColor: 'var(--xh-grid-cell-change-bg-highlight)',
+    cellHorizontalPadding: 'var(--xh-grid-cell-padding-inline)',
+    valueChangeValueHighlightBackgroundColor: 'var(--xh-grid-cell-changed-bg)',
 
     // Borders off by default - the `--row-borders` / `--cell-borders` modifiers turn them on.
     borderColor: 'var(--xh-grid-border-color)',
@@ -64,7 +64,7 @@ export const xhAgGridTheme = themeBalham.withParams({
     pinnedColumnBorder: '1px solid var(--xh-grid-pinned-column-border-color)',
 
     // Drives the focused-cell border too - there is no dedicated cell-focus param.
-    rangeSelectionBorderColor: 'var(--xh-grid-cell-focus-border-color)',
+    rangeSelectionBorderColor: 'var(--xh-grid-cell-focused-border-color)',
 
     // The side bar is typically collapsed - avoid an unexpected border on the grid's right edge.
     sidePanelBorder: false,

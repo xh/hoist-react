@@ -11,7 +11,7 @@
   color: white;
   flex: none;
   justify-content: center;
-  padding: var(--xh-pad-half-px);
+  padding: var(--xh-spacing-half);
 
   &--development {
     background-color: var(--xh-green-muted);
@@ -39,16 +39,16 @@
   }
 
   &__spacer {
-    margin-left: var(--xh-pad-px);
+    margin-left: var(--xh-spacing);
   }
 
   &__tabid {
-    margin-left: var(--xh-pad-px);
+    margin-left: var(--xh-spacing);
     cursor: pointer;
   }
 
   svg {
     cursor: pointer;
-    margin-left: var(--xh-pad-px);
+    margin-left: var(--xh-spacing);
   }
 }

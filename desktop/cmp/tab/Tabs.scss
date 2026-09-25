@@ -59,7 +59,7 @@
   }
 
   &--top {
-    padding-left: var(--xh-pad-px);
+    padding-left: var(--xh-spacing);
     max-width: 100%;
 
     // Active indicator sits on the bottom edge of the tab, adjacent to the content below.
@@ -69,8 +69,8 @@
   }
 
   &--bottom {
-    padding-left: var(--xh-pad-px);
-    padding-top: var(--xh-pad-half-px);
+    padding-left: var(--xh-spacing);
+    padding-top: var(--xh-spacing-half);
     max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
@@ -142,7 +142,7 @@
   &__tab {
     align-items: baseline;
     font-family: var(--xh-tab-font-family);
-    font-size: var(--xh-tab-font-size-px);
+    font-size: var(--xh-tab-font-size);
     user-select: none;
 
     & > svg:first-child {

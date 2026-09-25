@@ -8,7 +8,7 @@
 }
 
 .bp6-tab > svg:first-child {
-  margin-right: var(--xh-pad-half-px);
+  margin-right: var(--xh-spacing-half);
 }
 
 // Vertical tab lists fill their width
@@ -21,17 +21,17 @@
 //------------------------
 .bp6-dialog {
   padding-bottom: 0;
-  border-radius: var(--xh-border-radius-px);
-  border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
+  border-radius: var(--xh-border-radius);
+  border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
 
   .bp6-dialog-header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
     font-family: var(--xh-popup-title-font-family);
-    font-size: var(--xh-popup-title-font-size-px);
-    padding-left: var(--xh-pad-px);
-    border-top-right-radius: var(--xh-border-radius-px);
-    border-top-left-radius: var(--xh-border-radius-px);
+    font-size: var(--xh-popup-title-font-size);
+    padding-left: var(--xh-spacing);
+    border-top-right-radius: var(--xh-border-radius);
+    border-top-left-radius: var(--xh-border-radius);
 
     .bp6-heading,
     .bp6-icon {
@@ -39,13 +39,13 @@
     }
 
     > svg:first-child {
-      margin-right: var(--xh-pad-px);
+      margin-right: var(--xh-spacing);
     }
   }
 
   .bp6-dialog-body {
     margin: 0;
-    padding: var(--xh-pad-double-px);
+    padding: var(--xh-spacing-double);
     background: var(--xh-popup-bg);
 
     // See https://github.com/xh/hoist-react/issues/862 for why this is necessary. Note need for
@@ -210,7 +210,7 @@
     border-top: none;
     border-bottom: var(--xh-menu-heading-border);
     // Negative side margins cancel the menu's own 4px padding, so the rule runs edge to edge.
-    margin: var(--xh-pad-half-px) -4px 0;
+    margin: var(--xh-spacing-half) -4px 0;
     padding: 0;
 
     &:first-of-type {
@@ -219,11 +219,11 @@
 
     > h6 {
       color: var(--xh-menu-heading-text-color);
-      font-size: var(--xh-menu-heading-font-size-px);
+      font-size: var(--xh-menu-heading-font-size);
       font-weight: var(--xh-menu-heading-font-weight);
       line-height: normal;
       // Left inset lines the label up with the item icons, not the item text.
-      padding: var(--xh-pad-half-px) 10px var(--xh-pad-half-px) 14px;
+      padding: var(--xh-spacing-half) 10px var(--xh-spacing-half) 14px;
     }
   }
 
@@ -312,7 +312,9 @@ textarea.bp6-input,
 .bp6-input-ghost {
   color: var(--xh-input-text-color);
   background: var(--xh-input-bg);
-  font-size: var(--xh-font-size);
+  // Follow the surrounding font size (e.g. smaller in compact toolbars and grids) rather than
+  // Blueprint's fixed default.
+  font-size: inherit;
 
   &::placeholder {
     color: var(--xh-input-placeholder-text-color);
@@ -370,7 +372,7 @@ textarea.bp6-input,
     position: absolute;
     top: 0;
     line-height: 1;
-    font-size: var(--xh-font-size-large-px);
+    font-size: var(--xh-font-size-large);
     font-weight: 400;
     font-style: normal;
     -moz-osx-font-smoothing: grayscale;
@@ -422,7 +424,7 @@ textarea.bp6-input,
 // Misc
 //------------------------
 .bp6-hotkey-column {
-  padding: var(--xh-pad-double-px);
+  padding: var(--xh-spacing-double);
 
   .bp6-heading {
     font-weight: normal;

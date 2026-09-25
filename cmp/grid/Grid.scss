@@ -218,7 +218,7 @@
 
   // Adjust left padding for tree columns.
   .ag-cell.xh-tree-column {
-    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-size));
   }
 
   // Suppress (almost all) left padding in tree column header when actively showing expand/collapse
@@ -252,7 +252,7 @@
       .xh-ag-grid--show-hover {
         .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
-            background-color: var(--xh-grid-bg-hover);
+            background-color: var(--xh-grid-row-hover-bg);
           }
         }
       }
@@ -262,14 +262,14 @@
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
       .ag-grid-pinned-bottom-rows-container,
       .ag-grid-pinned-top-rows-container {
-        background-color: var(--xh-grid-tree-group-color-level-0);
+        background-color: var(--xh-grid-tree-group-level-0-bg);
       }
 
       @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: var(--xh-grid-tree-group-color-level-#{$level});
+            background-color: var(--xh-grid-tree-group-level-#{$level}-bg);
           }
         }
       }
@@ -324,7 +324,7 @@
       .xh-ag-grid--show-hover {
         .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
-            background-color: var(--xh-grid-bg-hover);
+            background-color: var(--xh-grid-row-hover-bg);
           }
         }
       }
@@ -334,14 +334,14 @@
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
       .ag-grid-pinned-bottom-rows-container,
       .ag-grid-pinned-top-rows-container {
-        background-color: var(--xh-grid-tree-group-color-level-0);
+        background-color: var(--xh-grid-tree-group-level-0-bg);
       }
 
       @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: var(--xh-grid-tree-group-color-level-#{$level});
+            background-color: var(--xh-grid-tree-group-level-#{$level}-bg);
           }
         }
       }
@@ -353,7 +353,7 @@
 // Row highlight
 //------------------------
 .xh-grid--highlight-row-on-click .xh-ag-grid .ag-row .ag-cell-data-changed {
-  background-color: var(--xh-grid-selected-row-bg) !important;
+  background-color: var(--xh-grid-row-selected-bg) !important;
 }
 
 //------------------------
@@ -378,12 +378,12 @@
   // reserves room for the markers, which a lone message does without.
   &--validation ul {
     margin: 0;
-    padding: 0 var(--xh-pad-half-px) 0 2em;
+    padding: 0 var(--xh-spacing-half) 0 2em;
   }
 
   &--validation-single ul {
     list-style-type: none;
-    padding: 0 var(--xh-pad-half-px);
+    padding: 0 var(--xh-spacing-half);
   }
 }
 
@@ -410,8 +410,8 @@
 }
 
 .xh-grid-autosize-cell {
-  padding: 0 var(--xh-grid-cell-lr-pad-px);
-  font-size: var(--xh-grid-font-size-px);
+  padding: 0 var(--xh-grid-cell-padding-inline);
+  font-size: var(--xh-grid-font-size);
   font-family: var(--xh-grid-font-family);
   visibility: hidden;
   display: none;
@@ -426,24 +426,24 @@
   }
 
   &--large {
-    font-size: var(--xh-grid-large-font-size-px);
-    padding: 0 var(--xh-grid-large-cell-lr-pad-px);
+    font-size: var(--xh-grid-large-font-size);
+    padding: 0 var(--xh-grid-large-cell-padding-inline);
   }
 
   &--compact {
-    font-size: var(--xh-grid-compact-font-size-px);
-    padding: 0 var(--xh-grid-compact-cell-lr-pad-px);
+    font-size: var(--xh-grid-compact-font-size);
+    padding: 0 var(--xh-grid-compact-cell-padding-inline);
   }
 
   &--tiny {
-    font-size: var(--xh-grid-tiny-font-size-px);
-    padding: 0 var(--xh-grid-tiny-cell-lr-pad-px);
+    font-size: var(--xh-grid-tiny-font-size);
+    padding: 0 var(--xh-grid-tiny-cell-padding-inline);
   }
 }
 
 .xh-grid-autosize-header {
-  padding: 0 var(--xh-grid-header-lr-pad-px);
-  font-size: var(--xh-grid-header-font-size-px);
+  padding: 0 var(--xh-grid-header-padding-inline);
+  font-size: var(--xh-grid-header-font-size);
   font-weight: var(--xh-grid-header-font-weight);
   font-family: var(--xh-grid-header-font-family);
   flex-direction: row;
@@ -470,18 +470,18 @@
   }
 
   &--large {
-    font-size: var(--xh-grid-large-header-font-size-px);
-    padding: 0 var(--xh-grid-large-header-lr-pad-px);
+    font-size: var(--xh-grid-large-header-font-size);
+    padding: 0 var(--xh-grid-large-header-padding-inline);
   }
 
   &--compact {
-    font-size: var(--xh-grid-compact-header-font-size-px);
-    padding: 0 var(--xh-grid-compact-header-lr-pad-px);
+    font-size: var(--xh-grid-compact-header-font-size);
+    padding: 0 var(--xh-grid-compact-header-padding-inline);
   }
 
   &--tiny {
-    font-size: var(--xh-grid-tiny-header-font-size-px);
-    padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+    font-size: var(--xh-grid-tiny-header-font-size);
+    padding: 0 var(--xh-grid-tiny-header-padding-inline);
   }
 }
 
@@ -519,7 +519,7 @@
     position: relative;
     left: calc(-1 * (var(--ag-icon-size) + var(--ag-grid-size) * 2));
     color: var(--xh-menu-heading-text-color);
-    font-size: var(--xh-menu-heading-font-size-px);
+    font-size: var(--xh-menu-heading-font-size);
     font-weight: var(--xh-menu-heading-font-weight);
   }
 }

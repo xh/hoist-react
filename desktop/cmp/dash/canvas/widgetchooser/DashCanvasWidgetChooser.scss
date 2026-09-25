@@ -1,11 +1,11 @@
 .xh-dash-canvas-widget-chooser {
-  padding: 0 var(--xh-pad-half-px);
+  padding: 0 var(--xh-spacing-half);
 
   &__draggable-widget {
     border: var(--xh-border-dotted);
     background-color: var(--xh-bg-alt);
-    padding: var(--xh-pad-half-px);
-    margin: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
+    margin: var(--xh-spacing-half);
     text-wrap: nowrap;
     cursor: grab;
 

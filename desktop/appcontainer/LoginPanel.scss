@@ -7,18 +7,18 @@
 
 .xh-login {
   border: var(--xh-border-solid);
-  border-radius: var(--xh-border-radius-px);
+  border-radius: var(--xh-border-radius);
 
   .bp6-input-group {
-    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
+    margin: 0 var(--xh-spacing) var(--xh-spacing) var(--xh-spacing);
   }
 
   &__warning,
   &__message {
     text-align: center;
-    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
-    padding: var(--xh-pad-px);
-    border-radius: var(--xh-border-radius-px);
+    margin: 0 var(--xh-spacing) var(--xh-spacing) var(--xh-spacing);
+    padding: var(--xh-spacing);
+    border-radius: var(--xh-border-radius);
   }
 
   &__warning {

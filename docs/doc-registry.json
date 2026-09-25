@@ -244,8 +244,8 @@
             "title": "Styles & Theming",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.",
-            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
+            "description": "CSS custom properties - naming conventions, units, overrides - plus BEM naming, dark/light theming, SCSS conventions, and utility classes.",
+            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, naming conventions, spacing, units, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
         },
         {
             "id": "kit/README.md",
@@ -518,6 +518,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v86.x to v87.0.0. Medium difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v87", "v86", "react-popper", "popperOptions", "cubeLeaves"]
+        },
+        {
+            "id": "docs/upgrade-notes/v88-upgrade-notes.md",
+            "title": "v88 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v87.x to v88.0.0 - partial draft covering only the CSS custom property overhaul (codemod, renamed variables, units). High difficulty overall; see CHANGELOG for the full v88 breaking changes.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-"]
         }
     ]
 }

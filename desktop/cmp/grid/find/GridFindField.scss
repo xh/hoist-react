@@ -12,28 +12,28 @@
 
   &__controls {
     align-items: center;
-    padding: 0 var(--xh-tbar-item-pad-px);
-    font-size: var(--xh-tbar-compact-font-size-px);
-    background-color: var(--xh-tbar-bg);
+    padding: 0 var(--xh-toolbar-item-spacing);
+    font-size: var(--xh-toolbar-compact-font-size);
+    background-color: var(--xh-toolbar-bg);
     border: 1px solid var(--xh-form-field-box-shadow-color-bottom);
     border-left: none;
     border-radius: 0 3px 3px 0;
 
     .xh-button {
-      max-height: calc(var(--xh-tbar-compact-item-height-px) * 0.5) !important;
-      min-height: calc(var(--xh-tbar-compact-item-height-px) * 0.5) !important;
-      min-width: var(--xh-tbar-compact-item-height-px);
-      max-width: var(--xh-tbar-compact-item-height-px);
+      max-height: calc(var(--xh-toolbar-compact-item-height) * 0.5) !important;
+      min-height: calc(var(--xh-toolbar-compact-item-height) * 0.5) !important;
+      min-width: var(--xh-toolbar-compact-item-height);
+      max-width: var(--xh-toolbar-compact-item-height);
       margin: 0 !important;
 
       svg {
-        font-size: var(--xh-tbar-compact-font-size-px);
+        font-size: var(--xh-toolbar-compact-font-size);
       }
     }
   }
 
   &__count-label {
-    margin-right: var(--xh-tbar-item-pad-px);
+    margin-right: var(--xh-toolbar-item-spacing);
     min-width: 30px;
     text-align: right;
   }

@@ -8,6 +8,72 @@ import {HoistModel, Theme, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 
 /**
+ * Size variables that held unitless numbers before v88 and now require a length (e.g. `8px`).
+ * Checked in development mode to catch app overrides left in the old form, which silently break
+ * every size derived from them.
+ */
+const LENGTH_VARS = [
+    '--xh-appbar-height',
+    '--xh-appbar-title-font-size',
+    '--xh-border-radius',
+    '--xh-border-width',
+    '--xh-button-font-size',
+    '--xh-card-border-radius',
+    '--xh-card-header-font-size',
+    '--xh-card-header-gap',
+    '--xh-card-header-min-height',
+    '--xh-font-size',
+    '--xh-font-size-large',
+    '--xh-font-size-small',
+    '--xh-form-field-info-border-width',
+    '--xh-form-field-invalid-border-width',
+    '--xh-form-field-warning-border-width',
+    '--xh-grid-cell-padding-inline',
+    '--xh-grid-compact-cell-padding-inline',
+    '--xh-grid-compact-font-size',
+    '--xh-grid-compact-header-font-size',
+    '--xh-grid-compact-header-padding-inline',
+    '--xh-grid-font-size',
+    '--xh-grid-header-font-size',
+    '--xh-grid-header-padding-inline',
+    '--xh-grid-large-cell-padding-inline',
+    '--xh-grid-large-font-size',
+    '--xh-grid-large-header-font-size',
+    '--xh-grid-large-header-padding-inline',
+    '--xh-grid-tiny-cell-padding-inline',
+    '--xh-grid-tiny-font-size',
+    '--xh-grid-tiny-header-font-size',
+    '--xh-grid-tiny-header-padding-inline',
+    '--xh-input-font-size',
+    '--xh-input-label-font-size',
+    '--xh-panel-border-width',
+    '--xh-panel-title-font-size',
+    '--xh-popup-border-width',
+    '--xh-popup-title-font-size',
+    '--xh-resizable-border-width',
+    '--xh-resizable-size',
+    '--xh-segmented-control-border-radius',
+    '--xh-segmented-control-padding',
+    '--xh-spacing',
+    '--xh-spacing-double',
+    '--xh-spacing-half',
+    '--xh-tab-font-size',
+    '--xh-title-compact-font-size',
+    '--xh-title-compact-height',
+    '--xh-title-font-size',
+    '--xh-title-height',
+    '--xh-title-icon-size',
+    '--xh-title-padding',
+    '--xh-toolbar-compact-font-size',
+    '--xh-toolbar-compact-min-size',
+    '--xh-toolbar-font-size',
+    '--xh-toolbar-item-spacing',
+    '--xh-toolbar-min-size',
+    '--xh-zone-grid-bottom-font-size',
+    '--xh-zone-grid-top-font-size'
+];
+
+/**
  * @internal
  */
 export class ThemeModel extends HoistModel {
@@ -60,6 +126,7 @@ export class ThemeModel extends HoistModel {
 
     init() {
         this.setTheme(XH.getPref('xhTheme'));
+        if (XH.isDevelopmentMode) this.warnOnUnitlessLengthVars();
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             if (XH.getPref('xhTheme') === 'system') {
                 this.setDarkTheme(event.matches);
@@ -76,8 +143,8 @@ export class ThemeModel extends HoistModel {
      * its chrome color from the page background (see the companion `color-scheme` handling above).
      */
     private syncThemeColorMeta() {
-        // Resolve --xh-appbar-bg (a chain of var() fallbacks) to a concrete color via a throwaway
-        // probe - reading computed `color` fully substitutes the var chain.
+        // Resolve --xh-appbar-bg (possibly a chain of var() references) to a concrete color via a
+        // throwaway probe - reading computed `color` fully substitutes the var chain.
         const probe = document.createElement('div');
         probe.style.cssText = 'display: none; color: var(--xh-appbar-bg)';
         document.body.appendChild(probe);
@@ -99,5 +166,23 @@ export class ThemeModel extends HoistModel {
             document.head.appendChild(meta);
         }
         meta.setAttribute('content', color);
+    }
+
+    /**
+     * Warn about any size variable resolving to a bare number - almost always an app override not
+     * yet migrated to v88, where these variables carry units. Checks the current theme only.
+     */
+    private warnOnUnitlessLengthVars() {
+        const style = window.getComputedStyle(document.body),
+            unitless = LENGTH_VARS.filter(name =>
+                /^-?\d*\.?\d+$/.test(style.getPropertyValue(name).trim())
+            );
+        if (unitless.length) {
+            this.logWarn(
+                `CSS size variables must include a unit as of Hoist v88 (e.g. '8px', not '8'). ` +
+                    `Unitless values found for: ${unitless.join(', ')}. ` +
+                    `See docs/upgrade-notes/v88-upgrade-notes.md.`
+            );
+        }
     }
 }

@@ -8,14 +8,14 @@
 .xh-segmented-control {
   .bp6-segmented-control {
     background-color: var(--xh-segmented-control-bg);
-    border-radius: var(--xh-segmented-control-border-radius-px);
-    padding: var(--xh-segmented-control-pad-px);
-    gap: var(--xh-segmented-control-pad-px);
+    border-radius: var(--xh-segmented-control-border-radius);
+    padding: var(--xh-segmented-control-padding);
+    gap: var(--xh-segmented-control-padding);
 
     // Constrain buttons to fit within a standard toolbar without growing it.
     // Toolbar (min-size - padding - border) minus tray padding on each side.
     // prettier-ignore
-    --seg-btn-h: calc(var(--xh-tbar-min-size-px) - var(--xh-pad-half-px) * 2 - var(--xh-segmented-control-pad-px) * 2 - 1px);
+    --seg-btn-h: calc(var(--xh-toolbar-min-size) - var(--xh-spacing-half) * 2 - var(--xh-segmented-control-padding) * 2 - 1px);
 
     > .bp6-button {
       min-height: var(--seg-btn-h);
@@ -24,7 +24,7 @@
 
     // Selected option - solid button standing out from the tray.
     > .bp6-button:not(.bp6-minimal) {
-      border-radius: var(--xh-segmented-control-border-radius-px);
+      border-radius: var(--xh-segmented-control-border-radius);
       background-color: var(--xh-segmented-control-selected-bg);
       color: var(--xh-segmented-control-selected-text-color);
     }
@@ -101,7 +101,7 @@
     > .bp6-button + .bp6-button::before {
       content: '';
       position: absolute;
-      left: calc(var(--xh-segmented-control-pad-px) / -2);
+      left: calc(var(--xh-segmented-control-padding) / -2);
       top: 20%;
       bottom: 20%;
       width: 1px;
@@ -128,10 +128,10 @@
     gap: 0;
 
     > .bp6-button {
-      min-height: var(--xh-tbar-compact-item-height-px);
-      max-height: var(--xh-tbar-compact-item-height-px);
-      font-size: var(--xh-tbar-compact-font-size-px);
-      padding: 0 var(--xh-pad-half-px);
+      min-height: var(--xh-toolbar-compact-item-height);
+      max-height: var(--xh-toolbar-compact-item-height);
+      font-size: var(--xh-toolbar-compact-font-size);
+      padding: 0 var(--xh-spacing-half);
 
       > svg:not(:last-child) {
         margin-right: 4px;
@@ -142,7 +142,7 @@
   // Compact + outlined - shrink buttons to account for the border.
   &--compact#{&}--outlined .bp6-segmented-control > .bp6-button,
   .xh-toolbar--compact &#{&}--outlined .bp6-segmented-control > .bp6-button {
-    --compact-btn-h: calc(var(--xh-tbar-compact-item-height-px) - 2px);
+    --compact-btn-h: calc(var(--xh-toolbar-compact-item-height) - 2px);
     min-height: var(--compact-btn-h);
     max-height: var(--compact-btn-h);
   }

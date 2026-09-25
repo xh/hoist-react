@@ -3,7 +3,7 @@
   height: 550px;
 
   &__zone-picker {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     background: var(--xh-bg-alt);
     border-top: var(--xh-border-solid);
     border-bottom: var(--xh-border-solid);
@@ -15,7 +15,7 @@
       flex: 1;
       min-height: 30px;
       white-space: nowrap;
-      padding: var(--xh-pad-half-px);
+      padding: var(--xh-spacing-half);
       background: var(--xh-bg);
       border: var(--xh-border-solid);
       cursor: pointer;
@@ -32,32 +32,32 @@
       }
 
       &.tl {
-        font-size: var(--xh-zone-grid-top-font-size-px);
+        font-size: var(--xh-zone-grid-top-font-size);
         color: var(--xh-zone-grid-top-text-color);
-        border-radius: var(--xh-border-radius-px) 0 0 0;
+        border-radius: var(--xh-border-radius) 0 0 0;
       }
 
       &.tr {
         justify-content: flex-end;
         margin: 0 0 0 -1px;
-        font-size: var(--xh-zone-grid-top-font-size-px);
+        font-size: var(--xh-zone-grid-top-font-size);
         color: var(--xh-zone-grid-top-text-color);
-        border-radius: 0 var(--xh-border-radius-px) 0 0;
+        border-radius: 0 var(--xh-border-radius) 0 0;
       }
 
       &.bl {
         margin: -1px 0 0 0;
-        font-size: var(--xh-zone-grid-bottom-font-size-px);
+        font-size: var(--xh-zone-grid-bottom-font-size);
         color: var(--xh-zone-grid-bottom-text-color);
-        border-radius: 0 0 0 var(--xh-border-radius-px);
+        border-radius: 0 0 0 var(--xh-border-radius);
       }
 
       &.br {
         justify-content: flex-end;
         margin: -1px 0 0 -1px;
-        font-size: var(--xh-zone-grid-bottom-font-size-px);
+        font-size: var(--xh-zone-grid-bottom-font-size);
         color: var(--xh-zone-grid-bottom-text-color);
-        border-radius: 0 0 var(--xh-border-radius-px);
+        border-radius: 0 0 var(--xh-border-radius);
       }
     }
   }
@@ -68,8 +68,8 @@
   }
 
   &__intro-text {
-    padding: var(--xh-pad-px) var(--xh-pad-px) 0 var(--xh-pad-px);
-    font-size: var(--xh-font-size-small-px);
+    padding: var(--xh-spacing) var(--xh-spacing) 0 var(--xh-spacing);
+    font-size: var(--xh-font-size-small);
 
     .xh-icon {
       margin-right: 2px;

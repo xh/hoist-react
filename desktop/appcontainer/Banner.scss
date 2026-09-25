@@ -11,13 +11,13 @@ body.xh-app .xh-banner {
     }
 
     & > .xh-icon {
-      margin-right: var(--xh-pad-half-px);
+      margin-right: var(--xh-spacing-half);
     }
   }
 
   &__message {
     flex: 1;
-    margin-right: var(--xh-pad-half-px);
+    margin-right: var(--xh-spacing-half);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
