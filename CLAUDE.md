@@ -35,8 +35,10 @@ real `bin` entries in the hoist-react `package.json` — invoke them exactly as 
 
 ```bash
 # Documentation
-npx hoist-docs search "grid sorting"         # Search all docs by keyword
+npx hoist-docs search "grid sorting"         # Search all docs - returns ranked sections
 npx hoist-docs read cmp/grid                 # Read a specific doc by ID
+npx hoist-docs read cmp/grid --outline       # List a doc's sections with token counts
+npx hoist-docs read cmp/grid -s "Sorting"    # Read one section (cheaper than the whole doc)
 npx hoist-docs list                          # List all available docs
 npx hoist-docs conventions                   # Print coding conventions
 npx hoist-docs index                         # Print the documentation catalog

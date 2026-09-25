@@ -175,6 +175,18 @@
   re-exported from `@xh/hoist/kit/ag-grid`. Apps that build a menu from dynamic strings must
   annotate or cast the array as `GridContextMenuItemLike[]`.
 
+### 🤖 AI Docs + Tooling
+
+* Rebuilt `hoist-search-docs` (and `hoist-docs search`) as ranked, section-level search. Results are
+  individual `##` / `###` doc sections ranked by BM25, each with its line range, token count, and a
+  short excerpt, rather than whole docs matched by keyword count. A default search returns 5
+  sections (at most 2 per doc) in under 800 tokens.
+* Added `section` and `outline` options to `hoist-read-doc` (`--section` / `--outline` for
+  `hoist-docs read`). A search hit now costs a few hundred tokens to read instead of the whole doc.
+  Full reads are unchanged, with a one-line size note on docs over ~3k tokens.
+* Added `pnpm test:mcp`, run in CI, covering the MCP specs plus a golden-set eval of doc search
+  ranking and an MCP / CLI output parity check.
+
 ### ✨ Styles
 
 * Grid styling moves from AgGrid.scss to AG Grid theme params, exported as `xhAgGridTheme` from
@@ -212,6 +224,7 @@
 * ag-grid-community `35.3 -> 36.2`
 * ag-grid-react `35.3 -> 36.2`
 * date-fns `added @ 4.4`
+* minisearch `added @ 7.2` (MCP / CLI doc search only - never bundled)
 * mobx `6.16 -> 7.0`
 * mobx-react-lite `4.1 -> 5.0`
 * react `19.2 -> 19.3`
