@@ -736,9 +736,9 @@ async fetchUsersAsync(): Promise<User[]> {
 Hoist extends the Promise prototype with chainable methods. The most common:
 
 - **`.catchDefault()`** — catches and passes to `XH.handleException()` with default options
-- **`.track({model, category})`** — links to a `TaskObserver` for loading masks/indicators
+- **`.track({category, message})`** — records the call and its timing via Hoist activity tracking
 - **`.timeout(ms)`** — rejects if not settled within the given time
-- **`.linkTo(observable)`** — writes resolved value to an observable property
+- **`.linkTo(taskObserver)`** — links to a `TaskObserver` for loading masks and progress messages
 
 See [`/promise/README.md`](../promise/README.md) for the full API.
 
