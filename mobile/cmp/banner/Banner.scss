@@ -74,6 +74,10 @@
     flex: none;
   }
 
+  &__action-button {
+    min-width: 60px;
+  }
+
   &--compact {
     --xh-button-height: 28px;
     min-height: 32px;

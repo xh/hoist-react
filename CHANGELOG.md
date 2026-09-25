@@ -124,6 +124,8 @@
 
 ### 🐞 Bug Fixes
 
+* `BannerSpec.onClick` is now called with the banner's `BannerModel`, as documented, rather than
+  the click event.
 * Fixed `PersistenceProvider` resurrecting cleared state - `clear()` wrote through synchronously
   without cancelling any pending debounced write, so state returned to its default within the
   debounce interval (250ms by default) was re-persisted by the stale write that followed.

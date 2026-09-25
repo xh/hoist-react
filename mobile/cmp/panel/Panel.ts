@@ -23,7 +23,7 @@ import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, isString, omitBy} from 'lodash';
-import {cloneElement, isValidElement, ReactNode, ReactElement} from 'react';
+import {Children, cloneElement, isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 import {logWarn} from '@xh/hoist/utils/js';
@@ -132,10 +132,11 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         const banners = parseBanners(bannerProp);
         return vbox({
             className,
-            items: [
+            // Keyed via toArray so a banner appearing or hiding does not remount the content frame.
+            items: Children.toArray([
                 panelHeader({title, icon, className: headerClassName, headerItems}),
                 parseToolbar(tbar),
-                ...banners.top,
+                banners.top,
                 frame({
                     display: scrollable ? 'block' : 'flex',
                     ...contentBoxProps,
@@ -144,11 +145,11 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
                     items: children
                 }),
-                ...banners.bottom,
+                banners.bottom,
                 parseToolbar(bbar),
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
-            ],
+            ]),
             ref,
             ...rest,
             ...layoutProps
