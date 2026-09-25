@@ -57,6 +57,11 @@ jobs:
         - name: Type check
           run: pnpm typecheck
 
+        # Self-contained spec scripts for the MCP server and CLI tools, including the doc-search
+        # golden-set eval. See mcp/README.md.
+        - name: MCP tests
+          run: pnpm test:mcp
+
         # Gates merges on a clean production-dependency audit for high and
         # critical advisories. The first, un-gated run prints lower-severity
         # findings in the step log for visibility without failing the build -
