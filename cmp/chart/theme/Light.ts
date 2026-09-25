@@ -7,7 +7,7 @@
 
 // Light theme color vars - see and sync with vars.scss.
 const bg = '#ffffff',
-    altBg = '#f5f5f5', // --xh-grid-bg-odd
+    altBg = '#f5f5f5', // --xh-grid-odd-row-bg
     borderColor = '#bdbdbd', // --xh-border-color
     altBorderColor = '#e6e6e6', // --xh-grid-border-color
     textColor = '#263238', // --xh-text-color
@@ -193,7 +193,7 @@ export const LightTheme = {
     },
 
     scrollbar: {
-        barBackgroundColor: '#90a4ae', // --xh-scrollbar-thumb
+        barBackgroundColor: '#90a4ae', // --xh-scrollbar-thumb-color
         barBorderColor: '#cfd8dc',
         buttonArrowColor: 'white',
         buttonBackgroundColor: '#90a4ae',

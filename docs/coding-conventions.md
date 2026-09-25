@@ -932,6 +932,11 @@ can reference these variables for consistent theming but should not define new v
 --xh-grid-bg
 ```
 
+Names follow a `--xh-{component}-{element}-{state}-{property}` grammar (e.g.
+`--xh-grid-row-hover-bg`), and size variables carry their unit in the value (`--xh-spacing: 10px`).
+When adding a variable to Hoist, follow the
+[naming conventions](../styles/README.md#naming-conventions) in the styles README.
+
 ## Key Source Files
 
 These files are good references for the conventions described above:

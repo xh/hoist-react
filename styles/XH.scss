@@ -22,7 +22,7 @@ body.xh-app {
   font-feature-settings: var(--xh-font-feature-settings);
   // Important for default Inter font to ensure numbers are constant-width and line up properly.
   font-variant-numeric: tabular-nums;
-  font-size: var(--xh-font-size-px);
+  font-size: var(--xh-font-size);
   box-sizing: border-box;
 
   *,
@@ -39,8 +39,8 @@ body.xh-app {
   ::-webkit-scrollbar {
     -webkit-appearance: none;
     background-color: var(--xh-scrollbar-bg);
-    width: var(--xh-scrollbar-size-px);
-    height: var(--xh-scrollbar-size-px);
+    width: var(--xh-scrollbar-size);
+    height: var(--xh-scrollbar-size);
   }
 
   ::-webkit-scrollbar-corner {
@@ -48,7 +48,7 @@ body.xh-app {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--xh-scrollbar-thumb);
+    background-color: var(--xh-scrollbar-thumb-color);
   }
 
   h1,
@@ -57,7 +57,7 @@ body.xh-app {
   h4,
   h5 {
     color: var(--xh-text-color-headings);
-    margin: var(--xh-pad-px) 0;
+    margin: var(--xh-spacing) 0;
   }
 
   .xh-title-tip {
@@ -166,29 +166,29 @@ body.xh-app {
   .xh-bold { font-weight: 600; } // note this is technically demi-bold - 700 often too heavy
   .xh-font-family-headings { font-family: var(--xh-font-family-headings); }
   .xh-font-family-mono { font-family: var(--xh-font-family-mono); }
-  .xh-font-size-large { font-size: var(--xh-font-size-large-em); }
-  .xh-font-size-small { font-size: var(--xh-font-size-small-em); }
+  .xh-font-size-large { font-size: var(--xh-font-size-large-relative); }
+  .xh-font-size-small { font-size: var(--xh-font-size-small-relative); }
 
-  .xh-margin { margin: var(--xh-pad-px); }
-  .xh-margin-double { margin: var(--xh-pad-double-px); }
-  .xh-margin-half { margin: var(--xh-pad-half-px); }
-  .xh-margin-top { margin-top: var(--xh-pad-px); }
-  .xh-margin-right { margin-right: var(--xh-pad-px); }
-  .xh-margin-bottom { margin-bottom: var(--xh-pad-px); }
-  .xh-margin-left { margin-left: var(--xh-pad-px); }
-  .xh-margin-lr { margin: 0 var(--xh-pad-px); }
-  .xh-margin-tb { margin: var(--xh-pad-px) 0; }
+  .xh-margin { margin: var(--xh-spacing); }
+  .xh-margin-double { margin: var(--xh-spacing-double); }
+  .xh-margin-half { margin: var(--xh-spacing-half); }
+  .xh-margin-top { margin-top: var(--xh-spacing); }
+  .xh-margin-right { margin-right: var(--xh-spacing); }
+  .xh-margin-bottom { margin-bottom: var(--xh-spacing); }
+  .xh-margin-left { margin-left: var(--xh-spacing); }
+  .xh-margin-lr { margin: 0 var(--xh-spacing); }
+  .xh-margin-tb { margin: var(--xh-spacing) 0; }
   .xh-margin-none { margin: 0 !important; }
 
-  .xh-pad { padding: var(--xh-pad-px); }
-  .xh-pad-double { padding: var(--xh-pad-double-px); }
-  .xh-pad-half { padding: var(--xh-pad-half-px); }
-  .xh-pad-top { padding-top: var(--xh-pad-px); }
-  .xh-pad-right { padding-right: var(--xh-pad-px); }
-  .xh-pad-bottom { padding-bottom: var(--xh-pad-px); }
-  .xh-pad-left { padding-left: var(--xh-pad-px); }
-  .xh-pad-lr { padding: 0 var(--xh-pad-px); }
-  .xh-pad-tb { padding: var(--xh-pad-px) 0; }
+  .xh-pad { padding: var(--xh-spacing); }
+  .xh-pad-double { padding: var(--xh-spacing-double); }
+  .xh-pad-half { padding: var(--xh-spacing-half); }
+  .xh-pad-top { padding-top: var(--xh-spacing); }
+  .xh-pad-right { padding-right: var(--xh-spacing); }
+  .xh-pad-bottom { padding-bottom: var(--xh-spacing); }
+  .xh-pad-left { padding-left: var(--xh-spacing); }
+  .xh-pad-lr { padding: 0 var(--xh-spacing); }
+  .xh-pad-tb { padding: var(--xh-spacing) 0; }
   .xh-pad-none { padding: 0 !important; }
 }
 
@@ -207,8 +207,8 @@ body.xh-app {
     background-color: var(--xh-popup-title-bg);
     color: var(--xh-popup-title-text-color);
     font-family: var(--xh-popup-title-font-family);
-    font-size: var(--xh-font-size-small-px);
-    padding: var(--xh-pad-half-px);
+    font-size: var(--xh-font-size-small);
+    padding: var(--xh-spacing-half);
     text-align: center;
     text-transform: uppercase;
   }

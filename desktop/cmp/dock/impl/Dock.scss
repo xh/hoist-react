@@ -19,7 +19,7 @@
     flex-direction: row-reverse !important;
 
     .xh-dock-view {
-      margin-left: var(--xh-pad-px);
+      margin-left: var(--xh-spacing);
     }
   }
 
@@ -27,7 +27,7 @@
     flex-direction: row !important;
 
     .xh-dock-view {
-      margin-right: var(--xh-pad-px);
+      margin-right: var(--xh-spacing);
     }
   }
 
@@ -48,15 +48,15 @@
 
   &__header {
     position: relative;
-    height: var(--xh-title-height-px);
+    height: var(--xh-title-height);
     color: var(--xh-title-text-color);
     background-color: var(--xh-title-bg);
-    border-top-right-radius: var(--xh-border-radius-px);
-    border-top-left-radius: var(--xh-border-radius-px);
+    border-top-right-radius: var(--xh-border-radius);
+    border-top-left-radius: var(--xh-border-radius);
 
     &__inner {
-      padding: var(--xh-title-pad-px);
-      height: var(--xh-title-height-px);
+      padding: var(--xh-title-padding);
+      height: var(--xh-title-height);
       align-items: center;
     }
 
@@ -65,23 +65,23 @@
     }
 
     &__title {
-      font-size: var(--xh-title-font-size-px);
-      margin-right: var(--xh-pad-px);
+      font-size: var(--xh-title-font-size);
+      margin-right: var(--xh-spacing);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
     &--compact {
-      height: var(--xh-title-compact-height-px);
+      height: var(--xh-title-compact-height);
 
       .xh-dock-view__header__inner {
-        height: var(--xh-title-compact-height-px);
-        padding: 0 0 0 var(--xh-pad-half-px);
+        height: var(--xh-title-compact-height);
+        padding: 0 0 0 var(--xh-spacing-half);
       }
 
       .xh-dock-view__header__title {
-        font-size: var(--xh-title-compact-font-size-px);
+        font-size: var(--xh-title-compact-font-size);
       }
     }
 
@@ -90,7 +90,7 @@
       &.xh-button--minimal {
         &.xh-button--intent-none {
           &.xh-button--enabled {
-            font-size: var(--xh-title-font-size-px);
+            font-size: var(--xh-title-font-size);
             color: var(--xh-popup-title-text-color);
           }
         }
@@ -121,8 +121,8 @@
     width: auto;
 
     .xh-dock-view__body {
-      border-bottom-right-radius: var(--xh-border-radius-px);
-      border-bottom-left-radius: var(--xh-border-radius-px);
+      border-bottom-right-radius: var(--xh-border-radius);
+      border-bottom-left-radius: var(--xh-border-radius);
       overflow: hidden;
     }
   }

@@ -38,9 +38,9 @@
 // labels sitting directly above their values. Apply to the container of a read-only `form`.
 // Styled entirely via the framework's form-field CSS vars - see `styles/vars.scss`.
 .xh-admin-readonly-form {
-  --xh-form-field-margin: 0 0 var(--xh-pad-half-px) 0;
-  --xh-form-field-label-color: var(--xh-text-color-muted);
-  --xh-form-field-label-font-size: var(--xh-font-size-small-px);
+  --xh-form-field-margin: 0 0 var(--xh-spacing-half) 0;
+  --xh-form-field-label-text-color: var(--xh-text-color-muted);
+  --xh-form-field-label-font-size: var(--xh-font-size-small);
   --xh-form-field-label-font-weight: 600;
   --xh-form-field-label-text-transform: uppercase;
   --xh-form-field-readonly-label-margin: 0;
@@ -83,7 +83,7 @@
     p,
     ul,
     ol {
-      margin: 0 0 var(--xh-pad-half-px) 0;
+      margin: 0 0 var(--xh-spacing-half) 0;
     }
 
     ul,
@@ -103,16 +103,16 @@
   // Frame read-only editors - they otherwise float borderless within a field set.
   .xh-code-input {
     border: var(--xh-border-solid);
-    border-radius: var(--xh-border-radius-px);
+    border-radius: var(--xh-border-radius);
   }
 }
 
 // RestDetailPanel form body.
 .xh-admin-rest-detail__form {
-  padding: var(--xh-pad-px);
-  gap: var(--xh-pad-px);
+  padding: var(--xh-spacing);
+  gap: var(--xh-spacing);
 }
 
 .xh-units-label {
-  font-size: var(--xh-font-size-small-px);
+  font-size: var(--xh-font-size-small);
 }

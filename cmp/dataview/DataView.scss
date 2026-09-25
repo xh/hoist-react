@@ -41,18 +41,18 @@
       }
 
       .ag-group-expanded {
-        margin: 0 var(--xh-pad-half-px) 0 0;
+        margin: 0 var(--xh-spacing-half) 0 0;
 
         svg {
-          width: var(--xh-pad-px);
+          width: var(--xh-spacing);
         }
       }
 
       .ag-group-contracted {
-        margin: 0 var(--xh-pad-half-px) 0 0;
+        margin: 0 var(--xh-spacing-half) 0 0;
 
         svg {
-          width: var(--xh-pad-px);
+          width: var(--xh-spacing);
         }
       }
     }
@@ -92,7 +92,7 @@
     // the flag off stays off under an ancestor that sets the param. Mirrors AgGrid.scss.)
     //------------------------
     &--stripe-rows {
-      --ag-odd-row-background-color: var(--xh-grid-bg-odd);
+      --ag-odd-row-background-color: var(--xh-grid-odd-row-bg);
     }
 
     &--no-stripe-rows {
@@ -100,7 +100,7 @@
     }
 
     &--show-hover {
-      --ag-row-hover-color: var(--xh-grid-bg-hover);
+      --ag-row-hover-color: var(--xh-grid-row-hover-bg);
     }
 
     &--no-hover {

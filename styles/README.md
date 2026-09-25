@@ -36,7 +36,7 @@ body.xh-app {
     --xh-border-color: #cccccc;
     --xh-grid-group-bg: hsl(206, 20%, 65%);
     --xh-text-color-muted: #5d5d5d;
-    --xh-tbar-compact-min-size: 32;
+    --xh-toolbar-compact-min-size: 32px;
 }
 ```
 
@@ -59,17 +59,17 @@ mobile-only values.
 
 #### Base vs. Derived Variables
 
-Many variables derive from others - `--xh-pad-px` from `--xh-pad`, `--xh-grid-header-bg` from
-`--xh-grid-bg`, `--xh-intent-primary` from the `--xh-intent-primary-*` HSL components, and so on.
-CSS resolves a `var()` reference on the element where the referencing variable is declared, and
+Many variables derive from others - `--xh-spacing-half` from `--xh-spacing`, `--xh-grid-header-bg`
+from `--xh-grid-bg`, `--xh-intent-primary` from the `--xh-intent-primary-*` HSL components, and so
+on. CSS resolves a `var()` reference on the element where the referencing variable is declared, and
 descendants inherit the *resolved* value. Because Hoist declares all of these on `body`:
 
 * **Overriding a base variable on `body.xh-app` flows through to everything derived from it.**
-  Setting `--xh-pad: 8` updates `--xh-pad-px`, `--xh-pad-half-px`, and every component spacing
-  built on them.
-* **Overriding a base variable on a descendant does not.** Setting `--xh-pad: 4` on
-  `.my-panel` changes `--xh-pad` within that subtree, but `--xh-pad-px` there is still the value
-  computed on `body` - and component SCSS typically reads the derived `-px` form.
+  Setting `--xh-spacing: 8px` updates `--xh-spacing-half`, `--xh-spacing-double`, and every
+  component spacing built on them.
+* **Overriding a base variable on a descendant reaches only CSS that reads it directly.** Setting
+  `--xh-spacing: 4px` on `.my-panel` changes padding that reads `var(--xh-spacing)` within that
+  subtree, but `--xh-spacing-half` there is still the value computed on `body`.
 
 #### Scoped Overrides
 
@@ -84,24 +84,68 @@ set the variable the components actually read, not one upstream of it:
     --xh-grid-header-bg: #fafafa;
 }
 
-// Does NOT work - `--xh-pad-px` (and the half/double variants) were already resolved on `body`.
+// Only partly works - CSS reading `--xh-spacing` follows, but `--xh-spacing-half`,
+// `--xh-spacing-double`, and variables built from them keep the values computed on `body`.
 .my-dense-panel {
-    --xh-pad: 4;
+    --xh-spacing: 4px;
 }
 ```
 
-Derivation can run several levels deep. `--xh-form-field-margin` is itself built from
-`--xh-pad-px` on `body`, so even overriding `--xh-pad-px` within a subtree leaves form field margins
-unchanged there - it reaches only CSS that reads `--xh-pad-px` directly. Scoped overrides are best
-suited to leaf variables such as colors; for broad changes like density, override the base variable
-app-wide on `body.xh-app` or use a component's built-in sizing options (e.g. grid `sizingMode`).
+Derivation can run several levels deep - `--xh-form-field-margin`, for example, is built from
+`--xh-spacing` on `body`, so a scoped `--xh-spacing` leaves form field margins unchanged. Scoped
+overrides are best suited to leaf variables such as colors; for broad changes like density,
+override the base variable app-wide on `body.xh-app` or use a component's built-in sizing options
+(e.g. grid `sizingMode`).
 
 When unsure which variable a component reads, check its SCSS or search `vars.scss` for the
 variable's name to see what references it.
 
+### Naming Conventions
+
+Every Hoist variable follows the same grammar, so a name can usually be predicted from what it
+styles:
+
+```
+--xh-{component}-{element}-{state}-{property}
+```
+
+Only `--xh-` and `{property}` are always present. Global tokens drop the component
+(`--xh-border-color`, `--xh-font-size`); component tokens name the component and, where needed, the
+element and state:
+
+| Name | Component | Element | State | Property |
+|------|-----------|---------|-------|----------|
+| `--xh-grid-bg` | grid | | | bg |
+| `--xh-grid-header-font-size` | grid | header | | font-size |
+| `--xh-grid-row-hover-bg` | grid | row | hover | bg |
+| `--xh-button-active-text-color` | button | | active | text-color |
+| `--xh-form-field-focused-border-color` | form-field | | focused | border-color |
+
+Conventions within that grammar:
+
+* **Property suffixes** - `-bg` for backgrounds; `-text-color` for text; `-border-color`; `-color`
+  alone only for an accent applied to several properties at once (e.g. `--xh-card-primary-color`
+  sets a border and header text); `-box-shadow`, `-font-size`, `-font-weight`, `-border-radius`,
+  `-border-width`. A `-border` suffix holds a full shorthand (`1px solid ...`).
+* **Spacing** - `--xh-spacing` is the base unit, with `-half` and `-double` variants. Component
+  padding uses `-padding` (full shorthand) or `-padding-inline` (left + right only); `-gap` for
+  flex/grid gaps.
+* **States** - e.g. `hover`, `active`, `focused`, `selected`, `disabled`, placed before the
+  property.
+* **Variants** - element variants read naturally before the element (`--xh-grid-odd-row-bg`,
+  `--xh-grid-total-row-bg`); sizing-mode variants follow the component
+  (`--xh-grid-compact-font-size`, `--xh-title-compact-height`). Variants of a global token follow
+  its property (`--xh-bg-alt`, `--xh-text-color-muted`, `--xh-font-family-mono`).
+* **Scales** - `-small` / `-large` and `-half` / `-double` for global tokens, with the ratio behind a
+  scale in a `-mult` variable (`--xh-font-size-large-mult`).
+* **No platform or theme in names** - dark and mobile values are the same variable, redefined under
+  `.xh-dark` / `.xh-mobile`. A variable only relevant on one platform (e.g. `--xh-input-height`,
+  mobile only) still carries no platform prefix.
+* **No units in names** - sizes carry their unit in the value (see below).
+
 ### Variable Categories
 
-The `vars.scss` file organizes ~470 CSS custom properties into these categories:
+The `vars.scss` file organizes ~410 CSS custom properties into these categories:
 
 | Category | Prefix Pattern | Examples |
 |----------|---------------|----------|
@@ -110,37 +154,38 @@ The `vars.scss` file organizes ~470 CSS custom properties into these categories:
 | **Positive/Negative** | `--xh-{pos\|neg\|neutral}-val-color` | `--xh-pos-val-color`, `--xh-neg-val-color` |
 | **Background** | `--xh-bg*` | `--xh-bg`, `--xh-bg-alt`, `--xh-bg-highlight` |
 | **Text** | `--xh-text-color*` | `--xh-text-color`, `--xh-text-color-muted`, `--xh-text-color-accent` |
-| **Typography** | `--xh-font-*` | `--xh-font-family`, `--xh-font-size-px`, `--xh-font-size-large-em` |
-| **Spacing** | `--xh-pad*` | `--xh-pad-px`, `--xh-pad-half-px`, `--xh-pad-double-px` |
-| **Borders** | `--xh-border-*` | `--xh-border-color`, `--xh-border-solid`, `--xh-border-radius-px` |
-| **Component-Specific** | `--xh-{component}-*` | `--xh-grid-bg`, `--xh-panel-title-bg`, `--xh-tbar-min-size-px` |
+| **Typography** | `--xh-font-*` | `--xh-font-family`, `--xh-font-size`, `--xh-font-size-large` |
+| **Spacing** | `--xh-spacing*` | `--xh-spacing`, `--xh-spacing-half`, `--xh-spacing-double` |
+| **Borders** | `--xh-border-*` | `--xh-border-color`, `--xh-border-solid`, `--xh-border-radius` |
+| **Component-Specific** | `--xh-{component}-*` | `--xh-grid-bg`, `--xh-panel-title-bg`, `--xh-toolbar-min-size` |
 
 Components with dedicated variable sets include: AppBar, Badge, Button, Card, Chart, Form Field,
 Grid (including Large, Compact, Tiny, and ZoneGrid variants), Input, Loading Indicator, Mask, Menu,
 Panel, Popup, Resizable Splitter, Scrollbar, Tab, Title, Toolbar, and Viewport.
 
-### Unitless Values and the `-px` Suffix Convention
+### Units
 
-Many size-related variables store **unitless numbers** and provide a computed `-px` companion:
-
-```scss
---xh-pad: 10;
---xh-pad-px: calc(var(--xh-pad) * 1px);
-```
-
-The unitless base value supports `calc()` arithmetic (e.g. deriving `--xh-pad-half` and
-`--xh-pad-double`), while the `-px` companion is ready for direct use in CSS properties. Most
-component SCSS files reference the `-px` suffixed versions.
-
-Apps overriding these variables should set a **unitless number**:
+Size variables hold real CSS lengths, units included, and derived sizes use plain `calc()`
+arithmetic:
 
 ```scss
-// Do: Set a unitless number
-body.xh-app { --xh-pad: 8; }
-
-// Don't: Include units — breaks calc() expressions
-body.xh-app { --xh-pad: 8px; }
+--xh-spacing: 10px;
+--xh-spacing-half: calc(var(--xh-spacing) * 0.5);
 ```
+
+Read size variables directly (`padding: var(--xh-spacing)`) and override them with a length:
+
+```scss
+// Do: Include the unit
+body.xh-app { --xh-spacing: 8px; }
+
+// Don't: Omit it - every size derived from the variable becomes invalid
+body.xh-app { --xh-spacing: 8; }
+```
+
+Only genuine ratios are unitless: the `-mult` scale factors, line-height ratios, opacities, font
+weights, and the intent HSL components. In development mode, Hoist logs a warning at startup if a
+size variable resolves to a bare number.
 
 ### Intent Color System
 
@@ -252,7 +297,7 @@ larger font sizes, taller toolbars, different AppBar colors). These combine with
 
 ```scss
 &:where(.xh-mobile) {
-    --xh-font-size: 16;
+    --xh-font-size: 16px;
 
     &:where(.xh-dark) {
         --xh-appbar-bg: #{mc('blue-grey', '700')};
@@ -291,7 +336,7 @@ name. This is one of the most important and pervasive uses of SCSS in the codeba
     // Elements
     &__header {
         color: var(--xh-card-header-text-color);
-        font-size: var(--xh-card-header-font-size-px);
+        font-size: var(--xh-card-header-font-size);
 
         // Modifiers on the element
         &--intent-primary {
@@ -388,7 +433,7 @@ Hoist uses a deliberately limited subset of SCSS features:
 | **Functions** | Color manipulation in `vars.scss` | `mc()`, `mc-muted()`, `mc-trans()` |
 | **`@mixin` / `@include`** | Sparingly, for reusable patterns | Grid border mixins |
 | **`@for` loops** | Rare, for generating depth-based styles | Tree grid row-level backgrounds |
-| **`calc()`** | Frequently, with CSS vars | `calc(var(--xh-pad) * 1px)` |
+| **`calc()`** | Frequently, with CSS vars | `calc(var(--xh-spacing) * 2)` |
 
 ### What Hoist Avoids
 
@@ -414,16 +459,16 @@ typical app-level stylesheet:
 // App.scss
 body.xh-app {
     // Override core spacing
-    --xh-pad: 8;
+    --xh-spacing: 8px;
 
     // Customize form field labels
-    --xh-form-field-label-color: var(--xh-text-color-muted);
-    --xh-form-field-label-font-size: var(--xh-font-size-small-px);
+    --xh-form-field-label-text-color: var(--xh-text-color-muted);
+    --xh-form-field-label-font-size: var(--xh-font-size-small);
     --xh-form-field-label-text-transform: uppercase;
 
     // Dark theme specific overrides
     &.xh-dark {
-        --xh-tbar-bg: #1d272c;
+        --xh-toolbar-bg: #1d272c;
     }
 }
 ```
@@ -446,7 +491,7 @@ can also target Hoist framework classes for contextual overrides:
 .xh-appbar-icon {
     img {
         height: 25px;
-        margin-left: var(--xh-pad-px);
+        margin-left: var(--xh-spacing);
     }
 }
 ```
@@ -497,18 +542,20 @@ $my-bg: white;
 
 SCSS variables are resolved at compile time and cannot respond to runtime theme toggling.
 
-### Including Units in Override Values
+### Omitting Units from Size Overrides
 
 ```scss
-// Don't: Include px units — breaks calc() expressions
-body.xh-app { --xh-font-size: 14px; }
-
-// Do: Use unitless numbers for size overrides
+// Don't: Set a size variable to a bare number
 body.xh-app { --xh-font-size: 14; }
+
+// Do: Include the unit
+body.xh-app { --xh-font-size: 14px; }
 ```
 
-Hoist's unitless-plus-`-px` pattern uses `calc(var(...) * 1px)` to add units — if the source
-value already includes units, the calculation produces invalid values like `14px * 1px`.
+A bare number is not a valid length, so it silently breaks every property and derived variable
+that uses it - e.g. `calc(var(--xh-font-size) * 1.2)` for `--xh-font-size-large`. Hoist versions
+before v88 used unitless size variables; see the
+[v88 upgrade notes](../docs/upgrade-notes/v88-upgrade-notes.md) for the migration.
 
 ### High-Specificity Selectors
 

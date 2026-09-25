@@ -1,10 +1,10 @@
 .xh-options-dialog {
   &__form {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     overflow-y: auto;
 
     .xh-form-field:not(:last-child) {
-      margin-bottom: var(--xh-pad-double-px);
+      margin-bottom: var(--xh-spacing-double);
     }
   }
 

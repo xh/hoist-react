@@ -3,9 +3,9 @@
 > **From:** v87.x → v88.0.0 | **Released:** TBD | **Difficulty:** 🔴 HIGH (full release - see
 > CHANGELOG)
 
-> **⚠️ Partial draft - CSS variables section only.** This file currently covers just one of v88's
-> breaking changes: the removal of the two-tier CSS variable override system. It is the first
-> section of the full v88 upgrade notes, which are still to be written. The other v88 breaking
+> **⚠️ Partial draft - CSS variables section only.** This file currently covers just one of
+> v88's breaking changes: the overhaul of Hoist's CSS custom properties. It is the first section of
+> the full v88 upgrade notes, which are still to be written. The other v88 breaking
 > changes - TC39 decorators and the `@xh/hoist-dev-utils` 16 requirement, MobX 7, AG Grid 36, the
 > React 19.3 floor, and the scheduled removals - are not yet covered here. Until they are, see the
 > v88 entry in [`CHANGELOG.md`](../../CHANGELOG.md) for the complete list, and treat the
@@ -13,23 +13,28 @@
 
 ## Overview - CSS Variables
 
-Hoist React v88 removes the two-tier CSS custom property override system. Previously, Hoist
-defined each framework variable as `--xh-grid-bg: var(--grid-bg, var(--xh-bg))`, where the
-unprefixed `--grid-bg` served as an app-level override hook. Applications now override the `--xh-`
-prefixed variables directly - simpler, IDE-friendly, and consistent with modern CSS variable
-conventions.
+Hoist React v88 resets Hoist's CSS custom properties onto a simpler baseline, designed to read the
+way developers - and AI coding agents - expect CSS variables to work:
 
-This is a **mechanical migration** for most apps. The majority of overrides simply need an `xh-`
-prefix added. Nine unprefixed names differed from their `--xh-` counterparts - see the mapping table
-in Step 3.
+- **One tier of variables.** The unprefixed override hooks are gone. Previously Hoist defined each
+  variable as `--xh-grid-bg: var(--grid-bg, var(--xh-bg))`, with the unprefixed `--grid-bg` as the
+  app-level hook. Apps now set the `--xh-*` variables directly.
+- **Sizes carry units.** Size variables hold real lengths (`--xh-spacing: 10px`) instead of
+  unitless numbers, and every `-px` companion variable (`--xh-pad-px`, `--xh-font-size-px`, ...)
+  is gone - read the base variable directly.
+- **Consistent names.** About 40 variables were renamed to follow one naming grammar - e.g.
+  `--xh-pad` → `--xh-spacing`, `--xh-tbar-*` → `--xh-toolbar-*`, `--xh-appbar-color` →
+  `--xh-appbar-text-color`. See [Renamed Variables](#renamed-variables) and the naming conventions
+  in [`styles/README.md`](../../styles/README.md#naming-conventions).
+- **Overrides on `body.xh-app` always win**, in every theme and platform combination.
+- **Three variables that never had any effect were removed.**
 
-The most significant app-level impacts are:
+A codemod automates nearly all of the migration. The most significant app-level impacts are:
 
-- **Unprefixed override hooks no longer do anything** - an app that still sets `--pad: 8` or
-  `--grid-bg: #fafafa` silently loses that customization. Migrate every override to its `--xh-*`
-  name.
-- **Nine hook names did not match their `--xh-` variable** - these need the table in Step 3, not
-  a plain prefix.
+- **Old names and unitless values fail silently.** An app still setting `--grid-bg`, `--xh-pad`, or
+  `--xh-font-size: 14` loses that customization without an error. Run the codemod, and watch for
+  Hoist's development-mode console warning about unitless size variables.
+- **Overrides set on `:root` or `html` no longer apply** - move them to `body.xh-app`.
 
 The CSS variable change requires no hoist-core change.
 
@@ -61,79 +66,100 @@ After:
 
 Then run `pnpm install` (or `yarn install` / `npm install`) to update dependencies.
 
-### 2. Migrate Unprefixed CSS Variable Overrides
+### 2. Run the CSS Variable Codemod
 
-Find every place your app sets an unprefixed CSS custom property that served as a Hoist override
-hook. These are typically in the app's root stylesheet (e.g. `App.scss`), occasionally in
-component-specific SCSS, and rarely as inline `style` custom properties in TypeScript.
+From your `client-app` directory, after installing v88:
 
-**Find candidates - any custom property declaration that is not already `--xh-*`:**
 ```bash
-# SCSS/CSS declarations. Add your own app prefix (e.g. --myapp-) to the exclusion list.
-grep -rnE '^\s*--[a-z][a-z0-9-]*\s*:' --include='*.scss' --include='*.css' client-app/src \
-  | grep -vE -- '--(xh|ag|bp[0-9]?|fa|myapp)-'
+# Preview first - reports every change without writing.
+node node_modules/@xh/hoist/docs/codemod/v88/codemod-css-vars.mjs --dry src
 
-# Custom properties set from TypeScript inline styles.
-grep -rnE "['\"]--[a-z][a-z0-9-]*['\"]\s*:" --include='*.ts' --include='*.tsx' client-app/src \
-  | grep -vE -- '--(xh|ag|myapp)-'
+# Then apply.
+node node_modules/@xh/hoist/docs/codemod/v88/codemod-css-vars.mjs src
 ```
 
-Any hit that names a Hoist variable is an override to migrate. Your app's own variables (with your
-own prefix) and third-party variables (`--ag-*`, `--bp*-*`) are unaffected. When in doubt whether
-a name is a Hoist variable, search for `--xh-<name>` in `node_modules/@xh/hoist/styles/vars.scss`.
+It scans `.scss`, `.css`, `.ts`, `.tsx`, `.js`, `.jsx`, and `.md` files and:
 
-**For most variables**, the migration is simply adding the `xh-` prefix:
+1. **Migrates unprefixed hooks** to their `--xh-*` variable, including the handful whose names
+   never matched (see [Old Hook Name Mismatches](#old-hook-name-mismatches)). Only declarations
+   inside a root-level selector (`body`, `html`, `:root`, `.xh-app`, `.xh-dark`, `.xh-mobile`, and
+   combinations) are migrated - the only places the hooks ever worked. Pass `--no-hooks` to skip.
+2. **Renames** every renamed or retired `--xh-*` variable, anywhere it appears.
+3. **Adds `px`** to size variables set to a bare number: `--xh-spacing: 8;` → `--xh-spacing: 8px;`.
+4. **Simplifies arithmetic** that re-applied the unit: `calc(var(--xh-spacing) * 1px)` →
+   `var(--xh-spacing)`, and `calc(var(--xh-toolbar-item-spacing) * 2px)` →
+   `calc(var(--xh-toolbar-item-spacing) * 2)`.
 
 Before:
 ```scss
 body.xh-app {
-  --font-feature-settings: 'tnum', 'zero', 'ss01';
+  --pad: 8;
   --border-color: #cccccc;
-  --grid-group-bg: hsl(206, 20%, 65%);
-  --text-color-muted: #5d5d5d;
-  --tbar-compact-min-size: 32;
+  --tbar-min-size: 50;
+  --grid-header-cell-lr-pad: 14;
 
   &.xh-dark {
-    --border-color: #37474f;
-    --text-color-muted: #acacac;
+    --tbar-bg: #1d272c;
   }
+}
+
+.my-panel__header {
+  padding: var(--xh-pad-half-px) var(--xh-pad-px);
+  font-size: var(--xh-font-size-small-px);
 }
 ```
 
 After:
 ```scss
 body.xh-app {
-  --xh-font-feature-settings: 'tnum', 'zero', 'ss01';
+  --xh-spacing: 8px;
   --xh-border-color: #cccccc;
-  --xh-grid-group-bg: hsl(206, 20%, 65%);
-  --xh-text-color-muted: #5d5d5d;
-  --xh-tbar-compact-min-size: 32;
+  --xh-toolbar-min-size: 50px;
+  --xh-grid-header-padding-inline: 14px;
 
   &.xh-dark {
-    --xh-border-color: #37474f;
-    --xh-text-color-muted: #acacac;
+    --xh-toolbar-bg: #1d272c;
   }
+}
+
+.my-panel__header {
+  padding: var(--xh-spacing-half) var(--xh-spacing);
+  font-size: var(--xh-font-size-small);
 }
 ```
 
-### 3. Handle Naming Mismatches
+The codemod ends with a report. Work through each section of it:
 
-Nine unprefixed override hooks had names that differed from the `--xh-` variable they configured.
-If your app set any of these, use the `--xh-` name from the right column:
+- **Hook migrations** - every unprefixed name it converted, with file and line. Confirm each was a
+  Hoist hook rather than an app variable that happened to share a hook's name (e.g. `--gray`).
+- **Removed variables still referenced** - delete these usages; the variables never had any effect.
+- **Warnings** - `calc()` expressions that add a bare number to a size variable (add a unit to the
+  number) or divide by one, TypeScript assigning a size variable a bare number, and code that
+  references a size variable by name. For the last, check whether the code reads the variable's
+  value - e.g. via `getComputedStyle(...).getPropertyValue()` - and appends a unit, which now
+  doubles up (`41pxpx`).
 
-| Old unprefixed hook | New `--xh-` variable |
-|---|---|
-| `--form-field-info-border-color` | `--xh-form-field-info-border-color` (see note) |
-| `--form-field-invalid-border-color` | `--xh-form-field-invalid-border-color` (see note) |
-| `--form-field-warning-border-color` | `--xh-form-field-warning-border-color` (see note) |
-| `--grid-cell-bg-highlight` | `--xh-grid-cell-change-bg-highlight` |
-| `--grid-header-cell-lr-pad` | `--xh-grid-header-lr-pad` |
-| `--input-placeholder-color` | `--xh-input-placeholder-text-color` |
-| `--popover-backdrop` | `--xh-popover-backdrop-bg` |
-| `--popover-shadow` | `--xh-popover-box-shadow` |
-| `--zone-grid-cell-pad-px` | `--xh-zone-grid-cell-lr-pad-px` |
+### 3. Review What the Codemod Cannot Migrate
 
-**Note on the form-field validation colors.** In prior versions the
+**Hooks set outside a root-level selector.** An unprefixed hook set on a container never had any
+effect - Hoist read the hooks only on `body` - so the codemod leaves these alone. Search for any that
+remain:
+
+```bash
+# Unprefixed custom properties. Add your own app prefix (e.g. --myapp-) to the exclusion list.
+grep -rnE '^\s*--[a-z][a-z0-9-]*\s*:' --include='*.scss' --include='*.css' src \
+  | grep -vE -- '--(xh|ag|bp[0-9]?|fa|myapp)-'
+```
+
+For any hit that names a Hoist hook, decide whether you want it at all: renamed to its `--xh-*`
+variable, it will *start* applying within that subtree for the first time.
+
+**Names built at runtime.** Variable names assembled dynamically - SCSS interpolation such as
+`--xh-grid-tree-group-color-level-#{$i}`, or strings concatenated in TypeScript - are not detected.
+Search for `--xh-` near `#{` or string concatenation and update them by hand using the
+[Renamed Variables](#renamed-variables) table.
+
+**Form-field validation colors.** In prior versions the
 `--form-field-{info,invalid,warning}-border-color` hooks fed *two* variables each: the
 `-border-color` variable (as intended) and, by mistake, the matching `-box-shadow` variable - so an
 app that set the hook to a color replaced the whole `box-shadow` value with a bare color, an
@@ -142,12 +168,6 @@ border but no inset shadow. In v88 the shadow variables reference the `-border-c
 properly, so setting `--xh-form-field-invalid-border-color` colors both the border and the inset
 shadow. To keep the prior no-shadow appearance, add e.g.
 `--xh-form-field-invalid-box-shadow: none;` alongside the color.
-
-**Find affected files:**
-```bash
-grep -rnE -- '--(form-field-(info|invalid|warning)-border-color|grid-cell-bg-highlight|grid-header-cell-lr-pad|input-placeholder-color|popover-backdrop|popover-shadow|zone-grid-cell-pad-px)\b' \
-  --include='*.scss' client-app/src
-```
 
 ### 4. Check Override Selectors
 
@@ -173,55 +193,132 @@ Before:
 After:
 ```scss
 body.xh-app {
-  --xh-grid-large-font-size: 16;
+  --xh-grid-large-font-size: 16px;
 }
 ```
 
-Where you want per-theme values, keep using an `&.xh-dark` block as in the example in Step 2.
+The codemod migrates the name and unit here but leaves the selector - change `:root` / `html` to
+`body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 2.
 
 **Scoped overrides** - setting a variable on a container rather than `body.xh-app` - only reach CSS
 that reads that exact variable. Variables derived from it were resolved once on `body`, so
-`.my-panel { --xh-pad: 4; }` does not change `--xh-pad-px` within the panel. See "Base vs. Derived
-Variables" in [`styles/README.md`](../../styles/README.md#base-vs-derived-variables).
+`.my-panel { --xh-spacing: 4px; }` does not change `--xh-spacing-half` within the panel. See "Base
+vs. Derived Variables" in [`styles/README.md`](../../styles/README.md#base-vs-derived-variables).
 
-Note that an unprefixed hook set on a container rather than on `body` never had any effect - Hoist
-read the hooks only where it declared its variables, on `body`. Once renamed to `--xh-*`, such an
-override *starts* applying within that subtree. Review any scoped hooks the Step 2 search turns up
-before renaming them, and drop any whose effect you do not want.
+### 5. Check the Console and the UI
 
-### 5. Check for Unitless Number Overrides
+Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
+a bare number - almost always an override the codemod could not see, such as one set from
+TypeScript or built with interpolation:
 
-If your app overrides any size-related variables that use Hoist's unitless number convention
-(e.g. `--xh-pad`, `--xh-font-size`, `--xh-tbar-min-size`), continue to set them as **unitless
-numbers**. This has not changed:
-
-```scss
-// Still correct - unitless numbers for size variables
-body.xh-app {
-  --xh-pad: 8;
-  --xh-font-size: 14;
-  --xh-appbar-height: 48;
-}
 ```
+[ThemeModel] | CSS size variables must include a unit as of Hoist v88 (e.g. '8px', not '8').
+Unitless values found for: --xh-spacing, ...
+```
+
+The check covers the active theme at startup; switch themes and reload to check the other. Then
+review the app in both light and dark themes, and on mobile if applicable.
 
 ## Verification Checklist
 
 After completing all steps:
 
 - [ ] `pnpm install` / `yarn install` / `npm install` completes without errors
-- [ ] Application loads without console errors
+- [ ] The codemod report has been reviewed - hook migrations, removed variables, and warnings
+- [ ] No overrides remain on `:root`, `html`, or bare `body`
+- [ ] Application loads in development mode without the unitless size variable warning
 - [ ] Custom colors, spacing, and typography render correctly in both light and dark themes (and on
   mobile, if applicable)
 - [ ] Form validation styling looks as intended if you override any `-border-color` (Step 3 note)
-- [ ] No unprefixed Hoist override hooks remain:
+- [ ] No references to retired names remain:
   ```bash
-  # Should return only your app's own custom vars (--myapp-*, etc.)
-  grep -rnE '^\s*--[a-z][a-z0-9-]*\s*:' --include='*.scss' client-app/src \
-    | grep -vE -- '--(xh|ag|bp[0-9]?|fa)-'
+  # Should return nothing
+  grep -rnE -- '--xh-[a-z0-9-]+-px\b|--xh-(pad|tbar)(-|\b)' src
   ```
+
+## Renamed Variables
+
+Beyond the renames below, two rules cover every other retired name:
+
+- **Every `-px` variable** is replaced by its base name, which now holds a length:
+  `--xh-font-size-px` → `--xh-font-size`, `--xh-scrollbar-size-px` → `--xh-scrollbar-size`.
+- **`--xh-tbar-*`** is now **`--xh-toolbar-*`**, and **`-lr-pad`** is now **`-padding-inline`**:
+  `--xh-grid-cell-lr-pad` → `--xh-grid-cell-padding-inline`.
+
+| v87 | v88 |
+|---|---|
+| `--xh-appbar-color` | `--xh-appbar-text-color` |
+| `--xh-appbar-title-color` | `--xh-appbar-title-text-color` |
+| `--xh-date-range-picker-accent` | `--xh-date-range-picker-accent-color` |
+| `--xh-font-size-large-em` | `--xh-font-size-large-relative` |
+| `--xh-font-size-small-em` | `--xh-font-size-small-relative` |
+| `--xh-form-field-info-color` | `--xh-form-field-info-text-color` |
+| `--xh-form-field-invalid-color` | `--xh-form-field-invalid-text-color` |
+| `--xh-form-field-label-color` | `--xh-form-field-label-text-color` |
+| `--xh-form-field-msg-font-size` | `--xh-form-field-message-font-size` |
+| `--xh-form-field-msg-line-height` | `--xh-form-field-message-line-height` |
+| `--xh-form-field-msg-margin` | `--xh-form-field-message-margin` |
+| `--xh-form-field-msg-text-transform` | `--xh-form-field-message-text-transform` |
+| `--xh-form-field-warning-color` | `--xh-form-field-warning-text-color` |
+| `--xh-grid-bg-hover` | `--xh-grid-row-hover-bg` |
+| `--xh-grid-bg-odd` | `--xh-grid-odd-row-bg` |
+| `--xh-grid-cell-change-bg-highlight` | `--xh-grid-cell-changed-bg` |
+| `--xh-grid-cell-focus-border-color` | `--xh-grid-cell-focused-border-color` |
+| `--xh-grid-selected-row-bg` | `--xh-grid-row-selected-bg` |
+| `--xh-grid-selected-row-text-color` | `--xh-grid-row-selected-text-color` |
+| `--xh-grid-tree-group-color-level-0` | `--xh-grid-tree-group-level-0-bg` |
+| `--xh-grid-tree-icon-px` | `--xh-grid-tree-icon-size` |
+| `--xh-loading-indicator-color` | `--xh-loading-indicator-text-color` |
+| `--xh-mobile-input-font-size` | `--xh-input-font-size` |
+| `--xh-mobile-input-height-px` | `--xh-input-height` |
+| `--xh-mobile-input-label-font-size` | `--xh-input-label-font-size` |
+| `--xh-pad` | `--xh-spacing` |
+| `--xh-pad-double` | `--xh-spacing-double` |
+| `--xh-pad-half` | `--xh-spacing-half` |
+| `--xh-pad-safe-all` | `--xh-safe-area-inset` |
+| `--xh-pad-safe-bottom` | `--xh-safe-area-inset-bottom` |
+| `--xh-pad-safe-left` | `--xh-safe-area-inset-left` |
+| `--xh-pad-safe-right` | `--xh-safe-area-inset-right` |
+| `--xh-pad-safe-top` | `--xh-safe-area-inset-top` |
+| `--xh-scrollbar-thumb` | `--xh-scrollbar-thumb-color` |
+| `--xh-segmented-control-pad` | `--xh-segmented-control-padding` |
+| `--xh-tbar-item-pad` | `--xh-toolbar-item-spacing` |
+| `--xh-title-pad` | `--xh-title-padding` |
+| `--xh-zone-grid-cell-lr-pad-px` | `--xh-zone-grid-cell-padding-inline` |
+| `--xh-zone-grid-delimiter-color` | `--xh-zone-grid-delimiter-text-color` |
+| `--xh-zone-grid-label-color` | `--xh-zone-grid-label-text-color` |
+
+`--xh-grid-tree-group-color-level-1` through `-9` follow the same pattern as level 0.
+
+**Removed** - none of these had any effect:
+
+| Variable | Note |
+|---|---|
+| `--xh-chart-bg` | Charts take their background from the Highcharts theme. |
+| `--xh-tab-border-width` | Never applied. |
+| `--xh-toolbar-button-bg` | Never applied. |
+
+## Old Hook Name Mismatches
+
+Nine v87 unprefixed hooks were named differently from the variable they configured. The codemod
+handles these; for reference, their v88 variables are:
+
+| v87 unprefixed hook | v88 variable |
+|---|---|
+| `--form-field-info-border-color` | `--xh-form-field-info-border-color` (see Step 3 note) |
+| `--form-field-invalid-border-color` | `--xh-form-field-invalid-border-color` (see Step 3 note) |
+| `--form-field-warning-border-color` | `--xh-form-field-warning-border-color` (see Step 3 note) |
+| `--grid-cell-bg-highlight` | `--xh-grid-cell-changed-bg` |
+| `--grid-header-cell-lr-pad` | `--xh-grid-header-padding-inline` |
+| `--input-placeholder-color` | `--xh-input-placeholder-text-color` |
+| `--popover-backdrop` | `--xh-popover-backdrop-bg` |
+| `--popover-shadow` | `--xh-popover-box-shadow` |
+| `--zone-grid-cell-pad-px` | `--xh-zone-grid-cell-padding-inline` |
 
 ## Reference
 
 - [Toolbox on GitHub](https://github.com/xh/toolbox) - canonical example of a Hoist app
-- [`styles/README.md`](../../styles/README.md) - CSS variable system documentation
+- [`styles/README.md`](../../styles/README.md) - CSS variable system documentation, including
+  naming conventions
+- [`codemod-css-vars.mjs`](../codemod/v88/codemod-css-vars.mjs) - the migration codemod
 - [Version Compatibility](../version-compatibility.md) - hoist-react / hoist-core matrix

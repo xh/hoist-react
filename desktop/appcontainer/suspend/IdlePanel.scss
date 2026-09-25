@@ -12,12 +12,12 @@
 
   img {
     display: block;
-    margin: 0 auto var(--xh-pad-px);
+    margin: 0 auto var(--xh-spacing);
     border-bottom: var(--xh-border-solid);
   }
 
   p {
-    padding: 0 var(--xh-pad-px);
+    padding: 0 var(--xh-spacing);
   }
 }
 

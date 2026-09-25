@@ -8,7 +8,7 @@
     background-color: var(--xh-bg-alt);
     border-bottom: var(--xh-border-solid);
     border-right: var(--xh-border-solid);
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    padding: var(--xh-spacing-half) var(--xh-spacing);
     text-align: right;
     vertical-align: top;
     white-space: nowrap;
@@ -17,6 +17,6 @@
   td {
     background-color: var(--xh-bg);
     border-bottom: var(--xh-border-solid);
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
   }
 }

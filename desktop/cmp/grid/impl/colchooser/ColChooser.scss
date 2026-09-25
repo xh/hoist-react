@@ -49,30 +49,30 @@
 
   // Width and `flex: none` are set inline; this is only the divider from the buckets.
   &__library {
-    border-right: var(--xh-border-width-px) solid var(--xh-border-color);
+    border-right: var(--xh-border-width) solid var(--xh-border-color);
   }
 
   &__separator {
     display: flex;
     align-items: center;
-    gap: var(--xh-pad-half-px);
+    gap: var(--xh-spacing-half);
     flex: none;
-    margin: var(--xh-pad-px) 0 var(--xh-pad-half-px);
+    margin: var(--xh-spacing) 0 var(--xh-spacing-half);
 
     // Right padding reserves the scrollbar gutter, so the toggle sits over the per-row action column.
-    padding: 0 var(--xh-scrollbar-size-px) 0 var(--xh-pad-half-px);
+    padding: 0 var(--xh-scrollbar-size) 0 var(--xh-spacing-half);
 
     &__line {
       flex: 1;
       height: 0;
-      border-top: var(--xh-border-width-px) solid var(--xh-border-color);
+      border-top: var(--xh-border-width) solid var(--xh-border-color);
     }
 
     &__label {
       flex: none;
       display: inline-flex;
       align-items: center;
-      gap: var(--xh-pad-half-px);
+      gap: var(--xh-spacing-half);
       white-space: nowrap;
       font-size: 10px;
       font-weight: 700;
@@ -91,7 +91,7 @@
       width: 36px; // = calcActionColWidth(1): centers the glyph over the action column
       min-height: 0;
       padding: 0;
-      font-size: var(--xh-grid-font-size-px);
+      font-size: var(--xh-grid-font-size);
 
       // Match the per-row action checkbox, which uses the lighter primary tone - not the base tone the
       // Icon `intent` prop applies.
@@ -128,7 +128,7 @@
     min-height: 40px;
 
     // Match the unpinned bucket's reserved gutter, so action-column checkboxes share a right edge.
-    padding-right: var(--xh-scrollbar-size-px);
+    padding-right: var(--xh-scrollbar-size);
 
     // Override ag-grid's own inline min-height on this viewport (set via JS layout) to match our
     // compact drop strip.
@@ -156,8 +156,8 @@
   }
 
   &__bucket--empty {
-    border-top: var(--xh-border-width-px) dashed var(--xh-border-color);
-    border-bottom: var(--xh-border-width-px) dashed var(--xh-border-color);
+    border-top: var(--xh-border-width) dashed var(--xh-border-color);
+    border-bottom: var(--xh-border-width) dashed var(--xh-border-color);
 
     // Set vars rather than properties - the Hoist grid theme rules win on selector specificity, but a
     // var set here cascades into them.
@@ -228,8 +228,8 @@
 
   &__lib-cell {
     &__row {
-      gap: var(--xh-pad-px);
-      padding: var(--xh-pad-half-px) 0;
+      gap: var(--xh-spacing);
+      padding: var(--xh-spacing-half) 0;
       width: 100%;
       min-height: 24px;
 
@@ -254,7 +254,7 @@
     }
 
     &__desc {
-      font-size: var(--xh-font-size-small-px);
+      font-size: var(--xh-font-size-small);
       line-height: 1.4;
       color: var(--column-chooser-text-color-alt);
     }
@@ -263,7 +263,7 @@
   &__name-cell {
     &__drag-handle,
     &__lock {
-      margin-right: var(--xh-pad-half-px);
+      margin-right: var(--xh-spacing-half);
       color: var(--xh-text-color-muted);
     }
 
@@ -280,7 +280,7 @@
     }
 
     &__meta {
-      margin-left: var(--xh-pad-half-px);
+      margin-left: var(--xh-spacing-half);
       font-size: 10px;
       cursor: default;
       color: var(--column-chooser-text-color-alt);
@@ -305,24 +305,24 @@
   padding: 0;
   background: var(--xh-bg);
   border: var(--xh-border-solid);
-  border-radius: var(--xh-border-radius-px);
+  border-radius: var(--xh-border-radius);
 }
 
 .xh-col-chooser__meta-tip {
-  gap: var(--xh-pad-half-px);
-  padding: var(--xh-pad-px);
+  gap: var(--xh-spacing-half);
+  padding: var(--xh-spacing);
   max-width: 280px;
 
   &__header {
     align-items: center;
     justify-content: space-between;
-    gap: var(--xh-pad-px);
+    gap: var(--xh-spacing);
 
     // Divider below the header only when a description follows it.
     &:not(:last-child) {
-      padding-bottom: var(--xh-pad-half-px);
-      margin-bottom: var(--xh-pad-half-px);
-      border-bottom: var(--xh-border-width-px) solid var(--xh-border-color);
+      padding-bottom: var(--xh-spacing-half);
+      margin-bottom: var(--xh-spacing-half);
+      border-bottom: var(--xh-border-width) solid var(--xh-border-color);
     }
   }
 
@@ -341,7 +341,7 @@
   }
 
   &__desc {
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
     line-height: 1.4;
     color: var(--column-chooser-text-color-alt);
   }

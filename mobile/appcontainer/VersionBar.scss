@@ -1,8 +1,8 @@
 .xh-version-bar {
   background-color: var(--xh-gray-dark);
   color: white;
-  font-size: var(--xh-font-size-small-px);
-  padding: var(--xh-pad-half-px);
+  font-size: var(--xh-font-size-small);
+  padding: var(--xh-spacing-half);
 
   &--development {
     background-color: var(--xh-green-muted);
@@ -32,7 +32,7 @@
   .xh-button {
     background: none !important;
     color: white !important;
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
     height: 14px;
     padding: 0 10px;
   }

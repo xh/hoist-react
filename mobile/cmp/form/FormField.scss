@@ -5,7 +5,7 @@
   margin: var(--xh-form-field-margin);
 
   &__label {
-    color: var(--xh-form-field-label-color);
+    color: var(--xh-form-field-label-text-color);
     font-size: var(--xh-form-field-label-font-size);
     font-style: var(--xh-form-field-label-font-style);
     font-weight: var(--xh-form-field-label-font-weight);
@@ -41,36 +41,36 @@
 
   &__info-msg,
   &__validation-msg {
-    font-size: var(--xh-form-field-msg-font-size);
-    line-height: var(--xh-form-field-msg-line-height);
-    margin: var(--xh-form-field-msg-margin);
-    text-transform: var(--xh-form-field-msg-text-transform);
+    font-size: var(--xh-form-field-message-font-size);
+    line-height: var(--xh-form-field-message-line-height);
+    margin: var(--xh-form-field-message-margin);
+    text-transform: var(--xh-form-field-message-text-transform);
   }
 
   &__validation-msg {
     &--error {
-      color: var(--xh-form-field-invalid-color);
+      color: var(--xh-form-field-invalid-text-color);
     }
 
     &--info {
-      color: var(--xh-form-field-info-color);
+      color: var(--xh-form-field-info-text-color);
     }
 
     &--warning {
-      color: var(--xh-form-field-warning-color);
+      color: var(--xh-form-field-warning-text-color);
     }
   }
 
   &--invalid .xh-form-field__label {
-    color: var(--xh-form-field-invalid-color);
+    color: var(--xh-form-field-invalid-text-color);
   }
 
   &--warning .xh-form-field__label {
-    color: var(--xh-form-field-warning-color);
+    color: var(--xh-form-field-warning-text-color);
   }
 
   &--info .xh-form-field__label {
-    color: var(--xh-form-field-info-color);
+    color: var(--xh-form-field-info-text-color);
   }
 
   &.xh-form-field--readonly {
@@ -79,7 +79,7 @@
     }
 
     .xh-form-field__readonly-display {
-      padding: var(--xh-pad-px) 0;
+      padding: var(--xh-spacing) 0;
     }
   }
 }

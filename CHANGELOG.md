@@ -53,13 +53,18 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       wherever they suffice.
 * Raised the `react` and `react-dom` peer dependency floor to `19.3`. Apps must bump both to
   `^19.3.0`. React 19.3 is a compatible minor with no breaking changes of its own.
-* Removed the two-tier CSS custom property override system. Applications that customized Hoist's
-  appearance by setting unprefixed CSS variables (e.g. `--grid-bg`, `--pad`, `--font-size`) must
-  now set the `--xh-` prefixed variables directly (e.g. `--xh-grid-bg`, `--xh-pad`,
-  `--xh-font-size`). This is a mechanical find-and-replace for most apps. Nine unprefixed hook
-  names did not match their `--xh-` counterpart - see the upgrade notes for the complete mapping.
-    * Set overrides on `body.xh-app`, which now wins over Hoist's defaults in every theme and
+* Overhauled Hoist's CSS custom properties onto a simpler, consistently named baseline. Run
+  `docs/codemod/v88/codemod-css-vars.mjs` to migrate app stylesheets and code.
+    * Removed the unprefixed override hooks (e.g. `--grid-bg`, `--pad`). Apps now set the `--xh-*`
+      variables directly on `body.xh-app`, which now wins over Hoist's defaults in every theme and
       platform combination. Overrides set on `:root` or `html` no longer have any effect.
+    * Size variables now hold lengths with units (`--xh-spacing: 10px`), and every `-px` companion
+      (`--xh-pad-px`, `--xh-font-size-px`, etc.) was removed - read the base variable instead.
+      Hoist logs a development-mode warning if a size variable resolves to a bare number.
+    * Renamed about 40 variables to follow one naming grammar, e.g. `--xh-pad` -> `--xh-spacing`,
+      `--xh-tbar-*` -> `--xh-toolbar-*`, `--xh-grid-bg-hover` -> `--xh-grid-row-hover-bg`.
+    * Removed `--xh-chart-bg`, `--xh-tab-border-width`, and `--xh-toolbar-button-bg`, none of which
+      had any effect.
 
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead. Note that

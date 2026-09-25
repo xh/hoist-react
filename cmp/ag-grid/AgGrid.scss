@@ -39,7 +39,7 @@
   // For non-cell children (custom renderers, em-based sizing) - cell text is themed via params.
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
-  font-size: var(--xh-grid-font-size-px);
+  font-size: var(--xh-grid-font-size);
 
   // ensure ag-grid box-sizing rule is not overridden by
   // body.xh-app box-sizing: inherit
@@ -77,7 +77,7 @@
   // color, and group rows.
   .ag-row {
     &.ag-row-selected .ag-cell {
-      color: var(--xh-grid-selected-row-text-color);
+      color: var(--xh-grid-row-selected-text-color);
     }
 
     &.ag-row-group.ag-full-width-row {
@@ -104,7 +104,7 @@
       width: var(--xh-grid-tree-indent);
 
       svg {
-        width: var(--xh-grid-tree-icon-px) !important;
+        width: var(--xh-grid-tree-icon-size) !important;
       }
     }
   }
@@ -147,7 +147,7 @@
   // rules restate the default so a grid with the flag off stays off even under an ancestor (or an
   // app-wide `AgGridModel.defaults.theme`) that sets the param.
   &--stripe-rows {
-    --ag-odd-row-background-color: var(--xh-grid-bg-odd);
+    --ag-odd-row-background-color: var(--xh-grid-odd-row-bg);
   }
 
   &--no-stripe-rows {
@@ -155,7 +155,7 @@
   }
 
   &--show-hover {
-    --ag-row-hover-color: var(--xh-grid-bg-hover);
+    --ag-row-hover-color: var(--xh-grid-row-hover-bg);
   }
 
   &--no-hover {
@@ -175,8 +175,8 @@
   // `cellHorizontalPadding` lands on header cells too - override for Hoist's separate header token.
   .ag-header-cell,
   .ag-header-group-cell {
-    padding-left: var(--xh-grid-header-lr-pad-px);
-    padding-right: var(--xh-grid-header-lr-pad-px);
+    padding-left: var(--xh-grid-header-padding-inline);
+    padding-right: var(--xh-grid-header-padding-inline);
 
     // Data cells carry a 1px transparent l/r border that insets their content - match it here so
     // header labels align with the cells below.
@@ -263,41 +263,41 @@
   // Each mode rebinds the font-size and padding params. The wrapper `font-size` is additionally
   // needed to scale em-based children, which sit outside the themed cell text.
   &--large {
-    font-size: var(--xh-grid-large-font-size-px);
-    --ag-font-size: var(--xh-grid-large-font-size-px);
-    --ag-header-font-size: var(--xh-grid-large-header-font-size-px);
-    --ag-cell-horizontal-padding: var(--xh-grid-large-cell-lr-pad-px);
+    font-size: var(--xh-grid-large-font-size);
+    --ag-font-size: var(--xh-grid-large-font-size);
+    --ag-header-font-size: var(--xh-grid-large-header-font-size);
+    --ag-cell-horizontal-padding: var(--xh-grid-large-cell-padding-inline);
 
     .ag-header-cell,
     .ag-header-group-cell {
-      padding-left: var(--xh-grid-large-header-lr-pad-px);
-      padding-right: var(--xh-grid-large-header-lr-pad-px);
+      padding-left: var(--xh-grid-large-header-padding-inline);
+      padding-right: var(--xh-grid-large-header-padding-inline);
     }
   }
 
   &--compact {
-    font-size: var(--xh-grid-compact-font-size-px);
-    --ag-font-size: var(--xh-grid-compact-font-size-px);
-    --ag-header-font-size: var(--xh-grid-compact-header-font-size-px);
-    --ag-cell-horizontal-padding: var(--xh-grid-compact-cell-lr-pad-px);
+    font-size: var(--xh-grid-compact-font-size);
+    --ag-font-size: var(--xh-grid-compact-font-size);
+    --ag-header-font-size: var(--xh-grid-compact-header-font-size);
+    --ag-cell-horizontal-padding: var(--xh-grid-compact-cell-padding-inline);
 
     .ag-header-cell,
     .ag-header-group-cell {
-      padding-left: var(--xh-grid-compact-header-lr-pad-px);
-      padding-right: var(--xh-grid-compact-header-lr-pad-px);
+      padding-left: var(--xh-grid-compact-header-padding-inline);
+      padding-right: var(--xh-grid-compact-header-padding-inline);
     }
   }
 
   &--tiny {
-    font-size: var(--xh-grid-tiny-font-size-px);
-    --ag-font-size: var(--xh-grid-tiny-font-size-px);
-    --ag-header-font-size: var(--xh-grid-tiny-header-font-size-px);
-    --ag-cell-horizontal-padding: var(--xh-grid-tiny-cell-lr-pad-px);
+    font-size: var(--xh-grid-tiny-font-size);
+    --ag-font-size: var(--xh-grid-tiny-font-size);
+    --ag-header-font-size: var(--xh-grid-tiny-header-font-size);
+    --ag-cell-horizontal-padding: var(--xh-grid-tiny-cell-padding-inline);
 
     .ag-header-cell,
     .ag-header-group-cell {
-      padding-left: var(--xh-grid-tiny-header-lr-pad-px);
-      padding-right: var(--xh-grid-tiny-header-lr-pad-px);
+      padding-left: var(--xh-grid-tiny-header-padding-inline);
+      padding-right: var(--xh-grid-tiny-header-padding-inline);
     }
   }
 
@@ -318,7 +318,7 @@
 
   // Adds padding to select all checkbox option in column set filter
   .ag-set-filter-select-all {
-    padding: var(--xh-pad-half-px) 0;
+    padding: var(--xh-spacing-half) 0;
   }
 
   //------------------------
@@ -372,7 +372,7 @@ body.xh-app {
   .ag-menu {
     // No param equivalent for menu typography.
     font-family: var(--xh-font-family);
-    font-size: var(--xh-menu-item-font-size-px);
+    font-size: var(--xh-menu-item-font-size);
 
     .ag-menu-option.ag-menu-option-active {
       background-color: var(--xh-menu-item-highlight-bg);

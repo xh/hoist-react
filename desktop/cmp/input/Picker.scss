@@ -55,11 +55,11 @@
     min-width: 18px;
     height: 18px;
     padding: 0 5px;
-    margin-right: var(--xh-pad-half-px);
+    margin-right: var(--xh-spacing-half);
     border-radius: 9px;
     background-color: var(--xh-intent-primary-trans2);
     color: var(--xh-intent-primary);
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
     font-weight: 500;
     line-height: 1;
     flex-shrink: 0;
@@ -80,8 +80,8 @@
     background-color: var(--xh-input-bg) !important;
     border: none;
     box-shadow: var(--xh-form-field-box-shadow);
-    padding-left: var(--xh-pad-px) !important;
-    padding-right: var(--xh-pad-px) !important;
+    padding-left: var(--xh-spacing) !important;
+    padding-right: var(--xh-spacing) !important;
 
     & > .xh-icon {
       color: var(--xh-text-color-muted);
@@ -127,32 +127,32 @@
   // Compact mode - trigger button matches compact toolbar button sizing.
   // .xh-button qualifier needed to beat `.xh-app .xh-button.bp6-button` font-size (0,3,0).
   &--compact &__trigger.xh-button {
-    min-height: var(--xh-tbar-compact-item-height-px);
-    max-height: var(--xh-tbar-compact-item-height-px);
-    font-size: var(--xh-tbar-compact-font-size-px);
-    padding: 3px var(--xh-pad-half-px);
+    min-height: var(--xh-toolbar-compact-item-height);
+    max-height: var(--xh-toolbar-compact-item-height);
+    font-size: var(--xh-toolbar-compact-font-size);
+    padding: 3px var(--xh-spacing-half);
   }
 
   // Override --as-input padding in compact mode (needs !important to beat the
   // !important declarations on the non-compact --as-input rule).
   &--compact .xh-picker__trigger--as-input.xh-button {
-    padding: 3px var(--xh-pad-half-px) !important;
+    padding: 3px var(--xh-spacing-half) !important;
   }
 
   &__popover.bp6-popover {
     .bp6-popover-content {
       padding: 0;
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
       background: var(--xh-bg);
     }
   }
 
   // Compact mode - popover content (renders in portal, outside root DOM).
   &__popover--compact.bp6-popover {
-    font-size: var(--xh-tbar-compact-font-size-px);
+    font-size: var(--xh-toolbar-compact-font-size);
 
     .xh-picker__option {
-      padding: 2px var(--xh-pad-half-px);
+      padding: 2px var(--xh-spacing-half);
     }
 
     .xh-picker__option-check {
@@ -161,21 +161,21 @@
     }
 
     .xh-picker__filter {
-      padding: 3px var(--xh-pad-half-px);
+      padding: 3px var(--xh-spacing-half);
     }
   }
 
   &__filter {
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
     border-bottom: 1px solid var(--xh-border-color);
   }
 
   &__footer {
     display: flex;
     align-items: center;
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    padding: var(--xh-spacing-half) var(--xh-spacing);
     border-top: 1px solid var(--xh-border-color);
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
     color: var(--xh-text-color-muted);
   }
 
@@ -199,7 +199,7 @@
   }
 
   &__footer-separator {
-    margin: 0 var(--xh-pad-half-px);
+    margin: 0 var(--xh-spacing-half);
     color: var(--xh-text-color-muted);
   }
 
@@ -209,7 +209,7 @@
   }
 
   &__no-results {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     color: var(--xh-text-color-muted);
     font-style: italic;
     text-align: center;
@@ -218,7 +218,7 @@
   &__option {
     display: flex;
     align-items: center;
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    padding: var(--xh-spacing-half) var(--xh-spacing);
     cursor: pointer;
     user-select: none;
 
@@ -233,7 +233,7 @@
 
     // Applied per-row via index to support both standard and virtual rendering modes.
     &--striped {
-      background-color: var(--xh-grid-bg-odd);
+      background-color: var(--xh-grid-odd-row-bg);
     }
 
     &--border-top {

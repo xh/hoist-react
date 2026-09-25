@@ -1,6 +1,6 @@
 .xh-zone-mapper {
   &__zone-picker {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     background: var(--xh-bg-alt);
     border-bottom: var(--xh-border-solid);
     border-top: var(--xh-border-solid);
@@ -12,7 +12,7 @@
       flex: 1;
       min-height: 34px;
       white-space: nowrap;
-      padding: var(--xh-pad-half-px);
+      padding: var(--xh-spacing-half);
       background: var(--xh-bg);
       border: var(--xh-border-solid);
 
@@ -26,32 +26,32 @@
       }
 
       &.tl {
-        font-size: var(--xh-zone-grid-top-font-size-px);
+        font-size: var(--xh-zone-grid-top-font-size);
         color: var(--xh-zone-grid-top-text-color);
-        border-radius: var(--xh-border-radius-px) 0 0 0;
+        border-radius: var(--xh-border-radius) 0 0 0;
       }
 
       &.tr {
         justify-content: flex-end;
         margin: 0 0 0 -1px;
-        font-size: var(--xh-zone-grid-top-font-size-px);
+        font-size: var(--xh-zone-grid-top-font-size);
         color: var(--xh-zone-grid-top-text-color);
-        border-radius: 0 var(--xh-border-radius-px) 0 0;
+        border-radius: 0 var(--xh-border-radius) 0 0;
       }
 
       &.bl {
         margin: -1px 0 0 0;
         color: var(--xh-zone-grid-bottom-text-color);
-        font-size: var(--xh-zone-grid-bottom-font-size-px);
-        border-radius: 0 0 0 var(--xh-border-radius-px);
+        font-size: var(--xh-zone-grid-bottom-font-size);
+        border-radius: 0 0 0 var(--xh-border-radius);
       }
 
       &.br {
         justify-content: flex-end;
         margin: -1px 0 0 -1px;
         color: var(--xh-zone-grid-bottom-text-color);
-        font-size: var(--xh-zone-grid-bottom-font-size-px);
-        border-radius: 0 0 var(--xh-border-radius-px);
+        font-size: var(--xh-zone-grid-bottom-font-size);
+        border-radius: 0 0 var(--xh-border-radius);
       }
     }
   }
@@ -61,17 +61,17 @@
     border-top: var(--xh-border-solid);
 
     .xh-panel__content .xh-hframe {
-      padding: var(--xh-pad-px);
+      padding: var(--xh-spacing);
       align-items: center;
 
       & > *:not(:last-child) {
-        margin-right: var(--xh-pad-px);
+        margin-right: var(--xh-spacing);
       }
     }
   }
 
   &__intro-text {
-    padding: var(--xh-pad-px);
-    font-size: var(--xh-font-size-small-px);
+    padding: var(--xh-spacing);
+    font-size: var(--xh-font-size-small);
   }
 }

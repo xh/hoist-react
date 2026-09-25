@@ -3,9 +3,9 @@
   --height: 20px; // should match spinner height
 
   position: absolute;
-  padding: var(--xh-pad-half-px);
+  padding: var(--xh-spacing-half);
   background-color: var(--xh-loading-indicator-bg);
-  color: var(--xh-loading-indicator-color);
+  color: var(--xh-loading-indicator-text-color);
   border-color: var(--xh-loading-indicator-border-color);
   border-style: solid;
   border-width: 0;
@@ -19,7 +19,7 @@
 
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
-        margin-left: var(--xh-pad-px);
+        margin-left: var(--xh-spacing);
       }
     }
   }
@@ -33,7 +33,7 @@
 
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
-        margin-right: var(--xh-pad-px);
+        margin-right: var(--xh-spacing);
       }
     }
   }
@@ -47,7 +47,7 @@
 
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
-        margin-left: var(--xh-pad-px);
+        margin-left: var(--xh-spacing);
       }
     }
   }
@@ -61,7 +61,7 @@
 
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
-        margin-right: var(--xh-pad-px);
+        margin-right: var(--xh-spacing);
       }
     }
   }
@@ -85,5 +85,5 @@
 }
 
 .xh-desktop .xh-loading-indicator {
-  font-size: var(--xh-font-size-small-px);
+  font-size: var(--xh-font-size-small);
 }

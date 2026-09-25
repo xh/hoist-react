@@ -21,20 +21,20 @@
 .xh-app.xh-dark,
 .xh-app.xh-dark.bp6-dark {
   .xh-button.bp6-button {
-    border-radius: var(--xh-button-border-radius-px);
+    border-radius: var(--xh-button-border-radius);
     font-family: var(--xh-button-font-family);
-    font-size: var(--xh-button-font-size-px);
+    font-size: var(--xh-button-font-size);
     white-space: nowrap;
 
     // Shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
-      padding: var(--xh-pad-half-px) var(--xh-pad-px);
+      padding: var(--xh-spacing-half) var(--xh-spacing);
     }
 
     // Minimal (Hoist default) and outlined mode.
     &.xh-button--minimal,
     &.xh-button--outlined {
-      padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+      padding: var(--xh-spacing-half) var(--xh-spacing-half);
     }
 
     &.xh-button--disabled {
@@ -47,7 +47,7 @@
       // indicator for an autoFocus button so it's clear that it has focus.
       &:focus {
         outline: var(--xh-focus-outline) !important;
-        outline-offset: var(--xh-focus-outline-offset-px) !important;
+        outline-offset: var(--xh-focus-outline-offset) !important;
       }
     }
   }
@@ -61,7 +61,7 @@
       &.xh-button--outlined {
         // Ensures outlined buttons in button-groups appear seamlessly adjacent to each other in dark mode.
         margin-right: 0;
-        padding: var(--xh-pad-half-px) var(--xh-pad-px);
+        padding: var(--xh-spacing-half) var(--xh-spacing);
       }
 
       // Minimal has no borders - radius is made visible by background shading when hovered or
@@ -76,7 +76,7 @@
         // indicator for a programmatically focused button so it's clear that it has focus.
         &:focus {
           outline: var(--xh-focus-outline) !important;
-          outline-offset: var(--xh-focus-outline-offset-px) !important;
+          outline-offset: var(--xh-focus-outline-offset) !important;
         }
       }
     }
@@ -90,11 +90,11 @@
         &.xh-button--standard,
         &.xh-button--outlined {
           &:first-child {
-            border-radius: var(--xh-button-border-radius-px) 0 0 var(--xh-button-border-radius-px);
+            border-radius: var(--xh-button-border-radius) 0 0 var(--xh-button-border-radius);
           }
 
           &:last-child {
-            border-radius: 0 var(--xh-button-border-radius-px) var(--xh-button-border-radius-px) 0;
+            border-radius: 0 var(--xh-button-border-radius) var(--xh-button-border-radius) 0;
           }
         }
 
@@ -114,11 +114,11 @@
         &.xh-button--standard,
         &.xh-button--outlined {
           &:first-child {
-            border-radius: var(--xh-button-border-radius-px) var(--xh-button-border-radius-px) 0 0;
+            border-radius: var(--xh-button-border-radius) var(--xh-button-border-radius) 0 0;
           }
 
           &:last-child {
-            border-radius: 0 0 var(--xh-button-border-radius-px) var(--xh-button-border-radius-px);
+            border-radius: 0 0 var(--xh-button-border-radius) var(--xh-button-border-radius);
           }
         }
 

@@ -11,7 +11,7 @@
     border-right: var(--xh-border-solid);
 
     &__fields {
-      padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-double-px);
+      padding: var(--xh-spacing) var(--xh-spacing) var(--xh-spacing-double);
       overflow-y: auto;
 
       &--ro {
@@ -27,14 +27,14 @@
   }
 
   &__intro {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     border-bottom: var(--xh-border-solid);
   }
 
   &__disabled-warning {
     background-color: var(--xh-intent-warning);
     color: white;
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
 
     p:first-child {
       font-weight: 600;
@@ -49,7 +49,7 @@
     }
 
     .xh-vframe {
-      padding: var(--xh-pad-double-px);
+      padding: var(--xh-spacing-double);
     }
 
     .xh-placeholder {
@@ -79,9 +79,9 @@
     li {
       padding: 2px 4px;
       margin: 0 2px;
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
       background-color: var(--xh-intent-neutral);
-      font-size: var(--xh-font-size-small-em);
+      font-size: var(--xh-font-size-small-relative);
     }
   }
 
