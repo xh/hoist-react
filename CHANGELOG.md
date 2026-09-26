@@ -25,9 +25,10 @@
     * `@observable accessor` fields are now prototype getter/setters rather than own enumerable
       properties, which changes `Object.keys` and spread (`{...model}`) over model instances.
     * `@persist` must now come *after* the MobX decorator (`@bindable` then `@persist`).
-      Reversed, it silently no-ops and the field stops persisting - no error, no type error.
-      Decorator order was irrelevant under legacy decorators, and the codemods do not reorder
-      them, so audit every `@persist` in app code by hand.
+      Reversed, provider creation fails and the field stops persisting:
+      `PersistenceProvider.create()` logs the error to the console, but nothing throws and there
+      is no type error. Decorator order was irrelevant under legacy decorators, and the codemods
+      do not reorder them, so audit every `@persist` in app code by hand.
 * Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
   exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
   `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, etc. Hoist's
@@ -92,10 +93,10 @@
   `getColumnGroups()` to read and drive it. `persistWith` persists this state by default - see the
   new `GridModelPersistOptions.persistColumnGroups`.
 * Cube `Aggregator` implementations can now hold per-row state via the new
-  `AggregationContext.setAggState()` / `getAggState()`. This lets aggregations that cannot come
-  from their children's published values alone - for example a weighted average - compose from
-  their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for an
-  example.
+  `AggregationContext.setAggState()` / `getAggState()`. This lets aggregations that cannot be
+  derived from their children's published values alone - for example a weighted average - compose
+  from their direct children. See the [Cube README](data/cube/README.md#custom-aggregators) for
+  an example.
 * Added the desktop `Menu` and `MenuButton` components. `Menu` renders a menu from Hoist
   `MenuItem` configs, `'-'` tokens, and `MenuHeading` entries. It runs each `prepareFn`, drops
   hidden and omitted items, builds submenus, and tidies separators. `MenuButton` adds a trigger
@@ -165,7 +166,8 @@
   regroup and update as those with `SUM` fields.
 * Model lookup now subscribes only to slots that can affect resolution - the matched slot, or
   nullish accessor candidates if no match. It excludes computed getters and primitive observables.
-  The prior walk subscribed indiscriminately and triggered needless re-renders.
+  This is tighter than the prior walk, which subscribed indiscriminately and triggered needless
+  re-renders.
 * Improved persistence in the Admin client.
 * Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
   full-width horizontal scrollbar spanning all columns, so Hoist removed its custom implementation.
