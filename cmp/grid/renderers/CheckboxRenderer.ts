@@ -23,7 +23,7 @@ export function checkboxRenderer({
 }: {
     displayUnsetState?: boolean;
     intent?: Intent;
-}): (v: boolean) => ReactNode {
+} = {}): (v: boolean) => ReactNode {
     return v => {
         const size = 'lg';
 

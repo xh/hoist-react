@@ -170,6 +170,9 @@ fetchAsync()
     .linkTo({observer: this.loadTask, omit: () => this.isBackgroundRefresh});
 ```
 
+`linkTo()` and the other extensions are building blocks. In models, compose them with the `Runner`
+chain from `HoistBase.runner()` - see [The Runner chain](../docs/telemetry.md#the-runner-chain).
+
 The most common pattern is passing the `TaskObserver` to a Panel's `mask` prop:
 
 ```typescript
@@ -275,9 +278,19 @@ this.submitOrderAsync()
 
 ### `catchDefault` order matters
 
-`catchDefault()` should be the *last* handler in the chain. Placing it before `.track()` means
-tracking won't capture failures. The standard order is:
-`.linkTo()` → `.track()` → `.catchDefault()`.
+`catchDefault()` should be the *last* handler in the chain. With the `Runner` chain, `linkTo()` and
+`track()` are builder methods and `catchDefault()` goes on the promise the terminal returns:
+
+```typescript
+this.runner()
+    .linkTo(this.loadTask)
+    .track('Loaded data')
+    .fetchJson({url: 'api/data'})
+    .catchDefault();
+```
+
+Applying `catchDefault()` earlier, e.g. within a `run()` fn, handles the failure before `track()`
+sees it, so tracking records a success.
 
 ### `thenAction` vs `async/await`
 
