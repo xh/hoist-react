@@ -373,6 +373,14 @@ for (const c of cases.filter(c => c.source === 'zero-result')) {
         pass('kind filter');
     else fail('kind filter');
 
+    const currency = await searchSymbols('currency'),
+        nearMiss = [
+            ...currency.symbols.map(h => h.entry.name),
+            ...currency.members.map(h => h.entry.name)
+        ].filter(n => /current/i.test(n));
+    if (nearMiss.length === 0) pass('"currency" returns no "current" hits (no fuzzy matching)');
+    else fail(`"currency" returns fuzzy hits: ${nearMiss.join(', ')}`);
+
     const empty = await searchSymbols('how to the');
     if (empty.symbols.length === 0 && empty.members.length === 0)
         pass('stop-word-only query returns nothing');

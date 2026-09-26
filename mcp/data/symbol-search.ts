@@ -167,8 +167,9 @@ export async function searchSymbols(
         baseOpts = (compoundHeads: Map<string, string>): SearchOptions => ({
             combineWith: 'OR',
             prefix: term => term.length >= 3,
-            fuzzy: term => (term.length >= 6 ? 0.2 : false),
-            maxFuzzy: 2,
+            // No fuzzy matching: API names are exact, camelCase parts and prefixes already give
+            // recall for near misses, and fuzzy pulled "current" hits into "currency".
+            fuzzy: false,
             tokenize: s => s.split(' '),
             processTerm: t => t,
             boostDocument: (_id, term) =>
