@@ -44,20 +44,25 @@ npx hoist-docs conventions                   # Print coding conventions
 npx hoist-docs index                         # Print the documentation catalog
 
 # TypeScript symbols and types
-npx hoist-ts search GridModel                # Search for symbols and class members
-npx hoist-ts symbol GridModel                # Get detailed type info for a symbol
-npx hoist-ts members GridModel               # List all members of a class/interface
+npx hoist-ts search GridModel                # Ranked search: symbols and members, one line each
+npx hoist-ts search headerName               # Find which class or config owns a property
+npx hoist-ts symbol GridModel                # Import line, signature, docs, member summary
+npx hoist-ts members GridModel --filter col  # Members whose name contains "col", with docs
 ```
 
-**Use `search` for discovery** — it matches against symbol names, JSDoc content, and own member
-names. Multi-word queries use AND logic (e.g. `"panel modal"` finds ModalSupportModel via its
-JSDoc, `"StoreRecord raw"` finds StoreRecord via its `raw` property). Also searches public members
-of every exported class and every exported `*Config` interface (e.g. `GridConfig`, `StoreConfig`)
-by owner name, member name, and JSDoc — so a query for `"groupSortFn"` reaches both `GridModel`
-and `GridConfig`. Use `symbol` and `members` when you already know the exact PascalCase name.
-When multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
-pass the file path to `symbol` or `members` to disambiguate — the tools will hint when this is
-needed. Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
+**Use `search` for discovery** - one strong keyword works best, ideally an API name
+(`GridModel`, `persistWith`, `headerName`); camelCase names match their parts. Multi-word
+queries rank hits by how many terms they match, so extra words narrow rather than exclude
+(`"StoreRecord raw"` finds `StoreRecord.raw`, `"panel modal"` finds `ModalSupportModel`). Every
+hit carries its public import path - import from that, not from the source file. Members of
+every exported class and every `*Config`, `*Spec`, and `*Options` interface are searched too, so
+`"groupSortFn"` reaches both `GridModel` and `GridConfig`; `*Props` members appear when the query
+names the component. `impl/` and `admin/` code is excluded unless you pass `--include-internal`.
+Use `symbol` when you know the exact name - for classes and interfaces it includes a member
+summary, usually enough to write the code - and `members` with `--filter` for member docs. When
+multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
+pass the file path with `--file` to disambiguate - the tools will hint when this is needed. Run
+`npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
 
 **Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
 to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your

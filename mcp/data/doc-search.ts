@@ -6,10 +6,9 @@
  * (`Doc title > H2 > H3`, boosted) and its own body text. Registry `title`, `description`, and
  * `keywords` act as a doc-level boost for terms they contain.
  *
- * Terms are split on punctuation and camelCase (`persistWith` indexes as `persistwith`,
- * `persist`, and `with`), lowercased, filtered against a stop-word list, and lightly stemmed.
- * Queries use prefix matching and light fuzziness, combined with OR and re-ranked by the share of
- * query terms each section matches.
+ * Text processing (camelCase splitting, stop words, stemming) and the ranking helpers are shared
+ * with symbol search - see `search-text.ts`. Queries use prefix matching and light fuzziness,
+ * combined with OR and re-ranked by the share of query terms each section matches.
  *
  * The corpus is small (~60 docs, ~1,300 sections), so the index is built in memory on first
  * use and memoized per registry.
@@ -19,6 +18,13 @@ import MiniSearch, {type SearchOptions, type SearchResult} from 'minisearch';
 import {log} from '../util/logger.js';
 import {loadDocContent, type DocEntry} from './doc-registry.js';
 import {parseDocSections, type DocSection} from './doc-sections.js';
+import {
+    createTermProcessor,
+    isRedundantCompoundMatch,
+    queryTerms,
+    rankByCoverage,
+    tokenize
+} from './search-text.js';
 
 //------------------------------------------------------------------
 // Types
@@ -74,16 +80,6 @@ function docWeight(entry: DocEntry): number {
     return 1;
 }
 
-const STOP_WORDS = new Set(
-    (
-        'a about after all also an and any are as at be been but by can could do does doing ' +
-        'during each for from had has have how i if in into is it its just me my of on or our ' +
-        'should so some such than that the their them then there these they this those to too ' +
-        'up us via was we were what when where which while who why will with would you your ' +
-        'hoist use used uses using want need way'
-    ).split(' ')
-);
-
 //------------------------------------------------------------------
 // Public API
 //------------------------------------------------------------------
@@ -114,11 +110,7 @@ export function searchDocs(
             tokenize: s => s.split(' '),
             processTerm: t => t,
             boostDocument: (id, term) => {
-                // Skip a prefix or fuzzy match onto a compound identifier whose leading part the
-                // query already matches (`show` → `showFeedbackDialog`). The part is indexed on
-                // its own, so this only drops double-counting that favors identifier-dense text.
-                const head = idx.compoundHeads.get(term);
-                if (head && !querySet.has(term) && terms.some(t => head.startsWith(t))) return 0;
+                if (isRedundantCompoundMatch(idx.compoundHeads, term, terms, querySet)) return 0;
 
                 const section = idx.sections[id],
                     meta = idx.metaTerms.get(section.docId);
@@ -128,13 +120,10 @@ export function searchDocs(
         },
         q = terms.join(' ');
 
-    // Rank by BM25 score scaled by the share of query terms each section matches. This
-    // prefers sections matching every term (as AND would) without letting a weak all-term
-    // match outrank a strong match on most terms (as strict AND-then-OR does).
-    const ranked = idx.miniSearch
-        .search(q, {...searchOpts, combineWith: 'OR'})
-        .map(hit => ({hit, score: (hit.score * new Set(hit.queryTerms).size) / terms.length}))
-        .sort((a, b) => b.score - a.score);
+    const ranked = rankByCoverage(
+        idx.miniSearch.search(q, {...searchOpts, combineWith: 'OR'}),
+        terms.length
+    );
 
     const picked: Array<{hit: SearchResult; score: number}> = [],
         perDoc = new Map<string, number>();
@@ -156,11 +145,6 @@ export function searchDocs(
             excerpt: makeExcerpt(section.body)
         };
     });
-}
-
-/** Tokenize and process a query the same way indexed text is processed. */
-function queryTerms(query: string): string[] {
-    return [...new Set(tokenize(query ?? '').flatMap(processTerm))];
 }
 
 //------------------------------------------------------------------
@@ -194,15 +178,11 @@ function getSearchIndex(registry: DocEntry[]): SearchIndex {
     if (cached) return cached;
 
     const start = Date.now(),
-        compoundHeads = new Map<string, string>(),
+        {processTerm, compoundHeads} = createTermProcessor(),
         miniSearch = new MiniSearch<IndexedSection>({
             fields: ['heading', 'body'],
             tokenize,
-            processTerm: token => {
-                const {whole, parts} = splitToken(token);
-                if (whole && parts.length) compoundHeads.set(whole, parts[0]);
-                return processTerm(token);
-            }
+            processTerm
         }),
         sections: SearchIndex['sections'] = [],
         docs: IndexedSection[] = [],
@@ -252,76 +232,6 @@ function getSearchIndex(registry: DocEntry[]): SearchIndex {
 //------------------------------------------------------------------
 // Text processing
 //------------------------------------------------------------------
-
-/** Split on anything other than letters and digits, preserving case for camelCase splitting. */
-function tokenize(text: string): string[] {
-    return text.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
-}
-
-/**
- * Expand a raw token into index terms: the whole token lowercased, plus its camelCase parts
- * (`persistWith` → `persistwith`, `persist`, `with`). Drops stop words and single characters,
- * then stems what remains.
- */
-function processTerm(token: string): string[] {
-    return splitToken(token).terms;
-}
-
-interface SplitToken {
-    whole: string | null;
-    parts: string[];
-    /** Whole and parts, de-duplicated - the index terms for this token. */
-    terms: string[];
-}
-
-/** Memoized by raw token - doc vocabulary repeats heavily, so this roughly halves build time. */
-const SPLIT_CACHE = new Map<string, SplitToken>();
-
-/**
- * Split a raw token into its processed whole and, for a camelCase compound, its processed
- * parts. Either may be filtered out as a stop word or single character.
- */
-function splitToken(token: string): SplitToken {
-    let ret = SPLIT_CACHE.get(token);
-    if (ret) return ret;
-
-    const keep = (t: string) => (t.length < 2 || STOP_WORDS.has(t) ? null : stem(t)),
-        rawParts = /[A-Z]/.test(token)
-            ? token.split(/(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/)
-            : [token],
-        parts =
-            rawParts.length > 1
-                ? rawParts.map(p => keep(p.toLowerCase())).filter((p): p is string => p != null)
-                : [];
-    const whole = keep(token.toLowerCase());
-    ret = {whole, parts, terms: [...new Set(whole ? [whole, ...parts] : parts)]};
-    SPLIT_CACHE.set(token, ret);
-    return ret;
-}
-
-/**
- * Light suffix stemmer, applied identically at index and query time. Folds plurals and common
- * verb/noun endings so `confirmation` matches `confirm` and `columns` matches `column`. Prefix
- * matching at query time covers the reverse direction (`config` → `configuration`).
- */
-function stem(term: string): string {
-    if (term.length < 4 || /\d/.test(term)) return term;
-
-    let t = term;
-    if (t.endsWith('ies') && t.length > 4) t = t.slice(0, -3) + 'y';
-    else if (t.endsWith('sses')) t = t.slice(0, -2);
-    else if (t.endsWith('s') && !/(ss|us|is)$/.test(t)) t = t.slice(0, -1);
-
-    for (const suffix of ['ation', 'ing', 'ed']) {
-        if (t.endsWith(suffix) && t.length - suffix.length >= 4) {
-            t = t.slice(0, -suffix.length);
-            // Undouble a trailing consonant left by -ing/-ed (`mapped` → `map`), except l/s/z.
-            if (suffix !== 'ation' && /([^aeiouylsz])\1$/.test(t)) t = t.slice(0, -1);
-            break;
-        }
-    }
-    return t;
-}
 
 const TOC_ROW_RE = /^\s*\|\s*\[[^\]]+\]\(#[^)]*\)\s*\|/,
     TABLE_RULE_RE = /^\s*\|?[\s:|-]+\|?\s*$/,
