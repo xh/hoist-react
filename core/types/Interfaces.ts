@@ -217,14 +217,14 @@ export interface MessageSpec {
      * displayed, or use a preconfigured helper such as `XH.alert()` or `XH.confirm()` for default
      * buttons.
      */
-    confirmProps?: any;
+    confirmProps?: MessageButtonSpec;
 
     /**
      * Props for secondary cancel button. Must provide either text or icon for button to be
      * displayed, or use a preconfigured helper such as `XH.alert()` or `XH.confirm()` for default
      * buttons.
      */
-    cancelProps?: any;
+    cancelProps?: MessageButtonSpec;
 
     /**
      * Specify 'left' to place the Cancel button (if shown) on the left edge of the dialog toolbar,
@@ -254,6 +254,34 @@ export interface MessageSpecInput {
 
     /** Initial value for the input. */
     initialValue?: any;
+}
+
+/**
+ * Props for a button shown in a modal message - see {@link MessageSpec.confirmProps} and
+ * {@link MessageSpec.cancelProps}. The button is displayed only if `text` or `icon` is set.
+ *
+ * Extra props pass through to the platform `button` component, e.g. `outlined` or `minimal`.
+ * Do not set `onClick` - it is ignored in favor of the message's built-in handlers. Use
+ * {@link MessageSpec.onConfirm} and {@link MessageSpec.onCancel} instead.
+ */
+export interface MessageButtonSpec {
+    /** Label for the button. */
+    text?: ReactNode;
+
+    /** Icon for the button. */
+    icon?: ReactElement;
+
+    /** Visual intent for the button, e.g. 'danger' for a destructive action. */
+    intent?: Intent;
+
+    /**
+     * True to focus this button when the message opens. If neither button sets this and the
+     * message has no `input`, the confirm button is focused by default.
+     */
+    autoFocus?: boolean;
+
+    /** Other props for the platform `button` component. */
+    [key: string]: any;
 }
 
 /**
