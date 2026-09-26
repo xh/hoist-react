@@ -110,7 +110,7 @@ export interface MemberInfo {
     returnType?: string;
     /**
      * Return-value info sourced from a `@returns` JSDoc tag. Distinct from
-     * `returnType` (which carries only the static type) — `returns.description`
+     * `returnType` (which carries only the static type) - `returns.description`
      * carries the author's prose explanation. Omitted when no `@returns` tag
      * is present.
      */
@@ -394,7 +394,7 @@ function buildSymbolIndex(proj: Project): {
     for (const sourceFile of proj.getSourceFiles()) {
         const filePath = sourceFile.getFilePath();
 
-        // Skip non-source files — use path relative to repoRoot so that
+        // Skip non-source files - use path relative to repoRoot so that
         // hoist-react's own sources are included even when the package is
         // installed under an app's node_modules directory.
         const relPath = filePath.startsWith(repoRoot + '/')
@@ -948,7 +948,7 @@ function enrichMemberIndexJsDoc(proj: Project): void {
  * Call this after server startup to warm the index asynchronously, so the
  * first tool invocation doesn't pay the full init cost. On a cache hit this
  * completes in ~100ms; on a cache miss it runs the full ts-morph build.
- * Safe to call multiple times — subsequent calls are no-ops.
+ * Safe to call multiple times - subsequent calls are no-ops.
  */
 export function beginInitialization(): void {
     if (symbolIndex || initPromise) return;
@@ -1258,7 +1258,7 @@ function extractExternalMembers(entry: SymbolEntry, known: Set<string>): Externa
  * Members from the target class itself have no `inheritedFrom` tag; members
  * from ancestor classes are tagged with the declaring class name.
  *
- * Deduplicates by member name — if a subclass overrides a parent member, only
+ * Deduplicates by member name - if a subclass overrides a parent member, only
  * the subclass version is included.
  *
  * Implements-JSDoc fallback: at each level, if a member has no own JSDoc,
@@ -1465,7 +1465,7 @@ function findJsDocFallback(
  * Members from the target interface itself have no `inheritedFrom` tag; members
  * from ancestor interfaces are tagged with the declaring interface name.
  *
- * Deduplicates by member name — first occurrence wins (root › first parent › ...).
+ * Deduplicates by member name - first occurrence wins (root › first parent › ...).
  * Parents not found in our symbol index (e.g. React's HTMLAttributes) are skipped.
  */
 function extractInterfaceMembersWithInheritance(filePath: string, name: string): MemberInfo[] {
