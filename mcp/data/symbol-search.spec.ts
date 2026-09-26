@@ -257,11 +257,14 @@ const cases: GoldenCase[] = [
 
 /**
  * Queries whose top symbol and member hits must all be barrel-exported, with the number of top
- * symbol hits checked. `confirm` matches only 8 symbols, 4 of them file imports whose names
- * contain the query, so only its top 2 symbols are held to the rule.
+ * symbol hits checked (members are checked to 3). `PanelModel` checks all 8 symbol slots, since
+ * file-import panel and dialog models are the ones that would fill slots 4 to 8. `confirm`
+ * matches only 8 symbols, 4 of them file imports whose names contain the query, so only its
+ * top 2 symbols are held to the rule: a weight low enough to push them below slot 3 would
+ * break exact-name-first.
  */
 const BARREL_FIRST_QUERIES: Array<[query: string, symbolDepth: number]> = [
-    ['PanelModel', 3],
+    ['PanelModel', 8],
     ['confirm', 2],
     ['loading', 3],
     ['select input options', 3]
