@@ -149,6 +149,10 @@
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
 * Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
+* Fixed `DashCanvas` widgets rendering at a placeholder width on load, then visibly animating out
+  to fill the canvas - a costly relayout of every widget while dashboards load. Widgets now render
+  once at their final size. Note that widgets on a canvas that starts hidden now render when first
+  shown.
 
 ### ⚙️ Technical
 
