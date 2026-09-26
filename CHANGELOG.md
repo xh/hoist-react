@@ -200,14 +200,17 @@
 * Rebuilt `hoist-search-symbols` (and `hoist-ts search`) as ranked search over symbols and
   members, using the same BM25 engine as doc search. Multi-word queries rank by term coverage
   instead of requiring every term, exact names rank first, and `impl/`, `admin/`, `inspector/`,
-  and `dynamics/` code is excluded unless `includeInternal` is set. Results are one line per hit
+  and `dynamics/` code and symbols no package barrel re-exports are hidden (and counted) unless
+  `includeInternal` is set. Results are one line per hit
   with kind, name, public import path, and first JSDoc sentence - 8 symbols and 8 members by
   default, typically under 600 tokens. `detail: "full"` restores complete JSDoc.
 * Added `importPath` (e.g. `@xh/hoist/cmp/grid`) to every symbol result across the three
   TypeScript tools, resolved from the package barrel that re-exports the symbol.
 * Enhanced `hoist-get-symbol` (`hoist-ts symbol`) with an import line and, for classes and
   interfaces, a compact member summary. A name declared as both a `const` and a `type` in one
-  file (`FieldType`) now returns both declarations, selectable with `kind`.
+  file (`FieldType`) now returns both declarations, selectable with `kind`. A const reports the
+  class it is an instance of (`XH` is an `XHApi`) and its Props interface, and a component
+  factory's initializer no longer prints in full.
 * Added `filter`, `include`, `memberKind`, and `detail` to `hoist-get-members` (`hoist-ts
   members`), plus members inherited from types outside hoist-react (React, Blueprint) grouped
   by declaring type. A `const`, `function`, `type`, or `enum` target now returns an error naming

@@ -47,7 +47,8 @@ mcp/
 ├── server.ts                  # MCP entry point -- creates McpServer, registers all capabilities
 ├── cli/
 │   ├── docs.ts                # CLI entry point for hoist-docs
-│   └── ts.ts                  # CLI entry point for hoist-ts
+│   ├── ts.ts                  # CLI entry point for hoist-ts
+│   └── ts-command.ts          # hoist-ts command definition with injectable io (run in-process by specs)
 ├── data/
 │   ├── doc-registry.ts        # Documentation inventory loader (reads docs/doc-registry.json)
 │   ├── doc-id-resolver.ts     # Tolerant doc-id resolver (canonical + shortenings + aliases)
@@ -155,14 +156,19 @@ applies three adjustments. A symbol or member whose whole name the query spells 
 `GridModel`, `headerName`) scores on its raw BM25 rather than the coverage-scaled score, so
 naming a symbol finds it however many other terms the query carries. Symbols no package barrel
 re-exports (internal API) and `kit/` re-exports of third-party components are halved. Ties go to
-the shorter name (`GridConfig.sortBy` before `ZoneGridConfig.sortBy`). By default `impl/`,
-`admin/`, `inspector/`, and `dynamics/` code and non-exported symbols are filtered out;
-`includeInternal` lifts that. A component, its element factory, and its Props interface fold into
-one hit (`Select / select ... Props: SelectProps`), since Hoist exports them together from one
-file. Output is one line per hit - kind, name, import path, and the first JSDoc sentence cut at
-100 characters - which keeps a default search of 8 symbols and 8 members under ~600 tokens;
-`detail: "full"` restores complete JSDoc. `data/symbol-search.spec.ts` guards ranking with a
-golden set - see [Testing](#testing).
+the shorter name (`GridConfig.sortBy` before `ZoneGridConfig.sortBy`). There is no fuzzy
+matching: API names are exact, camelCase parts and prefixes already give recall for near misses,
+and fuzzy pulled "current" hits into a search for "currency". By default `impl/`, `admin/`,
+`inspector/`, and `dynamics/` code, non-exported symbols, and symbols no package barrel
+re-exports (an app cannot import them) are hidden; the footer counts them and `includeInternal`
+shows them. Promise prototype extensions are exempt, since they need no import. A component, its
+element factory, and its Props interface fold into one hit (`Select / select ... Props:
+SelectProps`), since Hoist exports them together from one file, and a member hit that repeats an
+earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`) is dropped.
+Output is one line per hit - kind, name, import path, and the first JSDoc sentence cut at 80
+characters (90 for members) - which keeps a default search of 8 symbols and 8 members under ~600
+tokens; `detail: "full"` restores complete JSDoc. `data/symbol-search.spec.ts` guards ranking
+with a golden set - see [Testing](#testing).
 
 **Public import paths.** Apps import from package barrels (`@xh/hoist/cmp/grid`), not from the
 declaring file, and agents were inferring the barrel from `sourcePackage`. `data/import-paths.ts`
@@ -171,9 +177,9 @@ computes each exported symbol's `importPath` at index time: the shallowest direc
 statements between barrels (`cmp/grid/renderers/CheckboxRenderer.ts` resolves to
 `@xh/hoist/cmp/grid` through `cmp/grid/index.ts`; `cmp/grid/columns/Column.ts` through the nested
 `columns/index.ts`). Symbols no barrel reaches - impl helpers, appcontainer internals, a class its
-package barrel omits - carry `null`, which the tools render as "no public import" and search uses
-as a ranking penalty. The path is stored on `SymbolEntry`, so the disk cache carries it and a
-barrel edit invalidates it through the fingerprint.
+package barrel omits - carry `null`, which the tools render as "no public import" and search
+hides by default (see above). The path is stored on `SymbolEntry`, so the disk cache carries it
+and a barrel edit invalidates it through the fingerprint.
 
 **External members via the type checker.** The declaration walkers stop at types outside the
 index, so `ButtonProps extends Omit<BpButtonProps, 'ref'>` lost every Blueprint prop, `onClick`
@@ -492,8 +498,9 @@ members of every exported class and every `*Config`, `*Spec`, and `*Options` int
 `*Props` interfaces when the query names the owner). Terms are processed as for doc search:
 camelCase names match their parts, multi-word queries rank by how many terms a hit matches, and
 a hit whose whole name the query spells out ranks first. `impl/`, `admin/`, `inspector/`, and
-`dynamics/` code and non-exported symbols are excluded by default. See
-[Ranked symbol search](#design-decisions) for how ranking works.
+`dynamics/` code, non-exported symbols, and symbols no package barrel re-exports are hidden by
+default and counted in the footer. See [Ranked symbol search](#design-decisions) for how
+ranking works.
 
 Output is one line per hit: kind, name, import path (or "no public import" with the file), and
 the first JSDoc sentence; member hits are `Owner.name: type` with the default when known. A
@@ -505,7 +512,7 @@ symbols and 8 members in under ~600 tokens.
 | `query` | string | Yes | One strong keyword, ideally an API name (`"GridModel"`, `"persistWith"`, `"headerName"`), or a few terms (`"StoreRecord raw"`, `"panel collapsed"`) |
 | `kind` | enum | No | Restrict symbol results to `class`, `interface`, `type`, `function`, `const`, or `enum`. Member results are unaffected. |
 | `exported` | boolean | No | Exported symbols only. Default: `true`, or `false` when `includeInternal` is set |
-| `includeInternal` | boolean | No | Include `impl/`, `admin/`, `inspector/`, `dynamics/` code and non-exported symbols. Default: `false` |
+| `includeInternal` | boolean | No | Include `impl/`, `admin/`, `inspector/`, `dynamics/` code, non-exported symbols, and symbols no package barrel re-exports. Default: `false` |
 | `detail` | enum | No | `concise` (default): one line per hit. `full`: complete JSDoc for every hit |
 | `limit` | number | No | Max symbol results and max member results, 1-20. Default: 8 |
 
@@ -524,11 +531,12 @@ Members (3 of 310):
 Next: "hoist-ts symbol <Name>" for signature, docs, import, and a member summary; "hoist-ts members <Name> --filter <text>" for member docs.
 ```
 
-Structured output: `{query, detail, symbolCount, symbolTotal, memberCount, memberTotal, symbols:
-[{name, kind, importPath, sourcePackage, filePath, exported, summary, hasMembers, factory?,
-props?, hint?, jsDoc?}], members: [{name, memberKind, ownerName, ownerHint?, importPath,
-sourcePackage, filePath, isStatic, type, default?, summary, jsDoc?, decorators}]}`. `jsDoc` is
-present for `detail: "full"` only; `importPath` on a member is the owner's.
+Structured output: `{query, detail, symbolCount, symbolTotal, memberCount, memberTotal,
+hiddenSymbols, hiddenMembers, symbols: [{name, kind, importPath, sourcePackage, filePath,
+exported, summary, hasMembers, factory?, props?, hint?, jsDoc?}], members: [{name, memberKind,
+ownerName, ownerHint?, importPath, sourcePackage, filePath, isStatic, type, default?, summary,
+jsDoc?, decorators}]}`. `jsDoc` is present for `detail: "full"` only; `importPath` on a member is
+the owner's.
 
 **Member-indexed owners:** public members of every exported class and every exported interface
 whose name ends in `Config`, `Spec`, `Options`, or `Props` are indexed (members with `private`
@@ -554,7 +562,11 @@ property or method without another call.
 For classes that use the config-object constructor pattern (e.g. `GridModel`, `FormModel`,
 `Store`), the output includes a `Constructor:` line showing the config type name, a natural
 follow-up for `hoist-get-members`. Props interfaces and component factories cross-reference each
-other.
+other (`Props: PanelProps`, `Component: Panel, panel`). A const initialized with `new Class()`,
+annotated with an indexed class, or resolving to one reports `Instance of: XHApi`, and the
+next-step hint points at that class's members. A const whose initializer is implementation
+(`hoistCmp.withFactory({...})`, an arrow function) shows only the first line of its declaration;
+data literals such as `FieldType`'s frozen object are shown whole.
 
 When a name has two declarations in one file (`FieldType` is both a `const` and a `type`) both
 are returned in full; pass `kind` to select one. When the same name exists in several files
@@ -593,8 +605,9 @@ Configuration object for defining a {@link Column} within a {@link GridModel}.
 Full member details: hoist-ts members ColumnSpec [--filter <text>] [--include own|inherited] [--kind property|method|accessor]
 ```
 
-Structured output: `{requestedName, symbol, otherDeclarations, members?: {total, shown, list:
-[{name, kind, signature, isStatic, inheritedFrom?}]}, companions, alternates}`.
+Structured output: `{requestedName, symbol (with `instanceOf?`), otherDeclarations, members?:
+{total, shown, list: [{name, kind, signature, isStatic, inheritedFrom?}]}, companions,
+alternates}`.
 
 **Constructor detection logic:** The tool checks if the class has a constructor with exactly one
 parameter that has a named type annotation. Classes using destructured parameters (e.g.
@@ -824,7 +837,7 @@ and typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own E
 | `data/ts-registry.spec.ts` | TypeScript symbol and member lookup, cross-platform path handling |
 | `data/symbol-search.spec.ts` | Golden-set retrieval eval for symbol search: top-3 hit rate (must stay at or above 85%), the formerly zero-result queries, search token budgets (under 600 for the issue's experiment queries, under 800 for all), and the tool-level acceptance cases (`ColumnSpec` import path and member summary, `ButtonProps` external `onClick`, the `FieldType` error, `GridModel` filtered by `col` under 1k tokens) |
 | `tools/docs.spec.ts` | MCP / CLI parity - calls the doc tools through an in-memory MCP client and compares them with `hoist-docs` output and `--json` |
-| `tools/typescript.spec.ts` | MCP / CLI parity for the three TypeScript tools, including filters, `kind` and `filePath` disambiguation, and error cases |
+| `tools/typescript.spec.ts` | MCP / CLI parity for the three TypeScript tools, including filters, `kind` and `filePath` disambiguation, and error cases. Runs the CLI in-process via `cli/ts-command.ts` (about 4s for 45 checks) and spawns the real bin once as a smoke check |
 
 Each golden set maps realistic agent queries to the doc section, symbol, or `Owner.member` that
 should answer them. A miss prints the expected target and the actual top 3, so a ranking change
