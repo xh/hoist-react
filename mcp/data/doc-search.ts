@@ -67,6 +67,9 @@ const DOC_META_BOOST = 1.3;
  */
 function docWeight(entry: DocEntry): number {
     if (entry.id.startsWith('docs/upgrade-notes/')) return 0.5;
+    // The MCP server's own README documents this tooling, not app development. It mentions many
+    // framework terms in passing and otherwise outranks the docs that answer the question.
+    if (entry.id === 'mcp/README.md') return 0.5;
     if (entry.mcpCategory === 'index') return 0.6;
     return 1;
 }

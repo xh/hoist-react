@@ -108,7 +108,8 @@ export function registerDocTools(server: McpServer): void {
         },
         async ({category}) => {
             let text = formatDocList(registry, mcpCategories, category ?? undefined);
-            text += 'Read any document using its ID with the hoist://docs/{id} resource.';
+            text +=
+                'Read a doc with hoist-read-doc {id} - add section: "<heading>" for one section, or outline: true for its headings. The hoist://docs/{id} resource also serves full docs.';
             const structuredContent = toListDocsOutput(registry, mcpCategories, category);
             return {
                 content: [{type: 'text' as const, text}],

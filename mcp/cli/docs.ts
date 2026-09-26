@@ -135,7 +135,7 @@ program
         }
 
         let text = formatDocList(registry, mcpCategories, opts.category);
-        text += 'Read any document using: hoist-docs read <id>';
+        text += 'Read a doc with: hoist-docs read <id> [--section "<heading>" | --outline]';
         process.stdout.write(text + '\n');
     });
 
