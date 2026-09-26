@@ -218,12 +218,15 @@ All Hoist artifacts extend `HoistBase`, which provides:
 #### MobX Integration Conventions
 
 - `addAutorun()` / `addReaction()` - Managed MobX subscriptions (auto-disposed on destroy)
-- `makeObservable()` - Called in constructors to set up MobX observables/actions/computeds
-- `@observable` MobX decorator - Marks properties as observable state
+- TC39 decorators - no `makeObservable()` call is needed. Declare `@observable` and `@bindable`
+  fields with the `accessor` keyword (e.g. `@bindable accessor myProp = null`).
+- `@observable` MobX decorator - Marks properties as observable state. Use the MobX 7 named
+  re-exports from `@xh/hoist/mobx` for variants - e.g. `@observableRef` for reference-only.
 - `@action` MobX decorator - Marks methods that modify observable state
 - `@bindable` Hoist decorator - Marks properties as observable and generates setter methods
   automatically
   marked as `@action` - e.g., `setMyProp(value)` for property `myProp` (Hoist custom decorator).
+  `@bindableRef` is the reference-only variant.
   **Setter convention:** If a class defines an explicit public `setFoo()` method, call it (it likely
   has additional logic). Otherwise for auto-generated `@bindable` setters, prefer direct assignment
   (`model.myProp = value`) over calling the generated setter (`model.setMyProp(value)`).

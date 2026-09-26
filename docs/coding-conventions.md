@@ -78,7 +78,7 @@ in code reviews or conventions discussions — the tooling handles them:
   print width, trailing commas off, arrow parens avoided
 - **`eslint.config.js`** — Linting: `@xh/eslint-config` base rules + TSDoc syntax checking via
   `eslint-plugin-tsdoc` + Prettier integration
-- **`tsconfig.json`** — TypeScript: `experimentalDecorators`, `noImplicitOverride`,
+- **`tsconfig.json`** - TypeScript: `noImplicitOverride`,
   `useDefineForClassFields`, `moduleResolution: "bundler"`, ES2022 target
 - **`.stylelintrc.json`** — SCSS linting (if present)
 
