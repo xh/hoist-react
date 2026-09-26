@@ -239,6 +239,8 @@
 
 ### 📚 Libraries
 
+* @auth0/auth0-spa-js `2.26 -> 2.27`
+* @azure/msal-browser `5.22 -> 5.23`
 * @blueprintjs/core `6.18 -> 6.20`
 * @types/react `19.2 -> 19.3`
 * @types/react-dom `19.2 -> 19.3`
@@ -248,7 +250,7 @@
 * date-fns `added @ 4.4`
 * minisearch `added @ 7.2` (MCP / CLI doc search only - never bundled)
 * mobx `6.16 -> 7.0`
-* mobx-react-lite `4.1 -> 5.0`
+* mobx-react-lite `4.1 -> 5.1`
 * react `19.2 -> 19.3`
 * react-dom `19.2 -> 19.3`
 * type-fest `5.9 -> 5.10`
