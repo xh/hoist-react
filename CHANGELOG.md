@@ -121,6 +121,10 @@
 * `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
   their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
   prop to opt out - `password` type inputs do not trim by default.
+* Added `TabConfig.group` to break up long vertical (`left` / `right`) desktop `TabSwitcher` rails.
+  The switcher renders a display-only header above each contiguous run of tabs sharing a group,
+  with titles and icons from the new `TabSwitcherConfig.groups`. Headers are not focusable or
+  routable, and horizontal switchers ignore groups.
 * Improved coverage of sensitive data redaction in exceptions. Matching keys are now redacted at any
   depth within request bodies, params, and headers, and common secret names are redacted by default.
   See `ExceptionHandler.defaults.redactPaths` and new `ExceptionHandlerOptions.redactPaths`, which
@@ -228,6 +232,8 @@
 * Added four custom properties for the new `MenuHeading` to style headings in grid context menus,
   desktop menus, and mobile menus, so a single override restyles all three. Blueprint's own
   `.bp6-menu-header` now uses the same properties.
+* Added `--xh-tab-switcher-vertical-group-*` custom properties to style the new `TabSwitcher`
+  group headers (`.xh-tab-switcher__group-header`).
 
 ### 📚 Libraries
 
