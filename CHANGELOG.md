@@ -212,8 +212,9 @@
 * Added `pnpm test:mcp`, run in CI, covering the MCP specs plus a golden-set eval of doc search
   ranking and an MCP / CLI output parity check.
 * Rebuilt `hoist-search-symbols` (`hoist-ts search`) as ranked search over symbols and members: one
-  line per hit with the public import path, multi-word queries ranked by term coverage, and
-  internal or un-importable symbols hidden unless `includeInternal` is set.
+  line per hit with its import path (the package barrel when one re-exports the symbol, otherwise
+  the file), multi-word queries ranked by term coverage, and `impl/`, `admin/`, `inspector/`,
+  `dynamics/` and non-exported symbols hidden unless `includeInternal` is set.
 * `hoist-get-symbol` now shows an import line and a member summary. `hoist-get-members` gained
   `filter`, `include`, `memberKind`, and `detail`, and lists members inherited from non-Hoist types.
 * Added a symbol-search golden set and MCP / CLI parity specs to `pnpm test:mcp`, which now runs

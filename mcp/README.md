@@ -58,7 +58,7 @@ mcp/
 │   ├── search-text.ts         # Tokenizer, camelCase splitting, stemming, ranking helpers (shared)
 │   ├── ts-registry.ts         # Lazy ts-morph symbol index with on-demand type extraction
 │   ├── ts-registry.spec.ts    # Path handling and live index integration checks
-│   ├── import-paths.ts        # Public import path resolution by walking package barrels
+│   ├── import-paths.ts        # Barrel import path resolution by walking package barrels
 │   ├── index-cache.ts         # Disk cache for the symbol and member indexes
 │   ├── symbol-search.ts       # MiniSearch (BM25) indexes over symbols and members, ranked search
 │   └── symbol-search.spec.ts  # Golden-set retrieval eval and tool acceptance checks (see Testing)
@@ -154,16 +154,16 @@ sentence, and the rest of the JSDoc; members on owner and member name (boosted),
 JSDoc. Ranking reuses coverage-scaled OR and the compound-head guard from doc search, then
 applies three adjustments. A symbol or member whose whole name the query spells out (`Select`,
 `GridModel`, `headerName`) scores on its raw BM25 rather than the coverage-scaled score, so
-naming a symbol finds it however many other terms the query carries. Symbols no package barrel
-re-exports (internal API) and `kit/` re-exports of third-party components are halved. Ties go to
-the shorter name (`GridConfig.sortBy` before `ZoneGridConfig.sortBy`). There is no fuzzy
-matching: API names are exact, camelCase parts and prefixes already give recall for near misses,
-and fuzzy pulled "current" hits into a search for "currency". By default `impl/`, `admin/`,
-`inspector/`, and `dynamics/` code, non-exported symbols, and symbols no package barrel
-re-exports are hidden; the footer counts them, names any hidden
-symbol whose whole name the query spells out (`Hidden exact match: LeafRow
-(data/cube/row/LeafRow.ts) - not re-exported by any package barrel`), and `includeInternal` shows
-them. Promise prototype extensions are exempt, since they need no import. A component, its
+naming a symbol finds it however many other terms the query carries. `kit/` re-exports of
+third-party components are halved. Ties go to the shorter name (`GridConfig.sortBy` before
+`ZoneGridConfig.sortBy`). There is no fuzzy matching: API names are exact, camelCase parts and
+prefixes already give recall for near misses, and fuzzy pulled "current" hits into a search for
+"currency". Internal means internal by location or visibility: by default `impl/`, `admin/`,
+`inspector/`, and `dynamics/` code and non-exported symbols are hidden; the footer counts them,
+names any hidden symbol whose whole name the query spells out (`Hidden exact match:
+ColumnWidthCalculator (cmp/grid/impl/ColumnWidthCalculator.ts) - internal (impl/) code`), and
+`includeInternal` shows them. A symbol no package barrel re-exports is neither hidden nor ranked
+down; its hit shows the file import (see Import paths below). A component, its
 element factory, and its Props interface fold into one hit (`Select / select ... Props:
 SelectProps`), since Hoist exports them together from one file, and a member hit that repeats an
 earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`) is dropped.
@@ -172,16 +172,19 @@ characters (90 for members) - which keeps a default search of 8 symbols and 8 me
 tokens; `detail: "full"` restores complete JSDoc. `data/symbol-search.spec.ts` guards ranking
 with a golden set - see [Testing](#testing).
 
-**Public import paths.** Apps import from package barrels (`@xh/hoist/cmp/grid`), not from the
-declaring file, and agents were inferring the barrel from `sourcePackage`. `data/import-paths.ts`
-computes each exported symbol's `importPath` at index time: the shallowest directory whose
-`index.ts` re-exports it, following any chain of `export * from` and `export {name} from`
-statements between barrels (`cmp/grid/renderers/CheckboxRenderer.ts` resolves to
-`@xh/hoist/cmp/grid` through `cmp/grid/index.ts`; `cmp/grid/columns/Column.ts` through the nested
-`columns/index.ts`). Symbols no barrel reaches - impl helpers, appcontainer internals, a class its
-package barrel omits - carry `null`, which the tools render as "no public import" and search
-hides by default (see above). The path is stored on `SymbolEntry`, so the disk cache carries it
-and a barrel edit invalidates it through the fingerprint.
+**Import paths.** The package barrel (`@xh/hoist/cmp/grid`) is the preferred import: apps use
+barrels far more than deep imports, and barrels are the curated API surface. Agents otherwise
+infer the barrel from `sourcePackage`, so `data/import-paths.ts` computes each exported symbol's
+barrel `importPath` at index time: the shallowest directory whose `index.ts` re-exports it,
+following any chain of `export * from` and `export {name} from` statements between barrels
+(`cmp/grid/renderers/CheckboxRenderer.ts` resolves to `@xh/hoist/cmp/grid` through
+`cmp/grid/index.ts`; `cmp/grid/columns/Column.ts` through the nested `columns/index.ts`). The
+package has no `exports` map, so a deep file import always resolves too. When no barrel reaches
+an exported symbol, its `importPath` is `null` in the index and the tools show the file import
+(`@xh/hoist/data/cube/row/LeafRow`) with `barrelExport: false`. Text output marks that case:
+search hit lines add `file import`, and the import line notes that no package barrel re-exports
+the symbol. The barrel path is stored on `SymbolEntry`, so the disk cache carries it and a barrel
+edit invalidates it through the fingerprint; the file path is derived at output time.
 
 **External members via the type checker.** The declaration walkers stop at types outside the
 index, so `ButtonProps extends Omit<BpButtonProps, 'ref'>` lost every Blueprint prop, `onClick`
@@ -315,7 +318,7 @@ Run `npx hoist-docs --help` for full usage.
 ### `hoist-ts` -- TypeScript Symbol Exploration
 
 ```bash
-# Ranked search over symbols and members - one line per hit with the public import path
+# Ranked search over symbols and members - one line per hit with its import path
 npx hoist-ts search GridModel
 npx hoist-ts search headerName              # Which class or config owns a property
 npx hoist-ts search "StoreRecord raw"       # Owner + member name
@@ -483,9 +486,10 @@ Verify the MCP server is running and responsive. Takes no parameters. Reports th
 
 ### TypeScript Tools
 
-The three tools share one workflow: `hoist-search-symbols` finds the exact name and public
-import path, `hoist-get-symbol` gives the signature, JSDoc, import line, and a member summary,
-and `hoist-get-members` with `filter` gives member docs. Every result carries `importPath`. The
+The three tools share one workflow: `hoist-search-symbols` finds the exact name and import path,
+`hoist-get-symbol` gives the signature, JSDoc, import line, and a member summary, and
+`hoist-get-members` with `filter` gives member docs. Every result carries `importPath`: the package
+barrel when one re-exports the symbol, otherwise the file. Prefer the barrel path when shown. The
 CLI twins are `hoist-ts search | symbol | members`, sharing the formatters, so a CLI call returns
 the same content as the tool - only the trailing next-step hint differs in syntax.
 
@@ -495,26 +499,25 @@ calls are fast in-memory lookups.
 
 #### `hoist-search-symbols`
 
-Ranked search over classes, interfaces, types, functions, and component factories, plus the
-members of every exported class and every `*Config`, `*Spec`, and `*Options` interface (and
-`*Props` interfaces when the query names the owner). Terms are processed as for doc search:
-camelCase names match their parts, multi-word queries rank by how many terms a hit matches, and
-a hit whose whole name the query spells out ranks first. `impl/`, `admin/`, `inspector/`, and
-`dynamics/` code, non-exported symbols, and symbols no package barrel re-exports are hidden by
-default and counted in the footer. See [Ranked symbol search](#design-decisions) for how
-ranking works.
+Ranked search over classes, interfaces, types, functions, and component factories, plus the members
+of every exported class and every `*Config`, `*Spec`, and `*Options` interface (and `*Props`
+interfaces when the query names the owner). Terms are processed as for doc search: camelCase names
+match their parts, multi-word queries rank by how many terms a hit matches, and a hit whose whole
+name the query spells out ranks first. `impl/`, `admin/`, `inspector/`, and `dynamics/` code and
+non-exported symbols are hidden by default and counted in the footer. See [Ranked symbol
+search](#design-decisions) for how ranking works.
 
-Output is one line per hit: kind, name, import path (or "no public import" with the file), and
-the first JSDoc sentence; member hits are `Owner.name: type` with the default when known. A
-component, its factory, and its Props interface fold into one hit. A default search returns 8
-symbols and 8 members in under ~600 tokens.
+Output is one line per hit: kind, name, import path (the package barrel, or the file tagged `file
+import` when no barrel re-exports the symbol), and the first JSDoc sentence; member hits are
+`Owner.name: type` with the default when known. A component, its factory, and its Props interface
+fold into one hit. A default search returns 8 symbols and 8 members in under ~600 tokens.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | Yes | One strong keyword, ideally an API name (`"GridModel"`, `"persistWith"`, `"headerName"`), or a few terms (`"StoreRecord raw"`, `"panel collapsed"`) |
 | `kind` | enum | No | Restrict symbol results to `class`, `interface`, `type`, `function`, `const`, or `enum`. Member results are unaffected. |
 | `exported` | boolean | No | Exported symbols only. Default: `true`, or `false` when `includeInternal` is set |
-| `includeInternal` | boolean | No | Include `impl/`, `admin/`, `inspector/`, `dynamics/` code, non-exported symbols, and symbols no package barrel re-exports. Default: `false` |
+| `includeInternal` | boolean | No | Include `impl/`, `admin/`, `inspector/`, `dynamics/` code and non-exported symbols. Default: `false` |
 | `detail` | enum | No | `concise` (default): one line per hit. `full`: complete JSDoc for every hit |
 | `limit` | number | No | Max symbol results and max member results, 1-20. Default: 8 |
 
@@ -535,11 +538,11 @@ Next: "hoist-ts symbol <Name>" for signature, docs, import, and a member summary
 
 Structured output: `{query, detail, symbolCount, symbolTotal, memberCount, memberTotal,
 hiddenSymbols, hiddenMembers, hiddenExact: [{name, kind, filePath}], symbols: [{name, kind,
-importPath, sourcePackage, filePath,
-exported, summary, hasMembers, factory?, props?, hint?, jsDoc?}], members: [{name, memberKind,
-ownerName, ownerHint?, importPath, sourcePackage, filePath, isStatic, type, default?, summary,
-jsDoc?, decorators}]}`. `jsDoc` is present for `detail: "full"` only; `importPath` on a member is
-the owner's.
+importPath, barrelExport, sourcePackage, filePath, exported, summary, hasMembers, factory?,
+props?, hint?, jsDoc?}], members: [{name, memberKind, ownerName, ownerHint?, importPath,
+barrelExport, sourcePackage, filePath, isStatic, type, default?, summary, jsDoc?,
+decorators}]}`. `jsDoc` is present for `detail: "full"` only; `importPath` and `barrelExport` on a
+member are the owner's. `barrelExport` is true when `importPath` is a package barrel.
 
 **Member-indexed owners:** public members of every exported class and every exported interface
 whose name ends in `Config`, `Spec`, `Options`, or `Props` are indexed (members with `private`
@@ -556,7 +559,7 @@ on `Promise`. `hoist-get-symbol` returns their full signature and JSDoc. The int
 
 #### `hoist-get-symbol`
 
-Describe one symbol by exact name: its public import line, signature, JSDoc, inheritance,
+Describe one symbol by exact name: its import line, signature, JSDoc, inheritance,
 decorators, and source location. For classes and interfaces the output also includes a compact
 member summary - `name: type` (or `name(params): returnType`) one per line, own members first,
 then inherited members grouped by declaring type, capped at 60 lines - usually enough to pick a
