@@ -147,30 +147,32 @@ read instead of several thousand. The index builds in memory on first search (~1
 current corpus), so it is not cached to disk. `data/doc-search.spec.ts` guards ranking quality
 with a golden set of realistic queries - see [Testing](#testing).
 
-**Ranked symbol search on the same engine.** `data/symbol-search.ts` builds two MiniSearch
-indexes in memory (~100ms) from the registry's symbol and member maps, so the disk cache below
-keeps working: symbols on name (boosted 4x), kind, package, own member names, first JSDoc
-sentence, and the rest of the JSDoc; members on owner and member name (boosted), type text, and
-JSDoc. Ranking reuses coverage-scaled OR and the compound-head guard from doc search, then
-applies three adjustments. A symbol or member whose whole name the query spells out (`Select`,
-`GridModel`, `headerName`) scores on its raw BM25 rather than the coverage-scaled score, so
-naming a symbol finds it however many other terms the query carries. `kit/` re-exports of
-third-party components are halved. Ties go to the shorter name (`GridConfig.sortBy` before
-`ZoneGridConfig.sortBy`). There is no fuzzy matching: API names are exact, camelCase parts and
-prefixes already give recall for near misses, and fuzzy pulled "current" hits into a search for
-"currency". Internal means internal by location or visibility: by default `impl/`, `admin/`,
-`inspector/`, and `dynamics/` code and non-exported symbols are hidden; the footer counts them,
-names any hidden symbol whose whole name the query spells out (`Hidden exact match:
-ColumnWidthCalculator (cmp/grid/impl/ColumnWidthCalculator.ts) - internal (impl/) code`), and
-`includeInternal` shows them. A symbol no package barrel re-exports is neither hidden nor ranked
-down; its hit shows the file import (see Import paths below). A component, its
-element factory, and its Props interface fold into one hit (`Select / select ... Props:
-SelectProps`), since Hoist exports them together from one file, and a member hit that repeats an
-earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`) is dropped.
+**Ranked symbol search on the same engine.** `data/symbol-search.ts` builds two MiniSearch indexes
+in memory (~100ms) from the registry's symbol and member maps, so the disk cache below keeps
+working: symbols on name (boosted 4x), kind, package, own member names, first JSDoc sentence, and
+the rest of the JSDoc; members on owner and member name (boosted), type text, and JSDoc. Ranking
+reuses coverage-scaled OR and the compound-head guard from doc search, then applies three
+adjustments. A symbol or member whose whole name the query spells out (`Select`, `GridModel`,
+`headerName`) scores on its raw BM25 rather than the coverage-scaled score, so naming a symbol finds
+it however many other terms the query carries. Symbols the package barrels re-export are preferred,
+since the barrels are the curated public surface: a symbol no barrel re-exports, or a member whose
+owner no barrel re-exports, is weighted at 1/8 (Promise prototype extensions are exempt, since they
+need no import), and `kit/` re-exports of third-party components are halved. Ties go to the shorter
+name (`GridConfig.sortBy` before `ZoneGridConfig.sortBy`). There is no fuzzy matching: API names are
+exact, camelCase parts and prefixes already give recall for near misses, and fuzzy pulled "current"
+hits into a search for "currency". Internal means internal by location or visibility: by default
+`impl/`, `admin/`, `inspector/`, and `dynamics/` code and non-exported symbols are hidden; the
+footer counts them, names any hidden symbol whose whole name the query spells out (`Hidden exact
+match: ColumnWidthCalculator (cmp/grid/impl/ColumnWidthCalculator.ts) - internal (impl/) code`), and
+`includeInternal` shows them. A symbol no package barrel re-exports is listed with its file import
+(see Import paths below) and ranks below barrel-exported matches; an exact name still ranks first. A
+component, its element factory, and its Props interface fold into one hit (`Select / select ...
+Props: SelectProps`), since Hoist exports them together from one file, and a member hit that repeats
+an earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`) is dropped.
 Output is one line per hit - kind, name, import path, and the first JSDoc sentence cut at 80
-characters (90 for members) - which keeps a default search of 8 symbols and 8 members under ~600
-tokens; `detail: "full"` restores complete JSDoc. `data/symbol-search.spec.ts` guards ranking
-with a golden set - see [Testing](#testing).
+characters (90 for members) - which keeps a default search of 8 symbols and 8 members within the
+spec ceilings, typically 400 to 700 tokens; `detail: "full"` restores complete JSDoc.
+`data/symbol-search.spec.ts` guards ranking with a golden set - see [Testing](#testing).
 
 **Import paths.** The package barrel (`@xh/hoist/cmp/grid`) is the preferred import: apps use
 barrels far more than deep imports, and barrels are the curated API surface. Agents otherwise
@@ -510,7 +512,8 @@ search](#design-decisions) for how ranking works.
 Output is one line per hit: kind, name, import path (the package barrel, or the file tagged `file
 import` when no barrel re-exports the symbol), and the first JSDoc sentence; member hits are
 `Owner.name: type` with the default when known. A component, its factory, and its Props interface
-fold into one hit. A default search returns 8 symbols and 8 members in under ~600 tokens.
+fold into one hit. A default search returns 8 symbols and 8 members, typically in 400 to 700
+tokens.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -845,9 +848,9 @@ use `npx tsx mcp/data/doc-search.spec.ts`. CI runs `pnpm test:mcp` alongside lin
 | `data/doc-sections.spec.ts` | Section parsing, section-name resolution, and full / section / outline reads |
 | `data/doc-search.spec.ts` | Golden-set retrieval eval: top-3 hit rate (must stay at or above 85%), named experiment queries, and the default-search token budget (under 800) |
 | `data/ts-registry.spec.ts` | TypeScript symbol and member lookup, cross-platform path handling |
-| `data/symbol-search.spec.ts` | Golden-set retrieval eval for symbol search: top-3 hit rate (must stay at or above 85%), the formerly zero-result queries, search token budgets (under 600 for the issue's experiment queries, under 800 for all), and the tool-level acceptance cases (`ColumnSpec` import path and member summary, `ButtonProps` external `onClick`, the `FieldType` error, `GridModel` filtered by `col` under 1k tokens) |
+| `data/symbol-search.spec.ts` | Golden-set retrieval eval for symbol search: top-3 hit rate (must stay at or above 85%), multi-word queries that must return their obvious hit, search token ceilings (`MAX_EXPERIMENT_TOKENS` 1000 for the experiment queries, `MAX_SEARCH_TOKENS` 1200 for all), barrel-exported golden symbols returning a barrel import path, a ranking guard that keeps file imports out of the top hits for `PanelModel`, `confirm`, `loading`, and `select input options`, the file import for `LeafRow` (top hit, hit-line tag, `barrelExport: false`, and the marked import line on `hoist-get-symbol` and `hoist-get-members`), the hidden exact match footer for an `impl/` symbol (`ColumnWidthCalculator`), and the tool-level acceptance cases (`ColumnSpec` import path and member summary, `ButtonProps` external `onClick`, the `FieldType` error, `GridModel` filtered by `col` under 1k tokens) |
 | `tools/docs.spec.ts` | MCP / CLI parity - calls the doc tools through an in-memory MCP client and compares them with `hoist-docs` output and `--json` |
-| `tools/typescript.spec.ts` | MCP / CLI parity for the three TypeScript tools, including filters, `kind` and `filePath` disambiguation, and error cases. Runs the CLI in-process via `cli/ts-command.ts` (about 4s for 45 checks) and spawns the real bin once as a smoke check |
+| `tools/typescript.spec.ts` | MCP / CLI parity for the three TypeScript tools, including filters, `kind` and `filePath` disambiguation, and error cases. Covers the import line for a barrel symbol, a file-import symbol (`LeafRow`), and a Promise extension, and the hidden exact match query. Runs the CLI in-process via `cli/ts-command.ts` (about 4s) and spawns the real bin once as a smoke check |
 
 Each golden set maps realistic agent queries to the doc section, symbol, or `Owner.member` that
 should answer them. A miss prints the expected target and the actual top 3, so a ranking change
