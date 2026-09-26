@@ -44,8 +44,9 @@ export interface SymbolEntry {
     isExported: boolean;
     sourcePackage: string;
     /**
-     * Public import path (`@xh/hoist/cmp/grid`) - the shallowest package barrel that re-exports
-     * the symbol - or null when no barrel does. See `import-paths.ts`.
+     * Barrel import path (`@xh/hoist/cmp/grid`) - the shallowest package barrel that re-exports
+     * the symbol - or null when no barrel does. Output then shows the file path, derived from
+     * `filePath`, with `barrelExport: false`. See `import-paths.ts`.
      */
     importPath: string | null;
     /** JSDoc, if available. Populated at index time; displayed in search results. */
@@ -74,7 +75,7 @@ export interface SymbolDetail {
     filePath: string;
     sourcePackage: string;
     isExported: boolean;
-    /** Public import path, or null when no barrel re-exports the symbol. */
+    /** Barrel import path, or null when no barrel does. See {@link SymbolEntry.importPath}. */
     importPath: string | null;
     signature: string;
     jsDoc: string;
@@ -270,7 +271,7 @@ export function isPropsOwner(ownerName: string): boolean {
 
 /**
  * True for a Promise prototype extension entry (`catchDefault`, `linkTo`), which is public API
- * that needs no import - the one case where a null `importPath` does not mean internal.
+ * that needs no import - the one exported symbol the tools show no import path for.
  */
 export function isPromiseExtension(entry: Pick<SymbolEntry, 'name' | 'filePath'>): boolean {
     const detail = promiseExtensionDetails?.get(entry.name);

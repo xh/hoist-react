@@ -26,9 +26,11 @@ import {
     type SymbolEntry,
     type SymbolKind
 } from '../data/ts-registry.js';
+import {fileImportPath} from '../data/import-paths.js';
 import {
-    isInternalPath,
+    internalDir,
     MEMBER_SUMMARY_CHARS,
+    type MemberHit,
     type SymbolSearchResults
 } from '../data/symbol-search.js';
 import {estimateTokens} from '../data/doc-sections.js';
@@ -101,13 +103,65 @@ export function toRelativePath(filePath: string): string {
     return posix.startsWith(root) ? posix.slice(root.length + 1) : posix;
 }
 
-/** `import {Name} from '@xh/hoist/pkg';`, or an explanation of why there is no public import. */
-function importLine(detail: Pick<SymbolDetail, 'name' | 'importPath' | 'filePath'>): string {
-    if (detail.importPath) return `import {${detail.name}} from '${detail.importPath}';`;
+/** The import to show for a symbol, and whether it is a package barrel path. */
+interface ResolvedImport {
+    /** Barrel path when a package barrel re-exports the symbol, otherwise the file path. */
+    importPath: string | null;
+    barrelExport: boolean;
+}
+
+/**
+ * Resolve the import to show: the barrel path when one re-exports the symbol, otherwise the
+ * declaring file. Null for a non-exported symbol or a Promise prototype extension.
+ */
+function resolveImport(
+    e: Pick<SymbolEntry, 'name' | 'filePath' | 'importPath' | 'isExported'>
+): ResolvedImport {
+    if (e.importPath) return {importPath: e.importPath, barrelExport: true};
+    if (!e.isExported || isPromiseExtension(e)) return {importPath: null, barrelExport: false};
+    return {importPath: fileImportPath(toRelativePath(e.filePath)), barrelExport: false};
+}
+
+/** {@link resolveImport} for the owner of a member hit. `Promise` members need no import. */
+function resolveOwnerImport(hit: MemberHit): ResolvedImport {
+    const m = hit.entry;
+    if (m.ownerName === 'Promise') return {importPath: null, barrelExport: false};
+    return resolveImport({
+        name: m.ownerName,
+        filePath: m.filePath,
+        importPath: hit.importPath,
+        isExported: true
+    });
+}
+
+/**
+ * Where a search hit imports from, for its hit line: the import path, tagged when it is a file
+ * rather than a package barrel.
+ */
+function hitImport(
+    {importPath, barrelExport}: ResolvedImport,
+    filePath: string,
+    isPromise: boolean
+): string {
+    if (importPath) return barrelExport ? importPath : `${importPath}; file import`;
+    return isPromise
+        ? 'Promise prototype extension, no import needed'
+        : `not exported - ${toRelativePath(filePath)}`;
+}
+
+/** `import {Name} from '@xh/hoist/pkg';`, marked when no barrel covers it, or why none is needed. */
+function importLine(
+    detail: Pick<SymbolDetail, 'name' | 'importPath' | 'filePath' | 'isExported'>
+): string {
+    const {importPath, barrelExport} = resolveImport(detail);
+    if (importPath) {
+        const line = `import {${detail.name}} from '${importPath}';`;
+        return barrelExport ? line : `${line} (no package barrel re-exports this symbol)`;
+    }
     if (isPromiseExtension(detail)) {
         return 'none needed - Promise prototype extension, available on every Promise';
     }
-    return 'none - not re-exported from a package barrel (internal API)';
+    return 'none - not exported from its file';
 }
 
 /** Name plus `?` for optional members and `static ` for statics. */
@@ -156,7 +210,13 @@ const symbolKindSchema = z.enum(['class', 'interface', 'type', 'function', 'cons
 const importPathSchema = z
     .union([z.string(), z.null()])
     .describe(
-        'Public import path (e.g. "@xh/hoist/cmp/grid"), or null when no package barrel re-exports the symbol.'
+        'Import path: the package barrel when one re-exports the symbol (e.g. "@xh/hoist/cmp/grid"), otherwise the declaring file (e.g. "@xh/hoist/data/cube/row/LeafRow"). Prefer the barrel path when shown. Null for a non-exported symbol or a Promise prototype extension, which needs no import.'
+    );
+
+const barrelExportSchema = z
+    .boolean()
+    .describe(
+        'True when importPath is a package barrel, false when it is the declaring file or null.'
     );
 
 /** Lightweight symbol reference used in search results, companions, and alternates. */
@@ -164,6 +224,7 @@ const symbolRefSchema = z.object({
     name: z.string(),
     kind: symbolKindSchema,
     importPath: importPathSchema,
+    barrelExport: barrelExportSchema,
     sourcePackage: z.string().describe('Source package directory (e.g. "cmp/grid").'),
     filePath: z.string().describe('Repo-relative source file path.'),
     exported: z.boolean()
@@ -219,6 +280,7 @@ const symbolDetailSchema = z.object({
     name: z.string(),
     kind: symbolKindSchema,
     importPath: importPathSchema,
+    barrelExport: barrelExportSchema,
     sourcePackage: z.string(),
     filePath: z.string().describe('Repo-relative source file path.'),
     exported: z.boolean(),
@@ -250,7 +312,7 @@ function toSymbolRef(
     return {
         name: entry.name,
         kind: entry.kind,
-        importPath: entry.importPath,
+        ...resolveImport(entry),
         sourcePackage: entry.sourcePackage,
         filePath: toRelativePath(entry.filePath),
         exported: entry.isExported
@@ -261,7 +323,7 @@ function toSymbolDetail(detail: SymbolDetail) {
     return {
         name: detail.name,
         kind: detail.kind,
-        importPath: detail.importPath,
+        ...resolveImport(detail),
         sourcePackage: detail.sourcePackage,
         filePath: toRelativePath(detail.filePath),
         exported: detail.isExported,
@@ -323,11 +385,7 @@ export function formatSymbolSearch(results: SymbolSearchResults, detail: SearchD
             const e = hit.entry,
                 kind = hit.factory || hit.props ? 'component' : e.kind,
                 name = hit.factory ? `${e.name} / ${hit.factory}` : e.name,
-                where =
-                    e.importPath ??
-                    (isPromiseExtension(e)
-                        ? 'Promise prototype extension, no import needed'
-                        : `no public import - ${toRelativePath(e.filePath)}`),
+                where = hitImport(resolveImport(e), e.filePath, isPromiseExtension(e)),
                 props = hit.props ? ` Props: ${hit.props}.` : '',
                 hint = e.mcpHint ? ` [${e.mcpHint}]` : '';
             if (detail === 'full') {
@@ -358,7 +416,7 @@ export function formatSymbolSearch(results: SymbolSearchResults, detail: SearchD
             hintedOwners.add(m.ownerName);
             if (detail === 'full') {
                 lines.push(
-                    `${i + 1}. [${m.memberKind}] ${label}: ${truncateType(m.type)}${dflt} (${hit.importPath ?? `no public import - ${toRelativePath(m.filePath)}`})${ownerHint}`
+                    `${i + 1}. [${m.memberKind}] ${label}: ${truncateType(m.type)}${dflt} (${hitImport(resolveOwnerImport(hit), m.filePath, m.ownerName === 'Promise')})${ownerHint}`
                 );
                 if (m.jsDoc) lines.push(indentJsDoc(m.jsDoc));
             } else {
@@ -374,8 +432,8 @@ export function formatSymbolSearch(results: SymbolSearchResults, detail: SearchD
 
 /**
  * Next-step hint for a search, in the calling surface's syntax. Names any hidden symbol whose
- * whole name the query spells out, then counts the internal hits (impl/ code, or symbols no
- * package barrel re-exports) that were left out.
+ * whole name the query spells out, then counts the internal hits (impl/, admin/, inspector/,
+ * or dynamics/ code) that were left out.
  */
 export function searchNextHint(
     surface: Surface,
@@ -398,11 +456,8 @@ export function searchNextHint(
                   : 'For concepts and how-tos use "hoist-docs search".'
         ];
     for (const e of results.hiddenExact) {
-        const reason = isInternalPath(e.filePath)
-            ? 'internal (impl/) code'
-            : 'not re-exported by any package barrel';
         lines.push(
-            `Hidden exact match: ${e.name} (${toRelativePath(e.filePath)}) - ${reason}; pass ${flag} to see it.`
+            `Hidden exact match: ${e.name} (${toRelativePath(e.filePath)}) - internal (${internalDir(e.filePath)}/) code; pass ${flag} to see it.`
         );
     }
     if (hidden > 0) {
@@ -429,7 +484,7 @@ export const searchSymbolsOutputSchema = z.object({
         .number()
         .int()
         .describe(
-            'Matching internal symbols (impl/ code or not re-exported by a package barrel) left out because includeInternal was not set.'
+            'Matching internal symbols (impl/, admin/, inspector/, dynamics/ code) left out because includeInternal was not set.'
         ),
     hiddenMembers: z.number().int(),
     hiddenExact: z
@@ -441,7 +496,7 @@ export const searchSymbolsOutputSchema = z.object({
             })
         )
         .describe(
-            'Hidden symbols whose whole name the query spells out - the exact name of an internal or un-importable symbol. Pass includeInternal: true to see them.'
+            'Hidden symbols whose whole name the query spells out - the exact name of an internal symbol. Pass includeInternal: true to see them.'
         ),
     symbols: z.array(
         symbolRefSchema.extend({
@@ -474,7 +529,10 @@ export const searchSymbolsOutputSchema = z.object({
             memberKind: z.enum(['property', 'method', 'accessor']),
             ownerName: z.string(),
             ownerHint: z.string().optional().describe('Owner @mcpHint text, if present.'),
-            importPath: importPathSchema.describe('Public import path of the owner, or null.'),
+            importPath: importPathSchema.describe(
+                'Import path of the owner: the package barrel when one re-exports it, otherwise the declaring file. Null for Promise prototype extensions.'
+            ),
+            barrelExport: barrelExportSchema,
             sourcePackage: z.string(),
             filePath: z.string().describe('Repo-relative source file path.'),
             isStatic: z.boolean(),
@@ -524,7 +582,7 @@ export function toSearchSymbolsOutput(
                 memberKind: m.memberKind,
                 ownerName: m.ownerName,
                 ...(m.ownerHint ? {ownerHint: m.ownerHint} : {}),
-                importPath: hit.importPath,
+                ...resolveOwnerImport(hit),
                 sourcePackage: m.sourcePackage,
                 filePath: toRelativePath(m.filePath),
                 isStatic: m.isStatic,
