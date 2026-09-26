@@ -8,11 +8,12 @@
  * the ranking helpers are shared with doc search - see `search-text.ts`.
  *
  * Ranking: OR combination scaled by the share of query terms matched, a bonus for a symbol or
- * member whose whole name the query spells out, a penalty for `kit/` re-exports of third-party
- * components, and shorter names first on ties. Internal means internal by location or
- * visibility: by default `impl/`, `admin/`, `inspector/`, and `dynamics/` code and non-exported
- * symbols are hidden and counted; `includeInternal` shows them. A symbol no package barrel
- * re-exports is neither hidden nor penalized - apps can import it from its file. `*Props`
+ * member whose whole name the query spells out, a preference for symbols the package barrels
+ * re-export, a penalty for `kit/` re-exports of third-party components, and shorter names first
+ * on ties. Internal means internal by location or visibility: by default `impl/`, `admin/`,
+ * `inspector/`, and `dynamics/` code and non-exported symbols are hidden and counted;
+ * `includeInternal` shows them. A symbol no package barrel re-exports is listed with its file
+ * import and ranks below barrel-exported matches; an exact name still ranks first. `*Props`
  * members are indexed but only returned when the query names the owner (`ButtonProps` or
  * `button`), since generic prop names would otherwise flood every query.
  */
@@ -29,6 +30,7 @@ import {
 } from './search-text.js';
 import {
     getIndexes,
+    isPromiseExtension,
     isPropsOwner,
     type MemberIndexEntry,
     type SymbolEntry,
@@ -123,6 +125,14 @@ const OWNER_NAMED_BOOST = 1.3;
 /** Multiplier for `kit/` re-exports of third-party components (Blueprint, Onsen), which are not Hoist APIs. */
 const KIT_WEIGHT = 0.5;
 
+/**
+ * Multiplier for a symbol no package barrel re-exports, and for a member whose owner no barrel
+ * re-exports: a preference for the barrels, which are the curated public surface. Such symbols
+ * are still listed with their file import, and an exact name still ranks first. Promise
+ * prototype extensions need no import and are exempt.
+ */
+const FILE_IMPORT_WEIGHT = 0.125;
+
 /** Multiplier for a member whose JSDoc is inherited, so the documenting declaration ranks first. */
 const INHERITED_DOC_WEIGHT = 0.98;
 
@@ -192,7 +202,7 @@ export async function searchSymbols(
     ).map(({hit, score}) => {
         const entry = idx.symbolEntries[hit.id],
             exact = named.has(entry.name.toLowerCase()),
-            weight = symbolWeight(entry.importPath);
+            weight = symbolWeight(entry.importPath, isPromiseExtension(entry));
         return {entry, score: exact ? hit.score * EXACT_NAME_BOOST * weight : score * weight};
     });
     const symbolHits = includeInternal
@@ -226,7 +236,9 @@ export async function searchSymbols(
         const entry = idx.memberEntries[hit.id],
             importPath = idx.ownerImportPaths.get(ownerKey(entry)) ?? null,
             exact = named.has(entry.name.toLowerCase());
-        let s = (exact ? hit.score * EXACT_NAME_BOOST : score) * symbolWeight(importPath);
+        let s =
+            (exact ? hit.score * EXACT_NAME_BOOST : score) *
+            symbolWeight(importPath, entry.ownerName === 'Promise');
         if (exact && named.has(entry.ownerName.toLowerCase())) s *= OWNER_NAMED_BOOST;
         if (entry.jsDocInheritedFrom) s *= INHERITED_DOC_WEIGHT;
         return {entry, score: s, importPath};
@@ -336,9 +348,13 @@ function mergeComponentHits(
     return merged;
 }
 
-/** Ranking weight from a symbol's barrel import path: kit re-exports rank below Hoist's own API. */
-function symbolWeight(importPath: string | null): number {
-    return importPath?.startsWith('@xh/hoist/kit/') ? KIT_WEIGHT : 1;
+/**
+ * Ranking weight from a symbol's barrel import path: file imports and kit re-exports rank below
+ * Hoist's barrel-exported API. `noImport` exempts Promise prototype extensions.
+ */
+function symbolWeight(importPath: string | null, noImport: boolean): number {
+    if (!importPath) return noImport ? 1 : FILE_IMPORT_WEIGHT;
+    return importPath.startsWith('@xh/hoist/kit/') ? KIT_WEIGHT : 1;
 }
 
 /** True for paths under `impl/` at any depth, or under a top-level internal package. */
