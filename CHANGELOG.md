@@ -168,7 +168,6 @@
   nullish accessor candidates if no match. It excludes computed getters and primitive observables.
   This is tighter than the prior walk, which subscribed indiscriminately and triggered needless
   re-renders.
-* Improved persistence in the Admin client.
 * Deprecated `GridModel.enableFullWidthScroll`, now a no-op. AG Grid 36 natively renders a single
   full-width horizontal scrollbar spanning all columns, so Hoist removed its custom implementation.
 * `Promise.linkTo()` no longer logs a spurious "Uncaught (in promise)" error when a linked promise
@@ -833,6 +832,10 @@ columns.
 * Fixed "not a valid MIME type" console warnings from `FileChooser`. Accepted extensions are now
   passed under a dummy MIME type key, silencing the warnings while continuing to filter selected
   files by extension.
+
+### ⚙️ Technical
+
+* Admin activity tracking now persists its selected time period.
 
 ### ⚙️ Typescript API Adjustments
 
