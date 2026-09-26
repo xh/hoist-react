@@ -12,6 +12,7 @@ export * from './RecordAction';
 export * from './StoreSelectionModel';
 export * from './UrlStore';
 
+export * from './filter/BaseFilterFieldSpec';
 export * from './filter/Filter';
 export * from './filter/CompoundFilter';
 export * from './filter/FieldFilter';

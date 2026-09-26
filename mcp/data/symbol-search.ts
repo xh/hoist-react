@@ -92,7 +92,7 @@ export interface SymbolSearchResults {
     hiddenSymbols: number;
     hiddenMembers: number;
     /**
-     * Hidden symbols whose whole name the query spells out (`CardModel`), so an agent that
+     * Hidden symbols whose whole name the query spells out (`LeafRow`), so an agent that
      * typed the exact name of an un-importable symbol is told where it is, not just counted.
      */
     hiddenExact: SymbolEntry[];

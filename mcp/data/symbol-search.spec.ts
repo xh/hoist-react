@@ -8,6 +8,8 @@
  * member hits is one of the expected targets. Asserts:
  *   - top-3 hit rate at or above {@link MIN_HIT_RATE}
  *   - the three formerly zero-result queries return their obvious hit in the top 3
+ *   - each barrel-exported symbol returns itself in the top 3, so dropping it from its package
+ *     barrel (which hides it from default search) fails the run
  *   - a default search renders under {@link MAX_SEARCH_TOKENS} tokens for every golden query,
  *     and under {@link MAX_EXPERIMENT_TOKENS} for the experiment queries named in the issue.
  *     These are ceilings against regressions to the old multi-thousand-token dumps, not targets:
@@ -46,8 +48,11 @@ interface GoldenCase {
     query: string;
     /** Any one of these in the top 3 symbols or top 3 members counts as a hit. */
     expect: string[];
-    /** Where the case came from - experiment trail, formerly zero-result query, or common API. */
-    source: 'experiment' | 'zero-result' | 'common';
+    /**
+     * Where the case came from - experiment trail, formerly zero-result query, common API, or a
+     * symbol that must stay re-exported by its package barrel.
+     */
+    source: 'experiment' | 'zero-result' | 'common' | 'barrel';
 }
 
 const cases: GoldenCase[] = [
@@ -224,7 +229,20 @@ const cases: GoldenCase[] = [
         expect: ['LoadSupport.doLoadAsync', 'HoistModel.doLoadAsync', 'Loadable.doLoadAsync'],
         source: 'common'
     },
-    {query: 'addReaction', expect: ['HoistBase.addReaction'], source: 'common'}
+    {query: 'addReaction', expect: ['HoistBase.addReaction'], source: 'common'},
+
+    // Symbols once hidden because no package barrel re-exported them.
+    {query: 'CardModel', expect: ['CardModel'], source: 'barrel'},
+    {query: 'BaseOAuthClient', expect: ['BaseOAuthClient'], source: 'barrel'},
+    {query: 'DynamicTabSwitcherModel', expect: ['DynamicTabSwitcherModel'], source: 'barrel'},
+    {query: 'FilterChooserFieldSpec', expect: ['FilterChooserFieldSpec'], source: 'barrel'},
+    {query: 'DashContainerViewModel', expect: ['DashContainerViewModel'], source: 'barrel'},
+    {query: 'BaseFilterFieldSpec', expect: ['BaseFilterFieldSpec'], source: 'barrel'},
+    {query: 'ChartContextMenuSpec', expect: ['ChartContextMenuSpec'], source: 'barrel'},
+    {query: 'WhatsNewButton', expect: ['WhatsNewButton'], source: 'barrel'},
+    {query: 'EditorProps', expect: ['EditorProps'], source: 'barrel'},
+    {query: 'RestField', expect: ['RestField'], source: 'barrel'},
+    {query: 'PageConfig', expect: ['PageConfig'], source: 'barrel'}
 ];
 
 /** The issue's experiment queries, measured against the tighter budget. */
@@ -335,6 +353,13 @@ for (const c of cases.filter(c => c.source === 'zero-result')) {
     else fail(`"${c.query}" lacks ${c.expect.join(' / ')} in the top 3: ${label(results)}`);
 }
 
+// Barrel-exported symbols must stay visible to default search.
+for (const c of cases.filter(c => c.source === 'barrel')) {
+    const results = await searchSymbols(c.query);
+    if (isHit(results, c.expect)) pass(`"${c.query}" returns ${c.expect.join(' / ')} in the top 3`);
+    else fail(`"${c.query}" lacks ${c.expect.join(' / ')} in the top 3: ${label(results)}`);
+}
+
 // headerName reaches ColumnSpec.headerName with its JSDoc.
 {
     const hit = (await searchSymbols('headerName')).members
@@ -378,19 +403,20 @@ for (const c of cases.filter(c => c.source === 'zero-result')) {
         pass('kind filter');
     else fail('kind filter');
 
-    const cardModel = await searchSymbols('CardModel'),
-        cardText = searchText(cardModel),
-        exact = cardModel.hiddenExact[0];
+    // LeafRow is an internal cube row shape that no package barrel re-exports.
+    const leafRow = await searchSymbols('LeafRow'),
+        leafText = searchText(leafRow),
+        exact = leafRow.hiddenExact[0];
     if (
-        exact?.name === 'CardModel' &&
-        exact.filePath.endsWith('/cmp/card/CardModel.ts') &&
-        cardText.includes('Hidden exact match: CardModel (cmp/card/CardModel.ts)') &&
-        !cardModel.symbols.some(h => h.entry.name === 'CardModel')
+        exact?.name === 'LeafRow' &&
+        exact.filePath.endsWith('/data/cube/row/LeafRow.ts') &&
+        leafText.includes('Hidden exact match: LeafRow (data/cube/row/LeafRow.ts)') &&
+        !leafRow.symbols.some(h => h.entry.name === 'LeafRow')
     ) {
-        pass('"CardModel" names the hidden exact match and where it is');
+        pass('"LeafRow" names the hidden exact match and where it is');
     } else {
         fail(
-            `"CardModel" hidden exact match: ${JSON.stringify(cardModel.hiddenExact.map(e => e.name))}`
+            `"LeafRow" hidden exact match: ${JSON.stringify(leafRow.hiddenExact.map(e => e.name))}`
         );
     }
     const gridModel = await searchSymbols('GridModel');
