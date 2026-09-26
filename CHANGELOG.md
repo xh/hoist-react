@@ -191,12 +191,9 @@
   in `GridContextMenuToken`, which gains `'-'`, and the ag-Grid `DefaultMenuItem` tokens, newly
   re-exported from `@xh/hoist/kit/ag-grid`. Apps that build a menu from dynamic strings must
   annotate or cast the array as `GridContextMenuItemLike[]`.
-* Added package barrel exports for symbols that previously required a deep file import:
-  `CardModel` (`cmp/card`), `ChartContextMenuSpec` (`cmp/chart`), `FilterChooserFieldSpec`
-  (`cmp/filter`), `BaseFilterFieldSpec` (`data`), `DashContainerViewModel`,
-  `DynamicTabSwitcherModel`, `WhatsNewButton`, `EditorProps` and `RestField` (`desktop/cmp/*`),
-  and `OptionsButton` and `PageConfig` (`mobile/cmp/*`). Added a new `@xh/hoist/security` barrel
-  for `BaseOAuthClient`, `Token`, and `AccessTokenSpec`.
+* Added missing app-facing symbols to their package barrels, including `CardModel`,
+  `FilterChooserFieldSpec`, `DashContainerViewModel` and `DynamicTabSwitcherModel`, plus a new
+  `@xh/hoist/security` barrel exporting `BaseOAuthClient`.
 
 ### 🤖 AI Docs + Tooling
 
