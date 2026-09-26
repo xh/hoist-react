@@ -106,7 +106,7 @@ class MyModel extends HoistModel {
     override persistWith = {prefKey: 'MyModelState'};
 
     // Decorator form - syncs with configured PersistenceProvider
-    @persist @bindable accessor showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 
     // Or programmatic form for custom timing
     constructor() {
