@@ -25,6 +25,7 @@ import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
 import {resolveRepoRoot, resolveRepoRootPosix, toPosixPath} from '../util/paths.js';
+import {createImportPathResolver} from './import-paths.js';
 import {computeFingerprint, loadCache, writeCache} from './index-cache.js';
 
 //------------------------------------------------------------------
@@ -41,6 +42,11 @@ export interface SymbolEntry {
     filePath: string;
     isExported: boolean;
     sourcePackage: string;
+    /**
+     * Public import path (`@xh/hoist/cmp/grid`) - the shallowest package barrel that re-exports
+     * the symbol - or null when no barrel does. See `import-paths.ts`.
+     */
+    importPath: string | null;
     /** JSDoc, if available. Populated at index time; displayed in search results. */
     jsDoc: string;
     /**
@@ -67,6 +73,8 @@ export interface SymbolDetail {
     filePath: string;
     sourcePackage: string;
     isExported: boolean;
+    /** Public import path, or null when no barrel re-exports the symbol. */
+    importPath: string | null;
     signature: string;
     jsDoc: string;
     extends?: string;
@@ -92,6 +100,12 @@ export interface MemberInfo {
     isOptional?: boolean;
     decorators: string[];
     jsDoc: string;
+    /**
+     * Property initializer text (`true`, `'grid'`, `[]`) when the declaration has one that is
+     * short enough to read as a default. Defaults assigned in constructors or helpers are not
+     * chased.
+     */
+    default?: string;
     parameters?: MemberParameter[];
     returnType?: string;
     /**
@@ -132,8 +146,53 @@ export interface MemberIndexEntry {
     isStatic: boolean;
     type: string;
     jsDoc: string;
+    /** Set when `jsDoc` was inherited from an implemented interface or a sibling `*Spec`/`*Config`. */
+    jsDocInheritedFrom?: string;
+    /** Property initializer text, when short. See {@link MemberInfo.default}. */
+    default?: string;
     decorators: string[];
 }
+
+/** Member-name filters shared by `getMembers` and the tools that call it. */
+export interface MemberFilter {
+    /** Case-insensitive substring match on the member name. */
+    filter?: string;
+    /** Own members, inherited members, or both (default). */
+    include?: 'own' | 'inherited' | 'all';
+    memberKind?: 'property' | 'method' | 'accessor';
+}
+
+/** A member inherited from a type outside the index (React, Blueprint, ...), found via the type checker. */
+export interface ExternalMember {
+    name: string;
+    kind: 'property' | 'method';
+    /** Declared type text when the declaration has an annotation; omitted otherwise. */
+    type?: string;
+}
+
+/** External members grouped by the interface or class that declares them. */
+export interface ExternalMemberGroup {
+    declaredIn: string;
+    /** npm package the declaring type comes from, or null for a type within hoist-react. */
+    module: string | null;
+    members: ExternalMember[];
+}
+
+/** Outcome of {@link getMembers}. A non-class/interface target is reported, not silently empty. */
+export type MembersResult =
+    | {
+          ok: true;
+          symbol: SymbolDetail;
+          /** Members after `MemberFilter` is applied. */
+          members: MemberInfo[];
+          /** Members before filtering. */
+          totalMembers: number;
+          externalMembers: ExternalMemberGroup[];
+          /** External members before filtering. */
+          totalExternal: number;
+      }
+    | {ok: false; reason: 'not-found'}
+    | {ok: false; reason: 'no-members'; entries: SymbolEntry[]};
 
 //------------------------------------------------------------------
 // Module state (lazy initialization)
@@ -174,8 +233,12 @@ const TOP_LEVEL_PACKAGES = [
  * is determined by rule (see `shouldIndexClassMembers` / `shouldIndexInterfaceMembers`):
  *
  *   - every exported class
- *   - every exported interface whose name ends in `Config` (the Hoist convention for
- *     configuration-object shapes consumed by class constructors)
+ *   - every exported interface whose name ends in `Config`, `Spec`, or `Options` (the Hoist
+ *     conventions for configuration-object shapes consumed by class constructors, grid/column/
+ *     view definitions, and option bags such as `FetchOptions` and `PersistOptions`)
+ *   - every exported interface whose name ends in `Props` - indexed, but only searched when the
+ *     query names the owner (see `symbol-search.ts`), since generic prop names such as `title`
+ *     or `disabled` would otherwise flood results
  *
  * Each indexed owner can carry an optional short hint via an `@mcpHint` JSDoc tag
  * on its declaration (e.g. `@mcpHint model backing all grid components`). The tag
@@ -191,8 +254,16 @@ function shouldIndexClassMembers(cls: ClassDeclaration): boolean {
 
 /** True if the given interface should have its public members indexed for search. */
 function shouldIndexInterfaceMembers(name: string, isExported: boolean): boolean {
-    return isExported && name.endsWith('Config');
+    return isExported && /(Config|Spec|Options|Props)$/.test(name);
 }
+
+/** True for `*Props` owners, whose members are searched only when the query names the owner. */
+export function isPropsOwner(ownerName: string): boolean {
+    return ownerName.endsWith('Props');
+}
+
+/** Longest property initializer surfaced as a member default. */
+const MAX_DEFAULT_LENGTH = 60;
 
 /**
  * Derive the source package from a file's absolute path.
@@ -298,6 +369,9 @@ function buildSymbolIndex(proj: Project): {
     // POSIX form: compared against ts-morph `getFilePath()`, which always uses
     // forward slashes even on Windows.
     const repoRoot = resolveRepoRootPosix();
+    const resolveImportPath = createImportPathResolver(proj, repoRoot);
+    const importPathFor = (filePath: string, name: string, isExported: boolean) =>
+        isExported ? resolveImportPath(filePath, name) : null;
 
     const counts = {total: 0, exported: 0, byKind: {} as Record<string, number>};
     let memberCount = 0;
@@ -348,6 +422,7 @@ function buildSymbolIndex(proj: Project): {
                 filePath,
                 isExported: cls.isExported(),
                 sourcePackage: pkg,
+                importPath: importPathFor(filePath, name, cls.isExported()),
                 jsDoc: extractJsDoc(cls),
                 mcpHint
             };
@@ -375,6 +450,7 @@ function buildSymbolIndex(proj: Project): {
                             isStatic: m.isStatic,
                             type: m.kind === 'method' ? formatMethodType(m) : m.type,
                             jsDoc: m.jsDoc,
+                            ...(m.default != null ? {default: m.default} : {}),
                             decorators: m.decorators
                         };
                         addToMemberIndex(mIndex, mEntry);
@@ -405,6 +481,7 @@ function buildSymbolIndex(proj: Project): {
                 filePath,
                 isExported,
                 sourcePackage: pkg,
+                importPath: importPathFor(filePath, name, isExported),
                 jsDoc,
                 mcpHint
             };
@@ -413,8 +490,8 @@ function buildSymbolIndex(proj: Project): {
             if (entry.isExported) counts.exported++;
             counts.byKind['interface'] = (counts.byKind['interface'] || 0) + 1;
 
-            // Index public members for exported `*Config` interfaces, which describe the
-            // configuration surface of the classes that accept them as constructor arg.
+            // Index public members for exported `*Config`, `*Spec`, `*Options`, and `*Props`
+            // interfaces, which describe the configuration surface of classes and components.
             if (shouldIndexInterfaceMembers(name, isExported)) {
                 const ownerHint = mcpHint;
                 try {
@@ -438,11 +515,15 @@ function buildSymbolIndex(proj: Project): {
                         addToMemberIndex(mIndex, mEntry);
                         memberCount++;
                     }
-                    memberNamesByOwner.set(ownerKey(name, filePath), {
-                        name,
-                        filePath,
-                        memberNames: publicNames
-                    });
+                    // Props owners are searched only when named, so their member names do
+                    // not expand the owner's own searchable text either.
+                    if (!isPropsOwner(name)) {
+                        memberNamesByOwner.set(ownerKey(name, filePath), {
+                            name,
+                            filePath,
+                            memberNames: publicNames
+                        });
+                    }
                 } catch (e) {
                     log.warn(`Failed to index members for ${name}: ${e}`);
                 }
@@ -459,6 +540,7 @@ function buildSymbolIndex(proj: Project): {
                 filePath,
                 isExported: typeAlias.isExported(),
                 sourcePackage: pkg,
+                importPath: importPathFor(filePath, name, typeAlias.isExported()),
                 jsDoc: extractJsDoc(typeAlias)
             };
             addToIndex(index, entry);
@@ -477,6 +559,7 @@ function buildSymbolIndex(proj: Project): {
                 filePath,
                 isExported: func.isExported(),
                 sourcePackage: pkg,
+                importPath: importPathFor(filePath, name, func.isExported()),
                 jsDoc: extractFunctionJsDoc(func)
             };
             addToIndex(index, entry);
@@ -495,6 +578,7 @@ function buildSymbolIndex(proj: Project): {
                 filePath,
                 isExported: enumDecl.isExported(),
                 sourcePackage: pkg,
+                importPath: importPathFor(filePath, name, enumDecl.isExported()),
                 jsDoc: extractJsDoc(enumDecl)
             };
             addToIndex(index, entry);
@@ -537,6 +621,7 @@ function buildSymbolIndex(proj: Project): {
                         filePath,
                         isExported: true,
                         sourcePackage: pkg,
+                        importPath: importPathFor(filePath, name, true),
                         jsDoc: stmtJsDoc
                     };
                     addToIndex(index, entry);
@@ -663,13 +748,15 @@ function indexPromiseExtensions(
                     decorators: []
                 });
 
-                // Add as a searchable symbol entry
+                // Add as a searchable symbol entry. Prototype extensions need no import, so
+                // they carry no import path.
                 addToIndex(symbolIdx, {
                     name,
                     kind: 'function',
                     filePath,
                     isExported: true,
                     sourcePackage: pkg,
+                    importPath: null,
                     jsDoc
                 });
 
@@ -682,6 +769,7 @@ function indexPromiseExtensions(
                     filePath,
                     sourcePackage: pkg,
                     isExported: true,
+                    importPath: null,
                     signature: sig,
                     jsDoc
                 });
@@ -742,11 +830,12 @@ function buildIndexesFresh(repoRoot: string): void {
     const buildMs = Date.now() - buildStart;
 
     // Second pass: now that the symbol index is fully populated, fill in
-    // member-index JSDoc from `implements` for class members with no own
-    // JSDoc. Has to run after `symbolIndex`/`memberIndex` are assigned
-    // because the fallback resolves interfaces via `findIndexEntry`.
+    // member-index JSDoc from `implements` clauses and sibling `*Spec`/`*Config`
+    // interfaces for class members with no own JSDoc. Has to run after
+    // `symbolIndex`/`memberIndex` are assigned because the fallback resolves
+    // interfaces via `findIndexEntry`.
     const enrichStart = Date.now();
-    enrichMemberIndexFromImplements(proj);
+    enrichMemberIndexJsDoc(proj);
     const enrichMs = Date.now() - enrichStart;
 
     const elapsed = Date.now() - startMs;
@@ -788,19 +877,19 @@ function ensureProject(): Project {
 
 /**
  * Post-build pass that walks every member-indexed class with an `implements`
- * clause and, for each public member with empty own JSDoc, copies the
- * matching interface member's JSDoc into the corresponding `MemberIndexEntry`
- * (mutating in place). Mirrors the on-demand fallback in
- * {@link extractClassMembersWithInheritance} so that the member index
- * surfaces the same JSDoc text the `getMembers` path produces - critical
- * for `searchMembers` queries that match against JSDoc content.
+ * clause or a sibling `*Spec`/`*Config` interface and, for each public member
+ * with empty own JSDoc, copies the matching interface member's JSDoc into the
+ * corresponding `MemberIndexEntry` (mutating in place). Mirrors the on-demand
+ * fallback in {@link extractClassMembersWithInheritance} so that the member
+ * index surfaces the same JSDoc text the `getMembers` path produces - critical
+ * for member search queries that match against JSDoc content.
  *
  * Runs once at init, after the main `buildSymbolIndex` pass populates
  * `symbolIndex` and `memberIndex`. Trivially cheap relative to the main
- * build (only touches classes with implements clauses + members with empty
- * JSDoc).
+ * build (only touches members with empty JSDoc on classes that have a
+ * documentation source).
  */
-function enrichMemberIndexFromImplements(proj: Project): void {
+function enrichMemberIndexJsDoc(proj: Project): void {
     // POSIX form: compared against ts-morph `getFilePath()` (see buildSymbolIndex).
     const repoRoot = resolveRepoRootPosix();
 
@@ -820,10 +909,10 @@ function enrichMemberIndexFromImplements(proj: Project): void {
 
         for (const cls of sourceFile.getClasses()) {
             if (!shouldIndexClassMembers(cls)) continue;
-            if (cls.getImplements().length === 0) continue;
 
             const ownerName = cls.getName();
             if (!ownerName) continue;
+            if (cls.getImplements().length === 0 && findSiblingSpecs(cls).length === 0) continue;
 
             let members: MemberInfo[];
             try {
@@ -836,7 +925,7 @@ function enrichMemberIndexFromImplements(proj: Project): void {
                 if (m.jsDoc) continue;
                 if (isPrivateMember(m, cls)) continue;
 
-                const fallback = findImplementsJsDocFallback(cls, m);
+                const fallback = findJsDocFallback(cls, m);
                 if (!fallback) continue;
 
                 const key = m.name.toLowerCase();
@@ -845,6 +934,7 @@ function enrichMemberIndexFromImplements(proj: Project): void {
                 for (const entry of entries) {
                     if (entry.ownerName === ownerName && entry.filePath === filePath) {
                         entry.jsDoc = fallback.jsDoc;
+                        entry.jsDocInheritedFrom = fallback.inheritedFrom;
                     }
                 }
             }
@@ -883,118 +973,21 @@ export async function ensureInitialized(): Promise<void> {
     loadOrBuildIndexes();
 }
 
-/**
- * Search the symbol index by query string.
- *
- * Supports case-insensitive matching against symbol names, JSDoc, and own member names
- * (for member-indexed owners). Multi-word queries are split into tokens - all tokens
- * must match (AND logic) against the combined searchable text. Results are scored: name
- * matches rank above JSDoc/member-only matches.
- *
- * Optionally filter by kind and/or export status.
- */
-export async function searchSymbols(
-    query: string,
-    options?: {kind?: SymbolKind; exported?: boolean; limit?: number}
-): Promise<SymbolEntry[]> {
+/** The symbol and member indexes, keyed by lowercase name. Ranked search lives in `symbol-search.ts`. */
+export async function getIndexes(): Promise<{
+    symbols: Map<string, SymbolEntry[]>;
+    members: Map<string, MemberIndexEntry[]>;
+}> {
     await ensureInitialized();
-
-    const queryLower = query.toLowerCase().trim();
-    if (!queryLower) return [];
-
-    const tokens = queryLower.split(/\s+/);
-    const limit = options?.limit ?? 50;
-    const scored: {entry: SymbolEntry; nameMatches: number}[] = [];
-
-    for (const [key, entries] of symbolIndex!) {
-        for (const entry of entries) {
-            if (options?.kind && entry.kind !== options.kind) continue;
-            if (options?.exported !== undefined && entry.isExported !== options.exported) continue;
-
-            const jsDocLower = entry.jsDoc?.toLowerCase() ?? '';
-            const memberNamesLower = entry.memberNames?.toLowerCase() ?? '';
-            const searchable = key + ' ' + jsDocLower + ' ' + memberNamesLower;
-
-            // All tokens must match somewhere in the combined searchable text.
-            if (!tokens.every(t => searchable.includes(t))) continue;
-
-            // Count how many tokens matched the name specifically (for ranking).
-            const nameMatches = tokens.filter(t => key.includes(t)).length;
-            scored.push({entry, nameMatches});
-        }
-    }
-
-    // Sort: most name-token matches first, then exact name match, then exported, then alpha.
-    scored.sort((a, b) => {
-        // Prefer entries where more tokens matched the name itself
-        if (a.nameMatches !== b.nameMatches) return b.nameMatches - a.nameMatches;
-
-        const aExact = a.entry.name.toLowerCase() === queryLower ? 0 : 1;
-        const bExact = b.entry.name.toLowerCase() === queryLower ? 0 : 1;
-        if (aExact !== bExact) return aExact - bExact;
-
-        const aExported = a.entry.isExported ? 0 : 1;
-        const bExported = b.entry.isExported ? 0 : 1;
-        if (aExported !== bExported) return aExported - bExported;
-
-        return a.entry.name.localeCompare(b.entry.name);
-    });
-
-    return scored.slice(0, limit).map(s => s.entry);
+    return {symbols: symbolIndex!, members: memberIndex!};
 }
 
-/**
- * Search the member index by query string.
- *
- * Supports case-insensitive matching against the combined owner class name, member name,
- * and member JSDoc. Multi-word queries are split into tokens - all tokens must match (AND
- * logic) against the combined text. This allows queries like "StoreRecord raw" to find
- * the `raw` property on `StoreRecord`. Results are scored: member-name matches rank above
- * owner/JSDoc-only matches. Searches members of every exported class and every exported
- * `*Config` interface (see `shouldIndexClassMembers` / `shouldIndexInterfaceMembers`).
- */
-export async function searchMembers(
-    query: string,
-    options?: {limit?: number}
-): Promise<MemberIndexEntry[]> {
-    await ensureInitialized();
-
-    const queryLower = query.toLowerCase().trim();
-    if (!queryLower) return [];
-
-    const tokens = queryLower.split(/\s+/);
-    const limit = options?.limit ?? 15;
-    const scored: {entry: MemberIndexEntry; nameMatches: number}[] = [];
-
-    for (const [key, entries] of memberIndex!) {
-        for (const entry of entries) {
-            const ownerLower = entry.ownerName.toLowerCase();
-            const jsDocLower = entry.jsDoc?.toLowerCase() ?? '';
-            const searchable = ownerLower + ' ' + key + ' ' + jsDocLower;
-
-            if (!tokens.every(t => searchable.includes(t))) continue;
-
-            // Count how many tokens matched the member name for ranking.
-            const nameMatches = tokens.filter(t => key.includes(t)).length;
-            scored.push({entry, nameMatches});
-        }
-    }
-
-    // Sort: most member-name matches first, then exact name, then alpha by name, then owner.
-    scored.sort((a, b) => {
-        if (a.nameMatches !== b.nameMatches) return b.nameMatches - a.nameMatches;
-
-        const aExact = a.entry.name.toLowerCase() === queryLower ? 0 : 1;
-        const bExact = b.entry.name.toLowerCase() === queryLower ? 0 : 1;
-        if (aExact !== bExact) return aExact - bExact;
-
-        const nameCompare = a.entry.name.localeCompare(b.entry.name);
-        if (nameCompare !== 0) return nameCompare;
-
-        return a.entry.ownerName.localeCompare(b.entry.ownerName);
-    });
-
-    return scored.slice(0, limit).map(s => s.entry);
+/** Options for resolving a symbol by name. */
+export interface SymbolLookupOptions {
+    /** Source file path to disambiguate duplicate names. */
+    filePath?: string;
+    /** Symbol kind to disambiguate a `type` and `const` (or class) sharing a name. */
+    kind?: SymbolKind;
 }
 
 /**
@@ -1006,13 +999,39 @@ export async function searchMembers(
  */
 export async function getSymbolDetail(
     name: string,
-    filePath?: string
+    options: SymbolLookupOptions = {}
 ): Promise<SymbolDetail | null> {
     await ensureInitialized();
 
-    const entry = findIndexEntry(name, filePath);
-    if (!entry) return null;
+    const entry = findIndexEntry(name, options.filePath, options.kind);
+    return entry ? detailFor(entry) : null;
+}
 
+/**
+ * Get every declaration of a name within the file the name resolves to, primary first. A
+ * `type` and a `const` (or class) that share a name in one file - `FieldType` - describe one
+ * API, so callers show them together rather than silently picking one. Passing `kind` narrows
+ * the result to that declaration.
+ */
+export async function getSymbolDeclarations(
+    name: string,
+    options: SymbolLookupOptions = {}
+): Promise<SymbolDetail[]> {
+    await ensureInitialized();
+
+    const primary = findIndexEntry(name, options.filePath, options.kind);
+    if (!primary) return [];
+
+    const siblings = options.kind
+        ? []
+        : (symbolIndex!.get(name.toLowerCase()) ?? []).filter(
+              e => e !== primary && e.name === name && e.filePath === primary.filePath
+          );
+    return [primary, ...siblings].map(detailFor).filter((d): d is SymbolDetail => d != null);
+}
+
+/** Extract detail for an index entry, constructing the ts-morph Project only when needed. */
+function detailFor(entry: SymbolEntry): SymbolDetail | null {
     // Pre-computed Promise prototype extensions don't need the live Project;
     // skip the AST construction in that case.
     if (!promiseExtensionDetails?.has(entry.name)) {
@@ -1022,7 +1041,7 @@ export async function getSymbolDetail(
     try {
         return extractSymbolDetail(entry);
     } catch (e) {
-        log.warn(`Failed to extract detail for symbol "${name}": ${e}`);
+        log.warn(`Failed to extract detail for symbol "${entry.name}": ${e}`);
         return null;
     }
 }
@@ -1081,41 +1100,153 @@ function findCompanionEntries(baseName: string, filePath: string): SymbolEntry[]
  *
  * For classes, walks the inheritance chain and includes inherited members tagged
  * with their declaring class. Filters out `_`-prefixed and `private` members to
- * match the member index behavior.
+ * match the member index behavior. Members inherited from types outside the index
+ * (React, Blueprint) are listed separately via the type checker - see
+ * {@link extractExternalMembers}.
  *
- * Returns null for symbol kinds other than class or interface.
+ * A name that resolves to something other than a class or interface is reported
+ * as `no-members` with the declarations found, so callers can explain it.
  */
 export async function getMembers(
     name: string,
-    filePath?: string
-): Promise<{symbol: SymbolDetail; members: MemberInfo[]} | null> {
+    options: SymbolLookupOptions & MemberFilter = {}
+): Promise<MembersResult> {
     await ensureInitialized();
 
-    const entry = findIndexEntry(name, filePath);
-    if (!entry) return null;
-    if (entry.kind !== 'class' && entry.kind !== 'interface') return null;
+    const entry =
+        findIndexEntry(name, options.filePath, 'class') ??
+        findIndexEntry(name, options.filePath, 'interface') ??
+        findIndexEntry(name, options.filePath);
+    if (!entry) return {ok: false, reason: 'not-found'};
+    if (entry.kind !== 'class' && entry.kind !== 'interface') {
+        const entries = (symbolIndex!.get(name.toLowerCase()) ?? []).filter(
+            e => e.name === name && e.filePath === entry.filePath
+        );
+        return {ok: false, reason: 'no-members', entries};
+    }
 
     ensureProject();
 
     try {
         const detail = extractSymbolDetail(entry);
-        if (!detail) return null;
+        if (!detail) return {ok: false, reason: 'not-found'};
 
-        let members: MemberInfo[];
-        if (entry.kind === 'class') {
-            members = extractClassMembersWithInheritance(entry.filePath, name);
-        } else {
-            members = extractInterfaceMembersWithInheritance(entry.filePath, name);
-        }
+        const all =
+            entry.kind === 'class'
+                ? extractClassMembersWithInheritance(entry.filePath, entry.name)
+                : extractInterfaceMembersWithInheritance(entry.filePath, entry.name);
 
-        // Filter out _-prefixed and private members (match member index behavior)
-        members = members.filter(m => !m.name.startsWith('_'));
+        // Filter out _-prefixed members (match member index behavior)
+        const members = all.filter(m => !m.name.startsWith('_')),
+            known = new Set(all.map(m => m.name)),
+            external = extractExternalMembers(entry, known);
 
-        return {symbol: detail, members};
+        return {
+            ok: true,
+            symbol: detail,
+            members: applyMemberFilter(members, options),
+            totalMembers: members.length,
+            externalMembers: applyExternalFilter(external, options),
+            totalExternal: external.reduce((n, g) => n + g.members.length, 0)
+        };
     } catch (e) {
         log.warn(`Failed to extract members for symbol "${name}": ${e}`);
-        return null;
+        return {ok: false, reason: 'not-found'};
     }
+}
+
+function applyMemberFilter(members: MemberInfo[], f: MemberFilter): MemberInfo[] {
+    const needle = f.filter?.toLowerCase();
+    return members.filter(
+        m =>
+            (!needle || m.name.toLowerCase().includes(needle)) &&
+            (!f.memberKind || m.kind === f.memberKind) &&
+            (!f.include ||
+                f.include === 'all' ||
+                (f.include === 'own') === (m.inheritedFrom == null))
+    );
+}
+
+function applyExternalFilter(
+    groups: ExternalMemberGroup[],
+    f: MemberFilter
+): ExternalMemberGroup[] {
+    if (f.include === 'own') return [];
+    const needle = f.filter?.toLowerCase(),
+        kind = f.memberKind === 'accessor' ? 'property' : f.memberKind;
+    return groups
+        .map(g => ({
+            ...g,
+            members: g.members.filter(
+                m =>
+                    (!needle || m.name.toLowerCase().includes(needle)) && (!kind || m.kind === kind)
+            )
+        }))
+        .filter(g => g.members.length > 0);
+}
+
+/** Longest declared type text carried on an external member. */
+const MAX_EXTERNAL_TYPE_LENGTH = 80;
+
+/**
+ * Members the type checker sees on a class or interface that the declaration walkers did
+ * not reach - inherited from types outside the index such as React's `HTMLAttributes` or
+ * Blueprint's `ButtonProps` (also through `Omit<...>` and other type operators). Grouped by
+ * declaring type. Types come from the declaration's annotation, which is cheap; nothing is
+ * resolved through the checker beyond the property list itself.
+ */
+function extractExternalMembers(entry: SymbolEntry, known: Set<string>): ExternalMemberGroup[] {
+    const sourceFile = project!.getSourceFile(entry.filePath),
+        decl =
+            entry.kind === 'class'
+                ? sourceFile?.getClass(entry.name)
+                : sourceFile?.getInterface(entry.name);
+    if (!decl) return [];
+
+    const groups = new Map<string, ExternalMemberGroup>();
+    for (const sym of decl.getType().getProperties()) {
+        const name = sym.getName();
+        if (known.has(name) || name.startsWith('_')) continue;
+
+        const d = sym.getDeclarations()[0],
+            parent = d?.getParent(),
+            declaredIn = (parent as {getName?: () => string | undefined} | undefined)?.getName?.();
+        if (!d || !declaredIn) continue;
+        // The checker also lists private members, which the declaration walkers filter out.
+        if (Node.isModifierable(d) && d.hasModifier(SyntaxKind.PrivateKeyword)) continue;
+
+        const filePath = d.getSourceFile().getFilePath(),
+            module =
+                filePath
+                    .match(/node_modules\/((?:@[^/]+\/)?[^/@]+)/g)
+                    ?.at(-1)
+                    ?.slice(13) ?? null,
+            key = `${declaredIn}|${module}`,
+            typeText = (d as {getTypeNode?: () => Node | undefined}).getTypeNode?.()?.getText(),
+            type = typeText?.replace(/\s+/g, ' ').trim();
+
+        let group = groups.get(key);
+        if (!group) {
+            group = {declaredIn, module, members: []};
+            groups.set(key, group);
+        }
+        group.members.push({
+            name,
+            kind: Node.isMethodSignature(d) || Node.isMethodDeclaration(d) ? 'method' : 'property',
+            ...(type && type.length <= MAX_EXTERNAL_TYPE_LENGTH ? {type} : {})
+        });
+    }
+
+    // The checker's property order varies with what it has already resolved, so sort for
+    // stable output: hoist-react types first, then by module and declaring type, members by name.
+    const byName = (a: {name: string}, b: {name: string}) => a.name.localeCompare(b.name);
+    return [...groups.values()]
+        .map(g => ({...g, members: g.members.sort(byName)}))
+        .sort(
+            (a, b) =>
+                (a.module ?? '').localeCompare(b.module ?? '') ||
+                a.declaredIn.localeCompare(b.declaredIn)
+        );
 }
 
 //------------------------------------------------------------------
@@ -1166,13 +1297,13 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
 
             const enriched: MemberInfo = {...m, inheritedFrom: classChainInheritedFrom};
 
-            // Implements-fallback: when a member declares no own JSDoc, surface
-            // matching JSDoc from the first interface (in declaration order) that
-            // declares it. Recorded separately as `jsDocInheritedFrom` because
-            // the member itself is declared on the class - only the docs are
-            // inherited, not the member or its behavior.
+            // JSDoc fallback: when a member declares no own JSDoc, surface matching
+            // JSDoc from an implemented interface or a sibling `*Spec`/`*Config`.
+            // Recorded separately as `jsDocInheritedFrom` because the member itself
+            // is declared on the class - only the docs are inherited, not the member
+            // or its behavior.
             if (!enriched.jsDoc) {
-                const fallback = findImplementsJsDocFallback(cls, m);
+                const fallback = findJsDocFallback(cls, m);
                 if (fallback) {
                     enriched.jsDoc = fallback.jsDoc;
                     enriched.jsDocInheritedFrom = fallback.inheritedFrom;
@@ -1212,9 +1343,42 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
 }
 
 /**
- * For a class member with no own JSDoc, walk the class's `implements` clause
- * (declaration order) and return the JSDoc + tag info from the first interface
- * that declares a matching member with non-empty JSDoc.
+ * Sibling `*Spec` / `*Config` interfaces for a class - `ColumnSpec` for `Column`, `GridConfig`
+ * for `GridModel`. A same-file interface is preferred, then any in the same package. These
+ * mirror the class's properties and usually carry the documentation the class omits.
+ */
+function findSiblingSpecs(cls: ClassDeclaration): SymbolEntry[] {
+    const name = cls.getName();
+    if (!name) return [];
+
+    const filePath = cls.getSourceFile().getFilePath(),
+        pkg = derivePackage(filePath, resolveRepoRootPosix()),
+        base = name.endsWith('Model') ? name.slice(0, -'Model'.length) : name,
+        found: SymbolEntry[] = [];
+    for (const candidate of [`${name}Spec`, `${name}Config`, `${base}Spec`, `${base}Config`]) {
+        const entries = (symbolIndex!.get(candidate.toLowerCase()) ?? []).filter(
+            e =>
+                e.name === candidate &&
+                e.kind === 'interface' &&
+                e.isExported &&
+                e.sourcePackage === pkg &&
+                !found.includes(e)
+        );
+        found.push(
+            ...entries.sort(
+                (a, b) => Number(b.filePath === filePath) - Number(a.filePath === filePath)
+            )
+        );
+    }
+    return found;
+}
+
+/**
+ * For a class member with no own JSDoc, return the JSDoc + tag info from the
+ * first interface that declares a matching member with non-empty JSDoc. The
+ * class's `implements` clause is consulted first (declaration order), then its
+ * sibling `*Spec` / `*Config` interfaces (see {@link findSiblingSpecs}) - a
+ * `Column` property mirrored from `ColumnSpec` inherits the spec's docs.
  *
  * Only inspects the given class's direct implements clause - does not walk up
  * the extends chain to inspect ancestor implements (that case is naturally
@@ -1239,7 +1403,7 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
  * Returns null when no match is found, including when interfaces resolve to
  * something outside our index (e.g. React's HTMLAttributes).
  */
-function findImplementsJsDocFallback(
+function findJsDocFallback(
     cls: ClassDeclaration,
     member: MemberInfo
 ): {
@@ -1252,11 +1416,14 @@ function findImplementsJsDocFallback(
     // members only). Bail before doing any lookup work.
     if (member.isStatic) return null;
 
+    const sources: SymbolEntry[] = [];
     for (const impExpr of cls.getImplements()) {
-        const ifaceName = impExpr.getExpression().getText();
-        const ifaceEntry = findIndexEntry(ifaceName);
-        if (!ifaceEntry || ifaceEntry.kind !== 'interface') continue;
+        const ifaceEntry = findIndexEntry(impExpr.getExpression().getText());
+        if (ifaceEntry?.kind === 'interface') sources.push(ifaceEntry);
+    }
+    sources.push(...findSiblingSpecs(cls));
 
+    for (const ifaceEntry of sources) {
         const sf = project!.getSourceFile(ifaceEntry.filePath);
         if (!sf) continue;
         const iface = sf.getInterface(ifaceEntry.name);
@@ -1366,13 +1533,17 @@ export function findAlternateEntries(name: string, selectedFilePath: string): Sy
  * Find a symbol in the index by exact name.
  * Prefers exported symbols when multiple matches exist and no filePath filter.
  */
-function findIndexEntry(name: string, filePath?: string): SymbolEntry | null {
+export function findIndexEntry(
+    name: string,
+    filePath?: string,
+    kind?: SymbolKind
+): SymbolEntry | null {
     const key = name.toLowerCase();
     const entries = symbolIndex!.get(key);
     if (!entries) return null;
 
     // Exact name match (case-sensitive)
-    const exact = entries.filter(e => e.name === name);
+    const exact = entries.filter(e => e.name === name && (!kind || e.kind === kind));
     if (exact.length === 0) return null;
 
     if (filePath) {
@@ -1413,7 +1584,8 @@ function extractSymbolDetail(entry: SymbolEntry): SymbolDetail | null {
         kind: entry.kind,
         filePath: entry.filePath,
         sourcePackage: entry.sourcePackage,
-        isExported: entry.isExported
+        isExported: entry.isExported,
+        importPath: entry.importPath
     };
 
     switch (entry.kind) {
@@ -1856,7 +2028,8 @@ function extractClassMembers(sourceFile: SourceFile, name: string): MemberInfo[]
                 isStatic: false,
                 isOptional: Node.isPropertyDeclaration(prop) ? prop.hasQuestionToken() : undefined,
                 decorators,
-                jsDoc: extractJsDoc(prop as Parameters<typeof extractJsDoc>[0])
+                jsDoc: extractJsDoc(prop as Parameters<typeof extractJsDoc>[0]),
+                ...extractDefault(prop)
             });
         } catch (e) {
             log.warn(`Failed to extract instance property from ${name}: ${e}`);
@@ -1878,7 +2051,8 @@ function extractClassMembers(sourceFile: SourceFile, name: string): MemberInfo[]
                 type: fastGetTypeText(prop, prop),
                 isStatic: true,
                 decorators,
-                jsDoc: extractJsDoc(prop as Parameters<typeof extractJsDoc>[0])
+                jsDoc: extractJsDoc(prop as Parameters<typeof extractJsDoc>[0]),
+                ...extractDefault(prop)
             });
         } catch (e) {
             log.warn(`Failed to extract static property from ${name}: ${e}`);
@@ -2021,6 +2195,16 @@ function extractMethodInfo(
         returnType,
         ...(tags.returns ? {returns: {type: returnType, description: tags.returns}} : {})
     };
+}
+
+/**
+ * A property's initializer as its `default`, when it is a single short expression
+ * (`= true`, `= 'grid'`, `= []`). Long or multi-line initializers are not worth quoting.
+ */
+function extractDefault(node: Node): {default?: string} {
+    if (!Node.isPropertyDeclaration(node)) return {};
+    const text = node.getInitializer()?.getText().trim();
+    return text && text.length <= MAX_DEFAULT_LENGTH && !text.includes('\n') ? {default: text} : {};
 }
 
 /** Safely get decorator names from a node (not all node types support getDecorators). */
