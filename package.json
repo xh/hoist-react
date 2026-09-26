@@ -17,11 +17,12 @@
   },
   "scripts": {
     "lint": "pnpm lint:all",
-    "lint:all": "pnpm lint:code && pnpm lint:styles",
+    "lint:all": "pnpm lint:code && pnpm lint:mcp && pnpm lint:styles",
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p mcp/tsconfig.json",
+    "test:mcp": "tsx mcp/data/doc-id-resolver.spec.ts && tsx mcp/data/doc-sections.spec.ts && tsx mcp/data/doc-search.spec.ts && tsx mcp/data/ts-registry.spec.ts && tsx mcp/tools/docs.spec.ts",
     "prepack": "tsc --build",
     "prepare": "husky"
   },
@@ -84,6 +85,7 @@
     "jwt-decode": "^4.0.0",
     "lodash": "^4.18.1",
     "lodash-inflection": "^1.5.0",
+    "minisearch": "^7.2.0",
     "mobx": "~7.0.3",
     "mobx-react-lite": "~5.0.3",
     "moment": "~2.31.0",
@@ -118,6 +120,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.17.25",
+    "@types/node": "^22.20.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@xh/eslint-config": "^8.0.1",

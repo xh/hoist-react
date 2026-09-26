@@ -12,7 +12,8 @@
  * registries use the same JSON schema, but the files and entries are
  * independent -- changes here do not propagate there and vice versa.
  *
- * Provides metadata, file loading, and keyword-based search.
+ * Provides metadata and file loading. Search lives in `doc-search.ts`, and the section model
+ * used for search and targeted reads lives in `doc-sections.ts`.
  */
 import {existsSync, readFileSync} from 'node:fs';
 
@@ -50,21 +51,6 @@ export interface DocEntry {
      * for unambiguous cases.
      */
     aliases: string[];
-}
-
-/** A search result with match context. */
-export interface SearchResult {
-    entry: DocEntry;
-    /** Lines containing matches, with 1-based line numbers. */
-    snippets: Array<{lineNumber: number; text: string}>;
-    /** Total keyword match count (metadata + content). */
-    matchCount: number;
-}
-
-/** Options for the search function. */
-export interface SearchOptions {
-    mcpCategory?: string;
-    limit?: number;
 }
 
 //------------------------------------------------------------------
@@ -155,71 +141,4 @@ export function loadDocContent(entry: DocEntry): string {
         throw new Error(`Document file not found: "${entry.id}" at ${entry.filePath}`);
     }
     return readFileSync(entry.filePath, 'utf-8');
-}
-
-//------------------------------------------------------------------
-// Search
-//------------------------------------------------------------------
-
-/**
- * Search across all documents by keyword, returning matching entries with
- * context snippets.
- *
- * Uses simple case-insensitive string matching -- appropriate for the small,
- * bounded documentation corpus (~40 files).
- */
-export function searchDocs(
-    registry: DocEntry[],
-    query: string,
-    options?: SearchOptions
-): SearchResult[] {
-    const terms = query
-        .toLowerCase()
-        .split(/\s+/)
-        .filter(t => t.length > 1);
-
-    if (terms.length === 0) return [];
-
-    const results: SearchResult[] = [];
-
-    for (const entry of registry) {
-        // Filter by mcpCategory if specified.
-        if (
-            options?.mcpCategory &&
-            options.mcpCategory !== 'all' &&
-            entry.mcpCategory !== options.mcpCategory
-        ) {
-            continue;
-        }
-
-        // Check metadata (cheap).
-        const metaText =
-            `${entry.title} ${entry.description} ${entry.keywords.join(' ')}`.toLowerCase();
-        const metaMatches = terms.filter(t => metaText.includes(t)).length;
-
-        // Check file content.
-        const content = readFileSync(entry.filePath, 'utf-8');
-        const contentLower = content.toLowerCase();
-        const contentMatches = terms.filter(t => contentLower.includes(t)).length;
-
-        const totalMatches = metaMatches + contentMatches;
-        if (totalMatches === 0) continue;
-
-        // Extract up to 5 snippet lines containing any search term.
-        const lines = content.split('\n');
-        const snippets: Array<{lineNumber: number; text: string}> = [];
-        for (let i = 0; i < lines.length && snippets.length < 5; i++) {
-            const lineLower = lines[i].toLowerCase();
-            if (terms.some(t => lineLower.includes(t))) {
-                const text = lines[i].trim().slice(0, 200);
-                snippets.push({lineNumber: i + 1, text});
-            }
-        }
-
-        results.push({entry, snippets, matchCount: totalMatches});
-    }
-
-    // Sort by match count descending, then take top N.
-    const limit = options?.limit ?? 10;
-    return results.sort((a, b) => b.matchCount - a.matchCount).slice(0, limit);
 }
