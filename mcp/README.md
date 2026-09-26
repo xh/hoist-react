@@ -8,7 +8,7 @@
 | [MCP Server Setup](#mcp-server-setup) | Prerequisites, startup methods, and debug logging |
 | [MCP Tools Reference](#mcp-tools-reference) | Documentation and TypeScript tool APIs |
 | [MCP Resources](#mcp-resources) | Direct URI-based access to documentation files |
-| [Maintaining the Developer Tools](#maintaining-the-developer-tools) | Registry sync, maintenance checklist, and update points |
+| [Maintaining the Developer Tools](#maintaining-the-developer-tools) | Registry sync, maintenance checklist, update points, and testing |
 | [Extending the Developer Tools](#extending-the-developer-tools) | Adding new tools, resources, and doc registry entries |
 | [Common Pitfalls](#common-pitfalls) | Stdout corruption, path traversal, and naming conventions |
 
@@ -51,6 +51,9 @@ mcp/
 ├── data/
 │   ├── doc-registry.ts        # Documentation inventory loader (reads docs/doc-registry.json)
 │   ├── doc-id-resolver.ts     # Tolerant doc-id resolver (canonical + shortenings + aliases)
+│   ├── doc-sections.ts        # Splits docs into ##/### sections; section-name resolution
+│   ├── doc-search.ts          # MiniSearch (BM25) index over sections, ranked search
+│   ├── doc-search.spec.ts     # Golden-set retrieval eval (see Testing)
 │   └── ts-registry.ts         # Lazy ts-morph symbol index with on-demand type extraction
 ├── formatters/
 │   ├── docs.ts                # Shared doc formatting (used by MCP tools and CLI)
@@ -58,7 +61,7 @@ mcp/
 ├── resources/
 │   └── docs.ts                # MCP resource registrations (static + template)
 ├── tools/
-│   ├── docs.ts                # MCP documentation tools (search, list, ping)
+│   ├── docs.ts                # MCP documentation tools (search, list, read, ping)
 │   └── typescript.ts          # MCP TypeScript tools (search-symbols, get-symbol, get-members)
 ├── package.json               # ES module config (type: "module")
 ├── tsconfig.json              # TypeScript config (target: ES2022, module: Node16)
@@ -85,6 +88,9 @@ server.ts (McpServer)                  cli/docs.ts, cli/ts.ts
                      formatters/docs.ts, formatters/typescript.ts
                             │               │
                             ▼               ▼
+                     data/doc-search.ts ──► data/doc-sections.ts
+                            │
+                            ▼
                      data/doc-registry.ts ──► README files on disk
                      data/ts-registry.ts ──► ts-morph AST parsing
 ```
@@ -100,6 +106,31 @@ type-checking level. Note that these packages are regular `dependencies`, not `d
 the published `hoist-mcp`, `hoist-docs`, and `hoist-ts` bins must resolve them from a consuming
 application's own install, and package managers do not install a dependency's `devDependencies`.
 Bundle isolation therefore rests on the import-chain boundary alone, not on dependency scope.
+
+**Section-level retrieval.** Agents rarely need a whole README - they need the one section that
+answers their question. `data/doc-sections.ts` splits every registered doc at `##` and `###`
+headings (text before the first one is an intro section; headings inside code fences are
+ignored), recording each section's breadcrumb (`Doc title > H2 > H3`), line range, and estimated
+token count. `data/doc-search.ts` indexes those ~1,200 sections with MiniSearch (BM25+) on two
+fields: the breadcrumb, boosted 3x, and the section body. Terms split on punctuation and camelCase
+(`persistWith` indexes as `persistwith`, `persist`, and `with`), drop English stop words, and pass
+through a light suffix stemmer (`confirmation` → `confirm`). Queries add prefix matching and light
+fuzziness.
+
+Ranking uses OR combination scaled by the share of query terms each section matches. This
+prefers sections that match every term, as AND would, without letting a weak all-term match beat
+a strong match on most terms, as a strict AND-then-OR fallback does. Two further adjustments
+counter the doc set's shape. A query prefix that runs into a compound identifier whose leading
+part it already matches (`show` → `showFeedbackDialog`) is not counted twice, which otherwise
+favors identifier-dense text. Upgrade notes and the doc index are weighted down, since they
+mention most APIs but rarely answer a how-to question. Registry `title`, `description`, and
+`keywords` add a small doc-level boost. Results are capped at two sections per doc.
+
+`hoist-read-doc` takes a `section` (matched by path or heading, ignoring case and punctuation,
+with unique-prefix tolerance) or `outline: true`, so a search hit costs a few hundred tokens to
+read instead of several thousand. The index builds in memory on first search (~150ms for the
+current corpus), so it is not cached to disk. `data/doc-search.spec.ts` guards ranking quality
+with a golden set of realistic queries - see [Testing](#testing).
 
 **Tolerant doc-id resolution.** `data/doc-id-resolver.ts` accepts shortened or
 slightly-off doc IDs that agents naturally try (e.g. `grid` → `cmp/grid/README.md`,
@@ -190,7 +221,7 @@ via shell commands. They are the recommended interface for AI agents without MCP
 ### `hoist-docs` -- Documentation Search and Reading
 
 ```bash
-# Search documentation by keyword
+# Search documentation - returns ranked sections with excerpts
 npx hoist-docs search "grid sorting"
 npx hoist-docs search "authentication" --category concept
 
@@ -198,8 +229,10 @@ npx hoist-docs search "authentication" --category concept
 npx hoist-docs list
 npx hoist-docs list --category package
 
-# Read a specific document by ID
+# Read a specific document by ID - whole, one section, or its outline
 npx hoist-docs read cmp/grid
+npx hoist-docs read cmp/grid --outline
+npx hoist-docs read persistence --section "Built-in Model Support > GridModel"
 npx hoist-docs read lifecycle-app
 
 # Shortcuts for common documents
@@ -236,8 +269,8 @@ in the same process are fast, but each CLI invocation pays the cold start cost.
 
 ### Prerequisites
 
-- Node.js 18+
-- `tsx` available (included in hoist-react's devDependencies)
+- Node.js 22.12+ (the floor set by `commander`; hoist-dev-utils requires 22.15+ for app builds)
+- `tsx` available (included in hoist-react's dependencies)
 - A checked-out hoist-react repository
 
 ### Starting the Server
@@ -302,24 +335,35 @@ Set the `HOIST_MCP_DEBUG` environment variable to enable verbose debug output on
 
 #### `hoist-search-docs`
 
-Search across all hoist-react documentation by keyword. Returns matching documents with context
-snippets showing where terms appear.
+Ranked, section-level search across all hoist-react documentation. Returns the best-matching
+`##` / `###` sections, not whole docs: each result gives the doc id, the `section` path to pass to
+`hoist-read-doc`, its line range and token count, and a short excerpt from the section start. At
+most 2 results per doc. A default search costs under ~800 tokens. See
+[Section-level retrieval](#design-decisions) for how ranking works.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Search keywords (e.g. `"grid column sorting"`) |
+| `query` | string | Yes | Two to four keywords, ideally the names the docs use (e.g. `"grid column renderer"`, `"persistWith"`) |
 | `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `all` (default) |
-| `limit` | number | No | Max results, 1-20. Default: 10 |
+| `limit` | number | No | Max sections, 1-10. Default: 5 |
 
-**Example output:**
+**Example output** (`limit: 2`):
 ```
-Found 3 results for "grid sorting":
+2 sections matched "grid sorting":
 
-1. [Grid Component] (id: cmp/grid, category: package)
-   Primary data grid built on ag-Grid.
-   Matches: 6 | Snippets:
-   - L45: GridModel manages sorting, grouping, selection...
+1. Grid Component > Common Usage Patterns > Sorting
+   id: cmp/grid/README.md | section: "Common Usage Patterns > Sorting" | L102-119 | ~146 tokens
+   // Initial sort via config new GridModel({ sortBy: 'name', // Single column ...
+
+2. Grid Component > Architecture > Key Classes
+   id: cmp/grid/README.md | section: "Architecture > Key Classes" | L35-52 | ~240 tokens
+   - **GridModel** (`GridModel.ts`) - Central orchestrator managing sorting, grouping, ...
+
+Read a result with hoist-read-doc {id, section}, or list a doc's sections with {id, outline: true}.
 ```
+
+Structured output: `{query, resultCount, results: [{id, section, breadcrumb, category, startLine,
+endLine, tokens, score, excerpt}]}`.
 
 #### `hoist-list-docs`
 
@@ -331,17 +375,32 @@ List all available documentation with descriptions, grouped by category.
 
 #### `hoist-read-doc`
 
-Read the full text of a single document. Accepts the canonical ID (repo-relative path) and also
-tolerates common shortenings via `data/doc-id-resolver.ts` — a bare subsystem (`core`), a path
-without README (`cmp/grid`), a docs-doc without the `docs/` prefix (`authentication`), a
-last-segment shortcut (`grid`), or a version code for upgrade notes (`v85`). The tool-based
-equivalent of the `hoist://docs/{id}` resource — useful when resource fetching is unavailable or
-inconvenient. Returns the markdown body as text plus structured `{id, title, category, content,
-matchedAs?}` (`matchedAs` is set only when the input differed from the canonical id).
+Read a single document - in full, one section, or its outline. Accepts the canonical ID
+(repo-relative path) and also tolerates common shortenings via `data/doc-id-resolver.ts` - a bare
+subsystem (`core`), a path without README (`cmp/grid`), a docs-doc without the `docs/` prefix
+(`authentication`), a last-segment shortcut (`grid`), or a version code for upgrade notes (`v85`).
+The tool-based equivalent of the `hoist://docs/{id}` resource, which always returns the full doc.
+
+- **`section`** returns that section with its subsections, headed by a one-line
+  `[id | breadcrumb | line range | tokens]` label. Accepts a heading (`"GridModel"`), a path
+  (`"Built-in Model Support > GridModel"`), or a full breadcrumb with the doc title. Matching
+  ignores case and punctuation and accepts a unique prefix. A heading used more than once needs its
+  parent path; an unknown or ambiguous section returns an error listing candidates and the doc's
+  headings.
+- **`outline: true`** returns headings with line ranges and token counts, and no body. With
+  `section`, it outlines just that section's subtree.
+- **Neither** returns the full markdown unchanged. When the doc exceeds ~3k tokens, the text
+  starts with a one-line size note pointing to `section` and `outline`.
+
+Structured output: `{id, title, category, tokens, content?, section?, outline?, matchedAs?}` -
+`content` is absent for outlines, `section` is set for section reads, and `matchedAs` is set only
+when the input id differed from the canonical id.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | string | Yes | Canonical document ID (repo-relative path), e.g. `cmp/grid/README.md` — or a tolerated shortening (see above). |
+| `id` | string | Yes | Canonical document ID (repo-relative path), e.g. `cmp/grid/README.md` - or a tolerated shortening (see above). |
+| `section` | string | No | Heading or path of one section, e.g. `"Mask"` or `"Built-in Model Support > GridModel"`. |
+| `outline` | boolean | No | Return headings with line ranges and token counts instead of content. |
 
 #### `hoist-ping`
 
@@ -616,6 +675,29 @@ just display without the extra hint. The `@mcpHint` tag is declared in the proje
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
 | Add or revise the search-result hint for a key framework class | `@mcpHint` tag on the class/interface JSDoc (in its source file) |
 | Change which owners have members indexed | `mcp/data/ts-registry.ts` (`shouldIndexClassMembers` / `shouldIndexInterfaceMembers`) |
+| Raise the supported Node floor (tracks `engines` in hoist-dev-utils) | `@types/node` major in `package.json`, Node version under [Prerequisites](#prerequisites) |
+| Change doc search ranking, or add a doc that deserves golden-set coverage | `mcp/data/doc-search.ts`, `mcp/data/doc-search.spec.ts` - then run `pnpm test:mcp` |
+
+### Testing
+
+The repo has no general test framework, so MCP tests are self-contained spec scripts, each an
+exit-coded driver run with `npx tsx`. `pnpm test:mcp` runs them all, and CI runs it alongside lint
+and typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own ESLint config and
+`mcp/tsconfig.json` (with Node types from the root `@types/node` devDependency).
+
+| Spec | Covers |
+|------|--------|
+| `data/doc-id-resolver.spec.ts` | Tolerant doc-id resolution |
+| `data/doc-sections.spec.ts` | Section parsing, section-name resolution, and full / section / outline reads |
+| `data/doc-search.spec.ts` | Golden-set retrieval eval: top-3 hit rate (must stay at or above 85%), named experiment queries, and the default-search token budget (under 800) |
+| `data/ts-registry.spec.ts` | TypeScript symbol and member lookup |
+| `tools/docs.spec.ts` | MCP / CLI parity - calls the doc tools through an in-memory MCP client and compares them with `hoist-docs` output and `--json` |
+
+The golden set maps realistic agent queries to the doc and section that should answer them. A
+miss prints the expected target and the actual top 3, so a ranking change can be judged by the
+whole set rather than by the query that motivated it. Run with `VERBOSE=1` to print the top 3 for
+every query. When adding a doc or reshaping one, add a case or two for the questions it should
+answer.
 
 ## Extending the Developer Tools
 

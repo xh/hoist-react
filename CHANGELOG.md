@@ -124,6 +124,10 @@
 * `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
   their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
   prop to opt out - `password` type inputs do not trim by default.
+* Added `TabConfig.group` to break up long vertical (`left` / `right`) desktop `TabSwitcher` rails.
+  The switcher renders a display-only header above each contiguous run of tabs sharing a group,
+  with titles and icons from the new `TabSwitcherConfig.groups`. Headers are not focusable or
+  routable, and horizontal switchers ignore groups.
 * Improved coverage of sensitive data redaction in exceptions. Matching keys are now redacted at any
   depth within request bodies, params, and headers, and common secret names are redacted by default.
   See `ExceptionHandler.defaults.redactPaths` and new `ExceptionHandlerOptions.redactPaths`, which
@@ -157,6 +161,8 @@
 * Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
 * Fixed routed `TabContainerModel` leaving the URL at its own route, without its active tab, when
   reached via a deep link, a lazily-rendered parent tab, or a forward more than one level deep.
+* Fixed desktop `SegmentedControl` wrapping a multi-word option label onto two lines when the
+  control was sized to its content.
 
 ### ⚙️ Technical
 
@@ -194,6 +200,18 @@
   re-exported from `@xh/hoist/kit/ag-grid`. Apps that build a menu from dynamic strings must
   annotate or cast the array as `GridContextMenuItemLike[]`.
 
+### 🤖 AI Docs + Tooling
+
+* Rebuilt `hoist-search-docs` (and `hoist-docs search`) as ranked, section-level search. Results are
+  individual `##` / `###` doc sections ranked by BM25, each with its line range, token count, and a
+  short excerpt, rather than whole docs matched by keyword count. A default search returns 5
+  sections (at most 2 per doc) in under 800 tokens.
+* Added `section` and `outline` options to `hoist-read-doc` (`--section` / `--outline` for
+  `hoist-docs read`). A search hit now costs a few hundred tokens to read instead of the whole doc.
+  Full reads are unchanged, with a one-line size note on docs over ~3k tokens.
+* Added `pnpm test:mcp`, run in CI, covering the MCP specs plus a golden-set eval of doc search
+  ranking and an MCP / CLI output parity check.
+
 ### ✨ Styles
 
 * App-wide banners shown via `XH.showBanner()` now render with the new `Banner` component. The
@@ -224,6 +242,8 @@
 * Added four custom properties for the new `MenuHeading` to style headings in grid context menus,
   desktop menus, and mobile menus, so a single override restyles all three. Blueprint's own
   `.bp6-menu-header` now uses the same properties.
+* Added `--xh-tab-switcher-vertical-group-*` custom properties to style the new `TabSwitcher`
+  group headers (`.xh-tab-switcher__group-header`).
 
 ### 📚 Libraries
 
@@ -234,6 +254,7 @@
 * ag-grid-community `35.3 -> 36.2`
 * ag-grid-react `35.3 -> 36.2`
 * date-fns `added @ 4.4`
+* minisearch `added @ 7.2` (MCP / CLI doc search only - never bundled)
 * mobx `6.16 -> 7.0`
 * mobx-react-lite `4.1 -> 5.0`
 * react `19.2 -> 19.3`

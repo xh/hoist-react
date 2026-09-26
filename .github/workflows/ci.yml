@@ -27,11 +27,14 @@ jobs:
 
         # Installs the pnpm version pinned via the packageManager field in package.json.
         - name: Setup pnpm
-          uses: pnpm/setup@v2
+          uses: pnpm/setup@v3
           with:
               # `install: false` - this workflow runs its own install step below, after
               # Font Awesome registry auth, and with --frozen-lockfile.
               install: false
+              # `node-version-file: false` - v3 auto-installs Node from .nvmrc. Skip that, as
+              # actions/setup-node below owns Node.
+              node-version-file: false
 
         - name: Setup Node.js
           uses: actions/setup-node@v7
@@ -57,6 +60,11 @@ jobs:
         - name: Type check
           run: pnpm typecheck
 
+        # Self-contained spec scripts for the MCP server and CLI tools, including the doc-search
+        # golden-set eval. See mcp/README.md.
+        - name: MCP tests
+          run: pnpm test:mcp
+
         # Gates merges on a clean production-dependency audit for high and
         # critical advisories. The first, un-gated run prints lower-severity
         # findings in the step log for visibility without failing the build -
@@ -79,12 +87,12 @@ jobs:
         - uses: actions/checkout@v7
 
         - name: Initialize CodeQL
-          uses: github/codeql-action/init@v4.38.0
+          uses: github/codeql-action/init@v4.38.1
           with:
               languages: javascript
 
         - name: Autobuild
-          uses: github/codeql-action/autobuild@v4.38.0
+          uses: github/codeql-action/autobuild@v4.38.1
 
         - name: Perform CodeQL Analysis
-          uses: github/codeql-action/analyze@v4.38.0
+          uses: github/codeql-action/analyze@v4.38.1
