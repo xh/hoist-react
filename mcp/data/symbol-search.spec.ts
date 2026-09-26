@@ -9,8 +9,10 @@
  *   - top-3 hit rate at or above {@link MIN_HIT_RATE}
  *   - each multi-word query in the zero-result set returns its obvious hit in the top 3, so
  *     search never again returns nothing for a query whose terms all match one symbol
- *   - each barrel-exported symbol returns itself in the top 3, so dropping it from its package
- *     barrel (which hides it from default search) fails the run
+ *   - each barrel-exported symbol returns itself in the top 3 with a barrel import path, so
+ *     dropping it from its package barrel fails the run
+ *   - a symbol no barrel re-exports (`LeafRow`) is a visible hit with its file import path, and
+ *     an exact query for an `impl/` symbol (`ColumnWidthCalculator`) names the hidden match
  *   - a default search renders under {@link MAX_SEARCH_TOKENS} tokens for every golden query,
  *     and under {@link MAX_EXPERIMENT_TOKENS} for the experiment queries named in the issue.
  *     These are ceilings against regressions to the old multi-thousand-token dumps, not targets:
@@ -36,7 +38,8 @@ import {
     describeMembers,
     describeSymbol,
     formatSymbolSearch,
-    searchNextHint
+    searchNextHint,
+    toSearchSymbolsOutput
 } from '../formatters/typescript.js';
 
 process.env.HOIST_MCP_QUIET = '1';
@@ -233,8 +236,8 @@ const cases: GoldenCase[] = [
     },
     {query: 'addReaction', expect: ['HoistBase.addReaction'], source: 'common'},
 
-    // Symbols that must stay re-exported by their package barrel. A symbol no barrel re-exports
-    // is hidden from default search, so dropping one of these exports fails the run.
+    // Symbols that must stay re-exported by their package barrel. Each must return itself in the
+    // top 3 with a barrel import path, so dropping one of these exports fails the run.
     {query: 'CardModel', expect: ['CardModel'], source: 'barrel'},
     {query: 'BaseOAuthClient', expect: ['BaseOAuthClient'], source: 'barrel'},
     {query: 'DynamicTabSwitcherModel', expect: ['DynamicTabSwitcherModel'], source: 'barrel'},
@@ -350,11 +353,17 @@ for (const q of EXPERIMENT_QUERIES) {
 }
 
 // Multi-word queries must return their obvious hit in the top 3, and barrel-exported symbols
-// must stay visible to default search.
+// must return themselves with a barrel import path.
 for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'barrel')) {
     const results = await searchSymbols(c.query);
     if (isHit(results, c.expect)) pass(`"${c.query}" returns ${c.expect.join(' / ')} in the top 3`);
     else fail(`"${c.query}" lacks ${c.expect.join(' / ')} in the top 3: ${label(results)}`);
+    if (c.source !== 'barrel') continue;
+    const hit = results.symbols
+        .slice(0, 3)
+        .find(h => [h.entry.name, h.factory, h.props].some(n => n && c.expect.includes(n)));
+    if (hit?.entry.importPath) pass(`"${c.query}" has barrel import ${hit.entry.importPath}`);
+    else fail(`"${c.query}" has no barrel import path`);
 }
 
 // headerName reaches ColumnSpec.headerName with its JSDoc.
@@ -400,23 +409,42 @@ for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'ba
         pass('kind filter');
     else fail('kind filter');
 
-    // LeafRow is an internal cube row shape that no package barrel re-exports.
-    const leafRow = await searchSymbols('LeafRow'),
-        leafText = searchText(leafRow),
-        exact = leafRow.hiddenExact[0];
+    // ColumnWidthCalculator is exported from an impl/ file, so it is internal by location.
+    const calc = await searchSymbols('ColumnWidthCalculator'),
+        calcText = searchText(calc),
+        exact = calc.hiddenExact[0];
     if (
-        exact?.name === 'LeafRow' &&
-        exact.filePath.endsWith('/data/cube/row/LeafRow.ts') &&
-        leafText.includes('Hidden exact match: LeafRow (data/cube/row/LeafRow.ts)') &&
-        !leafRow.symbols.some(h => h.entry.name === 'LeafRow')
+        exact?.name === 'ColumnWidthCalculator' &&
+        exact.filePath.endsWith('/cmp/grid/impl/ColumnWidthCalculator.ts') &&
+        calcText.includes(
+            'Hidden exact match: ColumnWidthCalculator (cmp/grid/impl/ColumnWidthCalculator.ts) - internal (impl/) code'
+        ) &&
+        !calc.symbols.some(h => h.entry.name === 'ColumnWidthCalculator')
     ) {
-        pass('"LeafRow" names the hidden exact match and where it is');
+        pass('"ColumnWidthCalculator" names the hidden impl/ exact match and where it is');
     } else {
         fail(
-            `"LeafRow" hidden exact match: ${JSON.stringify(leafRow.hiddenExact.map(e => e.name))}`
+            `"ColumnWidthCalculator" hidden exact match: ${JSON.stringify(calc.hiddenExact.map(e => e.name))}`
         );
     }
-    const gridModel = await searchSymbols('GridModel');
+
+    // LeafRow is exported from its file but no package barrel re-exports it.
+    const leafRow = await searchSymbols('LeafRow'),
+        leafHit = toSearchSymbolsOutput(leafRow, 'concise').symbols.find(s => s.name === 'LeafRow');
+    if (
+        leafRow.symbols[0]?.entry.name === 'LeafRow' &&
+        leafHit?.importPath === '@xh/hoist/data/cube/row/LeafRow' &&
+        leafHit.barrelExport === false &&
+        leafRow.hiddenExact.length === 0 &&
+        searchText(leafRow).includes('LeafRow (@xh/hoist/data/cube/row/LeafRow; file import)')
+    ) {
+        pass('"LeafRow" is the top hit with its file import path');
+    } else {
+        fail(`"LeafRow" file import: ${JSON.stringify(leafHit)} | ${label(leafRow)}`);
+    }
+
+    const gridModel = await searchSymbols('GridModel'),
+        gridHit = toSearchSymbolsOutput(gridModel, 'concise').symbols[0];
     if (
         gridModel.hiddenExact.length === 0 &&
         !searchText(gridModel).includes('Hidden exact match')
@@ -426,6 +454,15 @@ for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'ba
         fail(
             `"GridModel" hidden exact match: ${JSON.stringify(gridModel.hiddenExact.map(e => e.name))}`
         );
+    }
+    if (
+        gridHit?.name === 'GridModel' &&
+        gridHit.importPath === '@xh/hoist/cmp/grid' &&
+        gridHit.barrelExport
+    ) {
+        pass('"GridModel" is the top hit with its barrel import path');
+    } else {
+        fail(`"GridModel" barrel import: ${JSON.stringify(gridHit)}`);
     }
 
     const currency = await searchSymbols('currency'),
