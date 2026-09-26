@@ -121,6 +121,10 @@
 * `TextInput` (desktop + mobile) and mobile `SearchInput` now trim leading/trailing whitespace from
   their committed value, committing null if nothing remains. Pass the new `trimWhitespace: false`
   prop to opt out - `password` type inputs do not trim by default.
+* Added `TabConfig.group` to break up long vertical (`left` / `right`) desktop `TabSwitcher` rails.
+  The switcher renders a display-only header above each contiguous run of tabs sharing a group,
+  with titles and icons from the new `TabSwitcherConfig.groups`. Headers are not focusable or
+  routable, and horizontal switchers ignore groups.
 * Improved coverage of sensitive data redaction in exceptions. Matching keys are now redacted at any
   depth within request bodies, params, and headers, and common secret names are redacted by default.
   See `ExceptionHandler.defaults.redactPaths` and new `ExceptionHandlerOptions.redactPaths`, which
@@ -149,6 +153,8 @@
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
 * Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
+* Fixed desktop `SegmentedControl` wrapping a multi-word option label onto two lines when the
+  control was sized to its content.
 
 ### ⚙️ Technical
 
@@ -235,9 +241,13 @@
 * Added four custom properties for the new `MenuHeading` to style headings in grid context menus,
   desktop menus, and mobile menus, so a single override restyles all three. Blueprint's own
   `.bp6-menu-header` now uses the same properties.
+* Added `--xh-tab-switcher-vertical-group-*` custom properties to style the new `TabSwitcher`
+  group headers (`.xh-tab-switcher__group-header`).
 
 ### 📚 Libraries
 
+* @auth0/auth0-spa-js `2.26 -> 2.27`
+* @azure/msal-browser `5.22 -> 5.23`
 * @blueprintjs/core `6.18 -> 6.20`
 * @types/react `19.2 -> 19.3`
 * @types/react-dom `19.2 -> 19.3`
@@ -247,7 +257,7 @@
 * date-fns `added @ 4.4`
 * minisearch `added @ 7.2` (MCP / CLI doc search only - never bundled)
 * mobx `6.16 -> 7.0`
-* mobx-react-lite `4.1 -> 5.0`
+* mobx-react-lite `4.1 -> 5.1`
 * react `19.2 -> 19.3`
 * react-dom `19.2 -> 19.3`
 * type-fest `5.9 -> 5.10`

@@ -27,11 +27,14 @@ jobs:
 
         # Installs the pnpm version pinned via the packageManager field in package.json.
         - name: Setup pnpm
-          uses: pnpm/setup@v2
+          uses: pnpm/setup@v3
           with:
               # `install: false` - this workflow runs its own install step below, after
               # Font Awesome registry auth, and with --frozen-lockfile.
               install: false
+              # `node-version-file: false` - v3 auto-installs Node from .nvmrc. Skip that, as
+              # actions/setup-node below owns Node.
+              node-version-file: false
 
         - name: Setup Node.js
           uses: actions/setup-node@v7
