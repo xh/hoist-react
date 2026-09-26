@@ -159,7 +159,8 @@ config and the property name as its path. `@persist.with(options)` allows overri
 property-specific options — including a completely different provider.
 
 **Decorator ordering matters:** `@persist` must come after the MobX decorator in source order
-(which means it is applied first at runtime):
+(which means it is applied first at runtime, though its `init` hook runs second; see Decorator
+Ordering under Common Pitfalls):
 
 ```typescript
 // ✅ Correct: MobX decorator first, then @persist
@@ -574,15 +575,19 @@ class DetailModel extends HoistModel {
 
 ### Decorator Ordering
 
-`@persist` (or `@persist.with`) must come after the MobX decorator. Since decorators in
-TypeScript are applied bottom-up, `@persist` needs to be the inner decorator so it runs first
-and sets up the value before MobX makes it observable:
+`@persist` (or `@persist.with`) must come after the MobX decorator. Decorators apply innermost
+first, so `@persist` is applied first and only returns an `init` hook. The `init` hooks then run in
+the opposite order, outermost first: MobX's `init` makes the property observable, and the
+`@persist` `init` then reads the default from it and applies any stored value. Reversed, the
+`@persist` `init` runs before MobX's and reads a property that is not yet observable:
 
 ```typescript
-// ✅ Correct: @bindable first (outer), @persist second (inner, runs first)
+// ✅ Correct: @bindable outer, @persist inner - MobX init runs first,
+// then @persist reads the observable
 @bindable @persist accessor showAdvanced = false;
 
-// ❌ Wrong: @persist is outer, runs after @bindable — fails to find the property
+// ❌ Wrong: @persist outer - its init runs before MobX's; the read throws,
+// the error is logged, and the field never persists
 @persist @bindable accessor showAdvanced = false;
 ```
 
