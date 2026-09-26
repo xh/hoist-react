@@ -13,6 +13,9 @@
  *     dropping it from its package barrel fails the run
  *   - a symbol no barrel re-exports (`LeafRow`) is a visible hit with its file import path, and
  *     an exact query for an `impl/` symbol (`ColumnWidthCalculator`) names the hidden match
+ *   - barrel-exported matches outrank file imports: for each {@link BARREL_FIRST_QUERIES} entry,
+ *     the top symbol and member hits include no file import, while an exact name (`LeafRow`)
+ *     still ranks first
  *   - a default search renders under {@link MAX_SEARCH_TOKENS} tokens for every golden query,
  *     and under {@link MAX_EXPERIMENT_TOKENS} for the experiment queries named in the issue.
  *     These are ceilings against regressions to the old multi-thousand-token dumps, not targets:
@@ -34,6 +37,7 @@
  */
 import {estimateTokens} from './doc-sections.js';
 import {searchSymbols, type SymbolSearchResults} from './symbol-search.js';
+import {isPromiseExtension} from './ts-registry.js';
 import {
     describeMembers,
     describeSymbol,
@@ -251,6 +255,18 @@ const cases: GoldenCase[] = [
     {query: 'PageConfig', expect: ['PageConfig'], source: 'barrel'}
 ];
 
+/**
+ * Queries whose top symbol and member hits must all be barrel-exported, with the number of top
+ * symbol hits checked. `confirm` matches only 8 symbols, 4 of them file imports whose names
+ * contain the query, so only its top 2 symbols are held to the rule.
+ */
+const BARREL_FIRST_QUERIES: Array<[query: string, symbolDepth: number]> = [
+    ['PanelModel', 3],
+    ['confirm', 2],
+    ['loading', 3],
+    ['select input options', 3]
+];
+
 /** The issue's experiment queries, measured against the tighter budget. */
 const EXPERIMENT_QUERIES = [
     'column renderer',
@@ -443,6 +459,26 @@ for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'ba
         fail(`"LeafRow" file import: ${JSON.stringify(leafHit)} | ${label(leafRow)}`);
     }
 
+    // Barrel-exported matches rank above file imports. Promise extensions need no import.
+    for (const [q, symbolDepth] of BARREL_FIRST_QUERIES) {
+        const r = await searchSymbols(q),
+            fileSymbols = r.symbols
+                .slice(0, symbolDepth)
+                .filter(h => !h.entry.importPath && !isPromiseExtension(h.entry))
+                .map(h => h.entry.name),
+            fileMembers = r.members
+                .slice(0, 3)
+                .filter(h => !h.importPath && h.entry.ownerName !== 'Promise')
+                .map(h => `${h.entry.ownerName}.${h.entry.name}`);
+        if (fileSymbols.length === 0 && fileMembers.length === 0) {
+            pass(`"${q}" top ${symbolDepth} symbols and top 3 members are barrel-exported`);
+        } else {
+            fail(
+                `"${q}" file imports near the top: ${[...fileSymbols, ...fileMembers].join(', ')}`
+            );
+        }
+    }
+
     const gridModel = await searchSymbols('GridModel'),
         gridHit = toSearchSymbolsOutput(gridModel, 'concise').symbols[0];
     if (
@@ -502,6 +538,22 @@ for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'ba
         pass('hoist-get-symbol ColumnSpec shows the import path and a member summary');
     } else {
         fail('hoist-get-symbol ColumnSpec lacks the import path or member summary');
+    }
+
+    // A symbol no barrel re-exports shows its file import, marked, on both reading tools.
+    const leafImport =
+            "Import: import {LeafRow} from '@xh/hoist/data/cube/row/LeafRow'; (no package barrel re-exports this symbol)",
+        leafSymbol = await describeSymbol({name: 'LeafRow'}, 'mcp'),
+        leafMembers = await describeMembers({name: 'LeafRow'}, 'mcp');
+    if (leafSymbol.ok && leafSymbol.text.split('\n').includes(leafImport)) {
+        pass('hoist-get-symbol LeafRow shows the marked file import line');
+    } else {
+        fail(`hoist-get-symbol LeafRow import line: ${leafSymbol.text.split('\n')[1]}`);
+    }
+    if (leafMembers.ok && leafMembers.text.split('\n')[1] === leafImport) {
+        pass('hoist-get-members LeafRow header shows the marked file import line');
+    } else {
+        fail(`hoist-get-members LeafRow header: ${leafMembers.text.split('\n')[1]}`);
     }
 
     const gridModel = await describeSymbol({name: 'GridModel'}, 'mcp');
