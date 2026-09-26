@@ -346,15 +346,9 @@ for (const q of EXPERIMENT_QUERIES) {
     else pass(`"${q}" ~${tokens} tokens`);
 }
 
-// Formerly zero-result queries must return their obvious hit in the top 3.
-for (const c of cases.filter(c => c.source === 'zero-result')) {
-    const results = await searchSymbols(c.query);
-    if (isHit(results, c.expect)) pass(`"${c.query}" returns ${c.expect.join(' / ')} in the top 3`);
-    else fail(`"${c.query}" lacks ${c.expect.join(' / ')} in the top 3: ${label(results)}`);
-}
-
-// Barrel-exported symbols must stay visible to default search.
-for (const c of cases.filter(c => c.source === 'barrel')) {
+// Formerly zero-result queries must return their obvious hit in the top 3, and barrel-exported
+// symbols must stay visible to default search.
+for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'barrel')) {
     const results = await searchSymbols(c.query);
     if (isHit(results, c.expect)) pass(`"${c.query}" returns ${c.expect.join(' / ')} in the top 3`);
     else fail(`"${c.query}" lacks ${c.expect.join(' / ')} in the top 3: ${label(results)}`);
