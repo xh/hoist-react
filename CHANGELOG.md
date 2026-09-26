@@ -155,6 +155,8 @@
 * Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
 * Fixed desktop `SegmentedControl` wrapping a multi-word option label onto two lines when the
   control was sized to its content.
+* Fixed `checkboxRenderer()` throwing a `TypeError` when called with no argument. Its config is now
+  optional.
 
 ### ⚙️ Technical
 
