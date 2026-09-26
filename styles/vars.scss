@@ -898,6 +898,8 @@ body {
   --xh-tab-switcher-vertical-group-gap: var(--tab-switcher-vertical-group-gap, var(--xh-pad-px));
   --xh-tab-switcher-vertical-group-border: var(--tab-switcher-vertical-group-border, var(--xh-border-solid));
   --xh-tab-switcher-vertical-group-header-padding: var(--tab-switcher-vertical-group-header-padding, var(--xh-pad-half-px) var(--xh-pad-px));
+  --xh-tab-switcher-vertical-group-header-bg: var(--tab-switcher-vertical-group-header-bg, transparent);
+  --xh-tab-switcher-vertical-group-header-border-radius: var(--tab-switcher-vertical-group-header-border-radius, var(--xh-tab-switcher-vertical-item-border-radius));
   --xh-tab-switcher-vertical-group-header-text-color: var(--tab-switcher-vertical-group-header-text-color, var(--xh-text-color));
   --xh-tab-switcher-vertical-group-header-font-size: var(--tab-switcher-vertical-group-header-font-size, var(--xh-font-size-small-px));
   --xh-tab-switcher-vertical-group-header-font-weight: var(--tab-switcher-vertical-group-header-font-weight, 600);

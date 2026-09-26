@@ -169,11 +169,15 @@
 
   // Display-only header above a run of grouped tabs - only rendered in vertical orientations.
   &__group-header {
+    position: relative;
     display: flex;
     align-self: stretch;
     align-items: baseline;
     gap: 0.4em;
+    margin-bottom: var(--xh-tab-switcher-vertical-item-gap);
     padding: var(--xh-tab-switcher-vertical-group-header-padding);
+    background-color: var(--xh-tab-switcher-vertical-group-header-bg);
+    border-radius: var(--xh-tab-switcher-vertical-group-header-border-radius);
     color: var(--xh-tab-switcher-vertical-group-header-text-color);
     font-family: var(--xh-tab-font-family);
     font-size: var(--xh-tab-switcher-vertical-group-header-font-size);
@@ -184,11 +188,21 @@
     user-select: none;
     cursor: default;
 
-    // Rule line + extra space separate each group from the tabs above it.
-    &:not(:first-child) {
-      margin-top: var(--xh-tab-switcher-vertical-group-gap);
-      padding-top: var(--xh-tab-switcher-vertical-group-gap);
-      border-top: var(--xh-tab-switcher-vertical-group-border);
+    // Rule line centered in the gap above each group after the first. Drawn outside the header
+    // box, so a header background never touches the rule or skews the header's own padding.
+    // Leading header flagged via class, not `:first-child` - Blueprint's `animate` indicator
+    // renders as the tab list's first child.
+    &:not(.xh-tab-switcher__group-header--first) {
+      margin-top: calc(2 * var(--xh-tab-switcher-vertical-group-gap));
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: calc(-1 * var(--xh-tab-switcher-vertical-group-gap));
+        left: 0;
+        right: 0;
+        border-top: var(--xh-tab-switcher-vertical-group-border);
+      }
     }
 
     & > span {

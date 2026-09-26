@@ -255,7 +255,18 @@ arrow-key navigation and `activateNextTab()` / `activatePrevTab()` skip over the
 `enableOverflow` is set, overflowed tabs are grouped under matching dividers in the overflow menu.
 
 Horizontal (`top` / `bottom`) switchers, the dynamic switcher, and mobile ignore groups. Style
-headers via the `--xh-tab-switcher-vertical-group-*` CSS variables.
+headers via the `--xh-tab-switcher-vertical-group-*` CSS variables. By default headers are minimal
+text labels, with a rule line above each group after the first. For a bolder look, give headers a
+background and drop the rule:
+
+```scss
+.my-switcher {
+  --xh-tab-switcher-vertical-group-header-bg: var(--xh-orange);
+  --xh-tab-switcher-vertical-group-header-text-color: white;
+  --xh-tab-switcher-vertical-group-border: none;
+  --xh-tab-switcher-vertical-group-gap: var(--xh-pad-half-px);
+}
+```
 
 ### Persistence
 

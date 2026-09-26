@@ -155,10 +155,11 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             ? withGroupHeaders(
                   tabs,
                   tabItems,
-                  (group, key) =>
+                  (group, key, isFirst) =>
                       groupHeader({
                           key,
                           group,
+                          isFirst,
                           spec: find(switcherConfig?.groups, {key: group}),
                           testId: getTestId(props, `group-${group}`)
                       }),
@@ -202,9 +203,12 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 //-----------------
 const groupHeader = hoistCmp.factory({
     model: false,
-    render({group, spec, testId}) {
+    render({group, isFirst, spec, testId}) {
         return div({
-            className: 'xh-tab-switcher__group-header',
+            className: classNames(
+                'xh-tab-switcher__group-header',
+                isFirst ? 'xh-tab-switcher__group-header--first' : null
+            ),
             role: 'presentation',
             [TEST_ID]: testId,
             items: [spec?.icon, span(spec?.title ?? group)]
@@ -380,12 +384,12 @@ class TabSwitcherLocalModel extends HoistModel {
 /**
  * Interleave separators into a list of rendered items (aligned by index with `tabs`): a header
  * before each contiguous run of tabs sharing a non-null group, and a spacer before an ungrouped tab
- * that follows such a run. Null items are skipped.
+ * that follows such a run. Null items are skipped. `headerFn` is told if its header leads the list.
  */
 function withGroupHeaders(
     tabs: TabModel[],
     items: ReactNode[],
-    headerFn: (group: string, key: string) => ReactNode,
+    headerFn: (group: string, key: string, isFirst: boolean) => ReactNode,
     spacerFn: (key: string) => ReactNode
 ): ReactNode[] {
     const ret = [];
@@ -393,8 +397,11 @@ function withGroupHeaders(
     items.forEach((item, idx) => {
         if (!item) return;
         const {group} = tabs[idx];
-        if (group != null && group !== prevGroup) ret.push(headerFn(group, `xh-group-${idx}`));
-        else if (group == null && prevGroup != null) ret.push(spacerFn(`xh-group-end-${idx}`));
+        if (group != null && group !== prevGroup) {
+            ret.push(headerFn(group, `xh-group-${idx}`, ret.length === 0));
+        } else if (group == null && prevGroup != null) {
+            ret.push(spacerFn(`xh-group-end-${idx}`));
+        }
         prevGroup = group;
         ret.push(item);
     });
