@@ -96,7 +96,12 @@ const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringif
 // Search
 //------------------------------------------------------------------
 console.log('hoist-search-symbols vs hoist-ts search:');
-for (const query of ['headerName', 'PanelModel persistWith collapsed', 'toolbar onClick button']) {
+for (const query of [
+    'headerName',
+    'PanelModel persistWith collapsed',
+    'toolbar onClick button',
+    'CardModel'
+]) {
     const mcp = await tool('hoist-search-symbols', {query}),
         json = JSON.parse(await cli('search', query, '--json')),
         text = await cli('search', query);

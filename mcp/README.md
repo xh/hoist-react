@@ -160,8 +160,10 @@ the shorter name (`GridConfig.sortBy` before `ZoneGridConfig.sortBy`). There is 
 matching: API names are exact, camelCase parts and prefixes already give recall for near misses,
 and fuzzy pulled "current" hits into a search for "currency". By default `impl/`, `admin/`,
 `inspector/`, and `dynamics/` code, non-exported symbols, and symbols no package barrel
-re-exports (an app cannot import them) are hidden; the footer counts them and `includeInternal`
-shows them. Promise prototype extensions are exempt, since they need no import. A component, its
+re-exports (an app cannot import them) are hidden; the footer counts them, names any hidden
+symbol whose whole name the query spells out (`Hidden exact match: CardModel
+(cmp/card/CardModel.ts) - not re-exported by any package barrel`), and `includeInternal` shows
+them. Promise prototype extensions are exempt, since they need no import. A component, its
 element factory, and its Props interface fold into one hit (`Select / select ... Props:
 SelectProps`), since Hoist exports them together from one file, and a member hit that repeats an
 earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`) is dropped.
@@ -532,7 +534,8 @@ Next: "hoist-ts symbol <Name>" for signature, docs, import, and a member summary
 ```
 
 Structured output: `{query, detail, symbolCount, symbolTotal, memberCount, memberTotal,
-hiddenSymbols, hiddenMembers, symbols: [{name, kind, importPath, sourcePackage, filePath,
+hiddenSymbols, hiddenMembers, hiddenExact: [{name, kind, filePath}], symbols: [{name, kind,
+importPath, sourcePackage, filePath,
 exported, summary, hasMembers, factory?, props?, hint?, jsDoc?}], members: [{name, memberKind,
 ownerName, ownerHint?, importPath, sourcePackage, filePath, isStatic, type, default?, summary,
 jsDoc?, decorators}]}`. `jsDoc` is present for `detail: "full"` only; `importPath` on a member is

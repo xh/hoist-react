@@ -26,7 +26,11 @@ import {
     type SymbolEntry,
     type SymbolKind
 } from '../data/ts-registry.js';
-import {MEMBER_SUMMARY_CHARS, type SymbolSearchResults} from '../data/symbol-search.js';
+import {
+    isInternalPath,
+    MEMBER_SUMMARY_CHARS,
+    type SymbolSearchResults
+} from '../data/symbol-search.js';
 import {firstSentence} from '../data/search-text.js';
 import {resolveRepoRootPosix, toPosixPath} from '../util/paths.js';
 
@@ -365,34 +369,44 @@ export function formatSymbolSearch(results: SymbolSearchResults, detail: SearchD
 }
 
 /**
- * Next-step hint for a search, in the calling surface's syntax, including how many internal
- * hits (impl/ code, or symbols no package barrel re-exports) were left out.
+ * Next-step hint for a search, in the calling surface's syntax. Names any hidden symbol whose
+ * whole name the query spells out, then counts the internal hits (impl/ code, or symbols no
+ * package barrel re-exports) that were left out.
  */
 export function searchNextHint(
     surface: Surface,
-    results: Pick<SymbolSearchResults, 'symbols' | 'members' | 'hiddenSymbols' | 'hiddenMembers'>
+    results: Pick<
+        SymbolSearchResults,
+        'symbols' | 'members' | 'hiddenSymbols' | 'hiddenMembers' | 'hiddenExact'
+    >
 ): string {
     const hasResults = results.symbols.length > 0 || results.members.length > 0,
         hidden = results.hiddenSymbols + results.hiddenMembers,
         flag = surface === 'mcp' ? 'includeInternal: true' : '--include-internal',
         plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`,
-        hiddenNote =
-            hidden > 0
-                ? ` Hidden: ${plural(results.hiddenSymbols, 'internal symbol')}, ${plural(results.hiddenMembers, 'member')} (${flag} shows them).`
-                : '';
-    if (!hasResults) {
-        return (
-            (surface === 'mcp'
-                ? 'For concepts and how-tos use hoist-search-docs.'
-                : 'For concepts and how-tos use "hoist-docs search".') + hiddenNote
+        lines = [
+            hasResults
+                ? surface === 'mcp'
+                    ? 'Next: hoist-get-symbol {name} for signature, docs, and a member summary; hoist-get-members {name, filter} for member docs.'
+                    : 'Next: hoist-ts symbol <Name> for signature, docs, and a member summary; hoist-ts members <Name> --filter <text> for member docs.'
+                : surface === 'mcp'
+                  ? 'For concepts and how-tos use hoist-search-docs.'
+                  : 'For concepts and how-tos use "hoist-docs search".'
+        ];
+    for (const e of results.hiddenExact) {
+        const reason = isInternalPath(e.filePath)
+            ? 'internal (impl/) code'
+            : 'not re-exported by any package barrel';
+        lines.push(
+            `Hidden exact match: ${e.name} (${toRelativePath(e.filePath)}) - ${reason}; pass ${flag} to see it.`
         );
     }
-    return (
-        (surface === 'mcp'
-            ? 'Next: hoist-get-symbol {name} for signature, docs, and a member summary; hoist-get-members {name, filter} for member docs.'
-            : 'Next: hoist-ts symbol <Name> for signature, docs, and a member summary; hoist-ts members <Name> --filter <text> for member docs.') +
-        hiddenNote
-    );
+    if (hidden > 0) {
+        lines.push(
+            `Hidden: ${plural(results.hiddenSymbols, 'internal symbol')}, ${plural(results.hiddenMembers, 'member')} (${flag} shows them).`
+        );
+    }
+    return lines.join('\n');
 }
 
 /**
@@ -414,6 +428,17 @@ export const searchSymbolsOutputSchema = z.object({
             'Matching internal symbols (impl/ code or not re-exported by a package barrel) left out because includeInternal was not set.'
         ),
     hiddenMembers: z.number().int(),
+    hiddenExact: z
+        .array(
+            z.object({
+                name: z.string(),
+                kind: symbolKindSchema,
+                filePath: z.string().describe('Repo-relative source file path.')
+            })
+        )
+        .describe(
+            'Hidden symbols whose whole name the query spells out - the exact name of an internal or un-importable symbol. Pass includeInternal: true to see them.'
+        ),
     symbols: z.array(
         symbolRefSchema.extend({
             summary: z.string().describe('First JSDoc sentence, cut at about 80 characters.'),
@@ -474,6 +499,11 @@ export function toSearchSymbolsOutput(
         memberTotal: results.memberTotal,
         hiddenSymbols: results.hiddenSymbols,
         hiddenMembers: results.hiddenMembers,
+        hiddenExact: results.hiddenExact.map(e => ({
+            name: e.name,
+            kind: e.kind,
+            filePath: toRelativePath(e.filePath)
+        })),
         symbols: results.symbols.map(hit => ({
             ...toSymbolRef(hit.entry),
             summary: hit.summary,

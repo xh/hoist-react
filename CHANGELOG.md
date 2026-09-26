@@ -200,8 +200,9 @@
 * Rebuilt `hoist-search-symbols` (and `hoist-ts search`) as ranked search over symbols and
   members, using the same BM25 engine as doc search. Multi-word queries rank by term coverage
   instead of requiring every term, exact names rank first, and `impl/`, `admin/`, `inspector/`,
-  and `dynamics/` code and symbols no package barrel re-exports are hidden (and counted) unless
-  `includeInternal` is set. Results are one line per hit
+  and `dynamics/` code and symbols no package barrel re-exports are hidden (counted, and named
+  when the query spells out their exact name) unless `includeInternal` is set. Results are one
+  line per hit
   with kind, name, public import path, and first JSDoc sentence - 8 symbols and 8 members by
   default, typically under 600 tokens. `detail: "full"` restores complete JSDoc.
 * Added `importPath` (e.g. `@xh/hoist/cmp/grid`) to every symbol result across the three

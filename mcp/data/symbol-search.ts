@@ -91,6 +91,11 @@ export interface SymbolSearchResults {
     /** Matching internal symbols left out because `includeInternal` was not set. */
     hiddenSymbols: number;
     hiddenMembers: number;
+    /**
+     * Hidden symbols whose whole name the query spells out (`CardModel`), so an agent that
+     * typed the exact name of an un-importable symbol is told where it is, not just counted.
+     */
+    hiddenExact: SymbolEntry[];
 }
 
 export const DEFAULT_SEARCH_LIMIT = 8,
@@ -149,7 +154,8 @@ export async function searchSymbols(
             symbolTotal: 0,
             memberTotal: 0,
             hiddenSymbols: 0,
-            hiddenMembers: 0
+            hiddenMembers: 0,
+            hiddenExact: []
         };
     if (terms.length === 0) return empty;
 
@@ -197,8 +203,17 @@ export async function searchSymbols(
         return {entry, score: exact ? hit.score * EXACT_NAME_BOOST * weight : score * weight};
     });
     const symbolHits = includeInternal
-        ? allSymbolHits
-        : allSymbolHits.filter(h => !isInternalSymbol(h.entry, idx.root));
+            ? allSymbolHits
+            : allSymbolHits.filter(h => !isInternalSymbol(h.entry, idx.root)),
+        hiddenExact = includeInternal
+            ? []
+            : allSymbolHits
+                  .filter(
+                      h =>
+                          isInternalSymbol(h.entry, idx.root) &&
+                          named.has(h.entry.name.toLowerCase())
+                  )
+                  .map(h => h.entry);
     symbolHits.sort((a, b) => b.score - a.score || a.entry.name.length - b.entry.name.length);
     const symbolResults = mergeComponentHits(symbolHits);
 
@@ -256,7 +271,8 @@ export async function searchSymbols(
         symbolTotal: symbolResults.length,
         memberTotal: memberHits.length,
         hiddenSymbols: allSymbolHits.length - symbolHits.length,
-        hiddenMembers: allMemberHits.length - memberHits.length
+        hiddenMembers: allMemberHits.length - memberHits.length,
+        hiddenExact
     };
 }
 

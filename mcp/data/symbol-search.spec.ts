@@ -373,6 +373,33 @@ for (const c of cases.filter(c => c.source === 'zero-result')) {
         pass('kind filter');
     else fail('kind filter');
 
+    const cardModel = await searchSymbols('CardModel'),
+        cardText = searchText(cardModel),
+        exact = cardModel.hiddenExact[0];
+    if (
+        exact?.name === 'CardModel' &&
+        exact.filePath.endsWith('/cmp/card/CardModel.ts') &&
+        cardText.includes('Hidden exact match: CardModel (cmp/card/CardModel.ts)') &&
+        !cardModel.symbols.some(h => h.entry.name === 'CardModel')
+    ) {
+        pass('"CardModel" names the hidden exact match and where it is');
+    } else {
+        fail(
+            `"CardModel" hidden exact match: ${JSON.stringify(cardModel.hiddenExact.map(e => e.name))}`
+        );
+    }
+    const gridModel = await searchSymbols('GridModel');
+    if (
+        gridModel.hiddenExact.length === 0 &&
+        !searchText(gridModel).includes('Hidden exact match')
+    ) {
+        pass('"GridModel" has no hidden exact match');
+    } else {
+        fail(
+            `"GridModel" hidden exact match: ${JSON.stringify(gridModel.hiddenExact.map(e => e.name))}`
+        );
+    }
+
     const currency = await searchSymbols('currency'),
         nearMiss = [
             ...currency.symbols.map(h => h.entry.name),
