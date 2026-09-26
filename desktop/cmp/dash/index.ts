@@ -5,6 +5,7 @@ export * from './DashViewSpec';
 
 export * from './container/DashContainer';
 export * from './container/DashContainerModel';
+export * from './container/DashContainerViewModel';
 export * from './container/DashContainerViewSpec';
 
 export * from './canvas/DashCanvas';

@@ -196,6 +196,9 @@
 * Added the `MessageButtonSpec` interface to type `MessageSpec.confirmProps` and `cancelProps`,
   previously `any`. Other props still pass through to the platform `button`. Apps passing a plain
   `string` as `intent` must narrow it to `Intent`.
+* Added missing app-facing symbols to their package barrels, including `CardModel`,
+  `FilterChooserFieldSpec`, `DashContainerViewModel` and `DynamicTabSwitcherModel`, plus a new
+  `@xh/hoist/security` barrel exporting `BaseOAuthClient`.
 
 ### 🤖 AI Docs + Tooling
 

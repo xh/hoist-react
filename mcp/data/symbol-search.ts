@@ -11,10 +11,10 @@
  * member whose whole name the query spells out, a penalty for symbols no package barrel
  * re-exports (internal API) and for `kit/` re-exports of third-party components, and shorter
  * names first on ties. By default `impl/`, `admin/`, `inspector/`, and `dynamics/` code,
- * non-exported symbols, and symbols no package barrel re-exports (an app cannot import them) are
- * hidden and counted; `includeInternal` shows them. `*Props` members are indexed but only
- * returned when the query names the owner (`ButtonProps` or `button`), since generic prop names
- * would otherwise flood every query.
+ * non-exported symbols, and symbols no package barrel re-exports are hidden and counted;
+ * `includeInternal` shows them. `*Props` members are indexed but only returned when the query
+ * names the owner (`ButtonProps` or `button`), since generic prop names would otherwise flood
+ * every query.
  */
 import MiniSearch, {type SearchOptions} from 'minisearch';
 
@@ -92,7 +92,7 @@ export interface SymbolSearchResults {
     hiddenSymbols: number;
     hiddenMembers: number;
     /**
-     * Hidden symbols whose whole name the query spells out (`CardModel`), so an agent that
+     * Hidden symbols whose whole name the query spells out (`LeafRow`), so an agent that
      * typed the exact name of an un-importable symbol is told where it is, not just counted.
      */
     hiddenExact: SymbolEntry[];

@@ -100,7 +100,7 @@ for (const query of [
     'headerName',
     'PanelModel persistWith collapsed',
     'toolbar onClick button',
-    'CardModel'
+    'LeafRow'
 ]) {
     const mcp = await tool('hoist-search-symbols', {query}),
         json = JSON.parse(await cli('search', query, '--json')),
