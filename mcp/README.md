@@ -828,8 +828,10 @@ just display without the extra hint. The `@mcpHint` tag is declared in the proje
 ### Testing
 
 The repo has no general test framework, so MCP tests are self-contained spec scripts, each an
-exit-coded driver run with `npx tsx`. `pnpm test:mcp` runs them all, and CI runs it alongside lint
-and typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own ESLint config and
+exit-coded driver. `pnpm test:mcp` runs every `mcp/**/*.spec.ts` through Node's built-in test
+runner, serially (the specs share the disk index cache), and fails when any script exits non-zero.
+A new spec file is picked up by its name alone; nothing in `package.json` lists them. To run one,
+use `npx tsx mcp/data/doc-search.spec.ts`. CI runs `pnpm test:mcp` alongside lint and typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own ESLint config and
 `mcp/tsconfig.json` (with Node types from the root `@types/node` devDependency).
 
 | Spec | Covers |

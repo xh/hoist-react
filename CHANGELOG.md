@@ -197,29 +197,13 @@
   Full reads are unchanged, with a one-line size note on docs over ~3k tokens.
 * Added `pnpm test:mcp`, run in CI, covering the MCP specs plus a golden-set eval of doc search
   ranking and an MCP / CLI output parity check.
-* Rebuilt `hoist-search-symbols` (and `hoist-ts search`) as ranked search over symbols and
-  members, using the same BM25 engine as doc search. Multi-word queries rank by term coverage
-  instead of requiring every term, exact names rank first, and `impl/`, `admin/`, `inspector/`,
-  and `dynamics/` code and symbols no package barrel re-exports are hidden (counted, and named
-  when the query spells out their exact name) unless `includeInternal` is set. Results are one
-  line per hit
-  with kind, name, public import path, and first JSDoc sentence - 8 symbols and 8 members by
-  default, typically under 600 tokens. `detail: "full"` restores complete JSDoc.
-* Added `importPath` (e.g. `@xh/hoist/cmp/grid`) to every symbol result across the three
-  TypeScript tools, resolved from the package barrel that re-exports the symbol.
-* Enhanced `hoist-get-symbol` (`hoist-ts symbol`) with an import line and, for classes and
-  interfaces, a compact member summary. A name declared as both a `const` and a `type` in one
-  file (`FieldType`) now returns both declarations, selectable with `kind`. A const reports the
-  class it is an instance of (`XH` is an `XHApi`) and its Props interface, and a component
-  factory's initializer no longer prints in full.
-* Added `filter`, `include`, `memberKind`, and `detail` to `hoist-get-members` (`hoist-ts
-  members`), plus members inherited from types outside hoist-react (React, Blueprint) grouped
-  by declaring type. A `const`, `function`, `type`, or `enum` target now returns an error naming
-  the right tool instead of an empty list.
-* Member search now covers exported `*Spec` and `*Options` interfaces as well as `*Config`, and
-  `*Props` interfaces when the query names the component. Class members without JSDoc inherit
-  it from the sibling `*Spec` / `*Config` interface (`Column.headerName` from `ColumnSpec`),
-  and property initializers surface as defaults.
+* Rebuilt `hoist-search-symbols` (`hoist-ts search`) as ranked search over symbols and members: one
+  line per hit with the public import path, multi-word queries ranked by term coverage, and
+  internal or un-importable symbols hidden unless `includeInternal` is set.
+* `hoist-get-symbol` now shows an import line and a member summary. `hoist-get-members` gained
+  `filter`, `include`, `memberKind`, and `detail`, and lists members inherited from non-Hoist types.
+* Added a symbol-search golden set and MCP / CLI parity specs to `pnpm test:mcp`, which now runs
+  every `mcp/**/*.spec.ts`. Details in `mcp/README.md`.
 
 ### ✨ Styles
 
