@@ -19,6 +19,7 @@ import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import {registerTsTools} from './typescript.js';
+import {createTsCommand} from '../cli/ts-command.js';
 import type {SymbolKind} from '../data/ts-registry.js';
 import {symbolNextHint} from '../formatters/typescript.js';
 import {resolveRepoRoot} from '../util/paths.js';
@@ -38,16 +39,38 @@ function check(name: string, ok: boolean, detail?: string) {
     }
 }
 
-const cliPath = resolve(resolveRepoRoot(), 'bin', 'hoist-ts.mjs');
-
-/** Run the CLI, returning its status and trimmed stdout and stderr. */
-function runCli(...args: string[]): {status: number | null; stdout: string; stderr: string} {
-    const res = spawnSync(process.execPath, [cliPath, ...args], {encoding: 'utf8'});
-    return {status: res.status, stdout: res.stdout.trimEnd(), stderr: res.stderr.trimEnd()};
+/** Thrown by the in-process CLI's exit hook, carrying the exit code. */
+class CliExit extends Error {
+    constructor(public code: number) {
+        super(`exit ${code}`);
+    }
 }
 
-function cli(...args: string[]): string {
-    const res = runCli(...args);
+/** Run the CLI in-process with buffered io, returning its status and trimmed stdout and stderr. */
+async function runCli(
+    ...args: string[]
+): Promise<{status: number; stdout: string; stderr: string}> {
+    let stdout = '',
+        stderr = '';
+    const command = createTsCommand({
+        stdout: text => void (stdout += text),
+        stderr: text => void (stderr += text),
+        exit: code => {
+            throw new CliExit(code);
+        }
+    });
+    let status = 0;
+    try {
+        await command.parseAsync(['node', 'hoist-ts', ...args]);
+    } catch (e) {
+        if (!(e instanceof CliExit)) throw e;
+        status = e.code;
+    }
+    return {status, stdout: stdout.trimEnd(), stderr: stderr.trimEnd()};
+}
+
+async function cli(...args: string[]): Promise<string> {
+    const res = await runCli(...args);
     if (res.status !== 0) throw new Error(`hoist-ts ${args.join(' ')} failed: ${res.stderr}`);
     return res.stdout;
 }
@@ -75,8 +98,8 @@ const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringif
 console.log('hoist-search-symbols vs hoist-ts search:');
 for (const query of ['headerName', 'PanelModel persistWith collapsed', 'toolbar onClick button']) {
     const mcp = await tool('hoist-search-symbols', {query}),
-        json = JSON.parse(cli('search', query, '--json')),
-        text = cli('search', query);
+        json = JSON.parse(await cli('search', query, '--json')),
+        text = await cli('search', query);
 
     check(`"${query}" --json equals structuredContent`, sameJson(json, mcp.structured));
     check(`"${query}" text matches apart from the hint`, body(mcp.text) === body(text));
@@ -85,7 +108,7 @@ for (const query of ['headerName', 'PanelModel persistWith collapsed', 'toolbar 
     const args = {query: 'loading', detail: 'full', limit: 3, kind: 'class'},
         mcp = await tool('hoist-search-symbols', args),
         json = JSON.parse(
-            cli(
+            await cli(
                 'search',
                 'loading',
                 '--detail',
@@ -108,7 +131,7 @@ for (const query of ['headerName', 'PanelModel persistWith collapsed', 'toolbar 
             includeInternal: true
         }),
         internalJson = JSON.parse(
-            cli('search', 'chooserNameColumn', '--include-internal', '--json')
+            await cli('search', 'chooserNameColumn', '--include-internal', '--json')
         );
     check(
         'includeInternal: --json equals structuredContent',
@@ -116,7 +139,7 @@ for (const query of ['headerName', 'PanelModel persistWith collapsed', 'toolbar 
     );
 
     const none = await tool('hoist-search-symbols', {query: 'the and of'}),
-        noneCli = cli('search', 'the and of');
+        noneCli = await cli('search', 'the and of');
     check('no-result text matches apart from the hint', body(none.text) === body(noneCli));
 }
 
@@ -142,18 +165,18 @@ for (const [name, extra, cliExtra] of [
         hint = symbolNextHint('mcp', structured.symbol, structured.companions);
     check(
         `${label} --json equals structuredContent`,
-        sameJson(JSON.parse(cli('symbol', name, ...cliExtra, '--json')), mcp.structured)
+        sameJson(JSON.parse(await cli('symbol', name, ...cliExtra, '--json')), mcp.structured)
     );
     // A symbol without a hint (e.g. a function) has no trailing paragraph to strip.
     const strip = (text: string) => (hint ? body(text) : text);
     check(
         `${label} text matches apart from the hint`,
-        strip(mcp.text) === strip(cli('symbol', name, ...cliExtra))
+        strip(mcp.text) === strip(await cli('symbol', name, ...cliExtra))
     );
 }
 {
     const miss = await tool('hoist-get-symbol', {name: 'NoSuchSymbolXyz'}),
-        missCli = runCli('symbol', 'NoSuchSymbolXyz');
+        missCli = await runCli('symbol', 'NoSuchSymbolXyz');
     check(
         'unknown symbol is an error on both surfaces',
         miss.isError === true && missCli.status === 1
@@ -189,16 +212,16 @@ for (const [name, extra, cliExtra] of [
         mcp = await tool('hoist-get-members', {name, ...extra});
     check(
         `${label} --json equals structuredContent`,
-        sameJson(JSON.parse(cli('members', name, ...cliExtra, '--json')), mcp.structured)
+        sameJson(JSON.parse(await cli('members', name, ...cliExtra, '--json')), mcp.structured)
     );
     check(
         `${label} text matches apart from the hint`,
-        body(mcp.text) === body(cli('members', name, ...cliExtra))
+        body(mcp.text) === body(await cli('members', name, ...cliExtra))
     );
 }
 {
     const wrongKind = await tool('hoist-get-members', {name: 'FieldType'}),
-        wrongKindCli = runCli('members', 'FieldType');
+        wrongKindCli = await runCli('members', 'FieldType');
     check(
         'const/type target is an error on both surfaces',
         wrongKind.isError === true && wrongKindCli.status === 1
@@ -208,6 +231,31 @@ for (const [name, extra, cliExtra] of [
         wrongKind.text.includes('type and const') &&
             wrongKind.text.includes('hoist-get-symbol') &&
             wrongKindCli.stderr.includes('hoist-ts symbol')
+    );
+}
+
+//------------------------------------------------------------------
+// Entry point smoke check: the real bin, spawned once.
+//------------------------------------------------------------------
+console.log('bin/hoist-ts.mjs:');
+{
+    const res = spawnSync(
+            process.execPath,
+            [
+                resolve(resolveRepoRoot(), 'bin', 'hoist-ts.mjs'),
+                'search',
+                'GridModel',
+                '--limit',
+                '1',
+                '--json'
+            ],
+            {encoding: 'utf8'}
+        ),
+        inProcess = await cli('search', 'GridModel', '--limit', '1', '--json');
+    check(
+        'spawned CLI matches the in-process command',
+        res.status === 0 && res.stdout.trimEnd() === inProcess,
+        res.stderr.trimEnd()
     );
 }
 
