@@ -262,6 +262,15 @@ export function isPropsOwner(ownerName: string): boolean {
     return ownerName.endsWith('Props');
 }
 
+/**
+ * True for a Promise prototype extension entry (`catchDefault`, `linkTo`), which is public API
+ * that needs no import - the one case where a null `importPath` does not mean internal.
+ */
+export function isPromiseExtension(entry: Pick<SymbolEntry, 'name' | 'filePath'>): boolean {
+    const detail = promiseExtensionDetails?.get(entry.name);
+    return detail != null && detail.filePath === entry.filePath;
+}
+
 /** Longest property initializer surfaced as a member default. */
 const MAX_DEFAULT_LENGTH = 60;
 

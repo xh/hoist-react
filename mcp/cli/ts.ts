@@ -131,9 +131,8 @@ program
                 return;
             }
 
-            const hasResults = results.symbols.length > 0 || results.members.length > 0;
             process.stdout.write(
-                `${formatSymbolSearch(results, detail)}\n\n${searchNextHint('cli', hasResults)}\n`
+                `${formatSymbolSearch(results, detail)}\n\n${searchNextHint('cli', results)}\n`
             );
         }
     );

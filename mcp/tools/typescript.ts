@@ -95,8 +95,7 @@ export function registerTsTools(server: McpServer): void {
         async ({query, kind, exported, includeInternal, detail, limit}) => {
             const results = await searchSymbols(query, {kind, exported, includeInternal, limit}),
                 level = detail ?? 'concise',
-                hasResults = results.symbols.length > 0 || results.members.length > 0,
-                text = `${formatSymbolSearch(results, level)}\n\n${searchNextHint('mcp', hasResults)}`;
+                text = `${formatSymbolSearch(results, level)}\n\n${searchNextHint('mcp', results)}`;
             return {
                 content: [{type: 'text' as const, text}],
                 structuredContent: toSearchSymbolsOutput(results, level)

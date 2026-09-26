@@ -20,7 +20,7 @@ import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import {registerTsTools} from './typescript.js';
 import type {SymbolKind} from '../data/ts-registry.js';
-import {searchNextHint, symbolNextHint} from '../formatters/typescript.js';
+import {symbolNextHint} from '../formatters/typescript.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
 process.env.HOIST_MCP_QUIET = '1';
@@ -66,7 +66,6 @@ async function tool(name: string, args: Record<string, unknown>) {
 }
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b),
-    withoutHint = (text: string, hint: string) => (hint ? text.replace(`\n\n${hint}`, '') : text),
     /** Text before the trailing hint paragraph, which is the only surface-specific part. */
     body = (text: string) => text.slice(0, text.lastIndexOf('\n\n'));
 
@@ -80,11 +79,7 @@ for (const query of ['headerName', 'PanelModel persistWith collapsed', 'toolbar 
         text = cli('search', query);
 
     check(`"${query}" --json equals structuredContent`, sameJson(json, mcp.structured));
-    check(
-        `"${query}" text matches apart from the hint`,
-        withoutHint(mcp.text, searchNextHint('mcp', true)) ===
-            withoutHint(text, searchNextHint('cli', true))
-    );
+    check(`"${query}" text matches apart from the hint`, body(mcp.text) === body(text));
 }
 {
     const args = {query: 'loading', detail: 'full', limit: 3, kind: 'class'},
@@ -122,11 +117,7 @@ for (const query of ['headerName', 'PanelModel persistWith collapsed', 'toolbar 
 
     const none = await tool('hoist-search-symbols', {query: 'the and of'}),
         noneCli = cli('search', 'the and of');
-    check(
-        'no-result text matches apart from the hint',
-        withoutHint(none.text, searchNextHint('mcp', false)) ===
-            withoutHint(noneCli, searchNextHint('cli', false))
-    );
+    check('no-result text matches apart from the hint', body(none.text) === body(noneCli));
 }
 
 //------------------------------------------------------------------

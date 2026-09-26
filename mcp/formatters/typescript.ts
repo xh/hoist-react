@@ -18,6 +18,7 @@ import {
     getCompanionSymbols,
     getMembers,
     getSymbolDeclarations,
+    isPromiseExtension,
     type ExternalMemberGroup,
     type MemberFilter,
     type MemberInfo,
@@ -93,11 +94,9 @@ export function toRelativePath(filePath: string): string {
 }
 
 /** `import {Name} from '@xh/hoist/pkg';`, or an explanation of why there is no public import. */
-function importLine(
-    detail: Pick<SymbolDetail, 'name' | 'importPath' | 'sourcePackage' | 'kind'>
-): string {
+function importLine(detail: Pick<SymbolDetail, 'name' | 'importPath' | 'filePath'>): string {
     if (detail.importPath) return `import {${detail.name}} from '${detail.importPath}';`;
-    if (detail.sourcePackage === 'promise' && detail.kind === 'function') {
+    if (isPromiseExtension(detail)) {
         return 'none needed - Promise prototype extension, available on every Promise';
     }
     return 'none - not re-exported from a package barrel (internal API)';
@@ -309,7 +308,11 @@ export function formatSymbolSearch(results: SymbolSearchResults, detail: SearchD
             const e = hit.entry,
                 kind = hit.factory || hit.props ? 'component' : e.kind,
                 name = hit.factory ? `${e.name} / ${hit.factory}` : e.name,
-                where = e.importPath ?? `no public import - ${toRelativePath(e.filePath)}`,
+                where =
+                    e.importPath ??
+                    (isPromiseExtension(e)
+                        ? 'Promise prototype extension, no import needed'
+                        : `no public import - ${toRelativePath(e.filePath)}`),
                 props = hit.props ? ` Props: ${hit.props}.` : '',
                 hint = e.mcpHint ? ` [${e.mcpHint}]` : '';
             if (detail === 'full') {
@@ -354,16 +357,35 @@ export function formatSymbolSearch(results: SymbolSearchResults, detail: SearchD
     return lines.join('\n');
 }
 
-/** Next-step hint for a search, in the calling surface's syntax. */
-export function searchNextHint(surface: Surface, hasResults: boolean): string {
+/**
+ * Next-step hint for a search, in the calling surface's syntax, including how many internal
+ * hits (impl/ code, or symbols no package barrel re-exports) were left out.
+ */
+export function searchNextHint(
+    surface: Surface,
+    results: Pick<SymbolSearchResults, 'symbols' | 'members' | 'hiddenSymbols' | 'hiddenMembers'>
+): string {
+    const hasResults = results.symbols.length > 0 || results.members.length > 0,
+        hidden = results.hiddenSymbols + results.hiddenMembers,
+        flag = surface === 'mcp' ? 'includeInternal: true' : '--include-internal',
+        plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`,
+        hiddenNote =
+            hidden > 0
+                ? ` Hidden: ${plural(results.hiddenSymbols, 'internal symbol')}, ${plural(results.hiddenMembers, 'member')} (${flag} shows them).`
+                : '';
     if (!hasResults) {
-        return surface === 'mcp'
-            ? 'Pass includeInternal: true to search impl code, or use hoist-search-docs for concepts and how-tos.'
-            : 'Add --include-internal to search impl code, or use "hoist-docs search" for concepts and how-tos.';
+        return (
+            (surface === 'mcp'
+                ? 'For concepts and how-tos use hoist-search-docs.'
+                : 'For concepts and how-tos use "hoist-docs search".') + hiddenNote
+        );
     }
-    return surface === 'mcp'
-        ? 'Next: hoist-get-symbol {name} for signature, docs, import, and a member summary; hoist-get-members {name, filter} for member docs.'
-        : 'Next: "hoist-ts symbol <Name>" for signature, docs, import, and a member summary; "hoist-ts members <Name> --filter <text>" for member docs.';
+    return (
+        (surface === 'mcp'
+            ? 'Next: hoist-get-symbol {name} for signature, docs, and a member summary; hoist-get-members {name, filter} for member docs.'
+            : 'Next: "hoist-ts symbol <Name>" for signature, docs, and a member summary; "hoist-ts members <Name> --filter <text>" for member docs.') +
+        hiddenNote
+    );
 }
 
 /**
@@ -378,9 +400,16 @@ export const searchSymbolsOutputSchema = z.object({
     symbolTotal: z.number().int().describe('Symbols that matched before the limit was applied.'),
     memberCount: z.number().int(),
     memberTotal: z.number().int(),
+    hiddenSymbols: z
+        .number()
+        .int()
+        .describe(
+            'Matching internal symbols (impl/ code or not re-exported by a package barrel) left out because includeInternal was not set.'
+        ),
+    hiddenMembers: z.number().int(),
     symbols: z.array(
         symbolRefSchema.extend({
-            summary: z.string().describe('First JSDoc sentence, cut at about 100 characters.'),
+            summary: z.string().describe('First JSDoc sentence, cut at about 80 characters.'),
             hasMembers: z
                 .boolean()
                 .describe('True for classes and interfaces - pass the name to hoist-get-members.'),
@@ -415,7 +444,7 @@ export const searchSymbolsOutputSchema = z.object({
             isStatic: z.boolean(),
             type: z.string(),
             default: z.string().optional().describe('Property initializer text, when short.'),
-            summary: z.string().describe('First JSDoc sentence, cut at about 100 characters.'),
+            summary: z.string().describe('First JSDoc sentence, cut at about 90 characters.'),
             jsDoc: z.string().optional().describe('Full JSDoc. Present for detail "full" only.'),
             decorators: z.array(z.string())
         })
@@ -436,6 +465,8 @@ export function toSearchSymbolsOutput(
         symbolTotal: results.symbolTotal,
         memberCount: results.members.length,
         memberTotal: results.memberTotal,
+        hiddenSymbols: results.hiddenSymbols,
+        hiddenMembers: results.hiddenMembers,
         symbols: results.symbols.map(hit => ({
             ...toSymbolRef(hit.entry),
             summary: hit.summary,

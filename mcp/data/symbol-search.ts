@@ -10,10 +10,11 @@
  * Ranking: OR combination scaled by the share of query terms matched, a bonus for a symbol or
  * member whose whole name the query spells out, a penalty for symbols no package barrel
  * re-exports (internal API) and for `kit/` re-exports of third-party components, and shorter
- * names first on ties. By default `impl/`, `admin/`, `inspector/`, and `dynamics/` code
- * and non-exported symbols are excluded; `includeInternal` lifts that. `*Props` members are
- * indexed but only returned when the query names the owner (`ButtonProps` or `button`), since
- * generic prop names would otherwise flood every query.
+ * names first on ties. By default `impl/`, `admin/`, `inspector/`, and `dynamics/` code,
+ * non-exported symbols, and symbols no package barrel re-exports (an app cannot import them) are
+ * hidden and counted; `includeInternal` shows them. `*Props` members are indexed but only
+ * returned when the query names the owner (`ButtonProps` or `button`), since generic prop names
+ * would otherwise flood every query.
  */
 import MiniSearch, {type SearchOptions} from 'minisearch';
 
@@ -28,6 +29,7 @@ import {
 } from './search-text.js';
 import {
     getIndexes,
+    isPromiseExtension,
     isPropsOwner,
     type MemberIndexEntry,
     type SymbolEntry,
@@ -45,7 +47,10 @@ export interface SymbolSearchOptions {
     kind?: SymbolKind;
     /** Exported symbols only. Default: true, or false when `includeInternal` is set. */
     exported?: boolean;
-    /** Include `impl/`, `admin/`, `inspector/`, `dynamics/` code and non-exported symbols. */
+    /**
+     * Include `impl/`, `admin/`, `inspector/`, `dynamics/` code, non-exported symbols, and
+     * symbols no package barrel re-exports.
+     */
     includeInternal?: boolean;
     /** Maximum symbol results and maximum member results. Clamped to 1-{@link MAX_SEARCH_LIMIT}. */
     limit?: number;
@@ -83,6 +88,9 @@ export interface SymbolSearchResults {
     /** Matching symbols before `limit` was applied. */
     symbolTotal: number;
     memberTotal: number;
+    /** Matching internal symbols left out because `includeInternal` was not set. */
+    hiddenSymbols: number;
+    hiddenMembers: number;
 }
 
 export const DEFAULT_SEARCH_LIMIT = 8,
@@ -93,10 +101,10 @@ export const DEFAULT_SEARCH_LIMIT = 8,
 //------------------------------------------------------------------
 
 /** Cut for the one-line summary shown per symbol hit. */
-export const SUMMARY_CHARS = 100;
+export const SUMMARY_CHARS = 80;
 
 /** Cut for the one-line summary shown per member hit - the same cut member listings use. */
-export const MEMBER_SUMMARY_CHARS = 100;
+export const MEMBER_SUMMARY_CHARS = 90;
 
 const SYMBOL_BOOST = {name: 4, kind: 0.3, package: 0.5, members: 1, summary: 1.5, body: 0.4},
     MEMBER_BOOST = {owner: 2, name: 4, type: 0.3, summary: 1.5, body: 0.4};
@@ -134,7 +142,15 @@ export async function searchSymbols(
     options: SymbolSearchOptions = {}
 ): Promise<SymbolSearchResults> {
     const terms = queryTerms(query),
-        empty = {query, symbols: [], members: [], symbolTotal: 0, memberTotal: 0};
+        empty = {
+            query,
+            symbols: [],
+            members: [],
+            symbolTotal: 0,
+            memberTotal: 0,
+            hiddenSymbols: 0,
+            hiddenMembers: 0
+        };
     if (terms.length === 0) return empty;
 
     const idx = await getSearchIndex(),
@@ -159,16 +175,16 @@ export async function searchSymbols(
                 isRedundantCompoundMatch(compoundHeads, term, terms, querySet) ? 0 : 1
         });
 
-    const symbolHits = rankByCoverage(
+    // Internal hits are ranked with the rest, then set aside and counted unless requested, so
+    // the footer can say how many `includeInternal` would add.
+    const allSymbolHits = rankByCoverage(
         idx.symbols.search(q, {
             ...baseOpts(idx.symbolHeads),
             boost: SYMBOL_BOOST,
             filter: hit => {
                 const e = idx.symbolEntries[hit.id];
                 return (
-                    (!options.kind || e.kind === options.kind) &&
-                    (!exportedOnly || e.isExported) &&
-                    (includeInternal || !isInternalPath(e.filePath, idx.root))
+                    (!options.kind || e.kind === options.kind) && (!exportedOnly || e.isExported)
                 );
             }
         }),
@@ -179,16 +195,18 @@ export async function searchSymbols(
             weight = symbolWeight(entry.importPath);
         return {entry, score: exact ? hit.score * EXACT_NAME_BOOST * weight : score * weight};
     });
+    const symbolHits = includeInternal
+        ? allSymbolHits
+        : allSymbolHits.filter(h => !isInternalSymbol(h.entry, idx.root));
     symbolHits.sort((a, b) => b.score - a.score || a.entry.name.length - b.entry.name.length);
     const symbolResults = mergeComponentHits(symbolHits);
 
-    const memberHits = rankByCoverage(
+    const allMemberHits = rankByCoverage(
         idx.members.search(q, {
             ...baseOpts(idx.memberHeads),
             boost: MEMBER_BOOST,
             filter: hit => {
                 const m = idx.memberEntries[hit.id];
-                if (!includeInternal && isInternalPath(m.filePath, idx.root)) return false;
                 if (!isPropsOwner(m.ownerName)) return true;
                 const owner = m.ownerName.toLowerCase();
                 return named.has(owner) || named.has(owner.slice(0, -'props'.length));
@@ -204,6 +222,11 @@ export async function searchSymbols(
         if (entry.jsDocInheritedFrom) s *= INHERITED_DOC_WEIGHT;
         return {entry, score: s, importPath};
     });
+    const memberHits = dedupeMemberHits(
+        includeInternal
+            ? allMemberHits
+            : allMemberHits.filter(h => !isInternalMember(h.entry, h.importPath, idx.root))
+    );
     // Ties (`GridConfig.sortBy` and `ZoneGridConfig.sortBy` share docs) go to the shorter owner
     // name, which tends to be the more general type.
     memberHits.sort(
@@ -230,8 +253,43 @@ export async function searchSymbols(
             importPath
         })),
         symbolTotal: symbolResults.length,
-        memberTotal: memberHits.length
+        memberTotal: memberHits.length,
+        hiddenSymbols: allSymbolHits.length - symbolHits.length,
+        hiddenMembers: allMemberHits.length - memberHits.length
     };
+}
+
+/**
+ * Drop member hits that repeat an earlier hit's owner name, member name, and type - the desktop
+ * and mobile `SelectProps.options` read identically, and a member line shows no import path.
+ */
+function dedupeMemberHits<T extends {entry: MemberIndexEntry}>(hits: T[]): T[] {
+    const seen = new Set<string>();
+    return hits.filter(h => {
+        const key = `${h.entry.ownerName}.${h.entry.name}:${h.entry.type}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+/** Internal unless `includeInternal`: an internal path, or nothing an app can import. */
+function isInternalSymbol(entry: SymbolEntry, root: string): boolean {
+    return (
+        isInternalPath(entry.filePath, root) ||
+        (entry.importPath == null && !isPromiseExtension(entry))
+    );
+}
+
+/** As {@link isInternalSymbol}, for a member via its owner's import path. `Promise` members need no import. */
+function isInternalMember(
+    m: MemberIndexEntry,
+    ownerImportPath: string | null,
+    root: string
+): boolean {
+    return (
+        isInternalPath(m.filePath, root) || (ownerImportPath == null && m.ownerName !== 'Promise')
+    );
 }
 
 /**

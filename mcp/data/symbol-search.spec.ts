@@ -262,8 +262,7 @@ function label(r: SymbolSearchResults): string {
 }
 
 function searchText(r: SymbolSearchResults): string {
-    const hasResults = r.symbols.length > 0 || r.members.length > 0;
-    return `${formatSymbolSearch(r, 'concise')}\n\n${searchNextHint('mcp', hasResults)}`;
+    return `${formatSymbolSearch(r, 'concise')}\n\n${searchNextHint('mcp', r)}`;
 }
 
 let failures = 0,
