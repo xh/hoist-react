@@ -166,7 +166,7 @@ property-specific options — including a completely different provider.
 @bindable @persist accessor showAdvanced = false;
 
 // ❌ Wrong: @persist must come after the MobX decorator
-@persist @bindable showAdvanced = false;
+@persist @bindable accessor showAdvanced = false;
 ```
 
 ### Approach 2: `markPersist()`
@@ -493,14 +493,16 @@ preserved.
 ### `@persist` Decorator Timing
 
 The `@persist` decorator operates during property initialization (before the constructor body
-runs). It:
+runs). The outer MobX decorator initializes first and registers the in-code default. The
+`@persist` `init` hook then creates a `PersistenceProvider`, which:
 
-1. Reads the in-code default value
-2. Creates a `PersistenceProvider` and reads from the backing store
-3. If a stored value exists, replaces the default
-4. Returns the final value as the property initializer result
-5. After the next tick (once `makeObservable()` has completed), installs a MobX reaction to
-   watch for future changes
+1. Reads the in-code default value from the now-observable property
+2. Reads from the backing store
+3. If a stored value exists, replaces the default via the property's MobX setter
+4. Installs a MobX reaction right away to watch for future changes
+
+The hook returns the in-code default unchanged. MobX holds the live value, so this does not undo
+step 3.
 
 This design ensures the persisted value is in place before any reactions see it — no thrashing.
 
@@ -581,7 +583,7 @@ and sets up the value before MobX makes it observable:
 @bindable @persist accessor showAdvanced = false;
 
 // ❌ Wrong: @persist is outer, runs after @bindable — fails to find the property
-@persist @bindable showAdvanced = false;
+@persist @bindable accessor showAdvanced = false;
 ```
 
 ### Missing `persistWith` on the Model
