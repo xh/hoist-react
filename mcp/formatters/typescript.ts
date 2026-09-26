@@ -390,7 +390,7 @@ export function searchNextHint(
     return (
         (surface === 'mcp'
             ? 'Next: hoist-get-symbol {name} for signature, docs, and a member summary; hoist-get-members {name, filter} for member docs.'
-            : 'Next: "hoist-ts symbol <Name>" for signature, docs, and a member summary; "hoist-ts members <Name> --filter <text>" for member docs.') +
+            : 'Next: hoist-ts symbol <Name> for signature, docs, and a member summary; hoist-ts members <Name> --filter <text> for member docs.') +
         hiddenNote
     );
 }
