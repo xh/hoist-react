@@ -387,7 +387,7 @@ try {
 | `showAsError` | `boolean` | Treat as an unexpected error (affects styling and logging). Default `true` for most exceptions |
 | `logOnServer` | `boolean` | Send the exception to the server for Admin Console review. Default `true` when `showAsError` is `true` |
 | `requireReload` | `boolean` | Force a reload button instead of a dismiss button — for unrecoverable errors |
-| `hideParams` | `string[]` | Parameters to redact from the exception log and alert |
+| `redactPaths` | `string[]` | Additional values to redact - see [Error Handling](../docs/error-handling.md#sensitive-data-redaction) |
 
 ```typescript
 // Show as toast instead of modal dialog

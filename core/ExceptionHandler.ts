@@ -6,9 +6,24 @@
  */
 import {Exception, HoistException} from '../exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {apiDeprecated, logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
-import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
+import {
+    forOwn,
+    has,
+    isArray,
+    isEmpty,
+    isNil,
+    isObject,
+    isPlainObject,
+    isString,
+    last,
+    mapValues,
+    omitBy,
+    partition,
+    pick,
+    toPath
+} from 'lodash';
 import {LoadSpec, PlainObject, XH} from './';
 
 export interface ExceptionHandlerOptions {
@@ -49,8 +64,12 @@ export interface ExceptionHandlerOptions {
     requireReload?: boolean;
 
     /**
-     * A list of parameters that should be hidden from the exception log and alert.
+     * Additional values to redact from this exception, with the same matching rules as
+     * {@link ExceptionHandlerDefaults.redactPaths}.
      */
+    redactPaths?: string[];
+
+    /** @deprecated - use {@link redactPaths} instead. */
     hideParams?: string[];
 }
 
@@ -70,7 +89,14 @@ export interface ExceptionHandlerLoggingOptions {
 
 export interface ExceptionHandlerDefaults {
     alertType?: 'dialog' | 'toast';
+
+    /**
+     * Values to redact from exceptions. Bare key names match case-insensitively at any depth within
+     * request params, body, and headers; entries with `.` or `[` are exact paths (e.g.
+     * `serverDetails.pin`).
+     */
     redactPaths?: string[];
+
     toastProps?: object;
 }
 
@@ -82,9 +108,23 @@ export class ExceptionHandler {
     /** App-level defaults for ExceptionHandler. Instance options take precedence. */
     static defaults: ExceptionHandlerDefaults = {
         alertType: 'dialog',
-        redactPaths: ['fetchOptions.headers.Authorization'],
+        redactPaths: [
+            'Authorization',
+            'password',
+            'pwd',
+            'secret',
+            'token',
+            'access_token',
+            'id_token',
+            'apiKey',
+            'api_key',
+            'api-key',
+            'X-Api-Key'
+        ],
         toastProps: {timeout: 10000}
     };
+
+    static readonly REDACTED = '******';
 
     /**
      * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
@@ -278,9 +318,7 @@ export class ExceptionHandler {
             delete ret.callContext;
 
             // 4) Redact specified values
-            ExceptionHandler.defaults.redactPaths.forEach(path => {
-                if (has(ret, path)) set(ret, path, '******');
-            });
+            this.redact(ret);
 
             // 5) Stringify and cleanse
             return stripTags(JSON.stringify(ret, null, 4));
@@ -301,25 +339,15 @@ export class ExceptionHandler {
         const e = Exception.create(exception),
             opts = this.parseOptions(e, options);
 
-        if (opts.hideParams) {
-            this.hideParams(e, opts);
-        }
+        apiDeprecated('ExceptionHandlerOptions.hideParams', {
+            v: 'v90',
+            test: opts.hideParams,
+            source: this,
+            msg: 'Use redactPaths instead.'
+        });
+        this.redact(e, [...(opts.redactPaths ?? []), ...(opts.hideParams ?? [])]);
 
         return {e, opts};
-    }
-
-    private hideParams(e: HoistException, opts: ExceptionHandlerOptions) {
-        const {fetchOptions} = e,
-            {hideParams} = opts;
-
-        if (!fetchOptions?.params) return;
-
-        // body will just be stringified params -- currently hide all for simplicity.
-        fetchOptions.body = '******';
-
-        hideParams.forEach(it => {
-            fetchOptions.params[it] = '******';
-        });
     }
 
     private logException(e: HoistException, opts: ExceptionHandlerOptions) {
@@ -385,5 +413,58 @@ export class ExceptionHandler {
         });
 
         return ret;
+    }
+
+    private redact(obj: PlainObject, extra: string[] = []) {
+        // split all redactPaths into proper paths and simple keys
+        const redactPaths = [...ExceptionHandler.defaults.redactPaths, ...extra],
+            [paths, keys] = partition(redactPaths, it => it.includes('.') || it.includes('['));
+
+        // ...simple keys are applied to fetchOptions deeply
+        if (obj.fetchOptions && !isEmpty(keys)) {
+            obj.fetchOptions = this.redactFetchOptions(obj.fetchOptions, keys);
+        }
+        // ...paths are applied object-wide
+        paths.forEach(path => this.redactPath(obj, path));
+    }
+
+    private redactFetchOptions(fetchOptions: PlainObject, keys: string[]): PlainObject {
+        const keySet = new Set(keys.map(it => it.toLowerCase())),
+            ret = {...fetchOptions};
+        ['params', 'body', 'headers'].forEach(it => {
+            if (ret[it] != null) ret[it] = this.redactData(ret[it], keySet);
+        });
+        return ret;
+    }
+
+    // Redact matching keys within an object or JSON string. Any other value is replaced entirely.
+    private redactData(data: unknown, keys: Set<string>): unknown {
+        if (isPlainObject(data) || isArray(data)) return this.redactKeys(data, keys);
+        if (!isString(data)) return ExceptionHandler.REDACTED;
+        try {
+            return JSON.stringify(this.redactKeys(JSON.parse(data), keys));
+        } catch {
+            return ExceptionHandler.REDACTED;
+        }
+    }
+
+    // Copy each object along the path before setting, so shared references are left intact.
+    private redactPath(obj: PlainObject, path: string) {
+        if (!has(obj, path)) return;
+        const segs = toPath(path);
+        let target = obj;
+        segs.slice(0, -1).forEach(seg => {
+            target[seg] = isArray(target[seg]) ? [...target[seg]] : {...target[seg]};
+            target = target[seg];
+        });
+        target[last(segs)] = ExceptionHandler.REDACTED;
+    }
+
+    private redactKeys(obj: unknown, keys: Set<string>): unknown {
+        if (isArray(obj)) return obj.map(it => this.redactKeys(it, keys));
+        if (!isPlainObject(obj)) return obj;
+        return mapValues(obj as PlainObject, (v, k) =>
+            keys.has(k.toLowerCase()) ? ExceptionHandler.REDACTED : this.redactKeys(v, keys)
+        );
     }
 }
