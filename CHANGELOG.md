@@ -153,6 +153,8 @@
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
 * Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
+* Fixed desktop `SegmentedControl` wrapping a multi-word option label onto two lines when the
+  control was sized to its content.
 
 ### ⚙️ Technical
 
