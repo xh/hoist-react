@@ -7,7 +7,8 @@
  * query through `searchSymbols` and counts a hit when any of the top 3 symbol hits or top 3
  * member hits is one of the expected targets. Asserts:
  *   - top-3 hit rate at or above {@link MIN_HIT_RATE}
- *   - the three formerly zero-result queries return their obvious hit in the top 3
+ *   - each multi-word query in the zero-result set returns its obvious hit in the top 3, so
+ *     search never again returns nothing for a query whose terms all match one symbol
  *   - each barrel-exported symbol returns itself in the top 3, so dropping it from its package
  *     barrel (which hides it from default search) fails the run
  *   - a default search renders under {@link MAX_SEARCH_TOKENS} tokens for every golden query,
@@ -49,8 +50,8 @@ interface GoldenCase {
     /** Any one of these in the top 3 symbols or top 3 members counts as a hit. */
     expect: string[];
     /**
-     * Where the case came from - experiment trail, formerly zero-result query, common API, or a
-     * symbol that must stay re-exported by its package barrel.
+     * What the case guards - an agent experiment trail, a multi-word query that must not come
+     * back empty, a common API name, or a symbol that must stay re-exported by its package barrel.
      */
     source: 'experiment' | 'zero-result' | 'common' | 'barrel';
 }
@@ -181,7 +182,8 @@ const cases: GoldenCase[] = [
     },
     {query: 'numberInput', expect: ['NumberInput', 'numberInput'], source: 'experiment'},
 
-    // Formerly zero-result queries (AND matching over name + JSDoc + member names).
+    // Multi-word queries that must not come back empty. Strict AND matching over name, JSDoc,
+    // and member names returns nothing for these; ranked matching must return the obvious hit.
     {query: 'PanelModel persistWith collapsed', expect: ['PanelModel'], source: 'zero-result'},
     {
         query: 'required validator rule constraint',
@@ -231,7 +233,8 @@ const cases: GoldenCase[] = [
     },
     {query: 'addReaction', expect: ['HoistBase.addReaction'], source: 'common'},
 
-    // Symbols once hidden because no package barrel re-exported them.
+    // Symbols that must stay re-exported by their package barrel. A symbol no barrel re-exports
+    // is hidden from default search, so dropping one of these exports fails the run.
     {query: 'CardModel', expect: ['CardModel'], source: 'barrel'},
     {query: 'BaseOAuthClient', expect: ['BaseOAuthClient'], source: 'barrel'},
     {query: 'DynamicTabSwitcherModel', expect: ['DynamicTabSwitcherModel'], source: 'barrel'},
@@ -346,8 +349,8 @@ for (const q of EXPERIMENT_QUERIES) {
     else pass(`"${q}" ~${tokens} tokens`);
 }
 
-// Formerly zero-result queries must return their obvious hit in the top 3, and barrel-exported
-// symbols must stay visible to default search.
+// Multi-word queries must return their obvious hit in the top 3, and barrel-exported symbols
+// must stay visible to default search.
 for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'barrel')) {
     const results = await searchSymbols(c.query);
     if (isHit(results, c.expect)) pass(`"${c.query}" returns ${c.expect.join(' / ')} in the top 3`);
