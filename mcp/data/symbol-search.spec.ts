@@ -428,6 +428,40 @@ for (const c of cases.filter(c => c.source === 'zero-result')) {
         fail('hoist-get-symbol FieldType does not return both declarations');
     }
 
+    const xh = await describeSymbol({name: 'XH'}, 'mcp');
+    if (
+        xh.ok &&
+        xh.structured.symbol.instanceOf === 'XHApi' &&
+        xh.text.includes('Instance of: XHApi') &&
+        xh.hint.includes('XHApi')
+    ) {
+        pass('hoist-get-symbol XH names XHApi as the instance class and points to its members');
+    } else {
+        fail('hoist-get-symbol XH lacks the instance class');
+    }
+
+    const panel = await describeSymbol({name: 'panel'}, 'mcp');
+    if (
+        panel.ok &&
+        !panel.structured.symbol.signature.includes('\n') &&
+        panel.structured.symbol.signature.endsWith('...') &&
+        panel.text.includes('Props: PanelProps') &&
+        panel.hint.includes('PanelProps')
+    ) {
+        pass('hoist-get-symbol panel cuts the factory initializer and names PanelProps');
+    } else {
+        fail(
+            `hoist-get-symbol panel: ${panel.ok ? panel.structured.symbol.signature.slice(0, 80) : 'not ok'}`
+        );
+    }
+
+    const fieldTypeConst = await describeSymbol({name: 'FieldType', kind: 'const'}, 'mcp');
+    if (fieldTypeConst.ok && fieldTypeConst.structured.symbol.signature.includes("TAGS: 'tags'")) {
+        pass('hoist-get-symbol FieldType keeps the frozen object literal whole');
+    } else {
+        fail('hoist-get-symbol FieldType lost its object literal');
+    }
+
     const buttonProps = await describeMembers({name: 'ButtonProps'}, 'mcp');
     if (
         buttonProps.ok &&

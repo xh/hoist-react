@@ -153,13 +153,14 @@ for (const [name, extra, cliExtra] of [
     ['FieldType', {}, []],
     ['FieldType', {kind: 'const'}, ['--kind', 'const']],
     ['panel', {}, []],
+    ['XH', {}, []],
     ['View', {filePath: 'data/cube/View.ts'}, ['--file', 'data/cube/View.ts']],
     ['catchDefault', {}, []]
 ] as Array<[string, Record<string, unknown>, string[]]>) {
     const label = `${name}${cliExtra.length ? ' ' + cliExtra.join(' ') : ''}`,
         mcp = await tool('hoist-get-symbol', {name, ...extra}),
         structured = mcp.structured as {
-            symbol: {name: string; kind: SymbolKind};
+            symbol: {name: string; kind: SymbolKind; instanceOf?: string};
             companions: Array<{name: string; kind: SymbolKind}>;
         },
         hint = symbolNextHint('mcp', structured.symbol, structured.companions);

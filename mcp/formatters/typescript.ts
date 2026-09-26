@@ -224,6 +224,12 @@ const symbolDetailSchema = z.object({
         .optional()
         .describe(
             'Name of the config-object interface the constructor accepts, when this class uses the config-object constructor pattern.'
+        ),
+    instanceOf: z
+        .string()
+        .optional()
+        .describe(
+            'For a const, the class it is an instance of (`XHApi` for `XH`). Pass to hoist-get-members for its members.'
         )
 });
 
@@ -260,7 +266,8 @@ function toSymbolDetail(detail: SymbolDetail) {
         ...(detail.decorators && detail.decorators.length > 0
             ? {decorators: detail.decorators}
             : {}),
-        ...(detail.constructorType ? {constructorType: detail.constructorType} : {})
+        ...(detail.constructorType ? {constructorType: detail.constructorType} : {}),
+        ...(detail.instanceOf ? {instanceOf: detail.instanceOf} : {})
     };
 }
 
@@ -652,20 +659,19 @@ function formatSymbolBlock(detail: SymbolDetail, companions: SymbolEntry[]): str
     if (detail.constructorType) {
         lines.push(`Constructor: new ${detail.name}(config: ${detail.constructorType})`);
     }
-
-    lines.push('', '## Signature', detail.signature);
-    if (detail.jsDoc) lines.push('', '## Documentation', collapseJsDoc(detail.jsDoc));
+    if (detail.instanceOf) lines.push(`Instance of: ${detail.instanceOf}`);
 
     // Cross-reference: link Props interfaces to their companion component and vice versa
     if (companions.length > 0) {
-        const names = companions.map(s => `\`${s.name}\``).join(', ');
-        lines.push('');
         if (detail.kind === 'interface' && detail.name.endsWith('Props')) {
-            lines.push('## Component', `Props interface for ${names}.`);
+            lines.push(`Component: ${companions.map(s => s.name).join(', ')}`);
         } else {
-            lines.push('## Props', `Accepts \`${companions[0].name}\`.`);
+            lines.push(`Props: ${companions[0].name}`);
         }
     }
+
+    lines.push('', '## Signature', detail.signature);
+    if (detail.jsDoc) lines.push('', '## Documentation', collapseJsDoc(detail.jsDoc));
     return lines.join('\n');
 }
 
@@ -694,18 +700,23 @@ function formatMemberSummary(members: MemberInfo[]): string {
 /** Next-step hint after a symbol lookup, in the calling surface's syntax. */
 export function symbolNextHint(
     surface: Surface,
-    detail: Pick<SymbolDetail, 'name' | 'kind'>,
+    detail: Pick<SymbolDetail, 'name' | 'kind' | 'instanceOf'>,
     companions: Pick<SymbolEntry, 'name' | 'kind'>[]
 ): string {
     const target =
         detail.kind === 'class' || detail.kind === 'interface'
             ? detail.name
-            : companions.find(c => c.kind === 'interface')?.name;
+            : (detail.instanceOf ?? companions.find(c => c.kind === 'interface')?.name);
     if (!target) return '';
-    const what = target === detail.name ? 'Full member details' : `Its props (\`${target}\`)`;
+    const what =
+        target === detail.name
+            ? 'Full member details'
+            : target === detail.instanceOf
+              ? `Members of \`${target}\``
+              : `Its props (\`${target}\`)`;
     return surface === 'mcp'
         ? `${what}: hoist-get-members {name: "${target}"}; narrow with filter: "<text>", include: "own" | "inherited", or memberKind.`
-        : `${what}: hoist-ts members ${target} [--filter <text>] [--include own|inherited] [--kind property|method|accessor]`;
+        : `${what}: hoist-ts members ${target} [--filter <text>] [--include own|inherited] [--kind property|method|accessor].`;
 }
 
 //------------------------------------------------------------------

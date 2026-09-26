@@ -19,7 +19,8 @@ import type {
     ClassDeclaration,
     FunctionDeclaration,
     InterfaceDeclaration,
-    SourceFile
+    SourceFile,
+    VariableDeclaration
 } from 'ts-morph';
 import {resolve} from 'node:path';
 
@@ -81,6 +82,11 @@ export interface SymbolDetail {
     implements?: string[];
     decorators?: string[];
     constructorType?: string;
+    /**
+     * For a const, the indexed class it is an instance of (`XHApi` for `XH`), from a
+     * `new Class()` initializer, a type annotation, or the checker's resolved type.
+     */
+    instanceOf?: string;
 }
 
 /** A method parameter, with optional description sourced from a `@param` JSDoc tag. */
@@ -1997,15 +2003,63 @@ function extractConstDetail(
     // Get the variable statement for JSDoc (JSDoc is on the statement, not the declaration)
     const varStmt = varDecl.getFirstAncestorByKind(SyntaxKind.VariableStatement);
 
-    const declText = varDecl.getText().trim();
-    const exportPrefix = varStmt?.isExported() ? 'export const ' : 'const ';
-    const signature = `${exportPrefix}${declText}`;
+    // A data literal (`Object.freeze({...})`, an options object) is the API and is kept whole.
+    // Anything else - `hoistCmp.withFactory({...})`, `new Foo({...})`, an arrow function - is
+    // implementation, so the signature stops at its first line.
+    const initializer = varDecl.getInitializer(),
+        fullText = varDecl.getText().trim(),
+        declText =
+            fullText.includes('\n') && !(initializer && isDataLiteral(initializer))
+                ? fullText.slice(0, fullText.indexOf('\n')).trimEnd() + ' ...'
+                : fullText,
+        exportPrefix = varStmt?.isExported() ? 'export const ' : 'const ',
+        signature = `${exportPrefix}${declText}`,
+        instanceOf = findInstanceClass(varDecl);
 
     return {
         ...base,
         signature: signature.length > 500 ? signature.slice(0, 500) + '...' : signature,
-        jsDoc: varStmt ? extractJsDoc(varStmt) : ''
+        jsDoc: varStmt ? extractJsDoc(varStmt) : '',
+        ...(instanceOf ? {instanceOf} : {})
     };
+}
+
+/** True for an object or array literal, optionally under `as const` or `Object.freeze(...)`. */
+function isDataLiteral(node: Node): boolean {
+    if (Node.isAsExpression(node) || Node.isSatisfiesExpression(node)) {
+        return isDataLiteral(node.getExpression());
+    }
+    if (Node.isCallExpression(node)) {
+        const arg = node.getArguments()[0];
+        return node.getExpression().getText() === 'Object.freeze' && !!arg && isDataLiteral(arg);
+    }
+    return Node.isObjectLiteralExpression(node) || Node.isArrayLiteralExpression(node);
+}
+
+/**
+ * The indexed class a const is an instance of, if any: from a `new Class()` initializer, then
+ * a type annotation, then the checker's resolved type. Only the checker step costs anything,
+ * and it runs for one declaration on demand.
+ */
+function findInstanceClass(varDecl: VariableDeclaration): string | undefined {
+    const isIndexedClass = (name: string | undefined) =>
+        name && findIndexEntry(name, undefined, 'class') ? name : undefined;
+
+    const initializer = varDecl.getInitializer();
+    if (initializer && Node.isNewExpression(initializer)) {
+        const named = isIndexedClass(initializer.getExpression().getText());
+        if (named) return named;
+    }
+    const annotation = varDecl.getTypeNode();
+    if (annotation && Node.isTypeReference(annotation)) {
+        const named = isIndexedClass(annotation.getTypeName().getText());
+        if (named) return named;
+    }
+    try {
+        return isIndexedClass(varDecl.getType().getSymbol()?.getName());
+    } catch {
+        return undefined;
+    }
 }
 
 //------------------------------------------------------------------
