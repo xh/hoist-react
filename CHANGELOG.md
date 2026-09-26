@@ -155,6 +155,8 @@
 * Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
 * Fixed desktop `SegmentedControl` wrapping a multi-word option label onto two lines when the
   control was sized to its content.
+* Fixed `checkboxRenderer()` throwing a `TypeError` when called with no argument. Its config is now
+  optional.
 
 ### ⚙️ Technical
 
@@ -191,6 +193,9 @@
   in `GridContextMenuToken`, which gains `'-'`, and the ag-Grid `DefaultMenuItem` tokens, newly
   re-exported from `@xh/hoist/kit/ag-grid`. Apps that build a menu from dynamic strings must
   annotate or cast the array as `GridContextMenuItemLike[]`.
+* Added the `MessageButtonSpec` interface to type `MessageSpec.confirmProps` and `cancelProps`,
+  previously `any`. Other props still pass through to the platform `button`. Apps passing a plain
+  `string` as `intent` must narrow it to `Intent`.
 * Added missing app-facing symbols to their package barrels, including `CardModel`,
   `FilterChooserFieldSpec`, `DashContainerViewModel` and `DynamicTabSwitcherModel`, plus a new
   `@xh/hoist/security` barrel exporting `BaseOAuthClient`.
