@@ -105,7 +105,7 @@ export function toRelativePath(filePath: string): string {
 
 /** The import to show for a symbol, and whether it is a package barrel path. */
 interface ResolvedImport {
-    /** Barrel path when a package barrel re-exports the symbol, otherwise the file path. */
+    /** Barrel path when a barrel re-exports the symbol, otherwise the file path, or null. */
     importPath: string | null;
     barrelExport: boolean;
 }

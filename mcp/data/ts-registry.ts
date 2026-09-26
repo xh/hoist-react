@@ -271,7 +271,7 @@ export function isPropsOwner(ownerName: string): boolean {
 
 /**
  * True for a Promise prototype extension entry (`catchDefault`, `linkTo`), which is public API
- * that needs no import - the one exported symbol the tools show no import path for.
+ * that needs no import - the one kind of exported symbol the tools show no import path for.
  */
 export function isPromiseExtension(entry: Pick<SymbolEntry, 'name' | 'filePath'>): boolean {
     const detail = promiseExtensionDetails?.get(entry.name);
