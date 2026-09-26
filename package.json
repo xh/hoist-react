@@ -22,7 +22,7 @@
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
     "typecheck": "tsc --noEmit && tsc -p mcp/tsconfig.json",
-    "test:mcp": "tsx mcp/data/doc-id-resolver.spec.ts && tsx mcp/data/doc-sections.spec.ts && tsx mcp/data/doc-search.spec.ts && tsx mcp/data/ts-registry.spec.ts && tsx mcp/tools/docs.spec.ts",
+    "test:mcp": "tsx mcp/data/doc-id-resolver.spec.ts && tsx mcp/data/doc-sections.spec.ts && tsx mcp/data/doc-search.spec.ts && tsx mcp/data/ts-registry.spec.ts && tsx mcp/data/symbol-search.spec.ts && tsx mcp/tools/docs.spec.ts && tsx mcp/tools/typescript.spec.ts",
     "prepack": "tsc --build",
     "prepare": "husky"
   },
