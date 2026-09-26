@@ -193,6 +193,9 @@
   in `GridContextMenuToken`, which gains `'-'`, and the ag-Grid `DefaultMenuItem` tokens, newly
   re-exported from `@xh/hoist/kit/ag-grid`. Apps that build a menu from dynamic strings must
   annotate or cast the array as `GridContextMenuItemLike[]`.
+* Added the `MessageButtonSpec` interface to type `MessageSpec.confirmProps` and `cancelProps`,
+  previously `any`. Other props still pass through to the platform `button`. Apps passing a plain
+  `string` as `intent` must narrow it to `Intent`.
 
 ### 🤖 AI Docs + Tooling
 
