@@ -31,6 +31,7 @@ import {
     MEMBER_SUMMARY_CHARS,
     type SymbolSearchResults
 } from '../data/symbol-search.js';
+import {estimateTokens} from '../data/doc-sections.js';
 import {firstSentence} from '../data/search-text.js';
 import {resolveRepoRootPosix, toPosixPath} from '../util/paths.js';
 
@@ -47,11 +48,14 @@ export const MAX_SUMMARY_MEMBERS = 60;
 export const MAX_EXTERNAL_LISTED = 40;
 
 /**
- * Member listings up to this size show full JSDoc; larger ones show one line per member with
- * the first JSDoc sentence, unless `detail` is passed. Keeps a broad filter on a large class
- * (`GridModel` with `filter: "col"` matches ~40 members) readable at a glance.
+ * An unfiltered member listing shows full JSDoc unless its full text would exceed this many
+ * tokens (`GridModel` unfiltered is ~6.6k); then it falls back to one line per member with the
+ * first JSDoc sentence and says so. A filtered listing is always full unless `detail: "summary"`
+ * is passed. Reading tools never trim documentation to save tokens: the reader has already chosen
+ * what to learn, and the tail of a JSDoc block is where defaults, prerequisites, and accepted
+ * values live.
  */
-export const FULL_DETAIL_MAX_MEMBERS = 20;
+export const FULL_DETAIL_MAX_TOKENS = 5000;
 
 /** Member listing shape: full JSDoc per member, or one line with the first sentence. */
 export type MemberDetail = 'full' | 'summary';
@@ -757,7 +761,10 @@ export function symbolNextHint(
 export interface GetMembersArgs extends MemberFilter {
     name: string;
     filePath?: string;
-    /** Listing shape. Default: full for up to {@link FULL_DETAIL_MAX_MEMBERS} members, else summary. */
+    /**
+     * Listing shape. Default: full, except an unfiltered listing whose full text would exceed
+     * {@link FULL_DETAIL_MAX_TOKENS} tokens falls back to summary.
+     */
     detail?: MemberDetail;
 }
 
@@ -803,7 +810,7 @@ export const getMembersOutputSchema = z.object({
     detail: z
         .enum(['full', 'summary'])
         .describe(
-            `Listing shape used: full JSDoc per member, or (for listings over ${FULL_DETAIL_MAX_MEMBERS} members unless overridden) one line per member with the first sentence.`
+            `Listing shape used: full JSDoc per member, or one line per member with the first sentence - only when requested, or when an unfiltered listing would exceed ${FULL_DETAIL_MAX_TOKENS} tokens.`
         ),
     totalMembers: z.number().int().describe('Own plus inherited members before filtering.'),
     members: z
@@ -861,8 +868,6 @@ export async function describeMembers(
 
     const {symbol, members, externalMembers} = result,
         alternates = args.filePath ? [] : findAlternateEntries(name, symbol.filePath),
-        detail: MemberDetail =
-            args.detail ?? (members.length > FULL_DETAIL_MAX_MEMBERS ? 'summary' : 'full'),
         filtering = filter.filter || filter.include !== 'all' || filter.memberKind,
         describeFilter = [
             filter.filter ? `matching "${filter.filter}"` : '',
@@ -878,50 +883,70 @@ export async function describeMembers(
         header = filtering
             ? `# ${symbol.name} Members ${describeFilter} (${members.length} of ${result.totalMembers}${result.totalExternal ? `, ${externalCount} of ${result.totalExternal} external` : ''})`
             : `# ${symbol.name} Members (${members.length}${result.totalExternal ? `, plus ${result.totalExternal} external` : ''})`,
-        lines = [header, `Import: ${importLine(symbol)}`];
-    if (detail === 'summary' && members.length > 0) {
-        lines.push('(one line per member; narrow the filter for full docs)');
-    }
-    lines.push('');
+        headerLines = [header, `Import: ${importLine(symbol)}`],
+        own = members.filter(m => !m.inheritedFrom),
+        inherited = members.filter(m => m.inheritedFrom),
+        listed = projectExternalGroups(externalMembers, !!filter.filter);
 
-    const own = members.filter(m => !m.inheritedFrom),
-        inherited = members.filter(m => m.inheritedFrom);
-    formatMembersByCategory(own, lines, detail);
+    const renderBody = (level: MemberDetail): string[] => {
+        const out: string[] = [];
+        formatMembersByCategory(own, out, level);
 
-    const bySource = new Map<string, MemberInfo[]>();
-    for (const m of inherited) {
-        const group = bySource.get(m.inheritedFrom!);
-        if (group) group.push(m);
-        else bySource.set(m.inheritedFrom!, [m]);
-    }
-    for (const [source, sourceMembers] of bySource) {
-        lines.push(`## Inherited from ${source} (${sourceMembers.length})`, '');
-        formatMembersByCategory(sourceMembers, lines, detail);
-    }
-
-    if (members.length === 0) lines.push(filtering ? 'No members match.' : 'No members found.', '');
-
-    const listed = projectExternalGroups(externalMembers, !!filter.filter);
-    if (externalMembers.length > 0) {
-        lines.push('## Inherited from types outside hoist-react', '');
-        for (const g of listed) {
-            const from = g.module ? `${g.declaredIn} (${g.module})` : g.declaredIn;
-            if (g.members.length === 0) {
-                lines.push(`### ${from} - ${g.total} standard React attributes, not listed`);
-            } else {
-                lines.push(`### ${from} (${g.total})`);
-                for (const m of g.members) {
-                    lines.push(`- ${m.name}${m.type ? `: ${m.type}` : ''}`);
-                }
-                if (g.members.length < g.total) {
-                    lines.push(`(${g.total - g.members.length} more not listed)`);
-                }
-            }
-            lines.push('');
+        const bySource = new Map<string, MemberInfo[]>();
+        for (const m of inherited) {
+            const group = bySource.get(m.inheritedFrom!);
+            if (group) group.push(m);
+            else bySource.set(m.inheritedFrom!, [m]);
         }
+        for (const [source, sourceMembers] of bySource) {
+            out.push(`## Inherited from ${source} (${sourceMembers.length})`, '');
+            formatMembersByCategory(sourceMembers, out, level);
+        }
+
+        if (members.length === 0)
+            out.push(filtering ? 'No members match.' : 'No members found.', '');
+
+        if (externalMembers.length > 0) {
+            out.push('## Inherited from types outside hoist-react', '');
+            for (const g of listed) {
+                const from = g.module ? `${g.declaredIn} (${g.module})` : g.declaredIn;
+                if (g.members.length === 0) {
+                    out.push(`### ${from} - ${g.total} standard React attributes, not listed`);
+                } else {
+                    out.push(`### ${from} (${g.total})`);
+                    for (const m of g.members) {
+                        out.push(`- ${m.name}${m.type ? `: ${m.type}` : ''}`);
+                    }
+                    if (g.members.length < g.total) {
+                        out.push(`(${g.total - g.members.length} more not listed)`);
+                    }
+                }
+                out.push('');
+            }
+        }
+
+        if (alternates.length > 0) out.push(alternatesNote(name, alternates), '');
+        return out;
+    };
+
+    // Full JSDoc by default. Only an unfiltered listing whose full text would blow the ceiling
+    // falls back to one line per member, and then the note says how much it left out.
+    let detail: MemberDetail = args.detail ?? 'full',
+        body = renderBody(detail),
+        note: string | null = null;
+    if (args.detail == null && !filtering && detail === 'full') {
+        const fullTokens = estimateTokens([...headerLines, '', ...body].join('\n'));
+        if (fullTokens > FULL_DETAIL_MAX_TOKENS) {
+            detail = 'summary';
+            body = renderBody(detail);
+            // Surface-neutral wording: the hint below carries the surface's own syntax.
+            note = `(one line per member: the full listing is ~${fullTokens.toLocaleString('en-US')} tokens. Narrow it with a filter, or ask for full detail to get complete JSDoc.)`;
+        }
+    } else if (detail === 'summary' && members.length > 0) {
+        note = '(one line per member, as requested; full detail gives complete JSDoc)';
     }
 
-    if (alternates.length > 0) lines.push(alternatesNote(name, alternates), '');
+    const lines = [...headerLines, ...(note ? [note] : []), '', ...body];
 
     return {
         ok: true,

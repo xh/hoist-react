@@ -15,7 +15,7 @@ import {
     describeSymbol,
     formatSymbolSearch,
     getMembersOutputSchema,
-    FULL_DETAIL_MAX_MEMBERS,
+    FULL_DETAIL_MAX_TOKENS,
     getSymbolOutputSchema,
     MAX_SUMMARY_MEMBERS,
     searchNextHint,
@@ -150,7 +150,7 @@ export function registerTsTools(server: McpServer): void {
         'hoist-get-members',
         {
             title: 'Get Hoist Class/Interface Members',
-            description: `List the properties, methods, and accessors of a class or interface with types, decorators, defaults, and JSDoc: own members, then members inherited via extends, then members from types outside hoist-react (React, Blueprint), each grouped by declaring type. Narrow with filter (substring of the member name, e.g. "col"), include: "own" | "inherited", and memberKind: "property" | "method" | "accessor". Listings of up to ${FULL_DETAIL_MAX_MEMBERS} members show full JSDoc; larger ones show one line per member unless detail: "full" is passed. React attribute groups are counted and listed only with a filter, so filter: "click" finds onClick on any Props interface. Members without JSDoc inherit it from an implemented interface or the sibling *Spec / *Config. Other symbol kinds return an error naming the right tool. For signature, docs, import, and a member summary in one call use hoist-get-symbol.`,
+            description: `List the properties, methods, and accessors of a class or interface with types, decorators, defaults, and JSDoc: own members, then members inherited via extends, then members from types outside hoist-react (React, Blueprint), each grouped by declaring type. Narrow with filter (substring of the member name, e.g. "col"), include: "own" | "inherited", and memberKind: "property" | "method" | "accessor". Listings show full JSDoc; only an unfiltered listing over ${FULL_DETAIL_MAX_TOKENS} tokens (e.g. GridModel) falls back to one line per member, says so, and takes detail: "full" to override. React attribute groups are counted and listed only with a filter, so filter: "click" finds onClick on any Props interface. Members without JSDoc inherit it from an implemented interface or the sibling *Spec / *Config. Other symbol kinds return an error naming the right tool. For signature, docs, import, and a member summary in one call use hoist-get-symbol.`,
             inputSchema: z.object({
                 name: z
                     .string()
@@ -181,7 +181,7 @@ export function registerTsTools(server: McpServer): void {
                     .enum(['full', 'summary'])
                     .optional()
                     .describe(
-                        `full: complete JSDoc per member. summary: one line per member with the first sentence. Default: full for up to ${FULL_DETAIL_MAX_MEMBERS} members, summary above that.`
+                        `full: complete JSDoc per member. summary: one line per member with the first sentence. Default: full; only an unfiltered listing over ${FULL_DETAIL_MAX_TOKENS} tokens (e.g. GridModel) falls back to summary, and says so.`
                     )
             }),
             outputSchema: getMembersOutputSchema,

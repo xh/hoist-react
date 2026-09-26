@@ -625,9 +625,11 @@ type, then members inherited from types outside hoist-react (React, Blueprint) f
 checker and grouped by declaring type with its npm package. A `const`, `function`, `type`, or
 `enum` name is an error naming the kinds found and pointing to `hoist-get-symbol`.
 
-Listings of up to 20 members show full JSDoc; larger ones (`GridModel` has ~180 members) show
-one line per member with the first JSDoc sentence, so a broad filter stays readable - narrow the
-filter, or pass `detail: "full"`, for complete docs. React's generic attribute groups
+Listings show full JSDoc by default. Only an unfiltered listing whose full text would exceed
+about 5k tokens (`GridModel` has ~180 members) falls back to one line per member with the first
+JSDoc sentence, and the output says so and how to narrow it; any filtered listing is full unless
+`detail: "summary"` is passed. Reading tools never trim documentation to save tokens - the tail of
+a JSDoc block is where defaults, prerequisites, and accepted values live. React's generic attribute groups
 (`HTMLAttributes`, `AriaAttributes`, `DOMAttributes`) are counted but listed only when a `filter`
 is passed, so `filter: "click"` finds `onClick` on any Props interface.
 
@@ -638,7 +640,7 @@ is passed, so `filter: "click"` finds `onClick` on any Props interface.
 | `filter` | string | No | Case-insensitive substring to match against member names (e.g. `"col"`, `"click"`). Also searches external groups. |
 | `include` | enum | No | `own`, `inherited`, or `all` (default) |
 | `memberKind` | enum | No | `property`, `method`, or `accessor`. Default: all kinds |
-| `detail` | enum | No | `full` or `summary`. Default: `full` up to 20 members, else `summary` |
+| `detail` | enum | No | `full` or `summary`. Default: `full`; an unfiltered listing over ~5k tokens falls back to `summary` |
 
 **Example output** (`hoist-ts members ButtonProps --filter click`):
 ```

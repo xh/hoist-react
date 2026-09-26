@@ -9,10 +9,16 @@
  *   - top-3 hit rate at or above {@link MIN_HIT_RATE}
  *   - the three formerly zero-result queries return their obvious hit in the top 3
  *   - a default search renders under {@link MAX_SEARCH_TOKENS} tokens for every golden query,
- *     and under {@link MAX_EXPERIMENT_TOKENS} for the experiment queries named in the issue
+ *     and under {@link MAX_EXPERIMENT_TOKENS} for the experiment queries named in the issue.
+ *     These are ceilings against regressions to the old multi-thousand-token dumps, not targets:
+ *     content is never trimmed to meet them
+ *   - reading tools are complete: every member's full JSDoc appears in the default text of an
+ *     unfiltered listing under the token ceiling (`ColumnSpec`) and of any filtered listing
+ *     (`GridModel` filtered by `col`); only an unfiltered listing over the ceiling (`GridModel`)
+ *     falls back to one line per member, and says so
  *   - the tool-level acceptance cases: import path and member summary on `ColumnSpec`,
  *     `onClick` under external members of `ButtonProps`, an explained error for `FieldType`,
- *     `ColumnSpec.headerName` with its JSDoc, `GridModel` filtered by `col` under 1k tokens
+ *     `ColumnSpec.headerName` with its JSDoc
  *
  * Prints a miss table for tuning. Set `VERBOSE=1` to print the top 3 for every query.
  *
@@ -33,9 +39,8 @@ import {
 process.env.HOIST_MCP_QUIET = '1';
 
 const MIN_HIT_RATE = 0.85,
-    MAX_SEARCH_TOKENS = 800,
-    MAX_EXPERIMENT_TOKENS = 600,
-    MAX_FILTERED_MEMBERS_TOKENS = 1000;
+    MAX_SEARCH_TOKENS = 1200,
+    MAX_EXPERIMENT_TOKENS = 1000;
 
 interface GoldenCase {
     query: string;
@@ -532,14 +537,54 @@ for (const c of cases.filter(c => c.source === 'zero-result')) {
         fail('hoist-get-members FieldType is not an explained error');
     }
 
-    const col = await describeMembers({name: 'GridModel', filter: 'col'}, 'mcp'),
-        colTokens = col.ok ? estimateTokens(`${col.text}\n\n${col.hint}`) : Infinity;
-    if (colTokens < MAX_FILTERED_MEMBERS_TOKENS)
-        pass(`hoist-get-members GridModel filter "col" ~${colTokens} tokens`);
-    else
-        fail(
-            `hoist-get-members GridModel filter "col" ~${colTokens} tokens (max ${MAX_FILTERED_MEMBERS_TOKENS})`
+    // Reading tools never trim JSDoc at the default detail level. Compare the rendered text with
+    // each member's full JSDoc after collapsing whitespace and unwrapping {@link} markup.
+    const norm = (t: string) =>
+        t
+            .replace(
+                /\{@link(?:code|plain)?\s+([^}|\s]+)(?:\s*\|\s*|\s+)?([^}]*)\}/g,
+                (_, a, b) => (b as string).trim() || a
+            )
+            .replace(/\s+/g, ' ')
+            .trim();
+    const checkComplete = async (label: string, args: Parameters<typeof describeMembers>[0]) => {
+        const r = await describeMembers(args, 'mcp');
+        if (!r.ok) return fail(`${label}: ${r.text}`);
+        const text = norm(r.text),
+            missing = r.structured.members.filter(m => m.jsDoc && !text.includes(norm(m.jsDoc)));
+        if (r.structured.detail !== 'full') fail(`${label} is not full by default`);
+        else if (missing.length > 0)
+            fail(`${label} drops JSDoc for ${missing.map(m => m.name).join(', ')}`);
+        else pass(`${label} is full and complete (${r.structured.members.length} members)`);
+    };
+    await checkComplete('hoist-get-members ColumnSpec', {name: 'ColumnSpec'});
+    await checkComplete('hoist-get-members PanelProps', {name: 'PanelProps'});
+    await checkComplete('hoist-get-members GridModel filter "col"', {
+        name: 'GridModel',
+        filter: 'col'
+    });
+
+    const gridAll = await describeMembers({name: 'GridModel'}, 'mcp');
+    if (
+        gridAll.ok &&
+        gridAll.structured.detail === 'summary' &&
+        /full listing is ~[\d,]+ tokens/.test(gridAll.text) &&
+        gridAll.text.includes('full detail')
+    ) {
+        pass(
+            'hoist-get-members GridModel (unfiltered, over the ceiling) falls back to summary and says so'
         );
+    } else {
+        fail('hoist-get-members GridModel should fall back to summary with a note');
+    }
+    const gridFull = await describeMembers({name: 'GridModel', detail: 'full'}, 'mcp');
+    if (
+        gridFull.ok &&
+        gridFull.structured.detail === 'full' &&
+        !/full listing is/.test(gridFull.text)
+    )
+        pass('hoist-get-members GridModel detail "full" is honored');
+    else fail('hoist-get-members GridModel detail "full" is not honored');
 
     const column = await describeMembers({name: 'Column', filter: 'headerName'}, 'mcp');
     if (

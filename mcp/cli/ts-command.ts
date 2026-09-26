@@ -13,7 +13,7 @@ import {
     describeMembers,
     describeSymbol,
     formatSymbolSearch,
-    FULL_DETAIL_MAX_MEMBERS,
+    FULL_DETAIL_MAX_TOKENS,
     searchNextHint,
     toSearchSymbolsOutput,
     type SearchDetail
@@ -224,7 +224,7 @@ Examples:
         .option('-k, --kind <kind>', `Restrict to one member kind: ${MEMBER_KINDS.join(', ')}`)
         .option(
             '-d, --detail <level>',
-            `full (complete JSDoc) or summary (one line per member). Default: full up to ${FULL_DETAIL_MAX_MEMBERS} members, else summary`
+            `full (complete JSDoc) or summary (one line per member). Default: full; only an unfiltered listing over ${FULL_DETAIL_MAX_TOKENS} tokens falls back to summary`
         )
         .option(
             '--json',

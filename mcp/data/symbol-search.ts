@@ -106,10 +106,10 @@ export const DEFAULT_SEARCH_LIMIT = 8,
 //------------------------------------------------------------------
 
 /** Cut for the one-line summary shown per symbol hit. */
-export const SUMMARY_CHARS = 80;
+export const SUMMARY_CHARS = 160;
 
 /** Cut for the one-line summary shown per member hit - the same cut member listings use. */
-export const MEMBER_SUMMARY_CHARS = 90;
+export const MEMBER_SUMMARY_CHARS = 160;
 
 const SYMBOL_BOOST = {name: 4, kind: 0.3, package: 0.5, members: 1, summary: 1.5, body: 0.4},
     MEMBER_BOOST = {owner: 2, name: 4, type: 0.3, summary: 1.5, body: 0.4};
