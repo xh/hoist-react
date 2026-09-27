@@ -13,6 +13,8 @@
  *     dropping it from its package barrel fails the run
  *   - a symbol no barrel re-exports (`LeafRow`) is a visible hit with its file import path, and
  *     an exact query for an `impl/` symbol (`ColumnWidthCalculator`) names the hidden match
+ *   - the hidden counts cover only hits left out by location: `headerName` with
+ *     `includeInternal` reports none, and without it reports hidden symbols and members
  *   - barrel-exported matches outrank file imports: for each {@link BARREL_FIRST_QUERIES} entry,
  *     the top symbol and member hits include no file import, while an exact name (`LeafRow`)
  *     still ranks first
@@ -407,6 +409,25 @@ for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'ba
     if (lifted.symbols[0]?.entry.name === 'chooserNameColumn')
         pass('includeInternal returns impl/ symbols');
     else fail('includeInternal does not return impl/ symbols');
+
+    // The hidden counts cover only hits left out by location: nothing with includeInternal, and
+    // both symbols and members for a query that matches impl/ code without it.
+    const shown = await searchSymbols('headerName', {includeInternal: true}),
+        byLocation = await searchSymbols('headerName');
+    if (shown.hiddenSymbols === 0 && shown.hiddenMembers === 0) {
+        pass('"headerName" with includeInternal hides nothing');
+    } else {
+        fail(
+            `"headerName" with includeInternal reports ${shown.hiddenSymbols} hidden symbols, ${shown.hiddenMembers} members`
+        );
+    }
+    if (byLocation.hiddenSymbols > 0 && byLocation.hiddenMembers > 0) {
+        pass(
+            `"headerName" counts location-hidden hits (${byLocation.hiddenSymbols} symbols, ${byLocation.hiddenMembers} members)`
+        );
+    } else {
+        fail('"headerName" reports no location-hidden hits');
+    }
 
     const generic = await searchSymbols('title'),
         named = await searchSymbols('panel title');

@@ -88,6 +88,7 @@ export interface SymbolSearchResults {
     memberTotal: number;
     /** Matching internal symbols left out because `includeInternal` was not set. */
     hiddenSymbols: number;
+    /** Matching members of internal owners left out for the same reason. */
     hiddenMembers: number;
     /**
      * Hidden symbols whose whole name the query spells out (`ColumnWidthCalculator`), so an
@@ -243,11 +244,12 @@ export async function searchSymbols(
         if (entry.jsDocInheritedFrom) s *= INHERITED_DOC_WEIGHT;
         return {entry, score: s, importPath};
     });
-    const memberHits = dedupeMemberHits(
-        includeInternal
+    // The hidden count covers only hits left out by location, so it is taken before duplicates
+    // are dropped.
+    const visibleMemberHits = includeInternal
             ? allMemberHits
-            : allMemberHits.filter(h => !isInternalPath(h.entry.filePath, idx.root))
-    );
+            : allMemberHits.filter(h => !isInternalPath(h.entry.filePath, idx.root)),
+        memberHits = dedupeMemberHits(visibleMemberHits);
     // Ties (`GridConfig.sortBy` and `ZoneGridConfig.sortBy` share docs) go to the shorter owner
     // name, which tends to be the more general type.
     memberHits.sort(
@@ -276,7 +278,7 @@ export async function searchSymbols(
         symbolTotal: symbolResults.length,
         memberTotal: memberHits.length,
         hiddenSymbols: allSymbolHits.length - symbolHits.length,
-        hiddenMembers: allMemberHits.length - memberHits.length,
+        hiddenMembers: allMemberHits.length - visibleMemberHits.length,
         hiddenExact
     };
 }
