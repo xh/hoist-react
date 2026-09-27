@@ -644,19 +644,21 @@ resolved value -- button click handlers or standalone save calls.
 
 ### Using catchDefault Before Other Promise Extensions
 
-`catchDefault()` should be the _last_ handler in a promise chain. Placing it before `.track()`
-means the tracking extension never sees the failure:
+`catchDefault()` should be the _last_ handler in a promise chain. With the `Runner` chain, apply it
+to the promise the terminal returns. Applied earlier, e.g. within a `run()` fn, it handles the
+failure before `track()` sees it:
 
 ```typescript
-// ❌ Don't: track() won't capture failures
-fetchAsync()
-    .catchDefault()
-    .track('Loaded data');
+// ❌ Don't: catchDefault() runs first, so track() records a success
+this.runner()
+    .track('Loaded data')
+    .run(ctx => XH.fetchJson({url: 'api/data'}, ctx).catchDefault());
 
-// ✅ Do: catchDefault last
-fetchAsync()
+// ✅ Do: catchDefault last, on the promise the chain returns
+this.runner()
     .linkTo(this.loadTask)
     .track('Loaded data')
+    .fetchJson({url: 'api/data'})
     .catchDefault();
 ```
 

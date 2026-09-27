@@ -422,7 +422,7 @@ const priceFeed = hoistCmp.factory<PriceFeedModel>({
 
 // Model — react to visibility changes
 class PriceFeedModel extends HoistModel {
-    @bindable visible = false;
+    @bindable accessor visible = false;
 
     override onLinked() {
         this.addReaction({
