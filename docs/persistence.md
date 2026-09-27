@@ -494,8 +494,10 @@ preserved.
 ### `@persist` Decorator Timing
 
 The `@persist` decorator operates during property initialization (before the constructor body
-runs). The outer MobX decorator initializes first and registers the in-code default. The
-`@persist` `init` hook then creates a `PersistenceProvider`, which:
+runs). Decorator functions run innermost first at class definition, so `@persist` runs before the
+MobX decorator and only registers an `init` hook. The `init` hooks then run outermost first when
+an instance is built: MobX's hook makes the property observable and registers the in-code
+default, and the `@persist` hook then creates a `PersistenceProvider`, which:
 
 1. Reads the in-code default value from the now-observable property
 2. Reads from the backing store
