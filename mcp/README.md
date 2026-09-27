@@ -505,9 +505,9 @@ Ranked search over classes, interfaces, types, functions, and component factorie
 of every exported class and every `*Config`, `*Spec`, and `*Options` interface (and `*Props`
 interfaces when the query names the owner). Terms are processed as for doc search: camelCase names
 match their parts, multi-word queries rank by how many terms a hit matches, and a hit whose whole
-name the query spells out ranks first. `impl/`, `admin/`, `inspector/`, and `dynamics/` code and
-non-exported symbols are hidden by default and counted in the footer. See [Ranked symbol
-search](#design-decisions) for how ranking works.
+name the query spells out ranks at or near the top. `impl/`, `admin/`, `inspector/`, and
+`dynamics/` code and non-exported symbols are hidden by default and counted in the footer. See
+[Ranked symbol search](#design-decisions) for how ranking works.
 
 Output is one line per hit: kind, name, import path (the package barrel, or the file tagged `file
 import` when no barrel re-exports the symbol), and the first JSDoc sentence; member hits are
