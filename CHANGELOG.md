@@ -54,6 +54,9 @@
       wherever they suffice.
 * Raised the `react` and `react-dom` peer dependency floor to `19.3`. Apps must bump both to
   `^19.3.0`. React 19.3 is a compatible minor with no breaking changes of its own.
+* Routed `TabContainerModel` no longer passes a tab's own route params to the sibling tab being
+  activated. Only params declared by the container's route or its ancestors now carry over, so
+  apps with sibling tabs sharing a param must declare it once on their common parent route.
 
 * Scheduled Removals
     * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead.
@@ -130,10 +133,13 @@
   The switcher renders a display-only header above each contiguous run of tabs sharing a group,
   with titles and icons from the new `TabSwitcherConfig.groups`. Headers are not focusable or
   routable, and horizontal switchers ignore groups.
-* Improved coverage of sensitive data redaction in exceptions. `ExceptionHandler` now redacts
-  matching keys at any depth within request bodies, params, and headers, and redacts common secret
-  names by default. See `ExceptionHandler.defaults.redactPaths` and new
-  `ExceptionHandlerOptions.redactPaths`, which replaces the now-deprecated `hideParams`.
+* Improved coverage of sensitive data redaction in exceptions. Matching keys are now redacted at any
+  depth within request bodies, params, and headers, and common secret names are redacted by default.
+  See `ExceptionHandler.defaults.redactPaths` and new `ExceptionHandlerOptions.redactPaths`, which
+  replaces the now-deprecated `hideParams`.
+* Routed `TabContainerModel` now remembers each tab's last route - including any child route and
+  its params - and restores it when the user switches back to that tab. Set the new
+  `restoreTabRouteParams: false` config to opt out.
 
 ### 🐞 Bug Fixes
 
@@ -159,6 +165,8 @@
 * Fixed `Mask` and `LoadingIndicator` ignoring changes to their `bind` prop after first render.
 * Fixed desktop `DateInput` logging a date-fns locale load error in apps installed via npm.
 * Fixed `TabContainer` ignoring a `switcher` props object that omitted `orientation`.
+* Fixed routed `TabContainerModel` leaving the URL at its own route, without its active tab, when
+  reached via a deep link, a lazily-rendered parent tab, or a forward more than one level deep.
 * Fixed desktop `SegmentedControl` wrapping a multi-word option label onto two lines when the
   control was sized to its content.
 * Fixed `checkboxRenderer()` throwing a `TypeError` when called with no argument. Its config is now

@@ -63,6 +63,7 @@ tabContainer({model: tabModel})
 | `tabs` | `TabConfig[]` | Tab definitions |
 | `defaultTabId` | `string` | Initial active tab (defaults to first tab) |
 | `route` | `string` | Base route for URL routing (desktop only) |
+| `restoreTabRouteParams` | `boolean` | Restore a tab's own route params on return (default: `true`) |
 | `renderMode` | `RenderMode` | When to render tab content (default: `'lazy'`) |
 | `refreshMode` | `RefreshMode` | When to refresh tab content (default: `'onShowLazy'`) |
 | `track` | `boolean` | Track tab views in activity log |
@@ -111,6 +112,17 @@ override getRoutes() {
 });
 // URLs: /app/overview, /app/reports/daily, /app/reports/weekly
 ```
+
+When the user switches tabs, the container carries over only the route params declared by its own
+`route` or that route's ancestors. Params declared by a tab's route (or its descendants) belong to
+that tab and are never passed to its siblings - declare any param that tabs should share on a
+parent route.
+
+Each tab's last route - including any child route and its params - is remembered and restored when
+the user switches back to it via the container. Memory is discarded if a shared path param has
+since changed (e.g. `/book/:bookId`), so one book's selection never reappears under another. Set
+`restoreTabRouteParams: false` to return to the tab's bare route instead. Note that navigating
+explicitly to a tab's bare route (e.g. via `XH.navigate()`) resets its memory.
 
 See the built-in Admin console (`/admin/AppModel.ts`) or Toolbox app for complete examples of
 routed tab hierarchies.
