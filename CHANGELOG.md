@@ -210,9 +210,7 @@
   returns a short ranked list of sections.
 * Added `section` and `outline` options to `hoist-read-doc` (`--section` / `--outline` for
   `hoist-docs read`). A search hit now costs a few hundred tokens to read instead of the whole doc.
-  Full reads are unchanged, with a one-line size note on docs over ~3k tokens.
-* Added `pnpm test:mcp`, run in CI, covering the MCP specs plus a golden-set eval of doc search
-  ranking and an MCP / CLI output parity check.
+  Full reads are unchanged, with a one-line size note on large docs.
 * Rebuilt `hoist-search-symbols` (`hoist-ts search`) as ranked search over symbols and members: one
   line per hit with its import path (the package barrel when one re-exports the symbol, otherwise
   the file), multi-word queries ranked by term coverage, and `impl/`, `admin/`, `inspector/`,
