@@ -31,8 +31,9 @@
       do not reorder them, so audit every `@persist` in app code by hand.
 * Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
   exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
-  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, and so on. Hoist's
-  `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump to `7.x`.
+  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, and so on.
+  Hoist's `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump
+  to `7.x`.
   Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
@@ -235,8 +236,9 @@
   chrome. Hoist applies it to the tooltip content it renders itself, and apps can add it to a custom
   (element) tooltip's own root to match. Line-break handling moved alongside it to a
   `.xh-grid-tooltip--prewrap` modifier.
-    * ⚠️ Removed the `.xh-grid-tooltip--default` and `--custom` classes. They carried the styling
-      that now lives in the utility classes above, and nothing consumed them once it moved out.
+    * ⚠️ Removed the `.xh-grid-tooltip--default` and `--custom` classes. They carried the
+      styling that now lives in the utility classes above, and nothing consumed them once it
+      moved out.
       Apps with CSS targeting either should retarget `.xh-grid-tooltip`, still applied to every
       grid tooltip, or the new utility classes.
 * Fixed validation tooltips on an editable column rendering without rounded corners or a max-width
@@ -2685,7 +2687,7 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 ## 65.0.0 - 2024-06-26
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+### 💥 Breaking Changes (upgrade difficulty: 🎉 TRIVIAL - dependencies only)
 
 * Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets. This
   should be a drop-in change for applications.
