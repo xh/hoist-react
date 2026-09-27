@@ -414,7 +414,7 @@ that doc's Recommended Core column, not the floor.
 ## Key Dependencies
 
 - **MobX** - Reactive state management
-- **ag-Grid** - Data grid (requires separate license for enterprise features)
+- **AG Grid** - Data grid (requires separate license for enterprise features)
 - **Blueprint** - UI component library
 - **Router5** - Client-side routing
 - **Highcharts** - Charting (requires separate license)
