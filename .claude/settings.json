@@ -8,6 +8,9 @@
       "WebFetch",
       "WebSearch",
       "Write",
+      "Skill(xh:clear-writing)",
+      "Skill(xh:setup-worktree)",
+      "Skill(xh:using-hoist-react-reference)",
       "mcp__github__get_commit",
       "mcp__github__get_file_contents",
       "mcp__github__get_label",
@@ -55,7 +58,16 @@
     "hoist-react"
   ],
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "xh@hoist-ai": true
+  },
+  "extraKnownMarketplaces": {
+    "hoist-ai": {
+      "source": {
+        "source": "github",
+        "repo": "xh/hoist-ai"
+      }
+    }
   },
   "env": {
     "ENABLE_LSP_TOOL": "1"
