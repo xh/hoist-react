@@ -42,6 +42,14 @@ function sectionsOf(id: string): DocSection[] {
 //------------------------------------------------------------------
 // Parsing
 //------------------------------------------------------------------
+// Expected section bounds, derived from the doc's headings so a doc edit cannot stale the spec.
+const persistenceLines = loadDocContent(entry('docs/persistence.md')).split('\n'),
+    lineOf = (heading: string) => persistenceLines.indexOf(heading) + 1,
+    INTRO_END = lineOf('## How It Works') - 1,
+    GRID_START = lineOf('### GridModel'),
+    GRID_END = lineOf('### FormModel') - 1,
+    BUILT_IN_END = lineOf('## Configuration Inheritance') - 1;
+
 console.log('Parsing:');
 {
     const sections = sectionsOf('docs/persistence.md'),
@@ -52,7 +60,7 @@ console.log('Parsing:');
     check('intro section is level 1 at line 1', intro.level === 1 && intro.startLine === 1);
     check(
         'intro ends before the first ## heading',
-        intro.endLine === 14,
+        intro.endLine === INTRO_END,
         `endLine=${intro.endLine}`
     );
     check('### path includes its ## parent', grid != null && grid.path.length === 2);
@@ -61,13 +69,15 @@ console.log('Parsing:');
         grid?.breadcrumb === 'Persistence > Built-in Model Support > GridModel'
     );
     check(
-        '### extent keeps its #### subsections (GridModel L212-274)',
-        grid?.startLine === 212 && grid.extentEndLine === 274,
+        '### extent keeps its #### subsections (GridModel)',
+        grid?.startLine === GRID_START && grid.extentEndLine === GRID_END,
         `L${grid?.startLine}-${grid?.extentEndLine}`
     );
     check(
         '## extent spans its ### children',
-        builtIn != null && builtIn.endLine < builtIn.extentEndLine && builtIn.extentEndLine === 362,
+        builtIn != null &&
+            builtIn.endLine < builtIn.extentEndLine &&
+            builtIn.extentEndLine === BUILT_IN_END,
         `endLine=${builtIn?.endLine} extentEndLine=${builtIn?.extentEndLine}`
     );
     check(
@@ -179,7 +189,7 @@ console.log('readDoc:');
         section.ok &&
             section.structured.content!.startsWith('### GridModel') &&
             !section.structured.content!.includes('### FormModel') &&
-            section.structured.section?.endLine === 274
+            section.structured.section?.endLine === GRID_END
     );
     check(
         'section read reports matchedAs for a shortened id',
