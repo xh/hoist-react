@@ -381,42 +381,58 @@ disk. Later invocations load the cache in ~20ms and build the in-memory search i
 ### Prerequisites
 
 - Node.js 22.12+, the floor set by `commander` (hoist-dev-utils requires 22.15+ for app builds)
-- `tsx` available (included in hoist-react's dependencies)
-- A checked-out hoist-react repository
+- `tsx`, a dependency of hoist-react, so it is present wherever `@xh/hoist` is installed
+- `@xh/hoist` installed in the app, or a checked-out hoist-react repository
 
 ### Starting the Server
 
-**Method 1: `.mcp.json` (recommended for Claude Code)**
+Claude Code reads `.mcp.json` at the project root and starts the server itself. One entry point
+serves every case: `bin/hoist-mcp.mjs` resolves `tsx` through Node's module resolution and runs
+`mcp/server.ts`, so the same command works from an installed package and from a checkout. Only the
+path differs.
 
-The repository includes a `.mcp.json` file that Claude Code reads automatically:
+**In a Hoist application**, the entry the `xh:onboard-app` skill writes:
 
 ```json
 {
   "mcpServers": {
     "hoist-react": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["tsx", "mcp/server.ts"],
+      "command": "node",
+      "args": ["client-app/node_modules/@xh/hoist/bin/hoist-mcp.mjs"],
       "env": {}
     }
   }
 }
 ```
 
-No manual setup is needed -- Claude Code discovers and starts the server when you open a session
-in the hoist-react directory.
+Claude Code starts stdio servers from the project root, so the path is relative to the app's root.
+The server describes the `@xh/hoist` version installed in `node_modules`. After an install changes
+that version, restart Claude Code (or reconnect with `/mcp`) so the server reloads.
 
-**Method 2: pnpm exec (from the hoist-react repo)**
+Toolbox is the exception, not the pattern. Its `.mcp.json` runs a wrapper script that prefers a
+sibling `../hoist-react` checkout over `node_modules`, because Toolbox doubles as the framework's
+development harness. Do not copy that wrapper into an app; the entry above is the reference.
 
-```bash
-pnpm exec hoist-mcp
+**In the hoist-react repository**, this repo's own `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "hoist-react": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["bin/hoist-mcp.mjs"],
+      "env": {}
+    }
+  }
+}
 ```
 
-**Method 3: npx (from installed package)**
+This serves the working tree, so uncommitted edits to docs and source are visible to the tools.
 
-```bash
-npx hoist-mcp
-```
+**Other clients and manual runs.** `pnpm exec hoist-mcp` from the hoist-react repo, or
+`npx hoist-mcp` from an app, start the same server on stdio for any MCP client.
 
 ### Verification
 
@@ -432,8 +448,8 @@ Set the `HOIST_MCP_DEBUG` environment variable to enable verbose debug output on
   "mcpServers": {
     "hoist-react": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["tsx", "mcp/server.ts"],
+      "command": "node",
+      "args": ["bin/hoist-mcp.mjs"],
       "env": {"HOIST_MCP_DEBUG": "1"}
     }
   }
