@@ -31,6 +31,7 @@ import {
     internalDir,
     MEMBER_SUMMARY_CHARS,
     type MemberHit,
+    SUMMARY_CHARS,
     type SymbolSearchResults
 } from '../data/symbol-search.js';
 import {estimateTokens} from '../data/doc-sections.js';
@@ -500,7 +501,9 @@ export const searchSymbolsOutputSchema = z.object({
         ),
     symbols: z.array(
         symbolRefSchema.extend({
-            summary: z.string().describe('First JSDoc sentence, cut at about 80 characters.'),
+            summary: z
+                .string()
+                .describe(`First JSDoc sentence, cut at about ${SUMMARY_CHARS} characters.`),
             hasMembers: z
                 .boolean()
                 .describe('True for classes and interfaces - pass the name to hoist-get-members.'),
@@ -538,7 +541,9 @@ export const searchSymbolsOutputSchema = z.object({
             isStatic: z.boolean(),
             type: z.string(),
             default: z.string().optional().describe('Property initializer text, when short.'),
-            summary: z.string().describe('First JSDoc sentence, cut at about 90 characters.'),
+            summary: z
+                .string()
+                .describe(`First JSDoc sentence, cut at about ${MEMBER_SUMMARY_CHARS} characters.`),
             jsDoc: z.string().optional().describe('Full JSDoc. Present for detail "full" only.'),
             decorators: z.array(z.string())
         })
@@ -617,7 +622,7 @@ const memberSummarySchema = z.object({
             signature: z
                 .string()
                 .describe(
-                    '`name: type` or `name(params): returnType`, with `= default` when known.'
+                    `\`name: type\` or \`name(params): returnType\`, with \`= default\` when known. Type text is cut at ${SUMMARY_TYPE_LENGTH} characters.`
                 ),
             isStatic: z.boolean(),
             inheritedFrom: z.string().optional()

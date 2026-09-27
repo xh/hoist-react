@@ -59,11 +59,12 @@ export interface SymbolEntry {
      */
     mcpHint?: string;
     /**
-     * Space-separated own member names for member-indexed owners (classes and `*Config`
-     * interfaces), used to expand the searchable text in symbol search. Only includes
-     * members directly declared on the owner - inherited HoistBase/HoistModel members
-     * are excluded to avoid noise from ubiquitous framework plumbing (destroy,
-     * addReaction, etc.). Empty for owners whose members are not indexed.
+     * Space-separated own member names for member-indexed owners (classes and `*Config`,
+     * `*Spec`, and `*Options` interfaces - not `*Props`, see `buildSymbolIndex`), used to expand
+     * the searchable text in symbol search. Only includes members directly declared on the
+     * owner - inherited HoistBase/HoistModel members are excluded to avoid noise from
+     * ubiquitous framework plumbing (destroy, addReaction, etc.). Empty for owners whose
+     * members are not indexed.
      */
     memberNames?: string;
 }
@@ -369,8 +370,10 @@ function formatMethodType(member: MemberInfo): string {
 
 /**
  * Build the symbol index by scanning all source files using AST-level methods.
- * Also builds a parallel member index for every exported class and every exported
- * `*Config` interface (see `shouldIndexClassMembers` / `shouldIndexInterfaceMembers`).
+ * Also builds a parallel member index for every exported class and every exported `*Config`,
+ * `*Spec`, `*Options`, and `*Props` interface (see `shouldIndexClassMembers` /
+ * `shouldIndexInterfaceMembers`). `*Props` members are searched only when the query names the
+ * owner (see `symbol-search.ts`).
  *
  * Uses getClasses(), getInterfaces(), getTypeAliases(), getFunctions(),
  * getEnums(), and getVariableStatements() -- NOT getExportedDeclarations(),
@@ -655,11 +658,11 @@ function buildSymbolIndex(proj: Project): {
         indexPromiseExtensions(promiseFile, index, mIndex, resolveRepoRootPosix());
     }
 
-    // Populate `memberNames` on symbol entries for every member-indexed owner
-    // (classes and `*Config` interfaces). Excludes inherited HoistBase/HoistModel
-    // members so that queries like "StoreRecord raw" surface StoreRecord, but
-    // generic terms like "destroy" or "addReaction" don't match every class.
-    // HoistBase and HoistModel each exist in exactly one file so a name-based
+    // Populate `memberNames` on symbol entries for every member-indexed owner except
+    // `*Props` (classes and `*Config`, `*Spec`, and `*Options` interfaces). Excludes
+    // inherited HoistBase/HoistModel members so that queries like "StoreRecord raw"
+    // surface StoreRecord, but generic terms like "destroy" or "addReaction" don't match
+    // every class. HoistBase and HoistModel each exist in exactly one file so a name-based
     // lookup is sufficient for computing `baseMemberNames`.
     const collectByName = (n: string): string[] => {
         for (const v of memberNamesByOwner.values()) {
@@ -976,7 +979,7 @@ export function beginInitialization(): void {
 
 /**
  * Ensure the symbol and member indexes are populated (from cache or via a
- * fresh build). Pure search paths (`searchSymbols`, `searchMembers`) only need
+ * fresh build). Pure search paths (`searchSymbols` in `symbol-search.ts`) only need
  * this; detail-extraction paths additionally call {@link ensureProject} to
  * construct the live ts-morph `Project` on demand.
  *
