@@ -385,7 +385,7 @@ can be included unconditionally in the parent's item list.
 ```typescript
 // TaskDialogModel.ts - manages dialog open/closed state and form data
 export class TaskDialogModel extends HoistModel {
-    @observable isOpen = false;
+    @observable accessor isOpen = false;
 
     @managed formModel = new FormModel({
         fields: [{name: 'description', rules: [required]}]

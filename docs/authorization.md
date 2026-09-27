@@ -173,8 +173,8 @@ widgets, and other top-level features:
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
-        await XH.installServicesAsync(PortfolioService, ReportService);
+    override async initAsync(ctx: InitContext) {
+        await XH.installServicesAsync([PortfolioService, ReportService], ctx);
     }
 
     get tabs(): TabConfig[] {

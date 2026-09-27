@@ -124,6 +124,28 @@ IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rath
 them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
 instance on another port needs a local override.
 
+### hoist-ai plugin (`xh@hoist-ai`)
+
+The shared `.claude/settings.json` enables XH's `xh@hoist-ai` plugin, the same plugin that Hoist
+applications install. Claude Code offers to install it on your first session here. Three of its
+skills apply in this repo:
+
+- `xh:clear-writing` - house style for CHANGELOG entries, PR descriptions, docs, and comments.
+  Prose written here follows its rules. Lint a draft with its script before you commit it.
+- `xh:setup-worktree` - provisions a runnable worktree. It knows this repo has no `client-app/`.
+- `xh:using-hoist-react-reference` - routes Hoist API questions to the MCP and CLI tools above.
+  It restates what this file already says, so it adds little here. It is the skill that app
+  developers rely on, and this repo is where changes to its tools land first, so keep it enabled.
+
+The other skills are for Hoist applications and do not apply to this library:
+
+- `xh:onboard-app` and `xh:hoist-upgrade` expect an app with a `client-app/` folder. To write
+  upgrade notes for a hoist-react release, use this repo's own `xh-upgrade-notes` skill instead.
+- `xh:using-hoist-core-reference` covers Grails and Groovy code, which this repo has none of.
+
+The plugin loads from the marketplace copy, not from a sibling `../hoist-ai` checkout. To try a
+local skill change, install the plugin from that path as hoist-ai's own `CLAUDE.md` describes.
+
 ## Build Commands
 
 ```bash
@@ -219,12 +241,15 @@ All Hoist artifacts extend `HoistBase`, which provides:
 #### MobX Integration Conventions
 
 - `addAutorun()` / `addReaction()` - Managed MobX subscriptions (auto-disposed on destroy)
-- `makeObservable()` - Called in constructors to set up MobX observables/actions/computeds
-- `@observable` MobX decorator - Marks properties as observable state
+- TC39 decorators - no `makeObservable()` call is needed. Declare `@observable` and `@bindable`
+  fields with the `accessor` keyword (e.g. `@bindable accessor myProp = null`).
+- `@observable` MobX decorator - Marks properties as observable state. Use the MobX 7 named
+  re-exports from `@xh/hoist/mobx` for variants - e.g. `@observableRef` for reference-only.
 - `@action` MobX decorator - Marks methods that modify observable state
 - `@bindable` Hoist decorator - Marks properties as observable and generates setter methods
   automatically
   marked as `@action` - e.g., `setMyProp(value)` for property `myProp` (Hoist custom decorator).
+  `@bindableRef` is the reference-only variant.
   **Setter convention:** If a class defines an explicit public `setFoo()` method, call it (it likely
   has additional logic). Otherwise for auto-generated `@bindable` setters, prefer direct assignment
   (`model.myProp = value`) over calling the generated setter (`model.setMyProp(value)`).
@@ -279,10 +304,11 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
-- **No em dashes in code comments** — Use ` - ` (spaced hyphen) not em dashes (`—`) in `.ts`
-  comments and JSDoc. Em dashes cause tooling issues and are reserved for prose `.md` docs.
-  Other Unicode characters (arrows, symbols, accented letters, etc.) are fine in code comments
-  when they aid clarity.
+- **No em dashes** - Use ` - ` (spaced hyphen) instead of em dashes (`—`) in code comments and
+  JSDoc, and in any new prose: CHANGELOG entries, docs, commit messages, PR descriptions. Em dashes
+  cause tooling issues and read as machine-written. Existing docs keep theirs; do not reflow a doc
+  only to remove them. Other Unicode characters (arrows, symbols, accented letters, etc.) are fine
+  in code comments when they aid clarity.
 
 ## Git Workflow
 
