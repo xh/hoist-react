@@ -26,7 +26,9 @@ Both interfaces share the same underlying registries and produce identical outpu
 
 - **Documentation tools** -- search and browse all hoist-react READMEs, concept docs, and upgrade notes
 - **TypeScript tools** -- search symbols, inspect types, and list class/interface members
-- **Documentation resources** (MCP only) -- direct access to any doc by URI
+- **Documentation resources** -- direct access to any doc by `hoist://docs/{id}` URI. Resources
+  are an MCP mechanism with no CLI counterpart, but the capability is on both surfaces:
+  `hoist-read-doc` and `hoist-docs read <id>` read any doc whole, by section, or as an outline
 
 **Audience:** AI assistants working with hoist-react codebases, and developers configuring those
 assistants. These tools are not used at runtime by applications.
@@ -52,7 +54,9 @@ mcp/
 ├── data/
 │   ├── doc-registry.ts        # Documentation inventory loader (reads docs/doc-registry.json)
 │   ├── doc-id-resolver.ts     # Tolerant doc-id resolver (canonical + shortenings + aliases)
+│   ├── doc-id-resolver.spec.ts # Resolver test cases (see Testing)
 │   ├── doc-sections.ts        # Splits docs into ##/### sections; section-name resolution
+│   ├── doc-sections.spec.ts   # Section parsing and read checks (see Testing)
 │   ├── doc-search.ts          # MiniSearch (BM25) index over sections, ranked search
 │   ├── doc-search.spec.ts     # Golden-set retrieval eval (see Testing)
 │   ├── search-text.ts         # Tokenizer, camelCase splitting, stemming, ranking helpers (shared)
@@ -72,11 +76,12 @@ mcp/
 │   ├── docs.spec.ts           # MCP / CLI parity check for the doc tools
 │   ├── typescript.ts          # MCP TypeScript tools (search-symbols, get-symbol, get-members)
 │   └── typescript.spec.ts     # MCP / CLI parity check for the TypeScript tools
+├── util/
+│   ├── logger.ts              # Stderr-only logging (protects stdio JSON-RPC)
+│   └── paths.ts               # Repo root resolution and path traversal safety
+├── eslint.config.mjs          # ESLint config for mcp/ (run by pnpm lint:mcp)
 ├── package.json               # ES module config (type: "module")
-├── tsconfig.json              # TypeScript config (target: ES2022, module: Node16)
-└── util/
-    ├── logger.ts              # Stderr-only logging (protects stdio JSON-RPC)
-    └── paths.ts               # Repo root resolution and path traversal safety
+└── tsconfig.json              # TypeScript config (target: ES2022, module: Node16)
 ```
 
 ### Data Flow
@@ -87,20 +92,20 @@ MCP Client (e.g. Claude Code)          Shell / AI Agent
     │  JSON-RPC over stdio                  │  bash commands
     │                                       │
     ▼                                       ▼
-server.ts (McpServer)                  cli/docs.ts, cli/ts.ts
+server.ts (McpServer)                  cli/docs.ts, cli/ts.ts ──► cli/ts-command.ts
     │                                       │
-    ├── resources/docs.ts ──┐               │
-    ├── tools/docs.ts ──────┤               │
+    ├── resources/docs.ts ──► data/doc-registry.ts, data/doc-id-resolver.ts
+    ├── tools/docs.ts ──────┐               │
     └── tools/typescript.ts ┤               │
-                            │               │
                             ▼               ▼
                      formatters/docs.ts, formatters/typescript.ts
                             │               │
                             ▼               ▼
                      data/doc-search.ts ──► data/doc-sections.ts
+                     data/doc-id-resolver.ts
                             │
                             ▼
-                     data/doc-registry.ts ──► README files on disk
+                     data/doc-registry.ts ──► docs/doc-registry.json, README files on disk
                      data/symbol-search.ts ──► data/ts-registry.ts ──► ts-morph AST parsing
                                                      │                  data/import-paths.ts
                                                      ▼
@@ -137,41 +142,44 @@ prefers sections that match every term, as AND would, without letting a weak all
 a strong match on most terms, as a strict AND-then-OR fallback does. Two further adjustments
 counter the doc set's shape. A query prefix that runs into a compound identifier whose leading
 part it already matches (`show` → `showFeedbackDialog`) is not counted twice, which otherwise
-favors identifier-dense text. Upgrade notes and the doc index are weighted down, since they
-mention most APIs but rarely answer a how-to question. Registry `title`, `description`, and
-`keywords` add a small doc-level boost. Results are capped at two sections per doc.
+favors identifier-dense text. Upgrade notes, the doc index, and this README are weighted down,
+since they mention most APIs but rarely answer a how-to question. Registry `title`,
+`description`, and `keywords` add a small doc-level boost. Results are capped at two sections
+per doc.
 
 `hoist-read-doc` takes a `section` (matched by path or heading, ignoring case and punctuation,
-with unique-prefix tolerance) or `outline: true`, so a search hit costs a few hundred tokens to
-read instead of several thousand. The index builds in memory on first search (~150ms for the
-current corpus), so it is not cached to disk. `data/doc-search.spec.ts` guards ranking quality
-with a golden set of realistic queries - see [Testing](#testing).
+with unique prefix or substring tolerance) or `outline: true`, so a search hit costs a few
+hundred tokens to read instead of several thousand. The index builds in memory on first search
+(~150ms for the current corpus), so it is not cached to disk. `data/doc-search.spec.ts` guards
+ranking quality with a golden set of realistic queries - see [Testing](#testing).
 
 **Ranked symbol search on the same engine.** `data/symbol-search.ts` builds two MiniSearch indexes
 in memory (~100ms) from the registry's symbol and member maps, so the disk cache below keeps
 working: symbols on name (boosted 4x), kind, package, own member names, first JSDoc sentence, and
 the rest of the JSDoc; members on owner and member name (boosted), type text, and JSDoc. Ranking
-reuses coverage-scaled OR and the compound-head guard from doc search, then applies three
+reuses coverage-scaled OR and the compound-head guard from doc search, then applies further
 adjustments. A symbol or member whose whole name the query spells out (`Select`, `GridModel`,
-`headerName`) scores on its raw BM25 rather than the coverage-scaled score, so naming a symbol finds
-it however many other terms the query carries. Symbols the package barrels re-export are preferred,
-since the barrels are the curated public surface: a symbol no barrel re-exports, or a member whose
-owner no barrel re-exports, is weighted at 1/8 (Promise prototype extensions are exempt, since they
-need no import), and `kit/` re-exports of third-party components are halved. Ties go to the shorter
-name (`GridConfig.sortBy` before `ZoneGridConfig.sortBy`). There is no fuzzy matching: API names are
-exact, camelCase parts and prefixes already give recall for near misses, and fuzzy pulled "current"
-hits into a search for "currency". Internal means internal by location or visibility: by default
-`impl/`, `admin/`, `inspector/`, and `dynamics/` code and non-exported symbols are hidden; the
-footer counts them, names any hidden symbol whose whole name the query spells out (`Hidden exact
-match: ColumnWidthCalculator (cmp/grid/impl/ColumnWidthCalculator.ts) - internal (impl/) code`), and
-`includeInternal` shows them. A symbol no package barrel re-exports is listed with its file import
-(see Import paths below) and ranks below barrel-exported matches; an exact name still ranks at or
-near the top. A component, its element factory, and its Props interface fold into one hit (`Select /
-select ... Props: SelectProps`), since Hoist exports them together from one file, and a member hit
-that repeats an earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`)
-is dropped. Output is one line per hit - kind, name, import path, and the first JSDoc sentence cut
-at 80 characters (90 for members) - which keeps a default search of 8 symbols and 8 members within
-the spec ceilings, typically 400 to 700 tokens; `detail: "full"` restores complete JSDoc.
+`headerName`) scores on its raw BM25 with a bonus, rather than the coverage-scaled score, so naming
+a symbol finds it however many other terms the query carries; a member hit whose owner the query
+also names (`StoreRecord raw`) gets a further bonus. Symbols the package barrels re-export are
+preferred, since the barrels are the curated public surface: a symbol no barrel re-exports, or a
+member whose owner no barrel re-exports, is weighted at 1/8 (Promise prototype extensions are
+exempt, since they need no import), and `kit/` re-exports of third-party components are halved.
+Ties go to the shorter name (`GridConfig.sortBy` before `ZoneGridConfig.sortBy`). There is no fuzzy
+matching: API names are exact, camelCase parts and prefixes already give recall for near misses,
+and fuzzy pulled "current" hits into a search for "currency". Internal means internal by location
+or visibility: by default `impl/`, `admin/`, `inspector/`, and `dynamics/` code and non-exported
+symbols are hidden; the footer counts the hits hidden by location, names any hidden symbol whose
+whole name the query spells out (`Hidden exact match: ColumnWidthCalculator
+(cmp/grid/impl/ColumnWidthCalculator.ts) - internal (impl/) code`), and `includeInternal` shows
+them all. A symbol no package barrel re-exports is listed with its file import (see Import paths
+below) and ranks below barrel-exported matches; an exact name still ranks at or near the top. A
+component, its element factory, and its Props interface fold into one hit (`Select / select ...
+Props: SelectProps`), since Hoist exports them together from one file, and a member hit that
+repeats an earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`) is
+dropped. Output is one line per hit - kind, name, import path, and the first JSDoc sentence cut at
+160 characters - which keeps a default search of 8 symbols and 8 members within the spec ceilings,
+typically 400 to 700 tokens; `detail: "full"` restores complete JSDoc.
 `data/symbol-search.spec.ts` guards ranking with a golden set - see [Testing](#testing).
 
 **Import paths.** The package barrel (`@xh/hoist/cmp/grid`) is the preferred import: apps use
@@ -180,7 +188,8 @@ infer the barrel from `sourcePackage`, so `data/import-paths.ts` computes each e
 barrel `importPath` at index time: the shallowest directory whose `index.ts` re-exports it,
 following any chain of `export * from` and `export {name} from` statements between barrels
 (`cmp/grid/renderers/CheckboxRenderer.ts` resolves to `@xh/hoist/cmp/grid` through
-`cmp/grid/index.ts`; `cmp/grid/columns/Column.ts` through the nested `columns/index.ts`). The
+`cmp/grid/index.ts`; `cmp/grid/columns/Column.ts` resolves to the same barrel through the nested
+`columns/index.ts`). The
 package has no `exports` map, so a deep file import always resolves too. When no barrel reaches
 an exported symbol, its `importPath` is `null` in the index and the tools show the file import
 (`@xh/hoist/data/cube/row/LeafRow`) with `barrelExport: false`. Text output marks that case:
@@ -189,9 +198,10 @@ the symbol. The barrel path is stored on `SymbolEntry`, so the disk cache carrie
 edit invalidates it through the fingerprint; the file path is derived at output time.
 
 **External members via the type checker.** The declaration walkers stop at types outside the
-index, so `ButtonProps extends Omit<BpButtonProps, 'ref'>` lost every Blueprint prop, `onClick`
-included. `hoist-get-members` now also asks the checker for `decl.getType().getProperties()` and
-reports every property the walkers did not reach under `externalMembers`, grouped by declaring
+index, so on their own they miss every Blueprint prop behind
+`ButtonProps extends Omit<BpButtonProps, 'ref'>`, `onClick` included. `hoist-get-members` also
+asks the checker for `decl.getType().getProperties()` and reports every property the walkers did
+not reach under `externalMembers`, grouped by declaring
 type with its npm package (`ActionProps (@blueprintjs/core)`). Types come from the declaration's
 annotation, not the checker, so this stays cheap. React's generic attribute interfaces
 (`HTMLAttributes`, `AriaAttributes`, `DOMAttributes`, ~270 members on every Props interface) are
@@ -211,7 +221,7 @@ produce. See the module header for the full tier ordering.
 
 **Hardcoded doc registry over filesystem scanning.** The doc registry (`data/doc-registry.ts`)
 defines each documentation entry in code rather than discovering files on disk. This was chosen
-because the documentation corpus is bounded and well-known (~40 files), and each entry needs
+because the documentation corpus is bounded and well-known (~60 files), and each entry needs
 curated metadata (title, description, category, search keywords) that cannot be reliably derived
 from filenames alone. The metadata is aligned with the `docs/README.md` index tables. The
 tradeoff is manual maintenance -- see [Maintaining the Developer Tools](#maintaining-the-developer-tools).
@@ -224,10 +234,10 @@ entire binding pattern as a single string (e.g. `"[Button, button]"`). The index
 entries, so both `Button` and `button` are separately searchable and resolvable via exact-name
 lookup.
 
-**Eager async TypeScript initialization.** Parsing hoist-react's ~700 TypeScript files with ts-morph
-is expensive (~2-3s). The MCP server calls `beginInitialization()` after connect so the index builds
-in the background while the client sets up. In both cases, `ensureInitialized()` awaits in-flight
-work if a query arrives before init completes.
+**Eager async TypeScript initialization.** Parsing hoist-react's ~800 TypeScript files with ts-morph
+is expensive (~3s). The MCP server calls `beginInitialization()` after connect so the index builds,
+or loads from the disk cache below, in the background while the client sets up.
+`ensureInitialized()` awaits in-flight work if a query arrives before init completes.
 
 **Disk-persisted index cache.** A serialized snapshot of the symbol and member indexes is written
 to `node_modules/.cache/hoist-mcp/index-v1.json` after each fresh build. Subsequent invocations
@@ -254,7 +264,7 @@ multiple `extends` parents. Both walkers resolve parents through the symbol inde
 system), so they stop at types outside hoist-react's index. Members are deduplicated by name, with
 child declarations winning. Inherited members are tagged with their declaring type in the formatted
 output. The same `_`-prefix and `private` filtering applied by the member search index is also
-applied here, so `getMembers()` and `searchMembers()` show a consistent public API view.
+applied here, so `getMembers()` and symbol search show a consistent public API view.
 
 For class members with no own JSDoc, the walker also looks up the class's `implements` clause and
 inherits the JSDoc -- including `@param` and `@returns` content -- from the first interface (in
@@ -311,7 +321,7 @@ npx hoist-docs read persistence --section "Built-in Model Support > GridModel"
 npx hoist-docs read lifecycle-app
 
 # Shortcuts for common documents
-npx hoist-docs conventions     # AGENTS.md coding conventions
+npx hoist-docs conventions     # docs/coding-conventions.md
 npx hoist-docs index           # docs/README.md documentation catalog
 ```
 
@@ -341,7 +351,7 @@ npx hoist-ts members ButtonProps --filter click     # Finds onClick among Bluepr
 
 Run `npx hoist-ts --help` for full usage.
 
-**Note:** The first `hoist-ts` invocation builds the TypeScript index (~3-4s) and caches it to
+**Note:** The first `hoist-ts` invocation builds the TypeScript index (~3s) and caches it to
 disk; later invocations load the cache in ~20ms and build the in-memory search index in ~100ms.
 
 ## MCP Server Setup
@@ -423,10 +433,10 @@ most 2 results per doc. A default search costs under ~800 tokens. See
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | Yes | Two to four keywords, ideally the names the docs use (e.g. `"grid column renderer"`, `"persistWith"`) |
-| `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `all` (default) |
+| `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `index`, `all` (default) |
 | `limit` | number | No | Max sections, 1-10. Default: 5 |
 
-**Example output** (`limit: 2`):
+**Example output** (`hoist-docs search "grid sorting" --limit 2`):
 ```
 2 sections matched "grid sorting":
 
@@ -438,7 +448,7 @@ most 2 results per doc. A default search costs under ~800 tokens. See
    id: cmp/grid/README.md | section: "Architecture > Key Classes" | L35-52 | ~240 tokens
    - **GridModel** (`GridModel.ts`) - Central orchestrator managing sorting, grouping, ...
 
-Read a result with hoist-read-doc {id, section}, or list a doc's sections with {id, outline: true}.
+Read a result with: hoist-docs read <id> --section "<section>" (or --outline to list sections).
 ```
 
 Structured output: `{query, resultCount, results: [{id, section, breadcrumb, category, startLine,
@@ -450,7 +460,7 @@ List all available documentation with descriptions, grouped by category.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `all` (default) |
+| `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `index`, `all` (default) |
 
 #### `hoist-read-doc`
 
@@ -463,9 +473,9 @@ The tool-based equivalent of the `hoist://docs/{id}` resource, which always retu
 - **`section`** returns that section with its subsections, headed by a one-line
   `[id | breadcrumb | line range | tokens]` label. Accepts a heading (`"GridModel"`), a path
   (`"Built-in Model Support > GridModel"`), or a full breadcrumb with the doc title. Matching
-  ignores case and punctuation and accepts a unique prefix. A heading used more than once needs its
-  parent path; an unknown or ambiguous section returns an error listing candidates and the doc's
-  headings.
+  ignores case and punctuation and accepts a unique prefix or substring. A heading used more than
+  once needs its parent path; an ambiguous section returns an error listing the candidates, and an
+  unknown one lists suggestions and the doc's headings.
 - **`outline: true`** returns headings with line ranges and token counts, and no body. With
   `section`, it outlines just that section's subtree.
 - **Neither** returns the full markdown unchanged. When the doc exceeds ~3k tokens, the text
@@ -495,7 +505,7 @@ barrel when one re-exports the symbol, otherwise the file. Prefer the barrel pat
 CLI twins are `hoist-ts search | symbol | members`, sharing the formatters, so a CLI call returns
 the same content as the tool - only the trailing next-step hint differs in syntax.
 
-**Note:** The TypeScript index is built asynchronously after server startup (~3-4s cold, ~20ms
+**Note:** The TypeScript index is built asynchronously after server startup (~3s cold, ~20ms
 from the disk cache) and the in-memory search index on the first search (~100ms). Subsequent
 calls are fast in-memory lookups.
 
@@ -506,8 +516,8 @@ of every exported class and every `*Config`, `*Spec`, and `*Options` interface (
 interfaces when the query names the owner). Terms are processed as for doc search: camelCase names
 match their parts, multi-word queries rank by how many terms a hit matches, and a hit whose whole
 name the query spells out ranks at or near the top. `impl/`, `admin/`, `inspector/`, and
-`dynamics/` code and non-exported symbols are hidden by default and counted in the footer. See
-[Ranked symbol search](#design-decisions) for how ranking works.
+`dynamics/` code and non-exported symbols are hidden by default; the footer counts the hits
+hidden by location. See [Ranked symbol search](#design-decisions) for how ranking works.
 
 Output is one line per hit: kind, name, import path (the package barrel, or the file tagged `file
 import` when no barrel re-exports the symbol), and the first JSDoc sentence; member hits are
@@ -526,9 +536,9 @@ tokens.
 
 **Example output** (`hoist-ts search headerName --limit 3`):
 ```
-Symbols (3 of 120 matched "headerName"):
+Symbols (3 of 121 matched "headerName"):
 1. [type] ColumnHeaderNameFn (@xh/hoist/cmp/grid) - Function to generate a Column header name.
-2. [interface] ColumnGroupSpec (@xh/hoist/cmp/grid) - Configuration for a ColumnGroup - a hierarchical grouping of columns that renders as a multi-level...
+2. [interface] ColumnGroupSpec (@xh/hoist/cmp/grid) - Configuration for a ColumnGroup - a hierarchical grouping of columns that renders as a multi-level header in the grid.
 3. [class] ColumnGroup (@xh/hoist/cmp/grid) - Cross-platform definition and API for a standardized Grid column group.
 
 Members (3 of 310):
@@ -536,7 +546,8 @@ Members (3 of 310):
 2. ColumnGroupSpec.headerName: ReactNode | ColumnHeaderNameFn - Display text for column group header.
 3. Column.headerName: ColumnHeaderNameFn | ReactNode - User-facing text/element displayed in the Column header, or a function to produce the same. [Column: column configuration for grids]
 
-Next: "hoist-ts symbol <Name>" for signature, docs, import, and a member summary; "hoist-ts members <Name> --filter <text>" for member docs.
+Next: hoist-ts symbol <Name> for signature, docs, and a member summary; hoist-ts members <Name> --filter <text> for member docs.
+Hidden: 53 internal symbols, 93 members (--include-internal shows them).
 ```
 
 Structured output: `{query, detail, symbolCount, symbolTotal, memberCount, memberTotal,
@@ -611,7 +622,7 @@ Configuration object for defining a {@link Column} within a {@link GridModel}.
 ...
 (4 more members not shown)
 
-Full member details: hoist-ts members ColumnSpec [--filter <text>] [--include own|inherited] [--kind property|method|accessor]
+Full member details: hoist-ts members ColumnSpec [--filter <text>] [--include own|inherited] [--kind property|method|accessor].
 ```
 
 Structured output: `{requestedName, symbol (with `instanceOf?`), otherDeclarations, members?:
@@ -632,12 +643,13 @@ checker and grouped by declaring type with its npm package. A `const`, `function
 `enum` name is an error naming the kinds found and pointing to `hoist-get-symbol`.
 
 Listings show full JSDoc by default. Only an unfiltered listing whose full text would exceed
-about 5k tokens (`GridModel` has ~180 members) falls back to one line per member with the first
+about 5k tokens (`GridModel` has over 180 members) falls back to one line per member with the first
 JSDoc sentence, and the output says so and how to narrow it; any filtered listing is full unless
 `detail: "summary"` is passed. Reading tools never trim documentation to save tokens - the tail of
 a JSDoc block is where defaults, prerequisites, and accepted values live. React's generic attribute groups
 (`HTMLAttributes`, `AriaAttributes`, `DOMAttributes`) are counted but listed only when a `filter`
-is passed, so `filter: "click"` finds `onClick` on any Props interface.
+is passed, so `filter: "click"` finds `onClick` on any Props interface. Other external groups list
+up to 40 members and count the rest.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -699,8 +711,8 @@ Resources provide direct read access to documentation files via URI.
 
 | Name | URI | Content |
 |------|-----|---------|
-| `doc-index` | `hoist://docs/index` | `docs/README.md` -- the primary documentation catalog |
-| `conventions` | `hoist://docs/conventions` | `AGENTS.md` -- coding conventions and patterns |
+| `doc-index` | `hoist://docs/docs/README.md` | The primary documentation catalog |
+| `conventions` | `hoist://docs/docs/coding-conventions.md` | Coding conventions and patterns |
 | `hoist-doc` | `hoist://docs/{+docId}` | Any document by ID (e.g. `hoist://docs/cmp/grid`) |
 
 The `hoist-doc` template uses RFC 6570 reserved expansion (`{+docId}`) so slashes in doc IDs
@@ -708,7 +720,8 @@ The `hoist-doc` template uses RFC 6570 reserved expansion (`{+docId}`) so slashe
 
 The resource resolves `docId` through the same tolerant resolver used by `hoist-read-doc` (see
 `data/doc-id-resolver.ts`), so the URI accepts canonical ids (`hoist://docs/cmp/grid/README.md`)
-and the same set of shortenings tolerated by the tool. Notably, because concept-doc IDs are
+and the same set of shortenings tolerated by the tool; `hoist://docs/index` and
+`hoist://docs/conventions` reach the two static docs this way. Notably, because concept-doc IDs are
 themselves `docs/`-prefixed (e.g. `docs/routing.md`) and the scheme prefix is also `hoist://docs/`,
 `hoist://docs/routing.md` and `hoist://docs/docs/routing.md` both resolve to the same entry. For
 a friction-free read by bare ID, prefer the `hoist-read-doc` tool.
@@ -848,7 +861,7 @@ use `npx tsx mcp/data/doc-search.spec.ts`. CI runs `pnpm test:mcp` alongside lin
 | `data/doc-sections.spec.ts` | Section parsing, section-name resolution, and full / section / outline reads |
 | `data/doc-search.spec.ts` | Golden-set retrieval eval: top-3 hit rate (must stay at or above 85%), named experiment queries, and the default-search token budget (under 800) |
 | `data/ts-registry.spec.ts` | TypeScript symbol and member lookup, cross-platform path handling |
-| `data/symbol-search.spec.ts` | Golden-set retrieval eval for symbol search: top-3 hit rate (must stay at or above 85%), multi-word queries that must return their obvious hit, search token ceilings (`MAX_EXPERIMENT_TOKENS` 1000 for the experiment queries, `MAX_SEARCH_TOKENS` 1200 for all), barrel-exported golden symbols returning a barrel import path, a ranking guard that keeps file imports out of the top hits for `PanelModel`, `confirm`, `loading`, and `select input options`, the file import for `LeafRow` (top hit, hit-line tag, `barrelExport: false`, and the marked import line on `hoist-get-symbol` and `hoist-get-members`), the hidden exact match footer for an `impl/` symbol (`ColumnWidthCalculator`), and the tool-level acceptance cases (`ColumnSpec` import path and member summary, `ButtonProps` external `onClick`, the `FieldType` error, `GridModel` filtered by `col` under 1k tokens) |
+| `data/symbol-search.spec.ts` | Golden-set retrieval eval for symbol search: top-3 hit rate (must stay at or above 85%), multi-word queries that must return their obvious hit, search token ceilings (`MAX_EXPERIMENT_TOKENS` 1000 for the experiment queries, `MAX_SEARCH_TOKENS` 1200 for all), barrel-exported golden symbols returning a barrel import path, a ranking guard that keeps file imports out of the top hits for `PanelModel`, `confirm`, `loading`, and `select input options`, the file import for `LeafRow` (top hit, hit-line tag, `barrelExport: false`, and the marked import line on `hoist-get-symbol` and `hoist-get-members`), the hidden exact match footer for an `impl/` symbol (`ColumnWidthCalculator`), the Props-owner, internal-code, no-fuzzy, and component-folding rules, and the tool-level acceptance cases (`ColumnSpec` import path and member summary, `ButtonProps` external `onClick`, the `FieldType` error and dual declarations, `XH` as an instance of `XHApi`, complete JSDoc on `ColumnSpec`, `PanelProps`, and `GridModel` filtered by `col`, the summary fallback for unfiltered `GridModel`, inherited JSDoc on `Column.headerName`, and the `PanelModel.collapsed` default) |
 | `tools/docs.spec.ts` | MCP / CLI parity - calls the doc tools through an in-memory MCP client and compares them with `hoist-docs` output and `--json` |
 | `tools/typescript.spec.ts` | MCP / CLI parity for the three TypeScript tools, including filters, `kind` and `filePath` disambiguation, and error cases. Covers the import line for a barrel symbol, a file-import symbol (`LeafRow`), and a Promise extension, and the hidden exact match query. Runs the CLI in-process via `cli/ts-command.ts` (about 4s) and spawns the real bin once as a smoke check |
 
