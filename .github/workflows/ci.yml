@@ -60,6 +60,11 @@ jobs:
         - name: Type check
           run: pnpm typecheck
 
+        # Files copied from dependencies into the repo (e.g. public/msal-redirect-bridge.min.js)
+        # have no install or build step keeping them current - fail if any drift from the source.
+        - name: Check vendored files
+          run: pnpm check:vendored
+
         # Self-contained spec scripts for the MCP server and CLI tools, including the doc-search
         # golden-set eval. See mcp/README.md.
         - name: MCP tests
