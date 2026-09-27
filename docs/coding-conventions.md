@@ -74,13 +74,13 @@ construction.
 The following config files define mechanically enforced style rules. Do not duplicate these rules
 in code reviews or conventions discussions — the tooling handles them:
 
-- **`.prettierrc.json`** — Formatting: single quotes, 4-space indent (2 for SCSS/JSON), 100-char
+- **`.prettierrc.json`** - Formatting: single quotes, 4-space indent (2 for SCSS/JSON), 100-char
   print width, trailing commas off, arrow parens avoided
-- **`eslint.config.js`** — Linting: `@xh/eslint-config` base rules + TSDoc syntax checking via
+- **`eslint.config.js`** - Linting: `@xh/eslint-config` base rules + TSDoc syntax checking via
   `eslint-plugin-tsdoc` + Prettier integration
 - **`tsconfig.json`** - TypeScript: `noImplicitOverride`,
   `useDefineForClassFields`, `moduleResolution: "bundler"`, ES2022 target
-- **`.stylelintrc.json`** — SCSS linting (if present)
+- **`.stylelintrc.json`** - SCSS linting (if present)
 
 Run `pnpm lint` to check all rules. Run `pnpm lint:code` for JS/TS only or `pnpm lint:styles`
 for SCSS only. Type-checking is a separate gate — run `pnpm typecheck` (`tsc --noEmit`), which
