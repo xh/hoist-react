@@ -43,8 +43,9 @@ export function managed(_value: any, context: FieldOrAccessorOrGetterContext): a
  * This decorator provides the same functionality as {@link HoistBase.markPersist}. See that method
  * for more details.
  *
- * This decorator should always be applied "after" the mobx decorator, i.e. second in file line
- * order: `@bindable @persist accessor fooBarFlag = true`
+ * Write `@persist` after the MobX decorator in source order: `@bindable @persist accessor foo`.
+ * Decorators apply innermost first, so `@persist` only registers an init hook; init hooks then
+ * run outermost first, so MobX makes the field observable before the persist hook reads it.
  *
  * See also `@persist.with`, a higher-order version of this decorator that allows for setting
  * property-specific persistence options.

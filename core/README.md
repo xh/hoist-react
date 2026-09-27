@@ -324,10 +324,10 @@ Services are installed in your `AppModel.initAsync()`:
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Install custom services - multiple calls for ordered initialization
-        await XH.installServicesAsync(TradeService, PortfolioService);
-        await XH.installServicesAsync(ReportService);  // Depends on above
+        await XH.installServicesAsync([TradeService, PortfolioService], ctx);
+        await XH.installServicesAsync([ReportService], ctx);  // Depends on above
     }
 }
 ```
