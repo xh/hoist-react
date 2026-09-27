@@ -14,7 +14,7 @@
 
 ## 88.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟡 MEDIUM - TC39 decorators, ag-Grid 36, removals)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - TC39 decorators, AG Grid 36, removals)
 
 * **Migrated to TC39 Stage 3 (2023-11) decorators**, retiring `experimentalDecorators`. The
   migration drops the `makeObservable(this)` boilerplate and gives Hoist per-property private
@@ -31,7 +31,7 @@
       do not reorder them, so audit every `@persist` in app code by hand.
 * Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
   exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
-  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, etc. Hoist's
+  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, and so on. Hoist's
   `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump to `7.x`.
   Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
 * Upgraded to AG Grid 36.
@@ -63,6 +63,8 @@
       instead.
     * Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})`
       instead as the popover behavior is a built-in mode of `FilterChooser`.
+    * Removed the deprecated `LogSource` type alias. Use `NameSource`, exported from the same
+      `@xh/hoist/utils/js` entry point, instead.
     * Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
       `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use
       the un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on.
@@ -136,7 +138,7 @@
 
 * Fixed `PersistenceProvider` resurrecting cleared state. `clear()` wrote through synchronously
   without canceling any pending debounced write. That stale write then re-persisted state returned
-  to its default within the debounce interval (250ms by default).
+  to its default within the debounce interval.
 * Fixed desktop submenus closing as soon as the pointer left the parent item, which dismissed them
   mid-diagonal. Submenus now linger briefly, aligning with grid context menus, where AG Grid
   already does the same. Tune with `Menu.defaults.submenuHoverCloseDelay`.
@@ -180,8 +182,6 @@
 * `RecordActionLike` is now just `RecordAction | RecordActionSpec`. `RecordAction.items` and
   `RestGridConfig.menuActions`, whose entries may also be a `'-'` separator, heading, or token, now
   use `GridContextMenuItemLike`.
-* Removed the deprecated `LogSource` type alias. Use `NameSource` (exported from the same
-  `@xh/hoist/utils/js` entry point) instead.
 * Added the `ViewRow` interface, documenting the row-level API passed to Cube `Aggregator`
   implementations and to the `lockFn`, `omitFn` and `bucketSpecFn` hooks. These previously typed
   their rows with unexported internal classes. `BucketSpec.bucketFn` now takes a `ViewRow` as
@@ -206,19 +206,17 @@
 * Rebuilt `hoist-search-docs` (and `hoist-docs search`) as ranked, section-level search. Results are
   individual `##` / `###` doc sections ranked by BM25, rather than whole docs matched by keyword
   count. Each hit carries its line range, token count, and a short excerpt. A default search
-  returns 5 sections (at most 2 per doc) in under 800 tokens.
+  returns a short ranked list of sections.
 * Added `section` and `outline` options to `hoist-read-doc` (`--section` / `--outline` for
   `hoist-docs read`). A search hit now costs a few hundred tokens to read instead of the whole doc.
-  Full reads are unchanged, with a one-line size note on docs over ~3k tokens.
-* Added `pnpm test:mcp`, run in CI, covering the MCP specs plus a golden-set eval of doc search
-  ranking and an MCP / CLI output parity check.
+  Full reads are unchanged, with a one-line size note on large docs.
 * Rebuilt `hoist-search-symbols` (`hoist-ts search`) as ranked search over symbols and members.
   Each hit is one line with the public import path. Hits for a multi-word query rank by term
   coverage, and internal or un-importable symbols stay hidden unless `includeInternal` is set.
 * `hoist-get-symbol` now shows an import line and a member summary. `hoist-get-members` gained
   `filter`, `include`, `memberKind`, and `detail`, and lists members inherited from non-Hoist types.
-* Added a symbol-search golden set and MCP / CLI parity specs to `pnpm test:mcp`, which now runs
-  every `mcp/**/*.spec.ts`. See `mcp/README.md` for details.
+* Added `pnpm test:mcp`, run in CI. It runs every `mcp/**/*.spec.ts`: golden-set evals of doc
+  search and symbol search ranking, plus MCP / CLI output parity specs. See `mcp/README.md`.
 
 ### ✨ Styles
 
@@ -237,20 +235,20 @@
   chrome. Hoist applies it to the tooltip content it renders itself, and apps can add it to a custom
   (element) tooltip's own root to match. Line-break handling moved alongside it to a
   `.xh-grid-tooltip--prewrap` modifier.
-    * ⚠️Removed the `.xh-grid-tooltip--default` and `--custom` classes. They carried the styling
+    * ⚠️ Removed the `.xh-grid-tooltip--default` and `--custom` classes. They carried the styling
       that now lives in the utility classes above, and nothing consumed them once it moved out.
       Apps with CSS targeting either should retarget `.xh-grid-tooltip`, still applied to every
       grid tooltip, or the new utility classes.
 * Fixed validation tooltips on an editable column rendering without rounded corners or a max-width
   when that column also defined a custom (element) `tooltip`. Validation messages now always use
   the standard frame, because they supersede the column's own tooltip entirely.
-    * ⚠️`.xh-grid-tooltip--validation` now sits on the tooltip itself rather than the message
+    * ⚠️ `.xh-grid-tooltip--validation` now sits on the tooltip itself rather than the message
       list inside it, making it a true modifier of `.xh-grid-tooltip`. Renamed
       `--validation--single` to `--validation-single` to match. The list carries no class of its
       own.
-* Added four custom properties for the new `MenuHeading` to style headings in grid context menus,
-  desktop menus, and mobile menus. A single override therefore restyles all three. Blueprint's own
-  `.bp6-menu-header` now uses the same properties.
+* Added CSS variables to style the new `MenuHeading` in grid context menus, desktop menus, and
+  mobile menus, so one override restyles all three. Blueprint's own `.bp6-menu-header` uses the
+  same variables.
 * Added `--xh-tab-switcher-vertical-group-*` custom properties to style the new `TabSwitcher`
   group headers (`.xh-tab-switcher__group-header`).
 
@@ -840,10 +838,6 @@ columns.
 * Fixed "not a valid MIME type" console warnings from `FileChooser`. Accepted extensions are now
   passed under a dummy MIME type key, silencing the warnings while continuing to filter selected
   files by extension.
-
-### ⚙️ Technical
-
-* Admin activity tracking now persists its selected time period.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -2309,7 +2303,7 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 ## 72.0.0 - 2025-01-27
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor changes to mobile nav)
+### 💥 Breaking Changes (upgrade difficulty: 🎉 TRIVIAL - minor changes to mobile nav)
 
 * Mobile `Navigator` no longer supports `animation` prop, and `NavigatorModel` no longer supports
   `swipeToGoBack`. Both of these properties are now managed internally by the `Navigator` component.
