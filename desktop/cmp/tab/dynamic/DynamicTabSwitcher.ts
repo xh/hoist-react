@@ -97,6 +97,8 @@ const tabs = hoistCmp.factory<TabsProps>({
                             className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
                             item: div({
                                 className: 'bp6-tab-list',
+                                role: 'tablist',
+                                'aria-orientation': isVertical ? 'vertical' : 'horizontal',
                                 items: [
                                     visibleTabs.map((tab, index) =>
                                         tabCmp({key: tab.id, localModel, tab, index})
@@ -177,9 +179,14 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                 testId: tabTestId,
                 ...provided.draggableProps,
                 ...provided.dragHandleProps,
+                // Focusable drag handle is the tab itself - override dnd's default `button` role.
+                role: 'tab',
+                'aria-selected': isActive,
+                'aria-disabled': disabled,
                 style: getStyles(isVertical, provided.draggableProps.style),
                 items: [
                     div({
+                        // Styling hooks shared with Blueprint tabs - see Tabs.scss.
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
                         className: 'bp6-tab',
