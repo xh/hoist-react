@@ -13,9 +13,9 @@
  * on ties. Internal means internal by location or visibility: by default `impl/`, `admin/`,
  * `inspector/`, and `dynamics/` code and non-exported symbols are hidden and counted;
  * `includeInternal` shows them. A symbol no package barrel re-exports is listed with its file
- * import and ranks below barrel-exported matches; an exact name still ranks first. `*Props`
- * members are indexed but only returned when the query names the owner (`ButtonProps` or
- * `button`), since generic prop names would otherwise flood every query.
+ * import and ranks below barrel-exported matches; an exact name still ranks at or near the
+ * top. `*Props` members are indexed but only returned when the query names the owner
+ * (`ButtonProps` or `button`), since generic prop names would otherwise flood every query.
  */
 import MiniSearch, {type SearchOptions} from 'minisearch';
 
@@ -128,8 +128,8 @@ const KIT_WEIGHT = 0.5;
 /**
  * Multiplier for a symbol no package barrel re-exports, and for a member whose owner no barrel
  * re-exports: a preference for the barrels, which are the curated public surface. Such symbols
- * are still listed with their file import, and an exact name still ranks first. Promise
- * prototype extensions need no import and are exempt.
+ * are still listed with their file import, and an exact name still ranks at or near the top.
+ * Promise prototype extensions need no import and are exempt.
  */
 const FILE_IMPORT_WEIGHT = 0.125;
 

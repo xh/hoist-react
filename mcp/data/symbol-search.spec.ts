@@ -7,8 +7,8 @@
  * query through `searchSymbols` and counts a hit when any of the top 3 symbol hits or top 3
  * member hits is one of the expected targets. Asserts:
  *   - top-3 hit rate at or above {@link MIN_HIT_RATE}
- *   - each multi-word query in the zero-result set returns its obvious hit in the top 3, so
- *     search never again returns nothing for a query whose terms all match one symbol
+ *   - each multi-word query in the zero-result set returns its obvious hit in the top 3: a
+ *     query whose terms all match one symbol returns that symbol
  *   - each barrel-exported symbol returns itself in the top 3 with a barrel import path, so
  *     dropping it from its package barrel fails the run
  *   - a symbol no barrel re-exports (`LeafRow`) is a visible hit with its file import path, and

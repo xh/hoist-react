@@ -165,13 +165,13 @@ hits into a search for "currency". Internal means internal by location or visibi
 footer counts them, names any hidden symbol whose whole name the query spells out (`Hidden exact
 match: ColumnWidthCalculator (cmp/grid/impl/ColumnWidthCalculator.ts) - internal (impl/) code`), and
 `includeInternal` shows them. A symbol no package barrel re-exports is listed with its file import
-(see Import paths below) and ranks below barrel-exported matches; an exact name still ranks first. A
-component, its element factory, and its Props interface fold into one hit (`Select / select ...
-Props: SelectProps`), since Hoist exports them together from one file, and a member hit that repeats
-an earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`) is dropped.
-Output is one line per hit - kind, name, import path, and the first JSDoc sentence cut at 80
-characters (90 for members) - which keeps a default search of 8 symbols and 8 members within the
-spec ceilings, typically 400 to 700 tokens; `detail: "full"` restores complete JSDoc.
+(see Import paths below) and ranks below barrel-exported matches; an exact name still ranks at or
+near the top. A component, its element factory, and its Props interface fold into one hit (`Select /
+select ... Props: SelectProps`), since Hoist exports them together from one file, and a member hit
+that repeats an earlier one's owner, name, and type (the desktop and mobile `SelectProps.options`)
+is dropped. Output is one line per hit - kind, name, import path, and the first JSDoc sentence cut
+at 80 characters (90 for members) - which keeps a default search of 8 symbols and 8 members within
+the spec ceilings, typically 400 to 700 tokens; `detail: "full"` restores complete JSDoc.
 `data/symbol-search.spec.ts` guards ranking with a golden set - see [Testing](#testing).
 
 **Import paths.** The package barrel (`@xh/hoist/cmp/grid`) is the preferred import: apps use
