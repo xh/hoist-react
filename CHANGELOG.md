@@ -210,10 +210,13 @@
   returns a short ranked list of sections.
 * Added `section` and `outline` options to `hoist-read-doc` (`--section` / `--outline` for
   `hoist-docs read`). A search hit now costs a few hundred tokens to read instead of the whole doc.
-  Full reads are unchanged, with a one-line size note on large docs.
-* Rebuilt `hoist-search-symbols` (`hoist-ts search`) as ranked search over symbols and members.
-  Each hit is one line with the public import path. Hits for a multi-word query rank by term
-  coverage, and internal or un-importable symbols stay hidden unless `includeInternal` is set.
+  Full reads are unchanged, with a one-line size note on docs over ~3k tokens.
+* Added `pnpm test:mcp`, run in CI, covering the MCP specs plus a golden-set eval of doc search
+  ranking and an MCP / CLI output parity check.
+* Rebuilt `hoist-search-symbols` (`hoist-ts search`) as ranked search over symbols and members: one
+  line per hit with its import path (the package barrel when one re-exports the symbol, otherwise
+  the file), multi-word queries ranked by term coverage, and `impl/`, `admin/`, `inspector/`,
+  `dynamics/` and non-exported symbols hidden unless `includeInternal` is set.
 * `hoist-get-symbol` now shows an import line and a member summary. `hoist-get-members` gained
   `filter`, `include`, `memberKind`, and `detail`, and lists members inherited from non-Hoist types.
 * Added `pnpm test:mcp`, run in CI. It runs every `mcp/**/*.spec.ts`: golden-set evals of doc
