@@ -236,11 +236,11 @@ produce. See the module header for the full tier ordering.
 
 **Hardcoded doc registry over filesystem scanning.** The doc registry (`docs/doc-registry.json`,
 loaded by `data/doc-registry.ts`) lists each documentation entry by hand rather than discovering
-files on disk. The reasons: the
-documentation corpus is bounded and well-known (~60 files), and each entry needs curated
-metadata. Filenames alone cannot reliably supply that metadata (title, description, category,
-search keywords). The metadata matches the `docs/README.md` index tables. The tradeoff is manual
-maintenance, covered in [Maintaining the Developer Tools](#maintaining-the-developer-tools).
+files on disk. The reasons: the documentation corpus is bounded and well-known (~60 files), and
+each entry needs curated metadata. Filenames alone cannot reliably supply that metadata (title,
+description, category, search keywords). The metadata matches the `docs/README.md` index tables.
+The tradeoff is manual maintenance, covered in
+[Maintaining the Developer Tools](#maintaining-the-developer-tools).
 
 **Destructured export expansion.** Hoist components are exported via array destructuring --
 `export const [Button, button] = hoistCmp.withFactory(...)` -- where the first element is the
