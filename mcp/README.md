@@ -82,6 +82,7 @@ mcp/
 │   └── paths.ts               # Repo root resolution and path traversal safety
 ├── eslint.config.mjs          # ESLint config for mcp/ (run by pnpm lint:mcp)
 ├── package.json               # ES module config (type: "module")
+├── README.md                  # This document
 └── tsconfig.json              # TypeScript config (target: ES2022, module: Node16)
 ```
 
@@ -233,8 +234,9 @@ candidates rather than guessing. Each registry entry may declare optional
 `aliases` in `doc-registry.json` for semantic synonyms that auto-rules wouldn't
 produce. See the module header for the full tier ordering.
 
-**Hardcoded doc registry over filesystem scanning.** The doc registry (`data/doc-registry.ts`)
-defines each documentation entry in code rather than discovering files on disk. The reasons: the
+**Hardcoded doc registry over filesystem scanning.** The doc registry (`docs/doc-registry.json`,
+loaded by `data/doc-registry.ts`) lists each documentation entry by hand rather than discovering
+files on disk. The reasons: the
 documentation corpus is bounded and well-known (~60 files), and each entry needs curated
 metadata. Filenames alone cannot reliably supply that metadata (title, description, category,
 search keywords). The metadata matches the `docs/README.md` index tables. The tradeoff is manual
@@ -572,7 +574,7 @@ Members (3 of 310):
 3. Column.headerName: ColumnHeaderNameFn | ReactNode - User-facing text/element displayed in the Column header, or a function to produce the same. [Column: column configuration for grids]
 
 Next: hoist-ts symbol <Name> for signature, docs, and a member summary; hoist-ts members <Name> --filter <text> for member docs.
-Hidden: 53 internal symbols, 93 members (--include-internal shows them).
+Hidden: 53 internal symbols, 91 members (--include-internal shows them).
 ```
 
 Structured output: `{query, detail, symbolCount, symbolTotal, memberCount, memberTotal,

@@ -487,7 +487,12 @@ export const searchSymbolsOutputSchema = z.object({
         .describe(
             'Matching internal symbols (impl/, admin/, inspector/, dynamics/ code) left out because includeInternal was not set.'
         ),
-    hiddenMembers: z.number().int(),
+    hiddenMembers: z
+        .number()
+        .int()
+        .describe(
+            'Matching members of internal owners (impl/, admin/, inspector/, dynamics/ code) left out because includeInternal was not set.'
+        ),
     hiddenExact: z
         .array(
             z.object({

@@ -661,7 +661,7 @@ function buildSymbolIndex(proj: Project): {
     // Populate `memberNames` on symbol entries for every member-indexed owner except
     // `*Props` (classes and `*Config`, `*Spec`, and `*Options` interfaces). Excludes
     // inherited HoistBase/HoistModel members so that queries like "StoreRecord raw"
-    // surface StoreRecord, but generic terms like "destroy" or "addReaction" don't match
+    // surface StoreRecord, but generic terms like "destroy" or "addReaction" do not match
     // every class. HoistBase and HoistModel each exist in exactly one file so a name-based
     // lookup is sufficient for computing `baseMemberNames`.
     const collectByName = (n: string): string[] => {
