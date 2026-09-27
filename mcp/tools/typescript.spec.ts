@@ -100,6 +100,9 @@ for (const query of [
     'headerName',
     'PanelModel persistWith collapsed',
     'toolbar onClick button',
+    // An impl/ symbol named exactly, for the hidden exact match footer.
+    'ColumnWidthCalculator',
+    // A symbol no package barrel re-exports, for the file import on hit lines.
     'LeafRow'
 ]) {
     const mcp = await tool('hoist-search-symbols', {query}),
@@ -155,6 +158,7 @@ console.log('hoist-get-symbol vs hoist-ts symbol:');
 for (const [name, extra, cliExtra] of [
     ['ColumnSpec', {}, []],
     ['GridModel', {}, []],
+    ['LeafRow', {}, []],
     ['FieldType', {}, []],
     ['FieldType', {kind: 'const'}, ['--kind', 'const']],
     ['panel', {}, []],
@@ -212,7 +216,8 @@ for (const [name, extra, cliExtra] of [
         {include: 'inherited', detail: 'summary'},
         ['--include', 'inherited', '--detail', 'summary']
     ],
-    ['Column', {filter: 'headerName'}, ['--filter', 'headerName']]
+    ['Column', {filter: 'headerName'}, ['--filter', 'headerName']],
+    ['LeafRow', {filter: 'cube'}, ['--filter', 'cube']]
 ] as Array<[string, Record<string, unknown>, string[]]>) {
     const label = `${name}${cliExtra.length ? ' ' + cliExtra.join(' ') : ''}`,
         mcp = await tool('hoist-get-members', {name, ...extra});

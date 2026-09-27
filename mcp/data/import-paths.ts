@@ -1,17 +1,20 @@
 /**
- * Public import path resolution for indexed symbols.
+ * Import path resolution for indexed symbols.
  *
- * Apps import Hoist symbols from package barrels (`@xh/hoist/cmp/grid`), not from the declaring
- * file. A symbol's public import path is `@xh/hoist/` plus the shallowest directory whose
- * `index.ts` re-exports it, walking from the declaring file upward and following any chain of
- * `export * from` / `export {name} from` statements between barrels. Symbols no barrel reaches
- * (impl helpers, admin internals, non-exported declarations) have no public import path.
+ * The package barrel (`@xh/hoist/cmp/grid`) is the preferred import: apps use barrels far more
+ * than deep imports, and barrels are the curated API surface. The resolver finds it when one
+ * exists: `@xh/hoist/` plus the shallowest directory whose `index.ts` re-exports the symbol,
+ * walking from the declaring file upward and following any chain of `export * from` /
+ * `export {name} from` statements between barrels. When no barrel reaches an exported symbol,
+ * the file itself still imports - the package has no `exports` map - and the tools show
+ * {@link fileImportPath} instead.
  *
- * Computed once per index build and stored on each `SymbolEntry`, so the disk cache carries it.
+ * The barrel path is computed once per index build and stored on each `SymbolEntry`, so the
+ * disk cache carries it. The file path is derived at output time.
  */
 import type {Project, SourceFile} from 'ts-morph';
 
-/** Resolve the public import path of `name` declared in `filePath` (POSIX, absolute). */
+/** Resolve the barrel import path of `name` declared in `filePath` (POSIX, absolute). */
 export type ImportPathResolver = (filePath: string, name: string) => string | null;
 
 /** Names an `export ... from` statement re-exports from its target: every export, or a set. */
@@ -119,4 +122,13 @@ export function createImportPathResolver(project: Project, repoRoot: string): Im
         }
         return null;
     };
+}
+
+/**
+ * Import path of a declaring file (`@xh/hoist/data/cube/row/LeafRow`): `@xh/hoist/` plus the
+ * repo-relative file path without its extension. The import to show when no barrel re-exports
+ * a symbol - the package has no `exports` map, so a deep import always resolves.
+ */
+export function fileImportPath(relPath: string): string {
+    return `@xh/hoist/${relPath.replace(/\.tsx?$/, '')}`;
 }

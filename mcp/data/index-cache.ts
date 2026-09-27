@@ -81,8 +81,8 @@ function cachePath(repoRoot: string): string {
  * package version changes. Mirrors the file-set filter applied in
  * `buildSymbolIndex` so the fingerprint and the indexed file set stay in sync.
  *
- * Walks the repo tree once. ~290 files in hoist-react; one stat per file.
- * Sub-100ms on a fast disk.
+ * Walks the repo tree once, one stat per `.ts`/`.tsx` file outside the excluded
+ * directories. Sub-100ms on a fast disk.
  */
 export function computeFingerprint(repoRoot: string): string {
     const entries: string[] = [];

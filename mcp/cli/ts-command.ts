@@ -103,7 +103,7 @@ Examples:
     program
         .command('search')
         .description(
-            'Ranked search over symbols (classes, interfaces, types, functions, component factories) and the members of exported classes and *Config / *Spec interfaces. One line per hit with kind, name, public import path, and first JSDoc sentence. One strong keyword works best; camelCase names match their parts.'
+            'Ranked search over symbols (classes, interfaces, types, functions, component factories) and the members of exported classes and *Config / *Spec interfaces. One line per hit with kind, name, import path (the package barrel when one re-exports the symbol, otherwise the file), and first JSDoc sentence. One strong keyword works best; camelCase names match their parts.'
         )
         .argument(
             '<query>',
@@ -179,7 +179,7 @@ Examples:
     program
         .command('symbol')
         .description(
-            'Describe a symbol by exact name: public import line, signature, JSDoc, inheritance, decorators, source location, and for classes and interfaces a compact member summary.'
+            'Describe a symbol by exact name: import line, signature, JSDoc, inheritance, decorators, source location, and for classes and interfaces a compact member summary.'
         )
         .argument('<name>', 'Exact symbol name (e.g. "GridModel", "ColumnSpec")')
         .option(

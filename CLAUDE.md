@@ -54,10 +54,11 @@ npx hoist-ts members GridModel --filter col  # Members whose name contains "col"
 (`GridModel`, `persistWith`, `headerName`); camelCase names match their parts. Multi-word
 queries rank hits by how many terms they match, so extra words narrow rather than exclude
 (`"StoreRecord raw"` finds `StoreRecord.raw`, `"panel modal"` finds `ModalSupportModel`). Every
-hit carries its public import path - import from that, not from the source file. Members of
-every exported class and every `*Config`, `*Spec`, and `*Options` interface are searched too, so
-`"groupSortFn"` reaches both `GridModel` and `GridConfig`; `*Props` members appear when the query
-names the component. `impl/` and `admin/` code is excluded unless you pass `--include-internal`.
+hit carries its import path: the package barrel when one exists, otherwise the file. Prefer the
+barrel path when shown. Members of every exported class and every `*Config`, `*Spec`, and
+`*Options` interface are searched too, so `"groupSortFn"` reaches both `GridModel` and
+`GridConfig`; `*Props` members appear when the query names the component. `impl/` and `admin/`
+code is excluded unless you pass `--include-internal`.
 Use `symbol` when you know the exact name - for classes and interfaces it includes a member
 summary, usually enough to write the code - and `members` with `--filter` for member docs. When
 multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),

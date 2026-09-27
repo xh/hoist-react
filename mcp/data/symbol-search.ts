@@ -8,13 +8,14 @@
  * the ranking helpers are shared with doc search - see `search-text.ts`.
  *
  * Ranking: OR combination scaled by the share of query terms matched, a bonus for a symbol or
- * member whose whole name the query spells out, a penalty for symbols no package barrel
- * re-exports (internal API) and for `kit/` re-exports of third-party components, and shorter
- * names first on ties. By default `impl/`, `admin/`, `inspector/`, and `dynamics/` code,
- * non-exported symbols, and symbols no package barrel re-exports are hidden and counted;
- * `includeInternal` shows them. `*Props` members are indexed but only returned when the query
- * names the owner (`ButtonProps` or `button`), since generic prop names would otherwise flood
- * every query.
+ * member whose whole name the query spells out, a preference for symbols the package barrels
+ * re-export, a penalty for `kit/` re-exports of third-party components, and shorter names first
+ * on ties. Internal means internal by location or visibility: by default `impl/`, `admin/`,
+ * `inspector/`, and `dynamics/` code and non-exported symbols are hidden and counted;
+ * `includeInternal` shows them. A symbol no package barrel re-exports is listed with its file
+ * import and ranks below barrel-exported matches; an exact name still ranks at or near the
+ * top. `*Props` members are indexed but only returned when the query names the owner
+ * (`ButtonProps` or `button`), since generic prop names would otherwise flood every query.
  */
 import MiniSearch, {type SearchOptions} from 'minisearch';
 
@@ -47,10 +48,7 @@ export interface SymbolSearchOptions {
     kind?: SymbolKind;
     /** Exported symbols only. Default: true, or false when `includeInternal` is set. */
     exported?: boolean;
-    /**
-     * Include `impl/`, `admin/`, `inspector/`, `dynamics/` code, non-exported symbols, and
-     * symbols no package barrel re-exports.
-     */
+    /** Include `impl/`, `admin/`, `inspector/`, `dynamics/` code and non-exported symbols. */
     includeInternal?: boolean;
     /** Maximum symbol results and maximum member results. Clamped to 1-{@link MAX_SEARCH_LIMIT}. */
     limit?: number;
@@ -77,7 +75,7 @@ export interface MemberHit {
     entry: MemberIndexEntry;
     score: number;
     summary: string;
-    /** Public import path of the owner, or null. */
+    /** Barrel import path of the owner, or null when no package barrel re-exports it. */
     importPath: string | null;
 }
 
@@ -90,10 +88,11 @@ export interface SymbolSearchResults {
     memberTotal: number;
     /** Matching internal symbols left out because `includeInternal` was not set. */
     hiddenSymbols: number;
+    /** Matching members of internal owners left out for the same reason. */
     hiddenMembers: number;
     /**
-     * Hidden symbols whose whole name the query spells out (`LeafRow`), so an agent that
-     * typed the exact name of an un-importable symbol is told where it is, not just counted.
+     * Hidden symbols whose whole name the query spells out (`ColumnWidthCalculator`), so an
+     * agent that typed the exact name of an internal symbol is told where it is, not just counted.
      */
     hiddenExact: SymbolEntry[];
 }
@@ -124,11 +123,16 @@ const EXACT_NAME_BOOST = 2.5;
 /** Extra multiplier for a member hit whose owner the query also names (`StoreRecord raw`). */
 const OWNER_NAMED_BOOST = 1.3;
 
-/** Multiplier for symbols no barrel re-exports - reachable, but not the public API. */
-const INTERNAL_WEIGHT = 0.5;
-
 /** Multiplier for `kit/` re-exports of third-party components (Blueprint, Onsen), which are not Hoist APIs. */
 const KIT_WEIGHT = 0.5;
+
+/**
+ * Multiplier for a symbol no package barrel re-exports, and for a member whose owner no barrel
+ * re-exports: a preference for the barrels, which are the curated public surface. Such symbols
+ * are still listed with their file import, and an exact name still ranks at or near the top.
+ * Promise prototype extensions need no import and are exempt.
+ */
+const FILE_IMPORT_WEIGHT = 0.125;
 
 /** Multiplier for a member whose JSDoc is inherited, so the documenting declaration ranks first. */
 const INHERITED_DOC_WEIGHT = 0.98;
@@ -199,18 +203,18 @@ export async function searchSymbols(
     ).map(({hit, score}) => {
         const entry = idx.symbolEntries[hit.id],
             exact = named.has(entry.name.toLowerCase()),
-            weight = symbolWeight(entry.importPath);
+            weight = symbolWeight(entry.importPath, isPromiseExtension(entry));
         return {entry, score: exact ? hit.score * EXACT_NAME_BOOST * weight : score * weight};
     });
     const symbolHits = includeInternal
             ? allSymbolHits
-            : allSymbolHits.filter(h => !isInternalSymbol(h.entry, idx.root)),
+            : allSymbolHits.filter(h => !isInternalPath(h.entry.filePath, idx.root)),
         hiddenExact = includeInternal
             ? []
             : allSymbolHits
                   .filter(
                       h =>
-                          isInternalSymbol(h.entry, idx.root) &&
+                          isInternalPath(h.entry.filePath, idx.root) &&
                           named.has(h.entry.name.toLowerCase())
                   )
                   .map(h => h.entry);
@@ -233,16 +237,19 @@ export async function searchSymbols(
         const entry = idx.memberEntries[hit.id],
             importPath = idx.ownerImportPaths.get(ownerKey(entry)) ?? null,
             exact = named.has(entry.name.toLowerCase());
-        let s = (exact ? hit.score * EXACT_NAME_BOOST : score) * symbolWeight(importPath);
+        let s =
+            (exact ? hit.score * EXACT_NAME_BOOST : score) *
+            symbolWeight(importPath, entry.ownerName === 'Promise');
         if (exact && named.has(entry.ownerName.toLowerCase())) s *= OWNER_NAMED_BOOST;
         if (entry.jsDocInheritedFrom) s *= INHERITED_DOC_WEIGHT;
         return {entry, score: s, importPath};
     });
-    const memberHits = dedupeMemberHits(
-        includeInternal
+    // The hidden count covers only hits left out by location, so it is taken before duplicates
+    // are dropped.
+    const visibleMemberHits = includeInternal
             ? allMemberHits
-            : allMemberHits.filter(h => !isInternalMember(h.entry, h.importPath, idx.root))
-    );
+            : allMemberHits.filter(h => !isInternalPath(h.entry.filePath, idx.root)),
+        memberHits = dedupeMemberHits(visibleMemberHits);
     // Ties (`GridConfig.sortBy` and `ZoneGridConfig.sortBy` share docs) go to the shorter owner
     // name, which tends to be the more general type.
     memberHits.sort(
@@ -271,7 +278,7 @@ export async function searchSymbols(
         symbolTotal: symbolResults.length,
         memberTotal: memberHits.length,
         hiddenSymbols: allSymbolHits.length - symbolHits.length,
-        hiddenMembers: allMemberHits.length - memberHits.length,
+        hiddenMembers: allMemberHits.length - visibleMemberHits.length,
         hiddenExact
     };
 }
@@ -288,25 +295,6 @@ function dedupeMemberHits<T extends {entry: MemberIndexEntry}>(hits: T[]): T[] {
         seen.add(key);
         return true;
     });
-}
-
-/** Internal unless `includeInternal`: an internal path, or nothing an app can import. */
-function isInternalSymbol(entry: SymbolEntry, root: string): boolean {
-    return (
-        isInternalPath(entry.filePath, root) ||
-        (entry.importPath == null && !isPromiseExtension(entry))
-    );
-}
-
-/** As {@link isInternalSymbol}, for a member via its owner's import path. `Promise` members need no import. */
-function isInternalMember(
-    m: MemberIndexEntry,
-    ownerImportPath: string | null,
-    root: string
-): boolean {
-    return (
-        isInternalPath(m.filePath, root) || (ownerImportPath == null && m.ownerName !== 'Promise')
-    );
 }
 
 /**
@@ -362,17 +350,32 @@ function mergeComponentHits(
     return merged;
 }
 
-/** Ranking weight from a symbol's public import path: internal and kit re-exports rank below Hoist's own API. */
-function symbolWeight(importPath: string | null): number {
-    if (!importPath) return INTERNAL_WEIGHT;
+/**
+ * Ranking weight from a symbol's barrel import path: file imports and kit re-exports rank below
+ * Hoist's barrel-exported API. `noImport` exempts Promise prototype extensions.
+ */
+function symbolWeight(importPath: string | null, noImport: boolean): number {
+    if (!importPath) return noImport ? 1 : FILE_IMPORT_WEIGHT;
     return importPath.startsWith('@xh/hoist/kit/') ? KIT_WEIGHT : 1;
 }
 
 /** True for paths under `impl/` at any depth, or under a top-level internal package. */
 export function isInternalPath(filePath: string, root: string = resolveRepoRootPosix()): boolean {
+    return internalDir(filePath, root) != null;
+}
+
+/**
+ * The directory that makes a path internal - a top-level internal package (`admin`) or the
+ * `impl` segment - or null for a path that is not internal.
+ */
+export function internalDir(
+    filePath: string,
+    root: string = resolveRepoRootPosix()
+): string | null {
     const rel = filePath.startsWith(root + '/') ? filePath.slice(root.length + 1) : filePath,
         dirs = rel.split('/').slice(0, -1);
-    return INTERNAL_TOP_DIRS.has(dirs[0]) || dirs.includes(INTERNAL_SEGMENT);
+    if (INTERNAL_TOP_DIRS.has(dirs[0])) return dirs[0];
+    return dirs.includes(INTERNAL_SEGMENT) ? INTERNAL_SEGMENT : null;
 }
 
 //------------------------------------------------------------------
