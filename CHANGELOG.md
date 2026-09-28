@@ -75,6 +75,11 @@
 
 ### 🎁 New Features
 
+* `ViewManagerModel.manageGlobal` now defaults to the server's answer on whether the user may
+  manage global views, set by the `xhJsonBlobConfig.globalWriteRoles` soft config in hoist-core
+  v42+. Once on v42+, apps should stop setting `manageGlobal` and configure the role on the server
+  only. An explicit `true` no longer grants access beyond the server's, and `false` remains
+  available to hide global view management on a model that shares its `type` with another.
 * Added a `CodeInput.extensions` prop to install additional CodeMirror extensions alongside Hoist's
   own - for example `autocompletion()` from `@codemirror/autocomplete`, `closeBrackets()`, or a
   custom keymap. `CodeInput` appends app extensions after Hoist's own, so Hoist wins on conflicts
