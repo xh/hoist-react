@@ -7,8 +7,11 @@
 import ReactGridLayout, {
     type LayoutItem,
     type GridLayoutProps,
+    bottom,
+    cloneLayout,
     getCompactor
 } from 'react-grid-layout';
+import {correctBounds} from 'react-grid-layout/core';
 import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
 import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
@@ -25,7 +28,7 @@ import '@xh/hoist/desktop/register';
 import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
@@ -66,9 +69,10 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
             // widgets render once at their final size. RGL's `useContainerWidth()` renders first
             // with a placeholder width, then relays out (and animates) every widget to the actual
             // width - costly churn while a dashboard is loading.
-            [width, setWidth] = useState<number>(null),
-            resizeRef = useOnResize(rect => setWidth(Math.round(rect.width))),
+            [width, widthRef] = useContentWidth(),
             initialWidthMeasured = width != null,
+            // Make RGL's rendered height available to the grid background.
+            rglHeightRef = useOnResize(rect => (model.rglHeight = rect.height), {debounce: 100}),
             defaultDroppedItemDims = {
                 w: Math.floor(model.columns / 3),
                 h: Math.floor(model.columns / 3)
@@ -79,7 +83,55 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 ? rglOptions.compactor
                 : model.compact === 'wrap'
                   ? wrapCompactor
-                  : getCompactor(model.compact, false, false);
+                  : getCompactor(model.compact, false, false),
+            rglProps: GridLayoutProps = {
+                ...mergeDeep(
+                    {
+                        gridConfig: {
+                            cols: model.columns,
+                            rowHeight: model.rowHeight,
+                            margin: model.margin,
+                            maxRows: model.maxRows,
+                            containerPadding: model.containerPadding
+                        },
+                        dragConfig: {
+                            enabled: isDraggable,
+                            handle: '.xh-dash-tab.xh-panel > .xh-panel__inner > .xh-panel-header',
+                            cancel: '.xh-button',
+                            bounded: true
+                        },
+                        resizeConfig: {
+                            enabled: isResizable
+                        },
+                        dropConfig: {
+                            enabled: model.contentLocked ? false : model.allowsDrop,
+                            defaultItem: defaultDroppedItemDims,
+                            onDragOver: (evt: DragEvent) => model.onDropDragOver(evt)
+                        },
+                        onDrop: (layout: LayoutItem[], layoutItem: LayoutItem, evt: Event) =>
+                            model.onDrop(layout, layoutItem, evt),
+                        compactor,
+                        onLayoutChange: (layout: LayoutItem[]) => model.onRglLayoutChange(layout),
+                        onResizeStart: () => (model.isResizing = true),
+                        onResizeStop: () => (model.isResizing = false)
+                    },
+                    rglOptions
+                ),
+                innerRef: useComposedRefs(rglOptions?.innerRef, rglHeightRef),
+                layout: model.rglLayout,
+                children: model.viewModels.map(vm =>
+                    div({
+                        key: vm.id,
+                        item: dashCanvasView({model: vm})
+                    })
+                ),
+                width
+            },
+            // Grid height predicted from layout, needed only until RGL reports its actual height.
+            expectedHeight =
+                initialWidthMeasured && model.rglHeight != null
+                    ? null
+                    : expectedGridHeight(rglProps);
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -89,67 +141,25 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                ref: useComposedRefs(ref, model.ref, resizeRef),
+                ref: useComposedRefs(ref, model.ref, widthRef),
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
                     // Until width is measured, reserve the grid's expected height so that any
                     // vertical scrollbar is already present when we measure - otherwise its later
                     // appearance narrows the canvas and triggers a second relayout of all widgets.
-                    div({omit: initialWidthMeasured, style: {height: expectedGridHeight(model)}}),
+                    div({omit: initialWidthMeasured, style: {height: expectedHeight}}),
                     gridBackgroundCells({
                         omit:
                             !model.showGridBackground ||
                             !initialWidthMeasured ||
                             (model.isEmpty && !model.draggedInView),
-                        width
+                        width,
+                        // Until RGL is measured, size to the expected height - the background's own
+                        // default of 10 rows could overflow a short canvas and add a scrollbar.
+                        height: model.rglHeight ?? expectedHeight,
+                        gridConfig: rglProps.gridConfig
                     }),
-                    reactGridLayout({
-                        ...mergeDeep(
-                            {
-                                gridConfig: {
-                                    cols: model.columns,
-                                    rowHeight: model.rowHeight,
-                                    margin: model.margin,
-                                    maxRows: model.maxRows,
-                                    containerPadding: model.containerPadding
-                                },
-                                dragConfig: {
-                                    enabled: isDraggable,
-                                    handle: '.xh-dash-tab.xh-panel > .xh-panel__inner > .xh-panel-header',
-                                    cancel: '.xh-button',
-                                    bounded: true
-                                },
-                                resizeConfig: {
-                                    enabled: isResizable
-                                },
-                                dropConfig: {
-                                    enabled: model.contentLocked ? false : model.allowsDrop,
-                                    defaultItem: defaultDroppedItemDims,
-                                    onDragOver: (evt: DragEvent) => model.onDropDragOver(evt)
-                                },
-                                onDrop: (
-                                    layout: LayoutItem[],
-                                    layoutItem: LayoutItem,
-                                    evt: Event
-                                ) => model.onDrop(layout, layoutItem, evt),
-                                compactor,
-                                onLayoutChange: (layout: LayoutItem[]) =>
-                                    model.onRglLayoutChange(layout),
-                                onResizeStart: () => (model.isResizing = true),
-                                onResizeStop: () => (model.isResizing = false)
-                            },
-                            rglOptions
-                        ),
-                        omit: !initialWidthMeasured,
-                        layout: model.rglLayout,
-                        children: model.viewModels.map(vm =>
-                            div({
-                                key: vm.id,
-                                item: dashCanvasView({model: vm})
-                            })
-                        ),
-                        width
-                    }),
+                    reactGridLayout({...rglProps, omit: !initialWidthMeasured}),
                     emptyContainerOverlay({
                         omit: !initialWidthMeasured || !model.showAddViewButtonWhenEmpty
                     })
@@ -163,17 +173,21 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
 const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
     displayName: 'DashCanvasGridBackgroundCells',
     model: uses(DashCanvasModel),
-    render({model, width}) {
+    render({width, height, gridConfig}) {
+        const {cols, rowHeight, margin, containerPadding} = gridConfig;
         return gridBackground({
             className: 'xh-dash-canvas__grid-background',
             width,
-            height: model.rglHeight,
-            cols: model.columns,
-            rowHeight: model.rowHeight,
-            margin: model.margin,
+            height,
+            cols,
+            rowHeight,
+            margin,
+            containerPadding,
             rows: 'auto',
             color: 'var(--xh-dash-canvas-grid-cell-color)',
-            borderRadius: 0
+            borderRadius: 0,
+            // Clip to the grid - `rows: 'auto'` rounds up, and a partial extra row would overflow.
+            style: {height}
         });
     }
 });
@@ -219,11 +233,41 @@ const onContextMenu = (e, model) => {
     }
 };
 
-/** Height RGL will render for the current layout - mirrors its internal calculation. */
-function expectedGridHeight(model: DashCanvasModel): number {
-    const {rows, rowHeight, margin, containerPadding} = model,
+/**
+ * Track the content width of the canvas - measured on attach (before first paint, and even in a
+ * hidden browser tab, where ResizeObserver callbacks are deferred), then on every resize. Zero
+ * widths (e.g. while hidden) are skipped, but unlike `useOnResize()` a zero height is not - an
+ * empty canvas in an unsized parent must still measure.
+ */
+function useContentWidth(): [number, (node: HTMLElement) => () => void] {
+    const [width, setWidth] = useState<number>(null),
+        ref = useCallback((node: HTMLElement) => {
+            if (!node) return;
+            const measure = () => {
+                const {paddingLeft, paddingRight} = window.getComputedStyle(node),
+                    newWidth =
+                        node.clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight);
+                if (newWidth > 0) setWidth(newWidth);
+            };
+            measure();
+            const observer = new ResizeObserver(measure);
+            observer.observe(node);
+            return () => observer.disconnect();
+        }, []);
+    return [width, ref];
+}
+
+/**
+ * Height RGL will render for the given props - mirrors its internal calculation, including the
+ * bounds correction and compaction it applies to the layout on first render.
+ */
+function expectedGridHeight({layout, compactor, gridConfig}: GridLayoutProps): number {
+    const {cols, rowHeight, margin, containerPadding} = gridConfig,
+        // Clone first - `correctBounds()` mutates the layout it is given.
+        rows = bottom(compactor.compact(correctBounds(cloneLayout(layout), {cols}), cols)),
+        // An explicit null `containerPadding` skips the model's default - RGL then uses margin.
         padY = (containerPadding ?? margin)[1];
-    return rows ? rows * rowHeight + (rows - 1) * margin[1] + 2 * padY : 0;
+    return Math.max(0, rows * rowHeight + (rows - 1) * margin[1] + 2 * padY);
 }
 
 const reactGridLayout = elementFactory<GridLayoutProps>(ReactGridLayout);
