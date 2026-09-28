@@ -184,6 +184,7 @@ const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
             cols: model.columns,
             rowHeight: model.rowHeight,
             margin: model.margin,
+            containerPadding: model.containerPadding,
             rows: 'auto',
             color: 'var(--xh-dash-canvas-grid-cell-color)',
             borderRadius: 0,
