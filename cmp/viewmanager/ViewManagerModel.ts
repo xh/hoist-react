@@ -20,7 +20,14 @@ import {
 import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, bindable, runInAction, observableRef, compareStructural} from '@xh/hoist/mobx';
+import {
+    action,
+    bindable,
+    observable,
+    runInAction,
+    observableRef,
+    compareStructural
+} from '@xh/hoist/mobx';
 import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
@@ -131,8 +138,10 @@ export interface ViewManagerConfig {
     instance?: string;
 
     /**
-     * True to allow the user to creat and manage Global views. Apps are expected to commonly set
-     * this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
+     * False to prevent the user from creating and managing global views, even if permitted by
+     * the server. Defaults to the server's determination, per the roles configured in the
+     * `xhJsonBlobConfig.globalWriteRoles` soft config (hoist-core v42+). Apps on earlier versions
+     * of hoist-core must set this explicitly - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
      */
     manageGlobal?: Thunkable<boolean>;
 
@@ -214,8 +223,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
     readonly preserveUnsavedChanges: boolean;
-    readonly manageGlobal: boolean;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
+    private readonly manageGlobalConfig: boolean;
+
+    /** Server-reported ability to manage global views. Null until loaded, or on hoist-core before v42. */
+    @observable private accessor canWriteGlobal: boolean = null;
 
     /** Current view. Will not include uncommitted changes */
     @observableRef accessor view: View<T> = null;
@@ -265,6 +277,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //---------------
     get isValueDirty(): boolean {
         return !!this.pendingValue;
+    }
+
+    /** True if the current user may create and manage global views. */
+    get manageGlobal(): boolean {
+        const {canWriteGlobal, manageGlobalConfig} = this;
+        return isNil(canWriteGlobal)
+            ? (manageGlobalConfig ?? false)
+            : canWriteGlobal && manageGlobalConfig !== false;
     }
 
     get isViewSavable(): boolean {
@@ -324,7 +344,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         defaultDisplayName = 'default',
         globalDisplayName = 'global',
         viewMenuItemFn,
-        manageGlobal = false,
+        manageGlobal = null,
         enableAutoSave = true,
         enableDefault = true,
         enableGlobal = true,
@@ -347,7 +367,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.defaultDisplayName = defaultDisplayName;
         this.globalDisplayName = globalDisplayName;
         this.viewMenuItemFn = viewMenuItemFn;
-        this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
+        this.manageGlobalConfig = executeIfFunction(manageGlobal);
         this.enableDefault = enableDefault;
         this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
@@ -371,12 +391,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .span('refresh')
             .run(async ctx => {
                 // 1) Update views and related state
-                const {views, state} = await dataAccess.fetchDataAsync(ctx);
+                const {views, state, canWriteGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
                     this.userPinned = state.userPinned;
                     this.autoSave = state.autoSave;
+                    this.canWriteGlobal = canWriteGlobal ?? null;
                 });
 
                 // potentially fast-forward current view.
