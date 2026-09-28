@@ -61,7 +61,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 88.0 | -- | | 41.0 | TC39 decorators (client-only) - requires hoist-dev-utils 16 | |
+| 88.0 | -- | 42.0 | 42.0 | `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
 | 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | [Notes](./upgrade-notes/v87-upgrade-notes.md) |
 | 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | [Notes](./upgrade-notes/v86-upgrade-notes.md) |
 | 85.0 | -- | 39.0 | 39.0 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
@@ -120,6 +120,7 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 42.0 | 88.0 recommended | `JsonBlobService` limits global blob writes to `xhJsonBlobConfig.globalWriteRoles` and reports `manageGlobal` on `xhView/allData`, consumed by v88's `ViewManagerModel`. Older hoist-react keeps its client-side `manageGlobal`, which the server now also enforces. No hard hoist-react bump. |
 | 41.0 | 87.0 recommended | Tabbed/typed config editor, directory group names + search endpoints - consumed by v87's Admin Console, which degrades gracefully without them. No hard hoist-react bump. |
 | 40.5 | 87.0 recommended | `ViewManager` group rename + bulk-editing endpoints consumed by v87 (which requires 40.5 as its floor). No hard hoist-react bump from 40.0. |
 | 40.0 | 86.0 recommended | Client metrics `/xh/recordMetrics` endpoint (added in 40.0.1). No hard hoist-react bump; needed only by apps recording client metrics. |

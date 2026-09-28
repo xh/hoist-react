@@ -12,9 +12,17 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 88.0.0-SNAPSHOT - unreleased
+## 88.0.0 - 2026-09-28
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - TC39 decorators, AG Grid 36, removals)
+### 💥 Breaking Changes (upgrade difficulty: 🔴 HIGH - TC39 decorators + Rsbuild, AG Grid 36, MobX 7, removals)
+
+See [`docs/upgrade-notes/v88-upgrade-notes.md`](docs/upgrade-notes/v88-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+The changes below are grouped by area. The first two groups - the decorator and build migration,
+and AG Grid 36 - affect every app. The rest apply only to apps using the named APIs.
+
+#### Decorators and Build Tooling
 
 * **Migrated to TC39 Stage 3 (2023-11) decorators**, retiring `experimentalDecorators`. The
   migration drops the `makeObservable(this)` boilerplate and gives Hoist per-property private
@@ -22,6 +30,11 @@
   `docs/codemod/v88/`. Hoist now requires `@xh/hoist-dev-utils >= 16`. Upgrade both packages
   together, because a legacy-decorator app built against the new dev-utils silently loses every
   `@observable` and `@bindable` field.
+    * `@xh/hoist-dev-utils` 16 builds with Rsbuild only - `configureWebpack()` is gone. Apps replace
+      `webpack.config.js` with an `rsbuild.config.mjs` calling `configureRsbuild()`, switch their
+      scripts to `rsbuild dev` / `rsbuild build`, and pass build-time overrides as `XH_*`
+      environment variables rather than `--env` flags. See the
+      [dev-utils migration guide](https://github.com/xh/hoist-dev-utils/blob/develop/README.md#migrating-from-v15-webpack).
     * `@observable accessor` fields are now prototype getter/setters rather than own enumerable
       properties, which changes `Object.keys` and spread (`{...model}`) over model instances.
     * `@persist` must now come *after* the MobX decorator (`@bindable` then `@persist`).
@@ -29,15 +42,14 @@
       `PersistenceProvider.create()` logs the error to the console, but nothing throws and there
       is no type error. Decorator order was irrelevant under legacy decorators, and the codemods
       do not reorder them, so audit every `@persist` in app code by hand.
-* Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
-  exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
-  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, and so on.
-  Hoist's `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump
-  to `7.x`.
-  Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
+
+#### AG Grid 36
+
 * Upgraded to AG Grid 36.
     * Apps must bump their `ag-grid-community`, `ag-grid-react`, and (if used)
       `ag-grid-enterprise` dependencies to `36.2` or later.
+    * AG Grid Enterprise requires a license valid for releases on or after 2 June 2026. Apps with
+      an older key see a watermark and console error after the bump.
     * AG Grid 36 restructures the grid into a single scrollable container and renames its internal
       layout classes. Apps with custom SCSS targeting AG Grid internals (for example
       `ag-floating-top`, `ag-center-cols-viewport`, `ag-body-viewport`) must migrate to the new
@@ -52,26 +64,36 @@
       custom CSS targeting either must retarget, using Hoist's own `.xh-ag-grid` wrapper class.
       Prefer the new `GridModel.theme` config (below) or the `--xh-grid-*` variables over CSS
       wherever they suffice.
+
+#### Other
+
+* Upgraded to MobX 7 and mobx-react-lite 5. MobX's dotted annotations and comparers are now named
+  exports, re-exported from `@xh/hoist/mobx`: `@observable.ref` -> `@observableRef`,
+  `@computed.struct` -> `@computedStruct`, `comparer.shallow` -> `compareShallow`, and so on.
+  Hoist's `@bindable.ref` is likewise now `@bindableRef`. Apps declaring `mobx` directly must bump
+  to `7.x`.
+  Run `docs/codemod/v88/codemod-mobx7-rename.mjs` to apply the renames.
 * Raised the `react` and `react-dom` peer dependency floor to `19.3`. Apps must bump both to
   `^19.3.0`. React 19.3 is a compatible minor with no breaking changes of its own.
 * Routed `TabContainerModel` no longer passes a tab's own route params to the sibling tab being
   activated. Only params declared by the container's route or its ancestors now carry over, so
   apps with sibling tabs sharing a param must declare it once on their common parent route.
 
-* Scheduled Removals
-    * Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead.
-      `TraceService.withSpan()` remains available for advanced use.
-    * Removed the `FetchOptions.span` and `FetchOptions.loadSpec` fields, deprecated in v86. Pass a
-      `CallContextLike` as a second argument - for example `XH.fetchJson({url}, {loadSpec})`.
-    * Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use `persistOptions()`
-      instead.
-    * Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})`
-      instead as the popover behavior is a built-in mode of `FilterChooser`.
-    * Removed the deprecated `LogSource` type alias. Use `NameSource`, exported from the same
-      `@xh/hoist/utils/js` entry point, instead.
-    * Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
-      `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use
-      the un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on.
+#### Scheduled Removals
+
+* Removed `HoistBase.withSpan()`, deprecated in v86. Use `runner().span(...)` instead.
+  `TraceService.withSpan()` remains available for advanced use.
+* Removed the `FetchOptions.span` and `FetchOptions.loadSpec` fields, deprecated in v86. Pass a
+  `CallContextLike` as a second argument - for example `XH.fetchJson({url}, {loadSpec})`.
+* Removed `PersistenceProvider.mergePersistOptions()`, deprecated in v86. Use `persistOptions()`
+  instead.
+* Removed `PopoverFilterChooser`, deprecated in v86.3. Use `filterChooser({popover: true})`
+  instead as the popover behavior is a built-in mode of `FilterChooser`.
+* Removed the deprecated `LogSource` type alias. Use `NameSource`, exported from the same
+  `@xh/hoist/utils/js` entry point, instead.
+* Removed the long-deprecated `Col`-suffixed column spec aliases `boolCheckCol`, `numberCol`,
+  `fileExtCol`, `dateCol`, `timeCol`, `dateTimeCol`, `compactDateCol`, and `localDateCol`. Use
+  the un-suffixed spec of the same name - `boolCheck`, `number`, `fileExt`, `date`, and so on.
 
 ### 🎁 New Features
 
@@ -176,6 +198,8 @@
   control was sized to its content.
 * Fixed `checkboxRenderer()` throwing a `TypeError` when called with no argument. Its config is now
   optional.
+* Fixed `HoistModel.matchesSelector()` throwing when a predicate selector returned `undefined`, as a
+  duck-type check against a model lacking the marker property does. It now reads as no match.
 * Fixed `DashCanvas` widgets rendering at a placeholder width on load, then visibly animating out
   to fill the canvas - a costly relayout of every widget while dashboards load. Widgets now render
   once at their final size. Note that widgets on a canvas that starts hidden now render when first
