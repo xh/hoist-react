@@ -269,7 +269,10 @@ common pitfalls.
 ### Promise Conventions
 
 - Methods returning Promises are suffixed with `Async` (e.g., `loadUsersAsync`)
-- Promise extensions: `catchDefault()`, `track()`, `timeout()`, `linkTo()`
+- Use the `Runner` chain (`this.runner({loadSpec}).linkTo(...).track(...).fetchJson(...)`) for
+  masking, activity tracking, and spans - see `docs/telemetry.md`
+- Promise extensions (`catchDefault()`, `track()`, `timeout()`, `linkTo()`) are the lower-level
+  API the Runner wraps
 
 ### Prefer Hoist Input Components Over Raw HTML
 
