@@ -104,8 +104,8 @@ export interface ViewManagerConfig {
 
     /**
      * True (default) to enable "global" views - i.e. views that are not owned by a user and are
-     * available to all. At least some users should have `manageGlobal` set to true to allow
-     * creation and management of these views.
+     * available to all. Creating and managing these views requires a role in the server-side
+     * `xhJsonBlobConfig.globalWriteRoles` soft config - see {@link manageGlobal}.
      */
     enableGlobal?: boolean;
 

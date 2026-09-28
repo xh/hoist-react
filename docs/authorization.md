@@ -198,8 +198,8 @@ class ReportModel extends HoistModel {
         return XH.getUser().hasRole('EXPORT_DATA');
     }
 
-    get canManageGlobalViews(): boolean {
-        return XH.getUser().hasRole('MANAGE_VIEWS');
+    get canPublishReports(): boolean {
+        return XH.getUser().hasRole('PUBLISH_REPORTS');
     }
 
     async deleteReportAsync(report: Report) {
@@ -229,16 +229,12 @@ const gridModel = new GridModel({
 
 ### ViewManager Global View Management
 
-`ViewManagerModel` accepts a `manageGlobal` config that determines whether the current user can
-create and manage globally shared views (vs. only their own private views). This is commonly
-gated on a role:
-
-```typescript
-const viewManagerModel = await ViewManagerModel.createAsync({
-    type: 'portfolioGridView',
-    manageGlobal: XH.getUser().hasRole('MANAGE_VIEWS')
-});
-```
+Hoist Core v42+ decides on the server who may create and manage global views, using roles set
+per view `type` in the `xhJsonBlobConfig.globalWriteRoles` soft config.
+`ViewManagerModel.manageGlobal` reflects the server's answer, so apps configure the role there
+rather than with a client-side role check. See
+[`cmp/viewmanager/README.md`](../cmp/viewmanager/README.md#sharing-and-visibility) and the
+[hoist-core JsonBlob documentation](https://github.com/xh/hoist-core/blob/develop/docs/jsonblob.md#access-control).
 
 ## Where Roles Come From
 
@@ -507,7 +503,9 @@ Category: "Functional Roles"      → Document Manager, Risk Analyst, Operations
 Role checks in client-side code control UI visibility and navigation, but they are **not** a
 security boundary. A determined user can bypass client-side checks. Always enforce authorization
 on the server as well — Hoist Core provides server-side role checking for controller endpoints.
-Client-side checks are for UX (showing/hiding features), not for security enforcement.
+Client-side checks are for UX (showing/hiding features), not for security enforcement. For example,
+Hoist Core enforces who may manage ViewManager global views - see
+[ViewManager Global View Management](#viewmanager-global-view-management).
 
 ### Hardcoding Role Names as Strings
 
@@ -556,4 +554,4 @@ render methods, or in model constructors/`onLinked` callbacks that run after app
 | `admin/tabs/userData/roles/Types.ts` | `HoistRole`, `RoleModuleConfig`, `RoleMemberType` type definitions |
 | `admin/tabs/userData/roles/editor/RoleEditorModel.ts` | Role create/edit dialog model |
 | `admin/tabs/userData/roles/graph/RoleGraphModel.ts` | Role inheritance graph visualization |
-| `cmp/viewmanager/ViewManagerModel.ts` | `manageGlobal` config — role-gated view management |
+| `cmp/viewmanager/ViewManagerModel.ts` | `manageGlobal` — server-determined global view management |
