@@ -12,9 +12,10 @@ module.exports = defineConfig([
             'tsdoc/syntax': 'warn'
         }
     },
+
     // Repo automation scripts run under Node, not in the browser.
     {
-        files: ['.github/scripts/**/*.mjs'],
+        files: ['.github/scripts/**/*.mjs', 'scripts/**/*'],
         languageOptions: {
             globals: globals.node
         }

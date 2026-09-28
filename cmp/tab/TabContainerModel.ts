@@ -15,6 +15,7 @@ import {
     PersistableState,
     PersistenceProvider,
     persistOptions,
+    PlainObject,
     RefreshContextModel,
     RefreshMode,
     RenderMode,
@@ -25,8 +26,20 @@ import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {difference, find, findLast, isObject, isString, without} from 'lodash';
+import {
+    difference,
+    find,
+    findLast,
+    flatMap,
+    isEqual,
+    isObject,
+    isString,
+    keys,
+    pick,
+    without
+} from 'lodash';
 import {ReactNode} from 'react';
+import type {NavigationOptions} from 'router5';
 import {TabConfig, TabModel} from './TabModel';
 
 /**
@@ -52,6 +65,14 @@ export interface TabContainerConfig {
      * route for each tab being "[route]/[tab.id]".
      */
     route?: string;
+
+    /**
+     * True (default) to restore a tab's last route - including any descendant route and the params
+     * owned by the tab - when navigating back to it via this container. Skipped if a shared path
+     * param has changed since. False to return to the tab's bare route instead. Applies only when
+     * `route` is set. Note this restores descendant routes owned by any nested container too.
+     */
+    restoreTabRouteParams?: boolean;
 
     /**
      * Specification for type of switcher. Specify `dynamic` or config for user-configurable tabs.
@@ -122,6 +143,7 @@ export class TabContainerModel extends HoistModel {
 
     depth: number; // Depth in hierarchy of nested TabContainerModels
     route: string;
+    restoreTabRouteParams: boolean;
     defaultTabId: string;
     track: boolean;
     renderMode: RenderMode;
@@ -137,6 +159,9 @@ export class TabContainerModel extends HoistModel {
 
     protected lastActiveTabId: string;
 
+    /** Last-seen route state within each tab, by tab ID - see `restoreTabRouteParams`. */
+    protected tabRouteMemory: Record<string, TabRouteMemory> = {};
+
     /**
      * @param config - TabContainer configuration.
      * @param depth - Depth in hierarchy of nested TabContainerModels. Not for application use.
@@ -146,6 +171,7 @@ export class TabContainerModel extends HoistModel {
             tabs = [],
             defaultTabId = null,
             route = null,
+            restoreTabRouteParams = true,
             track = false,
             renderMode = 'lazy',
             refreshMode = 'onShowLazy',
@@ -167,6 +193,7 @@ export class TabContainerModel extends HoistModel {
         this.defaultTabId = defaultTabId;
         this.emptyText = emptyText;
         this.route = route;
+        this.restoreTabRouteParams = restoreTabRouteParams;
         this.track = track;
         this.setTabs(tabs);
         this.refreshContextModel = new RefreshContextModel();
@@ -321,10 +348,8 @@ export class TabContainerModel extends HoistModel {
         const tab = this.findTab(id);
         if (!tab || tab.disabled || tab.isActive) return;
 
-        const {route} = this;
-        if (route) {
-            const {params} = XH.router.getState();
-            XH.navigate(route + '.' + tab.id, params);
+        if (this.route) {
+            this.navigateToTab(tab.id);
         } else {
             this.setActiveTabIdInternal(tab.id);
         }
@@ -377,17 +402,114 @@ export class TabContainerModel extends HoistModel {
         this.forwardRouterToTab(id);
     }
 
+    /**
+     * Sync this container with the current route, on every router change. Activates the tab
+     * matching the route and records its route for restore, or - if the route stops at this
+     * container's own route - completes it to the active tab.
+     */
     protected syncWithRouter() {
-        const {tabs, route} = this,
-            {router} = XH,
-            state = router.getState();
+        const {tabs, route, activeTabId} = this;
+        if (!this.isRouteActive(route)) return;
 
-        if (state && router.isActive(route)) {
-            const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
-            if (tab && !tab.isActive && !tab.disabled) {
+        const tab = tabs.find(t => this.isRouteActive(route + '.' + t.id));
+        if (tab) {
+            if (this.restoreTabRouteParams) this.recordTabRoute(tab.id);
+            if (!tab.isActive && !tab.disabled) {
                 this.setActiveTabIdInternal(tab.id);
             }
+        } else if (activeTabId) {
+            // Our own route is active without a tab - e.g. a deep link to this container, or a
+            // multi-level forward, which router5 resolves only one level deep. Complete the
+            // route to the active tab, so the URL reflects what is shown. Skipped for a guard
+            // redirect, which may have deliberately sent us here.
+            const {name, meta} = XH.router.getState();
+            if (name === route && !meta?.options?.redirected) {
+                this.navigateToTab(activeTabId, {replace: true});
+            }
         }
+    }
+
+    /**
+     * Navigate to a tab - restoring its last-seen route (including any descendant route) and
+     * params if enabled and still valid, else to its bare route. Shared params are always kept.
+     */
+    protected navigateToTab(id: string, opts?: NavigationOptions) {
+        const tabRoute = this.route + '.' + id,
+            shared = this.getSharedRouteParams(),
+            memory = this.restoreTabRouteParams ? this.tabRouteMemory[id] : null,
+            restore = memory && isEqual(memory.sharedUrlParams, this.getSharedRouteParams(true));
+
+        if (restore && this.tryNavigate(memory.name, {...memory.params, ...shared}, opts)) return;
+        this.tryNavigate(tabRoute, shared, opts);
+    }
+
+    private tryNavigate(name: string, params: PlainObject, opts: NavigationOptions): boolean {
+        try {
+            XH.navigate(name, params, opts);
+            return true;
+        } catch (e) {
+            this.logWarn(`Failed to navigate to route '${name}'`, e);
+            return false;
+        }
+    }
+
+    /** Record the current route within a tab, for restore by {@link navigateToTab}. */
+    protected recordTabRoute(tabId: string) {
+        this.tabRouteMemory[tabId] = {
+            name: XH.router.getState().name,
+            params: this.getTabRouteParams(tabId),
+            sharedUrlParams: this.getSharedRouteParams(true)
+        };
+    }
+
+    /**
+     * Is the named route active, either exactly or as an ancestor of the current route? Passes the
+     * current params, as router5 otherwise fails an exact match on any route with a URL param.
+     */
+    protected isRouteActive(name: string): boolean {
+        const {router} = XH,
+            state = router.getState();
+        return !!state && router.isActive(name, state.params);
+    }
+
+    /**
+     * Current route params to carry over when navigating to a new tab - only those declared by
+     * this container's route or its ancestors. Params declared by the outgoing tab's own route (or
+     * its descendants) belong to that tab and are dropped, so they don't bleed into its siblings.
+     *
+     * @param urlOnly - true to return only path (URL) params, excluding query params.
+     */
+    protected getSharedRouteParams(urlOnly: boolean = false): PlainObject {
+        const {route} = this;
+        return this.pickDeclaredRouteParams(
+            name => name === route || route.startsWith(name + '.'),
+            urlOnly
+        );
+    }
+
+    /**
+     * Current route params owned by a tab - those declared by its route or its descendants.
+     * Recorded as the tab's route changes, for restore when navigating back to it.
+     */
+    protected getTabRouteParams(tabId: string): PlainObject {
+        const tabRoute = this.route + '.' + tabId;
+        return this.pickDeclaredRouteParams(
+            name => name === tabRoute || name.startsWith(tabRoute + '.')
+        );
+    }
+
+    /** Current route params declared by any active route whose name passes `test`. */
+    private pickDeclaredRouteParams(
+        test: (routeName: string) => boolean,
+        urlOnly: boolean = false
+    ): PlainObject {
+        const state = XH.router.getState();
+        if (!state) return {};
+
+        const names = flatMap(state.meta?.params ?? {}, (params, routeName) =>
+            test(routeName) ? keys(params).filter(p => !urlOnly || params[p] === 'url') : []
+        );
+        return pick(state.params, names);
     }
 
     protected forwardRouterToTab(id) {
@@ -401,10 +523,9 @@ export class TabContainerModel extends HoistModel {
         let ret;
 
         // try route
-        const {route} = this,
-            {router} = XH;
-        if (route && router.isActive(route)) {
-            ret = tabs.find(t => router.isActive(route + '.' + t.id));
+        const {route} = this;
+        if (route && this.isRouteActive(route)) {
+            ret = tabs.find(t => this.isRouteActive(route + '.' + t.id));
             if (ret && !ret.disabled) return ret.id;
         }
 
@@ -485,4 +606,14 @@ export interface AddTabOptions {
     index?: number;
     /** True to immediately activate new tab. */
     activateImmediately?: boolean;
+}
+
+/** A tab's last-seen route, as recorded by {@link TabContainerModel} for restore. */
+interface TabRouteMemory {
+    /** Full name of the active route within the tab - the tab route or a descendant. */
+    name: string;
+    /** Params owned by the tab - declared by its route or its descendants. */
+    params: PlainObject;
+    /** Shared path params at time of recording - memory is restored only while these match. */
+    sharedUrlParams: PlainObject;
 }
