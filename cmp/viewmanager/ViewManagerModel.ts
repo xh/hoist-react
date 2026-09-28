@@ -227,7 +227,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private readonly manageGlobalConfig: boolean;
 
     /** Server-reported ability to manage global views. Null until loaded, or on hoist-core before v42. */
-    @observable private accessor canWriteGlobal: boolean = null;
+    @observable private accessor serverManageGlobal: boolean = null;
 
     /** Current view. Will not include uncommitted changes */
     @observableRef accessor view: View<T> = null;
@@ -281,10 +281,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     /** True if the current user may create and manage global views. */
     get manageGlobal(): boolean {
-        const {canWriteGlobal, manageGlobalConfig} = this;
-        return isNil(canWriteGlobal)
+        const {serverManageGlobal, manageGlobalConfig} = this;
+        return isNil(serverManageGlobal)
             ? (manageGlobalConfig ?? false)
-            : canWriteGlobal && manageGlobalConfig !== false;
+            : serverManageGlobal && manageGlobalConfig !== false;
     }
 
     get isViewSavable(): boolean {
@@ -391,13 +391,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .span('refresh')
             .run(async ctx => {
                 // 1) Update views and related state
-                const {views, state, canWriteGlobal} = await dataAccess.fetchDataAsync(ctx);
+                const {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
                     this.userPinned = state.userPinned;
                     this.autoSave = state.autoSave;
-                    this.canWriteGlobal = canWriteGlobal ?? null;
+                    this.serverManageGlobal = manageGlobal ?? null;
                 });
 
                 // potentially fast-forward current view.

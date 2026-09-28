@@ -30,7 +30,7 @@ export class DataAccess<T> {
     /** Fetch metadata for all views accessible by current user. */
     async fetchDataAsync(
         ctx: CallContext
-    ): Promise<{views: ViewInfo[]; state: ViewUserState; canWriteGlobal?: boolean}> {
+    ): Promise<{views: ViewInfo[]; state: ViewUserState; manageGlobal?: boolean}> {
         const {model} = this;
         return model
             .runner(ctx)
@@ -45,7 +45,7 @@ export class DataAccess<T> {
                 return {
                     views: ret.views.map(v => new ViewInfo(v, model)),
                     state: ret.state,
-                    canWriteGlobal: ret.canWriteGlobal
+                    manageGlobal: ret.manageGlobal
                 };
             })
             .catch(e => {
