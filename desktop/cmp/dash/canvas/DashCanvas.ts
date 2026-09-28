@@ -5,12 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import ReactGridLayout, {
+    type Compactor,
     type LayoutItem,
     type GridLayoutProps,
+    bottom,
     getCompactor
 } from 'react-grid-layout';
+import {correctBounds} from 'react-grid-layout/core';
 import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
-import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
+import {useComposedRefs, useOnResize, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
     elementFactory,
@@ -25,7 +28,7 @@ import '@xh/hoist/desktop/register';
 import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
@@ -66,9 +69,10 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
             // widgets render once at their final size. RGL's `useContainerWidth()` renders first
             // with a placeholder width, then relays out (and animates) every widget to the actual
             // width - costly churn while a dashboard is loading.
-            [width, setWidth] = useState<number>(null),
-            resizeRef = useOnResize(rect => setWidth(Math.round(rect.width))),
+            [width, widthRef] = useContentWidth(),
             initialWidthMeasured = width != null,
+            // Make RGL's rendered height available to the grid background.
+            rglHeightRef = useOnResize(rect => (model.rglHeight = rect.height), {debounce: 100}),
             defaultDroppedItemDims = {
                 w: Math.floor(model.columns / 3),
                 h: Math.floor(model.columns / 3)
@@ -79,7 +83,12 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 ? rglOptions.compactor
                 : model.compact === 'wrap'
                   ? wrapCompactor
-                  : getCompactor(model.compact, false, false);
+                  : getCompactor(model.compact, false, false),
+            // Grid height predicted from layout, needed only until RGL reports its actual height.
+            expectedHeight =
+                initialWidthMeasured && model.rglHeight != null
+                    ? null
+                    : expectedGridHeight(model, compactor);
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -89,19 +98,22 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                ref: useComposedRefs(ref, model.ref, resizeRef),
+                ref: useComposedRefs(ref, model.ref, widthRef),
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
                     // Until width is measured, reserve the grid's expected height so that any
                     // vertical scrollbar is already present when we measure - otherwise its later
                     // appearance narrows the canvas and triggers a second relayout of all widgets.
-                    div({omit: initialWidthMeasured, style: {height: expectedGridHeight(model)}}),
+                    div({omit: initialWidthMeasured, style: {height: expectedHeight}}),
                     gridBackgroundCells({
                         omit:
                             !model.showGridBackground ||
                             !initialWidthMeasured ||
                             (model.isEmpty && !model.draggedInView),
-                        width
+                        width,
+                        // Until RGL is measured, size to the expected height - the background's own
+                        // default of 10 rows could overflow a short canvas and add a scrollbar.
+                        height: model.rglHeight ?? expectedHeight
                     }),
                     reactGridLayout({
                         ...mergeDeep(
@@ -141,6 +153,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                             rglOptions
                         ),
                         omit: !initialWidthMeasured,
+                        innerRef: rglHeightRef,
                         layout: model.rglLayout,
                         children: model.viewModels.map(vm =>
                             div({
@@ -163,17 +176,19 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
 const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
     displayName: 'DashCanvasGridBackgroundCells',
     model: uses(DashCanvasModel),
-    render({model, width}) {
+    render({model, width, height}) {
         return gridBackground({
             className: 'xh-dash-canvas__grid-background',
             width,
-            height: model.rglHeight,
+            height,
             cols: model.columns,
             rowHeight: model.rowHeight,
             margin: model.margin,
             rows: 'auto',
             color: 'var(--xh-dash-canvas-grid-cell-color)',
-            borderRadius: 0
+            borderRadius: 0,
+            // Clip to the grid - `rows: 'auto'` rounds up, and a partial extra row would overflow.
+            style: {height}
         });
     }
 });
@@ -219,11 +234,36 @@ const onContextMenu = (e, model) => {
     }
 };
 
+/**
+ * Track the content width of the canvas. Zero-width updates (e.g. while hidden) are skipped, but
+ * unlike `useOnResize()` a zero height is not - an empty canvas in an unsized parent must measure.
+ */
+function useContentWidth(): [number, (node: HTMLElement) => void] {
+    const [width, setWidth] = useState<number>(null),
+        observer = useRef<ResizeObserver>(null);
+    useOnUnmount(() => observer.current?.disconnect());
+
+    const ref = useCallback((node: HTMLElement) => {
+        observer.current?.disconnect();
+        observer.current = null;
+        if (!node) return;
+        observer.current = new ResizeObserver(([entry]) => {
+            const newWidth = Math.round(entry.contentRect.width);
+            if (newWidth) setWidth(newWidth);
+        });
+        observer.current.observe(node);
+    }, []);
+
+    return [width, ref];
+}
+
 /** Height RGL will render for the current layout - mirrors its internal calculation. */
-function expectedGridHeight(model: DashCanvasModel): number {
-    const {rows, rowHeight, margin, containerPadding} = model,
+function expectedGridHeight(model: DashCanvasModel, compactor: Compactor): number {
+    const {rowHeight, margin, containerPadding, columns: cols} = model,
+        layout = compactor.compact(correctBounds(model.rglLayout, {cols}), cols),
+        rows = bottom(layout),
         padY = (containerPadding ?? margin)[1];
-    return rows ? rows * rowHeight + (rows - 1) * margin[1] + 2 * padY : 0;
+    return Math.max(0, rows * rowHeight + (rows - 1) * margin[1] + 2 * padY);
 }
 
 const reactGridLayout = elementFactory<GridLayoutProps>(ReactGridLayout);
