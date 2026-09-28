@@ -140,8 +140,7 @@ export interface ViewManagerConfig {
     /**
      * False to prevent the user from creating and managing global views, even if permitted by
      * the server. Defaults to the server's determination, per the roles configured in the
-     * `xhJsonBlobConfig.globalWriteRoles` soft config (hoist-core v42+). Apps on earlier versions
-     * of hoist-core must set this explicitly - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
+     * `xhJsonBlobConfig.globalWriteRoles` soft config (hoist-core v42+).
      */
     manageGlobal?: Thunkable<boolean>;
 
@@ -282,6 +281,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** True if the current user may create and manage global views. */
     get manageGlobal(): boolean {
         const {serverManageGlobal, manageGlobalConfig} = this;
+        // TODO: drop nil branch once hoist-core v42 is the minimum.
         return isNil(serverManageGlobal)
             ? (manageGlobalConfig ?? false)
             : serverManageGlobal && manageGlobalConfig !== false;
