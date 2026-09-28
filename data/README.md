@@ -1240,14 +1240,14 @@ problem when the app must persist the filter (e.g. via `@persist`):
 ```typescript
 class MyModel extends HoistModel {
     // ❌ Problem: Hoist cannot serialize a FunctionFilter for persistence
-    @persist
     @observableRef
-    filter: Filter = new FunctionFilter({testFn: r => r.data.custom > 0});
+    @persist
+    accessor filter: Filter = new FunctionFilter({testFn: r => r.data.custom > 0});
 
     // ✅ Correct: FieldFilter/CompoundFilter are serializable
-    @persist
     @observableRef
-    filter: Filter = parseFilter({field: 'custom', op: '>', value: 0});
+    @persist
+    accessor filter: Filter = parseFilter({field: 'custom', op: '>', value: 0});
 }
 ```
 

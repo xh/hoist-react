@@ -540,8 +540,8 @@ required context (the view model) is not yet available.
 class MetricWidgetModel extends HoistModel {
     @lookup(() => DashViewModel) viewModel: DashViewModel;
 
-    @bindable metric: string = 'hours';
-    @bindable showPrior: boolean = true;
+    @bindable accessor metric: string = 'hours';
+    @bindable accessor showPrior: boolean = true;
     @managed filterModel: FilterChooserModel;
 
     override onLinked() {
@@ -793,7 +793,7 @@ Lock dashboard editing based on runtime conditions such as a user preference or 
 
 ```typescript
 // Observbable flag on model to control editability
-@bindable lockDashEditing: boolean = false;
+@bindable accessor lockDashEditing: boolean = false;
 
 // Then in constructor or onLinked()
 this.addReaction({

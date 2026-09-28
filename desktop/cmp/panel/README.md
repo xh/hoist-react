@@ -10,6 +10,7 @@
 | [Toolbars](#toolbars) | tbar/bbar, separators, compact mode, and overflow menus |
 | [Panel + Grid Pattern](#panel--grid-pattern) | Common panel-wrapping-grid structure from real apps |
 | [Mask](#mask) | Loading overlays with TaskObserver and onLoad binding |
+| [Banners](#banners) | Info, warning, and error banners for state local to the panel |
 | [Collapsing and Resizing](#collapsing-and-resizing) | PanelModel config for collapse, resize, and splitters |
 | [collapsedTitle / collapsedIcon](#collapsedtitle--collapsedicon) | Identifying collapsed panels with custom titles and icons |
 | [compactHeader](#compactheader) | Reduced-size headers for visual hierarchy |
@@ -24,7 +25,7 @@
 
 Panel is the standard container for desktop Hoist application views. Nearly every screen in a Hoist
 app is built from one or more Panels. Panel renders content in a vertical flexbox (`vframe`) with
-optional header, top toolbar (`tbar`), bottom toolbar (`bbar`), and mask overlay.
+optional header, top toolbar (`tbar`), bottom toolbar (`bbar`), banners, and mask overlay.
 
 Panels also support collapsing, resizing, and popping out to a modal dialog — all configured via
 `PanelModel` and persistable if so configured.
@@ -252,6 +253,78 @@ panel({
 When `'onLoad'` is specified, Panel looks up the nearest context model's `loadObserver` and creates
 a mask with `spinner: true` bound to it. A warning is logged if the context model does not support
 loading.
+
+## Banners
+
+The `banner` prop shows an intent-colored strip within the panel for an info, warning, or error
+state that applies to its contents - e.g. stale data, a partial result set, or read-only access.
+Use it rather than hand-building a styled `div` or `toolbar`.
+
+Banners render **below the top toolbar**, directly above the content they describe. The toolbar
+never shifts when a banner appears or disappears. Set `position: 'bottom'` on a spec to render it
+above the bottom toolbar instead.
+
+| Value | Behavior |
+|-------|----------|
+| `{intent, message, ...}` | A `PanelBannerSpec` - `BannerProps` plus an optional `position`. |
+| `'Some message'` | Shortcut for a default `'primary'` (info) banner. |
+| `banner({...})` | A `banner()` element, or any custom element. Always rendered at the top. |
+| `[spec1, spec2]` | Several banners, stacked in order. `null` entries are skipped. |
+| `null` | No banner. |
+
+```typescript
+panel({
+    title: 'Positions',
+    tbar: [storeFilterField(), filler(), refreshButton()],
+    item: grid(),
+    // Conditional banners - null entries are ignored.
+    banner: [
+        model.isStale
+            ? {
+                  intent: 'warning',
+                  message: 'Prices are **delayed** - last updated 2 hours ago.',
+                  actionButtonProps: {text: 'Refresh', onClick: () => model.refreshAsync()}
+              }
+            : null,
+        model.isTruncated
+            ? {intent: 'primary', compact: true, position: 'bottom', message: 'Results limited to 1,000 rows.'}
+            : null
+    ]
+})
+```
+
+### Banner Props
+
+The same props apply to a standalone `banner()` from `@xh/hoist/desktop/cmp/banner` (or
+`@xh/hoist/mobile/cmp/banner`), which can be rendered in any layout - forms, dialogs, or cards.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `message` | `ReactNode` | Message to show. Strings render as markdown, supporting **bold**, *italics*, and links. |
+| `intent` | `Intent` | Color and default icon. Defaults to `'primary'`. Set to `null` for a neutral banner. |
+| `icon` | `ReactElement` | Icon before the message. Defaults to a standard icon for the intent - set to `null` for none. |
+| `filled` | `boolean` | Solid intent background with white text, as used by app-wide banners. Default is a lighter tint. |
+| `compact` | `boolean` | Reduced padding, height, and font size. |
+| `wrap` | `boolean` | Wrap long messages onto multiple lines. Default `true` - set `false` to truncate. |
+| `actionButtonProps` | `ButtonProps` | Props for a button within the banner, for a related action. |
+| `onClick` | `() => void` | Called when the user clicks the banner's icon or message. |
+| `onClose` | `() => void` | Shows a close button that calls this. |
+
+Banners are **controlled** - Panel has no internal state for them. To support closing, provide
+`onClose` and stop rendering the banner when it fires:
+
+```typescript
+// ✅ Do: Drive visibility from observable model state
+banner: model.showReadOnlyWarning
+    ? {intent: 'warning', message: 'Read-only view.', onClose: () => (model.showReadOnlyWarning = false)}
+    : null
+
+// ❌ Don't: Provide onClose without updating state - the banner will not go away
+banner: {intent: 'warning', message: 'Read-only view.', onClose: () => {}}
+```
+
+For an app-wide banner across the top of the viewport, use `XH.showBanner()` instead - see
+[`/appcontainer/README.md`](../../../appcontainer/README.md).
 
 ## Collapsing and Resizing
 
@@ -493,6 +566,7 @@ layouts like dashboards.
 | `headerClassName` | `string` | CSS class for the header element. |
 | `tbar` | `ReactNode` | Top toolbar. Array auto-wrapped in `toolbar()`. |
 | `bbar` | `ReactNode` | Bottom toolbar. Array auto-wrapped in `toolbar()`. |
+| `banner` | `Some<PanelBannerSpec \| string \| ReactElement>` | Banner(s) below `tbar`, or above `bbar` with `position: 'bottom'`. See [Banners](#banners). |
 | `contentBoxProps` | `BoxProps` | Props for the inner frame wrapping content items. |
 | `scrollable` | `boolean` | Allow the panel content area to scroll vertically. |
 | `mask` | `Some<TaskObserver> \| ReactElement \| boolean \| 'onLoad'` | Mask overlay specification. |
@@ -564,3 +638,4 @@ panel({
 | `desktop/cmp/modalsupport/ModalSupportModel.ts` | Modal pop-out config and state management. |
 | `desktop/cmp/modalsupport/ModalSupport.ts` | Portal-based modal implementation. |
 | `cmp/mask/Mask.ts` | Mask component with TaskObserver binding. |
+| `desktop/cmp/banner/Banner.ts` | Banner component, rendered by Panel's `banner` prop. |

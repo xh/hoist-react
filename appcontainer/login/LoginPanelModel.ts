@@ -42,7 +42,7 @@ export class LoginPanelModel extends HoistModel {
                 .loginWithCredentialsAsync(username, password)
                 .linkTo(loginTask)
                 .catchDefault({
-                    hideParams: ['password']
+                    redactPaths: ['password']
                 });
 
             if (identity) {

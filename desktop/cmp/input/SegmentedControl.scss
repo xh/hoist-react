@@ -17,9 +17,11 @@
     // prettier-ignore
     --seg-btn-h: calc(var(--xh-tbar-min-size-px) - var(--xh-pad-half-px) * 2 - var(--xh-segmented-control-pad-px) * 2 - 1px);
 
+    // Labels never wrap - buttons have a fixed height, so a second line would spill out.
     > .bp6-button {
       min-height: var(--seg-btn-h);
       max-height: var(--seg-btn-h);
+      white-space: nowrap;
     }
 
     // Selected option - solid button standing out from the tray.
@@ -77,8 +79,10 @@
   // The min-width keeps that equal share from shrinking an option below its own label. A zero
   // basis otherwise lets each option fall to BP's fixed 30px floor, which is unrelated to its
   // content: the horizontal padding is eaten first, then a single-word label spills past the
-  // border, since it can neither wrap nor ellipsize. Options only stop sharing equally once there
-  // is genuinely not enough room, and then only the ones that need the space keep it.
+  // border, since it can neither wrap nor ellipsize. With labels held to one line above,
+  // min-content is the full label width, not just its longest word. Options only stop sharing
+  // equally once there is genuinely not enough room, and then only the ones that need the space
+  // keep it.
   &--fill#{&}--equal-widths .bp6-segmented-control > .bp6-button {
     flex-basis: 0;
     min-width: min-content;

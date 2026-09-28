@@ -47,12 +47,12 @@ are installed automatically; applications add custom services in `AppModel.initA
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Install custom services - all initialize concurrently
-        await XH.installServicesAsync(TradeService, PortfolioService);
+        await XH.installServicesAsync([TradeService, PortfolioService], ctx);
 
         // Chain calls for ordered initialization (when services depend on earlier ones)
-        await XH.installServicesAsync(ReportService);  // Can now use Trade/Portfolio services
+        await XH.installServicesAsync([ReportService], ctx); // Can now use Trade/Portfolio services
     }
 }
 ```
@@ -622,7 +622,7 @@ export class PortfolioService extends HoistService {
 }
 
 // Install in AppModel.initAsync()
-await XH.installServicesAsync(PortfolioService);
+await XH.installServicesAsync([PortfolioService], ctx);
 
 // Access anywhere
 XH.portfolioService.getPortfolio('abc123');
