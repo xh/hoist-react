@@ -190,6 +190,8 @@
   rejects and the caller handles the rejection.
 * Updated the vendored `public/msal-redirect-bridge.min.js` from MSAL 5.11 to 5.23 to match the
   installed `@azure/msal-browser`. Added a `check:vendored` CI step to catch future drift.
+* Removed the no-op `@managed` decorator from `TaskObserver` fields across the framework. It needs
+  no cleanup, and its JSDoc now says so.
 
 ### ⚙️ Typescript API Adjustments
 

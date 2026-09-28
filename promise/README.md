@@ -299,8 +299,7 @@ within an action context automatically. `thenAction` is only needed in raw `.the
 
 ### `@managed` on TaskObserver
 
-`TaskObserver` does not implement `destroy` and requires no cleanup, so marking it `@managed` is
-unnecessary. It's not harmful, but there's no benefit — a plain property declaration is sufficient.
+`TaskObserver` needs no cleanup, so `@managed` is unnecessary - a plain property is sufficient.
 
 ## Related Packages
 

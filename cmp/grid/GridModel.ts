@@ -659,10 +659,10 @@ export class GridModel extends HoistModel {
     }
 
     /** Tracks execution of filtering operations.*/
-    @managed filterTask = TaskObserver.trackAll();
+    filterTask = TaskObserver.trackAll();
 
     /** Tracks execution of autosize operations. */
-    @managed autosizeTask = TaskObserver.trackAll();
+    autosizeTask = TaskObserver.trackAll();
 
     /** @internal */
     readonly diagnostics = new GridModelDiagnostics(this);
