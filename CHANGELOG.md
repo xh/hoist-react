@@ -175,6 +175,10 @@
   control was sized to its content.
 * Fixed `checkboxRenderer()` throwing a `TypeError` when called with no argument. Its config is now
   optional.
+* Fixed `DashCanvas` widgets rendering at a placeholder width on load, then visibly animating out
+  to fill the canvas - a costly relayout of every widget while dashboards load. Widgets now render
+  once at their final size. Note that widgets on a canvas that starts hidden now render when first
+  shown.
 
 ### ⚙️ Technical
 
