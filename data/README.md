@@ -183,9 +183,10 @@ Providing it is an assertion: the updates change record values only (no parent/s
 and no field outside the set changed. Hoist carries the set through to the `Grid` transaction sync,
 which uses it to prove that an update cannot affect row order and skip ag-Grid's re-sort entirely -
 a major win for high-frequency updates into large sorted grids. Cube `View`s supply `changedFields`
-automatically on streaming updates, so view-connected stores get this for free. Producers that
-cannot cheaply determine the set should simply omit it - the grid falls back to comparing sorted
-field values record-by-record where possible.
+automatically on streaming updates, so view-connected stores get this for free - and consume it on
+the way in, diffing only the declared fields on each updated leaf when a `Cube.updateDataAsync()`
+transaction supplies the set. Producers that cannot cheaply determine the set should simply omit
+it - the grid falls back to comparing sorted field values record-by-record where possible.
 
 **`loadDataAsync(rawData)`** - Streaming counterpart to `loadData()`. It accepts a sync or async
 iterable that yields raw records, and creates records incrementally without buffering the complete
