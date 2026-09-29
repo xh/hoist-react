@@ -39,8 +39,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   automatically as data changes, and calculated fields are read-only for editing.
 * Added `CubeFieldSpec.calculatedFn` - the Cube-layer form of the same concept, computed on View
   rows with the View's `AggregationContext`. Recommended for globally-dependent values such as
-  percent-of-total, where a custom aggregator would slow updates to the entire View - calculated
-  fields keep Views on their fastest incremental update path. `AggregationContext.filteredRecords`
+  percent-of-total or ratios of sums such as a weighted average, where a custom aggregator would
+  slow updates to the entire View - calculated fields keep Views on their fastest incremental
+  update path. `AggregationContext.filteredRecords`
   is readable from these functions and always current.
 
 ## 88.0.0 - 2026-09-28
