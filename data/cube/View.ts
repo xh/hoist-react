@@ -30,7 +30,7 @@ import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
-import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
+import {ExposedLeafRow, HiddenLeafRow, LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
 import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
@@ -154,8 +154,8 @@ export class View
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
     _aggFieldsByDepth: CubeField[][] = null;
-    // Derived fields without an aggregator - computed by getter on every row from its aggregates.
-    _levelDerivedFields: CubeField[] = null;
+    // Derived query fields - read via getter, so never present in a producer's `changedFields`.
+    _derivedFields: CubeField[] = null;
     _aggFieldNamesByDepth: Set<string>[] = null;
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
@@ -305,7 +305,7 @@ export class View
         if (!simpleUpdates) {
             this.fullUpdate('update', start);
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdate(simpleUpdates, start);
+            this.dataOnlyUpdate(simpleUpdates, changes.changedFields, start);
         } else {
             this.dataUnchangedUpdate(start);
         }
@@ -357,7 +357,7 @@ export class View
     private buildIndices() {
         const {fields, query} = this;
         this._fieldsByName = new Map(fields.map(it => [it.name, it]));
-        this._levelDerivedFields = fields.filter(it => it.isDerived && !it.aggregator);
+        this._derivedFields = fields.filter(it => it.isDerived);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
@@ -406,46 +406,59 @@ export class View
         }
     }
 
-    private dataOnlyUpdate(updates: StoreRecord[], start: number) {
-        const {_leafMap, stores} = this,
-            updatedRowDatas = new Set<ViewRowData>(),
-            changedFields = new Set<string>();
+    // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
+    private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
+        const {_leafMap, stores, fields} = this,
+            // A producer's changedFields names stored fields only - also check the derived fields
+            // reading them, whose leaf values may have moved without being named.
+            checkNames = changedFields ? this.withDerivedDependents(changedFields) : null,
+            checkFields = checkNames ? fields.filter(it => checkNames.has(it.name)) : fields,
+            changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
-            const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas, changedFields);
+            _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
         });
 
-        updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
+        changed.rows.forEach(rowData => this.assignDigest(rowData));
 
-        // Level-derived values have no stored value to diff - report one changed whenever an input is.
-        // Repeat until a pass adds nothing - derived fields may depend on other derived fields.
-        if (changedFields.size) {
-            for (let added = true; added;) {
-                added = false;
-                this._levelDerivedFields.forEach(({name, dependsOn}) => {
-                    if (!changedFields.has(name) && dependsOn.some(it => changedFields.has(it))) {
-                        changedFields.add(name);
-                        added = true;
-                    }
-                });
-            }
-        }
+        // Derived values on parent rows are read via getter and never diffed - report them changed
+        // to consumers whenever an input is.
+        changed.fields = this.withDerivedDependents(changed.fields);
 
         this.createAggregationContext();
 
         stores.forEach(store => {
             const recordUpdates = [];
-            updatedRowDatas.forEach(rowData => {
+            changed.rows.forEach(rowData => {
                 if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
-            // Parents only rewrite fields reported changed by leaves, so the leaf-level union
-            // covers every value written - and this path never touches structure.
-            store.updateData({update: recordUpdates, changedFields});
+            store.updateData({update: recordUpdates, changedFields: changed.fields});
         });
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);
+    }
+
+    /**
+     * The given field names plus, transitively, every derived query field reading any of them.
+     * Returns the input set itself when nothing is added.
+     */
+    private withDerivedDependents(names: Set<string>): Set<string> {
+        const {_derivedFields} = this;
+        if (isEmpty(_derivedFields) || !names.size) return names;
+
+        let ret = names;
+        for (let added = true; added;) {
+            added = false;
+            _derivedFields.forEach(({name, dependsOn}) => {
+                if (!ret.has(name) && dependsOn.some(it => ret.has(it))) {
+                    if (ret === names) ret = new Set(names);
+                    ret.add(name);
+                    added = true;
+                }
+            });
+        }
+        return ret;
     }
 
     // Rows left untouched, but deciding that meant testing the changes against the query.

@@ -16,6 +16,8 @@ import {ReactNode} from 'react';
  * track the progression of asynchronous tasks. It can be passed directly to a Panel
  * component via its `mask` property, providing a common and convenient
  * method for masking a section of a user interface while an operation is pending.
+ *
+ * Instances hold no resources and need no cleanup - `@managed` is not required.
  */
 export class TaskObserver {
     //-------------------
@@ -191,6 +193,7 @@ class PromiseObserver extends TaskObserver {
     constructor(promise, message) {
         super();
         this._message = message;
-        promise.finally(action(() => (this._isPending = false)));
+        const onSettled = action(() => (this._isPending = false));
+        promise.then(onSettled, onSettled);
     }
 }

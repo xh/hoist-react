@@ -86,7 +86,7 @@ export class AppContainerModel extends HoistModel {
     //------------
     // Sub-models
     //------------
-    @managed appLoadObserver = TaskObserver.trackAll();
+    appLoadObserver = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
     @managed pageStateModel = new PageStateModel();
     @managed routerModel = new RouterModel();

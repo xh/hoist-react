@@ -200,7 +200,7 @@ Import from `@xh/hoist/utils/js`.
 
 ### Decorators
 
-Hoist uses **TC39 Stage 3 modern decorators** (Babel `2023-11`, the current spec revision). TypeScript's
+Hoist uses **TC39 Stage 3 modern decorators** (the `2023-11` spec revision, transpiled by SWC). TypeScript's
 `experimentalDecorators` flag is **off**. This is the two-argument `(value, context)` API — any
 custom decorator must use this signature. `@observable` and `@bindable` fields require the
 `accessor` keyword; method/getter decorators below do not.
@@ -422,7 +422,7 @@ const priceFeed = hoistCmp.factory<PriceFeedModel>({
 
 // Model — react to visibility changes
 class PriceFeedModel extends HoistModel {
-    @bindable visible = false;
+    @bindable accessor visible = false;
 
     override onLinked() {
         this.addReaction({

@@ -6,7 +6,6 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {
-    managed,
     Persistable,
     PersistableState,
     PersistenceProvider,
@@ -188,7 +187,7 @@ export class DashContainerModel
     //----------------------------
     @observableRef accessor goldenLayout: GoldenLayout;
     containerRef = createObservableRef<HTMLElement>();
-    @managed loadingStateTask = TaskObserver.trackLast();
+    loadingStateTask = TaskObserver.trackLast();
 
     private isDestroyingGoldenLayout = false;
 

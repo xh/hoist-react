@@ -22,8 +22,8 @@ export class JsonSearchImplModel extends HoistModel {
     private matchingNodesUrl = 'jsonSearch/getMatchingNodes';
 
     @managed gridModel: GridModel;
-    @managed docLoadTask: TaskObserver = TaskObserver.trackLast();
-    @managed nodeLoadTask: TaskObserver = TaskObserver.trackLast();
+    docLoadTask: TaskObserver = TaskObserver.trackLast();
+    nodeLoadTask: TaskObserver = TaskObserver.trackLast();
 
     @observable accessor groupBy: string = null;
     @observable accessor isOpen: boolean = false;

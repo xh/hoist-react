@@ -74,13 +74,13 @@ construction.
 The following config files define mechanically enforced style rules. Do not duplicate these rules
 in code reviews or conventions discussions — the tooling handles them:
 
-- **`.prettierrc.json`** — Formatting: single quotes, 4-space indent (2 for SCSS/JSON), 100-char
+- **`.prettierrc.json`** - Formatting: single quotes, 4-space indent (2 for SCSS/JSON), 100-char
   print width, trailing commas off, arrow parens avoided
-- **`eslint.config.js`** — Linting: `@xh/eslint-config` base rules + TSDoc syntax checking via
+- **`eslint.config.js`** - Linting: `@xh/eslint-config` base rules + TSDoc syntax checking via
   `eslint-plugin-tsdoc` + Prettier integration
-- **`tsconfig.json`** — TypeScript: `experimentalDecorators`, `noImplicitOverride`,
+- **`tsconfig.json`** - TypeScript: `noImplicitOverride`,
   `useDefineForClassFields`, `moduleResolution: "bundler"`, ES2022 target
-- **`.stylelintrc.json`** — SCSS linting (if present)
+- **`.stylelintrc.json`** - SCSS linting (if present)
 
 Run `pnpm lint` to check all rules. Run `pnpm lint:code` for JS/TS only or `pnpm lint:styles`
 for SCSS only. Type-checking is a separate gate — run `pnpm typecheck` (`tsc --noEmit`), which
@@ -731,16 +731,39 @@ async fetchUsersAsync(): Promise<User[]> {
 `try/catch`, where `return await` is required for the local `catch` to handle rejections
 (a plain `return` passes the promise through unwrapped, bypassing the `catch`).
 
+### The Runner Chain
+
+For work that needs masking, activity tracking, or trace spans, use the `Runner` chain from
+`HoistBase.runner()`. It composes those concerns with the fetch call in one chain, and passes
+the `CallContext` (span and `loadSpec`) through to the request automatically. This is the
+standard load pattern for new code:
+
+```typescript
+async doLoadAsync(loadSpec: LoadSpec) {
+    const data = await this.runner({loadSpec})
+        .linkTo(this.loadTask)
+        .track({category: 'Users', message: 'Loaded users'})
+        .fetchJson({url: 'api/users'});
+    this.store.loadData(data);
+}
+```
+
+Use `.run(fn)` as the terminal when the work is more than a single fetch. See
+[The Runner chain](./telemetry.md#the-runner-chain) for the full builder and terminal API.
+
 ### Promise Extensions
 
-Hoist extends the Promise prototype with chainable methods. The most common:
+Hoist extends the Promise prototype with chainable methods. These are the lower-level API that
+the `Runner` wraps - prefer the `Runner` for masking, tracking, and spans in new code, and reach
+for these directly on promises the `Runner` does not produce:
 
 - **`.catchDefault()`** — catches and passes to `XH.handleException()` with default options
-- **`.track({model, category})`** — links to a `TaskObserver` for loading masks/indicators
+- **`.track({category, message})`** — records the call and its timing via Hoist activity tracking
 - **`.timeout(ms)`** — rejects if not settled within the given time
-- **`.linkTo(observable)`** — writes resolved value to an observable property
+- **`.linkTo(taskObserver)`** — links to a `TaskObserver` for loading masks and progress messages
 
-See [`/promise/README.md`](../promise/README.md) for the full API.
+`.catchDefault()` and `.timeout()` still apply to the promise a `Runner` terminal returns. See
+[`/promise/README.md`](../promise/README.md) for the full API.
 
 ### `Timer.create()`
 

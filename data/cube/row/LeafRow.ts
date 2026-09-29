@@ -8,10 +8,27 @@
 import {PlainObject} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
+import {CubeField} from '../CubeField';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 import {BaseRow} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
+
+/**
+ * Accumulates the effects of value-only leaf updates across a View - see
+ * {@link LeafRow.applyLeafDataUpdate}.
+ */
+export interface LeafUpdateChanges {
+    /** Data objects of every row rewritten by the update - leaves and their ancestors alike. */
+    rows: Set<ViewRowData>;
+    /**
+     * Names of every field changed by the update. Collected at the leaves only, which suffices
+     * because this path runs only with simple aggregators and no derived fields - a parent then
+     * rewrites a field only in response to a child update on that same field. See
+     * {@link View.aggregatorsAreSimple}.
+     */
+    fields: Set<string>;
+}
 
 /**
  * Row within a dataset produced by a Cube or View representing leaf-level data. These rows have a
@@ -50,33 +67,29 @@ export abstract class LeafRow extends BaseRow {
         this.cubeRecord = rawRecord;
     }
 
-    applyLeafDataUpdate(
-        newRec: StoreRecord,
-        updatedRowDatas: Set<PlainObject>,
-        changedFields: Set<string>
-    ) {
+    applyLeafDataUpdate(newRec: StoreRecord, checkFields: CubeField[], changed: LeafUpdateChanges) {
         this.cubeRecord = newRec;
-        const {view, data} = this,
+        const {data} = this,
             newData = newRec.data,
             updates = [];
 
         // 1) Calculate diff.
-        view.fields.forEach(field => {
+        checkFields.forEach(field => {
             const name = field.name,
                 oldValue = data[name],
                 newValue = newData[name];
             if (oldValue !== newValue) {
                 updates.push(new RowUpdate(field, oldValue, newValue));
-                changedFields.add(name);
+                changed.fields.add(name);
             }
         });
 
         // 2) Apply new values to our data, as per subclass strategy.
-        this.applyUpdatedData(updates, newData, updatedRowDatas);
+        this.applyUpdatedData(updates, newData, changed.rows);
 
         // 3) Propagate any updates to ancestors and consumers.
         if (!isEmpty(updates)) {
-            this.parent?.applyDataUpdate(updates, updatedRowDatas);
+            this.parent?.applyDataUpdate(updates, changed.rows);
         }
     }
 
