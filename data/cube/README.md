@@ -163,7 +163,9 @@ Rules to observe:
   would leave the weighted `price` stale until the next full rebuild. Returning false routes every
   update through a full rebuild, on which reused rows recompute the aggregate afresh. Aggregators
   that depend on values beyond their own children (e.g. percent-of-total) must return false for the
-  same reason, and doing so also gives them access to `AggregationContext.filteredRecords`.
+  same reason, and doing so also gives them access to `AggregationContext.filteredRecords`. Where
+  the aggregate is a ratio of sums, prefer restating it with a [calculated field](#calculated-fields)
+  - that keeps the View on the incremental path.
 
 ## Calculated Fields
 
@@ -199,6 +201,29 @@ skip unchanged cells.
 Note when the needed global is already published as a row - e.g. a View with `includeRoot`
 loading a store with `loadRootAsSummary` - prefer a Store-layer `calculatedFn` reading
 `store.summaryRecords`, with no Cube API needed at all.
+
+**Ratios over aggregates - e.g. a weighted average.** An aggregate that reads a second field, such
+as a price weighted by quantity, cannot use the incremental update path as a custom aggregator
+(see [Custom Aggregators](#custom-aggregators)). Restate it instead as built-in `SUM`s over
+leaf-level terms, with a calculated field taking the ratio on every row:
+
+```typescript
+// Leaf records supply `qty` and a precomputed `priceQty` (price * qty) - from the server, or via
+// the Cube's `processRawData`. Calculated fields never feed aggregators, so the product must be
+// a stored leaf value.
+fields: [
+    {name: 'qty', aggregator: 'SUM'},
+    {name: 'priceQty', aggregator: 'SUM'},
+    {name: 'price', calculatedFn: row => (row.qty ? row.priceQty / row.qty : null)}
+]
+```
+
+Both sums update incrementally in O(depth) per changed leaf, whether `price` or `qty` changed, and
+the ratio is always current on aggregate and leaf rows alike - no aggregator state, no
+`dependsOnChildrenOnly: false`. The same decomposition covers other ratios, conditional sums, and
+variance (via sum, sum of squares and `LEAF_COUNT`). Note `Cube.modifyRecordsAsync()` does not
+re-run `processRawData`, so a product derived there goes stale on local edits until the next load
+or update - supply it from the server if leaf-level editing matters.
 
 Constraints: `calculatedFn` is mutually exclusive with `aggregator`, `canAggregateFn` and
 `isDimension`; calculated fields may not feed other aggregators or appear in a `BucketSpec`'s

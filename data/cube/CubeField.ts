@@ -61,7 +61,9 @@ export interface CubeFieldSpec extends FieldSpec {
      * When the needed global is already published as a row (e.g. `includeRoot` +
      * `loadRootAsSummary`), prefer a Store-layer `calculatedFn` reading `store.summaryRecords`.
      * Otherwise read `ctx.filteredRecords` here, memoizing per-tick intermediates in
-     * `ctx.appData`. Shared semantics per {@link FieldSpec.calculatedFn}: read-only, read by
+     * `ctx.appData`. Ratios of aggregates (e.g. a weighted average as `SUM(priceQty) / SUM(qty)`)
+     * are best expressed as a calculated field over two `SUM` fields - see the Cube README.
+     * Shared semantics per {@link FieldSpec.calculatedFn}: read-only, read by
      * name (never own-property enumeration), and prefer returning primitives or stable
      * references.
      *

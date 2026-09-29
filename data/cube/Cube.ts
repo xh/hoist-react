@@ -7,7 +7,7 @@
 
 import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {Store, StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
@@ -174,8 +174,7 @@ export class Cube extends HoistBase {
     bucketSpecFn: BucketSpecFn;
     omitFn: OmitFn;
 
-    @observable.ref
-    info: any = null;
+    @observableRef accessor info: any = null;
 
     _connectedViews: Set<View> = new Set();
 
@@ -193,7 +192,6 @@ export class Cube extends HoistBase {
         xhName = null
     }: CubeConfig) {
         super();
-        makeObservable(this);
         this.xhName = xhName;
         this.store = new Store({
             xhName: this.childXhName('store'),

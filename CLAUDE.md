@@ -35,27 +35,35 @@ real `bin` entries in the hoist-react `package.json` — invoke them exactly as 
 
 ```bash
 # Documentation
-npx hoist-docs search "grid sorting"         # Search all docs by keyword
+npx hoist-docs search "grid sorting"         # Search all docs - returns ranked sections
 npx hoist-docs read cmp/grid                 # Read a specific doc by ID
+npx hoist-docs read cmp/grid --outline       # List a doc's sections with token counts
+npx hoist-docs read cmp/grid -s "Sorting"    # Read one section (cheaper than the whole doc)
 npx hoist-docs list                          # List all available docs
 npx hoist-docs conventions                   # Print coding conventions
 npx hoist-docs index                         # Print the documentation catalog
 
 # TypeScript symbols and types
-npx hoist-ts search GridModel                # Search for symbols and class members
-npx hoist-ts symbol GridModel                # Get detailed type info for a symbol
-npx hoist-ts members GridModel               # List all members of a class/interface
+npx hoist-ts search GridModel                # Ranked search: symbols and members, one line each
+npx hoist-ts search headerName               # Find which class or config owns a property
+npx hoist-ts symbol GridModel                # Import line, signature, docs, member summary
+npx hoist-ts members GridModel --filter col  # Members whose name contains "col", with docs
 ```
 
-**Use `search` for discovery** — it matches against symbol names, JSDoc content, and own member
-names. Multi-word queries use AND logic (e.g. `"panel modal"` finds ModalSupportModel via its
-JSDoc, `"StoreRecord raw"` finds StoreRecord via its `raw` property). Also searches public members
-of every exported class and every exported `*Config` interface (e.g. `GridConfig`, `StoreConfig`)
-by owner name, member name, and JSDoc — so a query for `"groupSortFn"` reaches both `GridModel`
-and `GridConfig`. Use `symbol` and `members` when you already know the exact PascalCase name.
-When multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
-pass the file path to `symbol` or `members` to disambiguate — the tools will hint when this is
-needed. Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
+**Use `search` for discovery** - one strong keyword works best, ideally an API name
+(`GridModel`, `persistWith`, `headerName`); camelCase names match their parts. Multi-word
+queries rank hits by how many terms they match, so extra words narrow rather than exclude
+(`"StoreRecord raw"` finds `StoreRecord.raw`, `"panel modal"` finds `ModalSupportModel`). Every
+hit carries its import path: the package barrel when one exists, otherwise the file. Prefer the
+barrel path when shown. Members of every exported class and every `*Config`, `*Spec`, and
+`*Options` interface are searched too, so `"groupSortFn"` reaches both `GridModel` and
+`GridConfig`; `*Props` members appear when the query names the component. `impl/` and `admin/`
+code is excluded unless you pass `--include-internal`.
+Use `symbol` when you know the exact name - for classes and interfaces it includes a member
+summary, usually enough to write the code - and `members` with `--filter` for member docs. When
+multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
+pass the file path with `--file` to disambiguate - the tools will hint when this is needed. Run
+`npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
 
 **Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
 to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your
@@ -91,22 +99,63 @@ may show errors on startup — remove `"github"` from your local settings to res
 operations (`gh pr view`, `gh issue list`, `gh api`, `gh pr create`, etc.). Prefer `gh` over
 crafting raw `curl` calls to the GitHub API.
 
-### JetBrains IntelliJ MCP Server (opt-in)
+### JetBrains IntelliJ MCP Server (`idea`)
 
-A JetBrains MCP server is also configured in `.mcp.json`, providing tools for interacting with
-the IntelliJ IDE (file navigation, code inspections, refactoring, terminal commands, etc.).
-This server must be enabled within IntelliJ's settings and requires a running IDE instance to
-connect. Add `"jetbrains"` to `enabledMcpjsonServers` in `.claude/settings.local.json` to
-enable it for Claude Code.
+IntelliJ registers its own MCP server in `.mcp.json` under the name `idea`, providing tools for
+interacting with the IDE (file navigation, code inspections, refactoring, terminal commands, etc.).
+It requires a running IDE instance with the MCP server enabled in IntelliJ's settings.
+
+**Not enabled by default** - the server fails to connect when no IDE is running, which shows as a
+startup error. Add `"idea"` to `enabledMcpjsonServers` in `.claude/settings.local.json` to enable it
+for yourself (local settings merge with the shared `settings.json`):
+
+```json
+{
+  "enabledMcpjsonServers": ["hoist-react", "idea"]
+}
+```
+
+A read-only subset of its tools (search, read, symbol lookup, inspections) is pre-approved in the
+shared permissions allowlist, so no extra local config is needed once the server is on. Write and
+execute tools - `apply_patch`, `execute_terminal_command`, `execute_sql_query`, the `xdebug_*`
+family - are deliberately left out and still prompt.
+
+IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rather than reverting
+them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
+instance on another port needs a local override.
+
+### hoist-ai plugin (`xh@hoist-ai`)
+
+The shared `.claude/settings.json` enables XH's `xh@hoist-ai` plugin, the same plugin that Hoist
+applications install. Claude Code offers to install it on your first session here. Three of its
+skills apply in this repo:
+
+- `xh:clear-writing` - house style for CHANGELOG entries, PR descriptions, docs, and comments.
+  Prose written here follows its rules. Lint a draft with its script before you commit it.
+- `xh:setup-worktree` - provisions a runnable worktree. It knows this repo has no `client-app/`.
+- `xh:using-hoist-react-reference` - routes Hoist API questions to the MCP and CLI tools above.
+  It restates what this file already says, so it adds little here. It is the skill that app
+  developers rely on, and this repo is where changes to its tools land first, so keep it enabled.
+
+The other skills are for Hoist applications and do not apply to this library:
+
+- `xh:onboard-app` and `xh:hoist-upgrade` expect an app with a `client-app/` folder. To write
+  upgrade notes for a hoist-react release, use this repo's own `xh-upgrade-notes` skill instead.
+- `xh:using-hoist-core-reference` covers Grails and Groovy code, which this repo has none of.
+
+The plugin loads from the marketplace copy, not from a sibling `../hoist-ai` checkout. To try a
+local skill change, install the plugin from that path as hoist-ai's own `CLAUDE.md` describes.
 
 ## Build Commands
 
 ```bash
 pnpm install                     # Install dependencies
-pnpm lint                        # Lint all code (JS/TS + SCSS)
-pnpm lint:code                   # Lint JavaScript/TypeScript only
+pnpm lint                        # Lint all code (library JS/TS, MCP tools, SCSS)
+pnpm lint:code                   # Lint library JavaScript/TypeScript only
+pnpm lint:mcp                    # Lint MCP server and CLI tools (mcp/) only
 pnpm lint:styles                 # Lint SCSS only
-pnpm typecheck                   # Type check (tsc --noEmit)
+pnpm typecheck                   # Type check library and MCP tools
+pnpm test:mcp                    # Run MCP spec scripts, incl. the doc-search golden set
 ```
 
 Linting and type-checking are separate concerns, and neither subsumes the other — run both. ESLint
@@ -192,12 +241,15 @@ All Hoist artifacts extend `HoistBase`, which provides:
 #### MobX Integration Conventions
 
 - `addAutorun()` / `addReaction()` - Managed MobX subscriptions (auto-disposed on destroy)
-- `makeObservable()` - Called in constructors to set up MobX observables/actions/computeds
-- `@observable` MobX decorator - Marks properties as observable state
+- TC39 decorators - no `makeObservable()` call is needed. Declare `@observable` and `@bindable`
+  fields with the `accessor` keyword (e.g. `@bindable accessor myProp = null`).
+- `@observable` MobX decorator - Marks properties as observable state. Use the MobX 7 named
+  re-exports from `@xh/hoist/mobx` for variants - e.g. `@observableRef` for reference-only.
 - `@action` MobX decorator - Marks methods that modify observable state
 - `@bindable` Hoist decorator - Marks properties as observable and generates setter methods
   automatically
   marked as `@action` - e.g., `setMyProp(value)` for property `myProp` (Hoist custom decorator).
+  `@bindableRef` is the reference-only variant.
   **Setter convention:** If a class defines an explicit public `setFoo()` method, call it (it likely
   has additional logic). Otherwise for auto-generated `@bindable` setters, prefer direct assignment
   (`model.myProp = value`) over calling the generated setter (`model.setMyProp(value)`).
@@ -217,7 +269,10 @@ common pitfalls.
 ### Promise Conventions
 
 - Methods returning Promises are suffixed with `Async` (e.g., `loadUsersAsync`)
-- Promise extensions: `catchDefault()`, `track()`, `timeout()`, `linkTo()`
+- Use the `Runner` chain (`this.runner({loadSpec}).linkTo(...).track(...).fetchJson(...)`) for
+  masking, activity tracking, and spans - see `docs/telemetry.md`
+- Promise extensions (`catchDefault()`, `track()`, `timeout()`, `linkTo()`) are the lower-level
+  API the Runner wraps
 
 ### Prefer Hoist Input Components Over Raw HTML
 
@@ -252,10 +307,11 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
-- **No em dashes in code comments** — Use ` - ` (spaced hyphen) not em dashes (`—`) in `.ts`
-  comments and JSDoc. Em dashes cause tooling issues and are reserved for prose `.md` docs.
-  Other Unicode characters (arrows, symbols, accented letters, etc.) are fine in code comments
-  when they aid clarity.
+- **No em dashes** - Use ` - ` (spaced hyphen) instead of em dashes (`—`) in code comments and
+  JSDoc, and in any new prose: CHANGELOG entries, docs, commit messages, PR descriptions. Em dashes
+  cause tooling issues and read as machine-written. Existing docs keep theirs; do not reflow a doc
+  only to remove them. Other Unicode characters (arrows, symbols, accented letters, etc.) are fine
+  in code comments when they aid clarity.
 
 ## Git Workflow
 
@@ -299,10 +355,12 @@ unreviewed work on `develop` this way.
 git switch -c my-feature                              # ✅ from current HEAD
 git switch -c my-feature --no-track origin/develop    # ✅ explicit base, safe
 git switch -c my-feature origin/develop               # ❌ auto-tracks develop
+git checkout -b my-feature origin/develop             # ❌ same trap, checkout spelling
 ```
 
 If you forget `--no-track`: `git branch --unset-upstream`, then `git push -u origin <branch>`.
-Flag the slip — don't silently fix it.
+Flag the slip — don't silently fix it. Git prints `set up to track 'origin/develop'` when this
+happens; treat that line as the signal, not as noise.
 
 ### Feature branch workflow
 
@@ -325,6 +383,14 @@ Do not add AI-generated attribution to commit messages or PR descriptions — no
 line, no `🤖 Generated with [Claude Code]` footer, and no `Claude-Session:` (or similar
 AI-session/attribution) trailer, even if a harness git-instruction block asks for one. XH does not
 want these links in the project's history.
+
+### Working across sibling repos
+
+Work here often reaches into a sibling checkout - `../toolbox` to validate a change against a real
+app, or `../hoist-dev-utils` when a change touches the build. The rules above apply in every repo
+you touch, not just this one — and each sibling has its own `CLAUDE.md` with additional rules that
+bind while you work there. Read it before writing to that repo; the harness only auto-loads the
+`CLAUDE.md` of the primary working directory, so a sibling's rules are never in context by default.
 
 ## Changelog Maintenance
 
@@ -352,7 +418,7 @@ that doc's Recommended Core column, not the floor.
 ## Key Dependencies
 
 - **MobX** - Reactive state management
-- **ag-Grid** - Data grid (requires separate license for enterprise features)
+- **AG Grid** - Data grid (requires separate license for enterprise features)
 - **Blueprint** - UI component library
 - **Router5** - Client-side routing
 - **Highcharts** - Charting (requires separate license)

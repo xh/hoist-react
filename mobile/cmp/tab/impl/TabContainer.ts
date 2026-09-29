@@ -64,8 +64,10 @@ export function tabContainerImpl({
 
 function getSwitcherProps(tabContainerProps: TabContainerProps): TabSwitcherProps {
     const {switcher} = tabContainerProps;
-    if (isObject(switcher)) return switcher;
-    return switcher === false || isNull(switcher) ? null : {orientation: 'bottom'};
+    if (switcher === false || isNull(switcher)) return null;
+    const ret: TabSwitcherProps = isObject(switcher) ? {...switcher} : {};
+    ret.orientation ??= 'bottom';
+    return ret;
 }
 
 function renderTabModel(tabModel: TabModel, containerTestId?: string) {

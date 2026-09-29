@@ -25,7 +25,7 @@ import {
     ValidationResult
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
-import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, computed, observable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -310,6 +310,7 @@ export interface StoreChangeLog {
     add?: StoreRecord[];
     remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
+    changedFields?: Set<string>;
 }
 
 export interface ChildRawData {
@@ -374,8 +375,7 @@ export class Store
     idSpec: (data: PlainObject) => StoreRecordId;
     processRawData: (raw: any) => any;
 
-    @observable
-    filterIncludesChildren: boolean;
+    @observable accessor filterIncludesChildren: boolean;
 
     loadTreeData: boolean;
     loadTreeDataFrom: string;
@@ -388,28 +388,23 @@ export class Store
     /** Connected Cube View, set at construction - see {@link StoreConfig.view}. */
     readonly view: View = null;
 
-    @observable.ref
-    filter: Filter;
+    @observableRef accessor filter: Filter;
 
     /** Timestamp (ms) of the last time this store's data was changed. */
-    @observable
-    lastUpdated: number;
+    @observable accessor lastUpdated: number;
 
     /** Timestamp (ms) of the last time this store's data was loaded.*/
-    @observable
-    lastLoaded: number = null;
+    @observable accessor lastLoaded: number = null;
 
     /**
      * Records containing summary data, such as top-level aggregations produced by a Hoist Cube
      * or any other custom aggregation(s) calculated and installed by the application. Set via
      * {@link loadData} or by loading a tree structure with `loadRootAsSummary` set to true.
      */
-    @observable.ref
-    summaryRecords: StoreRecord[] = null;
+    @observableRef accessor summaryRecords: StoreRecord[] = null;
 
     /** @internal - used internally by any StoreFilterField bound to this store. */
-    @observable
-    xhFilterText: string = null;
+    @observable accessor xhFilterText: string = null;
 
     @managed
     validator: StoreValidator;
@@ -417,12 +412,9 @@ export class Store
     //----------------------
     // Implementation State
     //----------------------
-    @observable.ref
-    private _committed: RecordSet;
-    @observable.ref
-    private _current: RecordSet;
-    @observable.ref
-    _filtered: RecordSet;
+    @observableRef private accessor _committed: RecordSet;
+    @observableRef private accessor _current: RecordSet;
+    @observableRef accessor _filtered: RecordSet;
 
     private _denseRecordThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
@@ -475,7 +467,6 @@ export class Store
         data
     }: StoreConfig) {
         super();
-        makeObservable(this);
         throwIf(
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
@@ -780,6 +771,9 @@ export class Store
             if (update) changeLog.update = update;
             if (add) changeLog.add = add;
             if (removeIds) changeLog.remove = compact(removeIds.map(id => this.getById(id)));
+            if (changedFields && update && !add && !removeIds) {
+                changeLog.changedFields = changedFields;
+            }
 
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.

@@ -15,7 +15,7 @@ import {
     useLocalModel,
     uses
 } from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -249,13 +249,7 @@ class FilterChooserLocalModel extends HoistModel {
     @lookup(FilterChooserModel)
     model: FilterChooserModel;
 
-    @bindable
-    popoverIsOpen: boolean = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor popoverIsOpen: boolean = false;
 
     open() {
         this.popoverIsOpen = true;

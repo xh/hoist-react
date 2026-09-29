@@ -8,7 +8,7 @@ import {br, fragment} from '@xh/hoist/cmp/layout';
 import {isHoistException} from '@xh/hoist/exception';
 import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {Token} from '@xh/hoist/security/Token';
 import {AccessTokenSpec, TokenMap} from './Types';
@@ -137,7 +137,6 @@ export abstract class BaseOAuthClient<
     //------------------------
     constructor(config: C) {
         super();
-        makeObservable(this);
         this.config = {
             loginMethodDesktop: 'REDIRECT',
             loginMethodMobile: 'REDIRECT',

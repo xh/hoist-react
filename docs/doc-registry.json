@@ -148,8 +148,8 @@
             "title": "Desktop Panel",
             "mcpCategory": "package",
             "viewerCategory": "desktop",
-            "description": "Desktop panel container with toolbars, masks, and collapsible behavior.",
-            "keywords": ["Panel", "PanelModel", "Toolbar", "mask", "loading indicator", "collapse/resize", "persistence", "modal support", "splitter", "compactHeader"]
+            "description": "Desktop panel container with toolbars, banners, masks, and collapsible behavior.",
+            "keywords": ["Panel", "PanelModel", "Toolbar", "Banner", "banner", "warning", "alert", "mask", "loading indicator", "collapse/resize", "persistence", "modal support", "splitter", "compactHeader"]
         },
         {
             "id": "desktop/README.md",
@@ -173,7 +173,7 @@
             "mcpCategory": "package",
             "viewerCategory": "utilities",
             "description": "Number, date, and miscellaneous formatting for grids and display.",
-            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "ledger", "colorSpec", "column renderer", "currency", "auto-precision"]
+            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "ledger", "colorSpec", "column renderer", "currency", "auto-precision", "localization", "locale", "i18n"]
         },
         {
             "id": "appcontainer/README.md",
@@ -372,8 +372,8 @@
             "title": "App Build & Deploy",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker).",
-            "keywords": ["build", "deploy", "pipeline", "webpack", "gradle", "Docker", "nginx", "Tomcat", "WAR"]
+            "description": "Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker).",
+            "keywords": ["build", "deploy", "pipeline", "rsbuild", "gradle", "Docker", "nginx", "Tomcat", "WAR"]
         },
         {
             "id": "docs/development-environment.md",
@@ -381,15 +381,15 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "Local development environment setup for Hoist and app developers.",
-            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "pnpm", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
+            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "pnpm", "yarn", "IntelliJ", "VS Code", "rsbuild dev server"]
         },
         {
             "id": "docs/compilation-notes.md",
             "title": "Compilation Notes",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "Notes on TypeScript/Babel compilation and build tooling internals.",
-            "keywords": ["compilation", "TypeScript", "Babel", "transpilation", "build tooling"]
+            "description": "Notes on TypeScript/SWC compilation and build tooling internals.",
+            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling"]
         },
         {
             "id": "docs/changelog-format.md",
@@ -524,8 +524,16 @@
             "title": "v88 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v87.x to v88.0.0. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "calculatedFn", "projectionOnly", "connected stores"]
+            "description": "Upgrade guide from v87.x to v88.0.0. High difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "experimentalDecorators", "makeObservable", "configureWebpack", "webpack.config.js", "ag-theme-balham", "PopoverFilterChooser", "mergePersistOptions", "LogSource", "localDateCol"]
+        },
+        {
+            "id": "docs/upgrade-notes/v89-upgrade-notes.md",
+            "title": "v89 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v88.x to v89.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88", "calculatedFn", "projectionOnly", "connected stores", "StoreConfig.view"]
         }
     ]
 }

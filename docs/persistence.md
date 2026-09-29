@@ -148,9 +148,9 @@ The simplest way to persist an individual property. Apply the decorator to any `
 class MyModel extends HoistModel {
     override persistWith = {localStorageKey: 'myPanel'};
 
-    @bindable @persist showAdvanced = false;
-    @observable @persist selectedView = 'summary';
-    @bindable @persist.with({prefKey: 'myPanelTheme'}) theme = 'light';
+    @bindable @persist accessor showAdvanced = false;
+    @observable @persist accessor selectedView = 'summary';
+    @bindable @persist.with({prefKey: 'myPanelTheme'}) accessor theme = 'light';
 }
 ```
 
@@ -159,14 +159,15 @@ config and the property name as its path. `@persist.with(options)` allows overri
 property-specific options — including a completely different provider.
 
 **Decorator ordering matters:** `@persist` must come after the MobX decorator in source order
-(which means it is applied first at runtime):
+(which means it is applied first at runtime, though its `init` hook runs second; see Decorator
+Ordering under Common Pitfalls):
 
 ```typescript
 // ✅ Correct: MobX decorator first, then @persist
-@bindable @persist showAdvanced = false;
+@bindable @persist accessor showAdvanced = false;
 
 // ❌ Wrong: @persist must come after the MobX decorator
-@persist @bindable showAdvanced = false;
+@persist @bindable accessor showAdvanced = false;
 ```
 
 ### Approach 2: `markPersist()`
@@ -177,8 +178,8 @@ declaration time — most commonly in dashboard widgets, where the backing store
 
 ```typescript
 class WidgetModel extends HoistModel {
-    @bindable selectedRegion = 'all';
-    @bindable groupBy = 'sector';
+    @bindable accessor selectedRegion = 'all';
+    @bindable accessor groupBy = 'sector';
 
     override onLinked() {
         // DashViewModel is only available after linking into the component tree
@@ -442,7 +443,7 @@ class ReportsModel extends HoistModel {
     override persistWith = {prefKey: 'reportsModel', pathPrefix: 'reports'};
 
     // Resolves to 'reports.showAdvanced'
-    @bindable @persist showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 
     // Resolves to 'reports.grid.columns', 'reports.grid.sortBy', etc.
     @managed gridModel = new GridModel({persistWith: this.persistWith, columns: [...]});
@@ -493,14 +494,18 @@ preserved.
 ### `@persist` Decorator Timing
 
 The `@persist` decorator operates during property initialization (before the constructor body
-runs). It:
+runs). Decorator functions run innermost first at class definition, so `@persist` runs before the
+MobX decorator and only registers an `init` hook. The `init` hooks then run outermost first when
+an instance is built: MobX's hook makes the property observable and registers the in-code
+default, and the `@persist` hook then creates a `PersistenceProvider`, which:
 
-1. Reads the in-code default value
-2. Creates a `PersistenceProvider` and reads from the backing store
-3. If a stored value exists, replaces the default
-4. Returns the final value as the property initializer result
-5. After the next tick (once `makeObservable()` has completed), installs a MobX reaction to
-   watch for future changes
+1. Reads the in-code default value from the now-observable property
+2. Reads from the backing store
+3. If a stored value exists, replaces the default via the property's MobX setter
+4. Installs a MobX reaction right away to watch for future changes
+
+The hook returns the in-code default unchanged. MobX holds the live value, so this does not undo
+step 3.
 
 This design ensures the persisted value is in place before any reactions see it — no thrashing.
 
@@ -530,9 +535,9 @@ ViewManager README for the standard setup pattern.
 class FilterPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'filterPanel'};
 
-    @bindable @persist showAdvanced = false;
-    @bindable @persist includeArchived = false;
-    @observable.ref @persist selectedStatuses = ['active', 'pending'];
+    @bindable @persist accessor showAdvanced = false;
+    @bindable @persist accessor includeArchived = false;
+    @observableRef @persist accessor selectedStatuses = ['active', 'pending'];
 }
 ```
 
@@ -572,16 +577,20 @@ class DetailModel extends HoistModel {
 
 ### Decorator Ordering
 
-`@persist` (or `@persist.with`) must come after the MobX decorator. Since decorators in
-TypeScript are applied bottom-up, `@persist` needs to be the inner decorator so it runs first
-and sets up the value before MobX makes it observable:
+`@persist` (or `@persist.with`) must come after the MobX decorator. Decorators apply innermost
+first, so `@persist` is applied first and only returns an `init` hook. The `init` hooks then run in
+the opposite order, outermost first: MobX's `init` makes the property observable, and the
+`@persist` `init` then reads the default from it and applies any stored value. Reversed, the
+`@persist` `init` runs before MobX's and reads a property that is not yet observable:
 
 ```typescript
-// ✅ Correct: @bindable first (outer), @persist second (inner, runs first)
-@bindable @persist showAdvanced = false;
+// ✅ Correct: @bindable outer, @persist inner - MobX init runs first,
+// then @persist reads the observable
+@bindable @persist accessor showAdvanced = false;
 
-// ❌ Wrong: @persist is outer, runs after @bindable — fails to find the property
-@persist @bindable showAdvanced = false;
+// ❌ Wrong: @persist outer - its init runs before MobX's; the read throws,
+// the error is logged, and the field never persists
+@persist @bindable accessor showAdvanced = false;
 ```
 
 ### Missing `persistWith` on the Model
@@ -593,13 +602,13 @@ provider cannot be created:
 ```typescript
 // ❌ No persistWith on model — @persist has no backing store
 class MyModel extends HoistModel {
-    @bindable @persist showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 }
 
 // ✅ Set persistWith to establish the backing store
 class MyModel extends HoistModel {
     override persistWith = {localStorageKey: 'myModel'};
-    @bindable @persist showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 }
 ```
 

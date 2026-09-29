@@ -120,7 +120,7 @@ export interface MsalTokenSpec extends AccessTokenSpec {
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/login-user.md
  *
  * Also see this doc re. use of blankUrl as redirectUri for all "silent" token requests:
- * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/errors.md#issues-caused-by-the-redirecturi-page
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/docs/errors.md#issues-caused-by-the-redirecturi-page
  *
  * Important note: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this
  *    library require 3rd party cookies to be enabled in the browser so that MSAL can load contact
@@ -134,17 +134,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
     telemetry: MsalClientTelemetry = null;
     private _telemetryCbHandle: string = null;
-
-    constructor(config: MsalClientConfig) {
-        super({
-            initRefreshTokenExpirationOffsetSecs: -1,
-            msalLogLevel: LogLevel.Warning,
-            domainHint: null,
-            enableTelemetry: true,
-            enableSsoSilent: true,
-            ...config
-        });
-    }
 
     //-------------------------------------------
     // Implementations of core lifecycle methods

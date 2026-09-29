@@ -6,7 +6,6 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {
-    managed,
     Persistable,
     PersistableState,
     PersistenceProvider,
@@ -19,7 +18,7 @@ import {
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
 import {convertIconToHtml, ResolvedIconProps} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -169,7 +168,7 @@ export class DashContainerModel
     //---------------------
     // Settable State
     //----------------------
-    @bindable showMenuButton: boolean;
+    @bindable accessor showMenuButton: boolean;
 
     //-----------------------------
     // Public properties
@@ -186,9 +185,9 @@ export class DashContainerModel
     //---------------------------
     // Implementation properties
     //----------------------------
-    @observable.ref goldenLayout: GoldenLayout;
+    @observableRef accessor goldenLayout: GoldenLayout;
     containerRef = createObservableRef<HTMLElement>();
-    @managed loadingStateTask = TaskObserver.trackLast();
+    loadingStateTask = TaskObserver.trackLast();
 
     private isDestroyingGoldenLayout = false;
 
@@ -211,7 +210,6 @@ export class DashContainerModel
         xhName = null
     }: DashContainerConfig) {
         super();
-        makeObservable(this);
         this.xhName = xhName;
         viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');

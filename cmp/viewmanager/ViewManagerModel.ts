@@ -20,7 +20,14 @@ import {
 import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
+import {
+    action,
+    bindable,
+    observable,
+    runInAction,
+    observableRef,
+    compareStructural
+} from '@xh/hoist/mobx';
 import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
@@ -97,8 +104,8 @@ export interface ViewManagerConfig {
 
     /**
      * True (default) to enable "global" views - i.e. views that are not owned by a user and are
-     * available to all. At least some users should have `manageGlobal` set to true to allow
-     * creation and management of these views.
+     * available to all. Creating and managing these views requires a role in the server-side
+     * `xhJsonBlobConfig.globalWriteRoles` soft config - see {@link manageGlobal}.
      */
     enableGlobal?: boolean;
 
@@ -131,8 +138,9 @@ export interface ViewManagerConfig {
     instance?: string;
 
     /**
-     * True to allow the user to creat and manage Global views. Apps are expected to commonly set
-     * this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
+     * False to prevent the user from creating and managing global views, even if permitted by
+     * the server. Defaults to the server's determination, per the roles configured in the
+     * `xhJsonBlobConfig.globalWriteRoles` soft config (hoist-core v42+).
      */
     manageGlobal?: Thunkable<boolean>;
 
@@ -214,13 +222,16 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
     readonly preserveUnsavedChanges: boolean;
-    readonly manageGlobal: boolean;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
+    private readonly manageGlobalConfig: boolean;
+
+    /** Server-reported ability to manage global views. Null until loaded, or on hoist-core before v42. */
+    @observable private accessor serverManageGlobal: boolean = null;
 
     /** Current view. Will not include uncommitted changes */
-    @observable.ref view: View<T> = null;
+    @observableRef accessor view: View<T> = null;
     /** Loaded saved view library - both private and global */
-    @observable.ref views: ViewInfo[] = [];
+    @observableRef accessor views: ViewInfo[] = [];
 
     /**
      * Map of user's preferred pinned state for views.
@@ -228,13 +239,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * Note that the actual pinned state for the views is determined by this value, layered
      * over the default state of the views themselves.
      */
-    @observable.ref userPinned: Record<string, boolean> = {};
+    @observableRef accessor userPinned: Record<string, boolean> = {};
 
     /**
      * True if user has opted-in to automatically saving changes to personal views (if auto-save
      * generally available as per `enableAutoSave`).
      */
-    @bindable autoSave = false;
+    @bindable accessor autoSave = false;
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -249,8 +260,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     // Private, internal state.
     //-------------------------
     /** Unsaved changes on the current view.*/
-    @observable.ref
-    private pendingValue: PendingValue<T> = null;
+    @observableRef private accessor pendingValue: PendingValue<T> = null;
 
     /**
      * Array of {@link ViewManagerProvider} instances bound to this model. Used to proactively push
@@ -266,6 +276,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //---------------
     get isValueDirty(): boolean {
         return !!this.pendingValue;
+    }
+
+    /** True if the current user may create and manage global views. */
+    get manageGlobal(): boolean {
+        const {serverManageGlobal, manageGlobalConfig} = this;
+        // TODO: drop nil branch once hoist-core v42 is the minimum.
+        return isNil(serverManageGlobal)
+            ? (manageGlobalConfig ?? false)
+            : serverManageGlobal && manageGlobalConfig !== false;
     }
 
     get isViewSavable(): boolean {
@@ -325,7 +344,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         defaultDisplayName = 'default',
         globalDisplayName = 'global',
         viewMenuItemFn,
-        manageGlobal = false,
+        manageGlobal = null,
         enableAutoSave = true,
         enableDefault = true,
         enableGlobal = true,
@@ -335,7 +354,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         xhName = null
     }: ViewManagerConfig) {
         super();
-        makeObservable(this);
         this.xhName = xhName ?? type;
 
         throwIf(
@@ -349,7 +367,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.defaultDisplayName = defaultDisplayName;
         this.globalDisplayName = globalDisplayName;
         this.viewMenuItemFn = viewMenuItemFn;
-        this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
+        this.manageGlobalConfig = executeIfFunction(manageGlobal);
         this.enableDefault = enableDefault;
         this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
@@ -373,12 +391,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .span('refresh')
             .run(async ctx => {
                 // 1) Update views and related state
-                const {views, state} = await dataAccess.fetchDataAsync(ctx);
+                const {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
                     this.userPinned = state.userPinned;
                     this.autoSave = state.autoSave;
+                    this.serverManageGlobal = manageGlobal ?? null;
                 });
 
                 // potentially fast-forward current view.
@@ -610,12 +629,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .span('init')
             .run(async ctx => {
                 // 1) Initialize views and related state
-                const {views, state} = await dataAccess.fetchDataAsync(ctx);
+                const {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 initialState = state;
                 runInAction(() => {
                     this.views = views;
                     this.userPinned = state.userPinned;
                     this.autoSave = state.autoSave;
+                    this.serverManageGlobal = manageGlobal ?? null;
                     if (this.preserveUnsavedChanges) {
                         this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
                     }
@@ -679,7 +699,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             {
                 track: () => this.userPinned,
                 run: userPinned => updateState('updateUserPinned', {userPinned}),
-                equals: comparer.structural,
+                equals: compareStructural,
                 debounce: ONE_SECOND
             },
             {

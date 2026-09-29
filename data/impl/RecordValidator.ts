@@ -14,7 +14,7 @@ import {
     ValidationResult,
     ValidationState
 } from '@xh/hoist/data';
-import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {computed, runInAction, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {compact, flatten, isEmpty, isString, mapValues, values} from 'lodash';
 import {PlainObject, TaskObserver} from '../../core';
 
@@ -25,7 +25,7 @@ import {PlainObject, TaskObserver} from '../../core';
 export class RecordValidator {
     record: StoreRecord;
 
-    @observable.ref private fieldValidations: RecordValidationResultsMap = null;
+    @observableRef private accessor fieldValidations: RecordValidationResultsMap = null;
     private validationTask = TaskObserver.trackLast();
     private validationRunId = 0;
 
@@ -52,7 +52,7 @@ export class RecordValidator {
     }
 
     /** Map of field names to field-level errors. */
-    @computed.struct
+    @computedStruct
     get errors(): RecordValidationMessagesMap {
         return mapValues(this.fieldValidations ?? {}, issues =>
             compact(issues.map(it => (it?.severity === 'error' ? it.message : null)))
@@ -60,7 +60,7 @@ export class RecordValidator {
     }
 
     /** Map of field names to field-level ValidationResults. */
-    @computed.struct
+    @computedStruct
     get validationResults(): RecordValidationResultsMap {
         return this.fieldValidations ?? {};
     }
@@ -81,7 +81,6 @@ export class RecordValidator {
 
     constructor(config: {record: StoreRecord}) {
         this.record = config.record;
-        makeObservable(this);
     }
 
     /**

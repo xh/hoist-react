@@ -190,6 +190,9 @@ panel({
 })
 ```
 
+Mobile panels also support the `banner` prop, with the same API as desktop - see
+[Panel Banners](../desktop/cmp/panel/README.md#banners).
+
 The package also provides `dialogPanel` — a panel variant rendered as a full-screen dialog overlay,
 useful for detail views or modal editing workflows.
 
