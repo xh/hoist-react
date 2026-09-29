@@ -629,12 +629,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .span('init')
             .run(async ctx => {
                 // 1) Initialize views and related state
-                const {views, state} = await dataAccess.fetchDataAsync(ctx);
+                const {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 initialState = state;
                 runInAction(() => {
                     this.views = views;
                     this.userPinned = state.userPinned;
                     this.autoSave = state.autoSave;
+                    this.serverManageGlobal = manageGlobal ?? null;
                     if (this.preserveUnsavedChanges) {
                         this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
                     }
