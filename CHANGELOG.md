@@ -305,8 +305,9 @@ and AG Grid 36 - affect every app. The rest apply only to apps using the named A
 
 ### 📚 Libraries
 
-* @auth0/auth0-spa-js `2.26 -> 2.27`
-* @azure/msal-browser `5.22 -> 5.23`
+* @auth0/auth0-spa-js `2.24 -> 2.27`
+* @azure/msal-browser `5.19 -> 5.23`
+* @azure/msal-common `16.13 -> 16.14`
 * @blueprintjs/core `6.18 -> 6.20`
 * @types/react `19.2 -> 19.3`
 * @types/react-dom `19.2 -> 19.3`
@@ -317,6 +318,7 @@ and AG Grid 36 - affect every app. The rest apply only to apps using the named A
 * minisearch `added @ 7.2` (MCP / CLI doc search only - never bundled)
 * mobx `6.16 -> 7.0`
 * mobx-react-lite `4.1 -> 5.1`
+* moment `2.30 -> 2.31`
 * react `19.2 -> 19.3`
 * react-dom `19.2 -> 19.3`
 * type-fest `5.9 -> 5.10`

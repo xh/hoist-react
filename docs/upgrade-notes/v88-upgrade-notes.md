@@ -190,8 +190,9 @@ After:
 ```
 
 Delete any `*AndAnalyze` scripts - `analyzeBundles` is gone. Keep `cross-env` in front of any
-`XH_*` assignment that must run on Windows. Each `configureRsbuild` option `fooBar` maps to
-`XH_FOO_BAR`, so `--env devHttps=true` becomes `XH_DEV_HTTPS=true`.
+`XH_*` assignment that must run on Windows. `readCliEnv()` maps a fixed set of `XH_*` variables
+onto options - for example `--env devHttps=true` becomes `XH_DEV_HTTPS=true`. Not every option
+has one - `readCliEnv()` in `@xh/hoist-dev-utils/configureRsbuild.js` lists them.
 
 Update CI release builds the same way:
 
@@ -208,7 +209,10 @@ Rsbuild loads on every run. Add `.env.local` and `.env.*.local` to `.gitignore`.
 Apps carrying their own `declare module '*.png'` / `'*.md'` style declarations in a local
 `types.d.ts` can drop them - hoist-react's `assets.d.ts` now covers the common asset types.
 
-Now run `pnpm install` / `yarn install` / `npm install`.
+Now run `pnpm install` / `yarn install` / `npm install`, then `pnpm dedupe` / `npm dedupe`. An
+in-place upgrade can leave older copies of packages that Hoist now requires at a newer version -
+`@codemirror/state` and `@codemirror/view` in particular - and `tsc` then fails inside Hoist's
+`CodeInput` with conflicting types.
 
 See the [dev-utils migration guide](https://github.com/xh/hoist-dev-utils/blob/develop/README.md#migrating-from-v15-webpack)
 for the full option reference, and Toolbox's
@@ -238,6 +242,9 @@ After:
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
 ```
+
+Remove it from any other `tsconfig.json` that compiles app sources, such as a Playwright or other
+E2E test project. Those fail with decorator errors until it is gone.
 
 ### 4. Migrate decorators and MobX names
 
@@ -391,13 +398,22 @@ reports - see Toolbox's `Bootstrap.ts` for an example.
 AG Grid 36 restructures the grid DOM into a single scrollable container and renames its internal
 layout classes. Hoist also no longer applies the `.ag-theme-balham` / `.ag-theme-balham-dark`
 classes. Only apps with custom SCSS or DOM queries reaching into AG Grid are affected - for
-example, `.ag-body-viewport` is now `.ag-grid-viewport`.
+example, `.ag-body-viewport` is now `.ag-grid-viewport`, and `.ag-floating-top` /
+`.ag-floating-bottom` are now `.ag-grid-pinned-top-rows` / `.ag-grid-pinned-bottom-rows`.
 
 **Find affected files:**
 
 ```bash
-grep -rn "ag-theme-balham\|ag-floating-top\|ag-center-cols\|ag-body-viewport\|ag-pinned-" client-app/src/
+grep -rn "ag-theme-\|ag-floating-top\|ag-floating-bottom\|ag-center-cols\|ag-body-viewport\|ag-pinned-" client-app/src/
 ```
+
+Review every `ag-theme-` hit, including wildcard selectors such as `[class*='ag-theme-']`. AG Grid's
+theming API applies its own generated `ag-theme-*` class, so a wildcard selector left in place can
+match it by accident.
+
+If the app has E2E or other test code that selects grid elements (for example a Playwright
+project), run the same search there. A selector for a renamed class matches nothing, and a test
+that skips when it finds no rows then passes without asserting anything.
 
 For theme-class selectors, retarget to Hoist's `.xh-ag-grid` wrapper, or better, express the
 override as theme params. The new `GridModel.theme` config takes AG Grid theme param overrides for
