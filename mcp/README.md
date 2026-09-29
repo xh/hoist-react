@@ -119,7 +119,7 @@ server.ts (McpServer)                  cli/docs.ts, cli/ts.ts ──► cli/ts-c
 ### Design Decisions
 
 **Bundle isolation via import chains.** hoist-react ships as raw TypeScript source -- applications
-compile it via webpack during their own build. Webpack only processes files reachable via import
+compile it via Rsbuild during their own build. The bundler only processes files reachable via import
 chains from app entry points. As long as no browser-targeted hoist code imports from `mcp/`, the
 MCP server's Node-only dependencies (`@modelcontextprotocol/sdk`, `ts-morph`, etc.) will never
 enter application bundles. The separate `tsconfig.json` provides an additional safety net at the

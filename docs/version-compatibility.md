@@ -1,7 +1,7 @@
 # Version Compatibility
 
 Hoist applications are built on a pairing of **hoist-react** (client) and **hoist-core** (server),
-plus **hoist-dev-utils** (the Webpack build tooling consumed by apps as a devDependency). These
+plus **hoist-dev-utils** (the Rsbuild build tooling consumed by apps as a devDependency). These
 libraries evolve together but are versioned independently. Running a mismatched combination can
 cause failures that are difficult to diagnose — error messages typically don't indicate a version
 mismatch. hoist-core mismatches surface at runtime; hoist-dev-utils mismatches surface at build /

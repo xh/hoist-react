@@ -147,9 +147,9 @@ for planned coverage:
 | Document | Description |
 |----------|-------------|
 | [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react |
-| [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker) |
+| [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
-| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/Babel compilation and build tooling internals |
+| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation and build tooling internals |
 
 ## Developer Tools
 

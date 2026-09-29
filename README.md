@@ -120,7 +120,7 @@ combined, and integrated by XH.
 |--------------|---------------------------------------------------------------------------------|-----------------------------------------------------|
 | React        | Core technology for efficient componentization and rendering of modern web apps | [reactjs.org](https://react.dev/)                   |
 | MobX         | Flexible, well-balanced state management and smart reactivity                   | [mobx.js.org](https://mobx.js.org/)                 |
-| Webpack      | Endlessly extensible (if occasionally baffling) bundle and build tool           | [webpack.js.org](https://webpack.js.org/)           |
+| Rsbuild      | Fast Rspack-based bundler and dev server, with SWC for transpilation            | [rsbuild.rs](https://rsbuild.rs/)                   |
 | AG Grid      | High performance, feature-rich data grid                                        | [ag-grid.com](https://www.ag-grid.com/)             |
 | Blueprint    | General purpose UI toolkit for data-dense desktop webapps                       | [blueprintjs.com](https://blueprintjs.com/)         |
 | Highcharts   | Proven, robust, well-rounded charting and visualization library                 | [highcharts.com](https://www.highcharts.com/)       |
@@ -154,9 +154,9 @@ Applications wishing to use charts in Hoist will need to provide a licensed vers
 
 ## TypeScript and Modern JavaScript
 
-Hoist React and Hoist applications are written in TypeScript. The codebase makes use of experimental
-(TC39 Stage 2) decorators via Babel — a notable difference from standard TypeScript decorator
-support — as coordinated within a standardized Webpack build process provided by
+Hoist React and Hoist applications are written in TypeScript. The codebase makes use of TC39
+Stage 3 (`2023-11`) decorators, with TypeScript's `experimentalDecorators` flag off. SWC transpiles
+them within a standardized Rsbuild build process provided by
 [hoist-dev-utils](https://github.com/xh/hoist-dev-utils).
 
 Key language features used throughout Hoist React include:
@@ -166,7 +166,7 @@ Key language features used throughout Hoist React include:
 - **Classes** — including class fields and carefully considered uses of inheritance.
 - **Async/await** — for asynchronous operations, with custom Promise extensions for error handling,
   tracking, and timeouts. See [/promise/README.md](promise/README.md).
-- **ES Modules** — all dependencies imported via ES modules and resolved by Webpack.
+- **ES Modules** — all dependencies imported via ES modules and resolved by Rsbuild.
 
 ## Licensing and Support
 
