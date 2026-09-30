@@ -14,6 +14,12 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `defaultReadonlyRenderer` reformatting plain strings that happen to parse as JSON scalars -
+  e.g. a JsonBlob token like `3473e37` rendered as `3.473e+40` in read-only form fields. Only JSON
+  objects and arrays are now pretty-printed.
+
 ## 88.0.0 - 2026-09-29
 
 ### 💥 Breaking Changes (upgrade difficulty: 🔴 HIGH - TC39 decorators + Rsbuild, AG Grid 36, MobX 7, removals)

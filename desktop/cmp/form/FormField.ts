@@ -34,7 +34,18 @@ import {
     useOnUnmount
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import {
+    first,
+    isBoolean,
+    isDate,
+    isEmpty,
+    isFinite,
+    isNil,
+    isObjectLike,
+    isString,
+    isUndefined,
+    kebabCase
+} from 'lodash';
 import {
     Children,
     cloneElement,
@@ -385,9 +396,11 @@ export function defaultReadonlyRenderer(value: any): ReactNode {
     if (isFinite(value)) return fmtNumber(value);
     if (isBoolean(value)) return value.toString();
 
-    // format JSON, but fail and ignore on plain text
+    // Pretty-print JSON objects/arrays (or a serialized null, shown as empty), but leave other
+    // strings as-is - e.g. a token like "3473e37" is valid JSON for a number.
     try {
-        value = fmtJson(value);
+        const parsed = isString(value) ? JSON.parse(value) : value;
+        if (parsed === null || isObjectLike(parsed)) value = fmtJson(parsed);
     } catch (e) {}
 
     return span(value != null ? value.toString() : null);
