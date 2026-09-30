@@ -14,6 +14,12 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
+  dragged. Active state was set on a fixed timer that could fire before the view's model existed,
+  most often on slower clients. Affected tabs could also miss their context menu and title updates.
+
 ## 88.0.0 - 2026-09-29
 
 ### 💥 Breaking Changes (upgrade difficulty: 🔴 HIGH - TC39 decorators + Rsbuild, AG Grid 36, MobX 7, removals)
