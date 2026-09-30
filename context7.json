@@ -30,7 +30,7 @@
         "Import from package barrels (@xh/hoist/core, @xh/hoist/cmp/grid, @xh/hoist/desktop/cmp/panel, @xh/hoist/mobx), never from internal files or impl folders.",
         "Use null, not undefined, as the no-value sentinel and test with == null. Suffix promise-returning methods with Async.",
         "v86+: wrap async work in the Runner chain, e.g. this.runner(ctx).span('loadX').linkTo(task).track({...}).run(async ctx => ...) or .fetchJson(). Compose masking, tracking, and spans there.",
-        "Pick the Context7 version that matches the app's @xh/hoist version. Across majors, read docs/upgrade-notes/v<major>-upgrade-notes.md and docs/version-compatibility.md."
+        "The default Context7 version documents the latest release. For an app on an older major, pick that major's version. Across majors, read docs/upgrade-notes/v<major>-upgrade-notes.md and docs/version-compatibility.md."
     ],
     "previousVersions": [
         {
