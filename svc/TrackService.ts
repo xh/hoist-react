@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
-import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty, isNil, isString} from 'lodash';
@@ -41,7 +41,6 @@ export class TrackService extends HoistService {
             enabled: true,
             logData: false,
             maxDataLength: 2000,
-            maxElapsedMins: 5,
             maxRows: {
                 default: 10000,
                 options: [1000, 5000, 10000, 25000]
@@ -154,18 +153,8 @@ export class TrackService extends HoistService {
         if (options.logData !== undefined) ret.logData = options.logData;
         if (options.elapsed !== undefined) ret.elapsed = options.elapsed;
 
-        // Drop implausibly long elapsed times - e.g. from a hidden tab or a sleeping laptop.
-        const {maxDataLength, maxElapsedMins} = this.conf;
-        if (maxElapsedMins > 0 && ret.elapsed > maxElapsedMins * MINUTES) {
-            this.logDebug(
-                `Track log elapsed of ${ret.elapsed}ms exceeds limit of ${maxElapsedMins}m`,
-                'elapsed will not be persisted',
-                options.message
-            );
-            ret.elapsed = null;
-        }
-
-        const dataLength = JSON.stringify(ret.data)?.length ?? 0;
+        const {maxDataLength} = this.conf,
+            dataLength = JSON.stringify(ret.data)?.length ?? 0;
         if (dataLength > maxDataLength) {
             this.logWarn(
                 `Track log includes ${dataLength} chars of JSON data`,
@@ -196,8 +185,6 @@ interface ActivityTrackingConfig {
     enabled: boolean;
     logData: boolean;
     maxDataLength: number;
-    /** Elapsed times over this limit are dropped as implausible. Set to -1 to disable. */
-    maxElapsedMins: number;
     maxRows?: {
         default: number;
         options: number[];

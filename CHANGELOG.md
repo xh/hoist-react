@@ -16,11 +16,9 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed app load tracking recording inflated load times for pages hidden during load, such as a
-  page opened in a background tab. These loads now omit `elapsed` and report `pageHidden` and
-  `hiddenMs` in their data. They also drop out of the server's `xh.client.load.*` metrics.
-* Updated `TrackService` to omit any `elapsed` time over 5 minutes as implausible. The limit is
-  read from `xhActivityTrackingConfig.maxElapsedMins`, which a future hoist-core will support.
+* Fixed app load tracking recording inflated load times for pages hidden at load start, such as a
+  page opened in a background tab. These loads now omit `elapsed` and report `hiddenAtLoad: true`
+  in their data. They also drop out of the server's `xh.client.load.*` metrics.
 
 ## 88.0.0 - 2026-09-29
 

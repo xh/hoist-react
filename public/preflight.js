@@ -1,31 +1,10 @@
 // Start load timer as early as possible - read later in AppStateModel.trackLoad().
 window._xhLoadTimestamp = Date.now();
 
-// Track time spent hidden during load - read later in AppStateModel.trackLoad(). Browsers throttle
-// or freeze hidden pages, so a load that was hidden at any point (including a page opened in a
-// background tab, which starts hidden) will not have a meaningful elapsed time.
-(function(W, D) {
-    var hiddenSince = D.visibilityState === 'hidden' ? W._xhLoadTimestamp : null,
-        pageHidden = hiddenSince != null,
-        hiddenMs = 0;
-
-    D.addEventListener('visibilitychange', function() {
-        if (D.visibilityState === 'hidden') {
-            pageHidden = true;
-            if (hiddenSince == null) hiddenSince = Date.now();
-        } else if (hiddenSince != null) {
-            hiddenMs += Date.now() - hiddenSince;
-            hiddenSince = null;
-        }
-    });
-
-    W._xhGetLoadVisibility = function() {
-        return {
-            pageHidden: pageHidden,
-            hiddenMs: hiddenSince != null ? hiddenMs + Date.now() - hiddenSince : hiddenMs
-        };
-    };
-})(window, document);
+// Flag if the page is hidden at load start - read later in AppStateModel.trackLoad(). Browsers
+// throttle hidden pages (e.g. a page opened in a background tab), so their load times are not
+// meaningful.
+window._xhHiddenAtLoad = document.visibilityState === 'hidden';
 
 // Check browser compatibility with features / syntax we can't polyfill. Currently Mobx 5+ has
 // a hard requirement for Proxy (test w/string access for max safety), which effectively filters

@@ -86,19 +86,18 @@ export class AppStateModel extends HoistModel {
         this.addReaction({
             when: () => this.state === 'RUNNING',
             run: () => {
-                // Skip elapsed if page was hidden at any point during load - see preflight.js.
-                const {pageHidden = false, hiddenMs = 0} = window['_xhGetLoadVisibility']?.() ?? {};
+                // Skip elapsed if page was hidden at load start - see preflight.js.
+                const hiddenAtLoad = !!window['_xhHiddenAtLoad'];
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
                     timestamp: loadStarted,
-                    elapsed: pageHidden
+                    elapsed: hiddenAtLoad
                         ? null
                         : Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
                     data: {
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
-                        pageHidden,
-                        hiddenMs,
+                        hiddenAtLoad,
                         clientHealth: XH.clientHealthService.getReport(),
                         window: this.getWindowData(),
                         screen: this.getScreenData()
