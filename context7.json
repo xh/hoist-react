@@ -37,6 +37,9 @@
             "branch": "develop"
         },
         {
+            "tag": "v88.0.0"
+        },
+        {
             "tag": "v87.3.0"
         },
         {
@@ -50,9 +53,6 @@
         },
         {
             "tag": "v83.1.0"
-        },
-        {
-            "tag": "v82.0.4"
         }
     ],
     "url": "https://context7.com/xh/hoist-react",
