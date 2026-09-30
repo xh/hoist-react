@@ -49,6 +49,10 @@ The abstract `BaseOAuthClient` manages the core OAuth lifecycle:
 6. **Logout** (`logoutAsync`) — Clears state and delegates to provider logout
 7. **Redirect state** — Captures and restores URL routing state across redirect flows
 
+After init, `authMethod` reports which path succeeded: `acquireSilent`, `ssoSilent` (MSAL only),
+`loginPopup`, or `loginRedirect`. Pass the ctx from `completeAuthAsync()` to `initAsync(ctx)` to
+also record it as an `xh.auth.method` tag on the `xh.client.auth` span.
+
 ### BaseOAuthClientConfig
 
 | Config | Type | Description |

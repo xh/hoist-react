@@ -21,7 +21,7 @@ import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hois
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
-import {AccessTokenSpec, TokenMap} from '../Types';
+import {AccessTokenSpec, AuthMethod, TokenMap} from '../Types';
 
 /**
  * Configuration for a {@link MsalClient} - the Microsoft Entra ID (Azure AD) OAuth client.
@@ -455,9 +455,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.logDebug('Target account identified:', account.username);
     }
 
-    private noteAuthComplete(authMethod: AuthMethod) {
+    protected override noteAuthComplete(authMethod: AuthMethod) {
+        super.noteAuthComplete(authMethod);
         if (this.telemetry) this.telemetry.authMethod = authMethod;
-        this.logInfo(`Authenticated user '${this.account.username}' via ${authMethod}`);
     }
 
     private authRequestCore(): AuthRequestCore {
@@ -483,7 +483,6 @@ type AuthRequestCore = Pick<
     CommonAuthorizationUrlRequest,
     'domainHint' | 'scopes' | 'extraScopesToConsent' | 'account' | 'loginHint' | 'redirectUri'
 >;
-type AuthMethod = 'acquireSilent' | 'ssoSilent' | 'loginPopup' | 'loginRedirect';
 
 /**
  * Telemetry produced by this client (if enabled) + included in {@link ClientHealthService}

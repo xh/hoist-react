@@ -6,12 +6,12 @@
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {isHoistException} from '@xh/hoist/exception';
-import {HoistBase, managed, XH} from '@xh/hoist/core';
+import {CallContextLike, HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {Token} from '@xh/hoist/security/Token';
-import {AccessTokenSpec, TokenMap} from './Types';
+import {AccessTokenSpec, AuthMethod, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
@@ -126,6 +126,9 @@ export abstract class BaseOAuthClient<
     /** Specification for Access Tokens */
     protected accessSpecs: Record<string, S>;
 
+    /** Method of last successful authentication for this client, if any. */
+    authMethod: AuthMethod = null;
+
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
     private TIMER_INTERVAL = 2 * SECONDS;
@@ -155,26 +158,33 @@ export abstract class BaseOAuthClient<
 
     /**
      * Main entry point for this object.
+     *
+     * @param ctx - tracing context, typically the one supplied to
+     *      {@link HoistAuthModel.completeAuthAsync}. On success, its span is tagged with
+     *      `xh.auth.method` - see {@link authMethod}.
      */
-    async initAsync(): Promise<void> {
-        try {
-            const tokens = await this.doInitAsync();
-            this.logDebug('Successfully initialized with following tokens:');
-            this.logTokensDebug(tokens);
-            if (this.config.autoRefreshSecs > 0) {
-                this.timer = Timer.create({
-                    runFn: async () => this.onTimerAsync(),
-                    interval: this.TIMER_INTERVAL
+    async initAsync(ctx?: CallContextLike): Promise<void> {
+        return this.runner(ctx).run(async ctx => {
+            try {
+                const tokens = await this.doInitAsync();
+                if (this.authMethod) ctx.span?.setTag('xh.auth.method', this.authMethod);
+                this.logDebug('Successfully initialized with following tokens:');
+                this.logTokensDebug(tokens);
+                if (this.config.autoRefreshSecs > 0) {
+                    this.timer = Timer.create({
+                        runFn: async () => this.onTimerAsync(),
+                        interval: this.TIMER_INTERVAL
+                    });
+                }
+            } catch (e) {
+                if (isHoistException(e)) throw e;
+                throw XH.exception({
+                    name: 'Auth Failed',
+                    message: 'Authentication has failed.',
+                    cause: e
                 });
             }
-        } catch (e) {
-            if (isHoistException(e)) throw e;
-            throw XH.exception({
-                name: 'Auth Failed',
-                message: 'Authentication has failed.',
-                cause: e
-            });
-        }
+        });
     }
 
     /**
@@ -254,6 +264,12 @@ export abstract class BaseOAuthClient<
     //---------------------------------------
     // Implementation
     //---------------------------------------
+    /** Record the path by which authentication completed. Call from `doInitAsync` and login impls. */
+    protected noteAuthComplete(authMethod: AuthMethod) {
+        this.authMethod = authMethod;
+        this.logInfo(`Authenticated user '${this.getSelectedUsername()}' via ${authMethod}`);
+    }
+
     protected get redirectUrl() {
         const url = this.config.redirectUrl;
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
