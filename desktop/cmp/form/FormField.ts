@@ -396,8 +396,7 @@ export function defaultReadonlyRenderer(value: any): ReactNode {
     if (isFinite(value)) return fmtNumber(value);
     if (isBoolean(value)) return value.toString();
 
-    // Pretty-print JSON objects/arrays (or a serialized null, shown as empty), but leave other
-    // strings as-is - e.g. a token like "3473e37" is valid JSON for a number.
+    // Pretty-print JSON objects/arrays (or a serialized null, shown as empty)
     try {
         const parsed = isString(value) ? JSON.parse(value) : value;
         if (parsed === null || isObjectLike(parsed)) value = fmtJson(parsed);
