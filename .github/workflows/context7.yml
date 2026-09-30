@@ -5,8 +5,7 @@
 # requested it recently, and it never discovers new release tags by itself. Two jobs close that gap:
 #
 # - refresh: asks Context7 to re-index the library. The main Context7 entry parses master, so this
-#   job runs on every push to master (a release) and on demand. The develop version listed in
-#   context7.json is not refreshed on its own - it catches up when a release refreshes the library.
+#   job runs on every push to master (a release) and on demand.
 #   Requires the CONTEXT7_API_KEY repository secret - create a key at https://context7.com/dashboard.
 #   Without the secret the job logs a warning and exits cleanly.
 #
