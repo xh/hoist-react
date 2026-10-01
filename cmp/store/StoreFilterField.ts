@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {DefaultHoistProps, hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
@@ -39,7 +40,7 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
     /**
      * GridModel whose Store this control should filter. When given a GridModel, this component
      * will, by default, use the fields for all *visible* columns when matching, as well as any
-     * groupBy field. Do not configure this and `store` on the same component.
+     * groupBy field. Do not configure this with `store` or `zoneGridModel`.
      */
     gridModel?: GridModel;
 
@@ -70,12 +71,19 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
 
     /**
      * Store that this control should filter. By default, all fields configured on the Store
-     * will be used for matching. Do not configure this and `gridModel` on the same component.
+     * will be used for matching. Do not configure this with `gridModel` or `zoneGridModel`.
      */
     store?: Store;
 
     /** Width of the input in pixels or string with unit. */
     width?: string | number;
+
+    /**
+     * ZoneGridModel whose Store this control should filter. When given a ZoneGridModel, this
+     * component will, by default, use the fields currently mapped to any of its zones when
+     * matching. Do not configure this with `gridModel` or `store`.
+     */
+    zoneGridModel?: ZoneGridModel;
 }
 
 /**
@@ -83,11 +91,11 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
  * its value to the value of configured fields on a candidate object. If any field values match, the
  * object itself is considered a match.
  *
- * This component is designed to be bound to a Store via either its `store` OR `gridModel` props.
- * (If not configured to bind to a specific Store or GridModel, this component will bind by default
- * to the store of the nearest GridModel found in context.) Binding in this way allows the component
- * to auto-generate the fields in the store to be included in the filter and to automatically
- * apply the filter to the Store.
+ * This component is designed to be bound to a Store via its `store`, `gridModel`, OR
+ * `zoneGridModel` prop. (If not configured with any of these, this component will bind by default
+ * to the store of the nearest GridModel or ZoneGridModel found in context.) Binding in this way
+ * allows the component to auto-generate the fields in the store to be included in the filter and
+ * to automatically apply the filter to the Store.
  *
  * In cases where the application is combining this filter with other filters, or applying
  * additional application logic, the filter can be managed manually by setting `autoApply` to

@@ -14,6 +14,12 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `StoreFilterField.zoneGridModel` to bind the filter to a `ZoneGrid`. The field searches
+  the fields mapped to the grid's zones, not its two zone columns. It also binds to the nearest
+  `ZoneGridModel` in context when no other target is given.
+
 ### 🐞 Bug Fixes
 
 * Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
