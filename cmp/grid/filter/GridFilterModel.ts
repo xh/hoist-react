@@ -79,6 +79,7 @@ export class GridFilterModel extends HoistModel {
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
 
         // Ensure every filterable column has a spec, including columns or View fields added later.
+        // Columns are typically still empty here - the reaction covers the GridModel's setColumns().
         this.addReaction({
             track: () => [gridModel.columns, this.bind.fieldNames],
             run: () => this.addColumnFieldSpecs(fieldSpecDefaults),
