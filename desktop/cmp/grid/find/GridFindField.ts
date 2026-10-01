@@ -20,18 +20,12 @@ import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
 export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     /**
-     * GridModel whose data this control should search. This component will, by default, use the
-     * fields for all *visible* columns when matching, as well as any groupBy field. Do not
-     * configure this with `zoneGridModel`.
+     * GridModel or ZoneGridModel whose data this control should search. When given a GridModel,
+     * this component will, by default, use the fields for all *visible* columns when matching, as
+     * well as any groupBy field. When given a ZoneGridModel, it uses the fields currently mapped
+     * to any of its zones.
      */
-    gridModel?: GridModel;
-
-    /**
-     * ZoneGridModel whose data this control should search. This component will, by default, use
-     * the fields currently mapped to any of its zones when matching. Do not configure this with
-     * `gridModel`.
-     */
-    zoneGridModel?: ZoneGridModel;
+    gridModel?: GridModel | ZoneGridModel;
 
     /** Mode to use when searching (default 'startWord'). */
     matchMode?: FilterMatchMode;
@@ -56,10 +50,9 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
  * the entered search term based on simple word-boundary matching of its value to the value of
  * configured fields on a record. If any field values match, the record itself is considered a match.
  *
- * This component is designed to be bound to a GridModel or ZoneGridModel via its `gridModel` or
- * `zoneGridModel` prop. If not configured with either, it binds by default to the nearest GridModel
- * found in context, or to the nearest ZoneGridModel if there is no standalone GridModel. Pass a
- * model prop explicitly when context holds both. Binding in this way allows the component to
+ * This component is designed to be bound to a GridModel or ZoneGridModel via its `gridModel` prop.
+ * If not configured, it binds by default to the nearest GridModel or ZoneGridModel found in
+ * context. Binding in this way allows the component to
  * auto-generate the fields in the store to be searched by the field and to automatically select
  * the results in the Grid.
  *

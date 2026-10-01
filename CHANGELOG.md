@@ -16,9 +16,11 @@
 
 ### 🎁 New Features
 
-* Both `StoreFilterField` and `GridFindField` now fully support `ZoneGrid` via a new `zoneGridModel`
-  prop. Both search the fields mapped to the grid's zones, not its two zone columns. With
-  no model prop, both bind to a `ZoneGridModel` in context if no standalone `GridModel` is found.
+* Both `StoreFilterField` and `GridFindField` now fully support `ZoneGrid`. Their `gridModel` prop
+  accepts a `ZoneGridModel`, in which case they search the fields mapped to the grid's zones, not
+  its two zone columns. With no prop, both bind to the nearest `GridModel` or `ZoneGridModel` in
+  context. Both now also re-derive their searchable fields when columns are shown or hidden, not
+  only when the grid's columns are replaced.
 * `BaseOAuthClient.initAsync()` now accepts an optional `CallContextLike`, and tags its span with
   `xh.auth.method` (`acquireSilent`, `ssoSilent`, `loginPopup`, or `loginRedirect`) so auth latency
   can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
@@ -27,6 +29,7 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed `StoreFilterField` ignoring changes to its `gridModel` or `store` props after mount.
 * Fixed app load tracking recording inflated load times for pages hidden at any point during load,
   such as a page opened in a background tab or switched away from while loading. These loads now
   omit `elapsed` and report `hiddenDuringLoad: true` in their data. This also drops them from the
