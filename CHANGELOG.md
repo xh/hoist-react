@@ -19,11 +19,23 @@
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
 
+### 🎁 New Features
+
+* `BaseOAuthClient.initAsync()` now accepts an optional `CallContextLike`, and tags its span with
+  `xh.auth.method` (`acquireSilent`, `ssoSilent`, `loginPopup`, or `loginRedirect`) so auth latency
+  can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
+  available as `BaseOAuthClient.lastAuthMethod`. Apps opt in by passing the ctx from
+  `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
+
 ### 🐞 Bug Fixes
 
 * Fixed `GridFilterModelConfig.fieldSpecs` disabling filters on all other `filterable` columns.
   Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
   See Breaking Changes above.
+* Fixed app load tracking recording inflated load times for pages hidden at any point during load,
+  such as a page opened in a background tab or switched away from while loading. These loads now
+  omit `elapsed` and report `hiddenDuringLoad: true` in their data. This also drops them from the
+  server's `xh.client.load.*` metrics.
 * Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
   dragged. Active state was set on a fixed timer that could fire before the view's model existed,
   most often on slower clients. Affected tabs could also miss their context menu and title updates.
