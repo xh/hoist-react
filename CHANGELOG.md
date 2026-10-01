@@ -14,6 +14,13 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `GridFilterModelConfig.fieldSpecs` no longer acts as an allow-list for column filters. Every
+  `filterable` column now gets a default spec if `fieldSpecs` omits its field, so apps only need to
+  list fields that require custom config. Apps that relied on `fieldSpecs` to limit which columns
+  show a filter should set `filterable: false` on the excluded columns.
+
 ### 🐞 Bug Fixes
 
 * Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or

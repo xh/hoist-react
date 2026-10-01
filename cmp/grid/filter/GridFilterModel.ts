@@ -77,6 +77,13 @@ export class GridFilterModel extends HoistModel {
         this.commitOnChange = commitOnChange;
         this.activeFilterIcon = activeFilterIcon ?? GridFilterModel.defaults.activeFilterIcon;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
+
+        // Ensure every filterable column has a spec, including columns added after construction.
+        this.addReaction({
+            track: () => gridModel.columns,
+            run: () => this.addColumnFieldSpecs(fieldSpecDefaults),
+            fireImmediately: true
+        });
     }
 
     /**
@@ -169,12 +176,29 @@ export class GridFilterModel extends HoistModel {
 
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
-            return new GridFilterFieldSpec({
-                filterModel: this,
-                source: bind,
-                ...fieldSpecDefaults,
-                ...spec
-            });
+            return this.createFieldSpec(spec, fieldSpecDefaults);
+        });
+    }
+
+    // Add default specs for filterable columns not covered by the configured specs.
+    private addColumnFieldSpecs(fieldSpecDefaults: Omit<GridFilterFieldSpecConfig, 'field'>) {
+        const {fieldNames} = this.bind;
+        this.gridModel.getLeafColumns().forEach(({filterable, field}) => {
+            if (filterable && fieldNames.includes(field) && !this.getFieldSpec(field)) {
+                this.fieldSpecs.push(this.createFieldSpec({field}, fieldSpecDefaults));
+            }
+        });
+    }
+
+    private createFieldSpec(
+        spec: GridFilterFieldSpecConfig,
+        fieldSpecDefaults: Omit<GridFilterFieldSpecConfig, 'field'>
+    ): GridFilterFieldSpec {
+        return new GridFilterFieldSpec({
+            filterModel: this,
+            source: this.bind,
+            ...fieldSpecDefaults,
+            ...spec
         });
     }
 
