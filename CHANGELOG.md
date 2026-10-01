@@ -18,7 +18,7 @@
 
 * Fixed app load tracking recording inflated load times for pages hidden at load start, such as a
   page opened in a background tab. These loads now omit `elapsed` and report `hiddenAtLoad: true`
-  in their data. They also drop out of the server's `xh.client.load.*` metrics.
+  in their data. This also drops them from the server's `xh.client.load.*` metrics.
 
 ## 88.0.0 - 2026-09-29
 

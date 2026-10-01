@@ -26,7 +26,6 @@ export class AppStateModel extends HoistModel {
 
     // Captured by preflight.js, before any Hoist JS has loaded.
     readonly loadStarted: number = window['_xhLoadTimestamp'];
-    // Hidden pages load throttled, so their elapsed time is not meaningful.
     readonly hiddenAtLoad: boolean = window['_xhHiddenAtLoad'];
 
     readonly timings: Record<AppState, number> = {} as Record<AppState, number>;
@@ -91,6 +90,7 @@ export class AppStateModel extends HoistModel {
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
                     timestamp: loadStarted,
+                    // Hidden pages may be throttled, elapsed time is misleading
                     elapsed: hiddenAtLoad ? null : Date.now() - loadStarted - loginTime,
                     data: {
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
