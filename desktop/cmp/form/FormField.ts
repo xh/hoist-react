@@ -397,10 +397,13 @@ export function defaultReadonlyRenderer(value: any): ReactNode {
     if (isObjectLike(value)) return fmtJson(value);
 
     // ... pretty printing json strings as well.
-    if (isString(value) && /^\s*[{[]/.test(value)) {
-        try {
-            value = fmtJson(value);
-        } catch {}
+    if (isString(value)) {
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                value = fmtJson(trimmed);
+            } catch {}
+        }
     }
 
     // Otherwise just fall back to string rendering
