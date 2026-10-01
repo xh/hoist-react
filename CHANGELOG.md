@@ -14,6 +14,14 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `BaseOAuthClient.initAsync()` now accepts an optional `CallContextLike`, and tags its span with
+  `xh.auth.method` (`acquireSilent`, `ssoSilent`, `loginPopup`, or `loginRedirect`) so auth latency
+  can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
+  available as `BaseOAuthClient.lastAuthMethod`. Apps opt in by passing the ctx from
+  `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
+
 ### 🐞 Bug Fixes
 
 * Fixed app load tracking recording inflated load times for pages hidden at any point during load,
