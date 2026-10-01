@@ -21,6 +21,9 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed `GridFilterModelConfig.fieldSpecs` disabling filters on all other `filterable` columns.
+  Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
+  See Breaking Changes above.
 * Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
   dragged. Active state was set on a fixed timer that could fire before the view's model existed,
   most often on slower clients. Affected tabs could also miss their context menu and title updates.
