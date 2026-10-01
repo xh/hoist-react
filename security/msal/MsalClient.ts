@@ -21,7 +21,7 @@ import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hois
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
-import {AccessTokenSpec, TokenMap} from '../Types';
+import {AccessTokenSpec, AuthMethod, TokenMap} from '../Types';
 
 /**
  * Configuration for a {@link MsalClient} - the Microsoft Entra ID (Azure AD) OAuth client.
@@ -207,7 +207,11 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // user involvement but will require at least a redirect or cursory auto-closing popup.
         this.logDebug('Attempting Login');
         await this.loginAsync();
-        return this.fetchAllTokensAsync({eagerOnly: true});
+
+        // 3a) ... and a redirect never returns above, so this was a popup.
+        const ret = await this.fetchAllTokensAsync({eagerOnly: true});
+        this.noteAuthComplete('loginPopup');
+        return ret;
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
@@ -217,7 +221,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 overrideInteractionInProgress: true
             });
             this.setAccount(ret.account);
-            this.noteAuthComplete('loginPopup');
         } catch (e) {
             if (e.errorCode === 'popup_window_error' || e.errorCode === 'empty_window_error') {
                 throw XH.exception({
@@ -455,9 +458,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.logDebug('Target account identified:', account.username);
     }
 
-    private noteAuthComplete(authMethod: AuthMethod) {
+    protected override noteAuthComplete(authMethod: AuthMethod) {
+        super.noteAuthComplete(authMethod);
         if (this.telemetry) this.telemetry.authMethod = authMethod;
-        this.logInfo(`Authenticated user '${this.account.username}' via ${authMethod}`);
     }
 
     private authRequestCore(): AuthRequestCore {
@@ -483,7 +486,6 @@ type AuthRequestCore = Pick<
     CommonAuthorizationUrlRequest,
     'domainHint' | 'scopes' | 'extraScopesToConsent' | 'account' | 'loginHint' | 'redirectUri'
 >;
-type AuthMethod = 'acquireSilent' | 'ssoSilent' | 'loginPopup' | 'loginRedirect';
 
 /**
  * Telemetry produced by this client (if enabled) + included in {@link ClientHealthService}

@@ -24,10 +24,7 @@ export class AppStateModel extends HoistModel {
     suspendData: AppSuspendData;
     accessDeniedMessage: string = 'Access Denied';
 
-    /**
-     * Timestamp when the app first started loading, prior to even JS download/eval.
-     * Read from timestamp set on window within index.html.
-     */
+    // Captured by preflight.js, before any Hoist JS has loaded.
     readonly loadStarted: number = window['_xhLoadTimestamp'];
     readonly timings: Record<AppState, number> = {} as Record<AppState, number>;
 
@@ -82,24 +79,28 @@ export class AppStateModel extends HoistModel {
     // Implementation
     //------------------
     private trackLoad() {
-        const {timings, loadStarted} = this;
         this.addReaction({
             when: () => this.state === 'RUNNING',
             run: () => {
+                const {timings, loadStarted} = this,
+                    loginTime = timings.LOGIN_REQUIRED ?? 0,
+                    hiddenDuringLoad = window['_xhWasHidden'];
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
                     timestamp: loadStarted,
-                    elapsed: Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
+                    // Hidden pages may be throttled, elapsed time is misleading
+                    elapsed: hiddenDuringLoad ? null : Date.now() - loadStarted - loginTime,
                     data: {
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
+                        hiddenDuringLoad,
                         clientHealth: XH.clientHealthService.getReport(),
                         window: this.getWindowData(),
                         screen: this.getScreenData()
                     },
                     omit: !XH.appSpec.trackAppLoad
                 });
-                this.logDebug('Load timings', this.timings);
+                this.logDebug('Load timings', timings);
             }
         });
     }
