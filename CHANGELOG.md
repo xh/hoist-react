@@ -16,10 +16,9 @@
 
 ### 🎁 New Features
 
-* Added `StoreFilterField.zoneGridModel` and `GridFindField.zoneGridModel` to bind these fields to
-  a `ZoneGrid`. Both search the fields mapped to the grid's zones, not its two zone columns. With
+* Both `StoreFilterField` and `GridFindField` now fully support `ZoneGrid` via a new `zoneGridModel`
+  prop. Both search the fields mapped to the grid's zones, not its two zone columns. With
   no model prop, both bind to a `ZoneGridModel` in context if no standalone `GridModel` is found.
-* Added `ZoneGridModel.getMappedColumns()` to return the columns behind its currently mapped fields.
 
 ### 🐞 Bug Fixes
 
