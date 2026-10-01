@@ -36,7 +36,6 @@ import {
 import classNames from 'classnames';
 import {
     first,
-    isBoolean,
     isDate,
     isEmpty,
     isFinite,
@@ -391,18 +390,21 @@ const editableChild = hoistCmp.factory<FieldModel>({
 // Helper Functions
 //---------------------------------
 export function defaultReadonlyRenderer(value: any): ReactNode {
+    // First try type-specific formatting
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
+    if (isObjectLike(value)) return fmtJson(value);
 
-    // Pretty-print JSON objects/arrays (or a serialized null, shown as empty)
-    try {
-        const parsed = isString(value) ? JSON.parse(value) : value;
-        if (parsed === null || isObjectLike(parsed)) value = fmtJson(parsed);
-    } catch (e) {}
+    // ... pretty printing json strings as well.
+    if (isString(value) && /^\s*[{[]/.test(value)) {
+        try {
+            value = fmtJson(value);
+        } catch {}
+    }
 
-    return span(value != null ? value.toString() : null);
+    // Otherwise just fall back to string rendering
+    return span(value?.toString());
 }
 
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];

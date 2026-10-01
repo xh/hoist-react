@@ -26,7 +26,7 @@
 
 * Fixed `defaultReadonlyRenderer` reformatting plain strings that happen to parse as JSON scalars -
   e.g. a JsonBlob token like `3473e37` rendered as `3.473e+40` in read-only form fields. Only JSON
-  objects and arrays are now pretty-printed.
+  objects and arrays are now pretty-printed, and other strings render as-is.
 * Fixed app load tracking recording inflated load times for pages hidden at any point during load,
   such as a page opened in a background tab or switched away from while loading. These loads now
   omit `elapsed` and report `hiddenDuringLoad: true` in their data. This also drops them from the
