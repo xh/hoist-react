@@ -92,10 +92,11 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
  * object itself is considered a match.
  *
  * This component is designed to be bound to a Store via its `store`, `gridModel`, OR
- * `zoneGridModel` prop. (If not configured with any of these, this component will bind by default
- * to the store of the nearest GridModel or ZoneGridModel found in context.) Binding in this way
- * allows the component to auto-generate the fields in the store to be included in the filter and
- * to automatically apply the filter to the Store.
+ * `zoneGridModel` prop. If not configured with any of these, it binds by default to the nearest
+ * GridModel found in context, or to the nearest ZoneGridModel if there is no standalone GridModel.
+ * Pass a model prop explicitly when context holds both. Binding in this way allows the component
+ * to auto-generate the fields in the store to be included in the filter and to automatically
+ * apply the filter to the Store.
  *
  * In cases where the application is combining this filter with other filters, or applying
  * additional application logic, the filter can be managed manually by setting `autoApply` to

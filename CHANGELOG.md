@@ -16,9 +16,10 @@
 
 ### 🎁 New Features
 
-* Added `StoreFilterField.zoneGridModel` to bind the filter to a `ZoneGrid`. The field searches
-  the fields mapped to the grid's zones, not its two zone columns. It also binds to the nearest
-  `ZoneGridModel` in context when no other target is given.
+* Added `StoreFilterField.zoneGridModel` and `GridFindField.zoneGridModel` to bind these fields to
+  a `ZoneGrid`. Both search the fields mapped to the grid's zones, not its two zone columns. Both
+  also bind to the nearest `ZoneGridModel` in context when no other target is given.
+* Added `ZoneGridModel.getMappedColumns()` to return the columns behind its currently mapped fields.
 
 ### 🐞 Bug Fixes
 

@@ -6,6 +6,7 @@
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
+import {lookupGridOrZoneGridModel} from '@xh/hoist/cmp/zoneGrid/impl/LookupGridOrZoneGridModel';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {appendFilter, getFilterRegex, Store} from '@xh/hoist/data';
@@ -20,7 +21,6 @@ import {
     isArray,
     isEmpty,
     isUndefined,
-    uniq,
     without
 } from 'lodash';
 
@@ -58,13 +58,11 @@ export class StoreFilterFieldImplModel extends HoistModel {
             "Cannot specify more than one of 'gridModel', 'zoneGridModel', and 'store' props."
         );
         if (!store && !gridModel && !zoneGridModel) {
-            const contextModel = this.lookupModel(
-                m => m instanceof GridModel || m instanceof ZoneGridModel
-            );
+            const contextModel = lookupGridOrZoneGridModel(this);
             if (contextModel instanceof ZoneGridModel) {
                 zoneGridModel = contextModel;
             } else {
-                gridModel = contextModel as GridModel;
+                gridModel = contextModel;
             }
         }
         if (zoneGridModel) gridModel = zoneGridModel.gridModel;
@@ -245,17 +243,11 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     /**
-     * Columns whose fields the user can see, and so should be able to search. For a standard grid,
-     * these are its visible leaf columns. A ZoneGrid renders mapped fields within its two zone
-     * columns, so use the (hidden) columns backing each mapped field instead.
+     * Columns whose fields the user can see, and so should be able to search. A ZoneGrid renders
+     * its mapped fields within two zone columns, so use the columns backing those fields instead.
      */
     getSearchColumns(): Column[] {
         const {gridModel, zoneGridModel} = this;
-        if (!zoneGridModel) return gridModel.getVisibleLeafColumns();
-
-        const mappedFields = uniq(
-            flatMap(zoneGridModel.mappings, zoneMappings => zoneMappings.map(it => it.field))
-        );
-        return gridModel.getLeafColumns().filter(col => mappedFields.includes(col.field));
+        return zoneGridModel ? zoneGridModel.getMappedColumns() : gridModel.getVisibleLeafColumns();
     }
 }
