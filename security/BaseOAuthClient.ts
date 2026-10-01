@@ -471,6 +471,7 @@ export abstract class BaseOAuthClient<
                 this.lastRelogin = XH.appContainerModel.lastRelogin = {started, completed};
             })
             .then(() => {
+                this.noteAuthComplete('loginPopup');
                 XH.track({
                     category: 'App',
                     message: 'Interactive reauthentication succeeded',

@@ -97,12 +97,14 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
             }
         }
 
-        // 2) otherwise full-login
+        // 2) otherwise full login.
         this.logDebug('Logging in');
         await this.loginAsync();
 
-        // 3) return tokens
-        return this.fetchAllTokensAsync({eagerOnly: true});
+        // 2a) ... and a redirect never returns above, so this was a popup.
+        const ret = await this.fetchAllTokensAsync({eagerOnly: true});
+        this.noteAuthComplete('loginPopup');
+        return ret;
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {
@@ -122,7 +124,6 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
                 authorizationParams: {scope: this.loginScope}
             });
             await this.noteUserAuthenticatedAsync();
-            this.noteAuthComplete('loginPopup');
         } catch (e) {
             const msg = e.message?.toLowerCase();
             e.popup?.close();
