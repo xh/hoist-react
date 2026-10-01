@@ -28,7 +28,9 @@
   `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
 
 ### 🐞 Bug Fixes
-
+* Fixed `defaultReadonlyRenderer` reformatting plain strings that happen to parse as JSON scalars -
+  e.g. a JsonBlob token like `3473e37` rendered as `3.473e+40` in read-only form fields. Only JSON
+  objects and arrays are now pretty-printed, and other strings render as-is.
 * Fixed `StoreFilterField` ignoring changes to its `gridModel` or `store` props after mount.
 * Fixed app load tracking recording inflated load times for pages hidden at any point during load,
   such as a page opened in a background tab or switched away from while loading. These loads now
