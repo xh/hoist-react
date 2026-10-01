@@ -19,7 +19,7 @@
 * `BaseOAuthClient.initAsync()` now accepts an optional `CallContextLike`, and tags its span with
   `xh.auth.method` (`acquireSilent`, `ssoSilent`, `loginPopup`, or `loginRedirect`) so auth latency
   can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
-  available as `BaseOAuthClient.authMethod`. Apps opt in by passing the ctx from
+  available as `BaseOAuthClient.lastAuthMethod`. Apps opt in by passing the ctx from
   `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
 
 ### 🐞 Bug Fixes

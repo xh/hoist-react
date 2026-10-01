@@ -127,7 +127,7 @@ export abstract class BaseOAuthClient<
     protected accessSpecs: Record<string, S>;
 
     /** Method of last successful authentication for this client, if any. */
-    authMethod: AuthMethod = null;
+    lastAuthMethod: AuthMethod = null;
 
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
@@ -160,31 +160,28 @@ export abstract class BaseOAuthClient<
      * Main entry point for this object.
      *
      * @param ctx - tracing context, typically the one supplied to
-     *      {@link HoistAuthModel.completeAuthAsync}. On success, its span is tagged with
-     *      `xh.auth.method` - see {@link authMethod}.
+     *      {@link HoistAuthModel.completeAuthAsync}.
      */
     async initAsync(ctx?: CallContextLike): Promise<void> {
-        return this.runner(ctx).run(async ctx => {
-            try {
-                const tokens = await this.doInitAsync();
-                if (this.authMethod) ctx.span?.setTag('xh.auth.method', this.authMethod);
-                this.logDebug('Successfully initialized with following tokens:');
-                this.logTokensDebug(tokens);
-                if (this.config.autoRefreshSecs > 0) {
-                    this.timer = Timer.create({
-                        runFn: async () => this.onTimerAsync(),
-                        interval: this.TIMER_INTERVAL
-                    });
-                }
-            } catch (e) {
-                if (isHoistException(e)) throw e;
-                throw XH.exception({
-                    name: 'Auth Failed',
-                    message: 'Authentication has failed.',
-                    cause: e
+        try {
+            const tokens = await this.doInitAsync();
+            ctx?.span?.setTag('xh.auth.method', this.lastAuthMethod);
+            this.logDebug('Successfully initialized with following tokens:');
+            this.logTokensDebug(tokens);
+            if (this.config.autoRefreshSecs > 0) {
+                this.timer = Timer.create({
+                    runFn: async () => this.onTimerAsync(),
+                    interval: this.TIMER_INTERVAL
                 });
             }
-        });
+        } catch (e) {
+            if (isHoistException(e)) throw e;
+            throw XH.exception({
+                name: 'Auth Failed',
+                message: 'Authentication has failed.',
+                cause: e
+            });
+        }
     }
 
     /**
@@ -266,7 +263,7 @@ export abstract class BaseOAuthClient<
     //---------------------------------------
     /** Record the path by which authentication completed. Call from `doInitAsync` and login impls. */
     protected noteAuthComplete(authMethod: AuthMethod) {
-        this.authMethod = authMethod;
+        this.lastAuthMethod = authMethod;
         this.logInfo(`Authenticated user '${this.getSelectedUsername()}' via ${authMethod}`);
     }
 
