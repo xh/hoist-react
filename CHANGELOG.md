@@ -14,12 +14,10 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - grid column filter specs)
 
-* `GridFilterModelConfig.fieldSpecs` no longer acts as an allow-list for column filters. Every
-  `filterable` column now gets a default spec if `fieldSpecs` omits its field, so apps only need to
-  list fields that require custom config. Apps that relied on `fieldSpecs` to limit which columns
-  show a filter should set `filterable: false` on the excluded columns.
+* `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
+  now gets a default filter - set `filterable: false` on columns that should have none.
 
 ### 🐞 Bug Fixes
 

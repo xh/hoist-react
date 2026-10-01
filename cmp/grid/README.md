@@ -220,7 +220,8 @@ new GridModel({
 });
 ```
 
-A `filterable` column gets a filter with default config even if `fieldSpecs` omits its field.
+A `filterable` column gets a filter with default config even if `fieldSpecs` omits its field, as
+long as that field exists in the bound Store or View.
 List only the fields that need custom config. Set `filterable: false` to disable a column's filter.
 
 ### Inline Editing
