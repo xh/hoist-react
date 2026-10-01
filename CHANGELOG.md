@@ -19,6 +19,9 @@
 * Fixed app load tracking recording inflated load times for pages hidden at load start, such as a
   page opened in a background tab. These loads now omit `elapsed` and report `hiddenAtLoad: true`
   in their data. This also drops them from the server's `xh.client.load.*` metrics.
+* Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
+  dragged. Active state was set on a fixed timer that could fire before the view's model existed,
+  most often on slower clients. Affected tabs could also miss their context menu and title updates.
 
 ## 88.0.0 - 2026-09-29
 

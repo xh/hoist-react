@@ -20,21 +20,21 @@
     ],
     "rules": [
         "Render components with element factories (panel({...}), grid({...})) rather than JSX. Pass children via item/items and use the omit prop for conditional rendering.",
-        "Through v87: plain fields (@bindable name = null, @observable.ref list = []) plus makeObservable(this) in the constructor. From v88 (TC39 decorators): add accessor (@bindable accessor name), use @observableRef and @bindableRef, drop makeObservable.",
-        "Wire components to models with creates(ModelClass) when the component owns the model, or uses(ModelClass) when a parent supplies it via props or context. lookupModel and @lookup work only in linked models during or after onLinked.",
-        "Mark child HoistBase instances with @managed so they are destroyed with their owner. Subscribe with this.addReaction() and this.addAutorun() from HoistBase, not raw MobX reaction() or autorun().",
-        "Opt into managed loading by overriding doLoadAsync(loadSpec) and trigger it with loadAsync() or refreshAsync(); never call doLoadAsync directly. Pass loadSpec through to XH.fetchJson and nested loads.",
-        "Reach services and app-wide APIs through the XH singleton (XH.fetchJson, XH.configService, XH.toast, XH.confirm, XH.handleException, XH.myCustomService). App services extend HoistService and are installed with XH.installServicesAsync.",
+        "v88+ uses TC39 decorators: @bindable accessor name, @observableRef, @bindableRef, no makeObservable. Through v87: plain fields (@bindable name = null) plus makeObservable(this) in the constructor.",
+        "Use creates(ModelClass) when a component owns its model, uses(ModelClass) when a parent supplies it. lookupModel and @lookup work only in linked models, from onLinked on.",
+        "Mark child HoistBase instances @managed so they are destroyed with their owner. Use this.addReaction() and this.addAutorun(), not raw MobX reaction() or autorun().",
+        "Implement doLoadAsync(loadSpec) and trigger it with loadAsync() or refreshAsync(), never directly. Pass loadSpec through to XH.fetchJson and nested loads.",
+        "Reach services and app-wide APIs through XH (XH.fetchJson, XH.configService, XH.toast, XH.handleException). App services extend HoistService and install via XH.installServicesAsync.",
         "Use Hoist input components (textInput, numberInput, select, checkbox, dateInput, textArea) bound to FormModel fields through formField. Do not use raw HTML inputs.",
-        "Grid columns are plain ColumnSpec objects in GridConfig.columns. Prefer numberRenderer and dateRenderer from @xh/hoist/format and the pre-built column specs before writing a custom renderer.",
-        "Import from package barrels such as @xh/hoist/core, @xh/hoist/cmp/grid, @xh/hoist/desktop/cmp/panel, @xh/hoist/mobx, and @xh/hoist/format, never from internal file paths or impl folders.",
+        "Grid columns are plain ColumnSpec objects in GridConfig.columns. Try the pre-built column specs and @xh/hoist/format renderers (numberRenderer, dateRenderer) before a custom renderer.",
+        "Import from package barrels (@xh/hoist/core, @xh/hoist/cmp/grid, @xh/hoist/desktop/cmp/panel, @xh/hoist/mobx), never from internal files or impl folders.",
         "Use null, not undefined, as the no-value sentinel and test with == null. Suffix promise-returning methods with Async.",
-        "v86 and later: wrap async work in the Runner chain this.runner(ctx).span('loadX').linkTo(taskObserver).track({...}).run(async ctx => ...) or its fetchJson() terminal. Compose masking, tracking, and spans there, not as promise extensions on a bare promise.",
-        "The develop branch documents the unreleased next major. Match the app's installed @xh/hoist version: pick that version in Context7, and read docs/upgrade-notes/v<major>-upgrade-notes.md and docs/version-compatibility.md when crossing majors."
+        "v86+: wrap async work in the Runner chain, e.g. this.runner(ctx).span('loadX').linkTo(task).track({...}).run(async ctx => ...) or .fetchJson(). Compose masking, tracking, and spans there.",
+        "The default Context7 version documents the latest release. For an app on an older major, pick that major's version. Across majors, read docs/upgrade-notes/v<major>-upgrade-notes.md and docs/version-compatibility.md."
     ],
     "previousVersions": [
         {
-            "branch": "develop"
+            "tag": "v88.0.0"
         },
         {
             "tag": "v87.3.0"
@@ -50,9 +50,6 @@
         },
         {
             "tag": "v83.1.0"
-        },
-        {
-            "tag": "v82.0.4"
         }
     ],
     "url": "https://context7.com/xh/hoist-react",

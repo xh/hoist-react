@@ -4,7 +4,7 @@
 // Context7 (https://context7.com) indexes only the versions declared in context7.json (or in the
 // library's admin panel) - it does not discover new git tags on its own. This script lists the
 // newest release tag of each of the most recent majors, so the Context7 workflow can open a PR
-// whenever a release adds or moves a major. Branch-based entries (e.g. `{"branch": "develop"}`)
+// whenever a release adds or moves a major. Branch-based entries (e.g. `{"branch": "release-1.x"}`)
 // are hand-maintained and preserved ahead of the tag entries.
 //
 // Usage: node .github/scripts/context7-versions.mjs [--majors N] [--check]
