@@ -26,8 +26,6 @@ export class AppStateModel extends HoistModel {
 
     // Captured by preflight.js, before any Hoist JS has loaded.
     readonly loadStarted: number = window['_xhLoadTimestamp'];
-    readonly hiddenAtLoad: boolean = window['_xhHiddenAtLoad'];
-
     readonly timings: Record<AppState, number> = {} as Record<AppState, number>;
 
     private lastStateChangeTime: number = this.loadStarted;
@@ -84,17 +82,18 @@ export class AppStateModel extends HoistModel {
         this.addReaction({
             when: () => this.state === 'RUNNING',
             run: () => {
-                const {timings, loadStarted, hiddenAtLoad} = this,
-                    loginTime = timings.LOGIN_REQUIRED ?? 0;
+                const {timings, loadStarted} = this,
+                    loginTime = timings.LOGIN_REQUIRED ?? 0,
+                    hiddenDuringLoad = window['_xhWasHidden'];
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
                     timestamp: loadStarted,
                     // Hidden pages may be throttled, elapsed time is misleading
-                    elapsed: hiddenAtLoad ? null : Date.now() - loadStarted - loginTime,
+                    elapsed: hiddenDuringLoad ? null : Date.now() - loadStarted - loginTime,
                     data: {
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
-                        hiddenAtLoad,
+                        hiddenDuringLoad,
                         clientHealth: XH.clientHealthService.getReport(),
                         window: this.getWindowData(),
                         screen: this.getScreenData()

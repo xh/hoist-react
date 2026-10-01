@@ -1,6 +1,7 @@
 // Record load info as early as possible - read later in AppStateModel.trackLoad().
 window._xhLoadTimestamp = Date.now();
-window._xhHiddenAtLoad = document.visibilityState === 'hidden';
+window._xhWasHidden = document.visibilityState === 'hidden';
+document.addEventListener('visibilitychange', function () {window._xhWasHidden = true});
 
 // Check browser compatibility with features / syntax we can't polyfill. Currently Mobx 5+ has
 // a hard requirement for Proxy (test w/string access for max safety), which effectively filters
