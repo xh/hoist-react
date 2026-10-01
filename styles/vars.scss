@@ -753,6 +753,20 @@ body {
   }
 
 
+  //------------------------
+  // PDF Viewer
+  //------------------------
+  --xh-pdf-viewer-bg: var(--pdf-viewer-bg, var(--xh-bg-alt));
+  --xh-pdf-viewer-page-shadow: var(--pdf-viewer-page-shadow, 0 1px 4px rgba(0, 0, 0, 0.25));
+  --xh-pdf-viewer-page-gap-px: var(--pdf-viewer-page-gap-px, 10px);
+  --xh-pdf-viewer-highlight-bg: var(--pdf-viewer-highlight-bg, #{mc-trans('amber', '400', 0.4)});
+  --xh-pdf-viewer-highlight-selected-bg: var(--pdf-viewer-highlight-selected-bg, #{mc-trans('orange', '700', 0.5)});
+
+  &.xh-dark {
+    --xh-pdf-viewer-page-shadow: var(--pdf-viewer-page-shadow, 0 1px 6px rgba(0, 0, 0, 0.6));
+  }
+
+
   //---------------------------------------
   // Popovers - e.g. mobile app menu.
   // Applicable to mobile only at this time

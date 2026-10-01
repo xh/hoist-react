@@ -544,6 +544,12 @@ export const Icon = {
     magnifyingGlass(p?: IconProps) {
         return Icon.icon({...p, iconName: 'magnifying-glass'});
     },
+    magnifyingGlassMinus(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'magnifying-glass-minus'});
+    },
+    magnifyingGlassPlus(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'magnifying-glass-plus'});
+    },
     mail(p?: IconProps) {
         return Icon.icon({...p, iconName: 'envelope'});
     },
@@ -651,6 +657,9 @@ export const Icon = {
     },
     roles(p?: IconProps) {
         return Icon.icon({...p, iconName: 'user-shield'});
+    },
+    rotateRight(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'rotate-right'});
     },
     server(p?: IconProps) {
         return Icon.icon({...p, iconName: 'server'});
@@ -928,6 +937,12 @@ export const Icon = {
     },
     upload(p?: IconProps) {
         return Icon.arrowUpFromBracket(p);
+    },
+    zoomIn(p?: IconProps) {
+        return Icon.magnifyingGlassPlus(p);
+    },
+    zoomOut(p?: IconProps) {
+        return Icon.magnifyingGlassMinus(p);
     },
 
     /**

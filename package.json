@@ -22,6 +22,7 @@
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
     "check:vendored": "node scripts/check-vendored.mjs",
+    "generate:pdfjs-css": "node scripts/generate-pdfjs-css.mjs",
     "typecheck": "tsc --noEmit && tsc -p mcp/tsconfig.json",
     "test:mcp": "node --import tsx --test --test-concurrency=1 \"mcp/**/*.spec.ts\"",
     "prepack": "tsc --build",
@@ -116,8 +117,14 @@
     "zod": "^4.6.5"
   },
   "peerDependencies": {
+    "pdfjs-dist": "^6.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
+  },
+  "peerDependenciesMeta": {
+    "pdfjs-dist": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/lodash": "^4.17.25",
@@ -135,6 +142,7 @@
     "globals": "^17.12.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.5.1",
+    "pdfjs-dist": "~6.3.289",
     "postcss": "^8.5.28",
     "prettier": "^3.9.9",
     "react": "^19.3.0",

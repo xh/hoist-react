@@ -26,6 +26,7 @@ kit/
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
 ├── onsen/                # Onsen UI wrappers with HoistModel prop stripping
+├── pdfjs/                # Lazy loader for pdf.js (optional peer dependency)
 ├── react-beautiful-dnd/  # Drag-and-drop re-exports with element factories
 ├── react-dropzone/       # File drop zone re-export
 ├── react-markdown/       # Markdown renderer re-export
@@ -146,6 +147,7 @@ with several patches applied directly to GoldenLayout's internal classes:
 
 | Library | Kit Sub-package | Used By | Purpose |
 |---------|-----------------|---------|---------|
+| pdf.js (`pdfjs-dist`) | `pdfjs/` | PdfViewer | Loaded on first use. Optional peer - apps add it to opt in. See [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | react-beautiful-dnd | `react-beautiful-dnd/` | DashCanvas widget reordering | Drag-and-drop with `DragDropContext`, `Droppable`, `Draggable` |
 | react-dropzone | `react-dropzone/` | FileChooser | File drop zone via `Dropzone` component |
 | react-markdown | `react-markdown/` | Markdown display | `ReactMarkdown` component for rendering markdown content |

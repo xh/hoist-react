@@ -1,0 +1,22 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Hoist overrides for the scoped pdf.js styles in pdf_viewer.css. Loaded after that file, so
+// these win at equal specificity.
+.xh-pdf-viewer .pdfViewer {
+  padding: var(--xh-pdf-viewer-page-gap-px) 0;
+
+  &.removePageBorders .page {
+    margin: 0 auto var(--xh-pdf-viewer-page-gap-px);
+    box-shadow: var(--xh-pdf-viewer-page-shadow);
+  }
+
+  .textLayer .highlight {
+    --highlight-bg-color: var(--xh-pdf-viewer-highlight-bg);
+    --highlight-selected-bg-color: var(--xh-pdf-viewer-highlight-selected-bg);
+  }
+}

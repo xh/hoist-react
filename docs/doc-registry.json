@@ -136,6 +136,14 @@
             "keywords": ["DateRangePickerModel", "DateRangePicker", "DateRangeSelection", "dateRangePresets", "DateRangePreset", "LocalDateRange", "anchorDate", "currentRangeFilter", "priorRange", "business days"]
         },
         {
+            "id": "cmp/pdfviewer/README.md",
+            "title": "PDF Viewer Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "PDF document viewer built on pdf.js, with a configurable toolbar and an observable model API for paging, zoom, find, and download.",
+            "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
+        },
+        {
             "id": "desktop/cmp/dash/README.md",
             "title": "Dashboard System",
             "mcpCategory": "package",
