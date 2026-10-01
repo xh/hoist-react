@@ -16,6 +16,11 @@
 
 ### 🎁 New Features
 
+* Both `StoreFilterField` and `GridFindField` now fully support `ZoneGrid`. Their `gridModel` prop
+  accepts a `ZoneGridModel`, in which case they search the fields mapped to the grid's zones, not
+  its two zone columns. With no prop, both bind to the nearest `GridModel` or `ZoneGridModel` in
+  context. Both now also re-derive their searchable fields when columns are shown or hidden, not
+  only when the grid's columns are replaced.
 * `BaseOAuthClient.initAsync()` now accepts an optional `CallContextLike`, and tags its span with
   `xh.auth.method` (`acquireSilent`, `ssoSilent`, `loginPopup`, or `loginRedirect`) so auth latency
   can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
@@ -23,10 +28,10 @@
   `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
 
 ### 🐞 Bug Fixes
-
 * Fixed `defaultReadonlyRenderer` reformatting plain strings that happen to parse as JSON scalars -
   e.g. a JsonBlob token like `3473e37` rendered as `3.473e+40` in read-only form fields. Only JSON
   objects and arrays are now pretty-printed, and other strings render as-is.
+* Fixed `StoreFilterField` ignoring changes to its `gridModel` or `store` props after mount.
 * Fixed app load tracking recording inflated load times for pages hidden at any point during load,
   such as a page opened in a background tab or switched away from while loading. These loads now
   omit `elapsed` and report `hiddenDuringLoad: true` in their data. This also drops them from the
@@ -34,6 +39,11 @@
 * Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
   dragged. Active state was set on a fixed timer that could fire before the view's model existed,
   most often on slower clients. Affected tabs could also miss their context menu and title updates.
+
+### ✨ Styles
+
+* Increased the default width of `GridFindField` from 180px to 240px, leaving room to type once its
+  match count and nav buttons appear.
 
 ## 88.0.0 - 2026-09-29
 
