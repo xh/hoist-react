@@ -14,6 +14,10 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
+
 ## 88.1.0 - 2026-10-01
 
 ### 🎁 New Features
