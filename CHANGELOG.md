@@ -17,8 +17,8 @@
 ### 🎁 New Features
 
 * Added `StoreFilterField.zoneGridModel` and `GridFindField.zoneGridModel` to bind these fields to
-  a `ZoneGrid`. Both search the fields mapped to the grid's zones, not its two zone columns. Both
-  also bind to the nearest `ZoneGridModel` in context when no other target is given.
+  a `ZoneGrid`. Both search the fields mapped to the grid's zones, not its two zone columns. With
+  no model prop, both bind to a `ZoneGridModel` in context if no standalone `GridModel` is found.
 * Added `ZoneGridModel.getMappedColumns()` to return the columns behind its currently mapped fields.
 
 ### 🐞 Bug Fixes
@@ -26,6 +26,11 @@
 * Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
   dragged. Active state was set on a fixed timer that could fire before the view's model existed,
   most often on slower clients. Affected tabs could also miss their context menu and title updates.
+
+### ✨ Styles
+
+* Increased the default width of `GridFindField` from 180px to 240px, leaving room to type once its
+  match count and nav buttons appear.
 
 ## 88.0.0 - 2026-09-29
 

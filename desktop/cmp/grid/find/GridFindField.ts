@@ -77,7 +77,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
         const impl = useLocalModel(GridFindFieldImplModel);
 
         return hbox({
-            width: 180,
+            width: 240,
             className,
             ...layoutProps,
             items: [
