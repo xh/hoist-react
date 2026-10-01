@@ -24,11 +24,11 @@ export class AppStateModel extends HoistModel {
     suspendData: AppSuspendData;
     accessDeniedMessage: string = 'Access Denied';
 
-    /**
-     * Timestamp when the app first started loading, prior to even JS download/eval.
-     * Read from timestamp set on window within index.html.
-     */
+    // Captured by preflight.js, before any Hoist JS has loaded.
     readonly loadStarted: number = window['_xhLoadTimestamp'];
+    // Hidden pages load throttled, so their elapsed time is not meaningful.
+    readonly hiddenAtLoad: boolean = window['_xhHiddenAtLoad'];
+
     readonly timings: Record<AppState, number> = {} as Record<AppState, number>;
 
     private lastStateChangeTime: number = this.loadStarted;
@@ -82,19 +82,16 @@ export class AppStateModel extends HoistModel {
     // Implementation
     //------------------
     private trackLoad() {
-        const {timings, loadStarted} = this;
         this.addReaction({
             when: () => this.state === 'RUNNING',
             run: () => {
-                // Skip elapsed if page was hidden at load start - see preflight.js.
-                const hiddenAtLoad = !!window['_xhHiddenAtLoad'];
+                const {timings, loadStarted, hiddenAtLoad} = this,
+                    loginTime = timings.LOGIN_REQUIRED ?? 0;
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
                     timestamp: loadStarted,
-                    elapsed: hiddenAtLoad
-                        ? null
-                        : Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
+                    elapsed: hiddenAtLoad ? null : Date.now() - loadStarted - loginTime,
                     data: {
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
                         hiddenAtLoad,
@@ -104,7 +101,7 @@ export class AppStateModel extends HoistModel {
                     },
                     omit: !XH.appSpec.trackAppLoad
                 });
-                this.logDebug('Load timings', this.timings);
+                this.logDebug('Load timings', timings);
             }
         });
     }

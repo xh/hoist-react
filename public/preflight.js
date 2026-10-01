@@ -1,9 +1,5 @@
-// Start load timer as early as possible - read later in AppStateModel.trackLoad().
+// Record load info as early as possible - read later in AppStateModel.trackLoad().
 window._xhLoadTimestamp = Date.now();
-
-// Flag if the page is hidden at load start - read later in AppStateModel.trackLoad(). Browsers
-// throttle hidden pages (e.g. a page opened in a background tab), so their load times are not
-// meaningful.
 window._xhHiddenAtLoad = document.visibilityState === 'hidden';
 
 // Check browser compatibility with features / syntax we can't polyfill. Currently Mobx 5+ has
