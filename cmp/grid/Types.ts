@@ -163,6 +163,10 @@ export interface GridFilterModelConfig {
      * Specifies the fields this model supports for filtering. Should be configs for
      * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or
      * omitted entirely to indicate that all fields should be filter-enabled.
+     *
+     * Any `filterable` column with a field not listed here gets a default spec, so this list only
+     * needs to include fields that require custom config. Set `filterable: false` on a column to
+     * disable its filter.
      */
     fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 

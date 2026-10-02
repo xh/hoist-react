@@ -30,7 +30,6 @@ import {
     isEqual,
     isFinite,
     isNil,
-    last,
     partition,
     reject,
     startCase
@@ -262,6 +261,16 @@ export class DashContainerModel
             {
                 track: () => this.viewState,
                 run: () => this.updateState()
+            },
+            {
+                // ViewModels are created async as GL's React roots render, after GL has fired its
+                // own active item events. Sync active state and tab headers once they exist.
+                track: () => [this.goldenLayout, this.viewModels],
+                run: () => {
+                    this.refreshActiveViews();
+                    this.updateTabHeaders();
+                },
+                debounce: 0
             }
         );
     }
@@ -336,13 +345,8 @@ export class DashContainerModel
                     this.destroyGoldenLayout();
                     this.goldenLayout = this.createGoldenLayout(containerEl, stateWithViewModelIds);
                 })
-                // Since React v18, it's necessary to wait a short while for ViewModels to be available.
+                // Hold the mask briefly while GL's React roots render and views settle.
                 .wait(500)
-                .then(() => {
-                    if (refIsStale()) return;
-                    this.refreshActiveViews();
-                    this.updateTabHeaders();
-                })
                 .linkTo(this.loadingStateTask)
         );
     }
@@ -378,8 +382,6 @@ export class DashContainerModel
 
         if (!isFinite(index)) index = container.contentItems.length;
         container.addChild(goldenLayoutConfig(viewSpec, this.genViewId(specId)), index);
-        const stack = container.isStack ? container : last(container.contentItems);
-        wait(1).then(() => this.onStackActiveItemChange(stack));
     }
 
     /**
@@ -753,7 +755,7 @@ export class DashContainerModel
                         track: () => model.fullTitle,
                         run: () => {
                             // Item lookup requires a mounted react component and can miss during
-                            // a GL (re)build - loadStateAsync calls updateTabHeaders to cover.
+                            // a GL (re)build - the viewModels reaction in the constructor covers it.
                             const item = this.getItemByViewModel(viewModelId);
                             if (!item?.tab) return;
 

@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - connected stores)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - connected stores, grid column filter specs)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -22,6 +22,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Stores connected to a Cube `View` are now always `projectionOnly` - the View sets the flag, and
   an explicit `false` or a `processRawData` config on a connected store throws. Apps parsing View
   rows into their own records must instead declare the needed fields on the Cube.
+* `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
+  now gets a default filter - set `filterable: false` on columns that should have none.
 
 ### 🎁 New Features
 
@@ -31,7 +33,47 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   derives each leaf and rolls up (e.g. market value), without one it derives each level from that
   row's aggregates (e.g. PnL in bps). A Query including a derived field includes its inputs.
 
-## 88.0.0 - 2026-09-28
+### 🐞 Bug Fixes
+
+* Fixed `GridFilterModelConfig.fieldSpecs` disabling filters on all other `filterable` columns.
+  Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
+  See Breaking Changes above.
+* Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
+
+## 88.1.0 - 2026-10-01
+
+### 🎁 New Features
+
+* Both `StoreFilterField` and `GridFindField` now fully support `ZoneGrid`. Their `gridModel` prop
+  accepts a `ZoneGridModel`, in which case they search the fields mapped to the grid's zones, not
+  its two zone columns. With no prop, both bind to the nearest `GridModel` or `ZoneGridModel` in
+  context. Both now also re-derive their searchable fields when columns are shown or hidden, not
+  only when the grid's columns are replaced.
+* `BaseOAuthClient.initAsync()` now accepts an optional `CallContextLike`, and tags its span with
+  `xh.auth.method` (`acquireSilent`, `ssoSilent`, `loginPopup`, or `loginRedirect`) so auth latency
+  can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
+  available as `BaseOAuthClient.lastAuthMethod`. Apps opt in by passing the ctx from
+  `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
+
+### 🐞 Bug Fixes
+* Fixed `defaultReadonlyRenderer` reformatting plain strings that happen to parse as JSON scalars -
+  e.g. a JsonBlob token like `3473e37` rendered as `3.473e+40` in read-only form fields. Only JSON
+  objects and arrays are now pretty-printed, and other strings render as-is.
+* Fixed `StoreFilterField` ignoring changes to its `gridModel` or `store` props after mount.
+* Fixed app load tracking recording inflated load times for pages hidden at any point during load,
+  such as a page opened in a background tab or switched away from while loading. These loads now
+  omit `elapsed` and report `hiddenDuringLoad: true` in their data. This also drops them from the
+  server's `xh.client.load.*` metrics.
+* Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
+  dragged. Active state was set on a fixed timer that could fire before the view's model existed,
+  most often on slower clients. Affected tabs could also miss their context menu and title updates.
+
+### ✨ Styles
+
+* Increased the default width of `GridFindField` from 180px to 240px, leaving room to type once its
+  match count and nav buttons appear.
+
+## 88.0.0 - 2026-09-29
 
 ### 💥 Breaking Changes (upgrade difficulty: 🔴 HIGH - TC39 decorators + Rsbuild, AG Grid 36, MobX 7, removals)
 
