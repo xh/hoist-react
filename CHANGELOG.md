@@ -14,8 +14,16 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - grid column filter specs)
+
+* `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
+  now gets a default filter - set `filterable: false` on columns that should have none.
+
 ### 🐞 Bug Fixes
 
+* Fixed `GridFilterModelConfig.fieldSpecs` disabling filters on all other `filterable` columns.
+  Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
+  See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 
 ## 88.1.0 - 2026-10-01
