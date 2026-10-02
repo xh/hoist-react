@@ -23,6 +23,7 @@ import {
     SumStrictAggregator,
     UniqueAggregator
 } from '@xh/hoist/data';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 export interface CubeFieldSpec extends FieldSpec {
@@ -128,6 +129,15 @@ export class CubeField extends Field {
         // Dimension specific
         this.isLeafDimension = isLeafDimension;
         this.parentDimension = parentDimension;
+
+        throwIf(
+            this.isDerived && this.isDimension,
+            `CubeField '${this.name}' may not be both derived and a dimension.`
+        );
+        throwIf(
+            this.isDerived && !this.aggregator && this.canAggregateFn,
+            `CubeField '${this.name}' is derived at every level and never aggregated - 'canAggregateFn' does not apply.`
+        );
     }
 
     //------------------------

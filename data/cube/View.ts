@@ -32,6 +32,7 @@ import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
 import {ExposedLeafRow, HiddenLeafRow, LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
+import {withDerivedDependents} from '../impl/DerivedFields';
 import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
 /**
@@ -51,9 +52,8 @@ export interface ViewConfig {
      * Store(s) to be automatically (re)loaded with data from this view.
      * Optional - read {@link View.result} directly to use without a Store.
      *
-     * Connected stores should generally set {@link StoreConfig.projectionOnly} - view rows are
-     * already parsed and owned by this View, so adopting them directly improves performance
-     * when no additional record parsing or local data modification is required.
+     * Connected stores are read-only projections of this View's rows - the View sets
+     * {@link StoreConfig.projectionOnly} on them, and conflicting config throws.
      */
     stores?: Store[] | Store;
 
@@ -155,6 +155,8 @@ export class View
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
     _aggFieldsByDepth: CubeField[][] = null;
+    // Derived query fields - read via getter, so never present in a producer's `changedFields`.
+    _derivedFields: CubeField[] = null;
     _aggFieldNamesByDepth: Set<string>[] = null;
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
@@ -354,15 +356,17 @@ export class View
     }
 
     private buildIndices() {
-        this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
+        const {fields, query} = this;
+        this._fieldsByName = new Map(fields.map(it => [it.name, it]));
+        this._derivedFields = fields.filter(it => it.isDerived);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
         // bucket rows share the level of the aggregate row above them. Note depth 0 has no applied
         // dimensions, and so holds the unfiltered superset of each list. Queries need not specify
         // dimensions at all (e.g. a leaves-only or root-total-only query) - Query.dimensions is
         // null in that case, leaving only the depth-0 entry below.
-        const dimensions = this.query.dimensions ?? [],
-            aggFields = this.fields.filter(it => it.aggregator),
+        const dimensions = query.dimensions ?? [],
+            aggFields = fields.filter(it => it.aggregator),
             appliedDimNames = dimensions.map(
                 (v, idx) => new Set(dimensions.slice(0, idx + 1).map(it => it.name))
             );
@@ -406,7 +410,12 @@ export class View
     // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
     private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
         const {_leafMap, stores, fields} = this,
-            checkFields = changedFields ? fields.filter(it => changedFields.has(it.name)) : fields,
+            // A producer's changedFields names stored fields only - also check the derived fields
+            // reading them, whose leaf values may have moved without being named.
+            checkNames = changedFields
+                ? withDerivedDependents(changedFields, this._derivedFields)
+                : null,
+            checkFields = checkNames ? fields.filter(it => checkNames.has(it.name)) : fields,
             changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
@@ -415,6 +424,10 @@ export class View
         });
 
         changed.rows.forEach(rowData => this.assignDigest(rowData));
+
+        // Derived values on parent rows are read via getter and never diffed - report them changed
+        // to consumers whenever an input is.
+        changed.fields = withDerivedDependents(changed.fields, this._derivedFields);
 
         this.createAggregationContext();
 
@@ -709,11 +722,11 @@ export class View
             '`Store.idEncodesTreePath` cannot be configured on a Store connected to a Cube View - view row ids do not encode a fixed tree position. Leave unset.'
         );
 
-        if (ret.some(s => s.projectionOnly == null && !s.processRawData)) {
-            this.logWarn(
-                'Connected store(s) do not set `projectionOnly` - recommended for improved performance when no additional record parsing or local data modification is required. Set explicitly to false to opt out and silence this warning.'
-            );
-        }
+        throwIf(
+            ret.some(s => s.projectionOnly === false || s.processRawData),
+            'A Store connected to a Cube View is a read-only projection of its rows - remove conflicting `projectionOnly: false` or `processRawData` config.'
+        );
+        ret.forEach(s => (s.projectionOnly = true));
 
         return ret;
     }

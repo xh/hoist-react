@@ -771,8 +771,8 @@ export class Column {
 
     /** Does column support editing its field for the given StoreRecord? */
     isEditableForRecord(record: StoreRecord): boolean {
-        const {editable, gridModel} = this;
-        if (!record) return false;
+        const {editable, gridModel, field} = this;
+        if (!record || record.store.getField(field)?.isDerived) return false;
         return isFunction(editable)
             ? editable({record, store: record.store, gridModel, column: this})
             : editable;

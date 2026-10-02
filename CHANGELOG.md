@@ -14,10 +14,24 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - grid column filter specs)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - connected stores, grid column filter specs)
 
+See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Stores connected to a Cube `View` are now always `projectionOnly` - the View sets the flag, and
+  an explicit `false` or a `processRawData` config on a connected store throws. Apps parsing View
+  rows into their own records must instead declare the needed fields on the Cube.
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
+
+### 🎁 New Features
+
+* Added `FieldSpec.derivedFn` - a field computed from the record's other values, named in the
+  required `dependsOn`, and read through a getter so it is always current. On a `CubeField` the
+  function also runs on every View row where the field is not aggregated: with an `aggregator` it
+  derives each leaf and rolls up (e.g. market value), without one it derives each level from that
+  row's aggregates (e.g. PnL in bps). A Query including a derived field includes its inputs.
 
 ### 🐞 Bug Fixes
 

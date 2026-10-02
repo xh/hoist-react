@@ -526,6 +526,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v87.x to v88.0.0. High difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "experimentalDecorators", "makeObservable", "configureWebpack", "webpack.config.js", "ag-theme-balham", "PopoverFilterChooser", "mergePersistOptions", "LogSource", "localDateCol"]
+        },
+        {
+            "id": "docs/upgrade-notes/v89-upgrade-notes.md",
+            "title": "v89 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v88.x to v89.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88", "derivedFn", "dependsOn", "projectionOnly", "connected stores"]
         }
     ]
 }

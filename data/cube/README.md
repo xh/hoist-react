@@ -89,54 +89,20 @@ Extend `Aggregator` and implement `aggregate()` to add application-specific aggr
 arrive as the row's direct children - a mix of leaf rows and already-aggregated parent rows, typed
 as `ViewRow` - so most aggregations compose naturally from `row.data[fieldName]`.
 
-Aggregations that cannot be derived from their children's published values alone (a weighted
-average, a standard deviation) can keep the extra terms they need as **aggregator state**, via
-`AggregationContext.setAggState()` / `getAggState()`. This keeps each row's work proportional to
-its child count rather than to its entire subtree of leaves:
+Before writing one, check whether the aggregate decomposes into sums. A weighted average is
+SUM(price × qty) / SUM(qty) - two derived fields, no aggregator code, and fully incremental:
 
 ```typescript
-export class WeightedAverageAggregator extends Aggregator {
-    readonly weightField: string;
-
-    constructor(weightField: string) {
-        super();
-        this.weightField = weightField;
-    }
-
-    // Reads a second field, so a change to the weight alone must recompute this aggregate - see
-    // below. This forgoes incremental updates, but not the compositional win of the state below.
-    override get dependsOnChildrenOnly() {
-        return false;
-    }
-
-    override aggregate(rows, fieldName, context) {
-        let weighted = 0,
-            weight = 0;
-
-        for (const row of rows) {
-            // Parents publish an average - compose from their state instead. A parent without
-            // state did not aggregate this field, so read its published values as for a leaf.
-            const state = row.isLeaf ? null : context.getAggState(row);
-            if (state) {
-                weighted += state.weighted;
-                weight += state.weight;
-            } else {
-                const val = row.data[fieldName],
-                    w = row.data[this.weightField];
-                if (val != null && w != null) {
-                    weighted += val * w;
-                    weight += w;
-                }
-            }
-        }
-
-        context.setAggState({weighted, weight});
-        return weight ? weighted / weight : null;
-    }
-}
+{name: 'weightedPrice', aggregator: 'SUM', dependsOn: ['price', 'qty'], derivedFn: d => d.price * d.qty},
+{name: 'vwap', dependsOn: ['weightedPrice', 'qty'], derivedFn: d => d.weightedPrice / d.qty}
 ```
 
-Then reference it from a field: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`.
+See [Derived Fields](#derived-fields) below.
+
+Aggregations that do not decompose this way (a standard deviation, a distinct count) can keep the
+extra terms they need as **aggregator state**, via `AggregationContext.setAggState()` /
+`getAggState()`. This keeps each row's work proportional to its child count rather than to its
+entire subtree of leaves.
 
 The rows handed to an aggregator are typed as `ViewRow` - the row-level API shared by aggregators
 and the `lockFn` / `omitFn` / `bucketSpecFn` hooks. Leaf rows additionally carry their source
@@ -151,19 +117,48 @@ Rules to observe:
 * **Expect non-leaf children without state.** `getAggState()` returns null for a child that did not
   aggregate the field - because its `canAggregateFn` returned false, or because the field is a
   dimension at that child's level and so is never aggregated there. Such a child publishes a value
-  to read instead - null in the first case, the dimension value in the second - so treat it as the
-  example does, exactly like a leaf.
+  to read instead - null in the first case, the dimension value in the second - so read it exactly
+  as for a leaf.
 * **Override `replace()` only if you can keep state consistent** with the value you return. The
   inherited implementation re-aggregates from direct children, which is correct and already cheap;
   see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
 * **Override `dependsOnChildrenOnly` to return false if the aggregate reads any field other than
-  its own**, as the weighted average above reads `qty`. A View whose aggregators all depend on
-  their children only applies a record update incrementally, re-aggregating a field up the
-  ancestor chain only when that field's own value changed on the leaf - a change to `qty` alone
-  would leave the weighted `price` stale until the next full rebuild. Returning false routes every
-  update through a full rebuild, on which reused rows recompute the aggregate afresh. Aggregators
-  that depend on values beyond their own children (e.g. percent-of-total) must return false for the
-  same reason, and doing so also gives them access to `AggregationContext.filteredRecords`.
+  its own.** A View whose aggregators all depend on their children only applies a record update
+  incrementally, re-aggregating a field up the ancestor chain only when that field's own value
+  changed on the leaf - a change to another input would leave the aggregate stale until the next
+  full rebuild. Returning false routes every update through a full rebuild, on which reused rows
+  recompute the aggregate afresh. Aggregators that depend on values beyond their own children (e.g.
+  percent-of-total) must return false for the same reason, and doing so also gives them access to
+  `AggregationContext.filteredRecords`.
+
+## Derived Fields
+
+A field with a `derivedFn` computes its value from the row's other values wherever the field is
+not aggregated. `dependsOn` names the fields it reads and is required - a Query including a derived
+field includes its inputs as well. See `FieldSpec.derivedFn` in `data/README.md` for the Store-level
+form, which the Cube's own store uses to derive every leaf.
+
+```typescript
+// Derived at each leaf, then summed - a product belongs at the leaf.
+{name: 'notional', aggregator: 'SUM', dependsOn: ['qty', 'price'], derivedFn: d => d.qty * d.price},
+
+// Derived at every level from that row's sums - a ratio belongs at the level.
+{name: 'pnlBps', dependsOn: ['pnl', 'notional'], derivedFn: d => (d.pnl / d.notional) * 10000},
+
+// Derived at leaves only - parents publish null.
+{name: 'side', aggregator: 'NULL', dependsOn: ['qty'], derivedFn: d => (d.qty > 0 ? 'Buy' : 'Sell')}
+```
+
+A derived field with an aggregator is an ordinary measure whose leaf values are computed rather
+than loaded. One without an aggregator is read through a getter on each parent row, so it is
+always current with that row's aggregates. Derived fields may read other derived fields.
+
+As at the Store layer, values are read by name, never enumerated, and the function should be pure,
+fast, and return primitives or stable references - see
+[Derived Fields](../README.md#derived-fields) in the data README.
+
+Stores connected to a View adopt these values from the rows they receive and compute nothing
+themselves - connected stores are always `projectionOnly`.
 
 ## Querying with Views
 

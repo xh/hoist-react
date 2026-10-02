@@ -170,6 +170,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v89](./upgrade-notes/v89-upgrade-notes.md) | TBD | 🟢 LOW | Stores connected to a Cube `View` are always `projectionOnly`; derived fields (`FieldSpec.derivedFn` / `dependsOn`) are the new-feature headline |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |
 | [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |
 | [v86](./upgrade-notes/v86-upgrade-notes.md) | 2026-06-12 | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
