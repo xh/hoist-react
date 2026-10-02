@@ -23,6 +23,7 @@ import {
     StoreValidationResultsMap,
     ValidationResult
 } from '@xh/hoist/data';
+import {withDerivedDependents} from '@xh/hoist/data/impl/DerivedFields';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, observable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -419,6 +420,7 @@ export class Store
 
     _created = Date.now();
     private _fieldMap: Map<string, Field>;
+    private _derivedFields: Field[];
     experimental: any;
 
     /** @internal */
@@ -472,6 +474,7 @@ export class Store
 
         this.validator = new StoreValidator({store: this});
         this._fieldMap = this.createFieldMap();
+        this._derivedFields = this.fields.filter(it => it.isDerived);
         this._simpleProto = this.createSimpleProto();
         this._denseTemplate = this.createDenseTemplate();
         this._denseThreshold = this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
@@ -658,8 +661,10 @@ export class Store
             rawTransaction = rawData;
         }
 
-        const {update, add, remove, rawSummaryData, changedFields, ...other} = rawTransaction;
+        let {update, add, remove, rawSummaryData, changedFields, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
+        if (changedFields)
+            changedFields = withDerivedDependents(changedFields, this._derivedFields);
 
         // 1) Pre-process updates and adds into Records
         let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;

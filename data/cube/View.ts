@@ -32,6 +32,7 @@ import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
 import {ExposedLeafRow, HiddenLeafRow, LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
+import {withDerivedDependents} from '../impl/DerivedFields';
 import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
 /**
@@ -411,7 +412,9 @@ export class View
         const {_leafMap, stores, fields} = this,
             // A producer's changedFields names stored fields only - also check the derived fields
             // reading them, whose leaf values may have moved without being named.
-            checkNames = changedFields ? this.withDerivedDependents(changedFields) : null,
+            checkNames = changedFields
+                ? withDerivedDependents(changedFields, this._derivedFields)
+                : null,
             checkFields = checkNames ? fields.filter(it => checkNames.has(it.name)) : fields,
             changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
 
@@ -424,7 +427,7 @@ export class View
 
         // Derived values on parent rows are read via getter and never diffed - report them changed
         // to consumers whenever an input is.
-        changed.fields = this.withDerivedDependents(changed.fields);
+        changed.fields = withDerivedDependents(changed.fields, this._derivedFields);
 
         this.createAggregationContext();
 
@@ -437,28 +440,6 @@ export class View
         });
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);
-    }
-
-    /**
-     * The given field names plus, transitively, every derived query field reading any of them.
-     * Returns the input set itself when nothing is added.
-     */
-    private withDerivedDependents(names: Set<string>): Set<string> {
-        const {_derivedFields} = this;
-        if (isEmpty(_derivedFields) || !names.size) return names;
-
-        let ret = names;
-        for (let added = true; added;) {
-            added = false;
-            _derivedFields.forEach(({name, dependsOn}) => {
-                if (!ret.has(name) && dependsOn.some(it => ret.has(it))) {
-                    if (ret === names) ret = new Set(names);
-                    ret.add(name);
-                    added = true;
-                }
-            });
-        }
-        return ret;
     }
 
     // Rows left untouched, but deciding that meant testing the changes against the query.
