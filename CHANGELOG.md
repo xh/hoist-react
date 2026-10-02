@@ -19,6 +19,11 @@
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
 
+### 🎁 New Features
+
+* Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
+  Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
+
 ### 🐞 Bug Fixes
 
 * Fixed `GridFilterModelConfig.fieldSpecs` disabling filters on all other `filterable` columns.
