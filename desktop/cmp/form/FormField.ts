@@ -34,7 +34,17 @@ import {
     useOnUnmount
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import {
+    first,
+    isDate,
+    isEmpty,
+    isFinite,
+    isNil,
+    isObjectLike,
+    isString,
+    isUndefined,
+    kebabCase
+} from 'lodash';
 import {
     Children,
     cloneElement,
@@ -380,17 +390,24 @@ const editableChild = hoistCmp.factory<FieldModel>({
 // Helper Functions
 //---------------------------------
 export function defaultReadonlyRenderer(value: any): ReactNode {
+    // First try type-specific formatting
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
+    if (isObjectLike(value)) return fmtJson(value);
 
-    // format JSON, but fail and ignore on plain text
-    try {
-        value = fmtJson(value);
-    } catch (e) {}
+    // ... pretty printing json strings as well.
+    if (isString(value)) {
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                value = fmtJson(trimmed);
+            } catch {}
+        }
+    }
 
-    return span(value != null ? value.toString() : null);
+    // Otherwise just fall back to string rendering
+    return span(value?.toString());
 }
 
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];

@@ -201,7 +201,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 id: 'activity',
-                title: 'User Activity',
+                title: 'Activity',
                 icon: Icon.analytics(),
                 content: activityTrackingPanel
             }
