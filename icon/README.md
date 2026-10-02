@@ -322,6 +322,10 @@ Supporting lookups:
 
 All of these accept either a factory name (`'add'`, `'invoice'`) or an FA name (`'plus'`).
 
+Use `Icon.getCatalog()` to list every available icon, such as for a gallery or a custom chooser.
+Do not iterate the keys of `Icon` itself - it also holds the lookup and registration methods above,
+which are not icon factories.
+
 A catalog entry carries each form: `iconName` is the FA name of the glyph, `name` is its primary
 `Icon` factory name, and `names` holds every name that resolves to it, aliases included.
 

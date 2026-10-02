@@ -14,10 +14,14 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - grid column filter specs)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - grid column filter specs, icon listing)
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
+* The `Icon` singleton now carries lookup and registration methods (`register()`, `get()`,
+  `getCatalog()`, ...) alongside its factories. Apps that list icons by iterating
+  `Object.keys(Icon)` must switch to `Icon.getCatalog()`, which returns one entry per icon with its
+  name and factory.
 
 ### 🎁 New Features
 
