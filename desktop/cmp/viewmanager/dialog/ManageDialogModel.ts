@@ -6,7 +6,13 @@
  */
 
 import {badge} from '@xh/hoist/cmp/badge';
-import {dateTimeCol, GridAutosizeMode, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {
+    dateTime,
+    GridAutosizeMode,
+    GridContextMenuItemLike,
+    GridModel,
+    TreeStyle
+} from '@xh/hoist/cmp/grid';
 import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
@@ -34,7 +40,14 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
 import {GridOptions, RowDropZoneEvents} from '@xh/hoist/kit/ag-grid';
-import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {
+    action,
+    computed,
+    observable,
+    runInAction,
+    observableRef,
+    bindableRef
+} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {
     capitalize,
@@ -84,7 +97,7 @@ type StripMode = 'rest' | 'armed' | 'hot' | 'blocked';
 export class ManageDialogModel extends HoistModel {
     viewManagerModel: ViewManagerModel;
 
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     @managed ownedGridModel: GridModel;
     @managed globalGridModel: GridModel;
@@ -96,16 +109,16 @@ export class ManageDialogModel extends HoistModel {
 
     @managed tabContainerModel: TabContainerModel;
 
-    @bindable.ref filter: FilterTestFn;
+    @bindableRef accessor filter: FilterTestFn;
 
     /** Anchors this dialog's toasts within it, rather than along the edge of the document. */
     readonly dialogRef = createRef<HTMLElement>();
 
     /** Pending row-drag drop target within one of the grids, for highlighting. */
-    @observable.ref private dropTarget: {type: GridType; id: string} = null;
+    @observableRef private accessor dropTarget: {type: GridType; id: string} = null;
 
     /** Row(s)/group currently mid-drag, tagged by originating grid. */
-    @observable.ref private drag: {type: GridType; payload: DragPayload} = null;
+    @observableRef private accessor drag: {type: GridType; payload: DragPayload} = null;
 
     /** Reversing action for the most recently applied move, backing the toast's Undo button. */
     private lastMove: {undo: () => Promise<void>} = null;
@@ -165,7 +178,6 @@ export class ManageDialogModel extends HoistModel {
 
     constructor(viewManagerModel: ViewManagerModel) {
         super();
-        makeObservable(this);
         this.viewManagerModel = viewManagerModel;
     }
 
@@ -917,7 +929,7 @@ export class ManageDialogModel extends HoistModel {
             }
         };
 
-        const contextMenu =
+        const contextMenu: GridContextMenuItemLike[] =
             type === 'shared' ? ['expandCollapseAll'] : [renameGroupAction, 'expandCollapseAll'];
 
         const modifier =
@@ -971,7 +983,7 @@ export class ManageDialogModel extends HoistModel {
                 {field: 'isGroupRow', hidden: true},
                 {field: 'group', hidden: true},
                 {field: 'owner', hidden: true},
-                {field: 'lastUpdated', ...dateTimeCol, hidden: true},
+                {field: 'lastUpdated', ...dateTime, hidden: true},
                 {
                     field: 'isPinned',
                     width: 40,

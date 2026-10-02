@@ -114,6 +114,7 @@ Desktop form inputs with Blueprint styling:
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
 | `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |
+| `IntentInput` | Compact swatch row for selecting a Hoist `Intent`, with optional intent names |
 | `CodeInput` | Code editor with syntax highlighting |
 | `JsonInput` | JSON editor with validation |
 
@@ -375,6 +376,7 @@ leftRightChooser({model})
 | `/appOption/` | App-wide configuration options UI |
 | `/clipboard/` | Clipboard operations (copy with feedback) |
 | `/contextmenu/` | Right-click context menu support |
+| `/daterange/` | Date range picker - presets, relative lookbacks, months and years, custom ranges (see [Date Range README](../cmp/daterange/README.md)) |
 | `/filechooser/` | File selection input |
 | `/filter/` | Filter chooser and filter editor |
 | `/form/` | FormField wrapper for desktop inputs |
@@ -403,7 +405,7 @@ can be included unconditionally in the parent's item list.
 ```typescript
 // TaskDialogModel.ts - manages dialog open/closed state and form data
 export class TaskDialogModel extends HoistModel {
-    @observable isOpen = false;
+    @observable accessor isOpen = false;
 
     @managed formModel = new FormModel({
         fields: [{name: 'description', rules: [required]}]

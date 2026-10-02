@@ -6,3 +6,4 @@
  */
 export * from './TabSwitcher';
 export * from './dynamic/DynamicTabSwitcher';
+export * from './dynamic/DynamicTabSwitcherModel';

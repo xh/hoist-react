@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    getPasswordManagerAttrs,
+    HoistInputModel,
+    HoistInputProps,
+    PasswordManagerSupportProps,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
@@ -16,7 +22,8 @@ import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
-export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, HoistInputProps {
+export interface NumberInputProps
+    extends HoistProps, LayoutProps, StyleProps, HoistInputProps, PasswordManagerSupportProps {
     value?: number;
 
     /** True to focus the control on render. */
@@ -278,6 +285,8 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
             textAlign: withDefault(props.textAlign, 'right')
         },
         [TEST_ID]: props.testId,
+        ...getPasswordManagerAttrs(props.enablePasswordManagers),
+        ...props.domAttrs,
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown,

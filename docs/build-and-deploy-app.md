@@ -13,7 +13,7 @@ For CI/CD of the hoist-react library itself (linting, npm publishing), see
 At a high level, the application build process:
 
 - Builds the Grails back-end via Gradle, producing a WAR file.
-- Builds the JS front-end via Webpack, producing a set of production-ready client assets.
+- Builds the JS front-end via Rsbuild, producing a set of production-ready client assets.
 - Copies both outputs into a pair of Docker containers and publishes those containers as the
   end-product of the build.
 - Deploys the new images, immediately or in a later step.
@@ -29,7 +29,7 @@ to bundle up and somewhat abstract away the two-part nature of full-stack Hoist 
 
 **Note:** the use of `appCode` throughout this section is a placeholder for the actual shortname
 assigned to your application. This is a short, camelCased variant of the longer `appName` and is set
-within the application source code via both the Gradle and Webpack configs.
+within the application source code via both the Gradle and Rsbuild configs.
 
 ## Setup/Prep
 
@@ -77,19 +77,23 @@ A Gradle wrapper should be checked in with the project and used according to Gra
 
 The output is a `appCode-appVersion.war` file within `/build/libs`.
 
-### Build TS Client with Webpack
+### Build TS Client with Rsbuild
 
-This step builds all the client-side assets (TS/CSS/static resources) with Webpack, taking the
-source and dependencies and producing concatenated, minified, and hashed files suitable for serving
-to browsers.
+This step builds all the client-side assets (TS/CSS/static resources) with
+[Rsbuild](https://rsbuild.rs), taking the source and dependencies and producing concatenated,
+minified, and hashed files suitable for serving to browsers.
 
-This step takes several arguments that are passed via a script in `package.json` to Webpack. Each
-project has a `webpack.config.js` file checked into the root of its `client-app` directory that
-accepts any args and runs them through a script provided by
-[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js) to produce
-a fully-based Webpack configuration object. See that project for additional details.
+Each project has an `rsbuild.config.mjs` file checked into the root of its `client-app` directory.
+It calls `configureRsbuild()` from
+[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/develop/configureRsbuild.js) to produce
+a complete Rsbuild configuration. The app's `build` script runs `rsbuild build --env-mode prod`.
+See that project for additional details.
 
-The appVersion and appBuild params, detailed above, are the most common options set at build-time.
+The Rsbuild CLI has no `--env key=value` flag. Build-time overrides arrive as `XH_*` environment
+variables instead, which the `readCliEnv()` helper maps onto `configureRsbuild()` options. Only a
+fixed set of options has a variable - see `readCliEnv()` for the list. `XH_APP_VERSION` and
+`XH_APP_BUILD` carry the appVersion and appBuild values detailed above, the most common options set
+at build-time.
 
 **Note:** this must run with `client-app` as its working directory:
 
@@ -97,7 +101,7 @@ The appVersion and appBuild params, detailed above, are the most common options 
 # Source commit hash from CI system (e.g. $GITHUB_SHA, $CI_COMMIT_SHA, etc.)
 APP_BUILD=${GIT_COMMIT:0:10}
 echo "Building $APP_VERSION $APP_BUILD"
-pnpm build --env appVersion=$APP_VERSION --env appBuild=$APP_BUILD
+XH_APP_VERSION="$APP_VERSION" XH_APP_BUILD="$APP_BUILD" pnpm build
 ```
 
 The output is a set of files within `/client-app/build/`.
@@ -228,7 +232,7 @@ server {
         return 302 https://$host/app/;
     }
 
-    # Entry points for this project's client apps, as built by Webpack.
+    # Entry points for this project's client apps, as built by Rsbuild.
     # Keep the list below in sync with entry-point files within `/client-app/src/apps`.
     location ~ ^/(?<clientAppCode>admin|app|mobile)(?:/|$) {
         # Add trailing slash if not present. Use explicit redirect w/leading https as this nginx is
@@ -285,7 +289,7 @@ Note that this example configuration:
   priority over any regex locations.
     - The `/api/` path is expected by the JS client, which will automatically prepend it to the path
       of any local/relative fetch requests. This can be customized if needed on the client by
-      adjusting the `baseUrl` param passed to `configureWebpack()`.
+      adjusting the `baseUrl` param passed to `configureRsbuild()`.
     - The use of `localhost` is enabled via a deployment configuration that runs the two containers
       on the same pod / task / workload. This will vary based on the deployment environment.
     - Cookie security flags and cache disabling are set explicitly on proxied responses.

@@ -130,9 +130,10 @@
     // Match the unpinned bucket's reserved gutter, so action-column checkboxes share a right edge.
     padding-right: var(--xh-scrollbar-size-px);
 
-    // Override ag-grid's 50px auto-height viewport floor to match our compact drop strip.
-    .ag-layout-auto-height .ag-center-cols-viewport {
-      min-height: 40px;
+    // Override ag-grid's own inline min-height on this viewport (set via JS layout) to match our
+    // compact drop strip.
+    .ag-layout-auto-height .ag-body-horizontal-scroll-viewport {
+      min-height: 40px !important;
     }
 
     .ag-overlay-no-rows-wrapper {

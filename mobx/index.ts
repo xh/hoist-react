@@ -6,17 +6,26 @@
  */
 import {
     action,
+    actionBound,
     autorun,
-    comparer,
+    compareDefault,
+    compareIdentity,
+    compareShallow,
+    compareStructural,
     computed,
+    computedStruct,
     configure,
     extendObservable,
+    isComputedProp,
+    isObservableProp,
     observable,
-    override,
+    observableDeep,
+    observableRef,
+    observableShallow,
+    observableStruct,
     reaction,
     runInAction,
     toJS,
-    trace,
     untracked,
     when
 } from 'mobx';
@@ -29,20 +38,29 @@ configure({enforceActions: 'observed'});
 //---------------------
 export {
     action,
+    actionBound,
     autorun,
-    comparer,
+    compareDefault,
+    compareIdentity,
+    compareShallow,
+    compareStructural,
     computed,
+    computedStruct,
     extendObservable,
+    isComputedProp,
+    isObservableProp,
     observable,
+    observableDeep,
+    observableRef,
+    observableShallow,
+    observableStruct,
     observer,
-    override,
     reaction,
     runInAction,
     toJS,
-    trace,
     untracked,
     when
 };
+export type {IAutorunOptions, IEqualsComparer, IReactionDisposer, IReactionOptions} from 'mobx';
 
 export * from './decorators';
-export * from './overrides';

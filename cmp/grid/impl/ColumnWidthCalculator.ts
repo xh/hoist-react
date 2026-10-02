@@ -111,8 +111,7 @@ export class ColumnWidthCalculator {
     }
 
     async calcLevelWidthAsync(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, rendererIsComplex, cellClassFn, cellClassRules} =
-                column,
+        const {field, getValueFn, renderer, rendererIsComplex, cellClassRules} = column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
@@ -163,11 +162,11 @@ export class ColumnWidthCalculator {
         await forEachAsync(sample, ({value, records}) => {
             // Get unique combinations of row and cell classes applied
             const classNames = new Set<string>();
-            if (rowClassFn || cellClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
+            if (rowClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
                 records.forEach(record => {
                     const rawValue = getValueFn({record, field, column, gridModel, store}),
                         rowClass = this.getRowClass(gridModel, record),
-                        cellClass = this.getCellClass(gridModel, column, record, rawValue);
+                        cellClass = this.getCellClass(column, record, rawValue);
                     classNames.add(rowClass + '|' + cellClass);
                 });
             } else {
@@ -342,13 +341,9 @@ export class ColumnWidthCalculator {
         return this._cellEl;
     }
 
-    getCellClass(gridModel, column, record, value) {
-        const {cellClassFn, cellClassRules} = column,
+    getCellClass(column, record, value) {
+        const {cellClassRules} = column,
             ret = [];
-
-        if (cellClassFn) {
-            ret.push(cellClassFn({record, column, gridModel}));
-        }
 
         if (cellClassRules) {
             forOwn(cellClassRules, (fn, className) => {

@@ -112,8 +112,8 @@ render changes, the component efficiently re-renders.
 ```typescript
 // Model defines observable state
 class MyComponentModel extends HoistModel {
-    @observable selectedId: string = null;
-    @observable.ref data: MyData[] = [];
+    @observable accessor selectedId: string = null;
+    @observableRef accessor data: MyData[] = [];
 
     @action
     setSelectedId(id: string) {
@@ -174,6 +174,7 @@ techniques.
 
 | Sub-package | Description |
 |-------------|-------------|
+| `/daterange/` | DateRangePickerModel for period selection - presets, relative lookbacks, months and years, custom ranges. [See README](./daterange/README.md) |
 | `/filter/` | FilterChooserModel for building filter UIs |
 | `/grouping/` | GroupingChooserModel for dimension selection |
 | `/store/` | Store-related UI components (count label, filter field) |

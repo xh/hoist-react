@@ -9,8 +9,6 @@ import {
     CallContext,
     CallContextLike,
     HoistService,
-    LoadSpec,
-    LoadSpecConfig,
     PlainObject,
     TrackOptions,
     XH,
@@ -21,7 +19,7 @@ import {
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, noop, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -302,21 +300,7 @@ export class FetchService extends HoistService {
         ctx?: CallContextLike,
         forStreaming: boolean = false
     ): Promise<any> {
-        // Default to deprecated context
-        ctx ??= {span: opts.span, loadSpec: opts.loadSpec as LoadSpec};
-        apiDeprecated('FetchOptions.span', {
-            v: 'v88',
-            test: opts.span,
-            source: this,
-            msg: 'Pass a CallContextLike as the second argument instead.'
-        });
-        apiDeprecated('FetchOptions.loadSpec', {
-            v: 'v88',
-            test: opts.loadSpec,
-            source: this,
-            msg: 'Pass a CallContextLike as the second argument instead.'
-        });
-        opts = omit(opts, 'span', 'loadSpec');
+        ctx ??= {};
 
         let spanConfig = forStreaming ? null : this.createSpanConfig(opts),
             runner = spanConfig ? this.runner(ctx).span(spanConfig) : this.runner(ctx),
@@ -879,6 +863,11 @@ export interface FetchOptions {
     /**
      * Parameters to encode and append as a query string, or send with the request body
      * (for POSTs/PUTs sending form-url-encoded).
+     *
+     * If `method` is not specified, a request with params is sent as a POST, with the params in a
+     * form-url-encoded body, or on the query string if `Content-Type` is JSON. `fetch`,
+     * `fetchJson`, and `fetchNdjson` follow this rule, while `getJson`, `postJson`, `putJson`,
+     * `patchJson`, and `deleteJson` set the method themselves.
      */
     params?: PlainObject;
 
@@ -899,14 +888,6 @@ export interface FetchOptions {
      * but may be specified as null to specify no timeout.
      */
     timeout?: PromiseTimeoutSpec;
-
-    /**
-     * Optional metadata about the underlying request. Passed through for downstream processing by
-     * utils such as {@link ExceptionHandler}.
-     *
-     * @deprecated Pass a {@link CallContextLike} as the second argument to the fetch method instead.
-     */
-    loadSpec?: LoadSpec | LoadSpecConfig;
 
     /**
      * Options to pass to the underlying fetch request.
@@ -952,13 +933,6 @@ export interface FetchOptions {
      * here - use the top-level `correlationId` property instead.)
      */
     track?: string | TrackOptions;
-
-    /**
-     * Parent span for this fetch request. Use to nest fetch calls under a business-level span.
-     *
-     * @deprecated Pass a {@link CallContextLike} as the second argument to the fetch method instead.
-     */
-    span?: Span;
 
     /**
      * Distributed trace ID for this request. Set automatically by FetchService

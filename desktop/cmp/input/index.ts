@@ -4,6 +4,7 @@ export * from './CheckboxButton';
 export * from './CodeInput';
 export * from './DateInput';
 export * from './IconPicker';
+export * from './IntentInput';
 export * from './JsonInput';
 export * from './NumberInput';
 export * from './Picker';

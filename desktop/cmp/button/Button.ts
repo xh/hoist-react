@@ -6,6 +6,7 @@
  */
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import {
+    DomAttrsProps,
     hoistCmp,
     HoistModel,
     HoistProps,
@@ -23,7 +24,13 @@ import {ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
-    extends HoistProps<M>, StyleProps, LayoutProps, TestSupportProps, Omit<BpButtonProps, 'ref'> {
+    extends
+        HoistProps<M>,
+        StyleProps,
+        LayoutProps,
+        TestSupportProps,
+        DomAttrsProps,
+        Omit<BpButtonProps, 'ref'> {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
@@ -83,6 +90,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
             tooltip,
             active,
             testId,
+            domAttrs,
             ...rest
         } = nonLayoutProps;
 
@@ -111,6 +119,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
             className: classNames(className, classes),
             ref,
             [TEST_ID]: testId,
+            ...domAttrs,
             disabled,
             icon,
             intent,

@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {HoistIconPrefix, Icon, IconCatalogEntry} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -104,11 +104,11 @@ const buttonEl = elementFactory('button');
 class IconPickerModel extends HoistInputModel {
     override xhImpl = true;
 
-    @observable popoverIsOpen: boolean = false;
-    @bindable filterValue: string = '';
+    @observable accessor popoverIsOpen: boolean = false;
+    @bindable accessor filterValue: string = '';
 
     /** Index within `filteredEntries` of the keyboard-highlighted icon. */
-    @observable activeIdx: number = 0;
+    @observable accessor activeIdx: number = 0;
 
     gridRef = createObservableRef<HTMLElement>();
 
@@ -152,11 +152,6 @@ class IconPickerModel extends HoistInputModel {
 
     get columns(): number {
         return withDefault(this.componentProps.columns, 8);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -331,6 +326,7 @@ const triggerButton = hoistCmp.factory<IconPickerModel>(({model, props}, ref) =>
         width: withDefault(width, showName ? 160 : null),
         style: props.style,
         [TEST_ID]: getTestId(props, 'trigger'),
+        ...props.domAttrs,
         onClick: () => {
             if (model.popoverIsOpen) {
                 model.closePopover();

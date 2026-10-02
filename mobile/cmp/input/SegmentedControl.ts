@@ -16,8 +16,7 @@ import {hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {computed, makeObservable} from '@xh/hoist/mobx';
-import {TEST_ID} from '@xh/hoist/utils/js';
+import {computed} from '@xh/hoist/mobx';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
@@ -130,21 +129,19 @@ class SegmentedControlModel extends HoistInputModel {
         });
     }
 
-    /** Map the current render value to the string key used to identify the selected option. */
+    /**
+     * Key of the option matching the current render value, or null if no option matches -
+     * including whenever the bound value is itself null.
+     */
     @computed
-    get selectedKey(): string {
+    get selectedKey(): string | null {
         const {renderValue, normalizedOptions} = this;
-        return normalizedOptions.find(o => o.value === renderValue)?._key;
+        return normalizedOptions.find(o => o.value === renderValue)?._key ?? null;
     }
 
     get enabledButtons(): HTMLButtonElement[] {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
         return filter(btns, (b: HTMLButtonElement) => !b.disabled) as HTMLButtonElement[];
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     onValueChange = (key: string) => {
@@ -180,6 +177,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         showTrayBackground = true,
         showOptionDividers = 'auto',
         testId,
+        domAttrs,
         ...rest
     } = getNonLayoutProps(props);
 
@@ -229,7 +227,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         onFocus: model.onFocus,
         onBlur: model.onBlur,
         ...getLayoutProps(props),
-        [TEST_ID]: testId,
+        testId,
+        domAttrs,
         items: buttons,
         ...rest
     });

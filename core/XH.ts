@@ -116,7 +116,7 @@ export class XHApi {
 
     //----------------------------------------------------------------------------------------------
     // Metadata - the `xhXXX` values on the right hand of these assignments are injected at build
-    // time via webpack.DefinePlugin. See @xh/hoist-dev-utils/configureWebpack.js.
+    // time via Rsbuild's `source.define`. See @xh/hoist-dev-utils/configureRsbuild.js.
     //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     readonly appCode: string = xhAppCode;

@@ -46,6 +46,7 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
 
         style: props.style,
         [TEST_ID]: props.testId,
+        ...props.domAttrs,
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,

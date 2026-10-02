@@ -10,17 +10,17 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {dateRangePicker} from '@xh/hoist/desktop/cmp/daterange';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
-import {dateInput, DateInputProps, select} from '@xh/hoist/desktop/cmp/input';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {viewManager} from '@xh/hoist/desktop/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
-import {LocalDate} from '@xh/hoist/utils/datetime';
-import {INTERVALS, ActivityTrackingModel} from './ActivityTrackingModel';
+import {ActivityTrackingModel} from './ActivityTrackingModel';
 import {aggChartPanel} from '@xh/hoist/admin/tabs/activity/tracking/chart/AggChartPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
 import './ActivityTracking.scss';
@@ -45,64 +45,33 @@ export const activityTrackingPanel = hoistCmp.factory({
     }
 });
 
-const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
-    const dateBtn = {outlined: true, width: 40} as const;
-    return toolbar(
+const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) =>
+    toolbar(
         viewManager({
             model: model.viewManagerModel,
             showSaveButton: 'always'
         }),
         '-',
+        dateRangePicker({showStepButtons: true, testId: 'activity-period'}),
+        toolbarSep(),
+        filterChooserToggleButton(),
+        toolbarSep(),
+        dataFieldsEditor(),
+        filler(),
         form({
-            fieldDefaults: {label: null},
-            items: [
-                button({
-                    icon: Icon.angleLeft(),
-                    onClick: () => model.adjustDates('subtract')
-                }),
-                formField({
-                    field: 'startDay',
-                    item: dateInput({...dateInputProps})
-                }),
-                Icon.caretRight(),
-                formField({
-                    field: 'endDay',
-                    item: dateInput({...dateInputProps})
-                }),
-                button({
-                    icon: Icon.angleRight(),
-                    onClick: () => model.adjustDates('add'),
-                    disabled: model.endDay >= LocalDate.currentAppDay()
-                }),
-                buttonGroup({
-                    items: INTERVALS.map(interval =>
-                        button({
-                            text: `${interval.value}${interval.unit[0]}`,
-                            onClick: () => model.adjustStartDate(interval),
-                            active: model.isInterval(interval),
-                            ...dateBtn
-                        })
-                    )
-                }),
-                toolbarSep(),
-                filterChooserToggleButton(),
-                toolbarSep(),
-                dataFieldsEditor(),
-                filler(),
-                formField({
-                    field: 'maxRows',
-                    label: 'Max rows',
-                    width: 140,
-                    item: select({
-                        enableFilter: false,
-                        hideDropdownIndicator: true,
-                        options: model.maxRowOptions
-                    })
+            item: formField({
+                field: 'maxRows',
+                label: 'Max rows',
+                width: 140,
+                item: select({
+                    enableFilter: false,
+                    hideDropdownIndicator: true,
+                    options: model.maxRowOptions
                 })
-            ]
+            })
         })
-    );
-});
+    )
+);
 
 const filterChooserToggleButton = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
     const {hasFilter, showFilterChooser} = model;
@@ -161,9 +130,3 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
         ]
     });
 });
-
-const dateInputProps: DateInputProps = {
-    popoverPosition: 'bottom',
-    valueType: 'localDate',
-    width: 120
-};

@@ -6,11 +6,11 @@
  */
 import {elementFactory} from '@xh/hoist/core';
 import {ComponentType} from 'react';
-import {DayPicker} from 'react-day-picker';
-import 'react-day-picker/style.css';
+import {DayPicker} from '@daypicker/react';
+import '@daypicker/react/style.css';
 
 export {DayPicker};
-export type {DayPickerProps, Matcher} from 'react-day-picker';
+export type {DayPickerProps, Matcher} from '@daypicker/react';
 
 // DayPicker's props are a discriminated union over its selection modes. Cast to ComponentType to
 // keep our element factory ergonomic and produce portable type declarations.

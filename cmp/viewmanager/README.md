@@ -58,28 +58,55 @@ the server before returning. Create all VMMs your app needs within `AppModel.ini
 ensures they have loaded their available state as early as possible, so the first components and
 models that are constructed can be initialized correctly with the persisted state they need.
 
-For apps with multiple VMMs, consider delegating creation to a dedicated method or even an
-app-level service to keep `initAsync()` organized.
+> **Hold VMMs outside `AppModel`:** Keep the created models in a dedicated module rather than as
+> properties of `AppModel` itself. Consumers can then import them directly. Reaching a VMM through
+> `AppModel` requires the consumer to import `AppModel` - which commonly imports, directly or
+> transitively, the very components that consume it. Where it does, the result is a circular
+> import, and one that surfaces as a runtime failure rather than a build error.
 
 ```typescript
+// viewManagers.ts
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import type {InitContext} from '@xh/hoist/core';
 
+class ViewManagers {
+    portfolioGridView: ViewManagerModel;
+
+    async initAsync(ctx: InitContext) {
+        this.portfolioGridView = await ViewManagerModel.createAsync(
+            {
+                type: 'portfolioGridView',
+                typeDisplayName: 'view',
+                enableGlobal: true,
+                enableSharing: true
+            },
+            ctx
+        );
+    }
+}
+
+export const viewManagers = new ViewManagers();
+```
+
+```typescript
+// AppModel.ts
 class AppModel extends HoistAppModel {
-    @managed portfolioGridViewManager: ViewManagerModel;
-
-    override async initAsync() {
-        this.portfolioGridViewManager = await ViewManagerModel.createAsync({
-            type: 'portfolioGridView',
-            typeDisplayName: 'view',
-            enableGlobal: true,
-            enableSharing: true
-        });
+    override async initAsync(ctx: InitContext) {
+        await viewManagers.initAsync(ctx);
     }
 }
 ```
 
-Use specific property names to store references to the created models. Generally match the `type` -
-avoid overly generic names like `viewManager`. Apps commonly have multiple VMMs for different parts of the UI, and clear naming keeps them distinct.
+`AppModel` still drives and awaits creation, so the ordering guarantee above is unchanged - it
+simply no longer owns the references.
+
+Use specific property names for the created models, generally matching the `type` - avoid overly
+generic names like `viewManager`. Apps commonly have multiple VMMs for different parts of the UI,
+and clear naming keeps them distinct.
+
+> **Binding the `viewManager()` component:** Because the models are no longer on a model in the
+> component hierarchy, `viewManager()` cannot resolve them via its default context lookup. Pass the
+> model explicitly: `viewManager({model: viewManagers.portfolioGridView})`.
 
 ### Configuration
 
@@ -92,7 +119,7 @@ avoid overly generic names like `viewManager`. Apps commonly have multiple VMMs 
 | `enableAutoSave` | `boolean` | Allow auto-save for owned views |
 | `enableGlobal` | `boolean` | Enable global (admin-managed) views |
 | `enableSharing` | `boolean` | Allow sharing personal views |
-| `manageGlobal` | `boolean` | Can user create/edit global views? (default false) |
+| `manageGlobal` | `boolean` | `false` to hide global view management even if the server allows it. Defaults to the server's answer - see [Global views](#sharing-and-visibility). |
 | `preserveUnsavedChanges` | `boolean` | Preserve pending changes across refresh |
 | `defaultDisplayName` | `string` | Label for in-code default option |
 | `globalDisplayName` | `string` | Label for global views |
@@ -111,7 +138,7 @@ class PortfolioGridModel extends HoistModel {
         this.gridModel = new GridModel({
             columns: [...],
             persistWith: {
-                viewManagerModel: XH.appModel.portfolioGridViewManager,
+                viewManagerModel: viewManagers.portfolioGridView,
                 path: 'gridState'
             }
         });
@@ -124,7 +151,7 @@ Multiple components can bind to the same ViewManagerModel. Hoist components that
 persisting multiple instances of the same type of model within a single VMM:
 
 ```typescript
-const vmModel = XH.appModel.portfolioGridViewManager;
+const vmModel = viewManagers.portfolioGridView;
 
 // Different model types use their own default paths ('grid', 'filterChooser', etc.)
 this.gridModel = new GridModel({
@@ -150,7 +177,7 @@ built-in ViewManager UI component. The API below is available for building custo
 programmatic view management, but is not commonly needed.
 
 ```typescript
-const vmModel = XH.appModel.portfolioGridViewManager;
+const vmModel = viewManagers.portfolioGridView;
 
 // Get current view
 vmModel.view;           // View instance
@@ -201,15 +228,37 @@ pin them for quick access. Only the owner can edit a shared view. Requires `enab
 **Global views** (`isGlobal: true, owner: null`) - Not owned by any user and visible to all.
 Global views are typically curated by administrators and represent canonical/standard
 configurations. They appear pinned on all users' menus by default (users can unpin them).
-Only users with `manageGlobal: true` can create or edit global views - apps typically gate
-this on a role. Requires `enableGlobal: true`.
+Requires `enableGlobal: true`.
+
+The server decides who can create or edit global views. Hoist Core v42+ enforces this in
+`JsonBlobService`, using roles from the `xhJsonBlobConfig.globalWriteRoles` soft config. The config
+is keyed by view `type`, with `*` as the fallback, and defaults to `HOIST_ADMIN` only:
+
+```json
+{
+  "globalWriteRoles": {
+    "portfolioGridView": ["MANAGE_GRID_VIEWS"],
+    "*": ["HOIST_ADMIN"]
+  }
+}
+```
+
+The server returns its answer for the current user with the model's views, and
+`ViewManagerModel.manageGlobal` reflects it - apps don't need to repeat the role on the client. The
+`manageGlobal` config can only restrict: set it to `false` to hide global view management on a
+particular model. That's mainly useful when several models share a `type`, since the server applies
+one role list per type. With Hoist Core before v42, the server sends no answer and `manageGlobal`
+falls back to the config value, defaulting to `false`.
+
+See the
+[hoist-core JsonBlob documentation](https://github.com/xh/hoist-core/blob/develop/docs/jsonblob.md#configuration)
+for the full server-side access rules.
 
 ```typescript
 const vmModel = await ViewManagerModel.createAsync({
     type: 'portfolioGridView',
     enableGlobal: true,
     enableSharing: true,
-    manageGlobal: () => XH.getUser().hasRole('MANAGE_GRID_VIEWS'),
     globalDisplayName: 'Acme Corp'  // Customizable label (default "global")
 });
 
@@ -352,29 +401,33 @@ Metadata about a saved view (excluding the actual value).
 
 ## Common Patterns
 
-### Initialize in AppModel
+### Create Multiple View Managers
 
 ```typescript
-class AppModel extends HoistAppModel {
-    @managed portfolioGridViewManager: ViewManagerModel;
-    @managed portfolioDashViewManager: ViewManagerModel;
+// viewManagers.ts
+class ViewManagers {
+    portfolioGridView: ViewManagerModel;
+    portfolioDashboard: ViewManagerModel;
 
-    override async initAsync() {
-        // Initialize all view managers during app startup
-        [this.portfolioGridViewManager, this.portfolioDashViewManager] = await Promise.all([
-            ViewManagerModel.createAsync({
-                type: 'portfolioGridView',
-                manageGlobal: () => XH.getUser().hasRole('MANAGE_GRID_VIEWS'),
-            }),
-            ViewManagerModel.createAsync({
-                type: 'portfolioDashboard',
-                typeDisplayName: 'dashboard',
-                enableSharing: false,
-                manageGlobal: () => XH.getUser().hasRole('MANAGE_DASHBOARDS')
-            })
+    async initAsync(ctx: InitContext) {
+        [this.portfolioGridView, this.portfolioDashboard] = await Promise.all([
+            ViewManagerModel.createAsync(
+                {type: 'portfolioGridView'},
+                ctx
+            ),
+            ViewManagerModel.createAsync(
+                {
+                    type: 'portfolioDashboard',
+                    typeDisplayName: 'dashboard',
+                    enableSharing: false
+                },
+                ctx
+            )
         ]);
     }
 }
+
+export const viewManagers = new ViewManagers();
 ```
 
 ### Bind Grid State
@@ -389,7 +442,7 @@ class PortfolioGridModel extends HoistModel {
             columns: [...],
             sortBy: 'symbol',
             persistWith: {
-                viewManagerModel: XH.appModel.portfolioGridViewManager,
+                viewManagerModel: viewManagers.portfolioGridView,
                 path: 'grid',
                 persistColumns: true,
                 persistSort: true,

@@ -112,6 +112,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         container = isTop ? vframe : hframe;
                     return container({
                         className,
+                        testId: props.testId,
+                        domAttrs: props.domAttrs,
                         items: [
                             // `box` (flex: none) so the rail keeps a fixed size beside the grid;
                             // `frame` would grow and crowd it out.
@@ -149,6 +151,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         !hasFiles ? 'xh-file-chooser__target--empty' : null,
                         clickable ? 'xh-file-chooser__target--clickable' : null
                     ),
+                    testId: props.testId,
+                    domAttrs: props.domAttrs,
                     items: [dropzoneItem, targetMask, input({...getInputProps()})],
                     ...getRootProps(),
                     ...getLayoutProps(props)

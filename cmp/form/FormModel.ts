@@ -14,7 +14,7 @@ import {
     PlainObject
 } from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     flatMap,
@@ -108,8 +108,7 @@ export interface FormValidateOptions {
  */
 export class FormModel extends HoistModel {
     /** Container object for FieldModel instances, keyed by field name.*/
-    @observable.ref
-    fields: Record<string, BaseFieldModel> = {};
+    @observableRef accessor fields: Record<string, BaseFieldModel> = {};
 
     /** All FieldModel instances. */
     @managed
@@ -118,8 +117,8 @@ export class FormModel extends HoistModel {
     }
 
     parent: FormModel = null;
-    @bindable disabled: boolean;
-    @bindable readonly: boolean;
+    @bindable accessor disabled: boolean;
+    @bindable accessor readonly: boolean;
 
     private valuesProxy = this.createValuesProxy();
 
@@ -147,7 +146,6 @@ export class FormModel extends HoistModel {
         xhImpl = false
     }: FormConfig = {}) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
         this.xhName = xhName;
 
@@ -176,7 +174,7 @@ export class FormModel extends HoistModel {
         forOwn(this.fields, f => {
             f.formModel = this;
             f.xhImpl = xhImpl;
-            f.xhName ??= this.childXhName(f.name) ?? f.name;
+            f.xhName ??= this.childXhName(f.name);
         });
     }
 
