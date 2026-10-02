@@ -213,14 +213,18 @@ export const invoiceIcon = Icon.register({
 });
 ```
 
-That single call gives the app four equivalent ways to use the icon:
+That single call gives the app three ways to use the icon:
 
 ```typescript
 invoiceIcon()                    // the returned factory - typed, and IDE-discoverable
 invoiceIcon({prefix: 'fas'})     // the solid variant registered above
-Icon.invoice()                   // installed on the Icon singleton
 Icon.get('invoice')              // resolved dynamically by name
 ```
+
+Hoist also installs the factory on the `Icon` singleton at runtime, but TypeScript does not know
+about names added this way - `Icon.invoice()` will not compile in app code. Use the returned
+factory instead. Runtime installation matters when replacing a built-in (see below), as Hoist's own
+calls to that factory then render the app's icon.
 
 Registration is a one-time, app-bootstrap concern — import your `Icons.ts` from `Bootstrap.ts` (or
 anywhere that runs before your first render) so the factories are installed before use.

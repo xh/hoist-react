@@ -84,8 +84,9 @@ export type IconFactory = (p?: IconProps) => any;
  */
 export interface IconRegistrationConfig {
     /**
-     * Name for this icon - installed as a factory method on {@link Icon} (e.g. `Icon.invoice()`)
-     * and usable as a key for {@link Icon.get}. Use camelCase, matching Hoist's built-in factories.
+     * Name for this icon - usable as a key for {@link Icon.get}. Use camelCase, matching Hoist's
+     * built-in factories. The factory is also installed on {@link Icon} at runtime, but is not
+     * typed there - call the factory returned by {@link Icon.register} instead.
      */
     name: string;
 
@@ -1019,8 +1020,8 @@ export const Icon = {
      * wherever possible for consistency across and within apps.
      *
      * If the FA icon of your dreams is not available, register it once in your app's bootstrap
-     * code via {@link Icon.register} - that will import it into the FA library, install a typed
-     * factory for it on `Icon`, and make it available to {@link IconPicker}.
+     * code via {@link Icon.register} - that will import it into the FA library, return a typed
+     * factory for it, and make it available to {@link IconPicker}.
      */
     icon(opts: SetRequired<IconProps, 'iconName'>): any {
         let {
