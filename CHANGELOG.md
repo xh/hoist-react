@@ -25,6 +25,7 @@
   Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
+* Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 
 ## 88.1.0 - 2026-10-01
 

@@ -450,6 +450,10 @@ export class DashContainerModel
         const {goldenLayout} = this;
         if (!goldenLayout) return;
 
+        // View models are created as GL's React roots render, which can trail a GL rebuild. Skip
+        // until every view has one - addViewModel() triggers another publish once they all exist.
+        if (this.getItems().some(it => !this.getViewModel(getViewModelId(it)))) return;
+
         try {
             const newState = convertGLToState(goldenLayout, this);
             if (!isEqual(this.state, newState)) {
