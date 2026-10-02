@@ -127,7 +127,8 @@ class IconPickerModel extends HoistInputModel {
      */
     get filteredEntries(): IconCatalogEntry[] {
         const {entries} = this,
-            terms = this.filterValue.trim().toLowerCase().split(/\s+/).filter(Boolean);
+            // Filter input commits null when cleared or emptied.
+            terms = (this.filterValue ?? '').toLowerCase().split(/\s+/).filter(Boolean);
 
         if (isEmpty(terms)) return entries;
         return entries.filter(it => {
