@@ -875,6 +875,12 @@ export class Store
                 return;
             }
 
+            const derived = Object.keys(mod).find(it => this._fieldMap.get(it)?.isDerived);
+            throwIf(
+                derived,
+                `Field '${derived}' is derived and read-only - its value is computed at read time and cannot be modified.`
+            );
+
             const currentRec = this.getOrThrow(id),
                 updatedData = this.parseUpdate(currentRec.data, mod);
 

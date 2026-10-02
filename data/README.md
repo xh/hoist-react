@@ -438,11 +438,20 @@ apps with large datasets. Set `enableXssProtection` per field, or app-wide via
 A field with a `derivedFn` computes its value from the record's other values, named in the
 required `dependsOn`. Values are read through a getter on record `data` - never loaded, parsed or
 written - so they are always current with their inputs, and sort, filter and export like any other
-field. Writes to one via `modifyRecords()` are ignored.
+field.
 
 ```typescript
 {name: 'marketValue', dependsOn: ['quantity', 'price'], derivedFn: d => d.quantity * d.price}
 ```
+
+* **Read-only.** `modifyRecords()` throws on a write to a derived field, and a grid column bound
+  to one is never editable.
+* **Read by name, never enumerated.** The getters are not own properties, so `Object.keys()`,
+  spread and `JSON.stringify()` omit them. `StoreRecord.getValues()` returns every field, derived
+  included.
+* **Keep the function pure and fast.** It can run once per visible cell per paint and once per
+  comparison when sorting. Return primitives or stable references - a fresh object or array per
+  read defeats the equality check grids use to skip repainting unchanged cells.
 
 A `projectionOnly` store adopts derived values from its provider rather than computing them. See
 the [Cube README](cube/README.md#derived-fields) for derived `CubeField`s, which also run on

@@ -134,6 +134,10 @@ export class CubeField extends Field {
             this.isDerived && this.isDimension,
             `CubeField '${this.name}' may not be both derived and a dimension.`
         );
+        throwIf(
+            this.isDerived && !this.aggregator && this.canAggregateFn,
+            `CubeField '${this.name}' is derived at every level and never aggregated - 'canAggregateFn' does not apply.`
+        );
     }
 
     //------------------------

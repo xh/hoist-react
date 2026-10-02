@@ -74,9 +74,10 @@ export interface FieldSpec {
      * {name: 'marketValue', dependsOn: ['quantity', 'price'], derivedFn: d => d.quantity * d.price}
      * ```
      *
-     * Requires `dependsOn`. Derived fields are read-only - {@link Store.modifyRecords} ignores
-     * writes to them. A Store that is a `projectionOnly` view of another's data (e.g. one
-     * connected to a Cube View) adopts derived values from its provider rather than computing them.
+     * Requires `dependsOn`. Derived fields are read-only - {@link Store.modifyRecords} throws on a
+     * write to one, and a grid column bound to one is never editable. A Store that is a
+     * `projectionOnly` view of another's data (e.g. one connected to a Cube View) adopts derived
+     * values from its provider rather than computing them.
      *
      * On a {@link CubeField}, the function also runs on every View row where the field is not
      * aggregated - so a field with an `aggregator` derives at the leaves and rolls up (market
