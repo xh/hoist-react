@@ -205,7 +205,7 @@ export class InstancesTabModel extends HoistModel {
 
     private createTabContainerModel() {
         return new TabContainerModel({
-            route: 'default.servers.instances',
+            route: 'default.general.instances',
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
                 {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},
