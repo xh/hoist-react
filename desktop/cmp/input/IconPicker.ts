@@ -15,7 +15,7 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, union} from 'lodash';
+import {compact, isEmpty, union, uniq} from 'lodash';
 import {KeyboardEvent} from 'react';
 import {textInput} from './TextInput';
 import './IconPicker.scss';
@@ -111,13 +111,14 @@ class IconPickerModel extends HoistInputModel {
     @observable accessor activeIdx: number = 0;
 
     gridRef = createObservableRef<HTMLElement>();
+    menuRef = createObservableRef<HTMLElement>();
 
     /** Icons offered by this control, before any text filter is applied. */
     get entries(): IconCatalogEntry[] {
         const {icons, includeHidden} = this.componentProps;
         return isEmpty(icons)
             ? Icon.getCatalog().filter(it => includeHidden || !it.hidden)
-            : compact(icons.map(it => Icon.getCatalogEntry(it)));
+            : uniq(compact(icons.map(it => Icon.getCatalogEntry(it))));
     }
 
     /**
@@ -279,6 +280,10 @@ const cmp = hoistCmp.factory<IconPickerModel>(({model, className, ...props}, ref
         className: classNames(className, compact && 'xh-icon-picker--compact'),
         isOpen: model.popoverIsOpen,
         onInteraction: nextOpen => model.onPopoverInteraction(nextOpen),
+        // Without a filter input to take focus, focus the menu itself so keyboard nav works.
+        onOpened: () => {
+            if (props.enableFilter === false) model.menuRef.current?.focus();
+        },
         minimal: withDefault(props.popoverMinimal, false),
         position: withDefault(props.popoverPosition, 'bottom-left'),
         popoverClassName: classNames(
@@ -346,11 +351,11 @@ const iconMenu = hoistCmp.factory<IconPickerModel>(({model, props}) => {
 
     return div({
         className: 'xh-icon-picker__menu',
+        ref: model.menuRef,
         onKeyDown: model.onKeyDown,
         // Keyboard nav is driven from whatever holds focus within the popover - the filter input
-        // when present, otherwise this container itself.
+        // when present, otherwise this container itself (focused on open - see `onOpened`).
         tabIndex: enableFilter ? null : 0,
-        autoFocus: !enableFilter,
         items: [
             div({
                 omit: !enableFilter,
