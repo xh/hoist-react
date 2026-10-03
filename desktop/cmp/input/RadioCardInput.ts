@@ -9,7 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {computed} from '@xh/hoist/mobx';
-import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
+import {getTestId, TEST_ID, throwIf} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isObject} from 'lodash';
@@ -17,24 +17,23 @@ import type {KeyboardEvent, ReactNode} from 'react';
 import './RadioCardInput.scss';
 
 export interface RadioCardInputProps extends HoistProps, HoistInputProps, LayoutProps {
-    /** True to allow the selected card to be clicked again to clear the value. Default false. */
-    enableClear?: boolean;
-
     /** Intent used to highlight the selected card. Defaults to 'primary'. */
     intent?: Intent;
 
     /**
      * Array of available options. Each entry may be a RadioCardOption object or a primitive
-     * value used as both the value and the display label.
+     * value used as both the value and the display label. To let users pick "no value", include
+     * an option with a null value and a label such as "None" - a selected card cannot be cleared
+     * by clicking it again.
      */
     options: Array<RadioCardOption | string | number | boolean>;
 }
 
 export interface RadioCardOption {
-    /** Value bound to the input when this card is selected. */
+    /** Value bound to the input when this card is selected. May be null for a "None" option. */
     value: any;
 
-    /** Label shown beneath the preview. Defaults to the stringified value. */
+    /** Label shown beneath the preview. Defaults to the stringified value. Required if null. */
     label?: ReactNode;
 
     /** Visual filling the top of the card - e.g. a mini mockup, type specimen, swatch, or icon. */
@@ -84,6 +83,10 @@ class RadioCardInputModel extends HoistInputModel {
         return options.map((o: any) => {
             if (isObject(o)) {
                 const opt = o as RadioCardOption;
+                throwIf(
+                    opt.value == null && opt.label == null,
+                    'RadioCardInput options with a null value must declare a label.'
+                );
                 return {
                     ...opt,
                     value: this.toInternal(opt.value),
@@ -115,9 +118,7 @@ class RadioCardInputModel extends HoistInputModel {
 
     selectOption(opt: NormalizedOption) {
         if (opt.disabled || this.isDisabled) return;
-        const isActive = opt.value === this.renderValue;
-        if (isActive && !this.componentProps.enableClear) return;
-        this.noteValueChange(isActive ? null : opt.value);
+        if (opt.value !== this.renderValue) this.noteValueChange(opt.value);
     }
 
     onKeyDown = (e: KeyboardEvent) => {
