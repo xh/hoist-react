@@ -40,7 +40,8 @@
 ### ✨ Styles
 
 * Added CSS vars for `RadioCardInput`: `--radio-card-input-bg`, `--radio-card-input-border-radius`,
-  `--radio-card-input-gap-px`, and `--radio-card-input-min-width-px`.
+  `--radio-card-input-gap-px`, `--radio-card-input-min-width-px`, and
+  `--radio-card-input-selected-color`.
 
 ## 88.1.0 - 2026-10-01
 

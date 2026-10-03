@@ -6,17 +6,9 @@
  */
 
 .xh-radio-card-input {
-  --xh-radio-card-input-accent: var(--xh-intent-primary);
-
   display: flex;
   flex-wrap: wrap;
   gap: var(--xh-radio-card-input-gap-px);
-
-  @each $intent in (primary, success, warning, danger) {
-    &--#{$intent} {
-      --xh-radio-card-input-accent: var(--xh-intent-#{$intent});
-    }
-  }
 
   &__card {
     display: flex;
@@ -37,7 +29,7 @@
     // Hover, selection, and focus all draw within the card's own box, so a container with
     // `overflow: hidden` cannot clip them at its edges.
     &:hover {
-      border-color: var(--xh-radio-card-input-accent);
+      border-color: var(--xh-radio-card-input-selected-color);
     }
 
     &:focus-visible {
@@ -47,8 +39,8 @@
 
     &--selected,
     &--selected:hover {
-      border-color: var(--xh-radio-card-input-accent);
-      box-shadow: inset 0 0 0 1px var(--xh-radio-card-input-accent);
+      border-color: var(--xh-radio-card-input-selected-color);
+      box-shadow: inset 0 0 0 1px var(--xh-radio-card-input-selected-color);
     }
 
     // A preview's own whitespace sits above the label, so tighten the bottom to balance it.

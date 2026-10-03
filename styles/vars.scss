@@ -711,6 +711,7 @@ body {
   --xh-radio-card-input-border-radius-px: calc(var(--xh-radio-card-input-border-radius) * 1px);
   --xh-radio-card-input-gap-px: var(--radio-card-input-gap-px, var(--xh-pad-px));
   --xh-radio-card-input-min-width-px: var(--radio-card-input-min-width-px, 80px);
+  --xh-radio-card-input-selected-color: var(--radio-card-input-selected-color, var(--xh-intent-primary));
 
   //------------------------
   // Intent Input

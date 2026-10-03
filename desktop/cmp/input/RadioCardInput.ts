@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, throwIf} from '@xh/hoist/utils/js';
@@ -17,9 +17,6 @@ import type {KeyboardEvent, ReactNode} from 'react';
 import './RadioCardInput.scss';
 
 export interface RadioCardInputProps extends HoistProps, HoistInputProps, LayoutProps {
-    /** Intent used to highlight the selected card. Defaults to 'primary'. */
-    intent?: Intent;
-
     /**
      * Array of available options. Each entry may be a RadioCardOption object or a primitive
      * value used as both the value and the display label. To let users pick "no value", include
@@ -179,14 +176,10 @@ class RadioCardInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props}, ref) => {
     const {renderValue, normalizedOptions, tabStopOption, isDisabled} = model,
-        {intent = 'primary', tabIndex = 0, testId, domAttrs} = props;
+        {tabIndex = 0, testId, domAttrs} = props;
 
     return div({
-        className: classNames(
-            className,
-            `xh-radio-card-input--${intent}`,
-            isDisabled && 'xh-radio-card-input--disabled'
-        ),
+        className: classNames(className, isDisabled && 'xh-radio-card-input--disabled'),
         role: 'radiogroup',
         'aria-disabled': isDisabled || undefined,
         ref,
