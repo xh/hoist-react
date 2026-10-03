@@ -1,0 +1,102 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-radio-card-input {
+  --xh-radio-card-input-accent: var(--xh-intent-primary);
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--xh-radio-card-input-gap-px);
+
+  @each $intent in (primary, success, warning, danger) {
+    &--#{$intent} {
+      --xh-radio-card-input-accent: var(--xh-intent-#{$intent});
+    }
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--xh-pad-half-px);
+    min-width: var(--xh-radio-card-input-min-width-px);
+    padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-half-px);
+    border: 1px solid var(--xh-border-color);
+    border-radius: var(--xh-radio-card-input-border-radius-px);
+    background-color: var(--xh-radio-card-input-bg);
+    cursor: pointer;
+    user-select: none;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      transform 0.15s ease;
+
+    &:hover {
+      border-color: var(--xh-radio-card-input-accent);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--xh-focus-outline-color);
+      outline-offset: 2px;
+    }
+
+    &--selected,
+    &--selected:hover {
+      border-color: var(--xh-radio-card-input-accent);
+      box-shadow: 0 0 0 1px var(--xh-radio-card-input-accent);
+    }
+
+    &--disabled,
+    &--disabled:hover {
+      cursor: not-allowed;
+      opacity: 0.5;
+      transform: none;
+    }
+
+    &--disabled:not(#{&}--selected):hover {
+      border-color: var(--xh-border-color);
+    }
+  }
+
+  &__preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__label {
+    font-size: var(--xh-font-size-small-px);
+    font-weight: 500;
+    color: var(--xh-text-color-muted);
+    text-align: center;
+  }
+
+  &__card--selected &__label {
+    color: var(--xh-text-color);
+    font-weight: 600;
+  }
+
+  &__description {
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+    text-align: center;
+  }
+
+  // Validation states - outline the card tray, matching other inputs' invalid treatment.
+  &.xh-input--invalid &__card {
+    border: var(--xh-form-field-invalid-border);
+  }
+
+  &.xh-input--warning &__card {
+    border: var(--xh-form-field-warning-border);
+  }
+
+  &.xh-input--info &__card {
+    border: var(--xh-form-field-info-border);
+  }
+}

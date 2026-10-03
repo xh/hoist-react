@@ -23,6 +23,11 @@
 
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
+* Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
+  visual preview, label, and optional description. It follows the "radio cards" idiom, as in the
+  macOS Appearance picker, and supports arrow-key navigation as an ARIA radio group.
+* Added a `previewCards` option to desktop `themeAppOption()`. Set it to show the theme choices as
+  a `RadioCardInput` with mini light, dark, and system app-window previews.
 
 ### 🐞 Bug Fixes
 
@@ -31,6 +36,11 @@
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
+
+### ✨ Styles
+
+* Added CSS vars for `RadioCardInput`: `--radio-card-input-bg`, `--radio-card-input-border-radius`,
+  `--radio-card-input-gap-px`, and `--radio-card-input-min-width-px`.
 
 ## 88.1.0 - 2026-10-01
 
