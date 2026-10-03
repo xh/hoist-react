@@ -205,6 +205,7 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
                 className: classNames(
                     'xh-radio-card-input__card',
                     isActive && 'xh-radio-card-input__card--selected',
+                    opt.preview != null && 'xh-radio-card-input__card--with-preview',
                     cardDisabled && 'xh-radio-card-input__card--disabled'
                 ),
                 role: 'radio',

@@ -24,7 +24,7 @@
     align-items: center;
     gap: var(--xh-pad-half-px);
     min-width: var(--xh-radio-card-input-min-width-px);
-    padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-half-px);
+    padding: var(--xh-pad-px);
     border: 1px solid var(--xh-border-color);
     border-radius: var(--xh-radio-card-input-border-radius-px);
     background-color: var(--xh-radio-card-input-bg);
@@ -49,6 +49,11 @@
     &--selected:hover {
       border-color: var(--xh-radio-card-input-accent);
       box-shadow: inset 0 0 0 1px var(--xh-radio-card-input-accent);
+    }
+
+    // A preview's own whitespace sits above the label, so tighten the bottom to balance it.
+    &--with-preview {
+      padding-bottom: var(--xh-pad-half-px);
     }
 
     &--disabled,
