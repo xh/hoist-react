@@ -1,0 +1,69 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Sizing mode previews for `sizingModeAppOption()`. Row and header heights are set inline from
+// the real grid heights. Cell bars scale with each mode's grid font size. Unlike the theme
+// previews, these follow the active theme.
+.xh-sizing-mode-preview {
+  --xh-sizing-mode-preview-font-size: var(--xh-grid-font-size);
+
+  display: flex;
+  flex-direction: column;
+  width: 64px;
+  height: 36px;
+  border: 1px solid var(--xh-border-color);
+  border-radius: 5px;
+  background: var(--xh-bg);
+  color: var(--xh-text-color);
+  overflow: hidden;
+
+  &--tiny {
+    --xh-sizing-mode-preview-font-size: var(--xh-grid-tiny-font-size);
+  }
+
+  &--compact {
+    --xh-sizing-mode-preview-font-size: var(--xh-grid-compact-font-size);
+  }
+
+  &--large {
+    --xh-sizing-mode-preview-font-size: var(--xh-grid-large-font-size);
+  }
+
+  &__header,
+  &__row {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+  }
+
+  &__header {
+    background: var(--xh-bg-alt);
+    border-bottom: 1px solid var(--xh-border-color);
+
+    .xh-sizing-mode-preview__cell {
+      opacity: 0.55;
+    }
+  }
+
+  &__row:nth-child(odd) {
+    background: color-mix(in srgb, var(--xh-bg-alt) 50%, transparent);
+  }
+
+  &__cell {
+    width: 45%;
+    height: calc(var(--xh-sizing-mode-preview-font-size) * 0.16px);
+    border-radius: 1px;
+    background: currentColor;
+    opacity: 0.35;
+
+    &--num {
+      width: 22%;
+    }
+  }
+}

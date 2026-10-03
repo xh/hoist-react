@@ -5,28 +5,28 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-// Theme previews for `themeAppOption({previewCards: true})`. Colors are fixed, not theme-aware,
+// Theme previews for `themeAppOption()`. Colors are fixed, not theme-aware,
 // so each card shows its own theme regardless of the active one.
 .xh-theme-preview {
   display: flex;
   flex-direction: column;
-  width: 76px;
-  height: 42px;
+  width: 64px;
+  height: 36px;
   border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 7px;
+  border-radius: 5px;
   overflow: hidden;
 
   &__chrome {
     display: flex;
     align-items: center;
     gap: 3px;
-    height: 11px;
-    padding: 0 5px;
+    height: 9px;
+    padding: 0 4px;
   }
 
   &__dot {
-    width: 4px;
-    height: 4px;
+    width: 3px;
+    height: 3px;
     border-radius: 50%;
 
     &:nth-child(1) {
@@ -47,13 +47,13 @@
     flex: 1;
     flex-direction: column;
     gap: 3px;
-    padding: 5px;
+    padding: 4px;
   }
 
   &__accent {
     width: 60%;
-    height: 5px;
-    border-radius: 3px;
+    height: 4px;
+    border-radius: 2px;
     background: var(--xh-blue);
   }
 
