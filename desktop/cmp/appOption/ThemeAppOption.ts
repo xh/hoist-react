@@ -57,6 +57,7 @@ export const themeAppOption = ({
                           {value: 'dark', label: 'Dark', icon: Icon.moon()},
                           {value: 'system', label: 'System', icon: Icon.sync()}
                       ],
+                      fill: false,
                       ...(inputProps as Partial<SegmentedControlProps>)
                   }),
             ...formFieldProps

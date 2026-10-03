@@ -58,6 +58,7 @@ export const sizingModeAppOption = ({
                   })
                 : segmentedControl({
                       options: modes.map(mode => ({value: mode, label: startCase(mode)})),
+                      fill: false,
                       ...(inputProps as Partial<SegmentedControlProps>)
                   }),
             ...formFieldProps

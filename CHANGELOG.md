@@ -28,10 +28,11 @@
   macOS Appearance picker, and supports arrow-key navigation as an ARIA radio group. Cards size to
   their content by default, or set `cardWidth` for a uniform width.
 * Desktop `themeAppOption()` now shows the theme choices as a `RadioCardInput` with mini light,
-  dark, and system app-window previews. Pass `previewCards: false` to keep the `SegmentedControl`.
+  dark, and system app-window previews. Pass `previewCards: false` for a `SegmentedControl`, now
+  sized to its options rather than stretched to fill the field.
 * Desktop `sizingModeAppOption()` now shows each grid sizing mode as a `RadioCardInput` card with a
-  mini grid drawn at that mode's row height. Pass `previewCards: false` to keep the
-  `SegmentedControl`.
+  mini grid drawn at that mode's row height. Pass `previewCards: false` for a `SegmentedControl`,
+  sized to its options as above.
 
 ### 🐞 Bug Fixes
 
