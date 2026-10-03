@@ -72,9 +72,9 @@
     text-align: center;
   }
 
+  // Mark the selected label by color only - a weight change would resize the card.
   &__card--selected &__label {
     color: var(--xh-text-color);
-    font-weight: 600;
   }
 
   &__description {
