@@ -26,8 +26,8 @@
 * Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
   visual preview, label, and optional description. It follows the "radio cards" idiom, as in the
   macOS Appearance picker, and supports arrow-key navigation as an ARIA radio group.
-* Added a `previewCards` option to desktop `themeAppOption()`. Set it to show the theme choices as
-  a `RadioCardInput` with mini light, dark, and system app-window previews.
+* Desktop `themeAppOption()` now shows the theme choices as a `RadioCardInput` with mini light,
+  dark, and system app-window previews. Pass `previewCards: false` to keep the `SegmentedControl`.
 
 ### 🐞 Bug Fixes
 

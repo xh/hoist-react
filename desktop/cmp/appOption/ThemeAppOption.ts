@@ -21,11 +21,11 @@ import './ThemeAppOption.scss';
 interface ThemeAppOptionSpec {
     /** Props for nested FormField */
     formFieldProps?: Partial<FormFieldProps>;
-    /** Props for nested SegmentedControl, or RadioCardInput if `previewCards` is true. */
+    /** Props for nested RadioCardInput, or SegmentedControl if `previewCards` is false. */
     inputProps?: Partial<SegmentedControlProps> | Partial<RadioCardInputProps>;
     /**
-     * True to render the choices as a RadioCardInput, with each card showing a small preview of
-     * an app window in that theme. Default false, for a compact SegmentedControl.
+     * True (default) to render the choices as a RadioCardInput, with each card showing a small
+     * preview of an app window in that theme. Set false for a compact SegmentedControl.
      */
     previewCards?: boolean;
 }
@@ -36,7 +36,7 @@ interface ThemeAppOptionSpec {
 export const themeAppOption = ({
     formFieldProps,
     inputProps,
-    previewCards = false
+    previewCards = true
 }: ThemeAppOptionSpec = {}) => {
     return {
         name: 'theme',
