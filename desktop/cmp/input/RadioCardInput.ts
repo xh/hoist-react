@@ -209,7 +209,8 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
                 role: 'radio',
                 'aria-checked': isActive,
                 'aria-disabled': cardDisabled || undefined,
-                tabIndex: opt === tabStopOption ? tabIndex : -1,
+                // Roving tab stop - disabled cards take no tabIndex so a click cannot focus them.
+                tabIndex: cardDisabled ? undefined : opt === tabStopOption ? tabIndex : -1,
                 onClick: () => model.selectOption(opt),
                 [TEST_ID]: getTestId(testId, String(opt.value)),
                 items: [

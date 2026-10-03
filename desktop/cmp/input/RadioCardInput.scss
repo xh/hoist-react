@@ -32,30 +32,29 @@
     user-select: none;
     transition:
       border-color 0.15s ease,
-      box-shadow 0.15s ease,
-      transform 0.15s ease;
+      box-shadow 0.15s ease;
 
+    // Hover, selection, and focus all draw within the card's own box, so a container with
+    // `overflow: hidden` cannot clip them at its edges.
     &:hover {
       border-color: var(--xh-radio-card-input-accent);
-      transform: translateY(-1px);
     }
 
     &:focus-visible {
       outline: 2px solid var(--xh-focus-outline-color);
-      outline-offset: 2px;
+      outline-offset: -4px;
     }
 
     &--selected,
     &--selected:hover {
       border-color: var(--xh-radio-card-input-accent);
-      box-shadow: 0 0 0 1px var(--xh-radio-card-input-accent);
+      box-shadow: inset 0 0 0 1px var(--xh-radio-card-input-accent);
     }
 
     &--disabled,
     &--disabled:hover {
       cursor: not-allowed;
       opacity: 0.5;
-      transform: none;
     }
 
     &--disabled:not(#{&}--selected):hover {
