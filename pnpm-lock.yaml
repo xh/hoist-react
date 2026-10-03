@@ -338,8 +338,8 @@ importers:
         specifier: ^2.14.4
         version: 2.14.4
       swiper:
-        specifier: ~12.2.0
-        version: 12.2.0
+        specifier: ~14.3.0
+        version: 14.3.0
       ts-morph:
         specifier: ^27.0.2
         version: 27.0.2
@@ -373,7 +373,7 @@ importers:
         version: 8.0.1(supports-color@10.2.2)
       '@xh/hoist-dev-utils':
         specifier: next
-        version: 16.0.0-SNAPSHOT.1790381140361(@rspack/core@2.2.7(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)
+        version: 17.0.0-SNAPSHOT.1790704122838(@rspack/core@2.2.7(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)
       ag-grid-community:
         specifier: ~36.2.0
         version: 36.2.0
@@ -1559,8 +1559,8 @@ packages:
   '@xh/eslint-config@8.0.1':
     resolution: {integrity: sha512-t+1R6My3ntLLJKqr5vtF6MF6r73ylwiLwI3UKj/mpz4oKfLB5NHws98kxKNDxYgCLWevVEkGStHo/6SXzVtx/A==}
 
-  '@xh/hoist-dev-utils@16.0.0-SNAPSHOT.1790381140361':
-    resolution: {integrity: sha512-2TgLkF3XS0Gg+cSphaE3NtjuNuykiAErmbRsvqIeP6nIyvdLcPDHpspNnURxd3AILqrUl+Qapt1IVCo/EKSdaA==}
+  '@xh/hoist-dev-utils@17.0.0-SNAPSHOT.1790704122838':
+    resolution: {integrity: sha512-mQiGBwCb17fUBPRauyN8GTELN/RDeEzd4nx/i/dLlTEbUIDPXr/WgLpcTFhxn5kZz2dtg7bciY1QwP5IGSXKdg==}
     engines: {node: '>=22.15.0'}
 
   accepts@2.0.0:
@@ -3362,8 +3362,8 @@ packages:
   svg-tags@1.0.0:
     resolution: {integrity: sha512-ovssysQTa+luh7A5Weu3Rta6FJlFBBbInjOh722LIt6klpU2/HtdUbszju/G4devcvk8PGt7FCLv5wftu3THUA==}
 
-  swiper@12.2.0:
-    resolution: {integrity: sha512-K8uXsBZU6ME97Ia3xbBge8IRCnR1lOmIILzvY/jGVic7dSTQ530s3uO8RvXbPUtkkXLWIwmZLRPbtDxRWVAFdg==}
+  swiper@14.3.0:
+    resolution: {integrity: sha512-qw0Xv1+sylM8KCQxWxV2iYAK2G6XjFGPZ/8F1baEsY8DK4A3sTnLx6jUJ0G71rDbVQ05JHMWkcWmJ5NvlxZO0w==}
     engines: {node: '>= 4.7.0'}
 
   symbol-observable@1.2.0:
@@ -4935,7 +4935,7 @@ snapshots:
       - jiti
       - supports-color
 
-  '@xh/hoist-dev-utils@16.0.0-SNAPSHOT.1790381140361(@rspack/core@2.2.7(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)':
+  '@xh/hoist-dev-utils@17.0.0-SNAPSHOT.1790704122838(@rspack/core@2.2.7(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)':
     dependencies:
       '@rsbuild/core': 2.2.9(core-js@3.50.0)
       '@rsbuild/plugin-basic-ssl': 1.2.3(@rsbuild/core@2.2.9(core-js@3.50.0))
@@ -7022,7 +7022,7 @@ snapshots:
 
   svg-tags@1.0.0: {}
 
-  swiper@12.2.0: {}
+  swiper@14.3.0: {}
 
   symbol-observable@1.2.0: {}
 
