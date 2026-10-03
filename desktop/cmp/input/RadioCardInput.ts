@@ -18,6 +18,14 @@ import './RadioCardInput.scss';
 
 export interface RadioCardInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /**
+     * Fixed width for every card, in pixels or any CSS width. Labels wrap to fit and wider
+     * previews are clipped. By default each card sizes to its own content, between the
+     * `--radio-card-input-min-width-px` and `--radio-card-input-max-width-px` CSS vars, so cards
+     * in one group can differ in width.
+     */
+    cardWidth?: number | string;
+
+    /**
      * Array of available options. Each entry may be a RadioCardOption object or a primitive
      * value used as both the value and the display label. To let users pick "no value", include
      * an option with a null value and a label such as "None" - a selected card cannot be cleared
@@ -176,7 +184,9 @@ class RadioCardInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props}, ref) => {
     const {renderValue, normalizedOptions, tabStopOption, isDisabled} = model,
-        {tabIndex = 0, testId, domAttrs} = props;
+        {cardWidth, tabIndex = 0, testId, domAttrs} = props,
+        cardStyle =
+            cardWidth != null ? {width: cardWidth, minWidth: 0, maxWidth: 'none'} : undefined;
 
     return div({
         className: classNames(className, isDisabled && 'xh-radio-card-input--disabled'),
@@ -206,6 +216,7 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
                 'aria-disabled': cardDisabled || undefined,
                 // Roving tab stop - disabled cards take no tabIndex so a click cannot focus them.
                 tabIndex: cardDisabled ? undefined : opt === tabStopOption ? tabIndex : -1,
+                style: cardStyle,
                 onClick: () => model.selectOption(opt),
                 [TEST_ID]: getTestId(testId, String(opt.value)),
                 items: [

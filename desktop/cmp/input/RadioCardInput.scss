@@ -16,6 +16,7 @@
     align-items: center;
     gap: var(--xh-pad-half-px);
     min-width: var(--xh-radio-card-input-min-width-px);
+    max-width: var(--xh-radio-card-input-max-width-px);
     padding: var(--xh-pad-px);
     border: 1px solid var(--xh-border-color);
     border-radius: var(--xh-radio-card-input-border-radius-px);
@@ -48,6 +49,12 @@
       padding-bottom: var(--xh-pad-half-px);
     }
 
+    // Text-only cards center their content, so a short label next to taller cards in the same
+    // row does not sit at the top with empty space below.
+    &:not(#{&}--with-preview) {
+      justify-content: center;
+    }
+
     &--disabled,
     &--disabled:hover {
       cursor: not-allowed;
@@ -63,6 +70,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   &__label {
@@ -70,6 +79,9 @@
     font-weight: 500;
     color: var(--xh-text-color-muted);
     text-align: center;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   // Mark the selected label by color only - a weight change would resize the card.
@@ -81,6 +93,8 @@
     font-size: var(--xh-font-size-small-px);
     color: var(--xh-text-color-muted);
     text-align: center;
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   // Validation states - outline the card tray, matching other inputs' invalid treatment.

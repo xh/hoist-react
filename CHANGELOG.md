@@ -25,7 +25,8 @@
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
 * Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
   visual preview, label, and optional description. It follows the "radio cards" idiom, as in the
-  macOS Appearance picker, and supports arrow-key navigation as an ARIA radio group.
+  macOS Appearance picker, and supports arrow-key navigation as an ARIA radio group. Cards size to
+  their content by default, or set `cardWidth` for a uniform width.
 * Desktop `themeAppOption()` now shows the theme choices as a `RadioCardInput` with mini light,
   dark, and system app-window previews. Pass `previewCards: false` to keep the `SegmentedControl`.
 * Desktop `sizingModeAppOption()` now shows each grid sizing mode as a `RadioCardInput` card with a
@@ -43,8 +44,8 @@
 ### ✨ Styles
 
 * Added CSS vars for `RadioCardInput`: `--radio-card-input-bg`, `--radio-card-input-border-radius`,
-  `--radio-card-input-gap-px`, `--radio-card-input-min-width-px`, and
-  `--radio-card-input-selected-color`.
+  `--radio-card-input-gap-px`, `--radio-card-input-min-width-px`,
+  `--radio-card-input-max-width-px`, and `--radio-card-input-selected-color`.
 * Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
 
 ## 88.1.0 - 2026-10-01
