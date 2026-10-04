@@ -18,15 +18,16 @@
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
+  so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
+  `inputProps` should also pass `previewCards: false`.
 
 ### 🎁 New Features
 
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
 * Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
-  visual preview, label, and optional description. It follows the "radio cards" idiom, as in the
-  macOS Appearance picker, and supports arrow-key navigation as an ARIA radio group. Cards share
-  one width (`cardWidth`) and wrap onto new rows. Set `fill` to stretch them across each row.
+  visual preview, label, and optional description, in the style of the macOS Appearance picker.
 * Desktop `themeAppOption()` now shows the theme choices as a `RadioCardInput` with mini light,
   dark, and system app-window previews. Pass `previewCards: false` for a `SegmentedControl`, now
   sized to its options rather than stretched to fill the field.
@@ -44,9 +45,6 @@
 
 ### ✨ Styles
 
-* Added CSS vars for `RadioCardInput`: `--radio-card-input-bg`, `--radio-card-input-border-radius`,
-  `--radio-card-input-gap-px`, `--radio-card-input-card-width`, and
-  `--radio-card-input-selected-color`.
 * Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
 
 ## 88.1.0 - 2026-10-01

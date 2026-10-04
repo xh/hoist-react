@@ -116,16 +116,11 @@
     overflow-wrap: break-word;
   }
 
-  // Validation states - outline the card tray, matching other inputs' invalid treatment.
-  &.xh-input--invalid &__card {
-    border: var(--xh-form-field-invalid-border);
-  }
-
-  &.xh-input--warning &__card {
-    border: var(--xh-form-field-warning-border);
-  }
-
-  &.xh-input--info &__card {
-    border: var(--xh-form-field-info-border);
+  // Validation states - outline each unselected card, leaving the selected card's ring and hover
+  // feedback intact.
+  @each $severity in (invalid, warning, info) {
+    &.xh-input--#{$severity} &__card:not(#{&}__card--selected, :hover) {
+      border: var(--xh-form-field-#{$severity}-border);
+    }
   }
 }

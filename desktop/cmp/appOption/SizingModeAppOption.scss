@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   width: 64px;
-  height: 36px;
+  // Height is set inline from PREVIEW_HEIGHT, which also sizes the row count.
   border: 1px solid var(--xh-border-color);
   border-radius: 5px;
   background: var(--xh-bg);

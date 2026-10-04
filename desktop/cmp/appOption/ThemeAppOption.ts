@@ -30,6 +30,14 @@ interface ThemeAppOptionSpec {
     previewCards?: boolean;
 }
 
+type ThemeValue = 'light' | 'dark' | 'system';
+
+const THEMES: {value: ThemeValue; label: string; icon: () => ReactElement}[] = [
+    {value: 'light', label: 'Light', icon: () => Icon.sun()},
+    {value: 'dark', label: 'Dark', icon: () => Icon.moon()},
+    {value: 'system', label: 'System', icon: () => Icon.sync()}
+];
+
 /**
  * Convenience configuration for the `theme` AppOption.
  */
@@ -44,19 +52,19 @@ export const themeAppOption = ({
             label: 'Theme',
             item: previewCards
                 ? radioCardInput({
-                      options: [
-                          {value: 'light', label: 'Light', preview: themePreview('light')},
-                          {value: 'dark', label: 'Dark', preview: themePreview('dark')},
-                          {value: 'system', label: 'System', preview: themePreview('system')}
-                      ],
+                      options: THEMES.map(({value, label}) => ({
+                          value,
+                          label,
+                          preview: themePreview(value)
+                      })),
                       ...(inputProps as Partial<RadioCardInputProps>)
                   })
                 : segmentedControl({
-                      options: [
-                          {value: 'light', label: 'Light', icon: Icon.sun()},
-                          {value: 'dark', label: 'Dark', icon: Icon.moon()},
-                          {value: 'system', label: 'System', icon: Icon.sync()}
-                      ],
+                      options: THEMES.map(({value, label, icon}) => ({
+                          value,
+                          label,
+                          icon: icon()
+                      })),
                       fill: false,
                       ...(inputProps as Partial<SegmentedControlProps>)
                   }),
@@ -72,7 +80,7 @@ export const themeAppOption = ({
  * A mini app window drawn in fixed light or dark colors, so each card shows its theme regardless
  * of the active one. 'system' splits the window diagonally.
  */
-function themePreview(theme: 'light' | 'dark' | 'system'): ReactElement {
+function themePreview(theme: ThemeValue): ReactElement {
     return div({
         className: `xh-theme-preview xh-theme-preview--${theme}`,
         items: [

@@ -85,6 +85,7 @@ function sizingModePreview(mode: SizingMode): ReactElement {
 
     return div({
         className: `xh-sizing-mode-preview xh-sizing-mode-preview--${mode}`,
+        style: {height: PREVIEW_HEIGHT},
         items: [
             div({
                 className: 'xh-sizing-mode-preview__header',

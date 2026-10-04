@@ -137,12 +137,16 @@ class RadioCardInputModel extends HoistInputModel {
     }
 
     onKeyDown = (e: KeyboardEvent) => {
-        const {enabledOptions, normalizedOptions} = this;
+        // Leave modified keys (e.g. Alt+Left for Back) and keys typed within a card's preview
+        // content to the browser and that content.
+        const target = e.target as HTMLElement;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
+        if (!target.classList.contains('xh-radio-card-input__card')) return;
+
+        const {enabledOptions, normalizedOptions, cardEls} = this;
         if (!enabledOptions.length) return;
 
-        const currIdx = enabledOptions.findIndex(
-                o => this.cardEls[normalizedOptions.indexOf(o)] === document.activeElement
-            ),
+        const currIdx = enabledOptions.indexOf(normalizedOptions[cardEls.indexOf(target)]),
             lastIdx = enabledOptions.length - 1;
 
         let nextIdx: number;
@@ -175,8 +179,8 @@ class RadioCardInputModel extends HoistInputModel {
         // Per the ARIA radio group pattern, arrow keys both move focus and select.
         e.preventDefault();
         const next = enabledOptions[nextIdx];
-        this.cardEls[normalizedOptions.indexOf(next)]?.focus();
-        if (next.value !== this.renderValue) this.noteValueChange(next.value);
+        cardEls[normalizedOptions.indexOf(next)]?.focus();
+        this.selectOption(next);
     };
 
     //-----------------
@@ -194,16 +198,15 @@ class RadioCardInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props}, ref) => {
     const {renderValue, normalizedOptions, tabStopOption, isDisabled} = model,
-        {cardWidth, fill, tabIndex = 0, testId, domAttrs} = props;
+        {cardWidth, fill, id, tabIndex = 0, testId, domAttrs} = props;
 
     return div({
-        className: classNames(
-            className,
-            fill && 'xh-radio-card-input--fill',
-            isDisabled && 'xh-radio-card-input--disabled'
-        ),
+        className: classNames(className, fill && 'xh-radio-card-input--fill'),
+        id,
         role: 'radiogroup',
-        'aria-disabled': isDisabled || undefined,
+        // FormField renders its label with an id derived from the input's id - see FormField.
+        'aria-labelledby': id ? `${id}-label` : null,
+        'aria-disabled': isDisabled || null,
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
@@ -234,9 +237,9 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
                 ),
                 role: 'radio',
                 'aria-checked': isActive,
-                'aria-disabled': cardDisabled || undefined,
+                'aria-disabled': cardDisabled || null,
                 // Roving tab stop - disabled cards take no tabIndex so a click cannot focus them.
-                tabIndex: cardDisabled ? undefined : opt === tabStopOption ? tabIndex : -1,
+                tabIndex: cardDisabled ? null : opt === tabStopOption ? tabIndex : -1,
                 onClick: () => model.selectOption(opt),
                 [TEST_ID]: getTestId(testId, String(opt.value)),
                 items: [
