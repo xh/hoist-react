@@ -6,17 +6,32 @@
  */
 
 .xh-radio-card-input {
+  // Equal-width cards that wrap onto new rows. Flexbox (not an auto-fill grid) keeps this working
+  // when the input sizes to its content - e.g. in a toolbar or a flex column aligned to start.
+  // A card shrinks below its width only when the container is narrower than one card.
   display: flex;
   flex-wrap: wrap;
   gap: var(--xh-radio-card-input-gap-px);
+
+  // Fill - span the container and stretch cards to share each row, with the card width as their
+  // minimum. A grid keeps every card in a row the same width, including on the last row.
+  &--fill {
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(var(--xh-radio-card-input-card-width), 100%), 1fr)
+    );
+    width: 100%;
+  }
 
   &__card {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 0 1 auto;
+    width: var(--xh-radio-card-input-card-width);
     gap: var(--xh-pad-half-px);
-    min-width: var(--xh-radio-card-input-min-width-px);
-    max-width: var(--xh-radio-card-input-max-width-px);
+    min-width: 0;
     padding: var(--xh-pad-px);
     border: 1px solid var(--xh-border-color);
     border-radius: var(--xh-radio-card-input-border-radius-px);

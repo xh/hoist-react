@@ -12,18 +12,24 @@ import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, throwIf} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isObject} from 'lodash';
+import {isNumber, isObject} from 'lodash';
 import type {KeyboardEvent, ReactNode} from 'react';
 import './RadioCardInput.scss';
 
 export interface RadioCardInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /**
-     * Fixed width for every card, in pixels or any CSS width. Labels wrap to fit and wider
-     * previews are clipped. By default each card sizes to its own content, between the
-     * `--radio-card-input-min-width-px` and `--radio-card-input-max-width-px` CSS vars, so cards
-     * in one group can differ in width.
+     * Width of every card, in pixels or any CSS width. Cards in a group always share one width
+     * and wrap onto new rows as needed. Defaults to the `--radio-card-input-card-width` CSS var
+     * (88px), which suits short labels under a small preview. Set a wider value for longer labels
+     * or descriptions - text wraps within the card.
      */
     cardWidth?: number | string;
+
+    /**
+     * True to stretch cards to fill each row, with `cardWidth` as their minimum width. Default
+     * false, which keeps cards at `cardWidth` and aligned in columns across rows.
+     */
+    fill?: boolean;
 
     /**
      * Array of available options. Each entry may be a RadioCardOption object or a primitive
@@ -62,6 +68,10 @@ export interface RadioCardOption {
  *
  * Renders as an ARIA radio group: Tab moves focus to the group, and the arrow keys move focus
  * between cards and select them.
+ *
+ * Sizing: every card in a group shares one width - `cardWidth`, default 88px - and cards wrap onto
+ * new rows when they run out of room. Labels and descriptions wrap within the card. Raise
+ * `cardWidth` for longer text, or set `fill` to stretch cards across the full row.
  */
 export const [RadioCardInput, radioCardInput] = hoistCmp.withFactory<RadioCardInputProps>({
     displayName: 'RadioCardInput',
@@ -184,19 +194,30 @@ class RadioCardInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props}, ref) => {
     const {renderValue, normalizedOptions, tabStopOption, isDisabled} = model,
-        {cardWidth, tabIndex = 0, testId, domAttrs} = props,
-        cardStyle =
-            cardWidth != null ? {width: cardWidth, minWidth: 0, maxWidth: 'none'} : undefined;
+        {cardWidth, fill, tabIndex = 0, testId, domAttrs} = props;
 
     return div({
-        className: classNames(className, isDisabled && 'xh-radio-card-input--disabled'),
+        className: classNames(
+            className,
+            fill && 'xh-radio-card-input--fill',
+            isDisabled && 'xh-radio-card-input--disabled'
+        ),
         role: 'radiogroup',
         'aria-disabled': isDisabled || undefined,
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
         onKeyDown: model.onKeyDown,
-        ...getLayoutProps(props),
+        style: {
+            ...getLayoutProps(props),
+            ...(cardWidth != null
+                ? {
+                      '--xh-radio-card-input-card-width': isNumber(cardWidth)
+                          ? `${cardWidth}px`
+                          : cardWidth
+                  }
+                : null)
+        },
         [TEST_ID]: testId,
         ...domAttrs,
         items: normalizedOptions.map((opt, idx) => {
@@ -216,7 +237,6 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
                 'aria-disabled': cardDisabled || undefined,
                 // Roving tab stop - disabled cards take no tabIndex so a click cannot focus them.
                 tabIndex: cardDisabled ? undefined : opt === tabStopOption ? tabIndex : -1,
-                style: cardStyle,
                 onClick: () => model.selectOption(opt),
                 [TEST_ID]: getTestId(testId, String(opt.value)),
                 items: [
