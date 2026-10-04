@@ -32,6 +32,13 @@
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.27 → 2.28`
+* @azure/msal-browser `5.23 → 5.24`
+* @blueprintjs/core `6.20 → 6.21`
+* @blueprintjs/datetime `6.2 → 6.3`
+
 ## 88.1.0 - 2026-10-01
 
 ### 🎁 New Features
