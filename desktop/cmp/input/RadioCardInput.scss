@@ -22,6 +22,10 @@
       minmax(min(var(--xh-radio-card-input-card-width), 100%), 1fr)
     );
     width: 100%;
+
+    .xh-radio-card-input__card {
+      width: auto;
+    }
   }
 
   &__card {
