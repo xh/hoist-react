@@ -26,6 +26,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
+    "test:report": "vitest run --reporter=default --reporter=./test/report/TestReporter.ts",
     "test:mcp": "node --import tsx --test --test-concurrency=1 \"mcp/**/*.spec.ts\"",
     "prepack": "tsc --build",
     "prepare": "husky"

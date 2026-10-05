@@ -14,7 +14,9 @@ import {configDefaults, defineConfig} from 'vitest/config';
 // Pin the time zone so date-sensitive tests give the same result on every machine and in CI.
 process.env.TZ = 'America/New_York';
 
-const isCI = !!process.env.CI;
+const isCI = !!process.env.CI,
+    // Writes the run summary and HTML report to .vitest/report - see test/report/TestReporter.ts.
+    reportReporter = './test/report/TestReporter.ts';
 
 export default defineConfig({
     plugins: [
@@ -79,9 +81,17 @@ export default defineConfig({
         exclude: [...configDefaults.exclude, 'build/**', 'mcp/**', '.*/**'],
         environment: 'jsdom',
         setupFiles: ['test/setup.ts'],
+        // Allow for initTestAppAsync() in beforeAll, which loads the full desktop module graph.
+        hookTimeout: 30_000,
         restoreMocks: true,
         unstubEnvs: true,
         unstubGlobals: true,
-        reporters: isCI ? ['default', 'github-actions'] : ['default']
+        // Record each test's line number, for links from reports to the spec source.
+        includeTaskLocation: true,
+        // In CI, annotate failures inline on the PR diff and write a report of the run. The report
+        // replaces the github-actions reporter's own (counts-only) job summary.
+        reporters: isCI
+            ? ['default', ['github-actions', {jobSummary: {enabled: false}}], reportReporter]
+            : ['default']
     }
 });

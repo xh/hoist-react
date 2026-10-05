@@ -85,6 +85,9 @@ jobs:
         - name: Lint
           run: pnpm lint:all
 
+        - name: Unit tests
+          run: pnpm test
+
         # Note the version is passed positionally. The legacy `--new-version` flag is no longer
         # recognized by npm/pnpm and warns as an unknown config - it only appeared to work because
         # the value fell through to the positional arg. If a future npm consumed it as the flag's
