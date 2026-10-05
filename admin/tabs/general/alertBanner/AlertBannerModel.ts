@@ -11,7 +11,8 @@ import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
-import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
+import {Icon} from '@xh/hoist/icon';
+import {AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
@@ -63,15 +64,14 @@ export class AlertBannerModel extends HoistModel {
         return ['primary', 'success', 'warning', 'danger'];
     }
 
-    get iconOptions(): AlertBannerIconName[] {
-        return [
-            'bullhorn',
-            'check-circle',
-            'exclamation-triangle',
-            'times-circle',
-            'info-circle',
-            'question-circle'
-        ];
+    /**
+     * Hoist's built-in icons, which every Hoist app can render. A banner shows in every targeted
+     * client app, so an icon registered by only one app could be missing in the others.
+     */
+    get iconOptions(): string[] {
+        return Icon.getCatalog()
+            .filter(it => !it.isCustom && !it.hidden)
+            .map(it => it.faName);
     }
 
     constructor() {

@@ -43,7 +43,7 @@ icon/
 └── impl/
     ├── IconCmp.ts       # React component wrapping FontAwesomeIcon
     ├── IconHtml.ts      # Raw SVG string renderer for asHtml mode
-    └── IconRegistry.ts  # Catalog of all known icons - built-ins plus app registrations
+    └── IconCatalog.ts   # Catalog of all known icons - built-ins plus app registrations
 ```
 
 The `index.ts` barrel file imports all FontAwesome icon definitions from the
@@ -56,7 +56,7 @@ Each factory method on `Icon` delegates to `Icon.icon()`. Depending on the `asHt
 either an `IconCmp` (a React component wrapping FA's `FontAwesomeIcon`) or an `IconHtml` (a raw SVG
 string).
 
-`IconRegistry` keeps a catalog of every icon Hoist knows about, keyed by FA name. It catalogs
+`IconCatalog` keeps a catalog of every icon Hoist knows about, keyed by FA name. It catalogs
 Hoist's own icons lazily, by calling each factory in `Icon.ts` and reading the icon it renders. The
 catalog therefore stays in sync with that file automatically. Apps add to it with
 `Icon.register()`. The catalog powers `Icon.get()`, `Icon.getCatalog()`, and the desktop
@@ -121,22 +121,26 @@ The `Spinner` component (`cmp/spinner/`) renders an animated FA icon for `Mask` 
 also keeps performance predictable in remote desktop environments such as Citrix.
 
 Spinner ships with several pre-registered icon choices, each in all four weight variants:
-`faSpinnerThird`, `faCircleNotch`, and `faSpinnerScale`. Apps can configure the default icon and
-prefix globally with `Spinner.defaults`, typically in the app's `Bootstrap.ts`:
+`spinnerThird`, `circleNotch`, and `spinnerScale`. Apps can configure the default icon and prefix
+globally with `Spinner.defaults`, typically in the app's `Bootstrap.ts`:
 
 ```typescript
 import {Spinner} from '@xh/hoist/cmp/spinner';
 
 // Override icon and/or weight globally
-Spinner.defaults.iconName = 'circle-notch';
+Spinner.defaults.icon = 'circleNotch';
 Spinner.defaults.prefix = 'far';
 ```
 
-| Default                        | Type              | Default           | Description                  |
-|--------------------------------|-------------------|-------------------|------------------------------|
-| `Spinner.defaults.iconName`    | `IconName`        | `'spinner-third'` | FA icon name for the spinner |
-| `Spinner.defaults.prefix`      | `HoistIconPrefix` | `'fal'`           | FA icon weight/prefix        |
-| `Spinner.defaults.usePng`      | `boolean`         | `false`           | Fall back to animated PNG    |
+`icon` takes a name that the icon catalog resolves, either an `Icon` name or an FA name, so an icon
+registered with `Icon.register()` works too. It also takes an icon element, such as
+`Icon.circleNotch()`. A name the catalog does not know renders Hoist's default spinner.
+
+| Default                        | Type                       | Default          | Description                  |
+|--------------------------------|----------------------------|------------------|------------------------------|
+| `Spinner.defaults.icon`        | `string \| ReactElement`   | `'spinnerThird'` | Icon name or element         |
+| `Spinner.defaults.prefix`      | `HoistIconPrefix`          | `'fal'`          | FA icon weight/prefix        |
+| `Spinner.defaults.usePng`      | `boolean`                  | `false`          | Fall back to animated PNG    |
 
 To override the defaults for one instance, pass props to `spinner()` or use the `spinner` prop of
 `LoadingIndicator`. That prop accepts either `true` (use defaults) or a `SpinnerProps` object:
@@ -144,7 +148,7 @@ To override the defaults for one instance, pass props to `spinner()` or use the 
 ```typescript
 loadingIndicator({
     bind: myTask,
-    spinner: {iconName: 'circle-notch'}
+    spinner: {icon: 'circleNotch'}
 })
 ```
 
@@ -247,7 +251,7 @@ Hoist merges `className` values instead of replacing them:
 ```typescript
 export const approvedIcon = Icon.register({
     name: 'approved',
-    iconName: 'circle-check',
+    faName: 'circle-check',
     props: {intent: 'success'}
 });
 
@@ -255,13 +259,19 @@ approvedIcon()                    // green check
 approvedIcon({intent: 'primary'}) // caller wins
 ```
 
-This example uses `iconName` in place of `defs`. That form gives an app-specific name to an icon
+This example uses `faName` in place of `defs`. That form gives an app-specific name to an icon
 already registered with FA, typically one of Hoist's own, with no import required.
+
+A glyph that is already in the catalog keeps its own name and label, and the registered name becomes
+an alias for it. Baked-in props apply only to the factory that the registration returns, which
+`Icon.get('approved')` also resolves to. A lookup by FA name, such as `Icon.get('circle-check')`,
+renders the plain glyph, as does `IconPicker` by default. The registration's `keywords` make the
+glyph easier to find in a picker, and its `displayName` labels the registered name wherever that
+name is offered on its own, as with `valueField: 'name'` (see below).
 
 ### Overriding Hoist's Icons
 
-Apps can replace any factory, including Hoist's own. `replace: true` is required. Without it, a
-registration over an existing name throws, so a typo cannot silently clobber a built-in:
+Pass `replace: true` to replace any factory, including Hoist's own:
 
 ```typescript
 import {faArrowRotateRight} from '@fortawesome/pro-regular-svg-icons';
@@ -273,13 +283,24 @@ Icon.register({name: 'refresh', defs: [faArrowRotateRight], replace: true});
 Hoist's ~40 semantic aliases (`refresh`, `add`, `delete`, `save`, ...) are the natural targets
 here. They exist to give apps one place to change the icon for a concept.
 
+Without `replace: true`, a registration under a name that already exists on `Icon` replaces nothing.
+Hoist keeps the existing icon and logs a console warning. The factory that the call returns still
+renders the new icon, but `Icon[name]()` and `Icon.get(name)` keep the existing one. A name
+conflict therefore never stops an app from starting, and a typo cannot silently replace a built-in.
+This also covers a later Hoist release that adds a built-in with the same name as an app icon. The
+app still starts, and the warning tells the developer to rename the app's icon.
+
+Registering the same name and glyph again, for example when hot reload re-runs the module that
+registers your icons, updates the registration without a warning. Names of `Icon`'s own methods,
+such as `get` or `register`, always throw.
+
 ### Registering Several at Once
 
 ```typescript
 Icon.registerAll([
     {name: 'invoice', defs: [faFileInvoiceDollar]},
     {name: 'deal', defs: [faHandshake]},
-    {name: 'dashboard', iconName: 'table-layout'}
+    {name: 'dashboard', faName: 'table-layout'}
 ]);
 ```
 
@@ -330,7 +351,7 @@ which are not icon factories.
 
 A catalog entry carries each form of name:
 
-- `iconName`: the FA name of the glyph
+- `faName`: the FA name of the glyph
 - `name`: its primary `Icon` factory name
 - `names`: every name that resolves to it, aliases included
 
@@ -349,17 +370,42 @@ formField({
 })
 ```
 
-The value of the control is the FA name of the selected icon (`'cog'`, not `'gear'`). Render it
-back with `Icon.get()`. Filtering matches display names, factory names, aliases, and any `keywords`
-supplied at registration.
+Render the value back with `Icon.get()`. Filtering matches display names, factory names, aliases,
+and any `keywords` supplied at registration.
 
-The picker stores the FA name, not the friendlier `Icon` factory name, because the app does not own
-it. The app does own its factory names. If an app renames a registration from `invoice` to
-`invoiceIcon`, every value already persisted under the old name silently stops resolving. FA names
-come from FontAwesome, and nothing an app does to its own factories changes them.
+### Choosing What the Picker Stores
 
-If an app does want to store its own names, `Icon.getCatalogEntry(iconName).name` converts on the
-way out. That couples the stored data to names the app is free to change.
+`valueField` sets which form of name the picker emits:
+
+| `valueField`         | Emits                                       | Stored values follow...              |
+|----------------------|---------------------------------------------|--------------------------------------|
+| `'faName'` default   | FA name of the glyph (`'cog'`)              | the glyph - nothing the app does to its own names changes them |
+| `'name'`             | `Icon` name (`'gear'`, `'businessRule'`)    | the name - re-point it, and every stored value shows the new glyph |
+
+Use the default for an open-ended "pick any icon" field. The value names exactly the glyph that the
+user chose, so a later rename in the app cannot orphan it.
+
+Use `'name'` when the app defines semantic icons and wants to change them later in one place. For
+example, an app stores an icon for each business rule. It registers `businessRule` and
+`complianceRule`, and offers them with `icons`:
+
+```typescript
+Icon.registerAll([
+    {name: 'businessRule', faName: 'briefcase', displayName: 'Business rule'},
+    {name: 'complianceRule', faName: 'balance-scale', displayName: 'Compliance rule'}
+]);
+
+iconPicker({bind: 'ruleIcon', valueField: 'name', icons: ['businessRule', 'complianceRule']})
+```
+
+Each rule stores `'businessRule'` or `'complianceRule'`. To change the icon for every business rule,
+the app points `businessRule` at another glyph with `replace: true`. The cost is that the app owns
+these names. If it renames a registration, values already stored under the old name stop
+resolving.
+
+With `'name'`, every name in `icons` is its own option, labelled with its registered `displayName`,
+even when several names share one glyph. Either way, the picker shows a stored value of the other
+form as selected, so switching `valueField` does not orphan existing values.
 
 Useful props:
 
@@ -374,7 +420,8 @@ Register an icon with `hidden: true` to keep it out of pickers while leaving it 
 
 | Prop        | Type                 | Description                                                                                                    |
 |-------------|----------------------|----------------------------------------------------------------------------------------------------------------|
-| `iconName`  | `IconName`           | FA icon name (for example `'check'`, `'gear'`). Required for `Icon.icon()`, provided automatically by named factories |
+| `faName`    | `IconName`           | FA icon name (for example `'check'`, `'cog'`). Required for `Icon.icon()`, provided automatically by named factories |
+| `iconName`  | `IconName`           | Deprecated - use `faName`. Will be removed in v91                                                              |
 | `prefix`    | `HoistIconPrefix`    | Weight variant: `'far'` (regular, default), `'fas'` (solid), `'fal'` (light), `'fat'` (thin), `'fab'` (brands) |
 | `intent`    | `Intent`             | Applies `xh-intent-{intent}` CSS class for semantic coloring                                                   |
 | `title`     | `string`             | Tooltip text rendered as SVG `<title>`                                                                         |
@@ -422,7 +469,7 @@ const invoiceIcon = Icon.register({name: 'invoice', defs: [faFileInvoiceDollarSo
 invoiceIcon()                                        // solid, its only registered weight
 
 // ❌ Don't: Assume regular weight for a solid-only icon — renders blank
-Icon.icon({iconName: 'file-invoice-dollar'})
+Icon.icon({faName: 'file-invoice-dollar'})
 ```
 
 ### Using Non-FontAwesome Icon Libraries

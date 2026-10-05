@@ -21,6 +21,8 @@
 * The `Icon` singleton now holds lookup and registration methods (`register()`, `get()`, ...) next
   to its factories. Apps that list icons by iterating `Object.keys(Icon)` must switch to
   `Icon.getCatalog()`, which returns one entry per icon with its name and factory.
+* Icon elements now carry their FA name as `props.faName`, not `props.iconName`. Update any code
+  that reads the FA name from a rendered icon element.
 
 ### 🎁 New Features
 
@@ -28,13 +30,17 @@
   any mix of weights. Hoist adds them to the FA library, installs a factory on `Icon`, and returns
   that factory for direct export.
 * Factories from `Icon.register()` render the icon's default variant when a caller asks for a weight
-  the app did not import, instead of a blank. Pass `replace: true` to override an existing factory,
-  including Hoist's semantic aliases (`Icon.refresh()`, `Icon.add()`, ...).
+  the app did not import, instead of a blank.
+* `Icon.register()` overrides an existing factory when passed `replace: true`, including Hoist's
+  semantic aliases such as `Icon.refresh()`. Without it, a name conflict logs a console warning and
+  keeps the existing icon.
 * Added `Icon.get()` to render a registered icon by name, and `Icon.getCatalog()` to list every icon
   that Hoist knows about, built-in or registered.
 * Added `IconPicker`, a desktop input with a trigger button that opens a searchable grid of the
-  icons in `Icon.getCatalog()`. Its value is the icon's FA name, which apps can persist and render
-  back with `Icon.get()`.
+  icons in `Icon.getCatalog()`. Its value is the icon's FA name, or its `Icon` name when
+  `valueField` is `'name'`. Apps render either back with `Icon.get()`.
+* The Admin Console alert banner editor now offers Hoist's full built-in icon set via `IconPicker`.
+  Existing banners keep their stored icon.
 
 ### 🐞 Bug Fixes
 
@@ -43,6 +49,13 @@
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
+
+### ⚙️ Technical
+
+* Deprecated `IconProps.iconName` in favor of `faName`, which `Icon.icon()` now takes. Calls that
+  still pass `iconName` render as before and log a warning. Support ends in v91.
+* Deprecated `SpinnerProps.iconName` and `Spinner.defaults.iconName` in favor of `icon`. It takes an
+  icon name from the catalog, either an `Icon` name or an FA name, or an icon element.
 
 ## 88.1.0 - 2026-10-01
 

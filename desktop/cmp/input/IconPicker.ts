@@ -9,13 +9,14 @@ import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
 import {elementFactory, hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {HoistIconPrefix, Icon, IconCatalogEntry} from '@xh/hoist/icon';
+import {HoistIconPrefix, Icon, IconCatalogEntry, IconFactory} from '@xh/hoist/icon';
+import {iconCatalog} from '@xh/hoist/icon/impl/IconCatalog';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, union, uniq} from 'lodash';
+import {compact, isEmpty, union, uniqBy} from 'lodash';
 import {KeyboardEvent} from 'react';
 import {textInput} from './TextInput';
 import './IconPicker.scss';
@@ -72,6 +73,21 @@ export interface IconPickerProps extends HoistProps, HoistInputProps, LayoutProp
 
     /** True (default) to style trigger button background and borders to match inputs. */
     styleButtonAsInput?: boolean;
+
+    /**
+     * Form of name this control emits as its value. Defaults to `'faName'`.
+     *
+     * - `'faName'` emits the FontAwesome name of the glyph (e.g. `'cog'`). It names exactly the
+     *   glyph the user chose, and no change the app makes to its own `Icon` names affects it.
+     * - `'name'` emits an `Icon` name (e.g. `'gear'`, or an app name such as `'businessRule'`).
+     *   A stored value follows the app if it later points that name at another glyph via
+     *   `Icon.register({replace: true})`. Renaming the registration orphans stored values.
+     *
+     * With `'name'`, every name listed in `icons` is its own option, even when several names
+     * share a glyph. Both forms render back with `Icon.get(value)`, and the control shows a stored
+     * value of either form as selected.
+     */
+    valueField?: 'faName' | 'name';
 }
 
 /**
@@ -82,10 +98,9 @@ export interface IconPickerProps extends HoistProps, HoistInputProps, LayoutProp
  * custom icons the app has registered via {@link Icon.register}. Apps therefore get their own
  * icons in this picker for free, with no additional wiring.
  *
- * The control's value is the selected icon's FontAwesome name (e.g. `'cog'`), rendered back via
- * `Icon.get(value)`. That name is chosen over the `Icon` factory name (`'gear'`) deliberately: it
- * comes from FontAwesome rather than the app, so persisted values survive an app renaming or
- * re-pointing its own factories - a real hazard for custom icons, whose names apps own outright.
+ * The control's value is a name for the selected icon, rendered back via `Icon.get(value)`. By
+ * default it is the icon's FontAwesome name (e.g. `'cog'`). Set `valueField: 'name'` to emit an
+ * `Icon` name instead (e.g. `'gear'`, or an app name such as `'businessRule'`).
  */
 export const [IconPicker, iconPicker] = hoistCmp.withFactory<IconPickerProps>({
     displayName: 'IconPicker',
@@ -101,51 +116,80 @@ export const [IconPicker, iconPicker] = hoistCmp.withFactory<IconPickerProps>({
 //-----------------------
 const buttonEl = elementFactory('button');
 
+/** One cell in the picker grid. */
+interface IconOption {
+    /** Value the control emits when this option is chosen. */
+    value: string;
+    /** Catalog entry for the glyph. Several options can share one, in `valueField: 'name'` mode. */
+    entry: IconCatalogEntry;
+    displayName: string;
+    factory: IconFactory;
+}
+
 class IconPickerModel extends HoistInputModel {
     override xhImpl = true;
 
     @observable accessor popoverIsOpen: boolean = false;
     @bindable accessor filterValue: string = '';
 
-    /** Index within `filteredEntries` of the keyboard-highlighted icon. */
+    /** Index within `filteredOptions` of the keyboard-highlighted icon. */
     @observable accessor activeIdx: number = 0;
 
     gridRef = createObservableRef<HTMLElement>();
     menuRef = createObservableRef<HTMLElement>();
 
-    /** Icons offered by this control, before any text filter is applied. */
-    get entries(): IconCatalogEntry[] {
-        const {icons, includeHidden} = this.componentProps;
-        return isEmpty(icons)
-            ? Icon.getCatalog().filter(it => includeHidden || !it.hidden)
-            : uniq(compact(icons.map(it => Icon.getCatalogEntry(it))));
+    get valueField(): 'faName' | 'name' {
+        return withDefault(this.componentProps.valueField, 'faName');
     }
 
     /**
-     * Icons matching the current filter. Note this is deliberately *not* a computed - the icon
-     * catalog is not observable, so caching it here could go stale if an app registers icons
-     * after this control has first rendered.
+     * Icons offered by this control, before any text filter is applied. Note this is deliberately
+     * *not* a computed - the icon catalog is not observable, so caching it here could go stale if
+     * an app registers icons after this control has first rendered.
      */
-    get filteredEntries(): IconCatalogEntry[] {
-        const {entries} = this,
+    get options(): IconOption[] {
+        const {icons, includeHidden} = this.componentProps,
+            names = isEmpty(icons)
+                ? Icon.getCatalog()
+                      .filter(it => includeHidden || !it.hidden)
+                      .map(it => it.faName)
+                : icons;
+        return uniqBy(compact(names.map(it => this.toOption(it))), 'value');
+    }
+
+    /** Icons matching the current filter. */
+    get filteredOptions(): IconOption[] {
+        const {options} = this,
             // Filter input commits null when cleared or emptied.
             terms = (this.filterValue ?? '').toLowerCase().split(/\s+/).filter(Boolean);
 
-        if (isEmpty(terms)) return entries;
-        return entries.filter(it => {
+        if (isEmpty(terms)) return options;
+        return options.filter(it => {
             const searchText = searchTextFor(it);
             return terms.every(term => searchText.includes(term));
         });
     }
 
-    get selectedEntry(): IconCatalogEntry {
+    /**
+     * Option for the current value. A value stored in the other form of name matches the option
+     * for the same glyph. A value not on offer still renders on the trigger.
+     */
+    get selectedOption(): IconOption {
         const {renderValue} = this;
-        return renderValue ? Icon.getCatalogEntry(renderValue) : null;
+        if (!renderValue) return null;
+
+        const {options} = this,
+            entry = Icon.getCatalogEntry(renderValue);
+        return (
+            options.find(it => it.value === renderValue) ??
+            options.find(it => it.entry === entry) ??
+            this.toOption(renderValue)
+        );
     }
 
-    /** Entry described in the popover footer - the keyboard-highlighted icon, else the selection. */
-    get activeEntry(): IconCatalogEntry {
-        return this.filteredEntries[this.activeIdx] ?? this.selectedEntry;
+    /** Option described in the popover footer - the keyboard-highlighted icon, else the selection. */
+    get activeOption(): IconOption {
+        return this.filteredOptions[this.activeIdx] ?? this.selectedOption;
     }
 
     get enableClear(): boolean {
@@ -187,7 +231,11 @@ class IconPickerModel extends HoistInputModel {
     openPopover() {
         this.popoverIsOpen = true;
         this.filterValue = '';
-        this.activeIdx = Math.max(this.filteredEntries.indexOf(this.selectedEntry), 0);
+        const selectedValue = this.selectedOption?.value;
+        this.activeIdx = Math.max(
+            this.filteredOptions.findIndex(it => it.value === selectedValue),
+            0
+        );
     }
 
     @action
@@ -210,13 +258,29 @@ class IconPickerModel extends HoistInputModel {
         this.activeIdx = idx;
     }
 
-    isSelected(entry: IconCatalogEntry): boolean {
-        return entry === this.selectedEntry;
+    onIconClick(option: IconOption) {
+        this.noteValueChange(option.value);
+        this.closePopover();
     }
 
-    onIconClick(entry: IconCatalogEntry) {
-        this.noteValueChange(entry.iconName);
-        this.closePopover();
+    /** Resolve an `Icon` or FA name to an option emitting the form set by `valueField`. */
+    toOption(name: string): IconOption {
+        const entry = Icon.getCatalogEntry(name);
+        if (!entry) return null;
+
+        if (this.valueField === 'faName') {
+            const {faName, displayName, factory} = entry;
+            return {value: faName, entry, displayName, factory};
+        }
+
+        // Keep an `Icon` name as given, so names that share a glyph stay distinct options.
+        const value = name === entry.faName ? entry.name : name;
+        return {
+            value,
+            entry,
+            displayName: iconCatalog.getDisplayName(value),
+            factory: Icon.getFactory(value)
+        };
     }
 
     clear() {
@@ -231,8 +295,8 @@ class IconPickerModel extends HoistInputModel {
      */
     @action
     onKeyDown = (e: KeyboardEvent) => {
-        const {filteredEntries, columns, activeIdx} = this,
-            {length} = filteredEntries;
+        const {filteredOptions, columns, activeIdx} = this,
+            {length} = filteredOptions;
 
         switch (e.key) {
             case 'Escape':
@@ -240,7 +304,7 @@ class IconPickerModel extends HoistInputModel {
                 return;
             case 'Enter':
                 e.preventDefault();
-                if (filteredEntries[activeIdx]) this.onIconClick(filteredEntries[activeIdx]);
+                if (filteredOptions[activeIdx]) this.onIconClick(filteredOptions[activeIdx]);
                 return;
             case 'ArrowLeft':
                 this.activeIdx = clamp(activeIdx - 1, length);
@@ -266,8 +330,8 @@ function clamp(idx: number, length: number): number {
     return Math.min(Math.max(idx, 0), length - 1);
 }
 
-function searchTextFor(entry: IconCatalogEntry): string {
-    return union([entry.displayName], entry.names, entry.keywords).join(' ').toLowerCase();
+function searchTextFor({value, displayName, entry}: IconOption): string {
+    return union([displayName, value], entry.names, entry.keywords).join(' ').toLowerCase();
 }
 
 //---------------------------------------------
@@ -300,7 +364,7 @@ const cmp = hoistCmp.factory<IconPickerModel>(({model, className, ...props}, ref
 // Trigger button
 //---------------------------------------------
 const triggerButton = hoistCmp.factory<IconPickerModel>(({model, props}, ref) => {
-    const {selectedEntry} = model,
+    const {selectedOption} = model,
         {width, ...restLayout} = getLayoutProps(props),
         btnProps = props.buttonProps ?? {},
         styleAsInput = withDefault(props.styleButtonAsInput, true),
@@ -316,12 +380,12 @@ const triggerButton = hoistCmp.factory<IconPickerModel>(({model, props}, ref) =>
         className: classNames(
             'xh-icon-picker__trigger',
             styleAsInput && 'xh-icon-picker__trigger--as-input',
-            !selectedEntry && 'xh-icon-picker__trigger--empty',
+            !selectedOption && 'xh-icon-picker__trigger--empty',
             btnProps.className
         ),
-        icon: selectedEntry ? selectedEntry.factory({prefix}) : Icon.placeholder(),
+        icon: selectedOption ? selectedOption.factory({prefix}) : Icon.placeholder(),
         text: showName
-            ? (selectedEntry?.displayName ?? withDefault(props.placeholder, 'Select icon...'))
+            ? (selectedOption?.displayName ?? withDefault(props.placeholder, 'Select icon...'))
             : null,
         disabled: props.disabled,
         active: model.popoverIsOpen,
@@ -379,11 +443,12 @@ const iconMenu = hoistCmp.factory<IconPickerModel>(({model, props}) => {
 });
 
 const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
-    const {filteredEntries, columns} = model,
+    const {filteredOptions, columns} = model,
+        selectedValue = model.selectedOption?.value,
         maxMenuHeight = withDefault(props.maxMenuHeight, 260),
         {prefix} = props;
 
-    if (isEmpty(filteredEntries)) {
+    if (isEmpty(filteredOptions)) {
         return div({className: 'xh-icon-picker__no-results', item: 'No matching icons found.'});
     }
 
@@ -394,39 +459,39 @@ const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
             maxHeight: maxMenuHeight,
             gridTemplateColumns: `repeat(${columns}, var(--xh-icon-picker-cell-size))`
         },
-        items: filteredEntries.map((entry, idx) =>
+        items: filteredOptions.map((option, idx) =>
             buttonEl({
-                key: entry.iconName,
+                key: option.value,
                 type: 'button',
                 tabIndex: -1,
                 className: classNames(
                     'xh-icon-picker__cell',
-                    model.isSelected(entry) && 'xh-icon-picker__cell--selected',
+                    option.value === selectedValue && 'xh-icon-picker__cell--selected',
                     idx === model.activeIdx && 'xh-icon-picker__cell--active'
                 ),
-                title: entry.displayName,
-                'aria-label': entry.displayName,
+                title: option.displayName,
+                'aria-label': option.displayName,
                 onMouseEnter: () => model.setActiveIdx(idx),
                 onClick: e => {
                     e.stopPropagation();
-                    model.onIconClick(entry);
+                    model.onIconClick(option);
                 },
-                item: entry.factory({prefix})
+                item: option.factory({prefix})
             })
         )
     });
 });
 
 const menuFooter = hoistCmp.factory<IconPickerModel>(({model, props}) => {
-    const {activeEntry, enableClear} = model,
-        hasSelection = !!model.selectedEntry;
+    const {activeOption, enableClear} = model,
+        hasSelection = !!model.selectedOption;
 
     return hbox({
         className: 'xh-icon-picker__footer',
         items: [
             span({
                 className: 'xh-icon-picker__footer-name',
-                item: activeEntry?.displayName ?? ''
+                item: activeOption?.displayName ?? ''
             }),
             filler(),
             div({
