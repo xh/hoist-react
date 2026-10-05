@@ -91,6 +91,8 @@ export default defineConfig({
         unstubGlobals: true,
         // Record each test's line number, for links from reports to the spec source.
         includeTaskLocation: true,
+        // Show values interpolated into it.each() test names in full - they describe the case.
+        taskTitleValueFormatTruncate: 1000,
         // In CI, annotate failures inline on the PR diff and write a report of the run. The report
         // replaces the github-actions reporter's own (counts-only) job summary.
         reporters: isCI

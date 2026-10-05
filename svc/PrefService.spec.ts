@@ -53,7 +53,7 @@ describe('PrefService', () => {
             ['int', 'pageSize', '200'],
             ['bool', 'showDetail', 'true'],
             ['json', 'chartOptions', 'line']
-        ])('rejects a value of the wrong type for a %s pref', (type, key, value) => {
+        ])('rejects a value of the wrong type for a pref of type %s', (type, key, value) => {
             expect(() => XH.setPref(key, value)).toThrow(`must be of type ${type}`);
         });
 
