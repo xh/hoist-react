@@ -73,6 +73,15 @@ describe('Timer', () => {
             expect(runFn).toHaveBeenCalledOnce();
         });
 
+        it('starts at once when delay is true but the interval is disabled', () => {
+            // Fixed in 89.0.0 - the delay took the negative interval, a negative setTimeout.
+            const setTimeout = vi.spyOn(globalThis, 'setTimeout');
+            createTimer({runFn: vi.fn(), interval: -1, delay: true});
+
+            expect(setTimeout).toHaveBeenCalledOnce();
+            expect(setTimeout.mock.lastCall[1]).toBe(0);
+        });
+
         it('re-evaluates a function interval as its value changes', async () => {
             let interval = 10 * SECONDS;
             const runFn = vi.fn();
@@ -197,10 +206,8 @@ describe('Timer', () => {
             runFns.forEach(runFn => expect(runFn).toHaveBeenCalledOnce());
         });
 
-        // BUG: utils/async/Timer.ts:109-117 - heartbeatAsync() reschedules itself forever and reads
-        // the interval on every beat, even once cancelled. Each destroyed timer keeps a 250ms-1s
-        // wakeup alive and retains its interval closure, e.g. a destroyed Clock's model.
-        it.fails('does no further work once destroyed', async () => {
+        // Fixed in 89.0.0 - a cancelled timer kept its heartbeat, reading its interval forever.
+        it('does no further work once destroyed', async () => {
             const interval = vi.fn(() => 1 * SECONDS),
                 timer = createTimer({runFn: vi.fn(), interval});
             await advanceAsync(1);

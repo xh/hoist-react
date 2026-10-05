@@ -72,9 +72,8 @@ describe('FetchService', () => {
             }
         );
 
-        // BUG: svc/FetchService.ts:383 sets the form Content-Type for POST only. A PUT with params
-        // sends its form body as text/plain, so the server never reads the params from it.
-        it.fails('sends params for a PUT as a form-encoded body', async () => {
+        // Fixed in 89.0.0 - a PUT sent its form body as text/plain, so the server ignored it.
+        it('sends params for a PUT as a form-encoded body', async () => {
             const sent = serve(xhUrl('test/items/1'));
             await XH.fetch({url: 'test/items/1', method: 'PUT', params: {name: 'Widget'}});
 

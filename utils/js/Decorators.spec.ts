@@ -198,10 +198,9 @@ describe('Decorators', () => {
             await expect(svc.loadQuoteAsync('AAPL')).resolves.toBe(190);
         });
 
-        // BUG: utils/js/Decorators.ts:85-107 - the try/catch meant for unserializable arguments
-        // also wraps the method call, so a synchronous throw is logged as a serialization failure
-        // and the method is run a second time.
-        it.fails('runs a method that throws synchronously only once', () => {
+        // Fixed in 89.0.0 - a synchronous throw was logged as a serialization failure, and the
+        // method was run a second time.
+        it('runs a method that throws synchronously only once', () => {
             vi.spyOn(console, 'warn').mockImplementation(() => {});
             class OrderService {
                 calls = 0;
