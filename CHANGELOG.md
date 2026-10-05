@@ -18,23 +18,23 @@
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
-* The `Icon` singleton now carries lookup and registration methods (`register()`, `get()`,
-  `getCatalog()`, ...) alongside its factories. Apps that list icons by iterating
-  `Object.keys(Icon)` must switch to `Icon.getCatalog()`, which returns one entry per icon with its
-  name and factory.
+* The `Icon` singleton now holds lookup and registration methods (`register()`, `get()`, ...) next
+  to its factories. Apps that list icons by iterating `Object.keys(Icon)` must switch to
+  `Icon.getCatalog()`, which returns one entry per icon with its name and factory.
 
 ### 🎁 New Features
 
-* Added `Icon.register()` and `Icon.registerAll()`, a supported API for apps to add their own
-  FontAwesome icons. Pass the imported definitions (any mix of weights) and Hoist adds them to the
-  FA library, installs a factory on `Icon`, and returns that factory for direct export. Registered
-  icons resolve by name via the new `Icon.get()`, and requests for an unimported weight now fall
-  back to the icon's default variant rather than rendering blank. Pass `replace: true` to override
-  an existing factory, including Hoist's own semantic aliases (`Icon.refresh()`, `Icon.add()`, ...).
-* Added `IconPicker`, a desktop input for choosing an icon, rendering a trigger button that opens a
-  searchable grid. Options come from the new `Icon.getCatalog()` - Hoist's built-in set plus
-  anything the app has registered - and its value is the icon's FA name, ready to persist and
-  render back with `Icon.get()`.
+* Added `Icon.register()` and `Icon.registerAll()` so apps can add their own FontAwesome icons, in
+  any mix of weights. Hoist adds them to the FA library, installs a factory on `Icon`, and returns
+  that factory for direct export.
+* Factories from `Icon.register()` render the icon's default variant when a caller asks for a weight
+  the app did not import, instead of a blank. Pass `replace: true` to override an existing factory,
+  including Hoist's semantic aliases (`Icon.refresh()`, `Icon.add()`, ...).
+* Added `Icon.get()` to render a registered icon by name, and `Icon.getCatalog()` to list every icon
+  that Hoist knows about, built-in or registered.
+* Added `IconPicker`, a desktop input with a trigger button that opens a searchable grid of the
+  icons in `Icon.getCatalog()`. Its value is the icon's FA name, which apps can persist and render
+  back with `Icon.get()`.
 
 ### 🐞 Bug Fixes
 

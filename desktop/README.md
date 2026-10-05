@@ -156,10 +156,10 @@ picker({
 })
 ```
 
-`IconPicker` lets end users choose an icon, rendering a trigger button that opens a searchable
-grid. Its options come from `Icon.getCatalog()` — Hoist's built-in set plus any icons the app has
-registered via `Icon.register()` — and its value is the selected icon's FontAwesome name, ready to
-persist and render back with `Icon.get()`.
+`IconPicker` lets end users choose an icon. It renders a trigger button that opens a searchable
+grid. Its options come from `Icon.getCatalog()`: Hoist's built-in set plus any icons the app
+registered with `Icon.register()`. Its value is the FontAwesome name of the selected icon, which
+apps can persist and render back with `Icon.get()`.
 
 ```typescript
 import {iconPicker} from '@xh/hoist/desktop/cmp/input';
