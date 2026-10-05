@@ -42,6 +42,14 @@
 * `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
   as `leafOldData` / `leafNewData`.
 
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.27 → 2.28`
+* @azure/msal-browser `5.23 → 5.24`
+* @blueprintjs/core `6.20 → 6.21`
+* @blueprintjs/datetime `6.2 → 6.3`
+* swiper `12.2 → 14.3`
+
 ## 88.1.0 - 2026-10-01
 
 ### 🎁 New Features
