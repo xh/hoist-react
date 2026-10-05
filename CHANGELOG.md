@@ -32,6 +32,13 @@
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 
+### ⚙️ Technical
+
+* Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
+  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
+* Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
+  comment. Snapshot and release builds now run the tests before publishing.
+
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.27 → 2.28`

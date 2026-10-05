@@ -62,6 +62,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Understand third-party library integration | [`/kit/`](../kit/README.md)                                                                                         |
 | Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-and-deploy-app.md) |
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
+| Write or run hoist-react's unit tests | [Unit Testing](./unit-testing.md) |
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
@@ -146,9 +147,10 @@ for planned coverage:
 
 | Document | Description |
 |----------|-------------|
-| [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react |
+| [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, unit tests, CodeQL analysis, and npm publishing of hoist-react |
 | [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
+| [Unit Testing](./unit-testing.md) | The unit test suite: running tests, the fake hoist-core server, writing tests, and CI reports |
 | [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation and build tooling internals |
 
 ## Developer Tools

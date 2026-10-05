@@ -1,5 +1,7 @@
 # Hoist React
 
+[![Unit Tests](https://github.com/xh/hoist-react/actions/workflows/unit-tests.yml/badge.svg?branch=develop)](https://github.com/xh/hoist-react/actions/workflows/unit-tests.yml?query=branch%3Adevelop)
+
 A full-stack UI development framework for enterprise web applications, built on React and MobX.
 Developed by [Extremely Heavy](https://xh.io/) as the client-side complement to
 [Hoist Core](https://github.com/xh/hoist-core).
@@ -73,6 +75,7 @@ docs. The primary entry points are:
 - [docs/build-and-publish.md](docs/build-and-publish.md) — GitHub Actions CI/CD for hoist-react
 - [docs/build-and-deploy-app.md](docs/build-and-deploy-app.md) — building and deploying Hoist applications
 - [docs/development-environment.md](docs/development-environment.md) — local development setup
+- [docs/unit-testing.md](docs/unit-testing.md) - the unit test suite, and how to write tests
 
 ## Architecture at a Glance
 
@@ -167,6 +170,13 @@ Key language features used throughout Hoist React include:
 - **Async/await** — for asynchronous operations, with custom Promise extensions for error handling,
   tracking, and timeouts. See [/promise/README.md](promise/README.md).
 - **ES Modules** — all dependencies imported via ES modules and resolved by Rsbuild.
+
+## Testing
+
+Hoist React has a suite of unit tests, run with `pnpm test` on [Vitest](https://vitest.dev). The
+tests compile the library with the same SWC decorator settings that apps use. They run Hoist's real
+services against an in-memory fake of the hoist-core server. CI runs them on every pull request.
+See [docs/unit-testing.md](docs/unit-testing.md).
 
 ## Licensing and Support
 
