@@ -21,6 +21,11 @@
 
 ### 🎁 New Features
 
+* Added `AverageWeightedAggregator` for Cube fields averaged by the weight of a second field, e.g.
+  `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`. Views update it
+  incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
+* Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
+  re-aggregates the field on changes to those as well.
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
 
@@ -31,6 +36,11 @@
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
+
+### ⚙️ Typescript API Adjustments
+
+* `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
+  as `leafOldData` / `leafNewData`.
 
 ### 📚 Libraries
 

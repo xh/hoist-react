@@ -68,18 +68,18 @@ export abstract class LeafRow extends BaseRow {
     }
 
     applyLeafDataUpdate(newRec: StoreRecord, checkFields: CubeField[], changed: LeafUpdateChanges) {
-        this.cubeRecord = newRec;
-        const {data} = this,
+        const oldData = this.cubeRecord.data,
             newData = newRec.data,
             updates = [];
+        this.cubeRecord = newRec;
 
-        // 1) Calculate diff.
+        // 1) Calculate diff - a field is updated if its own value changed, or the value of any
+        //    other field its aggregator depends on.
+        const valueChanged = name => oldData[name] !== newData[name];
         checkFields.forEach(field => {
-            const name = field.name,
-                oldValue = data[name],
-                newValue = newData[name];
-            if (oldValue !== newValue) {
-                updates.push(new RowUpdate(field, oldValue, newValue));
+            const {name, aggregator} = field;
+            if (valueChanged(name) || aggregator?.dependsOn?.some(valueChanged)) {
+                updates.push(new RowUpdate(field, oldData, newData));
                 changed.fields.add(name);
             }
         });
