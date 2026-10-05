@@ -102,8 +102,8 @@ export class AggregationContext {
      * aggregations of ancestor rows via {@link getAggState}.
      *
      * Lets an aggregator that cannot be composed from its children's published values alone -
-     * e.g. a weighted average - compose from its direct children rather than walking its entire
-     * subtree of leaves. See the Cube package README for a worked example.
+     * e.g. an average - compose from its direct children rather than walking its entire subtree
+     * of leaves. See {@link AverageAggregator} for an example.
      *
      * Write state on every call to {@link Aggregator.aggregate}, as rows are recomputed in place
      * when reused. An {@link Aggregator.replace} override must likewise keep state consistent with
