@@ -10,10 +10,11 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
-    difference,
+    differenceBy,
     escapeRegExp,
     first,
     isArray,
+    isDate,
     isEmpty,
     isEqual,
     isNil,
@@ -226,27 +227,27 @@ export class FieldFilter extends Filter {
                 break;
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'includes':
                 lookup = new Set(value);
@@ -308,8 +309,9 @@ export class FieldFilter extends Filter {
             other.op === this.op &&
             (isArray(other.value) && isArray(this.value)
                 ? other.value.length === this.value.length &&
-                  difference(other.value, this.value).length === 0
-                : other.value === this.value)
+                  // Compare Dates by time - a restored filter holds new Date instances.
+                  isEmpty(differenceBy(other.value, this.value, v => (isDate(v) ? v.getTime() : v)))
+                : isEqual(other.value, this.value))
         );
     }
 

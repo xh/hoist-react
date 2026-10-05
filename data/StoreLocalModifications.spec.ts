@@ -103,9 +103,8 @@ describe('Store', () => {
             expect(store.isDirty).toBe(true);
         });
 
-        // BUG: StoreRecord.ts:114 - `isDirty` evaluates `committedData && ...`, returning null for
-        // an added record. Store.isDirty had the same defect, fixed in 60899d455.
-        it.fails('reports an added record as not dirty', () => {
+        // Fixed in 89.0.0 - isDirty returned null, not false, for an added record.
+        it('reports an added record as not dirty', () => {
             const store = newStore();
             store.addRecords({id: 'new', name: 'n'});
 

@@ -63,9 +63,8 @@ describe('BaseFilterFieldSpec', () => {
     });
 
     describe('values', () => {
-        // BUG: BaseFilterFieldSpec.ts:94 - compact() removes the nulls it targets (v72.5.0, #3963),
-        // but also drops 0, false and '', so they are never offered as filter values.
-        it.fails('removes nulls from explicit values, but keeps 0', () => {
+        // Fixed in 89.0.0 - removing nulls also dropped 0, false and ''.
+        it('removes nulls from explicit values, but keeps 0', () => {
             expect(createSpec('qty', {values: [0, 1, 2, null]}).values).toEqual([0, 1, 2]);
         });
     });

@@ -111,7 +111,7 @@ export class StoreRecord {
 
     /** True if the StoreRecord has been modified since it was last committed. */
     get isDirty(): boolean {
-        return this.committedData && this.committedData !== this.data;
+        return this.committedData != null && this.committedData !== this.data;
     }
 
     /** Alias for {@link StoreRecord.isDirty} */

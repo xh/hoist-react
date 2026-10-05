@@ -55,9 +55,8 @@ describe('validEmail', () => {
         }
     );
 
-    // BUG: constraints.ts:35 short-circuits only on null - '' is reported as a malformed address.
-    // Per data/README.md and the 87.0.0 isValidJson fix, empty values should defer to `required`.
-    it.fails('passes an empty string, deferring to required', () => {
+    // Fixed in 89.0.0 - an empty string was reported as a malformed address.
+    it('passes an empty string, deferring to required', () => {
         expect(check(validEmail, '')).toBeNull();
     });
 });
