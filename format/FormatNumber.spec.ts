@@ -235,9 +235,9 @@ describe('fmtNumberTooltip', () => {
         expect(fmtNumberTooltip(1234.5, {ledger: true})).toBe('1,234.5');
     });
 
-    // BUG: FormatNumber.ts:367 (and :191 for precision: null) - 12 decimal places exceed double
-    // precision for large values, so numbro emits spurious digits, e.g. '44,510,347.00000001'.
-    it.fails('renders large values without spurious digits', () => {
+    // Fixed in 89.0.0 - 12 decimal places exceeded double precision for large values, adding
+    // spurious digits, e.g. '44,510,347.00000001'.
+    it('renders large values without spurious digits', () => {
         expect(fmtNumberTooltip(44510347)).toBe('44,510,347');
         expect(fmtNumberTooltip(2390421244)).toBe('2,390,421,244');
         expect(fmtNumber(2515000000, {precision: null})).toBe('2,515,000,000');
@@ -281,9 +281,8 @@ describe('fmtQuantity', () => {
         expect(fmtQuantity(1200000000, {...strOpts, useBillions: false})).toBe('1,200.00m');
     });
 
-    // BUG: FormatNumber.ts:302 - the default precision is 2 for any value of 1m or more, even when
-    // the useMillions/useBillions flags leave the value unscaled.
-    it.fails('renders an unscaled value as a whole number', () => {
+    // Fixed in 89.0.0 - values of 1m or more defaulted to 2 places, even when left unscaled.
+    it('renders an unscaled value as a whole number', () => {
         expect(fmtQuantity(2500000, {...strOpts, useMillions: false})).toBe('2,500,000');
     });
 
@@ -389,9 +388,9 @@ describe('parseNumber', () => {
         expect(parseNumber('abc')).toBeNaN();
     });
 
-    // BUG: FormatNumber.ts:607-616 - multiplying the parsed float by the unit leaves float
-    // artifacts, so a filter of 'value = 8.2m' misses a value of exactly 8,200,000.
-    it.fails('parses decimal shorthand to the exact value', () => {
+    // Fixed in 89.0.0 - multiplying by the unit left float artifacts, so a filter of
+    // 'value = 8.2m' missed a value of exactly 8,200,000.
+    it('parses decimal shorthand to the exact value', () => {
         expect(parseNumber('8.2m')).toBe(8200000);
         expect(parseNumber('1.005k')).toBe(1005);
     });
