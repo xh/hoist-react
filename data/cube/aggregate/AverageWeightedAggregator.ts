@@ -49,6 +49,7 @@ export class AverageWeightedAggregator extends Aggregator {
                 weight += state.weight;
                 count += state.count;
             } else {
+                // A leaf, or (rare) a child grouped by this field - just read value and weight.
                 const data = row.isLeaf ? row.cubeRecord.data : row.data,
                     val = data[fieldName],
                     w = data[weightField];
