@@ -23,6 +23,9 @@
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
     "check:vendored": "node scripts/check-vendored.mjs",
     "typecheck": "tsc --noEmit && tsc -p mcp/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "test:mcp": "node --import tsx --test --test-concurrency=1 \"mcp/**/*.spec.ts\"",
     "prepack": "tsc --build",
     "prepare": "husky"
@@ -120,10 +123,14 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@swc/core": "^1.16.13",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/lodash": "^4.17.25",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@vitest/ui": "^5.0.3",
     "@xh/eslint-config": "^8.0.1",
     "@xh/hoist-dev-utils": "next",
     "ag-grid-community": "~36.2.0",
@@ -134,7 +141,9 @@
     "eslint-plugin-tsdoc": "^0.5.4",
     "globals": "^17.13.0",
     "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
     "lint-staged": "^17.6.0",
+    "msw": "^2.15.0",
     "postcss": "^8.5.28",
     "prettier": "^3.9.9",
     "react": "^19.3.0",
@@ -142,7 +151,10 @@
     "stylelint": "^17.16.0",
     "stylelint-config-recommended-scss": "^17.0.1",
     "type-fest": "^5.10.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "unplugin-swc": "^2.0.0",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
   },
   "packageManager": "pnpm@12.7.0+sha512.9c56477e360068d6e9dca6a92efb4e46b3dc5a52fcebf3d84d78b9736c0ded589a561621a52f68219a7a39facc63cdc079c3226ef9c9d5f02b79f74e69a807b6"
 }

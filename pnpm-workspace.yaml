@@ -5,13 +5,18 @@
 # in CI. esbuild (via tsx, which powers the bin/hoist-* CLI tools) is allowed so its platform
 # binary install is guaranteed. The rest are declined: @parcel/watcher (via dev-utils' sass
 # watch-mode support, unused here) has a native build with prebuilt binaries shipped as optional
-# platform deps, browser-tabs-lock (via auth0-spa-js) ships prebuilt dist, and core-js's
-# postinstall only prints a funding message.
+# platform deps, @swc/core (the unit test transform) ships its binary the same way and its
+# postinstall only falls back to a wasm build if that is missing, browser-tabs-lock (via
+# auth0-spa-js) ships prebuilt dist, core-js's postinstall only prints a funding message, and
+# msw's postinstall only copies its browser service worker into an app's public dir (unit tests
+# use msw/node, which needs no worker).
 allowBuilds:
   '@parcel/watcher': false
+  '@swc/core': false
   browser-tabs-lock: false
   core-js: false
   esbuild: true
+  msw: false
 
 # Caret vs. tilde policy for `dependencies` in package.json. These ranges are the contract
 # consuming apps resolve against (our lockfile never applies to them), so qualifiers are chosen
