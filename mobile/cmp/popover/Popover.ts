@@ -15,7 +15,7 @@ import {
 import {div, fragment} from '@xh/hoist/cmp/layout';
 import {Content, hoistCmp, HoistModel, HoistProps, useLocalModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
@@ -143,15 +143,10 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
 class PopoverModel extends HoistModel {
     override xhImpl = true;
 
-    @observable isOpen;
+    @observable accessor isOpen;
 
     _onInteraction;
     _controlledMode = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override onLinked() {
         // Popovers are automatically closed on app route changes to avoid navigating the

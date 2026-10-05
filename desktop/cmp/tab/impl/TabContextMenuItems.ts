@@ -5,13 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {TabSwitcherMenuContext} from '@xh/hoist/cmp/tab';
-import {isMenuItem, type MenuItemLike, MenuToken} from '@xh/hoist/core';
+import {isMenuHeading, isMenuItem, type MenuItemLike, MenuToken} from '@xh/hoist/core';
+import {bindMenuHeadingContext} from '@xh/hoist/cmp/menu/impl/Menus';
 
 /** @internal */
 export function getContextMenuItem(
     item: MenuItemLike<MenuToken, TabSwitcherMenuContext>,
     context: TabSwitcherMenuContext
 ): MenuItemLike<MenuToken, TabSwitcherMenuContext> {
+    if (isMenuHeading(item)) return bindMenuHeadingContext(item, context);
     if (!isMenuItem(item)) return item;
     const ret = {...item};
     if (item.actionFn) ret.actionFn = e => item.actionFn(e, context);

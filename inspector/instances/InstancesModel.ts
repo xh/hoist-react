@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {boolCheck, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
 import {HoistBase, hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {Cube, StoreRecord, View} from '@xh/hoist/data';
@@ -12,7 +12,7 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, isObservableProp, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, isObservableProp, runInAction, bindableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
@@ -42,17 +42,17 @@ export class InstancesModel extends HoistModel {
         return this.statsModel?.selectedSyncRun;
     }
 
-    @bindable.ref propsWatchlist = [];
-    @bindable.ref loadedGetters = [];
+    @bindableRef accessor propsWatchlist = [];
+    @bindableRef accessor loadedGetters = [];
 
     // Persisted storeFilterFields (convenient across frequent page refreshes when developing)
-    @bindable @persist instancesStoreFilter;
-    @bindable @persist propertiesStoreFilter;
+    @bindable @persist accessor instancesStoreFilter;
+    @bindable @persist accessor propertiesStoreFilter;
 
     /** Keys of favorited instances (`{className}:{xhName}`) - requires an `xhName` to pin. */
-    @bindable.ref @persist favorites: string[] = [];
+    @bindableRef @persist accessor favorites: string[] = [];
 
-    @bindable @persist instQuickFilters = ['showInGroups'];
+    @bindable @persist accessor instQuickFilters = ['showInGroups'];
     get showInGroups() {
         return this.instQuickFilters?.includes('showInGroups');
     }
@@ -63,7 +63,7 @@ export class InstancesModel extends HoistModel {
         return this.instQuickFilters?.includes('favoritesOnly');
     }
 
-    @bindable @persist propQuickFilters = [];
+    @bindable @persist accessor propQuickFilters = [];
     get showUnderscoreProps() {
         return this.propQuickFilters?.includes('showUnderscoreProps');
     }
@@ -82,7 +82,6 @@ export class InstancesModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.instancesGridModel = this.createInstancesGridModel();
         this.propertiesGridModel = this.createPropertiesGridModel();
@@ -286,13 +285,13 @@ export class InstancesModel extends HoistModel {
                     field: 'isLinked',
                     headerName: Icon.link(),
                     headerTooltip: 'Linked model',
-                    ...boolCheckCol,
+                    ...boolCheck,
                     width: 40,
                     tooltip: v => (v ? 'Linked model' : ''),
                     renderer: v => (v ? Icon.link() : null)
                 },
                 {field: 'displayGroup', hidden: true},
-                {field: 'isFavorite', ...boolCheckCol, hidden: true},
+                {field: 'isFavorite', ...boolCheck, hidden: true},
                 {field: 'xhName', flex: 1, minWidth: 150},
                 {field: 'className', flex: 1, minWidth: 150},
                 {

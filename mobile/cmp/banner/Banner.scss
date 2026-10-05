@@ -1,0 +1,116 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+.xh-banner {
+  flex: none;
+  align-items: center;
+  gap: var(--xh-pad-half-px);
+  width: 100%;
+  min-height: var(--xh-tbar-min-size-px);
+  padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-px);
+
+  // Size buttons to fit the banner, matching mobile toolbars.
+  --xh-button-height: calc(var(--xh-tbar-min-size-px) - 2 * var(--xh-pad-half-px));
+  --xh-button-border-radius-px: var(--xh-border-radius-px);
+  color: var(--xh-text-color);
+  background-color: var(--xh-intent-neutral-trans1);
+
+  &__content {
+    flex: 1;
+    align-items: center;
+    gap: var(--xh-pad-px);
+    min-width: 0;
+
+    > .xh-icon {
+      flex: none;
+    }
+  }
+
+  &--clickable &__content {
+    cursor: pointer;
+  }
+
+  &__message {
+    flex: 1;
+    min-width: 0;
+
+    // Disallow most markdown styling except **bold**, *italics* and (links)
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    ul,
+    li,
+    a,
+    code {
+      display: inline;
+      margin: unset;
+      padding: unset;
+      color: unset;
+      font-weight: unset;
+      font-size: unset;
+      font-family: unset;
+      list-style: none;
+    }
+
+    // Render links with an underline
+    a {
+      text-decoration: underline;
+    }
+  }
+
+  &--nowrap &__message {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__action-button,
+  &__dismiss-button {
+    flex: none;
+  }
+
+  &__action-button {
+    min-width: 60px;
+  }
+
+  &--compact {
+    --xh-button-height: 28px;
+    min-height: 32px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: var(--xh-font-size-small-em);
+  }
+
+  // Tinted (default) style - intent background tint with intent-colored icon.
+  @each $intent in (primary, success, warning, danger) {
+    &--#{$intent}:not(&--filled) {
+      background-color: var(--xh-intent-#{$intent}-trans1);
+
+      .xh-banner__content > .xh-icon {
+        color: var(--xh-intent-#{$intent});
+      }
+    }
+  }
+
+  // Filled style - solid intent background (via .xh-bg-intent-*) with white text and buttons.
+  &--filled:not(&--none) {
+    .xh-banner__action-button,
+    .xh-banner__dismiss-button {
+      border-color: white !important;
+      color: white !important;
+
+      .xh-icon {
+        color: white !important;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+  }
+}

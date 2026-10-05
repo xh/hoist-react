@@ -54,10 +54,3 @@ export const compactDate: ColumnSpec = {
 export const localDate: ColumnSpec = {
     ...date
 };
-
-// Deprecated aliases with `Col` suffix
-export const dateCol = date;
-export const timeCol = time;
-export const dateTimeCol = dateTime;
-export const compactDateCol = compactDate;
-export const localDateCol = localDate;

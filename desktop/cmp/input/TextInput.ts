@@ -81,6 +81,14 @@ export interface TextInputProps
     /** True to allow browser spell check, default false. */
     spellCheck?: boolean;
 
+    /**
+     * True to trim leading/trailing whitespace from this input's value as committed to any bound
+     * model and reported to `onChange` / `onCommit`. Default true, except for `password` type
+     * inputs, where such whitespace can be intentional. A value that trims away to nothing commits
+     * null, as per an input the user cleared.
+     */
+    trimWhitespace?: boolean;
+
     /** Underlying HTML <input> element type. */
     type?: 'text' | 'password';
 }
@@ -105,6 +113,17 @@ export class TextInputModel extends HoistInputModel {
 
     override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
+    }
+
+    override get trimWhitespace() {
+        const {trimWhitespace, type} = this.componentProps;
+        // Passwords can legitimately carry leading/trailing whitespace - never trim by default.
+        return withDefault(trimWhitespace, type !== 'password');
+    }
+
+    override toExternal(internal: string): string {
+        // Normalize a value that trims away to nothing to null, as per an input the user cleared.
+        return super.toExternal(internal) || null;
     }
 
     onChange = ev => {

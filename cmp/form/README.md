@@ -530,13 +530,11 @@ class LocationFormModel extends HoistModel {
         ]
     });
 
-    @observable.ref states = [];
-    @observable.ref cities = [];
+    @observableRef accessor states = [];
+    @observableRef accessor cities = [];
 
     constructor() {
         super();
-        makeObservable(this);
-
         this.addReaction(
             {
                 track: () => this.formModel.values.country,

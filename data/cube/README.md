@@ -5,6 +5,7 @@
 | [Overview](#overview) | Architecture, dimensions vs. measures, CubeField configuration |
 | [Creating a Cube](#creating-a-cube) | Field definitions, data loading |
 | [Built-in Aggregators](#built-in-aggregators) | SUM, AVG, MIN, MAX, and counting aggregators |
+| [Custom Aggregators](#custom-aggregators) | Extending `Aggregator`, weighted averages via aggregator state |
 | [Querying with Views](#querying-with-views) | Grouped queries, grand totals, leaf drill-down, dynamic updates |
 | [Accessing View Data](#accessing-view-data) | Connected stores vs. direct result access |
 
@@ -76,6 +77,60 @@ const cube = new Cube({
 | `'UNIQUE'` | Count of unique values |
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
+| `AverageWeightedAggregator` | Average weighted by a second field, e.g. price by quantity |
+
+`AverageWeightedAggregator` takes the name of its weight field, so is instantiated per field rather
+than aliased by token: `{name: 'price', aggregator: new AverageWeightedAggregator('qty')}`. It
+reads the weight from each leaf's source record, so the weight field need not be queried, and
+updates incrementally on a change to either field.
+
+A field is never aggregated at or below the level at which it is applied as a dimension - rows
+there publish the dimension value, and rows above aggregate over those values, one per grouped row.
+`MIN`, `MAX` and `UNIQUE` remain meaningful for such a field; `SUM` and `AVG` do not. To average a
+field you also group by, add a second measure field over the same value.
+
+## Custom Aggregators
+
+Extend `Aggregator` and implement `aggregate()` to add application-specific aggregations. Values
+arrive as the row's direct children - a mix of leaf rows and already-aggregated parent rows, typed
+as `ViewRow` - so most aggregations compose naturally from `row.data[fieldName]`.
+
+Aggregations that cannot be derived from their children's published values alone (an average, a
+standard deviation) can keep the extra terms they need as **aggregator state**, via
+`AggregationContext.setAggState()` / `getAggState()`. This keeps each row's work proportional to
+its child count rather than to its entire subtree of leaves. See `AverageAggregator` and
+`AverageWeightedAggregator` for compact examples - the latter also reads a second field from each
+leaf's `cubeRecord`.
+
+The rows handed to an aggregator are typed as `ViewRow` - the row-level API shared by aggregators
+and the `lockFn` / `omitFn` / `bucketSpecFn` hooks. Leaf rows additionally carry their source
+`cubeRecord`, typed as `ViewLeafRow` - the type passed to the `forEachLeaf()` callback, and the one
+to narrow to when a row's `isLeaf` is true. Note the distinction from `ViewRowData`, which is a
+row's *data* as published to a View's result and its connected stores.
+
+Rules to observe:
+
+* **Write state on every `aggregate()` call.** Rows are recomputed in place when reused across
+  query results, so a state value left over from a prior result would be read as current.
+* **Expect non-leaf children without state.** `getAggState()` returns null for a child that did not
+  aggregate the field - because its `canAggregateFn` returned false, or because the field is a
+  dimension at that child's level and so is never aggregated there. Such a child publishes a value
+  to read instead - null in the first case, the dimension value in the second - so treat it
+  exactly like a leaf.
+* **Override `replace()` only if you can keep state consistent** with the value you return. The
+  inherited implementation re-aggregates from direct children, which is correct and already cheap;
+  see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
+  The `RowUpdate` it receives carries the leaf's full source data before and after the change.
+* **Override `dependsOn` to name any other leaf fields the aggregate reads**, as
+  `AverageWeightedAggregator` names its weight field. A View applies a record update incrementally,
+  re-aggregating a field up the ancestor chain only when that field's own leaf value changed - so
+  without the declaration, a change to the weight alone would leave the average stale until the
+  next full rebuild. Note that a `replace()` triggered this way may see the field's own leaf value
+  unchanged.
+* **Override `dependsOnChildrenOnly` to return false if the aggregate depends on values beyond its
+  own children** (e.g. percent-of-total). This routes every update through a full rebuild, on which
+  reused rows recompute the aggregate afresh, and gives the aggregator access to
+  `AggregationContext.filteredRecords`.
 
 ## Querying with Views
 

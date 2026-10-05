@@ -8,14 +8,13 @@ import {
     CallContextLike,
     HoistBase,
     LoadSpecConfig,
-    managed,
     PlainObject,
     RefreshContextModel,
     TaskObserver,
     XH
 } from '../';
 import {LoadSpec, Loadable} from './';
-import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {runInAction, observableRef} from '@xh/hoist/mobx';
 import {logDebug, logError} from '@xh/hoist/utils/js';
 import {isNil, omitBy} from 'lodash';
 
@@ -42,24 +41,19 @@ export class LoadSupport extends HoistBase implements Loadable {
      */
     lastSucceeded: LoadSpec = null;
 
-    @managed
     loadObserver: TaskObserver = TaskObserver.trackLast();
 
-    @observable.ref
-    lastLoadRequested: Date = null;
+    @observableRef accessor lastLoadRequested: Date = null;
 
-    @observable.ref
-    lastLoadCompleted: Date = null;
+    @observableRef accessor lastLoadCompleted: Date = null;
 
-    @observable.ref
-    lastLoadException: any = null;
+    @observableRef accessor lastLoadException: any = null;
 
     /** @internal */
     target: Loadable;
 
     constructor(target: Loadable) {
         super();
-        makeObservable(this);
         this.target = target;
     }
 

@@ -51,18 +51,21 @@ jobs:
         - name: Validate release version
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@a7698bfb83cd6b75f956c0a4d82fb3d6b07eab83 # master
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@6b767e4975c48e62b4d80e1cbf6f6f33addf0762 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
 
         # Installs the pnpm version pinned via the packageManager field in package.json.
         - name: Setup pnpm
-          uses: pnpm/setup@v2
+          uses: pnpm/setup@v3
           with:
               # `install: false` - this workflow runs its own install step below, after
               # Font Awesome registry auth, and with --frozen-lockfile.
               install: false
+              # `node-version-file: false` - v3 auto-installs Node from .nvmrc. Skip that, as
+              # actions/setup-node below owns Node (and registry auth for publish).
+              node-version-file: false
 
         - name: Setup Node.js
           uses: actions/setup-node@v7
@@ -118,7 +121,7 @@ jobs:
         # the correct release version — the tag is just a pointer to the source commit.
         # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@a7698bfb83cd6b75f956c0a4d82fb3d6b07eab83 # master
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@6b767e4975c48e62b4d80e1cbf6f6f33addf0762 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}

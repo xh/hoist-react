@@ -15,6 +15,7 @@ import {
 } from '@xh/hoist/core';
 import {maskImpl as desktopMaskImpl} from '@xh/hoist/dynamics/desktop';
 import {maskImpl as mobileMaskImpl} from '@xh/hoist/dynamics/mobile';
+import {computed} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {ReactNode, MouseEvent} from 'react';
 
@@ -61,15 +62,10 @@ export const [Mask, mask] = hoistCmp.withFactory<MaskProps>({
 class MaskLocalModel extends HoistModel {
     override xhImpl = true;
 
-    task;
-
-    override onLinked() {
+    @computed
+    get task(): TaskObserver {
         const {bind} = this.componentProps;
-        if (bind) {
-            this.task =
-                bind instanceof TaskObserver
-                    ? bind
-                    : this.markManaged(TaskObserver.trackAll({tasks: bind}));
-        }
+        if (!bind) return null;
+        return bind instanceof TaskObserver ? bind : TaskObserver.trackAll({tasks: bind});
     }
 }

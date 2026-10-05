@@ -77,10 +77,7 @@ export class TraceService extends HoistService {
      * @param config - span name string, or a SpanConfig with name and optional tags.
      * @param fn - the async function to wrap.
      */
-    override async withSpan<T>(
-        config: string | FullSpanConfig,
-        fn: (span: Span) => Promise<T>
-    ): Promise<T> {
+    async withSpan<T>(config: string | FullSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
         const span = this.createSpan(config);
         try {
             const result = await fn(span);

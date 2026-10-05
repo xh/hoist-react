@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {appendFilter, getFilterRegex, Store} from '@xh/hoist/data';
-import {action, comparer, makeObservable} from '@xh/hoist/mobx';
-import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {action, compareStructural, computed} from '@xh/hoist/mobx';
+import {stripTags, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
     filter,
@@ -30,9 +31,6 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
     @lookup('*') model;
 
-    gridModel: GridModel;
-    store: Store;
-
     private filter: (rec: StoreRecord) => boolean;
     private bufferedApplyFilter;
 
@@ -40,39 +38,48 @@ export class StoreFilterFieldImplModel extends HoistModel {
         return this.componentProps.matchMode ?? 'startWord';
     }
 
-    constructor() {
-        super();
-        makeObservable(this);
+    /** GridModel or ZoneGridModel to filter - from props, or the nearest found in context. */
+    @computed
+    get boundModel(): GridModel | ZoneGridModel {
+        const {gridModel, store} = this.componentProps;
+        if (store) return null;
+        return (
+            gridModel ??
+            this.lookupModel(it => it instanceof GridModel || it instanceof ZoneGridModel)
+        );
+    }
+
+    @computed
+    get store(): Store {
+        return this.componentProps.store ?? this.boundModel?.store ?? null;
     }
 
     override onLinked() {
-        let {gridModel, store, includeFields, bind, filterBuffer = 200} = this.componentProps;
-
-        throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
-        if (!store) {
-            gridModel = withDefault(gridModel, this.lookupModel(GridModel));
-            store = gridModel?.store ?? null;
-        }
+        const {componentProps, store} = this,
+            {bind, includeFields, filterBuffer = 200} = componentProps;
+        throwIf(
+            componentProps.gridModel && componentProps.store,
+            "Cannot specify both 'gridModel' and 'store' props."
+        );
         warnIf(
-            !gridModel && !store && isEmpty(includeFields),
+            !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
         );
         throwIf(!store && !bind, "Must specify either 'bind' or a 'store' in StoreFilterField.");
-        this.store = store;
-        this.gridModel = gridModel;
 
         this.bufferedApplyFilter = debounce(() => this.applyFilter(), filterBuffer);
 
         this.addReaction(
             {
-                track: () => [this.filterText, gridModel?.columns],
+                track: () => [this.store, this.filterText, ...this.getSearchColumns()],
                 run: () => this.regenerateFilter(),
+                equals: 'shallow',
                 fireImmediately: true
             },
             {
                 track: () => [this.componentProps.includeFields, this.componentProps.excludeFields],
                 run: () => this.regenerateFilter(),
-                equals: comparer.structural
+                equals: compareStructural
             }
         );
     }
@@ -139,22 +146,22 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     getActiveFields(): string[] {
-        const {gridModel, store, componentProps} = this,
+        const {boundModel, store, componentProps} = this,
             {includeFields, excludeFields} = componentProps;
 
         let ret = store ? ['id', ...store.fieldNames] : [];
         if (includeFields) ret = store ? intersection(ret, includeFields) : includeFields;
         if (excludeFields) ret = without(ret, ...excludeFields);
 
-        if (gridModel) {
-            const visibleCols = gridModel.getVisibleLeafColumns();
+        if (boundModel) {
+            const searchCols = this.getSearchColumns();
 
             // Push on dot-delimited grid column fields. These are supported by Grid and traverse
             // sub-objects in StoreRecord.data to display nested properties. Given that Grid treats these
             // as first-class fields and displays them w/o the need for renderers, we want to
             // include them here. (But only if their "root" is in the field list derived from the
             // Store and any given include/excludeField configs.)
-            visibleCols.forEach(col => {
+            searchCols.forEach(col => {
                 const {fieldPath} = col;
                 if (!isArray(fieldPath)) return;
 
@@ -172,7 +179,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
             ret = ret.filter(f => {
                 return (
                     (includeFields && includeFields.includes(f)) ||
-                    visibleCols.find(c => c.field === f)
+                    searchCols.find(c => c.field === f)
                 );
             });
         }
@@ -181,7 +188,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     getValGetters(fieldName: string) {
-        const {gridModel} = this;
+        const {boundModel} = this;
 
         // If a GridModel has been configured, the user is looking at rendered values in a grid and
         // would reasonably expect the filter to work off what they see. Rendering can be expensive,
@@ -190,12 +197,12 @@ export class StoreFilterFieldImplModel extends HoistModel {
         // with a flag to manage performance tradeoffs.
         //
         // Note corresponding impl. in GridFindFieldModel - review together if updating.
-        if (gridModel) {
-            const {store} = gridModel,
+        if (boundModel) {
+            const {store} = boundModel,
                 field = store.getField(fieldName);
 
             if (field?.type === 'date' || field?.type === 'localDate') {
-                const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
+                const cols = filter(this.getSearchColumns(), {field: fieldName});
 
                 // Empty return if no columns - even if this field has been force-included,
                 // we can't match it if we can't render it.
@@ -208,7 +215,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                                 record,
                                 field: field.name,
                                 column,
-                                gridModel,
+                                gridModel: this.innerGridModel,
                                 store,
                                 agParams: null
                             },
@@ -225,5 +232,22 @@ export class StoreFilterFieldImplModel extends HoistModel {
         return fieldName.includes('.')
             ? (rec: StoreRecord) => get(rec.data, fieldName)
             : (rec: StoreRecord) => rec.data[fieldName];
+    }
+
+    private get innerGridModel(): GridModel {
+        const {boundModel} = this;
+        return boundModel instanceof ZoneGridModel ? boundModel.gridModel : boundModel;
+    }
+
+    /**
+     * Columns whose fields the user can see, and so should be able to search. A ZoneGrid renders
+     * its mapped fields within two zone columns, so use the columns backing those fields instead.
+     */
+    private getSearchColumns(): Column[] {
+        const {boundModel} = this;
+        if (!boundModel) return [];
+        return boundModel instanceof ZoneGridModel
+            ? boundModel.getMappedColumns()
+            : boundModel.getVisibleLeafColumns();
     }
 }

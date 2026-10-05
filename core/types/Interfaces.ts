@@ -7,7 +7,7 @@
 
 import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
-import {isString} from 'lodash';
+import {isNil, isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 import {Intent, Thunkable} from './Types';
 
@@ -217,14 +217,14 @@ export interface MessageSpec {
      * displayed, or use a preconfigured helper such as `XH.alert()` or `XH.confirm()` for default
      * buttons.
      */
-    confirmProps?: any;
+    confirmProps?: MessageButtonSpec;
 
     /**
      * Props for secondary cancel button. Must provide either text or icon for button to be
      * displayed, or use a preconfigured helper such as `XH.alert()` or `XH.confirm()` for default
      * buttons.
      */
-    cancelProps?: any;
+    cancelProps?: MessageButtonSpec;
 
     /**
      * Specify 'left' to place the Cancel button (if shown) on the left edge of the dialog toolbar,
@@ -254,6 +254,34 @@ export interface MessageSpecInput {
 
     /** Initial value for the input. */
     initialValue?: any;
+}
+
+/**
+ * Props for a button shown in a modal message - see {@link MessageSpec.confirmProps} and
+ * {@link MessageSpec.cancelProps}. The button is displayed only if `text` or `icon` is set.
+ *
+ * Extra props pass through to the platform `button` component, e.g. `outlined` or `minimal`.
+ * Do not set `onClick` - it is ignored in favor of the message's built-in handlers. Use
+ * {@link MessageSpec.onConfirm} and {@link MessageSpec.onCancel} instead.
+ */
+export interface MessageButtonSpec {
+    /** Label for the button. */
+    text?: ReactNode;
+
+    /** Icon for the button. */
+    icon?: ReactElement;
+
+    /** Visual intent for the button, e.g. 'danger' for a destructive action. */
+    intent?: Intent;
+
+    /**
+     * True to focus this button when the message opens. If neither button sets this and the
+     * message has no `input`, the confirm button is focused by default.
+     */
+    autoFocus?: boolean;
+
+    /** Other props for the platform `button` component. */
+    [key: string]: any;
 }
 
 /**
@@ -332,11 +360,49 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
     /** True to disable this item. */
     disabled?: boolean;
 
+    /** True to render this item as active - e.g. to mark the current selection. */
+    active?: boolean;
+
     /** True to hide this item. May be set dynamically via prepareFn. */
     hidden?: boolean;
 
     /** True to skip this item. May be set dynamically via prepareFn. Alias for hidden. */
     omit?: Thunkable<boolean>;
+}
+
+/**
+ * A non-interactive heading that labels and visually groups the items below it within a menu.
+ *
+ * A heading draws its own divider rule, so it needs no adjacent '-' token. Hoist drops a heading
+ * with no items below it, either at the end of a menu or immediately before another heading. It
+ * also drops any separator directly adjacent to a heading.
+ *
+ * Grid context menus accept a heading via {@link GridContextMenuItemLike}. The desktop and mobile menus
+ * that take {@link MenuItemLike} accept one too.
+ */
+export interface MenuHeading<C = MenuContext> {
+    /** Text to display. May be overridden by `displayFn`. */
+    heading: ReactNode;
+
+    /** Css class name to be added when rendering the heading. */
+    className?: string;
+
+    /** True to hide this heading. May be set dynamically via `displayFn`. */
+    hidden?: boolean;
+
+    /** True to skip this heading. Alias for hidden. */
+    omit?: Thunkable<boolean>;
+
+    /**
+     * Function called before each render, to add or override display properties. Use it for
+     * dynamic control of the heading.
+     *
+     * The context differs by menu. A grid context menu supplies the same `ActionFnData` that it
+     * passes to a RecordAction's own `displayFn`, including the clicked `record` and the current
+     * `selectedRecords`. A menu with no contextual data, such as a dropdown on a button, calls
+     * this function with no argument.
+     */
+    displayFn?: (context?: C) => Partial<MenuHeading<C>>;
 }
 
 /**
@@ -346,7 +412,8 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
  * textless divider that will also be de-duped if appearing at the beginning, or end, or adjacent
  * to another divider at render time. Also allows for a ReactNode for flexible display.
  */
-export type MenuItemLike<T = MenuToken, C = MenuContext> = MenuItem<T, C> | T | ReactElement;
+export type MenuItemLike<T = MenuToken, C = MenuContext> =
+    MenuItem<T, C> | MenuHeading<C> | T | ReactElement;
 
 /**
  * A context menu is specified as an array of items, a function to generate one from a click, or a
@@ -358,7 +425,11 @@ export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
     | boolean;
 
 export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, C> {
-    return !isString(item) && !isValidElement(item);
+    return !isString(item) && !isValidElement(item) && !isMenuHeading(item);
+}
+
+export function isMenuHeading<C>(item: any): item is MenuHeading<C> {
+    return !isString(item) && !isValidElement(item) && !isNil(item) && 'heading' in item;
 }
 
 //------------------------

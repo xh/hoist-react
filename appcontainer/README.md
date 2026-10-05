@@ -341,6 +341,11 @@ XH.hideBanner('maintenance');
 `AlertBannerService` automatically manages admin-configured banners (configured via the Admin
 Console), displaying them without application code.
 
+App-wide banners are rendered by the public `banner()` component. For a banner local to one part of
+the app - e.g. a stale-data warning above a single grid - render `banner()` directly or set
+`Panel.banner` rather than calling `XH.showBanner()`. See
+[Panel Banners](../desktop/cmp/panel/README.md#banners).
+
 ### BannerSpec Reference
 
 | Config | Type | Description |
@@ -382,7 +387,7 @@ try {
 | `showAsError` | `boolean` | Treat as an unexpected error (affects styling and logging). Default `true` for most exceptions |
 | `logOnServer` | `boolean` | Send the exception to the server for Admin Console review. Default `true` when `showAsError` is `true` |
 | `requireReload` | `boolean` | Force a reload button instead of a dismiss button — for unrecoverable errors |
-| `hideParams` | `string[]` | Parameters to redact from the exception log and alert |
+| `redactPaths` | `string[]` | Additional values to redact - see [Error Handling](../docs/error-handling.md#sensitive-data-redaction) |
 
 ```typescript
 // Show as toast instead of modal dialog
@@ -411,7 +416,7 @@ class AppModel extends HoistAppModel {
     override getAppOptions(): AppOptionSpec[] {
         return [
             themeAppOption(),        // Built-in: light/dark/system
-            sizingModeAppOption(),   // Built-in: compact/standard/large
+            sizingModeAppOption(),   // Built-in: tiny/compact/standard/large grid sizing
             autoRefreshAppOption(),  // Built-in: enable/disable auto-refresh
             {
                 name: 'loadInactiveLoans',
@@ -429,6 +434,11 @@ class AppModel extends HoistAppModel {
 
 Each option can be backed by a preference (`prefName`) or use custom `valueGetter`/`valueSetter`
 functions for more complex handling. Return an empty array to disable the options menu item.
+
+On desktop, `themeAppOption()` and `sizingModeAppOption()` render as a `RadioCardInput` with a
+small preview on each card: a mini app window per theme, and a mini grid drawn at each sizing
+mode's row height. Pass `previewCards: false` to either for a compact `SegmentedControl`. Custom
+options can use `radioCardInput()` the same way for choices that are easier to show than to name.
 
 `XH.showOptionsDialog()` opens the dialog. Set `reloadRequired: true` on options that need an
 app reload to take effect — the dialog handles this automatically.

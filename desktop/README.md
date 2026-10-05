@@ -110,6 +110,7 @@ Desktop form inputs with Blueprint styling:
 | `Checkbox` | Boolean checkbox |
 | `SwitchInput` | Toggle switch |
 | `RadioInput` | Radio button group |
+| `RadioCardInput` | Radio group of cards, each with a visual preview - e.g. a theme or layout picker |
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
 | `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |
@@ -385,7 +386,7 @@ can be included unconditionally in the parent's item list.
 ```typescript
 // TaskDialogModel.ts - manages dialog open/closed state and form data
 export class TaskDialogModel extends HoistModel {
-    @observable isOpen = false;
+    @observable accessor isOpen = false;
 
     @managed formModel = new FormModel({
         fields: [{name: 'description', rules: [required]}]
