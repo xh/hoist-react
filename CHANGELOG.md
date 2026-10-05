@@ -23,7 +23,7 @@
 
 * Added `AverageWeightedAggregator` for Cube fields averaged by the weight of a second field, e.g.
   `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`. Views update it
-  incrementally on a change to either field.
+  incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
   re-aggregates the field on changes to those as well.
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User

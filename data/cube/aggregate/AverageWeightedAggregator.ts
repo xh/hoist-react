@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {Aggregator} from './Aggregator';
 
 /**
@@ -19,16 +20,22 @@ import {Aggregator} from './Aggregator';
  * {@link replace} adjusts those totals by leaf deltas without re-deriving them. The totals are
  * reset once no leaves contribute, so fractional weights net to exactly zero.
  *
- * Takes a parameter, so is not a singleton like the token-aliased aggregators. Instantiate it
+ * Weights are signed by default, so a group whose weights net toward zero returns an average of
+ * extreme magnitude - e.g. a price weighted by quantity across offsetting long and short
+ * positions. Pass `{absolute: true}` to weight by magnitude instead.
+ *
+ * Takes parameters, so is not a singleton like the token-aliased aggregators. Instantiate it
  * per field: `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`.
  */
 export class AverageWeightedAggregator extends Aggregator {
     readonly weightField: string;
+    readonly absolute: boolean;
     private readonly _dependsOn: string[];
 
-    constructor(weightField: string) {
+    constructor(weightField: string, {absolute = false}: {absolute?: boolean} = {}) {
         super();
         this.weightField = weightField;
+        this.absolute = absolute;
         this._dependsOn = [weightField];
     }
 
@@ -37,7 +44,6 @@ export class AverageWeightedAggregator extends Aggregator {
     }
 
     override aggregate(rows, fieldName, context) {
-        const {weightField} = this;
         let total = 0,
             weight = 0,
             count = 0;
@@ -52,7 +58,7 @@ export class AverageWeightedAggregator extends Aggregator {
                 // A leaf, or (rare) a child grouped by this field - just read value and weight.
                 const data = row.isLeaf ? row.cubeRecord.data : row.data,
                     val = data[fieldName],
-                    w = data[weightField];
+                    w = this.getWeight(data);
                 if (val != null && w != null) {
                     total += val * w;
                     weight += w;
@@ -69,10 +75,9 @@ export class AverageWeightedAggregator extends Aggregator {
         const state = context.getAggState();
         if (!state) return super.replace(rows, currAgg, update, context);
 
-        const {weightField} = this,
-            {leafOldValue, leafNewValue, leafOldData, leafNewData} = update,
-            oldW = leafOldData[weightField],
-            newW = leafNewData[weightField];
+        const {leafOldValue, leafNewValue, leafOldData, leafNewData} = update,
+            oldW = this.getWeight(leafOldData),
+            newW = this.getWeight(leafNewData);
 
         if (leafOldValue != null && oldW != null) {
             state.total -= leafOldValue * oldW;
@@ -88,5 +93,11 @@ export class AverageWeightedAggregator extends Aggregator {
 
         const {total, weight} = state;
         return weight ? total / weight : null;
+    }
+
+    /** Weight for a leaf's source data - null to skip the leaf. */
+    protected getWeight(data: PlainObject): number {
+        const w = data[this.weightField];
+        return this.absolute && w != null ? Math.abs(w) : w;
     }
 }
