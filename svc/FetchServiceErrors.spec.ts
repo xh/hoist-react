@@ -39,7 +39,7 @@ describe('FetchService', () => {
         });
 
         it('omits the cause from the message of a routine exception', async () => {
-            // Fixed in v87.0.0 (5d42d7732) - a routine message is complete and shown to users.
+            // Fixed in 87.0.0 (5d42d7732) - a routine message is complete and shown to users.
             respondWith(() =>
                 hoistError(400, {
                     name: 'ValidationException',

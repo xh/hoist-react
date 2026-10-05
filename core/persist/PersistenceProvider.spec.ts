@@ -116,7 +116,7 @@ describe('PersistenceProvider', () => {
             expect(store.data).toEqual({theme: 'dark'});
         });
 
-        // Fixed in v88.0.0 (7c7eff577) - the pending write landed after the clear.
+        // Fixed in 88.0.0 (7c7eff577) - the pending write landed after the clear.
         it('cancels a pending write so it cannot resurrect cleared state', async () => {
             vi.useFakeTimers();
             const store = new MemoryStore(),

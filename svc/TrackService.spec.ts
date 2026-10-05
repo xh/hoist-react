@@ -56,7 +56,7 @@ describe('TrackService', () => {
 
     describe('track', () => {
         it('drops data larger than the configured limit, keeping the entry', async () => {
-            // Fixed in v74.1.1 (#4023) - the limit was checked against an object's length.
+            // Fixed in 74.1.1 (#4023) - the limit was checked against an object's length.
             XH.track({message: 'Saved notes', data: {notes: 'x'.repeat(100)}});
             await XH.trackService.pushPendingAsync();
 

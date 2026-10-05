@@ -22,7 +22,7 @@ describe('View', () => {
 
     describe('value updates', () => {
         it('nulls a SUM once its last value goes null', async () => {
-            // Fixed in v87.0.0 (#4541) - the incremental SUM fell to 0, where a rebuild gives null.
+            // Fixed in 87.0.0 (#4541) - the incremental SUM fell to 0, where a rebuild gives null.
             const cube = createCube([
                     trade(1, 'US', 'Tech', 3),
                     trade(2, 'US', 'Tech', -3),
@@ -42,7 +42,7 @@ describe('View', () => {
         });
 
         it('recomputes MIN and MAX when the extreme value goes null', async () => {
-            // Fixed in v87.0.0 (99ed07733) - comparisons coerced null to 0, blanking both.
+            // Fixed in 87.0.0 (99ed07733) - comparisons coerced null to 0, blanking both.
             const cube = createCube([
                     trade(1, 'US', 'Tech', 0),
                     trade(2, 'US', 'Tech', 5),
@@ -62,7 +62,7 @@ describe('View', () => {
         });
 
         it('restores a UNIQUE value once its children agree again', async () => {
-            // Fixed in v86.0.0 (#4384) - a row stayed null for good once its children diverged.
+            // Fixed in 86.0.0 (#4384) - a row stayed null for good once its children diverged.
             const cube = createCube([
                     trade(1, 'US', 'Tech', 1),
                     trade(2, 'US', 'Tech', 1),
@@ -235,7 +235,7 @@ describe('View', () => {
 
     describe('reloads', () => {
         it('leaves rows untouched when a reload brings no changes', async () => {
-            // Fixed in v87.0.0 (#4561) - every reload regenerated all rows, e.g. on each poll.
+            // Fixed in 87.0.0 (#4561) - every reload regenerated all rows, e.g. on each poll.
             const data = [trade(1, 'US', 'Tech', 1), trade(2, 'EU', 'Tech', 2)],
                 cube = createCube(data),
                 view = connectView(cube),

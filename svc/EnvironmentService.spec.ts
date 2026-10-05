@@ -20,7 +20,7 @@ describe('EnvironmentService', () => {
 
     describe('initAsync', () => {
         it('fails when the server runs a different version of the app', async () => {
-            // Fixed in v83.1.0 (#4318) - the check had compared the server's version to itself.
+            // Fixed in 83.1.0 (#4318) - the check had compared the server's version to itself.
             const svc = createService({appVersion: '1.1.0'});
 
             await expect(svc.initAsync({span: null})).rejects.toThrow(
