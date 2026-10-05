@@ -38,6 +38,7 @@
 * @azure/msal-browser `5.23 → 5.24`
 * @blueprintjs/core `6.20 → 6.21`
 * @blueprintjs/datetime `6.2 → 6.3`
+* swiper `12.2 → 14.3`
 
 ## 88.1.0 - 2026-10-01
 
