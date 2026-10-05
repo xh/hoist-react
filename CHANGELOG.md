@@ -14,16 +14,29 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, exception flag rename)
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
 * Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
   so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
   `inputProps` should also pass `previewCards: false`.
+* Renamed the `isFetchAborted` exception flag to `isAborted` (on `FetchException` and related
+  `HoistException`s). The flag is now also set by the new `LoadAbortedException`. Update any
+  references from `e.isFetchAborted` to `e.isAborted` (e.g. in `catchWhen`/`catchDefaultWhen`
+  predicates).
 
 ### 🎁 New Features
 
+* `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
+  obsolete, and auto-refresh errors:
+    * New `Loadable.skipStaleLoads` flag (default `true`) - controls whether loads superseded
+      by a newer *started* request are aborted and silenced. Loads superseded by a newer
+      *completed* request are always skipped.
+    * New `Loadable.skipAutoRefreshErrors` flag (default `true`) - controls whether errors
+      raised during an auto-refresh are silenced rather than routed to `handleLoadException`.
+    * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
+      failures not skipped via the flags above. Default delegates to `XH.handleException(e)`.
 * Added `AverageWeightedAggregator` for Cube fields averaged by the weight of a second field, e.g.
   `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
@@ -411,25 +424,6 @@ and AG Grid 36 - affect every app. The rest apply only to apps using the named A
 * zod `4.5 -> 4.6`
 
 ## 87.3.0 - 2026-09-10
-
-### 💥 Breaking Changes
-
-* Renamed the `isFetchAborted` exception flag to `isAborted` (on `FetchException` and related
-  `HoistException`s). The flag is now also set by the new `LoadAbortedException`. Update any
-  references from `e.isFetchAborted` to `e.isAborted` (e.g. in `catchWhen`/`catchDefaultWhen`
-  predicates).
-
-### 🎁 New Features
-
-* `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
-  obsolete, and auto-refresh errors:
-    * New `Loadable.skipStaleLoads` flag (default `true`) - controls whether loads superseded
-      by a newer *started* request are aborted and silenced. Loads superseded by a newer
-      *completed* request are always skipped.
-    * New `Loadable.skipAutoRefreshErrors` flag (default `true`) - controls whether errors
-      raised during an auto-refresh are silenced rather than routed to `handleLoadException`.
-    * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
-      failures not skipped via the flags above. Default delegates to `XH.handleException(e)`.
 
 ### 🐞 Bug Fixes
 
