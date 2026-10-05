@@ -83,6 +83,9 @@ export default defineConfig({
         setupFiles: ['test/setup.ts'],
         // Allow for initTestAppAsync() in beforeAll, which loads the full desktop module graph.
         hookTimeout: 30_000,
+        // Show console output only for failing tests - Hoist logs freely, and the logs of a test
+        // that passed are noise.
+        silent: 'passed-only',
         restoreMocks: true,
         unstubEnvs: true,
         unstubGlobals: true,

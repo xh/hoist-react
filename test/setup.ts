@@ -7,11 +7,12 @@
 
 // Load core first, as every app does via its XH import. Hoist's module graph has cycles that only
 // resolve in that order - e.g. importing @xh/hoist/format before core fails at load.
-import '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 
+import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {cleanup} from '@testing-library/react';
-import {onReactionError} from 'mobx';
+import {onReactionError, when} from 'mobx';
 import {afterAll, afterEach, beforeAll, vi} from 'vitest';
 import {hoistCore, server} from './hoistCore';
 
@@ -38,6 +39,14 @@ window.matchMedia ??= (query: string) =>
         removeListener: () => {},
         dispatchEvent: () => false
     }) as MediaQueryList;
+
+// jsdom has no Screen Orientation API, which every supported browser has and ViewportSizeModel
+// reads. Report a landscape screen.
+if (!window.screen.orientation) {
+    Object.defineProperty(window.screen, 'orientation', {
+        value: {type: 'landscape-primary', angle: 0, addEventListener: () => {}}
+    });
+}
 
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
@@ -77,7 +86,17 @@ afterEach(() => {
     }
 });
 
-afterAll(() => {
+// XH builds its AppContainerModel on load, and the model's ViewportSizeModel measures the window
+// on debounced timers of up to 300ms. Let those run before Vitest tears down jsdom at the end of a
+// file - firing afterwards, with no `window`, they would throw. Costs nothing for files that run
+// longer than that, which is most of them. The wait is capped because a test that switches to fake
+// timers early can stall those timers for good - and then nothing is left to fire.
+const viewportSettled = when(() => !!XH.appContainerModel.viewportSizeModel.size).then(() =>
+    wait(400)
+);
+
+afterAll(async () => {
+    await Promise.race([viewportSettled, wait(1000)]);
     Timer.cancelAll();
     server.close();
 });
