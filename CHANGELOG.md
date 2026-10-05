@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, exception flag rename)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, load error handling)
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
@@ -25,6 +25,11 @@
   `HoistException`s). The flag is now also set by the new `LoadAbortedException`. Update any
   references from `e.isFetchAborted` to `e.isAborted` (e.g. in `catchWhen`/`catchDefaultWhen`
   predicates).
+* `loadAsync()` no longer rejects when `doLoadAsync()` throws. Errors not filtered as stale or
+  auto-refresh now route to the new `Loadable.handleLoadException()` hook, which alerts the user by
+  default where such errors were previously logged to the console only. Override the hook (e.g.
+  `XH.handleException(e, {showAlert: false})`) to quiet a model, and remove any `.catch()` or
+  `.catchDefault()` chained onto `loadAsync()` calls - they no longer fire.
 
 ### 🎁 New Features
 
