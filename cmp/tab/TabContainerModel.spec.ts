@@ -81,9 +81,8 @@ describe('TabContainerModel', () => {
             expect(model.activeTabId).toBe('c');
         });
 
-        // BUG: TabContainerModel.ts:375 - from the first tab, `idx - 1` is -1, which lodash
-        // findLast() reads as an offset from the end, so the search wraps to the last tab.
-        it.fails('stays on the first tab when moving back without cycling', () => {
+        // Fixed in 89.0.0 - moving back from the first tab wrapped to the last tab.
+        it('stays on the first tab when moving back without cycling', () => {
             const model = create({tabs: tabs('a', 'b', 'c')});
 
             model.activatePrevTab();

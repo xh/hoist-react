@@ -54,10 +54,8 @@ describe('GridModel', () => {
             expect(sortedIds(gridModel)).toEqual([4, 3, 1, 2]);
         });
 
-        // BUG: cmp/grid/impl/RecordSortUtils.ts:66 - with no rendered grid there are no row nodes,
-        // so Column.getSortValue() (cmp/grid/columns/Column.ts:1258) gets no record and falls back
-        // to the raw value. Records sort by 'rating' text rather than by 'ratingRank'.
-        it.fails("sorts by a column's sortValue field before the grid is rendered", () => {
+        // Fixed in 89.0.0 - with no rendered grid, a record-based sortValue was ignored.
+        it("sorts by a column's sortValue field before the grid is rendered", () => {
             const gridModel = createRatingGridModel({field: 'rating', sortValue: 'ratingRank'});
 
             expect(sortedIds(gridModel)).toEqual([2, 3, 4, 1]);
