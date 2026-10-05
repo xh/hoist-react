@@ -14,10 +14,13 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - grid column filter specs)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets)
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
+  so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
+  `inputProps` should also pass `previewCards: false`.
 
 ### 🎁 New Features
 
@@ -28,6 +31,14 @@
   re-aggregates the field on changes to those as well.
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
+* Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
+  visual preview, label, and optional description, in the style of the macOS Appearance picker.
+* Desktop `themeAppOption()` now shows the theme choices as a `RadioCardInput` with mini light,
+  dark, and system app-window previews. Pass `previewCards: false` for a `SegmentedControl`, now
+  sized to its options rather than stretched to fill the field.
+* Desktop `sizingModeAppOption()` now shows each grid sizing mode as a `RadioCardInput` card with a
+  mini grid drawn at that mode's row height. Pass `previewCards: false` for a `SegmentedControl`,
+  sized to its options as above.
 
 ### 🐞 Bug Fixes
 
@@ -41,6 +52,10 @@
 
 * `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
   as `leafOldData` / `leafNewData`.
+
+### ✨ Styles
+
+* Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
 
 ### 📚 Libraries
 
