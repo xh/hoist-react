@@ -107,7 +107,7 @@ describe('Aggregator', () => {
             expect(eu).toMatchObject({region: 'EU', sector: 'Tech'});
             expect(root).toMatchObject({region: null, sector: null});
 
-            // Fixed in v59.5.0 (#3548) - equal dates held in separate objects compared unequal.
+            // Fixed in 59.5.0 (#3548) - equal dates held in separate objects compared unequal.
             expect(root.tradeDate).toEqual(new Date(2026, 0, 5));
         });
     });

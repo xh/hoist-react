@@ -29,7 +29,7 @@ describe('persistOptions', () => {
         expect(ret).toEqual({prefKey: 'reportState', debounce: 100, path: 'grid'});
     });
 
-    // Fixed in v72.1.0 - an inherited prefKey outranked a child's localStorageKey.
+    // Fixed in 72.1.0 - an inherited prefKey outranked a child's localStorageKey.
     it('replaces every inherited provider key when an override names a provider', () => {
         const ret = persistOptions(
             {prefKey: 'reportState', debounce: 100},

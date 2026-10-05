@@ -58,7 +58,7 @@ describe('IdentityService', () => {
         });
 
         it('saves pending user state before switching to another user', async () => {
-            // Fixed in v75.0.0 (#4063) - prefs set just before a switch were lost.
+            // Fixed in 75.0.0 (#4063) - prefs set just before a switch were lost.
             const reloadApp = vi.spyOn(XH, 'reloadApp').mockImplementation(() => {});
             let savedFirst: string[], form: URLSearchParams;
             server.use(

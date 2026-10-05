@@ -37,7 +37,7 @@ describe('AppContainerModel', () => {
         });
 
         it('lets an impersonating admin end impersonation', async () => {
-            // Fixed in v76.0.0 (#4069) - this failed, as prefs are not yet loaded when locked out.
+            // Fixed in 76.0.0 (#4069) - this failed, as prefs are not yet loaded when locked out.
             const reloadApp = vi.spyOn(XH, 'reloadApp').mockImplementation(() => {});
             server.use(
                 http.get(xhUrl('xh/endImpersonate'), () => new HttpResponse(null, {status: 204}))

@@ -95,7 +95,7 @@ describe('PrefService', () => {
 
     describe('unset', () => {
         it("reverts to the default and clears the user's value on the server", async () => {
-            // Fixed in v86.4.0 (#4491) - unset() had saved the default as the user's own value.
+            // Fixed in 86.4.0 (#4491) - unset() had saved the default as the user's own value.
             expect(XH.prefService.isSet('pageSize')).toBe(true);
 
             XH.prefService.unset('pageSize');
@@ -141,7 +141,7 @@ describe('PrefService', () => {
         });
 
         it('sends pending changes once when called again before the first call completes', async () => {
-            // Fixed in v86.0.1 (#4430) - the queue is now cleared before the request is sent.
+            // Fixed in 86.0.1 (#4430) - the queue is now cleared before the request is sent.
             XH.setPref('lastTab', 'details');
             await Promise.all([
                 XH.prefService.pushPendingAsync(),
