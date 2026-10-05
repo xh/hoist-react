@@ -134,7 +134,7 @@ describe('PrefService', () => {
         await XH.prefService.pushPendingAsync();
 
         const [req] = hoistCore.requestsTo('xh/setPrefs');
-        expect(req.json).toEqual({pageSize: 200});
+        expect(req.json).toMatchObject({pageSize: 200});
         expect(req.query.clientUsername).toBe('jdoe');
     });
 
