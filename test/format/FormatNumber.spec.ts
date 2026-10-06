@@ -32,9 +32,9 @@ function html(node: ReactNode): string {
     return isValidElement(node) ? renderToStaticMarkup(node) : (node as string);
 }
 
-/** Text of a rendered element or HTML string, with tags removed. */
+/** Text of a rendered element or HTML string, as a browser displays it. */
 function text(node: ReactNode): string {
-    return html(node).replace(/<[^>]*>/g, '');
+    return new DOMParser().parseFromString(html(node), 'text/html').body.textContent;
 }
 
 describe('fmtNumber', () => {
