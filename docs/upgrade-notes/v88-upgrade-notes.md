@@ -214,6 +214,11 @@ in-place upgrade can leave older copies of packages that Hoist now requires at a
 `@codemirror/state` and `@codemirror/view` in particular - and `tsc` then fails inside Hoist's
 `CodeInput` with conflicting types.
 
+If an AI agent runs the upgrade with the hoist-react MCP server, restart the server now. In Claude
+Code, reconnect with `/mcp` or restart the session. The server reads the installed `@xh/hoist`
+version only when it starts, so until then it answers with v87 docs and types. The `hoist-docs`
+and `hoist-ts` CLI tools read the installed version on each call and need no restart.
+
 See the [dev-utils migration guide](https://github.com/xh/hoist-dev-utils/blob/develop/README.md#migrating-from-v15-webpack)
 for the full option reference, and Toolbox's
 [`rsbuild.config.mjs`](https://github.com/xh/toolbox/blob/develop/client-app/rsbuild.config.mjs)
@@ -321,19 +326,33 @@ codemods do not reorder decorators, and a reversed pair fails silently: `Persist
 logs an error to the console and the field simply stops persisting, with no type error.
 
 ```bash
-grep -rn "@persist @bindable\|@persist @observable\|@persist$" client-app/src/
+# Reversed on one line: `@persist @bindable ...`, `@persist.with({...}) @observable ...`
+grep -rnE '@persist(\.with\(.*\))?\s+@(bindable|observable)' client-app/src/
+
+# Reversed across lines: prints the MobX decorator line under a leading `@persist`
+grep -rnE -A1 '^\s*@persist(\.with\(.*\))?\s*(//.*)?$' client-app/src/ | grep -E '^\S+-[0-9]+-\s*@(bindable|observable)'
 ```
+
+The stacked form, with `@persist.with({...})` on its own line above `@bindable`, is easy to miss
+in review. The second command finds it.
 
 Before:
 
 ```typescript
 @persist @bindable accessor showInactive = false;
+
+@persist.with({path: 'gridState'})
+@bindable accessor gridState = null;
 ```
 
 After:
 
 ```typescript
 @bindable @persist accessor showInactive = false;
+
+@bindable
+@persist.with({path: 'gridState'})
+accessor gridState = null;
 ```
 
 **Audit enumeration of model instances.** `accessor` fields are prototype getter/setters, not own
@@ -457,7 +476,7 @@ All of these were deprecated in v86 or earlier. Search for each and replace as s
 
 ```bash
 grep -rn "withSpan\|mergePersistOptions\|PopoverFilterChooser\|LogSource" client-app/src/
-grep -rn "boolCheckCol\|numberCol\|fileExtCol\|dateCol\|timeCol\|dateTimeCol\|compactDateCol\|localDateCol" client-app/src/
+grep -rnw "boolCheckCol\|numberCol\|fileExtCol\|dateCol\|timeCol\|dateTimeCol\|compactDateCol\|localDateCol" client-app/src/
 grep -rn -A4 "XH.fetch" client-app/src/ | grep "span:\|loadSpec:"
 ```
 
@@ -574,8 +593,8 @@ After completing all steps:
 - [ ] `pnpm lint` / `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
 - [ ] `grep -rn "makeObservable\|experimentalDecorators" client-app/src client-app/tsconfig.json`
   returns nothing
-- [ ] `grep -rn "@persist @bindable\|@persist @observable\|@persist$" client-app/src/` returns
-  nothing (`@persist` is last, including the stacked one-decorator-per-line form)
+- [ ] Both `@persist` ordering greps from Step 4 return nothing (`@persist` comes after the MobX
+  decorator, on one line or stacked)
 - [ ] Dev server starts with `rsbuild dev`; production build succeeds and CI passes its version
   and build tag through `XH_APP_VERSION` / `XH_APP_BUILD`
 - [ ] Application loads without console errors, including no AG Grid theme-conflict warning
