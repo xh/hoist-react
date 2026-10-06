@@ -12,6 +12,16 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+## 88.1.1 - 2026-10-06
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the `@persist` ordering check in the v88 upgrade notes. It missed the stacked
+  `@persist.with({...})` form and flagged fields that were already in the correct order. The check
+  for removed `*Col` aliases now matches whole words only.
+* Added a step to the v88 upgrade notes to restart the hoist-react MCP server after installing v88.
+* The v88 codemods now print file paths relative to the working directory.
+
 ## 88.1.0 - 2026-10-01
 
 ### 🎁 New Features
