@@ -73,13 +73,13 @@ describe('Timer', () => {
             expect(runFn).toHaveBeenCalledOnce();
         });
 
-        it('starts at once when delay is true but the interval is disabled', () => {
-            // Fixed in 89.0.0 - the delay took the negative interval, a negative setTimeout.
+        it('never passes a negative delay to setTimeout when created paused', async () => {
+            // ClientHealthService does this when its report interval is disabled (-1). Browsers
+            // treat a negative delay as 0, but Node logs a TimeoutNegativeWarning.
             const setTimeout = vi.spyOn(globalThis, 'setTimeout');
             createTimer({runFn: vi.fn(), interval: -1, delay: true});
 
-            expect(setTimeout).toHaveBeenCalledOnce();
-            expect(setTimeout.mock.lastCall[1]).toBe(0);
+            expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 0);
         });
 
         it('re-evaluates a function interval as its value changes', async () => {

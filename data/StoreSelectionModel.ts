@@ -131,7 +131,6 @@ export class StoreSelectionModel extends HoistModel {
             return;
         }
 
-        // Single mode holds one record - any newly selected record replaces the prior selection.
         const replace = clearSelection || (this.mode === 'single' && !isEmpty(ids));
         this._ids = replace ? ids : union(this._ids, ids);
     }

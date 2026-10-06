@@ -171,7 +171,7 @@ Models can operate in two modes:
 
 ```typescript
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {bindable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, observableRef, runInAction} from '@xh/hoist/mobx';
 
 class UserListModel extends HoistModel {
     // Observable state

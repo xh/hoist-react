@@ -307,11 +307,7 @@ export class FieldFilter extends Filter {
             other instanceof FieldFilter &&
             other.field === this.field &&
             other.op === this.op &&
-            (isArray(other.value) && isArray(this.value)
-                ? other.value.length === this.value.length &&
-                  // Compare Dates by time - a restored filter holds new Date instances.
-                  isEmpty(differenceBy(other.value, this.value, v => (isDate(v) ? v.getTime() : v)))
-                : isEqual(other.value, this.value))
+            valuesEqual(other.value, this.value)
         );
     }
 
@@ -343,4 +339,14 @@ export class FieldFilter extends Filter {
     private lookupSet(values: any[]): Set<any> {
         return values.some(isObject) ? null : new Set(values);
     }
+}
+
+// Scalars must match; arrays must hold the same values, in any order.
+function valuesEqual(a: unknown, b: unknown): boolean {
+    // Compare values by key, so Dates match by time - a filter restored from JSON holds new instances.
+    const valueKey = v => (isDate(v) ? v.getTime() : v);
+
+    return isArray(a) && isArray(b)
+        ? a.length === b.length && isEmpty(differenceBy(a, b, valueKey))
+        : valueKey(a) === valueKey(b);
 }
