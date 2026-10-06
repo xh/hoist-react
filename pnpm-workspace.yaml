@@ -61,7 +61,14 @@ minimumReleaseAgeExclude:
 # Several transitive deps (react-popper, react-onsenui, react-windowed-select) still declare
 # react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
 # rather than surfacing unmet-peer warnings on every install.
+#
+# eslint-plugin-tsdoc pins `@typescript-eslint/utils` ~8.56, whose packages cap their TypeScript peer
+# below 6. The plugin reads doc comments only, and lint passes with TypeScript 7 at the root.
 peerDependencyRules:
   allowedVersions:
     react: '19'
     react-dom: '19'
+    '@typescript-eslint/utils>typescript': '7'
+    '@typescript-eslint/typescript-estree>typescript': '7'
+    '@typescript-eslint/project-service>typescript': '7'
+    '@typescript-eslint/tsconfig-utils>typescript': '7'

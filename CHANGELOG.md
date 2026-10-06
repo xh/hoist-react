@@ -16,6 +16,9 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets)
 
+See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
 * Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
@@ -96,11 +99,17 @@
   services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
   comment. Snapshot and release builds now run the tests before publishing.
+* Updated Hoist to build and type-check with TypeScript 7. Apps can move to TypeScript 7 with this
+  release or stay on 5.9. Apps that move must set `strict: false` (unless already strict) and
+  `noUncheckedSideEffectImports: false` in `tsconfig.json` to override new TypeScript defaults.
+  See the upgrade notes for the full steps.
 
 ### ⚙️ Typescript API Adjustments
 
 * `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
   as `leafOldData` / `leafNewData`.
+* Fixed `GridProps.agOptions` rejecting an `HTMLElement` for `popupParent` and other DOM-typed
+  options under TypeScript 6 and later.
 
 ### 🤖 AI Docs + Tooling
 
@@ -119,6 +128,8 @@
 * @blueprintjs/core `6.20 → 6.21`
 * @blueprintjs/datetime `6.2 → 6.3`
 * swiper `12.2 → 14.3`
+* ts-morph `27.0 → 28.0`
+* typescript `5.9 → 7.0`
 
 ## 88.1.1 - 2026-10-06
 

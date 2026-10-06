@@ -61,6 +61,14 @@ import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
+/**
+ * Deep-partial ag-Grid options. DOM-typed options are excluded from the recursion - TS 6+ cannot
+ * assign a real `HTMLElement` to its deep-partial form.
+ */
+type DomGridOptions = 'popupParent' | 'advancedFilterParent' | 'themeStyleContainer';
+type GridAgOptions = PartialDeep<Omit<GridOptions, DomGridOptions>> &
+    Pick<GridOptions, DomGridOptions>;
+
 export interface GridProps<M extends GridModel = GridModel>
     extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
@@ -72,7 +80,7 @@ export interface GridProps<M extends GridModel = GridModel>
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions?: PartialDeep<GridOptions>;
+    agOptions?: GridAgOptions;
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
