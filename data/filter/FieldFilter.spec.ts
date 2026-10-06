@@ -93,9 +93,8 @@ describe('FieldFilter', () => {
             expect(passing('not like', ['smith', 'jones'], values)).toEqual(['Brown']);
         });
 
-        // BUG: FieldFilter.ts:227-249 - the regex tests coerce a null or undefined value to the
-        // text "null" or "undefined", so blank rows match terms such as 'l', 'nu' or 'ed'.
-        it.fails('do not treat blank values as the text "null" or "undefined"', () => {
+        // Fixed in 89.0.0 - blank values matched as the text "null" or "undefined".
+        it('do not treat blank values as the text "null" or "undefined"', () => {
             expect(passing('like', 'l', [null, 'Bill'])).toEqual(['Bill']);
             expect(passing('begins', 'nu', [null, 'Nuno'])).toEqual(['Nuno']);
             expect(passing('ends', 'ed', [undefined, 'Closed'])).toEqual(['Closed']);
