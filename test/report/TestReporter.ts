@@ -159,6 +159,8 @@ export interface GitContext {
     runUrl: string;
     sha: string;
     branch: string;
+    /** GitHub Actions event that triggered the run, e.g. `push` or `pull_request`. */
+    event: string;
 }
 
 /** Full test name, as shown in reports - e.g. `Store › loadData › reuses records`. */
@@ -201,6 +203,7 @@ function gitContext(): GitContext {
                 ? `${server}/${repo}/actions/runs/${env.GITHUB_RUN_ID}`
                 : null,
         sha,
-        branch: env.REPORT_BRANCH || env.GITHUB_HEAD_REF || env.GITHUB_REF_NAME || null
+        branch: env.REPORT_BRANCH || env.GITHUB_HEAD_REF || env.GITHUB_REF_NAME || null,
+        event: env.GITHUB_EVENT_NAME || null
     };
 }

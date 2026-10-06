@@ -17,7 +17,7 @@ import MiniSearch, {type SearchOptions, type SearchResult} from 'minisearch';
 
 import {log} from '../util/logger.js';
 import {loadDocContent, type DocEntry} from './doc-registry.js';
-import {parseDocSections, type DocSection} from './doc-sections.js';
+import {LINK_DEF_RE, parseDocSections, stripLinks, type DocSection} from './doc-sections.js';
 import {
     createTermProcessor,
     isRedundantCompoundMatch,
@@ -253,7 +253,8 @@ function subHeadings(body: string): string[] {
 
 /**
  * Leading text of a section, trimmed to about {@link EXCERPT_CHARS} at a sentence boundary.
- * Blank lines, TOC rows, table rules, and link targets are dropped and whitespace collapsed.
+ * Blank lines, TOC rows, table rules, link targets, and link definitions are dropped and
+ * whitespace collapsed.
  * Reading stops at the first code block once there is enough prose to describe the section -
  * code is included only when the section leads with it.
  */
@@ -268,9 +269,11 @@ function makeExcerpt(body: string): string {
             inFence = !inFence;
             continue;
         }
-        if (!line || TOC_ROW_RE.test(line) || TABLE_RULE_RE.test(line)) continue;
+        if (!line || TOC_ROW_RE.test(line) || TABLE_RULE_RE.test(line) || LINK_DEF_RE.test(line)) {
+            continue;
+        }
 
-        kept.push(line.replace(/^#{1,6}\s+/, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1'));
+        kept.push(stripLinks(line.replace(/^#{1,6}\s+/, '')));
         length += line.length;
         if (length > EXCERPT_CHARS) break;
     }
