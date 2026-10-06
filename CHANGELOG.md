@@ -51,6 +51,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * `XH.message()`, `XH.confirm()`, and `XH.prompt()` now resolve to `null` when closed without a
   choice, instead of never settling.
+* Fixed `Store.modifyRecords()` leaving `Store.isDirty` true after its only edit was undone.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`. App load
   and `Promise.track()` entries again record their start times.
