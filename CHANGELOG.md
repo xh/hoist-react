@@ -48,7 +48,8 @@
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Restored the `MsalClient` defaults lost in v88: `enableSsoSilent` and `enableTelemetry` again
-  default to `true`, and MSAL logs at `Warning` level.
+  default to `true`, and MSAL logs at `Warning` level. Also restored the 3000ms
+  `system.iframeBridgeTimeout` that caps `ssoSilent` failures, dropped in the MSAL 5 upgrade.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`. App load
   and `Promise.track()` entries again record their start times.
 * Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was

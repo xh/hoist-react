@@ -77,8 +77,9 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      * cookies to be enabled.  Default true.
      *
      *  In practice, and according to documentation, this operation is likely to fail for a
-     *  number of reasons, and can often do so as timeout. MSAL defaults this timeout limit -
-     *  `system.iframeBridgeTimeout` - to 10000ms. Consider a lower value, via `msalClientOptions`.
+     *  number of reasons, and can often do so as timeout.  Therefore, keeping the timeout limit
+     *  value -- `system.iframeBridgeTimeout` -- at a relatively low value is critical.  Hoist
+     *  defaults this value to 3000ms vs. the default 10000ms.
      */
     enableSsoSilent?: boolean;
 
@@ -413,7 +414,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loggerOptions: {
                     loggerCallback: (level, message) => this.logFromMsal(level, message),
                     logLevel: msalLogLevel
-                }
+                },
+                iframeBridgeTimeout: 3000 // Prevent long pauses for sso failures.
             },
             cache: {
                 cacheLocation: 'localStorage' // allows sharing auth info across tabs.

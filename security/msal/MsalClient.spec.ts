@@ -56,8 +56,9 @@ describe('MsalClient', () => {
             expect(client.lastAuthMethod).toBe('ssoSilent');
         });
 
-        // Fixed in 89.0.0 - as above, for enableTelemetry and msalLogLevel.
-        it('enables telemetry and warning-level MSAL logging', async () => {
+        // Fixed in 89.0.0 - as above, for enableTelemetry and msalLogLevel. The 3000ms timeout
+        // was dropped separately, in the MSAL 5 upgrade.
+        it('enables telemetry, warning-level MSAL logging and a short ssoSilent timeout', async () => {
             fakeMsal({accounts: [JDOE]});
             const client = createClient();
 
@@ -65,6 +66,7 @@ describe('MsalClient', () => {
 
             const config = vi.mocked(createStandardPublicClientApplication).mock.lastCall[0];
             expect(config.system.loggerOptions.logLevel).toBe(LogLevel.Warning);
+            expect(config.system.iframeBridgeTimeout).toBe(3000);
             expect(config.telemetry?.client).toBeDefined();
             expect(client.telemetry).not.toBeNull();
         });
