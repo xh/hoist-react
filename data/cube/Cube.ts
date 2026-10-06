@@ -9,6 +9,7 @@ import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {Store, StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {RecordSetDelta} from '../impl/RecordSet';
@@ -202,6 +203,7 @@ export class Cube extends HoistBase {
             freezeData: false,
             idEncodesTreePath: true
         });
+        this.validateFields();
         this.store.loadData(data);
         this.info = info;
         this.lockFn = lockFn;
@@ -433,6 +435,19 @@ export class Cube extends HoistBase {
     @action
     private setInfo(info: PlainObject) {
         this.info = Object.freeze(info);
+    }
+
+    private validateFields() {
+        const {fields} = this,
+            names = new Set(fields.map(it => it.name));
+        fields.forEach(field => {
+            field.aggregator?.dependsOn?.forEach(dep => {
+                throwIf(
+                    !names.has(dep),
+                    `Aggregator for CubeField '${field.name}' depends on unknown field '${dep}'.`
+                );
+            });
+        });
     }
 
     private parseFields(fields = [], defaults) {

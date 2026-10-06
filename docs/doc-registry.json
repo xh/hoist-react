@@ -157,7 +157,7 @@
             "mcpCategory": "package",
             "viewerCategory": "desktop",
             "description": "Desktop-specific components and app container.",
-            "keywords": ["desktop components", "Blueprint wrappers", "dialog", "modal", "toolbar", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
+            "keywords": ["desktop components", "Blueprint wrappers", "dialog", "modal", "toolbar", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "RadioCardInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
         },
         {
             "id": "mobile/README.md",
@@ -181,7 +181,7 @@
             "mcpCategory": "package",
             "viewerCategory": "utilities",
             "description": "Application shell -- lifecycle, dialogs, toasts, banners, theming, and environment.",
-            "keywords": ["AppContainerModel", "MessageSpec", "ToastSpec", "BannerSpec", "ThemeModel", "RouterModel", "AppOption", "dark mode", "light mode", "theming", "ExceptionDialogModel", "SizingModeModel", "XH.toast", "XH.confirm", "XH.alert"]
+            "keywords": ["AppContainerModel", "MessageSpec", "ToastSpec", "BannerSpec", "ThemeModel", "RouterModel", "AppOption", "themeAppOption", "sizingModeAppOption", "dark mode", "light mode", "theming", "ExceptionDialogModel", "SizingModeModel", "XH.toast", "XH.confirm", "XH.alert"]
         },
         {
             "id": "utils/README.md",

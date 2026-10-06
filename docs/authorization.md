@@ -268,12 +268,10 @@ visual role graph showing inheritance relationships.
 
 The role module is enabled server-side by configuring hoist-core to use its `DefaultRoleService`.
 When enabled, roles are stored in the application's database and managed through the Admin Console
-under the **User Data > Roles** tab.
+under the **General > Roles** tab.
 
-The Roles tab is always present in the Admin Console navigation but checks the server-side module
-config on load. If `DefaultRoleService` is not enabled, the tab displays a
-"Default Role Module not enabled" message rather than the role editor — no app-level configuration
-is needed to handle this.
+The Admin Console loads the role module config at startup and shows the Roles tab only when
+`DefaultRoleService` is enabled. No app-level configuration is needed to handle this.
 
 ### Role Structure
 

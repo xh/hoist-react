@@ -111,6 +111,7 @@ Desktop form inputs with Blueprint styling:
 | `Checkbox` | Boolean checkbox |
 | `SwitchInput` | Toggle switch |
 | `RadioInput` | Radio button group |
+| `RadioCardInput` | Radio group of cards, each with a visual preview - e.g. a theme or layout picker |
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
 | `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |

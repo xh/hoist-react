@@ -8,6 +8,7 @@ export * from './IntentInput';
 export * from './JsonInput';
 export * from './NumberInput';
 export * from './Picker';
+export * from './RadioCardInput';
 export * from './RadioInput';
 export * from './SegmentedControl';
 export * from './Select';
