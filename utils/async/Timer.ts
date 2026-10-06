@@ -136,8 +136,9 @@ export class Timer {
     }
 
     private parseDelay(val: number | boolean): number {
-        if (isBoolean(val)) return val ? this.intervalMs : 0;
-        return isFinite(val) ? val : 0;
+        // A paused timer's interval is <= 0, so `delay: true` can yield a negative value here.
+        const ret = isBoolean(val) ? (val ? this.intervalMs : 0) : val;
+        return isFinite(ret) && ret > 0 ? ret : 0;
     }
 
     private get intervalMs() {
