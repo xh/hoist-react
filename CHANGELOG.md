@@ -74,11 +74,21 @@
   still pass `iconName` render as before and log a warning. Support ends in v91.
 * Deprecated `SpinnerProps.iconName` and `Spinner.defaults.iconName` in favor of `icon`. It takes an
   icon name from the catalog, either an `Icon` name or an FA name, or an icon element.
+* Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
+  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
+* Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
+  comment. Snapshot and release builds now run the tests before publishing.
 
 ### ⚙️ Typescript API Adjustments
 
 * `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
   as `leafOldData` / `leafNewData`.
+
+### 🤖 AI Docs + Tooling
+
+* Added support for reference-style Markdown links (`[text][label]`) to the doc tools. A section
+  read from `hoist-read-doc` or `hoist-docs read` now appends the link definitions it uses. Search
+  excerpts and section headings show the link text only.
 
 ### ✨ Styles
 

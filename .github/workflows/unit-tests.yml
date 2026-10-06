@@ -1,0 +1,138 @@
+# Unit Tests - Runs hoist-react's unit tests (Vitest) on PRs and pushes to develop, and reports the
+# results where people will see them:
+#
+#   - The "Unit Tests" check on the PR, linking to this run.
+#   - A summary on the run page - every test by package, with failures and their diffs first.
+#   - Inline annotations on the PR diff at each failing assertion.
+#   - A single comment on the PR, updated in place on each run.
+#   - An HTML report of every test, attached to the run as an artifact - and, from develop,
+#     published to GitHub Pages once enabled (see the publish-report job).
+#
+# See docs/unit-testing.md.
+
+name: Unit Tests
+
+on:
+    push:
+        branches: [ "develop" ]
+    pull_request:
+        branches: [ "develop" ]
+    # Manual runs against any branch, from the Actions tab or `gh workflow run unit-tests.yml --ref
+    # <branch>`. GitHub only offers this trigger once this file is on the default branch.
+    workflow_dispatch:
+
+# Only the latest commit's result matters - cancel superseded runs for the same PR or branch.
+concurrency:
+    group: unit-tests-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test:
+        name: Vitest
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            # To post and update the results comment on PRs.
+            pull-requests: write
+
+        env:
+            # Point report links at the commit and branch under test. On PRs, GITHUB_SHA is a
+            # temporary merge commit, so pass the PR head instead.
+            REPORT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+            REPORT_BRANCH: ${{ github.head_ref || github.ref_name }}
+
+        steps:
+        - uses: actions/checkout@v7
+
+        # Installs the pnpm version pinned via the packageManager field in package.json.
+        - name: Setup pnpm
+          uses: pnpm/setup@v3
+          with:
+              # `install: false` - this workflow runs its own install step below, after
+              # Font Awesome registry auth, and with --frozen-lockfile.
+              install: false
+              # `node-version-file: false` - v3 auto-installs Node from .nvmrc. Skip that, as
+              # actions/setup-node below owns Node.
+              node-version-file: false
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v7
+          with:
+              node-version-file: '.nvmrc'
+              cache: 'pnpm'
+
+        # Font Awesome Pro is a dependency of the library code under test.
+        - name: Configure Font Awesome registry auth
+          env:
+              FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+          run: echo "//npm.fontawesome.com/:_authToken=$FONTAWESOME_PACKAGE_TOKEN" >> .npmrc
+
+        - name: Install dependencies
+          run: pnpm install --frozen-lockfile
+
+        # In CI, vitest.config.mts adds the reporters that write the run summary and annotations,
+        # plus the report files in .vitest/report used by the steps below.
+        - name: Run unit tests
+          run: pnpm test
+
+        - name: Attach HTML report
+          if: ${{ !cancelled() }}
+          uses: actions/upload-artifact@v7
+          with:
+              name: unit-test-report
+              path: .vitest/report/index.html
+              include-hidden-files: true
+              if-no-files-found: ignore
+              retention-days: 30
+
+        # Keep one results comment per PR, updated in place, so the conversation shows the current
+        # result without a new comment on every push. Skipped for PRs from forks and Dependabot,
+        # whose tokens cannot comment. A failure here must never fail the run.
+        - name: Comment results on PR
+          if: >-
+              ${{ !cancelled() && github.event_name == 'pull_request'
+              && github.event.pull_request.head.repo.full_name == github.repository
+              && github.actor != 'dependabot[bot]' }}
+          continue-on-error: true
+          env:
+              GH_TOKEN: ${{ github.token }}
+              PR_NUMBER: ${{ github.event.pull_request.number }}
+          run: |
+              body=.vitest/report/comment.md
+              [ -f "$body" ] || exit 0
+
+              marker='<!-- hoist-unit-tests -->'
+              id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+                  --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" \
+                  | head -n 1)
+
+              if [ -n "$id" ]; then
+                  gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$body" > /dev/null
+              else
+                  gh pr comment "$PR_NUMBER" --body-file "$body"
+              fi
+
+        - name: Stage report for GitHub Pages
+          if: ${{ !cancelled() && github.event_name == 'push' && vars.PUBLISH_TEST_REPORT == 'true' }}
+          uses: actions/upload-pages-artifact@v5
+          with:
+              path: .vitest/report
+
+    # Publish the HTML report from develop to GitHub Pages - a live, public view of the library's
+    # tests. Opt-in, as it needs two one-time repo settings: Pages enabled with "GitHub Actions" as
+    # its source, and the repo variable PUBLISH_TEST_REPORT set to 'true'.
+    publish-report:
+        name: Publish report
+        needs: test
+        if: ${{ !cancelled() && github.event_name == 'push' && vars.PUBLISH_TEST_REPORT == 'true' }}
+        runs-on: ubuntu-latest
+        permissions:
+            pages: write
+            id-token: write
+        environment:
+            name: github-pages
+            url: ${{ steps.deploy.outputs.page_url }}
+        steps:
+        - name: Deploy to GitHub Pages
+          id: deploy
+          uses: actions/deploy-pages@v5

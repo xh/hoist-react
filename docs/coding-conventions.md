@@ -687,6 +687,21 @@ const filtered = this.applyFilters(records);
 this.store.loadData(filtered);
 ```
 
+### Links in Markdown Docs
+
+Use reference-style links for long URLs in prose. They keep the URL out of the sentence, so the
+Markdown source wraps cleanly and stays readable. Put all definitions at the end of the doc:
+
+```markdown
+See the [TypeScript 7.0 announcement][ts7] for Microsoft's benchmarks.
+
+[ts7]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/
+```
+
+Keep inline links for short relative paths and `#anchor` links, for example
+`[Grid](../cmp/grid/README.md)`. Every label must have a definition. An undefined label does not
+fail a build. It renders as the literal text `[text][label]`.
+
 ## Async Patterns
 
 ### `async/await`

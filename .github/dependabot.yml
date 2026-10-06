@@ -22,6 +22,12 @@ updates:
     # Group routine version bumps to keep the PR volume manageable. Major
     # bumps are excluded so they always surface as their own PR for review.
     groups:
+      # Vitest packages require each other's exact version, so they must
+      # move together - including for major bumps, which get a PR of their own.
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       production-minor-and-patch:
         dependency-type: "production"
         update-types:

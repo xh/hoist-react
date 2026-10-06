@@ -384,6 +384,14 @@
             "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "pnpm", "yarn", "IntelliJ", "VS Code", "rsbuild dev server"]
         },
         {
+            "id": "docs/unit-testing.md",
+            "title": "Unit Testing",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "The hoist-react unit test suite on Vitest: running tests, the fake hoist-core server, writing tests, and CI reports.",
+            "keywords": ["unit tests", "Vitest", "pnpm test", "spec.ts", "initTestAppAsync", "hoistCore", "MSW", "it.fails", "test report"]
+        },
+        {
             "id": "docs/compilation-notes.md",
             "title": "Compilation Notes",
             "mcpCategory": "devops",
