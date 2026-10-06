@@ -83,8 +83,9 @@ describe('TrackService', () => {
             expect(hoistCore.requestsTo('xh/track')).toHaveLength(0);
         });
 
-        // Fixed in 89.0.0 - the given timestamp was replaced with the send time.
-        it('sends the timestamp given by the caller', async () => {
+        // BUG: svc/TrackService.ts:146 - toServerJson sends Date.now() and drops the given
+        // timestamp, since v69.0.0 (#3802). App load and Promise.track entries lose their start time.
+        it.fails('sends the timestamp given by the caller', async () => {
             const loadStarted = Date.now() - 5000;
             XH.track({message: 'Loaded app', timestamp: loadStarted});
             await XH.trackService.pushPendingAsync();

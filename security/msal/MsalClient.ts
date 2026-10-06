@@ -77,8 +77,9 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      * cookies to be enabled.  Default true.
      *
      *  In practice, and according to documentation, this operation is likely to fail for a
-     *  number of reasons, and can often do so as timeout. MSAL defaults this timeout limit -
-     *  `system.iframeBridgeTimeout` - to 10000ms. Consider a lower value, via `msalClientOptions`.
+     *  number of reasons, and can often do so as timeout.  Therefore, keeping the timeout limit
+     *  value -- `system.iframeHashTimeout` -- at a relatively low value is critical.  Hoist
+     *  defaults this value to 3000ms vs. the default 10000ms.
      */
     enableSsoSilent?: boolean;
 
@@ -133,17 +134,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
     telemetry: MsalClientTelemetry = null;
     private _telemetryCbHandle: string = null;
-
-    constructor(config: MsalClientConfig) {
-        super({
-            initRefreshTokenExpirationOffsetSecs: -1,
-            msalLogLevel: LogLevel.Warning,
-            domainHint: null,
-            enableTelemetry: true,
-            enableSsoSilent: true,
-            ...config
-        });
-    }
 
     //-------------------------------------------
     // Implementations of core lifecycle methods

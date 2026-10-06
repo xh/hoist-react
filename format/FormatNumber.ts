@@ -6,7 +6,6 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {
-    clamp,
     defaults,
     isBoolean,
     isFinite,
@@ -29,8 +28,7 @@ import {saveOriginal} from './impl/Utils';
 const THOUSAND = 1000,
     MILLION = 1000000,
     BILLION = 1000000000,
-    MAX_NUMERIC_PRECISION = 12,
-    MAX_SIGNIFICANT_DIGITS = 15;
+    MAX_NUMERIC_PRECISION = 12;
 
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
@@ -190,7 +188,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     // Resolve precision: null means full precision, other non-integers (e.g. undefined) mean 'auto'.
     const fullPrecision = precision === null;
     if (fullPrecision) {
-        precision = calcFullPrecision(v);
+        precision = MAX_NUMERIC_PRECISION;
     } else if (!isInteger(precision)) {
         precision = 'auto';
     }
@@ -365,7 +363,7 @@ export function fmtNumberTooltip(v: number, opts?: {ledger?: boolean}): string {
     return fmtNumber(v, {
         ledger: opts?.ledger,
         forceLedgerAlign: false,
-        precision: null,
+        precision: MAX_NUMERIC_PRECISION,
         zeroPad: false,
         asHtml: true
     }) as string;
@@ -515,17 +513,6 @@ function parsePrecision(v: number, precisionSpec: Precision): number {
     if (absVal < 100) return 4;
     if (absVal < 10000) return 2;
     return 0;
-}
-
-/**
- * Resolve full precision to the most decimal places a value can show, capped so its integer and
- * decimal digits fit within the significant digits a double holds exactly. More places would
- * render float noise - e.g. 44,510,347.00000001.
- */
-function calcFullPrecision(v: number): NumericPrecision {
-    const absVal = Math.abs(v),
-        intDigits = absVal >= 1 ? Math.floor(Math.log10(absVal)) + 1 : 0;
-    return clamp(MAX_SIGNIFICANT_DIGITS - intDigits, 0, MAX_NUMERIC_PRECISION) as NumericPrecision;
 }
 
 function buildFormatConfig(

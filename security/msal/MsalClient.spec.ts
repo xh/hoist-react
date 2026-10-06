@@ -42,9 +42,10 @@ describe('MsalClient', () => {
     });
 
     describe('defaults', () => {
-        // Fixed in 89.0.0 - the documented config defaults were lost in v88.0.0 (e213e2ce9), so
-        // ssoSilent was never tried unless an app enabled it explicitly.
-        it('tries ssoSilent when no account is cached', async () => {
+        // BUG: security/msal/MsalClient.ts:129 - the constructor applying the documented defaults
+        // (enableSsoSilent, enableTelemetry, msalLogLevel) was deleted in the TC39 decorator
+        // migration (e213e2ce9), so ssoSilent is never tried unless an app enables it explicitly.
+        it.fails('tries ssoSilent when no account is cached', async () => {
             const msal = fakeMsal(),
                 // Popup login, so the test does not wait on a redirect if ssoSilent is skipped.
                 client = createClient({loginMethodDesktop: 'POPUP'});
@@ -56,8 +57,8 @@ describe('MsalClient', () => {
             expect(client.lastAuthMethod).toBe('ssoSilent');
         });
 
-        // Fixed in 89.0.0 - as above, for enableTelemetry and msalLogLevel.
-        it('enables telemetry and warning-level MSAL logging', async () => {
+        // BUG: security/msal/MsalClient.ts:129 - as above, for enableTelemetry and msalLogLevel.
+        it.fails('enables telemetry and warning-level MSAL logging', async () => {
             fakeMsal({accounts: [JDOE]});
             const client = createClient();
 

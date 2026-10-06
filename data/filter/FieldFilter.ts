@@ -227,27 +227,27 @@ export class FieldFilter extends Filter {
                 break;
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
+                opFn = v => regExps.some(re => re.test(v));
                 break;
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
+                opFn = v => regExps.every(re => !re.test(v));
                 break;
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
+                opFn = v => regExps.some(re => re.test(v));
                 break;
             case 'not begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
+                opFn = v => regExps.every(re => !re.test(v));
                 break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
+                opFn = v => regExps.some(re => re.test(v));
                 break;
             case 'not ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
+                opFn = v => regExps.every(re => !re.test(v));
                 break;
             case 'includes':
                 lookup = new Set(value);
