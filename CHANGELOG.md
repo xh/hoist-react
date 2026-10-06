@@ -47,6 +47,40 @@
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
+* Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
+  destroyed or the reaction was disposed.
+* Fixed `FormModel.allErrors` and `SubformsFieldModel.allErrors` omitting errors from nested
+  subforms.
+* Fixed `FieldFilter.equals()` treating filters on equal `Date` values as different, for example a
+  filter restored from JSON.
+* Fixed `FilterChooserFieldSpec` and `GridFilterFieldSpec` dropping `0`, `false` and `''` from
+  explicit `values`.
+* Fixed `FilterChooserModel` cutting off a typed value at an operator word or symbol inside it, for
+  example `Name = This Is Us`.
+* Fixed `StoreSelectionModel` holding two records in `single` mode after `select()` with
+  `clearSelection: false`.
+* Fixed `StoreRecord.isDirty` returning `null` in place of `false` for an added record.
+* Fixed the `validEmail` constraint failing blank values in place of leaving them to `required`.
+* Fixed `GridModel.getSortedRecords()` ignoring a column's record-based `sortValue` before the grid
+  has rendered.
+* Fixed `GridFilterModel.mergeColumnFilters()` throwing for a `FieldFilter` instance and changing
+  the filter specs passed to it.
+* Fixed the grid column header filter logging a MobX reaction error on first open. Its Apply button
+  also no longer turns on for an unchanged OR filter.
+* Fixed `TabContainerModel.activatePrevTab()` wrapping to the last tab without `cycle: true`.
+* Fixed `GroupingChooserModel.favoritesOptions` sorting favorites by only the first letter of their
+  labels.
+* Fixed `parseNumber` returning float artifacts for decimal shorthand, for example `'8.2m'` as
+  `8199999.999999999`, which broke equality filters in `FilterChooser`.
+* Fixed `fmtQuantity` adding `.00` to values of 1m or more left unscaled by `useMillions: false` or
+  `useBillions: false`.
+* Fixed `fmtCompactDate` ignoring `nullDisplay`, and formatting times on its near-future cutoff day
+  differently depending on the time of day.
+* Fixed `timestampReplacer` and `withFormattedTimestamps` ignoring their `format` option.
+* Fixed `@sharePendingPromise` running a method twice when it threw synchronously.
+* Fixed a cancelled `Timer` keeping its heartbeat alive, and a `Timer` with `delay: true` and a
+  disabled interval scheduling a negative timeout.
+* Fixed a `PUT` with `params` labeling its form body `text/plain`, so servers ignored the params.
 
 ### ⚙️ Technical
 

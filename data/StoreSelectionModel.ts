@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observableRef, computedStruct} from '@xh/hoist/mobx';
-import {castArray, compact, remove, isEqual, union, map} from 'lodash';
+import {castArray, compact, remove, isEmpty, isEqual, union, map} from 'lodash';
 import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
@@ -131,7 +131,9 @@ export class StoreSelectionModel extends HoistModel {
             return;
         }
 
-        this._ids = clearSelection ? ids : union(this._ids, ids);
+        // Single mode holds one record - any newly selected record replaces the prior selection.
+        const replace = clearSelection || (this.mode === 'single' && !isEmpty(ids));
+        this._ids = replace ? ids : union(this._ids, ids);
     }
 
     /** Select all filtered records. */

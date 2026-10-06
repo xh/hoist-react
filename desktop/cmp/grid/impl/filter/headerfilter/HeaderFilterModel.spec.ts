@@ -122,9 +122,8 @@ describe('HeaderFilterModel', () => {
             expect(model.isDirty).toBe(true);
         });
 
-        // BUG: HeaderFilterModel.ts:97 - compares against the column's filters flattened and
-        // ANDed together, so an OR filter reads as changed and enables Apply on open.
-        it.fails('is false for an unchanged OR filter', () => {
+        // Fixed in 89.0.0 - an OR filter was compared as an AND, so it read as changed on open.
+        it('is false for an unchanged OR filter', () => {
             const filter: FilterLike = {
                     op: 'OR',
                     filters: [REGION_EAST, {field: 'region', op: 'like', value: 'th'}]
@@ -203,14 +202,12 @@ describe('ValuesTabModel', () => {
         });
     });
 
-    // BUG: values/ValuesTabModel.ts:122 - the constructor's syncGrid() reaction fires immediately,
-    // before reset() loads the column's values, and throws on the null `values`. MobX logs the
-    // error the first time each column's filter opens.
-    it.fails('opens on a column for the first time without a reaction error', () => {
+    // Fixed in 89.0.0 - the grid synced before the column's values loaded, and threw.
+    it('opens on a column for the first time without a reaction error', () => {
         const errors = [];
         onTestFinished(onReactionError(e => errors.push(e)));
 
-        openFilter(createGrid(), 'region', {firstOpen: true});
+        openFilter(createGrid(), 'region');
         expect(errors).toEqual([]);
     });
 });
@@ -327,13 +324,8 @@ function createGrid(filter: FilterLike = null): GridModel {
     return ret;
 }
 
-/**
- * Open the header filter of a column, as its popover does. By default the column's values are
- * loaded first, as a previous open would have, to sidestep the first-open bug tested above.
- */
-function openFilter(gridModel: GridModel, field: string, {firstOpen = false} = {}) {
-    if (!firstOpen) gridModel.filterModel.getFieldSpec(field).loadValues();
-
+/** Open the header filter of a column, as its popover does. */
+function openFilter(gridModel: GridModel, field: string) {
     const parent = new ColumnHeaderFilterModel(gridModel.filterModel, gridModel.getColumn(field)),
         ret = new HeaderFilterModel();
     parent.open();

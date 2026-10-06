@@ -298,20 +298,19 @@ export function fmtQuantity(v: number, opts?: QuantityFormatOptions) {
 
     const absV = Math.abs(v),
         lessM = absV < MILLION,
-        lessB = absV < BILLION,
-        targetPrecision = opts.precision ?? (lessM ? 0 : 2);
+        lessB = absV < BILLION;
 
     // Compute scaling, if any (Lossless flag may preclude).
     let scale = !lessB && opts.useBillions ? BILLION : !lessM && opts.useMillions ? MILLION : null;
     if (scale && opts.lossless) {
-        const precision = parsePrecision(absV / scale, targetPrecision),
+        const precision = parsePrecision(absV / scale, opts.precision ?? 2),
             lossy = v % (scale / 10 ** precision) !== 0;
         if (lossy) scale = null;
     }
 
-    // Resolve render precision (unless the caller set one).
+    // Resolve render precision (unless the caller set one) - 2 places if scaled, else 0.
     if (isUndefined(opts.precision)) {
-        opts.precision = opts.lossless ? null : targetPrecision;
+        opts.precision = opts.lossless ? null : scale ? 2 : 0;
     }
 
     switch (scale) {
@@ -604,16 +603,17 @@ export function parseNumber(value: any): number {
     value = value.replace(/,/g, '');
 
     if (shorthandValidator.test(value)) {
-        const num = +value.substring(0, value.length - 1),
+        const numStr = value.substring(0, value.length - 1),
             lastChar = value.charAt(value.length - 1).toLowerCase();
 
+        // Shift by exponent rather than multiply, to avoid float artifacts (8.2 * 1e6 != 8.2e6).
         switch (lastChar) {
             case 'k':
-                return num * 1000;
+                return +`${numStr}e3`;
             case 'm':
-                return num * 1000000;
+                return +`${numStr}e6`;
             case 'b':
-                return num * 1000000000;
+                return +`${numStr}e9`;
             default:
                 return NaN;
         }

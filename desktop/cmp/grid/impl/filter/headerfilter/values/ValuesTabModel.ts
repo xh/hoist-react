@@ -277,7 +277,8 @@ export class ValuesTabModel extends HoistModel {
 
     private syncGrid() {
         const {values, pendingValues} = this;
-        const data = values.map(value => {
+        // Null-safe `map` - values are null on the first open, until `reset()` loads them.
+        const data = map(values, value => {
             const isChecked = pendingValues.includes(value);
             return {value, isChecked};
         });

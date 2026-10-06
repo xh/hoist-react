@@ -151,9 +151,8 @@ describe('FieldFilter', () => {
             expect(roundTrip(filter).equals(filter)).toBe(true);
         });
 
-        // BUG: FieldFilter.ts:312 - equals() compares values with ===, so a restored Date, which is
-        // a new instance, never equals the original. '=' itself compares Dates by value.
-        it.fails('restores a filter on a Date to an equal filter', () => {
+        // Fixed in 89.0.0 - equals() compared values by identity, so equal Dates differed.
+        it('restores a filter on a Date to an equal filter', () => {
             const filter = parseFilter({field: 'f', op: '=', value: new Date(2023, 4, 31, 12)}),
                 restored = roundTrip(filter) as FieldFilter;
 

@@ -6,7 +6,7 @@
  */
 import {HoistBase} from '@xh/hoist/core';
 import {Field, FieldFilter, FieldType, FilterValueSource, genDisplayName} from '@xh/hoist/data';
-import {compact, isArray, isEmpty} from 'lodash';
+import {isArray, isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
 /**
@@ -91,7 +91,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.ops = this.parseOperators(ops);
         this.forceSelection = forceSelection ?? false;
         this.values = isArray(values)
-            ? compact(values)
+            ? values.filter(v => v != null)
             : this.isBoolFieldType
               ? [true, false]
               : null;

@@ -121,14 +121,14 @@ describe('fmtCompactDate', () => {
         expect(tooltip).toHaveBeenCalledWith(day);
     });
 
-    // BUG: FormatDate.ts:142 - the options passed on to fmtDate omit nullDisplay.
-    it.fails('returns nullDisplay for null input', () => {
+    // Fixed in 89.0.0 - nullDisplay was not passed on to fmtDate.
+    it('returns nullDisplay for null input', () => {
         expect(fmtCompactDate(null, {nullDisplay: '-'})).toBe('-');
     });
 
-    // BUG: FormatDate.ts:141 - the near-future cutoff keeps the current time of day, so with the
-    // clock at noon, 9am on Aug 1 is 'near' and 6pm the same day is 'distant'.
-    it.fails('formats every time on the same day the same way', () => {
+    // Fixed in 89.0.0 - the near-future cutoff kept the current time of day, so with the clock at
+    // noon, 9am on Aug 1 was 'near' and 6pm the same day was 'distant'.
+    it('formats every time on the same day the same way', () => {
         const morning = new Date(2026, 7, 1, 9),
             evening = new Date(2026, 7, 1, 18);
         expect(fmtCompactDate(evening)).toBe(fmtCompactDate(morning));
@@ -172,8 +172,8 @@ describe('withFormattedTimestamps', () => {
         });
     });
 
-    // BUG: FormatDate.ts:187 - timestampReplacer hard-codes its format and ignores config.format.
-    it.fails('applies the configured format', () => {
+    // Fixed in 89.0.0 - timestampReplacer ignored config.format.
+    it('applies the configured format', () => {
         expect(withFormattedTimestamps({startTime: ts}, {format: 'YYYY-MM-DD'})).toEqual({
             startTime: '2026-02-08'
         });
