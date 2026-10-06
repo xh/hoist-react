@@ -14,15 +14,31 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - grid column filter specs)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets)
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
+  so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
+  `inputProps` should also pass `previewCards: false`.
 
 ### 🎁 New Features
 
+* Added `AverageWeightedAggregator` for Cube fields averaged by the weight of a second field, e.g.
+  `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`. Views update it
+  incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
+* Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
+  re-aggregates the field on changes to those as well.
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
+* Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
+  visual preview, label, and optional description, in the style of the macOS Appearance picker.
+* Desktop `themeAppOption()` now shows the theme choices as a `RadioCardInput` with mini light,
+  dark, and system app-window previews. Pass `previewCards: false` for a `SegmentedControl`, now
+  sized to its options rather than stretched to fill the field.
+* Desktop `sizingModeAppOption()` now shows each grid sizing mode as a `RadioCardInput` card with a
+  mini grid drawn at that mode's row height. Pass `previewCards: false` for a `SegmentedControl`,
+  sized to its options as above.
 
 ### 🐞 Bug Fixes
 
@@ -83,12 +99,29 @@
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
   comment. Snapshot and release builds now run the tests before publishing.
 
+### ⚙️ Technical
+
+* Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
+  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
+* Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
+  comment. Snapshot and release builds now run the tests before publishing.
+
+### ⚙️ Typescript API Adjustments
+
+* `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
+  as `leafOldData` / `leafNewData`.
+
+### ✨ Styles
+
+* Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
+
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.27 → 2.28`
 * @azure/msal-browser `5.23 → 5.24`
 * @blueprintjs/core `6.20 → 6.21`
 * @blueprintjs/datetime `6.2 → 6.3`
+* swiper `12.2 → 14.3`
 
 ## 88.1.0 - 2026-10-01
 
