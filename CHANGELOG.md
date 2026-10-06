@@ -60,6 +60,12 @@
 * `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
   as `leafOldData` / `leafNewData`.
 
+### 🤖 AI Docs + Tooling
+
+* Added support for reference-style Markdown links (`[text][label]`) to the doc tools. A section
+  read from `hoist-read-doc` or `hoist-docs read` now appends the link definitions it uses. Search
+  excerpts and section headings show the link text only.
+
 ### ✨ Styles
 
 * Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
