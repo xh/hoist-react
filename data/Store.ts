@@ -1641,9 +1641,7 @@ export class Store
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
-            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
-            // Rebuild it as modifyRecords() does - a spread would drop defaults held by the
-            // prototype of sparse data.
+            // Rebuild rather than spread - sparse data holds its defaults on a prototype.
             const data = this.parseUpdate(recToRevert.committedData, {});
             const ret = new StoreRecord({
                 id: recToRevert.id,
@@ -1660,7 +1658,6 @@ export class Store
         });
     }
 
-    // Replace summary records with their updated versions, keeping any not updated.
     private mergeSummaryRecords(updates: StoreRecord[]): StoreRecord[] {
         return this.summaryRecords.map(rec => updates.find(it => it.id === rec.id) ?? rec);
     }
