@@ -283,22 +283,6 @@ export function isPromiseExtension(entry: Pick<SymbolEntry, 'name' | 'filePath'>
 const MAX_DEFAULT_LENGTH = 60;
 
 /**
- * True if a file, given by its path relative to the repo root (with a leading slash), is library
- * source to index. Excludes dependencies, build output, this MCP sub-project, and unit tests and
- * their support code, which are not part of the published package.
- */
-function isLibrarySource(relPath: string | null): boolean {
-    return (
-        !!relPath &&
-        !relPath.startsWith('/node_modules/') &&
-        !relPath.includes('/build/') &&
-        !relPath.includes('/mcp/') &&
-        !relPath.startsWith('/test/') &&
-        !relPath.endsWith('.spec.ts')
-    );
-}
-
-/**
  * Derive the source package from a file's absolute path.
  * e.g. `/repo/core/HoistBase.ts` maps to `core`,
  *      `/repo/cmp/grid/GridModel.ts` maps to `cmp/grid`.
@@ -435,7 +419,14 @@ function buildSymbolIndex(proj: Project): {
         const relPath = filePath.startsWith(repoRoot + '/')
             ? filePath.slice(repoRoot.length)
             : null;
-        if (!isLibrarySource(relPath)) continue;
+        if (
+            !relPath ||
+            relPath.startsWith('/node_modules/') ||
+            relPath.includes('/build/') ||
+            relPath.includes('/mcp/')
+        ) {
+            continue;
+        }
 
         const pkg = derivePackage(filePath, repoRoot);
 
@@ -926,7 +917,14 @@ function enrichMemberIndexJsDoc(proj: Project): void {
         const relPath = filePath.startsWith(repoRoot + '/')
             ? filePath.slice(repoRoot.length)
             : null;
-        if (!isLibrarySource(relPath)) continue;
+        if (
+            !relPath ||
+            relPath.startsWith('/node_modules/') ||
+            relPath.includes('/build/') ||
+            relPath.includes('/mcp/')
+        ) {
+            continue;
+        }
 
         for (const cls of sourceFile.getClasses()) {
             if (!shouldIndexClassMembers(cls)) continue;

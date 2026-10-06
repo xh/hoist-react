@@ -266,6 +266,9 @@ interface IPanelConfig { ... }
 - **PascalCase** for files containing a primary class or component export (`GridModel.ts`,
   `Panel.ts`, `FetchService.ts`)
 - **camelCase** for utility files and internal helpers (`index.ts`, `impl/ResizeContainer.ts`)
+- **Unit tests** live in `test/`, in folders that mirror the library, named after the code they
+  test with a `.spec.ts` suffix: `test/data/Store.spec.ts` tests `data/Store.ts`. Never put a
+  test file beside library code. See [Unit Testing](./unit-testing.md).
 
 ### Interfaces and Types
 

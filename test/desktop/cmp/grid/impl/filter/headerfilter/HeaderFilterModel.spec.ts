@@ -15,9 +15,9 @@ import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test';
 import {onReactionError} from 'mobx';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
-import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
-import {CustomTabModel} from './custom/CustomTabModel';
-import {HeaderFilterModel} from './HeaderFilterModel';
+import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {CustomTabModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/headerfilter/custom/CustomTabModel';
+import {HeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/headerfilter/HeaderFilterModel';
 
 /**
  * The column header filter of desktop grids. Its Values tab picks from a column's values and its

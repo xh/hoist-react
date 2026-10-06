@@ -169,9 +169,12 @@ export function fullName(test: ReportTest): string {
 //------------------------
 // Helpers
 //------------------------
-// Group specs by Hoist package: the spec's directory, at most two levels deep.
+// Group specs by the Hoist package they test: the spec's directory under test/, at most two
+// levels deep.
 function packageOf(path: string): string {
-    const parts = dirname(path).split('/');
+    const parts = dirname(path)
+        .replace(/^test\/?/, '')
+        .split('/');
     return parts.slice(0, 2).join('/') || '.';
 }
 
