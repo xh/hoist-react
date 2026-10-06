@@ -554,3 +554,10 @@
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
   (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` and `/desktop/` README
   package tables.
+
+### 2026-10-04
+- Added `docs/unit-testing.md`, covering the new Vitest unit test suite: how it runs, the fake
+  hoist-core server and `initTestAppAsync()`, conventions for writing tests, the test reports, CI,
+  and working with AI agents.
+- Indexed in `docs/README.md` (Quick Reference and DevOps and Environment) and
+  `docs/doc-registry.json`. Linked from the README, `CLAUDE.md`, and `docs/build-and-publish.md`.

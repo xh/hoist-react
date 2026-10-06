@@ -9,6 +9,7 @@ unchecked and note in comments.
 - [ ] Added CHANGELOG entry, or determined not required.
 - [ ] Reviewed for breaking changes, added `breaking-change` label + CHANGELOG if so.
 - [ ] Updated doc comments / prop-types, or determined not required.
+- [ ] Added or updated unit tests, or determined not required.
 - [ ] Reviewed and tested on Mobile, or determined not required.
 - [ ] Created Toolbox branch / PR, or determined not required.
 

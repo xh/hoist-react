@@ -42,7 +42,16 @@ import type {SymbolEntry, MemberIndexEntry, SymbolDetail} from './ts-registry.js
 const CACHE_SCHEMA_VERSION = 2;
 
 /** Directories pruned from the fingerprint walk - mirrors `buildSymbolIndex` filters. */
-const EXCLUDED_DIRS = new Set(['node_modules', 'build', 'mcp', '.git', '.idea', '.vscode', 'docs']);
+const EXCLUDED_DIRS = new Set([
+    'node_modules',
+    'build',
+    'mcp',
+    'test',
+    '.git',
+    '.idea',
+    '.vscode',
+    'docs'
+]);
 
 /**
  * Indexer source files whose changes invalidate the cache despite living under
@@ -101,6 +110,7 @@ export function computeFingerprint(repoRoot: string): string {
                 walk(resolve(dir, entry.name));
             } else if (entry.isFile()) {
                 if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.tsx')) continue;
+                if (entry.name.endsWith('.spec.ts')) continue;
                 const fullPath = resolve(dir, entry.name);
                 try {
                     const stats = statSync(fullPath);
