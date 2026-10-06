@@ -115,23 +115,17 @@ describe('ViewManagerModel', () => {
             expect(handleException).toHaveBeenCalledOnce();
         });
 
-        // BUG: ViewManagerModel.ts:663-675 - after a failed load, the fallback default view is
-        // loaded without being awaited, and lands after the currentView reaction (:709-713) is
-        // added. The reaction then posts `currentView: null`, so a transient failure overwrites
-        // the user's saved view, and their next visit opens the default instead.
-        it.fails(
-            "leaves the user's saved current view in place when views fail to load",
-            async () => {
-                views.state.currentView = 'mine';
-                views.failNextLoad();
-                vi.spyOn(XH, 'handleException').mockImplementation(() => {});
+        it("leaves the user's saved current view in place when views fail to load", async () => {
+            views.state.currentView = 'mine';
+            views.failNextLoad();
+            vi.spyOn(XH, 'handleException').mockImplementation(() => {});
 
-                await createAsync();
-                await views.settleAsync();
+            await createAsync();
+            await views.settleAsync();
 
-                expect(views.state.currentView).toBe('mine');
-            }
-        );
+            expect(views.state.currentView).toBe('mine');
+            expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(0);
+        });
     });
 
     describe('manageGlobal', () => {
@@ -215,6 +209,26 @@ describe('ViewManagerModel', () => {
             expect(toast).toHaveBeenCalledOnce();
         });
 
+        it('keeps changes made while a save is in flight', async () => {
+            views.state.currentView = 'mine';
+            const vmm = await createAsync();
+            vi.spyOn(XH, 'successToast').mockImplementation(() => null);
+            vmm.setValue({sortBy: 'name'});
+
+            const release = views.holdResponses('xhView/updateValue'),
+                save = vmm.saveAsync();
+            await vi.waitFor(() =>
+                expect(hoistCore.requestsTo('xhView/updateValue')).toHaveLength(1)
+            );
+            vmm.setValue({sortBy: 'size'});
+            release();
+            await save;
+
+            expect(vmm.view.value).toEqual({sortBy: 'name'});
+            expect(vmm.getValue()).toEqual({sortBy: 'size'});
+            expect(vmm.isValueDirty).toBe(true);
+        });
+
         it('confirms before overwriting a view saved elsewhere since it was loaded', async () => {
             views.state.currentView = 'mine';
             const vmm = await createAsync(),
@@ -261,10 +275,7 @@ describe('ViewManagerModel', () => {
             expect(reqs.map(it => it.json)).toEqual([{sortBy: 'size'}]);
         });
 
-        // BUG: ViewManagerModel.ts:743 (and :473 for saveAsync) - setAsView() with the saved view
-        // clears the pending value, dropping any change made while the save was in flight. The
-        // model then reports no unsaved changes, and the change is never saved.
-        it.fails('keeps changes made while an auto-save is in flight', async () => {
+        it('keeps changes made while an auto-save is in flight', async () => {
             Object.assign(views.state, {currentView: 'mine', autoSave: true});
             const vmm = await createAsync();
             vi.useFakeTimers();
@@ -462,6 +473,7 @@ class ViewServer {
 
     private failLoad = false;
     private gate: Promise<void> = null;
+    private gatePath: string = null;
     private pending = new Set<Promise<Response>>();
 
     add(token: string, name: string, opts: ViewOptions = {}): JsonBlob {
@@ -479,12 +491,13 @@ class ViewServer {
         this.failLoad = true;
     }
 
-    /** Hold responses until the returned function is called. */
-    holdResponses(): () => void {
+    /** Hold responses - all, or those to one path - until the returned function is called. */
+    holdResponses(path: string = null): () => void {
         let release: () => void;
         this.gate = new Promise(resolve => (release = resolve));
+        this.gatePath = path;
         return () => {
-            this.gate = null;
+            this.gate = this.gatePath = null;
             release();
         };
     }
@@ -601,7 +614,7 @@ class ViewServer {
                 headers: {}
             };
         hoistCore.requests.push(req);
-        await this.gate;
+        if (!this.gatePath || path === this.gatePath) await this.gate;
         return fn(req);
     }
 }
