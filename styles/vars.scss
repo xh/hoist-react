@@ -704,6 +704,16 @@ body {
   }
 
   //------------------------
+  // Radio Card Input
+  //------------------------
+  --xh-radio-card-input-bg: var(--radio-card-input-bg, var(--xh-bg-alt));
+  --xh-radio-card-input-border-radius: var(--radio-card-input-border-radius, 10);
+  --xh-radio-card-input-border-radius-px: calc(var(--xh-radio-card-input-border-radius) * 1px);
+  --xh-radio-card-input-gap-px: var(--radio-card-input-gap-px, var(--xh-pad-px));
+  --xh-radio-card-input-card-width: var(--radio-card-input-card-width, 88px);
+  --xh-radio-card-input-selected-color: var(--radio-card-input-selected-color, var(--xh-intent-primary));
+
+  //------------------------
   // Intent Input
   //------------------------
   --xh-intent-input-swatch-size-px: var(--intent-input-swatch-size-px, 20px);

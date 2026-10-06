@@ -216,6 +216,11 @@ with spaces or special characters are included as-is — for example, an option 
 `label: 'High Risk'` would generate `data-testid="my-radio-High Risk"`. This can be surprising
 for test authors expecting normalized or slugified identifiers.
 
+### RadioCardInput (Cards)
+
+`RadioCardInput` generates testIds for each card: `${testId}-${value}`, using the option's
+stringified `value` (not its label). A "None" option with `value: null` gets `${testId}-null`.
+
 ### GroupingChooser (Popover)
 
 `GroupingChooser` generates testIds for its editor panel (`${testId}-editor`), favorites panel
@@ -483,6 +488,7 @@ models (or have no models at all).
 | [`desktop/cmp/input/TextInput.ts`](../desktop/cmp/input/TextInput.ts) | Input with sub-testId on clear button |
 | [`desktop/cmp/input/Select.ts`](../desktop/cmp/input/Select.ts) | Input with sub-testId on dropdown menu and clear button |
 | [`desktop/cmp/input/RadioInput.ts`](../desktop/cmp/input/RadioInput.ts) | Input with sub-testIds derived from option labels |
+| [`desktop/cmp/input/RadioCardInput.ts`](../desktop/cmp/input/RadioCardInput.ts) | Input with sub-testIds derived from option values |
 | [`desktop/cmp/tab/impl/TabContainer.ts`](../desktop/cmp/tab/impl/TabContainer.ts) | TabContainer with sub-testIds for tabs and switcher |
 | [`desktop/cmp/rest/RestGrid.ts`](../desktop/cmp/rest/RestGrid.ts) | RestGrid with sub-testIds for inner grid and form |
 | [`desktop/cmp/grouping/GroupingChooser.ts`](../desktop/cmp/grouping/GroupingChooser.ts) | GroupingChooser with sub-testIds for editor and favorites |

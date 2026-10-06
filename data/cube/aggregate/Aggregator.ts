@@ -37,6 +37,18 @@ export abstract class Aggregator {
     }
 
     /**
+     * Names of any fields this aggregator reads other than the one it
+     * aggregates - e.g. the weight field of a weighted average. Null by default.
+     *
+     * Views re-aggregate a field incrementally only when its own leaf value changes - declaring
+     * these extends that to changes in the fields named here. Not needed for aggregators that
+     * return false from {@link dependsOnChildrenOnly}, which rebuild on every update.
+     */
+    get dependsOn(): string[] {
+        return null;
+    }
+
+    /**
      * Aggregate values
      * @param rows - current rows in aggregation.  Will never be empty.
      * @param fieldName - name of field to perform the aggregation on.

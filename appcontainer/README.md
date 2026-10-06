@@ -416,7 +416,7 @@ class AppModel extends HoistAppModel {
     override getAppOptions(): AppOptionSpec[] {
         return [
             themeAppOption(),        // Built-in: light/dark/system
-            sizingModeAppOption(),   // Built-in: compact/standard/large
+            sizingModeAppOption(),   // Built-in: tiny/compact/standard/large grid sizing
             autoRefreshAppOption(),  // Built-in: enable/disable auto-refresh
             {
                 name: 'loadInactiveLoans',
@@ -434,6 +434,11 @@ class AppModel extends HoistAppModel {
 
 Each option can be backed by a preference (`prefName`) or use custom `valueGetter`/`valueSetter`
 functions for more complex handling. Return an empty array to disable the options menu item.
+
+On desktop, `themeAppOption()` and `sizingModeAppOption()` render as a `RadioCardInput` with a
+small preview on each card: a mini app window per theme, and a mini grid drawn at each sizing
+mode's row height. Pass `previewCards: false` to either for a compact `SegmentedControl`. Custom
+options can use `radioCardInput()` the same way for choices that are easier to show than to name.
 
 `XH.showOptionsDialog()` opens the dialog. Set `reloadRequired: true` on options that need an
 app reload to take effect — the dialog handles this automatically.
