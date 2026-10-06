@@ -71,9 +71,32 @@ The global setup in `test/setup.ts` fails a test that triggers any of these:
 
 ### Placement and naming
 
-Put a spec next to the code it tests, named after it: `data/Store.spec.ts` tests `data/Store.ts`.
-Split a large subject by concern, e.g. `data/StoreValidation.spec.ts`. Specs are excluded from
-the published package, and from the MCP symbol index.
+Specs live in `test/`, in folders that mirror the library. Name a spec after the code it tests,
+with a `.spec.ts` suffix: `test/data/Store.spec.ts` tests `data/Store.ts`. Split a large subject
+by concern, for example `test/data/StoreValidation.spec.ts`. Import the code under test through its
+`@xh/hoist/...` path, as app code does.
+
+Do not put a spec next to the code it tests, and do not name it `*.test.ts`. Many projects keep
+tests beside their code, but hoist-react keeps all test code in `test/`. That folder stays out of
+the published package and the library build. It has its own `tsconfig.json`, and `pnpm typecheck`
+checks both.
+
+The rule is enforced. Vitest runs only `test/**/*.spec.ts`, so a misplaced file would never run.
+To catch that, `test/globalSetup.ts` fails the whole run when it finds a test file outside `test/`
+or with another name, and lists where each file belongs.
+
+The rest of `test/` holds the shared test code:
+
+| Path | Contents |
+|------|----------|
+| `test/<package>/` | Specs, in folders that mirror the library |
+| `test/index.ts` | Imported as `@xh/hoist/test` - the fake hoist-core and `initTestAppAsync()` |
+| `test/hoistCore.ts` | The fake hoist-core server |
+| `test/testApp.ts` | `initTestAppAsync()`, which boots a headless app |
+| `test/setup.ts` | Runs before each spec file - starts the fake server and installs the guards |
+| `test/globalSetup.ts` | Runs once per test run - checks where test files live |
+| `test/report/` | The reporter that writes the CI summary and HTML report |
+| `test/tsconfig.json` | Type settings for the tests, apart from the library build |
 
 Name `describe` blocks after the class or function, then the method or feature. Name each test
 for the behavior it checks, in the present tense. The test list should read as a spec of what

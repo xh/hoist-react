@@ -22,5 +22,5 @@
     }
   },
   "include": ["./**/*", "package.json"],
-  "exclude": ["node_modules", "build", "mcp"]
+  "exclude": ["node_modules", "build", "mcp", "test", "vitest.config.mts"]
 }

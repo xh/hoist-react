@@ -18,7 +18,7 @@ import {
     type DragSelectionRow,
     type DropRejectReason,
     type DropTarget
-} from './colChooserDropEngine';
+} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/colChooserDropEngine';
 
 /**
  * Drag-and-drop rules of the desktop column chooser, run against its pure resolution engine. With

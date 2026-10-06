@@ -289,6 +289,9 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                     omit: !label,
                     className: 'xh-form-field__label',
                     items: [label, requiredIndicator],
+                    // Id lets inputs that are not labelable elements (e.g. RadioCardInput) name
+                    // themselves via `aria-labelledby`.
+                    id: `${childId}-label`,
                     htmlFor: clickableLabel ? childId : null,
                     style: {
                         textAlign: labelTextAlign,

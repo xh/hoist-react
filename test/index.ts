@@ -6,8 +6,8 @@
  */
 
 /**
- * Support code for hoist-react's own unit tests. Not part of the published package.
- * See docs/unit-testing.md.
+ * Shared code for the specs in this folder, imported as `@xh/hoist/test`. Not part of the
+ * published package. See docs/unit-testing.md.
  */
 export * from './hoistCore';
 export * from './testApp';
