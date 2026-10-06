@@ -929,7 +929,7 @@ export class Store
         // 3) Apply changes
         if (!isEmpty(updateRecs)) {
             let current = this._current.withTransaction({update: updateRecs});
-            // Only a record reverting to clean can leave the store clean - normalize just then.
+            // A record reverting to clean can leave the store clean - normalize just then.
             if (updateRecs.some(it => it.isCommitted)) current = current.normalize(this._committed);
             this._current = current;
             changeLog.update = updateRecs;
