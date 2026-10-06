@@ -697,19 +697,18 @@ export class Store
 
         // 2) Pre-process summary records, peeling them out of updates if needed
         const {summaryRecords} = this;
-        let summaryUpdateRecs: StoreRecord[];
+        let newSummaryRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
+            const updates = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
+            if (!isEmpty(updates)) newSummaryRecs = this.mergeSummaryRecords(updates);
         }
 
-        if (isEmpty(summaryUpdateRecs) && rawSummaryData) {
-            summaryUpdateRecs = castArray(rawSummaryData).map(it =>
-                this.createRecord(it, null, true)
-            );
+        if (!newSummaryRecs && rawSummaryData) {
+            newSummaryRecs = castArray(rawSummaryData).map(it => this.createRecord(it, null, true));
         }
 
-        if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+        if (!isEmpty(newSummaryRecs)) {
+            this.summaryRecords = newSummaryRecs;
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -924,7 +923,8 @@ export class Store
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+            summaryUpdateRecs.forEach(it => it.finalize());
+            this.summaryRecords = this.mergeSummaryRecords(summaryUpdateRecs);
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -1641,8 +1641,8 @@ export class Store
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
-            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
-            const data = {...recToRevert.committedData};
+            // Rebuild rather than spread - sparse data holds its defaults on a prototype.
+            const data = this.parseUpdate(recToRevert.committedData, {});
             const ret = new StoreRecord({
                 id: recToRevert.id,
                 store: this,
@@ -1650,11 +1650,16 @@ export class Store
                 data,
                 committedData: data,
                 parent: null,
-                isSummary: true
+                isSummary: true,
+                nonDefaultCount: this._recordBuildData.n
             });
             ret.finalize();
             return ret;
         });
+    }
+
+    private mergeSummaryRecords(updates: StoreRecord[]): StoreRecord[] {
+        return this.summaryRecords.map(rec => updates.find(it => it.id === rec.id) ?? rec);
     }
 }
 

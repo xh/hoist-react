@@ -78,7 +78,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      *
      *  In practice, and according to documentation, this operation is likely to fail for a
      *  number of reasons, and can often do so as timeout.  Therefore, keeping the timeout limit
-     *  value -- `system.iframeHashTimeout` -- at a relatively low value is critical.  Hoist
+     *  value -- `system.iframeBridgeTimeout` -- at a relatively low value is critical.  Hoist
      *  defaults this value to 3000ms vs. the default 10000ms.
      */
     enableSsoSilent?: boolean;
@@ -134,6 +134,17 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
     telemetry: MsalClientTelemetry = null;
     private _telemetryCbHandle: string = null;
+
+    constructor(config: MsalClientConfig) {
+        super({
+            initRefreshTokenExpirationOffsetSecs: -1,
+            msalLogLevel: LogLevel.Warning,
+            domainHint: null,
+            enableTelemetry: true,
+            enableSsoSilent: true,
+            ...config
+        });
+    }
 
     //-------------------------------------------
     // Implementations of core lifecycle methods
@@ -403,7 +414,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loggerOptions: {
                     loggerCallback: (level, message) => this.logFromMsal(level, message),
                     logLevel: msalLogLevel
-                }
+                },
+                iframeBridgeTimeout: 3000 // Prevent long pauses for sso failures.
             },
             cache: {
                 cacheLocation: 'localStorage' // allows sharing auth info across tabs.

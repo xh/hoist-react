@@ -235,9 +235,9 @@ describe('fmtNumberTooltip', () => {
         expect(fmtNumberTooltip(1234.5, {ledger: true})).toBe('1,234.5');
     });
 
-    // BUG: FormatNumber.ts:367 (and :191 for precision: null) - 12 decimal places exceed double
-    // precision for large values, so numbro emits spurious digits, e.g. '44,510,347.00000001'.
-    it.fails('renders large values without spurious digits', () => {
+    // Fixed in 89.0.0 - 12 decimal places exceeded double precision for large values, adding
+    // spurious digits, e.g. '44,510,347.00000001'.
+    it('renders large values without spurious digits', () => {
         expect(fmtNumberTooltip(44510347)).toBe('44,510,347');
         expect(fmtNumberTooltip(2390421244)).toBe('2,390,421,244');
         expect(fmtNumber(2515000000, {precision: null})).toBe('2,515,000,000');
