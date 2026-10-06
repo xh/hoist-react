@@ -12,6 +12,14 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+## 88.1.2-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Restored the `MsalClient` defaults lost in v88: `enableSsoSilent` and `enableTelemetry` again
+  default to `true`, and MSAL logs at `Warning` level. Also restored the 3000ms
+  `system.iframeBridgeTimeout` that caps `ssoSilent` failures, dropped in the MSAL 5 upgrade.
+
 ## 88.1.1 - 2026-10-06
 
 ### 🤖 AI Docs + Tooling
