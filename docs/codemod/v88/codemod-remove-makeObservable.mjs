@@ -128,7 +128,7 @@ async function processFile(filePath) {
         importsTrimmed += trimmedImports;
         if (!DRY) await fs.writeFile(filePath, modified);
         console.log(
-            `  ${path.relative(REPO_ROOT, filePath)} — calls=${removedCalls}, ctors=${removedConstructors}, imports=${trimmedImports}`
+            `  ${path.relative(process.cwd(), filePath)} — calls=${removedCalls}, ctors=${removedConstructors}, imports=${trimmedImports}`
         );
     }
 }
