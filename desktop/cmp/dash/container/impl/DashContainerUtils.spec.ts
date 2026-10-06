@@ -8,10 +8,7 @@ import type {PlainObject} from '@xh/hoist/core';
 import type {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import type {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {describe, expect, it, vi} from 'vitest';
-import {
-    convertGLToState,
-    convertStateToGL
-} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerUtils';
+import {convertGLToState, convertStateToGL} from './DashContainerUtils';
 
 /**
  * Conversion between DashContainer's saved state and GoldenLayout config. The saved state is a

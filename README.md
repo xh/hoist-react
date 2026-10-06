@@ -175,9 +175,8 @@ Key language features used throughout Hoist React include:
 
 Hoist React has a suite of unit tests, run with `pnpm test` on [Vitest](https://vitest.dev). The
 tests compile the library with the same SWC decorator settings that apps use. They run Hoist's real
-services against an in-memory fake of the hoist-core server. Specs live in the `test/` folder,
-which mirrors the library's packages. CI runs them on every pull request. See
-[docs/unit-testing.md](docs/unit-testing.md).
+services against an in-memory fake of the hoist-core server. CI runs them on every pull request.
+See [docs/unit-testing.md](docs/unit-testing.md).
 
 ## Licensing and Support
 

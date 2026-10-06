@@ -172,10 +172,8 @@ application project (e.g., Toolbox) that includes `@xh/hoist` as a dependency.
 **Before writing or changing a unit test, read [`docs/unit-testing.md`](docs/unit-testing.md).**
 The essentials:
 
-- Specs live in `test/`, mirroring the library: `test/data/Store.spec.ts` tests `data/Store.ts`.
-  **Never put a spec beside library code, and never name one `*.test.ts`.** Many projects keep
-  tests next to their code, but this repo keeps all test code in `test/`. `pnpm test` fails on a
-  misplaced test file. CI runs the specs on every PR as the "Unit Tests" check.
+- Specs sit next to the code they test, as `Foo.spec.ts` for `Foo.ts`. CI runs them on every PR
+  as the "Unit Tests" check.
 - When you change library behavior, add or update the specs that cover it, and run `pnpm test`.
 - Tests run Hoist's real services against a fake hoist-core server (`test/hoistCore.ts`). Boot it
   with `initTestAppAsync()`. Do not mock Hoist modules with `vi.mock`.

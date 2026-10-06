@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import swc from 'unplugin-swc';
-import {defineConfig} from 'vitest/config';
+import {configDefaults, defineConfig} from 'vitest/config';
 
 /**
  * Vitest config for hoist-react's unit tests. See docs/unit-testing.md.
@@ -75,11 +75,11 @@ export default defineConfig({
     },
 
     test: {
-        // Specs live in test/, mirroring the library's folders - see docs/unit-testing.md.
-        include: ['test/**/*.spec.ts'],
+        include: ['**/*.spec.ts'],
+        // mcp/ has its own node:test specs, run by `pnpm test:mcp`. Dot-directories are excluded so
+        // a run from the main checkout never collects specs from worktrees under .claude/.
+        exclude: [...configDefaults.exclude, 'build/**', 'mcp/**', '.*/**'],
         environment: 'jsdom',
-        // Fails the run on a test file outside test/ or not named *.spec.ts, which would never run.
-        globalSetup: ['test/globalSetup.ts'],
         setupFiles: ['test/setup.ts'],
         // Allow for initTestAppAsync() in beforeAll, which loads the full desktop module graph.
         hookTimeout: 30_000,

@@ -7,15 +7,16 @@
 node_modules
 scripts
 
-# Unit tests (see docs/unit-testing.md)
+# Unit tests and their support code (see docs/unit-testing.md)
+*.spec.ts
+*.spec.d.ts
 /test
+/build/types/test
 /.vitest
 vitest.config.*
 
 # Development configuration
 *.log
-*.spec.ts
-*.spec.d.ts
 *.tgz
 .DS_Store
 .editorconfig
