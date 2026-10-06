@@ -20,6 +20,13 @@
   default to `true`, and MSAL logs at `Warning` level. Also restored the 3000ms
   `system.iframeBridgeTimeout` that caps `ssoSilent` failures, dropped in the MSAL 5 upgrade.
 
+### 🤖 AI Docs + Tooling
+
+* Fixed the v88 `codemod-remove-makeObservable.mjs` deleting constructors that merged defaults into
+  their `super()` call. It now removes only constructors it emptied itself, whose remaining
+  `super()` passes through the constructor's own params. The v88 upgrade notes gain a grep to find
+  constructors an earlier copy removed.
+
 ## 88.1.1 - 2026-10-06
 
 ### 🤖 AI Docs + Tooling
