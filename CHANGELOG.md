@@ -52,6 +52,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `XH.message()`, `XH.confirm()`, and `XH.prompt()` now resolve to `null` when closed without a
   choice, instead of never settling.
 * Fixed `Store.modifyRecords()` leaving `Store.isDirty` true after its only edit was undone.
+* Fixed `Store.validateAsync()` skipping records changed just before the call, and `Store.isValid`
+  reporting true while a changed record's first async validation was still running.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`. App load
   and `Promise.track()` entries again record their start times.

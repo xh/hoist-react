@@ -165,8 +165,10 @@ export class StoreValidator extends HoistBase {
             toValidate.push(validator);
         });
 
-        await this.validateInChunksAsync(toValidate);
+        // Install before validating, so new validators report Unknown/pending in the meantime and
+        // a validateAsync() call made in the interim covers them.
         runInAction(() => (this._validators = newValidators));
+        await this.validateInChunksAsync(toValidate);
     }
 
     private async validateInChunksAsync(validators: RecordValidator[]) {
