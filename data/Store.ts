@@ -883,8 +883,7 @@ export class Store
             // If after parsing, data is deep equal, its a no-op
             if (equal(updatedData, currentRec.data)) return;
 
-            // A record modified back to its committed values reverts to clean. Reuse the committed
-            // instance where one exists so the RecordSet can normalize to committed below.
+            // Reuse the committed instance for a record modified back to its committed values.
             const reverted = currentRec.isModified && equal(currentRec.committedData, updatedData),
                 updatedRec =
                     (reverted ? this._committed.getById(id) : null) ??
@@ -930,8 +929,7 @@ export class Store
         // 3) Apply changes
         if (!isEmpty(updateRecs)) {
             let current = this._current.withTransaction({update: updateRecs});
-            // Only a record reverting to clean can leave the store clean - normalize just then, as
-            // the check is a full scan when the sets do not share a base.
+            // Only a record reverting to clean can leave the store clean - normalize just then.
             if (updateRecs.some(it => it.isCommitted)) current = current.normalize(this._committed);
             this._current = current;
             changeLog.update = updateRecs;
