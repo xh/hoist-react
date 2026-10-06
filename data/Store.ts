@@ -929,9 +929,8 @@ export class Store
         // 3) Apply changes
         if (!isEmpty(updateRecs)) {
             let current = this._current.withTransaction({update: updateRecs});
-            // Store can only be clean if every updated record is - skip full normalization otherwise.
-            if (updateRecs.every(it => it.isCommitted))
-                current = current.normalize(this._committed);
+            // Do (expensive) normalize only if store might have become clean.
+            if (updateRecs.every(r => r.isCommitted)) current = current.normalize(this._committed);
             this._current = current;
             changeLog.update = updateRecs;
             this.incrementalRefilter();
