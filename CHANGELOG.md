@@ -89,13 +89,6 @@
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
   comment. Snapshot and release builds now run the tests before publishing.
 
-### ⚙️ Technical
-
-* Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
-  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
-* Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
-  comment. Snapshot and release builds now run the tests before publishing.
-
 ### ⚙️ Typescript API Adjustments
 
 * `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
