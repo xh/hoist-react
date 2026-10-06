@@ -124,14 +124,18 @@ export interface IconRegistrationConfig {
     /** Additional search terms for this icon, used by {@link IconPicker}. */
     keywords?: string[];
 
-    /** True to exclude this icon from user-facing pickers. Defaults to false. */
-    hidden?: boolean;
+    /**
+     * True to leave this icon out of {@link IconPicker}'s default options. It stays usable in code
+     * and by name, and a picker still offers it when listed in `icons`. Defaults to false.
+     */
+    hideFromPicker?: boolean;
 
     /**
      * True to replace an existing factory of the same name, including one of Hoist's built-in
-     * icons. Without it, a name that already exists on {@link Icon} keeps its existing icon and
-     * Hoist logs a console warning. The factory returned by {@link Icon.register} still renders the
-     * new icon, but `Icon[name]` and {@link Icon.get} keep resolving to the existing one.
+     * icons. Without it, registering a name that already exists on {@link Icon} - one of Hoist's
+     * own icons, or one the app registered earlier - keeps the existing icon and logs a console
+     * warning. The factory returned by {@link Icon.register} still renders the new icon, but
+     * `Icon[name]` and {@link Icon.get} keep resolving to the existing one.
      */
     replace?: boolean;
 }
@@ -172,11 +176,15 @@ export interface IconCatalogEntry {
     /** Additional search terms for this icon. */
     keywords: string[];
 
-    /** True if registered by the application via {@link Icon.register}. */
-    isCustom: boolean;
+    /**
+     * Where the glyph comes from: `'hoist'` for Hoist's built-in set, or `'app'` for one the app
+     * added via {@link Icon.register}. An app name registered for a Hoist glyph is an alias, so
+     * that glyph stays `'hoist'`.
+     */
+    source: 'hoist' | 'app';
 
-    /** True to exclude from user-facing pickers. */
-    hidden: boolean;
+    /** True to leave out of {@link IconPicker}'s default options - see `hideFromPicker`. */
+    hideFromPicker: boolean;
 
     /** Factory for rendering this icon. */
     factory: IconFactory;
@@ -1142,8 +1150,8 @@ export const Icon = {
      * Return metadata for all icons known to Hoist - its built-in set plus any registered by the
      * app via {@link Icon.register} - sorted by display name.
      *
-     * Used to populate {@link IconPicker}. Note that entries flagged `hidden` are included here
-     * but excluded from pickers by default.
+     * Used to populate {@link IconPicker}. Note that entries flagged `hideFromPicker` are included
+     * here but excluded from pickers by default.
      */
     getCatalog(): IconCatalogEntry[] {
         return iconCatalog.getEntries();

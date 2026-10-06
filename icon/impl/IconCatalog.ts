@@ -78,7 +78,7 @@ class IconCatalog {
         this.ensureBuiltIns();
 
         const {Icon} = this.source,
-            {name, defs, props, displayName, keywords, hidden, replace} = config;
+            {name, defs, props, displayName, keywords, hideFromPicker, replace} = config;
 
         throwIf(!name, "Icon.register() | Must provide a 'name' for the icon.");
         throwIf(
@@ -121,7 +121,7 @@ class IconCatalog {
             prefix: config.prefix,
             displayName,
             keywords,
-            hidden
+            hideFromPicker
         });
 
         if (install) {
@@ -249,8 +249,8 @@ class IconCatalog {
                 prefixes,
                 names: [],
                 keywords: [],
-                isCustom: false,
-                hidden: false,
+                source: 'hoist',
+                hideFromPicker: false,
                 factory: this.makeFactory(faName)
             };
             this.entries.set(faName, entry);
@@ -271,9 +271,9 @@ class IconCatalog {
         prefix: HoistIconPrefix;
         displayName: string;
         keywords: string[];
-        hidden: boolean;
+        hideFromPicker: boolean;
     }) {
-        const {faName, name, prefix, displayName, keywords, hidden} = cfg,
+        const {faName, name, prefix, displayName, keywords, hideFromPicker} = cfg,
             isNew = !this.entries.has(faName),
             entry = this.getOrCreateEntry(faName);
 
@@ -281,11 +281,11 @@ class IconCatalog {
         entry.prefixes = union(entry.prefixes, this.detectPrefixes(faName));
 
         if (isNew) {
-            entry.isCustom = true;
+            entry.source = 'app';
             if (name) entry.name = name;
             entry.displayName = displayName ?? startCase(name ?? faName);
             if (prefix) entry.prefix = prefix;
-            entry.hidden = !!hidden;
+            entry.hideFromPicker = !!hideFromPicker;
         }
         if (!isEmpty(keywords)) entry.keywords = union(entry.keywords, keywords);
     }
@@ -300,7 +300,7 @@ class IconCatalog {
             // An entry losing its primary name falls back to its FA name.
             if (prior.name === name) {
                 prior.name = prior.faName;
-                if (!prior.isCustom) prior.displayName = startCase(prior.faName);
+                if (prior.source === 'hoist') prior.displayName = startCase(prior.faName);
             }
         }
 

@@ -414,7 +414,8 @@ Useful props:
 - `prefix` to render the grid in a specific weight
 - `icons` to restrict the offering to a curated subset
 
-Register an icon with `hidden: true` to keep it out of pickers while leaving it usable in code.
+Register an icon with `hideFromPicker: true` to keep it out of pickers while leaving it usable in
+code. A picker still offers it when it is listed in `icons`.
 
 ## IconProps Reference
 

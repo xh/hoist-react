@@ -70,7 +70,7 @@ export class AlertBannerModel extends HoistModel {
      */
     get iconOptions(): string[] {
         return Icon.getCatalog()
-            .filter(it => !it.isCustom && !it.hidden)
+            .filter(it => it.source === 'hoist' && !it.hideFromPicker)
             .map(it => it.faName);
     }
 

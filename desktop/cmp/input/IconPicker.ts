@@ -44,9 +44,6 @@ export interface IconPickerProps extends HoistProps, HoistInputProps, LayoutProp
      */
     icons?: string[];
 
-    /** True to include icons registered with `hidden: true`. Defaults to false. */
-    includeHidden?: boolean;
-
     /** Maximum height of the icon grid before scrolling. Defaults to 260. */
     maxMenuHeight?: number;
 
@@ -148,10 +145,10 @@ class IconPickerModel extends HoistInputModel {
      * an app registers icons after this control has first rendered.
      */
     get options(): IconOption[] {
-        const {icons, includeHidden} = this.componentProps,
+        const {icons} = this.componentProps,
             names = isEmpty(icons)
                 ? Icon.getCatalog()
-                      .filter(it => includeHidden || !it.hidden)
+                      .filter(it => !it.hideFromPicker)
                       .map(it => it.faName)
                 : icons;
         return uniqBy(compact(names.map(it => this.toOption(it))), 'value');
