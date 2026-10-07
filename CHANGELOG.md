@@ -49,8 +49,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
-* Fixed grid row backgrounds - stripes, tree and group row colors, and the total row - stopping at
-  the last column under AG Grid 36, which paints the space after it in the grid background.
+* Fixed grid row backgrounds (stripes, tree / group colors, total row) stopping at the last column.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`. App load
   and `Promise.track()` entries again record their start times.

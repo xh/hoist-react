@@ -76,9 +76,7 @@
   // Row colors come from params - these are the states with no param equivalent: selected-row *text*
   // color, and group rows.
   .ag-row {
-    // ag-Grid 36 fills the space after the last column with a `::after` filler painted in the
-    // grid's data background. That hides the row's own background (stripes, tree / group colors,
-    // total rows) to the right of the last column. Let the row paint through instead, as in v35.
+    // Let the row background show through ag-Grid's filler after the last column.
     &::after {
       background-color: transparent;
     }
