@@ -289,6 +289,15 @@ export class ExceptionHandler {
 
             ret = omitBy(ret, isNil);
 
+            // Summarize the verbose callContext by its loadSpec. Do so before cloning, which
+            // copies the loadSpec into a plain object.
+            const loadSpec = ret.callContext?.loadSpec;
+            if (loadSpec instanceof LoadSpec) {
+                ret.loadType = loadSpec.typeDisplay;
+                ret.loadNumber = loadSpec.loadNumber;
+            }
+            delete ret.callContext;
+
             // 2) Deep clone/protect against circularity/monstrosity
             ret = this.cloneAndTrim(ret);
 
@@ -309,13 +318,6 @@ export class ExceptionHandler {
                 delete fetchOptions.loadSpec;
                 delete fetchOptions.span;
             }
-            // Extract summary fields from verbose callContext into fetchOptions.
-            const loadSpec = ret.callContext?.loadSpec;
-            if (loadSpec instanceof LoadSpec) {
-                ret.loadType = loadSpec.typeDisplay;
-                ret.loadNumber = loadSpec.loadNumber;
-            }
-            delete ret.callContext;
 
             // 4) Redact specified values
             this.redact(ret);
@@ -396,15 +398,7 @@ export class ExceptionHandler {
         forOwn(obj, (val, key) => {
             try {
                 if (key.startsWith('_')) return;
-                if (val && !val.toJSON) {
-                    if (isObject(val)) {
-                        val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
-                    }
-                    if (isArray(val)) {
-                        val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
-                    }
-                }
-                ret[key] = val;
+                ret[key] = this.trimValue(val, depth);
             } catch (e) {
                 // fail quietly.  Note that some properties may be inaccessible, e.g. security
                 // limitations accessing popup window references.
@@ -413,6 +407,15 @@ export class ExceptionHandler {
         });
 
         return ret;
+    }
+
+    // Trim one value found at the given depth. Arrays count as a level, like objects.
+    private trimValue(val, depth: number) {
+        if (!isObject(val) || (val as any).toJSON) return val;
+        if (depth <= 1) return isArray(val) ? '[...]' : '{...}';
+        return isArray(val)
+            ? val.map(it => this.trimValue(it, depth - 1))
+            : this.cloneAndTrim(val, depth - 1);
     }
 
     private redact(obj: PlainObject, extra: string[] = []) {
