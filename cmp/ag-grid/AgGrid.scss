@@ -76,6 +76,13 @@
   // Row colors come from params - these are the states with no param equivalent: selected-row *text*
   // color, and group rows.
   .ag-row {
+    // Extend the row's background and hover / selection overlay across ag-Grid's filler after
+    // the last column. ag-Grid paints the overlay only on the cell containers.
+    &::after {
+      background-color: var(--ag-internal-row-overlay-color, transparent);
+      background-image: var(--ag-internal-row-overlay-image, none);
+    }
+
     &.ag-row-selected .ag-cell {
       color: var(--xh-grid-selected-row-text-color);
     }
@@ -163,10 +170,14 @@
   }
 
   // ag-Grid also hovers full-width group rows and pinned (summary) rows - Hoist never has.
-  .ag-row-hover.ag-full-width-row.ag-row-group::before,
-  .ag-row-hover.ag-row-pinned::before {
+  .ag-row-hover.ag-full-width-row.ag-row-group::before {
     background-color: transparent;
     background-image: none;
+  }
+
+  .ag-row-hover.ag-row-pinned {
+    --ag-internal-row-overlay-color: transparent;
+    --ag-internal-row-overlay-image: none;
   }
 
   //------------------------
