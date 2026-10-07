@@ -30,6 +30,7 @@ import equal from 'fast-deep-equal';
 import {
     castArray,
     compact,
+    countBy,
     defaultsDeep,
     differenceBy,
     first,
@@ -40,7 +41,9 @@ import {
     isNil,
     isNull,
     isString,
+    keys,
     partition,
+    pickBy,
     remove as lodashRemove,
     uniq,
     uniqBy,
@@ -1352,7 +1355,10 @@ export class Store
             `Applications must not specify a field named '__proto__' - assigning it would replace the
             prototype of each record's data object rather than setting a value on it.`
         );
-        throwIf(uniqBy(ret, 'name').length !== ret.length, 'Field names must be unique.');
+        if (uniqBy(ret, 'name').length !== ret.length) {
+            const dupes = keys(pickBy(countBy(ret, 'name'), count => count > 1));
+            throw XH.exception(`Field names must be unique. Duplicates: ${dupes.join(', ')}`);
+        }
         return ret;
     }
 
