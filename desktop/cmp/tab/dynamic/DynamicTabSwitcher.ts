@@ -28,7 +28,7 @@ import {consumeEvent, getTestId} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
-import {computed} from 'mobx';
+import {computed} from '@xh/hoist/mobx';
 import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';
@@ -97,6 +97,8 @@ const tabs = hoistCmp.factory<TabsProps>({
                             className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
                             item: div({
                                 className: 'bp6-tab-list',
+                                role: 'tablist',
+                                'aria-orientation': isVertical ? 'vertical' : 'horizontal',
                                 items: [
                                     visibleTabs.map((tab, index) =>
                                         tabCmp({key: tab.id, localModel, tab, index})
@@ -122,7 +124,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
         isCloseable =
             tab.disabled ||
             model.enabledVisibleTabs.filter(it => it instanceof TabModel).length > 1,
-        tabRef = useRef<HTMLDivElement>(),
+        tabRef = useRef<HTMLDivElement>(null),
         scrollerModel = useContextModel(ScrollerModel),
         {showScrollButtons} = scrollerModel,
         {disabled, icon, tooltip} = tab,
@@ -177,9 +179,14 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                 testId: tabTestId,
                 ...provided.draggableProps,
                 ...provided.dragHandleProps,
+                // Focusable drag handle is the tab itself - override dnd's default `button` role.
+                role: 'tab',
+                'aria-selected': isActive,
+                'aria-disabled': disabled,
                 style: getStyles(isVertical, provided.draggableProps.style),
                 items: [
                     div({
+                        // Styling hooks shared with Blueprint tabs - see Tabs.scss.
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
                         className: 'bp6-tab',

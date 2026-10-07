@@ -8,7 +8,7 @@ import {type MouseEvent} from 'react';
 import type {ChartContextMenuSpec, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
 import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observableRef} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isEmpty, isFunction, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
 
@@ -26,6 +26,9 @@ interface ChartConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface ChartModelDefaults {
@@ -60,11 +63,9 @@ export class ChartModel extends HoistModel {
         ]
     };
 
-    @observable.ref
-    highchartsConfig: PlainObject = {};
+    @observableRef accessor highchartsConfig: PlainObject = {};
 
-    @observable.ref
-    series: any[] = [];
+    @observableRef accessor series: any[] = [];
 
     contextMenu: ChartContextMenuSpec;
 
@@ -73,8 +74,7 @@ export class ChartModel extends HoistModel {
      * information about the chart, but any mutations to the chart should
      * be done via {@link setHighchartsConfig} or {@link setSeries}.
      */
-    @observable.ref
-    highchart: any;
+    @observableRef accessor highchart: any;
 
     /** True if this chart has no series to display */
     @computed
@@ -84,11 +84,17 @@ export class ChartModel extends HoistModel {
 
     constructor(config?: ChartConfig) {
         super();
-        makeObservable(this);
 
-        const {highchartsConfig, series = [], contextMenu, xhImpl = false} = config ?? {};
+        const {
+            highchartsConfig,
+            series = [],
+            contextMenu,
+            xhName = null,
+            xhImpl = false
+        } = config ?? {};
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
         this.contextMenu = this.parseContextMenu(contextMenu);

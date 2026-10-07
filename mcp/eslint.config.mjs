@@ -18,5 +18,5 @@ export default defineConfig([
             globals: globals.node
         }
     },
-    globalIgnores(['build/**/*', '.yarn/**/*', 'node_modules/**/*'])
+    globalIgnores(['build/**/*', 'node_modules/**/*'])
 ]);

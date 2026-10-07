@@ -19,7 +19,7 @@ import {cloneElement, isValidElement, MouseEvent, ReactElement} from 'react';
  * @param spec - spec the menu to be shown. If null, or the number of items is empty, no menu will
  *      be rendered and the event will be consumed.
  */
-export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): ReactElement {
+export function useContextMenu(child?: ReactElement<any>, spec?: ContextMenuSpec): ReactElement {
     if (!child || isUndefined(spec)) return child;
 
     const onContextMenu = (e: MouseEvent | PointerEvent) => {

@@ -150,10 +150,12 @@ numeric-only parameters). See the
 ### Conditional Route Exclusion
 
 Routes support an `omit` property (a Hoist extension, not part of Router5) that allows
-declarative exclusion of routes at registration time. This is useful for role-gated sections:
+declarative exclusion of routes at registration time. This is useful for role-gated sections.
+`getRoutes()` returns `HoistRoute[]` - Hoist's `Route` type extended with the optional `omit` key -
+so the property type-checks without any cast:
 
 ```typescript
-override getRoutes() {
+override getRoutes(): HoistRoute[] {
     return [{
         name: 'default',
         path: '/app',
@@ -183,7 +185,7 @@ The `XH` singleton exposes the primary routing API used by application code:
 
 ### `XH.routerState`
 
-The most commonly used property. It is a MobX `@observable.ref` value that updates whenever
+The most commonly used property. It is a MobX `@observableRef` value that updates whenever
 the route changes, making it available for use in MobX reactions:
 
 ```typescript

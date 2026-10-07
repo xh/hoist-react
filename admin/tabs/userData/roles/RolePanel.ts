@@ -9,8 +9,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/cmp/error';
-import {popoverFilterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
@@ -25,12 +24,6 @@ export const rolePanel = hoistCmp.factory({
     model: creates(RoleModel),
 
     render({className, model}) {
-        const {moduleConfig} = model;
-        if (!moduleConfig) return null;
-        if (!moduleConfig.enabled) {
-            return errorMessage({error: 'Default Role Module not enabled.'});
-        }
-
         const {gridModel, readonly} = model;
         return fragment(
             panel({
@@ -44,7 +37,7 @@ export const rolePanel = hoistCmp.factory({
                         selModel: gridModel.selModel
                     }),
                     '-',
-                    popoverFilterChooser({flex: 1}),
+                    filterChooser({popover: true, flex: 1}),
                     '-',
                     switchInput({
                         bind: 'showInGroups',

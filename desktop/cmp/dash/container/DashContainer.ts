@@ -9,7 +9,7 @@ import {hoistCmp, HoistProps, refreshContextView, TestSupportProps, uses} from '
 import {mask} from '@xh/hoist/cmp/mask';
 import {dashContainerView} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerView';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {composeRefs, useOnResize} from '@xh/hoist/utils/react';
+import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import './DashContainer.scss';
 import {createPortal} from 'react-dom';
 import {DashContainerModel} from './DashContainerModel';
@@ -26,7 +26,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
     className: 'xh-dash-container',
 
     render({model, className, testId}, ref) {
-        ref = composeRefs(
+        ref = useComposedRefs(
             ref,
             model.containerRef,
             useOnResize(() => model.onResize(), {debounce: 100})

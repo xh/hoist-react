@@ -17,11 +17,11 @@ import {
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
-import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
+import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
 import {debouncePromise, wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
-import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
+import {escapeRegExp, isEqual, isNil, isPlainObject} from 'lodash';
 import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
@@ -55,6 +55,14 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * will be rendered in the top half of the viewport, above the mobile keyboard.
      */
     enableFullscreen?: boolean;
+
+    /**
+     * True to constrain the value to the current `options` - any selected value not found there is
+     * removed whenever the value or the list changes. Enforced only once `options` is non-null, so
+     * pass null (not `[]`) while options load - `[]` means "no valid choices" and clears the value.
+     * Throws if combined with `enableCreate` or `queryFn`.
+     */
+    enforceValueInOptions?: boolean;
 
     /**
      * Optional override for fullscreen z-index. Useful for enabling fullscreen from
@@ -157,6 +165,20 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** Field on provided options for sourcing each option's value (default `value`). */
     valueField?: string;
+
+    /**
+     * Fallback function to look up the `SelectOption` for a (non-null) selected value that is not
+     * present in the current options. Return null to accept the default value-as-label behavior.
+     *
+     * Intended for values that already exist but whose option is simply out of view - e.g. an
+     * initial value on a `queryFn`-based select, where the control is bound to the value alone and
+     * no query has yet run to supply its label. Useful where value-as-label would never be
+     * meaningful to the user, such as an object select that should always render the object's name
+     * rather than its id value.
+     *
+     * Note this is not capable of "creating" new values via `enableCreate`.
+     */
+    generateOptionFn?: (value: any) => SelectOption;
 }
 
 /**
@@ -190,8 +212,8 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @bindable.ref internalOptions = [];
-    @bindable fullscreen = false;
+    @bindableRef accessor internalOptions = [];
+    @bindable accessor fullscreen = false;
 
     // Prop-backed convenience getters
     get asyncMode() {
@@ -218,15 +240,10 @@ class SelectInputModel extends HoistInputModel {
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
-    @observable inputValue = null;
+    @observable accessor inputValue = null;
     inputValueChangedSinceSelect = false;
     get manageInputValue() {
         return this.filterMode;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -242,9 +259,29 @@ class SelectInputModel extends HoistInputModel {
             fireImmediately: true
         });
 
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
+
         if (this.fullscreenMode) {
             this.addReaction(this.fullscreenReaction());
         }
+    }
+
+    // Enforce `enforceValueInOptions` - clear any current value not present in internalOptions.
+    // Null options signal that they have yet to load, and are not yet enforced against.
+    private pruneValueToOptions() {
+        const {externalValue} = this;
+        if (isNil(this.componentProps.options) || isNil(externalValue)) return;
+        if (!this.findOption(externalValue, false)) this.noteValueChange(null);
     }
 
     reactSelectRef = createObservableRef<any>();
@@ -301,7 +338,7 @@ class SelectInputModel extends HoistInputModel {
         }
     };
 
-    @override
+    @action
     override noteFocused() {
         if (this.fullscreenMode) {
             this.fullscreen = true;
@@ -319,7 +356,7 @@ class SelectInputModel extends HoistInputModel {
         super.noteFocused();
     }
 
-    selectText() {
+    private selectText() {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
@@ -336,7 +373,7 @@ class SelectInputModel extends HoistInputModel {
         }
     }
 
-    @override
+    @action
     override setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);
@@ -375,14 +412,12 @@ class SelectInputModel extends HoistInputModel {
         return regex.test(opt.label);
     };
 
-    // Convert external value into option object(s). Options created if missing - this takes the
-    // external value from the model, and we will respect that even if we don't know about it.
-    // (Exception for a null value, which we will only accept if explicitly present in options.)
+    // Convert external value (which may be a primitive string or number) into option object(s).
     override toInternal(external) {
         return this.findOption(external, !isNil(external));
     }
 
-    findOption(value, createIfNotFound, options = this.internalOptions) {
+    private findOption(value, createIfNotFound, options = this.internalOptions) {
         // Do a depth-first search of options
         for (const option of options) {
             if (option.options) {
@@ -393,14 +428,20 @@ class SelectInputModel extends HoistInputModel {
             }
         }
 
-        return createIfNotFound ? this.valueToOption(value) : null;
+        if (!createIfNotFound) return null;
+
+        return (
+            this.selectedOptions.find(it => isEqual(it.value, value)) ??
+            this.componentProps.generateOptionFn?.(value) ??
+            this.valueToOption(value)
+        );
     }
 
     override toExternal(internal) {
         return isNil(internal) ? null : internal.value;
     }
 
-    normalizeOptions(options, depth = 0) {
+    private normalizeOptions(options, depth = 0) {
         throwIf(depth > 1, 'Grouped select options support only one-deep nesting.');
 
         options = options || [];
@@ -410,11 +451,11 @@ class SelectInputModel extends HoistInputModel {
     // Normalize / clone a single source value into a normalized option object. Supports Strings
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
-    toOption(src, depth) {
+    private toOption(src, depth) {
         return isPlainObject(src) ? this.objectToOption(src, depth) : this.valueToOption(src);
     }
 
-    objectToOption(src, depth) {
+    private objectToOption(src, depth) {
         const {componentProps} = this,
             labelField = withDefault(componentProps.labelField, 'label'),
             valueField = withDefault(componentProps.valueField, 'value');
@@ -437,7 +478,7 @@ class SelectInputModel extends HoistInputModel {
               };
     }
 
-    valueToOption(src) {
+    private valueToOption(src) {
         return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
@@ -447,30 +488,18 @@ class SelectInputModel extends HoistInputModel {
     doQueryAsync = query => {
         return this.componentProps
             .queryFn(query)
-            .then(matchOpts => {
-                // Normalize query return.
-                matchOpts = this.normalizeOptions(matchOpts);
-
-                // Carry forward and add to any existing internalOpts to allow our value
-                // converters to continue all selected values in multiMode.
-                const matchesByVal = keyBy(matchOpts, 'value'),
-                    newOpts = [...matchOpts];
-
-                this.internalOptions.forEach(currOpt => {
-                    const matchOpt = matchesByVal[currOpt.value];
-                    if (!matchOpt) newOpts.push(currOpt); // avoiding dupes
-                });
-
-                this.internalOptions = newOpts;
-
-                // But only return the matching options back to the combo.
-                return matchOpts;
-            })
+            .then(rawOpts => this.normalizeOptions(rawOpts))
             .catch(e => {
                 this.logError(e);
                 throw e;
             });
     };
+
+    // Option backing the current selection, as produced by toInternal() above.
+    private get selectedOptions(): SelectOption[] {
+        const {internalValue} = this;
+        return isNil(internalValue) ? [] : [internalValue];
+    }
 
     loadingMessageFn = params => {
         if (!params) return '';
@@ -484,8 +513,7 @@ class SelectInputModel extends HoistInputModel {
     // Option Rendering
     //----------------------
     formatOptionLabel = (opt, params) => {
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
+        // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
             return opt.label;
         }
@@ -496,12 +524,12 @@ class SelectInputModel extends HoistInputModel {
         return optionRenderer(opt);
     };
 
-    optionRenderer = opt => {
+    private optionRenderer = opt => {
         if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
 
-        return this.externalValue === opt.value
+        return isEqual(this.externalValue, opt.value)
             ? hbox({
                   items: [
                       div({
@@ -518,7 +546,7 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Fullscreen mode
     //------------------------
-    fullscreenReaction() {
+    private fullscreenReaction() {
         return {
             track: () => this.fullscreen,
             run: fullscreen => {
@@ -663,6 +691,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                     item: factory(rsProps),
                     className,
                     testId: props.testId,
+                    domAttrs: props.domAttrs,
                     ref
                 })
             }),
@@ -675,6 +704,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             ...layoutProps,
             width: withDefault(width, null),
             testId: props.testId,
+            domAttrs: props.domAttrs,
             ref
         });
     }

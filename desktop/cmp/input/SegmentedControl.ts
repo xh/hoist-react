@@ -16,7 +16,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -28,8 +28,17 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     compact?: boolean;
 
     /**
-     * True (default) to stretch the control to fill available width,
-     * distributing space equally among options.
+     * True (default) to render all segments at an equal width when {@link fill} is enabled,
+     * dividing the available width into equal parts regardless of label length - the conventional
+     * segmented-control appearance. Set false to instead size each segment to its content and
+     * share only the leftover space, so a longer label yields a wider segment. No effect when
+     * `fill` is false.
+     */
+    equalSegmentWidths?: boolean;
+
+    /**
+     * True (default) to stretch the control to fill available width. Set false to size the control
+     * to its options. See `equalSegmentWidths` for how the filled width is divided up.
      */
     fill?: boolean;
 
@@ -48,10 +57,25 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     options: Array<SegmentedControlOption | SegmentedControlNullOption | OptionPrimitive>;
 
     /**
-     * True to render with an outlined style - a border around the control tray
-     * with no inner background fill. Border color follows the current intent.
+     * True (default) to render a border around the control tray. Border color follows the current
+     * intent. Note this controls the tray border only - it does not remove the tray background,
+     * which is governed independently by `showTrayBackground`.
      */
     outlined?: boolean;
+
+    /**
+     * True (default) to fill the control tray with a background, setting it off from the surface
+     * behind it. Set false to omit that fill for a lighter presentation.
+     */
+    showTrayBackground?: boolean;
+
+    /**
+     * True to render dividers between options, adding internal structure to the tray. Dividers
+     * are suppressed on either side of the selected option so they do not compete with it.
+     * Defaults to 'auto', showing dividers only while no option is selected - the state in which
+     * the tray offers no other cue that its options are separate and selectable.
+     */
+    showOptionDividers?: boolean | 'auto';
 }
 
 /**
@@ -77,9 +101,18 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 //-----------------------
 // Implementation
 //-----------------------
+
+/**
+ * Key handed to the Blueprint control when no option is selected. Option keys are always
+ * `String(index)`, so this cannot collide with a real option - and unlike a nullish value, it
+ * keeps Blueprint from falling back to its own internal selection state. See usage note below.
+ */
+const NO_SELECTION_KEY = '__xh_no_selection__';
+
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
     intent?: Intent;
+    testId?: string;
     _key: string;
 }
 
@@ -92,13 +125,14 @@ class SegmentedControlModel extends HoistInputModel {
         return options.map((o: any, idx: number) => {
             const key = String(idx);
             if (isObject(o)) {
-                const {label, value, icon, disabled, intent} = o as SegmentedControlOption;
+                const {label, value, icon, disabled, intent, testId} = o as SegmentedControlOption;
                 return {
                     value: this.toInternal(value),
                     label: label ?? (icon ? '' : String(value)),
                     icon,
                     disabled,
                     intent,
+                    testId,
                     _key: key
                 };
             } else {
@@ -107,21 +141,20 @@ class SegmentedControlModel extends HoistInputModel {
         });
     }
 
-    /** Map the current render value to the string key used by the Blueprint control. */
+    /**
+     * Key of the option matching the current render value, or null if no option matches -
+     * including whenever the bound value is itself null. Note this is the model's own view of
+     * the selection: the key actually handed to Blueprint is resolved at its point of use below.
+     */
     @computed
-    get selectedKey(): string {
+    get selectedKey(): string | null {
         const {renderValue, normalizedOptions} = this;
-        return normalizedOptions.find(o => o.value === renderValue)?._key;
+        return normalizedOptions.find(o => o.value === renderValue)?._key ?? null;
     }
 
     get enabledButtons(): HTMLButtonElement[] {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
         return filter(btns, (b: HTMLButtonElement) => !b.disabled) as HTMLButtonElement[];
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     onValueChange = (key: string) => {
@@ -152,24 +185,34 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         options,
         // Consumed by this component
         compact,
+        equalSegmentWidths = true,
+        fill = true,
         intent,
-        outlined,
+        outlined = true,
+        showTrayBackground = true,
+        showOptionDividers = 'auto',
         testId,
+        domAttrs,
         // Remainder passed to BP SegmentedControl
         ...bpProps
     } = getNonLayoutProps(props);
+
+    // 'auto' dividers track the empty state - shown only while nothing is selected.
+    const dividers = showOptionDividers === 'auto' ? model.selectedKey == null : showOptionDividers;
 
     // Resolve the effective intent per option (own intent wins over control-level default),
     // applied via a per-button className that our SCSS keys its solid/hint coloring off of.
     const defaultIntent = intent && intent !== 'none' ? intent : null,
         bpOptions = model.normalizedOptions.map(opt => {
-            const optIntent = opt.intent ?? defaultIntent;
+            const optIntent = opt.intent ?? defaultIntent,
+                optTestId = opt.testId ?? (testId ? `${testId}-${String(opt.value)}` : null);
             return {
                 value: opt._key,
                 label: opt.label,
                 icon: opt.icon,
                 disabled: opt.disabled,
-                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null
+                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null,
+                ...(optTestId ? {[TEST_ID]: optTestId} : null)
             };
         });
 
@@ -177,20 +220,31 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         className: classNames(
             className,
             compact && 'xh-segmented-control--compact',
+            fill && 'xh-segmented-control--fill',
+            fill && equalSegmentWidths && 'xh-segmented-control--equal-widths',
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
-            outlined && 'xh-segmented-control--outlined'
+            outlined && 'xh-segmented-control--outlined',
+            !showTrayBackground && 'xh-segmented-control--no-tray-bg',
+            dividers && 'xh-segmented-control--dividers'
         ),
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
         ...getLayoutProps(props),
         [TEST_ID]: props.testId,
+        ...domAttrs,
         item: bpSegmentedControl({
             ...bpProps,
-            fill: bpProps.fill ?? true,
+            fill,
             size: compact ? 'small' : undefined,
             options: bpOptions,
-            value: model.selectedKey,
+            // Blueprint resolves its selection as `value ?? internalState`, where the internal
+            // state is set on every click even when controlled. Passing a nullish value for a
+            // selection matching no option would fall back to the last-clicked segment,
+            // leaving it highlighted after the bound value is cleared. Pass a sentinel key
+            // instead, keeping the control fully controlled - Blueprint handles a value matching
+            // no option natively (see `isAnySelected`) and emits no warning.
+            value: model.selectedKey ?? NO_SELECTION_KEY,
             onValueChange: model.onValueChange,
             disabled
         })

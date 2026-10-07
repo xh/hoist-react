@@ -4,16 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import classNames from 'classnames';
+import {castArray} from 'lodash';
+import type {ReactElement} from 'react';
+
 import {div} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import classNames from 'classnames';
+
 import './Badge.scss';
 
 export interface BadgeProps extends HoistProps, BoxProps {
     /** Sets fontsize to half that of parent element (default false). */
     compact?: boolean;
+
+    /** Icon to display before the badge content. */
+    icon?: ReactElement;
 
     intent?: Intent;
 }
@@ -30,8 +37,10 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
 
     render(props, ref) {
         const classes = [],
-            [layoutProps, {className, intent, compact, children, testId, ...restProps}] =
-                splitLayoutProps(props);
+            [
+                layoutProps,
+                {className, intent, compact, icon, children, testId, domAttrs, ...restProps}
+            ] = splitLayoutProps(props);
 
         if (intent) {
             classes.push(`xh-bg-intent-${intent}`);
@@ -44,14 +53,14 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
         const divProps = mergeDeep(
             {className: classNames(className, classes)},
             {style: layoutProps},
-            {[TEST_ID]: testId},
+            {[TEST_ID]: testId, ...domAttrs},
             restProps
         );
 
         return div({
             ref,
             ...divProps,
-            items: children
+            items: icon ? [icon, ...castArray(children)] : children
         });
     }
 });

@@ -7,10 +7,11 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {HoistAppModel, InitContext, XH} from '@xh/hoist/core';
+import {HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {without} from 'lodash';
-import {Route} from 'router5';
+import {RoleModuleConfig} from './tabs/userData/roles/Types';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';
@@ -28,6 +29,9 @@ export class AppModel extends HoistAppModel {
 
     viewManagerModels: Record<string, ViewManagerModel> = {};
 
+    /** Role-module config, loaded once at init and shared with the Roles tab. */
+    roleModuleConfig: RoleModuleConfig = null;
+
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
     }
@@ -35,21 +39,23 @@ export class AppModel extends HoistAppModel {
     constructor() {
         super();
 
-        this.tabModel = new TabContainerModel({
-            route: 'default',
-            tabs: this.createTabs()
-        });
-
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.defaults.autosizeMode = 'managed';
     }
 
     override async initAsync(ctx: InitContext) {
+        await this.loadRoleModuleConfigAsync(ctx);
+
+        this.tabModel = new TabContainerModel({
+            route: 'default',
+            tabs: this.createTabs()
+        });
+
         await this.initViewManagerModelsAsync(ctx);
         await super.initAsync(ctx);
     }
 
-    override getRoutes(): Route[] {
+    override getRoutes(): HoistRoute[] {
         return [
             {
                 name: 'default',
@@ -66,7 +72,7 @@ export class AppModel extends HoistAppModel {
         return [];
     }
 
-    getTabRoutes(): Route[] {
+    getTabRoutes(): HoistRoute[] {
         return [
             {
                 name: 'general',
@@ -74,14 +80,7 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
-                    {name: 'feedback', path: '/feedback'},
-                    {name: 'alertBanner', path: '/alertBanner'}
-                ]
-            },
-            {
-                name: 'servers',
-                path: '/servers',
-                children: [
+                    {name: 'alertBanner', path: '/alertBanner'},
                     {
                         name: 'instances',
                         path: '/instances',
@@ -93,65 +92,92 @@ export class AppModel extends HoistAppModel {
                             {name: 'services', path: '/services'}
                         ]
                     },
+                    {name: 'metrics', path: '/metrics'},
                     {name: 'objects', path: '/objects'},
-                    {name: 'metrics', path: '/metrics'}
+                    {name: 'jsonBlobs', path: '/jsonBlobs'},
+                    {name: 'users', path: '/users'},
+                    {name: 'roles', path: '/roles'},
+                    {name: 'prefs', path: '/prefs'}
                 ]
-            },
-            {
-                name: 'clients',
-                path: '/clients'
             },
             {
                 name: 'monitors',
                 path: '/monitors'
             },
             {
-                name: 'activity',
-                path: '/activity'
+                name: 'clients',
+                path: '/clients'
             },
             {
-                name: 'userData',
-                path: '/userData',
-                children: [
-                    {name: 'users', path: '/users'},
-                    {name: 'roles', path: '/roles'},
-                    {name: 'prefs', path: '/prefs'},
-                    {name: 'jsonBlobs', path: '/jsonBlobs'}
-                ]
+                name: 'activity',
+                path: '/activity'
             }
         ];
     }
 
     createTabs(): TabConfig[] {
-        const conf = XH.getConf('xhAdminAppConfig', {});
+        const conf = XH.getConf('xhAdminAppConfig', {}),
+            rolesEnabled = this.roleModuleConfig?.enabled ?? false;
 
         return [
             {
                 id: 'general',
-                icon: Icon.info(),
+                icon: Icon.home(),
                 content: {
+                    switcher: {
+                        mode: 'static',
+                        groups: [
+                            {key: 'app', title: 'Application'},
+                            {key: 'servers', title: 'Servers & Data'},
+                            {
+                                key: 'userData',
+                                title: rolesEnabled ? 'Users & Roles' : 'Users'
+                            }
+                        ]
+                    },
                     tabs: [
-                        {id: 'about', icon: Icon.info(), content: aboutPanel},
-                        {id: 'config', icon: Icon.settings(), content: configPanel},
-                        {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
+                        ...this.groupTabs('app', [
+                            {id: 'about', icon: Icon.info(), content: aboutPanel},
+                            {id: 'config', icon: Icon.settings(), content: configPanel},
+                            {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
+                        ]),
+                        ...this.groupTabs('servers', [
+                            {id: 'instances', icon: Icon.server(), content: instancesTab},
+                            {id: 'metrics', icon: Icon.gauge(), content: metricsPanel},
+                            {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel},
+                            {
+                                id: 'jsonBlobs',
+                                title: 'JSON Blobs',
+                                icon: Icon.json(),
+                                content: jsonBlobPanel,
+                                refreshMode: 'onShowAlways'
+                            }
+                        ]),
+                        ...this.groupTabs('userData', [
+                            {
+                                id: 'users',
+                                icon: Icon.users(),
+                                content: userPanel,
+                                refreshMode: 'onShowAlways',
+                                omit: conf['hideUsersTab']
+                            },
+                            {
+                                id: 'roles',
+                                icon: Icon.idBadge(),
+                                content: rolePanel,
+                                refreshMode: 'onShowAlways',
+                                omit: !rolesEnabled
+                            },
+                            {
+                                id: 'prefs',
+                                title: 'Preferences',
+                                icon: Icon.bookmark(),
+                                content: userPreferencePanel,
+                                refreshMode: 'onShowAlways'
+                            }
+                        ])
                     ]
                 }
-            },
-            {
-                id: 'servers',
-                icon: Icon.server(),
-                content: {
-                    tabs: [
-                        {id: 'instances', icon: Icon.server(), content: instancesTab},
-                        {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel},
-                        {id: 'metrics', icon: Icon.gauge(), content: metricsPanel}
-                    ]
-                }
-            },
-            {
-                id: 'clients',
-                icon: Icon.desktop(),
-                content: clientsPanel
             },
             {
                 id: 'monitors',
@@ -159,40 +185,13 @@ export class AppModel extends HoistAppModel {
                 content: monitorTab
             },
             {
-                id: 'userData',
-                icon: Icon.users(),
-                content: {
-                    refreshMode: 'onShowAlways',
-                    tabs: [
-                        {
-                            id: 'users',
-                            icon: Icon.users(),
-                            content: userPanel,
-                            omit: conf['hideUsersTab']
-                        },
-                        {
-                            id: 'roles',
-                            icon: Icon.idBadge(),
-                            content: rolePanel
-                        },
-                        {
-                            id: 'prefs',
-                            title: 'Preferences',
-                            icon: Icon.bookmark(),
-                            content: userPreferencePanel
-                        },
-                        {
-                            id: 'jsonBlobs',
-                            title: 'JSON Blobs',
-                            icon: Icon.json(),
-                            content: jsonBlobPanel
-                        }
-                    ]
-                }
+                id: 'clients',
+                icon: Icon.desktop(),
+                content: clientsPanel
             },
             {
                 id: 'activity',
-                title: 'User Activity',
+                title: 'Activity',
                 icon: Icon.analytics(),
                 content: activityTrackingPanel
             }
@@ -219,5 +218,27 @@ export class AppModel extends HoistAppModel {
             },
             ctx
         );
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    private groupTabs(group: string, tabs: TabConfig[]): TabConfig[] {
+        return tabs.map(it => ({...it, group}));
+    }
+
+    private async loadRoleModuleConfigAsync(ctx: InitContext) {
+        // Load role config up-front to title/show the Roles tab (see createTabs).
+        // Never block startup if it can't load - the tab defaults to hidden.
+        try {
+            this.roleModuleConfig = await this.runner(ctx)
+                .span('loadRoleModuleConfig')
+                .fetchJson({url: 'roleAdmin/config', timeout: 10 * SECONDS});
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Unable to load roles configuration',
+                alertType: 'toast'
+            });
+        }
     }
 }

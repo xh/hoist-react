@@ -6,7 +6,6 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {
-    managed,
     Persistable,
     PersistableState,
     PersistenceProvider,
@@ -19,7 +18,7 @@ import {
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
 import {convertIconToHtml, ResolvedIconProps} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -31,7 +30,6 @@ import {
     isEqual,
     isFinite,
     isNil,
-    last,
     partition,
     reject,
     startCase
@@ -121,7 +119,9 @@ export interface DashContainerViewState {
  * id references to the provided DashContainerViewSpec, e.g. `{type: `view`, id: ViewSpec.id}`.
  * Use instead of the `component` and `react-component` types provided by GoldenLayout.
  *
- * Note that loading state will destroy and reinitialize all components - do so sparingly!
+ * Note that loading state rebuilds the entire GoldenLayout instance, but views whose generated
+ * ids match the incoming state are reused along with their mounted content - see
+ * {@link loadStateAsync} for details on these reuse semantics.
  *
  * @example
  * ```
@@ -167,7 +167,7 @@ export class DashContainerModel
     //---------------------
     // Settable State
     //----------------------
-    @bindable showMenuButton: boolean;
+    @bindable accessor showMenuButton: boolean;
 
     //-----------------------------
     // Public properties
@@ -184,9 +184,9 @@ export class DashContainerModel
     //---------------------------
     // Implementation properties
     //----------------------------
-    @observable.ref goldenLayout: GoldenLayout;
+    @observableRef accessor goldenLayout: GoldenLayout;
     containerRef = createObservableRef<HTMLElement>();
-    @managed loadingStateTask = TaskObserver.trackLast();
+    loadingStateTask = TaskObserver.trackLast();
 
     private isDestroyingGoldenLayout = false;
 
@@ -205,10 +205,11 @@ export class DashContainerModel
         persistWith = null,
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View',
-        extraMenuItems
+        extraMenuItems,
+        xhName = null
     }: DashContainerConfig) {
         super();
-        makeObservable(this);
+        this.xhName = xhName;
         viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
@@ -260,8 +261,29 @@ export class DashContainerModel
             {
                 track: () => this.viewState,
                 run: () => this.updateState()
+            },
+            {
+                // ViewModels are created async as GL's React roots render, after GL has fired its
+                // own active item events. Sync active state and tab headers once they exist.
+                track: () => [this.goldenLayout, this.viewModels],
+                run: () => {
+                    this.refreshActiveViews();
+                    this.updateTabHeaders();
+                },
+                debounce: 0
             }
         );
+    }
+
+    /**
+     * Remove all views from the container.
+     *
+     * Destroys all current view models, guaranteeing fresh views (and freshly-mounted content) on
+     * any subsequent {@link loadStateAsync}. Async counterpart to `DashCanvasModel.clear()` - the
+     * underlying GoldenLayout instance must be destroyed and recreated.
+     */
+    async clearAsync() {
+        await this.loadStateAsync([]);
     }
 
     /**
@@ -285,6 +307,15 @@ export class DashContainerModel
      * Note this applies full replace (not patch) semantics, at both levels: views not present in
      * the given state are removed, and entries fully replace each matched view's state - omitted
      * properties (e.g. `title`, `state`) reset to their defaults.
+     *
+     * Views are matched to incoming state by their generated ids, which encode position (spec id
+     * plus instance index - see {@link DashModel.genViewId}), not identity. Matched view models
+     * are reused rather than rebuilt: their content components stay mounted across the
+     * GoldenLayout rebuild and any models owned by that content remain live, with the incoming
+     * state pushed into them. This holds for any state loaded here, including state saved from a
+     * logically different dashboard (e.g. a saved-view switch driven by a ViewManager-linked
+     * provider). To instead force a full teardown and remount of all views, call
+     * {@link clearAsync} first.
      */
     async loadStateAsync(state: DashContainerViewState[]) {
         const ids = new Set<string>(),
@@ -314,13 +345,8 @@ export class DashContainerModel
                     this.destroyGoldenLayout();
                     this.goldenLayout = this.createGoldenLayout(containerEl, stateWithViewModelIds);
                 })
-                // Since React v18, it's necessary to wait a short while for ViewModels to be available.
+                // Hold the mask briefly while GL's React roots render and views settle.
                 .wait(500)
-                .then(() => {
-                    if (refIsStale()) return;
-                    this.refreshActiveViews();
-                    this.updateTabHeaders();
-                })
                 .linkTo(this.loadingStateTask)
         );
     }
@@ -356,8 +382,6 @@ export class DashContainerModel
 
         if (!isFinite(index)) index = container.contentItems.length;
         container.addChild(goldenLayoutConfig(viewSpec, this.genViewId(specId)), index);
-        const stack = container.isStack ? container : last(container.contentItems);
-        wait(1).then(() => this.onStackActiveItemChange(stack));
     }
 
     /**
@@ -425,6 +449,10 @@ export class DashContainerModel
     private publishState() {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
+
+        // View models are created as GL's React roots render, which can trail a GL rebuild. Skip
+        // until every view has one - addViewModel() triggers another publish once they all exist.
+        if (this.getItems().some(it => !this.getViewModel(getViewModelId(it)))) return;
 
         try {
             const newState = convertGLToState(goldenLayout, this);
@@ -731,7 +759,7 @@ export class DashContainerModel
                         track: () => model.fullTitle,
                         run: () => {
                             // Item lookup requires a mounted react component and can miss during
-                            // a GL (re)build - loadStateAsync calls updateTabHeaders to cover.
+                            // a GL (re)build - the viewModels reaction in the constructor covers it.
                             const item = this.getItemByViewModel(viewModelId);
                             if (!item?.tab) return;
 

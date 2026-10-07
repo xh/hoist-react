@@ -6,6 +6,7 @@
  */
 import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
 import {
+    DomAttrsProps,
     hoistCmp,
     HoistModel,
     HoistProps,
@@ -25,6 +26,7 @@ export interface ButtonGroupProps<M extends HoistModel = null>
         LayoutProps,
         StyleProps,
         TestSupportProps,
+        DomAttrsProps,
         SetOptional<Omit<BpButtonGroupProps, 'ref'>, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
@@ -45,13 +47,14 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
     className: 'xh-button-group',
 
     render(props, ref) {
-        const [layoutProps, {fill, minimal, vertical, style, testId, ...rest}] =
+        const [layoutProps, {fill, minimal, vertical, style, testId, domAttrs, ...rest}] =
             splitLayoutProps(props);
         return bpButtonGroup({
             fill,
             minimal,
             vertical,
             [TEST_ID]: testId,
+            ...domAttrs,
             style: {
                 ...style,
                 ...layoutProps

@@ -4,22 +4,28 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {RecordActionLike} from '@xh/hoist/data';
-import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {MenuToken} from '@xh/hoist/core';
+import type {RecordActionHeading, RecordActionLike} from '@xh/hoist/data';
+import type {DefaultMenuItem, GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 
 /**
- * If a String, value can be '-' for a separator, or a token supported by ag-Grid
- * for its native menu items, or a Hoist specific token.
+ * An entry within a grid context menu - a RecordAction or its spec, a {@link MenuHeading} such as
+ * `{heading: 'Section'}`, or a string token.
+ *
+ * For a token, use either a Hoist {@link GridContextMenuToken}, which includes '-' for a
+ * separator, or an ag-Grid `DefaultMenuItem` token.
  * {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items}
  */
-export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | string;
+export type GridContextMenuItemLike =
+    RecordActionLike | RecordActionHeading | GridContextMenuToken | DefaultMenuItem;
 
 /**
- * Hoist tokens, all of which require a GridModel:
+ * Hoist tokens, all of which require a GridModel - plus {@link MenuToken} ('-') for a separator:
  *          `autosizeColumns` - autosize columns to fit their contents.
  *          `copyCell` - copy cell value to clipboard.
- *          `colChooser` - display column chooser for a grid.
+ *          `colChooser` - show the grid's column chooser, in whichever presentation it is
+ *              configured for. Toggles the dock when `mode: 'docked'`.
  *          `expandCollapse` - expand/collapse parent rows on grouped or tree grid.
  *          `export` - export grid data to excel via Hoist's server-side export capabilities.
  *          `exportExcel` - alias for `export`.
@@ -40,7 +46,8 @@ export type GridContextMenuToken =
     | 'exportCsv'
     | 'exportLocal'
     | 'filter'
-    | 'restoreDefaults';
+    | 'restoreDefaults'
+    | MenuToken;
 
 /**
  * Specification for a GridContextMenu.  Either a list of items, or a function to produce one.

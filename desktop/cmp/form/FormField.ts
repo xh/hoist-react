@@ -27,14 +27,24 @@ import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {
-    composeRefs,
     getLayoutProps,
     getReactElementName,
+    useComposedRefs,
     useOnMount,
     useOnUnmount
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import {
+    first,
+    isDate,
+    isEmpty,
+    isFinite,
+    isNil,
+    isObjectLike,
+    isString,
+    isUndefined,
+    kebabCase
+} from 'lodash';
 import {
     Children,
     cloneElement,
@@ -273,11 +283,15 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             className: classNames(className, classes),
             ...getLayoutProps(props),
             testId,
+            domAttrs: props.domAttrs,
             items: [
                 labelEl({
                     omit: !label,
                     className: 'xh-form-field__label',
                     items: [label, requiredIndicator],
+                    // Id lets inputs that are not labelable elements (e.g. RadioCardInput) name
+                    // themselves via `aria-labelledby`.
+                    id: `${childId}-label`,
                     htmlFor: clickableLabel ? childId : null,
                     style: {
                         textAlign: labelTextAlign,
@@ -346,7 +360,7 @@ const editableChild = hoistCmp.factory<FieldModel>({
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref),
+            ref: useComposedRefs(model?.boundInputRef, child.ref),
             testId: props.testId ?? testId
         };
 
@@ -379,17 +393,24 @@ const editableChild = hoistCmp.factory<FieldModel>({
 // Helper Functions
 //---------------------------------
 export function defaultReadonlyRenderer(value: any): ReactNode {
+    // First try type-specific formatting
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
+    if (isObjectLike(value)) return fmtJson(value);
 
-    // format JSON, but fail and ignore on plain text
-    try {
-        value = fmtJson(value);
-    } catch (e) {}
+    // ... pretty printing json strings as well.
+    if (isString(value)) {
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                value = fmtJson(trimmed);
+            } catch {}
+        }
+    }
 
-    return span(value != null ? value.toString() : null);
+    // Otherwise just fall back to string rendering
+    return span(value?.toString());
 }
 
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];

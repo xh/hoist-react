@@ -13,6 +13,7 @@ import {UAParser} from 'ua-parser-js';
  */
 export class UserAgentModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'userAgentModel';
 
     private _uaParser: any = null;
 

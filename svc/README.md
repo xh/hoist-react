@@ -47,12 +47,12 @@ are installed automatically; applications add custom services in `AppModel.initA
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Install custom services - all initialize concurrently
-        await XH.installServicesAsync(TradeService, PortfolioService);
+        await XH.installServicesAsync([TradeService, PortfolioService], ctx);
 
         // Chain calls for ordered initialization (when services depend on earlier ones)
-        await XH.installServicesAsync(ReportService);  // Can now use Trade/Portfolio services
+        await XH.installServicesAsync([ReportService], ctx); // Can now use Trade/Portfolio services
     }
 }
 ```
@@ -186,6 +186,12 @@ XH.setPref('gridPageSize', 100);
 
 // Immediate save - no alias, access service directly
 await XH.prefService.pushAsync('criticalPref', value);
+
+// Distinguish an explicit user value from the server-side default
+if (XH.prefService.isSet('gridPageSize')) { /* user has customized this */ }
+
+// Clear the user's value, reverting to the default (real server-side unset)
+XH.prefService.unset('gridPageSize');
 ```
 
 Preferences are type-validated against server-defined types: `string`, `int`, `long`, `double`,
@@ -595,15 +601,10 @@ See `/core/README.md` for the full guide on creating services. Quick example:
 
 ```typescript
 import {HoistService, XH} from '@xh/hoist/core';
-import {makeObservable, observable} from '@xh/hoist/mobx';
+import {observable} from '@xh/hoist/mobx';
 
 export class PortfolioService extends HoistService {
-    @observable.ref portfolios: Portfolio[] = [];
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observableRef accessor portfolios: Portfolio[] = [];
 
     // Called during app startup
     override async initAsync() {
@@ -621,7 +622,7 @@ export class PortfolioService extends HoistService {
 }
 
 // Install in AppModel.initAsync()
-await XH.installServicesAsync(PortfolioService);
+await XH.installServicesAsync([PortfolioService], ctx);
 
 // Access anywhere
 XH.portfolioService.getPortfolio('abc123');
@@ -705,11 +706,10 @@ or coordinated multi-step workflows where you want timing visibility without a f
 ### Debounced Search with Auto-Abort
 
 ```typescript
-@bindable searchQuery = '';
+@bindable accessor searchQuery = '';
 
 constructor() {
     super();
-    makeObservable(this);
     this.addReaction({
         track: () => this.searchQuery,
         run: () => this.searchAsync(),

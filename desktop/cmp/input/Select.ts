@@ -26,12 +26,12 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
-import {debouncePromise, wait} from '@xh/hoist/promise';
+import {action, observable, bindableRef} from '@xh/hoist/mobx';
+import {debouncePromise, wait, waitFor} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
+import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
@@ -92,6 +92,14 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableWindowed?: boolean;
 
     /**
+     * True to constrain the value to the current `options` - any selected value not found there is
+     * removed whenever the value or the list changes. Enforced only once `options` is non-null, so
+     * pass null (not `[]`) while options load - `[]` means "no valid choices" and clears the value.
+     * Throws if combined with `enableCreate` or `queryFn`.
+     */
+    enforceValueInOptions?: boolean;
+
+    /**
      * Function called to filter available options for a given query string input.
      * Used for filtering of options provided by `options` prop when `enableFilter` is true.
      * Not to be confused with `queryFn` prop, used in asynchronous mode.
@@ -148,6 +156,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     optionRenderer?: (opt: SelectOption) => ReactNode;
 
     /**
+     * Renderer for the selected value within the control itself, called with the option matching
+     * the current value. Defaults to displaying the option's `label`.
+     */
+    valueRenderer?: (opt: SelectOption) => ReactNode;
+
+    /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
      * Primitives will be displayed via toString().
      * Objects must have either:
@@ -191,6 +205,20 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** Field on provided options for sourcing each option's value (default `value`). */
     valueField?: string;
+
+    /**
+     * Fallback function to look up the `SelectOption` for a (non-null) selected value that is not
+     * present in the current options. Return null to accept the default value-as-label behavior.
+     *
+     * Intended for values that already exist but whose option is simply out of view - e.g. an
+     * initial value on a `queryFn`-based select, where the control is bound to the value alone and
+     * no query has yet run to supply its label. Useful where value-as-label would never be
+     * meaningful to the user, such as an object select that should always render the object's name
+     * rather than its id value.
+     *
+     * Note this is not capable of "creating" new values via `enableCreate`.
+     */
+    generateOptionFn?: (value: any) => SelectOption;
 }
 
 /**
@@ -223,9 +251,9 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @bindable.ref internalOptions = [];
+    @bindableRef accessor internalOptions = [];
 
-    @observable windowedMenuWidth: number = null;
+    @observable accessor windowedMenuWidth: number = null;
 
     // Prop-backed convenience getters
     get asyncMode(): boolean {
@@ -273,15 +301,10 @@ class SelectInputModel extends HoistInputModel {
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
-    @observable inputValue: string = null;
+    @observable accessor inputValue: string = null;
     inputValueChangedSinceSelect = false;
     get manageInputValue(): boolean {
         return this.filterMode && !this.multiMode;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -303,6 +326,18 @@ class SelectInputModel extends HoistInputModel {
             },
             fireImmediately: true
         });
+
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
     }
 
     reactSelectRef = createObservableRef<any>();
@@ -364,7 +399,7 @@ class SelectInputModel extends HoistInputModel {
         }
     };
 
-    @override
+    @action
     override noteFocused() {
         if (this.manageInputValue) {
             const {renderValue} = this;
@@ -396,7 +431,7 @@ class SelectInputModel extends HoistInputModel {
         }
     }
 
-    @override
+    @action
     override setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);
@@ -435,9 +470,7 @@ class SelectInputModel extends HoistInputModel {
         return regex.test(opt.label);
     };
 
-    // Convert external value into option object(s). Options created if missing - this takes the
-    // external value from the model, and we will respect that even if we don't know about it.
-    // (Exception for a null value, which we will only accept if explicitly present in options.)
+    // Convert external value (which may be a primitive string or number) into option object(s).
     override toInternal(external) {
         if (this.multiMode) {
             if (external == null || isEqual(external, this.emptyValue)) external = []; // avoid [null]
@@ -457,7 +490,29 @@ class SelectInputModel extends HoistInputModel {
             }
         }
 
-        return createIfNotFound ? this.valueToOption(value) : null;
+        if (!createIfNotFound) return null;
+
+        return (
+            this.selectedOptions.find(it => isEqual(it.value, value)) ??
+            this.componentProps.generateOptionFn?.(value) ??
+            this.valueToOption(value)
+        );
+    }
+
+    // Enforce `enforceValueInOptions` - drop any current value not present in internalOptions.
+    // Null options signal that they have yet to load, and are not yet enforced against.
+    private pruneValueToOptions() {
+        const {externalValue, multiMode, emptyValue} = this;
+        if (isNil(this.componentProps.options)) return;
+        if (isNil(externalValue) || isEqual(externalValue, emptyValue)) return;
+
+        if (multiMode) {
+            const curr = castArray(externalValue),
+                keptOpts = curr.map(v => this.findOption(v, false)).filter(Boolean);
+            if (keptOpts.length !== curr.length) this.noteValueChange(keptOpts);
+        } else if (!this.findOption(externalValue, false)) {
+            this.noteValueChange(null);
+        }
     }
 
     override toExternal(internal) {
@@ -481,11 +536,11 @@ class SelectInputModel extends HoistInputModel {
     // Normalize / clone a single source value into a normalized option object. Supports Strings
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
-    private toOption(src, depth) {
+    private toOption(src, depth): SelectOption {
         return isPlainObject(src) ? this.objectToOption(src, depth) : this.valueToOption(src);
     }
 
-    private objectToOption(src, depth) {
+    private objectToOption(src, depth): SelectOption {
         const {componentProps} = this,
             labelField = withDefault(componentProps.labelField, 'label'),
             valueField = withDefault(componentProps.valueField, 'value');
@@ -508,7 +563,7 @@ class SelectInputModel extends HoistInputModel {
               };
     }
 
-    private valueToOption(src) {
+    private valueToOption(src): SelectOption {
         return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
@@ -516,22 +571,15 @@ class SelectInputModel extends HoistInputModel {
     // Async
     //------------------------
     doQueryAsync = async query => {
-        const rawOpts = await this.componentProps.queryFn(query),
-            matchOpts = this.normalizeOptions(rawOpts);
-
-        // Carry forward and add to any existing internalOpts to allow our value
-        // converters to continue all selected values in multiMode.
-        const matchesByVal = keyBy(matchOpts, 'value'),
-            newOpts = [...matchOpts];
-        this.internalOptions.forEach(currOpt => {
-            const matchOpt = matchesByVal[currOpt.value];
-            if (!matchOpt) newOpts.push(currOpt); // avoiding dupes
-        });
-        this.internalOptions = newOpts;
-
-        // But only return the matching options back to the combo.
-        return matchOpts;
+        const rawOpts = await this.componentProps.queryFn(query);
+        return this.normalizeOptions(rawOpts);
     };
+
+    // Option(s) backing the current selection, as produced by toInternal() above.
+    private get selectedOptions(): SelectOption[] {
+        const {internalValue} = this;
+        return isNil(internalValue) ? [] : castArray(internalValue).filter(it => !isNil(it));
+    }
 
     loadingMessageFn = params => {
         const {loadingMessageFn} = this.componentProps,
@@ -544,10 +592,10 @@ class SelectInputModel extends HoistInputModel {
     // Option Rendering
     //----------------------
     formatOptionLabel = (opt, params) => {
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
+        // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
-            return opt.label;
+            const {valueRenderer} = this.componentProps;
+            return valueRenderer ? valueRenderer(opt) : opt.label;
         }
 
         // For rendering dropdown menu items, use an optionRenderer if provided - or use the
@@ -561,7 +609,7 @@ class SelectInputModel extends HoistInputModel {
             return div(opt.label);
         }
 
-        return castArray(this.externalValue).includes(opt.value)
+        return castArray(this.externalValue).some(v => isEqual(v, opt.value))
             ? hbox({
                   items: [
                       div({
@@ -767,13 +815,14 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.inputValue = model.inputValue || '';
         rsProps.onInputChange = model.onInputChange;
         rsProps.controlShouldRenderValue = !model.hasFocus;
+    }
+
+    // Scroll selected option into view on open - react-select's own does not fire for portalled menus.
+    if (!model.multiMode && model.renderValue) {
         rsProps.onMenuOpen = () => {
-            wait().then(() => {
-                const selectedEl = document.getElementsByClassName(
-                    'xh-select__option--is-selected'
-                )[0];
-                selectedEl?.scrollIntoView({block: 'end'});
-            });
+            const getSel = () =>
+                document.getElementsByClassName('xh-select__option--is-selected')[0];
+            waitFor(() => !!getSel()).then(() => getSel().scrollIntoView({block: 'end'}));
         };
     }
 
@@ -821,6 +870,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             }
         },
         testId: props.testId,
+        domAttrs: props.domAttrs,
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,

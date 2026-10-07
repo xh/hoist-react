@@ -1,0 +1,4 @@
+# Launcher scripts run under node via a `#!/usr/bin/env node` shebang; a CRLF
+# shebang line breaks execution on Linux/macOS. Force LF so Windows checkouts
+# don't rewrite them to CRLF (which otherwise shows them as perpetually modified).
+bin/*.mjs text eol=lf

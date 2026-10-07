@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
@@ -13,16 +14,18 @@ import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
-import {composeRefs, splitLayoutProps} from '@xh/hoist/utils/react';
+import {useComposedRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
 export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     /**
-     * GridModel whose data this control should search. This component will, by default, use the
-     * fields for all *visible* columns when matching, as well as any groupBy field.
+     * GridModel or ZoneGridModel whose data this control should search. When given a GridModel,
+     * this component will, by default, use the fields for all *visible* columns when matching, as
+     * well as any groupBy field. When given a ZoneGridModel, it uses the fields currently mapped
+     * to any of its zones.
      */
-    gridModel?: GridModel;
+    gridModel?: GridModel | ZoneGridModel;
 
     /** Mode to use when searching (default 'startWord'). */
     matchMode?: FilterMatchMode;
@@ -47,10 +50,11 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
  * the entered search term based on simple word-boundary matching of its value to the value of
  * configured fields on a record. If any field values match, the record itself is considered a match.
  *
- * This component is designed to be bound to a GridModel via `gridModel` prop. (If not configured to
- * bind to a specific GridModel, this component will bind by default to the nearest GridModel found
- * in context.) Binding in this way allows the component to auto-generate the fields in the store to
- * be searched by the field and to automatically select the results in the Grid.
+ * This component is designed to be bound to a GridModel or ZoneGridModel via its `gridModel` prop.
+ * If not configured, it binds by default to the nearest GridModel or ZoneGridModel found in
+ * context. Binding in this way allows the component to
+ * auto-generate the fields in the store to be searched by the field and to automatically select
+ * the results in the Grid.
  *
  * Fields to be searched can be automatically determined from the bound Grid's Store, and/or
  * customized via the include/excludeFields props. See prop comments for details.
@@ -66,14 +70,14 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
         const impl = useLocalModel(GridFindFieldImplModel);
 
         return hbox({
-            width: 180,
+            width: 240,
             className,
             ...layoutProps,
             items: [
                 textInput({
                     model: impl,
                     bind: 'query',
-                    ref: composeRefs(impl.inputRef, ref),
+                    ref: useComposedRefs(impl.inputRef, ref),
                     commitOnChange: true,
                     leftIcon: Icon.search(),
                     enableClear: true,

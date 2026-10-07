@@ -20,8 +20,18 @@ export class MaxAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        if (update.newValue >= currAgg) return update.newValue;
-        if (update.oldValue >= currAgg) return this.aggregate(rows, update.field.name);
+        const {oldValue, newValue, field} = update;
+
+        // Relational comparisons below coerce null to 0 - resolve nulls first.
+        if (currAgg == null) return newValue;
+        if (newValue == null) {
+            return oldValue != null && oldValue >= currAgg
+                ? this.aggregate(rows, field.name)
+                : currAgg;
+        }
+
+        if (newValue >= currAgg) return newValue;
+        if (oldValue >= currAgg) return this.aggregate(rows, field.name);
 
         return currAgg;
     }

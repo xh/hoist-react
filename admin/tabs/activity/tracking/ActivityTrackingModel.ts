@@ -11,14 +11,15 @@ import {
     ActivityTrackingDataFieldSpec,
     DataFieldsEditorModel
 } from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
+import {DateRangePickerModel} from '@xh/hoist/cmp/daterange';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec, ViewRowData} from '@xh/hoist/data';
+import {Cube, CubeFieldSpec, FieldSpec, getCubeLeaves, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
@@ -30,18 +31,21 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
+    /** Period to query, resolved against the current app day. */
+    @managed dateRangePickerModel: DateRangePickerModel;
+
     /** Models for data-handling components - can be rebuilt due to change in dataFields. */
-    @managed @observable.ref groupingChooserModel: GroupingChooserModel;
-    @managed @observable.ref cube: Cube;
-    @managed @observable.ref filterChooserModel: FilterChooserModel;
-    @managed @observable.ref gridModel: GridModel;
+    @managed @observableRef accessor groupingChooserModel: GroupingChooserModel;
+    @managed @observableRef accessor cube: Cube;
+    @managed @observableRef accessor filterChooserModel: FilterChooserModel;
+    @managed @observableRef accessor gridModel: GridModel;
     @managed dataFieldsEditorModel: DataFieldsEditorModel;
 
     /**
      * Optional spec for fields to be extracted from additional `data` returned by track entries
      * and promoted to top-level columns in the grids. Supports dot-delimited paths as names.
      */
-    @observable.ref dataFields: ActivityTrackingDataFieldSpec[] = [];
+    @observableRef accessor dataFields: ActivityTrackingDataFieldSpec[] = [];
 
     // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
     //        detail grid and filter that replaces (potentially multiple) agg fields with a single
@@ -55,7 +59,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         }));
     }
 
-    @observable showFilterChooser: boolean = false;
+    @observable accessor showFilterChooser: boolean = false;
 
     get enabled(): boolean {
         return XH.trackService.enabled;
@@ -63,10 +67,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     get dimensions(): string[] {
         return this.groupingChooserModel.value;
-    }
-
-    get endDay(): LocalDate {
-        return this.formModel.values.endDay;
     }
 
     @computed
@@ -103,18 +103,18 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     readonly isActivityDetailProvider = true;
 
     /** Raw leaf-level log entries for the selected aggregate record, for detail. */
-    @observable.ref trackLogs: PlainObject[] = [];
+    @observableRef accessor trackLogs: PlainObject[] = [];
 
     private _monthFormat = 'MMM YYYY';
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.persistWith = {viewManagerModel: this.viewManagerModel};
         this.markPersist('showFilterChooser');
 
         this.formModel = this.createQueryFormModel();
+        this.dateRangePickerModel = this.createDateRangePickerModel();
 
         this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
         this.markPersist('dataFields');
@@ -138,7 +138,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             {
                 track: () => this.gridModel.selectedRecords,
                 run: recs =>
-                    (this.trackLogs = recs.flatMap(r => (r.raw as ViewRowData).cubeLeaves)),
+                    (this.trackLogs = recs.flatMap(r => getCubeLeaves(r.raw as ViewRowData))),
                 debounce: 100
             }
         );
@@ -183,39 +183,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         this.showFilterChooser = !this.showFilterChooser;
     }
 
-    adjustDates(dir: 'add' | 'subtract') {
-        const {startDay, endDay} = this.formModel.fields,
-            appDay = LocalDate.currentAppDay(),
-            start: LocalDate = startDay.value,
-            end: LocalDate = endDay.value,
-            diff = end.diff(start),
-            incr = diff + 1;
-
-        let newStart = start[dir](incr),
-            newEnd = end[dir](incr);
-
-        if (newEnd > appDay) {
-            newStart = appDay.subtract(Math.abs(diff));
-            newEnd = appDay;
-        }
-
-        startDay.setValue(newStart);
-        endDay.setValue(newEnd);
-    }
-
-    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
-    // forward one day as the day range query is inclusive.
-    adjustStartDate(value, unit) {
-        this.formModel.setValues({
-            startDay: this.endDay.subtract(value, unit).nextDay()
-        });
-    }
-
-    isInterval(value, unit) {
-        const {startDay, endDay} = this.formModel.values;
-        return startDay === endDay.subtract(value, unit).nextDay();
-    }
-
     getDisplayName(fieldName: string) {
         return fieldName ? (this.cube.store.getField(fieldName)?.displayName ?? fieldName) : null;
     }
@@ -226,11 +193,26 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     private createQueryFormModel(): FormModel {
         return new FormModel({
             persistWith: {...this.persistWith, path: 'queryFormValues', includeFields: ['maxRows']},
-            fields: [
-                {name: 'startDay', initialValue: () => LocalDate.currentAppDay()},
-                {name: 'endDay', initialValue: () => LocalDate.currentAppDay()},
-                {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
-            ]
+            fields: [{name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}]
+        });
+    }
+
+    private createDateRangePickerModel(): DateRangePickerModel {
+        return new DateRangePickerModel({
+            persistWith: this.persistWith,
+            presets: [
+                'anchorDay',
+                'prevDay',
+                'prev7Days',
+                'prev30Days',
+                'prev90Days',
+                'mtd',
+                'prevMonth',
+                'ytd'
+            ],
+            initialValue: 'anchorDay',
+            // Track logs are stamped in the app time zone - follow its day, across midnight too.
+            anchorDay: 'appDay'
         });
     }
 
@@ -274,11 +256,11 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     @computed
     private get query() {
-        const {values} = this.formModel;
+        const {start, end} = this.dateRangePickerModel.currentRange;
         return {
-            startDay: values.startDay,
-            endDay: values.endDay,
-            maxRows: values.maxRows,
+            startDay: start,
+            endDay: end,
+            maxRows: this.formModel.values.maxRows,
             filters: this.filterChooserModel.value
         };
     }

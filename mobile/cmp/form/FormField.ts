@@ -28,7 +28,7 @@ import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {composeRefs, getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps, useComposedRefs, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {Children, cloneElement, ReactNode, useContext, useEffect} from 'react';
@@ -160,6 +160,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         return box({
             ref,
             testId,
+            domAttrs: props.domAttrs,
             className: classNames(className, classes),
             ...layoutProps,
             items: [
@@ -227,7 +228,7 @@ const editableChild = hoistCmp.factory<FieldModel>({
             model,
             bind: 'value',
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref),
+            ref: useComposedRefs(model?.boundInputRef, child.ref),
             testId
         };
 

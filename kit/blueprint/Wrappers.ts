@@ -35,8 +35,10 @@ import {
     NumericInput,
     OverflowList,
     Overlay2 as Overlay,
-    Popover as BpPopover,
+    PopoverNext as BpPopover,
+    popoverPropsToNextProps,
     type PopoverProps,
+    PortalProvider,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -61,8 +63,11 @@ import React, {createElement as reactCreateElement} from 'react';
 const Dialog: React.FC<DialogProps> = props =>
     reactCreateElement(BpDialog, {transitionDuration: 0, transitionName: 'none', ...props});
 
+// `Popover` renders Blueprint's `PopoverNext` (Floating UI based, React 19 compatible) while
+// preserving our legacy `PopoverProps` API: `popoverPropsToNextProps` maps `position`/`modifiers`/
+// `minimal`/`boundary` and retains the legacy `shouldReturnFocusOnClose` default of `false`.
 const Popover: React.FC<PopoverProps> = props =>
-    reactCreateElement(BpPopover, {transitionDuration: 0, ...props});
+    reactCreateElement(BpPopover, {transitionDuration: 0, ...popoverPropsToNextProps(props)});
 
 //---------------------
 // Re-exports
@@ -97,6 +102,7 @@ export {
     OverflowList,
     Overlay,
     Popover,
+    PortalProvider,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -142,6 +148,7 @@ export const alert = elementFactory(Alert),
 // Container Components
 //-----------------------
 export const buttonGroup = elementFactory(ButtonGroup),
+    portalProvider = elementFactory(PortalProvider),
     callout = elementFactory(Callout),
     bpCard = elementFactory(BpCard),
     drawer = elementFactory(Drawer),

@@ -6,7 +6,7 @@
  */
 
 @use "sass:color";
-@import '~sass-material-colors/sass/sass-material-colors';
+@import 'sass-material-colors/sass/sass-material-colors';
 
 // Functions to fetch Google material design colors (https://material.io/color/)
 // While not strictly following any material design conventions within Hoist, using these color
@@ -278,6 +278,7 @@ body {
   --xh-badge-border-radius: var(--badge-border-radius, var(--xh-border-radius-px));
   --xh-badge-font-size: var(--badge-font-size, 0.75em);
   --xh-badge-font-weight: var(--badge-font-weight, bold);
+  --xh-badge-gap: var(--badge-gap, 0.4em);
   --xh-badge-height: var(--badge-height, 1.6em);
   --xh-badge-min-width: var(--badge-min-width, 15px);
   --xh-badge-padding: var(--badge-padding, #{0 4px});
@@ -395,6 +396,11 @@ body {
   // Highlight applied on hover for desktop, press for mobile.
   --xh-menu-item-highlight-bg: var(--menu-item-highlight-bg, var(--xh-grid-bg-hover));
   --xh-menu-item-text-color: var(--menu-item-text-color, var(--xh-text-color));
+  // Non-interactive section headings within a menu - see MenuHeading.
+  --xh-menu-heading-border: var(--menu-heading-border, var(--xh-menu-border));
+  --xh-menu-heading-font-size-px: var(--menu-heading-font-size-px, var(--xh-font-size-px));
+  --xh-menu-heading-font-weight: var(--menu-heading-font-weight, 600);
+  --xh-menu-heading-text-color: var(--menu-heading-text-color, var(--xh-text-color));
 
   &.xh-mobile {
     --xh-menu-item-height-px: var(--menu-item-height-px, 40px);
@@ -683,7 +689,7 @@ body {
   //------------------------
   // Segmented Control
   //------------------------
-  --xh-segmented-control-bg: var(--segmented-control-bg, #{color.mix(mc('blue-grey', '100'), mc('blue-grey', '50'))});
+  --xh-segmented-control-bg: var(--segmented-control-bg, var(--xh-bg-alt));
   --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, var(--xh-bg));
   --xh-segmented-control-text-color: var(--segmented-control-text-color, color-mix(in srgb, var(--xh-text-color) 75%, var(--xh-segmented-control-bg)));
   --xh-segmented-control-selected-text-color: var(--segmented-control-selected-text-color, var(--xh-text-color));
@@ -693,10 +699,50 @@ body {
   --xh-segmented-control-pad-px: calc(var(--xh-segmented-control-pad) * 1px);
 
   &.xh-dark {
-    --xh-segmented-control-bg: var(--segmented-control-bg, #{color.mix(mc('blue-grey', '800'), mc('blue-grey', '900'))});
+    // Tray bg follows --xh-bg-alt in both themes - no dark-mode override needed.
     --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, #{mc('blue-grey', '700')});
   }
 
+  //------------------------
+  // Radio Card Input
+  //------------------------
+  --xh-radio-card-input-bg: var(--radio-card-input-bg, var(--xh-bg-alt));
+  --xh-radio-card-input-border-radius: var(--radio-card-input-border-radius, 10);
+  --xh-radio-card-input-border-radius-px: calc(var(--xh-radio-card-input-border-radius) * 1px);
+  --xh-radio-card-input-gap-px: var(--radio-card-input-gap-px, var(--xh-pad-px));
+  --xh-radio-card-input-card-width: var(--radio-card-input-card-width, 88px);
+  --xh-radio-card-input-selected-color: var(--radio-card-input-selected-color, var(--xh-intent-primary));
+
+  //------------------------
+  // Intent Input
+  //------------------------
+  --xh-intent-input-swatch-size-px: var(--intent-input-swatch-size-px, 20px);
+  --xh-intent-input-compact-swatch-size-px: var(--intent-input-compact-swatch-size-px, 16px);
+  --xh-intent-input-gap-px: var(--intent-input-gap-px, var(--xh-pad-half-px));
+  --xh-intent-input-border-radius-px: var(--intent-input-border-radius-px, var(--xh-border-radius-px));
+
+  //------------------------
+  // Date Range Picker
+  //------------------------
+  --xh-date-range-picker-popover-width: var(--date-range-picker-popover-width, 640px);
+  --xh-date-range-picker-popover-single-width: var(--date-range-picker-popover-single-width, 300px);
+  --xh-date-range-picker-popover-min-height: var(--date-range-picker-popover-min-height, 322px);
+  --xh-date-range-picker-accent: var(--date-range-picker-accent, var(--xh-intent-primary));
+  --xh-date-range-picker-accent-text-color: var(--date-range-picker-accent-text-color, var(--xh-white));
+  --xh-date-range-picker-selected-bg: var(--date-range-picker-selected-bg, var(--xh-bg-highlight));
+  --xh-date-range-picker-hover-bg: var(--date-range-picker-hover-bg, var(--xh-grid-bg-hover));
+  --xh-date-range-picker-date-font-family: var(--date-range-picker-date-font-family, var(--xh-font-family-mono));
+  --xh-date-range-picker-date-font-size: var(--date-range-picker-date-font-size, 12px);
+  --xh-date-range-picker-row-height: var(--date-range-picker-row-height, 32px);
+  --xh-date-range-picker-day-size: var(--date-range-picker-day-size, 26px);
+  --xh-date-range-picker-footer-bg: var(--date-range-picker-footer-bg, var(--xh-tbar-bg));
+  // Tab rail stays on the popover background in light theme, where a distinct fill would set
+  // muted tab labels on grey and lose contrast. In dark theme a distinct fill reads well.
+  --xh-date-range-picker-rail-bg: var(--date-range-picker-rail-bg, transparent);
+
+  &.xh-dark {
+    --xh-date-range-picker-rail-bg: var(--date-range-picker-rail-bg, var(--xh-tbar-bg));
+  }
 
   //------------------------
   // Mask + LoadingIndicator
@@ -858,6 +904,17 @@ body {
   --xh-tab-switcher-vertical-item-active-bg: var(--tab-switcher-vertical-item-active-bg, var(--xh-bg-highlight));
   --xh-tab-switcher-vertical-item-font-weight: var(--tab-switcher-vertical-item-font-weight, 500);
   --xh-tab-switcher-vertical-item-active-font-weight: var(--tab-switcher-vertical-item-active-font-weight, 600);
+  // Display-only group headers, rendered above runs of tabs sharing a `TabConfig.group`.
+  --xh-tab-switcher-vertical-group-gap: var(--tab-switcher-vertical-group-gap, var(--xh-pad-px));
+  --xh-tab-switcher-vertical-group-border: var(--tab-switcher-vertical-group-border, var(--xh-border-solid));
+  --xh-tab-switcher-vertical-group-header-padding: var(--tab-switcher-vertical-group-header-padding, var(--xh-pad-half-px) var(--xh-pad-px));
+  --xh-tab-switcher-vertical-group-header-bg: var(--tab-switcher-vertical-group-header-bg, transparent);
+  --xh-tab-switcher-vertical-group-header-border-radius: var(--tab-switcher-vertical-group-header-border-radius, var(--xh-tab-switcher-vertical-item-border-radius));
+  --xh-tab-switcher-vertical-group-header-text-color: var(--tab-switcher-vertical-group-header-text-color, var(--xh-text-color));
+  --xh-tab-switcher-vertical-group-header-font-size: var(--tab-switcher-vertical-group-header-font-size, var(--xh-font-size-small-px));
+  --xh-tab-switcher-vertical-group-header-font-weight: var(--tab-switcher-vertical-group-header-font-weight, 600);
+  --xh-tab-switcher-vertical-group-header-letter-spacing: var(--tab-switcher-vertical-group-header-letter-spacing, 0.05em);
+  --xh-tab-switcher-vertical-group-header-text-transform: var(--tab-switcher-vertical-group-header-text-transform, uppercase);
 
   &.xh-dark {
     --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary-lighter));

@@ -5,7 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {StoreRecord} from '../../StoreRecord';
+import type {CubeField} from '../CubeField';
+import type {ParentRow} from '../row/ParentRow';
+import type {RowUpdate} from '../row/RowUpdate';
+import type {ViewRow} from '../ViewRow';
 import {View} from '../View';
 
 /**
@@ -19,18 +24,106 @@ export class AggregationContext {
     /** View being aggregated. */
     view: View;
 
-    /** All records currently meeting the filter for this view.*/
-    filteredRecords: StoreRecord[];
-
     /**
      * Custom aggregators may use to store pre-computed values.  Custom aggregators should
      * take care to appropriately namespace any data stored within this object.
      */
     appData: any;
 
-    constructor(view: View, filteredRecords: StoreRecord[]) {
+    /**
+     * Field currently being aggregated, or null if not within a call to an aggregator.
+     * @internal
+     */
+    activeField: CubeField = null;
+
+    /**
+     * Row currently being aggregated, or null if not within a call to an aggregator.
+     * @internal
+     */
+    activeRow: ParentRow = null;
+
+    /**
+     * All records currently meeting the filter for this view.
+     *
+     * Available only when an aggregator on the view overrides
+     * {@link Aggregator.dependsOnChildrenOnly} to return false.
+     * Views with children-only aggregators update incrementally without
+     * refreshing that collection, so reading it here throws.
+     */
+    get filteredRecords(): StoreRecord[] {
+        const {activeField, view} = this;
+        if (activeField?.aggregator.dependsOnChildrenOnly) {
+            throw XH.exception(
+                `The aggregator for the '${activeField.name}' field read \`filteredRecords\`, but does not override \`dependsOnChildrenOnly\` to return false - aggregators depending on records beyond their own children must do so.`
+            );
+        }
+        return view._records.list;
+    }
+
+    constructor(view: View) {
         this.view = view;
-        this.filteredRecords = filteredRecords;
         this.appData = {};
+    }
+
+    /**
+     * Aggregate the given rows for a field, tracking the field as active for the duration.
+     * @internal
+     */
+    aggregate(rows: ViewRow[], field: CubeField, row: ParentRow): any {
+        this.activeField = field;
+        this.activeRow = row;
+        try {
+            return field.aggregator.aggregate(rows, field.name, this);
+        } finally {
+            this.activeField = null;
+            this.activeRow = null;
+        }
+    }
+
+    /**
+     * Adjust an aggregated value for a single child update, tracking the updated field as active
+     * for the duration.
+     * @internal
+     */
+    replace(rows: ViewRow[], currVal: any, update: RowUpdate, row: ParentRow): any {
+        const {field} = update;
+        this.activeField = field;
+        this.activeRow = row;
+        try {
+            return field.aggregator.replace(rows, currVal, update, this);
+        } finally {
+            this.activeField = null;
+            this.activeRow = null;
+        }
+    }
+
+    /**
+     * Store state for the row and field currently being aggregated, to be read by the
+     * aggregations of ancestor rows via {@link getAggState}.
+     *
+     * Lets an aggregator that cannot be composed from its children's published values alone -
+     * e.g. an average - compose from its direct children rather than walking its entire subtree
+     * of leaves. See {@link AverageAggregator} for an example.
+     *
+     * Write state on every call to {@link Aggregator.aggregate}, as rows are recomputed in place
+     * when reused. An {@link Aggregator.replace} override must likewise keep state consistent with
+     * the value it returns, or delegate to `super`.
+     */
+    setAggState<T>(state: T) {
+        const {activeRow, activeField} = this;
+        (activeRow.aggStates ??= {})[activeField.name] = state;
+    }
+
+    /**
+     * Read the state stored by a row's aggregation of the active field - the row being aggregated
+     * if not specified.
+     *
+     * Null for any row that did not aggregate the field: a leaf, a row whose
+     * {@link CubeField.canAggregateFn} returned false for it, or a row grouped by the field itself
+     * (a dimension is never aggregated at its own level). Such a row publishes a value to read in
+     * place of state - null in all but the last case.
+     */
+    getAggState<T>(row: ViewRow = this.activeRow): T {
+        return (row as ParentRow).aggStates?.[this.activeField.name];
     }
 }

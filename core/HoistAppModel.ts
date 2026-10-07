@@ -5,8 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {AppOptionSpec, HoistModel, InitContext, Thunkable} from './';
-import {Route} from 'router5';
+import {AppOptionSpec, HoistModel, HoistRoute, InitContext, Thunkable} from './';
 import {ReactNode} from 'react';
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
@@ -52,7 +51,7 @@ export class HoistAppModel extends HoistModel {
     /**
      * Provide the initial set of Router5 Routes to be used by this application.
      */
-    getRoutes(): Route[] {
+    getRoutes(): HoistRoute[] {
         return [];
     }
 

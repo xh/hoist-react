@@ -7,11 +7,22 @@
 import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {FileRejection} from '@xh/hoist/kit/react-dropzone';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {ErrorCode, FileRejection} from '@xh/hoist/kit/react-dropzone';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {castArray, concat, filter, isEmpty, keys, fromPairs, map, sortBy, uniqBy} from 'lodash';
+import {
+    castArray,
+    differenceBy,
+    filter,
+    isEmpty,
+    keys,
+    fromPairs,
+    map,
+    sortBy,
+    take,
+    uniqBy
+} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef} from 'react-dropzone';
 
@@ -74,11 +85,9 @@ export interface FileChooserConfig {
  * a newly added file taking precedence over any existing file of the same name.
  */
 export class FileChooserModel extends HoistModel {
-    @observable.ref
-    files: File[] = [];
+    @observableRef accessor files: File[] = [];
 
-    @observable
-    disabled: boolean;
+    @observable accessor disabled: boolean;
 
     readonly accept: string[];
     readonly maxFiles: number;
@@ -98,7 +107,6 @@ export class FileChooserModel extends HoistModel {
 
     constructor(config: FileChooserConfig = {}) {
         super();
-        makeObservable(this);
 
         this.accept = isEmpty(config.accept) ? null : sortBy(castArray(config.accept));
         this.maxFiles = config.maxFiles;
@@ -120,10 +128,10 @@ export class FileChooserModel extends HoistModel {
     }
 
     /**
-     * Add files to the selection.
+     * Add files to the selection, taking as many as the `maxFiles` limit allows.
      *
-     * Respects the `maxFiles` limit but does NOT enforce the `accept` / file-size constraints
-     * (those are applied only on drop/browse) - use with care.
+     * Does NOT enforce the `accept` / file-size constraints (those are applied only on
+     * drop/browse) - use with care.
      */
     addFiles(files: Some<File>) {
         this.addFilesInternal(files);
@@ -158,39 +166,49 @@ export class FileChooserModel extends HoistModel {
             // In single-file mode, replace the current selection with the incoming file.
             if (maxFiles === 1 && accepted.length === 1) this.clear();
 
-            if (this.addFilesInternal(accepted)) {
-                this.onFileAccepted?.(accepted);
-            }
+            const added = this.addFilesInternal(accepted);
+            if (!isEmpty(added)) this.onFileAccepted?.(added);
         }
     }
 
     //------------------------
     // Implementation
     //------------------------
-    // De-dupe by name, then enforce `maxFiles` on the result. Warns and no-ops if exceeded;
-    // returns true if the selection was updated.
+    // Add incoming files, replacing any same-named file already selected and taking the rest up to
+    // the `maxFiles` limit. Warns on any surplus. Returns the files actually added.
     @action
-    private addFilesInternal(files: Some<File>): boolean {
+    private addFilesInternal(files: Some<File>): File[] {
         const {maxFiles} = this,
-            deduped = uniqBy(concat(files, this.files), 'name');
+            incoming = uniqBy(castArray(files), 'name'),
+            // Existing files the incoming batch does not replace - always retained.
+            retained = differenceBy(this.files, incoming, 'name'),
+            capacity = maxFiles != null ? Math.max(maxFiles - retained.length, 0) : incoming.length,
+            added = take(incoming, capacity),
+            surplus = incoming.length - added.length;
 
-        if (maxFiles != null && deduped.length > maxFiles) {
+        if (surplus) {
             XH.warningToast(
                 maxFiles === 1
                     ? 'Only one file allowed for upload.'
-                    : `File limit of ${maxFiles} exceeded.`
+                    : `File limit of ${maxFiles} reached - ${surplus} ${pluralize('file', surplus)} not added.`
             );
-            return false;
         }
 
-        this.files = deduped;
-        return true;
+        if (!isEmpty(added)) this.files = [...added, ...retained];
+        return added;
     }
 
-    private defaultRejectMessage(rejections: FileRejection[]): ReactElement {
-        // 1) Map rejected files to error messages
+    private defaultRejectMessage = (rejections: FileRejection[]): ReactElement => {
+        // 1) Map rejected files to error messages. Use custom message for invalid types to avoid displaying dummy MIME type.
         const errorsByFile = fromPairs(
-            map(rejections, ({file, errors}) => [file.name, map(errors, 'message')])
+            map(rejections, ({file, errors}) => [
+                file.name,
+                map(errors, e =>
+                    e.code === ErrorCode.FileInvalidType
+                        ? `File type must be one of ${this.accept.join(', ')}`
+                        : e.message
+                )
+            ])
         );
 
         // 2) List files with bulleted error messages
@@ -207,7 +225,7 @@ export class FileChooserModel extends HoistModel {
             });
 
         return vbox(rejectItems);
-    }
+    };
 
     private getRejectToastSpec(params: Partial<ToastSpec> | boolean): Partial<ToastSpec> {
         if (params == false) return null;

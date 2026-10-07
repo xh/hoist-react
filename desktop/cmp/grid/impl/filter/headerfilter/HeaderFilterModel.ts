@@ -26,6 +26,9 @@ import {CustomTabModel} from './custom/CustomTabModel';
 import {valuesTab} from './values/ValuesTab';
 import {ValuesTabModel} from './values/ValuesTabModel';
 
+/**
+ * @internal
+ */
 export class HeaderFilterModel extends HoistModel {
     override xhImpl = true;
 
@@ -91,7 +94,7 @@ export class HeaderFilterModel extends HoistModel {
 
     @computed
     get isDirty(): boolean {
-        const current = parseFilter(this.columnFilters),
+        const current = parseFilter(this.columnCompoundFilter ?? this.columnFilters),
             pending = parseFilter(this.pendingFilter);
         return current ? !current.equals(pending) : !!pending;
     }

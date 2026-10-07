@@ -8,5 +8,6 @@ import {elementFactory} from '@xh/hoist/core';
 import Dropzone from 'react-dropzone';
 
 export {Dropzone};
+export {ErrorCode} from 'react-dropzone';
 export type {Accept, FileRejection, FileWithPath} from 'react-dropzone';
 export const dropzone = elementFactory(Dropzone);

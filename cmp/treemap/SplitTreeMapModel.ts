@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PlainObject, Theme} from '@xh/hoist/core';
-import {action, observable, computed, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {ReactNode} from 'react';
@@ -53,19 +53,20 @@ export class SplitTreeMapModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable orientation: SplitTreeMapOrientation;
+    @observable accessor orientation: SplitTreeMapOrientation;
 
     constructor(config: SplitTreeMapConfig) {
         super();
-        makeObservable(this);
 
         const {
             mapFilter,
             mapTitleFn,
             showSplitter = false,
             orientation = 'vertical',
+            xhName = null,
             ...rest
         } = config ?? {};
+        this.xhName = xhName;
 
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
@@ -77,8 +78,16 @@ export class SplitTreeMapModel extends HoistModel {
         );
         this.orientation = orientation;
 
-        this.primaryMapModel = new TreeMapModel({...rest, filter: r => this.mapFilter(r)});
-        this.secondaryMapModel = new TreeMapModel({...rest, filter: r => !this.mapFilter(r)});
+        this.primaryMapModel = new TreeMapModel({
+            xhName: this.childXhName('primaryMapModel'),
+            ...rest,
+            filter: r => this.mapFilter(r)
+        });
+        this.secondaryMapModel = new TreeMapModel({
+            xhName: this.childXhName('secondaryMapModel'),
+            ...rest,
+            filter: r => !this.mapFilter(r)
+        });
     }
 
     // Getters derived from both underlying TreeMapModels.

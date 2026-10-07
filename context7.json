@@ -1,4 +1,57 @@
 {
-  "url": "https://context7.com/xh/hoist-react",
-  "public_key": "pk_NBMk3j2oYSSVg1aFVwXFT"
+    "$schema": "https://context7.com/schema/context7.json",
+    "projectTitle": "Hoist React",
+    "description": "Client half of XH's Hoist toolkit: React + MobX, element-factory components, HoistModel and HoistService, ag-Grid grids, forms, dashboards, persistence, routing. Pairs with hoist-core.",
+    "branch": "master",
+    "excludeFolders": [
+        "docs/planning",
+        "docs/archive",
+        "docs/superpowers",
+        "scripts",
+        ".github",
+        ".claude"
+    ],
+    "excludeFiles": [
+        "CHANGELOG.md",
+        "LICENSE.md",
+        "SECURITY.md",
+        "CLAUDE.local.md",
+        "CODE_OF_CONDUCT.md"
+    ],
+    "rules": [
+        "Render components with element factories (panel({...}), grid({...})) rather than JSX. Pass children via item/items and use the omit prop for conditional rendering.",
+        "v88+ uses TC39 decorators: @bindable accessor name, @observableRef, @bindableRef, no makeObservable. Through v87: plain fields (@bindable name = null) plus makeObservable(this) in the constructor.",
+        "Use creates(ModelClass) when a component owns its model, uses(ModelClass) when a parent supplies it. lookupModel and @lookup work only in linked models, from onLinked on.",
+        "Mark child HoistBase instances @managed so they are destroyed with their owner. Use this.addReaction() and this.addAutorun(), not raw MobX reaction() or autorun().",
+        "Implement doLoadAsync(loadSpec) and trigger it with loadAsync() or refreshAsync(), never directly. Pass loadSpec through to XH.fetchJson and nested loads.",
+        "Reach services and app-wide APIs through XH (XH.fetchJson, XH.configService, XH.toast, XH.handleException). App services extend HoistService and install via XH.installServicesAsync.",
+        "Use Hoist input components (textInput, numberInput, select, checkbox, dateInput, textArea) bound to FormModel fields through formField. Do not use raw HTML inputs.",
+        "Grid columns are plain ColumnSpec objects in GridConfig.columns. Try the pre-built column specs and @xh/hoist/format renderers (numberRenderer, dateRenderer) before a custom renderer.",
+        "Import from package barrels (@xh/hoist/core, @xh/hoist/cmp/grid, @xh/hoist/desktop/cmp/panel, @xh/hoist/mobx), never from internal files or impl folders.",
+        "Use null, not undefined, as the no-value sentinel and test with == null. Suffix promise-returning methods with Async.",
+        "v86+: wrap async work in the Runner chain, e.g. this.runner(ctx).span('loadX').linkTo(task).track({...}).run(async ctx => ...) or .fetchJson(). Compose masking, tracking, and spans there.",
+        "The default Context7 version documents the latest release. For an app on an older major, pick that major's version. Across majors, read docs/upgrade-notes/v<major>-upgrade-notes.md and docs/version-compatibility.md."
+    ],
+    "previousVersions": [
+        {
+            "tag": "v88.1.2"
+        },
+        {
+            "tag": "v87.3.0"
+        },
+        {
+            "tag": "v86.4.2"
+        },
+        {
+            "tag": "v85.0.0"
+        },
+        {
+            "tag": "v84.0.2"
+        },
+        {
+            "tag": "v83.1.0"
+        }
+    ],
+    "url": "https://context7.com/xh/hoist-react",
+    "public_key": "pk_NBMk3j2oYSSVg1aFVwXFT"
 }

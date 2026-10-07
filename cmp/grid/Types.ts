@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import type {HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {HoistModel, HSide, Intent, PersistOptions, Some} from '@xh/hoist/core';
+import type {PanelConfig} from '@xh/hoist/desktop/cmp/panel';
 import type {
     FilterBindTarget,
     FilterMatchMode,
@@ -42,6 +43,28 @@ export interface ColumnState {
 }
 
 /**
+ * Expand/collapse state for a single {@link ColumnGroup}, as tracked by
+ * {@link GridModel.columnGroupState}.
+ */
+export interface ColumnGroupState {
+    groupId: string;
+    expanded: boolean;
+}
+
+/** Options for {@link GridModel.setColumnState}. */
+export interface ColumnStateOptions {
+    /**
+     * True to hide any columns missing from the provided state, regardless of their in-code
+     * `hidden` config. Default false, respecting that config.
+     *
+     * Columns configured with `hideable: false` or `excludeFromChooser: true` are never hidden by
+     * this option, as the app has indicated that they must be displayed and/or cannot be restored
+     * by the user.
+     */
+    hideNewColumns?: boolean;
+}
+
+/**
  * Comparator for custom grid group sorting, provided to GridModel.
  * @param groupAVal - first group value to be compared.
  * @param groupBVal - second group value to be compared.
@@ -60,6 +83,9 @@ export type GridGroupSortFn = (
         nodeB: IRowNode;
     }
 ) => number;
+
+/** Position of a row in the viewport when scrolled into view - default null scrolls minimally. */
+export type GridScrollPosition = 'top' | 'middle' | 'bottom';
 
 /**
  * Closure to generate CSS class names for a row.
@@ -82,12 +108,34 @@ export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
 export interface GridModelPersistOptions extends PersistOptions {
     /** True (default) to include column state or provide column-specific PersistOptions. */
     persistColumns?: boolean | PersistOptions;
+    /**
+     * True (default) to include column group expand/collapse state, or provide group-specific
+     * PersistOptions. Nothing is written while every group sits at its configured `collapsed`.
+     */
+    persistColumnGroups?: boolean | PersistOptions;
     /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
     persistSort?: boolean | PersistOptions;
     /** True (default) to include expanded level state or provide expanded level-specific PersistOptions.  */
     persistExpandToLevel?: boolean | PersistOptions;
+    /**
+     * True to force columns newly added to the code - and therefore missing from any previously
+     * persisted state - to be initially hidden, regardless of their in-code `hidden` config. False
+     * to respect that config, allowing new columns to appear automatically.
+     *
+     * Defaults to true when persisting to a user-curated, named view - i.e. a `ViewManagerModel`
+     * or `DashViewModel`, per the resolved `persistColumns` options - as a release should not add
+     * columns to views users have deliberately composed. Defaults to false for all other
+     * providers, where state records a user's last-used layout and new columns aid discovery of
+     * newly released data. The in-code default view of a `ViewManagerModel` always follows the
+     * code - set this config to true to force-hide new columns there as well.
+     *
+     * Affects initial visibility only - new columns are always added to state and remain available
+     * via the column chooser. Columns with `hideable: false` or `excludeFromChooser: true` are
+     * never force-hidden, as the app requires them shown and/or users could not restore them.
+     */
+    hideNewColumns?: boolean;
 }
 
 /**
@@ -115,6 +163,10 @@ export interface GridFilterModelConfig {
      * Specifies the fields this model supports for filtering. Should be configs for
      * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or
      * omitted entirely to indicate that all fields should be filter-enabled.
+     *
+     * Any `filterable` column with a field not listed here gets a default spec, so this list only
+     * needs to include fields that require custom config. Set `filterable: false` on a column to
+     * disable its filter.
      */
     fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 
@@ -127,6 +179,9 @@ export interface GridFilterModelConfig {
      * Defaults to `Icon.filter()` (the standard funnel icon in regular/outline style).
      */
     activeFilterIcon?: ReactElement;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -142,20 +197,45 @@ export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSourc
  */
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
+/** Cross-platform interface for desktop and mobile ColChooserModels. */
+export interface IColChooserModel extends HoistModel {
+    readonly gridModel: GridModel;
+    readonly mode: ColChooserMode;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(): void;
+}
+
 /**
- * Configuration for a {@link ColChooserModel} - the model backing the grid column chooser UI.
- * Passed via the `colChooserModel` config on {@link GridConfig}, or set app-wide via
+ * Presentation for a grid's column chooser, as specified by {@link ColChooserConfig.mode}.
+ *      `modal` - an overlay (dialog or popover) shown above the grid.
+ *      `docked` - a resizable, non-modal side-panel rendered alongside the grid. Desktop only.
+ */
+export type ColChooserMode = 'modal' | 'docked';
+
+/**
+ * Configuration for a grid's column chooser - the model backing the column chooser UI. Passed via
+ * the `colChooserModel` config on {@link GridConfig}, or set app-wide via
  * `GridModel.defaults.colChooserModel`.
  *
- * @see ColChooserModel
+ * A grid has at most one chooser; `mode` selects how it is presented.
  */
 export interface ColChooserConfig {
     /** GridModel to bind to. Not required if creating via `GridModel.colChooserModel` */
     gridModel?: GridModel;
 
     /**
-     * Immediately render changed columns on grid (default true).
-     * Set to false to enable Save button for committing changes on save. Desktop only.
+     * How the chooser is presented (default 'modal'). Pass a bare {@link ColChooserMode} in place of
+     * this config as a shortcut - e.g. `colChooserModel: 'docked'`. Docked is desktop only and will
+     * throw in a mobile app.
+     */
+    mode?: ColChooserMode;
+
+    /**
+     * Immediately render changed columns on grid (default true). Set to false to enable Save button
+     * for committing changes on save. Desktop only, and modal only - the docked chooser stays in
+     * sync with external column state, so it always commits immediately.
      */
     commitOnChange?: boolean;
 
@@ -171,14 +251,58 @@ export interface ColChooserConfig {
      */
     autosizeOnCommit?: boolean;
 
-    /** Chooser width for popover and dialog. Desktop only. */
+    /**
+     * Width of the chooser's bucket column - the always-present part, excluding the optional Column
+     * Library (see {@link ColLibraryConfig.libraryWidth}). In the modal overlay this sizes to fit
+     * this plus the library when shown; in the docked panel it is the initial dock width (grown by
+     * the library width while shown). Desktop only.
+     */
     width?: string | number;
 
-    /** Chooser height for popover and dialog. Desktop only. */
+    /** Chooser height. Desktop only, and modal only - the dock sizes itself vertically. */
     height?: string | number;
 
     /** Mode to use when filtering (default 'startWord'). Desktop only. */
     filterMatchMode?: FilterMatchMode;
+
+    /**
+     * Enable the Column Library - a docked panel listing hidden columns (grouped by `chooserGroup`)
+     * that users drag onto the chooser's bucket grids to show, and onto which they drag columns to
+     * hide. When enabled, hidden columns are removed from the buckets by default. Default false.
+     * Pass `true` for defaults, or a {@link ColLibraryConfig} to customize. Desktop only.
+     */
+    columnLibrary?: boolean | ColLibraryConfig;
+
+    /**
+     * Config for the docked PanelModel (e.g. `side`, `defaultSize`, `minSize`). The chooser docks
+     * horizontally, so `side` is limited to 'left'/'right' (default 'right'). The dock is resize-only
+     * (open/close is driven externally - e.g. a `ColChooserButton` or `GridModel.showColChooser()`),
+     * so `collapsible` is omitted. Requires `mode: 'docked'`.
+     */
+    panelConfig?: Omit<PanelConfig, 'side' | 'collapsible'> & {side?: HSide};
+}
+
+/**
+ * Configuration for the ColumnChooser's optional Column Library, passed via
+ * {@link ColChooserConfig.columnLibrary}. Desktop only.
+ */
+export interface ColLibraryConfig {
+    /**
+     * Render the library's `chooserGroup` groups collapsed by default (default false). Recommended
+     * for large column sets.
+     */
+    collapseGroups?: boolean;
+
+    /**
+     * Max number of matching columns for a library group to be expanded while the chooser's filter
+     * is active (default 5). Set to 0 to disable.
+     */
+    autoExpandOnFilter?: number;
+
+    /**
+     * Fixed width of the Column Library panel (default 250).
+     */
+    libraryWidth?: number;
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;
@@ -186,6 +310,33 @@ export type ColumnOrGroupSpec = ColumnSpec | ColumnGroupSpec;
 
 export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
     return !('children' in spec);
+}
+
+/**
+ * Expand/collapse state of a containing ColumnGroup, within which a Column or nested ColumnGroup
+ * should be shown - see {@link ColumnSpec.groupShowMode}. 'always' (the default) shows it in
+ * either state.
+ *
+ * Note that this config is what makes a ColumnGroup expandable, and requires a mix of values to do
+ * so: the group must have a visible child shown while expanded *and* one shown while collapsed,
+ * with at least one child that is not shown 'always'. Groups not meeting that bar render as static
+ * headers.
+ */
+export type ColumnGroupShowMode = 'expanded' | 'collapsed' | 'always';
+
+/**
+ * Map a {@link ColumnGroupShowMode} to the ag-Grid `columnGroupShow` value.
+ * @internal
+ */
+export function toAgColumnGroupShow(mode: ColumnGroupShowMode): 'open' | 'closed' {
+    switch (mode) {
+        case 'expanded':
+            return 'open';
+        case 'collapsed':
+            return 'closed';
+        default:
+            return null;
+    }
 }
 
 /**
@@ -276,6 +427,14 @@ export type ColumnCellClassFn<T = any> = (
  *      it should be removed.
  */
 export type ColumnCellClassRuleFn = (agParams: CellClassParams) => boolean;
+
+/**
+ * Function to determine the corner flag, if any, to render on a grid cell's top-right corner.
+ * @param value - cell data value (column + row).
+ * @param context - additional data about the column, row and GridModel.
+ * @returns the Intent to draw the flag in, or null for no flag.
+ */
+export type ColumnCellFlagFn<T = any> = (value: T, context: CellContext) => Intent | null;
 
 /**
  * Function to produce a grid column tooltip.

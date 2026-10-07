@@ -4,15 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
+import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
+import {getFilterRegex} from '@xh/hoist/data';
 import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
-import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {stripTags, withDefault} from '@xh/hoist/utils/js';
+import {action, bindable, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
+import {stripTags} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
-    escapeRegExp,
     filter,
     flatMap,
     get,
@@ -30,8 +31,7 @@ import {
 export class GridFindFieldImplModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable
-    query: string = null;
+    @bindable accessor query: string = null;
 
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
@@ -49,7 +49,7 @@ export class GridFindFieldImplModel extends HoistModel {
         return this.componentProps.excludeFields;
     }
 
-    @observable.ref results;
+    @observableRef accessor results;
     inputRef = createObservableRef<TextInputModel>();
     _records: StoreRecord[] = null;
 
@@ -59,7 +59,7 @@ export class GridFindFieldImplModel extends HoistModel {
 
     get selectedIdx(): number {
         if (!this.count) return null;
-        const matchIdx = this.results.indexOf(this.gridModel.selectedId);
+        const matchIdx = this.results.indexOf(this.innerGridModel.selectedId);
         return matchIdx > -1 ? matchIdx : null;
     }
 
@@ -84,26 +84,26 @@ export class GridFindFieldImplModel extends HoistModel {
         return !isNil(this.results) && !isEmpty(this.results);
     }
 
+    /** GridModel or ZoneGridModel to search - from props, or the nearest found in context. */
     @computed
-    get gridModel(): GridModel {
-        const ret = withDefault(this.componentProps.gridModel, this.lookupModel(GridModel));
-        if (!ret) {
-            this.logError("No GridModel available.  Provide via a 'gridModel' prop, or context.");
-        } else if (!ret.selModel?.isEnabled) {
-            this.logError('GridFindField must be bound to GridModel with selection enabled.');
-        }
-        return ret;
+    get boundModel(): GridModel | ZoneGridModel {
+        return (
+            this.componentProps.gridModel ??
+            this.lookupModel(it => it instanceof GridModel || it instanceof ZoneGridModel)
+        );
     }
 
     //------------------------------------------------------------------
     // Trampoline value to grid
     //------------------------------------------------------------------
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     override onLinked() {
+        const {boundModel} = this;
+        if (!boundModel) {
+            this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
+        } else if (!boundModel.selModel?.isEnabled) {
+            this.logError('GridFindField must be bound to GridModel with selection enabled.');
+        }
+
         this.addReaction(
             {
                 track: () => this.query,
@@ -111,48 +111,53 @@ export class GridFindFieldImplModel extends HoistModel {
                 debounce: this.queryBuffer
             },
             {
-                track: () => [
-                    this.gridModel?.store.records,
-                    this.gridModel?.columns,
-                    this.gridModel?.sortBy,
-                    this.gridModel?.groupBy
-                ],
+                track: () => {
+                    const {innerGridModel} = this;
+                    return [
+                        innerGridModel?.store.records,
+                        innerGridModel?.sortBy,
+                        innerGridModel?.groupBy,
+                        ...this.getSearchColumns()
+                    ];
+                },
                 run: () => {
                     this._records = null;
                     if (this.hasQuery) this.updateResults();
-                }
+                },
+                equals: 'shallow',
+                debounce: this.queryBuffer
             },
             {
                 track: () => [this.includeFields, this.excludeFields, this.matchMode],
                 run: () => this.updateResults(),
-                equals: comparer.structural
+                equals: compareStructural
             }
         );
     }
 
     selectPrev() {
-        const {hasResults, results, selectedIdx, gridModel} = this;
+        const {hasResults, results, selectedIdx, innerGridModel} = this;
         if (!hasResults) return;
         const endIdx = results.length - 1;
         if (!isFinite(selectedIdx)) {
-            gridModel.selectAsync(results[endIdx]);
+            innerGridModel.selectAsync(results[endIdx]);
             return;
         }
 
         const idx = (selectedIdx - 1) % results.length;
-        gridModel.selectAsync(results[idx < 0 ? endIdx : idx]);
+        innerGridModel.selectAsync(results[idx < 0 ? endIdx : idx]);
     }
 
     selectNext() {
-        const {hasResults, results, selectedIdx, gridModel} = this;
+        const {hasResults, results, selectedIdx, innerGridModel} = this;
         if (!hasResults) return;
         if (!isFinite(selectedIdx)) {
-            gridModel.selectAsync(results[0]);
+            innerGridModel.selectAsync(results[0]);
             return;
         }
 
         const idx = (selectedIdx + 1) % results.length;
-        gridModel.selectAsync(results[idx]);
+        innerGridModel.selectAsync(results[idx]);
     }
 
     //------------------------
@@ -161,7 +166,7 @@ export class GridFindFieldImplModel extends HoistModel {
     @action
     private updateResults(autoSelect = false) {
         // Track ids of matching records
-        const {query, gridModel} = this,
+        const {query, innerGridModel} = this,
             activeFields = this.getActiveFields();
 
         if (!query || isEmpty(activeFields)) {
@@ -169,7 +174,7 @@ export class GridFindFieldImplModel extends HoistModel {
             return;
         }
 
-        const regex = this.getRegex(query),
+        const regex = getFilterRegex(query, this.matchMode),
             valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
 
         this.results = this.getRecords()
@@ -180,98 +185,19 @@ export class GridFindFieldImplModel extends HoistModel {
 
         // Auto-select first matching result
         if (autoSelect && this.hasResults && !isFinite(this.selectedIdx)) {
-            gridModel?.selectAsync(this.results[0]);
+            innerGridModel?.selectAsync(this.results[0]);
         }
     }
 
     private getRecords(): StoreRecord[] {
-        if (!this._records) {
-            const records = this.sortRecordsRecursive([...this.gridModel.store.rootRecords]);
-            this._records = this.sortRecordsByGroupBy(records);
-        }
-        return this._records;
-    }
-
-    // Sort records with GridModel's sortBy(s) using the Column's comparator
-    private sortRecordsRecursive(records: StoreRecord[]): StoreRecord[] {
-        const {gridModel} = this,
-            {sortBy, treeMode, agApi, store} = gridModel,
-            ret: StoreRecord[] = [];
-
-        [...sortBy].reverse().forEach(it => {
-            const column = gridModel.getColumn(it.colId);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                compFn = (column.getAgSpec().comparator as Function).bind(column),
-                direction = it.sort === 'desc' ? -1 : 1;
-
-            const ctx = {field, column, gridModel, store, agParams: null};
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, ...ctx}),
-                    valueB = getValueFn({record: b, ...ctx}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
-
-                return compFn(valueA, valueB, nodeA, nodeB) * direction;
-            });
-        });
-
-        records.forEach(rec => {
-            ret.push(rec);
-            if (treeMode && !isEmpty(rec.children)) {
-                const children = this.sortRecordsRecursive(rec.children);
-                ret.push(...children);
-            }
-        });
-
-        return ret;
-    }
-
-    // Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
-    private sortRecordsByGroupBy(records: StoreRecord[]) {
-        const {gridModel} = this,
-            {agApi, groupBy, groupSortFn, store} = gridModel;
-
-        [...groupBy].reverse().forEach(groupField => {
-            const column = gridModel.getColumn(groupField);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                ctx = {field, column, gridModel, store, agParams: null};
-
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, ...ctx}),
-                    valueB = getValueFn({record: b, ...ctx}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
-
-                return groupSortFn(valueA, valueB, field, {gridModel, nodeA, nodeB});
-            });
-        });
-
-        return records;
-    }
-
-    private getRegex(searchTerm: string): RegExp {
-        searchTerm = escapeRegExp(searchTerm);
-        switch (this.matchMode) {
-            case 'any':
-                return new RegExp(searchTerm, 'i');
-            case 'start':
-                return new RegExp(`^${searchTerm}`, 'i');
-            case 'startWord':
-                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
-        }
-        throw XH.exception('Unknown matchMode in GridFindField');
+        return (this._records ??= this.innerGridModel.getSortedRecords());
     }
 
     private getActiveFields(): string[] {
-        const {gridModel, includeFields, excludeFields} = this,
-            groupBy = gridModel.groupBy,
-            visibleCols = gridModel.getVisibleLeafColumns();
+        const {innerGridModel, includeFields, excludeFields} = this,
+            searchCols = this.getSearchColumns();
 
-        let ret = ['id', ...gridModel.store.fieldNames];
+        let ret = ['id', ...innerGridModel.store.fieldNames];
         if (includeFields) ret = intersection(ret, includeFields);
         if (excludeFields) ret = without(ret, ...excludeFields);
 
@@ -280,7 +206,7 @@ export class GridFindFieldImplModel extends HoistModel {
         // as first-class fields and displays them w/o the need for renderers, we want to
         // include them here. (But only if their "root" is in the field list derived from the
         // Store and any given include/excludeField configs.)
-        visibleCols.forEach(col => {
+        searchCols.forEach(col => {
             const {fieldPath} = col;
             if (!isArray(fieldPath)) return;
 
@@ -293,12 +219,11 @@ export class GridFindFieldImplModel extends HoistModel {
         // Run exclude once more to support explicitly excluding a dot-sep field added above.
         if (excludeFields) ret = without(ret, ...excludeFields);
 
-        // Final filter for column visibility, or explicit request for inclusion.
+        // Final filter for column visibility, or explicit request for inclusion. Deliberately not
+        // keyed to groupBy, so query results stay stable across regrouping (see #4070).
         ret = ret.filter(f => {
             return (
-                (includeFields && includeFields.includes(f)) ||
-                visibleCols.find(c => c.field === f) ||
-                groupBy.includes(f)
+                (includeFields && includeFields.includes(f)) || searchCols.find(c => c.field === f)
             );
         });
 
@@ -306,13 +231,13 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     private getValGetters(fieldName: string) {
-        const {gridModel} = this,
-            {store} = gridModel,
+        const {innerGridModel} = this,
+            {store} = innerGridModel,
             field = store.getField(fieldName);
 
         // See corresponding method in StoreFilterFieldImplModel for notes on this implementation.
         if (field?.type === 'date' || field?.type === 'localDate') {
-            const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
+            const cols = filter(this.getSearchColumns(), {field: fieldName});
             if (!cols) return [];
 
             return cols.map(column => {
@@ -322,7 +247,7 @@ export class GridFindFieldImplModel extends HoistModel {
                             record,
                             field: fieldName,
                             column,
-                            gridModel,
+                            gridModel: innerGridModel,
                             store,
                             agParams: null
                         },
@@ -338,5 +263,19 @@ export class GridFindFieldImplModel extends HoistModel {
         return fieldName.includes('.')
             ? (rec: StoreRecord) => get(rec.data, fieldName)
             : (rec: StoreRecord) => rec.data[fieldName];
+    }
+
+    private get innerGridModel(): GridModel {
+        const {boundModel} = this;
+        return boundModel instanceof ZoneGridModel ? boundModel.gridModel : boundModel;
+    }
+
+    // See corresponding method in StoreFilterFieldImplModel.
+    private getSearchColumns(): Column[] {
+        const {boundModel} = this;
+        if (!boundModel) return [];
+        return boundModel instanceof ZoneGridModel
+            ? boundModel.getMappedColumns()
+            : boundModel.getVisibleLeafColumns();
     }
 }

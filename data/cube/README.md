@@ -5,6 +5,7 @@
 | [Overview](#overview) | Architecture, dimensions vs. measures, CubeField configuration |
 | [Creating a Cube](#creating-a-cube) | Field definitions, data loading |
 | [Built-in Aggregators](#built-in-aggregators) | SUM, AVG, MIN, MAX, and counting aggregators |
+| [Custom Aggregators](#custom-aggregators) | Extending `Aggregator`, weighted averages via aggregator state |
 | [Querying with Views](#querying-with-views) | Grouped queries, grand totals, leaf drill-down, dynamic updates |
 | [Accessing View Data](#accessing-view-data) | Connected stores vs. direct result access |
 
@@ -50,6 +51,19 @@ const cube = new Cube({
 await cube.loadDataAsync(salesData);
 ```
 
+A Cube maintains an internal `Store` of the leaf-level records loaded into it. Tune that Store via
+`CubeConfig.store` - notably with `digestSpec`, recommended whenever the source can supply a cheap
+per-row digest, as it preserves record identity for unchanged rows across loads and updates and so
+allows connected Views to reuse their generated rows:
+
+```typescript
+const cube = new Cube({
+    fields: [...],
+    idSpec: 'orderId',
+    store: {digestSpec: 'rev'}
+});
+```
+
 ## Built-in Aggregators
 
 | Aggregator | Description |
@@ -63,6 +77,60 @@ await cube.loadDataAsync(salesData);
 | `'UNIQUE'` | Count of unique values |
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
+| `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
+
+`WeightedAverageAggregator` takes the name of its weight field, so is instantiated per field rather
+than aliased by token: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`. It
+reads the weight from each leaf's source record, so the weight field need not be queried, and
+updates incrementally on a change to either field.
+
+A field is never aggregated at or below the level at which it is applied as a dimension - rows
+there publish the dimension value, and rows above aggregate over those values, one per grouped row.
+`MIN`, `MAX` and `UNIQUE` remain meaningful for such a field; `SUM` and `AVG` do not. To average a
+field you also group by, add a second measure field over the same value.
+
+## Custom Aggregators
+
+Extend `Aggregator` and implement `aggregate()` to add application-specific aggregations. Values
+arrive as the row's direct children - a mix of leaf rows and already-aggregated parent rows, typed
+as `ViewRow` - so most aggregations compose naturally from `row.data[fieldName]`.
+
+Aggregations that cannot be derived from their children's published values alone (an average, a
+standard deviation) can keep the extra terms they need as **aggregator state**, via
+`AggregationContext.setAggState()` / `getAggState()`. This keeps each row's work proportional to
+its child count rather than to its entire subtree of leaves. See `AverageAggregator` and
+`WeightedAverageAggregator` for compact examples - the latter also reads a second field from each
+leaf's `cubeRecord`.
+
+The rows handed to an aggregator are typed as `ViewRow` - the row-level API shared by aggregators
+and the `lockFn` / `omitFn` / `bucketSpecFn` hooks. Leaf rows additionally carry their source
+`cubeRecord`, typed as `ViewLeafRow` - the type passed to the `forEachLeaf()` callback, and the one
+to narrow to when a row's `isLeaf` is true. Note the distinction from `ViewRowData`, which is a
+row's *data* as published to a View's result and its connected stores.
+
+Rules to observe:
+
+* **Write state on every `aggregate()` call.** Rows are recomputed in place when reused across
+  query results, so a state value left over from a prior result would be read as current.
+* **Expect non-leaf children without state.** `getAggState()` returns null for a child that did not
+  aggregate the field - because its `canAggregateFn` returned false, or because the field is a
+  dimension at that child's level and so is never aggregated there. Such a child publishes a value
+  to read instead - null in the first case, the dimension value in the second - so treat it
+  exactly like a leaf.
+* **Override `replace()` only if you can keep state consistent** with the value you return. The
+  inherited implementation re-aggregates from direct children, which is correct and already cheap;
+  see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
+  The `RowUpdate` it receives carries the leaf's full source data before and after the change.
+* **Override `dependsOn` to name any other leaf fields the aggregate reads**, as
+  `WeightedAverageAggregator` names its weight field. A View applies a record update incrementally,
+  re-aggregating a field up the ancestor chain only when that field's own leaf value changed - so
+  without the declaration, a change to the weight alone would leave the average stale until the
+  next full rebuild. Note that a `replace()` triggered this way may see the field's own leaf value
+  unchanged.
+* **Override `dependsOnChildrenOnly` to return false if the aggregate depends on values beyond its
+  own children** (e.g. percent-of-total). This routes every update through a full rebuild, on which
+  reused rows recompute the aggregate afresh, and gives the aggregator access to
+  `AggregationContext.filteredRecords`.
 
 ## Querying with Views
 
@@ -126,7 +194,7 @@ const view = cube.createView({
 
 ```typescript
 // Like includeLeaves, but leaves are accessible programmatically via
-// ViewRowData.cubeLeaves rather than rendered as tree children.
+// the getCubeLeaves() helper rather than rendered as tree children.
 // Useful for showing detail in a separate panel on selection.
 const view = cube.createView({
     query: {
@@ -167,6 +235,10 @@ view.updateQuery({
 view.setFilter({field: 'year', op: '=', value: 2025});
 ```
 
+Query updates are highly incremental - the View caches its generated rows and republishes
+unchanged rows (and their record-reuse digests) across regrouping, refiltering, and field
+changes, so connected stores and grids only process rows that actually changed.
+
 **One-shot queries with `executeQuery`:**
 
 For cases where you need aggregated data once without retaining a View — e.g. computing a
@@ -195,10 +267,16 @@ There are two ways to consume View results:
 **Option 1: Connected stores (recommended for grids)**
 
 Provide one or more stores via `ViewConfig.stores`. The View auto-loads hierarchical data
-into them whenever the query results change:
+into them whenever the query results change. Configure connected stores with
+`projectionOnly: true` (adopt View rows as record data without re-parsing). Record reuse is
+automatic - the View installs its own row-based digest on each connected store, so rows
+republished without change skip record rebuilds:
 
 ```typescript
-const store = new Store({fields: [...]});
+const store = new Store({
+    fields: [...],
+    projectionOnly: true
+});
 
 const view = cube.createView({
     query: {dimensions: ['region', 'product']},
@@ -224,6 +302,11 @@ addReaction({
     }
 });
 ```
+
+Note that `leafMap` is populated only when the query sets `includeLeaves` or `provideLeaves`. Views
+that expose no leaves hold them as zero-copy references to the source `Cube` record data - a
+significant memory and build-time win on large datasets, but not safe to publish. Read source
+records from `cube.store` directly if you need them.
 
 **Update triggers:** View data updates when either:
 - The underlying Cube data changes (requires `connect: true`)

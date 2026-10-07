@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
@@ -39,11 +39,11 @@ export class LogDisplayModel extends HoistModel {
     // Form State/Display options
     @bindable
     @persist
-    tail = false;
+    accessor tail = false;
 
-    @bindable startLine = 1;
-    @bindable maxLines = 1000;
-    @bindable pattern = '';
+    @bindable accessor startLine = 1;
+    @bindable accessor maxLines = 1000;
+    @bindable accessor pattern = '';
 
     @managed
     timer: Timer = null;
@@ -53,14 +53,16 @@ export class LogDisplayModel extends HoistModel {
 
     @bindable
     @persist
-    regexOption: boolean = false;
+    accessor regexOption: boolean = false;
 
     @bindable
     @persist
-    caseSensitive: boolean = false;
+    accessor caseSensitive: boolean = false;
 
-    @bindable
-    logRootPath: string;
+    @bindable accessor logRootPath: string;
+
+    // Line number to select on the next load
+    private pendingSelectRowNum: number = null;
 
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
@@ -72,7 +74,6 @@ export class LogDisplayModel extends HoistModel {
 
     constructor(parent: LogViewerModel) {
         super();
-        makeObservable(this);
 
         this.gridModel = this.createGridModel();
 
@@ -138,6 +139,24 @@ export class LogDisplayModel extends HoistModel {
     //---------------------------------
     // Implementation
     //---------------------------------
+    /** Clear any active filter and reload the log around the given line, re-selecting it. */
+    private viewSurroundingLines(rowNum: number) {
+        // Keep the target in the loaded window - a cleared maxLines defers to the server default.
+        const {maxLines} = this,
+            WIN = 100,
+            leadIn = maxLines ? Math.min(WIN, Math.floor((maxLines - 1) / 2)) : WIN;
+
+        this.pendingSelectRowNum = rowNum;
+
+        // The tail reaction resets startLine - flip tail off first, and not within an action.
+        this.tail = false;
+        this.pattern = '';
+        this.startLine = Math.max(1, rowNum - leadIn);
+
+        // Load directly, as the writes above can all be no-ops - debounce collapses any dupes.
+        this.loadLog();
+    }
+
     private createGridModel() {
         return new GridModel({
             selModel: 'multiple',
@@ -169,6 +188,13 @@ export class LogDisplayModel extends HoistModel {
             ],
             rowClassFn: () => 'xh-log-display__row',
             contextMenu: [
+                {
+                    text: 'View Surrounding Lines',
+                    icon: Icon.search(),
+                    recordsRequired: 1,
+                    actionFn: ({record}) => this.viewSurroundingLines(record.data.rowNum)
+                },
+                '-',
                 'copy',
                 '-',
                 {
@@ -200,7 +226,11 @@ export class LogDisplayModel extends HoistModel {
 
         gridModel.loadData(gridData);
 
-        if (tailActive) {
+        const {pendingSelectRowNum} = this;
+        if (pendingSelectRowNum != null) {
+            this.pendingSelectRowNum = null;
+            gridModel.selectAsync(pendingSelectRowNum, {ensureVisiblePosition: 'middle'});
+        } else if (tailActive) {
             this.scrollToTail();
         }
     }

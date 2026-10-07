@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PlainObject, Thunkable} from '@xh/hoist/core';
+import type {HoistBase, PlainObject, Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {
     flatMap,
@@ -282,13 +282,45 @@ export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): Plain
 }
 
 /**
- * A string, or an object from which a name can be derived - via `displayName` (e.g. React
- * components) or `constructor.name` (e.g. class instances). Used for logging and tracing.
+ * A string, or an object from which a name can be derived - via `xhName` (HoistBase instances),
+ * `displayName` (e.g. React components), or `constructor.name` (class instances). Used for
+ * logging and tracing.
  */
-export type NameSource = string | {displayName: string} | {constructor: {name: string}};
+export type NameSource = string | HoistBase | {displayName: string} | {constructor: {name: string}};
 
-/** Resolve a {@link NameSource} to a string, or null if unresolvable. */
+/**
+ * Resolve a {@link NameSource} to a string, or null if unresolvable.
+ *
+ * A HoistBase instance is labelled per {@link formatInstanceLabel}. Other sources resolve via
+ * `xhName` or {@link parseTypeName}.
+ */
 export function parseNameSource(source: NameSource): string {
+    if (!source) return null;
+    if (isString(source)) return source;
+    const typeName = parseTypeName(source);
+    if (!source['isHoistBase']) return source['xhName'] || typeName;
+    return formatInstanceLabel(typeName, source['xhName'], source['xhId']);
+}
+
+/**
+ * Label for a HoistBase instance - `ClassName [xhName]`, or `ClassName [id]` (short `xhId`) when
+ * unnamed. An `xhName` matching the class name (e.g. `fetchService`) marks a singleton and is
+ * omitted.
+ */
+export function formatInstanceLabel(className: string, xhName: string, xhId: string): string {
+    if (!xhName) return `${className} [${xhId.replace(/^xh-id-/, '')}]`;
+    return xhName.toLowerCase() === className.toLowerCase()
+        ? className
+        : `${className} [${xhName}]`;
+}
+
+/**
+ * Resolve a {@link NameSource} to its type-level name - `displayName` or `constructor.name` -
+ * ignoring any instance-level `xhName`. Returns null if unresolvable.
+ *
+ * @internal - use {@link parseNameSource}.
+ */
+export function parseTypeName(source: NameSource): string {
     if (!source) return null;
     if (isString(source)) return source;
     if (source['displayName']) return source['displayName'];

@@ -148,9 +148,9 @@ The simplest way to persist an individual property. Apply the decorator to any `
 class MyModel extends HoistModel {
     override persistWith = {localStorageKey: 'myPanel'};
 
-    @bindable @persist showAdvanced = false;
-    @observable @persist selectedView = 'summary';
-    @bindable @persist.with({prefKey: 'myPanelTheme'}) theme = 'light';
+    @bindable @persist accessor showAdvanced = false;
+    @observable @persist accessor selectedView = 'summary';
+    @bindable @persist.with({prefKey: 'myPanelTheme'}) accessor theme = 'light';
 }
 ```
 
@@ -159,14 +159,15 @@ config and the property name as its path. `@persist.with(options)` allows overri
 property-specific options — including a completely different provider.
 
 **Decorator ordering matters:** `@persist` must come after the MobX decorator in source order
-(which means it is applied first at runtime):
+(which means it is applied first at runtime, though its `init` hook runs second; see Decorator
+Ordering under Common Pitfalls):
 
 ```typescript
 // ✅ Correct: MobX decorator first, then @persist
-@bindable @persist showAdvanced = false;
+@bindable @persist accessor showAdvanced = false;
 
 // ❌ Wrong: @persist must come after the MobX decorator
-@persist @bindable showAdvanced = false;
+@persist @bindable accessor showAdvanced = false;
 ```
 
 ### Approach 2: `markPersist()`
@@ -177,8 +178,8 @@ declaration time — most commonly in dashboard widgets, where the backing store
 
 ```typescript
 class WidgetModel extends HoistModel {
-    @bindable selectedRegion = 'all';
-    @bindable groupBy = 'sector';
+    @bindable accessor selectedRegion = 'all';
+    @bindable accessor groupBy = 'sector';
 
     override onLinked() {
         // DashViewModel is only available after linking into the component tree
@@ -220,19 +221,57 @@ The most sophisticated built-in persistence, with four independently configurabl
 | `persistGrouping` | `grid.groupBy` | Row grouping columns |
 | `persistExpandToLevel` | `grid.expandLevel` | Expand level for grouped/tree data |
 
-Each aspect can be `true` (use root `persistWith`), `false` (skip), or a `PersistOptions` object
-to override the provider for that aspect:
+Each aspect is specified within the grid's `persistWith` config - a `GridModelPersistOptions` - and
+can be `true` (use the root options), `false` (skip), or a `PersistOptions` object to override the
+provider for that aspect:
 
 ```typescript
 new GridModel({
-    persistWith: {viewManagerModel: myViewManager},
-    persistColumns: true,           // Use viewManagerModel (the default)
-    persistSort: false,             // Do not persist - default sort should always be restored
-    persistGrouping: true,          // Use viewManagerModel
-    persistExpandToLevel: {localStorageKey: 'orderGridExpandLevel'},  // Override: use localStorage
+    persistWith: {
+        viewManagerModel: myViewManager,
+        persistColumns: true,       // Use viewManagerModel (the default)
+        persistSort: false,         // Do not persist - default sort should always be restored
+        persistGrouping: true,      // Use viewManagerModel
+        persistExpandToLevel: {localStorageKey: 'orderGridExpandLevel'}  // Override: localStorage
+    },
     columns: [...]
 });
 ```
+
+#### Newly Added Columns
+
+Columns added to the code after a user's state was saved are always added to that state, in the
+position at which they are defined. Whether they are initially *visible* depends on the backing
+store, via the `hideNewColumns` option:
+
+- **`viewManager` and `dashView`** - defaults to `true`, so new columns are hidden. Persisted state
+  here is a named view the user curated deliberately, often to capture a specific report, and a
+  release should not add columns to it.
+- **All other providers** - defaults to `false`, so new columns follow their in-code `hidden`
+  config. Persisted state here is an implicit record of the user's last-used layout, and surfacing
+  new columns helps users discover data added by a release.
+
+Set `hideNewColumns` explicitly to override:
+
+```typescript
+persistWith: {
+    viewManagerModel: myViewManager,
+    hideNewColumns: false       // Opt in to legacy behavior - new columns appear in saved views
+}
+```
+
+Two exceptions apply in all cases, as the app has indicated these columns must be displayed and/or
+could not be restored by a user: columns configured with `hideable: false` (which includes tree
+columns by default) or `excludeFromChooser: true` are never force-hidden.
+
+Note also that the ViewManager "default" view - the in-code state active when no saved view is
+selected - always follows the columns as defined in code, as it is not a curated artifact. Apps
+that disable that view in favor of a globally-shared default get the curated behavior throughout,
+with new columns surfacing only when an admin adds and saves them. Set `hideNewColumns: true`
+explicitly to force-hide new columns in the default view as well.
+
+Hidden or not, new columns remain available to users via the column chooser. Newly hidden columns
+also do not mark a saved view as dirty, so users are not prompted to save a change they cannot see.
 
 ### FormModel
 
@@ -404,7 +443,7 @@ class ReportsModel extends HoistModel {
     override persistWith = {prefKey: 'reportsModel', pathPrefix: 'reports'};
 
     // Resolves to 'reports.showAdvanced'
-    @bindable @persist showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 
     // Resolves to 'reports.grid.columns', 'reports.grid.sortBy', etc.
     @managed gridModel = new GridModel({persistWith: this.persistWith, columns: [...]});
@@ -455,14 +494,18 @@ preserved.
 ### `@persist` Decorator Timing
 
 The `@persist` decorator operates during property initialization (before the constructor body
-runs). It:
+runs). Decorator functions run innermost first at class definition, so `@persist` runs before the
+MobX decorator and only registers an `init` hook. The `init` hooks then run outermost first when
+an instance is built: MobX's hook makes the property observable and registers the in-code
+default, and the `@persist` hook then creates a `PersistenceProvider`, which:
 
-1. Reads the in-code default value
-2. Creates a `PersistenceProvider` and reads from the backing store
-3. If a stored value exists, replaces the default
-4. Returns the final value as the property initializer result
-5. After the next tick (once `makeObservable()` has completed), installs a MobX reaction to
-   watch for future changes
+1. Reads the in-code default value from the now-observable property
+2. Reads from the backing store
+3. If a stored value exists, replaces the default via the property's MobX setter
+4. Installs a MobX reaction right away to watch for future changes
+
+The hook returns the in-code default unchanged. MobX holds the live value, so this does not undo
+step 3.
 
 This design ensures the persisted value is in place before any reactions see it — no thrashing.
 
@@ -492,9 +535,9 @@ ViewManager README for the standard setup pattern.
 class FilterPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'filterPanel'};
 
-    @bindable @persist showAdvanced = false;
-    @bindable @persist includeArchived = false;
-    @observable.ref @persist selectedStatuses = ['active', 'pending'];
+    @bindable @persist accessor showAdvanced = false;
+    @bindable @persist accessor includeArchived = false;
+    @observableRef @persist accessor selectedStatuses = ['active', 'pending'];
 }
 ```
 
@@ -534,16 +577,20 @@ class DetailModel extends HoistModel {
 
 ### Decorator Ordering
 
-`@persist` (or `@persist.with`) must come after the MobX decorator. Since decorators in
-TypeScript are applied bottom-up, `@persist` needs to be the inner decorator so it runs first
-and sets up the value before MobX makes it observable:
+`@persist` (or `@persist.with`) must come after the MobX decorator. Decorators apply innermost
+first, so `@persist` is applied first and only returns an `init` hook. The `init` hooks then run in
+the opposite order, outermost first: MobX's `init` makes the property observable, and the
+`@persist` `init` then reads the default from it and applies any stored value. Reversed, the
+`@persist` `init` runs before MobX's and reads a property that is not yet observable:
 
 ```typescript
-// ✅ Correct: @bindable first (outer), @persist second (inner, runs first)
-@bindable @persist showAdvanced = false;
+// ✅ Correct: @bindable outer, @persist inner - MobX init runs first,
+// then @persist reads the observable
+@bindable @persist accessor showAdvanced = false;
 
-// ❌ Wrong: @persist is outer, runs after @bindable — fails to find the property
-@persist @bindable showAdvanced = false;
+// ❌ Wrong: @persist outer - its init runs before MobX's; the read throws,
+// the error is logged, and the field never persists
+@persist @bindable accessor showAdvanced = false;
 ```
 
 ### Missing `persistWith` on the Model
@@ -555,13 +602,13 @@ provider cannot be created:
 ```typescript
 // ❌ No persistWith on model — @persist has no backing store
 class MyModel extends HoistModel {
-    @bindable @persist showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 }
 
 // ✅ Set persistWith to establish the backing store
 class MyModel extends HoistModel {
     override persistWith = {localStorageKey: 'myModel'};
-    @bindable @persist showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 }
 ```
 

@@ -6,10 +6,11 @@
  */
 
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     debounce as lodashDebounce,
+    DebouncedFunc,
     get,
     isArray,
     isEmpty,
@@ -20,25 +21,28 @@ import {
     set,
     toPath
 } from 'lodash';
-import {IReactionDisposer, reaction} from 'mobx';
+import {IReactionDisposer, reaction} from '@xh/hoist/mobx';
 import {Class} from 'type-fest';
 import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
-import {
-    CustomProvider,
-    DashViewProvider,
-    LocalStorageProvider,
-    PersistOptions,
-    persistOptions,
-    PrefProvider,
-    SessionStorageProvider,
-    ViewManagerProvider
-} from './';
+import {PersistenceProviderType, PersistOptions} from './PersistOptions';
 
 export type PersistenceProviderConfig<S = any> = {
     persistOptions: PersistOptions;
     target: Persistable<S>;
     owner?: HoistBase;
 };
+
+/**
+ * Provider registration metadata - see {@link PersistenceProvider.registerProviders}.
+ * @internal
+ */
+interface ProviderRegistration {
+    /** `PersistOptions.type` value that selects this provider. */
+    type: PersistenceProviderType;
+    /** `PersistOptions` keys whose presence selects this provider in shortcut (typeless) form. */
+    shortcutKeys: string[];
+    cls: Class<PersistenceProvider, [PersistenceProviderConfig]>;
+}
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -70,6 +74,19 @@ export abstract class PersistenceProvider<S = any> {
     private lastReadState: PersistableState<S>;
     private lastReadTime: number;
 
+    private static registrations: ProviderRegistration[] = [];
+
+    /**
+     * Register concrete provider implementations for lookup by `create`. Called by this
+     * package's index.ts for the built-in providers, which must not be statically imported by
+     * this base module: they extend this class, so it must be fully initialized before any of
+     * them can be defined - importing them here would create an initialization-order cycle.
+     * @internal
+     */
+    static registerProviders(regs: ProviderRegistration[]) {
+        PersistenceProvider.registrations.push(...regs);
+    }
+
     /**
      * Construct an instance of this class.
      *
@@ -99,18 +116,6 @@ export abstract class PersistenceProvider<S = any> {
         }
     }
 
-    /** @deprecated Use the {@link persistOptions} function instead. */
-    static mergePersistOptions(
-        defaults: PersistOptions,
-        ...overrides: PersistOptions[]
-    ): PersistOptions {
-        apiDeprecated('PersistenceProvider.mergePersistOptions', {
-            v: 'v87',
-            msg: "Use the 'persistOptions' function instead."
-        });
-        return persistOptions(defaults, ...overrides);
-    }
-
     /** Read persisted state at this provider's path. */
     read(): PersistableState<S> {
         const state = get(this.readRaw(), this.path);
@@ -130,6 +135,11 @@ export abstract class PersistenceProvider<S = any> {
     /** Clear any persisted data at a path. Also clears any parent objects that become empty. */
     clear() {
         logDebug('Clearing state', this.owner);
+
+        // Drop any debounced write still pending - it holds pre-clear state and would otherwise
+        // land after this call and resurrect it.
+        (this.writeInternal as DebouncedFunc<(data: S) => void>).cancel?.();
+
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
         do {
@@ -213,31 +223,31 @@ export abstract class PersistenceProvider<S = any> {
         return null;
     }
 
-    private static parseProviderClass<S>(
+    /**
+     * Resolve the PersistenceProvider class that the given options would produce, applying the
+     * same precedence used by {@link create}. Throws if the options do not resolve to a known
+     * provider.
+     *
+     * Useful for callers that must adapt their behavior to the kind of backing store in play -
+     * e.g. {@link GridModel} treats state persisted to a user-curated view differently from state
+     * persisted as an implicit record of a user's last-used layout.
+     *
+     * @internal - not intended for application use.
+     */
+    static parseProviderClass<S>(
         opts: PersistOptions
     ): Class<PersistenceProvider<S>, [PersistenceProviderConfig<S>]> {
-        // 1) Recognize shortcut form
-        const {type, ...rest} = opts;
+        const {registrations} = PersistenceProvider,
+            {type, ...rest} = opts;
+
+        // 1) Recognize shortcut form - the presence of a provider-specific option key.
         if (!type) {
-            if (rest.prefKey) return PrefProvider;
-            if (rest.localStorageKey) return LocalStorageProvider;
-            if (rest.sessionStorageKey) return SessionStorageProvider;
-            if (rest.dashViewModel) return DashViewProvider;
-            if (rest.viewManagerModel) return ViewManagerProvider;
-            if (rest.getData || rest.setData) return CustomProvider;
+            const reg = registrations.find(it => it.shortcutKeys.some(key => rest[key]));
+            if (reg) return reg.cls;
         }
 
-        // 2) Map any string to known Provider Class, or return raw class
-        const ret = isString(type)
-            ? {
-                  pref: PrefProvider,
-                  localStorage: LocalStorageProvider,
-                  sessionStorage: SessionStorageProvider,
-                  dashView: DashViewProvider,
-                  viewManager: ViewManagerProvider,
-                  custom: CustomProvider
-              }[type]
-            : type;
+        // 2) Map any string to a registered Provider Class, or return raw class
+        const ret = isString(type) ? registrations.find(it => it.type === type)?.cls : type;
 
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 

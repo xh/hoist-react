@@ -6,9 +6,9 @@
  */
 import {ClientsModel} from '../ClientsModel';
 import {ColumnSpec} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, persistOptions, PlainObject, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed, bindableRef} from '@xh/hoist/mobx';
 import {ReactNode} from 'react';
 import {ActivityDetailProvider} from '../../activity/tracking/detail/ActivityDetailModel';
 
@@ -20,8 +20,8 @@ export class ClientDetailModel extends HoistModel implements ActivityDetailProvi
     readonly isActivityDetailProvider = true;
 
     /** Client tabID for which to load and show activity. */
-    @bindable tabId: string;
-    @bindable.ref trackLogs: PlainObject[] = [];
+    @bindable accessor tabId: string;
+    @bindableRef accessor trackLogs: PlainObject[] = [];
 
     get selectedRec(): StoreRecord {
         return this.clientsModel?.gridModel.selectedRecord;
@@ -45,13 +45,12 @@ export class ClientDetailModel extends HoistModel implements ActivityDetailProvi
         device: {hidden: true}
     };
 
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     override onLinked() {
         super.onLinked();
+
+        this.persistWith = persistOptions(this.clientsModel.persistWith, {
+            pathPrefix: 'activityGrid'
+        });
 
         this.addReaction(
             {

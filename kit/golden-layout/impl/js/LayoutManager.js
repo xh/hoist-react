@@ -210,8 +210,8 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 			this.width = width;
 			this.height = height;
 		} else {
-			this.width = containerNode.clientWidth;
-			this.height = containerNode.clientHeight;
+			this.width = lm.utils.contentWidth( containerNode );
+			this.height = lm.utils.contentHeight( containerNode );
 		}
 
 		if( this.isInitialised === true ) {
@@ -219,8 +219,8 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 
 			if( this._maximisedItem ) {
 				var maxNode = this._maximisedItem.element;
-				maxNode.style.width = containerNode.clientWidth + 'px';
-				maxNode.style.height = containerNode.clientHeight + 'px';
+				maxNode.style.width = lm.utils.contentWidth( containerNode ) + 'px';
+				maxNode.style.height = lm.utils.contentHeight( containerNode ) + 'px';
 				this._maximisedItem.callDownwards( 'setSize' );
 			}
 
@@ -379,8 +379,8 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		itemNode.classList.add( 'lm_maximised' );
 		itemNode.after( placeholderNode );
 		rootNode.prepend( itemNode );
-		itemNode.style.width = containerNode.clientWidth + 'px';
-		itemNode.style.height = containerNode.clientHeight + 'px';
+		itemNode.style.width = lm.utils.contentWidth( containerNode ) + 'px';
+		itemNode.style.height = lm.utils.contentHeight( containerNode ) + 'px';
 		contentItem.callDownwards( 'setSize' );
 		this._maximisedItem.emit( 'maximised' );
 		this.emit( 'stateChanged' );

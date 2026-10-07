@@ -29,6 +29,7 @@ interacts with Hoist.
 | `/desktop/` | 240 | Desktop-specific components and app container | [Done](../../desktop/README.md) |
 | `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../../desktop/cmp/panel/README.md) |
 | `/desktop/cmp/dash/` | 14 | Dashboard system — DashContainer (GoldenLayout) and DashCanvas (react-grid-layout), widget persistence, ViewManager integration | [Done](../../desktop/cmp/dash/README.md) |
+| `/cmp/daterange/` | 9 | DateRangePicker - period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters; desktop component in `/desktop/cmp/daterange/` | [Done](../../cmp/daterange/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |
 
 ## Priority 3 - Key Utilities
@@ -52,6 +53,7 @@ Smaller packages that provide important but more specialized functionality.
 | `/icon/` | 5 | Icon system and FontAwesome integration | [Done](../../icon/README.md) |
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Done](../../security/README.md) |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | 📝 [Draft](../../kit/README.md) |
+| `/kit/blueprint/` | 5 | Blueprint integration - wrappers, factories, build-time icon stubbing, upgrade checklist | [Done](../../kit/blueprint/README.md) |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | 📝 [Draft](../../inspector/README.md) |
 | `/styles/` | 3 | CSS custom properties, theming (dark/light), BEM naming, SCSS conventions, utility classes | 📝 [Draft](../../styles/README.md) |
 
@@ -70,7 +72,7 @@ patterns and systems that span multiple packages.
 | Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | 📝 [Draft](../routing.md) |
 | Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | [Done](../error-handling.md) |
 | Test Automation | How Hoist supports test automation via `testId` and `TestSupportProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | [Done](../test-automation.md) |
-| Telemetry & Observability | Client-side tracing, activity tracking, metrics, and timed logging composed via the `Runner` chain on `HoistBase`. Covers TraceService, spans, sampling, `traceparent` propagation, MetricsService, CallContext threading, `telemetryPrefix`, and the deprecation of `withSpan` / `FetchOptions.span`/`loadSpec`. | [Done](../telemetry.md) |
+| Telemetry & Observability | Client-side tracing, activity tracking, metrics, and timed logging composed via the `Runner` chain on `HoistBase`. Covers TraceService, spans, sampling, `traceparent` propagation, MetricsService, CallContext threading, `telemetryPrefix`, and the v88 removal of `withSpan` / `FetchOptions.span`/`loadSpec`. | [Done](../telemetry.md) |
 | Coding Conventions | Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming. | [Done](../coding-conventions.md) |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | [Done](../version-compatibility.md) |
 

@@ -4,14 +4,32 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {GridFilterFieldSpec} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {HeaderFilterModel} from '../HeaderFilterModel';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computedStruct} from '@xh/hoist/mobx';
 import {isArray, isEmpty, isNil} from 'lodash';
 import {CustomTabModel} from './CustomTabModel';
 
 type OperatorOptionValue = 'blank' | 'not blank' | FieldFilterOperator;
+
+/**
+ * Whether a row for the given op renders the multi-value `select` input - the only custom-tab input
+ * that holds an array of values directly. The single-value inputs (number, date, text) are used
+ * otherwise, so array filter values bound for them must be expanded into one row each (see
+ * `CustomTabModel.doSyncWithFilter`). Mirrors the input choice made in `CustomRow`.
+ */
+export function usesMultiValueInput(
+    fieldSpec: GridFilterFieldSpec,
+    op: FieldFilterOperator
+): boolean {
+    return (
+        !fieldSpec.isNumericFieldType &&
+        !fieldSpec.isDateBasedFieldType &&
+        fieldSpec.supportsSuggestions(op)
+    );
+}
 
 /**
  * @internal
@@ -22,11 +40,11 @@ export class CustomRowModel extends HoistModel {
     parentModel: CustomTabModel;
     headerFilterModel: HeaderFilterModel;
 
-    @bindable op: OperatorOptionValue;
-    @bindable inputVal: any;
+    @bindable accessor op: OperatorOptionValue;
+    @bindable accessor inputVal: any;
 
     /** FieldFilter config output of this row. */
-    @computed.struct
+    @computedStruct
     get value(): FieldFilterSpec {
         const {field} = this.fieldSpec;
 
@@ -79,7 +97,6 @@ export class CustomRowModel extends HoistModel {
 
     constructor(parentModel: CustomTabModel, op?: FieldFilterOperator, value?: any) {
         super();
-        makeObservable(this);
 
         let newOp = op as OperatorOptionValue;
         if (isNil(value)) {

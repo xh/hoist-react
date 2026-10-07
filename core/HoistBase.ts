@@ -7,14 +7,19 @@
 import {
     action,
     autorun as mobxAutorun,
-    checkMakeObservable,
-    comparer,
+    compareDefault,
+    compareIdentity,
+    compareShallow,
+    compareStructural,
+    IAutorunOptions,
+    IEqualsComparer,
+    IReactionDisposer,
+    IReactionOptions,
     reaction as mobxReaction,
     runInAction,
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {
-    apiDeprecated,
     getOrCreate,
     logDebug,
     logError,
@@ -34,8 +39,6 @@ import {
     isString,
     upperFirst
 } from 'lodash';
-import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
-import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
 import {
     CallContextLike,
     DebounceSpec,
@@ -43,14 +46,9 @@ import {
     PersistenceProvider,
     persistOptions,
     PersistOptions,
-    FullSpanConfig,
     Some,
-    Span,
     XH
 } from './';
-import {wait} from '@xh/hoist/promise';
-
-declare const xhIsDevelopmentMode: boolean;
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
@@ -77,12 +75,6 @@ export abstract class HoistBase {
         return true;
     }
 
-    constructor() {
-        if (xhIsDevelopmentMode) {
-            wait().then(() => checkMakeObservable(this));
-        }
-    }
-
     /**
      * For XH internal use only - marks this instance as created by and for Hoist as part of its
      * own implementation. Used as a filter within Hoist Inspector to distinguish services and
@@ -91,6 +83,12 @@ export abstract class HoistBase {
      * @internal
      */
     xhImpl: boolean = undefined;
+
+    /**
+     * Optional developer-facing name for this instance, shown in place of its class name in log
+     * output, telemetry, and the Inspector. Uniqueness is not enforced.
+     */
+    xhName: string = null;
 
     // Internal State
     private managedInstances = [];
@@ -134,20 +132,6 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    /** @deprecated - use {@link runner} to start a {@link Runner} chain. */
-    withSpan<T>(config: string | FullSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
-        apiDeprecated('HoistBase.withSpan', {
-            v: 'v88',
-            msg: 'Use runner().span() to start a Runner chain instead.',
-            source: this
-        });
-        let cfg = isString(config) ? {name: config} : config,
-            {telemetryPrefix} = this,
-            name = telemetryPrefix ? telemetryPrefix + '.' + cfg.name : cfg.name;
-        cfg = {caller: this, ...cfg, name};
-        return XH.traceService.withSpan(cfg, fn);
-    }
-
     /**
      * Create a {@link Runner} with an optional initial call context and this object as the caller.
      */
@@ -170,7 +154,7 @@ export abstract class HoistBase {
      *
      * Specify the property 'equals' to determine how successive outputs of track will be compared.
      * Hoist supports string specification of this (i.e. 'shallow','structural', or 'identity') and
-     * will map it to the underlying MobX `comparer` object.  For returns of arrays and objects,
+     * will map it to the corresponding MobX comparer function. For returns of arrays and objects,
      * consider using the value 'shallow' over the default 'identity' to avoid triggering spurious
      * changes. See MobX for more information.
      *
@@ -207,7 +191,10 @@ export abstract class HoistBase {
             const opts = parseReactionOptions(rest);
             run = bindAndDebounce(this, run, debounce);
 
-            const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
+            const disposer = withCancel(
+                track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts),
+                run
+            );
             this.disposers.push(disposer);
             return disposer;
         });
@@ -270,6 +257,11 @@ export abstract class HoistBase {
     /** @returns a unique id for this object within the lifetime of this document. */
     get xhId(): string {
         return getOrCreate(this, '_xhId', XH.genId);
+    }
+
+    /** Name for a child of this object - `{xhName}.{key}`, or null if this object is unnamed. */
+    childXhName(key: string): string {
+        return this.xhName ? `${this.xhName}.${key}` : null;
     }
 
     /**
@@ -370,8 +362,8 @@ export interface ReactionSpec<T = any> extends Omit<IReactionOptions<T, any>, 'e
     /** Specify to debounce run function */
     debounce?: DebounceSpec;
 
-    /** Specify a default from {@link comparer} or a custom comparer function. */
-    equals?: keyof typeof comparer | IEqualsComparer<T>;
+    /** Specify a built-in MobX comparer by name or a custom comparer function. */
+    equals?: keyof typeof comparers | IEqualsComparer<T>;
 }
 
 /**
@@ -386,6 +378,13 @@ export interface AutoRunSpec extends IAutorunOptions {
 // Implementation
 // Externalized to make private, obj is the instance
 //--------------------------------------------------
+const comparers = {
+    identity: compareIdentity,
+    default: compareDefault,
+    structural: compareStructural,
+    shallow: compareShallow
+};
+
 function parseReactionOptions(options) {
     throwIf(
         !isNil(options.runImmediately),
@@ -393,7 +392,7 @@ function parseReactionOptions(options) {
     );
 
     if (isString(options.equals)) {
-        const equals = comparer[options.equals];
+        const equals = comparers[options.equals];
         throwIf(!isFunction(equals), `Unknown value for equals: '${options.equals}'`);
         options = {...options, equals};
     }
@@ -408,4 +407,13 @@ function bindAndDebounce(obj, fn, debounce = null) {
     if (isNumber(debounce)) return lodashDebounce(action(ret), debounce);
     if (isPlainObject(debounce)) return lodashDebounce(action(ret), debounce.interval, debounce);
     return ret;
+}
+
+// Extend a MobX disposer to also cancel any pending call of a debounced run function.
+function withCancel(disposer: IReactionDisposer, run): IReactionDisposer {
+    if (!run.cancel) return disposer;
+    return Object.assign(() => {
+        disposer();
+        run.cancel();
+    }, disposer);
 }

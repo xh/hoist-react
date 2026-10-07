@@ -88,7 +88,7 @@ export interface FullSpanConfig extends SpanConfig {
      */
     startTime?: number;
 
-    /** Source for the `code.namespace` tag - usually the calling object/function. */
+    /** Usually the calling object/function - source of the `code.namespace` and `xh.name` tags. */
     caller?: NameSource;
 }
 

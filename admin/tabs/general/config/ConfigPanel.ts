@@ -7,14 +7,17 @@
 import * as AdminCol from '@xh/hoist/admin/columns';
 import * as Col from '@xh/hoist/admin/columns/Rest';
 import {jsonSearchButton} from '@xh/hoist/admin/jsonsearch/JsonSearch';
-import {fragment} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {differ} from '../../../differ/Differ';
 import {regroupDialog} from '../../../regroup/RegroupDialog';
+import {configDetailPanel} from './ConfigDetailPanel';
 import {ConfigPanelModel} from './ConfigPanelModel';
 
 export const configPanel = hoistCmp.factory({
@@ -22,36 +25,73 @@ export const configPanel = hoistCmp.factory({
 
     render({model}) {
         return fragment(
-            restGrid({
-                testId: 'config',
-                extraToolbarItems: () => [
-                    button({
-                        icon: Icon.diff(),
-                        text: 'Compare w/ Remote',
-                        onClick: () => model.openDiffer()
-                    }),
-                    toolbarSep(),
-                    jsonSearchButton({
-                        subjectName: 'Config',
-                        docSearchUrl: 'jsonSearch/searchConfigs',
-                        gridModelConfig: {
-                            sortBy: ['groupName', 'name'],
-                            columns: [
-                                {...AdminCol.groupName},
-                                {...AdminCol.name},
-                                {
-                                    field: {name: 'json', type: 'string'},
-                                    hidden: true
-                                },
-                                {...Col.lastUpdated}
-                            ]
-                        },
-                        groupByOptions: ['groupName']
-                    })
-                ]
-            }),
+            hframe(
+                restGrid({
+                    testId: 'config',
+                    formBbar: configFormBbar(),
+                    extraToolbarItems: () => [
+                        button({
+                            icon: Icon.diff(),
+                            text: 'Compare w/ Remote',
+                            onClick: () => model.openDiffer()
+                        }),
+                        toolbarSep(),
+                        jsonSearchButton({
+                            subjectName: 'Config',
+                            docSearchUrl: 'jsonSearch/searchConfigs',
+                            gridModelConfig: {
+                                sortBy: ['groupName', 'name'],
+                                columns: [
+                                    {...AdminCol.groupName},
+                                    {...AdminCol.name},
+                                    {
+                                        field: {name: 'json', type: 'string'},
+                                        hidden: true
+                                    },
+                                    {...Col.lastUpdated}
+                                ]
+                            },
+                            groupByOptions: ['groupName']
+                        })
+                    ]
+                }),
+                configDetailPanel()
+            ),
             differ({omit: !model.differModel}),
             regroupDialog()
         );
     }
+});
+
+// Custom toolbar adds a Revert button to the standard record actions and Cancel/Save. The dialog
+// is edit-only - viewing is handled by the docked detail panel.
+const configFormBbar = hoistCmp.factory<RestFormModel>(({model}) => {
+    const {formModel, actions, currentRecord, gridModel} = model,
+        {isDirty, isValid} = formModel;
+    return toolbar(
+        recordActionBar({
+            actions,
+            gridModel,
+            record: currentRecord
+        }),
+        button({
+            text: 'Revert',
+            icon: Icon.reset(),
+            onClick: () => formModel.reset(),
+            omit: !isDirty
+        }),
+        filler(),
+        button({
+            text: 'Cancel',
+            onClick: () => model.close()
+        }),
+        button({
+            text: 'Save',
+            icon: Icon.check(),
+            intent: 'success',
+            outlined: true,
+            disabled: (!model.isAdd && !isDirty) || !isValid,
+            onClick: () => model.validateAndSaveAsync()
+        })
+    );
 });

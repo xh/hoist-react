@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '../core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, HoistRoute} from '../core';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
@@ -20,9 +20,10 @@ import 'router5-plugin-browser';
  * underlying routes, presenting them to the application as a set of MobX observables.
  */
 export class RouterModel extends HoistModel {
+    override xhName = 'routerModel';
+
     /** Router5 state object representing the current state. */
-    @observable.ref
-    currentState: State;
+    @observableRef accessor currentState: State;
 
     /** Underlying Router5 Router object implementing the routing state. */
     router: Router = this.createRouter();
@@ -38,11 +39,11 @@ export class RouterModel extends HoistModel {
     /**
      * Add routes to the router.
      *
-     * @param routes - collection of router5 route spec.
-     *      This method supports an additional keyword 'omit' on each spec, in order to allow declarative
-     *      exclusion.  Otherwise these are Router5 configs to be passed directly to the Router5 API.
+     * @param routes - collection of {@link HoistRoute} specs. In addition to the standard Router5
+     *      route config, each spec supports an `omit` keyword to allow declarative exclusion.
+     *      Otherwise these are Router5 configs to be passed directly to the Router5 API.
      */
-    addRoutes(routes: object[]) {
+    addRoutes(routes: HoistRoute[]) {
         this.router.add(this.preprocessRoutes(routes));
     }
 
@@ -64,11 +65,6 @@ export class RouterModel extends HoistModel {
             match = name.match(/.*(?=\.)/);
         if (!match) return;
         return this.router.navigate(match[0], params);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     //-------------------------
@@ -100,7 +96,7 @@ export class RouterModel extends HoistModel {
         return ret;
     }
 
-    private preprocessRoutes(routes) {
+    private preprocessRoutes(routes: HoistRoute[]): HoistRoute[] {
         const ret = routes.filter(r => !isOmitted(r));
         ret.forEach(r => {
             if (r.children) r.children = this.preprocessRoutes(r.children);
