@@ -1,6 +1,9 @@
 # Hoist React v88 Upgrade Notes
 
-> **From:** v87.x → v88.0.0 | **Released:** 2026-09-28 | **Difficulty:** 🔴 HIGH
+> **From:** v87.x → v88.1.2 | **Released:** 2026-09-28 | **Difficulty:** 🔴 HIGH
+>
+> **Target v88.1.2 or later.** It restores `MsalClient` defaults that 88.0 dropped and fixes a
+> codemod that could delete constructors. Earlier 88 releases are not recommended.
 
 ## Overview
 
@@ -320,6 +323,16 @@ export class UsersModel extends HoistModel {
 error, and leftover imports as unused-variable warnings. One known skip: a field whose final
 decorator line is a call form with a trailing comment, such as
 `@persist.with({...}) // note`, gets no `accessor` - add it by hand.
+
+**Check for lost constructors.** Versions of `codemod-remove-makeObservable.mjs` before 88.1.2
+could delete a constructor that merged defaults into its `super()` call, such as
+`super({...defaults, ...config})`, mistaking it for an empty pass-through. If you ran an earlier
+copy, scan the diff for removed `super(` lines that took anything other than the constructor's own
+params:
+
+```bash
+git diff <pre-upgrade-ref> -- 'client-app/src/**/*.ts' 'client-app/src/**/*.tsx' | grep -A3 '^-\s*super('
+```
 
 **Audit `@persist` ordering by hand.** `@persist` must now come *after* the MobX decorator. The
 codemods do not reorder decorators, and a reversed pair fails silently: `PersistenceProvider`
