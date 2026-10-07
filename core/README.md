@@ -910,11 +910,13 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 ### Forgetting the `accessor` Keyword on Observables
 
 TC39 decorators require the `accessor` keyword on properties decorated with `@observable`,
-`@observableRef`, `@bindable`, or `@bindableRef`. Without `accessor`, the decorator cannot
-intercept the property and observables silently won't react.
+`@observableRef`, `@bindable`, `@bindableRef`, or `@persist`. Without `accessor`, the decorator
+cannot intercept the property. `tsc` reports the error for `@bindable`, `@bindableRef`, and
+`@persist`, but not for the MobX `@observable` decorators. A dev build then throws when the class
+loads. A production build skips that check, and the property silently stops being observable.
 
 ```typescript
-// ❌ Wrong: Missing accessor — observables won't react
+// ❌ Wrong: Missing accessor - throws in dev, silently not observable in production
 class MyModel extends HoistModel {
     @observable data = null;
 }
