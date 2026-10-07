@@ -120,8 +120,30 @@
     "zod": "^4.6.5"
   },
   "peerDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "jsdom": "^30.1.1",
+    "msw": "^3.0.2",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "vitest": "^5.0.3"
+  },
+  "peerDependenciesMeta": {
+    "@testing-library/dom": {
+      "optional": true
+    },
+    "@testing-library/react": {
+      "optional": true
+    },
+    "jsdom": {
+      "optional": true
+    },
+    "msw": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@swc/core": "^1.16.13",

@@ -42,6 +42,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `sizingModeAppOption()` now shows each grid sizing mode as a `RadioCardInput` card with a
   mini grid drawn at that mode's row height. Pass `previewCards: false` for a `SegmentedControl`,
   sized to its options as above.
+* Added `@xh/hoist/test`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a headless
+  app against an in-memory fake of hoist-core that serves app endpoints via `hoistCore.route()`.
+  Needs `configureVitest()` from hoist-dev-utils 16.1. Experimental in v89 - it may change.
 
 ### 🐞 Bug Fixes
 
@@ -101,6 +104,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
   comment. Snapshot and release builds now run the tests before publishing.
+* Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
+  them only to run unit tests.
 * Updated Hoist to build and type-check with TypeScript 7. Apps can move to TypeScript 7 with this
   release or stay on 5.9. Apps that move must set `strict: false` (unless already strict) and
   `noUncheckedSideEffectImports: false` in `tsconfig.json` to override new TypeScript defaults.
@@ -117,6 +122,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🤖 AI Docs + Tooling
 
+* Indexed `@xh/hoist/test` in the symbol tools, so `hoist-search-symbols` and `hoist-ts` find the
+  test kit for app agents.
 * Added support for reference-style Markdown links (`[text][label]`) to the doc tools. A section
   read from `hoist-read-doc` or `hoist-docs read` now appends the link definitions it uses. Search
   excerpts and section headings show the link text only.

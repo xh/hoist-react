@@ -57,8 +57,8 @@ export default defineConfig({
     // SWC (above) owns the TS transform.
     oxc: false,
 
-    // Build-time constants that hoist-dev-utils defines for app builds (see core/XH.ts).
-    // `xhBaseUrl` matches the dev-utils default, which the fake hoist-core in test/ serves under.
+    // Build-time constants that hoist-dev-utils defines for app builds (see core/XH.ts). The fake
+    // hoist-core in test/ reads its app identity and base URL from them, via XH.
     define: {
         xhAppCode: JSON.stringify('testApp'),
         xhAppName: JSON.stringify('Test App'),

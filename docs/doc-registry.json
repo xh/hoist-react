@@ -388,8 +388,8 @@
             "title": "Unit Testing",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "The hoist-react unit test suite on Vitest: running tests, the fake hoist-core server, writing tests, and CI reports.",
-            "keywords": ["unit tests", "Vitest", "pnpm test", "spec.ts", "initTestAppAsync", "hoistCore", "MSW", "it.fails", "test report"]
+            "description": "Unit tests on Vitest for apps and hoist-react: the @xh/hoist/test kit, the fake hoist-core server, setting up tests in an app with configureVitest(), writing tests, and CI reports.",
+            "keywords": ["unit tests", "Vitest", "pnpm test", "spec.ts", "@xh/hoist/test", "initTestAppAsync", "hoistCore", "configureVitest", "app unit tests", "MSW", "it.fails", "test report"]
         },
         {
             "id": "docs/compilation-notes.md",

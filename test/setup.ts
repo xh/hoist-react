@@ -13,7 +13,7 @@ import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {cleanup} from '@testing-library/react';
 import {onReactionError, when} from 'mobx';
-import {afterAll, afterEach, beforeAll, vi} from 'vitest';
+import {afterAll, afterEach, beforeAll, beforeEach, vi} from 'vitest';
 import {hoistCore, server} from './hoistCore';
 
 /**
@@ -73,6 +73,9 @@ interface FrameData {
     connection?: {client: {url: URL}};
 }
 
+// An error thrown by a route added with hoistCore.route(). The client sees a 500.
+hoistCore.onProblem = msg => problems.push(msg);
+
 // An error thrown inside a MobX reaction or autorun. MobX catches and logs these.
 onReactionError(e => problems.push(`Error in MobX reaction: ${e}`));
 
@@ -86,11 +89,15 @@ console.warn = (...args: any[]) => {
 
 beforeAll(() => server.listen({onUnhandledFrame}));
 
+// Routes added from here on - in beforeEach() or in the test - last only for this test.
+beforeEach(() => hoistCore.startTest());
+
 afterEach(() => {
     // Unmount anything rendered by React Testing Library - its auto-cleanup needs Vitest globals.
     cleanup();
     vi.useRealTimers();
     server.resetHandlers();
+    hoistCore.endTest();
     hoistCore.clearRequests();
 
     if (problems.length) {

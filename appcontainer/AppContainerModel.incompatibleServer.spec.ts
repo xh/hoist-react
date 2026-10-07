@@ -15,13 +15,16 @@ import {beforeAll, describe, expect, it, vi} from 'vitest';
  * a different shape.
  */
 describe('AppContainerModel', () => {
-    let envInitResult: {type: string; value: any};
+    let envInitResult: {type: string; value: any}, bootError: Error;
 
     beforeAll(async () => {
         // The fake's default server boots (see AppContainerModel.spec.ts) - only this differs.
         hoistCore.environment.hoistCoreVersion = '40.0.0';
         const envInit = vi.spyOn(EnvironmentService.prototype, 'initAsync');
-        await initTestAppAsync().catch(() => {});
+        bootError = await initTestAppAsync().then(
+            () => null,
+            e => e
+        );
         [envInitResult] = envInit.mock.settledResults;
     });
 
@@ -32,6 +35,13 @@ describe('AppContainerModel', () => {
             expect(envInitResult.type).toBe('rejected');
             expect(envInitResult.value.message).toMatch(/requires the server to run\s+Hoist Core/);
             expect(XH.appModel).toBeFalsy();
+        });
+
+        it('surfaces the reason through initTestAppAsync()', () => {
+            // Apps debugging a failed boot in their own specs read this cause.
+            expect(bootError.cause).toMatchObject({
+                message: expect.stringMatching(/requires the server to run\s+Hoist Core/)
+            });
         });
     });
 });
