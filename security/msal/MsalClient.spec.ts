@@ -13,7 +13,7 @@ import {
     LogLevel
 } from '@azure/msal-browser';
 import {MsalClient, MsalClientConfig} from '@xh/hoist/security/msal';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 

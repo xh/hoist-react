@@ -175,8 +175,9 @@ The essentials:
 - Specs sit next to the code they test, as `Foo.spec.ts` for `Foo.ts`. CI runs them on every PR
   as the "Unit Tests" check.
 - When you change library behavior, add or update the specs that cover it, and run `pnpm test`.
-- Tests run Hoist's real services against a fake hoist-core server (`test/hoistCore.ts`). Boot it
-  with `initTestAppAsync()`. Do not mock Hoist modules with `vi.mock`.
+- Tests run Hoist's real services against a fake hoist-core server
+  (`test-support/hoistCore.ts`). Boot it with `initTestAppAsync()`. Do not mock Hoist modules
+  with `vi.mock`.
 - Name tests for the behavior they check, so the test list reads as a spec. Test contracts that
   apps rely on - not trivial getters, rendering, or third-party libraries.
 - When a test exposes a library bug that is not fixed in the same change, mark it `it.fails()`

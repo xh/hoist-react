@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCore, initTestAppAsync} from '@xh/hoist/test';
+import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {HOURS, LocalDate} from '@xh/hoist/utils/datetime';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 

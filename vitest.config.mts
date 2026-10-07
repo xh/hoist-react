@@ -15,8 +15,9 @@ import {configDefaults, defineConfig} from 'vitest/config';
 process.env.TZ = 'America/New_York';
 
 const isCI = !!process.env.CI,
-    // Writes the run summary and HTML report to .vitest/report - see test/report/TestReporter.ts.
-    reportReporter = './test/report/TestReporter.ts';
+    // Writes the run summary and HTML report to .vitest/report - see
+    // test-support/report/TestReporter.ts.
+    reportReporter = './test-support/report/TestReporter.ts';
 
 export default defineConfig({
     plugins: [
@@ -58,7 +59,7 @@ export default defineConfig({
     oxc: false,
 
     // Build-time constants that hoist-dev-utils defines for app builds (see core/XH.ts). The fake
-    // hoist-core in test/ reads its app identity and base URL from them, via XH.
+    // hoist-core in test-support/ reads its app identity and base URL from them, via XH.
     define: {
         xhAppCode: JSON.stringify('testApp'),
         xhAppName: JSON.stringify('Test App'),
@@ -80,7 +81,7 @@ export default defineConfig({
         // a run from the main checkout never collects specs from worktrees under .claude/.
         exclude: [...configDefaults.exclude, 'build/**', 'mcp/**', '.*/**'],
         environment: 'jsdom',
-        setupFiles: ['test/setup.ts'],
+        setupFiles: ['test-support/setup.ts'],
         // Allow for initTestAppAsync() in beforeAll, which loads the full desktop module graph.
         hookTimeout: 30_000,
         // Show console output only for failing tests - Hoist logs freely, and the logs of a test

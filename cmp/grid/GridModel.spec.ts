@@ -7,7 +7,7 @@
 import {Column, type GridConfig, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**

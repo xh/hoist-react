@@ -10,7 +10,7 @@ import {vi} from 'vitest';
 export type TestAppSpec = Partial<ConstructorParameters<typeof AppSpec>[0]>;
 
 /**
- * Boot a headless Hoist app against the fake hoist-core in `test/hoistCore.ts`.
+ * Boot a headless Hoist app against the fake hoist-core in `test-support/hoistCore.ts`.
  *
  * Runs the real `AppContainerModel.initAsync()` - the same sequence a browser runs on page load:
  * authenticate via `xh/authStatus`, install every Hoist service (loading environment, configs and

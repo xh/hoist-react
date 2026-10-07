@@ -150,7 +150,7 @@ for planned coverage:
 | [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, unit tests, CodeQL analysis, and npm publishing of hoist-react |
 | [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
-| [Unit Testing](./unit-testing.md) | Unit tests for apps and hoist-react: the `@xh/hoist/test` kit, the fake hoist-core server, writing tests, and CI reports |
+| [Unit Testing](./unit-testing.md) | Unit tests for apps and hoist-react: the `@xh/hoist/test-support` kit, the fake hoist-core server, writing tests, and CI reports |
 | [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation and build tooling internals |
 
 ## Developer Tools

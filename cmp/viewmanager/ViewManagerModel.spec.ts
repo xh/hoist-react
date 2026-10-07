@@ -17,7 +17,7 @@ import {
     type RecordedRequest,
     server,
     xhUrl
-} from '@xh/hoist/test';
+} from '@xh/hoist/test-support';
 import {omit, pick} from 'lodash';
 import {http, HttpResponse} from 'msw';
 import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';

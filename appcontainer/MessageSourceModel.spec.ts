@@ -7,7 +7,7 @@
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {HoistRoute, MessageSuppressSpec, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {initTestAppAsync, TestAppModel} from '@xh/hoist/test';
+import {initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
 import {DAYS, HOURS, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 

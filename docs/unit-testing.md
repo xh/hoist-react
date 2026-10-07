@@ -3,7 +3,7 @@
 Hoist React has a suite of unit tests that run on [Vitest](https://vitest.dev). They cover the
 library's models, data layer, formatters, utilities, and services, and they run on every pull
 request. This document explains how the tests work, how to run them, and how to write new ones.
-Apps write unit tests in the same style with the `@xh/hoist/test` kit - see
+Apps write unit tests in the same style with the `@xh/hoist/test-support` kit - see
 [Unit Tests in an App](#unit-tests-in-an-app).
 
 Unit tests complement end-to-end tests. Playwright tests drive a real app in a real browser
@@ -49,11 +49,11 @@ leaks from one file to another.
 Most of Hoist depends on the hoist-core server. `Store` reads a soft config, `GridModel` persists
 to user prefs, and nearly every service loads data on init. Tests therefore need a server.
 
-`test/hoistCore.ts` provides one. It is a small, in-memory stand-in for hoist-core's `XhController`
-endpoints: auth status, environment, configs, prefs, and activity tracking. It answers in the
-exact JSON shapes hoist-core renders, and names the server source of each shape. Hoist's real
-`fetch` calls reach it through [MSW](https://mswjs.io), so the code under test runs unchanged,
-from `FetchService` down.
+`test-support/hoistCore.ts` provides one. It is a small, in-memory stand-in for hoist-core's
+`XhController` endpoints: auth status, environment, configs, prefs, and activity tracking. It
+answers in the exact JSON shapes hoist-core renders, and names the server source of each shape.
+Hoist's real `fetch` calls reach it through [MSW](https://mswjs.io), so the code under test runs
+unchanged, from `FetchService` down.
 
 `initTestAppAsync()` boots a headless app against the fake. It runs the real
 `AppContainerModel.initAsync()`, the same sequence a browser runs on page load. It authenticates,
@@ -63,7 +63,7 @@ rendered.
 ### Guards against silent failures
 
 Hoist catches and logs many errors by design, so a broken code path can still let a test pass.
-The global setup in `test/setup.ts` fails a test that triggers any of these:
+The global setup in `test-support/setup.ts` fails a test that triggers any of these:
 
 - A server request or WebSocket the fake does not handle. MSW fails it, so it never reaches a real
   server.
@@ -122,7 +122,7 @@ Boot the test app once per file. Adjust `hoistCore` state first to boot against 
 
 ```typescript
 import {XH} from '@xh/hoist/core';
-import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http} from 'msw';
 import {beforeAll, describe, expect, it} from 'vitest';
 
@@ -266,7 +266,7 @@ response body, a `Response` such as `hoistError(...)`, or nothing for an empty 2
 
 ```typescript
 import {type InitContext, XH} from '@xh/hoist/core';
-import {hoistCore, initTestAppAsync, TestAppModel} from '@xh/hoist/test';
+import {hoistCore, initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
 import {beforeAll, it} from 'vitest';
 import {OrderService} from './OrderService';
 

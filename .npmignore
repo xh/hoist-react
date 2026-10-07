@@ -7,12 +7,12 @@
 node_modules
 scripts
 
-# Unit tests (see docs/unit-testing.md). The test kit in /test ships as @xh/hoist/test for apps -
-# only the specs and hoist-react's own CI reporter stay out.
+# Unit tests (see docs/unit-testing.md). The test kit in /test-support ships as
+# @xh/hoist/test-support for apps - only the specs and hoist-react's own CI reporter stay out.
 *.spec.ts
 *.spec.d.ts
-/test/report
-/build/types/test/report
+/test-support/report
+/build/types/test-support/report
 /.vitest
 vitest.config.*
 

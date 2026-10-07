@@ -6,7 +6,7 @@
  */
 import type {PlainObject} from '@xh/hoist/core';
 import {Cube, type QueryConfig, Store, type View, type ViewRowData} from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {pick, sortBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 

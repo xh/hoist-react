@@ -7,7 +7,7 @@
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {XH} from '@xh/hoist/core';
 import {RestGridConfig, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 

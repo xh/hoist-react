@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {FetchService} from '@xh/hoist/svc';
-import {hoistCore, initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {hoistCore, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {LocalDate, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';

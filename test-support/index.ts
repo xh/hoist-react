@@ -6,7 +6,7 @@
  */
 
 /**
- * The unit test kit, published as `@xh/hoist/test` for app and library unit tests.
+ * The unit test kit, published as `@xh/hoist/test-support` for app and library unit tests.
  * See docs/unit-testing.md.
  */
 export * from './hoistCore';

@@ -386,7 +386,7 @@ export class FakeHoistCore {
 /** The fake hoist-core instance shared by all tests in a file. */
 export const hoistCore = new FakeHoistCore();
 
-/** The MSW server that routes Hoist's `fetch` calls to `hoistCore`. Started in test/setup.ts. */
+/** The MSW server that routes Hoist's `fetch` calls to `hoistCore`. Started in setup.ts. */
 export const server = setupServer(...hoistCore.handlers);
 
 //------------------------
