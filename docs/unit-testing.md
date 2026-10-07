@@ -153,7 +153,8 @@ describe('PrefService', () => {
 ```
 
 - `hoistCore.requestsTo(path)` returns the requests the fake served, parsed into `query`, `form`,
-  `json`, and `headers`. The log is cleared after each test.
+  `json`, and `headers`. The setup clears the log before each test, so a test sees only its own
+  requests.
 - `hoistCore.route()` serves an endpoint the fake lacks, or overrides one - see
   [The app's server state](#the-apps-server-state).
 - `server.use()` adds raw MSW handlers for one test. They are removed after the test.

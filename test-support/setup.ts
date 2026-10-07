@@ -13,7 +13,7 @@ import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {cleanup} from '@testing-library/react';
 import {onReactionError, when} from 'mobx';
-import {afterAll, afterEach, beforeAll, beforeEach, vi} from 'vitest';
+import {afterAll, beforeAll, beforeEach, vi} from 'vitest';
 import {hoistCore, server} from './hoistCore';
 
 /**
@@ -50,7 +50,7 @@ if (!window.screen.orientation) {
 
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
-// running test from afterEach() with a message naming the cause.
+// test when it finishes, with a message naming the cause.
 //------------------------------------------------------------------
 const problems: string[] = [];
 
@@ -89,22 +89,33 @@ console.warn = (...args: any[]) => {
 
 beforeAll(() => server.listen({onUnhandledFrame}));
 
-// Routes added from here on - in beforeEach() or in the test - last only for this test.
-beforeEach(() => hoistCore.startTest());
+beforeEach(({onTestFinished}) => {
+    // Routes added from here on - in beforeEach() or in the test - last only for this test.
+    hoistCore.startTest();
+    // Each test sees only its own requests, not those from boot or from an earlier test.
+    hoistCore.clearRequests();
+    // Not an afterEach(): Vitest skips the remaining after-hooks once one throws, so an app's
+    // failing afterEach() would leak this test's timers, routes and components into the next.
+    onTestFinished(endTest);
+});
 
-afterEach(() => {
+function endTest() {
     // Unmount anything rendered by React Testing Library - its auto-cleanup needs Vitest globals.
-    cleanup();
+    // Report an unmount error as a problem, so the resets below still run.
+    try {
+        cleanup();
+    } catch (e) {
+        problems.push(`Error unmounting rendered components: ${e}`);
+    }
     vi.useRealTimers();
     server.resetHandlers();
     hoistCore.endTest();
-    hoistCore.clearRequests();
 
     if (problems.length) {
         const msg = problems.splice(0).join('\n');
         throw new Error(`Test triggered problems that Hoist would otherwise swallow:\n${msg}`);
     }
-});
+}
 
 // XH builds its AppContainerModel on load, and the model's ViewportSizeModel measures the window
 // on debounced timers of up to 300ms. Let those run before Vitest tears down jsdom at the end of a

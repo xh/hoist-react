@@ -137,7 +137,7 @@ export class FakeHoistCore {
     /** Payload for `xh/environment`. */
     environment: PlainObject;
 
-    /** Every request the fake has served since the last `clearRequests()`. */
+    /** Every request the fake has served in this test - the kit's setup clears it before each. */
     requests: RecordedRequest[] = [];
 
     /** @internal - called with a message when a route throws. The kit's setup fails the test. */

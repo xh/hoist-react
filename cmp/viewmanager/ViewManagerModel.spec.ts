@@ -31,10 +31,7 @@ import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, 
 describe('ViewManagerModel', () => {
     let views: ViewServer;
 
-    beforeAll(async () => {
-        await initTestAppAsync();
-        hoistCore.clearRequests();
-    });
+    beforeAll(() => initTestAppAsync());
 
     beforeEach(() => {
         views = new ViewServer();

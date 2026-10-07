@@ -29,6 +29,11 @@ describe('FakeHoistCore', () => {
         await initTestAppAsync({modelClass: OrdersAppModel});
     });
 
+    // First in the file, so the log would still hold the requests from boot.
+    it('starts each test with an empty request log', () => {
+        expect(hoistCore.requests).toEqual([]);
+    });
+
     describe('route', () => {
         it('serves a route added before boot to the boot itself', () => {
             expect(bootOrders).toEqual(orders);
