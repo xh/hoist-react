@@ -25,9 +25,9 @@ import {Aggregator} from './Aggregator';
  * positions. Pass `{absolute: true}` to weight by magnitude instead.
  *
  * Takes parameters, so is not a singleton like the token-aliased aggregators. Instantiate it
- * per field: `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`.
+ * per field: `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`.
  */
-export class AverageWeightedAggregator extends Aggregator {
+export class WeightedAverageAggregator extends Aggregator {
     readonly weightField: string;
     readonly absolute: boolean;
     private readonly _dependsOn: string[];
