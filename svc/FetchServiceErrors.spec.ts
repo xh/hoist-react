@@ -97,7 +97,8 @@ describe('FetchService', () => {
 
         it('reports an empty auth filter rejection by its status', async () => {
             // e.g. a 403 for an inactive user - apps check httpStatus to explain the failure.
-            respondWith(() => authFailure(403));
+            // The message is the reason phrase, which a proxy such as nginx adds - Tomcat has none.
+            respondWith(() => authFailure(403, 'Forbidden'));
 
             const e = await fetchFailure();
             expect(e).toMatchObject({
