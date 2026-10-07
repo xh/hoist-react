@@ -50,16 +50,22 @@ export function managed(_value: any, context: FieldOrAccessorOrGetterContext): a
  * See also `@persist.with`, a higher-order version of this decorator that allows for setting
  * property-specific persistence options.
  */
-export const persist: any = (_value: any, context: ClassAccessorDecoratorContext) => {
+export function persist<This, V>(
+    _value: ClassAccessorDecoratorTarget<This, V>,
+    context: ClassAccessorDecoratorContext<This, V>
+): ClassAccessorDecoratorResult<This, V> {
     return createPersistResult(context, null);
-};
+}
 
 /**
  * Decorator to make a class property persistent. This is a higher-order version of `@persist`.
  * Use this variant as a function to provide custom PersistOptions.
  */
-persist.with = function (options: PersistOptions): any {
-    return function (_value: any, context: ClassAccessorDecoratorContext) {
+persist.with = function (options: PersistOptions) {
+    return function <This, V>(
+        _value: ClassAccessorDecoratorTarget<This, V>,
+        context: ClassAccessorDecoratorContext<This, V>
+    ): ClassAccessorDecoratorResult<This, V> {
         return createPersistResult(context, options);
     };
 };

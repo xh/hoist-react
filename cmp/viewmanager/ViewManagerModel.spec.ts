@@ -13,11 +13,12 @@ import {
     hoistCore,
     hoistError,
     initTestAppAsync,
+    noContent,
     type RecordedRequest,
     server,
     xhUrl
 } from '@xh/hoist/test';
-import {omit} from 'lodash';
+import {omit, pick} from 'lodash';
 import {http, HttpResponse} from 'msw';
 import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -509,7 +510,7 @@ class ViewServer {
                     return hoistError(500, {message: 'Database unavailable'});
                 }
                 return HttpResponse.json({
-                    state: this.state,
+                    state: this.clientState,
                     views: this.blobs.map(it => omit(it, 'value')),
                     manageGlobal: this.manageGlobal
                 });
@@ -517,9 +518,9 @@ class ViewServer {
 
             this.post('xhView/get', req => HttpResponse.json(this.get(req.form.token))),
 
-            // ViewService.create
+            // ViewService.create - also records `isPinned`, if given, in the user's state.
             this.post('xhView/create', ({json}) => {
-                const {name, group, isShared, isGlobal, value, description} = json,
+                const {name, group, isShared = null, isGlobal, value, description} = json,
                     ret = this.add(`new${this.blobs.length}`, name, {
                         owner: isGlobal ? null : hoistCore.username,
                         isShared,
@@ -527,6 +528,7 @@ class ViewServer {
                         value
                     });
                 ret.description = description;
+                if ('isPinned' in json) this.state.userPinned[ret.token] = json.isPinned;
                 return HttpResponse.json(ret);
             }),
 
@@ -534,21 +536,27 @@ class ViewServer {
                 const ret = this.get(query.token);
                 ret.value = json;
                 ret.lastUpdated += 1000;
+                ret.lastUpdatedBy = hoistCore.username;
                 return HttpResponse.json(ret);
             }),
 
             this.post('xhView/delete', ({query}) => {
                 const tokens = query.tokens.split(',');
                 this.blobs = this.blobs.filter(it => !tokens.includes(it.token));
-                return new HttpResponse(null, {status: 204});
+                return noContent();
             }),
 
-            // ViewService.updateState - merges each given key, returning the new state.
+            // ViewService.updateState - merges each given key, keeping pins only for views that
+            // still exist, and returns the new state. Other keys are ignored.
             this.post('xhView/updateState', ({json}) => {
-                const {userPinned, ...rest} = json;
-                Object.assign(this.state, rest);
-                if (userPinned) this.state.userPinned = {...this.state.userPinned, ...userPinned};
-                return HttpResponse.json(this.state);
+                const {state} = this;
+                if ('currentView' in json) state.currentView = json.currentView;
+                if ('autoSave' in json) state.autoSave = json.autoSave;
+                state.userPinned = pick(
+                    {...state.userPinned, ...json.userPinned},
+                    this.blobs.map(it => it.token)
+                );
+                return HttpResponse.json(this.clientState);
             })
         ];
     }
@@ -556,6 +564,12 @@ class ViewServer {
     //------------------
     // Implementation
     //------------------
+    // ViewService.getStateFromBlob - `currentView` is sent only once one has been saved.
+    private get clientState(): PlainObject {
+        const {userPinned = {}, autoSave = false} = this.state;
+        return {userPinned, autoSave, ...pick(this.state, 'currentView')};
+    }
+
     private createBlob(token: string, name: string, opts: ViewOptions): JsonBlob {
         const {owner = hoistCore.username, isShared = false, group = null, value = {}} = opts;
         return {

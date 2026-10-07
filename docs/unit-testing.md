@@ -153,7 +153,8 @@ describe('PrefService', () => {
   `json`, and `headers`. The log is cleared after each test.
 - `server.use()` adds handlers for one test. They are removed after the test.
 - `hoistError(status, {...})` renders an error as hoist-core does. `authFailure(status)` renders
-  the empty-bodied rejection that hoist-core's auth filter sends.
+  the empty-bodied rejection that hoist-core's auth filter sends. `noContent()` renders the empty
+  204 that hoist-core sends for an endpoint with no result.
 - A file boots once. To test a different boot outcome, such as access denied, use a separate spec
   file.
 
