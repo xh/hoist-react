@@ -291,7 +291,7 @@ export class ExceptionHandler {
             ret = omitBy(ret, isNil);
 
             // 2) Ad-hoc cleanups. Done before cloning and trim, so do not mutate.
-            // Summarize the verbose callContext, remove noisy grails wrapper and problematic fetchOptions
+            // Summarize verbose callContext, remove grails wrapper and problematic fetchOptions
             delete ret.isHoistException;
             const loadSpec = ret.callContext?.loadSpec;
             if (loadSpec instanceof LoadSpec) {
