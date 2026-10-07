@@ -8,10 +8,27 @@
 import {PlainObject} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
+import {CubeField} from '../CubeField';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 import {BaseRow, propagateUpdate} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
+
+/**
+ * Accumulates the effects of value-only leaf updates across a View - see
+ * {@link LeafRow.applyLeafDataUpdate}.
+ */
+export interface LeafUpdateChanges {
+    /** Every row rewritten by the update - leaves and their ancestors alike. */
+    rows: Set<BaseRow>;
+    /**
+     * Names of every field changed by the update. Collected at the leaves only, which suffices
+     * because this path runs only with simple aggregators and no derived fields - a parent then
+     * rewrites a field only in response to a child update on that same field. See
+     * {@link View.aggregatorsAreSimple}.
+     */
+    fields: Set<string>;
+}
 
 /**
  * Row within a dataset produced by a Cube or View representing leaf-level data. These rows have a
@@ -50,34 +67,30 @@ export abstract class LeafRow extends BaseRow {
         this.cubeRecord = rawRecord;
     }
 
-    applyLeafDataUpdate(
-        newRec: StoreRecord,
-        updatedRows: Set<BaseRow>,
-        changedFields: Set<string>
-    ) {
-        this.cubeRecord = newRec;
-        const {view, data} = this,
+    applyLeafDataUpdate(newRec: StoreRecord, checkFields: CubeField[], changed: LeafUpdateChanges) {
+        const oldData = this.cubeRecord.data,
             newData = newRec.data,
             updates = [];
+        this.cubeRecord = newRec;
 
-        // 1) Calculate diff.
-        view.fields.forEach(field => {
-            const name = field.name,
-                oldValue = data[name],
-                newValue = newData[name];
-            if (oldValue !== newValue) {
-                updates.push(new RowUpdate(field, oldValue, newValue));
-                changedFields.add(name);
+        // 1) Calculate diff - a field is updated if its own value changed, or the value of any
+        //    other field its aggregator depends on.
+        const valueChanged = name => oldData[name] !== newData[name];
+        checkFields.forEach(field => {
+            const {name, aggregator} = field;
+            if (valueChanged(name) || aggregator?.dependsOn?.some(valueChanged)) {
+                updates.push(new RowUpdate(field, oldData, newData));
+                changed.fields.add(name);
             }
         });
 
         // 2) Apply new values to our data, as per subclass strategy.
-        this.applyUpdatedData(updates, newData, updatedRows);
+        this.applyUpdatedData(updates, newData, changed.rows);
 
         // 3) Propagate any updates to ancestors and consumers. In a pivot view a leaf has two
         //    parents - its innermost group row and its own full-path cell.
         if (!isEmpty(updates)) {
-            propagateUpdate(this.parent, this.pivotParent, updates, updatedRows);
+            propagateUpdate(this.parent, this.pivotParent, updates, changed.rows);
         }
     }
 

@@ -5,11 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 /**
- * Correctness suite for the pure pivot structure module. Run with `pnpm test:unit`, or directly:
- *   npx tsx data/cube/impl/PivotStructure.spec.ts
- *
- * hoist-react has no general test framework configured, so (matching the mcp/data/*.spec.ts style)
- * this is a self-contained, exit-coded driver, exiting 1 on any failure - see `SpecSupport`.
+ * Correctness suite for the pure pivot structure module. Scenario matrices collect error strings
+ * and `check` asserts each list empty - see `SpecSupport`.
  *
  * Every scenario is checked against `PivotReference`, which computes each cell's leaf set from
  * first principles. Three properties are asserted per scenario:
@@ -55,7 +52,6 @@ import {
     expectThrows,
     leafOf,
     ORACLE,
-    report,
     SUM,
     SUM_STRICT,
     suite,
@@ -747,5 +743,3 @@ suite('CHILD_COUNT on a cell counts only the children carrying that path', () =>
     }
     check('CHILD_COUNT on a cell counts only the children carrying that path', capped(errs));
 });
-
-report();

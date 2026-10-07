@@ -54,9 +54,19 @@ import {
     StoreTransaction
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
+import {
+    castArray,
+    find,
+    flatMap,
+    forOwn,
+    isEmpty,
+    isFinite,
+    isPlainObject,
+    isString,
+    uniq
+} from 'lodash';
 import {ReactNode} from 'react';
 import {initPersist} from './impl/InitPersist';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
@@ -331,16 +341,13 @@ export class ZoneGridModel extends HoistModel {
     @managed
     mapperModel: ZoneMapperModel;
 
-    @observable.ref
-    mappings: Record<Zone, ZoneMapping[]>;
+    @observableRef accessor mappings: Record<Zone, ZoneMapping[]>;
 
     labelRenderers: Record<string, ColumnRenderer>;
 
-    @bindable.ref
-    leftColumnSpec: Partial<ColumnSpec>;
+    @bindableRef accessor leftColumnSpec: Partial<ColumnSpec>;
 
-    @bindable.ref
-    rightColumnSpec: Partial<ColumnSpec>;
+    @bindableRef accessor rightColumnSpec: Partial<ColumnSpec>;
 
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
@@ -352,7 +359,6 @@ export class ZoneGridModel extends HoistModel {
 
     constructor(config: ZoneGridConfig) {
         super();
-        makeObservable(this);
 
         const {
             columns,
@@ -447,6 +453,17 @@ export class ZoneGridModel extends HoistModel {
     setMappings(mappings: Record<Zone, Some<string | ZoneMapping>>) {
         this.mappings = this.parseMappings(mappings, false);
         this.gridModel.setColumns(this.getColumns());
+    }
+
+    /**
+     * Columns backing the fields currently mapped to any zone. These columns are hidden within the
+     * underlying GridModel, but their fields are what the user sees rendered within each row.
+     */
+    getMappedColumns(): Column[] {
+        const fields = uniq(
+            flatMap(this.mappings, zoneMappings => zoneMappings.map(it => it.field))
+        );
+        return this.gridModel.getLeafColumns().filter(col => fields.includes(col.field));
     }
 
     getDefaultContextMenu = (): GridContextMenuItemLike[] => [

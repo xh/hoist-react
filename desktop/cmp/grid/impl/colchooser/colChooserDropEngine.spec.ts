@@ -4,19 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-/**
- * Regression corpus for the column-chooser locked-group drop engine. Run with:
- *   npx tsx desktop/cmp/grid/impl/colchooser/colChooserDropEngine.spec.ts
- *
- * hoist-react has no general test framework configured, so (matching the mcp/data/*.spec.ts style) this
- * is a self-contained, exit-coded driver: a table of cases against the pure {@link resolveDrop} engine,
- * exiting 1 on any failure.
- *
- * Every case traces to a rule or captured case in `docs/planning/locked-group-dnd-spec.md`. Add a case
- * here whenever a new drag scenario is captured.
- */
 import type {ColumnState} from '@xh/hoist/cmp/grid';
 import type {HSide} from '@xh/hoist/core';
+import {describe, expect, it} from 'vitest';
 import {
     collapseSelection,
     dragSelectionRejectReason,
@@ -27,838 +17,645 @@ import {
     type ChainOf,
     type DragSelectionRow,
     type DropRejectReason,
-    type DropTarget,
-    type SelectionUnit
+    type DropTarget
 } from './colChooserDropEngine';
 
-//------------------
-// Fixtures: the Toolbox test-grid group tree (nested grp-pnl/grp-risk), natural order + hidden set.
-//------------------
-const CHAIN: Record<string, string[]> = {
-    symbol: ['grp-security'],
-    underlyer: ['grp-security'],
-    assetClass: ['grp-security'],
-    sector: ['grp-security'],
-    ccy: ['grp-security'],
-    side: ['grp-security'],
-    portfolio: ['grp-account'],
-    subPortfolio: ['grp-account'],
-    strategy: ['grp-account'],
-    trader: ['grp-account'],
-    tradeDate: ['grp-trade'],
-    maturityDate: ['grp-trade'],
-    quantity: ['grp-pricing'],
-    price: ['grp-pricing'],
-    priceLocal: ['grp-pricing'],
-    fxRate: ['grp-pricing'],
-    marketValue: ['grp-valuation'],
-    notional: ['grp-valuation'],
-    cost: ['grp-valuation'],
-    grossExposure: ['grp-exposure'],
-    netExposure: ['grp-exposure'],
-    portfolioWeight: ['grp-exposure'],
-    pnlTotalDaily: ['grp-pnl', 'grp-pnl-total'],
-    pnlTotalMtd: ['grp-pnl', 'grp-pnl-total'],
-    pnlTotalYtd: ['grp-pnl', 'grp-pnl-total'],
-    pnlTotalItd: ['grp-pnl', 'grp-pnl-total'],
-    delta: ['grp-risk', 'grp-greeks'],
-    gamma: ['grp-risk', 'grp-greeks'],
-    vega: ['grp-risk', 'grp-greeks'],
-    theta: ['grp-risk', 'grp-greeks'],
-    dv01: ['grp-risk', 'grp-rates'],
-    duration: ['grp-risk', 'grp-rates'],
-    cs01: ['grp-risk', 'grp-credit']
-};
-const NAT_ORDER = Object.keys(CHAIN);
-const HIDDEN = new Set([
-    'underlyer',
-    'subPortfolio',
-    'priceLocal',
-    'fxRate',
-    'cost',
-    'portfolioWeight',
-    'vega',
-    'theta',
-    'duration'
-]);
-
-const chainOf: ChainOf = colId => CHAIN[colId] ?? [];
-
-// Hidden columns are routed to the library, so not rendered in a bucket. (No Store filter is
-// exercised here; that path is covered live.)
-const isDisplayed = (colId: string) => !HIDDEN.has(colId);
-
-function buildMaster(pins: Record<string, HSide> = {}): ColumnState[] {
-    return NAT_ORDER.map(colId => ({
-        colId,
-        width: 100,
-        hidden: HIDDEN.has(colId),
-        pinned: pins[colId]
-    }));
-}
-
-/** A group id (has member leaves) becomes a group target; otherwise a leaf target. */
-function mkTarget(id: string): DropTarget {
-    const leaves = NAT_ORDER.filter(c => chainOf(c).includes(id));
-    return leaves.length
-        ? {id, isGroup: true, leafColIds: leaves}
-        : {id, isGroup: false, leafColIds: [id]};
-}
-
-/** Rendered (non-hidden) colIds of a bucket, in master order. */
-const bucketView = (st: ColumnState[], side: HSide | null) =>
-    st.filter(cs => (cs.pinned ?? null) === side && !cs.hidden).map(cs => cs.colId);
-/** Rendered (non-hidden) members of a group across all buckets, in master order. */
-const groupView = (st: ColumnState[], groupId: string) =>
-    st.filter(cs => !cs.hidden && chainOf(cs.colId).includes(groupId)).map(cs => cs.colId);
+/**
+ * Drag-and-drop rules of the desktop column chooser, run against its pure resolution engine. With
+ * `lockColumnGroups`, ag-Grid requires every column group to stay contiguous - a drop that splits
+ * one triggers ag-Grid warning #39 and scrambles the user's column order. Each case below is a drag
+ * a user can make, captured while building the chooser in #4409. They ran as an ad hoc script until
+ * 4d98c3b55, which dropped them for want of a test framework.
+ */
 
 //------------------
-// Cases
+// Fixture: a trading grid with nested groups (grp-pnl, grp-risk), some columns hidden.
 //------------------
-interface Case {
+const TRADES = fixture(
+    {
+        symbol: ['grp-security'],
+        underlyer: ['grp-security'],
+        assetClass: ['grp-security'],
+        sector: ['grp-security'],
+        ccy: ['grp-security'],
+        side: ['grp-security'],
+        portfolio: ['grp-account'],
+        subPortfolio: ['grp-account'],
+        strategy: ['grp-account'],
+        trader: ['grp-account'],
+        tradeDate: ['grp-trade'],
+        maturityDate: ['grp-trade'],
+        quantity: ['grp-pricing'],
+        price: ['grp-pricing'],
+        priceLocal: ['grp-pricing'],
+        fxRate: ['grp-pricing'],
+        marketValue: ['grp-valuation'],
+        notional: ['grp-valuation'],
+        cost: ['grp-valuation'],
+        grossExposure: ['grp-exposure'],
+        netExposure: ['grp-exposure'],
+        portfolioWeight: ['grp-exposure'],
+        pnlTotalDaily: ['grp-pnl', 'grp-pnl-total'],
+        pnlTotalMtd: ['grp-pnl', 'grp-pnl-total'],
+        pnlTotalYtd: ['grp-pnl', 'grp-pnl-total'],
+        pnlTotalItd: ['grp-pnl', 'grp-pnl-total'],
+        delta: ['grp-risk', 'grp-greeks'],
+        gamma: ['grp-risk', 'grp-greeks'],
+        vega: ['grp-risk', 'grp-greeks'],
+        theta: ['grp-risk', 'grp-greeks'],
+        dv01: ['grp-risk', 'grp-rates'],
+        duration: ['grp-risk', 'grp-rates'],
+        cs01: ['grp-risk', 'grp-credit']
+    },
+    [
+        'underlyer',
+        'subPortfolio',
+        'priceLocal',
+        'fxRate',
+        'cost',
+        'portfolioWeight',
+        'vega',
+        'theta',
+        'duration'
+    ]
+);
+
+const PRICING = ['quantity', 'price', 'priceLocal', 'fxRate'],
+    SECURITY = ['symbol', 'assetClass', 'sector', 'ccy', 'side'];
+
+describe('resolveDrop', () => {
+    describe('with locked column groups', () => {
+        it.each<DropCase & {left: string[]}>([
+            {
+                name: 'places a foreign leaf dropped below a lone group member after the group',
+                pins: {symbol: 'left'},
+                moving: ['tradeDate'],
+                target: 'symbol',
+                position: 'below',
+                left: ['symbol', 'tradeDate']
+            },
+            {
+                name: 'places a foreign leaf dropped above a lone group member before the group',
+                pins: {symbol: 'left'},
+                moving: ['tradeDate'],
+                target: 'symbol',
+                position: 'above',
+                left: ['tradeDate', 'symbol']
+            },
+            {
+                name: 'joins a sibling leaf dropped below a group member to that group',
+                pins: {symbol: 'left'},
+                moving: ['assetClass'],
+                target: 'symbol',
+                position: 'below',
+                left: ['symbol', 'assetClass']
+            },
+            {
+                name: 'places a leaf dropped between two groups between them',
+                pins: {symbol: 'left', portfolio: 'left'},
+                moving: ['quantity'],
+                target: 'symbol',
+                position: 'below',
+                left: ['symbol', 'quantity', 'portfolio']
+            },
+            {
+                // The top member of a two-member group lies wholly in the group's top half.
+                name: 'places a foreign leaf dropped onto the top member of a group before the group',
+                pins: {symbol: 'left', assetClass: 'left'},
+                moving: ['quantity'],
+                target: 'symbol',
+                position: 'below',
+                left: ['quantity', 'symbol', 'assetClass']
+            },
+            {
+                name: 'places a foreign leaf dropped below a nested group member after the outer group',
+                pins: {delta: 'left'},
+                moving: ['symbol'],
+                target: 'delta',
+                position: 'below',
+                left: ['delta', 'symbol']
+            },
+            {
+                name: 'joins a leaf dropped below a member of its own inner group to that group',
+                pins: {delta: 'left'},
+                moving: ['gamma'],
+                target: 'delta',
+                position: 'below',
+                left: ['delta', 'gamma']
+            },
+            {
+                name: 'joins a leaf dropped below a cousin to their shared outer group',
+                pins: {delta: 'left'},
+                moving: ['dv01'],
+                target: 'delta',
+                position: 'below',
+                left: ['delta', 'dv01']
+            },
+            {
+                name: 'unhides a column dropped from the library, placing it like any leaf',
+                pins: {symbol: 'left'},
+                moving: ['cost'],
+                target: 'symbol',
+                position: 'below',
+                makeVisible: true,
+                left: ['symbol', 'cost']
+            }
+        ])('$name', ({left, ...drop}) => {
+            const {master, state} = resolveLockedDrop(TRADES, {side: 'left', ...drop});
+            expect(TRADES.view(state, 'left')).toEqual(left);
+            expect(isNoOpDrop(state, master, TRADES.isDisplayed)).toBe(false);
+        });
+
+        // A foreign group is a single drop unit, flipping from before to after at its midpoint.
+        // grp-account renders 3 members, so the flip falls at the middle of strategy.
+        it.each<DropCase & {run: string[]}>([
+            {
+                name: 'drops a group above the midpoint of a foreign group before that group',
+                moving: PRICING,
+                group: 'grp-pricing',
+                target: 'strategy',
+                position: 'above',
+                run: ['quantity', 'price', 'portfolio', 'strategy', 'trader']
+            },
+            {
+                name: 'drops a group below the midpoint of a foreign group after that group',
+                moving: PRICING,
+                group: 'grp-pricing',
+                target: 'strategy',
+                position: 'below',
+                run: ['portfolio', 'strategy', 'trader', 'quantity', 'price']
+            },
+            {
+                name: 'drops a group onto the lower half of a top member before the foreign group',
+                moving: PRICING,
+                group: 'grp-pricing',
+                target: 'portfolio',
+                position: 'below',
+                run: ['quantity', 'price', 'portfolio', 'strategy', 'trader']
+            },
+            {
+                name: 'moves a whole group to a drop point outside its current run',
+                moving: SECURITY,
+                group: 'grp-security',
+                target: 'strategy',
+                position: 'below',
+                run: ['portfolio', 'strategy', 'trader', ...SECURITY, 'tradeDate']
+            }
+        ])('$name', ({run, ...drop}) => {
+            const {state} = resolveLockedDrop(TRADES, {side: null, ...drop});
+            expect(asRun(TRADES.view(state, null))).toContain(asRun(run));
+        });
+
+        it('moves a group dropped past the last row to the end of the bucket', () => {
+            const {state} = resolveLockedDrop(TRADES, {
+                side: null,
+                moving: ['symbol', 'underlyer', 'assetClass', 'sector', 'ccy', 'side'],
+                group: 'grp-security',
+                target: 'cs01',
+                position: 'below'
+            });
+            expect(TRADES.view(state, null).slice(-6)).toEqual(['cs01', ...SECURITY]);
+        });
+
+        // A dragged unit never leaves the innermost group it still shares with rendered columns.
+        // A drop outside that group is clamped to its near edge, rather than refused.
+        it.each<DropCase & {groupId: string; members: string[]}>([
+            {
+                name: 'reorders a leaf within its own group',
+                moving: ['assetClass'],
+                target: 'sector',
+                position: 'below',
+                groupId: 'grp-security',
+                members: ['symbol', 'sector', 'assetClass', 'ccy', 'side']
+            },
+            {
+                name: 'clamps a leaf dropped outside its group to the near edge of the group',
+                moving: ['assetClass'],
+                target: 'strategy',
+                position: 'above',
+                groupId: 'grp-security',
+                members: ['symbol', 'sector', 'ccy', 'side', 'assetClass']
+            },
+            {
+                name: 'clamps a subgroup dropped outside its parent to the edge of the parent',
+                moving: ['dv01', 'duration'],
+                group: 'grp-rates',
+                target: 'symbol',
+                position: 'above',
+                groupId: 'grp-risk',
+                members: ['dv01', 'delta', 'gamma', 'cs01']
+            },
+            {
+                name: 'rejoins the pinned part of a split group where dropped within its run',
+                pins: {portfolio: 'left'},
+                moving: ['portfolio'],
+                group: 'grp-account',
+                target: 'strategy',
+                position: 'below',
+                groupId: 'grp-account',
+                members: ['strategy', 'portfolio', 'trader']
+            },
+            {
+                name: 'clamps the pinned part of a split group dropped outside its run back to the run',
+                pins: {portfolio: 'left'},
+                moving: ['portfolio'],
+                group: 'grp-account',
+                target: 'symbol',
+                position: 'below',
+                groupId: 'grp-account',
+                members: ['portfolio', 'strategy', 'trader']
+            }
+        ])('$name', ({groupId, members, ...drop}) => {
+            const {state} = resolveLockedDrop(TRADES, {side: null, ...drop});
+            expect(TRADES.groupView(state, groupId)).toEqual(members);
+            expect(TRADES.view(state, 'left')).toEqual([]);
+        });
+
+        it('reports a group dropped back into its current place as a no-op', () => {
+            const {master, state} = resolveLockedDrop(TRADES, {
+                pins: {symbol: 'left', portfolio: 'left'},
+                side: 'left',
+                moving: ['symbol'],
+                group: 'grp-security',
+                target: 'grp-account',
+                position: 'above'
+            });
+            expect(isNoOpDrop(state, master, TRADES.isDisplayed)).toBe(true);
+        });
+
+        it('pins leaves dropped with no target row in place, leaving column order unchanged', () => {
+            const {master, state} = resolveLockedDrop(TRADES, {
+                side: 'left',
+                moving: ['tradeDate'],
+                target: null
+            });
+            expect(state.map(it => it.colId)).toEqual(master.map(it => it.colId));
+            expect(TRADES.view(state, 'left')).toEqual(['tradeDate']);
+        });
+    });
+
+    describe('with unlocked column groups', () => {
+        it('places a leaf exactly where it is dropped, splitting groups', () => {
+            const master = TRADES.master(),
+                {allowed, state} = resolveDrop({
+                    ...TRADES.dropInput(master, {
+                        side: null,
+                        moving: ['assetClass'],
+                        target: 'strategy',
+                        position: 'above'
+                    }),
+                    lockColumnGroups: false
+                });
+
+            expect(allowed).toBe(true);
+            expect(asRun(TRADES.view(state, null))).toContain(
+                asRun(['portfolio', 'assetClass', 'strategy'])
+            );
+            expect(invariantHolds(state, TRADES.chainOf)).toBe(false);
+        });
+    });
+
+    // A hidden group between rendered rows must not pull a drop across it. Resolving the drop on raw
+    // column indices would overshoot the hidden gap and split the Sales group. Modeled on the
+    // Toolbox column chooser example.
+    describe('with a hidden group between rendered rows', () => {
+        const SALES = fixture(
+            {
+                fullName: ['rep'],
+                firstName: ['rep'],
+                lastName: ['rep'],
+                email: ['rep'],
+                city: ['location'],
+                state: ['location'],
+                region: ['location'],
+                salary: [],
+                tenure: [],
+                projectedUnitsSold: ['sales', 'projected'],
+                projectedGross: ['sales', 'projected'],
+                actualUnitsSold: ['sales', 'actual'],
+                actualGross: ['sales', 'actual'],
+                commissionRate: ['compensation'],
+                commission: ['compensation'],
+                retain: []
+            },
+            [
+                'firstName',
+                'lastName',
+                'email',
+                'city',
+                'region',
+                'tenure',
+                'commissionRate',
+                'commission'
+            ]
+        );
+
+        it.each<DropCase & {unpinned: string[]}>([
+            {
+                name: 'reorders subgroups in place when one is dropped below the other',
+                moving: ['projectedUnitsSold', 'projectedGross'],
+                group: 'projected',
+                target: 'actualGross',
+                position: 'below',
+                unpinned: [
+                    'state',
+                    'salary',
+                    'actualUnitsSold',
+                    'actualGross',
+                    'projectedUnitsSold',
+                    'projectedGross',
+                    'retain'
+                ]
+            },
+            {
+                name: 'reorders subgroups in place when one is dropped above the other',
+                moving: ['actualUnitsSold', 'actualGross'],
+                group: 'actual',
+                target: 'projectedUnitsSold',
+                position: 'above',
+                unpinned: [
+                    'state',
+                    'salary',
+                    'actualUnitsSold',
+                    'actualGross',
+                    'projectedUnitsSold',
+                    'projectedGross',
+                    'retain'
+                ]
+            },
+            {
+                name: 'places an ungrouped leaf dropped below a group right after the group',
+                moving: ['salary'],
+                target: 'actualGross',
+                position: 'below',
+                unpinned: [
+                    'state',
+                    'projectedUnitsSold',
+                    'projectedGross',
+                    'actualUnitsSold',
+                    'actualGross',
+                    'salary',
+                    'retain'
+                ]
+            },
+            {
+                name: 'places an ungrouped leaf dropped into the top half of a group before it',
+                moving: ['retain'],
+                target: 'projectedGross',
+                position: 'above',
+                unpinned: [
+                    'state',
+                    'salary',
+                    'retain',
+                    'projectedUnitsSold',
+                    'projectedGross',
+                    'actualUnitsSold',
+                    'actualGross'
+                ]
+            }
+        ])('$name', ({unpinned, ...drop}) => {
+            const {state} = resolveLockedDrop(SALES, {
+                pins: {fullName: 'left'},
+                side: null,
+                ...drop
+            });
+            expect(SALES.view(state, null)).toEqual(unpinned);
+        });
+    });
+});
+
+describe('isValidDragSelection', () => {
+    const leaf = (parentGroupId: string | null, movable = true): DragSelectionRow => ({
+            isGroup: false,
+            movable,
+            parentGroupId
+        }),
+        group = (movable = true): DragSelectionRow => ({
+            isGroup: true,
+            movable,
+            parentGroupId: null
+        });
+
+    it.each<{
+        name: string;
+        rows: DragSelectionRow[];
+        lock?: boolean;
+        valid: boolean;
+        reason: DropRejectReason;
+    }>([
+        {name: 'refuses an empty selection', rows: [], valid: false, reason: null},
+        {
+            name: 'accepts a single movable leaf',
+            rows: [leaf('grp-security')],
+            valid: true,
+            reason: null
+        },
+        {
+            name: 'refuses a non-movable leaf',
+            rows: [leaf('grp-security', false)],
+            valid: false,
+            reason: 'notMovable'
+        },
+        {
+            name: 'refuses a selection including a non-movable leaf',
+            rows: [leaf('grp-security'), leaf('grp-security', false)],
+            valid: false,
+            reason: 'notMovable'
+        },
+        {
+            name: 'accepts sibling leaves of one group',
+            rows: [leaf('grp-security'), leaf('grp-security')],
+            valid: true,
+            reason: null
+        },
+        {
+            name: 'accepts several ungrouped leaves',
+            rows: [leaf(null), leaf(null)],
+            valid: true,
+            reason: null
+        },
+        {
+            name: 'refuses leaves of different groups when groups are locked',
+            rows: [leaf('grp-security'), leaf('grp-account')],
+            valid: false,
+            reason: 'multiGroupSelection'
+        },
+        {
+            name: 'accepts leaves of different groups when groups are unlocked',
+            rows: [leaf('grp-security'), leaf('grp-account')],
+            lock: false,
+            valid: true,
+            reason: null
+        },
+        {name: 'accepts a single movable group', rows: [group()], valid: true, reason: null},
+        {
+            // A non-movable column still rides along when its group is dragged - see ag-Grid's
+            // `suppressMovable` - so only a group with no movable column at all is refused.
+            name: 'refuses a group with no movable columns',
+            rows: [group(false)],
+            valid: false,
+            reason: 'notMovable'
+        },
+        {
+            name: 'refuses a group selected together with other rows',
+            rows: [group(), leaf('grp-security')],
+            valid: false,
+            reason: 'groupDraggedWithOthers'
+        }
+    ])('$name', ({rows, lock = true, valid, reason}) => {
+        expect(isValidDragSelection(rows, lock)).toBe(valid);
+        expect(dragSelectionRejectReason(rows, lock)).toBe(reason);
+    });
+});
+
+describe('collapseSelection', () => {
+    it.each([
+        {
+            name: 'collapses a group and one of its leaves to the group',
+            ids: ['delta', 'grp-greeks'],
+            expected: ['grp-greeks']
+        },
+        {
+            name: 'collapses a group and its ancestor group to the ancestor',
+            ids: ['grp-greeks', 'grp-risk'],
+            expected: ['grp-risk']
+        },
+        {
+            name: 'collapses a group and several of its leaves to the group',
+            ids: ['grp-greeks', 'delta', 'gamma'],
+            expected: ['grp-greeks']
+        },
+        {
+            name: 'keeps a group and a foreign leaf, in selection order',
+            ids: ['grp-greeks', 'portfolio'],
+            expected: ['grp-greeks', 'portfolio']
+        },
+        {
+            name: 'keeps sibling groups',
+            ids: ['grp-greeks', 'grp-rates'],
+            expected: ['grp-greeks', 'grp-rates']
+        },
+        {
+            name: 'keeps unrelated leaves',
+            ids: ['symbol', 'portfolio'],
+            expected: ['symbol', 'portfolio']
+        }
+    ])('$name', ({ids, expected}) => {
+        expect(collapseSelection(ids.map(TRADES.row)).map(it => it.id)).toEqual(expected);
+    });
+
+    // Rows with the same columns would otherwise subsume each other into nothing.
+    it('keeps the earlier of two nested groups with the same columns', () => {
+        const outer = {id: 'grp-outer', isGroup: true, leafColIds: ['notes']},
+            inner = {id: 'grp-inner', isGroup: true, leafColIds: ['notes']};
+        expect(collapseSelection([outer, inner])).toEqual([outer]);
+        expect(collapseSelection([inner, outer])).toEqual([inner]);
+    });
+
+    // Fixed in 89.0.0 - a leaf listed before its single-column group was kept alongside it.
+    it('collapses a single-column group and its leaf to one row in either order', () => {
+        const group = {id: 'grp-notes', isGroup: true, leafColIds: ['notes']},
+            leaf = {id: 'notes', isGroup: false, leafColIds: ['notes']};
+        expect(collapseSelection([group, leaf])).toHaveLength(1);
+        expect(collapseSelection([leaf, group])).toHaveLength(1);
+    });
+});
+
+//------------------
+// Test support
+//------------------
+interface DropCase {
     name: string;
+    /** Pinned side by colId - all other columns start unpinned. */
     pins?: Record<string, HSide>;
-    side: HSide | null; // target bucket
+    /** Leaf colIds under the dragged row(s). */
     moving: string[];
-    guid?: string | null; // dragged group id (null = leaf drag)
-    target: string | null; // colId or groupId; null = no in-bucket target
+    /** groupId of a dragged group row - omit for a leaf drag. */
+    group?: string;
+    /** colId or groupId of the target row, or null for no target. */
+    target: string | null;
     position?: 'above' | 'below';
     makeVisible?: boolean;
-    lock?: boolean; // default true
-    expect: {
-        allowed: boolean;
-        left?: string[];
-        unpinned?: string[];
-        right?: string[];
-        noOp?: boolean;
-        /** Targeted checks: return failure messages (empty = pass). */
-        verify?: (st: ColumnState[]) => string[];
+}
+
+type Fixture = ReturnType<typeof fixture>;
+
+/** A grid's column group tree (leaf colId to group chain, outermost first) and hidden columns. */
+function fixture(chains: Record<string, string[]>, hidden: string[]) {
+    const colIds = Object.keys(chains),
+        hiddenIds = new Set(hidden),
+        chainOf: ChainOf = colId => chains[colId] ?? [],
+        isDisplayed = (colId: string) => !hiddenIds.has(colId);
+
+    return {
+        chainOf,
+        isDisplayed,
+
+        /** Column state in natural order, with the given columns pinned. */
+        master(pins: Record<string, HSide> = {}): ColumnState[] {
+            return colIds.map(colId => ({
+                colId,
+                width: 100,
+                hidden: hiddenIds.has(colId),
+                pinned: pins[colId]
+            }));
+        },
+
+        /** A chooser row - a group row for an id with member columns, otherwise a leaf row. */
+        row(id: string): DropTarget {
+            const leafColIds = colIds.filter(c => chainOf(c).includes(id));
+            return leafColIds.length
+                ? {id, isGroup: true, leafColIds}
+                : {id, isGroup: false, leafColIds: [id]};
+        },
+
+        /** Rendered colIds of a bucket, in order. */
+        view(state: ColumnState[], side: HSide | null): string[] {
+            return state
+                .filter(it => (it.pinned ?? null) === side && !it.hidden)
+                .map(it => it.colId);
+        },
+
+        /** Rendered colIds of a group across all buckets, in order. */
+        groupView(state: ColumnState[], groupId: string): string[] {
+            return state
+                .filter(it => !it.hidden && chainOf(it.colId).includes(groupId))
+                .map(it => it.colId);
+        },
+
+        dropInput(master: ColumnState[], drop: Omit<DropCase, 'name'> & {side: HSide | null}) {
+            return {
+                master,
+                chainOf,
+                isDisplayed,
+                side: drop.side,
+                lockColumnGroups: true,
+                movingLeafColIds: drop.moving,
+                dragUnitGroupId: drop.group ?? null,
+                target: drop.target == null ? null : this.row(drop.target),
+                position: drop.position ?? 'above',
+                makeVisible: drop.makeVisible ?? false
+            };
+        }
     };
 }
 
-const cases: Case[] = [
-    // --- §10A C-F1/F2/S3: foreign vs sibling leaf, below/above a lone spanning member ---
-    {
-        name: 'C-F1 foreign leaf below spanning member -> after group',
-        pins: {symbol: 'left'},
-        side: 'left',
-        moving: ['tradeDate'],
-        target: 'symbol',
-        position: 'below',
-        expect: {allowed: true, left: ['symbol', 'tradeDate']}
-    },
-    {
-        name: 'C-F2 foreign leaf above -> before group',
-        pins: {symbol: 'left'},
-        side: 'left',
-        moving: ['tradeDate'],
-        target: 'symbol',
-        position: 'above',
-        expect: {allowed: true, left: ['tradeDate', 'symbol']}
-    },
-    {
-        name: 'C-S3 sibling leaf below -> joins group after member',
-        pins: {symbol: 'left'},
-        side: 'left',
-        moving: ['assetClass'],
-        target: 'symbol',
-        position: 'below',
-        expect: {allowed: true, left: ['symbol', 'assetClass']}
-    },
-
-    // --- between two pinned groups; flip snap when between two members of a foreign group ---
-    {
-        name: 'BETWEEN two pinned groups',
-        pins: {symbol: 'left', portfolio: 'left'},
-        side: 'left',
-        moving: ['quantity'],
-        target: 'symbol',
-        position: 'below',
-        expect: {allowed: true, left: ['symbol', 'quantity', 'portfolio']}
-    },
-    {
-        // Group-as-single-row (§5B): grp-security has 2 rendered members pinned left (symbol,
-        // assetClass); symbol is the top member, so its lower half is still the group's top half →
-        // before the group.
-        name: 'POS foreign group top member lower half (pinned) -> before the group',
-        pins: {symbol: 'left', assetClass: 'left'},
-        side: 'left',
-        moving: ['quantity'],
-        target: 'symbol',
-        position: 'below',
-        expect: {allowed: true, left: ['quantity', 'symbol', 'assetClass']}
-    },
-
-    // --- §10A C-NEST: nested spanning (delta pinned; grp-greeks & grp-risk both span) ---
-    {
-        name: 'C-NEST foreign leaf below -> after outer group',
-        pins: {delta: 'left'},
-        side: 'left',
-        moving: ['symbol'],
-        target: 'delta',
-        position: 'below',
-        expect: {allowed: true, left: ['delta', 'symbol']}
-    },
-    {
-        name: 'C-NEST inner-group sibling below -> joins inner group',
-        pins: {delta: 'left'},
-        side: 'left',
-        moving: ['gamma'],
-        target: 'delta',
-        position: 'below',
-        expect: {allowed: true, left: ['delta', 'gamma']}
-    },
-    {
-        name: 'C-NEST same-outer-group cousin below -> joins outer group',
-        pins: {delta: 'left'},
-        side: 'left',
-        moving: ['dv01'],
-        target: 'delta',
-        position: 'below',
-        expect: {allowed: true, left: ['delta', 'dv01']}
-    },
-
-    // --- §10A C-LIB: library drop = cross-bucket + unhide (foreign hits C-F1) ---
-    {
-        name: 'C-LIB hidden foreign leaf below -> after group, unhidden',
-        pins: {symbol: 'left'},
-        side: 'left',
-        moving: ['cost'],
-        target: 'symbol',
-        position: 'below',
-        makeVisible: true,
-        expect: {allowed: true, left: ['symbol', 'cost']}
-    },
-
-    // --- §10A C-N1: group-row drop that is a visible no-op (must be suppressible) ---
-    {
-        name: 'C-N1 spanning group-row before its group -> visible no-op',
-        pins: {symbol: 'left', portfolio: 'left'},
-        side: 'left',
-        moving: ['symbol'],
-        guid: 'grp-security',
-        target: 'grp-account',
-        position: 'above',
-        expect: {allowed: true, noOp: true}
-    },
-
-    // --- §10A C-SPAN / 2b: spanning group-row drag is strict to its own portion ---
-    {
-        name: 'C-SPAN within own portion -> allowed (rejoin)',
-        pins: {portfolio: 'left'},
-        side: null,
-        moving: ['portfolio'],
-        guid: 'grp-account',
-        target: 'strategy',
-        position: 'below',
-        expect: {
-            allowed: true,
-            verify: st =>
-                groupView(st, 'grp-account').join() === 'strategy,portfolio,trader'
-                    ? []
-                    : [`account order ${groupView(st, 'grp-account')}`]
-        }
-    },
-    {
-        // Dragging the pinned portion toward symbol (before the group) can't leave grp-account, so it
-        // rejoins at the group's leading edge and unpins (§5A).
-        name: 'C-SPAN outside own portion -> clamp back into own run (rejoin)',
-        pins: {portfolio: 'left'},
-        side: null,
-        moving: ['portfolio'],
-        guid: 'grp-account',
-        target: 'symbol',
-        position: 'below',
-        expect: {
-            allowed: true,
-            left: [],
-            verify: st =>
-                groupView(st, 'grp-account').join() === 'portfolio,strategy,trader'
-                    ? []
-                    : [`account order ${groupView(st, 'grp-account')}`]
-        }
-    },
-
-    // --- intra-bucket leaf validity (spec §5A): clamp to the leaf's own group edge, never reject ---
-    {
-        // Dragging assetClass down past its group clamps to grp-security's trailing edge - its only
-        // legal region - rather than refusing the drop.
-        name: 'INTRA leaf out of its group -> clamp to own group edge',
-        side: null,
-        moving: ['assetClass'],
-        target: 'strategy',
-        position: 'above',
-        expect: {
-            allowed: true,
-            verify: st =>
-                groupView(st, 'grp-security').join() === 'symbol,sector,ccy,side,assetClass'
-                    ? []
-                    : [`security order ${groupView(st, 'grp-security')}`]
-        }
-    },
-    {
-        name: 'INTRA leaf within its group -> allowed',
-        side: null,
-        moving: ['assetClass'],
-        target: 'sector',
-        position: 'below',
-        expect: {allowed: true}
-    },
-
-    // --- §5B group-as-single-row. grp-account has 3 rendered members (portfolio, strategy, trader), so
-    // the midpoint flip is at strategy's center; grp-pricing drags up from below, so both before and
-    // after are real moves. ---
-    {
-        // Above the midpoint (strategy's upper half) -> before the whole group.
-        name: 'POS foreign group above midpoint -> before the group',
-        side: null,
-        moving: ['quantity', 'price', 'priceLocal', 'fxRate'],
-        guid: 'grp-pricing',
-        target: 'strategy',
-        position: 'above',
-        expect: {
-            allowed: true,
-            verify: st => {
-                const uv = bucketView(st, null);
-                return uv.indexOf('portfolio') === uv.indexOf('price') + 1
-                    ? []
-                    : [`expected grp-pricing right before grp-account, got [${uv.slice(0, 10)}]`];
-            }
-        }
-    },
-    {
-        // Below the midpoint (strategy's lower half) -> after the whole group.
-        name: 'POS foreign group below midpoint -> after the group',
-        side: null,
-        moving: ['quantity', 'price', 'priceLocal', 'fxRate'],
-        guid: 'grp-pricing',
-        target: 'strategy',
-        position: 'below',
-        expect: {
-            allowed: true,
-            verify: st => {
-                const uv = bucketView(st, null);
-                return uv.indexOf('quantity') === uv.indexOf('trader') + 1
-                    ? []
-                    : [`expected grp-pricing right after grp-account, got [${uv.slice(0, 10)}]`];
-            }
-        }
-    },
-    {
-        // A member wholly in the top half (portfolio, first of 3) resolves to "before" even on its
-        // LOWER half - the whole member is above the group's midpoint.
-        name: 'POS foreign group top member lower half -> still before the group',
-        side: null,
-        moving: ['quantity', 'price', 'priceLocal', 'fxRate'],
-        guid: 'grp-pricing',
-        target: 'portfolio',
-        position: 'below',
-        expect: {
-            allowed: true,
-            verify: st => {
-                const uv = bucketView(st, null);
-                return uv.indexOf('portfolio') === uv.indexOf('price') + 1
-                    ? []
-                    : [`expected grp-pricing right before grp-account, got [${uv.slice(0, 10)}]`];
-            }
-        }
-    },
-    {
-        // Clamp to the bucket end: a top-level group dragged past the last row lands at the end of the
-        // bucket (the "empty space below the rows" / append case resolves to a real move, §5B).
-        name: 'CLAMP top-level group past the last row -> lands at bucket end',
-        side: null,
-        moving: ['symbol', 'underlyer', 'assetClass', 'sector', 'ccy', 'side'],
-        guid: 'grp-security',
-        target: 'cs01',
-        position: 'below',
-        expect: {
-            allowed: true,
-            verify: st => {
-                const uv = bucketView(st, null);
-                return uv.slice(-5).join() === 'symbol,assetClass,sector,ccy,side'
-                    ? []
-                    : [`expected grp-security at bucket end, got [${uv.slice(-6)}]`];
-            }
-        }
-    },
-    {
-        // Nested clamp-to-parent-edge: dragging the middle subgroup grp-rates up past grp-risk's start
-        // clamps it to grp-risk's leading edge (before grp-greeks) - it stays inside grp-risk rather
-        // than relocating the whole parent group. Without the clamp, escalation would move all of
-        // grp-risk to the front.
-        name: 'NEST subgroup up past parent start -> clamp to parent leading edge',
-        side: null,
-        moving: ['dv01', 'duration'],
-        guid: 'grp-rates',
-        target: 'symbol',
-        position: 'above',
-        expect: {
-            allowed: true,
-            verify: st =>
-                groupView(st, 'grp-risk').join() === 'dv01,delta,gamma,cs01'
-                    ? []
-                    : [`grp-risk order ${groupView(st, 'grp-risk')}`]
-        }
-    },
-
-    // --- full/fresh group drag stays relaxed (no other rendered member) ---
-    {
-        name: 'FULL group drag relaxed -> allowed anywhere',
-        side: null,
-        moving: ['symbol', 'assetClass', 'sector', 'ccy', 'side'],
-        guid: 'grp-security',
-        target: 'strategy',
-        position: 'below',
-        expect: {allowed: true}
-    },
-
-    // --- unlocked: no contiguity constraint, splits allowed ---
-    {
-        name: 'UNLOCKED leaf into middle of a foreign group -> splits (allowed)',
-        lock: false,
-        side: null,
-        moving: ['assetClass'],
-        target: 'strategy',
-        position: 'above',
-        expect: {
-            allowed: true,
-            verify: st => {
-                // Unlocked: no snap, so assetClass lands exactly where dropped - immediately before
-                // strategy - splitting grp-account (and grp-security), which is legal when unlocked.
-                const uv = bucketView(st, null),
-                    ai = uv.indexOf('assetClass'),
-                    si = uv.indexOf('strategy');
-                const split = !invariantHolds(st, chainOf);
-                return ai >= 0 && si === ai + 1 && split
-                    ? []
-                    : [
-                          `expected assetClass immediately before strategy with a split, got [${uv.slice(0, 10)}] split=${split}`
-                      ];
-            }
-        }
-    }
-];
-
-//------------------
-// Runner
-//------------------
-let passed = 0;
-const failures: string[] = [];
-const arrEq = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
-
-for (const c of cases) {
-    const errs: string[] = [];
-    const master = buildMaster(c.pins),
-        lock = c.lock ?? true,
-        res = resolveDrop({
-            master,
-            chainOf,
-            side: c.side,
-            isDisplayed,
-            lockColumnGroups: lock,
-            movingLeafColIds: c.moving,
-            dragUnitGroupId: c.guid ?? null,
-            target: c.target == null ? null : mkTarget(c.target),
-            position: c.position ?? 'above',
-            makeVisible: c.makeVisible ?? false
-        });
-
-    if (res.allowed !== c.expect.allowed)
-        errs.push(`allowed: expected ${c.expect.allowed}, got ${res.allowed}`);
-
-    if (res.allowed && res.state) {
-        const st = res.state;
-        if (lock && !invariantHolds(st, chainOf))
-            errs.push('marryChildren invariant VIOLATED (would trigger #39)');
-        for (const side of ['left', null, 'right'] as (HSide | null)[]) {
-            const exp =
-                side === 'left'
-                    ? c.expect.left
-                    : side === 'right'
-                      ? c.expect.right
-                      : c.expect.unpinned;
-            if (exp && !arrEq(bucketView(st, side), exp)) {
-                errs.push(
-                    `${side ?? 'unpinned'} view: expected [${exp}], got [${bucketView(st, side)}]`
-                );
-            }
-        }
-        if (c.expect.noOp != null && isNoOpDrop(st, master, isDisplayed) !== c.expect.noOp) {
-            errs.push(`noOp: expected ${c.expect.noOp}, got ${!c.expect.noOp}`);
-        }
-        if (c.expect.verify) errs.push(...c.expect.verify(st));
-    }
-
-    if (errs.length) {
-        failures.push(c.name);
-        console.log(`✗ ${c.name}`);
-        errs.forEach(e => console.log(`    ${e}`));
-    } else {
-        passed++;
-        console.log(`✓ ${c.name}`);
-    }
+/**
+ * Resolve a drop with column groups locked, checking it is allowed and keeps every group
+ * contiguous - the invariant whose violation triggers ag-Grid warning #39.
+ */
+function resolveLockedDrop(
+    fx: Fixture,
+    drop: Omit<DropCase, 'name'> & {side: HSide | null}
+): {master: ColumnState[]; state: ColumnState[]} {
+    const master = fx.master(drop.pins),
+        {allowed, state} = resolveDrop(fx.dropInput(master, drop));
+    expect(allowed).toBe(true);
+    expect(invariantHolds(state, fx.chainOf)).toBe(true);
+    return {master, state};
 }
 
-//------------------
-// isValidDragSelection: up-front multi-select gate (target-independent)
-//------------------
-const leaf = (parentGroupId: string | null, movable = true): DragSelectionRow => ({
-    isGroup: false,
-    movable,
-    parentGroupId
-});
-const group = (movable = true): DragSelectionRow => ({isGroup: true, movable, parentGroupId: null});
-
-interface SelCase {
-    name: string;
-    rows: DragSelectionRow[];
-    lock?: boolean; // default true
-    expect: boolean;
-}
-
-const selCases: SelCase[] = [
-    {name: 'SEL empty -> invalid', rows: [], expect: false},
-    {name: 'SEL single movable leaf -> valid', rows: [leaf('grp-security')], expect: true},
-    {
-        name: 'SEL single non-movable leaf -> invalid',
-        rows: [leaf('grp-security', false)],
-        expect: false
-    },
-    {
-        name: 'SEL locked siblings (same parent) -> valid',
-        rows: [leaf('grp-security'), leaf('grp-security')],
-        expect: true
-    },
-    {
-        name: 'SEL locked non-siblings (different parents) -> invalid',
-        rows: [leaf('grp-security'), leaf('grp-account')],
-        expect: false
-    },
-    {
-        name: 'SEL unlocked non-siblings -> valid (no contiguity constraint)',
-        rows: [leaf('grp-security'), leaf('grp-account')],
-        lock: false,
-        expect: true
-    },
-    {
-        name: 'SEL locked ungrouped leaves (shared root) -> valid',
-        rows: [leaf(null), leaf(null)],
-        expect: true
-    },
-    {
-        name: 'SEL any non-movable leaf in selection -> invalid',
-        rows: [leaf('grp-security'), leaf('grp-security', false)],
-        expect: false
-    },
-    {name: 'SEL single movable group -> valid', rows: [group()], expect: true},
-    {name: 'SEL single all-locked group -> invalid', rows: [group(false)], expect: false},
-    {
-        name: 'SEL group mixed with another row -> invalid (group drags alone)',
-        rows: [group(), leaf('grp-security')],
-        expect: false
-    }
-];
-
-for (const c of selCases) {
-    const got = isValidDragSelection(c.rows, c.lock ?? true);
-    if (got === c.expect) {
-        passed++;
-        console.log(`✓ ${c.name}`);
-    } else {
-        failures.push(c.name);
-        console.log(`✗ ${c.name}\n    expected ${c.expect}, got ${got}`);
-    }
-}
-
-//------------------
-// dragSelectionRejectReason: the reason the up-front gate refuses (drives the drag hint)
-//------------------
-interface ReasonCase {
-    name: string;
-    rows: DragSelectionRow[];
-    lock?: boolean; // default true
-    expect: DropRejectReason | null;
-}
-
-const reasonCases: ReasonCase[] = [
-    {name: 'REASON empty -> null (no drag to explain)', rows: [], expect: null},
-    {name: 'REASON valid single leaf -> null', rows: [leaf('grp-security')], expect: null},
-    {
-        name: 'REASON non-movable leaf -> notMovable',
-        rows: [leaf('grp-security', false)],
-        expect: 'notMovable'
-    },
-    {
-        name: 'REASON group mixed with a row -> groupDraggedWithOthers',
-        rows: [group(), leaf('grp-security')],
-        expect: 'groupDraggedWithOthers'
-    },
-    {
-        name: 'REASON locked non-siblings -> multiGroupSelection',
-        rows: [leaf('grp-security'), leaf('grp-account')],
-        expect: 'multiGroupSelection'
-    },
-    {
-        name: 'REASON unlocked non-siblings -> null',
-        rows: [leaf('grp-security'), leaf('grp-account')],
-        lock: false,
-        expect: null
-    }
-];
-
-for (const c of reasonCases) {
-    const got = dragSelectionRejectReason(c.rows, c.lock ?? true);
-    if (got === c.expect) {
-        passed++;
-        console.log(`✓ ${c.name}`);
-    } else {
-        failures.push(c.name);
-        console.log(`✗ ${c.name}\n    expected ${c.expect}, got ${got}`);
-    }
-}
-
-//------------------
-// collapseSelection: subsume rows contained in a selected group (redundant multi-select)
-//------------------
-/** Build a SelectionUnit from a fixture id - a group if it has member leaves, else a leaf. */
-const unit = (id: string): SelectionUnit => {
-    const leaves = NAT_ORDER.filter(c => chainOf(c).includes(id));
-    return leaves.length
-        ? {id, isGroup: true, leafColIds: leaves}
-        : {id, isGroup: false, leafColIds: [id]};
-};
-
-interface CollapseCase {
-    name: string;
-    ids: string[];
-    expect: string[];
-}
-
-const collapseCases: CollapseCase[] = [
-    {
-        name: 'COLLAPSE leaf + its group -> group only',
-        ids: ['delta', 'grp-greeks'],
-        expect: ['grp-greeks']
-    },
-    {
-        name: 'COLLAPSE subgroup + ancestor group -> ancestor only',
-        ids: ['grp-greeks', 'grp-risk'],
-        expect: ['grp-risk']
-    },
-    {
-        name: 'COLLAPSE group + several of its own children -> group only',
-        ids: ['grp-greeks', 'delta', 'gamma'],
-        expect: ['grp-greeks']
-    },
-    {
-        name: 'COLLAPSE group + foreign leaf -> both kept',
-        ids: ['grp-greeks', 'portfolio'],
-        expect: ['grp-greeks', 'portfolio']
-    },
-    {
-        name: 'COLLAPSE two sibling subgroups -> both kept',
-        ids: ['grp-greeks', 'grp-rates'],
-        expect: ['grp-greeks', 'grp-rates']
-    },
-    {
-        name: 'COLLAPSE two ungrouped leaves -> unchanged',
-        ids: ['symbol', 'portfolio'],
-        expect: ['symbol', 'portfolio']
-    },
-    {name: 'COLLAPSE single group -> unchanged', ids: ['grp-greeks'], expect: ['grp-greeks']}
-];
-
-for (const c of collapseCases) {
-    const got = collapseSelection(c.ids.map(unit)).map(u => u.id);
-    if (arrEq(got, c.expect)) {
-        passed++;
-        console.log(`✓ ${c.name}`);
-    } else {
-        failures.push(c.name);
-        console.log(`✗ ${c.name}\n    expected [${c.expect}], got [${got}]`);
-    }
-}
-
-//------------------
-// C-HIDDEN-GAP: a second fixture mirroring the Toolbox `columnChooser` example - a nested Sales group
-// (projected + actual subgroups) followed in master by an all-HIDDEN Compensation group and a trailing
-// ungrouped column (retain). That hidden group between the Sales run and retain is what makes these
-// cases load-bearing: a drop resolved on raw master indices overshoots across it, splitting Sales.
-// See `docs/planning/locked-group-dnd-spec.md` §5A.
-//------------------
-const CHAIN2: Record<string, string[]> = {
-    fullName: ['rep'],
-    firstName: ['rep'],
-    lastName: ['rep'],
-    email: ['rep'],
-    city: ['location'],
-    state: ['location'],
-    region: ['location'],
-    salary: [],
-    tenure: [],
-    projectedUnitsSold: ['sales', 'projected'],
-    projectedGross: ['sales', 'projected'],
-    actualUnitsSold: ['sales', 'actual'],
-    actualGross: ['sales', 'actual'],
-    commissionRate: ['compensation'],
-    commission: ['compensation'],
-    retain: []
-};
-const NAT2 = Object.keys(CHAIN2);
-const HIDDEN2 = new Set([
-    'firstName',
-    'lastName',
-    'email',
-    'city',
-    'region',
-    'tenure',
-    'commissionRate',
-    'commission'
-]);
-const PINS2: Record<string, HSide> = {fullName: 'left'};
-const chainOf2: ChainOf = c => CHAIN2[c] ?? [];
-const isDisplayed2 = (c: string) => !HIDDEN2.has(c);
-const master2: ColumnState[] = NAT2.map(colId => ({
-    colId,
-    width: 100,
-    hidden: HIDDEN2.has(colId),
-    pinned: PINS2[colId]
-}));
-const mkTarget2 = (id: string): DropTarget => {
-    const leaves = NAT2.filter(c => chainOf2(c).includes(id));
-    return leaves.length
-        ? {id, isGroup: true, leafColIds: leaves}
-        : {id, isGroup: false, leafColIds: [id]};
-};
-const bucketView2 = (st: ColumnState[], side: HSide | null) =>
-    st.filter(cs => (cs.pinned ?? null) === side && !cs.hidden).map(cs => cs.colId);
-
-interface HGCase {
-    name: string;
-    moving: string[];
-    guid?: string | null;
-    target: string;
-    position: 'above' | 'below';
-    expectUnpinned: string[];
-}
-
-const hiddenGapCases: HGCase[] = [
-    {
-        // Projected dropped below the last Actual leaf -> a minimal reorder within Sales, not a
-        // relocation of the whole Sales group past Retain.
-        name: 'C-HIDDEN-GAP subgroup below sibling subgroup last leaf -> reorder in place',
-        moving: ['projectedUnitsSold', 'projectedGross'],
-        guid: 'projected',
-        target: 'actualGross',
-        position: 'below',
-        expectUnpinned: [
-            'state',
-            'salary',
-            'actualUnitsSold',
-            'actualGross',
-            'projectedUnitsSold',
-            'projectedGross',
-            'retain'
-        ]
-    },
-    {
-        // Symmetric direction: Actual dropped above the first Projected leaf -> Actual then Projected,
-        // Sales still in place (never jumps the hidden Compensation gap).
-        name: 'C-HIDDEN-GAP subgroup above sibling subgroup first leaf -> reorder in place',
-        moving: ['actualUnitsSold', 'actualGross'],
-        guid: 'actual',
-        target: 'projectedUnitsSold',
-        position: 'above',
-        expectUnpinned: [
-            'state',
-            'salary',
-            'actualUnitsSold',
-            'actualGross',
-            'projectedUnitsSold',
-            'projectedGross',
-            'retain'
-        ]
-    },
-    {
-        // Foreign to BOTH rendered neighbors, with the hidden Compensation group between Actual Gross
-        // and Retain: the drop anchors after the preceding row, never before Retain across the gap.
-        name: 'C-HIDDEN-GAP ungrouped leaf below a group, hidden gap before next -> after preceding row',
-        moving: ['salary'],
-        guid: null,
-        target: 'actualGross',
-        position: 'below',
-        expectUnpinned: [
-            'state',
-            'projectedUnitsSold',
-            'projectedGross',
-            'actualUnitsSold',
-            'actualGross',
-            'salary',
-            'retain'
-        ]
-    },
-    {
-        // §5B group-as-single-row for an UNGROUPED leaf: retain dragged UP into the Sales group's top
-        // half (above its 4-member midpoint) lands before the whole group. Sales has 4 rendered
-        // members, so projectedGross (index 1) sits in the top half → before.
-        name: 'C-HIDDEN-GAP ungrouped leaf into group top half -> before the group',
-        moving: ['retain'],
-        guid: null,
-        target: 'projectedGross',
-        position: 'above',
-        expectUnpinned: [
-            'state',
-            'salary',
-            'retain',
-            'projectedUnitsSold',
-            'projectedGross',
-            'actualUnitsSold',
-            'actualGross'
-        ]
-    }
-];
-
-for (const c of hiddenGapCases) {
-    const errs: string[] = [];
-    const res = resolveDrop({
-        master: master2,
-        chainOf: chainOf2,
-        side: null,
-        isDisplayed: isDisplayed2,
-        lockColumnGroups: true,
-        movingLeafColIds: c.moving,
-        dragUnitGroupId: c.guid ?? null,
-        target: mkTarget2(c.target),
-        position: c.position
-    });
-    if (!res.allowed || !res.state) {
-        errs.push(`allowed: expected true, got ${res.allowed}`);
-    } else {
-        if (!invariantHolds(res.state, chainOf2))
-            errs.push('marryChildren invariant VIOLATED (would trigger #39)');
-        const got = bucketView2(res.state, null);
-        if (!arrEq(got, c.expectUnpinned))
-            errs.push(`unpinned view: expected [${c.expectUnpinned}], got [${got}]`);
-    }
-    if (errs.length) {
-        failures.push(c.name);
-        console.log(`✗ ${c.name}`);
-        errs.forEach(e => console.log(`    ${e}`));
-    } else {
-        passed++;
-        console.log(`✓ ${c.name}`);
-    }
-}
-
-const total =
-    cases.length +
-    selCases.length +
-    reasonCases.length +
-    collapseCases.length +
-    hiddenGapCases.length;
-console.log(`\n${passed}/${total} passed, ${failures.length} failed`);
-if (failures.length) {
-    console.log('FAILED:', failures.join('; '));
-    process.exit(1);
+/** A sequence of colIds as a delimited string, to assert one sequence runs within another. */
+function asRun(colIds: string[]): string {
+    return `|${colIds.join('|')}|`;
 }

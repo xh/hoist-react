@@ -6,7 +6,7 @@
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, isEmpty, isMatch, sortBy, sumBy} from 'lodash';
 import {RoleModel} from '../RoleModel';
@@ -14,15 +14,16 @@ import {EffectiveRoleMember, HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
     @lookup(RoleModel) readonly roleModel: RoleModel;
+
+    @bindable accessor relationship: 'effective' | 'inherited' = 'inherited';
+
+    @bindable accessor inverted: boolean = true;
+
+    @bindable accessor widthScale: number = 1.0;
+
+    @bindable accessor limitToOneLevel: boolean = true;
+
     @managed readonly chartModel: ChartModel = this.createChartModel();
-
-    @bindable relationship: 'effective' | 'inherited' = 'inherited';
-
-    @bindable inverted: boolean = true;
-
-    @bindable widthScale: number = 1.0;
-
-    @bindable limitToOneLevel: boolean = true;
 
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
@@ -53,11 +54,6 @@ export class RoleGraphModel extends HoistModel {
                 height: AVG_HEIGHT * (leafCount + 1)
             };
         }
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

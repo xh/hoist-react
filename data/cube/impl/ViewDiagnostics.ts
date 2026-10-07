@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import type {View} from '../View';
 
 /**
@@ -17,14 +17,9 @@ import type {View} from '../View';
  * @internal
  */
 export class ViewDiagnostics extends BaseDiagnostics<View> {
-    @observable.ref load: ViewOpStats = this.emptyStats();
-    @observable.ref update: ViewOpStats = this.emptyStats();
-    @observable.ref query: ViewOpStats = this.emptyStats();
-
-    constructor(owner: View) {
-        super(owner);
-        makeObservable(this);
-    }
+    @observableRef accessor load: ViewOpStats = this.emptyStats();
+    @observableRef accessor update: ViewOpStats = this.emptyStats();
+    @observableRef accessor query: ViewOpStats = this.emptyStats();
 
     @action
     noteLoad(type: ViewOp['type'], start: number) {

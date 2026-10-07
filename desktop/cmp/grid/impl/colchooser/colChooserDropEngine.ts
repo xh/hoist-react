@@ -11,11 +11,10 @@ import {findLastIndex} from 'lodash';
 
 /**
  * Pure resolution engine for column-chooser drag-and-drop - plain `ColumnState[]` master data plus a
- * `chainOf` group lookup, with no ag-Grid, MobX, or model deps. Rules and worked cases:
- * `docs/planning/locked-group-dnd-spec.md`.
+ * `chainOf` group lookup, with no ag-Grid, MobX, or model deps.
  *
- * Keep every `@xh/hoist` import here type-only - a runtime import breaks bare-`tsx` execution of
- * `colChooserDropEngine.spec.ts`.
+ * Keep every `@xh/hoist` import here type-only. Runtime imports would pull the framework into what
+ * is otherwise a self-contained, side-effect-free module.
  */
 
 /** Maps a leaf colId to its group chain as groupIds, outermost (top-level) to innermost. */
@@ -145,9 +144,9 @@ export function collapseSelection<T extends SelectionUnit>(rows: T[]): T[] {
                 if (j === i || !g.isGroup) return false;
                 const gLeaves = new Set(g.leafColIds);
                 if (!r.leafColIds.every(id => gLeaves.has(id))) return false;
-                // Equal leaf sets (e.g. a single-column group and its child): keep the earlier row,
-                // else the two subsume each other into nothing.
-                return g.leafColIds.length === r.leafColIds.length ? j < i : true;
+                // A group always subsumes a leaf. Between groups with equal leaf sets (e.g. nested
+                // single-column groups), keep the earlier, else neither survives.
+                return r.isGroup && g.leafColIds.length === r.leafColIds.length ? j < i : true;
             })
     );
 }

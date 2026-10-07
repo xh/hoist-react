@@ -7,7 +7,7 @@
 import {ColumnGroupSpec, ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, HSide, managed, ReactionSpec, VSide} from '@xh/hoist/core';
 import {CubeField, PivotCellField, PivotPath, PivotView, Store} from '@xh/hoist/data';
-import {action, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {isArray, isEmpty, mapValues, omit, orderBy, sortBy} from 'lodash';
 
 /**
@@ -122,11 +122,11 @@ export class PivotGridModel extends HoistModel {
     /** View supplying this grid's data. Application-owned; not swappable. */
     readonly view: PivotView;
 
-    @bindable rowSummary: boolean | HSide;
-    @bindable pivotSummary: boolean | HSide;
-    @bindable valueSummary: boolean | VSide;
-    @bindable.ref pivotSortBy: PivotSort[];
-    @bindable.ref valueColumnSpecs: Record<string, PivotValueColumnSpec>;
+    @bindable accessor rowSummary: boolean | HSide;
+    @bindable accessor pivotSummary: boolean | HSide;
+    @bindable accessor valueSummary: boolean | VSide;
+    @bindableRef accessor pivotSortBy: PivotSort[];
+    @bindableRef accessor valueColumnSpecs: Record<string, PivotValueColumnSpec>;
 
     //------------------------
     // Child Models
@@ -146,7 +146,6 @@ export class PivotGridModel extends HoistModel {
         gridConfig
     }: PivotGridConfig) {
         super();
-        makeObservable(this);
 
         this.view = view;
         this.rowSummary = rowSummary;

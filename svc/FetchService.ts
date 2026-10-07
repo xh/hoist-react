@@ -372,7 +372,7 @@ export class FetchService extends HoistService {
 
     private async withResolvedHeadersAsync(opts: FetchOptions, span: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            isPost = method === 'POST';
+            isForm = ['POST', 'PUT'].includes(method);
 
         const defaultHeaders = {};
         for (const h of this.defaultHeaders) {
@@ -380,7 +380,7 @@ export class FetchService extends HoistService {
         }
 
         const headers = {
-            'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
+            'Content-Type': isForm ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
             ...(span
@@ -863,6 +863,11 @@ export interface FetchOptions {
     /**
      * Parameters to encode and append as a query string, or send with the request body
      * (for POSTs/PUTs sending form-url-encoded).
+     *
+     * If `method` is not specified, a request with params is sent as a POST, with the params in a
+     * form-url-encoded body, or on the query string if `Content-Type` is JSON. `fetch`,
+     * `fetchJson`, and `fetchNdjson` follow this rule, while `getJson`, `postJson`, `putJson`,
+     * `patchJson`, and `deleteJson` set the method themselves.
      */
     params?: PlainObject;
 

@@ -112,8 +112,8 @@ render changes, the component efficiently re-renders.
 ```typescript
 // Model defines observable state
 class MyComponentModel extends HoistModel {
-    @observable selectedId: string = null;
-    @observable.ref data: MyData[] = [];
+    @observable accessor selectedId: string = null;
+    @observableRef accessor data: MyData[] = [];
 
     @action
     setSelectedId(id: string) {

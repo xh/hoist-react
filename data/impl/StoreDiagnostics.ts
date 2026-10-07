@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import type {Store} from '../Store';
 import type {RecordSet, RecordSetDerivation} from './RecordSet';
 
@@ -21,14 +21,9 @@ import type {RecordSet, RecordSetDerivation} from './RecordSet';
  * @internal
  */
 export class StoreDiagnostics extends BaseDiagnostics<Store> {
-    @observable.ref load: StoreOpStats = this.emptyStats();
-    @observable.ref update: StoreOpStats = this.emptyStats();
-    @observable.ref filter: StoreOpStats = this.emptyStats();
-
-    constructor(owner: Store) {
-        super(owner);
-        makeObservable(this);
-    }
+    @observableRef accessor load: StoreOpStats = this.emptyStats();
+    @observableRef accessor update: StoreOpStats = this.emptyStats();
+    @observableRef accessor filter: StoreOpStats = this.emptyStats();
 
     @action
     noteLoad(rs: RecordSet, prev: RecordSet, start: number) {

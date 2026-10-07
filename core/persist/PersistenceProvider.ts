@@ -21,7 +21,7 @@ import {
     set,
     toPath
 } from 'lodash';
-import {IReactionDisposer, reaction} from 'mobx';
+import {IReactionDisposer, reaction} from '@xh/hoist/mobx';
 import {Class} from 'type-fest';
 import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
 import {PersistenceProviderType, PersistOptions} from './PersistOptions';

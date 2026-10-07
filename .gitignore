@@ -10,6 +10,9 @@ build/
 node_modules/
 tsconfig.tsbuildinfo
 
+# Unit test reports
+.vitest/
+
 # Logs
 *.log
 
@@ -23,8 +26,9 @@ CLAUDE.local.md
 # GSD project planning (archived to hoist-ai repo)
 .planning/
 
-# Superpowers scratch (transient design/spec artifacts)
+# Superpowers and other scratch (transient design/spec artifacts)
 docs/superpowers/
+.tmp
 
 # OS generated files
 .DS_Store

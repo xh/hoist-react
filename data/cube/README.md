@@ -77,6 +77,12 @@ const cube = new Cube({
 | `'UNIQUE'` | Count of unique values |
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
+| `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
+
+`WeightedAverageAggregator` takes the name of its weight field, so is instantiated per field rather
+than aliased by token: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`. It
+reads the weight from each leaf's source record, so the weight field need not be queried, and
+updates incrementally on a change to either field.
 
 A field is never aggregated at or below the level at which it is applied as a dimension - rows
 there publish the dimension value, and rows above aggregate over those values, one per grouped row.
@@ -89,54 +95,12 @@ Extend `Aggregator` and implement `aggregate()` to add application-specific aggr
 arrive as the row's direct children - a mix of leaf rows and already-aggregated parent rows, typed
 as `ViewRow` - so most aggregations compose naturally from `row.data[fieldName]`.
 
-Aggregations that cannot be derived from their children's published values alone (a weighted
-average, a standard deviation) can keep the extra terms they need as **aggregator state**, via
+Aggregations that cannot be derived from their children's published values alone (an average, a
+standard deviation) can keep the extra terms they need as **aggregator state**, via
 `AggregationContext.setAggState()` / `getAggState()`. This keeps each row's work proportional to
-its child count rather than to its entire subtree of leaves:
-
-```typescript
-export class WeightedAverageAggregator extends Aggregator {
-    readonly weightField: string;
-
-    constructor(weightField: string) {
-        super();
-        this.weightField = weightField;
-    }
-
-    // Reads a second field, so a change to the weight alone must recompute this aggregate - see
-    // below. This forgoes incremental updates, but not the compositional win of the state below.
-    override get dependsOnChildrenOnly() {
-        return false;
-    }
-
-    override aggregate(rows, fieldName, context) {
-        let weighted = 0,
-            weight = 0;
-
-        for (const row of rows) {
-            // Parents publish an average - compose from their state instead. A parent without
-            // state did not aggregate this field, so read its published values as for a leaf.
-            const state = row.isLeaf ? null : context.getAggState(row);
-            if (state) {
-                weighted += state.weighted;
-                weight += state.weight;
-            } else {
-                const val = row.data[fieldName],
-                    w = row.data[this.weightField];
-                if (val != null && w != null) {
-                    weighted += val * w;
-                    weight += w;
-                }
-            }
-        }
-
-        context.setAggState({weighted, weight});
-        return weight ? weighted / weight : null;
-    }
-}
-```
-
-Then reference it from a field: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`.
+its child count rather than to its entire subtree of leaves. See `AverageAggregator` and
+`WeightedAverageAggregator` for compact examples - the latter also reads a second field from each
+leaf's `cubeRecord`.
 
 The rows handed to an aggregator are typed as `ViewRow` - the row-level API shared by aggregators
 and the `lockFn` / `omitFn` / `bucketSpecFn` hooks. Leaf rows additionally carry their source
@@ -151,19 +115,22 @@ Rules to observe:
 * **Expect non-leaf children without state.** `getAggState()` returns null for a child that did not
   aggregate the field - because its `canAggregateFn` returned false, or because the field is a
   dimension at that child's level and so is never aggregated there. Such a child publishes a value
-  to read instead - null in the first case, the dimension value in the second - so treat it as the
-  example does, exactly like a leaf.
+  to read instead - null in the first case, the dimension value in the second - so treat it
+  exactly like a leaf.
 * **Override `replace()` only if you can keep state consistent** with the value you return. The
   inherited implementation re-aggregates from direct children, which is correct and already cheap;
   see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
-* **Override `dependsOnChildrenOnly` to return false if the aggregate reads any field other than
-  its own**, as the weighted average above reads `qty`. A View whose aggregators all depend on
-  their children only applies a record update incrementally, re-aggregating a field up the
-  ancestor chain only when that field's own value changed on the leaf - a change to `qty` alone
-  would leave the weighted `price` stale until the next full rebuild. Returning false routes every
-  update through a full rebuild, on which reused rows recompute the aggregate afresh. Aggregators
-  that depend on values beyond their own children (e.g. percent-of-total) must return false for the
-  same reason, and doing so also gives them access to `AggregationContext.filteredRecords`.
+  The `RowUpdate` it receives carries the leaf's full source data before and after the change.
+* **Override `dependsOn` to name any other leaf fields the aggregate reads**, as
+  `WeightedAverageAggregator` names its weight field. A View applies a record update incrementally,
+  re-aggregating a field up the ancestor chain only when that field's own leaf value changed - so
+  without the declaration, a change to the weight alone would leave the average stale until the
+  next full rebuild. Note that a `replace()` triggered this way may see the field's own leaf value
+  unchanged.
+* **Override `dependsOnChildrenOnly` to return false if the aggregate depends on values beyond its
+  own children** (e.g. percent-of-total). This routes every update through a full rebuild, on which
+  reused rows recompute the aggregate afresh, and gives the aggregator access to
+  `AggregationContext.filteredRecords`.
 
 ## Querying with Views
 

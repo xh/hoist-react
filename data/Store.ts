@@ -24,12 +24,13 @@ import {
     ValidationResult
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
-import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, computed, observable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
     compact,
+    countBy,
     defaultsDeep,
     differenceBy,
     first,
@@ -40,7 +41,9 @@ import {
     isNil,
     isNull,
     isString,
+    keys,
     partition,
+    pickBy,
     remove as lodashRemove,
     uniq,
     uniqBy,
@@ -299,6 +302,7 @@ export interface StoreChangeLog {
     add?: StoreRecord[];
     remove?: StoreRecord[];
     summaryRecords?: StoreRecord[];
+    changedFields?: Set<string>;
 }
 
 export interface ChildRawData {
@@ -363,8 +367,7 @@ export class Store
     idSpec: (data: PlainObject) => StoreRecordId;
     processRawData: (raw: any) => any;
 
-    @observable
-    filterIncludesChildren: boolean;
+    @observable accessor filterIncludesChildren: boolean;
 
     loadTreeData: boolean;
     loadTreeDataFrom: string;
@@ -375,28 +378,23 @@ export class Store
     readonly projectionOnly: boolean;
     validationIsComplex: boolean;
 
-    @observable.ref
-    filter: Filter;
+    @observableRef accessor filter: Filter;
 
     /** Timestamp (ms) of the last time this store's data was changed. */
-    @observable
-    lastUpdated: number;
+    @observable accessor lastUpdated: number;
 
     /** Timestamp (ms) of the last time this store's data was loaded.*/
-    @observable
-    lastLoaded: number = null;
+    @observable accessor lastLoaded: number = null;
 
     /**
      * Records containing summary data, such as top-level aggregations produced by a Hoist Cube
      * or any other custom aggregation(s) calculated and installed by the application. Set via
      * {@link loadData} or by loading a tree structure with `loadRootAsSummary` set to true.
      */
-    @observable.ref
-    summaryRecords: StoreRecord[] = null;
+    @observableRef accessor summaryRecords: StoreRecord[] = null;
 
     /** @internal - used internally by any StoreFilterField bound to this store. */
-    @observable
-    xhFilterText: string = null;
+    @observable accessor xhFilterText: string = null;
 
     @managed
     validator: StoreValidator;
@@ -404,12 +402,9 @@ export class Store
     //----------------------
     // Implementation State
     //----------------------
-    @observable.ref
-    private _committed: RecordSet;
-    @observable.ref
-    private _current: RecordSet;
-    @observable.ref
-    _filtered: RecordSet;
+    @observableRef private accessor _committed: RecordSet;
+    @observableRef private accessor _current: RecordSet;
+    @observableRef accessor _filtered: RecordSet;
 
     private _fieldDefaults: Omit<FieldSpec, 'name'>;
     private _dataTemplate: PlainObject = null;
@@ -456,7 +451,6 @@ export class Store
         data
     }: StoreConfig) {
         super();
-        makeObservable(this);
         throwIf(
             projectionOnly && processRawData,
             'Store.projectionOnly cannot be used with processRawData - a projection adopts data already parsed by its provider.'
@@ -709,19 +703,18 @@ export class Store
 
         // 2) Pre-process summary records, peeling them out of updates if needed
         const {summaryRecords} = this;
-        let summaryUpdateRecs: StoreRecord[];
+        let newSummaryRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
+            const updates = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
+            if (!isEmpty(updates)) newSummaryRecs = this.mergeSummaryRecords(updates);
         }
 
-        if (isEmpty(summaryUpdateRecs) && rawSummaryData) {
-            summaryUpdateRecs = castArray(rawSummaryData).map(it =>
-                this.createRecord(it, null, true)
-            );
+        if (!newSummaryRecs && rawSummaryData) {
+            newSummaryRecs = castArray(rawSummaryData).map(it => this.createRecord(it, null, true));
         }
 
-        if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+        if (!isEmpty(newSummaryRecs)) {
+            this.summaryRecords = newSummaryRecs;
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -745,6 +738,9 @@ export class Store
             if (update) changeLog.update = update;
             if (add) changeLog.add = add;
             if (removeIds) changeLog.remove = compact(removeIds.map(id => this.getById(id)));
+            if (changedFields && update && !add && !removeIds) {
+                changeLog.changedFields = changedFields;
+            }
 
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
@@ -933,7 +929,8 @@ export class Store
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+            summaryUpdateRecs.forEach(it => it.finalize());
+            this.summaryRecords = this.mergeSummaryRecords(summaryUpdateRecs);
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -1381,7 +1378,10 @@ export class Store
             `Applications must not specify a field named '__proto__' - assigning it would replace the
             prototype of each record's data object rather than setting a value on it.`
         );
-        throwIf(uniqBy(ret, 'name').length !== ret.length, 'Field names must be unique.');
+        if (uniqBy(ret, 'name').length !== ret.length) {
+            const dupes = keys(pickBy(countBy(ret, 'name'), count => count > 1));
+            throw XH.exception(`Field names must be unique. Duplicates: ${dupes.join(', ')}`);
+        }
         return ret;
     }
 
@@ -1670,8 +1670,8 @@ export class Store
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
-            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
-            const data = {...recToRevert.committedData};
+            // Rebuild rather than spread - sparse data holds its defaults on a prototype.
+            const data = this.parseUpdate(recToRevert.committedData, {});
             const ret = new StoreRecord({
                 id: recToRevert.id,
                 store: this,
@@ -1679,11 +1679,16 @@ export class Store
                 data,
                 committedData: data,
                 parent: null,
-                isSummary: true
+                isSummary: true,
+                nonDefaultCount: this._recordBuildData.n
             });
             ret.finalize();
             return ret;
         });
+    }
+
+    private mergeSummaryRecords(updates: StoreRecord[]): StoreRecord[] {
+        return this.summaryRecords.map(rec => updates.find(it => it.id === rec.id) ?? rec);
     }
 }
 

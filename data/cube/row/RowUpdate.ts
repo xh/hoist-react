@@ -4,13 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {PlainObject} from '@xh/hoist/core';
 import {CubeField} from '../CubeField';
 
 /**
- * A single field value change, propagated up a row's ancestors to adjust their aggregations.
+ * A change at a leaf affecting one field's aggregation, propagated up the leaf's ancestors to
+ * adjust their aggregates in place.
  *
  * Passed to {@link Aggregator.replace}, which may use it to update an aggregate incrementally
- * rather than re-aggregating from scratch.
+ * rather than re-aggregating from scratch. Note that the field's own leaf value may be unchanged
+ * when the update was triggered by a change to a field the aggregator {@link Aggregator.dependsOn}.
  */
 export class RowUpdate {
     readonly field: CubeField;
@@ -19,32 +22,32 @@ export class RowUpdate {
     oldValue: any;
     newValue: any;
 
-    /** Values at the originating leaf - a running total over leaves can apply this delta at any level. */
-    readonly leafOldValue: any;
-    readonly leafNewValue: any;
+    /** Source record data of the originating leaf, before and after the update. */
+    readonly leafOldData: PlainObject;
+    readonly leafNewData: PlainObject;
 
-    constructor(
-        field: CubeField,
-        oldValue: any,
-        newValue: any,
-        leafOldValue: any = oldValue,
-        leafNewValue: any = newValue
-    ) {
+    /** Values of the field at the originating leaf. */
+    get leafOldValue(): any {
+        return this.leafOldData[this.field.name];
+    }
+
+    get leafNewValue(): any {
+        return this.leafNewData[this.field.name];
+    }
+
+    constructor(field: CubeField, leafOldData: PlainObject, leafNewData: PlainObject) {
         this.field = field;
-        this.oldValue = oldValue;
-        this.newValue = newValue;
-        this.leafOldValue = leafOldValue;
-        this.leafNewValue = leafNewValue;
+        this.leafOldData = leafOldData;
+        this.leafNewData = leafNewData;
+        this.oldValue = this.leafOldValue;
+        this.newValue = this.leafNewValue;
     }
 
     /** Independent copy for a second aggregation route - see {@link propagateUpdate}. */
     clone(): RowUpdate {
-        return new RowUpdate(
-            this.field,
-            this.oldValue,
-            this.newValue,
-            this.leafOldValue,
-            this.leafNewValue
-        );
+        const ret = new RowUpdate(this.field, this.leafOldData, this.leafNewData);
+        ret.oldValue = this.oldValue;
+        ret.newValue = this.newValue;
+        return ret;
     }
 }

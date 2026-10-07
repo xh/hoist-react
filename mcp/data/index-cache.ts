@@ -39,10 +39,19 @@ import type {SymbolEntry, MemberIndexEntry, SymbolDetail} from './ts-registry.js
  * {@link SymbolDetail} changes in a way that would make existing caches
  * misleading. Old caches are silently discarded on schema mismatch.
  */
-const CACHE_SCHEMA_VERSION = 1;
+const CACHE_SCHEMA_VERSION = 2;
 
 /** Directories pruned from the fingerprint walk - mirrors `buildSymbolIndex` filters. */
-const EXCLUDED_DIRS = new Set(['node_modules', 'build', 'mcp', '.git', '.idea', '.vscode', 'docs']);
+const EXCLUDED_DIRS = new Set([
+    'node_modules',
+    'build',
+    'mcp',
+    'test',
+    '.git',
+    '.idea',
+    '.vscode',
+    'docs'
+]);
 
 /**
  * Indexer source files whose changes invalidate the cache despite living under
@@ -51,7 +60,11 @@ const EXCLUDED_DIRS = new Set(['node_modules', 'build', 'mcp', '.git', '.idea', 
  * the code until an unrelated source file changed. Paths are relative to
  * repoRoot.
  */
-const INDEXER_SOURCES = ['mcp/data/ts-registry.ts', 'mcp/data/index-cache.ts'];
+const INDEXER_SOURCES = [
+    'mcp/data/ts-registry.ts',
+    'mcp/data/import-paths.ts',
+    'mcp/data/index-cache.ts'
+];
 
 interface CachePayload {
     schemaVersion: number;
@@ -77,8 +90,8 @@ function cachePath(repoRoot: string): string {
  * package version changes. Mirrors the file-set filter applied in
  * `buildSymbolIndex` so the fingerprint and the indexed file set stay in sync.
  *
- * Walks the repo tree once. ~290 files in hoist-react; one stat per file.
- * Sub-100ms on a fast disk.
+ * Walks the repo tree once, one stat per `.ts`/`.tsx` file outside the excluded
+ * directories. Sub-100ms on a fast disk.
  */
 export function computeFingerprint(repoRoot: string): string {
     const entries: string[] = [];
@@ -97,6 +110,7 @@ export function computeFingerprint(repoRoot: string): string {
                 walk(resolve(dir, entry.name));
             } else if (entry.isFile()) {
                 if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.tsx')) continue;
+                if (entry.name.endsWith('.spec.ts')) continue;
                 const fullPath = resolve(dir, entry.name);
                 try {
                     const stats = statSync(fullPath);

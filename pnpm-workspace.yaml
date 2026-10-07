@@ -5,10 +5,12 @@
 # in CI. esbuild (via tsx, which powers the bin/hoist-* CLI tools) is allowed so its platform
 # binary install is guaranteed. The rest are declined: @parcel/watcher (via dev-utils' sass
 # watch-mode support, unused here) has a native build with prebuilt binaries shipped as optional
-# platform deps, browser-tabs-lock (via auth0-spa-js) ships prebuilt dist, and core-js's
-# postinstall only prints a funding message.
+# platform deps, @swc/core (the unit test transform) ships its binary the same way and its
+# postinstall only falls back to a wasm build if that is missing, browser-tabs-lock (via
+# auth0-spa-js) ships prebuilt dist, and core-js's postinstall only prints a funding message.
 allowBuilds:
   '@parcel/watcher': false
+  '@swc/core': false
   browser-tabs-lock: false
   core-js: false
   esbuild: true
@@ -56,7 +58,18 @@ minimumReleaseAgeExclude:
 # Several transitive deps (react-popper, react-onsenui, react-windowed-select) still declare
 # react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
 # rather than surfacing unmet-peer warnings on every install.
+#
+# eslint-plugin-tsdoc pins `@typescript-eslint/utils` ~8.56, whose packages cap their TypeScript peer
+# below 6. The plugin reads doc comments only, and lint passes with TypeScript 7 at the root.
+#
+# @vitest/mocker caps its optional msw peer below 3. Only Vitest's browser mode uses msw there, and
+# the unit tests run in jsdom, mocking the server with msw 3 directly.
 peerDependencyRules:
   allowedVersions:
     react: '19'
     react-dom: '19'
+    '@typescript-eslint/utils>typescript': '7'
+    '@typescript-eslint/typescript-estree>typescript': '7'
+    '@typescript-eslint/project-service>typescript': '7'
+    '@typescript-eslint/tsconfig-utils>typescript': '7'
+    '@vitest/mocker>msw': '3'

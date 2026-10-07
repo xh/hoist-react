@@ -21,9 +21,8 @@ import type {RowUpdate} from './RowUpdate';
  * and `Aggregator.replace` reads them - so when a row has two parents the second must get its own
  * copies, or it would apply the first route's aggregated delta instead of this row's.
  *
- * Copies via `clone()`, never a fresh `RowUpdate`: the latter would re-seed `leafOldValue` /
- * `leafNewValue` from this row's *aggregated* values, silently corrupting every aggregator that
- * composes from a running leaf total (AVG, AVG_STRICT).
+ * Copies via `clone()`, never a fresh `RowUpdate`: the latter would reset `oldValue` / `newValue`
+ * to the originating leaf's values, discarding this row's aggregated delta.
  *
  * @internal
  */

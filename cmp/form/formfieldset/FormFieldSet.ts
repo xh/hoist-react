@@ -20,7 +20,7 @@ import {
 } from '@xh/hoist/core';
 import {ValidationSeverity} from '@xh/hoist/data';
 import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
-import {runInAction} from 'mobx';
+import {runInAction} from '@xh/hoist/mobx';
 import {ReactElement, type ReactNode, useEffect} from 'react';
 import './FormFieldSet.scss';
 

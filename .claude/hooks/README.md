@@ -210,8 +210,7 @@ screenshots. Chromium is pre-installed at `/opt/pw-browsers` with `PLAYWRIGHT_BR
 already pointing at it - do not run `playwright install`. The `playwright` npm package itself is
 not present in either repo and needs a one-off `npm i playwright` in a scratch directory.
 
-Note also that `webpack-dev-server` compiles silently, so grepping its log for a "compiled" line
-will hang. Poll for readiness instead:
+Poll the dev server for readiness rather than waiting on a line in its log:
 
 ```bash
 curl -s -m 30 -o /dev/null -w '%{http_code}' http://localhost:3000/app

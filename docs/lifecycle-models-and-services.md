@@ -23,7 +23,6 @@ Construction → Linking (onLinked) → Post-Link (afterLinked, initial load) �
 
 The constructor runs before the model is associated with any component. At this point:
 
-- `makeObservable(this)` has been called by the `HoistModel` base constructor
 - `LoadSupport` is auto-created if the class overrides `doLoadAsync()`
 - MobX observables declared with `@observable` or `@bindable` are active
 - Persistence decorators (`@persist`) read from the backing store and apply saved values
@@ -39,7 +38,6 @@ class OrderPanelModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.gridModel = new GridModel({columns: [...]});
         this.filterModel = new FilterChooserModel({...});
     }
@@ -200,12 +198,12 @@ are initialized concurrently — use separate `await`ed calls to enforce orderin
 
 ```typescript
 // In AppModel.initAsync()
-override async initAsync() {
+override async initAsync(ctx: InitContext) {
     // Phase 1: reference data (must complete first)
-    await XH.installServicesAsync(LookupService);
+    await XH.installServicesAsync([LookupService], ctx);
 
     // Phase 2: these can initialize concurrently
-    await XH.installServicesAsync(OrderService, TradeService);
+    await XH.installServicesAsync([OrderService, TradeService], ctx);
 }
 ```
 
@@ -450,7 +448,6 @@ class OrderListModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.gridModel = new GridModel({columns: [...]});
         this.filterModel = new FilterChooserModel({...});
 
@@ -506,12 +503,12 @@ class DetailModel extends HoistModel {
 class AppModel extends HoistAppModel {
     @managed tabModel: TabContainerModel;
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Phase 1: reference data (other services depend on these lookups)
-        await XH.installServicesAsync(LookupService);
+        await XH.installServicesAsync([LookupService], ctx);
 
         // Phase 2: domain services (can initialize concurrently)
-        await XH.installServicesAsync(OrderService, TradeService);
+        await XH.installServicesAsync([OrderService, TradeService], ctx);
 
         // Phase 3: set up application UI
         this.tabModel = new TabContainerModel({

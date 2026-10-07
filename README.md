@@ -1,5 +1,7 @@
 # Hoist React
 
+[![Unit Tests](https://github.com/xh/hoist-react/actions/workflows/unit-tests.yml/badge.svg?branch=develop)](https://github.com/xh/hoist-react/actions/workflows/unit-tests.yml?query=branch%3Adevelop)
+
 A full-stack UI development framework for enterprise web applications, built on React and MobX.
 Developed by [Extremely Heavy](https://xh.io/) as the client-side complement to
 [Hoist Core](https://github.com/xh/hoist-core).
@@ -73,6 +75,7 @@ docs. The primary entry points are:
 - [docs/build-and-publish.md](docs/build-and-publish.md) — GitHub Actions CI/CD for hoist-react
 - [docs/build-and-deploy-app.md](docs/build-and-deploy-app.md) — building and deploying Hoist applications
 - [docs/development-environment.md](docs/development-environment.md) — local development setup
+- [docs/unit-testing.md](docs/unit-testing.md) - the unit test suite, and how to write tests
 
 ## Architecture at a Glance
 
@@ -120,8 +123,8 @@ combined, and integrated by XH.
 |--------------|---------------------------------------------------------------------------------|-----------------------------------------------------|
 | React        | Core technology for efficient componentization and rendering of modern web apps | [reactjs.org](https://react.dev/)                   |
 | MobX         | Flexible, well-balanced state management and smart reactivity                   | [mobx.js.org](https://mobx.js.org/)                 |
-| Webpack      | Endlessly extensible (if occasionally baffling) bundle and build tool           | [webpack.js.org](https://webpack.js.org/)           |
-| ag-Grid      | High performance, feature-rich data grid                                        | [ag-grid.com](https://www.ag-grid.com/)             |
+| Rsbuild      | Fast Rspack-based bundler and dev server, with SWC for transpilation            | [rsbuild.rs](https://rsbuild.rs/)                   |
+| AG Grid      | High performance, feature-rich data grid                                        | [ag-grid.com](https://www.ag-grid.com/)             |
 | Blueprint    | General purpose UI toolkit for data-dense desktop webapps                       | [blueprintjs.com](https://blueprintjs.com/)         |
 | Highcharts   | Proven, robust, well-rounded charting and visualization library                 | [highcharts.com](https://www.highcharts.com/)       |
 | RGL          | Drag-and-drop grid layout for DashCanvas dashboards                             | [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout) |
@@ -135,10 +138,10 @@ open-source and fully free to use. Wherever possible, we have aimed to minimize 
 third-party license costs and restrictions. The exceptions to this rule are listed below. For these
 libraries, client application(s) using Hoist React must acquire and register appropriate licenses.
 
-**ag-Grid** is released under a dual licensing model, with the community edition available under a
+**AG Grid** is released under a dual licensing model, with the community edition available under a
 permissive MIT license and the enterprise edition requiring a
 [paid license](https://www.ag-grid.com/license-pricing). Applications wishing to use grids in Hoist
-React will need to provide a licensed version of ag-Grid. A free community version is available,
+React will need to provide a licensed version of AG Grid. A free community version is available,
 however many applications will want to license the enterprise version for important extra
 functionality including row grouping and tree grids.
 
@@ -154,9 +157,9 @@ Applications wishing to use charts in Hoist will need to provide a licensed vers
 
 ## TypeScript and Modern JavaScript
 
-Hoist React and Hoist applications are written in TypeScript. The codebase makes use of experimental
-(TC39 Stage 2) decorators via Babel — a notable difference from standard TypeScript decorator
-support — as coordinated within a standardized Webpack build process provided by
+Hoist React and Hoist applications are written in TypeScript. The codebase makes use of TC39
+Stage 3 (`2023-11`) decorators, with TypeScript's `experimentalDecorators` flag off. SWC transpiles
+them within a standardized Rsbuild build process provided by
 [hoist-dev-utils](https://github.com/xh/hoist-dev-utils).
 
 Key language features used throughout Hoist React include:
@@ -166,7 +169,14 @@ Key language features used throughout Hoist React include:
 - **Classes** — including class fields and carefully considered uses of inheritance.
 - **Async/await** — for asynchronous operations, with custom Promise extensions for error handling,
   tracking, and timeouts. See [/promise/README.md](promise/README.md).
-- **ES Modules** — all dependencies imported via ES modules and resolved by Webpack.
+- **ES Modules** — all dependencies imported via ES modules and resolved by Rsbuild.
+
+## Testing
+
+Hoist React has a suite of unit tests, run with `pnpm test` on [Vitest](https://vitest.dev). The
+tests compile the library with the same SWC decorator settings that apps use. They run Hoist's real
+services against an in-memory fake of the hoist-core server. CI runs them on every pull request.
+See [docs/unit-testing.md](docs/unit-testing.md).
 
 ## Licensing and Support
 

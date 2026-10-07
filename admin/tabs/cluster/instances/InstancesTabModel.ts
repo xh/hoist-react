@@ -23,7 +23,6 @@ import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
@@ -88,7 +87,6 @@ export class InstancesTabModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.timer = Timer.create({
             runFn: () => {
@@ -207,7 +205,7 @@ export class InstancesTabModel extends HoistModel {
 
     private createTabContainerModel() {
         return new TabContainerModel({
-            route: 'default.servers.instances',
+            route: 'default.general.instances',
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
                 {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},

@@ -885,7 +885,7 @@ export class Column {
         const {tooltip, editor} = this;
         if (tooltip || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
-            ret.tooltipValueGetter = () => 'tooltip';
+            ret.tooltip = () => 'tooltip';
             ret.tooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
                 const {location, data: record} = agParams,
                     hasRecord = record instanceof StoreRecord,

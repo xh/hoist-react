@@ -5,8 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 /**
- * Correctness suite for the built-in `Aggregator` classes. Run with `pnpm test:unit`, or directly:
- *   npx tsx data/cube/aggregate/Aggregator.spec.ts
+ * Correctness suite for the built-in `Aggregator` classes.
  *
  * Covers `aggregate` / `replace` semantics per aggregator over duck-typed rows, checked against an
  * independent oracle across a transition matrix, and two-level composition - a leaf change updating
@@ -25,7 +24,6 @@ import {
     LEAF_DOMAIN,
     leafOf,
     ORACLE,
-    report,
     runAggregate,
     runReplace,
     SUM,
@@ -371,5 +369,3 @@ suite('replace: composes a group aggregate up into its parent aggregate', () => 
     );
     check('replace: composes a group aggregate up into its parent aggregate', capped(errs));
 });
-
-report();

@@ -128,6 +128,7 @@ export function fmtCompactDate(v: DateLike, opts?: CompactDateFormatOptions) {
         nearFmt = MONTH_DAY_FMT,
         distantFmt = DATE_FMT,
         distantThreshold = 6,
+        nullDisplay,
         tooltip = null,
         asHtml = false,
         originalValue = v
@@ -138,8 +139,8 @@ export function fmtCompactDate(v: DateLike, opts?: CompactDateFormatOptions) {
         today = fmtDate(new Date()),
         valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
-        nearFuture = now.clone().add(distantThreshold, 'months').date(1),
-        dateOpts: DateFormatOptions = {tooltip, originalValue, asHtml};
+        nearFuture = now.clone().add(distantThreshold, 'months').startOf('month'),
+        dateOpts: DateFormatOptions = {nullDisplay, tooltip, originalValue, asHtml};
 
     if (today === valueDay) {
         dateOpts.fmt = sameDayFmt;
@@ -184,7 +185,7 @@ export function timestampReplacer(
     config: TimestampReplacerConfig = {}
 ): (k: string, v: any) => any {
     const suffixes = config.suffixes ?? ['time', 'date', 'timestamp'],
-        fmt = 'MMM DD HH:mm:ss.SSS';
+        fmt = config.format ?? 'MMM DD HH:mm:ss.SSS';
     return (k: string, v: any) => {
         return suffixes.some(s => k.toLowerCase().endsWith(s.toLowerCase())) &&
             isFinite(v) &&

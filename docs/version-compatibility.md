@@ -1,7 +1,7 @@
 # Version Compatibility
 
 Hoist applications are built on a pairing of **hoist-react** (client) and **hoist-core** (server),
-plus **hoist-dev-utils** (the Webpack build tooling consumed by apps as a devDependency). These
+plus **hoist-dev-utils** (the Rsbuild build tooling consumed by apps as a devDependency). These
 libraries evolve together but are versioned independently. Running a mismatched combination can
 cause failures that are difficult to diagnose — error messages typically don't indicate a version
 mismatch. hoist-core mismatches surface at runtime; hoist-dev-utils mismatches surface at build /
@@ -61,6 +61,8 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
+| 89.0 | -- | 42.0 | 42.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v89-upgrade-notes.md) |
+| 88.1 | -- | 42.0 | 42.0 | Use 88.1.2 or later - earlier 88 releases drop `MsalClient` defaults. `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
 | 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | [Notes](./upgrade-notes/v87-upgrade-notes.md) |
 | 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | [Notes](./upgrade-notes/v86-upgrade-notes.md) |
 | 85.0 | -- | 39.0 | 39.0 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
@@ -119,6 +121,7 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 42.0 | 88.0 recommended | `JsonBlobService` limits global blob writes to `xhJsonBlobConfig.globalWriteRoles` and reports `manageGlobal` on `xhView/allData`, consumed by v88's `ViewManagerModel`. Older hoist-react keeps its client-side `manageGlobal`, which the server now also enforces. No hard hoist-react bump. |
 | 41.0 | 87.0 recommended | Tabbed/typed config editor, directory group names + search endpoints - consumed by v87's Admin Console, which degrades gracefully without them. No hard hoist-react bump. |
 | 40.5 | 87.0 recommended | `ViewManager` group rename + bulk-editing endpoints consumed by v87 (which requires 40.5 as its floor). No hard hoist-react bump from 40.0. |
 | 40.0 | 86.0 recommended | Client metrics `/xh/recordMetrics` endpoint (added in 40.0.1). No hard hoist-react bump; needed only by apps recording client metrics. |
@@ -146,7 +149,7 @@ to find the minimum hoist-react version for a given core release.
 
 ## hoist-react ↔ hoist-dev-utils
 
-hoist-dev-utils is a build-time dependency: it supplies the Webpack config that compiles both app
+hoist-dev-utils is a build-time dependency: it supplies the bundler config that compiles both app
 code and hoist-react's raw TypeScript source. A version mismatch therefore fails at build or
 dev-server startup (`pnpm start` / `pnpm build`, or the yarn equivalents) rather than at runtime.
 Requirements flow in both directions - dev-utils majors set a minimum hoist-react, and some
@@ -162,6 +165,7 @@ taking its current major alongside a hoist-react upgrade is low-cost and always 
 
 | hoist-react | Min Dev-Utils Required | Recommended Dev-Utils | Notes |
 |---|---|---|---|
+| 88.0 | 16.0 | 16.0 | TC39 decorators, build-wide - neither side pairs with the other's syntax, so upgrade both together. |
 | 87.1 | -- | 15.0.1 | Take 15.0.1+, not 15.0.0. dev-utils 15 requires 87.1, enforced with a fail-fast build error. Apps taking v15 must also be TS-only (no `.jsx` files) and will see ESLint v10 rules. |
 | 87.0 | 14.0 | 14.0 | React 19: dev-utils 14 ships `@types/react` 19.x and is required for apps adopting pnpm. (13.x can build v87 with `@types/react` 19.x pinned via `resolutions` - a transitional pairing only, not supported.) |
 | 86.0 | -- | 13.0.1 | dev-utils 13 sets a Node floor of >= 22.11 and swaps the markdown loader - verify `flex: 1 1 0` styles (see [v86 notes](./upgrade-notes/v86-upgrade-notes.md)). |
@@ -179,6 +183,7 @@ hard gates stated in the [hoist-dev-utils CHANGELOG](https://github.com/xh/hoist
 
 | hoist-dev-utils | Min hoist-react | Min Node | Notes |
 |---|---|---|---|
+| 16.0 | 88.0 | 22.15 | Rsbuild replaces webpack, and TC39 `2023-11` decorators replace `legacy`. Both require app changes. |
 | 15.0 | 87.1 | 22.15 | Take 15.0.1+ - 15.0.0 can crash app boot ([#4640](https://github.com/xh/hoist-react/issues/4640)). Apps must be TypeScript-only - `.jsx` files are no longer resolved or transpiled. Re-enables Terser name-mangling, ships ESLint v10 via `@xh/eslint-config` 8, and emits pre-compressed `.br` / `.gz` assets on prod builds. |
 | 14.0 | 87.0 | 22.15 | React 19 / `@types/react` 19.x baseline. Adds pnpm support - apps adopting pnpm must take 14+, and must declare every package they import directly (see dev-utils CHANGELOG). webpack-dev-server 6. |
 | 13.0 | -- | 22.11 | Take 13.0.1+. Markdown files now import as strings; verify `flex: 1 1 0` styles. |

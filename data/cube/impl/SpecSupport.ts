@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isEqual} from 'lodash';
+import {describe, expect, it} from 'vitest';
 import type {Aggregator} from '../aggregate/Aggregator';
 import {AverageAggregator} from '../aggregate/AverageAggregator';
 import {AverageStrictAggregator} from '../aggregate/AverageStrictAggregator';
@@ -14,62 +15,26 @@ import {SumStrictAggregator} from '../aggregate/SumStrictAggregator';
 import {UniqueAggregator} from '../aggregate/UniqueAggregator';
 
 /**
- * Shared harness for the `data/cube` unit-tier specs - a minimal exit-coded driver plus duck-typed
- * rows and a fake {@link AggregationContext} for exercising `Aggregator` classes standalone.
- *
- * hoist-react has no general test framework: anything importing `View` needs a bundler and babel
- * decorators. The `Aggregator` classes carry neither, so they load under `npx tsx` against these
- * fixtures. Test-only - kept out of `data/index.ts`, like `PivotReference`.
+ * Shared support for the `data/cube` pivot and aggregator specs - matrix-style checks over vitest,
+ * plus duck-typed rows and a fake {@link AggregationContext} for exercising `Aggregator` classes
+ * without a View. Test-only - kept out of `data/index.ts`, like `PivotReference`.
  */
 
 //------------------
 // Harness
 //------------------
-let passed = 0;
-const failures: string[] = [];
-
+/** One test over a scenario matrix, passing when the block collected no error strings. */
 export function check(name: string, errs: string[]) {
-    if (errs.length) {
-        failures.push(name);
-        console.log(`✗ ${name}`);
-        errs.forEach(e => console.log(`    ${e}`));
-    } else {
-        passed++;
-        console.log(`✓ ${name}`);
-    }
+    it(name, () => expect(errs).toEqual([]));
 }
 
-/** Run a block of checks, recording a throw as a failure rather than aborting the remaining suites. */
+/** A `describe` block of checks. */
 export function suite(name: string, fn: () => void) {
-    try {
-        fn();
-    } catch (e) {
-        check(name, [`threw: ${(e as Error).stack ?? e}`]);
-    }
+    describe(name, fn);
 }
 
 export function expectThrows(name: string, fn: () => void, expectMsg: string) {
-    const errs: string[] = [];
-    try {
-        fn();
-        errs.push('expected a throw, but none occurred');
-    } catch (e) {
-        const msg = (e as Error).message ?? String(e);
-        if (!msg.includes(expectMsg)) {
-            errs.push(`message should include "${expectMsg}", got "${msg}"`);
-        }
-    }
-    check(name, errs);
-}
-
-/** Print the summary and exit 1 on any failure. Call last. */
-export function report() {
-    const total = passed + failures.length;
-    console.log(`\n${passed}/${total} passed, ${failures.length} failed`);
-    if (failures.length) {
-        console.log('FAILED:', failures.join('; '));
-        process.exit(1);
-    }
+    it(name, () => expect(fn).toThrow(expectMsg));
 }
 
 /** Cap a long failure list, so a broad matrix reports its first hits rather than burying them. */

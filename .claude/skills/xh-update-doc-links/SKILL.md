@@ -73,14 +73,21 @@ For each README on disk:
 
 Scan every documentation file (READMEs + concept docs) for relative markdown links.
 
-1. For each file, extract all markdown links matching `[text](path)` where `path` is a
-   relative path (not a URL).
+1. For each file, extract all relative paths (not URLs) from two kinds of link:
+   - Inline links: `[text](path)`.
+   - Reference link definitions: lines of the form `[label]: path`, usually at the end of the
+     file.
 2. Resolve each relative path from the source file's directory.
 3. Verify the target exists on disk.
 4. **Broken links:** Report and fix. Common fixes include:
    - Correcting `../` depth for moved files
    - Updating paths for renamed files
    - Removing links to deleted files
+5. **Undefined labels:** For each reference link, `[text][label]` or `[text][]`, verify that the
+   file defines the label. A collapsed link `[text][]` uses `text` as its label, and labels
+   ignore case. An undefined label fails silently: it renders as the literal text
+   `[text][label]`. Add the missing definition or fix the label. Skip matches inside code blocks
+   and inline code.
 
 ## Step 5: Enhance Cross-Links
 
@@ -143,7 +150,7 @@ Output a summary organized into these sections:
 
 1. **Index Updates** — `docs/README.md` entries added, updated, or removed.
 2. **Roadmap Updates** — Status changes and new entries in `docs-roadmap.md`, progress notes appended to `docs-roadmap-log.md`.
-3. **Broken Links Fixed** — Source file, broken target, and fix applied.
+3. **Broken Links Fixed** — Source file, broken target or undefined label, and fix applied.
 4. **New Cross-Links Added** — Source file, target doc, and surrounding context.
 5. **Registry Updates** — Entries added, removed, or updated in `docs/doc-registry.json`, with `id` for each change.
 6. **Items Needing Review** — Ambiguities or items requiring human judgment.

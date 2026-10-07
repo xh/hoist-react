@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {action, makeObservable, observable, override} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import type {PivotView} from '../PivotView';
 import {ViewDiagnostics} from './ViewDiagnostics';
 
@@ -20,11 +20,10 @@ import {ViewDiagnostics} from './ViewDiagnostics';
  * @internal
  */
 export class PivotViewDiagnostics extends ViewDiagnostics {
-    @observable.ref pivot: PivotOp = null;
+    @observableRef accessor pivot: PivotOp = null;
 
     constructor(owner: PivotView) {
         super(owner);
-        makeObservable(this);
     }
 
     /** Note the path discovery and cell build for one generation. */
@@ -42,8 +41,7 @@ export class PivotViewDiagnostics extends ViewDiagnostics {
         );
     }
 
-    // MobX `override`, not `action` - re-annotating an inherited action is an error.
-    @override
+    @action
     override reset() {
         super.reset();
         this.pivot = null;
