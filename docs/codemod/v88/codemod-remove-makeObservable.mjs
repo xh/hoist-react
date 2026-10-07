@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /*
- * Phase 4 codemod — deletes every `makeObservable(this);` call, drops newly-empty constructors
- * (body contains only `super(...)` ± blank lines), and trims `makeObservable` from any import
- * that no longer references it.
+ * Phase 4 codemod — deletes every `makeObservable(this);` call, drops constructors that this
+ * emptied down to a one-line pass-through `super(...)` (args are the constructor's own params,
+ * bare or spread, ± blank lines), and trims `makeObservable` from any import that no longer
+ * references it.
  *
  * Scope: hoist-react .ts/.tsx.
  *
@@ -17,6 +18,7 @@ const SELF_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SELF_DIR, '../../..');
 const EXCLUDED_DIRS = new Set(['node_modules', 'build', '.git', '.idea', '.husky']);
 const EXCLUDED_PREFIXES = [];
+const REMOVED_MARKER = '\u0000makeObservable-removed\u0000';
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -66,30 +68,36 @@ async function processFile(filePath) {
         removedConstructors = 0,
         trimmedImports = 0;
 
-    // 1) Remove lines that are only `makeObservable(this);` (plus optional whitespace).
+    // 1) Replace lines that are only `makeObservable(this);` (plus optional whitespace) with a
+    //    marker so step 2 can tell which constructors this codemod emptied.
     const callLine = /^\s*makeObservable\(this\);?\s*$/;
-    const kept = [];
-    for (const line of lines) {
-        if (callLine.test(line)) {
-            removedCalls++;
-            continue;
-        }
-        kept.push(line);
-    }
-    lines = kept;
-
-    // 2) Drop now-empty constructors. Match:
-    //       constructor(<anything until close-paren>) {
-    //           super(<args>);
-    //       }
-    //   with optional blank lines in the body.
-    const text = lines.join('\n');
-    const reEmptyCtor =
-        /^([ \t]*)constructor\s*\([^)]*\)\s*\{\s*\n\s*super\s*\([^;]*\);\s*\n(?:\s*\n)*\s*\}\s*\n?/gm;
-    const trimmedCtor = text.replace(reEmptyCtor, () => {
-        removedConstructors++;
-        return '';
+    lines = lines.map(line => {
+        if (!callLine.test(line)) return line;
+        removedCalls++;
+        return REMOVED_MARKER;
     });
+
+    // 2) Drop constructors emptied by step 1. Match:
+    //       constructor(<anything until close-paren>) {
+    //           super(<args on one line>);
+    //       }
+    //   with marker and blank lines anywhere in the body, then keep only pass-through supers whose
+    //   args are the constructor's own params (bare or spread). Anything else stays.
+    const text = lines.join('\n');
+    const filler = `(?:[ \\t]*(?:${REMOVED_MARKER})?[ \\t]*\\n)*`;
+    const reEmptyCtor = new RegExp(
+        `^([ \\t]*)constructor\\s*\\(([^)]*)\\)\\s*\\{[ \\t]*\\n${filler}[ \\t]*super\\s*\\(([^()\\n]*)\\);[ \\t]*\\n${filler}[ \\t]*\\}[ \\t]*\\n?`,
+        'gm'
+    );
+    const trimmedCtor = text
+        .replace(reEmptyCtor, (match, indent, params, superArgs) => {
+            if (!match.includes(REMOVED_MARKER) || !isPassThrough(params, superArgs)) return match;
+            removedConstructors++;
+            return '';
+        })
+        .split('\n')
+        .filter(l => l !== REMOVED_MARKER)
+        .join('\n');
     lines = trimmedCtor.split('\n');
 
     // 3) Trim `makeObservable` from imports when no longer used in the file.
@@ -131,4 +139,38 @@ async function processFile(filePath) {
             `  ${path.relative(process.cwd(), filePath)} — calls=${removedCalls}, ctors=${removedConstructors}, imports=${trimmedImports}`
         );
     }
+}
+
+// True if every super arg is a bare identifier, or spread of one, naming a constructor param.
+function isPassThrough(params, superArgs) {
+    const names = new Set(splitTopLevel(params).map(paramName).filter(Boolean));
+    return splitTopLevel(superArgs).every(a => {
+        const m = /^(?:\.\.\.)?([A-Za-z_$][\w$]*)$/.exec(a);
+        return m && names.has(m[1]);
+    });
+}
+
+// `config: Foo`, `private x = 1`, `...args: any[]`, `y?: Bar` -> config, x, args, y
+function paramName(param) {
+    const m = /^(?:(?:public|private|protected|readonly|override)\s+)*(?:\.\.\.)?([A-Za-z_$][\w$]*)/.exec(
+        param
+    );
+    return m?.[1];
+}
+
+// Split on commas not nested inside brackets, trimming and dropping empties.
+function splitTopLevel(str) {
+    const parts = [];
+    let depth = 0,
+        cur = '';
+    for (const ch of str) {
+        if ('([{<'.includes(ch)) depth++;
+        else if (')]}>'.includes(ch)) depth--;
+        if (ch === ',' && depth === 0) {
+            parts.push(cur);
+            cur = '';
+        } else cur += ch;
+    }
+    parts.push(cur);
+    return parts.map(s => s.trim()).filter(Boolean);
 }

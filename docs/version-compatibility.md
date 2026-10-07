@@ -62,7 +62,7 @@ Verified against both hoist-react and hoist-core changelogs.
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
 | 89.0 | -- | 42.0 | 42.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v89-upgrade-notes.md) |
-| 88.0 | -- | 42.0 | 42.0 | `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
+| 88.1 | -- | 42.0 | 42.0 | Use 88.1.2 or later - earlier 88 releases drop `MsalClient` defaults. `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
 | 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | [Notes](./upgrade-notes/v87-upgrade-notes.md) |
 | 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | [Notes](./upgrade-notes/v86-upgrade-notes.md) |
 | 85.0 | -- | 39.0 | 39.0 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
