@@ -7,16 +7,13 @@
 # watch-mode support, unused here) has a native build with prebuilt binaries shipped as optional
 # platform deps, @swc/core (the unit test transform) ships its binary the same way and its
 # postinstall only falls back to a wasm build if that is missing, browser-tabs-lock (via
-# auth0-spa-js) ships prebuilt dist, core-js's postinstall only prints a funding message, and
-# msw's postinstall only copies its browser service worker into an app's public dir (unit tests
-# use msw/node, which needs no worker).
+# auth0-spa-js) ships prebuilt dist, and core-js's postinstall only prints a funding message.
 allowBuilds:
   '@parcel/watcher': false
   '@swc/core': false
   browser-tabs-lock: false
   core-js: false
   esbuild: true
-  msw: false
 
 # Caret vs. tilde policy for `dependencies` in package.json. These ranges are the contract
 # consuming apps resolve against (our lockfile never applies to them), so qualifiers are chosen
@@ -64,6 +61,9 @@ minimumReleaseAgeExclude:
 #
 # eslint-plugin-tsdoc pins `@typescript-eslint/utils` ~8.56, whose packages cap their TypeScript peer
 # below 6. The plugin reads doc comments only, and lint passes with TypeScript 7 at the root.
+#
+# @vitest/mocker caps its optional msw peer below 3. Only Vitest's browser mode uses msw there, and
+# the unit tests run in jsdom, mocking the server with msw 3 directly.
 peerDependencyRules:
   allowedVersions:
     react: '19'
@@ -72,3 +72,4 @@ peerDependencyRules:
     '@typescript-eslint/typescript-estree>typescript': '7'
     '@typescript-eslint/project-service>typescript': '7'
     '@typescript-eslint/tsconfig-utils>typescript': '7'
+    '@vitest/mocker>msw': '3'

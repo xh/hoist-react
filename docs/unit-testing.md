@@ -63,7 +63,8 @@ rendered.
 Hoist catches and logs many errors by design, so a broken code path can still let a test pass.
 The global setup in `test/setup.ts` fails a test that triggers any of these:
 
-- A server request the fake does not handle.
+- A server request or WebSocket the fake does not handle. MSW fails it, so it never reaches a real
+  server.
 - An error thrown inside a MobX reaction or autorun.
 - A MobX strict-mode warning, which means observable state changed outside an action.
 
