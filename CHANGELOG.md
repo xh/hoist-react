@@ -131,6 +131,21 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * ts-morph `27.0 → 28.0`
 * typescript `5.9 → 7.0`
 
+## 88.1.2 - 2026-10-06
+
+### 🐞 Bug Fixes
+
+* Restored the `MsalClient` defaults lost in v88: `enableSsoSilent` and `enableTelemetry` again
+  default to `true`, and MSAL logs at `Warning` level. Also restored the 3000ms
+  `system.iframeBridgeTimeout` that caps `ssoSilent` failures, dropped in the MSAL 5 upgrade.
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the v88 `codemod-remove-makeObservable.mjs` deleting constructors that merged defaults into
+  their `super()` call. It now removes only constructors it emptied itself, whose remaining
+  `super()` passes through the constructor's own params. The v88 upgrade notes gain a grep to find
+  constructors an earlier copy removed.
+
 ## 88.1.1 - 2026-10-06
 
 ### 🤖 AI Docs + Tooling
