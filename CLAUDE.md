@@ -327,6 +327,10 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
+- **Comments describe the code as it is, not how it got here** - Write for a reader who never
+  saw the previous version. Mention a library version, upgrade, or prior behavior only when it
+  tells that reader something they need, such as a workaround to remove once an upstream bug is
+  fixed. See [Comments and Documentation](docs/coding-conventions.md#comments-and-documentation).
 - **No em dashes** - Use ` - ` (spaced hyphen) instead of em dashes (`—`) in code comments and
   JSDoc, and in any new prose: CHANGELOG entries, docs, commit messages, PR descriptions. Em dashes
   cause tooling issues and read as machine-written. Existing docs keep theirs; do not reflow a doc

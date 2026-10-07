@@ -27,8 +27,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
-* Added `AverageWeightedAggregator` for Cube fields averaged by the weight of a second field, e.g.
-  `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`. Views update it
+* Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
+  `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
   re-aggregates the field on changes to those as well.
@@ -56,6 +56,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   reporting true while a changed record's first async validation was still running.
 * Fixed `ViewManagerModel` overwriting the user's saved current view when views failed to load.
 * Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
+* Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
+  highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`. App load
   and `Promise.track()` entries again record their start times.
@@ -99,6 +101,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a cancelled `Timer` keeping its heartbeat alive, and a `Timer` with `delay: true` and a
   disabled interval scheduling a negative timeout.
 * Fixed a `PUT` with `params` labeling its form body `text/plain`, so servers ignored the params.
+* Fixed errors reported by `ExceptionHandler` omitting the type and number of a failed load.
+  Arrays in these reports, such as the stack trace, are also no longer sent as objects.
 
 ### ⚙️ Technical
 
@@ -117,6 +121,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   as `leafOldData` / `leafNewData`.
 * Fixed `GridProps.agOptions` rejecting an `HTMLElement` for `popupParent` and other DOM-typed
   options under TypeScript 6 and later.
+* Typed `@bindable`, `@bindableRef`, `@persist`, and `@persist.with()` as `accessor` decorators.
+  `tsc` now reports a plain field under any of them, which compiled before and threw at runtime.
 
 ### 🤖 AI Docs + Tooling
 
@@ -137,6 +143,21 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * swiper `12.2 → 14.3`
 * ts-morph `27.0 → 28.0`
 * typescript `5.9 → 7.0`
+
+## 88.1.2 - 2026-10-06
+
+### 🐞 Bug Fixes
+
+* Restored the `MsalClient` defaults lost in v88: `enableSsoSilent` and `enableTelemetry` again
+  default to `true`, and MSAL logs at `Warning` level. Also restored the 3000ms
+  `system.iframeBridgeTimeout` that caps `ssoSilent` failures, dropped in the MSAL 5 upgrade.
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the v88 `codemod-remove-makeObservable.mjs` deleting constructors that merged defaults into
+  their `super()` call. It now removes only constructors it emptied itself, whose remaining
+  `super()` passes through the constructor's own params. The v88 upgrade notes gain a grep to find
+  constructors an earlier copy removed.
 
 ## 88.1.1 - 2026-10-06
 

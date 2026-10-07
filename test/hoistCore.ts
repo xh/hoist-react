@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PlainObject} from '@xh/hoist/core';
-import {cloneDeep, mapValues, pick, pickBy} from 'lodash';
+import {cloneDeep, isArray, isPlainObject, pick, pickBy} from 'lodash';
 import {http, HttpResponse, type HttpHandler} from 'msw';
 import {setupServer} from 'msw/node';
 
@@ -21,6 +21,9 @@ import {setupServer} from 'msw/node';
  * The fake models shapes, status codes, and the `clientUsername` session check. It deliberately
  * does not re-implement server business rules. Tests that need other endpoints or failure modes
  * add per-test handlers with `server.use()`, which are cleared after each test.
+ *
+ * hoist-core accepts any HTTP method on these endpoints. Each handler here accepts only the method
+ * the client uses, so a test fails if the client changes how it calls the server.
  */
 
 /** URL prefix for Hoist server calls - the `xhBaseUrl` defined in vitest.config.mts. */
@@ -44,7 +47,8 @@ export interface PrefEntry {
     type: 'string' | 'int' | 'long' | 'double' | 'bool' | 'json';
     value: any;
     defaultValue: any;
-    isSet?: boolean;
+    /** True if the user has their own value, false if `value` is the default. */
+    isSet: boolean;
 }
 
 export interface HoistError {
@@ -68,10 +72,23 @@ export function hoistError(status: number, error: HoistError = {}): Response {
 /**
  * An auth-filter rejection as hoist-core `BaseAuthenticationService.allowRequest` sends it - a
  * bare status with an empty body and no content type.
+ *
+ * @param statusText - reason phrase for the status line. Tomcat sends none, so the default is
+ *      empty. Pass one to model a proxy that adds it, as nginx does.
  */
-export function authFailure(status: 401 | 403 | 500): Response {
-    const statusText = {401: 'Unauthorized', 403: 'Forbidden', 500: 'Internal Server Error'};
-    return new HttpResponse(null, {status, statusText: statusText[status]});
+export function authFailure(status: 401 | 403 | 500, statusText: string = ''): Response {
+    return new HttpResponse(null, {status, statusText});
+}
+
+/**
+ * An empty success response, as hoist-core `BaseController.renderSuccess` sends it - a 204 that
+ * still carries a JSON content type.
+ */
+export function noContent(): Response {
+    return new HttpResponse(null, {
+        status: 204,
+        headers: {'Content-Type': 'application/json; charset=UTF-8'}
+    });
 }
 
 /** Full URL path for a Hoist server endpoint, for use in per-test `server.use()` handlers. */
@@ -151,8 +168,9 @@ export class FakeHoistCore {
                     : authFailure(401)
             ),
 
-            // XhController.logout
-            this.get('xh/logout', () => HttpResponse.json({success: true})),
+            // XhController.logout - `success` is false unless the app supports interactive login,
+            // so this models the default of an SSO app (BaseAuthenticationService.logout).
+            this.get('xh/logout', () => HttpResponse.json({success: false})),
 
             // XhController.environment - EnvironmentService.getEnvironment.
             this.get('xh/environment', () => HttpResponse.json(this.environment)),
@@ -177,47 +195,54 @@ export class FakeHoistCore {
             // XhController.getPrefs - PrefService.getClientConfig.
             this.post('xh/getPrefs', req => this.checkUser(req) ?? HttpResponse.json(this.prefs)),
 
-            // XhController.setPrefs - JSON map of key -> new value.
+            // XhController.setPrefs - JSON map of key -> new value. Keys are saved in order, so an
+            // invalid key fails the request after saving the keys before it, as on the server.
             this.post('xh/setPrefs', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
-                const updated = mapValues(req.json, (value, key) => {
+                for (const [key, value] of Object.entries(req.json)) {
                     const pref = this.prefs[key];
-                    pref.value = value;
+                    // PrefService.getDefaultPreference throws for an unknown key.
+                    if (!pref) return hoistError(500, {message: `Preference not found: ${key}`});
+                    if ((isPlainObject(value) || isArray(value)) && pref.type !== 'json') {
+                        return hoistError(500, {message: `Unexpected type for preference: ${key}`});
+                    }
+                    pref.value = savedPrefValue(pref, value);
                     pref.isSet = true;
-                    return pref;
-                });
-                return HttpResponse.json({preferences: updated});
+                }
+                return HttpResponse.json({preferences: this.prefEntries(Object.keys(req.json))});
             }),
 
-            // XhController.unsetPrefs - JSON array of keys to revert to their defaults.
+            // XhController.unsetPrefs - JSON array of keys to revert to their defaults. Unknown
+            // keys are ignored, and left out of the response.
             this.post('xh/unsetPrefs', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
-                const updated = {};
-                req.json.forEach((key: string) => {
+                const keys: string[] = req.json;
+                keys.forEach(key => {
                     const pref = this.prefs[key];
-                    pref.value = pref.defaultValue;
+                    if (!pref) return;
+                    pref.value = cloneDeep(pref.defaultValue);
                     pref.isSet = false;
-                    updated[key] = pref;
                 });
-                return HttpResponse.json({preferences: updated});
+                return HttpResponse.json({preferences: this.prefEntries(keys)});
             }),
 
-            // XhController.clearUserState - resets all of the user's prefs.
+            // XhController.clearUserState - resets all of the user's prefs. The server also clears
+            // the user's ViewManager state, which this fake does not model.
             this.post('xh/clearUserState', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
                 Object.values(this.prefs).forEach(pref => {
-                    pref.value = pref.defaultValue;
+                    pref.value = cloneDeep(pref.defaultValue);
                     pref.isSet = false;
                 });
-                return new HttpResponse(null, {status: 204});
+                return noContent();
             }),
 
             // XhController.track, recordMetrics, submitSpans - accepted, nothing returned.
             ...['xh/track', 'xh/recordMetrics', 'xh/submitSpans'].map(path =>
-                this.post(path, req => this.checkUser(req) ?? new HttpResponse(null, {status: 204}))
+                this.post(path, req => this.checkUser(req) ?? noContent())
             )
         ];
     }
@@ -237,7 +262,13 @@ export class FakeHoistCore {
             : {user: this.user, roles: this.roles};
     }
 
-    // BaseController.ensureClientUsernameMatchesSession - required for user-state endpoints.
+    // PrefService.getLimitedClientConfig - entries for the given keys that exist.
+    private prefEntries(keys: string[]): Record<string, PrefEntry> {
+        return pick(this.prefs, keys);
+    }
+
+    // XhController.ensureClientUsernameMatchesSession - required for user-state endpoints. Reads
+    // Grails `params`, which merge the query string and a form-encoded body.
     private checkUser(req: RecordedRequest): Response {
         const clientUsername = req.query.clientUsername ?? req.form.clientUsername;
         if (clientUsername === this.username) return null;
@@ -275,14 +306,18 @@ export const server = setupServer(...hoistCore.handlers);
 // Default server state
 //------------------------
 // Client-visible configs that hoist-core creates by default (see its BootStrap /
-// ensureRequiredConfigsCreated), with their default values.
+// ensureRequiredConfigsCreated), with their default values. Configs with a typed class on the
+// server are always sent with every declared key, so tests should change keys within them rather
+// than replace them. `xhAppTimeZone` defaults to 'UTC' on the server. It is set here as a typical
+// app sets it, to the head office zone - which matches the browser zone set by vitest.config.mts.
 function defaultConfigs(): PlainObject {
     return {
         xhActivityTrackingConfig: {
             enabled: true,
             logData: false,
             maxDataLength: 2000,
-            maxElapsedMins: 5,
+            maxElapsedMins: 2,
+            maxElapsedMinsByCategory: {},
             maxEntriesPerMin: 1000,
             levels: [{username: '*', category: '*', severity: 'INFO'}],
             clientHealthReport: {intervalMins: -1},
@@ -305,6 +340,15 @@ function defaultConfigs(): PlainObject {
         xhExportConfig: {streamingCellThreshold: 100000, toastCellThreshold: 3000},
         xhFlags: {},
         xhIdleConfig: {timeout: 120, appTimeouts: {}},
+        xhMemoryMonitoringConfig: {
+            enabled: true,
+            snapshotInterval: 60,
+            maxSnapshots: 1440,
+            heapDumpDir: null,
+            preservePastInstances: true,
+            maxPastInstances: 10,
+            writeToLog: true
+        },
         xhTraceConfig: {
             enabled: false,
             sampleRate: 1.0,
@@ -347,8 +391,8 @@ function defaultEnvironment(): PlainObject {
         grailsVersion: '7.2.2',
         hoistCoreVersion: '42.1.0',
         javaVersion: '25.0.1',
-        serverTimeZone: 'America/New_York',
-        serverTimeZoneOffset: -14400000,
+        serverTimeZone: 'UTC',
+        serverTimeZoneOffset: 0,
         appTimeZone: 'America/New_York',
         appTimeZoneOffset: -14400000,
         webSocketsEnabled: false,
@@ -356,6 +400,28 @@ function defaultEnvironment(): PlainObject {
         alertBanner: {active: false},
         pollConfig: {interval: -1, onVersionChange: 'promptReload'}
     };
+}
+
+//------------------------
+// Prefs
+//------------------------
+// PrefService saves a map or list as JSON, and any other value as its string - which
+// UserPreference.externalUserValue then reads back as the pref's type.
+function savedPrefValue(pref: PrefEntry, value: any): any {
+    if (isPlainObject(value) || isArray(value)) return value;
+    const str = String(value);
+    switch (pref.type) {
+        case 'int':
+        case 'long':
+        case 'double':
+            return Number(str);
+        case 'bool':
+            return ['true', 'y', '1'].includes(str.trim().toLowerCase());
+        case 'string':
+            return str;
+        default:
+            return value;
+    }
 }
 
 //------------------------

@@ -1,6 +1,9 @@
 # Hoist React v88 Upgrade Notes
 
-> **From:** v87.x → v88.0.0 | **Released:** 2026-09-28 | **Difficulty:** 🔴 HIGH
+> **From:** v87.x → v88.1.2 | **Released:** 2026-09-28 | **Difficulty:** 🔴 HIGH
+>
+> **Target v88.1.2 or later.** It restores `MsalClient` defaults that 88.0 dropped and fixes a
+> codemod that could delete constructors. Earlier 88 releases are not recommended.
 
 ## Overview
 
@@ -206,6 +209,11 @@ XH_APP_VERSION="$VERSION" XH_APP_BUILD="$TAG" pnpm build
 Per-developer defaults such as `XH_DEV_HOST` belong in a gitignored `client-app/.env.local`, which
 Rsbuild loads on every run. Add `.env.local` and `.env.*.local` to `.gitignore`.
 
+If the dev port is busy, webpack failed at startup. Rsbuild under dev-utils 16 logs
+`port 3000 is in use, using port 3001` and serves on the next free port. OAuth redirect URIs and
+scripts that expect the fixed port then point at the wrong server. Stop any old dev server before
+you start a new one.
+
 Apps carrying their own `declare module '*.png'` / `'*.md'` style declarations in a local
 `types.d.ts` can drop them - hoist-react's `assets.d.ts` now covers the common asset types.
 
@@ -315,11 +323,39 @@ export class UsersModel extends HoistModel {
 
 `@computed` (getters), `@action` (methods), and `@managed` (plain properties) do not take
 `accessor`. The codemods rewrite imports without regard to the app's Prettier config, so run
-`npx prettier --write client-app/src` (or the app's lint-fix script) next. Then run
-`npx tsc --noEmit` and the linter - any site the codemods missed surfaces as a decorator-signature
-error, and leftover imports as unused-variable warnings. One known skip: a field whose final
-decorator line is a call form with a trailing comment, such as
-`@persist.with({...}) // note`, gets no `accessor` - add it by hand.
+`npx prettier --write client-app/src` (or the app's lint-fix script) next. Then run the linter,
+which reports leftover imports as unused-variable warnings.
+
+**Find fields the codemods missed.** `tsc` does not catch a missing `accessor`. A plain field
+under `@observable`, `@observableRef`, `@bindable`, `@bindableRef`, or `@persist` compiles
+cleanly. In a dev build, MobX throws ``Please use `@observable accessor x` `` when the module
+that declares the class loads. A production build strips that check, and the field silently
+stops being observable. A field with `@persist` alone throws a decorator `TypeError` in both
+builds. One known skip: a field whose final decorator line is a call form with a
+trailing comment, such as `@persist.with({...}) // note`, gets no `accessor`. These greps find
+leftovers and should return nothing:
+
+```bash
+# Decorator and field on one line, with no `accessor`
+grep -rnE '^\s*(@(observable|bindable)\w*(\.\w+)?\s+)(@\S+\s+)*((public|protected|private|readonly|override)\s+)*[A-Za-z_$][A-Za-z0-9_$]*[?!]?\s*[:=;]' client-app/src/
+
+# Decorators stacked on their own lines: prints a field line that follows them with no `accessor`
+grep -rnE -A1 '^\s*@(observable|bindable|persist)[A-Za-z.]*(\(.*\))?\s*(//.*)?$' client-app/src/ \
+    | grep -E '^\S+-[0-9]+-' | grep -vE '^\S+-[0-9]+-\s*(@|((public|protected|private|readonly|override|static)\s+)*accessor\b)'
+```
+
+Then load every part of the app in dev mode. A module that loads only on navigation, such as a
+lazy-loaded tab, does not throw until it loads.
+
+**Check for lost constructors.** Versions of `codemod-remove-makeObservable.mjs` before 88.1.2
+could delete a constructor that merged defaults into its `super()` call, such as
+`super({...defaults, ...config})`, mistaking it for an empty pass-through. If you ran an earlier
+copy, scan the diff for removed `super(` lines that took anything other than the constructor's own
+params:
+
+```bash
+git diff <pre-upgrade-ref> -- 'client-app/src/**/*.ts' 'client-app/src/**/*.tsx' | grep -A3 '^-\s*super('
+```
 
 **Audit `@persist` ordering by hand.** `@persist` must now come *after* the MobX decorator. The
 codemods do not reorder decorators, and a reversed pair fails silently: `PersistenceProvider`
@@ -359,11 +395,20 @@ accessor gridState = null;
 enumerable properties, so `Object.keys(model)`, `JSON.stringify(model)`, and spread
 (`{...model}`) no longer see them. Read named properties instead.
 
+The same change breaks copies and deep comparisons of a model:
+
+- lodash `clone()` / `cloneDeep()` of a model returns an object whose `accessor` fields throw a
+  `TypeError` when read. The copy does not hold the private storage behind them.
+- lodash `isEqual()` and MobX `compareStructural` call two models equal when only their
+  `accessor` fields differ.
+
 ```bash
 grep -rn "Object.keys(this)\|JSON.stringify(this)\|{\.\.\.this}" client-app/src/
+grep -rnE "\b(clone|cloneDeep|isEqual)\(|compareStructural" client-app/src/
 ```
 
-That grep is a starting point - also check helpers that enumerate a model passed in as an argument.
+These greps are a starting point. The second one also matches plain data, so review each hit for
+a model argument. Also check helpers that enumerate a model passed in as an argument.
 
 **Class-level `@managed`.** Legacy decorators silently ignored a stray `@managed` on a class
 declaration. TC39 decorators reject it at compile time - delete it. The codemods leave it alone.
@@ -418,7 +463,10 @@ AG Grid 36 restructures the grid DOM into a single scrollable container and rena
 layout classes. Hoist also no longer applies the `.ag-theme-balham` / `.ag-theme-balham-dark`
 classes. Only apps with custom SCSS or DOM queries reaching into AG Grid are affected - for
 example, `.ag-body-viewport` is now `.ag-grid-viewport`, and `.ag-floating-top` /
-`.ag-floating-bottom` are now `.ag-grid-pinned-top-rows` / `.ag-grid-pinned-bottom-rows`.
+`.ag-floating-bottom` map to `.ag-grid-pinned-top-rows-container` /
+`.ag-grid-pinned-bottom-rows-container`. Do not target the outer `.ag-grid-pinned-top-rows` /
+`.ag-grid-pinned-bottom-rows` sections. They also hold the sticky group rows, which AG Grid
+enables by default, so a pinned-row style there also styles sticky group rows.
 
 **Find affected files:**
 
@@ -468,7 +516,12 @@ For internal layout classes, consult the
 the new names. Theme defaults now resolve against an inner `.ag-styled-root` element.
 
 `GridModel.enableFullWidthScroll` is now a no-op - AG Grid 36 renders a single full-width
-horizontal scrollbar natively. Remove the config from any `GridModel` that sets it.
+horizontal scrollbar natively. Remove the config from any `GridModel` that sets it, and from
+`GridModel.defaults`. It compiles cleanly and logs a deprecation warning at runtime.
+
+```bash
+grep -rn "enableFullWidthScroll" client-app/src/
+```
 
 ### 7. Migrate off removed APIs
 
@@ -564,7 +617,13 @@ None of these break compilation, but review the ones that apply.
   remove app-side `manageGlobal: XH.getUser().isHoistAdmin` configs and set the role on the
   server. An explicit `true` no longer grants access beyond the server's.
 - **`ExceptionHandlerOptions.hideParams`** is deprecated in favor of `redactPaths`, which redacts
-  matching keys at any depth and covers common secret names by default.
+  matching keys at any depth and covers common secret names by default. It compiles cleanly and
+  logs a deprecation warning at runtime.
+
+  ```bash
+  grep -rn "hideParams" client-app/src/
+  ```
+
 - **Single-line text inputs trim whitespace** on commit. Pass `trimWhitespace: false` to opt out.
 - **Banner CSS**: `XH.showBanner()` now renders the new `Banner` component. Its root is no longer
   a `Toolbar`, and `.xh-banner__click_target` is now `.xh-banner__content`.
@@ -579,8 +638,9 @@ None of these break compilation, but review the ones that apply.
 
 - **Menu item typing tightened.** `GridContextMenuItemLike` and `MenuItemLike` no longer accept
   an open `string`. A menu array built from dynamic strings, such as `items.map(...)`, now needs
-  an explicit `MenuItemLike[]` / `GridContextMenuItemLike[]` annotation or cast. Shows up as a
-  `tsc` error, not at runtime.
+  an explicit `MenuItemLike[]` / `GridContextMenuItemLike[]` annotation or cast.
+  `RecordActionLike` no longer includes `'-'`. Retype an array that mixes record actions with
+  `'-'` separators as `GridContextMenuItemLike[]`. Both show up as `tsc` errors, not at runtime.
 - **Hand-built popover menus** can move to the new desktop `Menu` / `MenuButton` components,
   which take the same `MenuItem` configs as grid context menus.
 
@@ -589,7 +649,9 @@ None of these break compilation, but review the ones that apply.
 After completing all steps:
 
 - [ ] `pnpm install` / `yarn install` / `npm install` completes without errors
-- [ ] `npx tsc --noEmit` passes - the authoritative check that no `accessor` site was missed
+- [ ] `npx tsc --noEmit` passes. It does not catch a missing `accessor`.
+- [ ] Both missed-`accessor` greps from Step 4 return nothing, and every part of the app loads in
+  dev mode without a decorator error
 - [ ] `pnpm lint` / `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
 - [ ] `grep -rn "makeObservable\|experimentalDecorators" client-app/src client-app/tsconfig.json`
   returns nothing

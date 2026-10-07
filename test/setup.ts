@@ -54,11 +54,24 @@ if (!window.screen.orientation) {
 //------------------------------------------------------------------
 const problems: string[] = [];
 
-// A request with no handler. MSW fails the request, but Hoist services often catch and log
-// network errors, so this alone would not fail the test.
-server.events.on('request:unhandled', ({request}) => {
-    problems.push(`Request not handled by fake hoist-core: ${request.method} ${request.url}`);
-});
+// A request or WebSocket with no handler. Hoist services often catch and log network errors, so a
+// failed request alone would not fail the test. Throwing makes MSW fail the request - a callback
+// that returns normally lets it through to the real network.
+function onUnhandledFrame({frame}: {frame: {data: unknown}}): never {
+    const {request, connection} = frame.data as FrameData,
+        target = request
+            ? `${request.method} ${request.url}`
+            : `WebSocket ${connection.client.url}`,
+        msg = `Not handled by fake hoist-core: ${target}`;
+    problems.push(msg);
+    throw new Error(msg);
+}
+
+// What an MSW network frame carries - an HTTP request, or a WebSocket connection.
+interface FrameData {
+    request?: Request;
+    connection?: {client: {url: URL}};
+}
 
 // An error thrown inside a MobX reaction or autorun. MobX catches and logs these.
 onReactionError(e => problems.push(`Error in MobX reaction: ${e}`));
@@ -71,7 +84,7 @@ console.warn = (...args: any[]) => {
     consoleWarn(...args);
 };
 
-beforeAll(() => server.listen({onUnhandledRequest: 'error'}));
+beforeAll(() => server.listen({onUnhandledFrame}));
 
 afterEach(() => {
     // Unmount anything rendered by React Testing Library - its auto-cleanup needs Vitest globals.

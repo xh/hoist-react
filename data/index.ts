@@ -24,7 +24,6 @@ export * from './cube/aggregate/AggregationContext';
 export * from './cube/aggregate/Aggregator';
 export * from './cube/aggregate/AverageAggregator';
 export * from './cube/aggregate/AverageStrictAggregator';
-export * from './cube/aggregate/AverageWeightedAggregator';
 export * from './cube/aggregate/ChildCountAggregator';
 export * from './cube/aggregate/LeafCountAggregator';
 export * from './cube/aggregate/MaxAggregator';
@@ -34,6 +33,7 @@ export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
 export * from './cube/aggregate/UniqueAggregator';
+export * from './cube/aggregate/WeightedAverageAggregator';
 
 export * from './cube/BucketSpec';
 export * from './cube/Cube';

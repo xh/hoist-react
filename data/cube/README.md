@@ -77,10 +77,10 @@ const cube = new Cube({
 | `'UNIQUE'` | Count of unique values |
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
-| `AverageWeightedAggregator` | Average weighted by a second field, e.g. price by quantity |
+| `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
 
-`AverageWeightedAggregator` takes the name of its weight field, so is instantiated per field rather
-than aliased by token: `{name: 'price', aggregator: new AverageWeightedAggregator('qty')}`. It
+`WeightedAverageAggregator` takes the name of its weight field, so is instantiated per field rather
+than aliased by token: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`. It
 reads the weight from each leaf's source record, so the weight field need not be queried, and
 updates incrementally on a change to either field.
 
@@ -99,7 +99,7 @@ Aggregations that cannot be derived from their children's published values alone
 standard deviation) can keep the extra terms they need as **aggregator state**, via
 `AggregationContext.setAggState()` / `getAggState()`. This keeps each row's work proportional to
 its child count rather than to its entire subtree of leaves. See `AverageAggregator` and
-`AverageWeightedAggregator` for compact examples - the latter also reads a second field from each
+`WeightedAverageAggregator` for compact examples - the latter also reads a second field from each
 leaf's `cubeRecord`.
 
 The rows handed to an aggregator are typed as `ViewRow` - the row-level API shared by aggregators
@@ -122,7 +122,7 @@ Rules to observe:
   see `AverageAggregator` for an override that adjusts state from a single leaf's change instead.
   The `RowUpdate` it receives carries the leaf's full source data before and after the change.
 * **Override `dependsOn` to name any other leaf fields the aggregate reads**, as
-  `AverageWeightedAggregator` names its weight field. A View applies a record update incrementally,
+  `WeightedAverageAggregator` names its weight field. A View applies a record update incrementally,
   re-aggregating a field up the ancestor chain only when that field's own leaf value changed - so
   without the declaration, a change to the weight alone would leave the average stale until the
   next full rebuild. Note that a `replace()` triggered this way may see the field's own leaf value
