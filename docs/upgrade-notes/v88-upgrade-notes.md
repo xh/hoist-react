@@ -1,6 +1,9 @@
 # Hoist React v88 Upgrade Notes
 
-> **From:** v87.x → v88.0.0 | **Released:** 2026-09-28 | **Difficulty:** 🔴 HIGH
+> **From:** v87.x → v88.1.2 | **Released:** 2026-09-28 | **Difficulty:** 🔴 HIGH
+>
+> **Target v88.1.2 or later.** It restores `MsalClient` defaults that 88.0 dropped and fixes a
+> codemod that could delete constructors. Earlier 88 releases are not recommended.
 
 ## Overview
 
