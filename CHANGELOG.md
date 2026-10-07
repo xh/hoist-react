@@ -110,6 +110,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   as `leafOldData` / `leafNewData`.
 * Fixed `GridProps.agOptions` rejecting an `HTMLElement` for `popupParent` and other DOM-typed
   options under TypeScript 6 and later.
+* Typed `@bindable`, `@bindableRef`, `@persist`, and `@persist.with()` as `accessor` decorators.
+  `tsc` now reports a plain field under any of them, which compiled before and threw at runtime.
 
 ### 🤖 AI Docs + Tooling
 
