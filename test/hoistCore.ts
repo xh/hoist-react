@@ -9,7 +9,7 @@ import {cloneDeep, isArray, isPlainObject, pick, pickBy} from 'lodash';
 import {http, HttpResponse, type HttpHandler, matchRequestUrl} from 'msw';
 import {setupServer} from 'msw/node';
 
-/**
+/*
  * A small, in-memory stand-in for hoist-core, served to Hoist's real client code via MSW.
  *
  * Tests run Hoist's actual services (FetchService, ConfigService, PrefService, etc.) and let them
