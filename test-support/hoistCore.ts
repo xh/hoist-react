@@ -218,8 +218,7 @@ export class FakeHoistCore {
      * kit's setup also calls it when each test ends, so such a request cannot land in the next
      * test's log.
      *
-     * Waits on real time, even while the test fakes timers. Note that a POST stalls under Vitest's
-     * default fake timers (xh/hoist-react#4798) - call `vi.useRealTimers()` first.
+     * Waits on real time, even while the test fakes timers.
      *
      * @param timeout - ms to wait before rejecting with the requests still open.
      */
@@ -231,10 +230,7 @@ export class FakeHoistCore {
         while (inFlight.size) {
             if (realNow() > deadline) {
                 const open = [...inFlight.values()].join(', ');
-                throw new Error(
-                    `Requests still open after ${timeout}ms: ${open}. A POST sent under fake ` +
-                        'timers can stall for good - see xh/hoist-react#4798.'
-                );
+                throw new Error(`Requests still open after ${timeout}ms: ${open}.`);
             }
             await realWait(5);
             // Once all are answered, let the client handle them - which may start more.

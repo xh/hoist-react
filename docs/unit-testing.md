@@ -227,9 +227,14 @@ await vi.advanceTimersByTimeAsync(300);
 - Never call `vi.runAllTimers()`. Hoist's `Timer` heartbeat never ends.
 - When you expect a timer-driven rejection, attach the assertion before advancing time.
 - Use `vi.setSystemTime()` for code that reads the current date.
-- A POST stalls for seconds under Vitest's default fake timers - see
-  [#4798](https://github.com/xh/hoist-react/issues/4798). Call `vi.useRealTimers()` before you
-  await one.
+- Requests to the fake hoist-core run normally under fake timers. The kit's setup leaves
+  `setImmediate` and `clearImmediate` real, because Node's `fetch()` needs them to send a request.
+  Browsers have no `setImmediate`, so Hoist code never calls it. Vitest's other default timers are
+  still faked.
+- To pick the timers to fake, pass `toFake` to `vi.useFakeTimers()`. Do not pass `toNotFake`.
+  Vitest rejects it next to the kit's `toFake` default.
+- Set fake-timer options with `vi.setConfig({fakeTimers})` in an app setup file, which runs after
+  the kit's. The kit's setup replaces any `test.fakeTimers` from the Vitest config.
 
 The setup restores real timers after every test. All tests run in the `America/New_York` time
 zone, so date logic gives the same result on every machine.

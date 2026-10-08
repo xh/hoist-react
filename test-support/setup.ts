@@ -52,6 +52,33 @@ if (!window.screen.orientation) {
 // element's computed style lists a transition property. jsdom lists only the properties set on it.
 document.documentElement.style.transitionDuration = '0s';
 
+// Fake timers leave setImmediate alone. undici, which serves Node's fetch(), calls it before it
+// reuses an idle keep-alive connection, so faking it stalls the request until the connection
+// times out 4s later. Browsers have no setImmediate, so Hoist code never needs it faked. The list
+// is Vitest's default without it. setConfig() replaces the whole object, so this also restates
+// Vitest's other two defaults. A spec can still pass its own `toFake` to `vi.useFakeTimers()`.
+vi.setConfig({
+    fakeTimers: {
+        toFake: [
+            'setTimeout',
+            'clearTimeout',
+            'setInterval',
+            'clearInterval',
+            'Date',
+            'Temporal',
+            'Intl',
+            'hrtime',
+            'performance',
+            'requestAnimationFrame',
+            'cancelAnimationFrame',
+            'requestIdleCallback',
+            'cancelIdleCallback'
+        ],
+        loopLimit: 10_000,
+        shouldClearNativeTimers: true
+    }
+});
+
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
 // test when it finishes, with a message naming the cause.
