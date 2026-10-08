@@ -12,7 +12,7 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {HoistIconPrefix, Icon, IconCatalogEntry, IconFactory} from '@xh/hoist/icon';
 import {iconCatalog} from '@xh/hoist/icon/impl/IconCatalog';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -129,6 +129,12 @@ class IconPickerModel extends HoistInputModel {
     @observable accessor popoverIsOpen: boolean = false;
     @bindable accessor filterValue: string = '';
 
+    /**
+     * Snapshot of the icon catalog, refreshed each time the popover opens. Picks up icons the app
+     * registered since, while keeping options stable as the user hovers and filters.
+     */
+    @observableRef accessor catalog: IconCatalogEntry[] = Icon.getCatalog();
+
     /** Index within `filteredOptions` of the keyboard-highlighted icon. */
     @observable accessor activeIdx: number = 0;
 
@@ -139,22 +145,19 @@ class IconPickerModel extends HoistInputModel {
         return withDefault(this.componentProps.valueField, 'faName');
     }
 
-    /**
-     * Icons offered by this control, before any text filter is applied. Note this is deliberately
-     * *not* a computed - the icon catalog is not observable, so caching it here could go stale if
-     * an app registers icons after this control has first rendered.
-     */
+    /** Icons offered by this control, before any text filter is applied. */
+    @computed
     get options(): IconOption[] {
-        const {icons} = this.componentProps,
+        const {catalog} = this,
+            {icons} = this.componentProps,
             names = isEmpty(icons)
-                ? Icon.getCatalog()
-                      .filter(it => !it.hideFromPicker)
-                      .map(it => it.faName)
+                ? catalog.filter(it => !it.hideFromPicker).map(it => it.faName)
                 : icons;
         return uniqBy(compact(names.map(it => this.toOption(it))), 'value');
     }
 
     /** Icons matching the current filter. */
+    @computed
     get filteredOptions(): IconOption[] {
         const {options} = this,
             // Filter input commits null when cleared or emptied.
@@ -171,6 +174,7 @@ class IconPickerModel extends HoistInputModel {
      * Option for the current value. A value stored in the other form of name matches the option
      * for the same glyph. A value not on offer still renders on the trigger.
      */
+    @computed
     get selectedOption(): IconOption {
         const {renderValue} = this;
         if (!renderValue) return null;
@@ -226,6 +230,7 @@ class IconPickerModel extends HoistInputModel {
 
     @action
     openPopover() {
+        this.catalog = Icon.getCatalog();
         this.popoverIsOpen = true;
         this.filterValue = '';
         const selectedValue = this.selectedOption?.value;
@@ -457,27 +462,39 @@ const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
             gridTemplateColumns: `repeat(${columns}, var(--xh-icon-picker-cell-size))`
         },
         items: filteredOptions.map((option, idx) =>
-            buttonEl({
+            iconCell({
                 key: option.value,
-                type: 'button',
-                tabIndex: -1,
-                className: classNames(
-                    'xh-icon-picker__cell',
-                    option.value === selectedValue && 'xh-icon-picker__cell--selected',
-                    idx === model.activeIdx && 'xh-icon-picker__cell--active'
-                ),
-                title: option.displayName,
-                'aria-label': option.displayName,
-                onMouseEnter: () => model.setActiveIdx(idx),
-                onClick: e => {
-                    e.stopPropagation();
-                    model.onIconClick(option);
-                },
-                item: option.factory({prefix})
+                model,
+                option,
+                idx,
+                prefix,
+                isActive: idx === model.activeIdx,
+                isSelected: option.value === selectedValue
             })
         )
     });
 });
+
+const iconCell = hoistCmp.factory<IconPickerModel>(
+    ({model, option, idx, prefix, isActive, isSelected}) =>
+        buttonEl({
+            type: 'button',
+            tabIndex: -1,
+            className: classNames(
+                'xh-icon-picker__cell',
+                isSelected && 'xh-icon-picker__cell--selected',
+                isActive && 'xh-icon-picker__cell--active'
+            ),
+            title: option.displayName,
+            'aria-label': option.displayName,
+            onMouseEnter: () => model.setActiveIdx(idx),
+            onClick: e => {
+                e.stopPropagation();
+                model.onIconClick(option);
+            },
+            item: option.factory({prefix})
+        })
+);
 
 const menuFooter = hoistCmp.factory<IconPickerModel>(({model, props}) => {
     const {activeOption, enableClear} = model,
