@@ -181,7 +181,7 @@ describe('FakeHoistCore', () => {
         beforeAll(() => hoistCore.route('POST', 'orders', req => ({id: 2, ...req.json})));
 
         it('answers a request without waiting on real time', async () => {
-            // A request first, so the next one reuses the idle keep-alive connection.
+            // A request first, which leaves a connection that the next request could reuse.
             await XH.fetchJson({url: 'orders'});
             vi.useFakeTimers();
 

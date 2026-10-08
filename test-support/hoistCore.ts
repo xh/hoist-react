@@ -241,15 +241,23 @@ export class FakeHoistCore {
      * @internal - wraps `fetch` to count each request as open from the client's call until the
      * call settles, aborts included. Called by setup.ts after MSW patches `fetch` - counting from
      * the call, not from MSW's interception, keeps a request from slipping past `settleAsync()`.
+     *
+     * Also sends each request on its own connection. undici, which serves Node's `fetch()`, checks
+     * an idle keep-alive connection with `setImmediate()` before it reuses it, and fake timers
+     * freeze that check - the request then waits 4s for the connection to time out (#4798).
      */
     trackFetch() {
         const {inFlight} = this,
             fetch = globalThis.fetch;
         let nextId = 0;
         globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
-            const id = nextId++;
+            const id = nextId++,
+                headers = new Headers(
+                    init?.headers ?? (input instanceof Request ? input.headers : undefined)
+                );
+            headers.set('Connection', 'close');
             inFlight.set(id, fetchLabel(input, init));
-            return fetch(input, init).finally(() => inFlight.delete(id));
+            return fetch(input, {...init, headers}).finally(() => inFlight.delete(id));
         }) as typeof fetch;
     }
 

@@ -280,9 +280,8 @@ function serve(
 }
 
 /**
- * The abort signal that FetchService passes to `fetch()` for each request to `path`, in order. A
- * spec checks an abort here, not on the request a handler receives - MSW does not abort that
- * request when the client aborts on a reused keep-alive connection.
+ * The abort signal that FetchService passes to `fetch()` for each request to `path`, in order. Specs
+ * check the abort that FetchService controls here, not how MSW passes it on to a handler.
  */
 function spyFetchSignals(path: string): AbortSignal[] {
     const ret: AbortSignal[] = [],
