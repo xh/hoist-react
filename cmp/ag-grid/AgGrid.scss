@@ -277,6 +277,20 @@
       border-left: var(--ag-column-border);
     }
 
+    // ag-Grid hides the last column's border while the columns fill the grid's width. Keep it
+    // hidden on the focused cell too.
+    :where(.ag-ltr)
+      :where(.ag-body-horizontal-content-no-gap)
+      .ag-column-last.ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-right-color: transparent;
+    }
+
+    :where(.ag-rtl)
+      :where(.ag-body-horizontal-content-no-gap)
+      .ag-column-last.ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-left-color: transparent;
+    }
+
     &.xh-ag-grid--row-borders .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
       border-top: none;
       border-bottom: none;
