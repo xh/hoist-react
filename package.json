@@ -154,7 +154,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitest/ui": "^5.0.3",
     "@xh/eslint-config": "^8.1.0",
-    "@xh/hoist-dev-utils": "next",
+    "@xh/hoist-dev-utils": "^16.1.0",
     "ag-grid-community": "~36.2.0",
     "ag-grid-react": "~36.2.0",
     "csstype": "^3.2.3",

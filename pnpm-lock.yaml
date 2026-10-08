@@ -381,8 +381,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0(supports-color@10.2.2)
       '@xh/hoist-dev-utils':
-        specifier: next
-        version: 17.0.0-SNAPSHOT.1791474043895(@rspack/core@2.2.8(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)
+        specifier: ^16.1.0
+        version: 16.1.0(@rspack/core@2.2.8(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)
       ag-grid-community:
         specifier: ~36.2.0
         version: 36.2.0
@@ -1989,8 +1989,8 @@ packages:
   '@xh/eslint-config@8.1.0':
     resolution: {integrity: sha512-RcBbyvh2Gq/yKZzv8pYA9vU/0Cc6839EMBb39NBHZr4ZUXZz978WCzHmZqHXL1X4iS3dk/fDL/1S9xICa+0NTg==}
 
-  '@xh/hoist-dev-utils@17.0.0-SNAPSHOT.1791474043895':
-    resolution: {integrity: sha512-8PAS9ltm5iWFwCfo5LfZcbL1X9je3TfkEo+3i/IXzKFV8Pli/2lZGxy+UZIHDZ3k5M7SurjA9J6H1MjWrWp5eQ==}
+  '@xh/hoist-dev-utils@16.1.0':
+    resolution: {integrity: sha512-mVllM3fDqzFjp8fUHFBdkkK/cL3lWVXps71yKOdaP0b++WEIF4o73s6eUzhVnX782+Lb/tWvw21+NiRdfoW6UA==}
     engines: {node: '>=22.15.0'}
 
   accepts@2.0.0:
@@ -6168,7 +6168,7 @@ snapshots:
       - jiti
       - supports-color
 
-  '@xh/hoist-dev-utils@17.0.0-SNAPSHOT.1791474043895(@rspack/core@2.2.8(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)':
+  '@xh/hoist-dev-utils@16.1.0(@rspack/core@2.2.8(@swc/helpers@0.5.23))(core-js@3.50.0)(supports-color@10.2.2)':
     dependencies:
       '@rsbuild/core': 2.2.11(core-js@3.50.0)
       '@rsbuild/plugin-basic-ssl': 2.0.0(@rsbuild/core@2.2.11(core-js@3.50.0))
