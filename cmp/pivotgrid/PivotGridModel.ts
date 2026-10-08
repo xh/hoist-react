@@ -222,15 +222,16 @@ export class PivotGridModel extends HoistModel {
         });
     }
 
-    // `setColumns` resets state for every column. Cell field names are stable colIds, so re-applying
-    // the prior state keeps the user's widths and order; departed columns drop and new ones take
-    // their defaults at their defined index.
+    // `setColumns` resets column and group state alike. Cell field names and path keys are stable
+    // ids, so re-applying the prior state keeps the user's widths, order and collapsed groups;
+    // departed columns and groups drop, and new ones take their defaults.
     @action
     private rebuildColumns() {
         const {gridModel} = this,
-            priorState = gridModel.columnState;
+            {columnState, columnGroupState} = gridModel;
         gridModel.setColumns(this.buildColumns());
-        gridModel.setColumnState(priorState);
+        gridModel.setColumnState(columnState);
+        gridModel.setColumnGroupState(columnGroupState);
     }
 
     private buildColumns(): Array<ColumnSpec | ColumnGroupSpec> {
