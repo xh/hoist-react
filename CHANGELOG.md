@@ -69,6 +69,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   destroyed or the reaction was disposed.
 * Fixed `FormModel.allErrors` and `SubformsFieldModel.allErrors` omitting errors from nested
   subforms.
+* Fixed the focused cell dropping its column border under `cellBorders`, and shifting its content
+  under `rowBorders`, when `showCellFocus` is off (the default).
 * Fixed `Store.updateData()` and `Store.modifyRecords()` dropping other summary records when one
   changed, and `Store.revert()` dropping default field values from summary records.
 * Fixed `FieldFilter` text operators (`like`, `begins`, `ends` and their negations) matching blank
