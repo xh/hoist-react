@@ -149,6 +149,7 @@ techniques.
 | `/chart/` | Highcharts integration for data visualization |
 | `/treemap/` | Hierarchical treemap and split treemap visualizations |
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
+| `/pivotgrid/` | Pivoted Cube View as a tree grid with nested column groups. [See README](./pivotgrid/README.md) |
 
 ### Layout and Containers
 
