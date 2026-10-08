@@ -18,7 +18,8 @@ import {
     FieldFilter,
     Filter,
     FilterLike,
-    flattenFilter
+    flattenFilter,
+    parseFilter
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
@@ -106,17 +107,25 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     mergeColumnFilters(field: string, filter: FilterLike) {
-        let newFilter: any = filter;
-        const {op} = newFilter;
-        if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
-            const currFilters = flattenFilter(this.filter),
-                match = find(currFilters, {field, op}) as any;
+        let newFilter = parseFilter(filter);
+        if (
+            newFilter instanceof FieldFilter &&
+            FieldFilter.ARRAY_OPERATORS.includes(newFilter.op)
+        ) {
+            const {op, value} = newFilter,
+                currFilters = flattenFilter(this.filter),
+                match = find(currFilters, {field, op}) as FieldFilter;
 
+            // Build a new filter - the one passed in may be frozen, and is not ours to mutate.
             if (match) {
-                newFilter.value = uniq([...castArray(newFilter.value), ...castArray(match.value)]);
+                newFilter = parseFilter({
+                    field: newFilter.field,
+                    op,
+                    value: uniq([...castArray(value), ...castArray(match.value)])
+                });
             }
         }
-        this.setColumnFilters(field, filter);
+        this.setColumnFilters(field, newFilter);
     }
 
     @action

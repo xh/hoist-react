@@ -277,7 +277,7 @@ export class ValuesTabModel extends HoistModel {
 
     private syncGrid() {
         const {values, pendingValues} = this;
-        const data = values.map(value => {
+        const data = map(values, value => {
             const isChecked = pendingValues.includes(value);
             return {value, isChecked};
         });

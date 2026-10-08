@@ -191,7 +191,10 @@ export abstract class HoistBase {
             const opts = parseReactionOptions(rest);
             run = bindAndDebounce(this, run, debounce);
 
-            const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
+            const disposer = withCancel(
+                track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts),
+                run
+            );
             this.disposers.push(disposer);
             return disposer;
         });
@@ -404,4 +407,13 @@ function bindAndDebounce(obj, fn, debounce = null) {
     if (isNumber(debounce)) return lodashDebounce(action(ret), debounce);
     if (isPlainObject(debounce)) return lodashDebounce(action(ret), debounce.interval, debounce);
     return ret;
+}
+
+// Extend a MobX disposer to also cancel any pending call of a debounced run function.
+function withCancel(disposer: IReactionDisposer, run): IReactionDisposer {
+    if (!run.cancel) return disposer;
+    return Object.assign(() => {
+        disposer();
+        run.cancel();
+    }, disposer);
 }

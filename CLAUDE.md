@@ -155,6 +155,8 @@ pnpm lint:code                   # Lint library JavaScript/TypeScript only
 pnpm lint:mcp                    # Lint MCP server and CLI tools (mcp/) only
 pnpm lint:styles                 # Lint SCSS only
 pnpm typecheck                   # Type check library and MCP tools
+pnpm test                        # Run library unit tests (Vitest)
+pnpm test data/Store             # Run unit tests in spec files whose path contains "data/Store"
 pnpm test:mcp                    # Run MCP spec scripts, incl. the doc-search golden set
 ```
 
@@ -164,6 +166,25 @@ errors, so a genuine type error passes `pnpm lint`. CI runs the two as distinct 
 
 This is a library — it has no dev server or standalone build. To run locally, use a wrapper
 application project (e.g., Toolbox) that includes `@xh/hoist` as a dependency.
+
+## Unit Tests
+
+**Before writing or changing a unit test, read [`docs/unit-testing.md`](docs/unit-testing.md).**
+The essentials:
+
+- Specs sit next to the code they test, as `Foo.spec.ts` for `Foo.ts`. CI runs them on every PR
+  as the "Unit Tests" check.
+- When you change library behavior, add or update the specs that cover it, and run `pnpm test`.
+- Tests run Hoist's real services against a fake hoist-core server
+  (`test-support/hoistCore.ts`). Boot it with `initTestAppAsync()`. Do not mock Hoist modules
+  with `vi.mock`.
+- Name tests for the behavior they check, so the test list reads as a spec. Test contracts that
+  apps rely on - not trivial getters, rendering, or third-party libraries.
+- When a test exposes a library bug that is not fixed in the same change, mark it `it.fails()`
+  with a `// BUG:` comment.
+
+A failing `pnpm test` run prints each failure with its diff. On a PR, `gh pr checks` shows the
+check status, and `gh run view <run-id> --log-failed` shows the failing output.
 
 ## Architecture
 
@@ -307,6 +328,10 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
+- **Comments describe the code as it is, not how it got here** - Write for a reader who never
+  saw the previous version. Mention a library version, upgrade, or prior behavior only when it
+  tells that reader something they need, such as a workaround to remove once an upstream bug is
+  fixed. See [Comments and Documentation](docs/coding-conventions.md#comments-and-documentation).
 - **No em dashes** - Use ` - ` (spaced hyphen) instead of em dashes (`—`) in code comments and
   JSDoc, and in any new prose: CHANGELOG entries, docs, commit messages, PR descriptions. Em dashes
   cause tooling issues and read as machine-written. Existing docs keep theirs; do not reflow a doc

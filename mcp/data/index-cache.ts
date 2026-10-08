@@ -101,6 +101,7 @@ export function computeFingerprint(repoRoot: string): string {
                 walk(resolve(dir, entry.name));
             } else if (entry.isFile()) {
                 if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.tsx')) continue;
+                if (entry.name.endsWith('.spec.ts')) continue;
                 const fullPath = resolve(dir, entry.name);
                 try {
                     const stats = statSync(fullPath);

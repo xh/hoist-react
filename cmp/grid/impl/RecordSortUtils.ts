@@ -63,7 +63,8 @@ function sortRecords(
     const {agApi} = gridModel,
         decorated = records.map(record => ({
             record,
-            node: agApi?.getRowNode(record.agId),
+            // With no rendered row, stand in a minimal node - Column comparators read its `data`.
+            node: agApi?.getRowNode(record.agId) ?? {data: record},
             values: sorters.map(({getValueFn, ctx}) => getValueFn({record, ...ctx}))
         }));
 

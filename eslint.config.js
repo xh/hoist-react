@@ -21,6 +21,7 @@ module.exports = defineConfig([
         }
     },
     globalIgnores([
+        '.vitest/**/*',
         'build/**/*',
         'node_modules/**/*',
         'mcp/**/*',

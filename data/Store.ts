@@ -30,6 +30,7 @@ import equal from 'fast-deep-equal';
 import {
     castArray,
     compact,
+    countBy,
     defaultsDeep,
     differenceBy,
     first,
@@ -40,7 +41,9 @@ import {
     isNil,
     isNull,
     isString,
+    keys,
     partition,
+    pickBy,
     remove as lodashRemove,
     uniq,
     uniqBy,
@@ -697,19 +700,18 @@ export class Store
 
         // 2) Pre-process summary records, peeling them out of updates if needed
         const {summaryRecords} = this;
-        let summaryUpdateRecs: StoreRecord[];
+        let newSummaryRecs: StoreRecord[];
         if (!isEmpty(summaryRecords)) {
-            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
+            const updates = lodashRemove(updateRecs, ({id}) => this.summaryRecordIds.has(id));
+            if (!isEmpty(updates)) newSummaryRecs = this.mergeSummaryRecords(updates);
         }
 
-        if (isEmpty(summaryUpdateRecs) && rawSummaryData) {
-            summaryUpdateRecs = castArray(rawSummaryData).map(it =>
-                this.createRecord(it, null, true)
-            );
+        if (!newSummaryRecs && rawSummaryData) {
+            newSummaryRecs = castArray(rawSummaryData).map(it => this.createRecord(it, null, true));
         }
 
-        if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+        if (!isEmpty(newSummaryRecs)) {
+            this.summaryRecords = newSummaryRecs;
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -884,22 +886,20 @@ export class Store
             // If after parsing, data is deep equal, its a no-op
             if (equal(updatedData, currentRec.data)) return;
 
-            // Previously updated record might now be reverted to clean, normalize
-            const committedData =
-                currentRec.isModified && equal(currentRec.committedData, updatedData)
-                    ? updatedData
-                    : currentRec.committedData;
-
-            const updatedRec = new StoreRecord({
-                id: currentRec.id,
-                store: currentRec.store,
-                raw: currentRec.raw,
-                data: updatedData,
-                committedData: committedData,
-                parent: currentRec.parent,
-                isSummary: currentRec.isSummary,
-                nonDefaultCount: this._recordBuildData.n
-            });
+            // Reuse the committed instance for a record modified back to its committed values.
+            const reverted = currentRec.isModified && equal(currentRec.committedData, updatedData),
+                updatedRec =
+                    (reverted ? this._committed.getById(id) : null) ??
+                    new StoreRecord({
+                        id: currentRec.id,
+                        store: currentRec.store,
+                        raw: currentRec.raw,
+                        data: updatedData,
+                        committedData: reverted ? updatedData : currentRec.committedData,
+                        parent: currentRec.parent,
+                        isSummary: currentRec.isSummary,
+                        nonDefaultCount: this._recordBuildData.n
+                    });
 
             if (!equal(currentRec.data, updatedRec.data)) {
                 updateMap.set(id, updatedRec);
@@ -924,13 +924,17 @@ export class Store
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+            summaryUpdateRecs.forEach(it => it.finalize());
+            this.summaryRecords = this.mergeSummaryRecords(summaryUpdateRecs);
             changeLog.summaryRecords = this.summaryRecords;
         }
 
         // 3) Apply changes
         if (!isEmpty(updateRecs)) {
-            this._current = this._current.withTransaction({update: updateRecs});
+            let current = this._current.withTransaction({update: updateRecs});
+            // Do (expensive) normalize only if store might have become clean.
+            if (updateRecs.every(r => r.isCommitted)) current = current.normalize(this._committed);
+            this._current = current;
             changeLog.update = updateRecs;
             this.incrementalRefilter();
         }
@@ -1352,7 +1356,10 @@ export class Store
             `Applications must not specify a field named '__proto__' - assigning it would replace the
             prototype of each record's data object rather than setting a value on it.`
         );
-        throwIf(uniqBy(ret, 'name').length !== ret.length, 'Field names must be unique.');
+        if (uniqBy(ret, 'name').length !== ret.length) {
+            const dupes = keys(pickBy(countBy(ret, 'name'), count => count > 1));
+            throw XH.exception(`Field names must be unique. Duplicates: ${dupes.join(', ')}`);
+        }
         return ret;
     }
 
@@ -1641,8 +1648,8 @@ export class Store
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
-            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
-            const data = {...recToRevert.committedData};
+            // Rebuild rather than spread - sparse data holds its defaults on a prototype.
+            const data = this.parseUpdate(recToRevert.committedData, {});
             const ret = new StoreRecord({
                 id: recToRevert.id,
                 store: this,
@@ -1650,11 +1657,16 @@ export class Store
                 data,
                 committedData: data,
                 parent: null,
-                isSummary: true
+                isSummary: true,
+                nonDefaultCount: this._recordBuildData.n
             });
             ret.finalize();
             return ret;
         });
+    }
+
+    private mergeSummaryRecords(updates: StoreRecord[]): StoreRecord[] {
+        return this.summaryRecords.map(rec => updates.find(it => it.id === rec.id) ?? rec);
     }
 }
 

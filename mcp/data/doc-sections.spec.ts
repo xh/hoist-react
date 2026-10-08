@@ -4,9 +4,15 @@
  *
  * Self-contained, exit-coded driver (the repo has no general test framework). Covers section
  * parsing, section-name resolution, and the shared `readDoc` implementation behind
- * `hoist-read-doc` and `hoist-docs read`, against the live registry and docs.
+ * `hoist-read-doc` and `hoist-docs read`, against the live registry and docs. Reference-style
+ * links are covered with a fixture doc, as no registered doc uses them yet.
  */
+import {mkdtempSync, rmSync, writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+
 import {buildRegistry, loadDocContent, type DocEntry} from './doc-registry.js';
+import {searchDocs} from './doc-search.js';
 import {parseDocSections, resolveSection, type DocSection} from './doc-sections.js';
 import {LARGE_DOC_TOKENS, readDoc} from '../formatters/docs.js';
 import {resolveRepoRoot} from '../util/paths.js';
@@ -239,6 +245,96 @@ console.log('readDoc:');
         'unknown doc id fails',
         !unknownDoc.ok && unknownDoc.text.startsWith('Unknown document ID')
     );
+}
+
+//------------------------------------------------------------------
+// Reference-style links
+//------------------------------------------------------------------
+console.log('Reference links:');
+{
+    const dir = mkdtempSync(join(tmpdir(), 'hoist-doc-sections-')),
+        fixture: DocEntry = {
+            id: 'fixture/ref-links.md',
+            title: 'Reference Links',
+            filePath: join(dir, 'ref-links.md'),
+            mcpCategory: 'concept',
+            description: 'Fixture doc for reference-style links.',
+            keywords: [],
+            aliases: []
+        },
+        fixtureRegistry = [fixture];
+
+    writeFileSync(
+        fixture.filePath,
+        [
+            '# Reference Links',
+            '',
+            '## Compiler [Speed][ts7]',
+            '',
+            'See the [TypeScript 7.0 announcement][ts7] and the [Zebrafish Guide][] for',
+            'benchmarks of the new native compiler port and its effect on large builds.',
+            '',
+            '```ts',
+            'const grid = matrix[row][col];',
+            '```',
+            '',
+            '## Local',
+            '',
+            'Only [inline](https://example.com) links and one [reference][ts7] appear in this section.',
+            '',
+            '[TS7]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/',
+            '[zebrafish  guide]: ./zebrafish.md',
+            '[unused]: https://example.com/unused'
+        ].join('\n') + '\n'
+    );
+
+    try {
+        const sections = parseDocSections(fixture, loadDocContent(fixture)),
+            compiler = sections.find(s => s.ref === 'Compiler Speed');
+        check(
+            'heading reduces [text][label] to its text',
+            compiler != null,
+            sections.map(s => s.ref).join(', ')
+        );
+
+        const read = readDoc(fixtureRegistry, {id: fixture.id, section: 'Compiler Speed'}, 'mcp'),
+            body = read.ok ? read.structured.content! : read.text;
+        check(
+            'section read appends the definitions it uses',
+            body.endsWith(
+                '\n\n[TS7]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/' +
+                    '\n[zebrafish  guide]: ./zebrafish.md'
+            ),
+            body
+        );
+        check('section read omits unused definitions', !body.includes('[unused]'));
+
+        const local = readDoc(fixtureRegistry, {id: fixture.id, section: 'Local'}, 'mcp'),
+            localBody = local.ok ? local.structured.content! : local.text;
+        check(
+            'section read does not repeat definitions it already contains',
+            localBody.split('[TS7]:').length === 2,
+            localBody
+        );
+
+        const [hit] = searchDocs(fixtureRegistry, 'native compiler benchmarks');
+        check(
+            'excerpt reduces [text][label] and [text][] to their text',
+            hit?.excerpt.startsWith(
+                'See the TypeScript 7.0 announcement and the Zebrafish Guide for benchmarks'
+            ),
+            hit?.excerpt
+        );
+
+        const [localHit] = searchDocs(fixtureRegistry, 'inline links section');
+        check(
+            'excerpt skips link definition lines',
+            localHit != null && !localHit.excerpt.includes('devblogs'),
+            localHit?.excerpt
+        );
+    } finally {
+        rmSync(dir, {recursive: true, force: true});
+    }
 }
 
 console.log(`\nTotal: ${passed} passed, ${failed} failed.`);

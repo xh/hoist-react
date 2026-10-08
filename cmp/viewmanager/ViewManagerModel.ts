@@ -469,7 +469,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     .updateViewValueAsync(view, pendingValue.value, ctx)
                     .linkTo(this.saveTask);
 
-                this.setAsView(updated);
+                this.setAsSavedView(updated, pendingValue);
                 this.noteSuccess(`Saved ${view.typedName}`);
 
                 this.refreshAsync();
@@ -659,9 +659,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 // and load the in-code default, even if not enabled. We have no other choice!
                 await this.loadViewAsync(initialView?.token, this.pendingValue, ctx);
             })
-            .catch(e => {
+            .catch(async e => {
                 // Always ensure at least default view is installed (other state defaults are fine)
-                this.runner()
+                await this.runner()
                     .span('fallbackLoad')
                     .run(ctx => this.loadViewAsync(null, this.pendingValue, ctx));
                 this.handleException(e, {showAlert: false, logOnServer: true});
@@ -708,7 +708,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             {
                 track: () => this.view?.token,
                 run: tkn => updateState('updateCurrentView', {currentView: tkn}),
-                fireImmediately: this.view?.token !== initialState?.currentView
+                fireImmediately: !!initialState && this.view?.token !== initialState.currentView
             }
         ];
     }
@@ -739,7 +739,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                         .updateViewValueAsync(view, pendingValue.value, ctx)
                         .linkTo(this.saveTask);
 
-                    this.setAsView(updated);
+                    this.setAsSavedView(updated, pendingValue);
                 } catch (e) {
                     // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
                     // Keep count and alert server and user once at count n?
@@ -750,6 +750,16 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     });
                 }
             });
+    }
+
+    /** Install a saved view, keeping as pending any value set while the save was in flight. */
+    @action
+    private setAsSavedView(saved: View<T>, sent: PendingValue<T>) {
+        const value = this.getValue(),
+            pendingValue = isEqual(value, sent.value)
+                ? null
+                : {token: saved.token, baseUpdated: saved.lastUpdated, value};
+        this.setAsView(saved, pendingValue);
     }
 
     @action

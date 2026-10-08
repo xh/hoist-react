@@ -74,6 +74,9 @@ jobs:
         - name: Lint
           run: pnpm lint:all
 
+        - name: Unit tests
+          run: pnpm test
+
         - name: Prepare snapshot version
           id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.

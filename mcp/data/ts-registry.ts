@@ -233,7 +233,8 @@ const TOP_LEVEL_PACKAGES = [
     'static',
     'admin',
     'inspector',
-    'icon'
+    'icon',
+    'test-support'
 ];
 
 /**
@@ -281,6 +282,23 @@ export function isPromiseExtension(entry: Pick<SymbolEntry, 'name' | 'filePath'>
 
 /** Longest property initializer surfaced as a member default. */
 const MAX_DEFAULT_LENGTH = 60;
+
+/**
+ * True if a file, given by its path relative to the repo root (with a leading slash), is library
+ * source to index. Excludes dependencies, build output, this MCP sub-project, specs, and the CI
+ * reporter for hoist-react's own tests - none of which ship. The test kit in `test-support/` ships
+ * as `@xh/hoist/test-support`, so it is indexed.
+ */
+function isLibrarySource(relPath: string | null): boolean {
+    return (
+        !!relPath &&
+        !relPath.startsWith('/node_modules/') &&
+        !relPath.includes('/build/') &&
+        !relPath.includes('/mcp/') &&
+        !relPath.startsWith('/test-support/report/') &&
+        !relPath.endsWith('.spec.ts')
+    );
+}
 
 /**
  * Derive the source package from a file's absolute path.
@@ -419,14 +437,7 @@ function buildSymbolIndex(proj: Project): {
         const relPath = filePath.startsWith(repoRoot + '/')
             ? filePath.slice(repoRoot.length)
             : null;
-        if (
-            !relPath ||
-            relPath.startsWith('/node_modules/') ||
-            relPath.includes('/build/') ||
-            relPath.includes('/mcp/')
-        ) {
-            continue;
-        }
+        if (!isLibrarySource(relPath)) continue;
 
         const pkg = derivePackage(filePath, repoRoot);
 
@@ -917,14 +928,7 @@ function enrichMemberIndexJsDoc(proj: Project): void {
         const relPath = filePath.startsWith(repoRoot + '/')
             ? filePath.slice(repoRoot.length)
             : null;
-        if (
-            !relPath ||
-            relPath.startsWith('/node_modules/') ||
-            relPath.includes('/build/') ||
-            relPath.includes('/mcp/')
-        ) {
-            continue;
-        }
+        if (!isLibrarySource(relPath)) continue;
 
         for (const cls of sourceFile.getClasses()) {
             if (!shouldIndexClassMembers(cls)) continue;

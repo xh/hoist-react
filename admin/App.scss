@@ -76,9 +76,16 @@
   }
 
   // Markdown-rendered text fields - undo the readonly display's pre-wrap (which turns
-  // react-markdown's inter-element newlines into blank lines) and tighten block spacing.
+  // react-markdown's inter-element newlines into blank lines) and tighten block spacing. Cap the
+  // height and scroll within, so a long note does not push down the fields below it. A tinted
+  // background sets the scrollable region apart as a distinct box.
   &__markdown {
     white-space: normal;
+    max-height: 15em;
+    overflow-y: auto;
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    background-color: var(--xh-bg-alt);
+    border-radius: var(--xh-border-radius-px);
 
     p,
     ul,
