@@ -36,8 +36,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * Added `PivotGrid` and `PivotGridModel` (`@xh/hoist/cmp/pivotgrid`) to render a pivoted View
       as a tree grid with nested column groups, docked summaries, and per-measure column config.
       See the [PivotGrid README](cmp/pivotgrid/README.md).
-    * Added `View.createStore()` to mint a Store shaped for a View's rows, with any pivot cell
-      fields declared and kept in sync as the data changes.
     * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
       option pivots the aggregate grid on a chosen dimension.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
