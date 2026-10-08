@@ -38,8 +38,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       See the [PivotGrid README](cmp/pivotgrid/README.md).
     * Added `View.createStore()` to mint a Store shaped for a View's rows, with any pivot cell
       fields declared and kept in sync as the data changes.
-    * Added a "Pivot by" option to the Admin Console's Activity Tracking tab, pivoting the
-      aggregate grid on a chosen dimension.
+    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
+      option pivots the aggregate grid on a chosen dimension.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
   `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
