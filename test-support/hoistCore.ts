@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type PlainObject, XH} from '@xh/hoist/core';
-import {cloneDeep, isArray, isPlainObject, pick, pickBy} from 'lodash';
+import {isArray, isPlainObject, mapValues, pick, pickBy} from 'lodash';
 import {http, HttpResponse, type HttpHandler, matchRequestUrl} from 'msw';
 import {setupServer} from 'msw/node';
 
@@ -58,13 +58,12 @@ export interface RouteRequest extends RecordedRequest {
  */
 export type RouteFn = (req: RouteRequest) => unknown;
 
-/** A user preference as rendered to the client by hoist-core `PrefService`. */
-export interface PrefEntry {
+/** A user preference on the fake server - its type and default, and the user's own value if set. */
+export interface PrefSpec {
     type: 'string' | 'int' | 'long' | 'double' | 'bool' | 'json';
-    value: any;
     defaultValue: any;
-    /** True if the user has their own value, false if `value` is the default. */
-    isSet: boolean;
+    /** The user's own value. Leave out for a user who has not set the pref. */
+    value?: any;
 }
 
 export interface HoistError {
@@ -132,7 +131,7 @@ export class FakeHoistCore {
     configs: PlainObject;
 
     /** User preferences, keyed by name. */
-    prefs: Record<string, PrefEntry>;
+    prefs: Record<string, PrefSpec>;
 
     /** Payload for `xh/environment`. */
     environment: PlainObject;
@@ -304,7 +303,12 @@ export class FakeHoistCore {
             this.get('xh/getConfig', () => HttpResponse.json(this.configs)),
 
             // XhController.getPrefs - PrefService.getClientConfig.
-            this.post('xh/getPrefs', req => this.checkUser(req) ?? HttpResponse.json(this.prefs)),
+            this.post(
+                'xh/getPrefs',
+                req =>
+                    this.checkUser(req) ??
+                    HttpResponse.json(this.prefEntries(Object.keys(this.prefs)))
+            ),
 
             // XhController.setPrefs - JSON map of key -> new value. Keys are saved in order, so an
             // invalid key fails the request after saving the keys before it, as on the server.
@@ -319,7 +323,6 @@ export class FakeHoistCore {
                         return hoistError(500, {message: `Unexpected type for preference: ${key}`});
                     }
                     pref.value = savedPrefValue(pref, value);
-                    pref.isSet = true;
                 }
                 return HttpResponse.json({preferences: this.prefEntries(Object.keys(req.json))});
             }),
@@ -332,9 +335,7 @@ export class FakeHoistCore {
                 const keys: string[] = req.json;
                 keys.forEach(key => {
                     const pref = this.prefs[key];
-                    if (!pref) return;
-                    pref.value = cloneDeep(pref.defaultValue);
-                    pref.isSet = false;
+                    if (pref) delete pref.value;
                 });
                 return HttpResponse.json({preferences: this.prefEntries(keys)});
             }),
@@ -344,10 +345,7 @@ export class FakeHoistCore {
             this.post('xh/clearUserState', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
-                Object.values(this.prefs).forEach(pref => {
-                    pref.value = cloneDeep(pref.defaultValue);
-                    pref.isSet = false;
-                });
+                Object.values(this.prefs).forEach(pref => delete pref.value);
                 return noContent();
             }),
 
@@ -373,9 +371,13 @@ export class FakeHoistCore {
             : {user: this.user, roles: this.roles};
     }
 
-    // PrefService.getLimitedClientConfig - entries for the given keys that exist.
+    // PrefService.getLimitedClientConfig - entries for the given keys that exist, as the client
+    // reads them. A pref the user has not set reports its default.
     private prefEntries(keys: string[]): Record<string, PrefEntry> {
-        return pick(this.prefs, keys);
+        return mapValues(pick(this.prefs, keys), ({type, defaultValue, value}) => {
+            const isSet = value !== undefined;
+            return {type, value: isSet ? value : defaultValue, defaultValue, isSet};
+        });
     }
 
     // XhController.ensureClientUsernameMatchesSession - required for user-state endpoints. Reads
@@ -504,14 +506,9 @@ function defaultConfigs(): PlainObject {
     };
 }
 
-// Prefs that hoist-core creates by default, in PrefService.getClientConfig's format.
-function defaultPrefs(): Record<string, PrefEntry> {
-    const pref = (type: PrefEntry['type'], defaultValue: any): PrefEntry => ({
-        type,
-        value: cloneDeep(defaultValue),
-        defaultValue,
-        isSet: false
-    });
+// Prefs that hoist-core creates by default, none of them set by the user.
+function defaultPrefs(): Record<string, PrefSpec> {
+    const pref = (type: PrefSpec['type'], defaultValue: any): PrefSpec => ({type, defaultValue});
     return {
         xhAutoRefreshEnabled: pref('bool', true),
         xhIdleDetectionDisabled: pref('bool', false),
@@ -550,9 +547,17 @@ function defaultEnvironment(): PlainObject {
 //------------------------
 // Prefs
 //------------------------
+// A user preference as hoist-core PrefService renders it to the client.
+interface PrefEntry {
+    type: PrefSpec['type'];
+    value: any;
+    defaultValue: any;
+    isSet: boolean;
+}
+
 // PrefService saves a map or list as JSON, and any other value as its string - which
 // UserPreference.externalUserValue then reads back as the pref's type.
-function savedPrefValue(pref: PrefEntry, value: any): any {
+function savedPrefValue(pref: PrefSpec, value: any): any {
     if (isPlainObject(value) || isArray(value)) return value;
     const str = String(value);
     switch (pref.type) {

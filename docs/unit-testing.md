@@ -137,7 +137,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 describe('PrefService', () => {
     beforeAll(async () => {
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = {type: 'int', defaultValue: 50, value: 100};
         await initTestAppAsync();
     });
 
@@ -312,6 +312,9 @@ nothing about the app. `XH.getConf()` and `XH.getPref()` throw on an unknown key
 passes a default, so seed each config and pref that the code under test reads. Seed them before
 boot, because the client reads them once, at boot.
 
+Seed a pref with its `type` and `defaultValue`. Add `value` only for a user who has set their own.
+The fake reports `isSet` to the client from whether `value` is there.
+
 App services load from app endpoints. Serve each one with `hoistCore.route(method, path, fn)`,
 where `path` is relative to `XH.baseUrl`, as in `XH.fetchJson()`. The function returns the
 response body, a `Response` such as `hoistError(...)`, or nothing for an empty 204.
@@ -331,7 +334,7 @@ class OrdersTestModel extends TestAppModel {
 
 beforeAll(async () => {
     hoistCore.configs.orderLimit = 1000;
-    hoistCore.prefs.orderView = {type: 'json', value: {}, defaultValue: {}, isSet: false};
+    hoistCore.prefs.orderView = {type: 'json', defaultValue: {}};
     hoistCore.roles = ['ORDER_ADMIN'];
     hoistCore.user = {...hoistCore.user, region: 'EMEA'}; // a custom HoistUser field
     hoistCore.route('GET', 'orders', () => [{id: 1, qty: 500}]);

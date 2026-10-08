@@ -20,16 +20,16 @@ describe('PrefService', () => {
         // Each test changes its own prefs, so tests do not depend on each other's changes.
         hoistCore.prefs = {
             ...hoistCore.prefs,
-            pageSize: {type: 'int', value: 100, defaultValue: 50, isSet: true},
-            region: {type: 'string', value: 'US', defaultValue: 'US', isSet: false},
-            showDetail: {type: 'bool', value: false, defaultValue: false, isSet: false},
-            gridState: {type: 'json', value: {sortBy: ['name']}, defaultValue: {}, isSet: true},
-            chartOptions: {type: 'json', value: {}, defaultValue: {}, isSet: false},
-            filterState: {type: 'json', value: {}, defaultValue: {}, isSet: false},
-            maxRows: {type: 'int', value: 500, defaultValue: 500, isSet: false},
-            lastTab: {type: 'string', value: 'summary', defaultValue: 'summary', isSet: false},
-            lastView: {type: 'string', value: 'list', defaultValue: 'list', isSet: false},
-            panelWidth: {type: 'int', value: 200, defaultValue: 200, isSet: false}
+            pageSize: {type: 'int', defaultValue: 50, value: 100},
+            region: {type: 'string', defaultValue: 'US'},
+            showDetail: {type: 'bool', defaultValue: false},
+            gridState: {type: 'json', defaultValue: {}, value: {sortBy: ['name']}},
+            chartOptions: {type: 'json', defaultValue: {}},
+            filterState: {type: 'json', defaultValue: {}},
+            maxRows: {type: 'int', defaultValue: 500},
+            lastTab: {type: 'string', defaultValue: 'summary'},
+            lastView: {type: 'string', defaultValue: 'list'},
+            panelWidth: {type: 'int', defaultValue: 200}
         };
         await initTestAppAsync();
 
