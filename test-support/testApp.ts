@@ -25,7 +25,7 @@ export type TestAppSpec = Partial<ConstructorParameters<typeof AppSpec>[0]>;
  * `ACCESS_DENIED`, `LOAD_FAILED`, or `LOGIN_REQUIRED`, where boot waits for the user to sign in.
  *
  * @param spec - overrides for the test app's `AppSpec`. Defaults to a desktop app with a minimal
- *      app model, which requires the `APP_USER` role.
+ *      app model, open to any user. Pass `checkAccess` to require a role.
  */
 export async function initTestAppAsync(spec: TestAppSpec = {}): Promise<void> {
     const isMobileApp = spec.isMobileApp ?? false,
@@ -39,7 +39,7 @@ export async function initTestAppAsync(spec: TestAppSpec = {}): Promise<void> {
         componentClass: () => null,
         containerClass: AppContainer,
         modelClass: TestAppModel,
-        checkAccess: 'APP_USER',
+        checkAccess: () => true,
         disableWebSockets: true,
         trackAppLoad: false,
         ...spec,

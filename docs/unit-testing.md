@@ -328,7 +328,7 @@ class OrdersTestModel extends TestAppModel {
 beforeAll(async () => {
     hoistCore.configs.orderLimit = 1000;
     hoistCore.prefs.orderView = {type: 'json', value: {}, defaultValue: {}, isSet: false};
-    hoistCore.roles = ['APP_USER', 'ORDER_ADMIN'];
+    hoistCore.roles = ['ORDER_ADMIN'];
     hoistCore.user = {...hoistCore.user, region: 'EMEA'}; // a custom HoistUser field
     hoistCore.route('GET', 'orders', () => [{id: 1, qty: 500}]);
     hoistCore.route('POST', 'orders/:id/approve', req => ({id: req.params.id, approved: true}));
