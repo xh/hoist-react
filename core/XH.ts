@@ -672,6 +672,8 @@ export class XHApi {
      *
      * @returns true if user confirms, false if user cancels. If an input is provided, the
      * returned Promise will resolve to the input value if user confirms, false if user cancels.
+     * Resolves to null if the message is closed without a choice - e.g. by a route change or
+     * when replaced by a later message with the same `messageKey`.
      */
     message<T = unknown>(config: MessageSpec): Promise<T | boolean> {
         return this.acm.messageSourceModel.message(config);
