@@ -7,10 +7,10 @@
 
 import {PlainObject} from '@xh/hoist/core';
 import {CubeField} from '../CubeField';
-import {PivotPath} from '../PivotPath';
+import {PivotPath} from './PivotPath';
 import type {View} from '../View';
-import {BaseRow} from './BaseRow';
-import {ParentRow} from './ParentRow';
+import {BaseRow} from '../row/BaseRow';
+import {ParentRow} from '../row/ParentRow';
 
 /**
  * Row representing one `(group node, pivot path)` cell in a pivoted {@link View} - see `PivotCells`.

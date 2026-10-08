@@ -22,7 +22,7 @@
  * `aggregate/Aggregator.spec.ts`; routing updates through real `BaseRow` instances needs a browser
  * and lives in the Toolbox tier.
  */
-import type {Aggregator} from '../aggregate/Aggregator';
+import type {Aggregator} from '../../aggregate/Aggregator';
 import {
     buildPivotStructure,
     CHILD_KIND_LEAF,
@@ -59,7 +59,7 @@ import {
     UNIQUE,
     valEq,
     VF
-} from './SpecSupport';
+} from '../../impl/SpecSupport';
 
 interface Rec {
     data: Record<string, any>;

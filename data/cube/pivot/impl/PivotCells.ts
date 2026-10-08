@@ -9,13 +9,13 @@ import {PlainObject} from '@xh/hoist/core';
 import {Field, Store, StoreRecord} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {CubeField} from '../CubeField';
+import {CubeField} from '../../CubeField';
 import {PivotCellField, PivotPath} from '../PivotPath';
-import {BaseRow} from '../row/BaseRow';
-import {LeafRow} from '../row/LeafRow';
-import {PivotCellRow} from '../row/PivotCellRow';
-import type {View} from '../View';
-import {ViewRowData} from '../ViewRowData';
+import {BaseRow} from '../../row/BaseRow';
+import {LeafRow} from '../../row/LeafRow';
+import {PivotCellRow} from '../PivotCellRow';
+import type {View} from '../../View';
+import {ViewRowData} from '../../ViewRowData';
 import {
     buildPivotStructure,
     CHILD_KIND_LEAF,
@@ -25,7 +25,7 @@ import {
     type PivotPathDiscoveryResult,
     type PivotPathSpec
 } from './PivotStructure';
-import {PivotPhases} from './ViewDiagnostics';
+import {PivotPhases} from '../../impl/ViewDiagnostics';
 
 /**
  * Pivot support for a {@link View} whose query sets {@link QueryConfig.pivot}.

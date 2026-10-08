@@ -38,7 +38,7 @@ export * from './cube/aggregate/WeightedAverageAggregator';
 export * from './cube/BucketSpec';
 export * from './cube/Cube';
 export * from './cube/CubeField';
-export * from './cube/PivotPath';
+export * from './cube/pivot/PivotPath';
 export * from './cube/Query';
 export * from './cube/View';
 export * from './cube/ViewRow';

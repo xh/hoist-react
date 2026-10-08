@@ -13,7 +13,7 @@ import type {PlainObject} from '@xh/hoist/core';
  * as rows in the aggregation network.
  *
  * Deliberately free of any runtime framework dependency - plain data and integer indices only, so
- * it can be exercised directly under `npx tsx` (see `PivotStructure.spec.ts`) and reasoned about
+ * it can be exercised in isolation (see `PivotStructure.spec.ts`) and reasoned about
  * without `View`'s lifecycle machinery. Callers hold the mapping from index to row object.
  *
  * Everything is expressed over indices rather than objects to keep planning allocation-light: at
