@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PlainObject} from '@xh/hoist/core';
+import {type PlainObject, XH} from '@xh/hoist/core';
 import {cloneDeep, isArray, isPlainObject, pick, pickBy} from 'lodash';
-import {http, HttpResponse, type HttpHandler} from 'msw';
+import {http, HttpResponse, type HttpHandler, matchRequestUrl} from 'msw';
 import {setupServer} from 'msw/node';
 
-/**
+/*
  * A small, in-memory stand-in for hoist-core, served to Hoist's real client code via MSW.
  *
  * Tests run Hoist's actual services (FetchService, ConfigService, PrefService, etc.) and let them
@@ -19,20 +19,23 @@ import {setupServer} from 'msw/node';
  * server contract changes.
  *
  * The fake models shapes, status codes, and the `clientUsername` session check. It deliberately
- * does not re-implement server business rules. Tests that need other endpoints or failure modes
- * add per-test handlers with `server.use()`, which are cleared after each test.
+ * does not re-implement server business rules. Tests serve other endpoints, such as an app's own,
+ * with `hoistCore.route()`. `server.use()` adds raw MSW handlers for one test.
  *
  * hoist-core accepts any HTTP method on these endpoints. Each handler here accepts only the method
  * the client uses, so a test fails if the client changes how it calls the server.
  */
 
-/** URL prefix for Hoist server calls - the `xhBaseUrl` defined in vitest.config.mts. */
-export const BASE_URL = '/api/';
+/** URL prefix for Hoist server calls - `XH.baseUrl`, from the `xhBaseUrl` build constant. */
+export const BASE_URL = XH.baseUrl;
 
 /** A request served by the fake, recorded so tests can assert what the client sent. */
 export interface RecordedRequest {
     method: string;
-    /** Path relative to `XH.baseUrl`, e.g. `'xh/getPrefs'`. */
+    /**
+     * Path relative to `XH.baseUrl`, e.g. `'xh/getPrefs'`. A request outside `XH.baseUrl`, such as
+     * one to an external API, records its full URL without the query string.
+     */
     path: string;
     query: PlainObject;
     /** Parsed `application/x-www-form-urlencoded` body, if any. */
@@ -41,6 +44,19 @@ export interface RecordedRequest {
     json: any;
     headers: Record<string, string>;
 }
+
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+/** A request served by a `hoistCore.route()`, with its `:name` path parameters. */
+export interface RouteRequest extends RecordedRequest {
+    params: Record<string, string>;
+}
+
+/**
+ * Serves a route. Return a `Response`, a value to send as JSON, or nothing for the empty 204 that
+ * hoist-core sends for an endpoint with no result.
+ */
+export type RouteFn = (req: RouteRequest) => unknown;
 
 /** A user preference as rendered to the client by hoist-core `PrefService`. */
 export interface PrefEntry {
@@ -96,6 +112,10 @@ export function xhUrl(path: string): string {
     return BASE_URL + path;
 }
 
+/**
+ * The fake hoist-core server for unit tests. Use the `hoistCore` instance.
+ * @mcpHint fake hoist-core server for unit tests
+ */
 export class FakeHoistCore {
     /** Authenticated user, as rendered by hoist-core `HoistUser.formatForJSON`. */
     user: PlainObject;
@@ -117,8 +137,14 @@ export class FakeHoistCore {
     /** Payload for `xh/environment`. */
     environment: PlainObject;
 
-    /** Every request the fake has served since the last `clearRequests()`. */
+    /** Every request the fake has served in this test - the kit's setup clears it before each. */
     requests: RecordedRequest[] = [];
+
+    /** @internal - called with a message when a route throws. The kit's setup fails the test. */
+    onProblem: (msg: string) => void = null;
+
+    private routes: Route[] = [];
+    private testRouteCount = 0;
 
     constructor() {
         this.reset();
@@ -151,6 +177,34 @@ export class FakeHoistCore {
         return this.requests.filter(it => it.path === path);
     }
 
+    /**
+     * Serve an endpoint of the app's own server, or override a built-in one.
+     *
+     * A route added in a setup file or in `beforeAll()` lasts for the rest of the file, across
+     * the reset after each test. A route added in `beforeEach()` or in a test lasts for that test.
+     * The latest route that matches a request serves it, so a test can override a file's route.
+     * Requests are recorded, for `requestsTo()`.
+     *
+     * @param method - HTTP method, or `'*'` for any.
+     * @param path - path relative to `XH.baseUrl`, as passed to `XH.fetchJson()`, or an absolute
+     *      URL for an external API. `:name` segments match any value, read from `req.params`.
+     * @param fn - serves the request.
+     */
+    route(method: HttpMethod | '*', path: string, fn: RouteFn) {
+        const url = /^[a-z][a-z\d+.-]*:\/\//i.test(path) ? path : xhUrl(path);
+        this.routes.push({method, url, fn});
+    }
+
+    /** @internal - marks the routes added so far as lasting past the test about to run. */
+    startTest() {
+        this.testRouteCount = this.routes.length;
+    }
+
+    /** @internal - removes the routes added during the test that just ran. */
+    endTest() {
+        this.routes.length = this.testRouteCount;
+    }
+
     /** Username the client must report as `clientUsername` - the apparent user. */
     get username(): string {
         return this.user.username;
@@ -158,6 +212,14 @@ export class FakeHoistCore {
 
     get handlers(): HttpHandler[] {
         return [
+            // Routes added with route(). The predicate claims only requests that a route matches,
+            // so any other request stays unhandled and fails the test - a handler that returned
+            // nothing would instead let MSW pass the request through to the real network.
+            http.all(
+                ({request}) => !!this.findRoute(request),
+                ({request}) => this.serveRoute(request)
+            ),
+
             // XhController.authConfig - BaseAuthenticationService.clientConfig default.
             this.get('xh/authConfig', () => HttpResponse.json({})),
 
@@ -281,6 +343,31 @@ export class FakeHoistCore {
         });
     }
 
+    private findRoute(request: Request): {route: Route; params: Record<string, string>} {
+        const url = new URL(request.url);
+        for (let i = this.routes.length - 1; i >= 0; i--) {
+            const route = this.routes[i];
+            if (route.method !== '*' && route.method !== request.method) continue;
+            const {matches, params} = matchRequestUrl(url, route.url, window.location.href);
+            if (matches) return {route, params: params as Record<string, string>};
+        }
+        return null;
+    }
+
+    private async serveRoute(request: Request): Promise<Response> {
+        const {route, params} = this.findRoute(request),
+            req = await recordRequest(routePath(new URL(request.url)), request);
+        this.requests.push(req);
+        try {
+            const ret = await route.fn({...req, params});
+            if (ret instanceof Response) return ret;
+            return ret === undefined ? noContent() : HttpResponse.json(ret);
+        } catch (e) {
+            this.onProblem?.(`Route for ${req.method} ${req.path} threw: ${e}`);
+            return hoistError(500, {message: String(e?.message ?? e)});
+        }
+    }
+
     private get(path: string, fn: (req: RecordedRequest) => Response) {
         return http.get(xhUrl(path), ({request}) => this.serve(path, request, fn));
     }
@@ -299,7 +386,7 @@ export class FakeHoistCore {
 /** The fake hoist-core instance shared by all tests in a file. */
 export const hoistCore = new FakeHoistCore();
 
-/** The MSW server that routes Hoist's `fetch` calls to `hoistCore`. Started in test/setup.ts. */
+/** The MSW server that routes Hoist's `fetch` calls to `hoistCore`. Started in setup.ts. */
 export const server = setupServer(...hoistCore.handlers);
 
 //------------------------
@@ -309,7 +396,7 @@ export const server = setupServer(...hoistCore.handlers);
 // ensureRequiredConfigsCreated), with their default values. Configs with a typed class on the
 // server are always sent with every declared key, so tests should change keys within them rather
 // than replace them. `xhAppTimeZone` defaults to 'UTC' on the server. It is set here as a typical
-// app sets it, to the head office zone - which matches the browser zone set by vitest.config.mts.
+// app sets it, to the head office zone - which matches the browser zone the Vitest config pins.
 function defaultConfigs(): PlainObject {
     return {
         xhActivityTrackingConfig: {
@@ -378,15 +465,16 @@ function defaultPrefs(): Record<string, PrefEntry> {
     };
 }
 
-// EnvironmentService.getEnvironment. `appVersion` and `appBuild` match the build constants in
-// vitest.config.mts - a mismatch fails app init, as it would in a real app. Polling, websockets,
-// and the alert banner are off, so a test sees no background requests it did not ask for.
+// EnvironmentService.getEnvironment. The app's identity comes from its build constants, via `XH`,
+// so the server reports the version the client was built with - a mismatch would fail app init,
+// as it does in a real app. Polling, websockets, and the alert banner are off, so a test sees no
+// background requests it did not ask for.
 function defaultEnvironment(): PlainObject {
     return {
-        appCode: 'testApp',
-        appName: 'Test App',
-        appVersion: '1.0.0',
-        appBuild: 'test',
+        appCode: XH.appCode,
+        appName: XH.appName,
+        appVersion: XH.appVersion,
+        appBuild: XH.appBuild,
         appEnvironment: 'Development',
         grailsVersion: '7.2.2',
         hoistCoreVersion: '42.1.0',
@@ -422,6 +510,22 @@ function savedPrefValue(pref: PrefEntry, value: any): any {
         default:
             return value;
     }
+}
+
+//------------------------
+// Routes
+//------------------------
+interface Route {
+    method: HttpMethod | '*';
+    url: string;
+    fn: RouteFn;
+}
+
+// The recorded path - relative to the base URL, or the full URL for a request outside it.
+function routePath(url: URL): string {
+    const base = new URL(BASE_URL, window.location.href).href,
+        href = url.origin + url.pathname;
+    return href.startsWith(base) ? href.slice(base.length) : href;
 }
 
 //------------------------

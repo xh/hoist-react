@@ -6,7 +6,7 @@
  */
 import {HoistAppModel, HoistModel, LoadSpec, XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {last} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 

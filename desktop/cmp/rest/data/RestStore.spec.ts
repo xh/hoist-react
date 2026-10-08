@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RestStore, RestStoreConfig} from '@xh/hoist/desktop/cmp/rest';
-import {initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 

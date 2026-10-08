@@ -6,7 +6,7 @@
  */
 import {Store, type StoreSelectionConfig, StoreSelectionModel} from '@xh/hoist/data';
 import {reaction} from '@xh/hoist/mobx';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {sortBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 

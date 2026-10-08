@@ -7,7 +7,7 @@
 import {type GridConfig, type GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {FieldFilter, Store, type StoreRecord} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**

@@ -10,7 +10,7 @@ import {vi} from 'vitest';
 export type TestAppSpec = Partial<ConstructorParameters<typeof AppSpec>[0]>;
 
 /**
- * Boot a headless Hoist app against the fake hoist-core in `test/hoistCore.ts`.
+ * Boot a headless Hoist app against the fake hoist-core in `test-support/hoistCore.ts`.
  *
  * Runs the real `AppContainerModel.initAsync()` - the same sequence a browser runs on page load:
  * authenticate via `xh/authStatus`, install every Hoist service (loading environment, configs and
@@ -43,15 +43,17 @@ export async function initTestAppAsync(spec: TestAppSpec = {}): Promise<void> {
     });
 
     // initAsync() reports a failed boot via XH.handleException - capture it to fail loudly here.
+    // Read the reported error before restoring the spy, which clears its recorded calls.
     const handleException = vi.spyOn(XH, 'handleException').mockImplementation(() => {});
+    let cause: unknown;
     try {
         await acm.initAsync();
     } finally {
+        cause = handleException.mock.calls[0]?.[0];
         handleException.mockRestore();
     }
 
     if (XH.appState !== 'RUNNING') {
-        const cause = handleException.mock.calls[0]?.[0];
         throw new Error(`Test app failed to start - state is '${XH.appState}'`, {cause});
     }
 }

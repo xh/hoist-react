@@ -6,7 +6,7 @@
  */
 import {type Constraint, numberIs, required, Store, type StoreConfig} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -219,10 +219,7 @@ describe('Store', () => {
             expect(await store.validateAsync()).toBe(true);
         });
 
-        // BUG: StoreValidator.validateAsync (StoreValidator.ts:98) validates the installed
-        // validators only. The sync that a change starts installs its validators once it completes
-        // (StoreValidator.ts:168-169), so a record changed just before the call is not checked.
-        it.fails('checks records changed just before it is called', async () => {
+        it('checks records changed just before it is called', async () => {
             const store = createStore();
             store.modifyRecords({id: 1, name: null});
             expect(await store.validateAsync()).toBe(false);
@@ -278,10 +275,7 @@ describe('Store', () => {
             expect(store.isValid).toBe(true);
         });
 
-        // BUG: StoreValidator installs a record's validator only after its first validation
-        // completes (StoreValidator.ts:168-169). Until then the record has no validator, so the
-        // store reports Valid and nothing reports pending - a save gated on isValid goes through.
-        it.fails('is pending, not valid, while an async rule first runs on a record', async () => {
+        it('is pending, not valid, while an async rule first runs on a record', async () => {
             const result = deferred(),
                 store = createStore({fields: [{name: 'name', rules: [() => result.promise]}]});
             store.modifyRecords({id: 1, name: 'Taken'});

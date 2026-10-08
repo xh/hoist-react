@@ -11,7 +11,7 @@ import {
     type FieldFilterSpec,
     type Filter
 } from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {beforeAll, describe, expect, it} from 'vitest';
 

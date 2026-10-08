@@ -165,6 +165,7 @@ taking its current major alongside a hoist-react upgrade is low-cost and always 
 
 | hoist-react | Min Dev-Utils Required | Recommended Dev-Utils | Notes |
 |---|---|---|---|
+| 89.0 | -- | 16.1 | App unit tests with `@xh/hoist/test-support` compile through `configureVitest()`, added in dev-utils 16.1. Builds still work with 16.0. |
 | 88.0 | 16.0 | 16.0 | TC39 decorators, build-wide - neither side pairs with the other's syntax, so upgrade both together. |
 | 87.1 | -- | 15.0.1 | Take 15.0.1+, not 15.0.0. dev-utils 15 requires 87.1, enforced with a fail-fast build error. Apps taking v15 must also be TS-only (no `.jsx` files) and will see ESLint v10 rules. |
 | 87.0 | 14.0 | 14.0 | React 19: dev-utils 14 ships `@types/react` 19.x and is required for apps adopting pnpm. (13.x can build v87 with `@types/react` 19.x pinned via `resolutions` - a transitional pairing only, not supported.) |
@@ -178,11 +179,12 @@ taking its current major alongside a hoist-react upgrade is low-cost and always 
 
 ### Reverse Lookup: hoist-dev-utils → hoist-react
 
-Minimum hoist-react version (and Node floor, where declared) for each dev-utils major. These are
-hard gates stated in the [hoist-dev-utils CHANGELOG](https://github.com/xh/hoist-dev-utils/blob/develop/CHANGELOG.md).
+Minimum hoist-react version (and Node floor, where declared) for each dev-utils major, plus any
+minor that changes a pairing. These are hard gates stated in the [hoist-dev-utils CHANGELOG](https://github.com/xh/hoist-dev-utils/blob/develop/CHANGELOG.md).
 
 | hoist-dev-utils | Min hoist-react | Min Node | Notes |
 |---|---|---|---|
+| 16.1 | -- | -- | Adds `configureVitest()`, the Vitest preset for app unit tests. The preset alone needs hoist-react 89, which ships the `@xh/hoist/test-support` kit. Builds keep the 88 floor. |
 | 16.0 | 88.0 | 22.15 | Rsbuild replaces webpack, and TC39 `2023-11` decorators replace `legacy`. Both require app changes. |
 | 15.0 | 87.1 | 22.15 | Take 15.0.1+ - 15.0.0 can crash app boot ([#4640](https://github.com/xh/hoist-react/issues/4640)). Apps must be TypeScript-only - `.jsx` files are no longer resolved or transpiled. Re-enables Terser name-mangling, ships ESLint v10 via `@xh/eslint-config` 8, and emits pre-compressed `.br` / `.gz` assets on prod builds. |
 | 14.0 | 87.0 | 22.15 | React 19 / `@types/react` 19.x baseline. Adds pnpm support - apps adopting pnpm must take 14+, and must declare every package they import directly (see dev-utils CHANGELOG). webpack-dev-server 6. |

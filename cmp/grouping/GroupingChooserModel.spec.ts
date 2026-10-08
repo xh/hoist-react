@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {type GroupingChooserConfig, GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import type {PersistOptions, PlainObject} from '@xh/hoist/core';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**

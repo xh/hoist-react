@@ -7,7 +7,7 @@
 import {type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import type {PersistOptions, PlainObject} from '@xh/hoist/core';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**

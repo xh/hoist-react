@@ -12,7 +12,7 @@ import {
     type FilterLike
 } from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {onReactionError} from 'mobx';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
