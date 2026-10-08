@@ -218,6 +218,8 @@ describe('Icon', () => {
             expect(entry.source).toBe('hoist');
             expect(entry.name).toBe('gear');
             expect(entry.names).toContain('preferences');
+            expect(Icon.getDisplayName('preferences')).toBe('Preferences');
+            expect(Icon.getDisplayName('gear')).toBe('Gear');
             expect(Icon.getCatalog().filter(it => it.faName === 'cog')).toHaveLength(1);
         });
 

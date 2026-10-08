@@ -341,6 +341,7 @@ Supporting lookups:
 | `Icon.getFactory(name)`       | The icon's factory, or null                                     |
 | `Icon.getCatalogEntry(name)`  | Metadata for one icon (display name, FA name, weights, aliases) |
 | `Icon.exists(name)`           | True if the name resolves to a registered icon                  |
+| `Icon.getDisplayName(name)`   | User-facing label for a name, including an alias                |
 | `Icon.getCatalog()`           | Metadata for every known icon, sorted by display name           |
 
 All of these accept either a factory name (`'add'`, `'invoice'`) or an FA name (`'plus'`).

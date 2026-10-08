@@ -1148,6 +1148,14 @@ export const Icon = {
     },
 
     /**
+     * User-facing label for a factory or FA name, or null if not found. A name that shares its
+     * glyph with others, such as an app alias for a Hoist icon, gets its own label.
+     */
+    getDisplayName(name: string): string {
+        return iconCatalog.getDisplayName(name);
+    },
+
+    /**
      * Return metadata for all icons known to Hoist - its built-in set plus any registered by the
      * app via {@link Icon.register} - sorted by display name.
      *

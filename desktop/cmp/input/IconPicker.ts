@@ -10,7 +10,6 @@ import {elementFactory, hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh
 import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {HoistIconPrefix, Icon, IconCatalogEntry, IconFactory} from '@xh/hoist/icon';
-import {iconCatalog} from '@xh/hoist/icon/impl/IconCatalog';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
@@ -280,7 +279,7 @@ class IconPickerModel extends HoistInputModel {
         return {
             value,
             entry,
-            displayName: iconCatalog.getDisplayName(value),
+            displayName: Icon.getDisplayName(value),
             factory: Icon.getFactory(value)
         };
     }
