@@ -886,22 +886,20 @@ export class Store
             // If after parsing, data is deep equal, its a no-op
             if (equal(updatedData, currentRec.data)) return;
 
-            // Previously updated record might now be reverted to clean, normalize
-            const committedData =
-                currentRec.isModified && equal(currentRec.committedData, updatedData)
-                    ? updatedData
-                    : currentRec.committedData;
-
-            const updatedRec = new StoreRecord({
-                id: currentRec.id,
-                store: currentRec.store,
-                raw: currentRec.raw,
-                data: updatedData,
-                committedData: committedData,
-                parent: currentRec.parent,
-                isSummary: currentRec.isSummary,
-                nonDefaultCount: this._recordBuildData.n
-            });
+            // Reuse the committed instance for a record modified back to its committed values.
+            const reverted = currentRec.isModified && equal(currentRec.committedData, updatedData),
+                updatedRec =
+                    (reverted ? this._committed.getById(id) : null) ??
+                    new StoreRecord({
+                        id: currentRec.id,
+                        store: currentRec.store,
+                        raw: currentRec.raw,
+                        data: updatedData,
+                        committedData: reverted ? updatedData : currentRec.committedData,
+                        parent: currentRec.parent,
+                        isSummary: currentRec.isSummary,
+                        nonDefaultCount: this._recordBuildData.n
+                    });
 
             if (!equal(currentRec.data, updatedRec.data)) {
                 updateMap.set(id, updatedRec);
@@ -933,7 +931,10 @@ export class Store
 
         // 3) Apply changes
         if (!isEmpty(updateRecs)) {
-            this._current = this._current.withTransaction({update: updateRecs});
+            let current = this._current.withTransaction({update: updateRecs});
+            // Do (expensive) normalize only if store might have become clean.
+            if (updateRecs.every(r => r.isCommitted)) current = current.normalize(this._committed);
+            this._current = current;
             changeLog.update = updateRecs;
             this.incrementalRefilter();
         }
