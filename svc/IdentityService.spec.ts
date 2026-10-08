@@ -9,9 +9,10 @@ import {IdentityService} from '@xh/hoist/svc';
 import {
     hoistCore,
     initTestAppAsync,
+    prefEntry,
+    type RecordedRequest,
     server,
-    xhUrl,
-    type RecordedRequest
+    xhUrl
 } from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -29,7 +30,7 @@ describe('IdentityService', () => {
         hoistCore.authUser = {username: 'admin', displayName: 'Admin User', active: true};
         hoistCore.authUserRoles = ['APP_USER', 'HOIST_ADMIN', 'HOIST_IMPERSONATOR'];
         hoistCore.configs.xhEnableImpersonation = true;
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = prefEntry('int', 50, 100);
         // The impersonation bar, shown while impersonating, loads the users to switch to.
         server.use(
             http.get(xhUrl('xh/impersonationTargets'), () =>

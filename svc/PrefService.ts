@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {CallContextLike, HoistService, InitContext, XH} from '@xh/hoist/core';
+import {action, observable, runInAction} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
@@ -25,12 +26,29 @@ import {terminationSafePostJson} from './impl/Fetch';
  *
  * Preferences are persisted automatically back to the server by default so as to follow their user
  * across workstations.
+ *
+ * Preference values are observable. Reading a value via `get()` / {@link XH.getPref} within a
+ * component render, `@computed` getter, or reaction will track that key, so the reader updates
+ * when the value changes via `set()` or `unset()` - e.g. from an app option or another model.
+ * Use a reaction to apply a pref whose effect lives outside the component tree:
+ *
+ * ```
+ * this.addReaction({
+ *     track: () => XH.getPref('font'),
+ *     run: font => applyFont(font),
+ *     fireImmediately: true
+ * });
+ * ```
+ *
+ * Values are tracked per key and by reference - each value is a frozen copy, replaced on change.
  */
 export class PrefService extends HoistService {
     override telemetryPrefix = 'xh.client.prefs';
 
     static instance: PrefService;
-    private _data: Record<string, PrefEntry> = {};
+
+    // Entries are frozen and replaced on change - map is observable by key, not deeply.
+    private _data = observable.map<string, PrefEntry>({}, {deep: false});
     private _updates: Record<string, any> = {}; // undefined indicates unset
 
     override async initAsync(ctx: InitContext) {
@@ -48,7 +66,7 @@ export class PrefService extends HoistService {
      * Check to see if a given preference has been *defined*.
      */
     hasKey(key: string): boolean {
-        return this._data.hasOwnProperty(key);
+        return this._data.has(key);
     }
 
     /**
@@ -59,7 +77,7 @@ export class PrefService extends HoistService {
      */
     isSet(key: string): boolean {
         this.ensureKeyExists(key);
-        return !!this._data[key].isSet;
+        return this._data.get(key).isSet;
     }
 
     /**
@@ -73,12 +91,8 @@ export class PrefService extends HoistService {
      *      via the Admin client and have it be obvious when one is missing.
      */
     get(key: string, defaultValue?: any) {
-        const data = this._data;
-        let ret = defaultValue;
-
-        if (data.hasOwnProperty(key)) {
-            ret = data[key].value;
-        }
+        const pref = this._data.get(key),
+            ret = pref ? pref.value : defaultValue;
 
         throwIf(ret === undefined, `Preference key not found: '${key}'`);
         return ret;
@@ -90,20 +104,19 @@ export class PrefService extends HoistService {
      *
      * Values are validated client-side to ensure they (probably) are of the correct data type.
      *
-     * Values are saved to the server in an asynchronous and debounced manner.
-     * See pushAsync() and pushPendingAsync()
+     * The new value is applied locally and observable immediately. Values are saved to the server
+     * in an asynchronous and debounced manner - see pushAsync() and pushPendingAsync().
      */
+    @action
     set(key: string, value: any) {
         this.validateBeforeSet(key, value);
 
-        const oldValue = this.get(key);
-        if (isEqual(oldValue, value)) return;
+        const pref = this._data.get(key);
+        if (isEqual(pref.value, value)) return;
 
         // Change local value to sanitized copy and fire.
         value = deepFreeze(cloneDeep(value));
-        const pref = this._data[key];
-        pref.value = value;
-        pref.isSet = true;
+        this._data.set(key, {...pref, value, isSet: true});
 
         // Schedule serialization to storage
         this._updates[key] = value;
@@ -116,13 +129,13 @@ export class PrefService extends HoistService {
      * Unlike `set()`, this clears the user's explicit value rather than persisting the default as
      * one - so {@link isSet} will report `false` afterwards. Saved asynchronously (see `set()`).
      */
+    @action
     unset(key: string) {
         this.ensureKeyExists(key);
-        const pref = this._data[key];
+        const pref = this._data.get(key);
         if (!pref.isSet && isEqual(pref.value, pref.defaultValue)) return;
 
-        pref.value = pref.defaultValue;
-        pref.isSet = false;
+        this._data.set(key, {...pref, value: pref.defaultValue, isSet: false});
 
         // Schedule serialization to storage
         this._updates[key] = undefined;
@@ -155,17 +168,13 @@ export class PrefService extends HoistService {
         this._updates = {};
 
         // Partition into value updates and unsets.
-        // On a core that predates unset support, fall back to persisting default
         const setPrefs = {},
             unsetKeys = [];
         forEach(updates, (value, key) => {
-            const pref = this._data[key];
             if (value !== undefined) {
                 setPrefs[key] = value;
-            } else if (pref.hasOwnProperty('isSet')) {
-                unsetKeys.push(key);
             } else {
-                setPrefs[key] = pref.defaultValue;
+                unsetKeys.push(key);
             }
         });
 
@@ -217,7 +226,7 @@ export class PrefService extends HoistService {
                     deepFreeze(v.value);
                     deepFreeze(v.defaultValue);
                 });
-                this._data = data;
+                runInAction(() => this._data.replace(data));
             });
     }
 
@@ -227,7 +236,7 @@ export class PrefService extends HoistService {
 
     private validateBeforeSet(key: string, value: any) {
         this.ensureKeyExists(key);
-        const pref = this._data[key];
+        const pref = this._data.get(key);
         throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
         throwIf(
             !this.valueIsOfType(value, pref.type),

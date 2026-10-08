@@ -46,6 +46,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   headless app against an in-memory fake of hoist-core that serves app endpoints via
   `hoistCore.route()`. Needs `configureVitest()` from hoist-dev-utils 16.1. Experimental in v89 - it
   may change.
+* `PrefService` values are now observable. Components, `@computed` getters, and reactions that read
+  a pref via `XH.getPref()` update when it changes via `XH.setPref()` or `unset()`, with no app
+  refresh. See "Observing preference changes" in `svc/README.md` for patterns, and for reads that
+  capture a value and still need a refresh.
+* `PrefProvider` now pushes a change made to its pref by other code, such as an `unset()` to reset
+  it, to the persisted model or component.
+* The theme, sizing mode, idle detection, version bar, and changelog unread flag now follow changes
+  to their prefs immediately. The built-in theme and auto-refresh app options no longer refresh the
+  app on save.
 
 ### 🐞 Bug Fixes
 
@@ -113,6 +122,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   release or stay on 5.9. Apps that move must set `strict: false` (unless already strict) and
   `noUncheckedSideEffectImports: false` in `tsconfig.json` to override new TypeScript defaults.
   See the upgrade notes for the full steps.
+* A reaction or autorun that reads a pref now re-runs when that pref changes. Review any that read
+  prefs only incidentally, such as within a helper called from `track`.
+* Added `prefEntry()` to `@xh/hoist/test-support`, to seed `hoistCore.prefs` in tests.
 
 ### ⚙️ Typescript API Adjustments
 

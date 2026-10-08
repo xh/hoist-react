@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppOptionSpec, XH} from '@xh/hoist/core';
+import {AppOptionSpec} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
 import {segmentedControl, SegmentedControlProps} from '@xh/hoist/mobile/cmp/input';
@@ -38,7 +38,7 @@ export const themeAppOption = ({
             }),
             ...formFieldProps
         },
-        prefName: 'xhTheme',
-        valueSetter: v => XH.setTheme(v)
+        refreshRequired: false,
+        prefName: 'xhTheme'
     };
 };

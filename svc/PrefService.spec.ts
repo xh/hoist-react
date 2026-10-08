@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
+import {reaction} from '@xh/hoist/mobx';
 import {PrefService} from '@xh/hoist/svc';
-import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
+import {hoistCore, initTestAppAsync, prefEntry} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -20,16 +21,19 @@ describe('PrefService', () => {
         // Each test changes its own prefs, so tests do not depend on each other's changes.
         hoistCore.prefs = {
             ...hoistCore.prefs,
-            pageSize: {type: 'int', value: 100, defaultValue: 50, isSet: true},
-            region: {type: 'string', value: 'US', defaultValue: 'US', isSet: false},
-            showDetail: {type: 'bool', value: false, defaultValue: false, isSet: false},
-            gridState: {type: 'json', value: {sortBy: ['name']}, defaultValue: {}, isSet: true},
-            chartOptions: {type: 'json', value: {}, defaultValue: {}, isSet: false},
-            filterState: {type: 'json', value: {}, defaultValue: {}, isSet: false},
-            maxRows: {type: 'int', value: 500, defaultValue: 500, isSet: false},
-            lastTab: {type: 'string', value: 'summary', defaultValue: 'summary', isSet: false},
-            lastView: {type: 'string', value: 'list', defaultValue: 'list', isSet: false},
-            panelWidth: {type: 'int', value: 200, defaultValue: 200, isSet: false}
+            pageSize: prefEntry('int', 50, 100),
+            region: prefEntry('string', 'US'),
+            showDetail: prefEntry('bool', false),
+            gridState: prefEntry('json', {}, {sortBy: ['name']}),
+            chartOptions: prefEntry('json', {}),
+            filterState: prefEntry('json', {}),
+            maxRows: prefEntry('int', 500),
+            lastTab: prefEntry('string', 'summary'),
+            lastView: prefEntry('string', 'list'),
+            panelWidth: prefEntry('int', 200),
+            font: prefEntry('string', 'Inter'),
+            density: prefEntry('string', 'tight', 'loose'),
+            columnState: prefEntry('json', {})
         };
         await initTestAppAsync();
 
@@ -120,6 +124,34 @@ describe('PrefService', () => {
         });
     });
 
+    describe('observability', () => {
+        it('notifies observers of a pref when its value is set', () => {
+            const seen = observe('font');
+
+            XH.setPref('font', 'IBM Plex Sans');
+            XH.setPref('font', 'IBM Plex Sans');
+
+            expect(seen).toEqual(['IBM Plex Sans']);
+        });
+
+        it('notifies observers of a pref when it is unset', () => {
+            const seen = observe('density');
+
+            XH.prefService.unset('density');
+
+            expect(seen).toEqual(['tight']);
+            expect(XH.prefService.isSet('density')).toBe(false);
+        });
+
+        it('does not notify observers of other prefs', () => {
+            const seen = observe('columnState');
+
+            XH.setPref('lastTab', 'positions');
+
+            expect(seen).toEqual([]);
+        });
+    });
+
     describe('pushPendingAsync', () => {
         it('saves changes made in quick succession in one request, 5 seconds later', async () => {
             // A new instance - one already used on real timers keeps its pending debounce timer.
@@ -165,6 +197,17 @@ describe('PrefService', () => {
         });
     });
 });
+
+/** Record each new value of a pref seen by a MobX reaction, until the test finishes. */
+function observe(key: string): any[] {
+    const ret = [],
+        disposer = reaction(
+            () => XH.getPref(key),
+            v => ret.push(v)
+        );
+    onTestFinished(disposer);
+    return ret;
+}
 
 /** Report the page as hidden, as the browser does when the user switches tabs or closes one. */
 function setPageHidden() {

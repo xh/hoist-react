@@ -197,6 +197,68 @@ XH.prefService.unset('gridPageSize');
 Preferences are type-validated against server-defined types: `string`, `int`, `long`, `double`,
 `bool`, `json`.
 
+##### Observing preference changes
+
+Preference values are observable, tracked per key. Code that reads a pref via `XH.getPref()` in a
+reactive context - a component render, a `@computed` getter, or the `track` of a reaction - updates
+when that pref changes via `set()` or `unset()`, with no app refresh. Changing one pref does not
+notify readers of another.
+
+Choose the pattern by where the pref takes effect:
+
+```typescript
+// 1) Rendered or derived values - read the pref where it is used.
+get showDetail(): boolean {
+    return XH.getPref('showDetail');
+}
+
+// 2) Side effects outside the component tree - apply on init and on every change.
+this.addReaction({
+    track: () => XH.getPref('font'),
+    run: font => applyFont(font),
+    fireImmediately: true
+});
+
+// 3) Prefs that shape loaded data - reload when they change.
+this.addReaction({
+    track: () => XH.getPref('maxRows'),
+    run: () => this.refreshAsync()
+});
+```
+
+State persisted via `persistWith: {prefKey}` needs none of this - `PrefProvider` pushes changes
+made by other code to its model. See [Persistence](../docs/persistence.md).
+
+An `AppOption` whose pref is fully observed this way can set `refreshRequired: false`. Leave it at
+the default `true` while any reader of the pref still captures it as below - the refresh is the
+safety net for those readers.
+
+**Reads that capture a value.** A read outside a reactive context returns the value at that
+moment, and nothing updates it later. These reads are where a pref change can be silently missed:
+
+- **Construction and init.** A constructor, field initializer, `onLinked()`, or `initAsync()` that
+  stores `XH.getPref()` in a field keeps that snapshot. Read in a getter instead (pattern 1), or
+  apply it from a reaction with `fireImmediately` (pattern 2).
+- **Config passed to another object.** `new GridModel({sizingMode: XH.getPref(...)})` or a `Timer`
+  interval read from a pref is applied once. React to the pref and call the object's setter.
+- **Relays.** A `@bindable` field seeded from a pref, with an option setter that writes both, goes
+  stale when the pref changes elsewhere. Replace the field with a getter over the pref.
+- **Async code and handlers.** A read in `doLoadAsync()`, an event handler, or a reaction's `run`
+  is not tracked. That is correct, but data loaded with the old value stays loaded until a reload
+  (pattern 3).
+
+**Other guidance:**
+
+- **Track the slice you need.** A reader of a large JSON pref is notified when any part of it
+  changes. To follow one key, track it with a structural compare:
+  `track: () => XH.getPref('gridState')?.sortBy, equals: compareStructural`.
+- **Reactions that write their own pref must converge.** `set()` ignores a value equal to the
+  current one, which ends simple loops. Two reactions that each rewrite a pref into a different
+  shape will not converge.
+- **Never mutate a value in place.** Values are frozen copies, replaced on each change.
+- **Changes from other sessions are not observed.** Values set by the same user in another tab or
+  device, or by an admin on the server, reach the client when the app reloads.
+
 ### User & Environment
 
 #### IdentityService
@@ -594,6 +656,11 @@ Services are configured via soft configs (managed in Admin Console):
 | `xhAutoRefreshEnabled` | AutoRefreshService | User's auto-refresh preference |
 | `xhLastReadChangelog` | ChangelogService | Track latest read version |
 | `xhIdleDetectionDisabled` | IdleService | Disable idle suspension for user |
+| `xhShowVersionBar` | VersionBar | Show the version bar - `auto`, `always`, or `never` |
+| `xhSizingMode` | `XH.sizingMode` | Grid sizing mode, keyed by platform |
+| `xhTheme` | `XH.darkTheme` | Theme - `light`, `dark`, or `system` |
+
+Hoist applies each of these as soon as the pref changes.
 
 ## Creating Custom Services
 

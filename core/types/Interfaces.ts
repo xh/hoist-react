@@ -85,7 +85,8 @@ export interface AppOptionSpec {
      * True (default) to refresh the app after changing this option.
      *
      * Set to false for options that take effect immediately without requiring a full app
-     * refresh (e.g. visual options unrelated to data). Ignored if `reloadRequired` is true.
+     * refresh - e.g. visual options unrelated to data, or a pref that its consumers observe and
+     * react to directly (see {@link PrefService}). Ignored if `reloadRequired` is true.
      */
     refreshRequired?: boolean;
 

@@ -122,13 +122,13 @@ Boot the test app once per file. Adjust `hoistCore` state first to boot against 
 
 ```typescript
 import {XH} from '@xh/hoist/core';
-import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
+import {hoistCore, hoistError, initTestAppAsync, prefEntry, server, xhUrl} from '@xh/hoist/test-support';
 import {http} from 'msw';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 describe('PrefService', () => {
     beforeAll(async () => {
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = prefEntry('int', 50, 100); // default 50, user's own value 100
         await initTestAppAsync();
     });
 
@@ -173,6 +173,9 @@ Tests that do not touch services, such as `LocalDate` or filter tests, do not ne
 - Destroy models the test creates, e.g. with `onTestFinished(() => model.destroy())`.
 - Some Hoist state settles on a later tick, e.g. `GridFilterModel.setFilter()`. Await the task or
   `wait()` before asserting.
+- Keep the defaults that change timing, such as the 250ms persistence `debounce`, and advance fake
+  timers past them. A `debounce: 0` runs writes inside the triggering action, where MobX holds back
+  reactions until the action ends - so a test can pass where the app fails.
 
 ### Timers
 
@@ -186,6 +189,9 @@ await vi.advanceTimersByTimeAsync(300);
 ```
 
 - Never call `vi.runAllTimers()`. Hoist's `Timer` heartbeat never ends.
+- Switch back to real timers with `vi.useRealTimers()` before awaiting a POST to the fake
+  hoist-core, such as `XH.prefService.pushPendingAsync()`. Node's `fetch` sends a request body
+  with `setImmediate` and `performance`, so under fake timers each POST stalls for 4-18 seconds.
 - When you expect a timer-driven rejection, attach the assertion before advancing time.
 - Use `vi.setSystemTime()` for code that reads the current date.
 
@@ -267,7 +273,7 @@ response body, a `Response` such as `hoistError(...)`, or nothing for an empty 2
 
 ```typescript
 import {type InitContext, XH} from '@xh/hoist/core';
-import {hoistCore, initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
+import {hoistCore, initTestAppAsync, prefEntry, TestAppModel} from '@xh/hoist/test-support';
 import {beforeAll, it} from 'vitest';
 import {OrderService} from './OrderService';
 
@@ -280,7 +286,7 @@ class OrdersTestModel extends TestAppModel {
 
 beforeAll(async () => {
     hoistCore.configs.orderLimit = 1000;
-    hoistCore.prefs.orderView = {type: 'json', value: {}, defaultValue: {}, isSet: false};
+    hoistCore.prefs.orderView = prefEntry('json', {});
     hoistCore.roles = ['APP_USER', 'ORDER_ADMIN'];
     hoistCore.user = {...hoistCore.user, region: 'EMEA'}; // a custom HoistUser field
     hoistCore.route('GET', 'orders', () => [{id: 1, qty: 500}]);

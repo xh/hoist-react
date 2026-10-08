@@ -20,15 +20,7 @@ export class SizingModeModel extends HoistModel {
 
     @action
     setSizingMode(sizingMode: SizingMode) {
-        throwIf(
-            !values(SizingMode).includes(sizingMode),
-            `Sizing mode "${sizingMode}" not recognised.`
-        );
-
-        const classList = document.body.classList;
-        values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));
-
-        this.sizingMode = sizingMode;
+        this.applySizingMode(sizingMode);
 
         if (XH.prefService.hasKey('xhSizingMode')) {
             const pref = this.getPref(),
@@ -48,16 +40,39 @@ export class SizingModeModel extends HoistModel {
     }
 
     init() {
-        const pref = this.getPref(),
-            platform = this.getPlatform(),
-            sizingMode = isPlainObject(pref) ? pref[platform] : null;
+        this.setSizingMode(this.prefSizingMode);
 
-        this.setSizingMode(sizingMode ?? 'standard');
+        // Apply changes made to the pref elsewhere - e.g. via `XH.prefService.unset()`.
+        this.addReaction({
+            track: () => this.prefSizingMode,
+            run: sizingMode => {
+                if (sizingMode !== this.sizingMode) this.applySizingMode(sizingMode);
+            }
+        });
     }
 
     //---------------------
     // Implementation
     //---------------------
+    @action
+    private applySizingMode(sizingMode: SizingMode) {
+        throwIf(
+            !values(SizingMode).includes(sizingMode),
+            `Sizing mode "${sizingMode}" not recognised.`
+        );
+
+        const classList = document.body.classList;
+        values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));
+
+        this.sizingMode = sizingMode;
+    }
+
+    /** Mode stored in the pref for this platform, or the default if none. */
+    private get prefSizingMode(): SizingMode {
+        const pref = this.getPref();
+        return (isPlainObject(pref) ? pref[this.getPlatform()] : null) ?? 'standard';
+    }
+
     private getPref() {
         return XH.getPref('xhSizingMode', {});
     }

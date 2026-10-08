@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {hoistCore, initTestAppAsync, type RecordedRequest} from '@xh/hoist/test-support';
+import {hoistCore, initTestAppAsync, prefEntry, type RecordedRequest} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 /**
@@ -17,7 +17,7 @@ describe('AppContainerModel', () => {
 
     beforeAll(async () => {
         hoistCore.configs.featureFlag = true;
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = prefEntry('int', 50, 100);
         await initTestAppAsync();
         bootRequests = [...hoistCore.requests];
     });
