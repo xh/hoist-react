@@ -100,6 +100,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a `PUT` with `params` labeling its form body `text/plain`, so servers ignored the params.
 * Fixed errors reported by `ExceptionHandler` omitting the type and number of a failed load.
   Arrays in these reports, such as the stack trace, are also no longer sent as objects.
+* Fixed `XH.reloadApp()` leaving its `xhCacheBuster` query param in the address bar, where it
+  entered router state and was copied into shared links. The app now drops it on startup.
 
 ### ⚙️ Technical
 

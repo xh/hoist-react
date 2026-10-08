@@ -155,6 +155,8 @@ export class AppContainerModel extends HoistModel {
         if (this.initCalled) return;
         this.initCalled = true;
 
+        this.removeCacheBusterFromUrl();
+
         try {
             // Install TraceService first so booting traceable; it will defer sampling and export until config available
             await installServicesAsync([TraceService], {span: null});
@@ -390,6 +392,25 @@ export class AppContainerModel extends HoistModel {
         const env = XH.getEnv('appEnvironment'),
             {clientAppName} = this.appSpec;
         document.title = env === 'Production' ? clientAppName : `${clientAppName} (${env})`;
+    }
+
+    /**
+     * Drop the `xhCacheBuster` query param that `XH.reloadApp()` appends to force a reload past
+     * the browser cache. It has done its job once the page loads, and it would otherwise stay in
+     * the address bar, enter router state and get copied into any URL the user shares.
+     */
+    private removeCacheBusterFromUrl() {
+        const {pathname, search, hash} = window.location;
+        if (!search.includes('xhCacheBuster=')) return;
+
+        // Filter the raw query string rather than using URLSearchParams, which re-encodes the
+        // remaining params in form style (e.g. `%20` as `+`) and so corrupts them for the router.
+        const params = search
+                .slice(1)
+                .split('&')
+                .filter(it => it && !it.startsWith('xhCacheBuster=')),
+            newSearch = params.length ? `?${params.join('&')}` : '';
+        window.history.replaceState(window.history.state, '', pathname + newSearch + hash);
     }
 
     private startRouter() {
