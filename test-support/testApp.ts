@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppSpec, HoistAppModel, XH} from '@xh/hoist/core';
+import {when} from 'mobx';
 import {vi} from 'vitest';
 
 export type TestAppSpec = Partial<ConstructorParameters<typeof AppSpec>[0]>;
@@ -19,6 +20,9 @@ export type TestAppSpec = Partial<ConstructorParameters<typeof AppSpec>[0]>;
  * Call once per test file, typically from `beforeAll()`. Vitest gives each file a fresh module
  * graph, and with it a fresh `XH`. Adjust `hoistCore` state first to boot against other server
  * data (e.g. `hoistCore.configs.myConfig = 42`).
+ *
+ * Resolves once the app is `RUNNING`. Rejects, naming `XH.appState`, if boot stops anywhere else -
+ * `ACCESS_DENIED`, `LOAD_FAILED`, or `LOGIN_REQUIRED`, where boot waits for the user to sign in.
  *
  * @param spec - overrides for the test app's `AppSpec`. Defaults to a desktop app with a minimal
  *      app model, which requires the `APP_USER` role.
@@ -44,11 +48,14 @@ export async function initTestAppAsync(spec: TestAppSpec = {}): Promise<void> {
 
     // initAsync() reports a failed boot via XH.handleException - capture it to fail loudly here.
     // Read the reported error before restoring the spy, which clears its recorded calls.
-    const handleException = vi.spyOn(XH, 'handleException').mockImplementation(() => {});
+    // At LOGIN_REQUIRED, initAsync() waits for a sign-in that never comes, so stop waiting there.
+    const handleException = vi.spyOn(XH, 'handleException').mockImplementation(() => {}),
+        loginRequired = when(() => XH.appState === 'LOGIN_REQUIRED');
     let cause: unknown;
     try {
-        await acm.initAsync();
+        await Promise.race([acm.initAsync(), loginRequired]);
     } finally {
+        loginRequired.cancel();
         cause = handleException.mock.calls[0]?.[0];
         handleException.mockRestore();
     }
