@@ -6,7 +6,7 @@
  */
 import {HoistModel, persist, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {hoistCore, initTestAppAsync} from '@xh/hoist/test';
+import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**

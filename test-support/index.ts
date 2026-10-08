@@ -6,7 +6,7 @@
  */
 
 /**
- * Support code for hoist-react's own unit tests. Not part of the published package.
+ * The unit test kit, published as `@xh/hoist/test-support` for app and library unit tests.
  * See docs/unit-testing.md.
  */
 export * from './hoistCore';

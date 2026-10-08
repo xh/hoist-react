@@ -7,7 +7,7 @@
 import {type ColumnSpec, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import type {PlainObject} from '@xh/hoist/core';
 import type {StoreRecord} from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**

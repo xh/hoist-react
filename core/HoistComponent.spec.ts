@@ -7,7 +7,7 @@
 import {div, input, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistModel, type HoistProps, managed, uses, XH} from '@xh/hoist/core';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, render, screen} from '@testing-library/react';
 import {createRef, useState} from 'react';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';

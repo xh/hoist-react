@@ -3,6 +3,8 @@
 Hoist React has a suite of unit tests that run on [Vitest](https://vitest.dev). They cover the
 library's models, data layer, formatters, utilities, and services, and they run on every pull
 request. This document explains how the tests work, how to run them, and how to write new ones.
+Apps write unit tests in the same style with the `@xh/hoist/test-support` kit - see
+[Unit Tests in an App](#unit-tests-in-an-app).
 
 Unit tests complement end-to-end tests. Playwright tests drive a real app in a real browser
 against a real server. Unit tests run in milliseconds against one class or function. They pin
@@ -47,11 +49,11 @@ leaks from one file to another.
 Most of Hoist depends on the hoist-core server. `Store` reads a soft config, `GridModel` persists
 to user prefs, and nearly every service loads data on init. Tests therefore need a server.
 
-`test/hoistCore.ts` provides one. It is a small, in-memory stand-in for hoist-core's `XhController`
-endpoints: auth status, environment, configs, prefs, and activity tracking. It answers in the
-exact JSON shapes hoist-core renders, and names the server source of each shape. Hoist's real
-`fetch` calls reach it through [MSW](https://mswjs.io), so the code under test runs unchanged,
-from `FetchService` down.
+`test-support/hoistCore.ts` provides one. It is a small, in-memory stand-in for hoist-core's
+`XhController` endpoints: auth status, environment, configs, prefs, and activity tracking. It
+answers in the exact JSON shapes hoist-core renders, and names the server source of each shape.
+Hoist's real `fetch` calls reach it through [MSW](https://mswjs.io), so the code under test runs
+unchanged, from `FetchService` down.
 
 `initTestAppAsync()` boots a headless app against the fake. It runs the real
 `AppContainerModel.initAsync()`, the same sequence a browser runs on page load. It authenticates,
@@ -61,7 +63,7 @@ rendered.
 ### Guards against silent failures
 
 Hoist catches and logs many errors by design, so a broken code path can still let a test pass.
-The global setup in `test/setup.ts` fails a test that triggers any of these:
+The global setup in `test-support/setup.ts` fails a test that triggers any of these:
 
 - A server request or WebSocket the fake does not handle. MSW fails it, so it never reaches a real
   server.
@@ -120,7 +122,7 @@ Boot the test app once per file. Adjust `hoistCore` state first to boot against 
 
 ```typescript
 import {XH} from '@xh/hoist/core';
-import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http} from 'msw';
 import {beforeAll, describe, expect, it} from 'vitest';
 
@@ -151,8 +153,11 @@ describe('PrefService', () => {
 ```
 
 - `hoistCore.requestsTo(path)` returns the requests the fake served, parsed into `query`, `form`,
-  `json`, and `headers`. The log is cleared after each test.
-- `server.use()` adds handlers for one test. They are removed after the test.
+  `json`, and `headers`. The setup clears the log before each test, so a test sees only its own
+  requests.
+- `hoistCore.route()` serves an endpoint the fake lacks, or overrides one - see
+  [The app's server state](#the-apps-server-state).
+- `server.use()` adds raw MSW handlers for one test. They are removed after the test.
 - `hoistError(status, {...})` renders an error as hoist-core does. `authFailure(status)` renders
   the empty-bodied rejection that hoist-core's auth filter sends. `noContent()` renders the empty
   204 that hoist-core sends for an endpoint with no result.
@@ -204,6 +209,108 @@ test starts failing once the bug is fixed, as a reminder to remove the marker.
 
 A module graph can load the desktop or the mobile platform, not both. `initTestAppAsync()` boots a
 desktop app by default. Pass `{isMobileApp: true}` to boot a mobile app, in a spec file of its own.
+
+## Unit Tests in an App
+
+Apps use the same kit as hoist-react: the fake hoist-core, `initTestAppAsync()`, and the guards
+above. The [Writing Tests](#writing-tests) guidance applies to app specs too. App tests need
+hoist-react 89 and hoist-dev-utils 16.1 - see [Version Compatibility](./version-compatibility.md).
+
+### Setup
+
+1. Add the test runners as devDependencies, for example with pnpm:
+
+    ```bash
+    pnpm add -D vitest jsdom msw @testing-library/react @testing-library/dom
+    ```
+
+    Take the latest versions that fit the optional peer ranges in the `package.json` of
+    `@xh/hoist`. pnpm warns about any version outside those ranges, and `configureVitest()` fails
+    the run on a Vitest major outside its range. If a newer major is out, add the major that
+    `@xh/hoist` supports, for example `vitest@^N`.
+
+2. Add scripts to the app's `package.json`:
+
+    ```json
+    "scripts": {
+        "test": "vitest run",
+        "test:watch": "vitest"
+    }
+    ```
+
+3. Add `vitest.config.mts` beside `rsbuild.config.mjs`:
+
+    ```typescript
+    import configureVitest from '@xh/hoist-dev-utils/configureVitest';
+    import {defineConfig} from 'vitest/config';
+
+    export default defineConfig(configureVitest({appCode: 'myApp'}));
+    ```
+
+4. Write each spec beside the code it tests, as `Foo.spec.ts` for `Foo.ts`, and run `pnpm test`.
+
+`configureVitest()` compiles specs with the same SWC settings and build constants as the app
+build, and loads the kit's setup file. The hoist-dev-utils README lists its options, including a
+mode that runs specs against a local hoist-react checkout. React Testing Library is required even
+if no spec renders, because the kit's setup unmounts rendered components after each test.
+
+### The app's server state
+
+The fake serves Hoist's own endpoints, with hoist-core's default configs and prefs. It knows
+nothing about the app. `XH.getConf()` and `XH.getPref()` throw on an unknown key unless the call
+passes a default, so seed each config and pref that the code under test reads. Seed them before
+boot, because the client reads them once, at boot.
+
+App services load from app endpoints. Serve each one with `hoistCore.route(method, path, fn)`,
+where `path` is relative to `XH.baseUrl`, as in `XH.fetchJson()`. The function returns the
+response body, a `Response` such as `hoistError(...)`, or nothing for an empty 204.
+
+```typescript
+import {type InitContext, XH} from '@xh/hoist/core';
+import {hoistCore, initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
+import {beforeAll, it} from 'vitest';
+import {OrderService} from './OrderService';
+
+// Installs the services under test, as the app's AppModel would.
+class OrdersTestModel extends TestAppModel {
+    override async initAsync(ctx: InitContext) {
+        await XH.installServicesAsync(OrderService, ctx);
+    }
+}
+
+beforeAll(async () => {
+    hoistCore.configs.orderLimit = 1000;
+    hoistCore.prefs.orderView = {type: 'json', value: {}, defaultValue: {}, isSet: false};
+    hoistCore.roles = ['APP_USER', 'ORDER_ADMIN'];
+    hoistCore.user = {...hoistCore.user, region: 'EMEA'}; // a custom HoistUser field
+    hoistCore.route('GET', 'orders', () => [{id: 1, qty: 500}]);
+    hoistCore.route('POST', 'orders/:id/approve', req => ({id: req.params.id, approved: true}));
+    await initTestAppAsync({modelClass: OrdersTestModel});
+});
+
+it('flags orders over the configured limit', () => {
+    // ...
+});
+```
+
+- A route added in `beforeAll()` or a setup file lasts for the rest of the file. A route added in
+  `beforeEach()` or in a test lasts for that test, so a test can override a file's route.
+- `hoistCore.requestsTo('orders/7/approve')` returns the requests a route served.
+- A path can also be an absolute URL, for an external API the app calls.
+- A request that the fake does not serve fails the test, and the failure names the URL.
+- A file boots once, so test each role set or user in its own spec file.
+- The fake returns canned data. It does not enforce the server's business rules or role scoping.
+  Test those against a real server.
+
+### What to test in an app
+
+Test the app's own logic: model rules, derived state, data transforms, calculations, validation,
+and the requests its services send. Leave Hoist itself, rendering, and layout out of app specs.
+Do not import `Bootstrap.ts` or the entry points in `src/apps/` from a spec, because they register
+libraries and render the app when they load.
+
+Add `pnpm test` to the app's CI after its type check. Add it to snapshot and release builds too,
+so a failing suite blocks the publish.
 
 ## Test Reports
 

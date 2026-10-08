@@ -13,7 +13,7 @@ import {
     type View,
     type ViewRowData
 } from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {castArray, pick, sortBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 

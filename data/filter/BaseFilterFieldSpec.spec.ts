@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {BaseFilterFieldSpec, Store, type BaseFilterFieldSpecConfig} from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {afterAll, beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
