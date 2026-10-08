@@ -4,7 +4,7 @@
 
 ## Overview
 
-Hoist React v89 is a light upgrade with one required change and one strongly recommended change.
+Hoist React v89 is a light upgrade with three required changes and one strongly recommended change.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -12,6 +12,10 @@ Hoist React v89 is a light upgrade with one required change and one strongly rec
 - **`GridFilterModelConfig.fieldSpecs` (required review)** - `fieldSpecs` is no longer an
   allow-list. A grid with `filterable` columns that `fieldSpecs` omits now shows a filter on those
   columns - see Step 5.
+- **Listing icons (required if used)** - Apps that list icons by iterating `Object.keys(Icon)` must
+  switch to `Icon.getCatalog()` - see Step 6.
+- **Icon `faName` (required if used)** - Icon elements carry their FA name as `props.faName`, not
+  `props.iconName` - see Step 7.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -241,6 +245,112 @@ columns: [
 
 You can now pass a spec for only the fields that need custom config, such as a values renderer.
 
+### 6. List Icons with `Icon.getCatalog()`
+
+The `Icon` singleton now holds lookup and registration methods, such as `register()` and `get()`,
+next to its factories. Code that treats every key of `Icon` as an icon factory now picks up these
+methods too.
+
+**Find affected files:**
+
+```bash
+grep -rnE "(keys|values|entries|forOwn|forEach)\(Icon\)" client-app/src/
+```
+
+Before:
+
+```typescript
+const names = without(Object.keys(Icon), 'icon', 'fileIcon', 'placeholder').sort();
+names.map(name => Icon[name]());
+```
+
+After:
+
+```typescript
+const entries = Icon.getCatalog();
+entries.map(it => it.factory());
+```
+
+`getCatalog()` returns one `IconCatalogEntry` per glyph, sorted by display name. Each entry has the
+icon's `name`, `faName`, `factory`, and every alias in `names`. The catalog also includes icons the
+app adds with `Icon.register()`.
+
+### 7. Rename `iconName` to `faName`
+
+`IconProps.faName` replaces `iconName`. Rendered icon elements carry the FA name as
+`props.faName`, and `props.iconName` is no longer set.
+
+**Find affected files:**
+
+```bash
+grep -rn "iconName" client-app/src/
+```
+
+Code that reads the FA name from a rendered icon element must change now.
+
+Before:
+
+```typescript
+const faName = button.props.icon?.props.iconName;
+```
+
+After:
+
+```typescript
+const faName = button.props.icon?.props.faName;
+```
+
+`Icon.icon({iconName})` still works but logs a deprecation warning. Support ends in v91.
+
+Before:
+
+```typescript
+Icon.icon({iconName: 'github', prefix: 'fab'});
+```
+
+After:
+
+```typescript
+Icon.icon({faName: 'github', prefix: 'fab'});
+```
+
+For an icon the app uses in many places, consider `Icon.register()` instead. It returns a typed
+factory and adds the icon to `IconPicker`.
+
+### 8. Register Icons Added via `library.add()`
+
+Apps that add their own FontAwesome icons by calling `library.add()` directly should move those
+calls to `Icon.register()`. A registered icon is offered by `IconPicker`, and its factory renders
+the icon's default weight when asked for one the app did not import.
+
+**Find affected files:**
+
+```bash
+grep -rn "library.add" client-app/src/
+```
+
+Before:
+
+```typescript
+import {library} from '@fortawesome/fontawesome-svg-core';
+import {faDragon} from '@fortawesome/pro-regular-svg-icons';
+
+library.add(faDragon);
+Icon.icon({iconName: 'dragon'});
+```
+
+After:
+
+```typescript
+import {faDragon} from '@fortawesome/pro-regular-svg-icons';
+
+export const dragonIcon = Icon.register({name: 'dragon', defs: faDragon});
+dragonIcon();
+```
+
+Icons added via `library.add()` still render. `Icon.get()` logs a one-time warning for each one it
+looks up by name.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -252,6 +362,8 @@ After completing all steps:
 - [ ] The CI type check step passes.
 - [ ] The application builds and loads without console errors.
 - [ ] Grids with a `GridFilterModel` show filters only on the intended columns.
+- [ ] No code lists icons by iterating the keys of `Icon`.
+- [ ] No `IconProps.iconName` deprecation warnings appear in the browser console.
 
 ## Reference
 
