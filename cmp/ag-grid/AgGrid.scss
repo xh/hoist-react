@@ -272,8 +272,8 @@
   &--no-cell-focus {
     --ag-range-selection-border-color: transparent;
 
-    // ag-Grid drops the pinned-column border on a focused cell, and outranks the group borders in
-    // Grid.scss. Restore both, or they vanish as focus moves across the grid.
+    // ag-Grid's 1px focus border overrides the column, pinned and group borders, and re-adds the
+    // top/bottom borders that `--row-borders` removes. Restore them so focus doesn't shift cells.
     .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
       &.ag-cell-last-left-pinned {
         border-right: var(--ag-pinned-column-border);
@@ -290,6 +290,32 @@
       &.xh-cell--group-border-right {
         @include group-border(right);
       }
+    }
+
+    :where(.ag-ltr) .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-right: var(--ag-column-border);
+    }
+
+    :where(.ag-rtl) .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-left: var(--ag-column-border);
+    }
+
+    // Keep ag-Grid's hidden last-column border hidden when columns fill the grid.
+    :where(.ag-ltr)
+      :where(.ag-body-horizontal-content-no-gap)
+      .ag-column-last.ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-right-color: transparent;
+    }
+
+    :where(.ag-rtl)
+      :where(.ag-body-horizontal-content-no-gap)
+      .ag-column-last.ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-left-color: transparent;
+    }
+
+    &.xh-ag-grid--row-borders .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-top: none;
+      border-bottom: none;
     }
   }
 

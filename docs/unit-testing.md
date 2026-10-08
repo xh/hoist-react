@@ -158,13 +158,40 @@ describe('PrefService', () => {
 - `hoistCore.route()` serves an endpoint the fake lacks, or overrides one - see
   [The app's server state](#the-apps-server-state).
 - `server.use()` adds raw MSW handlers for one test. They are removed after the test.
+- `await hoistCore.settleAsync()` waits until the fake has answered every open request, and the
+  client has handled the answers. See
+  [Requests a test did not await](#requests-a-test-did-not-await).
 - `hoistError(status, {...})` renders an error as hoist-core does. `authFailure(status)` renders
   the empty-bodied rejection that hoist-core's auth filter sends. `noContent()` renders the empty
   204 that hoist-core sends for an endpoint with no result.
 - A file boots once. To test a different boot outcome, such as access denied, use a separate spec
-  file.
+  file. `initTestAppAsync()` rejects, naming `XH.appState`, if boot stops before `RUNNING`. That
+  includes `LOGIN_REQUIRED`, where an app with a login form waits for the user to sign in.
 
 Tests that do not touch services, such as `LocalDate` or filter tests, do not need to boot.
+
+### Requests a test did not await
+
+Models often start a request without returning its promise, such as a save from a timer or from
+`destroy()`. Call `hoistCore.settleAsync()` before you assert on that request:
+
+```typescript
+it('saves the draft when destroyed', async () => {
+    model.destroy(); // posts the draft, without returning the promise
+    await hoistCore.settleAsync();
+
+    const [req] = hoistCore.requestsTo('drafts');
+    expect(req.json).toEqual({text: 'Hello'});
+});
+```
+
+A request counts as open from the client's `fetch()` call until its response arrives. The setup
+also waits when each test ends, so such a request cannot land in the next test's log. A response
+that never arrives fails the test after 2s, and the failure names the request.
+
+`settleAsync()` does not wait for a request that has not started yet. A request sent after a
+debounce or timer, such as a `@persist` write or a `PrefService` push, starts only when that timer
+fires. Wait out or advance the timer first.
 
 ### Models and MobX
 
@@ -173,6 +200,13 @@ Tests that do not touch services, such as `LocalDate` or filter tests, do not ne
 - Destroy models the test creates, e.g. with `onTestFinished(() => model.destroy())`.
 - Some Hoist state settles on a later tick, e.g. `GridFilterModel.setFilter()`. Await the task or
   `wait()` before asserting.
+- Assign a `@bindable` field directly, as in `model.comment = 'x'`. Its generated setter, such as
+  `setComment()`, exists at runtime but has no type, so `tsc` rejects a call to it.
+- A `@persist` field writes its state 250ms after a change. A value equal to its default clears the
+  saved entry, so the saved state leaves it out. For a pref, `await wait(300)`, then
+  `await XH.prefService.pushPendingAsync()` before asserting on the request.
+- `GridModel` calls that need a rendered grid, such as `preSelectFirstAsync()`, wait 3s for one in a
+  model test and then do nothing. Leave grid selection out of model specs.
 
 ### Timers
 
@@ -188,6 +222,9 @@ await vi.advanceTimersByTimeAsync(300);
 - Never call `vi.runAllTimers()`. Hoist's `Timer` heartbeat never ends.
 - When you expect a timer-driven rejection, attach the assertion before advancing time.
 - Use `vi.setSystemTime()` for code that reads the current date.
+- A POST stalls for seconds under Vitest's default fake timers - see
+  [#4798](https://github.com/xh/hoist-react/issues/4798). Call `vi.useRealTimers()` before you
+  await one.
 
 The setup restores real timers after every test. All tests run in the `America/New_York` time
 zone, so date logic gives the same result on every machine.
@@ -304,6 +341,8 @@ it('flags orders over the configured limit', () => {
 - A route added in `beforeAll()` or a setup file lasts for the rest of the file. A route added in
   `beforeEach()` or in a test lasts for that test, so a test can override a file's route.
 - `hoistCore.requestsTo('orders/7/approve')` returns the requests a route served.
+- `XH.fetchJson()` with `params` and no `method` sends a form-encoded POST, not a GET. Serve it with
+  `route('POST', ...)` and read the params from `req.form`, not `req.query`.
 - A path can also be an absolute URL, for an external API the app calls.
 - A request that the fake does not serve fails the test, and the failure names the URL.
 - A file boots once, so test each role set or user in its own spec file.

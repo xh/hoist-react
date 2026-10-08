@@ -522,7 +522,11 @@ export class XHApi {
 
         if (opts.removeQueryParams) url.search = '';
         // Add a unique query param to force a full reload without using the browser cache.
-        url.searchParams.set('xhCacheBuster', Date.now().toString());
+        // Appended by hand, as `url.searchParams.set()` would re-serialize the entire query string
+        // with form encoding - converting `%20` to `+` and corrupting existing route params.
+        // `AppContainerModel.initAsync()` removes the param again once the app has loaded.
+        const {search} = url;
+        url.search = `${search}${search ? '&' : '?'}xhCacheBuster=${Date.now()}`;
         document.location.assign(url);
     }
 
@@ -669,6 +673,8 @@ export class XHApi {
      *
      * @returns true if user confirms, false if user cancels. If an input is provided, the
      * returned Promise will resolve to the input value if user confirms, false if user cancels.
+     * Resolves to null if the message is closed without a choice - e.g. by a route change or
+     * when replaced by a later message with the same `messageKey`.
      */
     message<T = unknown>(config: MessageSpec): Promise<T | boolean> {
         return this.acm.messageSourceModel.message(config);

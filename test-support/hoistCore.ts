@@ -145,6 +145,8 @@ export class FakeHoistCore {
 
     private routes: Route[] = [];
     private testRouteCount = 0;
+    // Requests the client has sent and not yet received a response for - see trackFetch().
+    private inFlight = new Map<number, string>();
 
     constructor() {
         this.reset();
@@ -203,6 +205,57 @@ export class FakeHoistCore {
     /** @internal - removes the routes added during the test that just ran. */
     endTest() {
         this.routes.length = this.testRouteCount;
+        // The kit's teardown has already reported any request still open - not again next test.
+        this.inFlight.clear();
+    }
+
+    /**
+     * Wait until the fake has answered every request it received, and the client has handled
+     * those answers - including any requests that the handling starts in turn.
+     *
+     * Use it after an action that starts a request without returning its promise, such as a model
+     * method that saves in the background, before asserting on `requests` or on the result. The
+     * kit's setup also calls it when each test ends, so such a request cannot land in the next
+     * test's log.
+     *
+     * Waits on real time, even while the test fakes timers. Note that a POST stalls under Vitest's
+     * default fake timers (xh/hoist-react#4798) - call `vi.useRealTimers()` first.
+     *
+     * @param timeout - ms to wait before rejecting with the requests still open.
+     */
+    async settleAsync(timeout: number = 2000): Promise<void> {
+        const {inFlight} = this,
+            deadline = realNow() + timeout;
+        // Yield a macrotask, so the client can start a request it has queued.
+        await realWait(0);
+        while (inFlight.size) {
+            if (realNow() > deadline) {
+                const open = [...inFlight.values()].join(', ');
+                throw new Error(
+                    `Requests still open after ${timeout}ms: ${open}. A POST sent under fake ` +
+                        'timers can stall for good - see xh/hoist-react#4798.'
+                );
+            }
+            await realWait(5);
+            // Once all are answered, let the client handle them - which may start more.
+            if (!inFlight.size) await realWait(0);
+        }
+    }
+
+    /**
+     * @internal - wraps `fetch` to count each request as open from the client's call until the
+     * call settles, aborts included. Called by setup.ts after MSW patches `fetch` - counting from
+     * the call, not from MSW's interception, keeps a request from slipping past `settleAsync()`.
+     */
+    trackFetch() {
+        const {inFlight} = this,
+            fetch = globalThis.fetch;
+        let nextId = 0;
+        globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+            const id = nextId++;
+            inFlight.set(id, fetchLabel(input, init));
+            return fetch(input, init).finally(() => inFlight.delete(id));
+        }) as typeof fetch;
     }
 
     /** Username the client must report as `clientUsername` - the apparent user. */
@@ -389,6 +442,14 @@ export const hoistCore = new FakeHoistCore();
 /** The MSW server that routes Hoist's `fetch` calls to `hoistCore`. Started in setup.ts. */
 export const server = setupServer(...hoistCore.handlers);
 
+// The clock functions as loaded - Vitest's fake timers replace the globals, not these references.
+const realSetTimeout = globalThis.setTimeout,
+    realNow = Date.now;
+
+function realWait(ms: number): Promise<void> {
+    return new Promise(resolve => realSetTimeout(resolve, ms));
+}
+
 //------------------------
 // Default server state
 //------------------------
@@ -519,6 +580,19 @@ interface Route {
     method: HttpMethod | '*';
     url: string;
     fn: RouteFn;
+}
+
+// A request's method and path, as settleAsync() names it. Never throws, so fetch() reports a bad
+// input in its usual way.
+function fetchLabel(input: RequestInfo | URL, init?: RequestInit): string {
+    const req = input instanceof Request ? input : null,
+        method = (init?.method ?? req?.method ?? 'GET').toUpperCase(),
+        href = req?.url ?? String(input);
+    try {
+        return `${method} ${routePath(new URL(href, window.location.href))}`;
+    } catch {
+        return `${method} ${href}`;
+    }
 }
 
 // The recorded path - relative to the base URL, or the full URL for a request outside it.

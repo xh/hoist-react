@@ -48,6 +48,10 @@ if (!window.screen.orientation) {
     });
 }
 
+// Onsen UI, loaded by the mobile platform, throws "Invalid state" at import unless the root
+// element's computed style lists a transition property. jsdom lists only the properties set on it.
+document.documentElement.style.transitionDuration = '0s';
+
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
 // test when it finishes, with a message naming the cause.
@@ -87,7 +91,10 @@ console.warn = (...args: any[]) => {
     consoleWarn(...args);
 };
 
-beforeAll(() => server.listen({onUnhandledFrame}));
+beforeAll(() => {
+    server.listen({onUnhandledFrame});
+    hoistCore.trackFetch();
+});
 
 beforeEach(({onTestFinished}) => {
     // Routes added from here on - in beforeEach() or in the test - last only for this test.
@@ -96,10 +103,10 @@ beforeEach(({onTestFinished}) => {
     hoistCore.clearRequests();
     // Not an afterEach(): Vitest skips the remaining after-hooks once one throws, so an app's
     // failing afterEach() would leak this test's timers, routes and components into the next.
-    onTestFinished(endTest);
+    onTestFinished(endTestAsync);
 });
 
-function endTest() {
+async function endTestAsync() {
     // Unmount anything rendered by React Testing Library - its auto-cleanup needs Vitest globals.
     // Report an unmount error as a problem, so the resets below still run.
     try {
@@ -108,6 +115,13 @@ function endTest() {
         problems.push(`Error unmounting rendered components: ${e}`);
     }
     vi.useRealTimers();
+    // Let requests the test started without awaiting finish now, before its routes are removed -
+    // otherwise they land in the next test's request log. Includes any sent by an unmount above.
+    try {
+        await hoistCore.settleAsync();
+    } catch (e) {
+        problems.push(e.message);
+    }
     server.resetHandlers();
     hoistCore.endTest();
 
