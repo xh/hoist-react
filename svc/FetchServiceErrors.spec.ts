@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import type {FetchException, FetchOptions} from '@xh/hoist/svc';
-import {authFailure, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {authFailure, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it} from 'vitest';
 
@@ -14,7 +14,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
  * How FetchService decodes a failed request into a HoistException. Apps, and Hoist's own
  * ExceptionHandler, branch on the decoded name, isRoutine and httpStatus - to choose an alert or
  * an error dialog, to log to the server, to retry, or to force a reload on session mismatch.
- * Server responses below use the shapes hoist-core renders, via the helpers in test/hoistCore.ts.
+ * Server responses below use the shapes hoist-core renders, via the helpers in test-support/hoistCore.ts.
  */
 describe('FetchService', () => {
     beforeAll(async () => {

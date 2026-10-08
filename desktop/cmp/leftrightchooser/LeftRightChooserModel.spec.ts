@@ -9,7 +9,7 @@ import {
     type LeftRightChooserConfig,
     type LeftRightChooserItem
 } from '@xh/hoist/desktop/cmp/leftrightchooser';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**

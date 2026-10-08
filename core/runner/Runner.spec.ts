@@ -6,7 +6,7 @@
  */
 import {type CallContext, HoistModel, LoadSpec, Span, TaskObserver, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
-import {hoistCore, initTestAppAsync} from '@xh/hoist/test';
+import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 /**

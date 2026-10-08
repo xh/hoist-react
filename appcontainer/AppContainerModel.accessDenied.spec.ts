@@ -5,7 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {hoistCore, initTestAppAsync, server, xhUrl, type RecordedRequest} from '@xh/hoist/test';
+import {
+    hoistCore,
+    initTestAppAsync,
+    server,
+    xhUrl,
+    type RecordedRequest
+} from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 

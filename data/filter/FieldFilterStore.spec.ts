@@ -13,7 +13,7 @@ import {
     type FieldSpec,
     type StoreRecord
 } from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isArray, sortBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';

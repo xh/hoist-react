@@ -13,7 +13,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import type {HoistException} from '@xh/hoist/exception';
-import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {delay, http, HttpResponse} from 'msw';
 import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 
