@@ -83,7 +83,9 @@
       background-image: var(--ag-internal-row-overlay-image, none);
     }
 
-    &.ag-row-selected .ag-cell {
+    // Set on the row, so that cells inherit it unless they carry a color class of their own - as
+    // the string formatters' `colorSpec` classes do.
+    &.ag-row-selected {
       color: var(--xh-grid-selected-row-text-color);
     }
 
