@@ -524,7 +524,7 @@ expectThrows(
 //------------------
 // Degenerate cases
 //------------------
-suite('empty pivotDimensions degenerates to zero cells', () => {
+suite('empty pivot dimensions degenerate to zero cells', () => {
     const errs: string[] = [],
         {structure, paths} = build({
             name: 'none',
@@ -536,7 +536,7 @@ suite('empty pivotDimensions degenerates to zero cells', () => {
     if (structure.cellCount !== 0) errs.push(`expected 0 cells, got ${structure.cellCount}`);
     if (paths.paths.length !== 1) errs.push(`expected root path only, got ${paths.paths.length}`);
     if (paths.maxDepth !== 0) errs.push(`expected maxDepth 0, got ${paths.maxDepth}`);
-    check('empty pivotDimensions degenerates to zero cells', errs);
+    check('empty pivot dimensions degenerate to zero cells', errs);
 });
 
 suite('no records yields zero cells', () => {

@@ -6,226 +6,105 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {Field, Store, StoreConfig, StoreRecord} from '@xh/hoist/data';
+import {Field, Store, StoreRecord} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {VIEW_ROW_DATA_FIELDS, ViewRowData} from './ViewRowData';
+import {CubeField} from '../CubeField';
+import {PivotCellField, PivotPath} from '../PivotPath';
+import {BaseRow} from '../row/BaseRow';
+import {LeafRow} from '../row/LeafRow';
+import {PivotCellRow} from '../row/PivotCellRow';
+import type {View} from '../View';
+import {ViewRowData} from '../ViewRowData';
 import {
     buildPivotStructure,
     CHILD_KIND_LEAF,
     discoverPivotPaths,
-    PATH_DELIMITER,
     pivotCellFieldName,
     type PivotStructure,
     type PivotPathDiscoveryResult,
     type PivotPathSpec
-} from './impl/PivotStructure';
-import {PivotRowDataGenerator} from './impl/PivotRowDataGenerator';
-import {PivotPhases, PivotViewDiagnostics} from './impl/PivotViewDiagnostics';
-import {CubeField} from './CubeField';
-import {PivotCellField, PivotPath} from './PivotPath';
-import {PivotQuery, PivotQueryConfig} from './PivotQuery';
-import {BaseRow} from './row/BaseRow';
-import {LeafRow} from './row/LeafRow';
-import {PivotCellRow} from './row/PivotCellRow';
-import {View, ViewConfig, ViewResult} from './View';
-
-export interface PivotViewResult extends ViewResult {
-    /**
-     * Pivot path tree, top-level paths first with nested `children`. Identity-stable while the pivot
-     * structure is unchanged - track it to decide whether to rebuild columns.
-     */
-    paths: PivotPath[];
-
-    /**
-     * One entry per (path, value field), including the root-path row totals. Identity-stable with
-     * `paths` - track it to decide whether to re-declare Store fields. Note both move on a
-     * `valueFields`-only change, even though the path tree itself is structurally unchanged.
-     */
-    cellFields: PivotCellField[];
-}
+} from './PivotStructure';
+import {PivotPhases} from './ViewDiagnostics';
 
 /**
- * Configuration for {@link PivotView.createStore}. Accepts the full {@link StoreConfig} surface,
- * defaulting `loadTreeData` and `projectionOnly` to true.
+ * Pivot support for a {@link View} whose query sets {@link QueryConfig.pivot}.
+ *
+ * The row hierarchy and the pivot hierarchy are orthogonal: every node of the row hierarchy
+ * carries its own subtree of {@link PivotCellRow}s, one per populated pivot path. Those are real
+ * rows in the aggregation network, so every aggregator works unmodified and ticks propagate
+ * incrementally, but they never enter the visible tree or reach a connected Store. Instead each
+ * cell's values are written onto its owning group row as flat synthetic fields, named per
+ * {@link ViewResult.cellFields} - so they are ordinary Store fields and work with grid column
+ * filters, Excel export, and inline editing.
+ *
+ * Owned by its View and driven from the few points in the View lifecycle that pivoting touches:
+ * index building, path discovery before rows are generated, cell generation after, projection of
+ * updated cells on a tick, and cell-field declaration on connected stores. Created on a View's
+ * first pivoted query and retained thereafter - with an unpivoted query it holds no cells.
+ *
+ * `PivotStructure` plans the cells; this class materializes them.
+ *
+ * @internal
  */
-export interface PivotViewStoreConfig extends StoreConfig {
-    /**
-     * True to register the new Store for live updates from this view. The *caller* owns the store
-     * and must call {@link PivotView.disconnectStore} when done with it. False (default) to declare
-     * fields and load once from the current result, then never again.
-     */
-    connect?: boolean;
-}
+export class PivotCells {
+    private readonly view: View;
 
-/**
- * A {@link View} that additionally slices its measures across a pivot axis, producing a compact
- * table of `(group row, pivot path)` cells alongside the usual row hierarchy.
- *
- * Create via {@link Cube.createPivotView}. Cell values arrive as flat synthetic fields on the
- * published row data, named per {@link PivotViewResult.cellFields} - so they are ordinary Store
- * fields, and work with grid column filters, Excel export, and inline editing.
- *
- * The row hierarchy and the pivot hierarchy are orthogonal: every node of the row hierarchy carries
- * its own pivot subtree of {@link PivotCellRow}s. Those are real rows in the aggregation network, so
- * every aggregator works unmodified and ticks propagate incrementally, but they never enter the
- * visible tree or reach a connected Store.
- *
- * @see PivotQuery
- * @mcpHint live or snapshot pivoted view of aggregated Cube data
- */
-export class PivotView extends View {
-    /** Separator between pivot path segments, and between a path key and its value field. */
-    static PATH_DELIMITER = PATH_DELIMITER;
-
-    // Narrow the inherited observable accessors to the pivot types.
-    override get query(): PivotQuery {
-        return super.query as PivotQuery;
-    }
-    override set query(query: PivotQuery) {
-        super.query = query;
-    }
-
-    override get result(): PivotViewResult {
-        return super.result as PivotViewResult;
-    }
-    override set result(result: PivotViewResult) {
-        super.result = result;
-    }
-
-    // Implementation - declared, never initialized. Field initializers on a View subclass would run
-    // *after* super()'s constructor-time fullUpdate() and wipe everything generated by it.
-    declare protected _allPaths: PivotPath[];
-    declare protected _pathKeys: string[];
-    declare protected _pathLabels: string[];
-    declare protected _valueFieldNames: string[];
-    declare protected _paths: PivotPath[];
-    /** Published cell fields - also read by `PivotRowDataGenerator` to shape exposed leaves. */
-    declare _cellFields: PivotCellField[];
-    /** Keyed on path *identity*, so a cell can never resolve names for a path it no longer holds. */
-    declare protected _cellFieldNames: Map<PivotPath, string[]>;
-    /** Index of each path within `_allPaths` - what an exposed leaf's `_pivotPathIdx` names. */
-    declare _pathIdx: Map<PivotPath, number>;
-    /** This generation's path discovery, run ahead of row generation - see `discoverPaths`. */
-    declare protected _discovery: PivotPathDiscoveryResult;
-    declare protected _cellRows: PivotCellRow[];
-    /** Phase timings for the generation in progress, reported by `afterGenerateRows`. */
-    declare private _phases: PivotPhases;
-    /** Cell fields last declared on each store, by identity - the structural-change signal. */
-    declare protected _syncedCellFields: WeakMap<Store, PivotCellField[]>;
+    /** Pivot path tree, top-level paths first - see {@link ViewResult.paths}. */
+    paths: PivotPath[] = [];
+    /** One entry per (path, value field) - see {@link ViewResult.cellFields}. */
+    cellFields: PivotCellField[] = [];
+    /** Index of each path within `allPaths` - what an exposed leaf's `_pivotPathIdx` names. */
+    pathIdx: Map<PivotPath, number> = new Map();
 
     // Aggregation field lists for cell rows, in the shape View maintains per depth for group rows -
-    // see PivotCellRow. Rebuilt with the base indices, as `updateQuery` can change `valueFields`.
-    declare _cellAggFields: CubeField[];
-    declare _cellAggFieldNames: Set<string>;
-    declare _cellCanAggregateFnFields: CubeField[];
-    declare _cellComplexAggFields: CubeField[];
+    // see PivotCellRow. Cells aggregate the value fields alone, plus their dependencies.
+    cellAggFields: CubeField[] = [];
+    cellAggFieldNames: Set<string> = new Set();
+    cellCanAggregateFnFields: CubeField[] = [];
+    cellComplexAggFields: CubeField[] = [];
 
-    /** @internal - applications should use {@link Cube.createPivotView} */
-    constructor(config: ViewConfig) {
-        super(config);
-    }
+    private allPaths: PivotPath[] = [];
+    private pathKeys: string[] = null;
+    private pathLabels: string[] = [];
+    private valueFieldNames: string[] = [];
+    /** Keyed on path *identity*, so a cell can never resolve names for a path it no longer holds. */
+    private cellFieldNamesByPath: Map<PivotPath, string[]> = new Map();
+    /** This generation's path discovery, run ahead of row generation - see `discoverPaths`. */
+    private discovery: PivotPathDiscoveryResult = null;
+    private cellRows: PivotCellRow[] = [];
+    /** Phase timings for the generation in progress, reported by `generateCells`. */
+    private phases: PivotPhases = null;
+    /** Cell fields last declared on each store, by identity - the structural-change signal. */
+    private syncedCellFields = new WeakMap<Store, PivotCellField[]>();
 
-    /**
-     * As per {@link View.updateQuery}, widened to the pivot members - without this override
-     * `pivotDimensions` and `valueFields` are unreachable from an object literal, including the
-     * documented case of emptying `pivotDimensions` to degenerate to plain View behavior.
-     */
-    override updateQuery(overrides: Partial<PivotQueryConfig>) {
-        super.updateQuery(overrides);
-    }
-
-    /**
-     * Create a Store shaped for this view's results - a Field per {@link ViewRowData} member, per
-     * query field, and per {@link PivotViewResult.cellFields} entry, kept in sync as the pivot
-     * structure changes.
-     *
-     * A convenience factory, not a claim of ownership: the *caller* owns the returned Store, and a
-     * caller passing `connect: true` must call {@link disconnectStore} from its own `destroy()`.
-     * (`View.destroy` unregisters itself from its Cube only because there the registered object is
-     * the owned one.)
-     */
-    createStore(config?: PivotViewStoreConfig): Store {
-        const {connect = false, fields = [], ...rest} = config ?? {};
-
-        const store = new Store({
-            loadTreeData: true,
-            projectionOnly: true,
-            xhName: this.childXhName('store'),
-            ...rest,
-            fields: [...VIEW_ROW_DATA_FIELDS, ...this.fields, ...fields]
-        });
-
-        // Run `parseStores` either way - it installs the row digest and rejects a conflicting one,
-        // and an unconnected store still loads from this view. Without the digest it would fall
-        // back to per-field value comparison, which a pivot store pays for across every cell field.
-        const [parsed] = this.parseStores(store);
-        if (connect) this.stores = [...this.stores, parsed];
-
-        this.syncStore(store);
-        this.loadStore(store);
-
-        return store;
-    }
-
-    /** Stop loading the given Store from this view. Callers of {@link createStore} own this call. */
-    disconnectStore(store: Store) {
-        this.stores = this.stores.filter(it => it !== store);
+    constructor(view: View) {
+        this.view = view;
     }
 
     //------------------------
-    // Implementation
+    // View lifecycle
     //------------------------
-    protected override createRowDataGenerator(): PivotRowDataGenerator {
-        return new PivotRowDataGenerator(this);
-    }
-
-    protected override createDiagnostics(): PivotViewDiagnostics {
-        return new PivotViewDiagnostics(this);
-    }
-
-    private get pivotRowDataGenerator(): PivotRowDataGenerator {
-        return this._rowDataGenerator as PivotRowDataGenerator;
-    }
-
-    protected override buildIndices() {
-        super.buildIndices();
-        this.buildCellAggFields();
-    }
-
-    /**
-     * Create the data object for a cell row.
-     * @internal
-     */
-    newCellRowData(): PlainObject {
-        const ret = this.pivotRowDataGenerator.newCellRowData();
-        this.assignDigest(ret as ViewRowData);
-        return ret;
-    }
-
-    protected override beforeGenerateRows() {
-        const start = performance.now();
-        this.discoverPaths();
-        this._phases = {
-            discover: performance.now() - start,
-            align: 0,
-            plan: 0,
-            build: 0,
-            project: 0
-        };
-    }
-
-    protected override afterGenerateRows() {
-        this.generateCells(this._records.list);
-
-        // Pivot work alone - base row generation is already reported by the op it ran under.
-        const phases = this._phases;
-        (this.diagnostics as PivotViewDiagnostics).notePivot({
-            paths: this._allPaths?.length ?? 0,
-            cells: this._cellRows?.length ?? 0,
-            phases,
-            elapsed: phases.discover + phases.align + phases.plan + phases.build + phases.project
+    /** Derive the cell aggregation field lists. Runs with the View's own `buildIndices`. */
+    buildIndices() {
+        const {view} = this,
+            names = new Set<string>();
+        this.valueFields.forEach(f => {
+            names.add(f.name);
+            f.aggregator?.dependsOn?.forEach(n => names.add(n));
         });
+
+        const fields: CubeField[] = [];
+        names.forEach(name => {
+            const field = view.getField(name);
+            if (field?.aggregator) fields.push(field);
+        });
+        this.cellAggFields = fields;
+        this.cellAggFieldNames = new Set(fields.map(f => f.name));
+        this.cellCanAggregateFnFields = fields.filter(f => f.canAggregateFn);
+        this.cellComplexAggFields = fields.filter(f => !f.aggregator.dependsOnChildrenOnly);
+
+        view._rowDataGenerator.onCellAggFieldsChange();
     }
 
     /**
@@ -236,35 +115,72 @@ export class PivotView extends View {
      * the pivot dimension names - never the row tree - so nothing forces it to wait. Only the
      * structure needs groups, and that stays in `generateCells`.
      */
-    private discoverPaths() {
-        const {query} = this;
+    discoverPaths() {
+        const {view} = this,
+            {query} = view,
+            start = performance.now();
+
         if (query.isPivoted) {
-            this._discovery = discoverPivotPaths(this._records.list, query.pivotDimensionNames, {
-                emptyPathLabel: query.emptyPathLabel,
-                maxPivotPaths: query.maxPivotPaths
+            const {pivot} = query;
+            this.discovery = discoverPivotPaths(view._records.list, pivot.dimensionNames, {
+                emptyPathLabel: pivot.emptyPathLabel,
+                maxPivotPaths: pivot.maxPivotPaths
             });
-            this.syncPaths(this._discovery.paths);
+            this.syncPaths(this.discovery.paths);
         } else {
-            this._discovery = null;
+            this.discovery = null;
             this.clearCells();
         }
 
-        if (this.pivotRowDataGenerator.onCellFieldsChange()) {
-            this._rowCache.invalidateExposedLeaves();
+        if (view._rowDataGenerator.onCellFieldsChange()) {
+            view._rowCache.invalidateExposedLeaves();
         }
-    }
 
-    protected override createResult(): PivotViewResult {
-        return {
-            ...super.createResult(),
-            paths: this._paths ?? [],
-            cellFields: this._cellFields ?? []
+        this.phases = {
+            discover: performance.now() - start,
+            align: 0,
+            plan: 0,
+            build: 0,
+            project: 0
         };
     }
 
-    protected override loadStores() {
-        this.stores.forEach(store => this.syncStore(store));
-        super.loadStores();
+    /** Build or reuse the cell rows for the just-generated row tree, and report the timings. */
+    generateCells() {
+        const {view} = this;
+        this.buildCells(view._records.list);
+
+        // Pivot work alone - base row generation is already reported by the op it ran under.
+        const {phases} = this;
+        view.diagnostics.notePivot({
+            paths: this.allPaths.length,
+            cells: this.cellRows.length,
+            phases,
+            elapsed: phases.discover + phases.align + phases.plan + phases.build + phases.project
+        });
+    }
+
+    /**
+     * Rewrite the cells touched by a tick onto their owning group rows, returning the group rows to
+     * push to connected stores - cell rows are never published.
+     */
+    projectUpdatedRows(updatedRows: Set<BaseRow>, changedFields: Set<string>): Set<BaseRow> {
+        const groupRows = new Set<BaseRow>(),
+            {exposesLeaves} = this.view;
+
+        updatedRows.forEach(row => {
+            if (row instanceof PivotCellRow) {
+                this.projectCell(row, changedFields);
+                groupRows.add(row.ownerRow);
+            } else {
+                if (exposesLeaves && row.isLeaf) {
+                    this.noteLeafCellFields(row as LeafRow, changedFields);
+                }
+                groupRows.add(row);
+            }
+        });
+
+        return groupRows;
     }
 
     /**
@@ -278,12 +194,11 @@ export class PivotView extends View {
      * fields rather than merely rendering late. Plain Views need none of this - their field set is
      * static and known at construction, while cell fields are discovered from data.
      */
-    private syncStore(store: Store) {
-        store.setLoadRootAsSummary(this.query.includeRoot);
+    syncStore(store: Store) {
+        store.setLoadRootAsSummary(this.view.query.includeRoot);
 
-        const cellFields = this._cellFields ?? [],
-            synced = (this._syncedCellFields ??= new WeakMap()),
-            prior = synced.get(store);
+        const {cellFields, syncedCellFields} = this,
+            prior = syncedCellFields.get(store);
 
         // `clearCells` mints a fresh empty array per build, so identity alone is not enough to keep
         // a degenerate (unpivoted) view from re-declaring fields on every one.
@@ -307,54 +222,45 @@ export class PivotView extends View {
                 );
 
         store.setFields([...retained, ...added]);
-        synced.set(store, cellFields);
-    }
-
-    /** A change to a *pivot* dimension value restructures the columns - force a full rebuild. */
-    protected override getStructuralDimensions(): CubeField[] {
-        return [...super.getStructuralDimensions(), ...this.query.pivotDimensions];
+        syncedCellFields.set(store, cellFields);
     }
 
     /**
-     * Rewrite the cells touched by a tick onto their owning group rows, then push only group rows to
-     * connected stores - cell rows are never published.
+     * Create the data object for a cell row.
+     * @internal
      */
-    protected override loadUpdatedRows(updatedRows: Set<BaseRow>, changedFields: Set<string>) {
-        const groupRows = new Set<BaseRow>(),
-            {exposesLeaves} = this;
+    newCellRowData(): PlainObject {
+        const {view} = this,
+            ret = view._rowDataGenerator.newCellRowData();
+        view.assignDigest(ret as ViewRowData);
+        return ret;
+    }
 
-        updatedRows.forEach(row => {
-            if (row instanceof PivotCellRow) {
-                this.projectCell(row, changedFields);
-                groupRows.add(row.ownerRow);
-            } else {
-                if (exposesLeaves && row.isLeaf) {
-                    this.noteLeafCellFields(row as LeafRow, changedFields);
-                }
-                groupRows.add(row);
-            }
-        });
-
-        super.loadUpdatedRows(groupRows, changedFields);
+    //------------------------
+    // Implementation
+    //------------------------
+    private get valueFields(): CubeField[] {
+        return this.view.query.pivot?.valueFields ?? [];
     }
 
     private clearCells() {
-        this.clearVacatedCells(this._cellRows, EMPTY_CELLS);
-        this._allPaths = [];
-        this._pathKeys = [];
-        this._pathLabels = [];
-        this._valueFieldNames = [];
-        this._paths = [];
-        this._cellFields = [];
-        this._cellFieldNames = new Map();
-        this._pathIdx = new Map();
-        this._cellRows = [];
+        this.clearVacatedCells(this.cellRows, EMPTY_CELLS);
+        this.allPaths = [];
+        this.pathKeys = [];
+        this.pathLabels = [];
+        this.valueFieldNames = [];
+        this.paths = [];
+        this.cellFields = [];
+        this.cellFieldNamesByPath = new Map();
+        this.pathIdx = new Map();
+        this.cellRows = [];
     }
 
-    private generateCells(records: StoreRecord[]) {
-        const {_discovery, _rootRows, exposesLeaves, _phases} = this,
-            prevCells = this._cellRows;
-        if (!_discovery || isEmpty(_rootRows)) return this.clearCells();
+    private buildCells(records: StoreRecord[]) {
+        const {view, discovery, phases} = this,
+            {_rootRows, exposesLeaves} = view,
+            prevCells = this.cellRows;
+        if (!discovery || isEmpty(_rootRows)) return this.clearCells();
 
         let mark = performance.now();
         const lap = () => {
@@ -372,10 +278,10 @@ export class PivotView extends View {
             leafOwnerGroup: number[] = [],
             leafPathIdx: number[] = [];
         for (let i = 0; i < records.length; i++) {
-            const leaf = this._leafMap.get(records[i].id);
+            const leaf = view._leafMap.get(records[i].id);
             if (!leaf) continue;
 
-            const pathIdx = _discovery.pathIdxOfRecord[i];
+            const pathIdx = discovery.pathIdxOfRecord[i];
 
             // Stamped on every leaf, owned or not - this is what its cell-field getters read, so a
             // leaf that lands in no cell must not keep publishing a previous generation's column.
@@ -388,7 +294,7 @@ export class PivotView extends View {
             leafPathIdx.push(pathIdx);
         }
         if (isEmpty(leafRows)) return this.clearCells();
-        _phases.align = lap();
+        phases.align = lap();
 
         const structure = buildPivotStructure({
             groupCount: groups.length,
@@ -396,20 +302,20 @@ export class PivotView extends View {
             innermost: Uint8Array.from(innermost),
             leafOwnerGroup: Int32Array.from(leafOwnerGroup),
             leafPathIdx: Int32Array.from(leafPathIdx),
-            pathCount: _discovery.paths.length,
-            pathParentIdx: _discovery.pathParentIdx,
-            pathDepth: _discovery.pathDepth,
-            maxDepth: _discovery.maxDepth
+            pathCount: discovery.paths.length,
+            pathParentIdx: discovery.pathParentIdx,
+            pathDepth: discovery.pathDepth,
+            maxDepth: discovery.maxDepth
         });
 
-        _phases.plan = lap();
+        phases.plan = lap();
 
         this.buildCellRows(structure, groups, leafRows);
-        this.clearVacatedCells(prevCells, new Set(this._cellRows));
-        _phases.build = lap();
+        this.clearVacatedCells(prevCells, new Set(this.cellRows));
+        phases.build = lap();
 
-        this._cellRows.forEach(cell => this.projectCell(cell));
-        _phases.project = lap();
+        this.cellRows.forEach(cell => this.projectCell(cell));
+        phases.project = lap();
     }
 
     /**
@@ -441,7 +347,8 @@ export class PivotView extends View {
             cell.staleAggs = true;
 
             const {data} = cell.ownerRow;
-            if (clearCellSlots(cell, data, EMPTY_NAMES)) this.assignDigest(data as ViewRowData);
+            if (clearCellSlots(cell, data, EMPTY_NAMES))
+                this.view.assignDigest(data as ViewRowData);
         });
     }
 
@@ -456,21 +363,21 @@ export class PivotView extends View {
         // concatenation, so no value can forge a boundary between them.
         const keys = specs.map(s => s.key),
             labels = specs.map(s => s.label),
-            valueFieldNames = this.query.valueFields.map(f => f.name);
+            valueFieldNames = this.valueFields.map(f => f.name);
         if (
-            this._pathKeys &&
-            arraysEqual(this._pathKeys, keys) &&
-            arraysEqual(this._pathLabels, labels) &&
-            arraysEqual(this._valueFieldNames, valueFieldNames)
+            this.pathKeys &&
+            arraysEqual(this.pathKeys, keys) &&
+            arraysEqual(this.pathLabels, labels) &&
+            arraysEqual(this.valueFieldNames, valueFieldNames)
         ) {
             return;
         }
 
-        const {pivotDimensions, valueFields} = this.query,
+        const {dimensions, valueFields} = this.view.query.pivot,
             all: PivotPath[] = specs.map(
                 s =>
                     new PivotPath({
-                        dimension: s.dimIdx >= 0 ? pivotDimensions[s.dimIdx] : null,
+                        dimension: s.dimIdx >= 0 ? dimensions[s.dimIdx] : null,
                         value: s.value,
                         label: s.label,
                         key: s.key,
@@ -484,11 +391,11 @@ export class PivotView extends View {
         });
 
         const cellFields: PivotCellField[] = [],
-            cellFieldNames = new Map<PivotPath, string[]>(),
+            cellFieldNamesByPath = new Map<PivotPath, string[]>(),
             pathIdx = new Map<PivotPath, number>();
         all.forEach((path, idx) => {
             const names = valueFields.map(vf => pivotCellFieldName(path.key, vf.name));
-            cellFieldNames.set(path, names);
+            cellFieldNamesByPath.set(path, names);
             pathIdx.set(path, idx);
             valueFields.forEach((valueField, i) => {
                 cellFields.push({name: names[i], path, valueField});
@@ -497,14 +404,14 @@ export class PivotView extends View {
 
         this.validateCellFieldNames(cellFields);
 
-        this._pathKeys = keys;
-        this._pathLabels = labels;
-        this._valueFieldNames = valueFieldNames;
-        this._allPaths = all;
-        this._paths = all[0].children;
-        this._cellFields = cellFields;
-        this._cellFieldNames = cellFieldNames;
-        this._pathIdx = pathIdx;
+        this.pathKeys = keys;
+        this.pathLabels = labels;
+        this.valueFieldNames = valueFieldNames;
+        this.allPaths = all;
+        this.paths = all[0].children;
+        this.cellFields = cellFields;
+        this.cellFieldNamesByPath = cellFieldNamesByPath;
+        this.pathIdx = pathIdx;
     }
 
     /**
@@ -512,12 +419,12 @@ export class PivotView extends View {
      * Root-path entries are exempt - those *are* the value field, by design.
      */
     private validateCellFieldNames(cellFields: PivotCellField[]) {
-        const cubeNames = new Set(this.cube.fields.map(f => f.name));
+        const cubeNames = new Set(this.view.cube.fields.map(f => f.name));
         cellFields.forEach(({name, path}) => {
             if (!path.isRoot && cubeNames.has(name)) {
                 throw new Error(
                     `Generated pivot cell field '${name}' collides with a Cube field of the same ` +
-                        `name. Rename the Cube field, or change PivotView.PATH_DELIMITER.`
+                        `name. Rename the Cube field, or change PATH_DELIMITER.`
                 );
             }
         });
@@ -531,13 +438,13 @@ export class PivotView extends View {
      */
     private buildCellRows(structure: PivotStructure, groups: BaseRow[], leafRows: LeafRow[]) {
         const {cellCount, cellGroup, cellPath, childStart, childIdx, cellChildKind} = structure,
-            {_allPaths} = this,
+            {view, allPaths} = this,
             cellRows: PivotCellRow[] = new Array(cellCount);
 
         for (let c = cellCount - 1; c >= 0; c--) {
             const ownerRow = groups[cellGroup[c]],
                 pathIdx = cellPath[c],
-                path = _allPaths[pathIdx],
+                path = allPaths[pathIdx],
                 isLeafKind = cellChildKind[c] === CHILD_KIND_LEAF,
                 children: BaseRow[] = [];
 
@@ -546,10 +453,10 @@ export class PivotView extends View {
             }
 
             const id = `${ownerRow.id}#${path.key}`,
-                row = (cellRows[c] = this._rowCache.getOrCreate(
+                row = (cellRows[c] = view._rowCache.getOrCreate(
                     id,
                     children,
-                    () => new PivotCellRow(this, id, children, ownerRow, path)
+                    () => new PivotCellRow(view, id, children, ownerRow, path)
                 ));
 
             // A cache hit means the id and the children match - not that the objects they name are
@@ -571,28 +478,7 @@ export class PivotView extends View {
             leafRows[l].pivotParent = cell >= 0 ? cellRows[cell] : null;
         }
 
-        this._cellRows = cellRows;
-    }
-
-    // Cells aggregate the query's value fields, plus any fields those declare a dependence on.
-    private buildCellAggFields() {
-        const names = new Set<string>();
-        this.query.valueFields.forEach(f => {
-            names.add(f.name);
-            f.aggregator?.dependsOn?.forEach(n => names.add(n));
-        });
-
-        const fields: CubeField[] = [];
-        names.forEach(name => {
-            const field = this.getField(name);
-            if (field?.aggregator) fields.push(field);
-        });
-        this._cellAggFields = fields;
-        this._cellAggFieldNames = new Set(fields.map(f => f.name));
-        this._cellCanAggregateFnFields = fields.filter(f => f.canAggregateFn);
-        this._cellComplexAggFields = fields.filter(f => !f.aggregator.dependsOnChildrenOnly);
-
-        this.pivotRowDataGenerator.onCellAggFieldsChange();
+        this.cellRows = cellRows;
     }
 
     /**
@@ -618,7 +504,7 @@ export class PivotView extends View {
         const names = this.cellFieldNames(cell),
             {data, ownerRow} = cell,
             ownerData = ownerRow.data,
-            {valueFields} = this.query;
+            {valueFields} = this;
 
         let changed = clearCellSlots(cell, ownerData, names, changedFields);
         for (let i = 0; i < valueFields.length; i++) {
@@ -631,12 +517,12 @@ export class PivotView extends View {
             }
         }
 
-        if (changed) this.assignDigest(ownerData as ViewRowData);
+        if (changed) this.view.assignDigest(ownerData as ViewRowData);
     }
 
     /** A miss means a cached cell outlived its path - `buildCellRows` should have rebound it. */
     private cellFieldNames(cell: PivotCellRow): string[] {
-        const ret = this._cellFieldNames.get(cell.path);
+        const ret = this.cellFieldNamesByPath.get(cell.path);
         throwIf(!ret, 'No pivot cell fields for this cell path - stale cached cell row.');
         return ret;
     }
@@ -662,7 +548,7 @@ export class PivotView extends View {
 
             row.children?.forEach(child => visit(child, idx));
         };
-        this._rootRows.forEach(row => visit(row, -1));
+        this.view._rootRows.forEach(row => visit(row, -1));
 
         return {groups, parentOfGroup, innermost, groupIdxOf};
     }

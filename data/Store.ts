@@ -996,7 +996,7 @@ export class Store
      * Drops all records - existing `data` objects were built against the outgoing defaults, and
      * callers reload immediately.
      *
-     * @internal - supports {@link PivotView}, whose cell fields are only discoverable from data.
+     * @internal - supports pivoted Views, whose cell fields are only discoverable from data.
      *      Not an app-facing API for reshaping a Store.
      */
     @action

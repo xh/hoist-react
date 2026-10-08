@@ -29,7 +29,7 @@ export interface PivotGridProps<M extends PivotGridModel = PivotGridModel>
  *
  * It displays group rows down a tree column and pivot paths across nested column groups, with
  * optional docked summaries. See {@link PivotGridModel} for its configuration, and
- * {@link PivotView} for the query that supplies its data.
+ * {@link QueryConfig.pivot} for the query that supplies its data.
  */
 export const [PivotGrid, pivotGrid] = hoistCmp.withFactory<PivotGridProps>({
     displayName: 'PivotGrid',

@@ -21,7 +21,7 @@ import {RowUpdate} from './RowUpdate';
  *
  * The concrete subclasses {@link AggregateRow} and {@link BucketRow} group their children by a
  * dimension value and a dynamic bucket, respectively, while {@link PivotCellRow} aggregates one
- * cell of a {@link PivotView}.
+ * cell of a pivoted View.
  *
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
@@ -49,7 +49,7 @@ export abstract class ParentRow extends BaseRow {
      * aggregates are still current - sound only for a row that stayed live throughout.
      *
      * Never set in a plain View, where a discarded row keeps its `parent` links and so keeps
-     * receiving updates. See {@link PivotView} - cells are discarded outright.
+     * receiving updates. See `PivotCells` - cells are discarded outright.
      */
     staleAggs: boolean = false;
 

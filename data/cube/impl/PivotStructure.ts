@@ -9,7 +9,7 @@ import type {PlainObject} from '@xh/hoist/core';
 
 /**
  * Pure combinatorial core of the Cube pivot view: discovers the pivot path tree from a set of
- * records, then plans the structure of `(group node, pivot path)` cells that `PivotView` materializes
+ * records, then plans the structure of `(group node, pivot path)` cells that `PivotCells` materializes
  * as rows in the aggregation network.
  *
  * Deliberately free of any runtime framework dependency - plain data and integer indices only, so
@@ -38,7 +38,7 @@ export interface PivotRecordLike {
 /** One node of the pivot path tree; index 0 is always the synthetic root path. */
 export interface PivotPathSpec {
     idx: number;
-    /** Index into the query's `pivotDimensions`; -1 for the root. */
+    /** Index into the query's pivot `dimensions`; -1 for the root. */
     dimIdx: number;
     /** Raw dimension value, null for an empty segment. */
     value: any;

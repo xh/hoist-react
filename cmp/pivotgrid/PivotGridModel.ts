@@ -6,7 +6,7 @@
  */
 import {ColumnGroupSpec, ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, HSide, managed, ReactionSpec, VSide} from '@xh/hoist/core';
-import {CubeField, PivotCellField, PivotPath, PivotView, Store} from '@xh/hoist/data';
+import {CubeField, PivotCellField, PivotPath, Store, View} from '@xh/hoist/data';
 import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {isArray, isEmpty, mapValues, omit, orderBy, sortBy} from 'lodash';
 
@@ -51,19 +51,19 @@ export type PivotValueColumnSpec = Omit<ColumnSpec, (typeof RESERVED_VALUE_COLUM
 /**
  * Configuration for a {@link PivotGridModel}.
  *
- * Carries no query configuration: `dimensions`, `pivotDimensions`, `valueFields`, `includeRoot` and
- * the rest live on the {@link PivotQuery} behind `view`, and apps reconfigure by calling
- * `view.updateQuery()`. Everything here is presentational.
+ * Carries no query configuration: `dimensions`, `pivot`, `includeRoot` and the rest live on the
+ * {@link Query} behind `view`, and apps reconfigure by calling `view.updateQuery()`. Everything
+ * here is presentational.
  *
  * @see PivotGridModel
  */
 export interface PivotGridConfig {
     /**
-     * View supplying this grid's data. Owned by the *application* - this model neither manages nor
-     * destroys it, and cannot swap it after construction. Two PivotGridModels may bind to one view;
-     * each mints its own Store.
+     * View supplying this grid's data, with a query that sets {@link QueryConfig.pivot}. Owned by
+     * the *application* - this model neither manages nor destroys it, and cannot swap it after
+     * construction. Two PivotGridModels may bind to one view; each mints its own Store.
      */
-    view: PivotView;
+    view: View;
 
     /**
      * Docked summary column(s) holding each value field's aggregate across all pivot paths. True for
@@ -107,11 +107,11 @@ export interface PivotGridConfig {
 }
 
 /**
- * Grid presentation of a {@link PivotView} - a tree grid of group rows whose columns are the pivot
- * paths, with optional docked summaries.
+ * Grid presentation of a pivoted {@link View} - a tree grid of group rows whose columns are the
+ * pivot paths, with optional docked summaries.
  *
  * Takes a view and owns everything downstream of it: the grid Store (minted via
- * {@link PivotView.createStore} and disconnected on destroy), the {@link GridModel}, and the column
+ * {@link View.createStore} and disconnected on destroy), the {@link GridModel}, and the column
  * hierarchy. The view keeps the Store's cell fields in sync itself; this model rebuilds columns when
  * `result.paths` changes identity, which is the data layer's structural-change signal.
  *
@@ -120,7 +120,7 @@ export interface PivotGridConfig {
  */
 export class PivotGridModel extends HoistModel {
     /** View supplying this grid's data. Application-owned; not swappable. */
-    readonly view: PivotView;
+    readonly view: View;
 
     @bindable accessor rowSummary: boolean | HSide;
     @bindable accessor pivotSummary: boolean | HSide;
@@ -168,6 +168,10 @@ export class PivotGridModel extends HoistModel {
         return this.view.query;
     }
 
+    private get valueFields(): CubeField[] {
+        return this.query.pivot?.valueFields ?? [];
+    }
+
     private get rowSummarySide(): HSide {
         return resolveSide(this.rowSummary, 'right');
     }
@@ -210,7 +214,7 @@ export class PivotGridModel extends HoistModel {
             colDefaults: {
                 ...config?.colDefaults,
                 enableDotSeparatedFieldPath: false, // Field names are derived from data values.
-                hideable: false // Hiding pivot columns should be done via the valueFields and filter in the PivotQuery
+                hideable: false // Hide pivot columns via the query's pivot valueFields and filter
             },
             store: this.store,
             treeMode: true,
@@ -285,7 +289,7 @@ export class PivotGridModel extends HoistModel {
     }
 
     private buildPathColumn(path: PivotPath): ColumnSpec | ColumnGroupSpec {
-        const {valueFields} = this.query;
+        const {valueFields} = this;
 
         if (isEmpty(path.children)) {
             // A group of one would read as a duplicate header.
@@ -323,7 +327,7 @@ export class PivotGridModel extends HoistModel {
     }
 
     private buildValueColumns(path: PivotPath): ColumnSpec[] {
-        return this.query.valueFields.map(field => this.buildValueColumn(path, field));
+        return this.valueFields.map(field => this.buildValueColumn(path, field));
     }
 
     private buildValueColumn(path: PivotPath, field: CubeField): ColumnSpec {

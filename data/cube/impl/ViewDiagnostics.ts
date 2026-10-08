@@ -20,6 +20,8 @@ export class ViewDiagnostics extends BaseDiagnostics<View> {
     @observableRef accessor load: ViewOpStats = this.emptyStats();
     @observableRef accessor update: ViewOpStats = this.emptyStats();
     @observableRef accessor query: ViewOpStats = this.emptyStats();
+    /** Path discovery and cell build for the last generation of a pivoted view, else null. */
+    @observableRef accessor pivot: PivotOp = null;
 
     @action
     noteLoad(type: ViewOp['type'], start: number) {
@@ -36,11 +38,27 @@ export class ViewDiagnostics extends BaseDiagnostics<View> {
         this.query = this.note('query', this.query, type, start);
     }
 
+    /** Note the path discovery and cell build for one generation of a pivoted view. */
+    @action
+    notePivot(op: Omit<PivotOp, 'timestamp'>) {
+        this.pivot = {...op, timestamp: Date.now()};
+
+        const phases = Object.entries(op.phases)
+            .map(([name, ms]) => `${name} ${ms.toFixed(1)}`)
+            .join(' ');
+        this.logOp(
+            'pivot',
+            {type: 'build', total: op.cells, elapsed: op.elapsed},
+            `paths ${op.paths} | ${phases}`
+        );
+    }
+
     @action
     reset() {
         this.load = this.emptyStats();
         this.update = this.emptyStats();
         this.query = this.emptyStats();
+        this.pivot = null;
     }
 
     private note(
@@ -95,4 +113,33 @@ export interface ViewOp {
     total: number;
     elapsed: number;
     timestamp: number;
+}
+
+export interface PivotOp {
+    /** Nodes of the pivot path tree, including the synthetic root path. */
+    paths: number;
+
+    /** Cell rows materialized across the whole row hierarchy. */
+    cells: number;
+
+    /** Sum of `phases` - all pivot work, excluding base row generation. */
+    elapsed: number;
+
+    phases: PivotPhases;
+
+    timestamp: number;
+}
+
+/** Elapsed ms per phase of one pivot generation. Zero for phases a degenerate build skipped. */
+export interface PivotPhases {
+    /** Path discovery over the filtered records, ahead of base row generation. */
+    discover: number;
+    /** Group enumeration and the per-record leaf alignment pass. */
+    align: number;
+    /** `buildPivotStructure` - planning the cell set and its links over integer arrays. */
+    plan: number;
+    /** Cell row instantiation or reuse, wiring, and clearing of vacated cells. */
+    build: number;
+    /** Projection of cell values onto owner rows. */
+    project: number;
 }

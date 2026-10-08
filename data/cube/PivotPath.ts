@@ -8,14 +8,14 @@
 import {CubeField} from './CubeField';
 
 /**
- * One ordered tuple of pivot dimension values within a {@link PivotView} result - e.g.
+ * One ordered tuple of pivot dimension values within a pivoted {@link View} result - e.g.
  * `US >> Equity`. Maps to one rendered column or column group.
  *
  * Instances are immutable and identity-stable while the pivot structure is unchanged, which is what
  * lets consumers skip rebuilding columns. Treat the tree as read-only: mutating `children` corrupts
  * the view's own state.
  *
- * @see PivotViewResult.paths
+ * @see ViewResult.paths
  */
 export class PivotPath {
     /** Pivot dimension at this depth. Null for the root path. */
@@ -38,7 +38,7 @@ export class PivotPath {
 
     readonly children: PivotPath[] = [];
 
-    /** @internal - constructed by PivotView. */
+    /** @internal - constructed by PivotCells. */
     constructor(config: {
         dimension: CubeField;
         value: any;
@@ -56,7 +56,7 @@ export class PivotPath {
 }
 
 /**
- * A single materialized measure within a {@link PivotView} result - the pairing of a pivot path with
+ * A single materialized measure within a pivoted {@link View} result - the pairing of a pivot path with
  * a value field, and the synthetic field name its value is written to on row data.
  *
  * `PivotGridModel` declares one Store field per entry and binds value columns to `name`.

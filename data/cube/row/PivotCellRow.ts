@@ -8,17 +8,17 @@
 import {PlainObject} from '@xh/hoist/core';
 import {CubeField} from '../CubeField';
 import {PivotPath} from '../PivotPath';
-import {PivotView} from '../PivotView';
+import type {View} from '../View';
 import {BaseRow} from './BaseRow';
 import {ParentRow} from './ParentRow';
 
 /**
- * Row representing one `(group node, pivot path)` cell in a {@link PivotView}.
+ * Row representing one `(group node, pivot path)` cell in a pivoted {@link View} - see `PivotCells`.
  *
  * These are real rows in the aggregation network - which is what lets every existing
  * {@link Aggregator} work on them unmodified, and lets `View`'s incremental machinery maintain them
  * on a tick - but they are never part of the visible row tree and never reach a connected Store.
- * Their values are copied onto their owning group row's data by `PivotView`.
+ * Their values are copied onto their owning group row's data by `PivotCells`.
  *
  * Deliberately not an {@link AggregateRow}: cells never enter `getVisibleDatas`, and keeping them
  * out of that type leaves the `omitFn` / `lockFn` signatures untouched.
@@ -26,11 +26,9 @@ import {ParentRow} from './ParentRow';
  * This is an internal data structure.
  */
 export class PivotCellRow extends ParentRow {
-    declare readonly view: PivotView;
-
     // Both are rebound on every reuse from `_rowCache` - the id pins what they *name*, not which
-    // object names it, and PivotView mints fresh owners and paths on each rebuild. Any state added
-    // here must be in the id, a function of `children`, or reassigned by `PivotView.buildCellRows`.
+    // object names it, and PivotCells mints fresh owners and paths on each rebuild. Any state added
+    // here must be in the id, a function of `children`, or reassigned by `PivotCells.buildCellRows`.
     /** Group row this cell's value is projected onto. */
     ownerRow: BaseRow;
     path: PivotPath;
@@ -53,34 +51,28 @@ export class PivotCellRow extends ParentRow {
     // Cells aggregate the query's value fields alone, which is what keeps cell aggregation
     // proportional to the measures rather than the full field set.
     protected override get aggFields(): CubeField[] {
-        return this.view._cellAggFields;
+        return this.view._pivot.cellAggFields;
     }
     protected override get aggFieldNames(): Set<string> {
-        return this.view._cellAggFieldNames;
+        return this.view._pivot.cellAggFieldNames;
     }
     protected override get canAggregateFnFields(): CubeField[] {
-        return this.view._cellCanAggregateFnFields;
+        return this.view._pivot.cellCanAggregateFnFields;
     }
     protected override get complexAggFields(): CubeField[] {
-        return this.view._cellComplexAggFields;
+        return this.view._pivot.cellComplexAggFields;
     }
 
-    // `parent` / `pivotParent` are assigned by PivotView from the structure - a cell's children do not
+    // `parent` / `pivotParent` are assigned by PivotCells from the structure - a cell's children do not
     // uniformly treat it as their group-axis parent, and claiming them here would corrupt both axes.
     protected override adoptChildren(children: BaseRow[]) {
         this.children = children;
     }
 
-    constructor(
-        view: PivotView,
-        id: string,
-        children: BaseRow[],
-        ownerRow: BaseRow,
-        path: PivotPath
-    ) {
+    constructor(view: View, id: string, children: BaseRow[], ownerRow: BaseRow, path: PivotPath) {
         super(view, id);
 
-        this.data = view.newCellRowData();
+        this.data = view._pivot.newCellRowData();
         this.ownerRow = ownerRow;
         this.path = path;
 
