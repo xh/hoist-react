@@ -19,7 +19,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, render} from '@testing-library/react';
 import {createRef} from 'react';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';

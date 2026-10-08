@@ -6,7 +6,7 @@
  */
 import {Store, type StoreSelectionConfig, StoreSelectionModel} from '@xh/hoist/data';
 import {reaction} from '@xh/hoist/mobx';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {sortBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -66,9 +66,8 @@ describe('StoreSelectionModel', () => {
             expect(selModel.selectedRecord).toBe(store.getById(2));
         });
 
-        // BUG: StoreSelectionModel.ts:134 unions with the prior ids regardless of mode, so a
-        // single-mode model ends up with two records and a null selectedRecord.
-        it.fails('keeps one record in single mode when adding to the selection', () => {
+        // Fixed in 89.0.0 - adding to a single-mode selection kept the prior record as well.
+        it('keeps one record in single mode when adding to the selection', () => {
             const {selModel} = createSelModel('single');
             selModel.select(1);
             selModel.select(2, false);

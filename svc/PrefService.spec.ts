@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {PrefService} from '@xh/hoist/svc';
-import {hoistCore, initTestAppAsync} from '@xh/hoist/test';
+import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**

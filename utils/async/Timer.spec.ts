@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {never, wait} from '@xh/hoist/promise';
-import {hoistCore, initTestAppAsync} from '@xh/hoist/test';
+import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {Timer, type TimerSpec} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -71,6 +71,15 @@ describe('Timer', () => {
 
             await advanceAsync(2 * SECONDS);
             expect(runFn).toHaveBeenCalledOnce();
+        });
+
+        it('never passes a negative delay to setTimeout when created paused', async () => {
+            // ClientHealthService does this when its report interval is disabled (-1). Browsers
+            // treat a negative delay as 0, but Node logs a TimeoutNegativeWarning.
+            const setTimeout = vi.spyOn(globalThis, 'setTimeout');
+            createTimer({runFn: vi.fn(), interval: -1, delay: true});
+
+            expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 0);
         });
 
         it('re-evaluates a function interval as its value changes', async () => {
@@ -197,10 +206,8 @@ describe('Timer', () => {
             runFns.forEach(runFn => expect(runFn).toHaveBeenCalledOnce());
         });
 
-        // BUG: utils/async/Timer.ts:109-117 - heartbeatAsync() reschedules itself forever and reads
-        // the interval on every beat, even once cancelled. Each destroyed timer keeps a 250ms-1s
-        // wakeup alive and retains its interval closure, e.g. a destroyed Clock's model.
-        it.fails('does no further work once destroyed', async () => {
+        // Fixed in 89.0.0 - a cancelled timer kept its heartbeat, reading its interval forever.
+        it('does no further work once destroyed', async () => {
             const interval = vi.fn(() => 1 * SECONDS),
                 timer = createTimer({runFn: vi.fn(), interval});
             await advanceAsync(1);

@@ -188,10 +188,8 @@ describe('SubformsFieldModel', () => {
             expect(items.isValid).toBe(true);
         });
 
-        // BUG: SubformsFieldModel.ts:121 gathers each row field's `validationResults` rather than
-        // its `allValidationResults`, so errors in nested subforms are missing from allErrors even
-        // though the form is NotValid. Before 80.0.0 (862b97729), allErrors included them.
-        it.fails('reports errors from nested subforms in allErrors', async () => {
+        // Fixed in 89.0.0 - allErrors left out errors from nested subforms.
+        it('reports errors from nested subforms in allErrors', async () => {
             const form = createForm({
                 fields: [
                     {

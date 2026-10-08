@@ -6,7 +6,13 @@
  */
 import {HoistUser, XH} from '@xh/hoist/core';
 import {IdentityService} from '@xh/hoist/svc';
-import {hoistCore, initTestAppAsync, server, xhUrl, type RecordedRequest} from '@xh/hoist/test';
+import {
+    hoistCore,
+    initTestAppAsync,
+    server,
+    xhUrl,
+    type RecordedRequest
+} from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 

@@ -7,7 +7,7 @@
 import {type GridConfig, type GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {FieldFilter, Store, type StoreRecord} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -99,10 +99,8 @@ describe('GridFilterModel', () => {
             expect(ids(store.records)).toEqual([3]);
         });
 
-        // BUG: cmp/grid/filter/GridFilterModel.ts:116 - merges by assigning to the `value` of the
-        // filter passed in, which throws for a FieldFilter instance, as FieldFilters are frozen.
-        // A plain spec passed in is mutated as a side effect.
-        it.fails('accepts a FieldFilter instance', async () => {
+        // Fixed in 89.0.0 - merged into the filter passed in, which threw for a frozen FieldFilter.
+        it('accepts a FieldFilter instance', async () => {
             const {filterModel} = createGridModel({filterModel: true});
 
             filterModel.mergeColumnFilters('region', {field: 'region', op: '!=', value: ['US']});
@@ -113,7 +111,9 @@ describe('GridFilterModel', () => {
             );
             await wait();
 
-            expect(filterModel.getColumnFilters('region')).toHaveLength(1);
+            const filters = filterModel.getColumnFilters('region');
+            expect(filters).toHaveLength(1);
+            expect([...filters[0].value].sort()).toEqual(['EU', 'US']);
         });
     });
 

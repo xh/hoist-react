@@ -233,7 +233,8 @@ const TOP_LEVEL_PACKAGES = [
     'static',
     'admin',
     'inspector',
-    'icon'
+    'icon',
+    'test-support'
 ];
 
 /**
@@ -284,8 +285,9 @@ const MAX_DEFAULT_LENGTH = 60;
 
 /**
  * True if a file, given by its path relative to the repo root (with a leading slash), is library
- * source to index. Excludes dependencies, build output, this MCP sub-project, and unit tests and
- * their support code, which are not part of the published package.
+ * source to index. Excludes dependencies, build output, this MCP sub-project, specs, and the CI
+ * reporter for hoist-react's own tests - none of which ship. The test kit in `test-support/` ships
+ * as `@xh/hoist/test-support`, so it is indexed.
  */
 function isLibrarySource(relPath: string | null): boolean {
     return (
@@ -293,7 +295,7 @@ function isLibrarySource(relPath: string | null): boolean {
         !relPath.startsWith('/node_modules/') &&
         !relPath.includes('/build/') &&
         !relPath.includes('/mcp/') &&
-        !relPath.startsWith('/test/') &&
+        !relPath.startsWith('/test-support/report/') &&
         !relPath.endsWith('.spec.ts')
     );
 }

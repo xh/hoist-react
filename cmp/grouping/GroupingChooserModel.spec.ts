@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {type GroupingChooserConfig, GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import type {PersistOptions, PlainObject} from '@xh/hoist/core';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -54,9 +54,8 @@ describe('GroupingChooserModel', () => {
             expect(model.favorites).toEqual([]);
         });
 
-        // BUG: GroupingChooserModel.ts:262 - sorts by `it.label[0]`, the first character of the
-        // label, so favorites that share a first letter keep the order they were added in.
-        it.fails('lists favorites in order of their labels', () => {
+        // Fixed in 89.0.0 - favorites were sorted by the first letter of their labels only.
+        it('lists favorites in order of their labels', () => {
             const model = create({
                 dimensions: ['region', 'sector', 'strategy'],
                 initialValue: ['region'],

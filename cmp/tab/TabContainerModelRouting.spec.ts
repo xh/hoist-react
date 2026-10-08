@@ -7,7 +7,7 @@
 import {type TabContainerConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {type HoistRoute, XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync, TestAppModel} from '@xh/hoist/test';
+import {initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
 import {beforeAll, beforeEach, describe, expect, it, onTestFinished} from 'vitest';
 
 /**

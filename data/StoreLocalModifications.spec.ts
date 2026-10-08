@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Store, type StoreConfig, type StoreRecord} from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {sortBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
@@ -76,15 +76,27 @@ describe('Store', () => {
             expect(store.isDirty).toBe(false);
         });
 
-        // BUG: Store.ts:932-933 - modifyRecords() never normalizes the current RecordSet against
-        // the committed one, so the store stays dirty after its only edit is undone - unlike
-        // removeRecords() and revertRecords(). Save buttons bound to `isDirty` stay enabled.
-        it.fails('leaves the store clean once its only edit is undone', () => {
-            const store = newStore();
+        it('leaves the store clean once its only edit is undone', () => {
+            const store = newStore(),
+                committed = store.getById(1);
             store.modifyRecords({id: 1, qty: 5});
             store.modifyRecords({id: 1, qty: 1});
 
             expect(store.isDirty).toBe(false);
+            expect(store.getById(1)).toBe(committed);
+        });
+
+        it('stays dirty when one of two edited records is undone', () => {
+            const store = newStore();
+            store.modifyRecords([
+                {id: 1, qty: 5},
+                {id: 2, qty: 5}
+            ]);
+            store.modifyRecords({id: 1, qty: 1});
+
+            expect(store.isDirty).toBe(true);
+            expect(store.getById(1).isModified).toBe(false);
+            expect(store.getById(2).isModified).toBe(true);
         });
     });
 
@@ -103,9 +115,8 @@ describe('Store', () => {
             expect(store.isDirty).toBe(true);
         });
 
-        // BUG: StoreRecord.ts:114 - `isDirty` evaluates `committedData && ...`, returning null for
-        // an added record. Store.isDirty had the same defect, fixed in 60899d455.
-        it.fails('reports an added record as not dirty', () => {
+        // Fixed in 89.0.0 - isDirty returned null, not false, for an added record.
+        it('reports an added record as not dirty', () => {
             const store = newStore();
             store.addRecords({id: 'new', name: 'n'});
 

@@ -16,7 +16,7 @@ import {
     type ViewRow,
     type ViewRowData
 } from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {sumBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 

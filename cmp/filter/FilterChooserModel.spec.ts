@@ -18,7 +18,7 @@ import {
     Store
 } from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -52,9 +52,8 @@ describe('FilterChooserModel', () => {
             expect(options.map(it => it.filter?.toJSON())).toEqual([expected]);
         });
 
-        // BUG: QueryEngine.ts:295 - the query is split on every operator it contains, and only
-        // the first three parts are kept, so the value is cut off at its first operator.
-        it.fails('keeps operator words and symbols that appear within the value', async () => {
+        // Fixed in 89.0.0 - the value was cut off at the first operator it contained.
+        it('keeps operator words and symbols that appear within the value', async () => {
             const model = create({fieldSpecs}),
                 [option] = await model.queryAsync('Name = This Is Us');
 

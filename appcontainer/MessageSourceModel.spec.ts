@@ -7,7 +7,7 @@
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {HoistRoute, MessageSuppressSpec, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {initTestAppAsync, TestAppModel} from '@xh/hoist/test';
+import {initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
 import {DAYS, HOURS, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -122,28 +122,25 @@ describe('MessageSourceModel', () => {
             expect(openMessage().message).toBe('Reconnect now?');
         });
 
-        // BUG: appcontainer/MessageModel.ts:189 - close() never settles `result`. A message closed
-        // without a choice - replaced by messageKey, closed by a route change, or destroyed -
-        // leaves `await XH.confirm()` hanging forever, so the caller's finally blocks never run.
-        it.fails('settles the promise of a message it replaces', async () => {
-            const first = trackSettled(XH.confirm({message: 'Reconnect?', messageKey: 'retry'}));
+        it('resolves a replaced message with null', async () => {
+            const first = XH.confirm({message: 'Reconnect?', messageKey: 'retry'});
 
             XH.confirm({message: 'Reconnect now?', messageKey: 'retry'});
-            await new Promise(resolve => setTimeout(resolve, 0));
 
-            expect(first.settled).toBe(true);
+            expect(await first).toBeNull();
         });
     });
 
     describe('route changes', () => {
         it('closes open messages, so the app does not navigate beneath a dialog', async () => {
-            XH.confirm({message: 'Delete 3 trades?'});
-            const msg = openMessage();
+            const result = XH.confirm({message: 'Delete 3 trades?'}),
+                msg = openMessage();
 
             await navigateAsync('default.detail');
 
             expect(msg.isOpen).toBe(false);
             expect(openMessages()).toHaveLength(0);
+            expect(await result).toBeNull();
         });
     });
 

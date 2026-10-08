@@ -6,7 +6,7 @@
  */
 import {type GridFilterFieldSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {wait} from '@xh/hoist/promise';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**

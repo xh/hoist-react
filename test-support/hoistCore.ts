@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PlainObject} from '@xh/hoist/core';
-import {cloneDeep, mapValues, pick, pickBy} from 'lodash';
-import {http, HttpResponse, type HttpHandler} from 'msw';
+import {type PlainObject, XH} from '@xh/hoist/core';
+import {cloneDeep, isArray, isPlainObject, pick, pickBy} from 'lodash';
+import {http, HttpResponse, type HttpHandler, matchRequestUrl} from 'msw';
 import {setupServer} from 'msw/node';
 
-/**
+/*
  * A small, in-memory stand-in for hoist-core, served to Hoist's real client code via MSW.
  *
  * Tests run Hoist's actual services (FetchService, ConfigService, PrefService, etc.) and let them
@@ -19,17 +19,23 @@ import {setupServer} from 'msw/node';
  * server contract changes.
  *
  * The fake models shapes, status codes, and the `clientUsername` session check. It deliberately
- * does not re-implement server business rules. Tests that need other endpoints or failure modes
- * add per-test handlers with `server.use()`, which are cleared after each test.
+ * does not re-implement server business rules. Tests serve other endpoints, such as an app's own,
+ * with `hoistCore.route()`. `server.use()` adds raw MSW handlers for one test.
+ *
+ * hoist-core accepts any HTTP method on these endpoints. Each handler here accepts only the method
+ * the client uses, so a test fails if the client changes how it calls the server.
  */
 
-/** URL prefix for Hoist server calls - the `xhBaseUrl` defined in vitest.config.mts. */
-export const BASE_URL = '/api/';
+/** URL prefix for Hoist server calls - `XH.baseUrl`, from the `xhBaseUrl` build constant. */
+export const BASE_URL = XH.baseUrl;
 
 /** A request served by the fake, recorded so tests can assert what the client sent. */
 export interface RecordedRequest {
     method: string;
-    /** Path relative to `XH.baseUrl`, e.g. `'xh/getPrefs'`. */
+    /**
+     * Path relative to `XH.baseUrl`, e.g. `'xh/getPrefs'`. A request outside `XH.baseUrl`, such as
+     * one to an external API, records its full URL without the query string.
+     */
     path: string;
     query: PlainObject;
     /** Parsed `application/x-www-form-urlencoded` body, if any. */
@@ -39,12 +45,26 @@ export interface RecordedRequest {
     headers: Record<string, string>;
 }
 
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+/** A request served by a `hoistCore.route()`, with its `:name` path parameters. */
+export interface RouteRequest extends RecordedRequest {
+    params: Record<string, string>;
+}
+
+/**
+ * Serves a route. Return a `Response`, a value to send as JSON, or nothing for the empty 204 that
+ * hoist-core sends for an endpoint with no result.
+ */
+export type RouteFn = (req: RouteRequest) => unknown;
+
 /** A user preference as rendered to the client by hoist-core `PrefService`. */
 export interface PrefEntry {
     type: 'string' | 'int' | 'long' | 'double' | 'bool' | 'json';
     value: any;
     defaultValue: any;
-    isSet?: boolean;
+    /** True if the user has their own value, false if `value` is the default. */
+    isSet: boolean;
 }
 
 export interface HoistError {
@@ -68,10 +88,23 @@ export function hoistError(status: number, error: HoistError = {}): Response {
 /**
  * An auth-filter rejection as hoist-core `BaseAuthenticationService.allowRequest` sends it - a
  * bare status with an empty body and no content type.
+ *
+ * @param statusText - reason phrase for the status line. Tomcat sends none, so the default is
+ *      empty. Pass one to model a proxy that adds it, as nginx does.
  */
-export function authFailure(status: 401 | 403 | 500): Response {
-    const statusText = {401: 'Unauthorized', 403: 'Forbidden', 500: 'Internal Server Error'};
-    return new HttpResponse(null, {status, statusText: statusText[status]});
+export function authFailure(status: 401 | 403 | 500, statusText: string = ''): Response {
+    return new HttpResponse(null, {status, statusText});
+}
+
+/**
+ * An empty success response, as hoist-core `BaseController.renderSuccess` sends it - a 204 that
+ * still carries a JSON content type.
+ */
+export function noContent(): Response {
+    return new HttpResponse(null, {
+        status: 204,
+        headers: {'Content-Type': 'application/json; charset=UTF-8'}
+    });
 }
 
 /** Full URL path for a Hoist server endpoint, for use in per-test `server.use()` handlers. */
@@ -79,6 +112,10 @@ export function xhUrl(path: string): string {
     return BASE_URL + path;
 }
 
+/**
+ * The fake hoist-core server for unit tests. Use the `hoistCore` instance.
+ * @mcpHint fake hoist-core server for unit tests
+ */
 export class FakeHoistCore {
     /** Authenticated user, as rendered by hoist-core `HoistUser.formatForJSON`. */
     user: PlainObject;
@@ -100,8 +137,14 @@ export class FakeHoistCore {
     /** Payload for `xh/environment`. */
     environment: PlainObject;
 
-    /** Every request the fake has served since the last `clearRequests()`. */
+    /** Every request the fake has served in this test - the kit's setup clears it before each. */
     requests: RecordedRequest[] = [];
+
+    /** @internal - called with a message when a route throws. The kit's setup fails the test. */
+    onProblem: (msg: string) => void = null;
+
+    private routes: Route[] = [];
+    private testRouteCount = 0;
 
     constructor() {
         this.reset();
@@ -134,6 +177,34 @@ export class FakeHoistCore {
         return this.requests.filter(it => it.path === path);
     }
 
+    /**
+     * Serve an endpoint of the app's own server, or override a built-in one.
+     *
+     * A route added in a setup file or in `beforeAll()` lasts for the rest of the file, across
+     * the reset after each test. A route added in `beforeEach()` or in a test lasts for that test.
+     * The latest route that matches a request serves it, so a test can override a file's route.
+     * Requests are recorded, for `requestsTo()`.
+     *
+     * @param method - HTTP method, or `'*'` for any.
+     * @param path - path relative to `XH.baseUrl`, as passed to `XH.fetchJson()`, or an absolute
+     *      URL for an external API. `:name` segments match any value, read from `req.params`.
+     * @param fn - serves the request.
+     */
+    route(method: HttpMethod | '*', path: string, fn: RouteFn) {
+        const url = /^[a-z][a-z\d+.-]*:\/\//i.test(path) ? path : xhUrl(path);
+        this.routes.push({method, url, fn});
+    }
+
+    /** @internal - marks the routes added so far as lasting past the test about to run. */
+    startTest() {
+        this.testRouteCount = this.routes.length;
+    }
+
+    /** @internal - removes the routes added during the test that just ran. */
+    endTest() {
+        this.routes.length = this.testRouteCount;
+    }
+
     /** Username the client must report as `clientUsername` - the apparent user. */
     get username(): string {
         return this.user.username;
@@ -141,6 +212,14 @@ export class FakeHoistCore {
 
     get handlers(): HttpHandler[] {
         return [
+            // Routes added with route(). The predicate claims only requests that a route matches,
+            // so any other request stays unhandled and fails the test - a handler that returned
+            // nothing would instead let MSW pass the request through to the real network.
+            http.all(
+                ({request}) => !!this.findRoute(request),
+                ({request}) => this.serveRoute(request)
+            ),
+
             // XhController.authConfig - BaseAuthenticationService.clientConfig default.
             this.get('xh/authConfig', () => HttpResponse.json({})),
 
@@ -151,8 +230,9 @@ export class FakeHoistCore {
                     : authFailure(401)
             ),
 
-            // XhController.logout
-            this.get('xh/logout', () => HttpResponse.json({success: true})),
+            // XhController.logout - `success` is false unless the app supports interactive login,
+            // so this models the default of an SSO app (BaseAuthenticationService.logout).
+            this.get('xh/logout', () => HttpResponse.json({success: false})),
 
             // XhController.environment - EnvironmentService.getEnvironment.
             this.get('xh/environment', () => HttpResponse.json(this.environment)),
@@ -177,47 +257,54 @@ export class FakeHoistCore {
             // XhController.getPrefs - PrefService.getClientConfig.
             this.post('xh/getPrefs', req => this.checkUser(req) ?? HttpResponse.json(this.prefs)),
 
-            // XhController.setPrefs - JSON map of key -> new value.
+            // XhController.setPrefs - JSON map of key -> new value. Keys are saved in order, so an
+            // invalid key fails the request after saving the keys before it, as on the server.
             this.post('xh/setPrefs', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
-                const updated = mapValues(req.json, (value, key) => {
+                for (const [key, value] of Object.entries(req.json)) {
                     const pref = this.prefs[key];
-                    pref.value = value;
+                    // PrefService.getDefaultPreference throws for an unknown key.
+                    if (!pref) return hoistError(500, {message: `Preference not found: ${key}`});
+                    if ((isPlainObject(value) || isArray(value)) && pref.type !== 'json') {
+                        return hoistError(500, {message: `Unexpected type for preference: ${key}`});
+                    }
+                    pref.value = savedPrefValue(pref, value);
                     pref.isSet = true;
-                    return pref;
-                });
-                return HttpResponse.json({preferences: updated});
+                }
+                return HttpResponse.json({preferences: this.prefEntries(Object.keys(req.json))});
             }),
 
-            // XhController.unsetPrefs - JSON array of keys to revert to their defaults.
+            // XhController.unsetPrefs - JSON array of keys to revert to their defaults. Unknown
+            // keys are ignored, and left out of the response.
             this.post('xh/unsetPrefs', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
-                const updated = {};
-                req.json.forEach((key: string) => {
+                const keys: string[] = req.json;
+                keys.forEach(key => {
                     const pref = this.prefs[key];
-                    pref.value = pref.defaultValue;
+                    if (!pref) return;
+                    pref.value = cloneDeep(pref.defaultValue);
                     pref.isSet = false;
-                    updated[key] = pref;
                 });
-                return HttpResponse.json({preferences: updated});
+                return HttpResponse.json({preferences: this.prefEntries(keys)});
             }),
 
-            // XhController.clearUserState - resets all of the user's prefs.
+            // XhController.clearUserState - resets all of the user's prefs. The server also clears
+            // the user's ViewManager state, which this fake does not model.
             this.post('xh/clearUserState', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
                 Object.values(this.prefs).forEach(pref => {
-                    pref.value = pref.defaultValue;
+                    pref.value = cloneDeep(pref.defaultValue);
                     pref.isSet = false;
                 });
-                return new HttpResponse(null, {status: 204});
+                return noContent();
             }),
 
             // XhController.track, recordMetrics, submitSpans - accepted, nothing returned.
             ...['xh/track', 'xh/recordMetrics', 'xh/submitSpans'].map(path =>
-                this.post(path, req => this.checkUser(req) ?? new HttpResponse(null, {status: 204}))
+                this.post(path, req => this.checkUser(req) ?? noContent())
             )
         ];
     }
@@ -237,7 +324,13 @@ export class FakeHoistCore {
             : {user: this.user, roles: this.roles};
     }
 
-    // BaseController.ensureClientUsernameMatchesSession - required for user-state endpoints.
+    // PrefService.getLimitedClientConfig - entries for the given keys that exist.
+    private prefEntries(keys: string[]): Record<string, PrefEntry> {
+        return pick(this.prefs, keys);
+    }
+
+    // XhController.ensureClientUsernameMatchesSession - required for user-state endpoints. Reads
+    // Grails `params`, which merge the query string and a form-encoded body.
     private checkUser(req: RecordedRequest): Response {
         const clientUsername = req.query.clientUsername ?? req.form.clientUsername;
         if (clientUsername === this.username) return null;
@@ -248,6 +341,31 @@ export class FakeHoistCore {
                 : 'Unable to confirm match between client and session user.',
             isRoutine: true
         });
+    }
+
+    private findRoute(request: Request): {route: Route; params: Record<string, string>} {
+        const url = new URL(request.url);
+        for (let i = this.routes.length - 1; i >= 0; i--) {
+            const route = this.routes[i];
+            if (route.method !== '*' && route.method !== request.method) continue;
+            const {matches, params} = matchRequestUrl(url, route.url, window.location.href);
+            if (matches) return {route, params: params as Record<string, string>};
+        }
+        return null;
+    }
+
+    private async serveRoute(request: Request): Promise<Response> {
+        const {route, params} = this.findRoute(request),
+            req = await recordRequest(routePath(new URL(request.url)), request);
+        this.requests.push(req);
+        try {
+            const ret = await route.fn({...req, params});
+            if (ret instanceof Response) return ret;
+            return ret === undefined ? noContent() : HttpResponse.json(ret);
+        } catch (e) {
+            this.onProblem?.(`Route for ${req.method} ${req.path} threw: ${e}`);
+            return hoistError(500, {message: String(e?.message ?? e)});
+        }
     }
 
     private get(path: string, fn: (req: RecordedRequest) => Response) {
@@ -268,21 +386,25 @@ export class FakeHoistCore {
 /** The fake hoist-core instance shared by all tests in a file. */
 export const hoistCore = new FakeHoistCore();
 
-/** The MSW server that routes Hoist's `fetch` calls to `hoistCore`. Started in test/setup.ts. */
+/** The MSW server that routes Hoist's `fetch` calls to `hoistCore`. Started in setup.ts. */
 export const server = setupServer(...hoistCore.handlers);
 
 //------------------------
 // Default server state
 //------------------------
 // Client-visible configs that hoist-core creates by default (see its BootStrap /
-// ensureRequiredConfigsCreated), with their default values.
+// ensureRequiredConfigsCreated), with their default values. Configs with a typed class on the
+// server are always sent with every declared key, so tests should change keys within them rather
+// than replace them. `xhAppTimeZone` defaults to 'UTC' on the server. It is set here as a typical
+// app sets it, to the head office zone - which matches the browser zone the Vitest config pins.
 function defaultConfigs(): PlainObject {
     return {
         xhActivityTrackingConfig: {
             enabled: true,
             logData: false,
             maxDataLength: 2000,
-            maxElapsedMins: 5,
+            maxElapsedMins: 2,
+            maxElapsedMinsByCategory: {},
             maxEntriesPerMin: 1000,
             levels: [{username: '*', category: '*', severity: 'INFO'}],
             clientHealthReport: {intervalMins: -1},
@@ -305,6 +427,15 @@ function defaultConfigs(): PlainObject {
         xhExportConfig: {streamingCellThreshold: 100000, toastCellThreshold: 3000},
         xhFlags: {},
         xhIdleConfig: {timeout: 120, appTimeouts: {}},
+        xhMemoryMonitoringConfig: {
+            enabled: true,
+            snapshotInterval: 60,
+            maxSnapshots: 1440,
+            heapDumpDir: null,
+            preservePastInstances: true,
+            maxPastInstances: 10,
+            writeToLog: true
+        },
         xhTraceConfig: {
             enabled: false,
             sampleRate: 1.0,
@@ -334,21 +465,22 @@ function defaultPrefs(): Record<string, PrefEntry> {
     };
 }
 
-// EnvironmentService.getEnvironment. `appVersion` and `appBuild` match the build constants in
-// vitest.config.mts - a mismatch fails app init, as it would in a real app. Polling, websockets,
-// and the alert banner are off, so a test sees no background requests it did not ask for.
+// EnvironmentService.getEnvironment. The app's identity comes from its build constants, via `XH`,
+// so the server reports the version the client was built with - a mismatch would fail app init,
+// as it does in a real app. Polling, websockets, and the alert banner are off, so a test sees no
+// background requests it did not ask for.
 function defaultEnvironment(): PlainObject {
     return {
-        appCode: 'testApp',
-        appName: 'Test App',
-        appVersion: '1.0.0',
-        appBuild: 'test',
+        appCode: XH.appCode,
+        appName: XH.appName,
+        appVersion: XH.appVersion,
+        appBuild: XH.appBuild,
         appEnvironment: 'Development',
         grailsVersion: '7.2.2',
         hoistCoreVersion: '42.1.0',
         javaVersion: '25.0.1',
-        serverTimeZone: 'America/New_York',
-        serverTimeZoneOffset: -14400000,
+        serverTimeZone: 'UTC',
+        serverTimeZoneOffset: 0,
         appTimeZone: 'America/New_York',
         appTimeZoneOffset: -14400000,
         webSocketsEnabled: false,
@@ -356,6 +488,44 @@ function defaultEnvironment(): PlainObject {
         alertBanner: {active: false},
         pollConfig: {interval: -1, onVersionChange: 'promptReload'}
     };
+}
+
+//------------------------
+// Prefs
+//------------------------
+// PrefService saves a map or list as JSON, and any other value as its string - which
+// UserPreference.externalUserValue then reads back as the pref's type.
+function savedPrefValue(pref: PrefEntry, value: any): any {
+    if (isPlainObject(value) || isArray(value)) return value;
+    const str = String(value);
+    switch (pref.type) {
+        case 'int':
+        case 'long':
+        case 'double':
+            return Number(str);
+        case 'bool':
+            return ['true', 'y', '1'].includes(str.trim().toLowerCase());
+        case 'string':
+            return str;
+        default:
+            return value;
+    }
+}
+
+//------------------------
+// Routes
+//------------------------
+interface Route {
+    method: HttpMethod | '*';
+    url: string;
+    fn: RouteFn;
+}
+
+// The recorded path - relative to the base URL, or the full URL for a request outside it.
+function routePath(url: URL): string {
+    const base = new URL(BASE_URL, window.location.href).href,
+        href = url.origin + url.pathname;
+    return href.startsWith(base) ? href.slice(base.length) : href;
 }
 
 //------------------------

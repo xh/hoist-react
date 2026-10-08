@@ -13,11 +13,12 @@ import {
     hoistCore,
     hoistError,
     initTestAppAsync,
+    noContent,
     type RecordedRequest,
     server,
     xhUrl
-} from '@xh/hoist/test';
-import {omit} from 'lodash';
+} from '@xh/hoist/test-support';
+import {omit, pick} from 'lodash';
 import {http, HttpResponse} from 'msw';
 import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -30,10 +31,7 @@ import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, 
 describe('ViewManagerModel', () => {
     let views: ViewServer;
 
-    beforeAll(async () => {
-        await initTestAppAsync();
-        hoistCore.clearRequests();
-    });
+    beforeAll(() => initTestAppAsync());
 
     beforeEach(() => {
         views = new ViewServer();
@@ -115,23 +113,17 @@ describe('ViewManagerModel', () => {
             expect(handleException).toHaveBeenCalledOnce();
         });
 
-        // BUG: ViewManagerModel.ts:663-675 - after a failed load, the fallback default view is
-        // loaded without being awaited, and lands after the currentView reaction (:709-713) is
-        // added. The reaction then posts `currentView: null`, so a transient failure overwrites
-        // the user's saved view, and their next visit opens the default instead.
-        it.fails(
-            "leaves the user's saved current view in place when views fail to load",
-            async () => {
-                views.state.currentView = 'mine';
-                views.failNextLoad();
-                vi.spyOn(XH, 'handleException').mockImplementation(() => {});
+        it("leaves the user's saved current view in place when views fail to load", async () => {
+            views.state.currentView = 'mine';
+            views.failNextLoad();
+            vi.spyOn(XH, 'handleException').mockImplementation(() => {});
 
-                await createAsync();
-                await views.settleAsync();
+            await createAsync();
+            await views.settleAsync();
 
-                expect(views.state.currentView).toBe('mine');
-            }
-        );
+            expect(views.state.currentView).toBe('mine');
+            expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(0);
+        });
     });
 
     describe('manageGlobal', () => {
@@ -215,6 +207,26 @@ describe('ViewManagerModel', () => {
             expect(toast).toHaveBeenCalledOnce();
         });
 
+        it('keeps changes made while a save is in flight', async () => {
+            views.state.currentView = 'mine';
+            const vmm = await createAsync();
+            vi.spyOn(XH, 'successToast').mockImplementation(() => null);
+            vmm.setValue({sortBy: 'name'});
+
+            const release = views.holdResponses('xhView/updateValue'),
+                save = vmm.saveAsync();
+            await vi.waitFor(() =>
+                expect(hoistCore.requestsTo('xhView/updateValue')).toHaveLength(1)
+            );
+            vmm.setValue({sortBy: 'size'});
+            release();
+            await save;
+
+            expect(vmm.view.value).toEqual({sortBy: 'name'});
+            expect(vmm.getValue()).toEqual({sortBy: 'size'});
+            expect(vmm.isValueDirty).toBe(true);
+        });
+
         it('confirms before overwriting a view saved elsewhere since it was loaded', async () => {
             views.state.currentView = 'mine';
             const vmm = await createAsync(),
@@ -261,10 +273,7 @@ describe('ViewManagerModel', () => {
             expect(reqs.map(it => it.json)).toEqual([{sortBy: 'size'}]);
         });
 
-        // BUG: ViewManagerModel.ts:743 (and :473 for saveAsync) - setAsView() with the saved view
-        // clears the pending value, dropping any change made while the save was in flight. The
-        // model then reports no unsaved changes, and the change is never saved.
-        it.fails('keeps changes made while an auto-save is in flight', async () => {
+        it('keeps changes made while an auto-save is in flight', async () => {
             Object.assign(views.state, {currentView: 'mine', autoSave: true});
             const vmm = await createAsync();
             vi.useFakeTimers();
@@ -462,6 +471,7 @@ class ViewServer {
 
     private failLoad = false;
     private gate: Promise<void> = null;
+    private gatePath: string = null;
     private pending = new Set<Promise<Response>>();
 
     add(token: string, name: string, opts: ViewOptions = {}): JsonBlob {
@@ -479,12 +489,13 @@ class ViewServer {
         this.failLoad = true;
     }
 
-    /** Hold responses until the returned function is called. */
-    holdResponses(): () => void {
+    /** Hold responses - all, or those to one path - until the returned function is called. */
+    holdResponses(path: string = null): () => void {
         let release: () => void;
         this.gate = new Promise(resolve => (release = resolve));
+        this.gatePath = path;
         return () => {
-            this.gate = null;
+            this.gate = this.gatePath = null;
             release();
         };
     }
@@ -509,7 +520,7 @@ class ViewServer {
                     return hoistError(500, {message: 'Database unavailable'});
                 }
                 return HttpResponse.json({
-                    state: this.state,
+                    state: this.clientState,
                     views: this.blobs.map(it => omit(it, 'value')),
                     manageGlobal: this.manageGlobal
                 });
@@ -517,9 +528,9 @@ class ViewServer {
 
             this.post('xhView/get', req => HttpResponse.json(this.get(req.form.token))),
 
-            // ViewService.create
+            // ViewService.create - also records `isPinned`, if given, in the user's state.
             this.post('xhView/create', ({json}) => {
-                const {name, group, isShared, isGlobal, value, description} = json,
+                const {name, group, isShared = null, isGlobal, value, description} = json,
                     ret = this.add(`new${this.blobs.length}`, name, {
                         owner: isGlobal ? null : hoistCore.username,
                         isShared,
@@ -527,6 +538,7 @@ class ViewServer {
                         value
                     });
                 ret.description = description;
+                if ('isPinned' in json) this.state.userPinned[ret.token] = json.isPinned;
                 return HttpResponse.json(ret);
             }),
 
@@ -534,21 +546,27 @@ class ViewServer {
                 const ret = this.get(query.token);
                 ret.value = json;
                 ret.lastUpdated += 1000;
+                ret.lastUpdatedBy = hoistCore.username;
                 return HttpResponse.json(ret);
             }),
 
             this.post('xhView/delete', ({query}) => {
                 const tokens = query.tokens.split(',');
                 this.blobs = this.blobs.filter(it => !tokens.includes(it.token));
-                return new HttpResponse(null, {status: 204});
+                return noContent();
             }),
 
-            // ViewService.updateState - merges each given key, returning the new state.
+            // ViewService.updateState - merges each given key, keeping pins only for views that
+            // still exist, and returns the new state. Other keys are ignored.
             this.post('xhView/updateState', ({json}) => {
-                const {userPinned, ...rest} = json;
-                Object.assign(this.state, rest);
-                if (userPinned) this.state.userPinned = {...this.state.userPinned, ...userPinned};
-                return HttpResponse.json(this.state);
+                const {state} = this;
+                if ('currentView' in json) state.currentView = json.currentView;
+                if ('autoSave' in json) state.autoSave = json.autoSave;
+                state.userPinned = pick(
+                    {...state.userPinned, ...json.userPinned},
+                    this.blobs.map(it => it.token)
+                );
+                return HttpResponse.json(this.clientState);
             })
         ];
     }
@@ -556,6 +574,12 @@ class ViewServer {
     //------------------
     // Implementation
     //------------------
+    // ViewService.getStateFromBlob - `currentView` is sent only once one has been saved.
+    private get clientState(): PlainObject {
+        const {userPinned = {}, autoSave = false} = this.state;
+        return {userPinned, autoSave, ...pick(this.state, 'currentView')};
+    }
+
     private createBlob(token: string, name: string, opts: ViewOptions): JsonBlob {
         const {owner = hoistCore.username, isShared = false, group = null, value = {}} = opts;
         return {
@@ -601,7 +625,7 @@ class ViewServer {
                 headers: {}
             };
         hoistCore.requests.push(req);
-        await this.gate;
+        if (!this.gatePath || path === this.gatePath) await this.gate;
         return fn(req);
     }
 }

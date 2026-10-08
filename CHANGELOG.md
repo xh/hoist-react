@@ -16,6 +16,9 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing)
 
+See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
 * Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
@@ -29,8 +32,8 @@
 
 ### 🎁 New Features
 
-* Added `AverageWeightedAggregator` for Cube fields averaged by the weight of a second field, e.g.
-  `{name: 'price', aggregator: new AverageWeightedAggregator('quantity')}`. Views update it
+* Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
+  `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
   re-aggregates the field on changes to those as well.
@@ -59,6 +62,10 @@
   `valueField` is `'name'`. Apps render either back with `Icon.get()`.
 * The Admin Console alert banner editor now offers Hoist's full built-in icon set via `IconPicker`.
   Existing banners keep their stored icon.
+* Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
+  headless app against an in-memory fake of hoist-core that serves app endpoints via
+  `hoistCore.route()`. Needs `configureVitest()` from hoist-dev-utils 16.1. Experimental in v89 - it
+  may change.
 
 ### 🐞 Bug Fixes
 
@@ -66,7 +73,64 @@
   Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
+* `XH.message()`, `XH.confirm()`, and `XH.prompt()` now resolve to `null` when closed without a
+  choice, instead of never settling.
+* Fixed `Store.modifyRecords()` leaving `Store.isDirty` true after its only edit was undone.
+* Fixed `Store.validateAsync()` skipping records changed just before the call, and `Store.isValid`
+  reporting true while a changed record's first async validation was still running.
+* Fixed `ViewManagerModel` overwriting the user's saved current view when views failed to load.
+* Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
+* Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
+  highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
+* Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`. App load
+  and `Promise.track()` entries again record their start times.
+* Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
+  destroyed or the reaction was disposed.
+* Fixed `FormModel.allErrors` and `SubformsFieldModel.allErrors` omitting errors from nested
+  subforms.
+* Fixed the focused cell dropping its column border under `cellBorders`, and shifting its content
+  under `rowBorders`, when `showCellFocus` is off (the default).
+* Fixed `Store.updateData()` and `Store.modifyRecords()` dropping other summary records when one
+  changed, and `Store.revert()` dropping default field values from summary records.
+* Fixed `FieldFilter` text operators (`like`, `begins`, `ends` and their negations) matching blank
+  values as the text "null" or "undefined".
+* Fixed `FieldFilter.equals()` treating filters on equal `Date` values as different, for example a
+  filter restored from JSON.
+* Fixed `FilterChooserFieldSpec` and `GridFilterFieldSpec` dropping `0`, `false` and `''` from
+  explicit `values`.
+* Fixed `FilterChooserModel` cutting off a typed value at an operator word or symbol inside it, for
+  example `Name = This Is Us`.
+* Fixed `StoreSelectionModel` holding two records in `single` mode after `select()` with
+  `clearSelection: false`.
+* Fixed `StoreRecord.isDirty` returning `null` in place of `false` for an added record.
+* Fixed the `validEmail` constraint failing blank values in place of leaving them to `required`.
+* Fixed `GridModel.getSortedRecords()` ignoring a column's record-based `sortValue` before the grid
+  has rendered.
+* Fixed `GridFilterModel.mergeColumnFilters()` throwing for a `FieldFilter` instance and changing
+  the filter specs passed to it.
+* Fixed the grid column header filter logging a MobX reaction error on first open. Its Apply button
+  also no longer turns on for an unchanged OR filter.
+* Fixed `TabContainerModel.activatePrevTab()` wrapping to the last tab without `cycle: true`.
+* Fixed `GroupingChooserModel.favoritesOptions` sorting favorites by only the first letter of their
+  labels.
+* Fixed `fmtNumberTooltip` and `precision: null` showing spurious digits for large values, for
+  example `44,510,347.00000001`. Full precision now stops at 15 significant digits.
+* Fixed `parseNumber` returning float artifacts for decimal shorthand, for example `'8.2m'` as
+  `8199999.999999999`, which broke equality filters in `FilterChooser`.
+* Fixed `fmtQuantity` adding `.00` to values of 1m or more left unscaled by `useMillions: false` or
+  `useBillions: false`.
+* Fixed `fmtCompactDate` ignoring `nullDisplay`, and formatting times on its near-future cutoff day
+  differently depending on the time of day.
+* Fixed `timestampReplacer` and `withFormattedTimestamps` ignoring their `format` option.
+* Fixed `@sharePendingPromise` running a method twice when it threw synchronously.
+* Fixed a cancelled `Timer` keeping its heartbeat alive, and a `Timer` with `delay: true` and a
+  disabled interval scheduling a negative timeout.
+* Fixed a `PUT` with `params` labeling its form body `text/plain`, so servers ignored the params.
+* Fixed errors reported by `ExceptionHandler` omitting the type and number of a failed load.
+  Arrays in these reports, such as the stack trace, are also no longer sent as objects.
+* Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
+  `xhCacheBuster` param in the URL after the reload.
 
 ### ⚙️ Technical
 
@@ -78,14 +142,26 @@
   services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
   comment. Snapshot and release builds now run the tests before publishing.
+* Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
+  them only to run unit tests.
+* Updated Hoist to build and type-check with TypeScript 7. Apps can move to TypeScript 7 with this
+  release or stay on 5.9. Apps that move must set `strict: false` (unless already strict) and
+  `noUncheckedSideEffectImports: false` in `tsconfig.json` to override new TypeScript defaults.
+  See the upgrade notes for the full steps.
 
 ### ⚙️ Typescript API Adjustments
 
 * `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
   as `leafOldData` / `leafNewData`.
+* Fixed `GridProps.agOptions` rejecting an `HTMLElement` for `popupParent` and other DOM-typed
+  options under TypeScript 6 and later.
+* Typed `@bindable`, `@bindableRef`, `@persist`, and `@persist.with()` as `accessor` decorators.
+  `tsc` now reports a plain field under any of them, which compiled before and threw at runtime.
 
 ### 🤖 AI Docs + Tooling
 
+* Indexed `@xh/hoist/test-support` in the symbol tools, so `hoist-search-symbols` and `hoist-ts`
+  find the test kit for app agents.
 * Added support for reference-style Markdown links (`[text][label]`) to the doc tools. A section
   read from `hoist-read-doc` or `hoist-docs read` now appends the link definitions it uses. Search
   excerpts and section headings show the link text only.
@@ -101,6 +177,33 @@
 * @blueprintjs/core `6.20 → 6.21`
 * @blueprintjs/datetime `6.2 → 6.3`
 * swiper `12.2 → 14.3`
+* ts-morph `27.0 → 28.0`
+* typescript `5.9 → 7.0`
+
+## 88.1.2 - 2026-10-06
+
+### 🐞 Bug Fixes
+
+* Restored the `MsalClient` defaults lost in v88: `enableSsoSilent` and `enableTelemetry` again
+  default to `true`, and MSAL logs at `Warning` level. Also restored the 3000ms
+  `system.iframeBridgeTimeout` that caps `ssoSilent` failures, dropped in the MSAL 5 upgrade.
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the v88 `codemod-remove-makeObservable.mjs` deleting constructors that merged defaults into
+  their `super()` call. It now removes only constructors it emptied itself, whose remaining
+  `super()` passes through the constructor's own params. The v88 upgrade notes gain a grep to find
+  constructors an earlier copy removed.
+
+## 88.1.1 - 2026-10-06
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the `@persist` ordering check in the v88 upgrade notes. It missed the stacked
+  `@persist.with({...})` form and flagged fields that were already in the correct order. The check
+  for removed `*Col` aliases now matches whole words only.
+* Added a step to the v88 upgrade notes to restart the hoist-react MCP server after installing v88.
+* The v88 codemods now print file paths relative to the working directory.
 
 ## 88.1.0 - 2026-10-01
 

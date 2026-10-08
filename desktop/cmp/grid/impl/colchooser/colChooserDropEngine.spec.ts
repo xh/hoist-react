@@ -552,11 +552,8 @@ describe('collapseSelection', () => {
         expect(collapseSelection([inner, outer])).toEqual([inner]);
     });
 
-    // BUG: colChooserDropEngine.ts:149 - only a group can subsume a row, and with equal columns
-    // only an earlier one can, so a leaf listed before its single-column group survives alongside
-    // it and the drag is refused as 'groupDraggedWithOthers'. Latent today: ag-Grid passes dragged
-    // rows sorted by row index, which puts a group before its children.
-    it.fails('collapses a single-column group and its leaf to one row in either order', () => {
+    // Fixed in 89.0.0 - a leaf listed before its single-column group was kept alongside it.
+    it('collapses a single-column group and its leaf to one row in either order', () => {
         const group = {id: 'grp-notes', isGroup: true, leafColIds: ['notes']},
             leaf = {id: 'notes', isGroup: false, leafColIds: ['notes']};
         expect(collapseSelection([group, leaf])).toHaveLength(1);

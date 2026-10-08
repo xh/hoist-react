@@ -13,7 +13,7 @@ import {
     LogLevel
 } from '@azure/msal-browser';
 import {MsalClient, MsalClientConfig} from '@xh/hoist/security/msal';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -42,10 +42,9 @@ describe('MsalClient', () => {
     });
 
     describe('defaults', () => {
-        // BUG: security/msal/MsalClient.ts:129 - the constructor applying the documented defaults
-        // (enableSsoSilent, enableTelemetry, msalLogLevel) was deleted in the TC39 decorator
-        // migration (e213e2ce9), so ssoSilent is never tried unless an app enables it explicitly.
-        it.fails('tries ssoSilent when no account is cached', async () => {
+        // Fixed in 89.0.0 - the documented config defaults were lost in v88.0.0 (e213e2ce9), so
+        // ssoSilent was never tried unless an app enabled it explicitly.
+        it('tries ssoSilent when no account is cached', async () => {
             const msal = fakeMsal(),
                 // Popup login, so the test does not wait on a redirect if ssoSilent is skipped.
                 client = createClient({loginMethodDesktop: 'POPUP'});
@@ -57,8 +56,9 @@ describe('MsalClient', () => {
             expect(client.lastAuthMethod).toBe('ssoSilent');
         });
 
-        // BUG: security/msal/MsalClient.ts:129 - as above, for enableTelemetry and msalLogLevel.
-        it.fails('enables telemetry and warning-level MSAL logging', async () => {
+        // Fixed in 89.0.0 - as above, for enableTelemetry and msalLogLevel. The 3000ms timeout
+        // was dropped separately, in the MSAL 5 upgrade.
+        it('enables telemetry, warning-level MSAL logging and a short ssoSilent timeout', async () => {
             fakeMsal({accounts: [JDOE]});
             const client = createClient();
 
@@ -66,6 +66,7 @@ describe('MsalClient', () => {
 
             const config = vi.mocked(createStandardPublicClientApplication).mock.lastCall[0];
             expect(config.system.loggerOptions.logLevel).toBe(LogLevel.Warning);
+            expect(config.system.iframeBridgeTimeout).toBe(3000);
             expect(config.telemetry?.client).toBeDefined();
             expect(client.telemetry).not.toBeNull();
         });

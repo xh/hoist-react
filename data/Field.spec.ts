@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Field, type FieldType, genDisplayName, parseFieldValue, Store} from '@xh/hoist/data';
-import {initTestAppAsync} from '@xh/hoist/test';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 

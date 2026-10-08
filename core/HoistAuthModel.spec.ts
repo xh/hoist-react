@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {authFailure, hoistCore, initTestAppAsync, server, xhUrl} from '@xh/hoist/test';
+import {authFailure, hoistCore, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';
 import {beforeAll, beforeEach, describe, expect, it} from 'vitest';
 

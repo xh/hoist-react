@@ -126,6 +126,20 @@ describe('HoistBase', () => {
             expect(run.mock.lastCall[0]).toBe(3);
         });
 
+        // Fixed in 89.0.0 - disposing a debounced reaction left its pending run to fire.
+        it('cancels a pending debounced run when disposed', async () => {
+            vi.useFakeTimers();
+            const model = autoDestroy(new TestModel()),
+                run = vi.fn(),
+                disposer = model.addReaction({track: () => model.x, run, debounce: 300});
+
+            model.x = 1;
+            disposer();
+            await vi.advanceTimersByTimeAsync(300);
+
+            expect(run).not.toHaveBeenCalled();
+        });
+
         it('accepts a debounce spec with lodash options', async () => {
             vi.useFakeTimers();
             const model = autoDestroy(new TestModel()),
@@ -197,10 +211,9 @@ describe('HoistBase', () => {
             expect(runAutorun).toHaveBeenCalledOnce();
         });
 
-        // BUG: core/HoistBase.ts:404-405 - bindAndDebounce never cancels the debounced run, and
-        // destroy() only disposes the MobX reaction, so a run pending at destroy still fires. A
-        // common case is `run: () => this.loadAsync(), debounce: 300` on a model just unmounted.
-        it.fails('cancels a pending debounced reaction run', async () => {
+        // Fixed in 89.0.0 - a debounced run pending at destroy still fired, e.g. a reload on a
+        // model just unmounted.
+        it('cancels a pending debounced reaction run', async () => {
             vi.useFakeTimers();
             const model = new TestModel(),
                 run = vi.fn();
