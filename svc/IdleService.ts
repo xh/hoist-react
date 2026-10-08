@@ -16,7 +16,8 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * leaks or other performance issues that can arise with long-running sessions.
  *
  * This service consults the `xhIdleConfig` soft-config and the `xhIdleDetectionDisabled`
- * user preference to determine if and when it should suspend the app.
+ * user preference to determine if and when it should suspend the app. Changes to the pref take
+ * effect immediately.
  */
 export class IdleService extends HoistService {
     override xhImpl = true;
@@ -30,8 +31,8 @@ export class IdleService extends HoistService {
     constructor() {
         super();
         this.addReaction({
-            when: () => XH.appIsRunning,
-            run: this.startMonitoring
+            track: () => XH.appIsRunning && !XH.getPref('xhIdleDetectionDisabled'),
+            run: enabled => (enabled ? this.startMonitoring() : this.stopMonitoring())
         });
     }
 
@@ -42,13 +43,17 @@ export class IdleService extends HoistService {
         const idleConfig = XH.getConf('xhIdleConfig', {}),
             {appTimeouts = {}, timeout} = idleConfig,
             configTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
-            configEnabled = configTimeout > 0,
-            userEnabled = !XH.getPref('xhIdleDetectionDisabled');
+            configEnabled = configTimeout > 0;
 
-        if (configEnabled && userEnabled) {
+        if (configEnabled) {
             this.timeout = configTimeout;
             this.createTimer();
         }
+    }
+
+    private stopMonitoring() {
+        this.timer?.cancel();
+        this.timer = null;
     }
 
     private createTimer() {

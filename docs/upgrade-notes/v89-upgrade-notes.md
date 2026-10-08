@@ -4,7 +4,8 @@
 
 ## Overview
 
-Hoist React v89 is a light upgrade with one required change and one strongly recommended change.
+Hoist React v89 is a light upgrade with one required change, one strongly recommended change, and
+one optional review.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -12,6 +13,9 @@ Hoist React v89 is a light upgrade with one required change and one strongly rec
 - **`GridFilterModelConfig.fieldSpecs` (required review)** - `fieldSpecs` is no longer an
   allow-list. A grid with `filterable` columns that `fieldSpecs` omits now shows a filter on those
   columns - see Step 5.
+- **Observable preferences (optional review)** - `XH.getPref()` is now observable, so code can
+  react to a pref change without an app refresh. Existing code keeps working - see Step 6 to
+  simplify it and to find reads that capture a value.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -241,6 +245,78 @@ columns: [
 
 You can now pass a spec for only the fields that need custom config, such as a values renderer.
 
+### 6. Review Code That Reads Preferences
+
+Pref values are now observable. Components, `@computed` getters, and reactions that read a pref
+update when it changes, and state persisted with `persistWith: {prefKey}` follows changes made by
+other code, such as an `unset()` to reset a layout. No change is required - code that worked in
+v88 works the same. This step finds code to simplify, and code that still needs a refresh.
+
+**Find affected files:**
+
+```bash
+grep -rn "getPref\|prefService" client-app/src/
+```
+
+For each read, check where it runs:
+
+- **Render, getter, or reaction `track`** - now reactive. Nothing to do.
+- **Constructor, field initializer, `onLinked()`, or `initAsync()`** - a snapshot. Replace the
+  stored field with a getter, or apply the pref from a reaction with `fireImmediately: true`.
+- **`doLoadAsync()`** - data loaded with the old value stays loaded. Add a reaction that calls
+  `refreshAsync()`, or keep the option's `refreshRequired` at its default.
+
+The most common simplification is an observable relay, kept in sync by an option's setter.
+
+Before:
+
+```typescript
+class AppModel extends HoistAppModel {
+    @observable accessor compactMenu: boolean = XH.getPref('compactMenu');
+
+    override getAppOptions() {
+        return [{
+            name: 'compactMenu',
+            valueGetter: () => XH.getPref('compactMenu'),
+            valueSetter: v => {
+                runInAction(() => (this.compactMenu = v));
+                XH.setPref('compactMenu', v);
+            },
+            formField: {label: 'Compact menu', item: switchInput()}
+        }];
+    }
+}
+```
+
+After:
+
+```typescript
+class AppModel extends HoistAppModel {
+    get compactMenu(): boolean {
+        return XH.getPref('compactMenu');
+    }
+
+    override getAppOptions() {
+        return [{
+            name: 'compactMenu',
+            prefName: 'compactMenu',
+            refreshRequired: false,
+            formField: {label: 'Compact menu', item: switchInput()}
+        }];
+    }
+}
+```
+
+Set `refreshRequired: false` only once every reader of the pref is reactive. See
+[Observing preference changes](../../svc/README.md#observing-preference-changes) for the full
+guidance.
+
+Two smaller changes come with this:
+
+- The built-in theme and auto-refresh app options no longer refresh the app on save.
+- A reaction or autorun that reads a pref, even inside a helper called from `track`, now re-runs
+  when that pref changes.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -252,6 +328,7 @@ After completing all steps:
 - [ ] The CI type check step passes.
 - [ ] The application builds and loads without console errors.
 - [ ] Grids with a `GridFilterModel` show filters only on the intended columns.
+- [ ] Each app option takes effect on save, with a refresh only where `refreshRequired` asks.
 
 ## Reference
 

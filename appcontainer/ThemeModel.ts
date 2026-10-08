@@ -59,7 +59,12 @@ export class ThemeModel extends HoistModel {
     }
 
     init() {
-        this.setTheme(XH.getPref('xhTheme'));
+        // Apply the pref on init and whenever it changes - e.g. via the Options dialog.
+        this.addReaction({
+            track: () => XH.getPref('xhTheme'),
+            run: theme => this.setTheme(theme, false),
+            fireImmediately: true
+        });
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             if (XH.getPref('xhTheme') === 'system') {
                 this.setDarkTheme(event.matches);

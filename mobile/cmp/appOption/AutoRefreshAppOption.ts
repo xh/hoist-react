@@ -27,6 +27,7 @@ export const autoRefreshAppOption = ({
         omit: XH.autoRefreshService.interval <= 0,
         name: 'autoRefresh',
         prefName: 'xhAutoRefreshEnabled',
+        refreshRequired: false,
         formField: {
             label: 'Auto-refresh',
             info: `Enable to auto-refresh app data every ${XH.autoRefreshService.interval} seconds`,

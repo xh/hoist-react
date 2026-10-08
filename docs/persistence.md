@@ -82,6 +82,10 @@ and associated with the current user — they survive everything and are availab
 
 Best for: important user preferences that should roam, like default groupings or filter settings.
 
+Prefs are observable, so a change made to the preference by other code - e.g.
+`XH.prefService.unset()` to reset a layout - is pushed to the target. Writes from other
+`PrefProvider`s are not, so targets that share a preference do not overwrite each other's state.
+
 ### ViewManager
 
 Stores state within named saved views managed by `ViewManagerModel`. Multiple components can

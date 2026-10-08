@@ -82,7 +82,12 @@ export class ChangelogService extends HoistService {
             : {title: null, versions: []};
 
         this.versions = this.parseVersions(this.changelog);
-        this.updateUnreadStatus();
+
+        this.addReaction({
+            track: () => XH.getPref(this.LAST_READ_PREF_KEY, null),
+            run: () => this.updateUnreadStatus(),
+            fireImmediately: true
+        });
     }
 
     markLatestAsRead() {
@@ -101,7 +106,6 @@ export class ChangelogService extends HoistService {
         }
 
         XH.setPref(LAST_READ_PREF_KEY, latestAvailableVersion);
-        this.updateUnreadStatus();
     }
 
     //------------------------

@@ -67,6 +67,17 @@ export interface PrefEntry {
     isSet: boolean;
 }
 
+/**
+ * A pref entry for seeding `hoistCore.prefs`, e.g. `hoistCore.prefs.pageSize = prefEntry('int', 50)`.
+ *
+ * @param defaultValue - the pref's server-side default.
+ * @param value - the user's own value, if they have one. Omit for a user on the default.
+ */
+export function prefEntry(type: PrefEntry['type'], defaultValue: any, value?: any): PrefEntry {
+    const isSet = value !== undefined;
+    return {type, value: isSet ? value : cloneDeep(defaultValue), defaultValue, isSet};
+}
+
 export interface HoistError {
     name?: string;
     message?: string;
@@ -449,19 +460,13 @@ function defaultConfigs(): PlainObject {
 
 // Prefs that hoist-core creates by default, in PrefService.getClientConfig's format.
 function defaultPrefs(): Record<string, PrefEntry> {
-    const pref = (type: PrefEntry['type'], defaultValue: any): PrefEntry => ({
-        type,
-        value: cloneDeep(defaultValue),
-        defaultValue,
-        isSet: false
-    });
     return {
-        xhAutoRefreshEnabled: pref('bool', true),
-        xhIdleDetectionDisabled: pref('bool', false),
-        xhLastReadChangelog: pref('string', '0.0.0'),
-        xhShowVersionBar: pref('string', 'auto'),
-        xhSizingMode: pref('json', {}),
-        xhTheme: pref('string', 'system')
+        xhAutoRefreshEnabled: prefEntry('bool', true),
+        xhIdleDetectionDisabled: prefEntry('bool', false),
+        xhLastReadChangelog: prefEntry('string', '0.0.0'),
+        xhShowVersionBar: prefEntry('string', 'auto'),
+        xhSizingMode: prefEntry('json', {}),
+        xhTheme: prefEntry('string', 'system')
     };
 }
 

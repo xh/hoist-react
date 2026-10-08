@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {XH} from '@xh/hoist/core';
 import {
     radioCardInput,
     RadioCardInputProps,
@@ -71,8 +70,7 @@ export const themeAppOption = ({
             ...formFieldProps
         },
         refreshRequired: false,
-        prefName: 'xhTheme',
-        valueSetter: v => XH.setTheme(v)
+        prefName: 'xhTheme'
     };
 };
 
