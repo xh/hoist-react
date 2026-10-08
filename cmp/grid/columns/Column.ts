@@ -999,7 +999,12 @@ export class Column {
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
-        return {...ret, ...agOptions};
+        const spec = {...ret, ...agOptions};
+
+        // ...but a `cellClass` given via agOptions must keep the plain-text marker, which the
+        // cell's styling depends on.
+        if (isPlain && agOptions.cellClass) spec.cellClass = withPlainMarker(agOptions.cellClass);
+        return spec;
     }
 
     /** ag-Grid comparator for this column - see {@link getAgSpec}. @internal */
@@ -1337,3 +1342,9 @@ const SEVERITY_FLAG_INTENTS: Record<ValidationSeverity, Intent> = {
     warning: 'warning',
     info: 'primary'
 };
+
+function withPlainMarker(cellClass: ColDef['cellClass']): ColDef['cellClass'] {
+    return isFunction(cellClass)
+        ? agParams => [...castArray(cellClass(agParams) ?? []), 'xh-cell--plain']
+        : [...castArray(cellClass), 'xh-cell--plain'];
+}

@@ -262,7 +262,8 @@ new GridModel({
 **Plain cells have no wrapper span.** A column with no `renderer` now displays its value as text
 written by ag-Grid, with no React component and no `xh-cell-inner-wrapper` span in the cell. The
 cell carries an `xh-cell--plain` class. Columns with a `renderer`, tree columns, and columns with
-an ag-Grid `cellRenderer` via `agOptions` are unchanged.
+an ag-Grid `cellRenderer` via `agOptions` are unchanged. A renderer-less column with an
+`agOptions.valueFormatter` now displays the formatted value, as its export already did.
 
 **Find affected styles and selectors:**
 

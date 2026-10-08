@@ -67,6 +67,17 @@ describe('Column.getAgSpec', () => {
             expect(spec.cellClass).not.toContain('xh-cell--plain');
         });
 
+        it('keeps the plain-text marker when agOptions supplies a cellClass', () => {
+            expect(createColumn({agOptions: {cellClass: 'a'}}).getAgSpec().cellClass).toEqual([
+                'a',
+                'xh-cell--plain'
+            ]);
+            const fn = createColumn({
+                agOptions: {cellClass: () => ['b', 'c']}
+            }).getAgSpec().cellClass as Function;
+            expect(fn({})).toEqual(['b', 'c', 'xh-cell--plain']);
+        });
+
         it('defers to a cellRenderer given via agOptions', () => {
             const spec = createColumn({
                 agOptions: {cellRenderer: 'agAnimateShowChangeCellRenderer'}

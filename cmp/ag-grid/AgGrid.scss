@@ -129,8 +129,6 @@
     .ag-cell {
       border-bottom: none;
       border-top: none;
-      // The row border now takes the vertical space the cell borders did - see `xh-cell--plain`.
-      --xh-plain-cell-vertical-chrome: 1px;
     }
   }
 
@@ -238,17 +236,14 @@
     align-items: center;
   }
 
-  // Plain-text cells center their text by line-height, so the line box must match the cell's
-  // content height exactly: the row height, less the vertical space taken by borders - the cell's
-  // own 1px transparent top and bottom borders, or under `--row-borders` the 1px row border drawn
-  // on the cell container in their place. ag-Grid's own cell rule gets this wrong when a
-  // `getRowHeight` function is in use, as Hoist's always is: it then sets `--ag-line-height` to
-  // the row height less 2px inline on each row, and subtracts the 2px again, leaving the text 1px
-  // high of center. (Its `--ag-internal-row-border-width` is not used here either - ag-Grid
-  // measures it once, so it does not follow the `--row-borders` modifier at runtime.)
+  // Plain-text cells (columns with no renderer) hold a bare text node that ag-Grid sizes by
+  // line-height and ellipsizes itself, so it cannot be flex-centered like rendered content.
+  // ag-Grid's line-height is also 2px short whenever a `getRowHeight` function is in use (Hoist's
+  // always is), and never exceeds the grid's default row height, so taller rows (`autoHeight`
+  // columns, a custom `getRowHeight`) would leave the text at the top. Center the line box in the
+  // cell instead, which holds for any row height and keeps ag-Grid's line spacing for wrapped text.
   .ag-cell.xh-cell--plain {
-    --xh-plain-cell-row-height: calc(var(--ag-line-height, calc(var(--ag-row-height) - 2px)) + 2px);
-    line-height: calc(var(--xh-plain-cell-row-height) - var(--xh-plain-cell-vertical-chrome, 2px));
+    align-content: center;
   }
 
   // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to
