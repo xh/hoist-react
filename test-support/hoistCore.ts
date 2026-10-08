@@ -133,7 +133,10 @@ export class FakeHoistCore {
     /** User preferences, keyed by name. */
     prefs: Record<string, PrefSpec>;
 
-    /** Payload for `xh/environment`. */
+    /**
+     * Payload for `xh/environment`. Set `appTimeZone` and `serverTimeZone` here - the fake adds
+     * each zone's offset when it answers, as hoist-core does.
+     */
     environment: PlainObject;
 
     /** Every request the fake has served in this test - the kit's setup clears it before each. */
@@ -291,7 +294,15 @@ export class FakeHoistCore {
             this.get('xh/logout', () => HttpResponse.json({success: false})),
 
             // XhController.environment - EnvironmentService.getEnvironment.
-            this.get('xh/environment', () => HttpResponse.json(this.environment)),
+            this.get('xh/environment', () => {
+                const env = this.environment,
+                    now = Date.now();
+                return HttpResponse.json({
+                    ...env,
+                    serverTimeZoneOffset: zoneOffset(env.serverTimeZone, now),
+                    appTimeZoneOffset: zoneOffset(env.appTimeZone, now)
+                });
+            }),
 
             // XhController.environmentPoll
             this.get('xh/environmentPoll', () =>
@@ -542,14 +553,24 @@ function defaultEnvironment(): PlainObject {
         hoistCoreVersion: '42.1.0',
         javaVersion: '25.0.1',
         serverTimeZone: 'UTC',
-        serverTimeZoneOffset: 0,
         appTimeZone: 'America/New_York',
-        appTimeZoneOffset: -14400000,
         webSocketsEnabled: false,
         instanceName: 'inst-1',
         alertBanner: {active: false},
         pollConfig: {interval: -1, onVersionChange: 'promptReload'}
     };
+}
+
+// TimeZone.getOffset() - the zone's offset from UTC at an instant, in ms, positive east of UTC.
+// hoist-core sends one for each zone, computed when it answers, so an offset follows daylight saving.
+function zoneOffset(timeZone: string, at: number): number {
+    const name = new Intl.DateTimeFormat('en-US', {timeZone, timeZoneName: 'longOffset'})
+            .formatToParts(at)
+            .find(it => it.type === 'timeZoneName').value,
+        [, sign, hours, minutes] = /GMT([+-])(\d\d):(\d\d)/.exec(name) ?? [];
+    // A zone at UTC formats as plain 'GMT'.
+    if (!sign) return 0;
+    return (sign === '-' ? -1 : 1) * (Number(hours) * 60 + Number(minutes)) * 60_000;
 }
 
 //------------------------
