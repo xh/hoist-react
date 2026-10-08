@@ -13,19 +13,19 @@ import {isString} from 'lodash';
  * @internal - apps should use the Hoist Icon factories instead with {@link IconProps.asHtml}.
  */
 export function iconHtml({
-    iconName,
+    faName,
     prefix = 'far',
     title,
     className,
     size
 }: {
-    iconName: IconName;
+    faName: IconName;
     prefix: IconPrefix;
     title?: string;
     className?: string;
     size?: string;
 }) {
-    const iconDef = findIconDefinition({prefix, iconName}),
+    const iconDef = findIconDefinition({prefix, iconName: faName}),
         classes = enhanceFaClasses(className, size);
 
     return icon(iconDef, {classes, title}).html[0];
