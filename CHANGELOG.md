@@ -113,6 +113,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   release or stay on 5.9. Apps that move must set `strict: false` (unless already strict) and
   `noUncheckedSideEffectImports: false` in `tsconfig.json` to override new TypeScript defaults.
   See the upgrade notes for the full steps.
+* `creates()`, `uses()` and `useLocalModel()` now build and link their models untracked by MobX.
+  Observable state read by a model constructor, `@persist` setup or `onLinked()` no longer
+  re-renders the component that created the model.
 
 ### ⚙️ Typescript API Adjustments
 

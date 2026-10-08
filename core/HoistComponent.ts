@@ -30,7 +30,7 @@ import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
-import {observer} from '../mobx';
+import {observer, untracked} from '../mobx';
 import {
     ForwardedRef,
     forwardRef,
@@ -407,11 +407,13 @@ function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Conf
     return resolvedModel;
 }
 
+// Models are created untracked here and in lookupModel(), so that observables read by a model
+// constructor do not subscribe the component.
 function createModel(spec: CreatesSpec<HoistModel>): ResolvedModel {
-    let model = spec.createFn();
-    if (isFunction(model)) {
-        model = new (model as any)();
-    }
+    const model = untracked(() => {
+        const ret = spec.createFn();
+        return isFunction(ret) ? new (ret as any)() : ret;
+    });
 
     return {model, isLinked: true, fromContext: false};
 }
@@ -424,7 +426,8 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     // 1) props - config
     if (spec.createFromConfig) {
         if (isPlainObject(modelConfig)) {
-            return {model: new selector(modelConfig), isLinked: true, fromContext: false};
+            const model = untracked(() => new selector(modelConfig));
+            return {model, isLinked: true, fromContext: false};
         }
     }
 
@@ -451,7 +454,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     // 4) default create
     const create = spec.createDefault;
     if (create) {
-        const model = isFunction(create) ? create() : new selector();
+        const model = untracked(() => (isFunction(create) ? create() : new selector()));
         return {model, isLinked: true, fromContext: false};
     }
 
