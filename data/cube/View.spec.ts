@@ -267,6 +267,29 @@ describe('View', () => {
             expect(store.getById('root>>region=[US]').data.qty).toBe(225);
         });
     });
+
+    describe('createStore', () => {
+        it('mints a store that treats the grand total as its summary row, following includeRoot', () => {
+            const view = createView(createCube(), {dimensions: ['region'], includeRoot: true}),
+                store = autoDestroy(view.createStore({connect: true}));
+
+            expect(store.loadRootAsSummary).toBe(true);
+            expect(store.summaryRecords.map(it => it.id)).toEqual(['root']);
+            expect(store.getById('root>>region=[US]').data.qty).toBe(425);
+
+            view.updateQuery({includeRoot: false});
+            expect(store.loadRootAsSummary).toBe(false);
+            expect(store.summaryRecords).toBeNull();
+            expect(store.getById('root>>region=[US]').data.qty).toBe(425);
+        });
+
+        it('leaves the summary flag of a store the app passed in alone', () => {
+            const store = autoDestroy(new Store({fields: ['qty'], projectionOnly: true}));
+            createView(createCube(), {dimensions: ['region'], includeRoot: true}, {stores: store});
+
+            expect(store.loadRootAsSummary).toBe(false);
+        });
+    });
 });
 
 //------------------

@@ -190,6 +190,8 @@ export class View
     _rowDataGenerator: RowDataGenerator = null;
     // Pivot cells - null until the query first pivots, retained thereafter. See PivotCells.
     _pivot: PivotCells = null;
+    // Stores minted by `createStore`, whose summary-row flag follows the query's `includeRoot`.
+    private _ownStores = new WeakSet<Store>();
     // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
     _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
@@ -333,7 +335,7 @@ export class View
     /**
      * Create a Store shaped for this view's results - a Field per {@link ViewRowData} member, per
      * query field, and (for a pivoted query) per {@link ViewResult.cellFields} entry, kept in sync
-     * as the pivot structure changes.
+     * as the pivot structure changes. Its `loadRootAsSummary` follows the query's `includeRoot`.
      *
      * A convenience factory, not a claim of ownership: the *caller* owns the returned Store, and a
      * caller passing `connect: true` must call {@link disconnectStore} from its own `destroy()`.
@@ -344,10 +346,12 @@ export class View
         const store = new Store({
             loadTreeData: true,
             projectionOnly: true,
+            loadRootAsSummary: this.query.includeRoot,
             xhName: this.childXhName('store'),
             ...rest,
             fields: [...VIEW_ROW_DATA_FIELDS, ...this.fields, ...fields]
         });
+        this._ownStores.add(store);
 
         // Run `parseStores` either way - it installs the row digest and rejects a conflicting one,
         // and an unconnected store still loads from this view.
@@ -555,6 +559,10 @@ export class View
     private loadStore(store: Store) {
         const {_leafMap, _rowDatas} = this;
         if (!_leafMap || !_rowDatas) return;
+
+        // A minted store expects exactly the one root node `includeRoot` publishes - keep the two in
+        // step across `updateQuery`. Stores an app passed in are its own to configure.
+        if (this._ownStores.has(store)) store.setLoadRootAsSummary(this.query.includeRoot);
 
         // Skip degenerate root in stores/grids, but preserve in object api.
         store.loadData(_leafMap.size !== 0 ? _rowDatas : []);

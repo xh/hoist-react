@@ -184,9 +184,7 @@ export class PivotCells {
     }
 
     /**
-     * Declare a Field on `store` for every current cell field, and mirror `includeRoot` onto its
-     * `loadRootAsSummary` - `loadStores` publishes exactly the one root node carrying `children`
-     * that flag expects.
+     * Declare a Field on `store` for every current cell field.
      *
      * Done here rather than from a consumer's reaction on `result` because `fullUpdate` assigns
      * `result` *last*: a reaction cannot declare fields until after the load has already run against
@@ -195,8 +193,6 @@ export class PivotCells {
      * static and known at construction, while cell fields are discovered from data.
      */
     syncStore(store: Store) {
-        store.setLoadRootAsSummary(this.view.query.includeRoot);
-
         const {cellFields, syncedCellFields} = this,
             prior = syncedCellFields.get(store);
 
