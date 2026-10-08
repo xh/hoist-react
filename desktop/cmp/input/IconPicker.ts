@@ -384,7 +384,8 @@ const triggerButton = hoistCmp.factory<IconPickerModel>(({model, props}, ref) =>
             !selectedOption && 'xh-icon-picker__trigger--empty',
             btnProps.className
         ),
-        icon: selectedOption ? selectedOption.factory({prefix}) : Icon.placeholder(),
+        // Without a name, hold the icon's space so an empty trigger does not collapse.
+        icon: selectedOption?.factory({prefix}) ?? (showName ? null : Icon.placeholder()),
         text: showName
             ? (selectedOption?.displayName ?? withDefault(props.placeholder, 'Select icon...'))
             : null,
