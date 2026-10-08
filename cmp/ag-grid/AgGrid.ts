@@ -70,11 +70,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
 
         const impl = useLocalModel(AgGridLocalModel),
             AgGridCmp = AgGrid as any,
-            // Explicit `rowHeight` props describe the grid's data rows - else the sizing mode does.
+            // Explicit `rowHeight` / `headerHeight` props describe the grid - else the sizing mode
+            // does. The same precedence as the options passed to ag-Grid below.
             rowHeight = isNumber(agGridProps.rowHeight)
                 ? agGridProps.rowHeight
                 : AgGridCmp.getRowHeightForSizingMode(sizingMode),
-            headerHeight = AgGridCmp.getHeaderHeightForSizingMode(sizingMode);
+            headerHeight = isNumber(agGridProps.headerHeight)
+                ? agGridProps.headerHeight
+                : impl.headerHeight;
 
         return frame({
             ref,
