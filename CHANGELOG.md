@@ -62,6 +62,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   destroyed or the reaction was disposed.
 * Fixed `FormModel.allErrors` and `SubformsFieldModel.allErrors` omitting errors from nested
   subforms.
+* Fixed a phantom selection effect on grids with `showCellFocus` off (the default): clicking a cell
+  dropped its column border under `cellBorders`, and shifted its content under `rowBorders`, as
+  ag-Grid drew its (transparent) focus border over them.
 * Fixed `Store.updateData()` and `Store.modifyRecords()` dropping other summary records when one
   changed, and `Store.revert()` dropping default field values from summary records.
 * Fixed `FieldFilter` text operators (`like`, `begins`, `ends` and their negations) matching blank
