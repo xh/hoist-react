@@ -58,8 +58,8 @@
             "title": "Cube Aggregation",
             "mcpCategory": "package",
             "viewerCategory": "core",
-            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, and Queries.",
-            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView"]
+            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, Queries, and pivoting.",
+            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView", "pivot", "PivotSpec", "createStore", "cubeLabelValue"]
         },
         {
             "id": "svc/README.md",
@@ -86,6 +86,14 @@
             "viewerCategory": "components",
             "description": "Primary data grid built on ag-Grid.",
             "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
+        },
+        {
+            "id": "cmp/pivotgrid/README.md",
+            "title": "PivotGrid Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Pivoted Cube View rendered as a tree grid with nested column groups, docked summaries, and per-measure column config.",
+            "keywords": ["PivotGridModel", "PivotGrid", "PivotGridConfig", "pivot", "PivotSpec", "valueFields", "cellFields", "PivotPath", "rowSummary", "pivotSummary", "valueSummary", "pivotSortBy", "valueColumnSpecs"]
         },
         {
             "id": "cmp/form/README.md",

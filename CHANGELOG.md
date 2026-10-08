@@ -27,6 +27,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added Grid and Cube pivoting - a View can slice its measures across extra dimensions as columns,
+  and a new `PivotGrid` renders the result.
+    * Set `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on
+      each group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
+      incrementally like any other. See `PivotSpec` and the
+      [Cube README](data/cube/README.md#pivoting-with-pivot).
+    * Added `PivotGrid` and `PivotGridModel` (`@xh/hoist/cmp/pivotgrid`) to render a pivoted View
+      as a tree grid with nested column groups, docked summaries, and per-measure column config.
+      See the [PivotGrid README](cmp/pivotgrid/README.md).
+    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
+      option pivots the aggregate grid on a chosen dimension.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
   `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.

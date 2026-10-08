@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
@@ -38,15 +39,12 @@ export class StoreFilterFieldImplModel extends HoistModel {
         return this.componentProps.matchMode ?? 'startWord';
     }
 
-    /** GridModel or ZoneGridModel to filter - from props, or the nearest found in context. */
+    /** Model to filter - from props, or the nearest found in context. */
     @computed
-    get boundModel(): GridModel | ZoneGridModel {
+    get boundModel(): GridModel | ZoneGridModel | PivotGridModel {
         const {gridModel, store} = this.componentProps;
         if (store) return null;
-        return (
-            gridModel ??
-            this.lookupModel(it => it instanceof GridModel || it instanceof ZoneGridModel)
-        );
+        return gridModel ?? this.lookupModel(isGridLikeModel);
     }
 
     @computed
@@ -236,7 +234,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
     private get innerGridModel(): GridModel {
         const {boundModel} = this;
-        return boundModel instanceof ZoneGridModel ? boundModel.gridModel : boundModel;
+        return boundModel instanceof GridModel ? boundModel : (boundModel?.gridModel ?? null);
     }
 
     /**
@@ -244,10 +242,15 @@ export class StoreFilterFieldImplModel extends HoistModel {
      * its mapped fields within two zone columns, so use the columns backing those fields instead.
      */
     private getSearchColumns(): Column[] {
-        const {boundModel} = this;
+        const {boundModel, innerGridModel} = this;
         if (!boundModel) return [];
         return boundModel instanceof ZoneGridModel
             ? boundModel.getMappedColumns()
-            : boundModel.getVisibleLeafColumns();
+            : innerGridModel.getVisibleLeafColumns();
     }
+}
+
+/** Models a filter or find field can bind to - a GridModel, or a model wrapping one. */
+export function isGridLikeModel(it: unknown): it is GridModel | ZoneGridModel | PivotGridModel {
+    return it instanceof GridModel || it instanceof ZoneGridModel || it instanceof PivotGridModel;
 }

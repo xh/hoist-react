@@ -11,7 +11,7 @@ import {isEmpty} from 'lodash';
 import {CubeField} from '../CubeField';
 import {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
-import {BaseRow} from './BaseRow';
+import {BaseRow, propagateUpdate} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
@@ -19,8 +19,8 @@ import {RowUpdate} from './RowUpdate';
  * {@link LeafRow.applyLeafDataUpdate}.
  */
 export interface LeafUpdateChanges {
-    /** Data objects of every row rewritten by the update - leaves and their ancestors alike. */
-    rows: Set<ViewRowData>;
+    /** Every row rewritten by the update - leaves and their ancestors alike. */
+    rows: Set<BaseRow>;
     /**
      * Names of every field changed by the update. Collected at the leaves only, which suffices
      * because this path runs only with simple aggregators and no derived fields - a parent then
@@ -87,16 +87,17 @@ export abstract class LeafRow extends BaseRow {
         // 2) Apply new values to our data, as per subclass strategy.
         this.applyUpdatedData(updates, newData, changed.rows);
 
-        // 3) Propagate any updates to ancestors and consumers.
+        // 3) Propagate any updates to ancestors and consumers. In a pivot view a leaf has two
+        //    parents - its innermost group row and its own full-path cell.
         if (!isEmpty(updates)) {
-            this.parent?.applyDataUpdate(updates, changed.rows);
+            propagateUpdate(this.parent, this.pivotParent, updates, changed.rows);
         }
     }
 
     protected abstract applyUpdatedData(
         updates: RowUpdate[],
         newData: PlainObject,
-        updatedRowDatas: Set<PlainObject>
+        updatedRows: Set<BaseRow>
     ): void;
 }
 
@@ -119,10 +120,10 @@ export class ExposedLeafRow extends LeafRow {
     protected override applyUpdatedData(
         updates: RowUpdate[],
         newData: PlainObject,
-        updatedRowDatas: Set<PlainObject>
+        updatedRows: Set<BaseRow>
     ) {
         this.data._src = newData;
-        if (!isEmpty(updates)) updatedRowDatas.add(this.data);
+        if (!isEmpty(updates)) updatedRows.add(this);
     }
 }
 

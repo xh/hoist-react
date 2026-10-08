@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
 import type {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
@@ -20,12 +21,12 @@ import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
 export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     /**
-     * GridModel or ZoneGridModel whose data this control should search. When given a GridModel,
-     * this component will, by default, use the fields for all *visible* columns when matching, as
-     * well as any groupBy field. When given a ZoneGridModel, it uses the fields currently mapped
-     * to any of its zones.
+     * Model whose data this control should search. When given a GridModel or PivotGridModel, this
+     * component will, by default, use the fields for all *visible* columns when
+     * matching, as well as any groupBy field. When given a ZoneGridModel, it
+     * uses the fields currently mapped to any of its zones.
      */
-    gridModel?: GridModel | ZoneGridModel;
+    gridModel?: GridModel | ZoneGridModel | PivotGridModel;
 
     /** Mode to use when searching (default 'startWord'). */
     matchMode?: FilterMatchMode;
@@ -50,8 +51,8 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
  * the entered search term based on simple word-boundary matching of its value to the value of
  * configured fields on a record. If any field values match, the record itself is considered a match.
  *
- * This component is designed to be bound to a GridModel or ZoneGridModel via its `gridModel` prop.
- * If not configured, it binds by default to the nearest GridModel or ZoneGridModel found in
+ * This component is designed to be bound to a GridModel, ZoneGridModel or PivotGridModel via its
+ * `gridModel` prop. If not configured, it binds by default to the nearest such model found in
  * context. Binding in this way allows the component to
  * auto-generate the fields in the store to be searched by the field and to automatically select
  * the results in the Grid.

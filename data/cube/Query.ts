@@ -6,6 +6,7 @@
  */
 
 import {
+    appendFilter,
     BucketSpecFn,
     Filter,
     FilterLike,
@@ -16,7 +17,7 @@ import {
     StoreRecord
 } from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual, sortBy, uniq} from 'lodash';
+import {compact, find, isEmpty, isEqual, sortBy, uniq} from 'lodash';
 import {Cube} from './Cube';
 import {CubeField} from './CubeField';
 
@@ -26,7 +27,8 @@ import {CubeField} from './CubeField';
  *
  * Key options beyond `dimensions` and `filter`: `includeRoot` adds a grand-total row,
  * `includeLeaves` exposes source records as tree children, and `provideLeaves` makes them
- * accessible programmatically without rendering in the tree.
+ * accessible programmatically without rendering in the tree. `pivot` additionally slices the
+ * aggregates across a second axis of dimensions - see {@link PivotSpec}.
  *
  * See the Cube package README (`data/cube/README.md#querying-with-views`) for query patterns.
  *
@@ -42,7 +44,8 @@ export interface QueryConfig {
 
     /**
      * Fields or field names. If unspecified will include all available {@link Cube.fields}.
-     * Specify a subset to optimize aggregation performance.
+     * Specify a subset to optimize aggregation performance. `dimensions` and any `pivot` fields
+     * are always included.
      */
     fields?: string[] | CubeField[];
 
@@ -128,6 +131,61 @@ export interface QueryConfig {
      * Return true to omit the row. Defaults to Cube.omitFn.
      */
     omitFn?: OmitFn;
+
+    /**
+     * Pivot additional dimensions into *columns* rather than rows, aggregating measures at each
+     * intersection. Omit for an ordinary view - see {@link PivotSpec}.
+     */
+    pivot?: PivotSpec;
+}
+
+/**
+ * Pivot axis of a {@link QueryConfig} - extra dimensions sliced into columns rather than rows,
+ * and the measures aggregated at each intersection.
+ *
+ * `QueryConfig.dimensions` keeps its exact meaning as the ordered levels of the visible row
+ * hierarchy. The two axes are orthogonal and nothing is concatenated. Results carry the pivot
+ * structure as {@link ViewResult.paths} and {@link ViewResult.cellFields}, with each cell value
+ * published as a synthetic field on its group row's {@link ViewRowData} - see `PivotGridModel`
+ * for the component that renders them.
+ */
+export interface PivotSpec {
+    /**
+     * Pivot dimensions, outermost first. 1 is typical, 3 the practical ceiling. Empty to degenerate
+     * to plain View behavior, so apps can toggle pivoting without swapping view objects.
+     */
+    dimensions: string[] | CubeField[];
+
+    /**
+     * Measures to aggregate per cell. Must specify an aggregator, and must not also be a grouping
+     * `dimension`. Added to the query's `fields` along with any {@link Aggregator.dependsOn}.
+     */
+    valueFields: string[] | CubeField[];
+
+    /** Label for a null / blank pivot dimension value. Default '(empty)'. */
+    emptyPathLabel?: string;
+
+    /**
+     * True to exclude records with a null / blank pivot dimension value entirely. Default false,
+     * which gives such records their own `emptyPathLabel` path segment instead.
+     *
+     * Implemented as an implicit filter, so excluded records leave the *group* aggregates too. That
+     * is the only formulation under which a row total still equals the sum of its pivot columns.
+     */
+    excludeEmptyPivotValues?: boolean;
+
+    /** Throw if the discovered pivot path count exceeds this. Default 1000; null to disable. */
+    maxPivotPaths?: number;
+}
+
+/** Resolved form of a {@link PivotSpec}, as held by a {@link Query}. */
+export interface Pivot {
+    dimensions: CubeField[];
+    dimensionNames: string[];
+    valueFields: CubeField[];
+    emptyPathLabel: string;
+    excludeEmptyPivotValues: boolean;
+    maxPivotPaths: number;
 }
 
 /**
@@ -137,7 +195,8 @@ export interface QueryConfig {
  */
 export class Query {
     /**
-     * Queried fields, sorted by name. Includes `dimensions`, added here if not already present.
+     * Queried fields, sorted by name. Includes `dimensions` and pivot fields, added here if not
+     * already present.
      */
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];
@@ -151,8 +210,12 @@ export class Query {
     readonly lockFn: LockFn;
     readonly bucketSpecFn: BucketSpecFn;
     readonly omitFn: OmitFn;
+    /** Resolved pivot spec, or null for an ordinary query. */
+    readonly pivot: Pivot;
 
+    // Pre-derivation inputs, so `clone` re-derives from these rather than compounding.
     private readonly _rawFields: string[] | CubeField[];
+    private readonly _rawFilter: Filter;
     private readonly _testFn: FilterTestFn;
 
     constructor({
@@ -166,34 +229,39 @@ export class Query {
         omitRedundantNodes = true,
         lockFn = cube.lockFn,
         bucketSpecFn = cube.bucketSpecFn,
-        omitFn = cube.omitFn
+        omitFn = cube.omitFn,
+        pivot = null
     }: QueryConfig) {
         this.cube = cube;
         this._rawFields = fields?.slice();
+        this._rawFilter = parseFilter(filter);
         this.dimensions = this.parseDimensions(dimensions);
+        this.pivot = this.parsePivot(pivot);
         // Ensure canonical field order so equivalent queries compare equal
         this.fields = sortBy(
-            uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]),
+            uniq([...this.parseFields(fields), ...(this.dimensions ?? []), ...this.pivotFields()]),
             'name'
         );
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
         this.provideLeaves = provideLeaves;
         this.omitRedundantNodes = omitRedundantNodes;
-        this.filter = parseFilter(filter);
+        this.filter = this.applyPivotFilter(this._rawFilter);
         this.lockFn = lockFn;
         this.bucketSpecFn = bucketSpecFn;
         this.omitFn = omitFn;
 
         this._testFn = this.filter?.getTestFn(this.cube.store) ?? null;
         this.hasFilter = this._testFn != null;
+
+        this.validatePivot();
     }
 
-    clone(overrides: Partial<QueryConfig>) {
-        const conf = {
+    clone(overrides: Partial<QueryConfig>): Query {
+        return new Query({
             dimensions: this.dimensions,
             fields: this._rawFields, // NOT this.fields - would retain stale dimensions
-            filter: this.filter,
+            filter: this._rawFilter, // NOT this.filter - would re-append any pivot exclusion
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
             provideLeaves: this.provideLeaves,
@@ -201,11 +269,10 @@ export class Query {
             lockFn: this.lockFn,
             bucketSpecFn: this.bucketSpecFn,
             omitFn: this.omitFn,
+            pivot: this.pivot,
             cube: this.cube,
             ...overrides
-        };
-
-        return new Query(conf);
+        });
     }
 
     test(record: StoreRecord): boolean {
@@ -230,6 +297,7 @@ export class Query {
         return (
             isEqual(this.fields, other.fields) &&
             isEqual(this.dimensions, other.dimensions) &&
+            isEqual(this.pivot, other.pivot) &&
             this.cube === other.cube &&
             this.includeRoot === other.includeRoot &&
             this.includeLeaves === other.includeLeaves &&
@@ -238,6 +306,35 @@ export class Query {
             this.bucketSpecFn == other.bucketSpecFn &&
             this.omitFn == other.omitFn &&
             this.lockFn == other.lockFn
+        );
+    }
+
+    /**
+     * True if a change from `other` to this query can leave cached parent rows unused - i.e. it moves
+     * the ids those rows are generated under, so retaining them would keep values that no later
+     * generation maintains. See {@link RowCache}.
+     * @internal
+     */
+    orphansParents(other: Query): boolean {
+        return (
+            !isEqual(this.dimensions, other.dimensions) ||
+            // Cell row ids are keyed on pivot path, and path keys carry dimension *values* alone -
+            // so a pivot dimension change can even land a stale cell on a live id.
+            !isEqual(this.pivot?.dimensions, other.pivot?.dimensions)
+        );
+    }
+
+    /**
+     * True if a change from `other` to this query leaves cached parent rows holding state it no longer
+     * asks for - so they must be rebuilt rather than recomputed in place. See {@link RowCache}.
+     * @internal
+     */
+    invalidatesParents(other: Query): boolean {
+        return (
+            this.bucketSpecFn !== other.bucketSpecFn ||
+            // Cell rows aggregate `valueFields` alone, so a measure change moves a field set that
+            // `fields` - and with it RowCache's own field-gain check - can miss entirely.
+            !isEqual(this.pivot?.valueFields, other.pivot?.valueFields)
         );
     }
 
@@ -264,5 +361,112 @@ export class Query {
             );
             return field;
         });
+    }
+
+    //------------------------
+    // Pivot
+    //------------------------
+    /** True if this query pivots on at least one dimension. */
+    get isPivoted(): boolean {
+        return !isEmpty(this.pivot?.dimensions);
+    }
+
+    private parsePivot(spec: PivotSpec): Pivot {
+        if (!spec) return null;
+
+        const {
+                dimensions,
+                valueFields,
+                emptyPathLabel = '(empty)',
+                excludeEmptyPivotValues = false,
+                maxPivotPaths = 1000
+            } = spec,
+            dims = this.parseDimensions(dimensions) ?? [];
+
+        return {
+            dimensions: dims,
+            dimensionNames: dims.map(it => it.name),
+            valueFields: this.parseValueFields(valueFields),
+            emptyPathLabel,
+            excludeEmptyPivotValues,
+            maxPivotPaths
+        };
+    }
+
+    private parseValueFields(raw: CubeField[] | string[]): CubeField[] {
+        throwIf(isEmpty(raw), 'A pivot requires at least one entry in `valueFields`.');
+        if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
+
+        const {fields} = this.cube;
+        return (raw as string[]).map(name => {
+            const field = find(fields, {name});
+            throwIf(!field, `Value field '${name}' is not a Field on this Cube.`);
+            return field;
+        });
+    }
+
+    /** The pivot's own fields plus anything their aggregators read - always queried. */
+    private pivotFields(): CubeField[] {
+        const {pivot, cube} = this;
+        if (!pivot) return [];
+
+        const deps = pivot.valueFields.flatMap(f => f.aggregator?.dependsOn ?? []);
+        return [
+            ...pivot.dimensions,
+            ...pivot.valueFields,
+            ...compact(deps.map(n => cube.getField(n)))
+        ];
+    }
+
+    /**
+     * Fold `excludeEmptyPivotValues` into the query filter, so exclusion is a real filter.
+     *
+     * FieldFilters rather than a testFn: `FunctionFilter.equals` compares its `testFn` by reference,
+     * so a per-construction closure would make every clone unequal and defeat `View.updateQuery`'s
+     * no-op check. FieldFilter treats null / '' / [] alike as blank, matching the intent.
+     */
+    private applyPivotFilter(filter: Filter): Filter {
+        const {pivot} = this;
+        if (!pivot?.excludeEmptyPivotValues || !this.isPivoted) return filter;
+
+        const excludes = pivot.dimensionNames.map(field => ({
+            field,
+            op: '!=' as const,
+            value: [null]
+        }));
+        return appendFilter(filter, ...excludes);
+    }
+
+    private validatePivot() {
+        const {pivot} = this;
+        if (!pivot) return;
+
+        const dimNames = (this.dimensions ?? []).map(it => it.name);
+
+        pivot.valueFields.forEach(field => {
+            const {name} = field;
+            throwIf(!field.aggregator, `Pivot value field '${name}' must specify an aggregator.`);
+            // The root path's cell field *is* the bare value field name, so its projection would
+            // overwrite the group label a grouping dimension puts in that same slot.
+            throwIf(
+                dimNames.includes(name),
+                `Pivot value field '${name}' cannot also be a grouping dimension of this query.`
+            );
+        });
+
+        const overlap = pivot.dimensionNames.filter(it => dimNames.includes(it));
+        throwIf(
+            !isEmpty(overlap),
+            `Field(s) '${overlap}' cannot be both a grouping and a pivot dimension.`
+        );
+
+        // A group node must decompose on exactly one axis. Bucketing leaves leaves an innermost
+        // aggregate holding both LeafRows and BucketRows, which would double count on the pivot
+        // axis - see `PivotStructure`.
+        throwIf(
+            this.isPivoted && this.bucketSpecFn && this.includeLeaves,
+            'Pivoting is not supported alongside `bucketSpecFn` with `includeLeaves` - bucketing ' +
+                'leaves would give a pivot cell two update routes into the same parent.'
+        );
     }
 }

@@ -26,6 +26,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Understand the component/model/service pattern | [`/core/`](../core/README.md)                                                                                       |
 | Work with `XH` singleton API | [`/core/`](../core/README.md)                                                                                       |
 | Build or configure a data grid | [`/cmp/grid/`](../cmp/grid/README.md)                                                                               |
+| Pivot aggregated data into columns | [`/cmp/pivotgrid/`](../cmp/pivotgrid/README.md) |
 | Build a form with validation | [`/cmp/form/`](../cmp/form/README.md)                                                                               |
 | Understand input change/commit lifecycle | [`/cmp/input/`](../cmp/input/README.md)                                                                             |
 | Create a tabbed interface | [`/cmp/tab/`](../cmp/tab/README.md)                                                                                 |
@@ -77,7 +78,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
 | [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, tree data, and memory tuning | Store, StoreRecord, Field, Filter, tree data, loadData, loadDataAsync, updateData, digestSpec, projectionOnly, diagnostics |
-| [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
+| [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, Views, and pivoting | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves, pivot |
 | [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
 ### Components
@@ -86,6 +87,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 |---------|-------------|------------|
 | [`/cmp/`](../cmp/README.md) | Cross-platform component overview and catalog | Component categories, factory pattern, platform-specific vs shared |
 | [`/cmp/grid/`](../cmp/grid/README.md) | Primary data grid built on AG Grid | GridModel, Column, ColumnGroup, sorting, grouping, filtering, selection, inline editing, export |
+| [`/cmp/pivotgrid/`](../cmp/pivotgrid/README.md) | Pivoted Cube View rendered as a tree grid with nested column groups and docked summaries | PivotGridModel, PivotGrid, pivot, PivotSpec, valueFields, cellFields, rowSummary, pivotSortBy |
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
