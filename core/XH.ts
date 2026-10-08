@@ -522,7 +522,10 @@ export class XHApi {
 
         if (opts.removeQueryParams) url.search = '';
         // Add a unique query param to force a full reload without using the browser cache.
-        url.searchParams.set('xhCacheBuster', Date.now().toString());
+        // Appended by hand, as `url.searchParams.set()` would re-serialize the entire query string
+        // with form encoding - converting `%20` to `+` and corrupting existing route params.
+        const search = url.search.replace(/[?&]xhCacheBuster=[^&]*/, '').replace(/^&/, '?');
+        url.search = `${search}${search ? '&' : '?'}xhCacheBuster=${Date.now()}`;
         document.location.assign(url);
     }
 
