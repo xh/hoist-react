@@ -38,7 +38,7 @@ export class MessageModel extends HoistModel {
     dismissable;
     cancelOnDismiss;
 
-    // Promise to be resolved when user has clicked on choice and its internal resolver
+    // Promise settled when the message closes - with the user's choice, or null if forced close
     result;
     _resolver;
 
@@ -163,15 +163,13 @@ export class MessageModel extends HoistModel {
         }
 
         this.onConfirm?.();
-        this._resolver(resolvedVal);
-        this.close();
+        this.close(resolvedVal);
     }
 
     @action
     doCancel() {
         this.onCancel?.();
-        this._resolver(false);
-        this.close();
+        this.close(false);
     }
 
     @action
@@ -181,12 +179,13 @@ export class MessageModel extends HoistModel {
             this.doCancel();
             return;
         }
-        this._resolver(null);
         this.close();
     }
 
+    /** Close the message, settling `result` with the given value. */
     @action
-    close() {
+    close(result: unknown = null) {
+        this._resolver(result);
         this.isOpen = false;
     }
 
