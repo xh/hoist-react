@@ -139,7 +139,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Deprecated `SpinnerProps.iconName` and `Spinner.defaults.iconName` in favor of `icon`. It takes an
   icon name from the catalog, either an `Icon` name or an FA name, or an icon element.
 * Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
-  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
+  services against an in-memory fake of the hoist-core server. The suite runs on
+  `configureVitest()` from hoist-dev-utils, the preset app suites use, so every PR checks it. See
+  `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
   comment. Snapshot and release builds now run the tests before publishing.
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install

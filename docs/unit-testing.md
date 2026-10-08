@@ -28,12 +28,17 @@ IntelliJ runs and debugs Vitest tests natively. Use the gutter icon next to any 
 ### Same compiler as apps
 
 Apps compile hoist-react from source with Rsbuild and SWC, using TC39 `2023-11` decorators. The
-tests compile it the same way: `vitest.config.mts` runs SWC with the options that
-`configureRsbuild()` in hoist-dev-utils passes to Rsbuild. Decorators like `@bindable` and
-`@managed` therefore behave in tests exactly as they do in apps.
+tests compile it the same way: `vitest.config.mts` is built on `configureVitest()` from
+hoist-dev-utils, the preset that app test suites use. It compiles with the SWC inside Rspack and the
+same settings as `configureRsbuild()`. Decorators like `@bindable` and `@managed` therefore behave
+in tests exactly as they do in apps.
 
-This is load-bearing. Vite's built-in transform cannot compile decorators at all. Removing the SWC
-plugin breaks every test that loads a decorated class.
+The config passes `selfHost: true`, which points `@xh/hoist` at this repo. This suite thus checks
+the preset on every PR. To try a preset change before it is published, run
+`pnpm link ../hoist-dev-utils`, then `pnpm test`.
+
+This is load-bearing. Vite's built-in transform cannot compile decorators at all, so a test that
+loads a decorated class fails without the preset's SWC plugin.
 
 ### A real Hoist environment
 
