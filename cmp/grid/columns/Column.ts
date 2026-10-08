@@ -41,7 +41,6 @@ import {
     isValidElement,
     ReactElement,
     ReactNode,
-    useImperativeHandle,
     useLayoutEffect,
     useRef
 } from 'react';
@@ -887,11 +886,21 @@ export class Column {
             setRenderer(this.agCellRenderer);
         }
 
-        // Tooltip Handling
+        // Tooltip Handling. ag-Grid shows a tooltip only when `tooltip` returns a value, mounting
+        // the component (a React portal) each time it does. The content is resolved within the
+        // component - here decide only whether there is anything to show: any record's cell for a
+        // configured `tooltip`, otherwise just an editable cell with validation results to report.
         const {tooltip, editor} = this;
         if (tooltip || editor) {
-            // ag-Grid requires a return from getter, but value we actually use is computed below
-            ret.tooltip = () => 'tooltip';
+            ret.tooltip = tooltip
+                ? agParams => (agParams.data instanceof StoreRecord ? 'tooltip' : null)
+                : agParams => {
+                      const record = agParams.data;
+                      return record instanceof StoreRecord &&
+                          !isEmpty(record.validationResults[field])
+                          ? 'tooltip'
+                          : null;
+                  };
             ret.tooltipComponent = this.agTooltipComponent;
         }
 
@@ -1012,7 +1021,11 @@ export class Column {
     private get agTooltipComponent(): ColDef['tooltipComponent'] {
         if (!this._agTooltipComponent) {
             const {tooltip, editor, field, gridModel} = this;
-            this._agTooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
+            // A plain function component - ag-Grid React detects it as stateless and skips the
+            // ref plumbing it needs for class components. A stateless component must render a
+            // node, or ag-Grid React waits on it indefinitely - hence `div()` where there is
+            // nothing to show (a container with no content and no classes, so nothing visible).
+            this._agTooltipComponent = (agParams: ITooltipParams) => {
                 const {location, data: record} = agParams,
                     hasRecord = record instanceof StoreRecord,
                     wrapperRef = useRef<HTMLDivElement>(null);
@@ -1085,13 +1098,8 @@ export class Column {
                     return () => container?.classList.remove(...xhToolTipClassNames);
                 }, [isCustom, validationCount, location]);
 
-                // Required by agGrid, even though empty.
-                // If not present agGrid logs this warning:
-                // "If the component is using `forwardRef` but not `useImperativeHandle`, add the following: `useImperativeHandle(ref, () => ({}));"
-                useImperativeHandle(ref, () => ({}), []);
-
                 if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
-                if (!hasRecord) return null;
+                if (!hasRecord) return div();
 
                 // Validation messages supersede the column's own tooltip - resolved above.
                 if (validationMessages) {
@@ -1102,15 +1110,15 @@ export class Column {
                         })
                     });
                 }
-                if (editor && !tooltip) return null;
+                if (editor && !tooltip) return div();
 
-                if (isNil(ret) || ret === '') return null;
+                if (isNil(ret) || ret === '') return div();
 
                 return div({
                     ref: wrapperRef,
                     item: (isElement ? ret : toString(ret)) as any
                 });
-            });
+            };
         }
         return this._agTooltipComponent;
     }

@@ -5,7 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Column, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {required} from '@xh/hoist/data';
+import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
+import {render} from '@testing-library/react';
+import {createElement} from 'react';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -79,6 +83,69 @@ describe('Column.getAgSpec', () => {
                 {field: 'name', isTreeColumn: true}
             ]);
             expect(gridModel.getColumn('name').getAgSpec().cellClass).toEqual(['xh-tree-column']);
+        });
+    });
+
+    describe('tooltip', () => {
+        it('is not configured for a column with neither tooltip nor editor', () => {
+            const spec = createColumn({}).getAgSpec();
+            expect(spec.tooltip).toBeUndefined();
+            expect(spec.tooltipComponent).toBeUndefined();
+        });
+
+        it('shows for any record when configured, but not for rows without a record', () => {
+            const gridModel = createGridModel({}, [{field: 'name', tooltip: true}]),
+                {store} = gridModel;
+            store.loadData([{id: 1, name: 'a'}]);
+            const tooltip = gridModel.getColumn('name').getAgSpec().tooltip as Function;
+
+            expect(tooltip({data: store.getById(1)})).toBeTruthy();
+            expect(tooltip({data: undefined})).toBeNull();
+        });
+
+        it('shows for an editable cell only when it has validation results', async () => {
+            const gridModel = createGridModel(
+                    {store: {fields: [{name: 'name', rules: [required]}]}},
+                    [{field: 'name', editor: () => null}]
+                ),
+                {store} = gridModel;
+            store.loadData([
+                {id: 1, name: 'ok'},
+                {id: 2, name: 'was ok'}
+            ]);
+            // Stores validate their uncommitted records - so edit one into an invalid state.
+            store.modifyRecords({id: 2, name: null});
+            await wait();
+            await store.validateAsync();
+            const tooltip = gridModel.getColumn('name').getAgSpec().tooltip as Function;
+
+            expect(store.getById(2).validationResults.name).not.toHaveLength(0);
+            expect(tooltip({data: store.getById(1)})).toBeNull();
+            expect(tooltip({data: store.getById(2)})).toBeTruthy();
+        });
+
+        it('renders as a plain function component showing the value, or a tooltip fn result', () => {
+            const gridModel = createGridModel({}, [
+                    {field: 'name', tooltip: true},
+                    {field: 'region', tooltip: (v, {record}) => `${v} / ${record.data.name}`},
+                    {field: 'pnl', tooltip: () => null}
+                ]),
+                {store} = gridModel;
+            store.loadData([{id: 1, name: 'Alpha', region: 'EMEA', pnl: 10}]);
+            const record = store.getById(1),
+                renderTooltip = (colId: string) => {
+                    const Cmp = gridModel.getColumn(colId).getAgSpec().tooltipComponent;
+                    expect(Cmp).toBeTypeOf('function');
+                    return render(createElement(Cmp as any, {location: 'cell', data: record}))
+                        .container;
+                };
+
+            expect(renderTooltip('name').textContent).toBe('Alpha');
+            expect(renderTooltip('region').textContent).toBe('EMEA / Alpha');
+            // Always renders a node - ag-Grid React waits on a stateless component that does not.
+            const empty = renderTooltip('pnl');
+            expect(empty.textContent).toBe('');
+            expect(empty.childElementCount).toBe(1);
         });
     });
 

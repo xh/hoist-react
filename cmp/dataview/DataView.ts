@@ -19,7 +19,7 @@ import {
 } from '@xh/hoist/core';
 import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {isFunction} from 'lodash';
+import {isFunction, isNumber} from 'lodash';
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 import {mergeDeep} from '@xh/hoist/utils/js';
@@ -86,6 +86,8 @@ class DataViewLocalModel extends HoistModel {
         return {
             headerHeight: 0,
             suppressGroupChangesColumnVisibility: 'suppressShowOnUngroup',
+            // A fixed itemHeight is the row height ag-Grid should assume for unrendered rows.
+            rowHeight: isNumber(model.itemHeight) ? model.itemHeight : undefined,
             getRowHeight: agParams => {
                 const {groupRowHeight, itemHeight} = model;
 

@@ -108,6 +108,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   re-applying column defs no longer remounts every cell. Columns without an `editable` config or
   with a static `cellClass` now emit static ag-Grid values in place of per-cell callbacks, and the
   header height is passed to ag-Grid up front rather than applied after init.
+* `Grid` and `AgGrid` now publish their row and header heights to ag-Grid as the `--ag-row-height`
+  and `--ag-header-height` theme variables. ag-Grid uses these to size rows it has not yet
+  rendered and to center cell text, and had been using its theme defaults, which differ from
+  Hoist's heights. With rows now sized correctly up front, `Grid` only pre-evaluates row heights
+  after a data load for grids whose rows differ in height (grouped grids, `autoHeight` columns,
+  custom `getRowHeight`). `DataView` passes a fixed `itemHeight` the same way.
+* `Column` tooltips are now shown only where there is something to show - an editable column
+  without a `tooltip` no longer mounts a tooltip for cells with no validation results - and the
+  tooltip component is a plain function component rather than a `forwardRef`.
 * Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
   services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a

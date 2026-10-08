@@ -6,7 +6,7 @@
  */
 import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
-import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
+import {agGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnGroupState, ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import {div, fragment, frame, hframe} from '@xh/hoist/cmp/layout';
@@ -52,13 +52,14 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
 import {type MouseEvent} from 'react';
 import {PartialDeep} from 'type-fest';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
+import {getDataRowHeight, getGroupRowHeight, hasUniformRowHeights} from './impl/RowHeightUtils';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
 /**
@@ -132,7 +133,10 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 agGrid({
                     model: model.agGridModel,
                     ...getLayoutProps(props),
-                    ...impl.agOptions
+                    ...impl.agOptions,
+                    // Data row height - AgGrid publishes it as `--ag-row-height` for ag-Grid to
+                    // position and style rows by. `getRowHeight` still decides each row's height.
+                    rowHeight: impl.agOptions.rowHeight ?? impl.calculatedRowHeight
                 })
             ],
             testId,
@@ -443,25 +447,12 @@ export class GridLocalModel extends HoistModel {
     //----------------------
     @computed
     get calculatedRowHeight() {
-        const {model} = this,
-            AgGridCmp = AgGrid as any;
-        return max([
-            AgGridCmp.getRowHeightForSizingMode(model.sizingMode),
-            maxBy(model.getVisibleLeafColumns(), 'rowHeight')?.rowHeight
-        ]);
+        return getDataRowHeight(this.model);
     }
 
     @computed
     get calculatedGroupRowHeight() {
-        const {sizingMode, groupRowHeight} = this.model,
-            {groupDisplayType} = this.agOptions,
-            AgGridCmp = AgGrid as any;
-        return (
-            groupRowHeight ??
-            (groupDisplayType === 'groupRows'
-                ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-                : AgGridCmp.getRowHeightForSizingMode(sizingMode))
-        );
+        return getGroupRowHeight(this.model, this.agOptions.groupDisplayType);
     }
 
     defaultGetRowHeight = ({node}) => {
@@ -488,14 +479,16 @@ export class GridLocalModel extends HoistModel {
     @computed
     get useScrollOptimization() {
         // When true, we preemptively evaluate and assign functional row heights after data loading.
-        // This improves slow scrolling but means function not guaranteed to be re-called
-        // when node is rendered in viewport.
+        // ag-Grid otherwise estimates rows it has not rendered at `--ag-row-height`, and corrects
+        // them as they scroll into view - a hitch when the estimate is wrong. It is right whenever
+        // rows are uniform (Grid publishes the data row height as that var), so this only applies
+        // when they are not. Note the function is then not guaranteed to be re-called when a node
+        // is rendered in the viewport.
         const {model, agOptions} = this;
         return (
             !model.disableScrollOptimization &&
-            agOptions.getRowHeight &&
-            !agOptions.rowHeight &&
-            !model.getVisibleLeafColumns().some(c => c.autoHeight)
+            !!agOptions.getRowHeight &&
+            !hasUniformRowHeights(model, agOptions, this.defaultGetRowHeight)
         );
     }
 

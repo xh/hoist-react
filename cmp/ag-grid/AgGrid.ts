@@ -21,6 +21,8 @@ import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 import {logError} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {isNumber} from 'lodash';
+import type {CSSProperties} from 'react';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
@@ -66,10 +68,24 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             } = model,
             {isDesktop} = XH;
 
-        const impl = useLocalModel(AgGridLocalModel);
+        const impl = useLocalModel(AgGridLocalModel),
+            AgGridCmp = AgGrid as any,
+            // Explicit `rowHeight` props describe the grid's data rows - else the sizing mode does.
+            rowHeight = isNumber(agGridProps.rowHeight)
+                ? agGridProps.rowHeight
+                : AgGridCmp.getRowHeightForSizingMode(sizingMode),
+            headerHeight = AgGridCmp.getHeaderHeightForSizingMode(sizingMode);
 
         return frame({
             ref,
+            // ag-Grid reads these theme vars to estimate the height of rows it has not yet
+            // rendered, and to center text within cells and header cells. Keep them in step with
+            // the heights Hoist drives via `getRowHeight` / `headerHeight`, which the theme's own
+            // defaults know nothing about.
+            style: {
+                '--ag-row-height': `${rowHeight}px`,
+                '--ag-header-height': `${headerHeight}px`
+            } as CSSProperties,
             className: classNames(
                 className,
                 `xh-ag-grid--${sizingMode}`,
