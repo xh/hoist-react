@@ -524,7 +524,8 @@ export class XHApi {
         // Add a unique query param to force a full reload without using the browser cache.
         // Appended by hand, as `url.searchParams.set()` would re-serialize the entire query string
         // with form encoding - converting `%20` to `+` and corrupting existing route params.
-        const search = url.search.replace(/[?&]xhCacheBuster=[^&]*/, '').replace(/^&/, '?');
+        // `AppContainerModel.initAsync()` removes the param again once the app has loaded.
+        const {search} = url;
         url.search = `${search}${search ? '&' : '?'}xhCacheBuster=${Date.now()}`;
         document.location.assign(url);
     }

@@ -145,6 +145,8 @@ export class AppContainerModel extends HoistModel {
      * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
+        this.removeCacheBusterFromUrl();
+
         // Avoid bug where "Discarded" browser tabs can re-init an old version (see #3574)
         if (window.document['wasDiscarded']) {
             XH.reloadApp();
@@ -154,8 +156,6 @@ export class AppContainerModel extends HoistModel {
         // Avoid multiple calls, which can occur if AppContainer remounted.
         if (this.initCalled) return;
         this.initCalled = true;
-
-        this.removeCacheBusterFromUrl();
 
         try {
             // Install TraceService first so booting traceable; it will defer sampling and export until config available
@@ -397,7 +397,8 @@ export class AppContainerModel extends HoistModel {
     /**
      * Drop the `xhCacheBuster` query param that `XH.reloadApp()` appends to force a reload past
      * the browser cache. It has done its job once the page loads, and it would otherwise stay in
-     * the address bar, enter router state and get copied into any URL the user shares.
+     * the address bar, enter router state and get copied into any URL the user shares. Runs
+     * before anything else, so a reload from here starts from a URL without a stale param.
      */
     private removeCacheBusterFromUrl() {
         const {pathname, search, hash} = window.location;
