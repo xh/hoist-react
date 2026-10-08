@@ -21,7 +21,6 @@ import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 import {logError} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
@@ -88,6 +87,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 // Default some ag-grid props, but allow overriding.
                 theme: agTheme,
                 getRowHeight: impl.getRowHeight,
+                headerHeight: impl.headerHeight,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -141,23 +141,13 @@ class AgGridLocalModel extends HoistModel {
 
     @lookup(AgGridModel) model: AgGridModel;
 
+    // Passed to ag-Grid as a prop, so applied from the first render and re-applied by ag-Grid's
+    // prop diffing as sizing mode or `hideHeaders` change. Explicit `headerHeight` props win.
     get headerHeight() {
         const {hideHeaders, sizingMode} = this.model,
             AgGridCmp = AgGrid as any;
 
         return hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode);
-    }
-
-    override onLinked() {
-        const {model} = this;
-
-        // manage header height if was not explicitly provided to component
-        if (isNil(this.componentProps.headerHeight)) {
-            this.addReaction({
-                track: () => [model.agApi, this.headerHeight],
-                run: ([api, headerHeight]) => api?.updateGridOptions({headerHeight})
-            });
-        }
     }
 
     getRowHeight = ({node}) => {

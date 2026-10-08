@@ -73,6 +73,7 @@ import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
     CellClassParams,
     ColDef,
+    ICellRendererParams,
     ITooltipParams,
     ValueGetterParams,
     ValueSetterParams,
@@ -565,6 +566,12 @@ export class Column {
     agOptions: ColDef;
     appData: PlainObject;
 
+    // ag-Grid colDef functions, created once per Column - see `getAgSpec()`.
+    private _agCellRenderer: ColDef['cellRenderer'];
+    private _agTooltipComponent: ColDef['tooltipComponent'];
+    private _agCellEditor: ColDef['cellEditor'];
+    private _agComparator: ColDef['comparator'];
+
     /**
      * Not for application use. Columns are created internally by Hoist.
      * Applications specify columns by providing ColumnSpec objects to the
@@ -778,7 +785,14 @@ export class Column {
             : editable;
     }
 
-    /** A Column definition appropriate for AG-Grid. */
+    /**
+     * A Column definition appropriate for AG-Grid.
+     *
+     * The renderer, tooltip, editor and comparator functions on the returned def are created once
+     * per Column and reused across calls. ag-Grid React mounts the renderer, tooltip and editor as
+     * React components, so a new identity on each call would remount every cell of the column
+     * whenever the grid's column defs are re-applied.
+     */
     getAgSpec(): ColDef {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret: ColDef = {
@@ -810,7 +824,9 @@ export class Column {
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
                 cellClassRules: this.cellClassRules,
-                editable: agParams => this.isEditableForRecord(agParams.node.data),
+                editable: this.editable
+                    ? agParams => this.isEditableForRecord(agParams.node.data)
+                    : false,
                 valueSetter: (agParams: ValueSetterParams) => {
                     const record = agParams.data;
                     this.setValueFn({
@@ -867,9 +883,119 @@ export class Column {
         // By always providing a minimal pass-through cellRenderer, we can ensure the
         // cell contents are wrapped in a span for styling purposes. We check agOptions in case
         // the dev has specified a renderer option directly against the ag-Grid API.
-        const {renderer} = this;
         if (!agOptions.cellRenderer) {
-            setRenderer(agParams => {
+            setRenderer(this.agCellRenderer);
+        }
+
+        // Tooltip Handling
+        const {tooltip, editor} = this;
+        if (tooltip || editor) {
+            // ag-Grid requires a return from getter, but value we actually use is computed below
+            ret.tooltip = () => 'tooltip';
+            ret.tooltipComponent = this.agTooltipComponent;
+        }
+
+        // Generate CSS classes for cells. Default alignment classes are mixed in with any
+        // provided custom classes. Only a `cellClass` function needs evaluating per cell - ag-Grid
+        // calls the function on every cell render and value change, so a static list is emitted
+        // as-is otherwise.
+        const {cellClass, isTreeColumn, align} = this,
+            fixedClasses: string[] = [];
+        if (isTreeColumn) fixedClasses.push('xh-tree-column');
+        if (align === 'center' || align === 'right') fixedClasses.push('xh-align-' + align);
+
+        ret.cellClass = isFunction(cellClass)
+            ? agParams => [
+                  ...castArray(
+                      cellClass(agParams.value, {
+                          record: agParams.data,
+                          column: this,
+                          gridModel,
+                          agParams
+                      })
+                  ),
+                  ...fixedClasses
+              ]
+            : [...(cellClass ? castArray(cellClass) : []), ...fixedClasses];
+
+        if (this.flex) {
+            ret.resizable = false;
+            ret.flex = isNumber(this.flex) ? this.flex : 1;
+        } else {
+            ret.suppressSizeToFit = true;
+            ret.width = this.width;
+        }
+
+        const sortCfg = gridModel.getSorter(ret.colId);
+        if (sortCfg) {
+            ret.sort = sortCfg.sort;
+            ret.sortIndex = gridModel.sortBy.indexOf(sortCfg);
+        }
+
+        ret.comparator = this.agComparator;
+
+        if (this.autoHeight) {
+            ret.autoHeight = true;
+            ret.wrapText = true;
+        }
+
+        if (editor) {
+            ret.cellEditor = this.agCellEditor;
+            ret.cellEditorPopup = this.editorIsPopup;
+            ret.cellClassRules = {
+                'xh-cell--editable': agParams => {
+                    return this.isEditableForRecord(agParams.data);
+                },
+                ...ret.cellClassRules
+            };
+        }
+
+        // Flags must go via cellClassRules (removable) rather than cellClass (sticky), and must be
+        // composed into the ag colDef here rather than `this.cellClassRules` - the latter feeds
+        // ColumnWidthCalculator, and these pseudo-elements cannot affect measured width.
+        const {cellFlag} = this;
+        if (cellFlag || editor) {
+            // Not memoized by record - `validationResults` can settle while the record and its
+            // value stay identical, and a captured record would be pinned for the colDef's life.
+            const intentForCell = (agParams: CellClassParams): Intent => {
+                const record = agParams.data as StoreRecord,
+                    {value} = agParams;
+
+                // Validation state wins - it reports an error, not an annotation.
+                if (editor) {
+                    const severity = maxSeverity(record?.validationResults[field]);
+                    if (severity) return SEVERITY_FLAG_INTENTS[severity];
+                }
+
+                return cellFlag ? cellFlag(value, {record, column: this, gridModel}) : null;
+            };
+
+            const flagRules: Record<string, ColumnCellClassRuleFn> = {};
+            CELL_FLAG_INTENTS.forEach(intent => {
+                flagRules[`xh-cell--flag-${intent}`] = agParams =>
+                    intentForCell(agParams) === intent;
+            });
+
+            // Flag rules first, so app-supplied cellClassRules continue to win.
+            ret.cellClassRules = {...flagRules, ...ret.cellClassRules};
+        }
+
+        // Finally, apply explicit app requests.  The customer is always right....
+        return {...ret, ...agOptions};
+    }
+
+    /** ag-Grid comparator for this column - see {@link getAgSpec}. @internal */
+    getAgComparator(): ColDef['comparator'] {
+        return this.agComparator;
+    }
+
+    //--------------------
+    // ag-Grid colDef functions - each created once, on first access.
+    //--------------------
+    private get agCellRenderer(): ColDef['cellRenderer'] {
+        if (!this._agCellRenderer) {
+            const {renderer, gridModel} = this;
+            this._agCellRenderer = (agParams: ICellRendererParams) => {
                 let ret = renderer
                     ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
                     : agParams.value;
@@ -878,15 +1004,15 @@ export class Column {
 
                 // Add wrapping span for styling purposes
                 return span({className: 'xh-cell-inner-wrapper', item: ret});
-            });
+            };
         }
+        return this._agCellRenderer;
+    }
 
-        // Tooltip Handling
-        const {tooltip, editor} = this;
-        if (tooltip || editor) {
-            // ag-Grid requires a return from getter, but value we actually use is computed below
-            ret.tooltip = () => 'tooltip';
-            ret.tooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
+    private get agTooltipComponent(): ColDef['tooltipComponent'] {
+        if (!this._agTooltipComponent) {
+            const {tooltip, editor, field, gridModel} = this;
+            this._agTooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
                 const {location, data: record} = agParams,
                     hasRecord = record instanceof StoreRecord,
                     wrapperRef = useRef<HTMLDivElement>(null);
@@ -986,104 +1112,13 @@ export class Column {
                 });
             });
         }
+        return this._agTooltipComponent;
+    }
 
-        // Generate CSS classes for cells.
-        // Default alignment classes are mixed in with any provided custom classes.
-        const {cellClass, isTreeColumn, align} = this;
-        ret.cellClass = agParams => {
-            let r = [];
-            if (cellClass) {
-                r = castArray(
-                    isFunction(cellClass)
-                        ? cellClass(agParams.value, {
-                              record: agParams.data,
-                              column: this,
-                              gridModel,
-                              agParams
-                          })
-                        : cellClass
-                );
-            }
-            if (isTreeColumn) {
-                r.push('xh-tree-column');
-            }
-            if (align === 'center' || align === 'right') {
-                r.push('xh-align-' + align);
-            }
-            return r;
-        };
-
-        if (this.flex) {
-            ret.resizable = false;
-            ret.flex = isNumber(this.flex) ? this.flex : 1;
-        } else {
-            ret.suppressSizeToFit = true;
-            ret.width = this.width;
-        }
-
-        const sortCfg = gridModel.getSorter(ret.colId);
-        if (sortCfg) {
-            ret.sort = sortCfg.sort;
-            ret.sortIndex = gridModel.sortBy.indexOf(sortCfg);
-        }
-
-        if (this.comparator === undefined) {
-            // Use default comparator with appropriate inputs
-            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId} = this,
-                    // Note: sortCfg and agNodes can be undefined if comparator called during show
-                    // of agGrid column header set filter menu.
-                    sortCfg = gridModel.getSorter(colId),
-                    sortDir = sortCfg?.sort || 'asc',
-                    recordA = agNodeA?.data,
-                    recordB = agNodeB?.data;
-
-                valueA = this.getSortValue(valueA, recordA);
-                valueB = this.getSortValue(valueB, recordB);
-
-                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
-                if (sortToBottom !== 0) return sortToBottom;
-
-                return this.defaultComparator(valueA, valueB, sortCfg);
-            };
-        } else {
-            // ...or process custom comparator with the Hoist-defined comparatorFn API.
-            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId} = this,
-                    // Note: sortCfg and agNodes can be undefined if comparator called during show
-                    // of agGrid column header set filter menu.
-                    sortCfg = gridModel.getSorter(colId),
-                    sortDir = sortCfg?.sort || 'asc',
-                    abs = sortCfg?.abs || false,
-                    recordA = agNodeA?.data as StoreRecord,
-                    recordB = agNodeB?.data as StoreRecord,
-                    params = {
-                        recordA,
-                        recordB,
-                        column: this as Column,
-                        gridModel,
-                        defaultComparator: this.defaultComparator,
-                        agNodeA,
-                        agNodeB
-                    };
-
-                valueA = this.getSortValue(valueA, recordA);
-                valueB = this.getSortValue(valueB, recordB);
-
-                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
-                if (sortToBottom !== 0) return sortToBottom;
-
-                return this.comparator(valueA, valueB, sortDir, abs, params);
-            };
-        }
-
-        if (this.autoHeight) {
-            ret.autoHeight = true;
-            ret.wrapText = true;
-        }
-
-        if (editor) {
-            ret.cellEditor = forwardRef((agParams: CustomCellEditorProps, ref) => {
+    private get agCellEditor(): ColDef['cellEditor'] {
+        if (!this._agCellEditor) {
+            const {editor, gridModel} = this;
+            this._agCellEditor = forwardRef((agParams: CustomCellEditorProps, ref) => {
                 const props = {
                     record: agParams.data as StoreRecord,
                     gridModel,
@@ -1096,47 +1131,63 @@ export class Column {
                 if (isFunction(editor)) return editor(props) as ReactElement;
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
-            ret.cellEditorPopup = this.editorIsPopup;
-            ret.cellClassRules = {
-                'xh-cell--editable': agParams => {
-                    return this.isEditableForRecord(agParams.data);
-                },
-                ...ret.cellClassRules
-            };
         }
+        return this._agCellEditor;
+    }
 
-        // Flags must go via cellClassRules (removable) rather than cellClass (sticky), and must be
-        // composed into the ag colDef here rather than `this.cellClassRules` - the latter feeds
-        // ColumnWidthCalculator, and these pseudo-elements cannot affect measured width.
-        const {cellFlag} = this;
-        if (cellFlag || editor) {
-            // Not memoized by record - `validationResults` can settle while the record and its
-            // value stay identical, and a captured record would be pinned for the colDef's life.
-            const intentForCell = (agParams: CellClassParams): Intent => {
-                const record = agParams.data as StoreRecord,
-                    {value} = agParams;
+    private get agComparator(): ColDef['comparator'] {
+        if (!this._agComparator) {
+            if (this.comparator === undefined) {
+                // Use default comparator with appropriate inputs
+                this._agComparator = (valueA, valueB, agNodeA, agNodeB) => {
+                    const {gridModel, colId} = this,
+                        // Note: sortCfg and agNodes can be undefined if comparator called
+                        // during show of agGrid column header set filter menu.
+                        sortCfg = gridModel.getSorter(colId),
+                        sortDir = sortCfg?.sort || 'asc',
+                        recordA = agNodeA?.data,
+                        recordB = agNodeB?.data;
 
-                // Validation state wins - it reports an error, not an annotation.
-                if (editor) {
-                    const severity = maxSeverity(record?.validationResults[field]);
-                    if (severity) return SEVERITY_FLAG_INTENTS[severity];
-                }
+                    valueA = this.getSortValue(valueA, recordA);
+                    valueB = this.getSortValue(valueB, recordB);
 
-                return cellFlag ? cellFlag(value, {record, column: this, gridModel}) : null;
-            };
+                    const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                    if (sortToBottom !== 0) return sortToBottom;
 
-            const flagRules: Record<string, ColumnCellClassRuleFn> = {};
-            CELL_FLAG_INTENTS.forEach(intent => {
-                flagRules[`xh-cell--flag-${intent}`] = agParams =>
-                    intentForCell(agParams) === intent;
-            });
+                    return this.defaultComparator(valueA, valueB, sortCfg);
+                };
+            } else {
+                // ...or process custom comparator with the Hoist-defined comparatorFn API.
+                this._agComparator = (valueA, valueB, agNodeA, agNodeB) => {
+                    const {gridModel, colId} = this,
+                        // Note: sortCfg and agNodes can be undefined if comparator called
+                        // during show of agGrid column header set filter menu.
+                        sortCfg = gridModel.getSorter(colId),
+                        sortDir = sortCfg?.sort || 'asc',
+                        abs = sortCfg?.abs || false,
+                        recordA = agNodeA?.data as StoreRecord,
+                        recordB = agNodeB?.data as StoreRecord,
+                        params = {
+                            recordA,
+                            recordB,
+                            column: this as Column,
+                            gridModel,
+                            defaultComparator: this.defaultComparator,
+                            agNodeA,
+                            agNodeB
+                        };
 
-            // Flag rules first, so app-supplied cellClassRules continue to win.
-            ret.cellClassRules = {...flagRules, ...ret.cellClassRules};
+                    valueA = this.getSortValue(valueA, recordA);
+                    valueB = this.getSortValue(valueB, recordB);
+
+                    const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                    if (sortToBottom !== 0) return sortToBottom;
+
+                    return this.comparator(valueA, valueB, sortDir, abs, params);
+                };
+            }
         }
-
-        // Finally, apply explicit app requests.  The customer is always right....
-        return {...ret, ...agOptions};
+        return this._agComparator;
     }
 
     //--------------------

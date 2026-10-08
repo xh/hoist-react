@@ -273,7 +273,7 @@ export class GridLocalModel extends HoistModel {
             },
             tooltipShowDelay: 0,
             getRowHeight: this.defaultGetRowHeight,
-            getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
+            getRowClass: model.rowClassFn ? ({data}) => model.rowClassFn(data) : undefined,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
             onCellContextMenu: model.onCellContextMenu,

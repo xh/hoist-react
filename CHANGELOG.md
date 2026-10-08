@@ -103,6 +103,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
+* Improved `Grid` rendering efficiency. `Column.getAgSpec()` now reuses one renderer, tooltip,
+  editor and comparator function per `Column` instead of creating new ones per call, so
+  re-applying column defs no longer remounts every cell. Columns without an `editable` config or
+  with a static `cellClass` now emit static ag-Grid values in place of per-cell callbacks, and the
+  header height is passed to ag-Grid up front rather than applied after init.
 * Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
   services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
