@@ -579,7 +579,7 @@ export class PivotView extends View {
         const names = new Set<string>();
         this.query.valueFields.forEach(f => {
             names.add(f.name);
-            f.dependsOn?.forEach(n => names.add(n));
+            f.aggregator?.dependsOn?.forEach(n => names.add(n));
         });
 
         const fields: CubeField[] = [];

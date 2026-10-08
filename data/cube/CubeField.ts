@@ -49,13 +49,6 @@ export interface CubeFieldSpec extends FieldSpec {
      */
     canAggregateFn?: CanAggregateFn;
 
-    /**
-     * Names of other fields this field's aggregator reads. A no-op for plain Views, which aggregate
-     * every queried field anyway. {@link PivotView} uses it to expand the reduced field set it
-     * aggregates on cell rows, so a dependent aggregator still sees what it needs.
-     */
-    dependsOn?: string[];
-
     /** True if any further groupings below this dimension would be derivative (have only one member). */
     isLeafDimension?: boolean;
 
@@ -104,7 +97,6 @@ export type CanAggregateFn = (
 export class CubeField extends Field {
     aggregator: Aggregator;
     canAggregateFn: CanAggregateFn;
-    dependsOn: string[];
     isLeafDimension: boolean;
     parentDimension: string;
 
@@ -123,7 +115,6 @@ export class CubeField extends Field {
     constructor({
         aggregator = null,
         canAggregateFn = null,
-        dependsOn = null,
         isLeafDimension = false,
         parentDimension = null,
         ...fieldArgs
@@ -133,7 +124,6 @@ export class CubeField extends Field {
         // Metrics
         this.aggregator = this.parseAggregator(aggregator);
         this.canAggregateFn = canAggregateFn;
-        this.dependsOn = dependsOn;
 
         // Dimension specific
         this.isLeafDimension = isLeafDimension;

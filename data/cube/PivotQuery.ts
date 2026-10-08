@@ -30,7 +30,7 @@ export interface PivotQueryConfig extends QueryConfig {
 
     /**
      * Measures to aggregate per cell. Must specify an aggregator, and must not also be a grouping
-     * `dimension`. Derived into `fields` along with their `dependsOn` - see `fields`.
+     * `dimension`. Derived into `fields` along with any {@link Aggregator.dependsOn} - see `fields`.
      */
     valueFields: string[] | CubeField[];
 
@@ -38,8 +38,8 @@ export interface PivotQueryConfig extends QueryConfig {
      * *Additional* fields or field names to aggregate, beyond the derived baseline.
      *
      * Unlike {@link QueryConfig.fields}, leaving this unspecified does *not* pull in all
-     * {@link Cube.fields}: `dimensions`, `pivotDimensions`, `valueFields`, and the `dependsOn` of
-     * those value fields are always derived in, and are all a pivot needs. Each extra aggregatable
+     * {@link Cube.fields}: `dimensions`, `pivotDimensions`, `valueFields`, and the
+     * {@link Aggregator.dependsOn} of those value fields are always derived in, and are all a pivot needs. Each extra aggregatable
      * field named here is aggregated on every row of the hierarchy, so name only what the UI will
      * actually show. Pass `cube.fields` for the plain-Query behavior.
      */
@@ -213,7 +213,7 @@ export class PivotQuery extends Query {
 
     /**
      * Derive the query's full field set - the caller's `fields` plus the pivot dimensions, the value
-     * fields, and each value field's `dependsOn`. `Query` folds in `dimensions` on top of this.
+     * fields, and each value field's aggregator `dependsOn`. `Query` folds in `dimensions` on top of this.
      *
      * Note this deliberately does *not* fall back to all `cube.fields` when `fields` is unspecified,
      * as {@link Query} does - see {@link PivotQueryConfig.fields}.
@@ -229,7 +229,7 @@ export class PivotQuery extends Query {
             names = [...fieldNames(fields), ...fieldNames(pivotDimensions)];
 
         fieldNames(valueFields).forEach(name => {
-            names.push(name, ...(cube.getField(name)?.dependsOn ?? []));
+            names.push(name, ...(cube.getField(name)?.aggregator?.dependsOn ?? []));
         });
 
         return compact(uniq(names).map(name => cube.getField(name)));
