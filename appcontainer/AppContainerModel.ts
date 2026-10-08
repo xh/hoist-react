@@ -394,18 +394,12 @@ export class AppContainerModel extends HoistModel {
         document.title = env === 'Production' ? clientAppName : `${clientAppName} (${env})`;
     }
 
-    /**
-     * Drop the `xhCacheBuster` query param that `XH.reloadApp()` appends to force a reload past
-     * the browser cache. It has done its job once the page loads, and it would otherwise stay in
-     * the address bar, enter router state and get copied into any URL the user shares. Runs
-     * before anything else, so a reload from here starts from a URL without a stale param.
-     */
+    // Drop the param `XH.reloadApp()` appends to bypass the browser cache. Filter the raw query
+    // string rather than using URLSearchParams, which would re-encode the other params.
     private removeCacheBusterFromUrl() {
         const {pathname, search, hash} = window.location;
         if (!search.includes('xhCacheBuster=')) return;
 
-        // Filter the raw query string rather than using URLSearchParams, which re-encodes the
-        // remaining params in form style (e.g. `%20` as `+`) and so corrupts them for the router.
         const params = search
                 .slice(1)
                 .split('&')
