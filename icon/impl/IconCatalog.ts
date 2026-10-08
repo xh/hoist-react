@@ -66,6 +66,8 @@ class IconCatalog {
         {faName: IconName; factory: IconFactory; displayName: string}
     >();
     private builtInsLoaded = false;
+    /** Names found only in the FA library, already warned about by `getFactory()`. */
+    private unregisteredNames = new Set<string>();
 
     /** Called once by `Icon.ts` to provide the singleton and factory maps this catalog works on. */
     setSource(source: IconCatalogSource) {
@@ -135,9 +137,26 @@ class IconCatalog {
         return factory;
     }
 
-    /** Factory for a factory or FA name - see {@link Icon.getFactory}. */
+    /**
+     * Factory for a factory or FA name - see {@link Icon.getFactory}. Falls back to an icon added
+     * directly to the FA library, with a one-time warning to register it instead.
+     */
     getFactory(name: string): IconFactory {
-        return this.registrations.get(name)?.factory ?? this.getEntry(name)?.factory ?? null;
+        const ret = this.registrations.get(name)?.factory ?? this.getEntry(name)?.factory;
+        if (ret) return ret;
+
+        const faName = name as IconName;
+        if (!PREFIXES.some(prefix => findIconDefinition({prefix, iconName: faName}))) return null;
+
+        if (!this.unregisteredNames.has(name)) {
+            this.unregisteredNames.add(name);
+            logWarn(
+                `Icon '${name}' was added to the FA library but not registered with Hoist. ` +
+                    `Register it via Icon.register() to make it available to IconPicker.`,
+                'Icon'
+            );
+        }
+        return this.makeFactory(faName);
     }
 
     /**

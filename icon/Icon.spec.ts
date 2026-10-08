@@ -8,7 +8,8 @@ import {
     faDragon as faDragonSolid,
     faUnicorn as faUnicornSolid
 } from '@fortawesome/pro-solid-svg-icons';
-import {faCactus, faFileInvoiceDollar, faTaco} from '@fortawesome/pro-regular-svg-icons';
+import {library} from '@fortawesome/fontawesome-svg-core';
+import {faBurrito, faCactus, faFileInvoiceDollar, faTaco} from '@fortawesome/pro-regular-svg-icons';
 import {faFileInvoiceDollar as faFileInvoiceDollarSolid} from '@fortawesome/pro-solid-svg-icons';
 import {Icon} from '@xh/hoist/icon';
 import {describe, expect, it, vi} from 'vitest';
@@ -167,6 +168,16 @@ describe('Icon', () => {
 
             expect(Icon.get('noSuchIcon')).toBeNull();
             expect(Icon.exists('noSuchIcon')).toBe(false);
+            expect(warn).toHaveBeenCalledOnce();
+        });
+
+        it('renders an icon added to the FA library but not registered, warning once', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            library.add(faBurrito);
+
+            expect(Icon.get('burrito').props.faName).toBe('burrito');
+            expect(Icon.get('burrito', {prefix: 'fas'}).props.prefix).toBe('far');
+            expect(Icon.exists('burrito')).toBe(false);
             expect(warn).toHaveBeenCalledOnce();
         });
     });

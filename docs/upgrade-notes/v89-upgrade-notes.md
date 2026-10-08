@@ -317,6 +317,40 @@ Icon.icon({faName: 'github', prefix: 'fab'});
 For an icon the app uses in many places, consider `Icon.register()` instead. It returns a typed
 factory and adds the icon to `IconPicker`.
 
+### 8. Register Icons Added via `library.add()`
+
+Apps that add their own FontAwesome icons by calling `library.add()` directly should move those
+calls to `Icon.register()`. A registered icon is offered by `IconPicker`, and its factory renders
+the icon's default weight when asked for one the app did not import.
+
+**Find affected files:**
+
+```bash
+grep -rn "library.add" client-app/src/
+```
+
+Before:
+
+```typescript
+import {library} from '@fortawesome/fontawesome-svg-core';
+import {faDragon} from '@fortawesome/pro-regular-svg-icons';
+
+library.add(faDragon);
+Icon.icon({iconName: 'dragon'});
+```
+
+After:
+
+```typescript
+import {faDragon} from '@fortawesome/pro-regular-svg-icons';
+
+export const dragonIcon = Icon.register({name: 'dragon', defs: faDragon});
+dragonIcon();
+```
+
+Icons added via `library.add()` still render. `Icon.get()` logs a one-time warning for each one it
+looks up by name.
+
 ## Verification Checklist
 
 After completing all steps:

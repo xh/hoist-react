@@ -1113,8 +1113,9 @@ export const Icon = {
      * Render a registered icon by name, for use with dynamic values - e.g. an icon choice
      * persisted by a user via {@link IconPicker}.
      *
-     * Accepts either a factory name (`'add'`, `'invoice'`) or an FA name (`'plus'`). Returns null
-     * and logs a warning if the requested icon has not been registered.
+     * Accepts either a factory name (`'add'`, `'invoice'`) or an FA name (`'plus'`). An icon added
+     * to the FA library but not registered still renders, with a one-time warning. Returns null
+     * and logs a warning if the requested icon is not found.
      */
     get(name: string, props?: IconProps): any {
         const factory = Icon.getFactory(name);
