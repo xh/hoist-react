@@ -27,24 +27,26 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added Grid and Cube pivoting - a View can slice its measures across extra dimensions as columns,
+  and a new `PivotGrid` renders the result.
+    * Set `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on
+      each group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
+      incrementally like any other. See `PivotSpec` and the
+      [Cube README](data/cube/README.md#pivoting-with-pivot).
+    * Added `PivotGrid` and `PivotGridModel` (`@xh/hoist/cmp/pivotgrid`) to render a pivoted View
+      as a tree grid with nested column groups, docked summaries, and per-measure column config.
+      See the [PivotGrid README](cmp/pivotgrid/README.md).
+    * Added `View.createStore()` to mint a Store shaped for a View's rows, with any pivot cell
+      fields declared and kept in sync as the data changes.
+    * Added `ViewRowData.cubeLabelValue`, the typed value behind `cubeLabel`. Bind a tree column's
+      `sortValue` to it to sort groups by their dimension value rather than its display string.
+    * Added a "Pivot by" option to the Admin Console's Activity Tracking tab, pivoting the
+      aggregate grid on a chosen dimension.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
   `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
   re-aggregates the field on changes to those as well.
-* Added pivoting to Cube Views. Set `QueryConfig.pivot` to slice a View's measures across extra
-  dimensions as columns, published as synthetic fields on each group row and described by
-  `ViewResult.paths` and `cellFields`. Pivoted Views update incrementally like any other. See
-  `PivotSpec` and the [Cube README](data/cube/README.md#pivoting-with-pivot).
-* Added `PivotGrid` and `PivotGridModel` (`@xh/hoist/cmp/pivotgrid`) to render a pivoted View as a
-  tree grid with nested column groups, docked summaries, and per-measure column config. See the
-  [PivotGrid README](cmp/pivotgrid/README.md).
-* Added `View.createStore()` to mint a Store shaped for a View's rows, with any pivot cell fields
-  declared and kept in sync as the data changes.
-* Added `ViewRowData.cubeLabelValue`, the typed value behind `cubeLabel`. Bind a tree column's
-  `sortValue` to it to sort groups by their dimension value rather than its display string.
-* Added a "Pivot by" option to the Admin Console's Activity Tracking tab, pivoting the aggregate
-  grid on a chosen dimension.
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
 * Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
