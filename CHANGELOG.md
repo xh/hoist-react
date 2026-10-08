@@ -127,6 +127,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   writes the value into the cell as text. Together with column virtualisation now on by default,
   this cuts the DOM and the per-cell work behind rendering and scrolling wide grids. See Breaking
   Changes.
+* Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, which installs ag-Grid's
+  community modules so that unit tests can render a `Grid` and check what Hoist hands to ag-Grid.
 * Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
   services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
