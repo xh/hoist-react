@@ -46,8 +46,12 @@ Tests run in [jsdom](https://github.com/jsdom/jsdom), which gives them `window`,
 `localStorage`. Every test file loads the real `@xh/hoist/core` module graph, including the `XH`
 singleton. Nothing in Hoist is mocked at the module level.
 
-Vitest gives each test file a fresh module graph. Tests in one file share one `XH`, but no state
-leaks from one file to another.
+Each test file works like one page load. Vitest gives each file a fresh module graph, so each file
+gets its own `XH` and its own fake hoist-core. No state leaks from one file to another.
+
+The tests in one file share both. If one test saves a pref or sets a role on `hoistCore`, the next
+test still sees it. Undo the change in the test that made it, or move the test to its own file.
+Between tests, the setup resets only the request log and the routes a test added.
 
 ### A fake hoist-core
 
