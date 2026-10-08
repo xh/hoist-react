@@ -113,26 +113,25 @@ class IconCatalog {
                     `Pass 'replace: true' to override the existing icon, or register under another name.`,
                 'Icon'
             );
+            return factory;
         }
 
         this.addAppIcon({
             faName,
-            name: install ? name : null,
+            name,
             prefix: config.prefix,
             displayName,
             keywords,
             hideFromPicker
         });
-
-        if (install) {
-            this.addName(name, faName);
-            this.registrations.set(name, {
-                faName,
-                factory,
-                displayName: displayName ?? startCase(name)
-            });
-            Icon[name] = factory;
-        }
+        this.addName(name, faName);
+        this.registrations.set(name, {
+            faName,
+            factory,
+            displayName: displayName ?? startCase(name)
+        });
+        Icon[name] = factory;
+        if (replace) this.catalogAliases();
         return factory;
     }
 
@@ -169,14 +168,14 @@ class IconCatalog {
     // Implementation
     //------------------------
     /**
-     * Catalog Hoist's built-in icons. Lazy, and run at most once - typically triggered by an app's
-     * first registration, or by the first render of an IconPicker.
+     * Catalog Hoist's built-in icons, at most once. Lazy because `icon/index.ts` adds them to the
+     * FA library only after `Icon.ts` loads, so their weights cannot be detected any earlier.
      */
     private ensureBuiltIns() {
         if (this.builtInsLoaded) return;
         this.builtInsLoaded = true;
 
-        const {iconFactories, aliasFactories} = this.source;
+        const {iconFactories} = this.source;
 
         // Direct factories define the catalog - each contributes an entry for the icon it renders.
         forOwn(iconFactories, (factory, name) => {
@@ -194,8 +193,16 @@ class IconCatalog {
             this.addName(name, faName);
         });
 
-        // Aliases contribute additional searchable names for the icons they delegate to.
-        forOwn(aliasFactories, (factory, name) => {
+        this.catalogAliases();
+    }
+
+    /**
+     * Point each of Hoist's aliases at the icon it renders, adding a searchable name to that
+     * icon's entry. Skips aliases the app has replaced, which are cataloged by their registration.
+     */
+    private catalogAliases() {
+        forOwn(this.source.aliasFactories, (factory, name) => {
+            if (this.registrations.has(name)) return;
             const faName = probeFaName(factory);
             if (!faName) return;
             this.getOrCreateEntry(faName);
@@ -282,8 +289,8 @@ class IconCatalog {
 
         if (isNew) {
             entry.source = 'app';
-            if (name) entry.name = name;
-            entry.displayName = displayName ?? startCase(name ?? faName);
+            entry.name = name;
+            entry.displayName = displayName ?? startCase(name);
             if (prefix) entry.prefix = prefix;
             entry.hideFromPicker = !!hideFromPicker;
         }
@@ -317,11 +324,13 @@ class IconCatalog {
     /**
      * Return the requested weight if available for this icon, otherwise the icon's default -
      * ensuring a request for an unimported variant renders the icon rather than nothing at all.
+     * An icon outside the catalog, e.g. from a refused registration, is checked in the FA library.
      */
     private resolvePrefix(faName: IconName, prefix: HoistIconPrefix): HoistIconPrefix {
-        const entry = this.entries.get(faName);
-        if (!entry) return prefix ?? 'far';
-        return prefix && entry.prefixes.includes(prefix) ? prefix : entry.prefix;
+        const entry = this.entries.get(faName),
+            prefixes = entry?.prefixes ?? this.detectPrefixes(faName);
+        if (prefix && prefixes.includes(prefix)) return prefix;
+        return entry?.prefix ?? preferredPrefix(prefixes);
     }
 }
 

@@ -4,7 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {faDragon as faDragonSolid} from '@fortawesome/pro-solid-svg-icons';
+import {
+    faDragon as faDragonSolid,
+    faUnicorn as faUnicornSolid
+} from '@fortawesome/pro-solid-svg-icons';
 import {faCactus, faFileInvoiceDollar, faTaco} from '@fortawesome/pro-regular-svg-icons';
 import {faFileInvoiceDollar as faFileInvoiceDollarSolid} from '@fortawesome/pro-solid-svg-icons';
 import {Icon} from '@xh/hoist/icon';
@@ -62,6 +65,14 @@ describe('Icon', () => {
             expect(factory().props.faName).toBe('file-invoice-dollar');
         });
 
+        it('leaves a refused registration out of the catalog, with a working factory', () => {
+            vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const factory = Icon.register({name: 'search', defs: faUnicornSolid});
+
+            expect(Icon.exists('unicorn')).toBe(false);
+            expect(factory({prefix: 'far'}).props.prefix).toBe('fas');
+        });
+
         it('replaces an existing icon, including a Hoist alias, when passed replace', () => {
             const edit = Icon.register({
                 name: 'edit',
@@ -75,6 +86,16 @@ describe('Icon', () => {
             expect(Icon.getCatalogEntry('pen-to-square').names).not.toContain('edit');
             // Other names for the replaced glyph are unaffected.
             expect(Icon.penToSquare().props.faName).toBe('pen-to-square');
+        });
+
+        it('re-points Hoist aliases of a replaced icon, by name and in the catalog', () => {
+            Icon.register({name: 'xCircle', faName: 'file-invoice-dollar', replace: true});
+
+            // `danger` delegates to `xCircle`.
+            expect(Icon.danger().props.faName).toBe('file-invoice-dollar');
+            expect(Icon.get('danger').props.faName).toBe('file-invoice-dollar');
+            expect(Icon.getCatalogEntry('file-invoice-dollar').names).toContain('danger');
+            expect(Icon.getCatalogEntry('times-circle').names).not.toContain('danger');
         });
 
         it('updates a repeated registration without warning, as on hot reload', () => {
