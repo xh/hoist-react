@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, grid rendering defaults)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -24,6 +24,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
   so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
   `inputProps` should also pass `previewCards: false`.
+* `GridModel.useVirtualColumns` now defaults to true, so a grid renders cells only for the columns
+  within or near its viewport, as ag-Grid does by default. Set it to false on grids whose
+  offscreen cells must be in the DOM, such as for test automation that reads them.
+* Grid cells in columns without a `renderer` now display their value as plain text and no longer
+  render the `xh-cell-inner-wrapper` span. Styles or selectors that relied on that span in such
+  columns should target `.ag-cell` instead. These cells carry an `xh-cell--plain` class.
 
 ### 🎁 New Features
 
@@ -117,6 +123,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Column` tooltips are now shown only where there is something to show - an editable column
   without a `tooltip` no longer mounts a tooltip for cells with no validation results - and the
   tooltip component is a plain function component rather than a `forwardRef`.
+* `Grid` no longer mounts a React component for cells in columns without a `renderer` - ag-Grid
+  writes the value into the cell as text. Together with column virtualisation now on by default,
+  this cuts the DOM and the per-cell work behind rendering and scrolling wide grids. See Breaking
+  Changes.
 * Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
   services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
 * Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a

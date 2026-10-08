@@ -129,6 +129,8 @@
     .ag-cell {
       border-bottom: none;
       border-top: none;
+      // The row border now takes the vertical space the cell borders did - see `xh-cell--plain`.
+      --xh-plain-cell-vertical-chrome: 1px;
     }
   }
 
@@ -209,9 +211,13 @@
     display: none;
   }
 
-  // We use flexbox to consistently vertically center cell contents across
-  // the different sizing modes. See https://github.com/xh/hoist-react/issues/1949
-  .ag-cell-value {
+  // We use flexbox to consistently vertically center rendered cell contents across the different
+  // sizing modes. See https://github.com/xh/hoist-react/issues/1949
+  // Plain-text cells (`xh-cell--plain` - columns with no renderer) are excluded. ag-Grid writes
+  // their value into the cell as a bare text node, centers it by line-height and ellipsizes it
+  // itself. As an anonymous flex item that text could not be ellipsized. `:where()` keeps this
+  // rule's specificity unchanged; the second argument covers cells with an `.ag-cell-wrapper`.
+  .ag-cell-value:where(:not(.xh-cell--plain, .xh-cell--plain *)) {
     display: flex;
     align-items: center;
 
@@ -226,9 +232,23 @@
       text-overflow: ellipsis;
       min-width: 0;
     }
-    .ag-row-group {
-      align-items: center;
-    }
+  }
+
+  .ag-cell-value .ag-row-group {
+    align-items: center;
+  }
+
+  // Plain-text cells center their text by line-height, so the line box must match the cell's
+  // content height exactly: the row height, less the vertical space taken by borders - the cell's
+  // own 1px transparent top and bottom borders, or under `--row-borders` the 1px row border drawn
+  // on the cell container in their place. ag-Grid's own cell rule gets this wrong when a
+  // `getRowHeight` function is in use, as Hoist's always is: it then sets `--ag-line-height` to
+  // the row height less 2px inline on each row, and subtracts the 2px again, leaving the text 1px
+  // high of center. (Its `--ag-internal-row-border-width` is not used here either - ag-Grid
+  // measures it once, so it does not follow the `--row-borders` modifier at runtime.)
+  .ag-cell.xh-cell--plain {
+    --xh-plain-cell-row-height: calc(var(--ag-line-height, calc(var(--ag-row-height) - 2px)) + 2px);
+    line-height: calc(var(--xh-plain-cell-row-height) - var(--xh-plain-cell-vertical-chrome, 2px));
   }
 
   // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to

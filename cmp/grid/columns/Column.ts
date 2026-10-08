@@ -273,6 +273,11 @@ export interface ColumnSpec {
     /**
      * Function returning a React Element for each cell value in this Column.
      *
+     * Without a renderer, the cell displays its value as plain text, which ag-Grid writes into
+     * the cell directly - the cheapest cell there is. A renderer makes each cell of the column a
+     * React component, so prefer a `valueFormatter`-style renderer that returns a string where
+     * a string will do, and reserve element-returning renderers for cells that need them.
+     *
      * For number and date formatting, prefer the pre-built `numberRenderer` and `dateRenderer`
      * factories from `@xh/hoist/format` - these accept formatting options and return a reusable
      * renderer function. Also consider the pre-built column specs (`number`, `date`, `dateTime`,
@@ -879,10 +884,13 @@ export class Column {
             setRenderer = r => (ret.cellRendererParams.innerRenderer = r);
         }
 
-        // By always providing a minimal pass-through cellRenderer, we can ensure the
-        // cell contents are wrapped in a span for styling purposes. We check agOptions in case
-        // the dev has specified a renderer option directly against the ag-Grid API.
-        if (!agOptions.cellRenderer) {
+        // A column with no renderer displays its value as plain text, which ag-Grid writes into
+        // the cell itself - no React component per cell. Every other column renders through a
+        // cell renderer: Hoist's wraps the rendered content in a span for styling (installed as
+        // the inner renderer of a tree column), unless the dev has specified a renderer directly
+        // against the ag-Grid API via agOptions.
+        const isPlain = !this.renderer && !this.isTreeColumn && !agOptions.cellRenderer;
+        if (!isPlain && !agOptions.cellRenderer) {
             setRenderer(this.agCellRenderer);
         }
 
@@ -912,6 +920,7 @@ export class Column {
             fixedClasses: string[] = [];
         if (isTreeColumn) fixedClasses.push('xh-tree-column');
         if (align === 'center' || align === 'right') fixedClasses.push('xh-align-' + align);
+        if (isPlain) fixedClasses.push('xh-cell--plain');
 
         ret.cellClass = isFunction(cellClass)
             ? agParams => [
