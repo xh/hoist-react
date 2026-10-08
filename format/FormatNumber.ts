@@ -8,7 +8,9 @@ import {span} from '@xh/hoist/cmp/layout';
 import {
     clamp,
     defaults,
+    forEach,
     isBoolean,
+    isEmpty,
     isFinite,
     isFunction,
     isInteger,
@@ -23,7 +25,7 @@ import numbro from 'numbro';
 import {CSSProperties, ReactNode} from 'react';
 import {IntRange} from 'type-fest';
 import {fmtSpan, FormatOptions} from './FormatMisc';
-import {createRenderer} from './FormatUtils';
+import {createRenderer, type StringFormatter} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
 
 const THOUSAND = 1000,
@@ -602,6 +604,92 @@ export const numberRenderer = createRenderer(fmtNumber),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
+
+/**
+ * Options for the string-returning number formatters - {@link numberFormatter} and friends.
+ *
+ * The options of {@link NumberFormatOptions} that would need markup are left out: `tooltip`
+ * (use `Column.tooltip`), `withSignGlyph`, `labelCls` (a `label` is appended as plain text) and
+ * `asHtml`. `colorSpec` and ledger alignment are instead applied to the cell via `cellClassRules`.
+ */
+export interface NumberFormatterOptions extends Omit<
+    NumberFormatOptions,
+    | 'colorSpec'
+    | 'tooltip'
+    | 'withSignGlyph'
+    | 'labelCls'
+    | 'zeroDisplay'
+    | 'asHtml'
+    | 'originalValue'
+> {
+    /**
+     * True to color the cell by sign with the default classes (`xh-pos-val`, `xh-neg-val`,
+     * `xh-neutral-val`), or the CSS class to apply per sign. Classes only - inline styles cannot
+     * be applied to a plain-text cell.
+     */
+    colorSpec?: boolean | {pos?: string; neg?: string; neutral?: string};
+
+    /** Display value for exact zeros. */
+    zeroDisplay?: string;
+}
+
+/**
+ * String-returning counterparts of {@link numberRenderer} and friends, for `Column.formatter`.
+ *
+ * Each takes {@link NumberFormatterOptions} and returns a formatter whose output ag-Grid writes
+ * into the cell as text. With `colorSpec`, or `ledger` with `forceLedgerAlign` (the default),
+ * the formatter carries `cellClassRules` that color the cell by sign and reserve the width of a
+ * closing parenthesis on positives, so that the column still aligns.
+ */
+export const numberFormatter = createNumberFormatter(fmtNumber),
+    thousandsFormatter = createNumberFormatter(fmtThousands),
+    millionsFormatter = createNumberFormatter(fmtMillions),
+    billionsFormatter = createNumberFormatter(fmtBillions),
+    quantityFormatter = createNumberFormatter(fmtQuantity),
+    priceFormatter = createNumberFormatter(fmtPrice),
+    percentFormatter = createNumberFormatter(fmtPercent);
+
+function createNumberFormatter(
+    fmt: (v: number, opts?: NumberFormatOptions) => ReactNode
+): (opts?: NumberFormatterOptions) => StringFormatter<number> {
+    return (opts = {}) => {
+        const {colorSpec = false, ledger = false, forceLedgerAlign = true, ...rest} = opts,
+            // Every option that would make the formatter return markup is pinned off here -
+            // see `fmtNumber`, which then returns its string form.
+            fmtOpts: NumberFormatOptions = {
+                ...rest,
+                ledger,
+                forceLedgerAlign: false,
+                colorSpec: false,
+                tooltip: null,
+                withSignGlyph: false,
+                labelCls: null
+            },
+            ret: StringFormatter<number> = v => fmt(v, fmtOpts) as string,
+            rules: StringFormatter['cellClassRules'] = {};
+
+        if (colorSpec) {
+            const spec = colorSpec === true ? DEFAULT_COLOR_SPEC : colorSpec,
+                signRules = {pos: v => v > 0, neg: v => v < 0, neutral: v => v === 0};
+            forEach(signRules, (test, key) => {
+                const cls = spec[key];
+                if (isString(cls) && cls) {
+                    rules[cls] = ({value}) => isFinite(value) && test(value);
+                }
+            });
+        }
+
+        if (ledger && forceLedgerAlign) {
+            // Positives (and values that round to zero) get no parentheses, so reserve the width
+            // of a closing one - as the element formatter's hidden placeholder does.
+            rules['xh-cell--ledger-align'] = ({value}) =>
+                isNumber(value) && isFinite(value) && !ret(value).endsWith(')');
+        }
+
+        if (!isEmpty(rules)) ret.cellClassRules = rules;
+        return ret;
+    };
+}
 
 const shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 

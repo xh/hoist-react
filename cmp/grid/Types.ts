@@ -383,6 +383,21 @@ export interface CellContext {
 export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactNode;
 
 /**
+ * Formatter function for a grid cell - returns the cell's display text.
+ *
+ * ag-Grid writes the text into the cell directly, with no component per cell, so prefer a
+ * formatter over a `renderer` wherever a string will do. The function may carry `cellClassRules`
+ * to style the cell by value - the string formatter factories in `@xh/hoist/format` attach rules
+ * for `colorSpec` and ledger alignment this way.
+ * @param value - cell data value (column + row).
+ * @param context - additional data about the column, row and GridModel.
+ * @returns the display text.
+ */
+export type ColumnFormatter<T = any> = ((value: T, context: CellContext) => string) & {
+    cellClassRules?: Record<string, ColumnCellClassRuleFn>;
+};
+
+/**
  * Function to return a value to export for a grid cell.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.

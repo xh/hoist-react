@@ -274,6 +274,30 @@ grep -rn "xh-cell-inner-wrapper" client-app/src/
 For a rule that should apply to such a column, target the cell. For a renderer-less column that
 must keep the span, add a renderer that returns the value.
 
+**Formatted columns can be plain too.** `Column.formatter` takes a function returning the cell's
+display text, and the `numberFormatter`, `dateFormatter` (and `thousands`, `millions`, `dateTime`,
+... siblings) factories in `@xh/hoist/format` return one from the same options as their renderer
+counterparts, minus those that need markup (`tooltip`, `withSignGlyph`, `labelCls`). `colorSpec`
+and ledger alignment are applied through `cellClassRules` the formatter carries. The built-in
+`number` and date column specs now use formatters, so grids built on them get plain cells without
+any change; a `renderer` passed alongside still wins. Switch other formatted columns as you touch
+them:
+
+Before:
+
+```typescript
+{field: 'pnl', renderer: numberRenderer({precision: 0, ledger: true, colorSpec: true})}
+```
+
+After:
+
+```typescript
+{field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})}
+```
+
+Keep the renderer where the cell needs an element - icons, nested layout, a `tooltip` option
+(move it to `Column.tooltip`), or inline styles from a `colorSpec`.
+
 Before:
 
 ```scss

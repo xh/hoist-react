@@ -95,6 +95,34 @@ corresponding formatter:
 export const numberRenderer = createRenderer(fmtNumber);
 ```
 
+### Formatter Factories
+
+Formatter factories mirror the renderer factories but always return a **string**, for a grid
+column's `formatter` prop. ag-Grid writes that text into the cell directly, with no React component
+per cell, so this is the path to prefer for formatted numbers and dates in grids. They take the same
+options as their renderer counterparts, minus those that would need markup: `tooltip` (use
+`Column.tooltip`), `withSignGlyph`, `labelCls` (a `label` is appended as plain text) and `asHtml`.
+
+`colorSpec` and `ledger` alignment are supported, but applied to the cell rather than inline: the
+returned formatter carries `cellClassRules` that color the cell by sign (`xh-pos-val`,
+`xh-neg-val`, `xh-neutral-val`, or the class names you pass) and reserve the width of a closing
+parenthesis on positive ledger values. `Column` applies them beneath its own `cellClassRules`.
+
+```typescript
+import {numberFormatter, millionsFormatter, dateFormatter} from '@xh/hoist/format';
+
+columns: [
+    {field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})},
+    {field: 'volume', formatter: millionsFormatter({precision: 1, label: true})},
+    {field: 'tradeDate', formatter: dateFormatter('MMM D')}
+]
+```
+
+Available: `numberFormatter`, `thousandsFormatter`, `millionsFormatter`, `billionsFormatter`,
+`quantityFormatter`, `priceFormatter`, `percentFormatter`, `dateFormatter`, `dateTimeFormatter`,
+`dateTimeSecFormatter`, `timeFormatter`, `compactDateFormatter`. The built-in `number` and date
+column specs in `@xh/hoist/cmp/grid` use them.
+
 ## Number Formatting
 
 Number formatting is the most heavily used part of this package. The core function `fmtNumber`

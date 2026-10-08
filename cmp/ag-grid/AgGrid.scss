@@ -246,6 +246,14 @@
     align-content: center;
   }
 
+  // Ledger-formatted positives reserve the width of a closing parenthesis, so that a column of
+  // mixed signs still aligns. The string formatters mark such cells (`cellClassRules`); the
+  // element formatters render a hidden placeholder of their own.
+  .ag-cell.xh-cell--plain.xh-cell--ledger-align::after {
+    content: ')';
+    visibility: hidden;
+  }
+
   // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to
   // `--row-borders` above - setting `--ag-row-border` here too would win over it, as both modifier
   // classes land on the same element.

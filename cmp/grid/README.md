@@ -258,13 +258,30 @@ await gridModel.exportAsync({type: 'excel'});
 gridModel.localExport('my-data', 'csv');
 ```
 
-### Custom Renderers
+### Formatters and Custom Renderers
 
-Use `xxxRenderer` factory functions (e.g., `numberRenderer`) when passing a statically configured
-renderer directly to the `renderer` config - the factory returns a reusable function. When rendering
-dynamically based on record data or otherwise customizing per-cell, call the underlying formatter
-directly (e.g., `fmtNumber`) to avoid creating a new function on each render. See
-[`/format/README.md`](../../format/README.md) for the full formatter and renderer API.
+Prefer `formatter` over `renderer` wherever the cell shows text. A formatter returns a string that
+ag-Grid writes into the cell directly, with no React component per cell; a renderer returns a React
+element and makes every cell of the column a component. The `xxxFormatter` factories (e.g.
+`numberFormatter`, `dateFormatter`) return a reusable formatter from the same options as their
+`xxxRenderer` counterparts, minus those that need markup - `colorSpec` and ledger alignment are
+applied to the cell through `cellClassRules` the formatter carries. The built-in `number` and date
+column specs use them.
+
+```typescript
+import {numberFormatter} from '@xh/hoist/format';
+
+columns: [
+    {field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})}
+]
+```
+
+Use `xxxRenderer` factory functions (e.g., `numberRenderer`) when a cell needs markup - a
+`tooltip` option, `withSignGlyph`, a styled label - passing a statically configured renderer
+directly to the `renderer` config. When rendering dynamically based on record data or otherwise
+customizing per-cell, call the underlying formatter directly (e.g., `fmtNumber`) to avoid creating
+a new function on each render. See [`/format/README.md`](../../format/README.md) for the full
+formatter and renderer API.
 
 ```typescript
 import {numberRenderer, fmtNumber} from '@xh/hoist/format';

@@ -11,7 +11,9 @@ import {
     fmtDateTime,
     fmtDateTimeSec,
     fmtTime,
-    withFormattedTimestamps
+    withFormattedTimestamps,
+    dateFormatter,
+    dateTimeFormatter
 } from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
@@ -177,5 +179,22 @@ describe('withFormattedTimestamps', () => {
         expect(withFormattedTimestamps({startTime: ts}, {format: 'YYYY-MM-DD'})).toEqual({
             startTime: '2026-02-08'
         });
+    });
+});
+
+describe('dateFormatter', () => {
+    const date = moment('2026-10-07 14:05:09').toDate();
+
+    it('formats to a string with a format option or a bare format', () => {
+        expect(dateFormatter()(date)).toBe('2026-10-07');
+        expect(dateFormatter('MMM D')(date)).toBe('Oct 7');
+        expect(dateFormatter({fmt: 'YYYY'})(date)).toBe('2026');
+        expect(dateTimeFormatter()(date)).toBe('2026-10-07 2:05pm');
+    });
+
+    it('returns a string for null and invalid input', () => {
+        expect(dateFormatter()(null)).toBe('');
+        expect(dateFormatter({nullDisplay: '-'})(null)).toBe('-');
+        expect(dateFormatter()('not a date')).toBe('');
     });
 });

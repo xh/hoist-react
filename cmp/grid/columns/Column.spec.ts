@@ -87,6 +87,60 @@ describe('Column.getAgSpec', () => {
         });
     });
 
+    describe('formatter', () => {
+        it('supplies a valueFormatter for a plain cell, with the cell context', () => {
+            const gridModel = createGridModel({}, [
+                    {field: 'name', formatter: (v, {record}) => `${v} #${record.id}`}
+                ]),
+                {store} = gridModel;
+            store.loadData([{id: 7, name: 'Alpha'}]);
+            const spec = gridModel.getColumn('name').getAgSpec();
+
+            expect(spec.cellRenderer).toBeUndefined();
+            expect(spec.cellClass).toContain('xh-cell--plain');
+            expect(spec.valueFormatter).toBeTypeOf('function');
+            expect(
+                (spec.valueFormatter as Function)({value: 'Alpha', data: store.getById(7)})
+            ).toBe('Alpha #7');
+            expect(spec.valueFormatter).toBe(
+                gridModel.getColumn('name').getAgSpec().valueFormatter
+            );
+        });
+
+        it('applies the formatter cellClassRules beneath the column own rules', () => {
+            const formatter = Object.assign(v => `${v}`, {
+                    cellClassRules: {pos: ({value}) => value > 0, shared: () => false}
+                }),
+                col = createColumn({formatter, cellClassRules: {shared: () => true}});
+
+            expect(Object.keys(col.cellClassRules)).toEqual(['pos', 'shared']);
+            expect(col.cellClassRules.shared({} as any)).toBe(true);
+            expect(col.getAgSpec().cellClassRules.pos).toBe(col.cellClassRules.pos);
+        });
+
+        it('yields to a renderer', () => {
+            const formatter = Object.assign(v => `${v}`, {cellClassRules: {pos: () => true}}),
+                spec = createColumn({formatter, renderer: v => v}).getAgSpec();
+
+            expect(spec.valueFormatter).toBeUndefined();
+            expect(spec.cellRenderer).toBeTypeOf('function');
+            expect(spec.cellClassRules).toEqual({});
+        });
+
+        it('reaches a tree column through its group renderer as valueFormatted', () => {
+            const gridModel = createGridModel({treeMode: true}, [
+                    {field: 'name', isTreeColumn: true, formatter: v => `${v}!`}
+                ]),
+                spec = gridModel.getColumn('name').getAgSpec();
+
+            expect(spec.cellRenderer).toBe('agGroupCellRenderer');
+            expect(spec.valueFormatter).toBeTypeOf('function');
+            const inner = spec.cellRendererParams.innerRenderer,
+                el = inner({value: 'a', valueFormatted: 'a!', data: null});
+            expect(el.props.children).toBe('a!');
+        });
+    });
+
     describe('cellClass', () => {
         // Columns here have no renderer, so each list ends with the plain-text cell marker.
         it('is a static list when configured with strings, with alignment classes appended', () => {

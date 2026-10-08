@@ -10,7 +10,7 @@ import moment from 'moment';
 import {ReactNode} from 'react';
 import {DateLike, PlainObject} from '../core/types/Types';
 import {fmtSpan, FormatOptions} from './FormatMisc';
-import {createRenderer} from './FormatUtils';
+import {createRenderer, type StringFormatter} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
 
 export const DATE_FMT = 'YYYY-MM-DD',
@@ -200,3 +200,40 @@ export const dateRenderer = createRenderer(fmtDate),
     dateTimeSecRenderer = createRenderer(fmtDateTimeSec),
     timeRenderer = createRenderer(fmtTime),
     compactDateRenderer = createRenderer(fmtCompactDate);
+
+/**
+ * Options for the string-returning date formatters - {@link dateFormatter} and friends. As
+ * {@link DateFormatOptions}, less the options that would need markup: `tooltip` (use
+ * `Column.tooltip`) and `asHtml`.
+ */
+export type DateFormatterOptions = Omit<
+    DateFormatOptions,
+    'tooltip' | 'asHtml' | 'originalValue'
+> & {
+    nullDisplay?: string;
+};
+
+/** As {@link DateFormatterOptions}, for {@link compactDateFormatter}. */
+export type CompactDateFormatterOptions = Omit<
+    CompactDateFormatOptions,
+    'tooltip' | 'asHtml' | 'originalValue'
+> & {nullDisplay?: string};
+
+/**
+ * String-returning counterparts of {@link dateRenderer} and friends, for `Column.formatter`.
+ * Each returns a formatter whose output ag-Grid writes into the cell as text.
+ */
+export const dateFormatter = createDateFormatter<DateFormatterOptions>(fmtDate),
+    dateTimeFormatter = createDateFormatter<DateFormatterOptions>(fmtDateTime),
+    dateTimeSecFormatter = createDateFormatter<DateFormatterOptions>(fmtDateTimeSec),
+    timeFormatter = createDateFormatter<DateFormatterOptions>(fmtTime),
+    compactDateFormatter = createDateFormatter<CompactDateFormatterOptions>(fmtCompactDate);
+
+function createDateFormatter<C extends PlainObject>(
+    fmt: (v: DateLike, opts?: any) => ReactNode
+): (opts?: C | string) => StringFormatter<DateLike> {
+    return opts => {
+        const fmtOpts = {...(isString(opts) ? {fmt: opts} : opts), tooltip: null, asHtml: false};
+        return v => fmt(v, fmtOpts) as string;
+    };
+}

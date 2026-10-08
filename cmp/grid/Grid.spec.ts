@@ -6,6 +6,7 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {numberFormatter} from '@xh/hoist/format';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {render, waitFor} from '@testing-library/react';
@@ -68,6 +69,21 @@ describe('Grid', () => {
 
         expect(qty.classList.contains('xh-cell--plain')).toBe(false);
         expect(qty.querySelector('.xh-cell-inner-wrapper').textContent).toBe('1!');
+    });
+
+    it('writes a formatter result into a plain cell, with its cellClassRules applied', async () => {
+        const {container} = await renderGridAsync({
+                columns: [
+                    {field: 'name'},
+                    {field: 'qty', formatter: numberFormatter({colorSpec: true})}
+                ]
+            }),
+            [, qty] = container.querySelectorAll('.ag-row[row-id="ag_1"] .ag-cell');
+
+        expect(qty.classList.contains('xh-cell--plain')).toBe(true);
+        expect(qty.querySelector('.xh-cell-inner-wrapper')).toBeNull();
+        expect(qty.textContent).toBe('1');
+        expect(qty.classList.contains('xh-pos-val')).toBe(true);
     });
 });
 

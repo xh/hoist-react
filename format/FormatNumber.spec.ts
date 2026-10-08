@@ -15,7 +15,8 @@ import {
     fmtThousands,
     millionsRenderer,
     type NumberFormatOptions,
-    parseNumber
+    parseNumber,
+    numberFormatter
 } from '@xh/hoist/format';
 import {isValidElement, type ReactNode} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -393,5 +394,61 @@ describe('parseNumber', () => {
     it('parses decimal shorthand to the exact value', () => {
         expect(parseNumber('8.2m')).toBe(8200000);
         expect(parseNumber('1.005k')).toBe(1005);
+    });
+});
+
+describe('numberFormatter', () => {
+    const rule = (fmt, cls, value) => fmt.cellClassRules[cls]({value});
+
+    it('always returns a string, even with options that make fmtNumber return markup', () => {
+        const fmt = numberFormatter({
+            precision: 0,
+            ledger: true,
+            colorSpec: true,
+            label: 'm',
+            withPlusSign: true
+        });
+        expect(fmt(1234.5)).toBe('+1,235m');
+        expect(fmt(-1234.5)).toBe('(1,234m)');
+        expect(fmt(0)).toBe('0m');
+        expect(fmt(null)).toBe('');
+        [1234.5, -1234.5, 0, null].forEach(v => expect(fmt(v)).toBeTypeOf('string'));
+    });
+
+    it('carries no cellClassRules unless an option needs them', () => {
+        expect(numberFormatter({precision: 2}).cellClassRules).toBeUndefined();
+        expect(
+            numberFormatter({ledger: true, forceLedgerAlign: false}).cellClassRules
+        ).toBeUndefined();
+    });
+
+    it('colors the cell by sign through cellClassRules', () => {
+        const fmt = numberFormatter({colorSpec: true});
+        expect(Object.keys(fmt.cellClassRules)).toEqual([
+            'xh-pos-val',
+            'xh-neg-val',
+            'xh-neutral-val'
+        ]);
+        expect(rule(fmt, 'xh-pos-val', 5)).toBe(true);
+        expect(rule(fmt, 'xh-neg-val', -5)).toBe(true);
+        expect(rule(fmt, 'xh-neutral-val', 0)).toBe(true);
+        expect(rule(fmt, 'xh-pos-val', -5)).toBe(false);
+        expect(rule(fmt, 'xh-pos-val', null)).toBe(false);
+
+        const custom = numberFormatter({colorSpec: {neg: 'my-neg'}});
+        expect(Object.keys(custom.cellClassRules)).toEqual(['my-neg']);
+    });
+
+    it('reserves ledger alignment on values shown without parentheses', () => {
+        const fmt = numberFormatter({ledger: true, precision: 0});
+        expect(rule(fmt, 'xh-cell--ledger-align', 10)).toBe(true);
+        expect(rule(fmt, 'xh-cell--ledger-align', 0)).toBe(true);
+        expect(rule(fmt, 'xh-cell--ledger-align', -10)).toBe(false);
+        expect(rule(fmt, 'xh-cell--ledger-align', null)).toBe(false);
+
+        // A value that rounds to zero prints without parentheses, so it aligns like a positive.
+        const loose = numberFormatter({ledger: true, precision: 0, strictZero: false});
+        expect(loose(-0.2)).toBe('0');
+        expect(rule(loose, 'xh-cell--ledger-align', -0.2)).toBe(true);
     });
 });

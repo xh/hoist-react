@@ -28,10 +28,16 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   cells must be in the DOM, such as for test automation that reads them.
 * Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
   class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
-  target `.ag-cell` instead.
+  target `.ag-cell` instead. The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`,
+  `compactDate` and `localDate` column specs now format through `Column.formatter` and render as
+  such plain cells.
 
 ### 🎁 New Features
 
+* Added `Column.formatter` - a renderer that returns the cell's display text, which ag-Grid writes
+  into the cell with no React component per cell - with string-returning factories
+  `numberFormatter`, `dateFormatter` and siblings in `@xh/hoist/format`. Their `colorSpec` and
+  ledger alignment options apply through `cellClassRules`; use `Column.tooltip` for tooltips.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
   `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.

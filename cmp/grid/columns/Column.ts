@@ -61,6 +61,7 @@ import {
     ColumnGroupShowMode,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
+    ColumnFormatter,
     ColumnRenderer,
     ColumnSetValueFn,
     ColumnSortSpec,
@@ -74,6 +75,7 @@ import type {
     ColDef,
     ICellRendererParams,
     ITooltipParams,
+    ValueFormatterParams,
     ValueGetterParams,
     ValueSetterParams,
     CustomCellEditorProps,
@@ -271,18 +273,33 @@ export interface ColumnSpec {
     pinned?: boolean | HSide;
 
     /**
+     * Function returning the display text for each cell value in this Column.
+     *
+     * ag-Grid writes the text into the cell directly, with no React component per cell - the
+     * cheapest cell there is. Prefer a formatter over a `renderer` wherever a string will do. For
+     * numbers and dates use the `numberFormatter` and `dateFormatter` factories from
+     * `@xh/hoist/format` (and their `thousands`, `millions`, `dateTime`, ... siblings), which take
+     * formatting options and return a reusable formatter. The pre-built column specs (`number`,
+     * `date`, `dateTime`, ... from `@xh/hoist/cmp/grid`) bundle one with alignment and export
+     * formatting.
+     *
+     * A formatter may carry `cellClassRules` to style the cell by value - the factories above do
+     * so for `colorSpec` and ledger alignment. Those rules are applied beneath the column's own.
+     *
+     * The formatted text is also what ag-Grid copies and exports for the cell. Ignored when a
+     * `renderer` is set.
+     */
+    formatter?: ColumnFormatter;
+
+    /**
      * Function returning a React Element for each cell value in this Column.
      *
-     * Without a renderer, the cell displays its value as plain text, which ag-Grid writes into
-     * the cell directly - the cheapest cell there is. A renderer makes each cell of the column a
-     * React component, so prefer a `valueFormatter`-style renderer that returns a string where
-     * a string will do, and reserve element-returning renderers for cells that need them.
+     * A renderer makes each cell of the column a React component. Reserve it for cells that need
+     * an element (icons, nested layout, inline styles) and use `formatter` where a string will do.
      *
-     * For number and date formatting, prefer the pre-built `numberRenderer` and `dateRenderer`
-     * factories from `@xh/hoist/format` - these accept formatting options and return a reusable
-     * renderer function. Also consider the pre-built column specs (`number`, `date`, `dateTime`,
-     * `boolCheck` from `@xh/hoist/cmp/grid`) which bundle a renderer with appropriate alignment,
-     * sorting, and export formatting.
+     * For number and date formatting with markup options (`tooltip`, `withSignGlyph`, styled
+     * labels), the `numberRenderer` and `dateRenderer` factories from `@xh/hoist/format` accept
+     * formatting options and return a reusable renderer function.
      *
      * For custom rendering based on record data beyond this column's field, set
      * `rendererIsComplex: true` to ensure cells refresh on any record change.
@@ -535,6 +552,7 @@ export class Column {
     filterable: boolean;
     hideable: boolean;
     pinned: HSide;
+    formatter: ColumnFormatter;
     renderer: ColumnRenderer;
     rendererIsComplex: boolean;
     highlightOnChange: boolean;
@@ -572,6 +590,7 @@ export class Column {
 
     // ag-Grid colDef functions, created once per Column - see `getAgSpec()`.
     private _agCellRenderer: ColDef['cellRenderer'];
+    private _agValueFormatter: ColDef['valueFormatter'];
     private _agTooltipComponent: ColDef['tooltipComponent'];
     private _agCellEditor: ColDef['cellEditor'];
     private _agComparator: ColDef['comparator'];
@@ -616,6 +635,7 @@ export class Column {
             sortable,
             filterable,
             pinned,
+            formatter,
             renderer,
             rendererIsComplex,
             highlightOnChange,
@@ -679,7 +699,9 @@ export class Column {
         this.headerClass = headerClass;
 
         this.cellClass = cellClass;
-        this.cellClassRules = cellClassRules || {};
+        // A formatter's rules style the cell by value where its text cannot - a renderer wins
+        // over a formatter, and styles its own output.
+        this.cellClassRules = {...(renderer ? null : formatter?.cellClassRules), ...cellClassRules};
         this.cellFlag = cellFlag;
 
         this.align = align;
@@ -718,6 +740,7 @@ export class Column {
         this.hideable = withDefault(hideable, !this.isTreeColumn);
         this.pinned = this.parsePinned(pinned);
 
+        this.formatter = formatter;
         this.renderer = managedRenderer(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
@@ -894,6 +917,13 @@ export class Column {
             setRenderer(this.agCellRenderer);
         }
 
+        // A formatter supplies the cell's display text through ag-Grid's `valueFormatter`, which
+        // keeps a plain cell plain (and reaches a tree column's group renderer as
+        // `valueFormatted`). ag-Grid's copy and export use the same text.
+        if (this.formatter && !this.renderer) {
+            ret.valueFormatter = this.agValueFormatter;
+        }
+
         // Tooltip Handling. ag-Grid shows a tooltip only when `tooltip` returns a value, mounting
         // the component (a React portal) each time it does. The content is resolved within the
         // component - here decide only whether there is anything to show: any record's cell for a
@@ -1021,7 +1051,7 @@ export class Column {
             this._agCellRenderer = (agParams: ICellRendererParams) => {
                 let ret = renderer
                     ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
-                    : agParams.value;
+                    : (agParams.valueFormatted ?? agParams.value);
 
                 ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
 
@@ -1030,6 +1060,15 @@ export class Column {
             };
         }
         return this._agCellRenderer;
+    }
+
+    private get agValueFormatter(): ColDef['valueFormatter'] {
+        if (!this._agValueFormatter) {
+            const {formatter, gridModel} = this;
+            this._agValueFormatter = (agParams: ValueFormatterParams) =>
+                formatter(agParams.value, {record: agParams.data, column: this, gridModel});
+        }
+        return this._agValueFormatter;
     }
 
     private get agTooltipComponent(): ColDef['tooltipComponent'] {

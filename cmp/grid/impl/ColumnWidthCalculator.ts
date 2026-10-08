@@ -111,13 +111,15 @@ export class ColumnWidthCalculator {
     }
 
     async calcLevelWidthAsync(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, rendererIsComplex, cellClassRules} = column,
+        const {field, getValueFn, renderer, formatter, rendererIsComplex, cellClassRules} = column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get map of rendered values to data about it
         const estimatesByValue = new Map(),
-            renderMemo = renderer && !rendererIsComplex ? new Map() : null;
+            // A formatter's text is measured as text; a renderer's markup as HTML.
+            render = renderer ?? formatter,
+            renderMemo = render && !rendererIsComplex ? new Map() : null;
 
         await forEachAsync(records, record => {
             if (!record) return;
@@ -127,11 +129,11 @@ export class ColumnWidthCalculator {
 
             // 1a) Get rendered markup value from raw.  Use memoization if appropriate
             let value = rawValue;
-            if (renderer) {
+            if (render) {
                 if (renderMemo?.has(rawValue)) {
                     value = renderMemo.get(rawValue);
                 } else {
-                    value = renderer(rawValue, ctx);
+                    value = render(rawValue, ctx);
                     if (isValidElement(value)) value = renderToStaticMarkup(value);
                     renderMemo?.set(rawValue, value);
                 }
