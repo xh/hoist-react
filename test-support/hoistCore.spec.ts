@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
+import {wait} from '@xh/hoist/promise';
 import {hoistCore, hoistError, initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
-import {beforeAll, beforeEach, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * `hoistCore.route()` serves an app's own endpoints in its specs. Apps register routes once per
@@ -125,6 +126,53 @@ describe('FakeHoistCore', () => {
 
             await expect(XH.fetchJson({url: 'broken'})).rejects.toMatchObject({httpStatus: 500});
             expect(problems).toEqual(['Route for GET broken threw: Error: No such order']);
+        });
+    });
+
+    // Models often start a request without awaiting it - e.g. a save from a timer or destroy().
+    describe('settleAsync', () => {
+        beforeAll(() => hoistCore.route('POST', 'audit', () => wait(50)));
+
+        it('waits for a request started without an await, and its handling', async () => {
+            let handled = false;
+            void XH.postJson({url: 'audit'}).then(() => (handled = true));
+
+            await hoistCore.settleAsync();
+
+            expect(hoistCore.requestsTo('audit')).toHaveLength(1);
+            expect(handled).toBe(true);
+        });
+
+        it('waits on real time while a test fakes timers', async () => {
+            vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout', 'Date']});
+            void XH.fetchJson({url: 'orders'});
+
+            await hoistCore.settleAsync();
+
+            expect(hoistCore.requestsTo('orders')).toHaveLength(1);
+        });
+
+        it('rejects, naming any request still open after the timeout', async () => {
+            let release: () => void;
+            hoistCore.route('GET', 'held', () => new Promise<void>(r => (release = r)));
+            void XH.fetchJson({url: 'held'});
+
+            try {
+                await expect(hoistCore.settleAsync(100)).rejects.toThrow('GET held');
+            } finally {
+                release?.();
+            }
+        });
+
+        // These two run in order - the second checks what the first left behind.
+        let leakedHandled = false;
+        it('lets a test end with a request it did not await', () => {
+            void XH.postJson({url: 'audit'}).then(() => (leakedHandled = true));
+        });
+
+        it('waits at teardown, so that request stays out of the next test', () => {
+            expect(leakedHandled).toBe(true);
+            expect(hoistCore.requests).toEqual([]);
         });
     });
 });

@@ -44,8 +44,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   sized to its options as above.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core that serves app endpoints via
-  `hoistCore.route()`. Needs `configureVitest()` from hoist-dev-utils 16.1. Experimental in v89 - it
-  may change.
+  `hoistCore.route()`, and `hoistCore.settleAsync()` waits for requests that a test did not await.
+  Needs `configureVitest()` from hoist-dev-utils 16.1. Experimental in v89 - it may change.
 
 ### 🐞 Bug Fixes
 
