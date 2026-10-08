@@ -43,7 +43,7 @@ export class DetailsModel extends HoistModel {
         await this.runner({loadSpec})
             .span('getStats')
             .run(async ctx => {
-                const resp = await XH.fetchJson(
+                this.stats = await XH.fetchJson(
                     {
                         url: 'serviceManagerAdmin/getStats',
                         params: {instance: parent.instanceName, name: selected.name},
@@ -51,8 +51,6 @@ export class DetailsModel extends HoistModel {
                     },
                     ctx
                 );
-                if (loadSpec.isStale) return;
-                this.stats = resp;
             });
     }
 }

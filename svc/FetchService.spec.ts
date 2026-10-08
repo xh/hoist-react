@@ -230,13 +230,13 @@ describe('FetchService', () => {
             const ab = search('ab');
             await expect(a).rejects.toMatchObject({
                 name: 'Fetch Aborted',
-                isFetchAborted: true,
+                isAborted: true,
                 isRoutine: true
             });
             await arrived;
 
             // The first request's cleanup must not release the key held by the second.
-            const abAborted = expect(ab).rejects.toMatchObject({isFetchAborted: true});
+            const abAborted = expect(ab).rejects.toMatchObject({isAborted: true});
             expect(await search('abc')).toEqual({q: 'abc'});
             await abAborted;
             expect(sent.map(it => it.signal.aborted)).toEqual([true, true, false]);

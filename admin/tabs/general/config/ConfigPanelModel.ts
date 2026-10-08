@@ -173,7 +173,7 @@ export class ConfigPanelModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        return this.gridModel.loadAsync(loadSpec).catchDefault();
+        return this.gridModel.loadAsync(loadSpec);
     }
 
     @action

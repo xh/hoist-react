@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, load error handling)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -24,9 +24,27 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
   so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
   `inputProps` should also pass `previewCards: false`.
+* Renamed the `isFetchAborted` exception flag to `isAborted` (on `FetchException` and related
+  `HoistException`s). The flag is now also set by the new `LoadAbortedException`. Update any
+  references from `e.isFetchAborted` to `e.isAborted` (e.g. in `catchWhen`/`catchDefaultWhen`
+  predicates).
+* `loadAsync()` no longer rejects when `doLoadAsync()` throws. Errors not filtered as stale or
+  auto-refresh now route to the new `Loadable.handleLoadException()` hook, which alerts the user by
+  default where such errors were previously logged to the console only. Override the hook (e.g.
+  `XH.handleException(e, {showAlert: false})`) to quiet a model, and remove any `.catch()` or
+  `.catchDefault()` chained onto `loadAsync()` calls - they no longer fire.
 
 ### 🎁 New Features
 
+* `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
+  obsolete, and auto-refresh errors:
+    * New `Loadable.skipStaleLoads` flag (default `true`) - controls whether loads superseded
+      by a newer *started* request are aborted and silenced. Loads superseded by a newer
+      *completed* request are always skipped.
+    * New `Loadable.skipAutoRefreshErrors` flag (default `true`) - controls whether errors
+      raised during an auto-refresh are silenced rather than routed to `handleLoadException`.
+    * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
+      failures not skipped via the flags above. Default delegates to `XH.handleException(e)`.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
   `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
   incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.

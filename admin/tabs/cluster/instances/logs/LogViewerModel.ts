@@ -110,8 +110,7 @@ export class LogViewerModel extends BaseInstanceModel {
                         selModel.select(latestAppLog);
                     }
                 }
-            })
-            .catch(e => this.handleLoadException(e, loadSpec));
+            });
     }
 
     async deleteSelectedAsync() {

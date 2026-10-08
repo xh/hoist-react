@@ -49,12 +49,8 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            await this.loadDataAsync(loadSpec);
-            await this.loadPastInstancesAsync(loadSpec);
-        } catch (e) {
-            this.handleLoadException(e, loadSpec);
-        }
+        await this.loadDataAsync(loadSpec);
+        await this.loadPastInstancesAsync(loadSpec);
     }
 
     async takeSnapshotAsync() {

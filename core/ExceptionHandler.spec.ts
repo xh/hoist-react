@@ -145,7 +145,7 @@ describe('ExceptionHandler', () => {
             const e = await aborted;
 
             await handleAsync(e);
-            expect(e.isFetchAborted).toBe(true);
+            expect(e.isAborted).toBe(true);
             expect(dialogModel().displayData).toBeNull();
             expect(reports()).toEqual([]);
         });

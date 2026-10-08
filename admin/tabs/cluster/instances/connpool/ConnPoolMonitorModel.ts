@@ -135,8 +135,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
                         step: true
                     }
                 ]);
-            })
-            .catch(e => this.handleLoadException(e, loadSpec));
+            });
     }
 
     async takeSnapshotAsync() {

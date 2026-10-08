@@ -392,7 +392,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .run(async ctx => {
                 // 1) Update views and related state
                 const {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
-                if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
                     this.userPinned = state.userPinned;
@@ -407,11 +406,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                         this.loadViewAsync(view.token, this.pendingValue, ctx);
                     }
                 }
-            })
-            .catch(e => {
-                if (loadSpec.isStale) return;
-                this.handleException(e, {showAlert: false});
             });
+    }
+
+    override handleLoadException(e: unknown) {
+        this.handleException(e, {showAlert: false});
     }
 
     async selectViewAsync(
