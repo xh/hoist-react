@@ -135,8 +135,9 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                     ...getLayoutProps(props),
                     ...impl.agOptions,
                     // Data row height - AgGrid publishes it as `--ag-row-height` for ag-Grid to
-                    // position and style rows by. `getRowHeight` still decides each row's height.
-                    rowHeight: impl.agOptions.rowHeight ?? impl.calculatedRowHeight
+                    // position and style rows by. Hoist's `getRowHeight` sizes every data row from
+                    // this same value (an `agOptions.rowHeight` is not consulted), so the two agree.
+                    rowHeight: impl.calculatedRowHeight
                 })
             ],
             testId,
