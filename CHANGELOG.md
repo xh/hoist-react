@@ -112,6 +112,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
   `xhCacheBuster` param in the URL after the reload.
 * Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
+* Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
+  Titled icons also get the title as their `aria-label`, so screen readers announce them again.
 
 ### ⚙️ Technical
 

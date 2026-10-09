@@ -6,6 +6,7 @@
  */
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {elementFactory, hoistCmp} from '@xh/hoist/core';
+import {useLayoutEffect, useRef} from 'react';
 import {enhanceFaClasses} from './IconHtml';
 
 /**
@@ -19,8 +20,26 @@ export const iconCmp = hoistCmp.factory({
     model: false,
 
     render({faName, prefix, title, className, size, ...rest}) {
+        const svgRef = useRef<SVGSVGElement>(null);
+
+        // FontAwesome ignores `title`, so add the SVG `<title>` child the browser shows as a tooltip.
+        useLayoutEffect(() => {
+            const svg = svgRef.current;
+            if (!svg || !title) return;
+            const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+            titleEl.textContent = title;
+            svg.prepend(titleEl);
+            return () => titleEl.remove();
+        }, [title, faName, prefix]);
+
         className = enhanceFaClasses(className, size);
-        return fontAwesomeIcon({icon: [prefix, faName], className, title, ...rest});
+        return fontAwesomeIcon({
+            icon: [prefix, faName],
+            className,
+            'aria-label': title,
+            ...rest,
+            ref: svgRef
+        });
     }
 });
 const fontAwesomeIcon = elementFactory(FontAwesomeIcon);
