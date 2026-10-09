@@ -21,20 +21,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
-<<<<<<< HEAD
-* Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
-  so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
-  `inputProps` should also pass `previewCards: false`.
-* The `Icon` singleton now holds lookup and registration methods (`register()`, `get()`, ...) next
-  to its factories. Apps that list icons by iterating `Object.keys(Icon)` must switch to
-  `Icon.getCatalog()`, which returns one entry per icon with its name and factory.
-* Icon elements now carry their FA name as `props.faName`, not `props.iconName`. Update any code
-  that reads the FA name from a rendered icon element.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now pass `inputProps` to a
+  `RadioCardInput`. Apps passing `SegmentedControl` props there should add `previewCards: false`.
+* `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
+  `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
+* Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
 * `GridModel.useVirtualColumns` now defaults to true. Set it to false on grids whose offscreen
   cells must be in the DOM, such as for test automation that reads them.
 * Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
   class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
-<<<<<<< HEAD
   target `.ag-cell` instead. The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`,
   `compactDate` and `localDate` column specs now format through `Column.formatter` and render as
   such plain cells.
@@ -45,24 +40,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   into the cell with no React component per cell - with string-returning factories
   `numberFormatter`, `dateFormatter` and siblings in `@xh/hoist/format`. Their `colorSpec` and
   ledger alignment options apply through `cellClassRules`; use `Column.tooltip` for tooltips.
-* Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
-  `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
-  incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
-=======
-  target `.ag-cell` instead.
-=======
-* Desktop `themeAppOption()` and `sizingModeAppOption()` now pass `inputProps` to a
-  `RadioCardInput`. Apps passing `SegmentedControl` props there should add `previewCards: false`.
-* `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
-  `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
-* Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
->>>>>>> grid-performance-1
-
-### 🎁 New Features
-
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
   `{absolute: true}` to weight by magnitude.
->>>>>>> grid-performance-2
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
   re-aggregates the field on changes to those as well.
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
@@ -156,17 +135,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   rows vary in height.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
-<<<<<<< HEAD
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
   `Grid` against ag-Grid's community modules.
-* Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
-  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
-* Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
-  comment. Snapshot and release builds now run the tests before publishing.
-=======
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
   before publishing snapshot and release builds. See `docs/unit-testing.md`.
->>>>>>> grid-performance-1
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
   them only to run unit tests.
 * Updated Hoist to build with TypeScript 7. Apps can stay on 5.9 or move to 7, which needs two
