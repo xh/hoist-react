@@ -4,7 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {findIconDefinition, icon, IconName, IconPrefix} from '@fortawesome/fontawesome-svg-core';
+import {
+    AbstractElement,
+    findIconDefinition,
+    icon,
+    IconName,
+    IconPrefix,
+    toHtml
+} from '@fortawesome/fontawesome-svg-core';
 import classNames from 'classnames';
 import {isString} from 'lodash';
 
@@ -28,7 +35,17 @@ export function iconHtml({
     const iconDef = findIconDefinition({prefix, iconName: faName}),
         classes = enhanceFaClasses(className, size);
 
-    return icon(iconDef, {classes, title}).html[0];
+    if (!title) return icon(iconDef, {classes}).html[0];
+
+    // FontAwesome ignores `title`, so add the SVG `<title>` child the browser shows as a tooltip.
+    const svg = icon(iconDef, {classes, attributes: {'aria-label': title}}).abstract[0];
+    svg.children.unshift({
+        tag: 'title',
+        attributes: {},
+        // svg-core types children as elements, but `toHtml` escapes and renders strings too.
+        children: [title as unknown as AbstractElement]
+    });
+    return toHtml(svg);
 }
 
 export function enhanceFaClasses(className: string, size: string) {
