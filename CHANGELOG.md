@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -26,6 +26,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
   `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
 * Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
+* `GridModel.useVirtualColumns` now defaults to true. Set it to false on grids whose offscreen
+  cells must be in the DOM, such as for test automation that reads them.
+* Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
+  class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
+  target `.ag-cell` instead.
 
 ### 🎁 New Features
 
@@ -111,11 +116,29 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Arrays in these reports, such as the stack trace, are also no longer sent as objects.
 * Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
   `xhCacheBuster` param in the URL after the reload.
+* Fixed an explicit `rowHeight` on `AgGrid`, or in `Grid.agOptions`, being ignored when sizing rows.
+* Fixed tree grid parent rows ignoring `Column.rowHeight`, and so sitting shorter than their
+  children.
+* Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
+* Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
+  Titled icons also get the title as their `aria-label`, so screen readers announce them again.
 
 ### ⚙️ Technical
 
 * Deprecated `IconProps.iconName` in favor of `faName`, and `SpinnerProps.iconName` in favor of
   `icon`. Support for both ends in v91.
+* `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
+  `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
+  column def, and static `cellClass` and `editable` values replace per-cell callbacks.
+* `AgGrid` now publishes its row and header heights to ag-Grid as `--ag-row-height` and
+  `--ag-header-height`. `Grid` and `AgGrid` pass ag-Grid a `getRowHeight` function only when row
+  heights vary, so uniform grids skip per-row height calls and the post-load row height pass.
+* Removed `GridExperimentalFlags.disableScrollOptimization`. The post-load row height pass now
+  runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
+* `Column` tooltips no longer mount for rows without a record, or for editable cells with no
+  validation results, and the tooltip component is a plain function component.
+* Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
+  `Grid` against ag-Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
   before publishing snapshot and release builds. See `docs/unit-testing.md`.
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
@@ -125,6 +148,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `creates()`, `uses()` and `useLocalModel()` now build and link their models untracked by MobX.
   Observable state read during model construction or `onLinked()` no longer triggers a
   spurious one-time re-render.
+* `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
+  by a change append rather than taking their source position. This may affect the sort ordering
+  of unsorted grids when data changes.
 
 ### ⚙️ Typescript API Adjustments
 

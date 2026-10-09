@@ -18,6 +18,13 @@ import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 describe('GridModel', () => {
     beforeAll(() => initTestAppAsync());
 
+    describe('defaults', () => {
+        it('virtualises columns', () => {
+            expect(createGridModel().useVirtualColumns).toBe(true);
+            expect(createGridModel({useVirtualColumns: false}).useVirtualColumns).toBe(false);
+        });
+    });
+
     describe('setSortBy', () => {
         it('accepts strings, specs and GridSorters, alone or in a list', () => {
             const gridModel = createGridModel();

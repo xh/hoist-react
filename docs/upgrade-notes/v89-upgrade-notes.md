@@ -351,6 +351,55 @@ dragonIcon();
 Icons added via `library.add()` still render. `Icon.get()` logs a one-time warning for each one it
 looks up by name.
 
+### 9. Review Grid Rendering Defaults
+
+Two `Grid` rendering defaults changed for performance. Most apps need no change, but check the
+two cases below.
+
+**Column virtualisation is on by default.** `GridModel.useVirtualColumns` now defaults to `true`,
+so a grid renders cells only for the columns within or near its viewport (ag-Grid's own default).
+Hoist's autosizing does not depend on rendered cells, so it is unaffected. If a grid needs every
+column's cells in the DOM - typically for test automation that reads offscreen cells - set the
+flag explicitly:
+
+```typescript
+new GridModel({
+    useVirtualColumns: false,
+    ...
+});
+```
+
+**Plain cells have no wrapper span.** A column with no `renderer` now displays its value as text
+written by ag-Grid, with no React component and no `xh-cell-inner-wrapper` span in the cell. The
+cell carries an `xh-cell--plain` class. Columns with a `renderer`, tree columns, and columns with
+an ag-Grid `cellRenderer` via `agOptions` are unchanged. A renderer-less column with an
+`agOptions.valueFormatter` now displays the formatted value, as its export already did.
+
+**Find affected styles and selectors:**
+
+```bash
+grep -rn "xh-cell-inner-wrapper" client-app/src/
+```
+
+For a rule that should apply to such a column, target the cell. For a renderer-less column that
+must keep the span, add a renderer that returns the value.
+
+Before:
+
+```scss
+.my-grid .xh-cell-inner-wrapper {
+  color: var(--xh-text-color-muted);
+}
+```
+
+After:
+
+```scss
+.my-grid .ag-cell {
+  color: var(--xh-text-color-muted);
+}
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -364,6 +413,9 @@ After completing all steps:
 - [ ] Grids with a `GridFilterModel` show filters only on the intended columns.
 - [ ] No code lists icons by iterating the keys of `Icon`.
 - [ ] No `IconProps.iconName` deprecation warnings appear in the browser console.
+- [ ] Wide grids scroll as expected, and any automation reading offscreen cells sets
+      `useVirtualColumns: false`.
+- [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
 
 ## Reference
 
