@@ -49,7 +49,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Icon` factories. Apps that call FontAwesome's `library.add()` directly should switch to these.
   Added `Icon.get()` to render an icon by name and `Icon.getCatalog()` to list them all.
 * Added `IconPicker`, a desktop input that picks from a searchable grid of all catalog icons. The
-  Admin Console alert banner editor now uses it.
+  Admin Console alert banner editor now uses it. Its grid renders only the rows in view, so it
+  stays responsive with thousands of icons.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
   hoist-dev-utils 16.1. Experimental in v89 - it may change.

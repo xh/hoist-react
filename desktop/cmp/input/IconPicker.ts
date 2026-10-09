@@ -16,7 +16,14 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, union, uniqBy} from 'lodash';
-import {KeyboardEvent} from 'react';
+import {CSSProperties, KeyboardEvent, UIEvent} from 'react';
+import {
+    CELL_GAP,
+    CELL_SIZE,
+    COMPACT_CELL_SIZE,
+    scrollTopToReveal,
+    visibleRowRange
+} from './impl/IconGridWindow';
 import {textInput} from './TextInput';
 import './IconPicker.scss';
 
@@ -120,6 +127,8 @@ interface IconOption {
     entry: IconCatalogEntry;
     displayName: string;
     factory: IconFactory;
+    /** Lowercase text the filter matches against - names, aliases and keywords. */
+    searchText: string;
 }
 
 class IconPickerModel extends HoistInputModel {
@@ -136,6 +145,9 @@ class IconPickerModel extends HoistInputModel {
 
     /** Index within `filteredOptions` of the keyboard-highlighted icon. */
     @observable accessor activeIdx: number = 0;
+
+    /** Index of the grid row at the top of its scrolled viewport - drives row windowing. */
+    @observable accessor scrollRow: number = 0;
 
     gridRef = createObservableRef<HTMLElement>();
     menuRef = createObservableRef<HTMLElement>();
@@ -163,10 +175,7 @@ class IconPickerModel extends HoistInputModel {
             terms = (this.filterValue ?? '').toLowerCase().split(/\s+/).filter(Boolean);
 
         if (isEmpty(terms)) return options;
-        return options.filter(it => {
-            const searchText = searchTextFor(it);
-            return terms.every(term => searchText.includes(term));
-        });
+        return options.filter(it => terms.every(term => it.searchText.includes(term)));
     }
 
     /**
@@ -200,6 +209,34 @@ class IconPickerModel extends HoistInputModel {
         return withDefault(this.componentProps.columns, 8);
     }
 
+    get maxMenuHeight(): number {
+        return withDefault(this.componentProps.maxMenuHeight, 260);
+    }
+
+    get cellSize(): number {
+        return this.componentProps.compact ? COMPACT_CELL_SIZE : CELL_SIZE;
+    }
+
+    /** Height of one grid row, including the gap below it. */
+    get rowHeight(): number {
+        return this.cellSize + CELL_GAP;
+    }
+
+    get rowCount(): number {
+        return Math.ceil(this.filteredOptions.length / this.columns);
+    }
+
+    /** Grid rows `[start, end)` to render - those in or near the scrolled viewport. */
+    @computed
+    get renderedRows(): [number, number] {
+        return visibleRowRange({
+            scrollRow: this.scrollRow,
+            viewportHeight: this.maxMenuHeight,
+            rowHeight: this.rowHeight,
+            rowCount: this.rowCount
+        });
+    }
+
     override onLinked() {
         this.addReaction(
             {
@@ -208,14 +245,44 @@ class IconPickerModel extends HoistInputModel {
                 run: () => this.setActiveIdx(0)
             },
             {
-                // Keep the highlighted icon in view as it moves through the grid.
-                track: () => [this.activeIdx, this.popoverIsOpen],
-                run: () =>
-                    this.gridRef.current?.children[this.activeIdx]?.scrollIntoView({
-                        block: 'nearest'
-                    })
+                // Keep the highlighted icon in view as it moves through the grid. The grid renders
+                // only the rows near its viewport, so scroll by row math rather than to an element.
+                // Tracking the ref runs this once the grid mounts in the opened popover.
+                track: () => [
+                    this.activeIdx,
+                    this.filteredOptions,
+                    this.popoverIsOpen,
+                    this.gridRef.current
+                ],
+                run: () => this.scrollActiveIntoView()
             }
         );
+    }
+
+    onGridScroll = (e: UIEvent<HTMLElement>) => this.syncScrollRow(e.currentTarget);
+
+    /** Update the windowed rows to match the grid's scroll position. */
+    @action
+    syncScrollRow(el: HTMLElement) {
+        const row = Math.floor(el.scrollTop / this.rowHeight);
+        if (row !== this.scrollRow) this.scrollRow = row;
+    }
+
+    scrollActiveIntoView() {
+        const el = this.gridRef.current;
+        if (!el) return;
+
+        const scrollTop = scrollTopToReveal({
+            idx: this.activeIdx,
+            columns: this.columns,
+            rowHeight: this.rowHeight,
+            cellSize: this.cellSize,
+            padTop: parseFloat(window.getComputedStyle(el).paddingTop) || 0,
+            scrollTop: el.scrollTop,
+            clientHeight: el.clientHeight
+        });
+        if (scrollTop != null) el.scrollTop = scrollTop;
+        this.syncScrollRow(el);
     }
 
     /** Focus is held by the trigger button - the popover's filter input takes over when open. */
@@ -232,6 +299,7 @@ class IconPickerModel extends HoistInputModel {
         this.catalog = Icon.getCatalog();
         this.popoverIsOpen = true;
         this.filterValue = '';
+        this.scrollRow = 0;
         const selectedValue = this.selectedOption?.value;
         this.activeIdx = Math.max(
             this.filteredOptions.findIndex(it => it.value === selectedValue),
@@ -271,17 +339,17 @@ class IconPickerModel extends HoistInputModel {
 
         if (this.valueField === 'faName') {
             const {faName, displayName, factory} = entry;
-            return {value: faName, entry, displayName, factory};
+            return withSearchText({value: faName, entry, displayName, factory});
         }
 
         // Keep an `Icon` name as given, so names that share a glyph stay distinct options.
         const value = name === entry.faName ? entry.name : name;
-        return {
+        return withSearchText({
             value,
             entry,
             displayName: Icon.getDisplayName(value),
             factory: Icon.getFactory(value)
-        };
+        });
     }
 
     clear() {
@@ -297,7 +365,8 @@ class IconPickerModel extends HoistInputModel {
     @action
     onKeyDown = (e: KeyboardEvent) => {
         const {filteredOptions, columns, activeIdx} = this,
-            {length} = filteredOptions;
+            {length} = filteredOptions,
+            pageSize = Math.max(Math.floor(this.maxMenuHeight / this.rowHeight), 1) * columns;
 
         switch (e.key) {
             case 'Escape':
@@ -319,6 +388,12 @@ class IconPickerModel extends HoistInputModel {
             case 'ArrowDown':
                 this.activeIdx = clamp(activeIdx + columns, length);
                 break;
+            case 'PageUp':
+                this.activeIdx = clamp(activeIdx - pageSize, length);
+                break;
+            case 'PageDown':
+                this.activeIdx = clamp(activeIdx + pageSize, length);
+                break;
             default:
                 return;
         }
@@ -331,8 +406,12 @@ function clamp(idx: number, length: number): number {
     return Math.min(Math.max(idx, 0), length - 1);
 }
 
-function searchTextFor({value, displayName, entry}: IconOption): string {
-    return union([displayName, value], entry.names, entry.keywords).join(' ').toLowerCase();
+function withSearchText(option: Omit<IconOption, 'searchText'>): IconOption {
+    const {value, displayName, entry} = option;
+    return {
+        ...option,
+        searchText: union([displayName, value], entry.names, entry.keywords).join(' ').toLowerCase()
+    };
 }
 
 //---------------------------------------------
@@ -444,10 +523,15 @@ const iconMenu = hoistCmp.factory<IconPickerModel>(({model, props}) => {
     });
 });
 
+/**
+ * Grid of icon cells, windowed by row - only rows in or near the viewport render, with padding on
+ * the inner cells element holding the space of the rest, so the scrollbar reflects every option.
+ */
 const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
-    const {filteredOptions, columns} = model,
+    const {filteredOptions, columns, cellSize, rowHeight, rowCount, activeIdx} = model,
+        [startRow, endRow] = model.renderedRows,
+        startIdx = startRow * columns,
         selectedValue = model.selectedOption?.value,
-        maxMenuHeight = withDefault(props.maxMenuHeight, 260),
         {prefix} = props;
 
     if (isEmpty(filteredOptions)) {
@@ -457,21 +541,33 @@ const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
     return div({
         className: 'xh-icon-picker__grid',
         ref: model.gridRef,
+        onScroll: model.onGridScroll,
         style: {
-            maxHeight: maxMenuHeight,
-            gridTemplateColumns: `repeat(${columns}, var(--xh-icon-picker-cell-size))`
-        },
-        items: filteredOptions.map((option, idx) =>
-            iconCell({
-                key: option.value,
-                model,
-                option,
-                idx,
-                prefix,
-                isActive: idx === model.activeIdx,
-                isSelected: option.value === selectedValue
+            maxHeight: model.maxMenuHeight,
+            '--xh-icon-picker-cell-size': `${cellSize}px`
+        } as CSSProperties,
+        item: div({
+            className: 'xh-icon-picker__grid-cells',
+            style: {
+                gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
+                gridAutoRows: `${cellSize}px`,
+                gap: CELL_GAP,
+                paddingTop: startRow * rowHeight,
+                paddingBottom: (rowCount - endRow) * rowHeight
+            },
+            items: filteredOptions.slice(startIdx, endRow * columns).map((option, i) => {
+                const idx = startIdx + i;
+                return iconCell({
+                    key: option.value,
+                    model,
+                    option,
+                    idx,
+                    prefix,
+                    isActive: idx === activeIdx,
+                    isSelected: option.value === selectedValue
+                });
             })
-        )
+        })
     });
 });
 

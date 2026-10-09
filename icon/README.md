@@ -372,7 +372,8 @@ formField({
 ```
 
 Render the value back with `Icon.get()`. Filtering matches display names, factory names, aliases,
-and any `keywords` supplied at registration.
+and any `keywords` supplied at registration. The grid renders only the rows in view, so apps can
+catalog thousands of icons (e.g. whole FA packs registered by `faName`) without slowing the picker.
 
 ### Choosing What the Picker Stores
 
