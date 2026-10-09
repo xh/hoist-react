@@ -859,13 +859,7 @@ export class Column {
                 onCellClicked: this.onCellClicked
             };
 
-        // A tree column renders through ag-Grid's group cell renderer (expand/collapse control and
-        // indentation), with our renderer installed inside it. A plain column has no cell renderer
-        // at all - ag-Grid writes its value into the cell as text, with no React component.
-        //
-        // Our implementation of Grid.getDataPath() > StoreRecord.treePath returns data path []s of
-        // StoreRecord IDs. TreeColumns use those IDs as their cell values, regardless of field.
-        // Add valueGetters below to correct + additional fixes for sorting below.
+        // Renderer: Tree cols nest our renderer in ag-Grid's group cell renderer. Plain have none.
         const {agCellRenderer} = this;
         if (this.isTreeColumn) {
             ret.showRowGroup = true;
