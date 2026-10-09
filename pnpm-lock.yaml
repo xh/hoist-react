@@ -205,9 +205,6 @@ importers:
       '@floating-ui/react':
         specifier: ^0.27.20
         version: 0.27.20(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@fortawesome/fontawesome-pro':
-        specifier: ^7.3.1
-        version: 7.3.1
       '@fortawesome/fontawesome-svg-core':
         specifier: ^7.3.1
         version: 7.3.1
@@ -1031,10 +1028,6 @@ packages:
 
   '@fortawesome/fontawesome-common-types@7.3.1':
     resolution: {integrity: sha512-k0C0sdHmZtAo6dRDtd1Z/qcpyHbL0CKsjV8seMY/21xGhY5Wsv0XRmiI/xEEH4y2c9b1+jvgNs/3EqhV27yUEA==, tarball: https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-7.3.1.tgz}
-    engines: {node: '>=6'}
-
-  '@fortawesome/fontawesome-pro@7.3.1':
-    resolution: {integrity: sha512-Y7cPcgdqYkuwa1huWuB3N57ICm2+3XdepQ3hZN0Zm0lJFxujtzl10FmvTQu86/21rpUMIQcBUCYsWBdenaWuMw==, tarball: https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/fontawesome-pro-7.3.1.tgz}
     engines: {node: '>=6'}
 
   '@fortawesome/fontawesome-svg-core@7.3.1':
@@ -5210,8 +5203,6 @@ snapshots:
   '@floating-ui/utils@0.2.12': {}
 
   '@fortawesome/fontawesome-common-types@7.3.1': {}
-
-  '@fortawesome/fontawesome-pro@7.3.1': {}
 
   '@fortawesome/fontawesome-svg-core@7.3.1':
     dependencies:

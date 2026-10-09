@@ -178,6 +178,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * @azure/msal-browser `5.23 → 5.24`
 * @blueprintjs/core `6.20 → 6.21`
 * @blueprintjs/datetime `6.2 → 6.3`
+* @fortawesome/fontawesome-pro `removed` (unused - icons come from the `pro-*-svg-icons` packages)
 * swiper `12.2 → 14.3`
 * ts-morph `27.0 → 28.0`
 * typescript `5.9 → 7.0`
