@@ -111,6 +111,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Arrays in these reports, such as the stack trace, are also no longer sent as objects.
 * Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
   `xhCacheBuster` param in the URL after the reload.
+* Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
 
 ### ⚙️ Technical
 
