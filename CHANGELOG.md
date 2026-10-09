@@ -21,27 +21,16 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
-<<<<<<< HEAD
-* Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
-  so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
-  `inputProps` should also pass `previewCards: false`.
-* The `Icon` singleton now holds lookup and registration methods (`register()`, `get()`, ...) next
-  to its factories. Apps that list icons by iterating `Object.keys(Icon)` must switch to
-  `Icon.getCatalog()`, which returns one entry per icon with its name and factory.
-* Icon elements now carry their FA name as `props.faName`, not `props.iconName`. Update any code
-  that reads the FA name from a rendered icon element.
-* `GridModel.useVirtualColumns` now defaults to true. Set it to false on grids whose offscreen
-  cells must be in the DOM, such as for test automation that reads them.
-* Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
-  class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
-  target `.ag-cell` instead.
-=======
 * Desktop `themeAppOption()` and `sizingModeAppOption()` now pass `inputProps` to a
   `RadioCardInput`. Apps passing `SegmentedControl` props there should add `previewCards: false`.
 * `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
   `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
 * Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
->>>>>>> grid-performance-1
+* `GridModel.useVirtualColumns` now defaults to true. Set it to false on grids whose offscreen
+  cells must be in the DOM, such as for test automation that reads them.
+* Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
+  class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
+  target `.ag-cell` instead.
 
 ### 🎁 New Features
 
@@ -140,17 +129,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   rows vary in height.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
-<<<<<<< HEAD
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
   `Grid` against ag-Grid's community modules.
-* Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
-  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
-* Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
-  comment. Snapshot and release builds now run the tests before publishing.
-=======
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
   before publishing snapshot and release builds. See `docs/unit-testing.md`.
->>>>>>> grid-performance-1
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
   them only to run unit tests.
 * Updated Hoist to build with TypeScript 7. Apps can stay on 5.9 or move to 7, which needs two
