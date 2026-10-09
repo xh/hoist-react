@@ -28,7 +28,7 @@ describe('AppContainerModel', () => {
         hoistCore.roles = ['OTHER_APP_USER'];
         hoistCore.authUser = {username: 'admin', displayName: 'Admin User', active: true};
         hoistCore.authUserRoles = ['APP_USER', 'HOIST_ADMIN', 'HOIST_IMPERSONATOR'];
-        await initTestAppAsync().catch(() => {});
+        await initTestAppAsync({checkAccess: 'APP_USER'}).catch(() => {});
         bootRequests = [...hoistCore.requests];
     });
 
