@@ -144,7 +144,7 @@ describe('FakeHoistCore', () => {
         });
 
         it('waits on real time while a test fakes timers', async () => {
-            vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout', 'Date']});
+            vi.useFakeTimers();
             void XH.fetchJson({url: 'orders'});
 
             await hoistCore.settleAsync();
@@ -175,4 +175,30 @@ describe('FakeHoistCore', () => {
             expect(hoistCore.requests).toEqual([]);
         });
     });
+
+    // Specs fake timers for debounces and dates, then save through the fake - e.g. a pref push.
+    describe('under fake timers', () => {
+        beforeAll(() => hoistCore.route('POST', 'orders', req => ({id: 2, ...req.json})));
+
+        it('answers a request without waiting on real time', async () => {
+            // A request first, which leaves a connection that the next request could reuse.
+            await XH.fetchJson({url: 'orders'});
+            vi.useFakeTimers();
+
+            const saved = XH.postJson({url: 'orders', body: {qty: 100}});
+
+            await expect(withinRealMs(saved, 1000)).resolves.toEqual({id: 2, qty: 100});
+        });
+    });
 });
+
+// The clock as loaded - fake timers replace the global, not this reference.
+const realSetTimeout = globalThis.setTimeout;
+
+/** Resolve as `promise` does, or reject if it takes longer than `ms` of real time. */
+function withinRealMs<T>(promise: Promise<T>, ms: number): Promise<T> {
+    const timeout = new Promise<never>((_, reject) =>
+        realSetTimeout(() => reject(new Error(`Not settled after ${ms}ms of real time`)), ms)
+    );
+    return Promise.race([promise, timeout]);
+}

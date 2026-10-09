@@ -28,12 +28,17 @@ IntelliJ runs and debugs Vitest tests natively. Use the gutter icon next to any 
 ### Same compiler as apps
 
 Apps compile hoist-react from source with Rsbuild and SWC, using TC39 `2023-11` decorators. The
-tests compile it the same way: `vitest.config.mts` runs SWC with the options that
-`configureRsbuild()` in hoist-dev-utils passes to Rsbuild. Decorators like `@bindable` and
-`@managed` therefore behave in tests exactly as they do in apps.
+tests compile it the same way: `vitest.config.mts` is built on `configureVitest()` from
+hoist-dev-utils, the preset that app test suites use. It compiles with the SWC inside Rspack and the
+same settings as `configureRsbuild()`. Decorators like `@bindable` and `@managed` therefore behave
+in tests exactly as they do in apps.
 
-This is load-bearing. Vite's built-in transform cannot compile decorators at all. Removing the SWC
-plugin breaks every test that loads a decorated class.
+The config passes `selfHost: true`, which points `@xh/hoist` at this repo. This suite thus checks
+the preset on every PR. To try a preset change before it is published, run
+`pnpm link ../hoist-dev-utils`, then `pnpm test`.
+
+This is load-bearing. Vite's built-in transform cannot compile decorators at all, so a test that
+loads a decorated class fails without the preset's SWC plugin.
 
 ### A real Hoist environment
 
@@ -41,8 +46,12 @@ Tests run in [jsdom](https://github.com/jsdom/jsdom), which gives them `window`,
 `localStorage`. Every test file loads the real `@xh/hoist/core` module graph, including the `XH`
 singleton. Nothing in Hoist is mocked at the module level.
 
-Vitest gives each test file a fresh module graph. Tests in one file share one `XH`, but no state
-leaks from one file to another.
+Each test file works like one page load. Vitest gives each file a fresh module graph, so each file
+gets its own `XH` and its own fake hoist-core. No state leaks from one file to another.
+
+The tests in one file share both. If one test saves a pref or sets a role on `hoistCore`, the next
+test still sees it. Undo the change in the test that made it, or move the test to its own file.
+Between tests, the setup resets only the request log and the routes a test added.
 
 ### A fake hoist-core
 
@@ -128,7 +137,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 describe('PrefService', () => {
     beforeAll(async () => {
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = {type: 'int', defaultValue: 50, value: 100};
         await initTestAppAsync();
     });
 
@@ -222,9 +231,8 @@ await vi.advanceTimersByTimeAsync(300);
 - Never call `vi.runAllTimers()`. Hoist's `Timer` heartbeat never ends.
 - When you expect a timer-driven rejection, attach the assertion before advancing time.
 - Use `vi.setSystemTime()` for code that reads the current date.
-- A POST stalls for seconds under Vitest's default fake timers - see
-  [#4798](https://github.com/xh/hoist-react/issues/4798). Call `vi.useRealTimers()` before you
-  await one.
+- Requests to the fake hoist-core run normally under fake timers. The kit sends each request on
+  its own connection, so no request waits on a timer that the test has frozen.
 
 The setup restores real timers after every test. All tests run in the `America/New_York` time
 zone, so date logic gives the same result on every machine.
@@ -306,6 +314,9 @@ nothing about the app. `XH.getConf()` and `XH.getPref()` throw on an unknown key
 passes a default, so seed each config and pref that the code under test reads. Seed them before
 boot, because the client reads them once, at boot.
 
+Seed a pref with its `type` and `defaultValue`. Add `value` only for a user who has set their own.
+The fake reports `isSet` to the client from whether `value` is there.
+
 App services load from app endpoints. Serve each one with `hoistCore.route(method, path, fn)`,
 where `path` is relative to `XH.baseUrl`, as in `XH.fetchJson()`. The function returns the
 response body, a `Response` such as `hoistError(...)`, or nothing for an empty 204.
@@ -325,8 +336,8 @@ class OrdersTestModel extends TestAppModel {
 
 beforeAll(async () => {
     hoistCore.configs.orderLimit = 1000;
-    hoistCore.prefs.orderView = {type: 'json', value: {}, defaultValue: {}, isSet: false};
-    hoistCore.roles = ['APP_USER', 'ORDER_ADMIN'];
+    hoistCore.prefs.orderView = {type: 'json', defaultValue: {}};
+    hoistCore.roles = ['ORDER_ADMIN'];
     hoistCore.user = {...hoistCore.user, region: 'EMEA'}; // a custom HoistUser field
     hoistCore.route('GET', 'orders', () => [{id: 1, qty: 500}]);
     hoistCore.route('POST', 'orders/:id/approve', req => ({id: req.params.id, approved: true}));

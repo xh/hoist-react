@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type PlainObject, XH} from '@xh/hoist/core';
-import {cloneDeep, isArray, isPlainObject, pick, pickBy} from 'lodash';
+import {isArray, isPlainObject, mapValues, pick, pickBy} from 'lodash';
 import {http, HttpResponse, type HttpHandler, matchRequestUrl} from 'msw';
 import {setupServer} from 'msw/node';
 
@@ -58,13 +58,12 @@ export interface RouteRequest extends RecordedRequest {
  */
 export type RouteFn = (req: RouteRequest) => unknown;
 
-/** A user preference as rendered to the client by hoist-core `PrefService`. */
-export interface PrefEntry {
+/** A user preference on the fake server - its type and default, and the user's own value if set. */
+export interface PrefSpec {
     type: 'string' | 'int' | 'long' | 'double' | 'bool' | 'json';
-    value: any;
     defaultValue: any;
-    /** True if the user has their own value, false if `value` is the default. */
-    isSet: boolean;
+    /** The user's own value. Leave out for a user who has not set the pref. */
+    value?: any;
 }
 
 export interface HoistError {
@@ -132,9 +131,12 @@ export class FakeHoistCore {
     configs: PlainObject;
 
     /** User preferences, keyed by name. */
-    prefs: Record<string, PrefEntry>;
+    prefs: Record<string, PrefSpec>;
 
-    /** Payload for `xh/environment`. */
+    /**
+     * Payload for `xh/environment`. Set `appTimeZone` and `serverTimeZone` here - the fake adds
+     * each zone's offset when it answers, as hoist-core does.
+     */
     environment: PlainObject;
 
     /** Every request the fake has served in this test - the kit's setup clears it before each. */
@@ -218,8 +220,7 @@ export class FakeHoistCore {
      * kit's setup also calls it when each test ends, so such a request cannot land in the next
      * test's log.
      *
-     * Waits on real time, even while the test fakes timers. Note that a POST stalls under Vitest's
-     * default fake timers (xh/hoist-react#4798) - call `vi.useRealTimers()` first.
+     * Waits on real time, even while the test fakes timers.
      *
      * @param timeout - ms to wait before rejecting with the requests still open.
      */
@@ -231,10 +232,7 @@ export class FakeHoistCore {
         while (inFlight.size) {
             if (realNow() > deadline) {
                 const open = [...inFlight.values()].join(', ');
-                throw new Error(
-                    `Requests still open after ${timeout}ms: ${open}. A POST sent under fake ` +
-                        'timers can stall for good - see xh/hoist-react#4798.'
-                );
+                throw new Error(`Requests still open after ${timeout}ms: ${open}.`);
             }
             await realWait(5);
             // Once all are answered, let the client handle them - which may start more.
@@ -246,15 +244,23 @@ export class FakeHoistCore {
      * @internal - wraps `fetch` to count each request as open from the client's call until the
      * call settles, aborts included. Called by setup.ts after MSW patches `fetch` - counting from
      * the call, not from MSW's interception, keeps a request from slipping past `settleAsync()`.
+     *
+     * Also sends each request on its own connection. undici, which serves Node's `fetch()`, checks
+     * an idle keep-alive connection with `setImmediate()` before it reuses it, and fake timers
+     * freeze that check - the request then waits 4s for the connection to time out (#4798).
      */
     trackFetch() {
         const {inFlight} = this,
             fetch = globalThis.fetch;
         let nextId = 0;
         globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
-            const id = nextId++;
+            const id = nextId++,
+                headers = new Headers(
+                    init?.headers ?? (input instanceof Request ? input.headers : undefined)
+                );
+            headers.set('Connection', 'close');
             inFlight.set(id, fetchLabel(input, init));
-            return fetch(input, init).finally(() => inFlight.delete(id));
+            return fetch(input, {...init, headers}).finally(() => inFlight.delete(id));
         }) as typeof fetch;
     }
 
@@ -288,7 +294,15 @@ export class FakeHoistCore {
             this.get('xh/logout', () => HttpResponse.json({success: false})),
 
             // XhController.environment - EnvironmentService.getEnvironment.
-            this.get('xh/environment', () => HttpResponse.json(this.environment)),
+            this.get('xh/environment', () => {
+                const env = this.environment,
+                    now = Date.now();
+                return HttpResponse.json({
+                    ...env,
+                    serverTimeZoneOffset: zoneOffset(env.serverTimeZone, now),
+                    appTimeZoneOffset: zoneOffset(env.appTimeZone, now)
+                });
+            }),
 
             // XhController.environmentPoll
             this.get('xh/environmentPoll', () =>
@@ -308,7 +322,12 @@ export class FakeHoistCore {
             this.get('xh/getConfig', () => HttpResponse.json(this.configs)),
 
             // XhController.getPrefs - PrefService.getClientConfig.
-            this.post('xh/getPrefs', req => this.checkUser(req) ?? HttpResponse.json(this.prefs)),
+            this.post(
+                'xh/getPrefs',
+                req =>
+                    this.checkUser(req) ??
+                    HttpResponse.json(this.prefEntries(Object.keys(this.prefs)))
+            ),
 
             // XhController.setPrefs - JSON map of key -> new value. Keys are saved in order, so an
             // invalid key fails the request after saving the keys before it, as on the server.
@@ -323,7 +342,6 @@ export class FakeHoistCore {
                         return hoistError(500, {message: `Unexpected type for preference: ${key}`});
                     }
                     pref.value = savedPrefValue(pref, value);
-                    pref.isSet = true;
                 }
                 return HttpResponse.json({preferences: this.prefEntries(Object.keys(req.json))});
             }),
@@ -336,9 +354,7 @@ export class FakeHoistCore {
                 const keys: string[] = req.json;
                 keys.forEach(key => {
                     const pref = this.prefs[key];
-                    if (!pref) return;
-                    pref.value = cloneDeep(pref.defaultValue);
-                    pref.isSet = false;
+                    if (pref) delete pref.value;
                 });
                 return HttpResponse.json({preferences: this.prefEntries(keys)});
             }),
@@ -348,10 +364,7 @@ export class FakeHoistCore {
             this.post('xh/clearUserState', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
-                Object.values(this.prefs).forEach(pref => {
-                    pref.value = cloneDeep(pref.defaultValue);
-                    pref.isSet = false;
-                });
+                Object.values(this.prefs).forEach(pref => delete pref.value);
                 return noContent();
             }),
 
@@ -377,9 +390,13 @@ export class FakeHoistCore {
             : {user: this.user, roles: this.roles};
     }
 
-    // PrefService.getLimitedClientConfig - entries for the given keys that exist.
+    // PrefService.getLimitedClientConfig - entries for the given keys that exist, as the client
+    // reads them. A pref the user has not set reports its default.
     private prefEntries(keys: string[]): Record<string, PrefEntry> {
-        return pick(this.prefs, keys);
+        return mapValues(pick(this.prefs, keys), ({type, defaultValue, value}) => {
+            const isSet = value !== undefined;
+            return {type, value: isSet ? value : defaultValue, defaultValue, isSet};
+        });
     }
 
     // XhController.ensureClientUsernameMatchesSession - required for user-state endpoints. Reads
@@ -508,14 +525,9 @@ function defaultConfigs(): PlainObject {
     };
 }
 
-// Prefs that hoist-core creates by default, in PrefService.getClientConfig's format.
-function defaultPrefs(): Record<string, PrefEntry> {
-    const pref = (type: PrefEntry['type'], defaultValue: any): PrefEntry => ({
-        type,
-        value: cloneDeep(defaultValue),
-        defaultValue,
-        isSet: false
-    });
+// Prefs that hoist-core creates by default, none of them set by the user.
+function defaultPrefs(): Record<string, PrefSpec> {
+    const pref = (type: PrefSpec['type'], defaultValue: any): PrefSpec => ({type, defaultValue});
     return {
         xhAutoRefreshEnabled: pref('bool', true),
         xhIdleDetectionDisabled: pref('bool', false),
@@ -541,9 +553,7 @@ function defaultEnvironment(): PlainObject {
         hoistCoreVersion: '42.1.0',
         javaVersion: '25.0.1',
         serverTimeZone: 'UTC',
-        serverTimeZoneOffset: 0,
         appTimeZone: 'America/New_York',
-        appTimeZoneOffset: -14400000,
         webSocketsEnabled: false,
         instanceName: 'inst-1',
         alertBanner: {active: false},
@@ -551,12 +561,32 @@ function defaultEnvironment(): PlainObject {
     };
 }
 
+// TimeZone.getOffset() - the zone's offset from UTC at an instant, in ms, positive east of UTC.
+// hoist-core sends one for each zone, computed when it answers, so an offset follows daylight saving.
+function zoneOffset(timeZone: string, at: number): number {
+    const name = new Intl.DateTimeFormat('en-US', {timeZone, timeZoneName: 'longOffset'})
+            .formatToParts(at)
+            .find(it => it.type === 'timeZoneName').value,
+        [, sign, hours, minutes] = /GMT([+-])(\d\d):(\d\d)/.exec(name) ?? [];
+    // A zone at UTC formats as plain 'GMT'.
+    if (!sign) return 0;
+    return (sign === '-' ? -1 : 1) * (Number(hours) * 60 + Number(minutes)) * 60_000;
+}
+
 //------------------------
 // Prefs
 //------------------------
+// A user preference as hoist-core PrefService renders it to the client.
+interface PrefEntry {
+    type: PrefSpec['type'];
+    value: any;
+    defaultValue: any;
+    isSet: boolean;
+}
+
 // PrefService saves a map or list as JSON, and any other value as its string - which
 // UserPreference.externalUserValue then reads back as the pref's type.
-function savedPrefValue(pref: PrefEntry, value: any): any {
+function savedPrefValue(pref: PrefSpec, value: any): any {
     if (isPlainObject(value) || isArray(value)) return value;
     const str = String(value);
     switch (pref.type) {

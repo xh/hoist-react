@@ -170,10 +170,11 @@ describe('FetchService', () => {
         it('rejects with a Fetch Timeout after 30 seconds by default, and aborts the request', async () => {
             let notifyArrival: () => void;
             const arrived = new Promise<void>(resolve => (notifyArrival = resolve)),
-                sent = serve(xhUrl('test/report'), () => {
-                    notifyArrival();
-                    return hang();
-                });
+                signals = spyFetchSignals('test/report');
+            serve(xhUrl('test/report'), () => {
+                notifyArrival();
+                return hang();
+            });
 
             vi.useFakeTimers();
             const result = XH.fetchJson({url: 'test/report'}),
@@ -187,7 +188,7 @@ describe('FetchService', () => {
             await arrived;
             await vi.advanceTimersByTimeAsync(30 * SECONDS);
             await assertion;
-            expect(sent[0].signal.aborted).toBe(true);
+            expect(signals[0].aborted).toBe(true);
         });
 
         it('never times out when timeout is null', async () => {
@@ -214,13 +215,14 @@ describe('FetchService', () => {
             // after the latest one.
             let notifyArrival: () => void;
             const nextArrival = () => new Promise<void>(resolve => (notifyArrival = resolve)),
-                sent = serve(xhUrl('test/search'), req => {
-                    notifyArrival();
-                    const q = req.url.searchParams.get('q');
-                    return q === 'abc' ? HttpResponse.json({q}) : hang();
-                }),
+                signals = spyFetchSignals('test/search'),
                 search = (q: string) =>
                     XH.getJson({url: 'test/search', params: {q}, autoAbortKey: 'search'});
+            serve(xhUrl('test/search'), req => {
+                notifyArrival();
+                const q = req.url.searchParams.get('q');
+                return q === 'abc' ? HttpResponse.json({q}) : hang();
+            });
 
             let arrived = nextArrival();
             const a = search('a');
@@ -239,7 +241,7 @@ describe('FetchService', () => {
             const abAborted = expect(ab).rejects.toMatchObject({isFetchAborted: true});
             expect(await search('abc')).toEqual({q: 'abc'});
             await abAborted;
-            expect(sent.map(it => it.signal.aborted)).toEqual([true, true, false]);
+            expect(signals.map(it => it.aborted)).toEqual([true, true, false]);
         });
     });
 });
@@ -252,7 +254,6 @@ interface SentRequest {
     url: URL;
     headers: Headers;
     body: string;
-    signal: AbortSignal;
 }
 
 /**
@@ -269,13 +270,26 @@ function serve(
             const req = {
                 url: new URL(request.url),
                 headers: request.headers,
-                body: await request.text(),
-                signal: request.signal
+                body: await request.text()
             };
             ret.push(req);
             return respond(req);
         })
     );
+    return ret;
+}
+
+/**
+ * The abort signal that FetchService passes to `fetch()` for each request to `path`, in order. Specs
+ * check the abort that FetchService controls here, not how MSW passes it on to a handler.
+ */
+function spyFetchSignals(path: string): AbortSignal[] {
+    const ret: AbortSignal[] = [],
+        fetch = globalThis.fetch;
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+        if (String(input).includes(path)) ret.push(init?.signal);
+        return fetch(input, init);
+    });
     return ret;
 }
 
