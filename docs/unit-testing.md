@@ -352,6 +352,46 @@ it('flags orders over the configured limit', () => {
 - The fake returns canned data. It does not enforce the server's business rules or role scoping.
   Test those against a real server.
 
+### Server state for every spec
+
+When several spec files need the same server state, seed it in one place. Add a setup file with
+the `setupFiles` option of `configureVitest()`. It runs before each spec file, after Hoist's own
+setup.
+
+```typescript
+// vitest.config.mts
+export default defineConfig(
+    configureVitest({appCode: 'myApp', setupFiles: ['./src/test-support/setup.ts']})
+);
+```
+
+```typescript
+// src/test-support/setup.ts
+import {hoistCore} from '@xh/hoist/test-support';
+import {installMyAppFake} from './myAppFake';
+
+installMyAppFake(hoistCore);
+```
+
+```typescript
+// src/test-support/myAppFake.ts
+import type {FakeHoistCore} from '@xh/hoist/test-support';
+
+/** Seed the fake with the server state that every client of the app gets. */
+export function installMyAppFake(core: FakeHoistCore) {
+    Object.assign(core.configs, {orderLimit: 1000});
+    Object.assign(core.prefs, {orderView: {type: 'json', defaultValue: {}}});
+    core.route('GET', 'orders', () => []);
+}
+```
+
+- Seed each client-visible config and pref at its server default, as the app's `BootStrap.groovy`
+  creates it. Change the fixture in the same commit as the server.
+- Keep data for one scenario, such as an error or the rows a test checks, in the spec that needs
+  it. A spec's own route overrides the fixture's.
+- App code never imports `src/test-support/`, so none of it ships in the app build.
+- Toolbox's `client-app/src/test-support/` is a working example.
+
 ### What to test in an app
 
 Test the app's own logic: model rules, derived state, data transforms, calculations, validation,

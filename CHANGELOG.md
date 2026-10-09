@@ -114,6 +114,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed an explicit `rowHeight` on `AgGrid`, or in `Grid.agOptions`, being ignored when sizing rows.
 * Fixed tree grid parent rows ignoring `Column.rowHeight`, and so sitting shorter than their
   children.
+* Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
 
 ### ⚙️ Technical
 
