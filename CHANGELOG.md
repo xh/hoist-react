@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, store order)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -26,6 +26,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
   `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
 * Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
+* `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
+  by a change append rather than taking their source position - sort grids where order matters.
 
 ### 🎁 New Features
 
