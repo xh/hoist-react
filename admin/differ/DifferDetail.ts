@@ -12,7 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {fmtDateTime} from '@xh/hoist/format';
 import {div} from '@xh/hoist/cmp/layout';
-import {keys, toString, filter, startsWith} from 'lodash';
+import {filter, isObject, keys, startsWith, toString} from 'lodash';
 import {strong} from '../../cmp/layout';
 import {DifferDetailModel} from './DifferDetailModel';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -65,8 +65,8 @@ const diffTable = hoistCmp.factory<DifferDetailModel>(({model}) => {
 
     const rows = fields.map(field => {
         const cls = model.createDiffClass(field, local, remote),
-            localCell = local ? toString(local[field]) : '',
-            remoteCell = remote ? {className: cls, item: toString(remote[field])} : null;
+            localCell = local ? fmtValue(local[field]) : '',
+            remoteCell = remote ? {className: cls, item: fmtValue(remote[field])} : null;
         return tr(td(field), td(localCell), td(remoteCell));
     });
 
@@ -82,3 +82,7 @@ const diffTable = hoistCmp.factory<DifferDetailModel>(({model}) => {
         )
     );
 });
+
+function fmtValue(v: unknown): string {
+    return isObject(v) ? JSON.stringify(v) : toString(v);
+}

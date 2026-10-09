@@ -122,6 +122,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
 * Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
   Titled icons also get the title as their `aria-label`, so screen readers announce them again.
+* Fixed the Admin Console config differ flagging typed JSON configs as changed, based on their
+  code-derived resolved and default values, and showing those values as `[object Object]`.
 
 ### ⚙️ Technical
 

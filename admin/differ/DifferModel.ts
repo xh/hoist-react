@@ -29,6 +29,8 @@ export class DifferModel extends HoistModel {
     displayName: string;
     columnFields: Array<string | Partial<ColumnSpec>>;
     matchFields: string[];
+    /** Fields the server computes from code rather than storing - excluded from diffs. */
+    ignoreFields: string[];
     valueRenderer: ColumnRenderer;
     url: string;
 
@@ -76,6 +78,7 @@ export class DifferModel extends HoistModel {
         displayName,
         columnFields = ['name'],
         matchFields = ['name'],
+        ignoreFields = [],
         valueRenderer
     }: Partial<DifferModel>) {
         super();
@@ -84,6 +87,7 @@ export class DifferModel extends HoistModel {
         this.displayName = displayName ?? entityName;
         this.columnFields = columnFields;
         this.matchFields = matchFields;
+        this.ignoreFields = ignoreFields;
         this.valueRenderer = valueRenderer ?? (v => (isNil(v) ? '' : v.value));
 
         this.url = entityName + 'DiffAdmin';
@@ -285,10 +289,8 @@ export class DifferModel extends HoistModel {
     }
 
     cleanRawData(data) {
-        data.forEach(it => {
-            delete it.dateCreated;
-            delete it.id;
-        });
+        const omitFields = ['dateCreated', 'id', ...this.ignoreFields];
+        data.forEach(it => omitFields.forEach(field => delete it[field]));
 
         return data;
     }
