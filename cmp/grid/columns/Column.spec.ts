@@ -54,23 +54,64 @@ describe('Column.getAgSpec', () => {
         });
     });
 
+    describe('cellRenderer', () => {
+        it('is omitted for a column with no renderer, which ag-Grid renders as plain text', () => {
+            const spec = createColumn({}).getAgSpec();
+            expect(spec.cellRenderer).toBeUndefined();
+            expect(spec.cellClass).toContain('xh-cell--plain');
+        });
+
+        it('wraps a configured renderer', () => {
+            const spec = createColumn({renderer: v => v}).getAgSpec();
+            expect(spec.cellRenderer).toBeTypeOf('function');
+            expect(spec.cellClass).not.toContain('xh-cell--plain');
+        });
+
+        it('keeps the plain-text marker when agOptions supplies a cellClass', () => {
+            expect(createColumn({agOptions: {cellClass: 'a'}}).getAgSpec().cellClass).toEqual([
+                'a',
+                'xh-cell--plain'
+            ]);
+            const fn = createColumn({
+                agOptions: {cellClass: () => ['b', 'c']}
+            }).getAgSpec().cellClass as Function;
+            expect(fn({})).toEqual(['b', 'c', 'xh-cell--plain']);
+        });
+
+        it('defers to a cellRenderer given via agOptions', () => {
+            const spec = createColumn({
+                agOptions: {cellRenderer: 'agAnimateShowChangeCellRenderer'}
+            }).getAgSpec();
+            expect(spec.cellRenderer).toBe('agAnimateShowChangeCellRenderer');
+            expect(spec.cellClass).not.toContain('xh-cell--plain');
+        });
+    });
+
     describe('cellClass', () => {
+        // Columns here have no renderer, so each list ends with the plain-text cell marker.
         it('is a static list when configured with strings, with alignment classes appended', () => {
-            expect(createColumn({}).getAgSpec().cellClass).toEqual([]);
-            expect(createColumn({cellClass: 'a'}).getAgSpec().cellClass).toEqual(['a']);
+            expect(createColumn({}).getAgSpec().cellClass).toEqual(['xh-cell--plain']);
+            expect(createColumn({cellClass: 'a'}).getAgSpec().cellClass).toEqual([
+                'a',
+                'xh-cell--plain'
+            ]);
             expect(
                 createColumn({cellClass: ['a', 'b'], align: 'right'}).getAgSpec().cellClass
-            ).toEqual(['a', 'b', 'xh-align-right']);
+            ).toEqual(['a', 'b', 'xh-align-right', 'xh-cell--plain']);
             expect(createColumn({align: 'center'}).getAgSpec().cellClass).toEqual([
-                'xh-align-center'
+                'xh-align-center',
+                'xh-cell--plain'
             ]);
-            expect(createColumn({align: 'left'}).getAgSpec().cellClass).toEqual([]);
+            expect(createColumn({align: 'left', renderer: v => v}).getAgSpec().cellClass).toEqual(
+                []
+            );
         });
 
         it('wraps a cellClass function, appending alignment classes to its result', () => {
             const col = createColumn({
                     cellClass: v => (v > 0 ? 'pos' : ['neg', 'red']),
-                    align: 'right'
+                    align: 'right',
+                    renderer: v => v
                 }),
                 fn = col.getAgSpec().cellClass as Function;
 

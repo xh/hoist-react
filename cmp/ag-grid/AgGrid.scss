@@ -209,9 +209,13 @@
     display: none;
   }
 
-  // We use flexbox to consistently vertically center cell contents across
-  // the different sizing modes. See https://github.com/xh/hoist-react/issues/1949
-  .ag-cell-value {
+  // We use flexbox to consistently vertically center rendered cell contents across the different
+  // sizing modes. See https://github.com/xh/hoist-react/issues/1949
+  // Plain-text cells (`xh-cell--plain` - columns with no renderer) are excluded. ag-Grid writes
+  // their value into the cell as a bare text node, centers it by line-height and ellipsizes it
+  // itself. As an anonymous flex item that text could not be ellipsized. `:where()` keeps this
+  // rule's specificity unchanged; the second argument covers cells with an `.ag-cell-wrapper`.
+  .ag-cell-value:where(:not(.xh-cell--plain, .xh-cell--plain *)) {
     display: flex;
     align-items: center;
 
@@ -226,9 +230,20 @@
       text-overflow: ellipsis;
       min-width: 0;
     }
-    .ag-row-group {
-      align-items: center;
-    }
+  }
+
+  .ag-cell-value .ag-row-group {
+    align-items: center;
+  }
+
+  // Plain-text cells (columns with no renderer) hold a bare text node that ag-Grid sizes by
+  // line-height and ellipsizes itself, so it cannot be flex-centered like rendered content.
+  // ag-Grid's line-height is also 2px short whenever a `getRowHeight` function is in use (Hoist's
+  // always is), and never exceeds the grid's default row height, so taller rows (`autoHeight`
+  // columns, a custom `getRowHeight`) would leave the text at the top. Center the line box in the
+  // cell instead, which holds for any row height and keeps ag-Grid's line spacing for wrapped text.
+  .ag-cell.xh-cell--plain {
+    align-content: center;
   }
 
   // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to

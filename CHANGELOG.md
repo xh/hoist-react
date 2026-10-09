@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -26,6 +26,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
   `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
 * Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
+* `GridModel.useVirtualColumns` now defaults to true. Set it to false on grids whose offscreen
+  cells must be in the DOM, such as for test automation that reads them.
+* Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
+  class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
+  target `.ag-cell` instead.
 
 ### 🎁 New Features
 
@@ -130,6 +135,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
+* Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
+  `Grid` against ag-Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
   before publishing snapshot and release builds. See `docs/unit-testing.md`.
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install

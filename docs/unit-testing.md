@@ -244,6 +244,14 @@ the contracts of the component layer itself, such as how `hoistCmp` factories pa
 resolve models. Use [React Testing Library](https://testing-library.com/react). The setup unmounts
 rendered components after each test.
 
+To test what reaches ag-Grid - a `Grid`'s column defs, cell classes, row heights - and what
+ag-Grid renders from it, call `installAgGridForTests()` from `@xh/hoist/test-support/agGrid` in
+`beforeAll`, after `initTestAppAsync()`. It registers ag-Grid's community modules and installs
+`AgGridReact`, as an app's `Bootstrap.ts` does. ag-Grid renders its header, rows and cells in
+jsdom, which has no layout: every row and column renders regardless of the viewport, so
+virtualisation cannot be observed, and measured sizes read back as zero. Inline styles and CSS
+variables read as set. See `cmp/grid/Grid.spec.ts`.
+
 ### When a test finds a bug
 
 Write the test for the correct behavior. If the fix belongs in a separate change, mark the test

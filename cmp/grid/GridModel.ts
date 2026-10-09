@@ -352,11 +352,13 @@ export interface GridConfig {
     contextMenu?: GridContextMenuSpec | false;
 
     /**
-     * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
-     * scroll area (versus rendering all columns).  Consider this performance optimization for
-     * grids with a very large number of columns obscured by horizontal scrolling. Note that
-     * setting this value to true may limit the ability of the grid to autosize offscreen columns
-     * effectively. Default false.
+     * True (default) to render cells only for the columns within or near the visible scroll area,
+     * as ag-Grid does by default - the cost of rendering and scrolling then follows the visible
+     * column count rather than the total. Hoist's autosizing measures values without rendered
+     * cells, so it is unaffected.
+     *
+     * Set false to render the cells of every column, e.g. for test automation that must find
+     * offscreen cells in the DOM. Expect scrolling to slow with the total number of columns.
      */
     useVirtualColumns?: boolean;
 
@@ -705,7 +707,7 @@ export class GridModel extends HoistModel {
             onCellContextMenu,
             clicksToExpand = GridModel.defaults.clicksToExpand ?? (XH.isMobileApp ? 1 : 2),
             contextMenu,
-            useVirtualColumns = false,
+            useVirtualColumns = true,
             autosizeOptions = {},
             restoreDefaultsFn,
             restoreDefaultsWarning = GridModel.defaults.restoreDefaultsWarning,

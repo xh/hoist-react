@@ -273,6 +273,11 @@ export interface ColumnSpec {
     /**
      * Function returning a React Element for each cell value in this Column.
      *
+     * Without a renderer, the cell displays its value as plain text, which ag-Grid writes into
+     * the cell directly - the cheapest cell there is. A renderer makes each cell of the column a
+     * React component, so prefer a `valueFormatter`-style renderer that returns a string where
+     * a string will do, and reserve element-returning renderers for cells that need them.
+     *
      * For number and date formatting, prefer the pre-built `numberRenderer` and `dateRenderer`
      * factories from `@xh/hoist/format` - these accept formatting options and return a reusable
      * renderer function. Also consider the pre-built column specs (`number`, `date`, `dateTime`,
@@ -854,30 +859,18 @@ export class Column {
                 onCellClicked: this.onCellClicked
             };
 
-        // We will change this setter as needed to install the renderer in the proper location
-        // for cases like tree columns where we need to set the inner renderer on the default ag-Grid
-        // group cell renderer, instead of on the top-level column itself
-        let setRenderer = r => (ret.cellRenderer = r);
-
-        // Our implementation of Grid.getDataPath() > StoreRecord.treePath returns data path []s of
-        // StoreRecord IDs. TreeColumns use those IDs as their cell values, regardless of field.
-        // Add valueGetters below to correct + additional fixes for sorting below.
+        // Renderer: Tree cols nest our renderer in ag-Grid's group cell renderer. Plain have none.
+        const {agCellRenderer} = this;
         if (this.isTreeColumn) {
             ret.showRowGroup = true;
             ret.cellRenderer = 'agGroupCellRenderer';
             ret.cellRendererParams = {
                 suppressCount: true,
-                suppressDoubleClickExpand: true
+                suppressDoubleClickExpand: true,
+                innerRenderer: agCellRenderer
             };
-
-            setRenderer = r => (ret.cellRendererParams.innerRenderer = r);
-        }
-
-        // By always providing a minimal pass-through cellRenderer, we can ensure the
-        // cell contents are wrapped in a span for styling purposes. We check agOptions in case
-        // the dev has specified a renderer option directly against the ag-Grid API.
-        if (!agOptions.cellRenderer) {
-            setRenderer(this.agCellRenderer);
+        } else if (agCellRenderer) {
+            ret.cellRenderer = agCellRenderer;
         }
 
         // Tooltip Handling. ag-Grid shows a tooltip only when `tooltip` returns a value, mounting
@@ -906,6 +899,7 @@ export class Column {
             fixedClasses: string[] = [];
         if (isTreeColumn) fixedClasses.push('xh-tree-column');
         if (align === 'center' || align === 'right') fixedClasses.push('xh-align-' + align);
+        if (!agCellRenderer) fixedClasses.push('xh-cell--plain');
 
         ret.cellClass = isFunction(cellClass)
             ? agParams => [
@@ -984,7 +978,14 @@ export class Column {
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
-        return {...ret, ...agOptions};
+        const spec = {...ret, ...agOptions};
+
+        // ...but a `cellClass` given via agOptions must keep the plain-text marker, which the
+        // cell's styling depends on.
+        if (!agCellRenderer && agOptions.cellClass) {
+            spec.cellClass = withPlainMarker(agOptions.cellClass);
+        }
+        return spec;
     }
 
     /** ag-Grid comparator for this column - see {@link getAgSpec}. @internal */
@@ -995,10 +996,16 @@ export class Column {
     //--------------------
     // ag-Grid colDef functions - created once per Column, so their identities are stable.
     //--------------------
+    // Any renderer the dev has specified directly against the ag-Grid API via agOptions, otherwise
+    // Hoist's, which wraps the rendered content in a span for styling (installed as the inner
+    // renderer of a tree column). Null for a plain column - no renderer and not a tree column.
     @computeOnce
     private get agCellRenderer(): ColDef['cellRenderer'] {
+        const {renderer, isTreeColumn, agOptions} = this;
+        if (agOptions.cellRenderer) return agOptions.cellRenderer;
+        if (!renderer && !isTreeColumn) return null;
         return (agParams: ICellRendererParams) => {
-            const {renderer, gridModel} = this;
+            const {gridModel} = this;
             let ret = renderer
                 ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
                 : agParams.value;
@@ -1293,3 +1300,9 @@ const SEVERITY_FLAG_INTENTS: Record<ValidationSeverity, Intent> = {
     warning: 'warning',
     info: 'primary'
 };
+
+function withPlainMarker(cellClass: ColDef['cellClass']): ColDef['cellClass'] {
+    return isFunction(cellClass)
+        ? agParams => [...castArray(cellClass(agParams) ?? []), 'xh-cell--plain']
+        : [...castArray(cellClass), 'xh-cell--plain'];
+}
