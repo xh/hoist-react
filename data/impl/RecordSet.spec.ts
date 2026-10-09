@@ -12,8 +12,8 @@ import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 /**
  * The deltas between a Store's successive filtered RecordSets, as reported by `diffFrom()`. Grid
  * applies these to ag-Grid verbatim as row transactions, so a wrong delta leaves stale, missing
- * or duplicate rows on screen. Each case runs with patching off (the default - every change
- * builds a fresh record map) and on (changes layered as patches over a shared base), as the two
+ * or duplicate rows on screen. Each case runs with patching off (every change builds a fresh
+ * record map) and on (the default - changes layered as patches over a shared base), as the two
  * derive records, filter results and deltas by separate code paths.
  */
 describe('RecordSet', () => {
@@ -132,6 +132,19 @@ describe('RecordSet', () => {
             store.updateData({update: [row(5, 60)], add: [row(11, 11)], changedFields});
             expect(store._filtered.diffFrom(third).changedFields).toBeNull();
         });
+    });
+
+    it('patches changes of up to a tenth of the records by default', () => {
+        const store = newTestStore({filter: null}),
+            first = store._filtered;
+
+        store.updateData([row(5, 50)]);
+        expect(store._filtered.hasDeltaFrom(first)).toBe(true);
+
+        // A second change takes the patch past 1 of 10 records - it flattens into a new base.
+        const second = store._filtered;
+        store.updateData([row(6, 60)]);
+        expect(store._filtered.hasDeltaFrom(second)).toBe(false);
     });
 });
 

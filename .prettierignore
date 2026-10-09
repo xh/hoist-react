@@ -9,3 +9,4 @@
 yarn.lock
 webpack.config.intellij.js
 *.md
+pnpm-workspace.yaml

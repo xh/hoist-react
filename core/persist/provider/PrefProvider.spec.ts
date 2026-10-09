@@ -18,9 +18,8 @@ describe('PrefProvider', () => {
     beforeAll(async () => {
         hoistCore.prefs.ordersState = {
             type: 'json',
-            value: {grid: {sortBy: ['date|desc']}, groupBy: 'region'},
             defaultValue: {},
-            isSet: true
+            value: {grid: {sortBy: ['date|desc']}, groupBy: 'region'}
         };
         await initTestAppAsync();
     });
