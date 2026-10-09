@@ -123,8 +123,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Updated Hoist to build with TypeScript 7. Apps can stay on 5.9 or move to 7, which needs two
   `tsconfig.json` overrides. See the upgrade notes.
 * `creates()`, `uses()` and `useLocalModel()` now build and link their models untracked by MobX.
-  Observable state read by a model constructor, `@persist` setup or `onLinked()` no longer
-  re-renders the component that created the model.
+  Observable state read during model construction or `onLinked()` no longer triggers a
+  spurious one-time re-render.
 
 ### ⚙️ Typescript API Adjustments
 

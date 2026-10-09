@@ -90,8 +90,6 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         }
 
         model.setComponentProps(props);
-
-        // Untracked - observables read by onLinked() should not subscribe the component.
         untracked(() => model.onLinked());
     }
 

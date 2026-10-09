@@ -407,9 +407,8 @@ function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Conf
     return resolvedModel;
 }
 
-// Models are created untracked here and in lookupModel(), so that observables read by a model
-// constructor do not subscribe the component.
 function createModel(spec: CreatesSpec<HoistModel>): ResolvedModel {
+    // Model creation is one-time, don't track.
     const model = untracked(() => {
         const ret = spec.createFn();
         return isFunction(ret) ? new (ret as any)() : ret;
