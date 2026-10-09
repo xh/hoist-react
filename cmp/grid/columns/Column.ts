@@ -859,33 +859,24 @@ export class Column {
                 onCellClicked: this.onCellClicked
             };
 
-        // We will change this setter as needed to install the renderer in the proper location
-        // for cases like tree columns where we need to set the inner renderer on the default ag-Grid
-        // group cell renderer, instead of on the top-level column itself
-        let setRenderer = r => (ret.cellRenderer = r);
-
+        // A tree column renders through ag-Grid's group cell renderer (expand/collapse control and
+        // indentation), with our renderer installed inside it. A plain column has no cell renderer
+        // at all - ag-Grid writes its value into the cell as text, with no React component.
+        //
         // Our implementation of Grid.getDataPath() > StoreRecord.treePath returns data path []s of
         // StoreRecord IDs. TreeColumns use those IDs as their cell values, regardless of field.
         // Add valueGetters below to correct + additional fixes for sorting below.
+        const {agCellRenderer} = this;
         if (this.isTreeColumn) {
             ret.showRowGroup = true;
             ret.cellRenderer = 'agGroupCellRenderer';
             ret.cellRendererParams = {
                 suppressCount: true,
-                suppressDoubleClickExpand: true
+                suppressDoubleClickExpand: true,
+                innerRenderer: agCellRenderer
             };
-
-            setRenderer = r => (ret.cellRendererParams.innerRenderer = r);
-        }
-
-        // A column with no renderer displays its value as plain text, which ag-Grid writes into
-        // the cell itself - no React component per cell. Every other column renders through a
-        // cell renderer: Hoist's wraps the rendered content in a span for styling (installed as
-        // the inner renderer of a tree column), unless the dev has specified a renderer directly
-        // against the ag-Grid API via agOptions.
-        const isPlain = !this.renderer && !this.isTreeColumn && !agOptions.cellRenderer;
-        if (!isPlain && !agOptions.cellRenderer) {
-            setRenderer(this.agCellRenderer);
+        } else if (agCellRenderer) {
+            ret.cellRenderer = agCellRenderer;
         }
 
         // Tooltip Handling. ag-Grid shows a tooltip only when `tooltip` returns a value, mounting
@@ -914,7 +905,7 @@ export class Column {
             fixedClasses: string[] = [];
         if (isTreeColumn) fixedClasses.push('xh-tree-column');
         if (align === 'center' || align === 'right') fixedClasses.push('xh-align-' + align);
-        if (isPlain) fixedClasses.push('xh-cell--plain');
+        if (!agCellRenderer) fixedClasses.push('xh-cell--plain');
 
         ret.cellClass = isFunction(cellClass)
             ? agParams => [
@@ -997,7 +988,9 @@ export class Column {
 
         // ...but a `cellClass` given via agOptions must keep the plain-text marker, which the
         // cell's styling depends on.
-        if (isPlain && agOptions.cellClass) spec.cellClass = withPlainMarker(agOptions.cellClass);
+        if (!agCellRenderer && agOptions.cellClass) {
+            spec.cellClass = withPlainMarker(agOptions.cellClass);
+        }
         return spec;
     }
 
@@ -1009,10 +1002,16 @@ export class Column {
     //--------------------
     // ag-Grid colDef functions - created once per Column, so their identities are stable.
     //--------------------
+    // Any renderer the dev has specified directly against the ag-Grid API via agOptions, otherwise
+    // Hoist's, which wraps the rendered content in a span for styling (installed as the inner
+    // renderer of a tree column). Null for a plain column - no renderer and not a tree column.
     @computeOnce
     private get agCellRenderer(): ColDef['cellRenderer'] {
+        const {renderer, isTreeColumn, agOptions} = this;
+        if (agOptions.cellRenderer) return agOptions.cellRenderer;
+        if (!renderer && !isTreeColumn) return null;
         return (agParams: ICellRendererParams) => {
-            const {renderer, gridModel} = this;
+            const {gridModel} = this;
             let ret = renderer
                 ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
                 : agParams.value;
