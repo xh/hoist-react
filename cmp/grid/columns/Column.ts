@@ -788,9 +788,9 @@ export class Column {
      * A Column definition appropriate for AG-Grid.
      *
      * The renderer, tooltip, editor and comparator functions on the returned def are created once
-     * per Column and reused across calls. ag-Grid React mounts the renderer, tooltip and editor as
-     * React components, so a new identity on each call would remount every cell of the column
-     * whenever the grid's column defs are re-applied.
+     * per Column, so repeated calls return the same identities - ag-Grid React mounts the renderer,
+     * tooltip and editor as components, and `RecordSortUtils` reads the comparator via
+     * {@link getAgComparator} without building a def.
      */
     getAgSpec(): ColDef {
         const {gridModel, field, headerName, displayName, agOptions} = this,
