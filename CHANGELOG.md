@@ -122,6 +122,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   them only to run unit tests.
 * Updated Hoist to build with TypeScript 7. Apps can stay on 5.9 or move to 7, which needs two
   `tsconfig.json` overrides. See the upgrade notes.
+* `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
+  by a change append rather than taking their source position. This may affect the sort ordering
+  of unsorted grids when data changes.
 
 ### ⚙️ Typescript API Adjustments
 
