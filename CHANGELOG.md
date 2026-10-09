@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, grid defaults)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -24,6 +24,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
   so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
   `inputProps` should also pass `previewCards: false`.
+* The `Icon` singleton now holds lookup and registration methods (`register()`, `get()`, ...) next
+  to its factories. Apps that list icons by iterating `Object.keys(Icon)` must switch to
+  `Icon.getCatalog()`, which returns one entry per icon with its name and factory.
+* Icon elements now carry their FA name as `props.faName`, not `props.iconName`. Update any code
+  that reads the FA name from a rendered icon element.
 * `GridModel.useVirtualColumns` now defaults to true. Set it to false on grids whose offscreen
   cells must be in the DOM, such as for test automation that reads them.
 * Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
@@ -47,6 +52,21 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `sizingModeAppOption()` now shows each grid sizing mode as a `RadioCardInput` card with a
   mini grid drawn at that mode's row height. Pass `previewCards: false` for a `SegmentedControl`,
   sized to its options as above.
+* Added `Icon.register()` and `Icon.registerAll()` so apps can add their own FontAwesome icons, in
+  any mix of weights. Hoist adds them to the FA library, installs a factory on `Icon`, and returns
+  that factory for direct export.
+* Factories from `Icon.register()` render the icon's default variant when a caller asks for a weight
+  the app did not import, instead of a blank.
+* `Icon.register()` overrides an existing factory when passed `replace: true`, including Hoist's
+  semantic aliases such as `Icon.refresh()`. Without it, a name conflict logs a console warning and
+  keeps the existing icon.
+* Added `Icon.get()` to render a registered icon by name, and `Icon.getCatalog()` to list every icon
+  that Hoist knows about, built-in or registered.
+* Added `IconPicker`, a desktop input with a trigger button that opens a searchable grid of the
+  icons in `Icon.getCatalog()`. Its value is the icon's FA name, or its `Icon` name when
+  `valueField` is `'name'`. Apps render either back with `Icon.get()`.
+* The Admin Console alert banner editor now offers Hoist's full built-in icon set via `IconPicker`.
+  Existing banners keep their stored icon.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core that serves app endpoints via
   `hoistCore.route()`, and `hoistCore.settleAsync()` waits for requests that a test did not await.
@@ -119,6 +139,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
+* Deprecated `IconProps.iconName` in favor of `faName`, which `Icon.icon()` now takes. Calls that
+  still pass `iconName` render as before and log a warning. Support ends in v91.
+* Deprecated `SpinnerProps.iconName` and `Spinner.defaults.iconName` in favor of `icon`. It takes an
+  icon name from the catalog, either an `Icon` name or an FA name, or an icon element.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
