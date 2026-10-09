@@ -4,7 +4,7 @@
 
 ## Overview
 
-Hoist React v89 is a light upgrade with four required changes and one strongly recommended change.
+Hoist React v89 is a light upgrade with three required changes and one strongly recommended change.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -16,8 +16,6 @@ Hoist React v89 is a light upgrade with four required changes and one strongly r
   switch to `Icon.getCatalog()` - see Step 6.
 - **Icon `faName` (required if used)** - Icon elements carry their FA name as `props.faName`, not
   `props.iconName` - see Step 7.
-- **Store patching (required review)** - `Store` now applies small changes as patches by default.
-  Unsorted grids may show new records in a different position - see Step 9.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -353,37 +351,6 @@ dragonIcon();
 Icons added via `library.add()` still render. `Icon.get()` logs a one-time warning for each one it
 looks up by name.
 
-### 9. Review Unsorted Grids and Externally-Driven Filters
-
-`Store` now applies small changes - transactions, partial reloads, and refilters - as patches over a
-shared base, so their cost scales with the size of the change rather than the store. This was
-previously opt-in via `experimental: {maxPatchRatio: 0.1}` and is now the default. It changes two
-behaviors:
-
-- **Record order.** Existing records keep their positions and new records append, including adds
-  within a partial reload and records entering a filter. A grid with no sort shows them at the end
-  rather than at their position in the source data. Give the grid a `sortBy` where order matters.
-- **Filters that read external state.** On a data change, only the changed records are re-tested
-  against the filter. A `FunctionFilter` whose result depends on anything other than the record's
-  own data - app state, or other records - no longer gets re-run across the whole store as a side
-  effect. Call `Store.refreshFilter()` when that external state changes.
-
-**Find affected files:**
-
-```bash
-grep -rnE "testFn|FunctionFilter" client-app/src/
-```
-
-To restore the previous behavior for one store, set its ratio to 0:
-
-```typescript
-const store = new Store({
-    experimental: {maxPatchRatio: 0}
-});
-```
-
-To restore it app-wide, set `maxPatchRatio` to 0 in the `xhStoreExperimental` soft-config.
-
 ## Verification Checklist
 
 After completing all steps:
@@ -397,7 +364,6 @@ After completing all steps:
 - [ ] Grids with a `GridFilterModel` show filters only on the intended columns.
 - [ ] No code lists icons by iterating the keys of `Icon`.
 - [ ] No `IconProps.iconName` deprecation warnings appear in the browser console.
-- [ ] Unsorted grids over live-updating stores show records in an acceptable order.
 
 ## Reference
 
