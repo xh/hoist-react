@@ -6,7 +6,7 @@
  */
 import {recategorizeDialog} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialog';
 import {grid} from '@xh/hoist/cmp/grid';
-import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton} from '@xh/hoist/desktop/cmp/button';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
@@ -56,20 +56,25 @@ export const rolePanel = hoistCmp.factory({
 });
 
 const detailsPanel = hoistCmp.factory<RoleModel>(({model}) => {
-    const {selectedRole} = model;
+    const {selectedRole, readonly} = model,
+        canEdit = selectedRole && !readonly;
     return panel({
         compactHeader: true,
         icon: Icon.idBadge(),
         title: selectedRole?.name ? `Details - ${selectedRole.name}` : 'Details',
         item: roleDetails(),
-        headerItems: [
-            button({
-                icon: Icon.edit(),
-                minimal: true,
-                onClick: () => model.editAsync(selectedRole),
-                omit: !selectedRole || model.readonly
-            })
-        ],
+        bbar: canEdit
+            ? [
+                  filler(),
+                  button({
+                      text: 'Edit Role',
+                      icon: Icon.edit(),
+                      intent: 'primary',
+                      outlined: true,
+                      onClick: () => model.editAsync(selectedRole)
+                  })
+              ]
+            : null,
         modelConfig: {
             defaultSize: '30%',
             minSize: 550,
