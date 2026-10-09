@@ -59,7 +59,7 @@ export const [DataView, dataView] = hoistCmp.withFactory<DataViewProps>({
             testId,
             ref,
             model: model.gridModel,
-            agOptions: impl.agOptions
+            agOptions: {...impl.agOptions, rowHeight: impl.rowHeight}
         });
     }
 });
@@ -69,6 +69,12 @@ class DataViewLocalModel extends HoistModel {
 
     @lookup(DataViewModel) model: DataViewModel;
     agOptions: PlainObject;
+
+    // A fixed itemHeight is the data row height ag-Grid should assume for unrendered rows.
+    get rowHeight(): number {
+        const {itemHeight} = this.model;
+        return isNumber(itemHeight) ? itemHeight : null;
+    }
 
     override onLinked() {
         const {model} = this;
@@ -86,8 +92,6 @@ class DataViewLocalModel extends HoistModel {
         return {
             headerHeight: 0,
             suppressGroupChangesColumnVisibility: 'suppressShowOnUngroup',
-            // A fixed itemHeight is the row height ag-Grid should assume for unrendered rows.
-            rowHeight: isNumber(model.itemHeight) ? model.itemHeight : undefined,
             getRowHeight: agParams => {
                 const {groupRowHeight, itemHeight} = model;
 

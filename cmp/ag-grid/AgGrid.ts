@@ -21,7 +21,6 @@ import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 import {logError} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNumber} from 'lodash';
 import type {CSSProperties} from 'react';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
@@ -55,7 +54,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             return placeholder('ag-Grid library not available.');
         }
 
-        const [layoutProps, agGridProps] = splitLayoutProps(props),
+        const [layoutProps, agProps] = splitLayoutProps(props),
             {
                 sizingMode,
                 showHover,
@@ -68,26 +67,13 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             } = model,
             {isDesktop} = XH;
 
-        const impl = useLocalModel(AgGridLocalModel),
-            AgGridCmp = AgGrid as any,
-            // Explicit `rowHeight` / `headerHeight` props describe the grid - else the sizing mode
-            // does. The same precedence as the options passed to ag-Grid below.
-            rowHeight = isNumber(agGridProps.rowHeight)
-                ? agGridProps.rowHeight
-                : AgGridCmp.getRowHeightForSizingMode(sizingMode),
-            headerHeight = isNumber(agGridProps.headerHeight)
-                ? agGridProps.headerHeight
-                : impl.headerHeight;
+        const impl = useLocalModel(AgGridLocalModel);
 
         return frame({
             ref,
-            // ag-Grid reads these theme vars to estimate the height of rows it has not yet
-            // rendered, and to center text within cells and header cells. Keep them in step with
-            // the heights Hoist drives via `getRowHeight` / `headerHeight`, which the theme's own
-            // defaults know nothing about.
             style: {
-                '--ag-row-height': `${rowHeight}px`,
-                '--ag-header-height': `${headerHeight}px`
+                '--ag-row-height': `${impl.rowHeight}px`,
+                '--ag-header-height': `${impl.headerHeight}px`
             } as CSSProperties,
             className: classNames(
                 className,
@@ -102,13 +88,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             ...layoutProps,
             testId,
             item: createElement(AgGridReact, {
-                ...AgGrid['DEFAULT_PROPS'],
+                ...AgGridCmp.DEFAULT_PROPS,
                 // Default some ag-grid props, but allow overriding.
                 theme: agTheme,
                 getRowHeight: impl.getRowHeight,
+                rowHeight: impl.rowHeight,
                 headerHeight: impl.headerHeight,
                 // Pass others on directly.
-                ...agGridProps,
+                ...agProps,
 
                 // These handlers are overridden, but also delegate to props passed
                 onGridReady: impl.noteGridReady
@@ -155,28 +142,38 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     AgGrid.DEFAULT_PROPS = {};
 })(AgGrid);
 
+const AgGridCmp = AgGrid as any;
+
 class AgGridLocalModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(AgGridModel) model: AgGridModel;
 
-    // Passed to ag-Grid as a prop, so applied from the first render and re-applied by ag-Grid's
-    // prop diffing as sizing mode or `hideHeaders` change. Explicit `headerHeight` props win.
-    get headerHeight() {
-        const {hideHeaders, sizingMode} = this.model,
-            AgGridCmp = AgGrid as any;
-
-        return hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode);
+    get rowHeight(): number {
+        const {rowHeight} = this.componentProps;
+        return rowHeight ?? AgGridCmp.getRowHeightForSizingMode(this.model.sizingMode);
     }
 
-    getRowHeight = ({node}) => {
-        const {sizingMode} = this.model,
-            {groupDisplayType} = this.componentProps,
-            AgGridCmp = AgGrid as any;
-        return node.group && groupDisplayType === 'groupRows'
-            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
-    };
+    get headerHeight(): number {
+        const {headerHeight} = this.componentProps,
+            {hideHeaders, sizingMode} = this.model;
+        return (
+            headerHeight ?? (hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode))
+        );
+    }
+
+    // Only full-width group rows differ from `rowHeight` - otherwise pass no function, so ag-Grid
+    // sizes every row from `rowHeight` without per-row calls or estimated heights.
+    get getRowHeight(): GridOptions['getRowHeight'] {
+        return this.componentProps.groupDisplayType === 'groupRows'
+            ? this.groupRowsGetRowHeight
+            : null;
+    }
+
+    private groupRowsGetRowHeight = ({node}) =>
+        node.group
+            ? AgGridCmp.getGroupRowHeightForSizingMode(this.model.sizingMode)
+            : this.rowHeight;
 
     noteGridReady = agParams => {
         this.model.handleGridReady(agParams);

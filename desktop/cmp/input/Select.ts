@@ -626,18 +626,21 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Other Implementation
     //------------------------
-    // cache to avoid re-renders and focus issues, note this "freezes" leftIcon
+    // Cache to avoid re-renders and focus issues. Reads leftIcon from react-select's
+    // `selectProps` at render time, so the icon can change without replacing the component.
     _valueContainerCmp = null;
     getValueContainerCmp() {
         if (!this._valueContainerCmp) {
-            const {leftIcon} = this.componentProps;
-            this._valueContainerCmp = leftIcon
-                ? props =>
-                      fragment(
+            this._valueContainerCmp = props => {
+                const {leftIcon} = props.selectProps,
+                    valueContainer = createElement(components.ValueContainer, props);
+                return leftIcon
+                    ? fragment(
                           span({className: 'xh-select__control__left-icon', item: leftIcon}),
-                          createElement(components.ValueContainer, props)
+                          valueContainer
                       )
-                : components.ValueContainer;
+                    : valueContainer;
+            };
         }
 
         return this._valueContainerCmp;
@@ -782,6 +785,9 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             openMenuOnFocus: props.openMenuOnFocus,
             placeholder: withDefault(props.placeholder, 'Select...'),
             tabIndex: props.tabIndex,
+
+            // Not a react-select prop - read by our custom ValueContainer via `selectProps`.
+            leftIcon: props.leftIcon,
 
             // Minimize (or hide) bulky dropdown
             components: {

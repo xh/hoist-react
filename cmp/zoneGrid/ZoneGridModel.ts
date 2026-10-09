@@ -275,11 +275,10 @@ export interface ZoneGridConfig {
     contextMenu?: GridContextMenuSpec;
 
     /**
-     * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
-     * scroll area (versus rendering all columns).  Consider this performance optimization for
-     * grids with a very large number of columns obscured by horizontal scrolling. Note that
-     * setting this value to true may limit the ability of the grid to autosize offscreen columns
-     * effectively. Default false.
+     * True (default) to render cells only for the columns within or near the visible scroll area,
+     * as ag-Grid does by default. Set false to render the cells of every column, e.g. for test
+     * automation that must find offscreen cells in the DOM.
+     * See {@link GridConfig.useVirtualColumns}.
      */
     useVirtualColumns?: boolean;
 
