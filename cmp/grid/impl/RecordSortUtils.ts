@@ -86,7 +86,7 @@ function getColumnSorters(gridModel: GridModel): RecordSorter[] {
             const column = gridModel.getColumn(colId);
             if (!column) return null;
 
-            const compFn = (column.getAgSpec().comparator as Function).bind(column),
+            const compFn = column.getAgComparator() as Function,
                 direction = sort === 'desc' ? -1 : 1;
 
             return {

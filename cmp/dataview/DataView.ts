@@ -19,7 +19,7 @@ import {
 } from '@xh/hoist/core';
 import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {isFunction} from 'lodash';
+import {isFunction, isNumber} from 'lodash';
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 import {mergeDeep} from '@xh/hoist/utils/js';
@@ -59,7 +59,7 @@ export const [DataView, dataView] = hoistCmp.withFactory<DataViewProps>({
             testId,
             ref,
             model: model.gridModel,
-            agOptions: impl.agOptions
+            agOptions: {...impl.agOptions, rowHeight: impl.rowHeight}
         });
     }
 });
@@ -69,6 +69,12 @@ class DataViewLocalModel extends HoistModel {
 
     @lookup(DataViewModel) model: DataViewModel;
     agOptions: PlainObject;
+
+    // A fixed itemHeight is the data row height ag-Grid should assume for unrendered rows.
+    get rowHeight(): number {
+        const {itemHeight} = this.model;
+        return isNumber(itemHeight) ? itemHeight : null;
+    }
 
     override onLinked() {
         const {model} = this;

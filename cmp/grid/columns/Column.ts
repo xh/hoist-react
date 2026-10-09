@@ -17,7 +17,7 @@ import {
     ValidationResult,
     ValidationSeverity
 } from '@xh/hoist/data';
-import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {computeOnce, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -41,7 +41,6 @@ import {
     isValidElement,
     ReactElement,
     ReactNode,
-    useImperativeHandle,
     useLayoutEffect,
     useRef
 } from 'react';
@@ -73,6 +72,7 @@ import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
     CellClassParams,
     ColDef,
+    ICellRendererParams,
     ITooltipParams,
     ValueGetterParams,
     ValueSetterParams,
@@ -778,7 +778,14 @@ export class Column {
             : editable;
     }
 
-    /** A Column definition appropriate for AG-Grid. */
+    /**
+     * A Column definition appropriate for AG-Grid.
+     *
+     * The renderer, tooltip, editor and comparator functions on the returned def are created once
+     * per Column, so repeated calls return the same identities - ag-Grid React mounts the renderer,
+     * tooltip and editor as components, and `RecordSortUtils` reads the comparator via
+     * {@link getAgComparator} without building a def.
+     */
     getAgSpec(): ColDef {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret: ColDef = {
@@ -810,7 +817,9 @@ export class Column {
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
                 cellClassRules: this.cellClassRules,
-                editable: agParams => this.isEditableForRecord(agParams.node.data),
+                editable: this.editable
+                    ? agParams => this.isEditableForRecord(agParams.node.data)
+                    : false,
                 valueSetter: (agParams: ValueSetterParams) => {
                     const record = agParams.data;
                     this.setValueFn({
@@ -867,151 +876,50 @@ export class Column {
         // By always providing a minimal pass-through cellRenderer, we can ensure the
         // cell contents are wrapped in a span for styling purposes. We check agOptions in case
         // the dev has specified a renderer option directly against the ag-Grid API.
-        const {renderer} = this;
         if (!agOptions.cellRenderer) {
-            setRenderer(agParams => {
-                let ret = renderer
-                    ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
-                    : agParams.value;
-
-                ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
-
-                // Add wrapping span for styling purposes
-                return span({className: 'xh-cell-inner-wrapper', item: ret});
-            });
+            setRenderer(this.agCellRenderer);
         }
 
-        // Tooltip Handling
+        // Tooltip Handling. ag-Grid shows a tooltip only when `tooltip` returns a value, mounting
+        // the component (a React portal) each time it does. The content is resolved within the
+        // component - here decide only whether there is anything to show: any record's cell for a
+        // configured `tooltip`, otherwise just an editable cell with validation results to report.
         const {tooltip, editor} = this;
         if (tooltip || editor) {
-            // ag-Grid requires a return from getter, but value we actually use is computed below
-            ret.tooltip = () => 'tooltip';
-            ret.tooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
-                const {location, data: record} = agParams,
-                    hasRecord = record instanceof StoreRecord,
-                    wrapperRef = useRef<HTMLDivElement>(null);
-
-                let ret = null;
-                if (hasRecord) {
-                    const {store} = record,
-                        val = this.getValueFn({
-                            record,
-                            field,
-                            column: this,
-                            gridModel,
-                            store
-                        });
-
-                    if (isFunction(tooltip)) {
-                        try {
-                            ret = tooltip(val, {record, gridModel, agParams, column: this});
-                        } catch (e) {
-                            logWarn([`Failure in tooltip for '${this.displayName}'`, e], 'Column');
-                        }
-                    } else {
-                        ret = val;
-                    }
-                }
-
-                // Validation state replaces a column's own tooltip entirely - resolve it here, so
-                // that the classes below describe what is actually rendered rather than the
-                // tooltip it supersedes.
-                let validationMessages: string[] = null;
-                if (hasRecord && editor) {
-                    const bySeverity = groupBy(
-                        record.validationResults[field],
-                        'severity'
-                    ) as Record<ValidationSeverity, ValidationResult[]>;
-                    const msgs = (bySeverity.error ?? bySeverity.warning ?? bySeverity.info)?.map(
-                        v => v.message
-                    );
-                    if (!isEmpty(msgs)) validationMessages = msgs;
-                }
-
-                // Hoist frames the content it renders itself - a plain value/string tooltip, or the
-                // validation list above. A custom element tooltip is left unframed, so that it can
-                // supply its own chrome (opting in with `xh-grid-tooltip-frame` if it wants ours).
-                const isElement = isValidElement(ret),
-                    isCustom = !validationMessages && isElement,
-                    validationCount = validationMessages?.length ?? 0;
-
-                useLayoutEffect(() => {
-                    let xhToolTipClassNames: string[];
-                    if (location === 'header') {
-                        xhToolTipClassNames = ['ag-tooltip'];
-                    } else if (isCustom) {
-                        xhToolTipClassNames = ['xh-grid-tooltip'];
-                    } else {
-                        xhToolTipClassNames = [
-                            'xh-grid-tooltip',
-                            'xh-grid-tooltip--prewrap',
-                            'xh-grid-tooltip-frame'
-                        ];
-                        if (validationCount) {
-                            xhToolTipClassNames.push('xh-grid-tooltip--validation');
-                            if (validationCount === 1) {
-                                xhToolTipClassNames.push('xh-grid-tooltip--validation-single');
-                            }
-                        }
-                    }
-                    const container = wrapperRef.current?.closest('.ag-react-container');
-                    container?.classList.add(...xhToolTipClassNames);
-                    return () => container?.classList.remove(...xhToolTipClassNames);
-                }, [isCustom, validationCount, location]);
-
-                // Required by agGrid, even though empty.
-                // If not present agGrid logs this warning:
-                // "If the component is using `forwardRef` but not `useImperativeHandle`, add the following: `useImperativeHandle(ref, () => ({}));"
-                useImperativeHandle(ref, () => ({}), []);
-
-                if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
-                if (!hasRecord) return null;
-
-                // Validation messages supersede the column's own tooltip - resolved above.
-                if (validationMessages) {
-                    return div({
-                        ref: wrapperRef,
-                        item: ul({
-                            items: validationMessages.map((it, idx) => li({key: idx, item: it}))
-                        })
-                    });
-                }
-                if (editor && !tooltip) return null;
-
-                if (isNil(ret) || ret === '') return null;
-
-                return div({
-                    ref: wrapperRef,
-                    item: (isElement ? ret : toString(ret)) as any
-                });
-            });
+            ret.tooltip = tooltip
+                ? agParams => (agParams.data instanceof StoreRecord ? 'tooltip' : null)
+                : agParams => {
+                      const record = agParams.data;
+                      return record instanceof StoreRecord &&
+                          !isEmpty(record.validationResults[field])
+                          ? 'tooltip'
+                          : null;
+                  };
+            ret.tooltipComponent = this.agTooltipComponent;
         }
 
-        // Generate CSS classes for cells.
-        // Default alignment classes are mixed in with any provided custom classes.
-        const {cellClass, isTreeColumn, align} = this;
-        ret.cellClass = agParams => {
-            let r = [];
-            if (cellClass) {
-                r = castArray(
-                    isFunction(cellClass)
-                        ? cellClass(agParams.value, {
-                              record: agParams.data,
-                              column: this,
-                              gridModel,
-                              agParams
-                          })
-                        : cellClass
-                );
-            }
-            if (isTreeColumn) {
-                r.push('xh-tree-column');
-            }
-            if (align === 'center' || align === 'right') {
-                r.push('xh-align-' + align);
-            }
-            return r;
-        };
+        // Generate CSS classes for cells. Default alignment classes are mixed in with any
+        // provided custom classes. Only a `cellClass` function needs evaluating per cell - ag-Grid
+        // calls the function on every cell render and value change, so a static list is emitted
+        // as-is otherwise.
+        const {cellClass, isTreeColumn, align} = this,
+            fixedClasses: string[] = [];
+        if (isTreeColumn) fixedClasses.push('xh-tree-column');
+        if (align === 'center' || align === 'right') fixedClasses.push('xh-align-' + align);
+
+        ret.cellClass = isFunction(cellClass)
+            ? agParams => [
+                  ...castArray(
+                      cellClass(agParams.value, {
+                          record: agParams.data,
+                          column: this,
+                          gridModel,
+                          agParams
+                      })
+                  ),
+                  ...fixedClasses
+              ]
+            : [...(cellClass ? castArray(cellClass) : []), ...fixedClasses];
 
         if (this.flex) {
             ret.resizable = false;
@@ -1027,55 +935,7 @@ export class Column {
             ret.sortIndex = gridModel.sortBy.indexOf(sortCfg);
         }
 
-        if (this.comparator === undefined) {
-            // Use default comparator with appropriate inputs
-            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId} = this,
-                    // Note: sortCfg and agNodes can be undefined if comparator called during show
-                    // of agGrid column header set filter menu.
-                    sortCfg = gridModel.getSorter(colId),
-                    sortDir = sortCfg?.sort || 'asc',
-                    recordA = agNodeA?.data,
-                    recordB = agNodeB?.data;
-
-                valueA = this.getSortValue(valueA, recordA);
-                valueB = this.getSortValue(valueB, recordB);
-
-                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
-                if (sortToBottom !== 0) return sortToBottom;
-
-                return this.defaultComparator(valueA, valueB, sortCfg);
-            };
-        } else {
-            // ...or process custom comparator with the Hoist-defined comparatorFn API.
-            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId} = this,
-                    // Note: sortCfg and agNodes can be undefined if comparator called during show
-                    // of agGrid column header set filter menu.
-                    sortCfg = gridModel.getSorter(colId),
-                    sortDir = sortCfg?.sort || 'asc',
-                    abs = sortCfg?.abs || false,
-                    recordA = agNodeA?.data as StoreRecord,
-                    recordB = agNodeB?.data as StoreRecord,
-                    params = {
-                        recordA,
-                        recordB,
-                        column: this as Column,
-                        gridModel,
-                        defaultComparator: this.defaultComparator,
-                        agNodeA,
-                        agNodeB
-                    };
-
-                valueA = this.getSortValue(valueA, recordA);
-                valueB = this.getSortValue(valueB, recordB);
-
-                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
-                if (sortToBottom !== 0) return sortToBottom;
-
-                return this.comparator(valueA, valueB, sortDir, abs, params);
-            };
-        }
+        ret.comparator = this.agComparator;
 
         if (this.autoHeight) {
             ret.autoHeight = true;
@@ -1083,19 +943,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditor = forwardRef((agParams: CustomCellEditorProps, ref) => {
-                const props = {
-                    record: agParams.data as StoreRecord,
-                    gridModel,
-                    column: this,
-                    agParams,
-                    ref
-                };
-                // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent) return createElement(editor, props);
-                if (isFunction(editor)) return editor(props) as ReactElement;
-                throw XH.exception('Column editor must be a HoistComponent or a render function');
-            });
+            ret.cellEditor = this.agCellEditor;
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
                 'xh-cell--editable': agParams => {
@@ -1137,6 +985,182 @@ export class Column {
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...agOptions};
+    }
+
+    /** ag-Grid comparator for this column - see {@link getAgSpec}. @internal */
+    getAgComparator(): ColDef['comparator'] {
+        return this.agComparator;
+    }
+
+    //--------------------
+    // ag-Grid colDef functions - created once per Column, so their identities are stable.
+    //--------------------
+    @computeOnce
+    private get agCellRenderer(): ColDef['cellRenderer'] {
+        return (agParams: ICellRendererParams) => {
+            const {renderer, gridModel} = this;
+            let ret = renderer
+                ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
+                : agParams.value;
+
+            ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
+
+            // Add wrapping span for styling purposes
+            return span({className: 'xh-cell-inner-wrapper', item: ret});
+        };
+    }
+
+    // A plain function component - ag-Grid React detects it as stateless and skips the
+    // ref plumbing it needs for class components. A stateless component must render a
+    // node, or ag-Grid React waits on it indefinitely - hence `div()` where there is
+    // nothing to show (a container with no content and no classes, so nothing visible).
+    @computeOnce
+    private get agTooltipComponent(): ColDef['tooltipComponent'] {
+        return (agParams: ITooltipParams) => {
+            const {tooltip, editor, field, gridModel} = this;
+            const {location, data: record} = agParams,
+                hasRecord = record instanceof StoreRecord,
+                wrapperRef = useRef<HTMLDivElement>(null);
+
+            let ret = null;
+            if (hasRecord) {
+                const {store} = record,
+                    val = this.getValueFn({
+                        record,
+                        field,
+                        column: this,
+                        gridModel,
+                        store
+                    });
+
+                if (isFunction(tooltip)) {
+                    try {
+                        ret = tooltip(val, {record, gridModel, agParams, column: this});
+                    } catch (e) {
+                        logWarn([`Failure in tooltip for '${this.displayName}'`, e], 'Column');
+                    }
+                } else {
+                    ret = val;
+                }
+            }
+
+            // Validation state replaces a column's own tooltip entirely - resolve it here, so
+            // that the classes below describe what is actually rendered rather than the
+            // tooltip it supersedes.
+            let validationMessages: string[] = null;
+            if (hasRecord && editor) {
+                const bySeverity = groupBy(record.validationResults[field], 'severity') as Record<
+                    ValidationSeverity,
+                    ValidationResult[]
+                >;
+                const msgs = (bySeverity.error ?? bySeverity.warning ?? bySeverity.info)?.map(
+                    v => v.message
+                );
+                if (!isEmpty(msgs)) validationMessages = msgs;
+            }
+
+            // Hoist frames the content it renders itself - a plain value/string tooltip, or the
+            // validation list above. A custom element tooltip is left unframed, so that it can
+            // supply its own chrome (opting in with `xh-grid-tooltip-frame` if it wants ours).
+            const isElement = isValidElement(ret),
+                isCustom = !validationMessages && isElement,
+                validationCount = validationMessages?.length ?? 0;
+
+            useLayoutEffect(() => {
+                let xhToolTipClassNames: string[];
+                if (location === 'header') {
+                    xhToolTipClassNames = ['ag-tooltip'];
+                } else if (isCustom) {
+                    xhToolTipClassNames = ['xh-grid-tooltip'];
+                } else {
+                    xhToolTipClassNames = [
+                        'xh-grid-tooltip',
+                        'xh-grid-tooltip--prewrap',
+                        'xh-grid-tooltip-frame'
+                    ];
+                    if (validationCount) {
+                        xhToolTipClassNames.push('xh-grid-tooltip--validation');
+                        if (validationCount === 1) {
+                            xhToolTipClassNames.push('xh-grid-tooltip--validation-single');
+                        }
+                    }
+                }
+                const container = wrapperRef.current?.closest('.ag-react-container');
+                container?.classList.add(...xhToolTipClassNames);
+                return () => container?.classList.remove(...xhToolTipClassNames);
+            }, [isCustom, validationCount, location]);
+
+            if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
+            if (!hasRecord) return div();
+
+            // Validation messages supersede the column's own tooltip - resolved above.
+            if (validationMessages) {
+                return div({
+                    ref: wrapperRef,
+                    item: ul({
+                        items: validationMessages.map((it, idx) => li({key: idx, item: it}))
+                    })
+                });
+            }
+            if (editor && !tooltip) return div();
+
+            if (isNil(ret) || ret === '') return div();
+
+            return div({
+                ref: wrapperRef,
+                item: (isElement ? ret : toString(ret)) as any
+            });
+        };
+    }
+
+    @computeOnce
+    private get agCellEditor(): ColDef['cellEditor'] {
+        return forwardRef((agParams: CustomCellEditorProps, ref) => {
+            const {editor, gridModel} = this,
+                props = {
+                    record: agParams.data as StoreRecord,
+                    gridModel,
+                    column: this,
+                    agParams,
+                    ref
+                };
+            // Can be a component or elem factory/ ad-hoc render function.
+            if ((editor as any).isHoistComponent) return createElement(editor, props);
+            if (isFunction(editor)) return editor(props) as ReactElement;
+            throw XH.exception('Column editor must be a HoistComponent or a render function');
+        });
+    }
+
+    @computeOnce
+    private get agComparator(): ColDef['comparator'] {
+        return (valueA, valueB, agNodeA, agNodeB) => {
+            const {gridModel, colId, comparator} = this,
+                // Note: sortCfg and agNodes can be undefined if comparator called
+                // during show of agGrid column header set filter menu.
+                sortCfg = gridModel.getSorter(colId),
+                sortDir = sortCfg?.sort || 'asc',
+                recordA = agNodeA?.data as StoreRecord,
+                recordB = agNodeB?.data as StoreRecord;
+
+            valueA = this.getSortValue(valueA, recordA);
+            valueB = this.getSortValue(valueB, recordB);
+
+            const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+            if (sortToBottom !== 0) return sortToBottom;
+
+            if (comparator === undefined) return this.defaultComparator(valueA, valueB, sortCfg);
+
+            // Custom comparator, with the Hoist-defined comparatorFn API.
+            return comparator(valueA, valueB, sortDir, sortCfg?.abs || false, {
+                recordA,
+                recordB,
+                column: this as Column,
+                gridModel,
+                defaultComparator: this.defaultComparator,
+                agNodeA,
+                agNodeB
+            });
+        };
     }
 
     //--------------------
