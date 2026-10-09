@@ -18,9 +18,9 @@ export const iconCmp = hoistCmp.factory({
     observer: false,
     model: false,
 
-    render({iconName, prefix, title, className, size, ...rest}) {
+    render({faName, prefix, title, className, size, ...rest}) {
         className = enhanceFaClasses(className, size);
-        return fontAwesomeIcon({icon: [prefix, iconName], className, title, ...rest});
+        return fontAwesomeIcon({icon: [prefix, faName], className, title, ...rest});
     }
 });
 const fontAwesomeIcon = elementFactory(FontAwesomeIcon);

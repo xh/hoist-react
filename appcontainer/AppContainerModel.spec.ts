@@ -17,7 +17,7 @@ describe('AppContainerModel', () => {
 
     beforeAll(async () => {
         hoistCore.configs.featureFlag = true;
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = {type: 'int', defaultValue: 50, value: 100};
         await initTestAppAsync();
         bootRequests = [...hoistCore.requests];
     });

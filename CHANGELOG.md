@@ -14,54 +14,63 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
   now gets a default filter - set `filterable: false` on columns that should have none.
-* Desktop `themeAppOption()` and `sizingModeAppOption()` now render a `RadioCardInput` by default,
-  so any `inputProps` they receive go to that input. Apps passing `SegmentedControl` props via
-  `inputProps` should also pass `previewCards: false`.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now pass `inputProps` to a
+  `RadioCardInput`. Apps passing `SegmentedControl` props there should add `previewCards: false`.
+* `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
+  `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
+* Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
 
 ### 🎁 New Features
 
-* Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field, e.g.
-  `{name: 'price', aggregator: new WeightedAverageAggregator('quantity')}`. Views update it
-  incrementally on a change to either field. Pass `{absolute: true}` to weight by magnitude.
+* Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
+  `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
   re-aggregates the field on changes to those as well.
 * Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
   Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
 * Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
-  visual preview, label, and optional description, in the style of the macOS Appearance picker.
-* Desktop `themeAppOption()` now shows the theme choices as a `RadioCardInput` with mini light,
-  dark, and system app-window previews. Pass `previewCards: false` for a `SegmentedControl`, now
-  sized to its options rather than stretched to fill the field.
-* Desktop `sizingModeAppOption()` now shows each grid sizing mode as a `RadioCardInput` card with a
-  mini grid drawn at that mode's row height. Pass `previewCards: false` for a `SegmentedControl`,
-  sized to its options as above.
+  preview, label, and optional description.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now show their choices as `RadioCardInput`
+  cards with a mini preview of each theme or grid sizing mode. Pass `previewCards: false` for a
+  `SegmentedControl`, now sized to its options.
+* Added `Icon.register()` and `Icon.registerAll()` so apps can add their own FontAwesome icons as
+  `Icon` factories. Apps that call FontAwesome's `library.add()` directly should switch to these.
+  Added `Icon.get()` to render an icon by name and `Icon.getCatalog()` to list them all.
+* Added `IconPicker`, a desktop input that picks from a searchable grid of all catalog icons. The
+  Admin Console alert banner editor now uses it.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
-  headless app against an in-memory fake of hoist-core that serves app endpoints via
-  `hoistCore.route()`. Needs `configureVitest()` from hoist-dev-utils 16.1. Experimental in v89 - it
-  may change.
+  headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
+  hoist-dev-utils 16.1. Experimental in v89 - it may change.
 
 ### 🐞 Bug Fixes
 
 * Fixed `GridFilterModelConfig.fieldSpecs` disabling filters on all other `filterable` columns.
-  Apps can now pass a spec for just the fields needing custom config, such as a values renderer.
   See Breaking Changes above.
 * Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
+* `XH.message()`, `XH.confirm()`, and `XH.prompt()` now resolve to `null` when closed without a
+  choice, instead of never settling.
+* Fixed `Store.modifyRecords()` leaving `Store.isDirty` true after its only edit was undone.
+* Fixed `Store.validateAsync()` skipping records changed just before the call, and `Store.isValid`
+  reporting true while a changed record's first async validation was still running.
+* Fixed `ViewManagerModel` overwriting the user's saved current view when views failed to load.
+* Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
-* Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`. App load
-  and `Promise.track()` entries again record their start times.
+* Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`.
 * Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
   destroyed or the reaction was disposed.
 * Fixed `FormModel.allErrors` and `SubformsFieldModel.allErrors` omitting errors from nested
   subforms.
+* Fixed the focused cell dropping its column border under `cellBorders`, and shifting its content
+  under `rowBorders`, when `showCellFocus` is off (the default).
 * Fixed `Store.updateData()` and `Store.modifyRecords()` dropping other summary records when one
   changed, and `Store.revert()` dropping default field values from summary records.
 * Fixed `FieldFilter` text operators (`like`, `begins`, `ends` and their negations) matching blank
@@ -77,7 +86,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `StoreRecord.isDirty` returning `null` in place of `false` for an added record.
 * Fixed the `validEmail` constraint failing blank values in place of leaving them to `required`.
 * Fixed `GridModel.getSortedRecords()` ignoring a column's record-based `sortValue` before the grid
-  has rendered.
+  renders.
 * Fixed `GridFilterModel.mergeColumnFilters()` throwing for a `FieldFilter` instance and changing
   the filter specs passed to it.
 * Fixed the grid column header filter logging a MobX reaction error on first open. Its Apply button
@@ -100,19 +109,19 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a `PUT` with `params` labeling its form body `text/plain`, so servers ignored the params.
 * Fixed errors reported by `ExceptionHandler` omitting the type and number of a failed load.
   Arrays in these reports, such as the stack trace, are also no longer sent as objects.
+* Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
+  `xhCacheBuster` param in the URL after the reload.
 
 ### ⚙️ Technical
 
-* Added a unit test suite for the library, run with `pnpm test` on Vitest. Tests run Hoist's real
-  services against an in-memory fake of the hoist-core server. See `docs/unit-testing.md`.
-* Added a "Unit Tests" CI workflow that reports results on each PR as a check, a run summary, and a
-  comment. Snapshot and release builds now run the tests before publishing.
+* Deprecated `IconProps.iconName` in favor of `faName`, and `SpinnerProps.iconName` in favor of
+  `icon`. Support for both ends in v91.
+* Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
+  before publishing snapshot and release builds. See `docs/unit-testing.md`.
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
   them only to run unit tests.
-* Updated Hoist to build and type-check with TypeScript 7. Apps can move to TypeScript 7 with this
-  release or stay on 5.9. Apps that move must set `strict: false` (unless already strict) and
-  `noUncheckedSideEffectImports: false` in `tsconfig.json` to override new TypeScript defaults.
-  See the upgrade notes for the full steps.
+* Updated Hoist to build with TypeScript 7. Apps can stay on 5.9 or move to 7, which needs two
+  `tsconfig.json` overrides. See the upgrade notes.
 * `creates()`, `uses()` and `useLocalModel()` now build and link their models untracked by MobX.
   Observable state read by a model constructor, `@persist` setup or `onLinked()` no longer
   re-renders the component that created the model.
@@ -130,9 +139,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Indexed `@xh/hoist/test-support` in the symbol tools, so `hoist-search-symbols` and `hoist-ts`
   find the test kit for app agents.
-* Added support for reference-style Markdown links (`[text][label]`) to the doc tools. A section
-  read from `hoist-read-doc` or `hoist-docs read` now appends the link definitions it uses. Search
-  excerpts and section headings show the link text only.
+* Added support for reference-style Markdown links (`[text][label]`) to the doc tools. Section reads
+  now include the link definitions they use.
 
 ### ✨ Styles
 

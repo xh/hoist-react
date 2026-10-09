@@ -28,12 +28,17 @@ IntelliJ runs and debugs Vitest tests natively. Use the gutter icon next to any 
 ### Same compiler as apps
 
 Apps compile hoist-react from source with Rsbuild and SWC, using TC39 `2023-11` decorators. The
-tests compile it the same way: `vitest.config.mts` runs SWC with the options that
-`configureRsbuild()` in hoist-dev-utils passes to Rsbuild. Decorators like `@bindable` and
-`@managed` therefore behave in tests exactly as they do in apps.
+tests compile it the same way: `vitest.config.mts` is built on `configureVitest()` from
+hoist-dev-utils, the preset that app test suites use. It compiles with the SWC inside Rspack and the
+same settings as `configureRsbuild()`. Decorators like `@bindable` and `@managed` therefore behave
+in tests exactly as they do in apps.
 
-This is load-bearing. Vite's built-in transform cannot compile decorators at all. Removing the SWC
-plugin breaks every test that loads a decorated class.
+The config passes `selfHost: true`, which points `@xh/hoist` at this repo. This suite thus checks
+the preset on every PR. To try a preset change before it is published, run
+`pnpm link ../hoist-dev-utils`, then `pnpm test`.
+
+This is load-bearing. Vite's built-in transform cannot compile decorators at all, so a test that
+loads a decorated class fails without the preset's SWC plugin.
 
 ### A real Hoist environment
 
@@ -41,8 +46,12 @@ Tests run in [jsdom](https://github.com/jsdom/jsdom), which gives them `window`,
 `localStorage`. Every test file loads the real `@xh/hoist/core` module graph, including the `XH`
 singleton. Nothing in Hoist is mocked at the module level.
 
-Vitest gives each test file a fresh module graph. Tests in one file share one `XH`, but no state
-leaks from one file to another.
+Each test file works like one page load. Vitest gives each file a fresh module graph, so each file
+gets its own `XH` and its own fake hoist-core. No state leaks from one file to another.
+
+The tests in one file share both. If one test saves a pref or sets a role on `hoistCore`, the next
+test still sees it. Undo the change in the test that made it, or move the test to its own file.
+Between tests, the setup resets only the request log and the routes a test added.
 
 ### A fake hoist-core
 
@@ -128,7 +137,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 describe('PrefService', () => {
     beforeAll(async () => {
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = {type: 'int', defaultValue: 50, value: 100};
         await initTestAppAsync();
     });
 
@@ -158,13 +167,40 @@ describe('PrefService', () => {
 - `hoistCore.route()` serves an endpoint the fake lacks, or overrides one - see
   [The app's server state](#the-apps-server-state).
 - `server.use()` adds raw MSW handlers for one test. They are removed after the test.
+- `await hoistCore.settleAsync()` waits until the fake has answered every open request, and the
+  client has handled the answers. See
+  [Requests a test did not await](#requests-a-test-did-not-await).
 - `hoistError(status, {...})` renders an error as hoist-core does. `authFailure(status)` renders
   the empty-bodied rejection that hoist-core's auth filter sends. `noContent()` renders the empty
   204 that hoist-core sends for an endpoint with no result.
 - A file boots once. To test a different boot outcome, such as access denied, use a separate spec
-  file.
+  file. `initTestAppAsync()` rejects, naming `XH.appState`, if boot stops before `RUNNING`. That
+  includes `LOGIN_REQUIRED`, where an app with a login form waits for the user to sign in.
 
 Tests that do not touch services, such as `LocalDate` or filter tests, do not need to boot.
+
+### Requests a test did not await
+
+Models often start a request without returning its promise, such as a save from a timer or from
+`destroy()`. Call `hoistCore.settleAsync()` before you assert on that request:
+
+```typescript
+it('saves the draft when destroyed', async () => {
+    model.destroy(); // posts the draft, without returning the promise
+    await hoistCore.settleAsync();
+
+    const [req] = hoistCore.requestsTo('drafts');
+    expect(req.json).toEqual({text: 'Hello'});
+});
+```
+
+A request counts as open from the client's `fetch()` call until its response arrives. The setup
+also waits when each test ends, so such a request cannot land in the next test's log. A response
+that never arrives fails the test after 2s, and the failure names the request.
+
+`settleAsync()` does not wait for a request that has not started yet. A request sent after a
+debounce or timer, such as a `@persist` write or a `PrefService` push, starts only when that timer
+fires. Wait out or advance the timer first.
 
 ### Models and MobX
 
@@ -173,6 +209,13 @@ Tests that do not touch services, such as `LocalDate` or filter tests, do not ne
 - Destroy models the test creates, e.g. with `onTestFinished(() => model.destroy())`.
 - Some Hoist state settles on a later tick, e.g. `GridFilterModel.setFilter()`. Await the task or
   `wait()` before asserting.
+- Assign a `@bindable` field directly, as in `model.comment = 'x'`. Its generated setter, such as
+  `setComment()`, exists at runtime but has no type, so `tsc` rejects a call to it.
+- A `@persist` field writes its state 250ms after a change. A value equal to its default clears the
+  saved entry, so the saved state leaves it out. For a pref, `await wait(300)`, then
+  `await XH.prefService.pushPendingAsync()` before asserting on the request.
+- `GridModel` calls that need a rendered grid, such as `preSelectFirstAsync()`, wait 3s for one in a
+  model test and then do nothing. Leave grid selection out of model specs.
 
 ### Timers
 
@@ -188,6 +231,8 @@ await vi.advanceTimersByTimeAsync(300);
 - Never call `vi.runAllTimers()`. Hoist's `Timer` heartbeat never ends.
 - When you expect a timer-driven rejection, attach the assertion before advancing time.
 - Use `vi.setSystemTime()` for code that reads the current date.
+- Requests to the fake hoist-core run normally under fake timers. The kit sends each request on
+  its own connection, so no request waits on a timer that the test has frozen.
 
 The setup restores real timers after every test. All tests run in the `America/New_York` time
 zone, so date logic gives the same result on every machine.
@@ -261,6 +306,9 @@ nothing about the app. `XH.getConf()` and `XH.getPref()` throw on an unknown key
 passes a default, so seed each config and pref that the code under test reads. Seed them before
 boot, because the client reads them once, at boot.
 
+Seed a pref with its `type` and `defaultValue`. Add `value` only for a user who has set their own.
+The fake reports `isSet` to the client from whether `value` is there.
+
 App services load from app endpoints. Serve each one with `hoistCore.route(method, path, fn)`,
 where `path` is relative to `XH.baseUrl`, as in `XH.fetchJson()`. The function returns the
 response body, a `Response` such as `hoistError(...)`, or nothing for an empty 204.
@@ -280,8 +328,8 @@ class OrdersTestModel extends TestAppModel {
 
 beforeAll(async () => {
     hoistCore.configs.orderLimit = 1000;
-    hoistCore.prefs.orderView = {type: 'json', value: {}, defaultValue: {}, isSet: false};
-    hoistCore.roles = ['APP_USER', 'ORDER_ADMIN'];
+    hoistCore.prefs.orderView = {type: 'json', defaultValue: {}};
+    hoistCore.roles = ['ORDER_ADMIN'];
     hoistCore.user = {...hoistCore.user, region: 'EMEA'}; // a custom HoistUser field
     hoistCore.route('GET', 'orders', () => [{id: 1, qty: 500}]);
     hoistCore.route('POST', 'orders/:id/approve', req => ({id: req.params.id, approved: true}));
@@ -296,6 +344,8 @@ it('flags orders over the configured limit', () => {
 - A route added in `beforeAll()` or a setup file lasts for the rest of the file. A route added in
   `beforeEach()` or in a test lasts for that test, so a test can override a file's route.
 - `hoistCore.requestsTo('orders/7/approve')` returns the requests a route served.
+- `XH.fetchJson()` with `params` and no `method` sends a form-encoded POST, not a GET. Serve it with
+  `route('POST', ...)` and read the params from `req.form`, not `req.query`.
 - A path can also be an absolute URL, for an external API the app calls.
 - A request that the fake does not serve fails the test, and the failure names the URL.
 - A file boots once, so test each role set or user in its own spec file.
