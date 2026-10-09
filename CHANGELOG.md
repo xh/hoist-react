@@ -116,6 +116,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Arrays in these reports, such as the stack trace, are also no longer sent as objects.
 * Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
   `xhCacheBuster` param in the URL after the reload.
+* Fixed an explicit `rowHeight` on `AgGrid`, or in `Grid.agOptions`, being ignored when sizing rows.
+* Fixed tree grid parent rows ignoring `Column.rowHeight`, and so sitting shorter than their
+  children.
+* Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
 
 ### ⚙️ Technical
 
@@ -125,8 +129,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
 * `AgGrid` now publishes its row and header heights to ag-Grid as `--ag-row-height` and
-  `--ag-header-height`, and `Grid` pre-evaluates row heights after a load only for grids whose
-  rows vary in height.
+  `--ag-header-height`. `Grid` and `AgGrid` pass ag-Grid a `getRowHeight` function only when row
+  heights vary, so uniform grids skip per-row height calls and the post-load row height pass.
+* Removed `GridExperimentalFlags.disableScrollOptimization`. The post-load row height pass now
+  runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a

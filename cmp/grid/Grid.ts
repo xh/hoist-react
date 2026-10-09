@@ -24,7 +24,7 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
-import type {Filter, StoreRecord} from '@xh/hoist/data';
+import type {Filter} from '@xh/hoist/data';
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
 import {DeferredWorkScheduler} from '@xh/hoist/cmp/grid/impl/DeferredWorkScheduler';
@@ -59,7 +59,7 @@ import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
-import {getDataRowHeight, getGroupRowHeight, hasUniformRowHeights} from './impl/RowHeightUtils';
+import {RowHeightSupport} from './impl/RowHeightSupport';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
 /**
@@ -134,10 +134,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                     model: model.agGridModel,
                     ...getLayoutProps(props),
                     ...impl.agOptions,
-                    // Data row height - AgGrid publishes it as `--ag-row-height` for ag-Grid to
-                    // position and style rows by. Hoist's `getRowHeight` sizes every data row from
-                    // this same value (an `agOptions.rowHeight` is not consulted), so the two agree.
-                    rowHeight: impl.calculatedRowHeight
+                    ...impl.rowHeightSupport.agGridProps
                 })
             ],
             testId,
@@ -185,11 +182,12 @@ export class GridLocalModel extends HoistModel {
         '.ag-grid-viewport, .ag-grid-scrollable-area, .ag-grid-scrolling-container, .ag-row';
 
     @lookup(GridModel)
-    private model: GridModel;
+    model: GridModel;
     agOptions: GridOptions;
     viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     @managed private transactionMgr: GridTransactionManager;
+    @managed rowHeightSupport: RowHeightSupport;
 
     // State for the managed-autosize trigger - see `noteManagedAutosizeTrigger()`.
     private autosizedAsOfFilter: Filter = null;
@@ -233,7 +231,6 @@ export class GridLocalModel extends HoistModel {
             this.columnGroupStateReaction(),
             this.dataReaction(),
             this.groupReaction(),
-            this.rowHeightReaction(),
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
             this.modalReaction(),
@@ -241,6 +238,7 @@ export class GridLocalModel extends HoistModel {
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+        this.rowHeightSupport = new RowHeightSupport(this);
         this.transactionMgr = new GridTransactionManager(this.model);
     }
 
@@ -277,7 +275,6 @@ export class GridLocalModel extends HoistModel {
                 agColumnGroupHeader: props => columnGroupHeader({...props, gridModel: model})
             },
             tooltipShowDelay: 0,
-            getRowHeight: this.defaultGetRowHeight,
             getRowClass: model.rowClassFn ? ({data}) => model.rowClassFn(data) : undefined,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
@@ -441,79 +438,6 @@ export class GridLocalModel extends HoistModel {
                 agApi.applyColumnState({state});
             }
         };
-    }
-
-    //----------------------
-    // Row Height Management
-    //----------------------
-    @computed
-    get calculatedRowHeight() {
-        return getDataRowHeight(this.model);
-    }
-
-    @computed
-    get calculatedGroupRowHeight() {
-        return getGroupRowHeight(this.model, this.agOptions.groupDisplayType);
-    }
-
-    defaultGetRowHeight = ({node}) => {
-        return node.group ? this.calculatedGroupRowHeight : this.calculatedRowHeight;
-    };
-
-    rowHeightReaction() {
-        return {
-            track: () => [
-                this.useScrollOptimization,
-                this.calculatedRowHeight,
-                this.calculatedGroupRowHeight
-            ],
-            run: () => {
-                const {agApi} = this.model;
-                if (!agApi) return;
-                agApi.resetRowHeights();
-                this.applyScrollOptimization();
-            },
-            debounce: 1
-        };
-    }
-
-    @computed
-    get useScrollOptimization() {
-        // When true, we preemptively evaluate and assign functional row heights after data loading.
-        // ag-Grid otherwise estimates rows it has not rendered at `--ag-row-height`, and corrects
-        // them as they scroll into view - a hitch when the estimate is wrong. It is right whenever
-        // rows are uniform (Grid publishes the data row height as that var), so this only applies
-        // when they are not. Note the function is then not guaranteed to be re-called when a node
-        // is rendered in the viewport.
-        const {model, agOptions} = this;
-        return (
-            !model.disableScrollOptimization &&
-            !!agOptions.getRowHeight &&
-            !hasUniformRowHeights(model, agOptions, this.defaultGetRowHeight)
-        );
-    }
-
-    applyScrollOptimization(added?: StoreRecord[]) {
-        if (!this.useScrollOptimization || (added && !added.length)) return;
-
-        const {agApi} = this.model,
-            {getRowHeight} = this.agOptions,
-            params = {api: agApi, context: null} as any,
-            setHeight = node => {
-                params.node = node;
-                params.data = node.data;
-                node.setRowHeight(getRowHeight(params));
-            };
-
-        if (added) {
-            added.forEach(rec => {
-                const node = agApi.getRowNode(rec.agId);
-                if (node) setHeight(node);
-            });
-        } else {
-            agApi.forEachNode(setHeight);
-        }
-        agApi.onRowHeightChanged();
     }
 
     columnsReaction() {
@@ -758,7 +682,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         model._syncedRs = newRs;
-        this.applyScrollOptimization(transaction.add);
+        this.rowHeightSupport.noteRecordsAdded(transaction.add);
 
         model.diagnostics.noteApplyTransaction(transaction, newRs, applyStart);
     }

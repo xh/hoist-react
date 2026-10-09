@@ -417,13 +417,6 @@ export interface GridConfig {
 
 interface GridExperimentalFlags {
     /**
-     * Set to true to disable scroll optimization for large grids, where we proactively update the
-     * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
-     * through large grids.
-     */
-    disableScrollOptimization?: boolean;
-
-    /**
      * Percentage [0-90] of changed rows above which a managed re-sort runs a full sort rather
      * than an ag-Grid delta sort. Delta cost is ~linear in changed rows while full cost is ~flat
      * in them, with measured break-even near 55% on nested cube grids - erring toward delta
@@ -1858,11 +1851,6 @@ export class GridModel extends HoistModel {
         if (b === '') return -1;
         return a.localeCompare(b);
     };
-
-    /** @internal */
-    get disableScrollOptimization() {
-        return !!this.experimental.disableScrollOptimization;
-    }
 
     //-----------------------
     // Implementation
