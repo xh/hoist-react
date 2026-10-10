@@ -1025,6 +1025,12 @@ export class Column {
         if (!agCellRenderer && agOptions.cellClass) {
             spec.cellClass = withPlainMarker(agOptions.cellClass);
         }
+
+        // ...and `cellClassRules` given via agOptions add to the column's, winning per class. A
+        // formatter's rules carry its styling (e.g. `colorSpec`), and autosize measures with them.
+        if (agOptions.cellClassRules) {
+            spec.cellClassRules = {...ret.cellClassRules, ...agOptions.cellClassRules};
+        }
         return spec;
     }
 

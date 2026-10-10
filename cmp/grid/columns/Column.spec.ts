@@ -156,6 +156,21 @@ describe('Column.getAgSpec', () => {
             expect(rules.shared({})).toBe(true);
         });
 
+        it('keeps its cellClassRules beside cellClassRules given via agOptions', () => {
+            const spec = createColumn({
+                formatter: numberFormatter({colorSpec: true}),
+                agOptions: {cellClassRules: {custom: () => true, 'xh-neg-val': () => false}}
+            }).getAgSpec();
+
+            expect(Object.keys(spec.cellClassRules)).toEqual([
+                'xh-pos-val',
+                'xh-neg-val',
+                'xh-neutral-val',
+                'custom'
+            ]);
+            expect((spec.cellClassRules['xh-neg-val'] as Function)({value: -1})).toBe(false);
+        });
+
         it('is ignored, with its cellClassRules, when a renderer is set', () => {
             const formatter = Object.assign(v => `${v}`, {cellClassRules: {pos: () => true}}),
                 spec = createColumn({formatter, renderer: v => v}).getAgSpec();

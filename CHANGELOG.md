@@ -79,6 +79,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed `GridModel.localExport` calling a column's `agOptions.valueFormatter` with a bare value
   instead of AG Grid's params.
+* Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
+  styling. They now add to them, and win for a class that both define.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`.
 * Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
