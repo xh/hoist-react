@@ -447,8 +447,9 @@ new GridModel({
 });
 ```
 
-Or raise the cap with `autosizeOptions: {maxRecords: 50000}`. Each all-rows autosize costs
-roughly 10us per record per autosized column.
+Or adjust the cap with `autosizeOptions: {maxRecords: 5000}`. Each all-rows autosize costs about
+10us per record per autosized column on a current developer laptop, and several times that on
+slower client hardware or a VDI session, so set the cap for the machines your users run on.
 
 ## Verification Checklist
 

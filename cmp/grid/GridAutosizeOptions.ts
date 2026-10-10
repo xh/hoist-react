@@ -35,8 +35,9 @@ export interface GridAutosizeOptions {
     /**
      * Record count above which an autosize with `renderedRowsOnly` unset considers rendered rows
      * only. Default is 10000; null removes the cap. The cost of an all-rows autosize scales with
-     * records x autosized columns, at roughly 10us per cell, so the default bounds an all-rows
-     * autosize of a 10-column grid at about a second.
+     * records x autosized columns: about 10us per cell on a current developer laptop, so the
+     * default bounds a 10-column grid at about a second there. Slower client hardware and VDI
+     * sessions take several times longer per cell; lower the cap to suit them.
      */
     maxRecords?: number;
 
