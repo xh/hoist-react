@@ -251,12 +251,14 @@
   // Ledger-formatted positives reserve the width of a closing parenthesis, so that a column of
   // mixed signs still aligns. The string formatters mark such cells with `cellClassRules`, and the
   // element formatters render a hidden placeholder of their own. The placeholder follows the
-  // element that holds the text: the cell itself, or the value span inside the wrapper that
-  // ag-Grid adds for `autoHeight` columns and `enableCellTextSelection`. An inline editor
-  // replaces the text, so it gets no placeholder.
-  .ag-cell.xh-cell--plain.xh-cell--ledger-align:not(.ag-cell-inline-editing) {
-    &.ag-cell-value::after,
-    > .ag-cell-wrapper > .ag-cell-value::after {
+  // element that holds the text: the plain cell itself, the value span inside the wrapper that
+  // ag-Grid adds for `autoHeight` columns and `enableCellTextSelection`, or the inner wrapper
+  // within a tree column's group cell. An inline editor replaces the text, so it gets no
+  // placeholder.
+  .ag-cell.xh-cell--ledger-align:not(.ag-cell-inline-editing) {
+    &.xh-cell--plain.ag-cell-value::after,
+    &.xh-cell--plain > .ag-cell-wrapper > .ag-cell-value::after,
+    &.xh-tree-column .ag-group-value > .xh-cell-inner-wrapper::after {
       content: ')';
       visibility: hidden;
     }
