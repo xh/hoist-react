@@ -153,7 +153,11 @@ export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
 
-    /**  Column configs to be set on all columns.  Merges deeply. */
+    /**
+     * Column configs to be set on all columns. Merges deeply. A default `renderer` does not apply
+     * to a column with its own `formatter`, such as one built on the `number` or `date` specs, and
+     * a default `formatter` does not apply to a column with its own `renderer`.
+     */
     colDefaults?: Partial<ColumnSpec>;
 
     /**
@@ -1863,10 +1867,13 @@ export class GridModel extends HoistModel {
     //-----------------------
     private buildColumn(config: ColumnOrGroupSpec, borderedGroup?: ColumnGroupSpec): ColumnOrGroup {
         // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins.
+        // Ensure *any* tooltip setting on column itself always wins. So does its own renderer or
+        // formatter - a default renderer would otherwise override the column's formatter.
         if (this.colDefaults && !this.isGroupSpec(config)) {
             let colDefaults = {...this.colDefaults};
             if (config.tooltip) colDefaults.tooltip = null;
+            if (config.formatter) colDefaults.renderer = null;
+            if (config.renderer) colDefaults.formatter = null;
             config = defaultsDeep({}, config, colDefaults);
         }
 

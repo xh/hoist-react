@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, type GridConfig, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
+import {Column, dateTime, type GridConfig, GridModel, GridSorter, number} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -112,6 +112,36 @@ describe('GridModel', () => {
 
             expect(qty.sortingOrder).toEqual(Column.ABS_DESC_FIRST);
             expect(tradeDate.sortingOrder).toEqual(Column.DESC_FIRST);
+        });
+
+        it('keeps a column formatter, such as a number spec has, over a default renderer', () => {
+            const renderer = (v: unknown) => `${v ?? '-'}`,
+                formatter = (v: unknown) => `<${v}>`,
+                gridModel = createGridModel({
+                    colDefaults: {renderer},
+                    columns: [
+                        {...number, field: 'pnl'},
+                        {...dateTime, field: 'ts'},
+                        {field: 'name'},
+                        {field: 'region', formatter}
+                    ]
+                });
+
+            ['pnl', 'ts', 'region'].forEach(colId => {
+                const col = gridModel.getColumn(colId);
+                expect(col.renderer, colId).toBeFalsy();
+                expect(col.formatter, colId).toBeTypeOf('function');
+            });
+            expect(gridModel.getColumn('pnl').formatter(1234567.891, null)).toBe('1,234,568');
+            expect(gridModel.getColumn('name').renderer).toBeTypeOf('function');
+
+            // A column's own renderer likewise wins over a default formatter.
+            const withDefaultFormatter = createGridModel({
+                colDefaults: {formatter},
+                columns: [{field: 'name', renderer}, {field: 'region'}]
+            });
+            expect(withDefaultFormatter.getColumn('name').formatter).toBeFalsy();
+            expect(withDefaultFormatter.getColumn('region').formatter).toBeTypeOf('function');
         });
 
         it('creates Store fields for columns the Store config does not define', () => {
