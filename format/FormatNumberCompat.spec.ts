@@ -23,13 +23,15 @@ import {afterAll, describe, expect, it} from 'vitest';
 import baseline from './FormatNumberCompat.spec.json';
 
 /**
- * Number formatters render the numbers in nearly every Hoist grid. This spec pins their output for
- * ordinary values and for the option sets apps pass, so a change to how Hoist formats digits
- * cannot change what apps show.
+ * Hoist formatted digits with numbro until v89, and with `Intl.NumberFormat` since. Apps show these
+ * strings in every grid, so the first table pins the output for ordinary values, and the option
+ * sets apps pass, to the strings numbro produced. The second table pins the edge cases where v89
+ * output changed on purpose, with the reason for each.
  *
- * `FormatNumberCompat.spec.json` holds the expected strings, which numbro formatted. This spec
- * wrote them once in write mode: `XH_WRITE_NUMBRO_BASELINE=1 pnpm test FormatNumberCompat`. Never
- * regenerate them with any other digit formatter.
+ * `FormatNumberCompat.spec.json` holds the numbro output. This spec wrote it in write mode at
+ * commit 21f23207cb6d, the last with numbro. Never regenerate it from current code. To add a case,
+ * check out that commit, copy this spec over, run
+ * `XH_WRITE_NUMBRO_BASELINE=1 pnpm test FormatNumberCompat`, and copy the JSON back.
  */
 
 const WRITE = !!process.env.XH_WRITE_NUMBRO_BASELINE;
@@ -298,4 +300,103 @@ describe('Number formatters match the numbro baseline for ordinary values', () =
     it.each(helperCases)('%s', (name, fmt, vals = helperValues) =>
         check('helpers', name, vals, fmt)
     );
+});
+
+// Each row: the input, what v89 shows, what numbro showed. Write mode skips this table, which
+// fails on numbro.
+describe.skipIf(WRITE)('Number formatter edge cases that changed on purpose in v89', () => {
+    it.each<[string, string, string, () => ReactNode]>([
+        // Ties round half away from zero for both signs. numbro took negative ties toward zero.
+        ['-2.5 at 0dp', '-3', '-2', () => fmtNumber(-2.5, {precision: 0})],
+        ['-1.005 at 2dp', '-1.01', '-1.00', () => fmtNumber(-1.005, {precision: 2})],
+        [
+            '-1.125 at 2dp, ledger',
+            '(1.13)',
+            '(1.12)',
+            () => fmtNumber(-1.125, {precision: 2, ledger: true, forceLedgerAlign: false})
+        ],
+        [
+            '-0.005 at 2dp, strictZero false',
+            '-0.01',
+            '0.00',
+            () => fmtNumber(-0.005, {precision: 2, strictZero: false})
+        ],
+        // A negative value that arithmetic left just below a tie rounds as a positive one does.
+        ['fmtPercent(-0.0045) at 1dp', '-0.5%', '-0.4%', () => fmtPercent(-0.0045, {precision: 1})],
+        // Values below 1e-6 round like any other. numbro truncated values in e-notation.
+        [
+            '9.9999999e-7 at 6dp',
+            '0.000001',
+            '0.000000',
+            () => fmtNumber(9.9999999e-7, {precision: 6})
+        ],
+        ['5e-7 at auto precision', '0.000001', '0', () => fmtNumber(5e-7)],
+        [
+            'fmtMillions(0.5)',
+            '0.000001m',
+            '0m',
+            () => fmtMillions(0.5, {label: true, labelCls: null})
+        ],
+        [
+            '1e-7 at 8dp, zeroPad 2',
+            '0.0000001',
+            '0.00',
+            () => fmtNumber(1e-7, {precision: 8, zeroPad: 2})
+        ],
+        // Past 15 significant digits there is no float noise from numbro's decimal shift.
+        [
+            '2390421244 at 12dp',
+            '2,390,421,244.000000000000',
+            '2,390,421,243.999999500000',
+            () => fmtNumber(2390421244, {precision: 12})
+        ],
+        [
+            '-307720365289.33826 at 4dp',
+            '-307,720,365,289.3383',
+            '-307,720,365,289.3382',
+            () => fmtNumber(-307720365289.33826, {precision: 4})
+        ],
+        // Infinity shows the Intl symbol, with Hoist's sign and ledger.
+        ['Infinity', '∞', 'Infinity', () => fmtNumber(Infinity)],
+        [
+            '-Infinity, ledger',
+            '(∞)',
+            '(Infinity)',
+            () => fmtNumber(-Infinity, {ledger: true, forceLedgerAlign: false})
+        ],
+        // NaN and -0 are unchanged.
+        ['NaN', 'NaN', 'NaN', () => fmtNumber(NaN)],
+        ['-0 at 2dp', '0.00', '0.00', () => fmtNumber(-0, {precision: 2})],
+        // Strings are not parsed. A plain decimal string formats as its number, any other is NaN.
+        [
+            "'-1234.5' at 2dp",
+            '-1,234.50',
+            '-1,234.50',
+            () => fmtNumber('-1234.5' as any, {precision: 2})
+        ],
+        ["'1,234.5' at 2dp", 'NaN', '1,234.50', () => fmtNumber('1,234.5' as any, {precision: 2})],
+        ["'N/A'", 'NaN', 'a TypeError', () => fmtNumber('N/A' as any)],
+        // A numeric zeroPad of 0 is the same as false.
+        [
+            '1234.0001 at 2dp, zeroPad 0, omitFourDigitComma',
+            '1,234',
+            '1234',
+            () => fmtNumber(1234.0001, {precision: 2, zeroPad: 0, omitFourDigitComma: true})
+        ],
+        // Precision is clamped to 0-12, so a negative one cannot reach the Intl range check.
+        [
+            'precision -1 on 5.5',
+            '6',
+            'ERROR: invalid format',
+            () => fmtNumber(5.5, {precision: -1 as any})
+        ]
+    ])('%s: %s (was %s)', (_, expected, was, fmt) => {
+        expect(html(fmt())).toBe(expected);
+    });
+
+    it('throws for the removed formatConfig option, naming its replacements', () => {
+        const opts = {formatConfig: {thousandSeparated: false, mantissa: 0}} as any;
+        expect(() => fmtNumber(1234, opts)).toThrow("Use 'precision', 'zeroPad' and 'withCommas'");
+        expect(() => fmtNumber(null, opts)).toThrow('formatConfig');
+    });
 });

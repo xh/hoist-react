@@ -23,8 +23,9 @@ import {describe, expect, it, vi} from 'vitest';
 
 /**
  * Number formatters render the numbers in nearly every Hoist grid and display. These tests pin the
- * logic Hoist adds on top of numbro: precision and zero padding, signs and ledger format, colors by
- * sign, unit scaling and tooltips, the string-or-element return contract, and shorthand parsing.
+ * logic Hoist adds on top of `Intl.NumberFormat`: precision and zero padding, signs and ledger
+ * format, colors by sign, unit scaling and tooltips, the string-or-element return contract, and
+ * shorthand parsing.
  */
 
 /** Markup of a rendered element, or a string as-is. */
