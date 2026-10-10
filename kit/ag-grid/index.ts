@@ -43,6 +43,7 @@ export type {
     ITooltipParams,
     IRowNode,
     RowClassParams,
+    ValueFormatterParams,
     ValueGetterParams,
     ValueSetterParams,
     MenuItemDef,

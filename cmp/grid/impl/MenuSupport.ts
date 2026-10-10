@@ -223,7 +223,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                     const values = getValues(selectedRecords, field);
                     if (values.length > 1) return {text: `${values.length} values`};
 
-                    const renderer = fieldSpec.renderer ?? column.renderer,
+                    const renderer = fieldSpec.renderer ?? column.renderer ?? column.formatter,
                         elem = renderer
                             ? renderer(values[0], {
                                   record,

@@ -31,11 +31,19 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
   class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
   target `.ag-cell` instead.
+* The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
+  column specs now set a `formatter` in place of a `renderer`. Their cells are plain too, and code
+  that reads their `renderer` finds none. Client-side exports (`GridModel.localExport` and the
+  `exportLocal` menu item) write their display text in place of the raw value. Excel still gets a
+  number as a number.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 
 ### 🎁 New Features
 
+* Added `Column.formatter`, a function that returns a cell's display text. AG Grid writes the text
+  into a plain cell, with no React component. The `numberFormatter`, `dateFormatter` and sibling
+  factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell classes.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
   `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
@@ -70,6 +78,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
+* Fixed `GridModel.localExport` calling a column's `agOptions.valueFormatter` with a bare value
+  instead of AG Grid's params.
+* Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
+  styling. They now add to them, and win for a class that both define.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`.
 * Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
@@ -135,15 +147,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
-* `AgGrid` now publishes its row and header heights to ag-Grid as `--ag-row-height` and
-  `--ag-header-height`. `Grid` and `AgGrid` pass ag-Grid a `getRowHeight` function only when row
+* `AgGrid` now publishes its row and header heights to AG Grid as `--ag-row-height` and
+  `--ag-header-height`. `Grid` and `AgGrid` pass AG Grid a `getRowHeight` function only when row
   heights vary, so uniform grids skip per-row height calls and the post-load row height pass.
 * Removed `GridExperimentalFlags.disableScrollOptimization`. The post-load row height pass now
   runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
-  `Grid` against ag-Grid's community modules.
+  `Grid` against AG Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
   before publishing snapshot and release builds. See `docs/unit-testing.md`.
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
@@ -176,6 +188,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 ### ✨ Styles
 
 * Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
+* Moved the selected grid row's text color from its cells to the row. A cell with its own color
+  class, such as a formatter's sign color, now keeps that color when its row is selected.
 
 ### 📚 Libraries
 

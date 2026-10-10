@@ -4,7 +4,7 @@
 
 ## Overview
 
-Hoist React v89 is a light upgrade with four required changes and one strongly recommended change.
+Hoist React v89 is a light upgrade with five required changes and one strongly recommended change.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -16,6 +16,9 @@ Hoist React v89 is a light upgrade with four required changes and one strongly r
   switch to `Icon.getCatalog()` - see Step 6.
 - **Icon `faName` (required if used)** - Icon elements carry their FA name as `props.faName`, not
   `props.iconName` - see Step 7.
+- **Column `renderer` reads (required if used)** - The built-in number and date column specs set
+  `formatter`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
+  Fall back to `col.formatter` - see Step 9.
 - **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
   follow text need a space or a container `gap` - see Step 10.
 
@@ -355,8 +358,8 @@ looks up by name.
 
 ### 9. Review Grid Rendering Defaults
 
-Two `Grid` rendering defaults changed for performance. Most apps need no change, but check the
-two cases below.
+Three `Grid` rendering defaults changed for performance. Most apps need no change, but check the
+three cases below.
 
 **Column virtualisation is on by default.** `GridModel.useVirtualColumns` now defaults to `true`,
 so a grid renders cells only for the columns within or near its viewport (ag-Grid's own default).
@@ -375,7 +378,7 @@ new GridModel({
 written by ag-Grid, with no React component and no `xh-cell-inner-wrapper` span in the cell. The
 cell carries an `xh-cell--plain` class. Columns with a `renderer`, tree columns, and columns with
 an ag-Grid `cellRenderer` via `agOptions` are unchanged. A renderer-less column with an
-`agOptions.valueFormatter` now displays the formatted value, as its export already did.
+`agOptions.valueFormatter` now displays the formatted value.
 
 **Find affected styles and selectors:**
 
@@ -401,6 +404,54 @@ After:
   color: var(--xh-text-color-muted);
 }
 ```
+
+**Built-in number and date columns are plain.** The `number`, `date`, `dateTime`, `dateTimeSec`,
+`time`, `compactDate` and `localDate` column specs now set a `Column.formatter` in place of a
+`renderer`. A formatter returns the cell's display text, and ag-Grid writes it into a plain cell.
+Grids built on these specs get plain cells with no change. A `renderer` set on top of a spec still
+wins, so `{...number, renderer: myRenderer}` works as before. Two side effects remain:
+
+- App code that reads `renderer` from one of these specs, or from a `Column` built on one, finds
+  none. Fall back to the formatter, as in `col.renderer ?? col.formatter`.
+- Client-side exports (`GridModel.localExport` and the `exportLocal` menu item) write the display
+  text of a formatter column, where they wrote the raw value. An Excel file still gets a number
+  as a raw number. Copy still sends the value, and `GridModel.exportAsync` still sends it with its
+  Excel format.
+
+**Find code that reads a column's renderer:**
+
+```bash
+# Matches `col.renderer` and `const {renderer} = col`
+grep -rnE "\.renderer\b|\{[^}]*\brenderer\b[^}]*\}\s*=" client-app/src/
+```
+
+**Other formatted columns can be plain too.** Switch them to the `numberFormatter`, `dateFormatter`
+and sibling factories in `@xh/hoist/format` as you touch them. Each takes the options of its
+renderer counterpart, less those that need markup. The compiler rejects those options.
+
+Before:
+
+```typescript
+{field: 'pnl', renderer: numberRenderer({precision: 0, ledger: true, colorSpec: true})}
+```
+
+After:
+
+```typescript
+{field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})}
+```
+
+A formatter cell shows the same text, sign colors and alignment as the renderer cell it replaces.
+These differences remain:
+
+- `colorSpec` classes such as `xh-pos-val` sit on the cell, not on an inner span.
+- A `label` is plain text, with no `xh-units-label` span to style. Keep the renderer if the label
+  needs its own style.
+- Ledger alignment is a hidden `::after` on the cell. The cell text no longer ends in a hidden `)`.
+
+Keep the renderer where a cell needs an element, such as an icon or nested layout. Also keep it for
+`withSignGlyph`, `labelCls`, or a `colorSpec` with inline styles. A `tooltip` option does not need
+the renderer. Move it to `Column.tooltip`, for example `tooltip: v => fmtNumberTooltip(v)`.
 
 ### 10. Space Badges from Preceding Text
 
@@ -447,6 +498,8 @@ After completing all steps:
 - [ ] Wide grids scroll as expected, and any automation reading offscreen cells sets
       `useVirtualColumns: false`.
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
+- [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
+- [ ] Code that reads `Column.renderer` handles columns built on the number and date specs.
 - [ ] Badges that follow a label are spaced from it.
 
 ## Reference

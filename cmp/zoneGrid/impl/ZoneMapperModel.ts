@@ -14,6 +14,7 @@ import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} f
 import {ReactNode} from 'react';
 import {ZoneGridModel} from '../ZoneGridModel';
 import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
+import {getFormatterClasses} from './ZoneGridRenderer';
 
 /**
  * Configuration for a ZoneMapperModel - the UI for user-driven customization of zone
@@ -236,7 +237,7 @@ export class ZoneMapperModel extends HoistModel {
                 displayName: displayName,
                 label: label,
                 column: column,
-                renderer: column.renderer,
+                renderer: column.renderer ?? column.formatter,
                 chooserGroup: column.chooserGroup,
                 sortable: column.sortable,
                 sortingOrder: column.sortingOrder
@@ -313,15 +314,17 @@ export class ZoneMapperModel extends HoistModel {
 
         if (!field) return null;
 
-        let value;
+        let value, classes: string[];
         if (sampleRecord) {
-            value = sampleRecord.data[mapping.field];
+            const rawValue = sampleRecord.data[mapping.field];
+            value = rawValue;
             if (field.renderer) {
-                value = field.renderer(value, {
+                value = field.renderer(rawValue, {
                     record: sampleRecord,
                     column: field.column,
                     gridModel: this.zoneGridModel.gridModel
                 });
+                classes = getFormatterClasses(field.renderer, rawValue, sampleRecord);
             }
         }
 
@@ -332,7 +335,10 @@ export class ZoneMapperModel extends HoistModel {
 
         // Render label if requested
         const label = mapping.showLabel && !ignoreLabel ? `${field.label}: ` : null;
-        return span(label, value);
+        return span(
+            label,
+            isEmpty(classes) ? value : span({className: classes.join(' '), item: value})
+        );
     }
 
     private getSampleRecord(): StoreRecord {

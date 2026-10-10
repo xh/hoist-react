@@ -4,18 +4,19 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
+import {CellContext, Column, ColumnFormatter, ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
+import {StoreRecord} from '@xh/hoist/data';
 import {intersperse, throwIf} from '@xh/hoist/utils/js';
-import {compact, isFunction, isNil, partition} from 'lodash';
+import {compact, forOwn, isFunction, isNil, partition} from 'lodash';
 import {ReactNode} from 'react';
 
 export interface ZoneGridColConfig {
     /** Array of SubField specifications to render. */
     subFields: ZoneGridSubField[];
 
-    /** Renderer for primary field. */
-    mainRenderer?: ColumnRenderer;
+    /** Renderer - or formatter - for primary field. */
+    mainRenderer?: ColumnRenderer | ColumnFormatter;
 
     /** Separator rendered between consecutive SubFields. */
     delimiter?: string | false;
@@ -76,10 +77,30 @@ export function zoneGridRenderer(value: any, context: CellContext, isLeft: boole
     });
 }
 
+/**
+ * Classes that a formatter's `cellClassRules` (e.g. `colorSpec`) give a value.
+ * @internal
+ */
+export function getFormatterClasses(
+    renderer: ColumnRenderer | ColumnFormatter,
+    value: any,
+    record: StoreRecord
+): string[] {
+    const ret: string[] = [];
+    forOwn((renderer as ColumnFormatter)?.cellClassRules, (fn, cls) => {
+        if (fn({value, data: record} as any)) ret.push(cls);
+    });
+    return ret;
+}
+
 //------------------
 // Implementation
 //------------------
-function renderMainField(value: any, renderer: ColumnRenderer, context: CellContext) {
+function renderMainField(
+    value: any,
+    renderer: ColumnRenderer | ColumnFormatter,
+    context: CellContext
+) {
     const {column} = context;
     const {content, rendererClass} = renderValue(value, renderer, column, context);
     return div({
@@ -94,7 +115,8 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
 
     throwIf(!column, `Subfield ${colId} not found`);
 
-    const {field, headerName, renderer} = column,
+    const {field, headerName} = column,
+        renderer = column.renderer ?? column.formatter,
         value = record.data[field];
 
     let labelStr;
@@ -124,19 +146,24 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
 
 function renderValue(
     value: string | number,
-    renderer: ColumnRenderer,
+    renderer: ColumnRenderer | ColumnFormatter,
     column: Column,
     context: CellContext
 ): {
     content: ReactNode | null;
     rendererClass: string;
 } {
-    const ret = renderer ? renderer(value, {...context, column}) : value;
+    const ret = renderer ? renderer(value, {...context, column}) : value,
+        classes = [
+            ['string', 'number'].includes(typeof ret)
+                ? getStyleClassName('text-container')
+                : getStyleClassName('element-container'),
+            ...getFormatterClasses(renderer, value, context.record)
+        ];
+
     return {
         content: isNil(ret) ? null : ret,
-        rendererClass: ['string', 'number'].includes(typeof ret)
-            ? getStyleClassName('text-container')
-            : getStyleClassName('element-container')
+        rendererClass: classes.join(' ')
     };
 }
 

@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, ColumnOrGroup, ColumnRenderer, GroupRowRenderer} from '@xh/hoist/cmp/grid';
+import {
+    Column,
+    ColumnFormatter,
+    ColumnOrGroup,
+    ColumnRenderer,
+    GroupRowRenderer
+} from '@xh/hoist/cmp/grid';
 import type {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
 import {logWarn} from '@xh/hoist/utils/js';
 import {castArray, isFunction} from 'lodash';
@@ -23,6 +29,25 @@ export function managedRenderer<T extends ColumnRenderer | GroupRowRenderer>(
             return '#ERROR';
         }
     } as unknown as T;
+}
+
+/**
+ * Wrap a formatter so that a throw shows '#ERROR' in its one cell, as `managedRenderer` does. The
+ * wrapper keeps the formatter's `cellClassRules`.
+ * @internal
+ */
+export function managedFormatter(fn: ColumnFormatter, identifier: string): ColumnFormatter {
+    if (!isFunction(fn)) return fn;
+    const ret: ColumnFormatter = (v, ctx) => {
+        try {
+            return fn(v, ctx);
+        } catch (e) {
+            logWarn([`Formatter for '${identifier}' has thrown an error`, e]);
+            return '#ERROR';
+        }
+    };
+    if (fn.cellClassRules) ret.cellClassRules = fn.cellClassRules;
+    return ret;
 }
 
 /**

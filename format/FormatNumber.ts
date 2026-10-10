@@ -5,10 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
+import {throwIf} from '@xh/hoist/utils/js';
 import {
     clamp,
     defaults,
+    forEach,
     isBoolean,
+    isEmpty,
     isFinite,
     isFunction,
     isInteger,
@@ -23,14 +26,17 @@ import numbro from 'numbro';
 import {CSSProperties, ReactNode} from 'react';
 import {IntRange} from 'type-fest';
 import {fmtSpan, FormatOptions} from './FormatMisc';
-import {createRenderer} from './FormatUtils';
-import {saveOriginal} from './impl/Utils';
+import {createRenderer, type StringFormatter} from './FormatUtils';
+import {saveOriginal, throwIfMarkupOptions} from './impl/Utils';
 
 const THOUSAND = 1000,
     MILLION = 1000000,
     BILLION = 1000000000,
     MAX_NUMERIC_PRECISION = 12,
     MAX_SIGNIFICANT_DIGITS = 15;
+
+// A formatted value (sign removed) that shows only zero digits - see `strictZero`.
+const ROUNDED_ZERO = /^0+.?0*$/;
 
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
@@ -204,7 +210,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let sign = null;
 
     // Tests for zero strings at various precisions
-    if (!strictZero && /^0+.?0*$/.test(str)) {
+    if (!strictZero && ROUNDED_ZERO.test(str)) {
         // Treat rounded zeros as a true zero, for sign checks
         v = 0;
     }
@@ -602,6 +608,177 @@ export const numberRenderer = createRenderer(fmtNumber),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
+
+/**
+ * Options for the string-returning number formatters - {@link numberFormatter} and friends.
+ *
+ * As {@link NumberFormatOptions}, less the options that need markup, which a formatter cannot
+ * return. Those are typed `never`, so passing one - in a literal, a variable or a spread - fails
+ * to compile, and the factories throw if an untyped caller passes one anyway. `colorSpec` and
+ * ledger alignment style the cell through `cellClassRules` instead.
+ */
+export interface NumberFormatterOptions extends Omit<
+    NumberFormatOptions,
+    | 'colorSpec'
+    | 'tooltip'
+    | 'withSignGlyph'
+    | 'labelCls'
+    | 'nullDisplay'
+    | 'zeroDisplay'
+    | 'asHtml'
+    | 'originalValue'
+> {
+    /**
+     * True to color the cell by sign with the default classes (`xh-pos-val`, `xh-neg-val`,
+     * `xh-neutral-val`), or the CSS class to apply per sign. Class names only: a formatter cannot
+     * set inline styles, so a `colorSpec` with style objects needs `numberRenderer`.
+     */
+    colorSpec?: boolean | {pos?: string; neg?: string; neutral?: string};
+
+    /** Display value for null and other invalid input. */
+    nullDisplay?: string;
+
+    /** Display value for zero. */
+    zeroDisplay?: string;
+
+    /** Not supported - set `Column.tooltip` instead. */
+    tooltip?: never;
+
+    /** Not supported - the glyph needs markup. Use `numberRenderer`. */
+    withSignGlyph?: never;
+
+    /** Not supported - a formatter appends its `label` as plain text. */
+    labelCls?: never;
+
+    /** Not supported - a formatter always returns plain text. */
+    asHtml?: never;
+}
+
+/** Options for {@link quantityFormatter} - see {@link QuantityFormatOptions}. */
+export type QuantityFormatterOptions = NumberFormatterOptions &
+    Pick<QuantityFormatOptions, 'useMillions' | 'useBillions' | 'lossless'>;
+
+/**
+ * String-returning counterparts of {@link numberRenderer} and friends, for `Column.formatter`.
+ *
+ * Each takes {@link NumberFormatterOptions} ({@link QuantityFormatterOptions} for
+ * `quantityFormatter`) and returns a formatter whose output ag-Grid writes into the cell as text.
+ * With `colorSpec`, or `ledger` with `forceLedgerAlign` (the default), the formatter carries
+ * `cellClassRules` that color the cell by sign and reserve the width of a closing parenthesis on
+ * positives, so that the column still aligns.
+ */
+export const numberFormatter = createNumberFormatter(fmtNumber),
+    thousandsFormatter = createNumberFormatter(fmtThousands),
+    millionsFormatter = createNumberFormatter(fmtMillions),
+    billionsFormatter = createNumberFormatter(fmtBillions),
+    quantityFormatter = createNumberFormatter<QuantityFormatterOptions>(fmtQuantity, {
+        ledger: true
+    }),
+    priceFormatter = createNumberFormatter(fmtPrice),
+    percentFormatter = createNumberFormatter(fmtPercent);
+
+function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatterOptions>(
+    fmt: (v: number, opts?: NumberFormatOptions) => ReactNode,
+    fmtDefaults: {ledger?: boolean} = {}
+): (opts?: O) => StringFormatter<number> {
+    return (opts?: O) => {
+        opts ??= {} as O;
+        throwIfMarkupOptions(
+            opts,
+            ['tooltip', 'withSignGlyph', 'labelCls', 'asHtml'],
+            ['nullDisplay', 'zeroDisplay']
+        );
+        const {
+                colorSpec = false,
+                ledger = fmtDefaults.ledger ?? false,
+                forceLedgerAlign = true,
+                ...rest
+            } = opts,
+            {strictZero = true, zeroDisplay = null} = rest,
+            // With these pinned off, `fmtNumber` returns its string form - the cell class rules
+            // below apply the color and ledger alignment instead.
+            fmtOpts: NumberFormatOptions = {
+                ...rest,
+                ledger,
+                forceLedgerAlign: false,
+                colorSpec: false,
+                labelCls: null
+            },
+            // Just the digits, for the `strictZero` test that `fmtNumber` applies.
+            digitsOpts: NumberFormatOptions = {
+                ...fmtOpts,
+                ledger: false,
+                withPlusSign: false,
+                prefix: null,
+                label: null,
+                zeroDisplay: null,
+                strictZero: true
+            },
+            ret: StringFormatter<number> = v => fmt(v, fmtOpts) as string,
+            rules: StringFormatter['cellClassRules'] = {};
+
+        // True if `strictZero: false` shows the value as zero. This formats the value, so it keeps
+        // the last result - AG Grid tests a cell's rules one after another with the same value.
+        // A value that numbro cannot format (e.g. 'N/A') is not zero: a rule that threw would
+        // take down the grid, where the formatter itself shows '#ERROR'.
+        let lastTested: any, lastRoundsToZero: boolean;
+        const roundsToZero = (v: any): boolean => {
+            if (!Object.is(v, lastTested)) {
+                lastTested = v;
+                try {
+                    const digits = (fmt(v, digitsOpts) as string).replace('-', '');
+                    lastRoundsToZero = ROUNDED_ZERO.test(digits);
+                } catch {
+                    lastRoundsToZero = false;
+                }
+            }
+            return lastRoundsToZero;
+        };
+
+        // The value as `fmtNumber` styles it: zero if `strictZero: false` rounds it to zero, or
+        // null if it shows `nullDisplay` or `zeroDisplay`, which take no sign color or ledger
+        // alignment. Any other value is returned as-is - a numeric string, NaN or Infinity gets
+        // ledger alignment but no sign color, as from `numberRenderer`.
+        const styledValue = (v: any): any => {
+            if (v == null || v === '') return null;
+            if (!strictZero && v !== 0 && roundsToZero(v)) v = 0;
+            return v === 0 && zeroDisplay != null ? null : v;
+        };
+
+        if (colorSpec) {
+            const spec = colorSpec === true ? DEFAULT_COLOR_SPEC : colorSpec,
+                signTests = {pos: v => v > 0, neg: v => v < 0, neutral: v => v === 0},
+                // One rule per class, so that signs sharing a class each apply it.
+                testsByCls: Record<string, Array<(v: number) => boolean>> = {};
+            forEach(signTests, (test, key) => {
+                const cls = spec[key];
+                throwIf(
+                    !isNil(cls) && !isString(cls),
+                    "Formatter option 'colorSpec' takes class names only - use a renderer for styles."
+                );
+                if (cls) (testsByCls[cls] ??= []).push(test);
+            });
+            forEach(testsByCls, (tests, cls) => {
+                rules[cls] = ({value}) => {
+                    const v = styledValue(value);
+                    return isFinite(v) && tests.some(test => test(v));
+                };
+            });
+        }
+
+        if (ledger && forceLedgerAlign) {
+            // Values shown without parentheses reserve the width of a closing one - as the
+            // element formatter's hidden placeholder does.
+            rules['xh-cell--ledger-align'] = ({value}) => {
+                const v = styledValue(value);
+                return v != null && !(v < 0);
+            };
+        }
+
+        if (!isEmpty(rules)) ret.cellClassRules = rules;
+        return ret;
+    };
+}
 
 const shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 

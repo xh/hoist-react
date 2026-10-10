@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {span} from '@xh/hoist/cmp/layout';
 import {
     fmtBillions,
     fmtMillions,
@@ -13,9 +14,17 @@ import {
     fmtPrice,
     fmtQuantity,
     fmtThousands,
+    millionsFormatter,
     millionsRenderer,
     type NumberFormatOptions,
-    parseNumber
+    numberFormatter,
+    numberRenderer,
+    parseNumber,
+    percentFormatter,
+    percentRenderer,
+    quantityFormatter,
+    type QuantityFormatterOptions,
+    quantityRenderer
 } from '@xh/hoist/format';
 import {isValidElement, type ReactNode} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -24,7 +33,8 @@ import {describe, expect, it, vi} from 'vitest';
 /**
  * Number formatters render the numbers in nearly every Hoist grid and display. These tests pin the
  * logic Hoist adds on top of numbro: precision and zero padding, signs and ledger format, colors by
- * sign, unit scaling and tooltips, the string-or-element return contract, and shorthand parsing.
+ * sign, unit scaling and tooltips, the string-or-element return contract, shorthand parsing, and
+ * the string formatters that grid columns use.
  */
 
 /** Markup of a rendered element, or a string as-is. */
@@ -393,5 +403,113 @@ describe('parseNumber', () => {
     it('parses decimal shorthand to the exact value', () => {
         expect(parseNumber('8.2m')).toBe(8200000);
         expect(parseNumber('1.005k')).toBe(1005);
+    });
+});
+
+/**
+ * The string formatters, for `Column.formatter`. The built-in `number` column spec uses
+ * `numberFormatter`, and apps switch columns to it from `numberRenderer`, so a formatted cell
+ * must look like the rendered one. It must never receive markup, which it would show as
+ * "[object Object]".
+ */
+describe('numberFormatter and friends', () => {
+    it('reject options that need markup, at compile time and when created', () => {
+        // Each line is a compile error - `pnpm typecheck` fails if one stops being one.
+        // @ts-expect-error - tooltip
+        expect(() => numberFormatter({tooltip: true})).toThrow('Column.tooltip');
+        // @ts-expect-error - withSignGlyph
+        expect(() => numberFormatter({withSignGlyph: true})).toThrow('withSignGlyph');
+        // @ts-expect-error - labelCls
+        expect(() => millionsFormatter({label: true, labelCls: 'x'})).toThrow('labelCls');
+        // @ts-expect-error - asHtml
+        expect(() => percentFormatter({asHtml: true})).toThrow('asHtml');
+        // @ts-expect-error - colorSpec with inline styles
+        expect(() => numberFormatter({colorSpec: {pos: {color: 'green'}}})).toThrow('colorSpec');
+        // @ts-expect-error - an element for nullDisplay
+        expect(() => numberFormatter({nullDisplay: span('-')})).toThrow('nullDisplay');
+        // @ts-expect-error - an element for zeroDisplay
+        expect(() => quantityFormatter({zeroDisplay: span('-')})).toThrow('zeroDisplay');
+
+        // Options shared with a renderer, passed by variable or spread, fail to compile too.
+        const rendererOpts = {precision: 2 as const, withSignGlyph: true};
+        // @ts-expect-error - withSignGlyph, by variable
+        expect(() => numberFormatter(rendererOpts)).toThrow('withSignGlyph');
+        // @ts-expect-error - withSignGlyph, by spread
+        expect(() => numberFormatter({...rendererOpts, ledger: true})).toThrow('withSignGlyph');
+    });
+
+    it('accept the unit options of quantityFormatter', () => {
+        expect(quantityFormatter()(7100100)).toBe('7.10m');
+        expect(quantityFormatter({lossless: true})(7100100)).toBe('7,100,100');
+        expect(quantityFormatter({useMillions: false})(7100100)).toBe('7,100,100');
+    });
+
+    describe('match their renderers', () => {
+        // A formatted cell must look like the rendered one: the same text, sign color and ledger
+        // placeholder. Only the `xh-units-label` span is gone - a plain-text cell cannot carry it.
+        // NaN (a `number` field's parse of junk input) and Infinity are shown, so they align too.
+        // Numeric strings (an `auto` field's raw values) are checked for `number` only - the other
+        // renderers do arithmetic on them first, which gives a number its sign color.
+        const values = [
+                ...[1234567.891, -1234567.891, 0, 0.004, -0.004, 12.5, -12.5, null],
+                ...[NaN, Infinity, -Infinity]
+            ],
+            numericStrings: any[] = ['1234567.891', '-12.5', '0', '0.004', '-0.004', ''],
+            twins = {
+                number: [numberRenderer, numberFormatter],
+                millions: [millionsRenderer, millionsFormatter],
+                quantity: [quantityRenderer, quantityFormatter],
+                percent: [percentRenderer, percentFormatter]
+            };
+
+        // What the renderer's cell shows: its text, the classes on its markup, and whether it
+        // ends with the hidden ledger placeholder.
+        function rendered(node: ReactNode) {
+            const body = new DOMParser().parseFromString(html(node) ?? '', 'text/html').body,
+                placeholder = body.querySelector('[style*="hidden"]');
+            placeholder?.remove();
+            const classes = Array.from(body.querySelectorAll('[class]'))
+                .flatMap(it => Array.from(it.classList))
+                .filter(it => it !== 'xh-units-label');
+            return {text: body.textContent, classes, ledgerAlign: !!placeholder};
+        }
+
+        // What the formatter's cell shows: its text, and the classes its rules give the cell.
+        function formatted(formatter, v: number) {
+            const rules = formatter.cellClassRules ?? {},
+                classes = Object.keys(rules).filter(it => rules[it]({value: v}));
+            return {
+                text: formatter(v),
+                classes: classes.filter(it => it !== 'xh-cell--ledger-align'),
+                ledgerAlign: classes.includes('xh-cell--ledger-align')
+            };
+        }
+
+        it.each<[keyof typeof twins, QuantityFormatterOptions]>([
+            ['number', {}],
+            ['number', {precision: 4, zeroPad: 2}],
+            ['number', {ledger: true, precision: 0}],
+            ['number', {ledger: true, forceLedgerAlign: false}],
+            ['number', {colorSpec: {neg: 'my-neg'}, precision: 1}],
+            ['number', {colorSpec: {pos: 'my-up', neg: 'my-down', neutral: 'my-up'}}],
+            ['number', {ledger: true, colorSpec: true, precision: 0}],
+            ['number', {ledger: true, colorSpec: true, zeroDisplay: '-', nullDisplay: 'n/a'}],
+            ['number', {ledger: true, colorSpec: true, strictZero: false, precision: 0}],
+            [
+                'number',
+                {prefix: '$', label: 'k', withPlusSign: true, withCommas: false, precision: 1}
+            ],
+            ['millions', {label: true, ledger: true}],
+            ['quantity', {}],
+            ['quantity', {ledger: false, colorSpec: true}],
+            ['percent', {colorSpec: true}]
+        ])('%sFormatter with %o', (kind, opts) => {
+            const [renderer, formatter] = twins[kind],
+                render = renderer(opts),
+                format = formatter(opts);
+            [...values, ...(kind === 'number' ? numericStrings : [])].forEach(v =>
+                expect(formatted(format, v), `value ${v}`).toEqual(rendered(render(v)))
+            );
+        });
     });
 });
