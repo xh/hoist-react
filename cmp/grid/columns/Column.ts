@@ -701,6 +701,11 @@ export class Column {
         // A formatter's rules style the cell by value where its text cannot - a renderer wins
         // over a formatter, and styles its own output.
         this.cellClassRules = {...(renderer ? null : formatter?.cellClassRules), ...cellClassRules};
+        warnIf(
+            !isEmpty((renderer as ColumnFormatter)?.cellClassRules),
+            `Column '${this.colId}' has a formatter set as its renderer, which drops the ` +
+                `formatter's cell classes (e.g. colorSpec, ledger). Set it as 'formatter' instead.`
+        );
         this.cellFlag = cellFlag;
 
         this.align = align;
