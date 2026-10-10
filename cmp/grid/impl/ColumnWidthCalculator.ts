@@ -119,7 +119,10 @@ export class ColumnWidthCalculator {
         const estimatesByValue = new Map(),
             // A formatter's text is measured as text, and a renderer's markup as HTML.
             render = renderer ?? formatter,
-            renderMemo = render && !rendererIsComplex ? new Map() : null;
+            renderMemo = render && !rendererIsComplex ? new Map() : null,
+            // A formatter's ledger alignment is a hidden `::after`, not part of its text. Count it
+            // in the estimate below, so that the widest positives make the sample.
+            ledgerRule = renderer ? null : cellClassRules?.['xh-cell--ledger-align'];
 
         await forEachAsync(records, record => {
             if (!record) return;
@@ -143,11 +146,11 @@ export class ColumnWidthCalculator {
             // Strip html tags but include parentheses / units etc. for renderers that may return elements.
             const est = estimatesByValue.get(value);
             if (!est) {
+                let text = isNil(value) ? null : stripTags(value.toString());
+                if (text && ledgerRule?.({value: rawValue, data: record})) text += ')';
                 estimatesByValue.set(value, {
                     value,
-                    width: isNil(value)
-                        ? 0
-                        : this.getStringWidth(stripTags(value.toString())) + indentationPx,
+                    width: isNil(text) ? 0 : this.getStringWidth(text) + indentationPx,
                     records: [record]
                 });
             } else {

@@ -13,6 +13,7 @@ import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {fireEvent, render, waitFor} from '@testing-library/react';
 import {CsvExportModule, ModuleRegistry} from 'ag-grid-community';
+import {sumBy, times} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -51,6 +52,29 @@ describe('Column.formatter', () => {
         expect(width('fmt')).toBe(width('rnd'));
         expect(width('fmt')).not.toBe(width('raw'));
         expect(width('dateFmt')).toBe(width('dateRnd'));
+    });
+
+    it('counts the ledger placeholder when it picks the values to measure', async () => {
+        // Autosize measures only the values whose text it estimates widest. Here a dozen negatives
+        // out-estimate the one positive on their text alone, and only its placeholder makes the
+        // positive the widest cell.
+        const opts = {ledger: true, precision: 0} as const,
+            ledgerCols: ColumnSpec[] = [
+                {field: 'qty', colId: 'fmt', formatter: numberFormatter(opts)},
+                {field: 'qty', colId: 'rnd', renderer: numberRenderer(opts)}
+            ].map(it => ({...it, autosizeIncludeHeader: false})),
+            gridModel = await renderGridAsync({columns: ledgerCols});
+        gridModel.loadData([
+            {id: 0, qty: 1_000_000},
+            ...times(12, i => ({id: i + 1, qty: -99_900 - i}))
+        ]);
+        stubTextLayout();
+
+        await gridModel.autosizeAsync({columns: ['fmt', 'rnd'], bufferPx: 0});
+        const width = (colId: string) => gridModel.columnState.find(it => it.colId === colId).width;
+
+        expect(width('rnd')).toBe(charsWidth('1,000,000)'));
+        expect(width('fmt')).toBe(width('rnd'));
     });
 
     it('leaves copy with the typed value, as for a renderer', async () => {
@@ -138,23 +162,31 @@ describe('Column.formatter', () => {
 });
 
 /**
- * jsdom has no layout. Give text a width of 7px per character - enough to tell display text from
- * a raw value - for the canvas and the hidden cell that the autosize calculator measures. jsdom also
+ * Width of text in the stub layout below: 7px per character, but 3px for a comma and 10px for a
+ * parenthesis. Wide parentheses let a negative's pair outweigh a positive's extra digit.
+ */
+function charsWidth(s: string): number {
+    return sumBy(Array.from(s ?? ''), c => (c === ',' ? 3 : '()'.includes(c) ? 10 : 7));
+}
+
+/**
+ * jsdom has no layout. Give text the width of `charsWidth` - enough to tell display text from a
+ * raw value - for the canvas and the hidden cell that the autosize calculator measures. The hidden
+ * cell adds a parenthesis for the ledger alignment class, as its `::after` rule does. jsdom also
  * lacks `innerText`, which stands in here for `textContent`.
  */
 function stubTextLayout() {
-    const textWidth = (s: string) => (s ?? '').length * 7;
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
-        measureText: (s: string) => ({width: textWidth(s)})
+        measureText: (s: string) => ({width: charsWidth(s)})
     } as any);
 
     const proto = HTMLElement.prototype;
     Object.defineProperty(proto, 'clientWidth', {
         configurable: true,
         get() {
-            return this.classList.contains('xh-grid-autosize-cell')
-                ? textWidth(this.textContent)
-                : 0;
+            if (!this.classList.contains('xh-grid-autosize-cell')) return 0;
+            const ledgerAlign = this.classList.contains('xh-cell--ledger-align');
+            return charsWidth(this.textContent + (ledgerAlign ? ')' : ''));
         }
     });
     Object.defineProperty(proto, 'innerText', {
