@@ -11,9 +11,8 @@
  *
  * `estimateWidth()` sums per-character widths, each measured once and cached, so a pass over many
  * values costs one `measureText` call per distinct character rather than per value. The sum
- * ignores kerning, ligatures and contextual alternates, so it can differ from the exact width of
- * `measureWidth()` by a fraction of a pixel per kerned pair, or by up to ~2px for a glyph a font
- * swaps in context (Inter's `*` after a digit or capital).
+ * ignores kerning, ligatures and contextual alternates, so it differs from the exact width of
+ * `measureWidth()` by a small, font-dependent amount.
  *
  * @internal
  */
