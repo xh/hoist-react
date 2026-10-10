@@ -4,7 +4,7 @@
 
 ## Overview
 
-Hoist React v89 is a light upgrade with four required changes and one strongly recommended change.
+Hoist React v89 is a light upgrade with five required changes and one strongly recommended change.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -16,6 +16,9 @@ Hoist React v89 is a light upgrade with four required changes and one strongly r
   switch to `Icon.getCatalog()` - see Step 6.
 - **Icon `faName` (required if used)** - Icon elements carry their FA name as `props.faName`, not
   `props.iconName` - see Step 7.
+- **Column `renderer` reads (required if used)** - The built-in number and date column specs set
+  `formatter`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
+  Fall back to `col.formatter` - see Step 9.
 - **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
   follow text need a space or a container `gap` - see Step 10.
 
@@ -410,9 +413,10 @@ wins, so `{...number, renderer: myRenderer}` works as before. Two side effects r
 
 - App code that reads `renderer` from one of these specs, or from a `Column` built on one, finds
   none. Fall back to the formatter, as in `col.renderer ?? col.formatter`.
-- `GridModel.localExport` writes the display text of a formatter column, where it wrote the raw
-  value. An Excel file holds that text as text, not as a number. Copy still sends the value, and
-  `GridModel.exportAsync` still sends it with its Excel format.
+- Client-side exports (`GridModel.localExport` and the `exportLocal` menu item) write the display
+  text of a formatter column, where they wrote the raw value. An Excel file holds that text as
+  text, not as a number. Copy still sends the value, and `GridModel.exportAsync` still sends it
+  with its Excel format.
 
 **Find code that reads a column's renderer:**
 

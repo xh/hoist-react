@@ -33,8 +33,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   target `.ag-cell` instead.
 * The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
   column specs now set a `formatter` in place of a `renderer`, so their cells are plain too. Code
-  that reads their `renderer` finds none, and `GridModel.localExport` writes their display text in
-  place of the raw value.
+  that reads their `renderer` finds none. Client-side exports (`GridModel.localExport` and the
+  `exportLocal` menu item) write their display text in place of the raw value.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 
