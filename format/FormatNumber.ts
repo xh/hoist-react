@@ -34,6 +34,9 @@ const THOUSAND = 1000,
     MAX_NUMERIC_PRECISION = 12,
     MAX_SIGNIFICANT_DIGITS = 15;
 
+// A formatted value (sign removed) that shows only zero digits - see `strictZero`.
+const ROUNDED_ZERO = /^0+.?0*$/;
+
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
@@ -206,7 +209,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let sign = null;
 
     // Tests for zero strings at various precisions
-    if (!strictZero && /^0+.?0*$/.test(str)) {
+    if (!strictZero && ROUNDED_ZERO.test(str)) {
         // Treat rounded zeros as a true zero, for sign checks
         v = 0;
     }
@@ -645,15 +648,22 @@ export const numberFormatter = createNumberFormatter(fmtNumber),
     thousandsFormatter = createNumberFormatter(fmtThousands),
     millionsFormatter = createNumberFormatter(fmtMillions),
     billionsFormatter = createNumberFormatter(fmtBillions),
-    quantityFormatter = createNumberFormatter(fmtQuantity),
+    quantityFormatter = createNumberFormatter(fmtQuantity, {ledger: true}),
     priceFormatter = createNumberFormatter(fmtPrice),
     percentFormatter = createNumberFormatter(fmtPercent);
 
 function createNumberFormatter(
-    fmt: (v: number, opts?: NumberFormatOptions) => ReactNode
+    fmt: (v: number, opts?: NumberFormatOptions) => ReactNode,
+    fmtDefaults: {ledger?: boolean} = {}
 ): (opts?: NumberFormatterOptions) => StringFormatter<number> {
     return (opts = {}) => {
-        const {colorSpec = false, ledger = false, forceLedgerAlign = true, ...rest} = opts,
+        const {
+                colorSpec = false,
+                ledger = fmtDefaults.ledger ?? false,
+                forceLedgerAlign = true,
+                ...rest
+            } = opts,
+            {strictZero = true, zeroDisplay = null} = rest,
             // Every option that would make the formatter return markup is pinned off here -
             // see `fmtNumber`, which then returns its string form.
             fmtOpts: NumberFormatOptions = {
@@ -665,8 +675,30 @@ function createNumberFormatter(
                 withSignGlyph: false,
                 labelCls: null
             },
+            // Just the digits, for the `strictZero` test that `fmtNumber` applies.
+            digitsOpts: NumberFormatOptions = {
+                ...fmtOpts,
+                ledger: false,
+                withPlusSign: false,
+                prefix: null,
+                label: null,
+                zeroDisplay: null,
+                strictZero: true
+            },
             ret: StringFormatter<number> = v => fmt(v, fmtOpts) as string,
             rules: StringFormatter['cellClassRules'] = {};
+
+        // The value as `fmtNumber` styles it: zero if `strictZero: false` rounds it to zero, or
+        // null if it shows `nullDisplay` or `zeroDisplay`, which take no sign color or ledger
+        // alignment.
+        const styledValue = (v: number): number => {
+            if (!isFinite(v)) return null;
+            if (!strictZero && v !== 0) {
+                const digits = (fmt(v, digitsOpts) as string).replace('-', '');
+                if (ROUNDED_ZERO.test(digits)) v = 0;
+            }
+            return v === 0 && zeroDisplay != null ? null : v;
+        };
 
         if (colorSpec) {
             const spec = colorSpec === true ? DEFAULT_COLOR_SPEC : colorSpec,
@@ -674,16 +706,21 @@ function createNumberFormatter(
             forEach(signRules, (test, key) => {
                 const cls = spec[key];
                 if (isString(cls) && cls) {
-                    rules[cls] = ({value}) => isFinite(value) && test(value);
+                    rules[cls] = ({value}) => {
+                        const v = styledValue(value);
+                        return v != null && test(v);
+                    };
                 }
             });
         }
 
         if (ledger && forceLedgerAlign) {
-            // Positives (and values that round to zero) get no parentheses, so reserve the width
-            // of a closing one - as the element formatter's hidden placeholder does.
-            rules['xh-cell--ledger-align'] = ({value}) =>
-                isNumber(value) && isFinite(value) && !ret(value).endsWith(')');
+            // Values shown without parentheses reserve the width of a closing one - as the
+            // element formatter's hidden placeholder does.
+            rules['xh-cell--ledger-align'] = ({value}) => {
+                const v = styledValue(value);
+                return v != null && v >= 0;
+            };
         }
 
         if (!isEmpty(rules)) ret.cellClassRules = rules;
