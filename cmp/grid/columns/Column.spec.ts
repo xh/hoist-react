@@ -106,14 +106,34 @@ describe('Column.getAgSpec', () => {
             expect(format({value: 'Alpha', data: store.getById(7)})).toBe('Alpha #7');
         });
 
-        it('is not called for a row with no record, such as a group row', () => {
+        // ag-Grid formats a group row's label through the column the row is grouped by. Such
+        // rows have no record.
+        it("is not called for a group row's label, which shows its raw value", () => {
             let calls = 0;
             const col = createColumn({formatter: v => `${v} #${++calls}`}),
-                format = col.getAgSpec().valueFormatter as Function;
+                format = col.getAgSpec().valueFormatter as Function,
+                agColumn = {};
 
             // ag-Grid shows the raw value when the formatter gives it null.
-            expect(format({value: 'Alpha', data: undefined})).toBeNull();
+            expect(
+                format({
+                    value: 'Alpha',
+                    data: undefined,
+                    column: agColumn,
+                    node: {group: true, rowGroupColumn: agColumn}
+                })
+            ).toBeNull();
             expect(calls).toBe(0);
+        });
+
+        it('formats an aggregate on a row with no record, such as a total row', () => {
+            const col = createColumn({formatter: numberFormatter({precision: 2})}),
+                format = col.getAgSpec().valueFormatter as Function,
+                totalRow = {group: true, footer: true, rowGroupColumn: {}};
+
+            expect(format({value: 1234.5, data: undefined, column: {}, node: totalRow})).toBe(
+                '1,234.50'
+            );
         });
 
         it('blanks the cell when it returns null, as a renderer does', () => {

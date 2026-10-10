@@ -390,8 +390,9 @@ export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactN
  * to style the cell by value - the string formatter factories in `@xh/hoist/format` attach rules
  * for `colorSpec` and ledger alignment this way.
  *
- * As with a renderer, a group row shows its raw value without calling the formatter, and a throw
- * shows '#ERROR' in the cell.
+ * As with a renderer, a group row's label shows its raw value without calling the formatter, and
+ * a throw shows '#ERROR' in the cell. On a row with no record, such as an ag-Grid total row, the
+ * formatter gets `record` undefined.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
  *      Note that a column whose formatter reads record fields other than its own should set

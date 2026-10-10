@@ -286,8 +286,8 @@ export interface ColumnSpec {
      * A formatter may carry `cellClassRules` to style the cell by value - the factories above do
      * so for `colorSpec` and ledger alignment. Those rules are applied beneath the column's own.
      * As for a renderer, set `rendererIsComplex` if the formatter reads other fields of the
-     * record, so that autosize measures each row's own text. Group rows show their raw value, as
-     * they do for a renderer.
+     * record, so that autosize measures each row's own text. A group row's label shows its raw
+     * value, as for a renderer.
      *
      * Autosize, `GridModel.localExport`, header and context menu filters, and ZoneGrid use the
      * formatted text, as do `StoreFilterField` and `GridFindField` on date fields. Copy sends the
@@ -1061,11 +1061,12 @@ export class Column {
     private get agValueFormatter(): ColDef['valueFormatter'] {
         return (agParams: ValueFormatterParams) => {
             const {formatter, gridModel} = this,
-                record = agParams.data;
+                {data: record, node, column} = agParams;
 
-            // ag-Grid also formats a full-width group row's label through the grouped column.
-            // That row has no record, so it shows its raw value, as with a renderer.
-            if (!(record instanceof StoreRecord)) return null;
+            // ag-Grid also formats a group row's label through the grouped column. The label
+            // shows its raw value, as with a renderer. Other rows without a record, such as
+            // ag-Grid total rows, format their aggregates, also as with a renderer.
+            if (!(record instanceof StoreRecord) && node?.rowGroupColumn === column) return null;
 
             // Blank the cell for a null return, as for a renderer. ag-Grid would show the value.
             return formatter(agParams.value, {record, column: this, gridModel}) ?? '';

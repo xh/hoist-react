@@ -288,8 +288,9 @@ columns: [
   and ledger alignment. `Column` applies them beneath its own `cellClassRules`.
 - **Other record fields** - a formatter that reads them needs `rendererIsComplex`, as a renderer
   does. Autosize relies on it to measure each row's own text.
-- **Group rows** - a group row shows its raw group value, as with a renderer. Set
-  `GridModel.groupRowRenderer` to format it.
+- **Group rows** - a group row's label shows its raw group value, as with a renderer. Set
+  `GridModel.groupRowRenderer` to format it. An ag-Grid total row has no record, so the formatter
+  gets `record` undefined there.
 - **With a renderer** - the `renderer` wins, and `Column` ignores the formatter and its rules.
   This lets `{...number, renderer}` override a built-in spec.
 - **Outside the cell** - autosize, `GridModel.localExport`, header filters and `ZoneGrid` use the
