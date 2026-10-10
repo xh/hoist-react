@@ -483,6 +483,7 @@ describe('numberFormatter and friends', () => {
             ['number', {ledger: true, precision: 0}],
             ['number', {ledger: true, forceLedgerAlign: false}],
             ['number', {colorSpec: {neg: 'my-neg'}, precision: 1}],
+            ['number', {colorSpec: {pos: 'my-up', neg: 'my-down', neutral: 'my-up'}}],
             ['number', {ledger: true, colorSpec: true, precision: 0}],
             ['number', {ledger: true, colorSpec: true, zeroDisplay: '-', nullDisplay: 'n/a'}],
             ['number', {ledger: true, colorSpec: true, strictZero: false, precision: 0}],

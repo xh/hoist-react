@@ -729,19 +729,22 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
 
         if (colorSpec) {
             const spec = colorSpec === true ? DEFAULT_COLOR_SPEC : colorSpec,
-                signRules = {pos: v => v > 0, neg: v => v < 0, neutral: v => v === 0};
-            forEach(signRules, (test, key) => {
+                signTests = {pos: v => v > 0, neg: v => v < 0, neutral: v => v === 0},
+                // One rule per class, so that signs sharing a class each apply it.
+                testsByCls: Record<string, Array<(v: number) => boolean>> = {};
+            forEach(signTests, (test, key) => {
                 const cls = spec[key];
                 throwIf(
                     !isNil(cls) && !isString(cls),
                     "Formatter option 'colorSpec' takes class names only - use a renderer for styles."
                 );
-                if (cls) {
-                    rules[cls] = ({value}) => {
-                        const v = styledValue(value);
-                        return v != null && test(v);
-                    };
-                }
+                if (cls) (testsByCls[cls] ??= []).push(test);
+            });
+            forEach(testsByCls, (tests, cls) => {
+                rules[cls] = ({value}) => {
+                    const v = styledValue(value);
+                    return v != null && tests.some(test => test(v));
+                };
             });
         }
 
