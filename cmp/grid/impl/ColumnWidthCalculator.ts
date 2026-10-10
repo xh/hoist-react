@@ -120,12 +120,12 @@ export class ColumnWidthCalculator {
     }
 
     async calcLevelWidthAsync(
-        gridModel,
+        gridModel: GridModel,
         records: StoreRecord[],
-        column,
-        options,
+        column: Column,
+        options: Omit<GridAutosizeOptions, 'columns'>,
         indentationPx = 0
-    ) {
+    ): Promise<number> {
         const {field, getValueFn, renderer, rendererIsComplex, cellClassRules} = column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
