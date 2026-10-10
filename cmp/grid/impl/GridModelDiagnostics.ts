@@ -65,18 +65,29 @@ export class GridModelDiagnostics extends BaseDiagnostics<GridModel> {
     }
 
     @action
-    noteAutosize(type: AutosizeOp['type'], columns: number, records: number, start: number) {
+    noteAutosize(
+        type: AutosizeOp['type'],
+        columns: number,
+        records: number,
+        renderedRowsOnly: boolean,
+        start: number
+    ) {
         const op: AutosizeOp = {
             type,
             columns,
             records,
+            renderedRowsOnly,
             total: this.owner.store.records.length,
             elapsed: performance.now() - start,
             timestamp: Date.now()
         };
         const {count, elapsed} = this.autosize;
         this.autosize = {last: op, count: count + 1, elapsed: elapsed + op.elapsed};
-        this.logOp('autosize', op, `cols ${op.columns} records ${op.records}`);
+        this.logOp(
+            'autosize',
+            op,
+            `cols ${op.columns} records ${op.records}${op.renderedRowsOnly ? ' (rendered rows only)' : ''}`
+        );
     }
 
     @action
@@ -146,6 +157,8 @@ export interface AutosizeOp {
     type: 'standard' | 'fillMode';
     columns: number;
     records: number;
+    /** True when the sized records were the rendered rows, whether by option or by `maxRecords`. */
+    renderedRowsOnly: boolean;
     total: number;
     elapsed: number;
     timestamp: number;

@@ -31,6 +31,9 @@ export class GridAutosizeService extends HoistService {
 
     private _columnWidthCalculator = new ColumnWidthCalculator();
 
+    /** Models already warned that `maxRecords` switched them to rendered rows only. */
+    private _maxRecordsWarned = new WeakSet<GridModel>();
+
     /**
      * Calculate and apply autosized column widths.
      *
@@ -62,7 +65,7 @@ export class GridAutosizeService extends HoistService {
         colIds = sortBy(colIds, id => gridModel.columnState.findIndex(col => col.colId === id));
 
         // Perform computation. This is async and expensive, and may become obsolete.
-        const records = this.gatherRecordsToBeSized(gridModel, options),
+        const {records, renderedRowsOnly} = this.gatherRecordsToBeSized(gridModel, options),
             requiredWidths = await this.calcRequiredWidthsAsync(
                 gridModel,
                 colIds,
@@ -98,6 +101,7 @@ export class GridAutosizeService extends HoistService {
                 !fillMode || fillMode == 'none' ? 'standard' : 'fillMode',
                 requiredWidths.length,
                 records.length,
+                renderedRowsOnly,
                 start
             );
         });
@@ -132,19 +136,21 @@ export class GridAutosizeService extends HoistService {
         return ret;
     }
 
+    /**
+     * Returns the records to size against, and whether they are the rendered rows only - either
+     * by option, or because `maxRecords` capped an autosize with `renderedRowsOnly` unset.
+     */
     private gatherRecordsToBeSized(
         gridModel: GridModel,
         options: Omit<GridAutosizeOptions, 'columns'>
-    ): StoreRecord[] {
-        let {store, agApi, treeMode, groupBy} = gridModel,
-            {includeCollapsedChildren, renderedRowsOnly} = options,
-            ret = [];
+    ): {records: StoreRecord[]; renderedRowsOnly: boolean} {
+        const {store, agApi, treeMode, groupBy} = gridModel,
+            {includeCollapsedChildren, maxRecords} = options;
+        let {renderedRowsOnly} = options,
+            ret: StoreRecord[] = [];
 
         if (renderedRowsOnly) {
-            agApi.getRenderedNodes().forEach(node => {
-                const record = store.getById(node.data?.id);
-                if (record) ret.push(record);
-            });
+            ret = this.gatherRenderedRecords(gridModel);
         } else if (!includeCollapsedChildren && (treeMode || groupBy)) {
             // In tree/grouped grids, included expanded rows only by default.
             for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
@@ -163,11 +169,38 @@ export class GridAutosizeService extends HoistService {
             ret = [...store.records];
         }
 
+        if (renderedRowsOnly == null && isFinite(maxRecords) && ret.length > maxRecords) {
+            this.warnOfMaxRecords(gridModel, ret.length, maxRecords);
+            ret = this.gatherRenderedRecords(gridModel);
+            renderedRowsOnly = true;
+        }
+
         // Ensure the summary record is always included, since it is likely to contain the largest values.
         if (gridModel.showSummary && !isEmpty(store.summaryRecords)) {
             ret.push(...store.summaryRecords);
         }
+        return {records: ret, renderedRowsOnly: !!renderedRowsOnly};
+    }
+
+    private gatherRenderedRecords(gridModel: GridModel): StoreRecord[] {
+        const {store, agApi} = gridModel,
+            ret: StoreRecord[] = [];
+        agApi.getRenderedNodes().forEach(node => {
+            const record = store.getById(node.data?.id);
+            if (record) ret.push(record);
+        });
         return ret;
+    }
+
+    // Warn once per GridModel, as managed-mode grids autosize on every load.
+    private warnOfMaxRecords(gridModel: GridModel, count: number, maxRecords: number) {
+        if (this._maxRecordsWarned.has(gridModel)) return;
+        this._maxRecordsWarned.add(gridModel);
+        this.logWarn(
+            `GridModel ${gridModel.xhId} autosizing against rendered rows only - ${count} records ` +
+                `exceeds autosizeOptions.maxRecords (${maxRecords}). Set ` +
+                `autosizeOptions.renderedRowsOnly or maxRecords to control this.`
+        );
     }
 
     // Calculate the increased size of columns to fill any remaining space.

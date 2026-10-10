@@ -355,8 +355,8 @@ looks up by name.
 
 ### 9. Review Grid Rendering Defaults
 
-Two `Grid` rendering defaults changed for performance. Most apps need no change, but check the
-two cases below.
+Three `Grid` defaults changed for performance. Most apps need no change, but check the cases
+below.
 
 **Column virtualisation is on by default.** `GridModel.useVirtualColumns` now defaults to `true`,
 so a grid renders cells only for the columns within or near its viewport (ag-Grid's own default).
@@ -431,6 +431,25 @@ After:
 span('Alerts ', badge({item: count, intent: 'danger'}))
 ```
 
+### 11. Cap on All-Rows Autosizing
+
+`GridAutosizeOptions.renderedRowsOnly` now defaults to unset.
+A grid then autosizes against every record while it holds no more than
+`GridAutosizeOptions.maxRecords` (default 10000), and against rendered rows only beyond that,
+with one console warning per grid when the cap applies. Grids that already set `renderedRowsOnly`
+are unchanged. For a grid that must size against every record whatever its count, set the option
+explicitly:
+
+```typescript
+new GridModel({
+    autosizeOptions: {renderedRowsOnly: false},
+    ...
+});
+```
+
+Or raise the cap with `autosizeOptions: {maxRecords: 50000}`. Each all-rows autosize costs
+roughly 10us per record per autosized column.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -448,6 +467,8 @@ After completing all steps:
       `useVirtualColumns: false`.
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
 - [ ] Badges that follow a label are spaced from it.
+- [ ] Grids over 10,000 records that must autosize against every record set
+      `autosizeOptions: {renderedRowsOnly: false}`.
 
 ## Reference
 

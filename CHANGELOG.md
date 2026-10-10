@@ -33,6 +33,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   target `.ag-cell` instead.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
+* `GridAutosizeOptions.renderedRowsOnly` now defaults to unset. A grid holding more than
+  `GridAutosizeOptions.maxRecords` records (default 10000) then autosizes against rendered rows
+  only, and warns once when it does. Set `autosizeOptions: {renderedRowsOnly: false}` on grids
+  that must size against every record.
 
 ### 🎁 New Features
 

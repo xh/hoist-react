@@ -26,15 +26,23 @@ export interface GridAutosizeOptions {
     showMask?: boolean;
 
     /**
-     * True to limit operation to rendered rows only. Default is false.
-     * Set to true for grids that contain many rows and columns, for which full autosizing
-     * of all data would be too slow.
+     * True to size columns against rendered rows only. False to size against all records,
+     * whatever their count. Unset (the default) to size against all records up to `maxRecords`
+     * and against rendered rows beyond it.
      */
     renderedRowsOnly?: boolean;
 
     /**
+     * Record count above which an autosize with `renderedRowsOnly` unset considers rendered rows
+     * only. Default is 10000; null removes the cap. The cost of an all-rows autosize scales with
+     * records x autosized columns, at roughly 10us per cell, so the default bounds an all-rows
+     * autosize of a 10-column grid at about a second.
+     */
+    maxRecords?: number;
+
+    /**
      *  True to autosize all rows, even when hidden due to a collapsed ancestor row.
-     *  Only has an effect when renderedRowsOnly is false. Default is false.
+     *  Has no effect when sizing against rendered rows only. Default is false.
      *  Note that setting this to true can have performance impacts for large tree grids with many cells.
      */
     includeCollapsedChildren?: boolean;

@@ -755,7 +755,8 @@ export class GridModel extends HoistModel {
             {...autosizeOptions},
             {
                 mode: GridModel.defaults.autosizeMode,
-                renderedRowsOnly: false,
+                renderedRowsOnly: null,
+                maxRecords: 10000,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
