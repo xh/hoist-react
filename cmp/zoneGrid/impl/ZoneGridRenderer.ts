@@ -6,6 +6,7 @@
  */
 import {CellContext, Column, ColumnFormatter, ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
+import {StoreRecord} from '@xh/hoist/data';
 import {intersperse, throwIf} from '@xh/hoist/utils/js';
 import {compact, forOwn, isFunction, isNil, partition} from 'lodash';
 import {ReactNode} from 'react';
@@ -76,6 +77,22 @@ export function zoneGridRenderer(value: any, context: CellContext, isLeft: boole
     });
 }
 
+/**
+ * Classes that a formatter's `cellClassRules` (e.g. `colorSpec`) give a value.
+ * @internal
+ */
+export function getFormatterClasses(
+    renderer: ColumnRenderer | ColumnFormatter,
+    value: any,
+    record: StoreRecord
+): string[] {
+    const ret: string[] = [];
+    forOwn((renderer as ColumnFormatter)?.cellClassRules, (fn, cls) => {
+        if (fn({value, data: record} as any)) ret.push(cls);
+    });
+    return ret;
+}
+
 //------------------
 // Implementation
 //------------------
@@ -140,13 +157,9 @@ function renderValue(
         classes = [
             ['string', 'number'].includes(typeof ret)
                 ? getStyleClassName('text-container')
-                : getStyleClassName('element-container')
+                : getStyleClassName('element-container'),
+            ...getFormatterClasses(renderer, value, context.record)
         ];
-
-    // A formatter styles its text by value through `cellClassRules` (e.g. `colorSpec`).
-    forOwn((renderer as ColumnFormatter)?.cellClassRules, (fn, cls) => {
-        if (fn({value, data: context.record} as any)) classes.push(cls);
-    });
 
     return {
         content: isNil(ret) ? null : ret,
