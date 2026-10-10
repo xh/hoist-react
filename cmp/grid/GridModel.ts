@@ -444,6 +444,7 @@ interface GridExperimentalFlags {
 
 export interface GridModelDefaults {
     autosizeMode?: GridAutosizeMode;
+    autosizeOptions?: Partial<GridAutosizeOptions>;
     cellBorders?: boolean;
     clicksToExpand?: number | null;
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean | null;
@@ -502,6 +503,7 @@ export class GridModel extends HoistModel {
     /** App-level defaults for GridModel. Instance config takes precedence. */
     static defaults: GridModelDefaults = {
         autosizeMode: 'onSizingModeChange',
+        autosizeOptions: null,
         cellBorders: false,
         clicksToExpand: null,
         colChooserModel: null,
@@ -751,20 +753,17 @@ export class GridModel extends HoistModel {
             source: this,
             msg: 'It no longer has any effect - AG Grid 36 renders a full-width scrollbar natively.'
         });
-        this.autosizeOptions = defaults(
-            {...autosizeOptions},
-            {
-                mode: GridModel.defaults.autosizeMode,
-                renderedRowsOnly: null,
-                maxRecords: 10000,
-                includeCollapsedChildren: false,
-                showMask: false,
-                // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
-                // any autosize mis-calc. Manual col resizing on mobile is super annoying!
-                bufferPx: XH.isMobileApp ? 10 : 5,
-                fillMode: 'none'
-            }
-        );
+        this.autosizeOptions = defaults({...autosizeOptions}, GridModel.defaults.autosizeOptions, {
+            mode: GridModel.defaults.autosizeMode,
+            renderedRowsOnly: null,
+            maxRecords: 5000,
+            includeCollapsedChildren: false,
+            showMask: false,
+            // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
+            // any autosize mis-calc. Manual col resizing on mobile is super annoying!
+            bufferPx: XH.isMobileApp ? 10 : 5,
+            fillMode: 'none'
+        });
         this.restoreDefaultsFn = restoreDefaultsFn;
         this.restoreDefaultsWarning = restoreDefaultsWarning;
         this.fullRowEditing = fullRowEditing;

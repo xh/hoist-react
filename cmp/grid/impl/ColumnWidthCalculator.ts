@@ -46,7 +46,7 @@ export class ColumnWidthCalculator {
      * Max number of values to measure exactly on the canvas per column, taken from the widest
      * per-character estimates. A column with up to this many distinct rendered values is measured
      * exactly; above it, a value is missed only if this many distinct values are all over-estimated
-     * above it, which takes kerning or contextual alternates of a few pixels on every one of them.
+     * above it, which takes kerning or contextual alternates widening every one of them.
      */
     RANK_SAMPLES = 500;
 

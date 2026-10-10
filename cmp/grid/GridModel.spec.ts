@@ -23,6 +23,21 @@ describe('GridModel', () => {
             expect(createGridModel().useVirtualColumns).toBe(true);
             expect(createGridModel({useVirtualColumns: false}).useVirtualColumns).toBe(false);
         });
+
+        it('takes autosizeOptions from GridModel.defaults, below instance config', () => {
+            const prev = GridModel.defaults.autosizeOptions;
+            GridModel.defaults.autosizeOptions = {maxRecords: 7, renderedRowsOnly: true};
+            onTestFinished(() => {
+                GridModel.defaults.autosizeOptions = prev;
+            });
+
+            const {autosizeOptions} = createGridModel({autosizeOptions: {maxRecords: 9}});
+            expect(autosizeOptions).toMatchObject({
+                maxRecords: 9,
+                renderedRowsOnly: true,
+                mode: GridModel.defaults.autosizeMode
+            });
+        });
     });
 
     describe('setSortBy', () => {
