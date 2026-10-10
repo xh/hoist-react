@@ -717,16 +717,31 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
             ret: StringFormatter<number> = v => fmt(v, fmtOpts) as string,
             rules: StringFormatter['cellClassRules'] = {};
 
+        // True if `strictZero: false` shows the value as zero. This formats the value, so it keeps
+        // the last result - AG Grid tests a cell's rules one after another with the same value.
+        // A value that numbro cannot format (e.g. 'N/A') is not zero: a rule that threw would
+        // take down the grid, where the formatter itself shows '#ERROR'.
+        let lastTested: any, lastRoundsToZero: boolean;
+        const roundsToZero = (v: any): boolean => {
+            if (!Object.is(v, lastTested)) {
+                lastTested = v;
+                try {
+                    const digits = (fmt(v, digitsOpts) as string).replace('-', '');
+                    lastRoundsToZero = ROUNDED_ZERO.test(digits);
+                } catch {
+                    lastRoundsToZero = false;
+                }
+            }
+            return lastRoundsToZero;
+        };
+
         // The value as `fmtNumber` styles it: zero if `strictZero: false` rounds it to zero, or
         // null if it shows `nullDisplay` or `zeroDisplay`, which take no sign color or ledger
         // alignment. Any other value is returned as-is - a numeric string, NaN or Infinity gets
         // ledger alignment but no sign color, as from `numberRenderer`.
         const styledValue = (v: any): any => {
             if (v == null || v === '') return null;
-            if (!strictZero && v !== 0) {
-                const digits = (fmt(v, digitsOpts) as string).replace('-', '');
-                if (ROUNDED_ZERO.test(digits)) v = 0;
-            }
+            if (!strictZero && v !== 0 && roundsToZero(v)) v = 0;
             return v === 0 && zeroDisplay != null ? null : v;
         };
 

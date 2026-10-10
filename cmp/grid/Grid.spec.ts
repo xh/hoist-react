@@ -6,6 +6,7 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import type {PlainObject} from '@xh/hoist/core';
 import {numberFormatter} from '@xh/hoist/format';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
@@ -107,15 +108,44 @@ describe('Grid', () => {
         expect(cells('ag_1')).toEqual(['Alpha', '#ERROR']);
         expect(cells('ag_2')).toEqual(['Beta', '2!']);
     });
+
+    // The cell class rules of a `strictZero: false` formatter format the value too, to test for a
+    // rounded zero. numbro throws on a string such as 'N/A' in an 'auto' field.
+    it("shows '#ERROR' for a value a strictZero: false number formatter cannot format", async () => {
+        const {container} = await renderGridAsync(
+                {
+                    columns: [
+                        {field: 'name'},
+                        {
+                            field: 'qty',
+                            formatter: numberFormatter({strictZero: false, colorSpec: true})
+                        }
+                    ]
+                },
+                [
+                    {id: 1, name: 'Alpha', qty: 'N/A'},
+                    {id: 2, name: 'Beta', qty: -2}
+                ]
+            ),
+            qtyCell = (rowId: string) =>
+                container.querySelectorAll(`.ag-row[row-id="${rowId}"] .ag-cell`)[1];
+
+        expect(qtyCell('ag_1').textContent).toBe('#ERROR');
+        expect(qtyCell('ag_2').textContent).toBe('-2');
+        expect(qtyCell('ag_2').classList.contains('xh-neg-val')).toBe(true);
+    });
 });
 
-async function renderGridAsync(config: GridConfig = {}) {
-    const gridModel = new GridModel({columns: [{field: 'name'}, {field: 'qty'}], ...config});
-    onTestFinished(() => gridModel.destroy());
-    gridModel.loadData([
+async function renderGridAsync(
+    config: GridConfig = {},
+    data: PlainObject[] = [
         {id: 1, name: 'Alpha', qty: 1},
         {id: 2, name: 'Beta', qty: 2}
-    ]);
+    ]
+) {
+    const gridModel = new GridModel({columns: [{field: 'name'}, {field: 'qty'}], ...config});
+    onTestFinished(() => gridModel.destroy());
+    gridModel.loadData(data);
 
     const {container} = render(grid({model: gridModel, width: 600, height: 400}));
     await waitFor(() => expect(container.querySelectorAll('.ag-row')).toHaveLength(2));
