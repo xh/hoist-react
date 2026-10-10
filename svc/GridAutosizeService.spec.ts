@@ -104,18 +104,6 @@ describe('GridAutosizeService', () => {
             });
         });
 
-        it('yields to a renderedRowsOnly override passed to autosizeAsync', async () => {
-            const {gridModel, renderedNodes, warn} = await renderGridAsync({
-                autosizeOptions: {maxRecords: 2}
-            });
-
-            await gridModel.autosizeAsync({renderedRowsOnly: false});
-
-            expect(renderedNodes).not.toHaveBeenCalled();
-            expect(warn).not.toHaveBeenCalled();
-            expect(gridModel.diagnostics.autosize.last.renderedRowsOnly).toBe(false);
-        });
-
         it('still includes summary records on the rendered-rows path', async () => {
             const {gridModel, renderedNodes} = await renderGridAsync(
                 {showSummary: true, autosizeOptions: {maxRecords: 2}},

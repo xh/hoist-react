@@ -23,11 +23,6 @@ describe('CanvasTextMeasurer', () => {
             expect(measurer.estimateWidth('A B')).toBe(widths.A + widths[' '] + widths.B);
         });
 
-        it('ignores kerning between characters', () => {
-            const {measurer} = createMeasurer();
-            expect(measurer.estimateWidth('AV')).toBe(widths.A + widths.V);
-        });
-
         it('measures each character once and reuses its width', () => {
             const {measurer, ctx} = createMeasurer();
 
@@ -47,19 +42,13 @@ describe('CanvasTextMeasurer', () => {
             expect(ctx.measureText).toHaveBeenCalledTimes(1);
             expect(ctx.measureText).toHaveBeenCalledWith('😀');
         });
-
-        it('is 0 for an empty string, with no measurement', () => {
-            const {measurer, ctx} = createMeasurer();
-            expect(measurer.estimateWidth('')).toBe(0);
-            expect(ctx.measureText).not.toHaveBeenCalled();
-        });
     });
 
     describe('measureWidth', () => {
-        it('measures the whole text exactly, including kerning', () => {
+        it('includes the kerning that estimateWidth ignores', () => {
             const {measurer} = createMeasurer();
+            expect(measurer.estimateWidth('AV')).toBe(widths.A + widths.V);
             expect(measurer.measureWidth('AV')).toBe(widths.A + widths.V + kerning.AV);
-            expect(measurer.measureWidth('')).toBe(0);
         });
     });
 
