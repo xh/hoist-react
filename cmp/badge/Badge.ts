@@ -28,6 +28,10 @@ export interface BadgeProps extends HoistProps, BoxProps {
 /**
  * Badge indicator, generally displayed inline with text/title, showing a count or other small
  * indicator that something is new or has content.
+ *
+ * Renders inline with no outer margin. Separate it from a preceding label with a space, as with
+ * any inline element - e.g. `span('Users ', badge(count))`. Within a flex container such as an
+ * `hbox`, which drops that space, set a `gap` on the container instead.
  */
 export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
     displayName: 'Badge',

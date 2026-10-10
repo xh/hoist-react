@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -31,6 +31,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
   class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
   target `.ag-cell` instead.
+* `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
+  `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 
 ### 🎁 New Features
 
@@ -122,6 +124,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
 * Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
   Titled icons also get the title as their `aria-label`, so screen readers announce them again.
+* Fixed `Badge` ignoring the `align` of its grid column. It now renders inline.
 
 ### ⚙️ Technical
 
