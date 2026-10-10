@@ -154,9 +154,9 @@ export interface GridConfig {
     columns?: ColumnOrGroupSpec[];
 
     /**
-     * Column configs to be set on all columns. Merges deeply. A default `renderer` does not apply
-     * to a column with its own `formatter`, such as one built on the `number` or `date` specs, and
-     * a default `formatter` does not apply to a column with its own `renderer`.
+     * Column configs to be set on all columns. Merges deeply, except that a column with its own
+     * `renderer` or `formatter`, such as one built on the `number` or `date` specs, takes neither
+     * from the defaults. The same holds for these defaults over `GridModel.defaults.colDefaults`.
      */
     colDefaults?: Partial<ColumnSpec>;
 
@@ -791,7 +791,7 @@ export class GridModel extends HoistModel {
 
         Object.assign(this, rest);
 
-        this.colDefaults = defaultsDeep({}, colDefaults, GridModel.defaults.colDefaults);
+        this.colDefaults = this.withColDefaults(colDefaults, GridModel.defaults.colDefaults);
         this.parseAndSetColumnsAndStore(columns, store);
 
         this.setGroupBy(groupBy);
@@ -1867,14 +1867,11 @@ export class GridModel extends HoistModel {
     //-----------------------
     private buildColumn(config: ColumnOrGroupSpec, borderedGroup?: ColumnGroupSpec): ColumnOrGroup {
         // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins. So does its own renderer or
-        // formatter - a default renderer would otherwise override the column's formatter.
+        // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
             let colDefaults = {...this.colDefaults};
             if (config.tooltip) colDefaults.tooltip = null;
-            if (config.formatter) colDefaults.renderer = null;
-            if (config.renderer) colDefaults.formatter = null;
-            config = defaultsDeep({}, config, colDefaults);
+            config = this.withColDefaults(config, colDefaults);
         }
 
         const omit = executeIfFunction(config.omit);
@@ -1891,6 +1888,20 @@ export class GridModel extends HoistModel {
         }
 
         return new Column(config, this);
+    }
+
+    // Merge column config over defaults, deeply - but a config with its own renderer or formatter
+    // takes neither from the defaults. A default renderer would override the config's formatter,
+    // and a deep merge of two formatters copies the default's `cellClassRules` onto the config's,
+    // which may be a built-in spec's formatter, shared by every grid in the app.
+    private withColDefaults(
+        config: Partial<ColumnSpec>,
+        defaults: Partial<ColumnSpec>
+    ): Partial<ColumnSpec> {
+        if (config?.renderer || config?.formatter) {
+            defaults = {...defaults, renderer: null, formatter: null};
+        }
+        return defaultsDeep({}, config, defaults);
     }
 
     @sharePendingPromise

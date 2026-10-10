@@ -6,6 +6,7 @@
  */
 import {Column, dateTime, type GridConfig, GridModel, GridSorter, number} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
+import {numberFormatter} from '@xh/hoist/format';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -142,6 +143,38 @@ describe('GridModel', () => {
             });
             expect(withDefaultFormatter.getColumn('name').formatter).toBeFalsy();
             expect(withDefaultFormatter.getColumn('region').formatter).toBeTypeOf('function');
+        });
+
+        // A deep merge copied the default formatter's `cellClassRules` onto the column's own
+        // formatter - here the `number` spec's, which every grid in the app shares.
+        it("keeps a default formatter's cell classes off a column's own formatter", () => {
+            const gridModel = createGridModel({
+                colDefaults: {formatter: numberFormatter({colorSpec: true})},
+                columns: [{...number, field: 'pnl'}, {field: 'qty'}]
+            });
+
+            expect(gridModel.getColumn('pnl').cellClassRules).toEqual({});
+            expect(gridModel.getColumn('qty').cellClassRules).toHaveProperty('xh-pos-val');
+            expect(number.formatter.cellClassRules).toBeUndefined();
+        });
+
+        it("keeps an app-wide default formatter's cell classes off a grid's own", () => {
+            const appDefaults = GridModel.defaults.colDefaults;
+            GridModel.defaults.colDefaults = {formatter: numberFormatter({colorSpec: true})};
+            onTestFinished(() => {
+                GridModel.defaults.colDefaults = appDefaults;
+            });
+
+            const ledger = numberFormatter({ledger: true}),
+                gridModel = createGridModel({
+                    colDefaults: {formatter: ledger},
+                    columns: [{field: 'qty'}]
+                });
+
+            expect(Object.keys(gridModel.getColumn('qty').cellClassRules)).toEqual([
+                'xh-cell--ledger-align'
+            ]);
+            expect(Object.keys(ledger.cellClassRules)).toEqual(['xh-cell--ledger-align']);
         });
 
         it('creates Store fields for columns the Store config does not define', () => {
