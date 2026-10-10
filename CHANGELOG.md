@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing, number `formatConfig`)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -33,6 +33,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   target `.ag-cell` instead.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
+* Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
+  and `withCommas` instead. Passing it fails to compile and throws at runtime.
 
 ### 🎁 New Features
 
@@ -156,6 +158,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
   by a change append rather than taking their source position. This may affect the sort ordering
   of unsorted grids when data changes.
+* `fmtNumber` and the formatters built on it now format digits with a cached `Intl.NumberFormat` in
+  place of numbro. This speeds up bulk formatting, such as all-rows grid autosizing. Ordinary values
+  render as before. Negative ties now round away from zero (-2.5 to -3, not -2), and `Infinity`
+  renders as `∞`. Strings such as `'1,234.5'` render as `NaN` - see the upgrade notes.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -184,6 +190,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * @blueprintjs/core `6.20 → 6.21`
 * @blueprintjs/datetime `6.2 → 6.3`
 * @fortawesome/fontawesome-pro `removed` (unused - icons come from the `pro-*-svg-icons` packages)
+* numbro `removed` (number formatting now uses the browser's `Intl.NumberFormat`)
 * swiper `12.2 → 14.3`
 * ts-morph `27.0 → 28.0`
 * typescript `5.9 → 7.0`

@@ -114,7 +114,7 @@ Test the behavior apps rely on, through the public API:
 Do not test:
 
 - Rendering, layout, and styling. jsdom has no layout engine. Leave these to Playwright.
-- Third-party libraries such as AG Grid, Blueprint, or numbro.
+- Third-party libraries such as AG Grid, Blueprint, or Highcharts.
 - Trivial getters, or values that only restate the code.
 - Private implementation details. If a test breaks when the code is refactored with no change in
   behavior, it is testing the wrong thing.
