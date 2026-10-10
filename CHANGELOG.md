@@ -33,13 +33,14 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   target `.ag-cell` instead.
 * The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
   column specs now set a `formatter` in place of a `renderer`, so their cells are plain too. Code
-  that reads their `renderer` finds none, and `GridModel.localExport` writes their display text.
+  that reads their `renderer` finds none, and `GridModel.localExport` writes their display text in
+  place of the raw value.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 
 ### 🎁 New Features
 
-* Added `Column.formatter`, a function that returns a cell's display text. ag-Grid writes the text
+* Added `Column.formatter`, a function that returns a cell's display text. AG Grid writes the text
   into a plain cell, with no React component. The `numberFormatter`, `dateFormatter` and sibling
   factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell classes.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
@@ -77,7 +78,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed `GridModel.localExport` calling a column's `agOptions.valueFormatter` with a bare value
-  instead of ag-Grid's params.
+  instead of AG Grid's params.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`.
 * Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
@@ -143,15 +144,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
-* `AgGrid` now publishes its row and header heights to ag-Grid as `--ag-row-height` and
-  `--ag-header-height`. `Grid` and `AgGrid` pass ag-Grid a `getRowHeight` function only when row
+* `AgGrid` now publishes its row and header heights to AG Grid as `--ag-row-height` and
+  `--ag-header-height`. `Grid` and `AgGrid` pass AG Grid a `getRowHeight` function only when row
   heights vary, so uniform grids skip per-row height calls and the post-load row height pass.
 * Removed `GridExperimentalFlags.disableScrollOptimization`. The post-load row height pass now
   runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
-  `Grid` against ag-Grid's community modules.
+  `Grid` against AG Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
   before publishing snapshot and release builds. See `docs/unit-testing.md`.
 * Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
