@@ -647,7 +647,7 @@ export class ZoneGridModel extends HoistModel {
         });
 
         const zoneGridConfig: ZoneGridColConfig = {
-            mainRenderer: primaryCol.renderer,
+            mainRenderer: primaryCol.renderer ?? primaryCol.formatter,
             delimiter,
             subFields
         };

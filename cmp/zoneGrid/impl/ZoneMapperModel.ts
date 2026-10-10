@@ -236,7 +236,7 @@ export class ZoneMapperModel extends HoistModel {
                 displayName: displayName,
                 label: label,
                 column: column,
-                renderer: column.renderer,
+                renderer: column.renderer ?? column.formatter,
                 chooserGroup: column.chooserGroup,
                 sortable: column.sortable,
                 sortingOrder: column.sortingOrder

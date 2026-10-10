@@ -300,11 +300,14 @@ export class ValuesTabModel extends HoistModel {
             {headerFilterModel, fieldSpec} = this,
             {fieldType, column} = headerFilterModel;
 
-        // Default to the column's renderer/sortValue, but only where they apply to a bare value -
-        // we call them with the value alone (see below), so treat them as pure value transforms.
+        // Default to the column's renderer (or formatter) and sortValue, but only where they apply
+        // to a bare value - we call them with the value alone (see below), so treat them as pure
+        // value transforms.
         const renderer =
                 fieldSpec.renderer ??
-                (fieldType !== 'tags' ? (column.renderer as GridFilterRenderer) : null),
+                (fieldType !== 'tags'
+                    ? ((column.renderer ?? column.formatter) as GridFilterRenderer)
+                    : null),
             sortValue =
                 fieldSpec.sortValue ??
                 (fieldType !== 'tags' && isFunction(column.sortValue)
