@@ -85,6 +85,28 @@ describe('Grid', () => {
         expect(qty.textContent).toBe('1');
         expect(qty.classList.contains('xh-pos-val')).toBe(true);
     });
+
+    it("shows '#ERROR' in the cell of a formatter that throws, and renders the other cells", async () => {
+        const {container} = await renderGridAsync({
+                columns: [
+                    {field: 'name'},
+                    {
+                        field: 'qty',
+                        formatter: v => {
+                            if (v === 1) throw new Error('bad value');
+                            return `${v}!`;
+                        }
+                    }
+                ]
+            }),
+            cells = (rowId: string) =>
+                Array.from(container.querySelectorAll(`.ag-row[row-id="${rowId}"] .ag-cell`)).map(
+                    it => it.textContent
+                );
+
+        expect(cells('ag_1')).toEqual(['Alpha', '#ERROR']);
+        expect(cells('ag_2')).toEqual(['Beta', '2!']);
+    });
 });
 
 async function renderGridAsync(config: GridConfig = {}) {
