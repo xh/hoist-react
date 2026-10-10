@@ -15,6 +15,7 @@
 | [collapsedTitle / collapsedIcon](#collapsedtitle--collapsedicon) | Identifying collapsed panels with custom titles and icons |
 | [compactHeader](#compactheader) | Reduced-size headers for visual hierarchy |
 | [headerItems](#headeritems) | Inline controls in the panel header |
+| [Styling](#styling) | CSS variables for background, border, corner radius, and title |
 | [Persistence](#persistence) | Persisting collapsed state and size across sessions |
 | [Modal Support](#modal-support) | Popping panel content into a near-full-screen dialog |
 | [Configuration Reference](#configuration-reference) | Full Panel props and PanelModel config tables |
@@ -464,6 +465,47 @@ panel({
 
 Header items are hidden when the panel is collapsed — only the title, icon, and built-in
 collapse/modal toggle buttons are shown in the collapsed header.
+
+## Styling
+
+Panel styling is driven by Hoist CSS variables, each overridable via an un-prefixed hook - set
+`--panel-bg` rather than `--xh-panel-bg`. Hooks set on `:root` apply app-wide. The border width and
+radius hooks are also read on each panel, so they can be scoped to a container class to style only
+the panels within it:
+
+| Hook | Default | Description |
+|------|---------|-------------|
+| `--panel-bg` | `--xh-bg` | Background of the panel body. |
+| `--panel-border-color` | `--xh-border-color` | Color of the optional outer border. |
+| `--panel-border-width` | `0` | Width of the outer border, unitless px. |
+| `--panel-border-radius` | `0` | Radius of the outer corners, unitless px. |
+| `--panel-title-bg` | `--xh-title-bg` | Header background. |
+| `--panel-title-text-color` | `--xh-title-text-color` | Header text and tool button color. |
+| `--panel-title-font-family` | `--xh-title-font-family` | Header font family. |
+| `--panel-title-font-size` | `--xh-title-font-size` | Header font size, unitless px. |
+
+A border radius is intended for panels laid out with gaps between them or floating on a contrasting
+background - e.g. tiles in a gapped grid or flex layout, or cards on a page background. It is not
+suited to the space-filling layouts most panels sit in - flush against siblings, in splitters, tabs,
+or frames - where rounded corners leave notches against neighboring content. For that reason it
+defaults to `0` and is best set via a scoped override on a container class rather than globally.
+The panel clips its header, toolbars, banners, content, and masks to the rounded shape. Panels
+nested within a rounded one inherit the hook, so reset it to `0` on any that sit flush inside:
+
+```scss
+.my-tile-grid {
+  gap: 10px;
+  padding: 10px;
+
+  --panel-border-radius: 8;
+  --panel-border-width: 1;
+
+  .xh-panel .xh-panel {
+    --panel-border-radius: 0;
+    --panel-border-width: 0;
+  }
+}
+```
 
 ## Persistence
 

@@ -1,7 +1,13 @@
 .xh-panel__inner {
   flex: 1;
   background-color: var(--xh-panel-bg);
-  border: var(--xh-panel-border-width-px) solid var(--xh-panel-border-color);
+  // Border width and radius read their `--panel-*` hooks here as well as on `body`, so either can
+  // be scoped to a container class - e.g. a gapped tile layout - rather than set app-wide.
+  border: calc(var(--panel-border-width, var(--xh-panel-border-width)) * 1px) solid
+    var(--xh-panel-border-color);
+  // As a Hoist `vbox`, this element has inline `overflow: hidden`, which clips the header,
+  // toolbars, content, and masks to the rounded corners - no extra clipping or layout change.
+  border-radius: calc(var(--panel-border-radius, var(--xh-panel-border-radius)) * 1px);
 }
 
 // Separate banners from the panel contents they sit above or below.

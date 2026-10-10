@@ -54,6 +54,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
   hoist-dev-utils 16.1. Experimental in v89 - it may change.
+* Added `--xh-panel-border-radius` to round the outer corners of desktop and mobile `Panel`s,
+  clipping their header, toolbars, and content to match. Intended for gapped or floating panels -
+  set `--panel-border-radius` on a container class, not globally. Defaults to `0`. The
+  `--panel-border-width` hook can now be scoped to a container the same way.
 
 ### 🐞 Bug Fixes
 
