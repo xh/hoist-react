@@ -30,18 +30,18 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   cells must be in the DOM, such as for test automation that reads them.
 * Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
   class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
-  target `.ag-cell` instead. The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`,
-  `compactDate` and `localDate` column specs now format through `Column.formatter` and render as
-  such plain cells. `GridModel.localExport` writes their display text.
+  target `.ag-cell` instead.
+* The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
+  column specs now set a `formatter` in place of a `renderer`, so their cells are plain too. Code
+  that reads their `renderer` finds none, and `GridModel.localExport` writes their display text.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 
 ### 🎁 New Features
 
-* Added `Column.formatter` - a renderer that returns the cell's display text, which ag-Grid writes
-  into the cell with no React component per cell - with string-returning factories
-  `numberFormatter`, `dateFormatter` and siblings in `@xh/hoist/format`. Their `colorSpec` and
-  ledger alignment options apply through `cellClassRules`; use `Column.tooltip` for tooltips.
+* Added `Column.formatter`, a function that returns a cell's display text. ag-Grid writes the text
+  into a plain cell, with no React component. The `numberFormatter`, `dateFormatter` and sibling
+  factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell classes.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
   `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
@@ -76,6 +76,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
+* Fixed `GridModel.localExport` calling a column's `agOptions.valueFormatter` with a bare value
+  instead of ag-Grid's params.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
 * Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`.
 * Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
@@ -182,6 +184,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 ### ✨ Styles
 
 * Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
+* Moved the selected grid row's text color from its cells to the row. A cell with its own color
+  class, such as a formatter's sign color, now keeps that color when its row is selected.
 
 ### 📚 Libraries
 

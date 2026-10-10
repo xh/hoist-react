@@ -355,8 +355,8 @@ looks up by name.
 
 ### 9. Review Grid Rendering Defaults
 
-Two `Grid` rendering defaults changed for performance. Most apps need no change, but check the
-two cases below.
+Three `Grid` rendering defaults changed for performance. Most apps need no change, but check the
+three cases below.
 
 **Column virtualisation is on by default.** `GridModel.useVirtualColumns` now defaults to `true`,
 so a grid renders cells only for the columns within or near its viewport (ag-Grid's own default).
@@ -402,14 +402,26 @@ After:
 }
 ```
 
-**Formatted columns can be plain too.** `Column.formatter` takes a function returning the cell's
-display text, and the `numberFormatter`, `dateFormatter` (and `thousands`, `millions`, `dateTime`,
-... siblings) factories in `@xh/hoist/format` return one from the same options as their renderer
-counterparts, minus those that need markup (`tooltip`, `withSignGlyph`, `labelCls`). `colorSpec`
-and ledger alignment are applied through `cellClassRules` the formatter carries. The built-in
-`number` and date column specs now use formatters, so grids built on them get plain cells without
-any change; a `renderer` passed alongside still wins. Switch other formatted columns as you touch
-them:
+**Built-in number and date columns are plain.** The `number`, `date`, `dateTime`, `dateTimeSec`,
+`time`, `compactDate` and `localDate` column specs now set a `Column.formatter` in place of a
+`renderer`. A formatter returns the cell's display text, and ag-Grid writes it into a plain cell.
+Grids built on these specs get plain cells with no change. A `renderer` set on top of a spec still
+wins, so `{...number, renderer: myRenderer}` works as before. Two side effects remain:
+
+- App code that reads `renderer` from one of these specs, or from a `Column` built on one, finds
+  none. Fall back to the formatter, as in `col.renderer ?? col.formatter`.
+- `GridModel.localExport` writes the display text of a formatter column, where it wrote the raw
+  value. Copy and `GridModel.exportAsync` still send the value with its Excel format.
+
+**Find code that reads a column's renderer:**
+
+```bash
+grep -rnE "\.renderer\b" client-app/src/
+```
+
+**Other formatted columns can be plain too.** Switch them to the `numberFormatter`, `dateFormatter`
+and sibling factories in `@xh/hoist/format` as you touch them. Each takes the options of its
+renderer counterpart, less those that need markup. The compiler rejects those options.
 
 Before:
 
@@ -423,19 +435,17 @@ After:
 {field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})}
 ```
 
-Keep the renderer where the cell needs an element - icons, nested layout, a `tooltip` option
-(move it to `Column.tooltip`), or inline styles from a `colorSpec`.
-
 A formatter cell shows the same text, sign colors and alignment as the renderer cell it replaces.
 These differences remain:
 
-- `GridModel.localExport` writes the display text, where it wrote the raw value. This applies to
-  the built-in specs as shipped. Copy and `GridModel.exportAsync` still send the value with its
-  Excel format.
 - `colorSpec` classes such as `xh-pos-val` sit on the cell, not on an inner span.
 - A `label` is plain text, with no `xh-units-label` span to style. Keep the renderer if the label
   needs its own style.
 - Ledger alignment is a hidden `::after` on the cell. The cell text no longer ends in a hidden `)`.
+
+Keep the renderer where a cell needs an element, such as an icon or nested layout. Also keep it for
+`withSignGlyph`, `labelCls`, or a `colorSpec` with inline styles. A `tooltip` option does not need
+the renderer. Move it to `Column.tooltip`, for example `tooltip: v => fmtNumberTooltip(v)`.
 
 ### 10. Space Badges from Preceding Text
 
@@ -483,6 +493,7 @@ After completing all steps:
       `useVirtualColumns: false`.
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
 - [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
+- [ ] Code that reads `Column.renderer` handles columns built on the number and date specs.
 - [ ] Badges that follow a label are spaced from it.
 
 ## Reference
