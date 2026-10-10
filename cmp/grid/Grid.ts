@@ -449,6 +449,17 @@ export class GridLocalModel extends HoistModel {
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.updateGridOptions({columnDefs: this.getColumnDefs()});
+
+                    // ag-Grid caches a cell's formatted value when it creates the cell. A new
+                    // colDef skips cells created but not yet mounted, such as the rows of a sort
+                    // or grouping change made in the same tick. Refresh the formatted columns so
+                    // those cells show the new valueFormatter's text.
+                    const colIds = (api.getColumns() ?? [])
+                        .filter(col => col.getColDef().valueFormatter)
+                        .map(col => col.getColId());
+                    if (colIds.length) {
+                        api.refreshCells({columns: colIds, force: true, suppressFlash: true});
+                    }
                 });
             }
         };
