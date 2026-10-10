@@ -378,9 +378,9 @@ Renders a minimally formatted, full-precision number for use in tooltips. Suppor
 `ledger` option. Returns an HTML string (`asHtml: true`).
 
 ```typescript
-// Commonly used for grid column tooltips alongside a scaled/rounded renderer
+// Commonly used for grid column tooltips alongside a scaled or rounded formatter
 tooltip: val => fmtNumberTooltip(val, {ledger: true}),
-renderer: millionsRenderer({precision: 3, ledger: true})
+formatter: millionsFormatter({precision: 3, ledger: true})
 ```
 
 ### `parseNumber(value)`
