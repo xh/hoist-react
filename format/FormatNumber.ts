@@ -662,9 +662,10 @@ export type QuantityFormatterOptions = NumberFormatterOptions &
  * String-returning counterparts of {@link numberRenderer} and friends, for `Column.formatter`.
  *
  * Each takes {@link NumberFormatterOptions} ({@link QuantityFormatterOptions} for
- * `quantityFormatter`) and returns a formatter whose output ag-Grid writes into the cell as text. With `colorSpec`, or `ledger` with `forceLedgerAlign` (the default),
- * the formatter carries `cellClassRules` that color the cell by sign and reserve the width of a
- * closing parenthesis on positives, so that the column still aligns.
+ * `quantityFormatter`) and returns a formatter whose output ag-Grid writes into the cell as text.
+ * With `colorSpec`, or `ledger` with `forceLedgerAlign` (the default), the formatter carries
+ * `cellClassRules` that color the cell by sign and reserve the width of a closing parenthesis on
+ * positives, so that the column still aligns.
  */
 export const numberFormatter = createNumberFormatter(fmtNumber),
     thousandsFormatter = createNumberFormatter(fmtThousands),

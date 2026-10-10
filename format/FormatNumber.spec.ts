@@ -407,9 +407,10 @@ describe('parseNumber', () => {
 });
 
 /**
- * The string formatters, for `Column.formatter`. The built-in `number` column spec and apps' own
- * columns moved from `numberRenderer` to `numberFormatter`, so a formatted cell must look as the
- * rendered one did, and must never receive markup that it would show as "[object Object]".
+ * The string formatters, for `Column.formatter`. The built-in `number` column spec uses
+ * `numberFormatter`, and apps switch columns to it from `numberRenderer`, so a formatted cell
+ * must look like the rendered one. It must never receive markup, which it would show as
+ * "[object Object]".
  */
 describe('numberFormatter and friends', () => {
     it('reject options that need markup, at compile time and when created', () => {
@@ -444,7 +445,7 @@ describe('numberFormatter and friends', () => {
     });
 
     describe('match their renderers', () => {
-        // A formatted cell must look as the rendered one did: the same text, sign color and ledger
+        // A formatted cell must look like the rendered one: the same text, sign color and ledger
         // placeholder. Only the `xh-units-label` span is gone - a plain-text cell cannot carry it.
         const values = [1234567.891, -1234567.891, 0, 0.004, -0.004, 12.5, -12.5, null],
             twins = {

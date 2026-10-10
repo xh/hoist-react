@@ -13,8 +13,8 @@ The package exports three categories of tools for each data type:
   Use these for ad-hoc, inline formatting in component render methods and business logic.
 
 - **Renderer factories** (e.g. `numberRenderer`) - take options only and return a pre-configured
-  function suitable for use as a grid column `renderer`. Use these when defining reusable column
-  specs and other declarative configurations.
+  function suitable for use as a grid column `renderer`. Use these for grid columns that need
+  markup, and for other declarative configurations.
 
 - **Formatter factories** (e.g. `numberFormatter`) - take options only and return a function that
   always returns a string, for a grid column `formatter`. Prefer these for grid columns that show

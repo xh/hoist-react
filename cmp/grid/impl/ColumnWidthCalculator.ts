@@ -117,7 +117,7 @@ export class ColumnWidthCalculator {
 
         // 1) Get map of rendered values to data about it
         const estimatesByValue = new Map(),
-            // A formatter's text is measured as text; a renderer's markup as HTML.
+            // A formatter's text is measured as text, and a renderer's markup as HTML.
             render = renderer ?? formatter,
             renderMemo = render && !rendererIsComplex ? new Map() : null;
 
