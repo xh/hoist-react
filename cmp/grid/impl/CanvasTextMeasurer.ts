@@ -12,7 +12,7 @@
  * `estimateWidth()` sums per-character widths, each measured once and cached, so a pass over many
  * values costs one `measureText` call per distinct character rather than per value. The sum
  * ignores kerning, ligatures and contextual alternates, so it differs from the exact width of
- * `measureWidth()` by a small, font-dependent amount.
+ * `measureWidth()` by whatever those contribute, which depends on the font and the text.
  *
  * @internal
  */

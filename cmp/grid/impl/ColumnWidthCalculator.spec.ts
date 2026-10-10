@@ -8,7 +8,7 @@ import {type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import type {PlainObject} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {stripTags} from '@xh/hoist/utils/js';
-import {range} from 'lodash';
+import {range, sortBy} from 'lodash';
 import {createElement} from 'react';
 import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 import {ColumnWidthCalculator} from './ColumnWidthCalculator';
@@ -49,12 +49,19 @@ describe('ColumnWidthCalculator', () => {
 
         it('measures exactly only the RANK_SAMPLES widest estimates of a larger column', async () => {
             // Canvas calls then scale with distinct characters and RANK_SAMPLES, not with rows.
-            const values = range(600).map(n => `${n}`.padStart(4, '0')),
-                {calc, ctx, gridModel} = createCalculator(values),
+            const values = range(600).map(n => `${n % 100}`.padStart(2 + Math.floor(n / 100), '0')),
+                widest = values.filter(it => it.length === 7),
+                ranked = values.filter(it => it.length > 2),
+                {calc, ctx, gridModel, bufferPx} = createCalculator(values),
                 distinctChars = new Set(values.join('')).size;
 
-            await calcWidthAsync(calc, gridModel);
-            expect(exactMeasurements(ctx)).toHaveLength(calc.RANK_SAMPLES);
+            // 100 values of each length, so the RANK_SAMPLES widest estimates are every value
+            // longer than two characters and none of the rest.
+            expect(ranked).toHaveLength(calc.RANK_SAMPLES);
+            await expect(calcWidthAsync(calc, gridModel)).resolves.toBe(
+                measure(widest[0]) + bufferPx
+            );
+            expect(sortBy(exactMeasurements(ctx))).toEqual(sortBy(ranked));
             expect(ctx.measureText.mock.calls.length).toBeLessThanOrEqual(
                 distinctChars + calc.RANK_SAMPLES
             );
@@ -82,7 +89,7 @@ describe('ColumnWidthCalculator', () => {
             expect(measured).not.toContain('undefined');
         });
 
-        it('estimates an element renderer from its markup with the tags stripped', async () => {
+        it('sizes an element renderer by its markup with the tags stripped', async () => {
             const {calc, ctx, bufferPx, gridModel} = createCalculator([12], {
                 columns: [{field: 'name', renderer: v => createElement('b', null, `${v}%`)}]
             });
