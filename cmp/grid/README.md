@@ -258,6 +258,58 @@ await gridModel.exportAsync({type: 'excel'});
 gridModel.localExport('my-data', 'csv');
 ```
 
+### Autosizing
+
+Autosizing sets each column's width to fit its content, header included. Hoist runs it through
+its own `GridAutosizeService` rather than ag-Grid's autosize. ag-Grid measures rendered cells
+only, so it skips off-screen rows and, with column virtualisation on, off-screen columns. Hoist
+sizes against the records in the store and includes columns that are not yet rendered.
+
+`autosizeOptions.mode` (`GridAutosizeMode`) controls when it runs:
+
+- `disabled` - never.
+- `onDemand` - only when asked: `gridModel.autosizeAsync()`, the grid context menu,
+  `colAutosizeButton`, or a double-click on a column header.
+- `onSizingModeChange` (default) - also when the grid's `sizingMode` changes.
+- `managed` - also on every data load and filter change, for columns the user has not resized by
+  hand. Data updates re-autosize on a schedule paced by the autosize's own cost. Managed widths
+  are not treated as manual resizes, so they are not persisted and the next load sizes afresh.
+
+```typescript
+new GridModel({
+    autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
+    columns: [
+        {field: 'name', autosizeMaxWidth: 300},
+        {field: 'notes', autosizable: false}
+    ]
+});
+
+// On demand, for all autosizable columns or a subset.
+await gridModel.autosizeAsync();
+await gridModel.autosizeAsync({columns: ['name', 'status']});
+```
+
+Which records are measured:
+
+- By default, every record that passes the store's filter, plus the summary row. In tree and
+  grouped grids the children of collapsed rows are left out unless `includeCollapsedChildren` is
+  true.
+- Above `maxRecords` (default 5000), only the rendered rows, and the grid warns once in the
+  console. Sizing against every record costs time in proportion to records x autosized columns,
+  on the client. Set `renderedRowsOnly: true` to always measure rendered rows only, or `false`
+  to always measure every record. Set either, or `maxRecords`, for every grid in the app via
+  `GridModel.defaults.autosizeOptions`.
+
+Columns with `flex` or `autosizable: false` are skipped, as are hidden columns unless
+`includeHiddenColumns` is true. `autosizeMinWidth`, `autosizeMaxWidth`, `autosizeBufferPx`,
+`autosizeIncludeHeader` and `autosizeIncludeHeaderIcons` tune a column's result, and `fillMode`
+grows columns to fill the grid's remaining width. A column with a `renderer` costs more to
+measure: the renderer runs once per distinct value, or once per record when `rendererIsComplex`
+is true, and React output is rendered to markup.
+
+`gridModel.diagnostics.autosize.last` records the latest run: column and record counts, elapsed
+time, and whether it measured rendered rows only.
+
 ### Custom Renderers
 
 Use `xxxRenderer` factory functions (e.g., `numberRenderer`) when passing a statically configured
@@ -473,8 +525,8 @@ defaults for all grids. Instance-level config always takes precedence.
 
 `GridModel.defaults` covers a wide range of visual, behavioral, and structural properties —
 including `enableExport`, `showHover`, `rowBorders`, `stripeRows`, `cellBorders`,
-`headerMenuDisplay`, `colDefaults`, `exportOptions`, and more. See the `GridModelDefaults`
-interface for the full typed list with all available properties.
+`headerMenuDisplay`, `colDefaults`, `exportOptions`, `autosizeOptions`, and more. See the
+`GridModelDefaults` interface for the full typed list with all available properties.
 
 `GridFilterModel.defaults` provides `activeFilterIcon` to customize the icon displayed in
 column headers when a filter is active.
@@ -492,6 +544,7 @@ GridModel.defaults.showHover = true;
 GridModel.defaults.rowBorders = true;
 GridModel.defaults.headerMenuDisplay = 'hover';
 GridModel.defaults.colDefaults = {sortable: false};
+GridModel.defaults.autosizeOptions = {mode: 'managed', renderedRowsOnly: true};
 GridModel.defaults.contextMenu = [
     ...GridModel.defaults.contextMenu,
     '-',

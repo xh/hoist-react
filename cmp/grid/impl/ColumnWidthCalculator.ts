@@ -28,6 +28,7 @@ import {isValidElement} from 'react';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {Column} from '../columns';
 import {GridModel} from '../GridModel';
+import {CanvasTextMeasurer} from './CanvasTextMeasurer';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -38,10 +39,18 @@ import {GridModel} from '../GridModel';
  * @internal
  */
 export class ColumnWidthCalculator {
-    /** Max number value to calculate size per column */
+    /** Max number of values to measure in the DOM per column. */
     SIZE_CALC_SAMPLES = 10;
 
-    private _canvasContext;
+    /**
+     * Max number of values to measure exactly on the canvas per column, taken from the widest
+     * per-character estimates. A column with up to this many distinct rendered values is measured
+     * exactly; above it, a value is missed only if this many distinct values are all over-estimated
+     * above it, which takes kerning or contextual alternates widening every one of them.
+     */
+    RANK_SAMPLES = 500;
+
+    private _measurer: CanvasTextMeasurer;
     private _headerEl;
     private _cellEl;
     private _rowEl;
@@ -110,13 +119,20 @@ export class ColumnWidthCalculator {
         }
     }
 
-    async calcLevelWidthAsync(gridModel, records, column, options, indentationPx = 0) {
+    async calcLevelWidthAsync(
+        gridModel: GridModel,
+        records: StoreRecord[],
+        column: Column,
+        options: Omit<GridAutosizeOptions, 'columns'>,
+        indentationPx = 0
+    ): Promise<number> {
         const {field, getValueFn, renderer, rendererIsComplex, cellClassRules} = column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get map of rendered values to data about it
-        const estimatesByValue = new Map(),
+        const measurer = this.getMeasurer(),
+            estimatesByValue = new Map<any, ValueEstimate>(),
             renderMemo = renderer && !rendererIsComplex ? new Map() : null;
 
         await forEachAsync(records, record => {
@@ -137,15 +153,15 @@ export class ColumnWidthCalculator {
                 }
             }
 
-            // 1b) Use a canvas to estimate pixel width of new markup.
+            // 1b) Estimate the pixel width of new markup from cached per-character widths.
             // Strip html tags but include parentheses / units etc. for renderers that may return elements.
             const est = estimatesByValue.get(value);
             if (!est) {
+                const text = isNil(value) ? null : stripTags(value.toString());
                 estimatesByValue.set(value, {
                     value,
-                    width: isNil(value)
-                        ? 0
-                        : this.getStringWidth(stripTags(value.toString())) + indentationPx,
+                    text,
+                    width: text == null ? 0 : measurer.estimateWidth(text) + indentationPx,
                     records: [record]
                 });
             } else {
@@ -153,9 +169,14 @@ export class ColumnWidthCalculator {
             }
         });
 
-        // 2) Extract the sample set of widest estimate values for rendering and sizing
-        let sample = Array.from(estimatesByValue.values());
-        sample = takeRight(sortBy(sample, 'width'), this.SIZE_CALC_SAMPLES);
+        // 2) Extract the sample set of widest values for rendering and sizing. The estimates ignore
+        // kerning, so measure the RANK_SAMPLES widest of them exactly before picking the sample.
+        const {SIZE_CALC_SAMPLES, RANK_SAMPLES} = this;
+        let sample = takeRight(sortBy([...estimatesByValue.values()], 'width'), RANK_SAMPLES);
+        sample.forEach(est => {
+            if (est.text != null) est.width = measurer.measureWidth(est.text) + indentationPx;
+        });
+        sample = takeRight(sortBy(sample, 'width'), SIZE_CALC_SAMPLES);
 
         // 3) Get widest values, after actually rendering all css combinations for all records
         let ret = 0;
@@ -401,27 +422,17 @@ export class ColumnWidthCalculator {
     //------------------
     // Canvas-based width estimation
     //------------------
-    getStringWidth(string) {
-        const canvasContext = this.getCanvasContext();
-        return canvasContext.measureText(string).width;
+    private getMeasurer(): CanvasTextMeasurer {
+        // Measures in the font of the hidden cell, as styled for the standard sizing mode.
+        return (this._measurer ??= new CanvasTextMeasurer(this.getCellEl()));
     }
+}
 
-    getCanvasContext() {
-        if (!this._canvasContext) {
-            // Create hidden canvas
-            const canvasEl = document.createElement('canvas');
-            canvasEl.classList.add('xh-grid-autosize-canvas');
-            document.body.appendChild(canvasEl);
-
-            // Create context which uses grid fonts
-            const canvasContext = canvasEl.getContext('2d'),
-                cellEl = this.getCellEl(),
-                fontSize = window.getComputedStyle(cellEl).getPropertyValue('font-size'),
-                fontFamily = window.getComputedStyle(cellEl).getPropertyValue('font-family');
-
-            canvasContext.font = `${fontSize} ${fontFamily}`;
-            this._canvasContext = canvasContext;
-        }
-        return this._canvasContext;
-    }
+/** A rendered value of the column, the records that show it, and its estimated width. */
+interface ValueEstimate {
+    value: any;
+    /** Rendered value with any tags stripped. Null for a nil value. */
+    text: string;
+    width: number;
+    records: StoreRecord[];
 }

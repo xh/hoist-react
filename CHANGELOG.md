@@ -33,6 +33,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   target `.ag-cell` instead.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
+* `GridAutosizeOptions.renderedRowsOnly` now defaults to unset. A grid holding more than
+  `GridAutosizeOptions.maxRecords` records (default 5000) then autosizes against rendered rows
+  only, and warns once when it does. Set `autosizeOptions: {renderedRowsOnly: false}` on grids
+  that must size against every record.
 
 ### 🎁 New Features
 
@@ -142,6 +146,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
+* Improved autosize performance on large grids. Column values are now ranked by cached
+  per-character widths, with exact canvas measurement reserved for the 500 widest - columns with
+  up to 500 distinct values are measured exactly, as before. See `ColumnWidthCalculator`.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
   `Grid` against ag-Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
