@@ -285,12 +285,14 @@ export interface ColumnSpec {
      *
      * A formatter may carry `cellClassRules` to style the cell by value - the factories above do
      * so for `colorSpec` and ledger alignment. Those rules are applied beneath the column's own.
-     * A formatter that reads other fields of the record needs no `rendererIsComplex`: ag-Grid
-     * formats an updated row's cells again and redraws those whose text changed.
+     * As for a renderer, set `rendererIsComplex` if the formatter reads other fields of the
+     * record, so that autosize measures each row's own text. Group rows show their raw value, as
+     * they do for a renderer.
      *
-     * Autosize, `GridModel.localExport`, filters and ZoneGrid use the formatted text. Copy and
-     * `GridModel.exportAsync` send the cell's value and Excel format, as for any column. Ignored,
-     * with its `cellClassRules`, when a `renderer` is set.
+     * Autosize, `GridModel.localExport`, header and context menu filters, and ZoneGrid use the
+     * formatted text, as do `StoreFilterField` and `GridFindField` on date fields. Copy sends the
+     * cell's value, and `GridModel.exportAsync` sends it with its Excel format, as for any column.
+     * Ignored, with its `cellClassRules`, when a `renderer` is set.
      */
     formatter?: ColumnFormatter;
 
@@ -312,9 +314,10 @@ export interface ColumnSpec {
     renderer?: ColumnRenderer;
 
     /**
-     * True if this renderer relies on more than just the value of the field associated with this
-     * column. Set to true to ensure that the cells for this column are updated any time the
-     * record is changed, but note this can negatively affect update performance. Default false.
+     * True if this column's renderer or formatter relies on more than just the value of the field
+     * associated with this column. Set to true to ensure that the cells for this column are
+     * updated any time the record is changed, but note this can negatively affect update
+     * performance. Default false.
      */
     rendererIsComplex?: boolean;
 

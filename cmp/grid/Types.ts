@@ -394,6 +394,8 @@ export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactN
  * shows '#ERROR' in the cell.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
+ *      Note that a column whose formatter reads record fields other than its own should set
+ *      `rendererIsComplex`, so that autosize measures each row's own text.
  * @returns the display text, or null for an empty cell.
  */
 export type ColumnFormatter<T = any> = ((value: T, context: CellContext) => string) & {

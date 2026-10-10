@@ -276,19 +276,25 @@ import {numberFormatter} from '@xh/hoist/format';
 
 columns: [
     {field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})},
-    {field: 'qty', formatter: (v, {record}) => `${v} ${record.data.unit}`}
+    {
+        field: 'qty',
+        formatter: (v, {record}) => `${v} ${record.data.unit}`,
+        rendererIsComplex: true
+    }
 ]
 ```
 
 - **Styling by value** - a formatter can carry `cellClassRules`, as the factories do for `colorSpec`
   and ledger alignment. `Column` applies them beneath its own `cellClassRules`.
-- **Other record fields** - a formatter that reads them needs no `rendererIsComplex`. ag-Grid
-  formats each cell of an updated row again and redraws those whose text changed.
+- **Other record fields** - a formatter that reads them needs `rendererIsComplex`, as a renderer
+  does. Autosize relies on it to measure each row's own text.
+- **Group rows** - a group row shows its raw group value, as with a renderer. Set
+  `GridModel.groupRowRenderer` to format it.
 - **With a renderer** - the `renderer` wins, and `Column` ignores the formatter and its rules.
   This lets `{...number, renderer}` override a built-in spec.
-- **Outside the cell** - autosize, `GridModel.localExport`, `StoreFilterField`, header filters and
-  `ZoneGrid` use the formatted text. Copy and `GridModel.exportAsync` send the typed value with its
-  `excelFormat`, as for any column.
+- **Outside the cell** - autosize, `GridModel.localExport`, header filters and `ZoneGrid` use the
+  formatted text, as do `StoreFilterField` and `GridFindField` on date fields. Copy sends the
+  cell's value, and `GridModel.exportAsync` sends it with its `excelFormat`, as for any column.
 
 ### Custom Renderers
 

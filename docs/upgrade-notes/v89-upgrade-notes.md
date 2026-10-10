@@ -411,12 +411,14 @@ wins, so `{...number, renderer: myRenderer}` works as before. Two side effects r
 - App code that reads `renderer` from one of these specs, or from a `Column` built on one, finds
   none. Fall back to the formatter, as in `col.renderer ?? col.formatter`.
 - `GridModel.localExport` writes the display text of a formatter column, where it wrote the raw
-  value. Copy and `GridModel.exportAsync` still send the value with its Excel format.
+  value. An Excel file holds that text as text, not as a number. Copy still sends the value, and
+  `GridModel.exportAsync` still sends it with its Excel format.
 
 **Find code that reads a column's renderer:**
 
 ```bash
-grep -rnE "\.renderer\b" client-app/src/
+# Matches `col.renderer` and `const {renderer} = col`
+grep -rnE "\.renderer\b|\{[^}]*\brenderer\b[^}]*\}\s*=" client-app/src/
 ```
 
 **Other formatted columns can be plain too.** Switch them to the `numberFormatter`, `dateFormatter`
