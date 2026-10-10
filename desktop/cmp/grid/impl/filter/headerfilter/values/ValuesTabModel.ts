@@ -5,6 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    type ColumnCellClassRuleFn,
+    type ColumnFormatter,
     GridFilterModel,
     GridFilterRenderer,
     GridFilterSortValueFn,
@@ -22,6 +24,7 @@ import {
     isEmpty,
     isFunction,
     map,
+    mapValues,
     partition,
     uniq,
     without
@@ -312,7 +315,21 @@ export class ValuesTabModel extends HoistModel {
                 fieldSpec.sortValue ??
                 (fieldType !== 'tags' && isFunction(column.sortValue)
                     ? (column.sortValue as GridFilterSortValueFn)
-                    : null);
+                    : null),
+            // A formatter styles its text with `cellClassRules` (e.g. `colorSpec`). The list's
+            // cells take them as the grid's cells do, called with the value alone.
+            cellClassRules = mapValues(
+                (renderer as ColumnFormatter)?.cellClassRules,
+                (rule): ColumnCellClassRuleFn =>
+                    ({value}) => {
+                        if (value === BLANK_PLACEHOLDER) return false;
+                        try {
+                            return rule({value} as any);
+                        } catch {
+                            return false;
+                        }
+                    }
+            );
 
         return new GridModel({
             store: {
@@ -370,6 +387,7 @@ export class ValuesTabModel extends HoistModel {
                         if (v2 === BLANK_PLACEHOLDER) return -1 * mul;
                         return defaultComparator(v1, v2);
                     },
+                    cellClassRules,
                     // Apply renderer/sortValue as pure value transforms - pass no context, skip the
                     // blank placeholder, and fall back to the raw value if either throws.
                     sortValue: v => {
