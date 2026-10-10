@@ -63,6 +63,7 @@ import {
     CellEditingStartedEvent,
     CellEditingStoppedEvent,
     ColumnEvent,
+    ProcessCellForExportParams,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
@@ -886,6 +887,10 @@ export class GridModel extends HoistModel {
 
     /**
      * Export grid data using ag-Grid's built-in client-side export.
+     *
+     * Cells export their raw value, or their display text where the column has a `formatter`
+     * (or an ag-Grid `valueFormatter`). Server-side {@link exportAsync} sends typed values with
+     * Excel formats instead.
      *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
@@ -1940,14 +1945,10 @@ export class GridModel extends HoistModel {
         return ids;
     }
 
-    private formatValuesForExport(params) {
-        const value = params.value,
-            fmt = params.column.colDef.valueFormatter;
-        if (value !== null && fmt) {
-            return fmt(value);
-        } else {
-            return value;
-        }
+    // `formatValue` runs the column's ag-Grid `valueFormatter` (a Hoist `formatter`), if any.
+    private formatValuesForExport(params: ProcessCellForExportParams) {
+        const {value} = params;
+        return value == null ? value : params.formatValue(value);
     }
 
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,
