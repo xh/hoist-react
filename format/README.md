@@ -209,13 +209,13 @@ values so that digits in a column of mixed positive/negative numbers align verti
 Real-world example — a currency column with ledger formatting:
 
 ```typescript
-import {numberRenderer} from '@xh/hoist/format';
+import {numberFormatter} from '@xh/hoist/format';
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 
 const ccyValueCol: ColumnSpec = {
     align: 'right',
     excelFormat: ExcelFormat.LEDGER_2DP,
-    renderer: numberRenderer({
+    formatter: numberFormatter({
         precision: 2,
         ledger: true,
         forceLedgerAlign: false,
@@ -256,7 +256,7 @@ ColorSpec is commonly combined with `ledger`, `withPlusSign`, or `withSignGlyph`
 P&L columns:
 
 ```typescript
-// P&L column — Toolbox portfolio example
+// P&L column
 const pnlCol: ColumnSpec = {
     field: {name: 'pnl', type: 'number'},
     headerName: 'P&L',
@@ -264,7 +264,7 @@ const pnlCol: ColumnSpec = {
     width: 130,
     absSort: true,
     tooltip: val => fmtNumberTooltip(val, {ledger: true}),
-    renderer: numberRenderer({
+    formatter: numberFormatter({
         precision: 0,
         ledger: true,
         colorSpec: true
@@ -301,10 +301,10 @@ fmtThousands(45000, {precision: 0, label: true})     // "45k"
 fmtBillions(1200000000, {precision: 2, label: true}) // "1.20b"
 ```
 
-Real-world example — market value column from Toolbox:
+Example of a market value column, in millions:
 
 ```typescript
-import {millionsRenderer, fmtNumberTooltip} from '@xh/hoist/format';
+import {millionsFormatter, fmtNumberTooltip} from '@xh/hoist/format';
 
 const mktValCol: ColumnSpec = {
     field: {name: 'mktVal', type: 'number'},
@@ -313,7 +313,7 @@ const mktValCol: ColumnSpec = {
     width: 130,
     absSort: true,
     tooltip: val => fmtNumberTooltip(val, {ledger: true}),
-    renderer: millionsRenderer({precision: 3, ledger: true})
+    formatter: millionsFormatter({precision: 3, ledger: true})
 };
 ```
 
@@ -464,7 +464,7 @@ The formatter classifies dates into three buckets:
 | `distantThreshold` | `number` | `6` | Number of months (before and after today) to consider "near" |
 
 ```typescript
-import {fmtCompactDate, compactDateRenderer} from '@xh/hoist/format';
+import {fmtCompactDate, compactDateFormatter} from '@xh/hoist/format';
 
 // Assuming today is 2026-02-08:
 fmtCompactDate(new Date('2026-02-08T15:45:00'))  // "3:45pm"    (same day → time only)
@@ -474,11 +474,11 @@ fmtCompactDate(new Date('2025-03-22T10:00:00'))  // "2025-03-22" (11 months ago 
 // LocalDate same-day defaults to 'MMM D' since there is no time component
 fmtCompactDate(LocalDate.today())                // "Feb 8"
 
-// Use as a column renderer for activity/event timestamps
-{field: 'lastActivity', renderer: compactDateRenderer()}
+// Use as a column formatter for activity/event timestamps
+{field: 'lastActivity', formatter: compactDateFormatter()}
 
-// Custom thresholds — e.g. show full date after only 2 months
-{field: 'updatedDate', renderer: compactDateRenderer({distantThreshold: 2})}
+// Custom thresholds - e.g. show full date after only 2 months
+{field: 'updatedDate', formatter: compactDateFormatter({distantThreshold: 2})}
 ```
 
 ### Timestamp Utilities
