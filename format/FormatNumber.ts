@@ -681,7 +681,8 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
     fmt: (v: number, opts?: NumberFormatOptions) => ReactNode,
     fmtDefaults: {ledger?: boolean} = {}
 ): (opts?: O) => StringFormatter<number> {
-    return (opts = {} as O) => {
+    return (opts?: O) => {
+        opts ??= {} as O;
         throwIfMarkupOptions(
             opts,
             ['tooltip', 'withSignGlyph', 'labelCls', 'asHtml'],
