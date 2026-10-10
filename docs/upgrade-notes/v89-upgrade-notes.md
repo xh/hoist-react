@@ -378,7 +378,7 @@ new GridModel({
 written by ag-Grid, with no React component and no `xh-cell-inner-wrapper` span in the cell. The
 cell carries an `xh-cell--plain` class. Columns with a `renderer`, tree columns, and columns with
 an ag-Grid `cellRenderer` via `agOptions` are unchanged. A renderer-less column with an
-`agOptions.valueFormatter` now displays the formatted value, as its export already did.
+`agOptions.valueFormatter` now displays the formatted value.
 
 **Find affected styles and selectors:**
 
