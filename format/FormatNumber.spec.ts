@@ -486,7 +486,10 @@ describe('numberFormatter and friends', () => {
             ['number', {ledger: true, colorSpec: true, precision: 0}],
             ['number', {ledger: true, colorSpec: true, zeroDisplay: '-', nullDisplay: 'n/a'}],
             ['number', {ledger: true, colorSpec: true, strictZero: false, precision: 0}],
-            ['number', {prefix: '$', label: 'k', withPlusSign: true, withCommas: false}],
+            [
+                'number',
+                {prefix: '$', label: 'k', withPlusSign: true, withCommas: false, precision: 1}
+            ],
             ['millions', {label: true, ledger: true}],
             ['quantity', {}],
             ['quantity', {ledger: false, colorSpec: true}],
