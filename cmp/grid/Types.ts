@@ -389,9 +389,12 @@ export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactN
  * formatter over a `renderer` wherever a string will do. The function may carry `cellClassRules`
  * to style the cell by value - the string formatter factories in `@xh/hoist/format` attach rules
  * for `colorSpec` and ledger alignment this way.
+ *
+ * As with a renderer, a group row shows its raw value without calling the formatter, and a throw
+ * shows '#ERROR' in the cell.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
- * @returns the display text.
+ * @returns the display text, or null for an empty cell.
  */
 export type ColumnFormatter<T = any> = ((value: T, context: CellContext) => string) & {
     cellClassRules?: Record<string, ColumnCellClassRuleFn>;

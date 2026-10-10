@@ -1052,8 +1052,15 @@ export class Column {
     @computeOnce
     private get agValueFormatter(): ColDef['valueFormatter'] {
         return (agParams: ValueFormatterParams) => {
-            const {formatter, gridModel} = this;
-            return formatter(agParams.value, {record: agParams.data, column: this, gridModel});
+            const {formatter, gridModel} = this,
+                record = agParams.data;
+
+            // ag-Grid also formats a full-width group row's label through the grouped column.
+            // That row has no record, so it shows its raw value, as with a renderer.
+            if (!(record instanceof StoreRecord)) return null;
+
+            // Blank the cell for a null return, as for a renderer. ag-Grid would show the value.
+            return formatter(agParams.value, {record, column: this, gridModel}) ?? '';
         };
     }
 

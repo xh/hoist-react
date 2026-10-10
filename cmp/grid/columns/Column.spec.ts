@@ -106,6 +106,25 @@ describe('Column.getAgSpec', () => {
             expect(format({value: 'Alpha', data: store.getById(7)})).toBe('Alpha #7');
         });
 
+        it('is not called for a row with no record, such as a group row', () => {
+            let calls = 0;
+            const col = createColumn({formatter: v => `${v} #${++calls}`}),
+                format = col.getAgSpec().valueFormatter as Function;
+
+            // ag-Grid shows the raw value when the formatter gives it null.
+            expect(format({value: 'Alpha', data: undefined})).toBeNull();
+            expect(calls).toBe(0);
+        });
+
+        it('blanks the cell when it returns null, as a renderer does', () => {
+            const gridModel = createGridModel({}, [{field: 'name', formatter: () => null}]),
+                {store} = gridModel;
+            store.loadData([{id: 7, name: 'Alpha'}]);
+            const format = gridModel.getColumn('name').getAgSpec().valueFormatter as Function;
+
+            expect(format({value: 'Alpha', data: store.getById(7)})).toBe('');
+        });
+
         it("applies its cellClassRules beneath the column's own", () => {
             const formatter = Object.assign(v => `${v}`, {
                     cellClassRules: {pos: ({value}) => value > 0, shared: () => false}
