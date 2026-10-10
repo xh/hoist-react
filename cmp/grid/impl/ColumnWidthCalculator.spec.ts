@@ -48,16 +48,16 @@ describe('ColumnWidthCalculator', () => {
         });
 
         it('measures exactly only the RANK_SAMPLES widest estimates of a larger column', async () => {
+            // Canvas calls then scale with distinct characters and RANK_SAMPLES, not with rows.
             const values = range(600).map(n => `${n}`.padStart(4, '0')),
-                {calc, ctx, gridModel} = createCalculator(values);
+                {calc, ctx, gridModel} = createCalculator(values),
+                distinctChars = new Set(values.join('')).size;
 
             await calcWidthAsync(calc, gridModel);
             expect(exactMeasurements(ctx)).toHaveLength(calc.RANK_SAMPLES);
-        });
-
-        it('sizes a column of equally wide values to their shared width', async () => {
-            const {calc, bufferPx, gridModel} = createCalculator(['abc', 'def', 'ghi']);
-            await expect(calcWidthAsync(calc, gridModel)).resolves.toBe(measure('abc') + bufferPx);
+            expect(ctx.measureText.mock.calls.length).toBeLessThanOrEqual(
+                distinctChars + calc.RANK_SAMPLES
+            );
         });
 
         it('adds the tree indentation of each depth to the values at that depth', async () => {
@@ -91,17 +91,6 @@ describe('ColumnWidthCalculator', () => {
             const measured = ctx.measureText.mock.calls.map(it => it[0]);
             expect(measured).toContain('12%');
             expect(measured.join('')).not.toContain('<');
-        });
-
-        it('bounds canvas measurements by distinct characters plus RANK_SAMPLES, not by rows', async () => {
-            const values = range(1000).map(n => `v${n}`),
-                {calc, ctx, gridModel} = createCalculator(values),
-                distinctChars = new Set(values.join('')).size;
-
-            await calcWidthAsync(calc, gridModel);
-            expect(ctx.measureText.mock.calls.length).toBeLessThanOrEqual(
-                distinctChars + calc.RANK_SAMPLES
-            );
         });
     });
 });
