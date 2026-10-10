@@ -25,6 +25,7 @@ import {
     isFunction,
     map,
     mapValues,
+    omit,
     partition,
     uniq,
     without
@@ -317,9 +318,10 @@ export class ValuesTabModel extends HoistModel {
                     ? (column.sortValue as GridFilterSortValueFn)
                     : null),
             // A formatter styles its text with `cellClassRules` (e.g. `colorSpec`). The list's
-            // cells take them as the grid's cells do, called with the value alone.
+            // cells take them as the grid's cells do, called with the value alone. Not the ledger
+            // rule: these cells have a renderer, so they show no placeholder for autosize to count.
             cellClassRules = mapValues(
-                (renderer as ColumnFormatter)?.cellClassRules,
+                omit((renderer as ColumnFormatter)?.cellClassRules, 'xh-cell--ledger-align'),
                 (rule): ColumnCellClassRuleFn =>
                     ({value}) => {
                         if (value === BLANK_PLACEHOLDER) return false;
