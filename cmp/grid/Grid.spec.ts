@@ -71,7 +71,7 @@ describe('Grid', () => {
         expect(qty.querySelector('.xh-cell-inner-wrapper').textContent).toBe('1!');
     });
 
-    it('writes a formatter result into a plain cell, with its cellClassRules applied', async () => {
+    it("writes a formatter's text into a plain cell, styled by its cellClassRules", async () => {
         const {container} = await renderGridAsync({
                 columns: [
                     {field: 'name'},

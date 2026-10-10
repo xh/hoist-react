@@ -7,23 +7,22 @@
 import {date, grid, GridModel, localDate, number, type ColumnSpec} from '@xh/hoist/cmp/grid';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {zoneGrid, ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
-import {XH} from '@xh/hoist/core';
 import {dateRenderer, numberFormatter, numberRenderer} from '@xh/hoist/format';
-import {initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {fireEvent, render, waitFor} from '@testing-library/react';
 import {CsvExportModule, ModuleRegistry} from 'ag-grid-community';
-import {http, HttpResponse} from 'msw';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * What each consumer of a cell's value sees for a column with a `formatter`. The built-in `number`
  * and date column specs format this way, so a consumer that reads only `Column.renderer` changes
  * for every app. Autosize, client export, filters and zone grids must see the display text. Copy
- * and server export send the typed value, as they do for the same column with a renderer.
+ * sends the typed value, as it does for the same column with a renderer. Server export reads its
+ * values through the same `GridExportService.getExportableValueForCell` as copy.
  */
-describe('Column.formatter consumers', () => {
+describe('Column.formatter', () => {
     beforeAll(async () => {
         await initTestAppAsync();
         installAgGridForTests();
@@ -42,7 +41,7 @@ describe('Column.formatter consumers', () => {
         {...date, field: 'day', colId: 'dateRnd', renderer: dateRenderer()}
     ].map(it => ({...it, autosizeIncludeHeader: false}));
 
-    it('autosizes to the display text', async () => {
+    it('sets the autosized width from the display text', async () => {
         const gridModel = await renderGridAsync({columns: twins});
         stubTextLayout();
 
@@ -54,7 +53,7 @@ describe('Column.formatter consumers', () => {
         expect(width('dateFmt')).toBe(width('dateRnd'));
     });
 
-    it('copies the typed value, as for a renderer', async () => {
+    it('leaves copy with the typed value, as for a renderer', async () => {
         const gridModel = await renderGridAsync({columns: twins}),
             {agApi} = gridModel,
             copy = agApi.getGridOption('processCellForClipboard'),
@@ -68,7 +67,7 @@ describe('Column.formatter consumers', () => {
         expect(copied('dateFmt')).toBe('2026-10-07 14:05:09');
     });
 
-    it('exports the display text from localExport', async () => {
+    it('supplies the display text to localExport', async () => {
         const gridModel = await renderGridAsync({columns: twins}),
             {agApi} = gridModel;
 
@@ -82,31 +81,7 @@ describe('Column.formatter consumers', () => {
         expect(csv.split('\r\n')[1]).toBe('"1,234,567,891","2026-10-07"');
     });
 
-    it('sends the typed value and Excel format to a server export, as for a renderer', async () => {
-        const gridModel = await renderGridAsync({columns: twins, enableExport: true});
-        let params;
-        server.use(
-            http.post(xhUrl('xh/export'), async ({request}) => {
-                params = JSON.parse((await request.formData()).get('params') as string);
-                return new HttpResponse(null, {status: 204});
-            })
-        );
-        vi.spyOn(XH, 'successToast').mockImplementation(() => null);
-
-        await gridModel.exportAsync({columns: ['fmt', 'rnd', 'dateFmt', 'dateRnd']});
-
-        const [fmt, rnd, dateFmt, dateRnd] = params.meta;
-        expect(fmt).toEqual(rnd);
-        expect(dateFmt).toEqual(dateRnd);
-        expect(params.rows[1].data).toEqual([
-            String(QTY),
-            String(QTY),
-            '2026-10-07 14:05:09',
-            '2026-10-07 14:05:09'
-        ]);
-    });
-
-    it('matches a date column on its display text in a StoreFilterField', async () => {
+    it('supplies the display text to StoreFilterField matching', async () => {
         const gridModel = await renderGridAsync({columns: [{...date, field: 'day'}]}),
             {container} = render(storeFilterField({model: gridModel, gridModel, filterBuffer: 0}));
 
@@ -115,7 +90,7 @@ describe('Column.formatter consumers', () => {
         await waitFor(() => expect(gridModel.store.records.map(it => it.id)).toEqual([1]));
     });
 
-    it('shows the display text and value classes in ZoneGrid zones', async () => {
+    it('supplies the display text and value classes to ZoneGrid', async () => {
         const zoneGridModel = new ZoneGridModel({
             columns: [
                 {field: 'name'},

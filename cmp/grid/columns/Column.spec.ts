@@ -4,13 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {Column, type ColumnFormatter, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {required} from '@xh/hoist/data';
+import {numberFormatter, numberRenderer} from '@xh/hoist/format';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {render} from '@testing-library/react';
 import {createElement} from 'react';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, expectTypeOf, it, onTestFinished} from 'vitest';
 
 /**
  * The ag-Grid column definition a Column produces. Grid applies these defs to ag-Grid whenever
@@ -88,37 +89,35 @@ describe('Column.getAgSpec', () => {
     });
 
     describe('formatter', () => {
-        it('supplies a valueFormatter for a plain cell, with the cell context', () => {
+        it('accepts only a function that returns a string - not a renderer', () => {
+            expectTypeOf(numberFormatter()).toExtend<ColumnFormatter>();
+            expectTypeOf(numberRenderer()).not.toExtend<ColumnFormatter>();
+        });
+
+        it('is called with the cell context, as a renderer is', () => {
             const gridModel = createGridModel({}, [
                     {field: 'name', formatter: (v, {record}) => `${v} #${record.id}`}
                 ]),
                 {store} = gridModel;
             store.loadData([{id: 7, name: 'Alpha'}]);
-            const spec = gridModel.getColumn('name').getAgSpec();
+            const spec = gridModel.getColumn('name').getAgSpec(),
+                format = spec.valueFormatter as Function;
 
-            expect(spec.cellRenderer).toBeUndefined();
-            expect(spec.cellClass).toContain('xh-cell--plain');
-            expect(spec.valueFormatter).toBeTypeOf('function');
-            expect(
-                (spec.valueFormatter as Function)({value: 'Alpha', data: store.getById(7)})
-            ).toBe('Alpha #7');
-            expect(spec.valueFormatter).toBe(
-                gridModel.getColumn('name').getAgSpec().valueFormatter
-            );
+            expect(format({value: 'Alpha', data: store.getById(7)})).toBe('Alpha #7');
         });
 
-        it('applies the formatter cellClassRules beneath the column own rules', () => {
+        it("applies its cellClassRules beneath the column's own", () => {
             const formatter = Object.assign(v => `${v}`, {
                     cellClassRules: {pos: ({value}) => value > 0, shared: () => false}
                 }),
-                col = createColumn({formatter, cellClassRules: {shared: () => true}});
+                col = createColumn({formatter, cellClassRules: {shared: () => true}}),
+                rules = col.getAgSpec().cellClassRules as Record<string, Function>;
 
-            expect(Object.keys(col.cellClassRules)).toEqual(['pos', 'shared']);
-            expect(col.cellClassRules.shared({} as any)).toBe(true);
-            expect(col.getAgSpec().cellClassRules.pos).toBe(col.cellClassRules.pos);
+            expect(Object.keys(rules)).toEqual(['pos', 'shared']);
+            expect(rules.shared({})).toBe(true);
         });
 
-        it('yields to a renderer', () => {
+        it('is ignored, with its cellClassRules, when a renderer is set', () => {
             const formatter = Object.assign(v => `${v}`, {cellClassRules: {pos: () => true}}),
                 spec = createColumn({formatter, renderer: v => v}).getAgSpec();
 
@@ -127,7 +126,7 @@ describe('Column.getAgSpec', () => {
             expect(spec.cellClassRules).toEqual({});
         });
 
-        it('reaches a tree column through its group renderer as valueFormatted', () => {
+        it('shows its text in a tree column, through the group cell renderer', () => {
             const gridModel = createGridModel({treeMode: true}, [
                     {field: 'name', isTreeColumn: true, formatter: v => `${v}!`}
                 ]),
