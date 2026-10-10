@@ -386,6 +386,22 @@ grep -rn "xh-cell-inner-wrapper" client-app/src/
 For a rule that should apply to such a column, target the cell. For a renderer-less column that
 must keep the span, add a renderer that returns the value.
 
+Before:
+
+```scss
+.my-grid .xh-cell-inner-wrapper {
+  color: var(--xh-text-color-muted);
+}
+```
+
+After:
+
+```scss
+.my-grid .ag-cell {
+  color: var(--xh-text-color-muted);
+}
+```
+
 **Formatted columns can be plain too.** `Column.formatter` takes a function returning the cell's
 display text, and the `numberFormatter`, `dateFormatter` (and `thousands`, `millions`, `dateTime`,
 ... siblings) factories in `@xh/hoist/format` return one from the same options as their renderer
@@ -410,21 +426,16 @@ After:
 Keep the renderer where the cell needs an element - icons, nested layout, a `tooltip` option
 (move it to `Column.tooltip`), or inline styles from a `colorSpec`.
 
-Before:
+A formatter cell shows the same text, sign colors and alignment as the renderer cell it replaces.
+These differences remain:
 
-```scss
-.my-grid .xh-cell-inner-wrapper {
-  color: var(--xh-text-color-muted);
-}
-```
-
-After:
-
-```scss
-.my-grid .ag-cell {
-  color: var(--xh-text-color-muted);
-}
-```
+- `GridModel.localExport` writes the display text, where it wrote the raw value. This applies to
+  the built-in specs as shipped. Copy and `GridModel.exportAsync` still send the value with its
+  Excel format.
+- `colorSpec` classes such as `xh-pos-val` sit on the cell, not on an inner span.
+- A `label` is plain text, with no `xh-units-label` span to style. Keep the renderer if the label
+  needs its own style.
+- Ledger alignment is a hidden `::after` on the cell. The cell text no longer ends in a hidden `)`.
 
 ### 10. Space Badges from Preceding Text
 
@@ -471,6 +482,7 @@ After completing all steps:
 - [ ] Wide grids scroll as expected, and any automation reading offscreen cells sets
       `useVirtualColumns: false`.
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
+- [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
 - [ ] Badges that follow a label are spaced from it.
 
 ## Reference

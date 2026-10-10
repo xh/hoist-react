@@ -286,8 +286,9 @@ export interface ColumnSpec {
      * A formatter may carry `cellClassRules` to style the cell by value - the factories above do
      * so for `colorSpec` and ledger alignment. Those rules are applied beneath the column's own.
      *
-     * The formatted text is also what ag-Grid copies and exports for the cell. Ignored when a
-     * `renderer` is set.
+     * Autosize, `GridModel.localExport`, filters and ZoneGrid use the formatted text. Copy and
+     * `GridModel.exportAsync` send the cell's value and Excel format, as for any column. Ignored
+     * when a `renderer` is set.
      */
     formatter?: ColumnFormatter;
 
@@ -897,7 +898,7 @@ export class Column {
 
         // A formatter supplies the cell's display text through ag-Grid's `valueFormatter`, which
         // keeps a plain cell plain (and reaches a tree column's group renderer as
-        // `valueFormatted`). ag-Grid's copy and export use the same text.
+        // `valueFormatted`). `GridModel.localExport` writes the same text.
         if (this.formatter && !this.renderer) {
             ret.valueFormatter = this.agValueFormatter;
         }
