@@ -6,7 +6,9 @@
  */
 
 .xh-badge {
-  display: flex;
+  // Inline with no outer margin - spaced and aligned by surrounding text and its container.
+  display: inline-flex;
+  vertical-align: middle;
   justify-content: center;
   align-items: center;
   align-self: center;
@@ -14,7 +16,6 @@
   font-size: var(--xh-badge-font-size);
   font-weight: var(--xh-badge-font-weight);
   border-radius: var(--xh-badge-border-radius);
-  margin-left: 5px;
   padding: var(--xh-badge-padding);
   height: var(--xh-badge-height);
   width: fit-content;

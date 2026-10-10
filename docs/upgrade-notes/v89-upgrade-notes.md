@@ -4,7 +4,7 @@
 
 ## Overview
 
-Hoist React v89 is a light upgrade with three required changes and one strongly recommended change.
+Hoist React v89 is a light upgrade with four required changes and one strongly recommended change.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -16,6 +16,8 @@ Hoist React v89 is a light upgrade with three required changes and one strongly 
   switch to `Icon.getCatalog()` - see Step 6.
 - **Icon `faName` (required if used)** - Icon elements carry their FA name as `props.faName`, not
   `props.iconName` - see Step 7.
+- **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
+  follow text need a space or a container `gap` - see Step 10.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -424,6 +426,35 @@ After:
 }
 ```
 
+### 10. Space Badges from Preceding Text
+
+`Badge` now renders inline with no outer margin, like a badge in most component libraries. The old
+5px left margin assumed a badge always follows text, and it pushed standalone badges off-center in
+grid cells and other aligned containers.
+
+**Find affected code:**
+
+```bash
+grep -rn "badge(" client-app/src/
+```
+
+Where a badge follows a label, separate them with a space, as with any inline element. An `hbox`
+drops that space, because it lays text out as a flex item. Replace it with a `span`, or keep the
+`hbox` and set a `gap`. Remove any `margin-left: 0` or `margin: 0 auto` overrides that worked around
+the old margin.
+
+Before:
+
+```typescript
+hbox('Alerts', badge({item: count, intent: 'danger'}))
+```
+
+After:
+
+```typescript
+span('Alerts ', badge({item: count, intent: 'danger'}))
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -440,6 +471,7 @@ After completing all steps:
 - [ ] Wide grids scroll as expected, and any automation reading offscreen cells sets
       `useVirtualColumns: false`.
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
+- [ ] Badges that follow a label are spaced from it.
 
 ## Reference
 

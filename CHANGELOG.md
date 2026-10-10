@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -33,6 +33,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   target `.ag-cell` instead. The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`,
   `compactDate` and `localDate` column specs now format through `Column.formatter` and render as
   such plain cells.
+* `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
+  `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 
 ### 🎁 New Features
 
@@ -126,6 +128,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed tree grid parent rows ignoring `Column.rowHeight`, and so sitting shorter than their
   children.
 * Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
+* Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
+  Titled icons also get the title as their `aria-label`, so screen readers announce them again.
+* Fixed the Admin Console config differ flagging typed JSON configs as changed, based on their
+  code-derived resolved and default values, and showing those values as `[object Object]`.
+* Fixed `Badge` ignoring the `align` of its grid column. It now renders inline.
 
 ### ⚙️ Technical
 
@@ -149,6 +156,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   them only to run unit tests.
 * Updated Hoist to build with TypeScript 7. Apps can stay on 5.9 or move to 7, which needs two
   `tsconfig.json` overrides. See the upgrade notes.
+* `creates()`, `uses()` and `useLocalModel()` now build and link their models untracked by MobX.
+  Observable state read during model construction or `onLinked()` no longer triggers a
+  spurious one-time re-render.
 * `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
   by a change append rather than taking their source position. This may affect the sort ordering
   of unsorted grids when data changes.
@@ -179,6 +189,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * @azure/msal-browser `5.23 → 5.24`
 * @blueprintjs/core `6.20 → 6.21`
 * @blueprintjs/datetime `6.2 → 6.3`
+* @fortawesome/fontawesome-pro `removed` (unused - icons come from the `pro-*-svg-icons` packages)
 * swiper `12.2 → 14.3`
 * ts-morph `27.0 → 28.0`
 * typescript `5.9 → 7.0`

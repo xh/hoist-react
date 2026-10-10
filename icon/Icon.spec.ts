@@ -9,6 +9,7 @@ import {
     faUnicorn as faUnicornSolid
 } from '@fortawesome/pro-solid-svg-icons';
 import {library} from '@fortawesome/fontawesome-svg-core';
+import {render} from '@testing-library/react';
 import {faBurrito, faCactus, faFileInvoiceDollar, faTaco} from '@fortawesome/pro-regular-svg-icons';
 import {faFileInvoiceDollar as faFileInvoiceDollarSolid} from '@fortawesome/pro-solid-svg-icons';
 import {Icon} from '@xh/hoist/icon';
@@ -17,7 +18,8 @@ import {describe, expect, it, vi} from 'vitest';
 /**
  * The icon registration API: how apps add their own FontAwesome icons, how names resolve to icons,
  * and what the catalog behind `IconPicker` lists. Apps persist icon names chosen by users and
- * render them back with `Icon.get()`, so name resolution must stay stable.
+ * render them back with `Icon.get()`, so name resolution must stay stable. Also covers how an
+ * icon's `title` renders as a hover tooltip.
  *
  * Registrations live on the `Icon` singleton for the rest of the file, so each test registers
  * under its own name.
@@ -236,6 +238,57 @@ describe('Icon', () => {
             vi.spyOn(console, 'warn').mockImplementation(() => {});
 
             expect(Icon.icon({iconName: 'plus'}).props.faName).toBe('plus');
+        });
+    });
+
+    // Regressed in v84 with the FontAwesome 7 upgrade, which ignores `title`.
+    describe('title', () => {
+        const titleEls = (container: HTMLElement) => container.querySelectorAll('svg > title');
+
+        it('renders a title as an SVG tooltip and accessible label', () => {
+            const {container} = render(Icon.add({title: 'Add'})),
+                svg = container.querySelector('svg');
+
+            expect(titleEls(container)).toHaveLength(1);
+            expect(titleEls(container)[0].textContent).toBe('Add');
+            expect(svg.getAttribute('aria-label')).toBe('Add');
+            expect(svg.getAttribute('aria-hidden')).toBe('false');
+        });
+
+        it('keeps a single title when the title or icon changes', () => {
+            const {container, rerender} = render(Icon.add({title: 'Add'}));
+
+            rerender(Icon.add({title: 'Add trade'}));
+            expect(titleEls(container)).toHaveLength(1);
+            expect(titleEls(container)[0].textContent).toBe('Add trade');
+
+            rerender(Icon.check({title: 'Add trade'}));
+            expect(titleEls(container)).toHaveLength(1);
+            expect(titleEls(container)[0].textContent).toBe('Add trade');
+        });
+
+        it('removes the title and label when the title is cleared', () => {
+            const {container, rerender} = render(Icon.add({title: 'Add'}));
+
+            rerender(Icon.add());
+            const svg = container.querySelector('svg');
+            expect(titleEls(container)).toHaveLength(0);
+            expect(svg.hasAttribute('aria-label')).toBe(false);
+            expect(svg.getAttribute('aria-hidden')).toBe('true');
+        });
+
+        it('renders a title as an SVG tooltip in HTML output', () => {
+            const parse = (html: string) => {
+                const el = document.createElement('div');
+                el.innerHTML = html;
+                return el.querySelector('svg');
+            };
+            const svg = parse(Icon.add({title: 'Fees & <costs>', asHtml: true}));
+
+            expect(svg.querySelector('title').textContent).toBe('Fees & <costs>');
+            expect(svg.getAttribute('aria-label')).toBe('Fees & <costs>');
+            expect(svg.hasAttribute('aria-hidden')).toBe(false);
+            expect(parse(Icon.add({asHtml: true})).querySelector('title')).toBeNull();
         });
     });
 });
