@@ -105,6 +105,7 @@ import {
     isArray,
     isBoolean,
     isEmpty,
+    isFinite,
     isFunction,
     isNil,
     isString,
@@ -893,7 +894,7 @@ export class GridModel extends HoistModel {
      * Export grid data using ag-Grid's built-in client-side export.
      *
      * Cells export their raw value, or their display text where the column has a `formatter`
-     * (or an ag-Grid `valueFormatter`). An Excel file holds that text as text, not as a number.
+     * (or an ag-Grid `valueFormatter`). An Excel export keeps a number as a number, unformatted.
      * To export raw values, pass a `processCellCallback` in `params`. Server-side
      * {@link exportAsync} sends typed values with Excel formats instead.
      *
@@ -1965,9 +1966,12 @@ export class GridModel extends HoistModel {
     }
 
     // `formatValue` runs the column's ag-Grid `valueFormatter` (a Hoist `formatter`), if any.
+    // AG Grid's Excel export types each cell from the value returned here, so formatted text such
+    // as "1,234" would land as text. Keep numbers raw for Excel, as its native export does.
     private formatValuesForExport(params: ProcessCellForExportParams) {
-        const {value} = params;
-        return value == null ? value : params.formatValue(value);
+        const {value, type} = params;
+        if (value == null || (type === 'excel' && isFinite(value))) return value;
+        return params.formatValue(value);
     }
 
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,

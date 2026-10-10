@@ -294,8 +294,9 @@ columns: [
 - **With a renderer** - the `renderer` wins, and `Column` ignores the formatter and its rules.
   This lets `{...number, renderer}` override a built-in spec.
 - **Outside the cell** - autosize, `GridModel.localExport`, header filters and `ZoneGrid` use the
-  formatted text, as do `StoreFilterField` and `GridFindField` on date fields. Copy sends the
-  cell's value, and `GridModel.exportAsync` sends it with its `excelFormat`, as for any column.
+  formatted text, as do `StoreFilterField` and `GridFindField` on date fields. A `localExport` to
+  Excel keeps a number as a raw number. Copy sends the cell's value, and `GridModel.exportAsync`
+  sends it with its `excelFormat`, as for any column.
 
 ### Custom Renderers
 

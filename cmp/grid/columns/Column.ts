@@ -290,8 +290,9 @@ export interface ColumnSpec {
      * value, as for a renderer.
      *
      * Autosize, `GridModel.localExport`, header and context menu filters, and ZoneGrid use the
-     * formatted text, as do `StoreFilterField` and `GridFindField` on date fields. Copy sends the
-     * cell's value, and `GridModel.exportAsync` sends it with its Excel format, as for any column.
+     * formatted text, as do `StoreFilterField` and `GridFindField` on date fields. A `localExport`
+     * to Excel keeps a number as a raw number. Copy sends the cell's value, and
+     * `GridModel.exportAsync` sends it with its Excel format, as for any column.
      * Ignored, with its `cellClassRules`, when a `renderer` is set.
      */
     formatter?: ColumnFormatter;
@@ -908,7 +909,8 @@ export class Column {
 
         // A formatter supplies the cell's display text through ag-Grid's `valueFormatter`, which
         // keeps a plain cell plain (and reaches a tree column's group renderer as
-        // `valueFormatted`). `GridModel.localExport` writes the same text.
+        // `valueFormatted`). `GridModel.localExport` writes the same text, except for a number
+        // sent to Excel.
         if (this.formatter && !this.renderer) {
             ret.valueFormatter = this.agValueFormatter;
         }

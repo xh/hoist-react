@@ -19,9 +19,10 @@ import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 /**
  * What each consumer of a cell's value sees for a column with a `formatter`. The built-in `number`
  * and date column specs format this way, so a consumer that reads only `Column.renderer` changes
- * for every app. Autosize, client export, filters and zone grids must see the display text. Copy
- * sends the typed value, as it does for the same column with a renderer. Server export reads its
- * values through the same `GridExportService.getExportableValueForCell` as copy.
+ * for every app. Autosize, client export, filters and zone grids must see the display text, but a
+ * client export to Excel keeps a number as a number. Copy sends the typed value, as it does for the
+ * same column with a renderer. Server export reads its values through the same
+ * `GridExportService.getExportableValueForCell` as copy.
  */
 describe('Column.formatter', () => {
     beforeAll(async () => {
@@ -103,6 +104,27 @@ describe('Column.formatter', () => {
         gridModel.localExport('test', 'csv', {columnKeys: ['fmt', 'dateFmt']});
 
         expect(csv.split('\r\n')[1]).toBe('"1,234,567,891","2026-10-07"');
+    });
+
+    it('keeps numbers as numbers in a localExport to Excel', async () => {
+        const gridModel = await renderGridAsync({columns: twins}),
+            {agApi} = gridModel;
+
+        // Excel export is an enterprise module, so run its cell callback through the CSV writer
+        // and see what each cell would hold. A number stays a number, so Excel can sum it.
+        let row: string;
+        vi.spyOn(agApi, 'exportDataAsExcel').mockImplementation(params => {
+            const {columnKeys, processCellCallback} = params;
+            row = agApi
+                .getDataAsCsv({
+                    columnKeys,
+                    processCellCallback: p => processCellCallback({...p, type: 'excel'})
+                })
+                .split('\r\n')[1];
+        });
+        gridModel.localExport('test', 'excel', {columnKeys: ['fmt', 'dateFmt']});
+
+        expect(row).toBe(`"${QTY}","2026-10-07"`);
     });
 
     it('supplies the display text to StoreFilterField matching', async () => {
