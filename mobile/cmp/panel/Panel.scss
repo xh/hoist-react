@@ -33,11 +33,26 @@
 
 // Rounds the panel's corners (0 by default). As a Hoist `vbox`, the panel already has inline
 // `overflow: hidden`, which clips its header, toolbars, content, and masks to the rounded shape.
-// The `--panel-border-radius` hook is read here as well as on `body`, so it can be scoped to a
-// container class. `:where()` zeroes specificity - mobile apps style this same element via
+// The `--panel-border-radius` hook is read on each panel as well as on `body`, so it can be scoped
+// to a container class. `:where()` zeroes specificity - mobile apps style this same element via
 // `className`, so any app rule setting its own `border-radius` keeps winning.
 :where(.xh-panel) {
-  border-radius: calc(var(--panel-border-radius, var(--xh-panel-border-radius)) * 1px);
+  --xh-panel-border-radius-px: calc(
+    var(--panel-border-radius, var(--xh-panel-border-radius)) * 1px
+  );
+
+  border-radius: var(--xh-panel-border-radius-px);
+}
+
+// Inset a corner loading indicator from a rounded corner, so the curve doesn't clip it.
+:where(.xh-panel > .xh-loading-indicator) {
+  margin: calc(var(--xh-panel-border-radius-px) * 0.3);
+}
+
+// Stop a container-scoped hook at each panel, so panels nested within a rounded one stay square.
+// They fall back to any app-wide value set on `:root`.
+:where(.xh-panel) > * {
+  --panel-border-radius: initial;
 }
 
 // Separate banners from the panel contents they sit above or below.

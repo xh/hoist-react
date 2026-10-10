@@ -488,9 +488,7 @@ A border radius is intended for panels laid out with gaps between them or floati
 background - e.g. tiles in a gapped grid or flex layout, or cards on a page background. It is not
 suited to the space-filling layouts most panels sit in - flush against siblings, in splitters, tabs,
 or frames - where rounded corners leave notches against neighboring content. For that reason it
-defaults to `0` and is best set via a scoped override on a container class rather than globally.
-The panel clips its header, toolbars, banners, content, and masks to the rounded shape. Panels
-nested within a rounded one inherit the hook, so reset it to `0` on any that sit flush inside:
+defaults to `0` and is best set via a scoped override on a container class rather than globally:
 
 ```scss
 .my-tile-grid {
@@ -499,13 +497,16 @@ nested within a rounded one inherit the hook, so reset it to `0` on any that sit
 
   --panel-border-radius: 8;
   --panel-border-width: 1;
-
-  .xh-panel .xh-panel {
-    --panel-border-radius: 0;
-    --panel-border-width: 0;
-  }
 }
 ```
+
+The panel clips its header, toolbars, banners, content, and masks to the rounded shape, insets a
+corner loading indicator from the curve, and shortens the splitter of a resizable panel to clear
+its corners. Container-scoped border and radius hooks stop at each panel, so panels nested flush
+within a rounded one - in its content, tabs, or a dashboard widget - stay square and unbordered. To
+round panels nested inside another, set the hooks on a container within it. A hook set on `:root`
+applies to every panel, nested or not, except one popped out to a modal dialog, which drops the
+radius in favor of the dialog's own corners.
 
 ## Persistence
 

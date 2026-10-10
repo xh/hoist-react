@@ -5,5 +5,8 @@
     width: auto;
     // Zero margin to allow for fullscreen modals @ 100vw/vh
     margin: 0;
+    // The dialog frames a modal panel, so drop any app-wide panel radius rather than nest a second
+    // curve inside the dialog's own corners.
+    --panel-border-radius: 0;
   }
 }

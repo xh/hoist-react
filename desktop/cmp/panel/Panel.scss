@@ -1,13 +1,46 @@
 .xh-panel__inner {
+  // Border width and radius read their `--panel-*` hooks on each panel, not only on `body`, so
+  // either can be scoped to a container class - e.g. a gapped tile layout. Their `-px` vars are
+  // re-resolved here, so the panel's own contents can read its actual values.
+  --xh-panel-border-width-px: calc(var(--panel-border-width, var(--xh-panel-border-width)) * 1px);
+  --xh-panel-border-radius-px: calc(
+    var(--panel-border-radius, var(--xh-panel-border-radius)) * 1px
+  );
+
   flex: 1;
   background-color: var(--xh-panel-bg);
-  // Border width and radius read their `--panel-*` hooks here as well as on `body`, so either can
-  // be scoped to a container class - e.g. a gapped tile layout - rather than set app-wide.
-  border: calc(var(--panel-border-width, var(--xh-panel-border-width)) * 1px) solid
-    var(--xh-panel-border-color);
+  border: var(--xh-panel-border-width-px) solid var(--xh-panel-border-color);
   // As a Hoist `vbox`, this element has inline `overflow: hidden`, which clips the header,
   // toolbars, content, and masks to the rounded corners - no extra clipping or layout change.
-  border-radius: calc(var(--panel-border-radius, var(--xh-panel-border-radius)) * 1px);
+  border-radius: var(--xh-panel-border-radius-px);
+}
+
+// Inset a corner loading indicator from a rounded corner, so the curve doesn't clip it. `:where()`
+// zeroes specificity here and below, so any app rule setting these margins keeps winning.
+:where(.xh-panel__inner > .xh-loading-indicator) {
+  margin: calc(var(--xh-panel-border-radius-px) * 0.3);
+}
+
+// Stop container-scoped hooks at each panel, so panels nested within a rounded one - in its
+// content, tabs, or a dashboard widget - stay square and unbordered. They fall back to any app-wide
+// value set on `:root`. A hook set on a nested panel itself still wins.
+:where(.xh-panel__inner) > * {
+  --panel-border-radius: initial;
+  --panel-border-width: initial;
+}
+
+// Inset the splitter of a rounded, resizable panel from its corners, so it runs alongside only the
+// panel's straight edge rather than leaving gaps against the curve.
+:where(.xh-resizable > .xh-resizable-splitter) {
+  --xh-panel-splitter-inset: calc(var(--panel-border-radius, var(--xh-panel-border-radius)) * 1px);
+}
+
+:where(.xh-resizable > .xh-resizable-splitter.horizontal) {
+  margin-block: var(--xh-panel-splitter-inset);
+}
+
+:where(.xh-resizable > .xh-resizable-splitter.vertical) {
+  margin-inline: var(--xh-panel-splitter-inset);
 }
 
 // Separate banners from the panel contents they sit above or below.

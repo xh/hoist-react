@@ -803,6 +803,8 @@ body {
   --xh-panel-border-color: var(--panel-border-color, var(--xh-border-color));
   // Radius for panels laid out with gaps or floating on a background (e.g. tiles, cards) - not for
   // flush, space-filling layouts. Best set via a scoped `--panel-border-radius` on a container.
+  // The values here reflect hooks set on `:root` only - each panel re-resolves the border `-px`
+  // vars from any hooks scoped to a container, for use within that panel.
   --xh-panel-border-radius: var(--panel-border-radius, 0);
   --xh-panel-border-radius-px: calc(var(--xh-panel-border-radius) * 1px);
   --xh-panel-border-width: var(--panel-border-width, 0);
