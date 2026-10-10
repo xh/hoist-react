@@ -300,12 +300,12 @@ columns: [
 
 ### Custom Renderers
 
-Use `xxxRenderer` factory functions (e.g., `numberRenderer`) when a cell needs markup, such as
-`withSignGlyph` or a styled label, passing a statically configured renderer directly to the
-`renderer` config. When rendering dynamically based on record data or otherwise customizing
-per-cell, call the underlying `fmtXxx` function directly (for example `fmtNumber`) to avoid
-creating a new function on each render. See [`/format/README.md`](../../format/README.md) for the
-full formatter and renderer API.
+Use an `xxxRenderer` factory function, for example `numberRenderer`, when a cell needs markup such
+as `withSignGlyph` or a styled label. Pass a statically configured renderer directly to the
+`renderer` config. To render dynamically from record data or otherwise customize per cell, call
+the underlying `fmtXxx` function directly, for example `fmtNumber`. Doing so avoids creating a new
+function on each render. See [`/format/README.md`](../../format/README.md) for the full formatter
+and renderer API.
 
 ```typescript
 import {numberRenderer, fmtNumber} from '@xh/hoist/format';

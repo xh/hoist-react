@@ -32,10 +32,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
   target `.ag-cell` instead.
 * The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
-  column specs now set a `formatter` in place of a `renderer`, so their cells are plain too. Code
+  column specs now set a `formatter` in place of a `renderer`. Their cells are plain too, and code
   that reads their `renderer` finds none. Client-side exports (`GridModel.localExport` and the
-  `exportLocal` menu item) write their display text in place of the raw value, but Excel still
-  gets a number as a number.
+  `exportLocal` menu item) write their display text in place of the raw value. Excel still gets a
+  number as a number.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 

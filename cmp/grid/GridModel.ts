@@ -894,9 +894,9 @@ export class GridModel extends HoistModel {
      * Export grid data using ag-Grid's built-in client-side export.
      *
      * Cells export their raw value, or their display text where the column has a `formatter`
-     * (or an ag-Grid `valueFormatter`). An Excel export keeps a number as a number, unformatted.
-     * To export raw values, pass a `processCellCallback` in `params`. Server-side
-     * {@link exportAsync} sends typed values with Excel formats instead.
+     * (or an ag-Grid `valueFormatter`). A null cell exports blank. An Excel export keeps a number
+     * as a number, unformatted. To export raw values, pass a `processCellCallback` in `params`.
+     * Server-side {@link exportAsync} sends typed values with Excel formats instead.
      *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
