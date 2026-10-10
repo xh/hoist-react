@@ -447,7 +447,14 @@ describe('numberFormatter and friends', () => {
     describe('match their renderers', () => {
         // A formatted cell must look like the rendered one: the same text, sign color and ledger
         // placeholder. Only the `xh-units-label` span is gone - a plain-text cell cannot carry it.
-        const values = [1234567.891, -1234567.891, 0, 0.004, -0.004, 12.5, -12.5, null],
+        // NaN (a `number` field's parse of junk input) and Infinity are shown, so they align too.
+        // Numeric strings (an `auto` field's raw values) are checked for `number` only - the other
+        // renderers do arithmetic on them first, which gives a number its sign color.
+        const values = [
+                ...[1234567.891, -1234567.891, 0, 0.004, -0.004, 12.5, -12.5, null],
+                ...[NaN, Infinity, -Infinity]
+            ],
+            numericStrings: any[] = ['1234567.891', '-12.5', '0', '0.004', '-0.004', ''],
             twins = {
                 number: [numberRenderer, numberFormatter],
                 millions: [millionsRenderer, millionsFormatter],
@@ -500,7 +507,7 @@ describe('numberFormatter and friends', () => {
             const [renderer, formatter] = twins[kind],
                 render = renderer(opts),
                 format = formatter(opts);
-            values.forEach(v =>
+            [...values, ...(kind === 'number' ? numericStrings : [])].forEach(v =>
                 expect(formatted(format, v), `value ${v}`).toEqual(rendered(render(v)))
             );
         });

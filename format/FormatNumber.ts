@@ -718,9 +718,10 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
 
         // The value as `fmtNumber` styles it: zero if `strictZero: false` rounds it to zero, or
         // null if it shows `nullDisplay` or `zeroDisplay`, which take no sign color or ledger
-        // alignment.
-        const styledValue = (v: number): number => {
-            if (!isFinite(v)) return null;
+        // alignment. Any other value is returned as-is - a numeric string, NaN or Infinity gets
+        // ledger alignment but no sign color, as from `numberRenderer`.
+        const styledValue = (v: any): any => {
+            if (v == null || v === '') return null;
             if (!strictZero && v !== 0) {
                 const digits = (fmt(v, digitsOpts) as string).replace('-', '');
                 if (ROUNDED_ZERO.test(digits)) v = 0;
@@ -744,7 +745,7 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
             forEach(testsByCls, (tests, cls) => {
                 rules[cls] = ({value}) => {
                     const v = styledValue(value);
-                    return v != null && tests.some(test => test(v));
+                    return isFinite(v) && tests.some(test => test(v));
                 };
             });
         }
@@ -754,7 +755,7 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
             // element formatter's hidden placeholder does.
             rules['xh-cell--ledger-align'] = ({value}) => {
                 const v = styledValue(value);
-                return v != null && v >= 0;
+                return v != null && !(v < 0);
             };
         }
 
