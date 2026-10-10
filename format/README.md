@@ -7,14 +7,18 @@ throughout Hoist applications. Given Hoist's focus on financial and enterprise a
 number formatting is especially rich — supporting ledger-style accounting format, sign-based
 color coding, automatic precision scaling, and labeled units (thousands, millions, billions).
 
-The package exports two categories of tools for each data type:
+The package exports three categories of tools for each data type:
 
-- **Formatter functions** (e.g. `fmtNumber`) — take a value and options, return formatted output.
+- **Formatter functions** (e.g. `fmtNumber`) - take a value and options, return formatted output.
   Use these for ad-hoc, inline formatting in component render methods and business logic.
 
-- **Renderer factories** (e.g. `numberRenderer`) — take options only and return a pre-configured
+- **Renderer factories** (e.g. `numberRenderer`) - take options only and return a pre-configured
   function suitable for use as a grid column `renderer`. Use these when defining reusable column
   specs and other declarative configurations.
+
+- **Formatter factories** (e.g. `numberFormatter`) - take options only and return a function that
+  always returns a string, for a grid column `formatter`. Prefer these for grid columns that show
+  text.
 
 ## Architecture
 
@@ -23,9 +27,9 @@ The package exports two categories of tools for each data type:
 ├── FormatNumber.ts   # Number formatting: fmtNumber, fmtPercent, fmtMillions, etc.
 ├── FormatDate.ts     # Date formatting: fmtDate, fmtDateTime, fmtCompactDate, etc.
 ├── FormatMisc.ts     # Utilities: fmtSpan, fmtJson, capitalizeWords
-├── FormatUtils.ts    # createRenderer() — the renderer factory utility
+├── FormatUtils.ts    # createRenderer() - the renderer factory utility, and StringFormatter
 └── impl/
-    └── Utils.ts      # Internal helpers (saveOriginal)
+    └── Utils.ts      # Internal helpers (saveOriginal, throwIfMarkupOptions)
 ```
 
 ## Formatters vs Renderers
@@ -54,7 +58,8 @@ const dateStr = fmtDate(trade.settleDate);
 
 Renderer factories take **options only** and return a pre-configured function `(value) => formattedOutput`.
 This curried pattern is designed for grid column `renderer` props and other declarative configs
-where the formatting options are known at definition time but the value arrives later:
+where the formatting options are known at definition time but the value arrives later. For a grid
+column that shows only text, prefer the [formatter factories](#formatter-factories) below.
 
 ```typescript
 import {numberRenderer, dateRenderer, percentRenderer} from '@xh/hoist/format';
@@ -97,16 +102,12 @@ export const numberRenderer = createRenderer(fmtNumber);
 
 ### Formatter Factories
 
-Formatter factories mirror the renderer factories but always return a **string**, for a grid
-column's `formatter` prop. ag-Grid writes that text into the cell directly, with no React component
-per cell, so this is the path to prefer for formatted numbers and dates in grids. They take the same
-options as their renderer counterparts, minus those that would need markup: `tooltip` (use
-`Column.tooltip`), `withSignGlyph`, `labelCls` (a `label` is appended as plain text) and `asHtml`.
-
-`colorSpec` and `ledger` alignment are supported, but applied to the cell rather than inline: the
-returned formatter carries `cellClassRules` that color the cell by sign (`xh-pos-val`,
-`xh-neg-val`, `xh-neutral-val`, or the class names you pass) and reserve the width of a closing
-parenthesis on positive ledger values. `Column` applies them beneath its own `cellClassRules`.
+Formatter factories take **options only**, as renderer factories do, but the function they return
+always returns a **string**. Use it as a grid column's `formatter`. ag-Grid writes the text into the
+cell, with no React component per cell, which makes this the cheaper path for numbers and dates in
+grids. Every renderer factory above has a formatter factory with the same prefix, such as
+`numberFormatter` and `dateFormatter`. The built-in `number` and date column specs in
+`@xh/hoist/cmp/grid` use them.
 
 ```typescript
 import {numberFormatter, millionsFormatter, dateFormatter} from '@xh/hoist/format';
@@ -118,10 +119,23 @@ columns: [
 ]
 ```
 
-Available: `numberFormatter`, `thousandsFormatter`, `millionsFormatter`, `billionsFormatter`,
-`quantityFormatter`, `priceFormatter`, `percentFormatter`, `dateFormatter`, `dateTimeFormatter`,
-`dateTimeSecFormatter`, `timeFormatter`, `compactDateFormatter`. The built-in `number` and date
-column specs in `@xh/hoist/cmp/grid` use them.
+A formatter factory takes the options of its renderer counterpart, less those that need markup:
+
+| Option | In a formatter factory |
+|--------|------------------------|
+| `colorSpec` | Class names only. Rules on the formatter color the whole cell. Keep `numberRenderer` for inline styles |
+| `ledger` | Supported. With `forceLedgerAlign` (the default), a cell class reserves the width of a `)` on values without one |
+| `label` | Appended as plain text, with no `xh-units-label` span. `labelCls` is not supported |
+| `nullDisplay`, `zeroDisplay` | Strings only |
+| `tooltip` | Not supported. Set `Column.tooltip` instead, for example to `v => fmtNumberTooltip(v)` |
+| `withSignGlyph`, `asHtml` | Not supported |
+
+The option types enforce this table. A markup option or an element display value fails to compile,
+also through a variable or a spread of shared renderer options. An untyped caller gets an exception
+from the factory call, never a cell that shows `[object Object]`.
+
+The `colorSpec` and ledger rules ride on the returned function as `cellClassRules`. `Column` applies
+them beneath its own `cellClassRules`, so a column rule for the same class name wins.
 
 ## Number Formatting
 
@@ -509,23 +523,23 @@ Capitalizes the first letter of each space-separated word.
 ### Defining Reusable Column Specs
 
 The most common pattern across Hoist applications is defining shared column specs in a central
-module, pairing renderers with matching `ExcelFormat` values for consistent display and export:
+module, pairing formatters with matching `ExcelFormat` values for consistent display and export:
 
 ```typescript
-import {numberRenderer, percentRenderer, dateRenderer} from '@xh/hoist/format';
+import {numberFormatter, dateFormatter} from '@xh/hoist/format';
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 
 // Shared column definitions
 export const hoursCol: ColumnSpec = {
     field: {name: 'hours', type: 'number'},
     excelFormat: ExcelFormat.NUM_2DP,
-    renderer: numberRenderer({precision: 2, nullDisplay: '-'})
+    formatter: numberFormatter({precision: 2, nullDisplay: '-'})
 };
 
 export const dueDateCol: ColumnSpec = {
     field: {name: 'dueDate', type: 'localDate'},
     headerName: 'Due',
-    renderer: dateRenderer()
+    formatter: dateFormatter()
 };
 ```
 
@@ -572,7 +586,7 @@ const dayOfWeekCol: ColumnSpec = {
     colId: 'trade_date_day',
     field: {name: 'trade_date', type: 'localDate'},
     displayName: 'Day of Week',
-    renderer: dateRenderer({fmt: 'dddd'})
+    formatter: dateFormatter({fmt: 'dddd'})
 };
 ```
 
@@ -587,6 +601,6 @@ achievable, but it means coordinating all of them and is not yet a turnkey setti
 
 ## Related Packages
 
-- [`/cmp/grid/`](../cmp/grid/README.md) - GridModel columns use renderers extensively
+- [`/cmp/grid/`](../cmp/grid/README.md) - GridModel columns use formatters and renderers extensively
 - [`/data/`](../data/README.md) - Field types determine appropriate formatters
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp for component integration

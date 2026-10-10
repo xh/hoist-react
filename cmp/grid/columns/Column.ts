@@ -285,10 +285,12 @@ export interface ColumnSpec {
      *
      * A formatter may carry `cellClassRules` to style the cell by value - the factories above do
      * so for `colorSpec` and ledger alignment. Those rules are applied beneath the column's own.
+     * A formatter that reads other fields of the record needs no `rendererIsComplex`: ag-Grid
+     * formats an updated row's cells again and redraws those whose text changed.
      *
      * Autosize, `GridModel.localExport`, filters and ZoneGrid use the formatted text. Copy and
-     * `GridModel.exportAsync` send the cell's value and Excel format, as for any column. Ignored
-     * when a `renderer` is set.
+     * `GridModel.exportAsync` send the cell's value and Excel format, as for any column. Ignored,
+     * with its `cellClassRules`, when a `renderer` is set.
      */
     formatter?: ColumnFormatter;
 
@@ -298,9 +300,9 @@ export interface ColumnSpec {
      * A renderer makes each cell of the column a React component. Reserve it for cells that need
      * an element (icons, nested layout, inline styles) and use `formatter` where a string will do.
      *
-     * For number and date formatting with markup options (`tooltip`, `withSignGlyph`, styled
-     * labels), the `numberRenderer` and `dateRenderer` factories from `@xh/hoist/format` accept
-     * formatting options and return a reusable renderer function.
+     * For number and date formatting with markup options (`withSignGlyph`, styled labels, a
+     * `colorSpec` with inline styles), the `numberRenderer` and `dateRenderer` factories from
+     * `@xh/hoist/format` accept formatting options and return a reusable renderer function.
      *
      * For custom rendering based on record data beyond this column's field, set
      * `rendererIsComplex: true` to ensure cells refresh on any record change.
