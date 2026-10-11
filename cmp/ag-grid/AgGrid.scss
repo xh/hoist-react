@@ -83,7 +83,9 @@
       background-image: var(--ag-internal-row-overlay-image, none);
     }
 
-    &.ag-row-selected .ag-cell {
+    // Set on the row, so that cells inherit it unless they carry a color class of their own - as
+    // the string formatters' `colorSpec` classes do.
+    &.ag-row-selected {
       color: var(--xh-grid-selected-row-text-color);
     }
 
@@ -244,6 +246,22 @@
   // cell instead, which holds for any row height and keeps ag-Grid's line spacing for wrapped text.
   .ag-cell.xh-cell--plain {
     align-content: center;
+  }
+
+  // Ledger-formatted positives reserve the width of a closing parenthesis, so that a column of
+  // mixed signs still aligns. The string formatters mark such cells with `cellClassRules`, and the
+  // element formatters render a hidden placeholder of their own. The placeholder follows the
+  // element that holds the text: the plain cell itself, the value span inside the wrapper that
+  // ag-Grid adds for `autoHeight` columns and `enableCellTextSelection`, or the inner wrapper
+  // within a tree column's group cell. An inline editor replaces the text, so it gets no
+  // placeholder.
+  .ag-cell.xh-cell--ledger-align:not(.ag-cell-inline-editing) {
+    &.xh-cell--plain.ag-cell-value::after,
+    &.xh-cell--plain > .ag-cell-wrapper > .ag-cell-value::after,
+    &.xh-tree-column .ag-group-value > .xh-cell-inner-wrapper::after {
+      content: ')';
+      visibility: hidden;
+    }
   }
 
   // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to

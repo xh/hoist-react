@@ -5,6 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    type ColumnCellClassRuleFn,
+    type ColumnFormatter,
     GridFilterModel,
     GridFilterRenderer,
     GridFilterSortValueFn,
@@ -22,6 +24,8 @@ import {
     isEmpty,
     isFunction,
     map,
+    mapValues,
+    omit,
     partition,
     uniq,
     without
@@ -300,16 +304,34 @@ export class ValuesTabModel extends HoistModel {
             {headerFilterModel, fieldSpec} = this,
             {fieldType, column} = headerFilterModel;
 
-        // Default to the column's renderer/sortValue, but only where they apply to a bare value -
-        // we call them with the value alone (see below), so treat them as pure value transforms.
+        // Default to the column's renderer (or formatter) and sortValue, but only where they apply
+        // to a bare value - we call them with the value alone (see below), so treat them as pure
+        // value transforms.
         const renderer =
                 fieldSpec.renderer ??
-                (fieldType !== 'tags' ? (column.renderer as GridFilterRenderer) : null),
+                (fieldType !== 'tags'
+                    ? ((column.renderer ?? column.formatter) as GridFilterRenderer)
+                    : null),
             sortValue =
                 fieldSpec.sortValue ??
                 (fieldType !== 'tags' && isFunction(column.sortValue)
                     ? (column.sortValue as GridFilterSortValueFn)
-                    : null);
+                    : null),
+            // A formatter styles its text with `cellClassRules` (e.g. `colorSpec`). The list's
+            // cells take them as the grid's cells do, called with the value alone. Not the ledger
+            // rule: these cells have a renderer, so they show no placeholder for autosize to count.
+            cellClassRules = mapValues(
+                omit((renderer as ColumnFormatter)?.cellClassRules, 'xh-cell--ledger-align'),
+                (rule): ColumnCellClassRuleFn =>
+                    ({value}) => {
+                        if (value === BLANK_PLACEHOLDER) return false;
+                        try {
+                            return rule({value} as any);
+                        } catch {
+                            return false;
+                        }
+                    }
+            );
 
         return new GridModel({
             store: {
@@ -367,6 +389,7 @@ export class ValuesTabModel extends HoistModel {
                         if (v2 === BLANK_PLACEHOLDER) return -1 * mul;
                         return defaultComparator(v1, v2);
                     },
+                    cellClassRules,
                     // Apply renderer/sortValue as pure value transforms - pass no context, skip the
                     // blank placeholder, and fall back to the raw value if either throws.
                     sortValue: v => {

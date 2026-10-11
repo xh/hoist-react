@@ -463,3 +463,33 @@ When working on hoist-react library code or documentation, reference Toolbox for
 of how features are used in applications. Note that the local checkout is specific to the Hoist
 development environment and would not be available to general application developers who have
 hoist-react as a dependency.
+
+### Running Toolbox against this checkout
+
+To see a hoist-react change in a real browser, run Toolbox with this checkout compiled inline:
+
+- **Client** - `cd ../toolbox/client-app && pnpm startWithHoist` serves `http://localhost:3000`
+  and rebuilds when files here change. Reload the page after a rebuild.
+- **Server** - `cd ../toolbox && ./gradlew bootRun` serves the Grails API on port 8080, against
+  the developer's MySQL and login by default.
+
+Check first whether both are already running (`curl -s -o /dev/null -w '%{http_code}'
+http://localhost:3000/admin/` and the same for `:8080`). Leave servers you did not start running
+when you finish - another session may depend on them.
+
+If you need to log in yourself and have no session to use, never enter the developer's
+credentials. Start the server on a throwaway in-memory H2 database with a temporary admin instead:
+
+```bash
+cd ../toolbox
+export AGENT_PASSWORD=$(openssl rand -hex 12)
+APP_TOOLBOX_USE_H2=true APP_TOOLBOX_OAUTH_PROVIDER=NONE \
+APP_TOOLBOX_BOOTSTRAP_ADMIN_USER=agent@xh.io \
+APP_TOOLBOX_BOOTSTRAP_ADMIN_PASSWORD=$AGENT_PASSWORD ./gradlew bootRun
+```
+
+Startup logs `Local admin user available as per instanceConfig`. Then log in by POSTing the
+credentials to `/api/xh/login` from a page on `localhost:3000` (a form fill can be blocked by
+password-manager overlays) and reload. The database starts empty and is discarded on stop, so
+features that depend on stored data may not work. Full details, including the login snippet, are in
+`../toolbox/docs/running-locally.md` under "Agent-driven sessions with a throwaway database".

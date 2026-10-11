@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, type GridConfig, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
+import {Column, dateTime, type GridConfig, GridModel, GridSorter, number} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
+import {numberFormatter} from '@xh/hoist/format';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -112,6 +113,68 @@ describe('GridModel', () => {
 
             expect(qty.sortingOrder).toEqual(Column.ABS_DESC_FIRST);
             expect(tradeDate.sortingOrder).toEqual(Column.DESC_FIRST);
+        });
+
+        it('keeps a column formatter, such as a number spec has, over a default renderer', () => {
+            const renderer = (v: unknown) => `${v ?? '-'}`,
+                formatter = (v: unknown) => `<${v}>`,
+                gridModel = createGridModel({
+                    colDefaults: {renderer},
+                    columns: [
+                        {...number, field: 'pnl'},
+                        {...dateTime, field: 'ts'},
+                        {field: 'name'},
+                        {field: 'region', formatter}
+                    ]
+                });
+
+            ['pnl', 'ts', 'region'].forEach(colId => {
+                const col = gridModel.getColumn(colId);
+                expect(col.renderer, colId).toBeFalsy();
+                expect(col.formatter, colId).toBeTypeOf('function');
+            });
+            expect(gridModel.getColumn('pnl').formatter(1234567.891, null)).toBe('1,234,568');
+            expect(gridModel.getColumn('name').renderer).toBeTypeOf('function');
+
+            // A column's own renderer likewise wins over a default formatter.
+            const withDefaultFormatter = createGridModel({
+                colDefaults: {formatter},
+                columns: [{field: 'name', renderer}, {field: 'region'}]
+            });
+            expect(withDefaultFormatter.getColumn('name').formatter).toBeFalsy();
+            expect(withDefaultFormatter.getColumn('region').formatter).toBeTypeOf('function');
+        });
+
+        // A deep merge copied the default formatter's `cellClassRules` onto the column's own
+        // formatter - here the `number` spec's, which every grid in the app shares.
+        it("keeps a default formatter's cell classes off a column's own formatter", () => {
+            const gridModel = createGridModel({
+                colDefaults: {formatter: numberFormatter({colorSpec: true})},
+                columns: [{...number, field: 'pnl'}, {field: 'qty'}]
+            });
+
+            expect(gridModel.getColumn('pnl').cellClassRules).toEqual({});
+            expect(gridModel.getColumn('qty').cellClassRules).toHaveProperty('xh-pos-val');
+            expect(number.formatter.cellClassRules).toBeUndefined();
+        });
+
+        it("keeps an app-wide default formatter's cell classes off a grid's own", () => {
+            const appDefaults = GridModel.defaults.colDefaults;
+            GridModel.defaults.colDefaults = {formatter: numberFormatter({colorSpec: true})};
+            onTestFinished(() => {
+                GridModel.defaults.colDefaults = appDefaults;
+            });
+
+            const ledger = numberFormatter({ledger: true}),
+                gridModel = createGridModel({
+                    colDefaults: {formatter: ledger},
+                    columns: [{field: 'qty'}]
+                });
+
+            expect(Object.keys(gridModel.getColumn('qty').cellClassRules)).toEqual([
+                'xh-cell--ledger-align'
+            ]);
+            expect(Object.keys(ledger.cellClassRules)).toEqual(['xh-cell--ledger-align']);
         });
 
         it('creates Store fields for columns the Store config does not define', () => {

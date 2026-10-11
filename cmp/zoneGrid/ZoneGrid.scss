@@ -57,6 +57,12 @@
     margin-right: 0.25em;
   }
 
+  // A formatter's ledger alignment - see the matching rule for grid cells in AgGrid.scss.
+  &__text-container.xh-cell--ledger-align::after {
+    content: ')';
+    visibility: hidden;
+  }
+
   // Right-hand sections have special handling to ensure right alignment as well as ellipsis to
   // indicate overflow, ensuring that it is clear to a user when a primary metric that doesn't fit
   // in the allotted width has been clipped.

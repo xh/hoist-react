@@ -4,13 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {Column, type ColumnFormatter, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {required} from '@xh/hoist/data';
+import {numberFormatter, numberRenderer} from '@xh/hoist/format';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {render} from '@testing-library/react';
 import {createElement} from 'react';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, expectTypeOf, it, onTestFinished} from 'vitest';
 
 /**
  * The ag-Grid column definition a Column produces. Grid applies these defs to ag-Grid whenever
@@ -84,6 +85,112 @@ describe('Column.getAgSpec', () => {
             }).getAgSpec();
             expect(spec.cellRenderer).toBe('agAnimateShowChangeCellRenderer');
             expect(spec.cellClass).not.toContain('xh-cell--plain');
+        });
+    });
+
+    describe('formatter', () => {
+        it('accepts only a function that returns a string - not a renderer', () => {
+            expectTypeOf(numberFormatter()).toExtend<ColumnFormatter>();
+            expectTypeOf(numberRenderer()).not.toExtend<ColumnFormatter>();
+        });
+
+        it('is called with the cell context, as a renderer is', () => {
+            const gridModel = createGridModel({}, [
+                    {field: 'name', formatter: (v, {record}) => `${v} #${record.id}`}
+                ]),
+                {store} = gridModel;
+            store.loadData([{id: 7, name: 'Alpha'}]);
+            const spec = gridModel.getColumn('name').getAgSpec(),
+                format = spec.valueFormatter as Function;
+
+            expect(format({value: 'Alpha', data: store.getById(7)})).toBe('Alpha #7');
+        });
+
+        // ag-Grid formats a group row's label through the column the row is grouped by. Such
+        // rows have no record.
+        it("is not called for a group row's label, which shows its raw value", () => {
+            let calls = 0;
+            const col = createColumn({formatter: v => `${v} #${++calls}`}),
+                format = col.getAgSpec().valueFormatter as Function,
+                agColumn = {};
+
+            // ag-Grid shows the raw value when the formatter gives it null.
+            expect(
+                format({
+                    value: 'Alpha',
+                    data: undefined,
+                    column: agColumn,
+                    node: {group: true, rowGroupColumn: agColumn}
+                })
+            ).toBeNull();
+            expect(calls).toBe(0);
+        });
+
+        it('formats an aggregate on a row with no record, such as a total row', () => {
+            const col = createColumn({formatter: numberFormatter({precision: 2})}),
+                format = col.getAgSpec().valueFormatter as Function,
+                totalRow = {group: true, footer: true, rowGroupColumn: {}};
+
+            expect(format({value: 1234.5, data: undefined, column: {}, node: totalRow})).toBe(
+                '1,234.50'
+            );
+        });
+
+        it('blanks the cell when it returns null, as a renderer does', () => {
+            const gridModel = createGridModel({}, [{field: 'name', formatter: () => null}]),
+                {store} = gridModel;
+            store.loadData([{id: 7, name: 'Alpha'}]);
+            const format = gridModel.getColumn('name').getAgSpec().valueFormatter as Function;
+
+            expect(format({value: 'Alpha', data: store.getById(7)})).toBe('');
+        });
+
+        it("applies its cellClassRules beneath the column's own", () => {
+            const formatter = Object.assign(v => `${v}`, {
+                    cellClassRules: {pos: ({value}) => value > 0, shared: () => false}
+                }),
+                col = createColumn({formatter, cellClassRules: {shared: () => true}}),
+                rules = col.getAgSpec().cellClassRules as Record<string, Function>;
+
+            expect(Object.keys(rules)).toEqual(['pos', 'shared']);
+            expect(rules.shared({})).toBe(true);
+        });
+
+        it('keeps its cellClassRules beside cellClassRules given via agOptions', () => {
+            const spec = createColumn({
+                formatter: numberFormatter({colorSpec: true}),
+                agOptions: {cellClassRules: {custom: () => true, 'xh-neg-val': () => false}}
+            }).getAgSpec();
+
+            expect(Object.keys(spec.cellClassRules)).toEqual([
+                'xh-pos-val',
+                'xh-neg-val',
+                'xh-neutral-val',
+                'custom'
+            ]);
+            expect((spec.cellClassRules['xh-neg-val'] as Function)({value: -1})).toBe(false);
+        });
+
+        it('is ignored, with its cellClassRules, when a renderer is set', () => {
+            const formatter = Object.assign(v => `${v}`, {cellClassRules: {pos: () => true}}),
+                spec = createColumn({formatter, renderer: v => v}).getAgSpec();
+
+            expect(spec.valueFormatter).toBeUndefined();
+            expect(spec.cellRenderer).toBeTypeOf('function');
+            expect(spec.cellClassRules).toEqual({});
+        });
+
+        it('shows its text in a tree column, through the group cell renderer', () => {
+            const gridModel = createGridModel({treeMode: true}, [
+                    {field: 'name', isTreeColumn: true, formatter: v => `${v}!`}
+                ]),
+                spec = gridModel.getColumn('name').getAgSpec();
+
+            expect(spec.cellRenderer).toBe('agGroupCellRenderer');
+            expect(spec.valueFormatter).toBeTypeOf('function');
+            const inner = spec.cellRendererParams.innerRenderer,
+                el = inner({value: 'a', valueFormatted: 'a!', data: null});
+            expect(el.props.children).toBe('a!');
         });
     });
 
