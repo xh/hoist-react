@@ -5,9 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Field, type FieldType, genDisplayName, parseFieldValue, Store} from '@xh/hoist/data';
+import {XH} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import DOMPurify from 'dompurify';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * Field parsing and defaults. Every value loaded into a Store or Cube passes through
@@ -121,6 +123,47 @@ describe('Field', () => {
         it('leaves markup untouched by default', () => {
             const field = new Field({name: 'note', type: 'string'});
             expect(field.parseVal(markup)).toBe(markup);
+        });
+
+        // Large loads parse many strings, and DOMPurify parses its config on every call.
+        it.each(['', 'A & B', 'x > y', '&lt;b&gt;', '\u0000', '中文 ✓', '{{name}}'])(
+            'returns %j as DOMPurify would, without calling it',
+            val => {
+                const field = new Field({name: 'note', type: 'string', enableXssProtection: true}),
+                    expected = DOMPurify.sanitize(val),
+                    sanitize = vi.spyOn(DOMPurify, 'sanitize');
+                onTestFinished(() => sanitize.mockRestore());
+
+                expect(field.parseVal(val)).toBe(expected);
+                expect(sanitize).not.toHaveBeenCalled();
+            }
+        );
+    });
+
+    describe('date values that do not parse', () => {
+        it('warns once per field in development mode', () => {
+            const devMode = XH.isDevelopmentMode,
+                warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            (XH as any).isDevelopmentMode = true;
+            onTestFinished(() => {
+                (XH as any).isDevelopmentMode = devMode;
+                warn.mockRestore();
+            });
+
+            const field = new Field({name: 'openTime', type: 'date'});
+            ['12:30', 'Open', ''].forEach(val => expect(field.parseVal(val).getTime()).toBeNaN());
+            expect(field.parseVal('2026-03-15').getTime()).not.toBeNaN();
+
+            expect(warn).toHaveBeenCalledTimes(1);
+            expect(warn.mock.calls[0].join(' ')).toContain("Field 'openTime' is typed 'date'");
+        });
+
+        it('does not warn outside development mode', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            onTestFinished(() => warn.mockRestore());
+
+            new Field({name: 'openTime', type: 'date'}).parseVal('Open');
+            expect(warn).not.toHaveBeenCalled();
         });
     });
 });

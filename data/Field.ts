@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logWarn, withDefault} from '@xh/hoist/utils/js';
 import {Rule} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
@@ -124,8 +124,27 @@ export class Field {
         });
     }
 
+    private warnedInvalidDate = false;
+
     private parseValueInternal(raw: any): any {
-        return parseFieldValue(raw, this.type, null, this.enableXssProtection);
+        const ret = parseFieldValue(raw, this.type, null, this.enableXssProtection);
+        // An Invalid Date never equals another, so a Store rebuilds every record holding one on
+        // each load. Warn once per field in development, where a mistyped field is fixable.
+        if (
+            this.type === 'date' &&
+            ret &&
+            isNaN(ret.getTime()) &&
+            !this.warnedInvalidDate &&
+            XH.isDevelopmentMode
+        ) {
+            this.warnedInvalidDate = true;
+            logWarn(
+                `Field '${this.name}' is typed 'date', but ${JSON.stringify(raw)} parses to an ` +
+                    `Invalid Date. Records holding such values are rebuilt on every load.`,
+                'Field'
+            );
+        }
+        return ret;
     }
 }
 
@@ -186,8 +205,12 @@ export function parseFieldValue(
  * returning the original in that case keeps values deduplicated upstream (e.g. via
  * `FetchOptions.internStrings`) shared, and avoids retaining a second copy of every parsed
  * string value alongside `StoreRecord.raw`.
+ *
+ * A string with no `<` holds no markup, and DOMPurify returns it as-is. Return it here instead,
+ * because DOMPurify parses its config on every call before it checks for `<`.
  */
 function sanitizeVal(val: string): string {
+    if (!val.includes('<')) return val;
     const ret = DOMPurify.sanitize(val);
     return ret === val ? val : ret;
 }

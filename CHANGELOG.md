@@ -134,6 +134,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `icon`. Support for both ends in v91.
 * `XH.isDesktop`, `XH.isPhone`, and `XH.isTablet` now parse the user agent once at startup, not on
   every read.
+* Fields with `enableXssProtection` now pass a string to DOMPurify only when it contains `<`. Other
+  strings hold no markup, so large loads skip one DOMPurify call per string value.
+* A `date` field now logs a warning in development mode, once per field, when a value parses to an
+  Invalid Date. Records holding such values are rebuilt on every load.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
