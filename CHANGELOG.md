@@ -159,9 +159,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   by a change append rather than taking their source position. This may affect the sort ordering
   of unsorted grids when data changes.
 * `fmtNumber` and the formatters built on it now format digits with a cached `Intl.NumberFormat` in
-  place of numbro. This speeds up bulk formatting, such as all-rows grid autosizing. Ordinary values
-  render as before. Negative ties now round away from zero (-2.5 to -3, not -2), and `Infinity`
-  renders as `∞`. Strings such as `'1,234.5'` render as `NaN` - see the upgrade notes.
+  place of numbro. This speeds up bulk formatting such as all-rows grid autosizing. Ordinary values
+  render as before. Edge cases such as negative ties and `Infinity` changed - see the upgrade notes.
 
 ### ⚙️ Typescript API Adjustments
 

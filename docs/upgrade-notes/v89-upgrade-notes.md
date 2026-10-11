@@ -434,7 +434,7 @@ After:
 span('Alerts ', badge({item: count, intent: 'danger'}))
 ```
 
-### 11. Replace formatConfig and Review Number Edge Cases
+### 11. Replace `formatConfig` and Review Number Edge Cases
 
 Hoist no longer depends on numbro. `fmtNumber` and the formatters and renderers built on it format
 digits with the browser's `Intl.NumberFormat`, fixed to the `en-US` locale. The
@@ -447,13 +447,19 @@ to compile and throws at runtime.
 grep -rn "formatConfig" client-app/src/
 ```
 
-Replace each numbro format key with the matching Hoist option:
+Replace each numbro format key with the matching Hoist option. Hoist groups thousands and rounds by
+default, but numbro does neither unless the format asks. Map the keys a format leaves out as well,
+or the output can gain commas and lose decimal places.
 
 | numbro key | Hoist option |
 |---|---|
+| `thousandSeparated` left out or `false` | `withCommas: false` |
+| `thousandSeparated: true` | None - Hoist groups thousands by default |
 | `mantissa: n` | `precision: n` |
+| `mantissa` left out | `precision: null` |
 | `trimMantissa: true` | `zeroPad: false` |
-| `thousandSeparated: false` | `withCommas: false` |
+| `negative: 'parenthesis'` | `ledger: true, forceLedgerAlign: false` |
+| `forceSign: true` | `withPlusSign: true` |
 | `average: true` | `fmtThousands()`, `fmtMillions()`, `fmtBillions()` or `fmtQuantity()` |
 | `output: 'percent'` | `fmtPercent()` |
 
@@ -482,7 +488,7 @@ Ordinary values render exactly as before. These edge cases changed:
 | `fmtNumber(5e-7)` | `0` | `0.000001` | Values below 1e-6 round like any other. numbro truncated them. |
 | `fmtMillions(0.5, {label: true})` | `0m` | `0.000001m` | The same rule, after scaling to millions. |
 | `fmtNumber(Infinity)` | `Infinity` | `∞` | The `Intl.NumberFormat` symbol for infinity. |
-| `fmtNumber('1,234.5', {precision: 2})` | `1,234.50` | `NaN` | Strings are not parsed. A plain decimal string such as `'1234.5'` still formats. |
+| `fmtNumber('1,234.5', {precision: 2})` | `1,234.50` | `NaN` | A string renders as JavaScript's `Number()` reads it. `'1234.5'` still formats. |
 | `fmtNumber('N/A')` | throws a `TypeError` | `NaN` | The same rule. |
 
 Parse formatted text with `parseNumber()` before you format it, and update tests or exports that

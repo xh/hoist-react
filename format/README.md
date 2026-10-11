@@ -252,8 +252,8 @@ places gives `1.01`. Near a tie, Hoist shifts the decimal point before it rounds
 float error from arithmetic. So `fmtPercent(0.0045, {precision: 1})` gives `"0.5%"`, although
 `0.0045 * 100` is `0.44999999999999996` in floating point.
 
-`Infinity` renders as `∞`. A string renders only when it is a plain decimal such as `'1234.5'`. Any
-other string renders as `NaN`, so parse formatted text with `parseNumber()` first.
+`Infinity` renders as `∞`. A string renders as JavaScript's `Number()` reads it, so `'1234.5'`
+formats and `'1,234.5'` renders as `NaN`. Parse formatted text with `parseNumber()` first.
 
 ### Convenience Number Formatters
 
