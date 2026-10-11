@@ -188,6 +188,95 @@ describe('ViewManagerModel', () => {
             expect(vmm.getValue()).toEqual({sortBy: 'sector'});
             expect(hoistCore.requestsTo('xhView/get').at(-1).form).toEqual({token: 'firm'});
         });
+
+        // Fixed in 89.0.0 - a slower, earlier view load replaced a later one.
+        describe('when selections overlap', () => {
+            beforeEach(() => addDeskViews(views));
+
+            it('applies the view selected last when an earlier selection loads after it', async () => {
+                const vmm = await createAsync(),
+                    model = createGroupingModel(vmm),
+                    release = views.holdView('east');
+                vi.useFakeTimers();
+
+                const east = vmm.selectViewAsync('east');
+                await vmm.selectViewAsync('west');
+                expect(vmm.selectTask.isPending).toBe(false);
+
+                release();
+                await east;
+                await vi.advanceTimersByTimeAsync(250);
+
+                expect(vmm.view.token).toBe('west');
+                expect(model.groupBy).toBe('desk');
+                expect(vmm.isValueDirty).toBe(false);
+            });
+
+            it('ignores the failure of a selection overtaken by a later one', async () => {
+                const vmm = await createAsync(),
+                    release = views.holdView('east');
+                views.failNextView('east');
+
+                const east = vmm.selectViewAsync('east');
+                await vmm.selectViewAsync('west');
+                release();
+
+                await expect(east).resolves.toBeUndefined();
+                expect(vmm.view.token).toBe('west');
+            });
+
+            it('reports the failure of the latest selection', async () => {
+                const vmm = await createAsync(),
+                    release = views.holdView('east');
+                views.failNextView('west');
+
+                const east = vmm.selectViewAsync('east'),
+                    west = await vmm.selectViewAsync('west').then(
+                        () => 'loaded',
+                        () => 'failed'
+                    );
+                release();
+                await east;
+
+                expect(west).toBe('failed');
+                expect(vmm.view.token).not.toBe('east');
+            });
+        });
+    });
+
+    // Fixed in 89.0.0 - a refresh reloaded the prior view over a newer selection.
+    describe('refreshAsync', () => {
+        beforeEach(() => addDeskViews(views));
+
+        it('keeps a selection that loads during a refresh over an update to the prior view', async () => {
+            views.state.currentView = 'east';
+            const vmm = await createAsync();
+            views.get('east').lastUpdated += 1000;
+
+            const release = views.holdResponses('xhView/allData'),
+                refresh = vmm.refreshAsync();
+            await vmm.selectViewAsync('west');
+            release();
+            await refresh;
+            await views.settleAsync();
+
+            expect(vmm.view.token).toBe('west');
+        });
+
+        it('keeps a selection still loading over a refresh that finds the current view updated', async () => {
+            views.state.currentView = 'east';
+            const vmm = await createAsync();
+            views.get('east').lastUpdated += 1000;
+
+            const release = views.holdView('west'),
+                west = vmm.selectViewAsync('west');
+            await vmm.refreshAsync();
+            release();
+            await west;
+            await views.settleAsync();
+
+            expect(vmm.view.token).toBe('west');
+        });
     });
 
     describe('saveAsync', () => {
@@ -460,10 +549,7 @@ describe('ViewManagerModel', () => {
 
         // Fixed in 89.0.0 - a write pending at a view switch landed in the new view.
         describe('when views are selected in quick succession', () => {
-            beforeEach(() => {
-                views.add('east', 'East Desks', {value: {groupBy: 'region'}});
-                views.add('west', 'West Desks', {value: {groupBy: 'desk'}});
-            });
+            beforeEach(() => addDeskViews(views));
 
             it('keeps a change made in the prior view out of the new one', async () => {
                 const vmm = await createAsync(),
@@ -516,68 +602,6 @@ describe('ViewManagerModel', () => {
                 await vi.advanceTimersByTimeAsync(250);
                 expect(vmm.isValueDirty).toBe(false);
             });
-
-            it('applies the view selected last when an earlier selection loads after it', async () => {
-                const vmm = await createAsync(),
-                    model = createGroupingModel(vmm),
-                    release = views.holdView('east');
-                vi.useFakeTimers();
-
-                const east = vmm.selectViewAsync('east');
-                await vmm.selectViewAsync('west');
-                expect(vmm.selectTask.isPending).toBe(false);
-
-                release();
-                await east;
-                await vi.advanceTimersByTimeAsync(250);
-
-                expect(vmm.view.token).toBe('west');
-                expect(model.groupBy).toBe('desk');
-                expect(vmm.isValueDirty).toBe(false);
-            });
-
-            it('ignores the failure of a selection overtaken by a later one', async () => {
-                const vmm = await createAsync(),
-                    release = views.holdView('east');
-                views.failNextView('east');
-
-                const east = vmm.selectViewAsync('east');
-                await vmm.selectViewAsync('west');
-                release();
-
-                await expect(east).resolves.toBeUndefined();
-                expect(vmm.view.token).toBe('west');
-            });
-
-            it('keeps a selection that loads during a refresh over an update to the prior view', async () => {
-                views.state.currentView = 'east';
-                const vmm = await createAsync();
-                views.get('east').lastUpdated += 1000;
-
-                const release = views.holdResponses('xhView/allData'),
-                    refresh = vmm.refreshAsync();
-                await vmm.selectViewAsync('west');
-                release();
-                await refresh;
-                await views.settleAsync();
-
-                expect(vmm.view.token).toBe('west');
-            });
-
-            it('keeps a selection still loading over a refresh that finds the current view updated', async () => {
-                views.state.currentView = 'east';
-                const vmm = await createAsync();
-                views.get('east').lastUpdated += 1000;
-
-                const release = views.holdView('west'),
-                    west = vmm.selectViewAsync('west');
-                await vmm.refreshAsync();
-                release();
-                await west;
-                await views.settleAsync();
-
-                expect(vmm.view.token).toBe('west');
-            });
         });
     });
 });
@@ -593,6 +617,12 @@ async function createAsync(config: Partial<ViewManagerConfig> = {}): Promise<Vie
     const ret = await ViewManagerModel.createAsync({type: TYPE, ...config});
     onTestFinished(() => ret.destroy());
     return ret;
+}
+
+/** Two views that group by different fields. */
+function addDeskViews(server: ViewServer) {
+    server.add('east', 'East Desks', {value: {groupBy: 'region'}});
+    server.add('west', 'West Desks', {value: {groupBy: 'desk'}});
 }
 
 /** A model bound to a view manager, writing its changes with the default 250ms debounce. */
