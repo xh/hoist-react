@@ -15,6 +15,7 @@ import {
     fmtThousands,
     type NumberFormatOptions
 } from '@xh/hoist/format';
+import {throwIf} from '@xh/hoist/utils/js';
 import {writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {isValidElement, type ReactNode} from 'react';
@@ -24,17 +25,26 @@ import baseline from './FormatNumberCompat.spec.json';
 
 /**
  * Hoist formatted digits with numbro until v89, and with `Intl.NumberFormat` since. Apps show these
- * strings in every grid, so the first table pins the output for ordinary values, and the option
- * sets apps pass, to the strings numbro produced. The second table pins the edge cases where v89
- * output changed on purpose, with the reason for each.
+ * strings in every grid. The first table pins them to the strings numbro produced, for ordinary
+ * values and for the option sets apps pass. The second table pins edge cases in v89, with the
+ * reason for each. Most changed on purpose, and a few pin edges that did not change.
  *
- * `FormatNumberCompat.spec.json` holds the numbro output. This spec wrote it in write mode at
- * commit 21f23207cb6d, the last with numbro. Never regenerate it from current code. To add a case,
- * check out that commit, copy this spec over, run
+ * `FormatNumberCompat.spec.json` holds the numbro output, written by this spec in write mode. Never
+ * regenerate it from current code. Write mode refuses to run unless numbro formats the digits.
+ *
+ * To add a case, find the last commit that formats with numbro. It is the parent of
+ * `git log -1 --format=%h -S"from 'numbro'" -- format/FormatNumber.ts`. Check it out in a separate
+ * worktree and run `pnpm install`. Copy this spec and its JSON over, run
  * `XH_WRITE_NUMBRO_BASELINE=1 pnpm test FormatNumberCompat`, and copy the JSON back.
  */
 
 const WRITE = !!process.env.XH_WRITE_NUMBRO_BASELINE;
+
+// numbro rounds -2.5 to -2 and Intl to -3, so this check stops write mode from recording Intl.
+throwIf(
+    WRITE && fmtNumber(-2.5, {precision: 0}) !== '-2',
+    'Write the numbro baseline only at a commit that formats with numbro - see the header.'
+);
 
 /** Markup of a rendered element, or a string as-is. */
 function html(node: ReactNode): string {
