@@ -110,8 +110,8 @@ describe('Grid', () => {
     });
 
     // The cell class rules of a `strictZero: false` formatter format the value too, to test for a
-    // rounded zero. numbro throws on a string such as 'N/A' in an 'auto' field.
-    it("shows '#ERROR' for a value a strictZero: false number formatter cannot format", async () => {
+    // rounded zero. A value that is not a number must not count as zero or break the grid.
+    it("shows 'NaN' for a value a strictZero: false number formatter cannot read", async () => {
         const {container} = await renderGridAsync(
                 {
                     columns: [
@@ -130,7 +130,8 @@ describe('Grid', () => {
             qtyCell = (rowId: string) =>
                 container.querySelectorAll(`.ag-row[row-id="${rowId}"] .ag-cell`)[1];
 
-        expect(qtyCell('ag_1').textContent).toBe('#ERROR');
+        expect(qtyCell('ag_1').textContent).toBe('NaN');
+        expect(qtyCell('ag_1').classList.contains('xh-neutral-val')).toBe(false);
         expect(qtyCell('ag_2').textContent).toBe('-2');
         expect(qtyCell('ag_2').classList.contains('xh-neg-val')).toBe(true);
     });

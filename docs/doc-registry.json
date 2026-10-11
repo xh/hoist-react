@@ -541,7 +541,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v88.x to v89.0.0. Low difficulty. Covers the move to TypeScript 7.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88", "numbro", "formatConfig"]
         }
     ]
 }
