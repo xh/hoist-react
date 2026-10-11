@@ -1293,12 +1293,13 @@ export class GridModel extends HoistModel {
     /**
      * True if the given `resolvedLevelLabels` index is the grid's current expand level - used to
      * mark the active item in the "Expand to..." menu. The deepest labelled level counts as current
-     * whenever the grid is expanded to or beyond it.
+     * whenever the grid is expanded to or beyond it, including to all levels with -1.
      */
     isCurrentExpandLevel(idx: number): boolean {
         const {expandLevel, resolvedLevelLabels} = this,
-            lastIdx = resolvedLevelLabels?.length - 1;
-        return expandLevel === idx || (idx === lastIdx && expandLevel > lastIdx);
+            lastIdx = resolvedLevelLabels?.length - 1,
+            expandedPastLast = expandLevel < 0 || expandLevel > lastIdx;
+        return expandLevel === idx || (idx === lastIdx && expandedPastLast);
     }
 
     /**
