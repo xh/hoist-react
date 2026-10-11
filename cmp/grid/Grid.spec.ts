@@ -6,6 +6,7 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {runInAction} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {render, waitFor} from '@testing-library/react';
@@ -106,6 +107,23 @@ describe('Grid', () => {
 
             gridModel.collapseAll();
             expect(agApi.getGridOption('isGroupOpenByDefault')).toBeUndefined();
+        });
+
+        // A view switch changes grouping and expand level in the same action.
+        it('applies a new expand level before regrouping in the same action', async () => {
+            const {gridModel} = await renderGridAsync({expandLevel: 0}),
+                {agApi} = gridModel,
+                optionsAtRegroup = [];
+            vi.spyOn(agApi, 'setRowGroupColumns').mockImplementation(() => {
+                optionsAtRegroup.push(agApi.getGridOption('isGroupOpenByDefault'));
+            });
+
+            runInAction(() => {
+                gridModel.setGroupBy('name');
+                gridModel.expandToLevel(1);
+            });
+            expect(optionsAtRegroup).toHaveLength(1);
+            expect(optionsAtRegroup[0]).toBeTypeOf('function');
         });
 
         it.each([

@@ -430,6 +430,10 @@ export class GridLocalModel extends HoistModel {
             track: () => [model.agApi, model.groupBy],
             run: ([agApi, groupBy]) => {
                 if (!agApi) return;
+
+                // Apply the current expand level first. New group nodes read it once, when created,
+                // and a view switch changes grouping and level in the same action.
+                this.syncGroupOpenByDefault(agApi);
                 agApi.setRowGroupColumns(groupBy);
 
                 // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
@@ -606,10 +610,8 @@ export class GridLocalModel extends HoistModel {
         const {model} = this;
         return {
             track: () => [model.agApi, model.expandLevel],
-            run: ([api, level]) => {
-                if (api && this.ownsGroupOpenByDefault) {
-                    api.setGridOption('isGroupOpenByDefault', this.groupOpenByDefaultFor(level));
-                }
+            run: ([api]) => {
+                if (api) this.syncGroupOpenByDefault(api);
             }
         };
     }
@@ -824,6 +826,15 @@ export class GridLocalModel extends HoistModel {
 
     // Unset at level 0, where ag-Grid's default `groupDefaultExpanded` of 0 opens nothing. With
     // either option set, ag-Grid's state service walks every row after each data update.
+    private syncGroupOpenByDefault(api: GridApi) {
+        if (this.ownsGroupOpenByDefault) {
+            api.setGridOption(
+                'isGroupOpenByDefault',
+                this.groupOpenByDefaultFor(this.model.expandLevel)
+            );
+        }
+    }
+
     private groupOpenByDefaultFor(level: number) {
         return this.ownsGroupOpenByDefault && level !== 0 ? this.isGroupOpenByDefault : undefined;
     }
