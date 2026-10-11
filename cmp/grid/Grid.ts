@@ -231,6 +231,7 @@ export class GridLocalModel extends HoistModel {
             this.columnGroupStateReaction(),
             this.dataReaction(),
             this.groupReaction(),
+            this.expandLevelReaction(),
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
             this.modalReaction(),
@@ -297,11 +298,7 @@ export class GridLocalModel extends HoistModel {
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
-            // An app's own `groupDefaultExpanded` in agOptions takes the place of this callback.
-            isGroupOpenByDefault:
-                this.componentProps.agOptions?.groupDefaultExpanded == null
-                    ? this.isGroupOpenByDefault
-                    : undefined,
+            isGroupOpenByDefault: this.groupOpenByDefaultFor(model.expandLevel),
             groupDisplayType: 'groupRows',
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -605,6 +602,18 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
+    expandLevelReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.expandLevel],
+            run: ([api, level]) => {
+                if (api && this.ownsGroupOpenByDefault) {
+                    api.setGridOption('isGroupOpenByDefault', this.groupOpenByDefaultFor(level));
+                }
+            }
+        };
+    }
+
     updatePinnedSummaryRowData() {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
@@ -806,6 +815,18 @@ export class GridLocalModel extends HoistModel {
     // Reads the level on each call, so rows added later open to the grid's current expandLevel.
     // Untracked, as ag-Grid can resolve a row's expanded state inside a MobX derivation.
     isGroupOpenByDefault = ({level}) => untracked(() => this.model.isLevelExpanded(level));
+
+    // An app's own `groupDefaultExpanded` or `isGroupOpenByDefault` in agOptions replaces Hoist's.
+    private get ownsGroupOpenByDefault(): boolean {
+        const {agOptions} = this.componentProps;
+        return agOptions?.groupDefaultExpanded == null && agOptions?.isGroupOpenByDefault == null;
+    }
+
+    // Unset at level 0, where ag-Grid's default `groupDefaultExpanded` of 0 opens nothing. With
+    // either option set, ag-Grid's state service walks every row after each data update.
+    private groupOpenByDefaultFor(level: number) {
+        return this.ownsGroupOpenByDefault && level !== 0 ? this.isGroupOpenByDefault : undefined;
+    }
 
     groupSortComparator = ({nodeA, nodeB}) => {
         const gridModel = this.model;
