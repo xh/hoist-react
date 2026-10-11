@@ -160,6 +160,21 @@ export interface ColorSpec {
 }
 
 /**
+ * Config for pos/neg/neutral color classes, with class names only. Renderers and formatters both
+ * accept it, so one spec can be shared between them.
+ */
+export interface ColorClassSpec {
+    /** CSS color class to apply to positive values. */
+    pos?: string;
+
+    /** CSS color class to apply to negative values. */
+    neg?: string;
+
+    /** CSS color class to apply to zero values. */
+    neutral?: string;
+}
+
+/**
  * Standard number formatting for Hoist
  *
  * This method delegates to numbro, @see http://numbrojs.com for more details.
@@ -631,9 +646,10 @@ export interface NumberFormatterOptions extends Omit<
     /**
      * True to color the cell by sign with the default classes (`xh-pos-val`, `xh-neg-val`,
      * `xh-neutral-val`), or the CSS class to apply per sign. Class names only: a formatter cannot
-     * set inline styles, so a `colorSpec` with style objects needs `numberRenderer`.
+     * set inline styles, so a `colorSpec` with style objects needs `numberRenderer`. Type a spec
+     * shared with renderers as a {@link ColorClassSpec}.
      */
-    colorSpec?: boolean | {pos?: string; neg?: string; neutral?: string};
+    colorSpec?: boolean | ColorClassSpec;
 
     /** Display value for null and other invalid input. */
     nullDisplay?: string;

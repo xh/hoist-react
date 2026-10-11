@@ -6,6 +6,7 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {
+    type ColorClassSpec,
     fmtBillions,
     fmtMillions,
     fmtNumber,
@@ -436,6 +437,15 @@ describe('numberFormatter and friends', () => {
         expect(() => numberFormatter(rendererOpts)).toThrow('withSignGlyph');
         // @ts-expect-error - withSignGlyph, by spread
         expect(() => numberFormatter({...rendererOpts, ledger: true})).toThrow('withSignGlyph');
+    });
+
+    it('share a class-only colorSpec with renderers', () => {
+        const colorSpec: ColorClassSpec = {pos: 'my-pos', neg: 'my-neg'},
+            {cellClassRules} = numberFormatter({colorSpec});
+
+        expect(html(numberRenderer({colorSpec})(-5))).toBe('<span class="my-neg">-5</span>');
+        expect(cellClassRules['my-neg']({value: -5})).toBe(true);
+        expect(cellClassRules['my-pos']({value: -5})).toBe(false);
     });
 
     it('accept the unit options of quantityFormatter', () => {

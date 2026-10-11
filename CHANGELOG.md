@@ -44,6 +44,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `Column.formatter`, a function that returns a cell's display text. AG Grid writes the text
   into a plain cell, with no React component. The `numberFormatter`, `dateFormatter` and sibling
   factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell classes.
+* Added `ColorClassSpec`, a `colorSpec` type that holds class names only. Renderer and formatter
+  factories both accept it, so apps can share one spec between them.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
   `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
