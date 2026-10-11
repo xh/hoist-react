@@ -19,7 +19,7 @@ beforeAll(async () => {
 // ag-Grid's grouping and tree data modules are enterprise-only, so these tests check what the
 // grid hands to ag-Grid, not which rows open.
 describe('Grid expand level', () => {
-    // Before v89, each level change set ag-Grid's `groupDefaultExpanded`, which regroups,
+    // Fixed in 89.0.0 - each level change set ag-Grid's `groupDefaultExpanded`, which regroups,
     // re-sorts and redraws every row.
     it("expands and collapses without changing ag-Grid's groupDefaultExpanded", async () => {
         const {gridModel} = await renderGridAsync(),
@@ -83,7 +83,7 @@ describe('Grid expand level', () => {
     });
 
     // GridModel does not track a level set through agOptions, so its expand menus can disagree.
-    it('warns once when an app sets agOptions.groupDefaultExpanded, and not otherwise', async () => {
+    it('warns once per GridModel when agOptions set groupDefaultExpanded', async () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         onTestFinished(() => warn.mockRestore());
         const optionWarnings = () =>
@@ -101,7 +101,7 @@ describe('Grid expand level', () => {
         render(grid({model: gridModel, agOptions}));
         await waitFor(() => expect(gridModel.isReady).toBe(true));
         expect(optionWarnings()).toHaveLength(1);
-        expect(optionWarnings()[0].join(' ')).toContain('GridConfig.expandLevel');
+        expect(optionWarnings()[0].join(' ')).toContain("Set the GridModel's expandLevel instead");
     });
 
     it.each([
@@ -136,5 +136,5 @@ async function renderGridAsync(config: GridConfig = {}) {
 
     const {container} = render(grid({model: gridModel, width: 600, height: 400}));
     await waitFor(() => expect(container.querySelectorAll('.ag-row')).toHaveLength(2));
-    return {gridModel, container, frame: container.querySelector('.xh-ag-grid') as HTMLElement};
+    return {gridModel};
 }

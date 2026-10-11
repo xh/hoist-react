@@ -212,8 +212,9 @@ export interface GridConfig {
     groupBy?: Some<string>;
 
     /**
-     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.
-     * Defaults to 0 for tree grids (i.e. treeMode = true), 1 for standard grouped grids.
+     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.,
+     * and -1 = all levels expanded. Defaults to 0 for tree grids (i.e. treeMode = true), 1 for
+     * standard grouped grids.
      */
     expandLevel?: number;
 
@@ -1253,7 +1254,7 @@ export class GridModel extends HoistModel {
         this.expandToLevel(0);
     }
 
-    /** Expand all parent rows in grouped or tree grid to the specified level. */
+    /** Expand all parent rows in grouped or tree grid to the specified level, or all for -1. */
     @action
     expandToLevel(level: number) {
         this.expandLevel = level;

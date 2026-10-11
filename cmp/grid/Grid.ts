@@ -49,7 +49,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer, runInAction, untracked} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logWarn} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
@@ -251,10 +251,9 @@ export class GridLocalModel extends HoistModel {
             !_warnedGroupDefaultExpanded.has(model)
         ) {
             _warnedGroupDefaultExpanded.add(model);
-            logWarn(
+            model.logWarn(
                 `Grid agOptions set 'groupDefaultExpanded', which GridModel does not track. ` +
-                    `Set GridConfig.expandLevel instead.`,
-                model
+                    `Set the GridModel's expandLevel instead.`
             );
         }
         this.rowHeightSupport = new RowHeightSupport(this);
@@ -842,8 +841,6 @@ export class GridLocalModel extends HoistModel {
         return agOptions?.groupDefaultExpanded == null && agOptions?.isGroupOpenByDefault == null;
     }
 
-    // Unset at level 0, where ag-Grid's default `groupDefaultExpanded` of 0 opens nothing. With
-    // either option set, ag-Grid's state service walks every row after each data update.
     private syncGroupOpenByDefault(api: GridApi) {
         if (this.ownsGroupOpenByDefault) {
             api.setGridOption(
@@ -853,6 +850,9 @@ export class GridLocalModel extends HoistModel {
         }
     }
 
+    // Unset at level 0, where ag-Grid's default `groupDefaultExpanded` of 0 opens nothing. With
+    // either option set, ag-Grid's state module, when registered, walks every row after each data
+    // update.
     private groupOpenByDefaultFor(level: number) {
         return this.ownsGroupOpenByDefault && level !== 0 ? this.isGroupOpenByDefault : undefined;
     }

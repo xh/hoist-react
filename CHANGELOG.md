@@ -149,12 +149,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   validation results, and the tooltip component is a plain function component.
 * Improved autosize performance on large grids. Column values are now ranked by cached
   per-character widths, and only the 500 widest are measured exactly.
-* Made `GridModel.expandToLevel()`, `expandAll()` and `collapseAll()` faster on large tree grids,
-  and on grouped grids. They no longer change AG Grid's `groupDefaultExpanded`, which regrouped and
-  re-sorted every row. `Grid` now opens rows added later through an `isGroupOpenByDefault` callback.
-  If `Grid.agOptions` sets `groupDefaultExpanded`, rows added after an `expandToLevel()` call now
-  follow that value, not the new level. `Grid` warns once about that option - set
-  `GridConfig.expandLevel` instead.
+* Made `GridModel.expandToLevel()`, `expandAll()` and `collapseAll()` faster on large tree and
+  grouped grids. A level change no longer sets AG Grid's `groupDefaultExpanded`, which regrouped
+  and re-sorted every row.
+* `Grid` warns once per `GridModel` when `agOptions` set `groupDefaultExpanded` - set `expandLevel`
+  instead. With that option, rows added after an `expandToLevel()` call follow it, not the level.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
   `Grid` against ag-Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
