@@ -44,10 +44,7 @@ export class ColumnWidthCalculator {
 
     /**
      * Max number of values to measure exactly on the canvas per column, taken from the widest
-     * per-character estimates. A column with up to this many distinct rendered values is measured
-     * exactly. Above it, the widest value is missed only if this many distinct values rank above
-     * it by estimate yet render narrower, which takes kerning, ligatures or contextual alternates
-     * shifting exact widths by more than the estimates differ.
+     * estimates. Columns with up to this many distinct values are measured exactly.
      */
     RANK_SAMPLES = 500;
 
@@ -170,8 +167,7 @@ export class ColumnWidthCalculator {
             }
         });
 
-        // 2) Extract the sample set of widest values for rendering and sizing. The estimates ignore
-        // kerning, so measure the RANK_SAMPLES widest of them exactly before picking the sample.
+        // 2) Re-measure the widest estimates exactly, then extract the sample set for rendering
         const {SIZE_CALC_SAMPLES, RANK_SAMPLES} = this;
         let sample = takeRight(sortBy([...estimatesByValue.values()], 'width'), RANK_SAMPLES);
         sample.forEach(est => {
@@ -424,15 +420,15 @@ export class ColumnWidthCalculator {
     // Canvas-based width estimation
     //------------------
     private getMeasurer(): CanvasTextMeasurer {
-        // Measures in the font of the hidden cell, as styled for the standard sizing mode.
+        // Uses the hidden cell's font, as styled for the standard sizing mode.
         return (this._measurer ??= new CanvasTextMeasurer(this.getCellEl()));
     }
 }
 
-/** A rendered value of the column, the records that show it, and its estimated width. */
+/** A rendered column value, with its width and the records that show it. */
 interface ValueEstimate {
     value: any;
-    /** Rendered value with any tags stripped. Null for a nil value. */
+    /** Value with tags stripped, or null for a nil value. */
     text: string;
     width: number;
     records: StoreRecord[];

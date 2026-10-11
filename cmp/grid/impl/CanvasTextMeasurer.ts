@@ -8,12 +8,6 @@
 /**
  * Measures text widths in the grid cell font with a hidden canvas. Used by `ColumnWidthCalculator`
  * to rank the values of a column before it measures the widest few in the DOM.
- *
- * `estimateWidth()` sums per-character widths, each measured once and cached, so a pass over many
- * values costs one `measureText` call per distinct character rather than per value. The sum
- * ignores kerning, ligatures and contextual alternates, so it differs from the exact width of
- * `measureWidth()` by whatever those contribute, which depends on the font and the text.
- *
  * @internal
  */
 export class CanvasTextMeasurer {
@@ -26,7 +20,7 @@ export class CanvasTextMeasurer {
         this.fontEl = fontEl;
     }
 
-    /** Approximate pixel width of text, as the sum of its cached per-character widths. */
+    /** Approximate pixel width of text, summed from cached per-character widths. Ignores kerning. */
     estimateWidth(text: string): number {
         let ret = 0;
         // Iterates code points, so a surrogate pair is measured as one character.
