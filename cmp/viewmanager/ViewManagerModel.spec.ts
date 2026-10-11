@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type ViewInfo, ViewManagerModel, type ViewManagerConfig} from '@xh/hoist/cmp/viewmanager';
-import {HoistModel, persist, type PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, persist, type PersistOptions, type PlainObject, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import type {JsonBlob} from '@xh/hoist/svc';
@@ -428,6 +428,68 @@ describe('ViewManagerModel', () => {
             expect(vmm.isValueDirty).toBe(true);
             expect(vmm.getValue()).toEqual({sortBy: 'name'});
         });
+
+        // Fixed in 89.0.0 - bound models write their changes 250ms after they are made, and a
+        // write still pending at a view switch landed in the new view. Views selected in quick
+        // succession were left with unsaved changes, holding state from the view before.
+        describe('when views are selected in quick succession', () => {
+            beforeEach(() => {
+                views.add('east', 'East Desks', {value: {groupBy: 'region'}});
+                views.add('west', 'West Desks', {value: {groupBy: 'desk'}});
+            });
+
+            it('keeps a change made in the prior view out of the new one', async () => {
+                const vmm = await createAsync(),
+                    // A settleTime, as dashboards use, skips the write of the incoming view's
+                    // state, which would otherwise replace the pending one.
+                    model = createGroupingModel(vmm, {settleTime: 1000});
+                await vmm.selectViewAsync('east');
+
+                vi.useFakeTimers();
+                await vi.advanceTimersByTimeAsync(1001);
+                model.groupBy = 'trader';
+                await vmm.selectViewAsync('west');
+                await vi.advanceTimersByTimeAsync(250);
+
+                expect(model.groupBy).toBe('desk');
+                expect(vmm.isValueDirty).toBe(false);
+                expect(vmm.getValue()).toEqual({groupBy: 'desk'});
+            });
+
+            it('applies the new view to a model rebuilt across the switch', async () => {
+                const vmm = await createAsync();
+                vi.useFakeTimers();
+
+                // Applying a view queues a write of the model's state. The model is destroyed, as
+                // when its component unmounts, while that write is still pending.
+                const prior = createGroupingModel(vmm);
+                await vmm.selectViewAsync('east');
+                prior.destroy();
+                await vmm.selectViewAsync('west');
+                const model = createGroupingModel(vmm);
+                await vi.advanceTimersByTimeAsync(250);
+
+                expect(model.groupBy).toBe('desk');
+                expect(vmm.isValueDirty).toBe(false);
+                expect(createGroupingModel(vmm).groupBy).toBe('desk');
+            });
+
+            it('keeps a change made in the prior view out of the new one when its model is destroyed', async () => {
+                const vmm = await createAsync(),
+                    model = createGroupingModel(vmm, {settleTime: 1000});
+                await vmm.selectViewAsync('east');
+
+                vi.useFakeTimers();
+                await vi.advanceTimersByTimeAsync(1001);
+                model.groupBy = 'trader';
+                await vmm.selectViewAsync('west');
+                model.destroy();
+                expect(vmm.getValue()).toEqual({groupBy: 'desk'});
+
+                await vi.advanceTimersByTimeAsync(250);
+                expect(vmm.isValueDirty).toBe(false);
+            });
+        });
     });
 });
 
@@ -440,6 +502,17 @@ const TYPE = 'portfolioGrid',
 
 async function createAsync(config: Partial<ViewManagerConfig> = {}): Promise<ViewManagerModel> {
     const ret = await ViewManagerModel.createAsync({type: TYPE, ...config});
+    onTestFinished(() => ret.destroy());
+    return ret;
+}
+
+/** A model bound to a view manager, writing its changes with the default 250ms debounce. */
+function createGroupingModel(vmm: ViewManagerModel, opts: PersistOptions = {}) {
+    class GroupingModel extends HoistModel {
+        override persistWith = {viewManagerModel: vmm, ...opts};
+        @bindable @persist accessor groupBy = 'none';
+    }
+    const ret = new GroupingModel();
     onTestFinished(() => ret.destroy());
     return ret;
 }

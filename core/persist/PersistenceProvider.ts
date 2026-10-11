@@ -138,7 +138,7 @@ export abstract class PersistenceProvider<S = any> {
 
         // Drop any debounced write still pending - it holds pre-clear state and would otherwise
         // land after this call and resurrect it.
-        (this.writeInternal as DebouncedFunc<(data: S) => void>).cancel?.();
+        this.cancelPendingWrite();
 
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
@@ -152,7 +152,18 @@ export abstract class PersistenceProvider<S = any> {
     }
 
     destroy() {
+        // Write any change still pending now, rather than from a timer once this provider is gone.
+        this.debouncedWrite?.flush();
         this.disposer?.();
+    }
+
+    /**
+     * Drop any debounced write still pending. Called when the store moves on to other state, which
+     * a pending write would otherwise overwrite with state captured before the move.
+     * @internal
+     */
+    cancelPendingWrite() {
+        this.debouncedWrite?.cancel();
     }
 
     /** Push the current state of this provider to its target. */
@@ -252,6 +263,11 @@ export abstract class PersistenceProvider<S = any> {
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 
         return ret;
+    }
+
+    // The debounced write function, or null if writes are not debounced - see constructor.
+    private get debouncedWrite(): DebouncedFunc<(data: S) => void> {
+        return this.debounce ? (this.writeInternal as DebouncedFunc<(data: S) => void>) : null;
     }
 
     private ensureValid() {

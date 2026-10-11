@@ -174,6 +174,19 @@ describe('PersistenceProvider', () => {
             model.size = 300;
             expect(store.setData).not.toHaveBeenCalled();
         });
+
+        it('writes a change still pending when its owner is destroyed', async () => {
+            vi.useFakeTimers();
+            const store = new MemoryStore(),
+                model = createModel(store.options);
+
+            model.size = 300;
+            model.destroy();
+            expect(store.data).toEqual({layout: {size: 300}});
+
+            await vi.advanceTimersByTimeAsync(250);
+            expect(store.setData).toHaveBeenCalledOnce();
+        });
     });
 });
 

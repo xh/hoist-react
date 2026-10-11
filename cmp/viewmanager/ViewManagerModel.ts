@@ -722,6 +722,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return this.dataAccess
             .fetchViewAsync(token, ctx)
             .thenAction(latest => {
+                // Drop writes still pending from before this load. They hold state captured
+                // against the outgoing value, and would otherwise land on top of the new one.
+                this.providers.forEach(it => it.cancelPendingWrite());
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
             })
