@@ -18,7 +18,7 @@ import {
     server,
     xhUrl
 } from '@xh/hoist/test-support';
-import {omit, pick} from 'lodash';
+import {find, omit, pick} from 'lodash';
 import {http, HttpResponse} from 'msw';
 import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -292,6 +292,35 @@ describe('ViewManagerModel', () => {
             expect(vmm.view.value).toEqual({sortBy: 'name'});
             expect(vmm.getValue()).toEqual({sortBy: 'size'});
             expect(vmm.isValueDirty).toBe(true);
+        });
+
+        // Fixed in 89.0.0 - a save that landed after a view switch reinstalled the prior view.
+        it('keeps the newly selected view when an auto-save of the prior view lands after it', async () => {
+            Object.assign(views.state, {currentView: 'mine', autoSave: true});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            vmm.setValue({sortBy: 'name'});
+            const release = views.holdNext('xhView/updateValue');
+            await vi.advanceTimersByTimeAsync(2000);
+            await vi.waitFor(() =>
+                expect(hoistCore.requestsTo('xhView/updateValue')).toHaveLength(1)
+            );
+
+            // Selecting a view saves the change again before it loads the view.
+            await vmm.selectViewAsync('firm');
+            const {lastUpdated} = views.get('mine');
+            release();
+
+            // The held save lands last, and is recorded in the views list.
+            await vi.waitFor(() =>
+                expect(find(vmm.views, {token: 'mine'}).lastUpdated).toBeGreaterThan(lastUpdated)
+            );
+            await vi.advanceTimersByTimeAsync(2000);
+
+            expect(vmm.view.token).toBe('firm');
+            expect(vmm.isValueDirty).toBe(false);
+            expect(views.get('mine').value).toEqual({sortBy: 'name'});
         });
     });
 
@@ -631,6 +660,15 @@ class ViewServer {
     /** Hold responses - all, or those to one path - until the returned function is called. */
     holdResponses(path: string = null): () => void {
         return this.hold(req => !path || req.path === path);
+    }
+
+    /** Hold the response to the next request to a path until the returned function is called. */
+    holdNext(path: string): () => void {
+        let held = false;
+        return this.hold(req => {
+            if (held || req.path !== path) return false;
+            return (held = true);
+        });
     }
 
     /** Hold the response to a fetch of one view until the returned function is called. */

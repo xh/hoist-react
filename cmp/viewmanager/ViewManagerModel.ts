@@ -771,6 +771,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Install a saved view, keeping as pending any value set while the save was in flight. */
     @action
     private setAsSavedView(saved: View<T>, sent: PendingValue<T>) {
+        // The user selected another view while this save was in flight. Record the save in the
+        // views list, but keep the current view.
+        if (saved.token !== this.view.token) {
+            this.noteViewInfo(saved);
+            return;
+        }
+
         const value = this.getValue(),
             pendingValue = isEqual(value, sent.value)
                 ? null
@@ -783,12 +790,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.view = view;
         this.pendingValue = pendingValue;
         // Ensure we update meta-data as well.
-        if (!view.isDefault) {
-            this.views = uniqBy([view.info, ...this.views], 'token');
-        }
+        if (!view.isDefault) this.noteViewInfo(view);
 
         // Ensure providers have a clean reference of the current view state.
         this.providers.forEach(it => it.read());
+    }
+
+    @action
+    private noteViewInfo(view: View<T>) {
+        this.views = uniqBy([view.info, ...this.views], 'token');
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {

@@ -72,6 +72,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   quick succession. A destroyed `PersistenceProvider` now writes any pending change at once.
 * Fixed `ViewManagerModel` installing an earlier selected view when it finished loading after a
   later one. A refresh also no longer reloads the prior view over a newer selection.
+* Fixed `ViewManagerModel` reinstalling the prior view when a save of it finished after the user
+  selected another view. An auto-save could then write the new view's state into the prior one.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
