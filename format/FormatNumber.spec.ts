@@ -81,7 +81,10 @@ describe('fmtNumber', () => {
             [1.2, {precision: 4, zeroPad: 2}, '1.20'],
             [1.234, {precision: 4, zeroPad: 2}, '1.234'],
             [1.23456, {precision: 4, zeroPad: 2}, '1.2346'],
-            [5, {zeroPad: 2}, '5.00']
+            [5, {zeroPad: 2}, '5.00'],
+            [12345.678, {zeroPad: 2}, '12,346'],
+            [Math.PI, {precision: 2, zeroPad: 4}, '3.14'],
+            [1234.5, {precision: 0, zeroPad: 2}, '1,235']
         ] as const)('formats %s with %o as "%s"', (v, opts, expected) => {
             expect(fmtNumber(v, opts)).toBe(expected);
         });
@@ -136,7 +139,7 @@ describe('fmtNumber', () => {
             [9999.5, 0, '10,000'],
             [-2.5, 0, '-3'],
             [-1.005, 2, '-1.01']
-        ] as const)('rounds the tie %s at %s places to "%s"', (v, precision, expected) => {
+        ] as const)('rounds the tie %s with precision %s to "%s"', (v, precision, expected) => {
             expect(fmtNumber(v, {precision})).toBe(expected);
         });
 
@@ -148,7 +151,7 @@ describe('fmtNumber', () => {
             [224845.94999999998, 1, '224,846.0'],
             [(512345678901.21 + 512345678901.22) / 2, 2, '512,345,678,901.22']
         ] as const)(
-            'rounds %s at %s places to "%s", as the arithmetic intended',
+            'rounds %s with precision %s to "%s", as the arithmetic intended',
             (v, p, expected) => {
                 expect(fmtNumber(v, {precision: p})).toBe(expected);
             }
