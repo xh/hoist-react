@@ -429,9 +429,7 @@ describe('ViewManagerModel', () => {
             expect(vmm.getValue()).toEqual({sortBy: 'name'});
         });
 
-        // Fixed in 89.0.0 - bound models write their changes 250ms after they are made, and a
-        // write still pending at a view switch landed in the new view. Views selected in quick
-        // succession were left with unsaved changes, holding state from the view before.
+        // Fixed in 89.0.0 - a write pending at a view switch landed in the new view.
         describe('when views are selected in quick succession', () => {
             beforeEach(() => {
                 views.add('east', 'East Desks', {value: {groupBy: 'region'}});

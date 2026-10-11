@@ -163,17 +163,11 @@ export abstract class PersistenceProvider<S = any> {
         }
     }
 
-    /**
-     * Drop any debounced write still pending. Called when the store moves on to other state, which
-     * a pending write would otherwise overwrite with state captured before the move.
-     * @internal
-     */
-    cancelPendingWrite() {
-        this.debouncedWrite?.cancel();
-    }
-
     /** Push the current state of this provider to its target. */
     pushStateToTarget() {
+        // Drop any pending write. It holds the target's state from before this push, and would
+        // overwrite the new state, such as a view that a ViewManagerModel just loaded.
+        this.cancelPendingWrite();
         const state = this.read();
         this.target.setPersistableState(state ? state : this.defaultState);
     }
@@ -269,6 +263,10 @@ export abstract class PersistenceProvider<S = any> {
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 
         return ret;
+    }
+
+    private cancelPendingWrite() {
+        this.debouncedWrite?.cancel();
     }
 
     // The debounced write function, or null if writes are not debounced - see constructor.

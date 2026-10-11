@@ -163,6 +163,23 @@ describe('PersistenceProvider', () => {
             model.provider.pushStateToTarget();
             expect(model.size).toBe(100);
         });
+
+        it('drops a pending write, so it cannot overwrite the state it pushes', async () => {
+            vi.useFakeTimers();
+            const store = new MemoryStore(),
+                // A settleTime skips the write of the pushed state, which would otherwise replace
+                // the pending one.
+                model = createModel({...store.options, settleTime: 1000});
+            await vi.advanceTimersByTimeAsync(1001);
+
+            model.size = 300;
+            store.data = {layout: {size: 500}};
+            model.provider.pushStateToTarget();
+            await vi.advanceTimersByTimeAsync(250);
+
+            expect(model.size).toBe(500);
+            expect(store.data).toEqual({layout: {size: 500}});
+        });
     });
 
     describe('destroy', () => {
