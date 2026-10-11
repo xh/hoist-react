@@ -134,10 +134,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `icon`. Support for both ends in v91.
 * `XH.isDesktop`, `XH.isPhone`, and `XH.isTablet` now parse the user agent once at startup, not on
   every read.
-* `Field` now skips DOMPurify for strings with no `<` when `enableXssProtection` is set. Such
-  strings hold no markup, so large loads skip one DOMPurify call per string value.
-* `Field` now logs a warning in development mode, once per `date` field, when a value parses to an
-  Invalid Date. Records holding such values are rebuilt on every load.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
@@ -164,6 +160,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
   by a change append rather than taking their source position. This may affect the sort ordering
   of unsorted grids when data changes.
+* `Field` now skips DOMPurify for strings with no `<` when `enableXssProtection` is set. Such
+  strings hold no markup, so large loads skip one DOMPurify call per string value.
+* `Field` now logs a warning in development mode, once per `date` field, when a value parses to an
+  Invalid Date. Records holding such values are rebuilt on every load.
 
 ### ⚙️ Typescript API Adjustments
 
