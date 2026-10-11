@@ -134,8 +134,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `icon`. Support for both ends in v91.
 * `XH.isDesktop`, `XH.isPhone`, and `XH.isTablet` now parse the user agent once at startup, not on
   every read.
-* `Grid` now passes AG Grid only the pinned rows that changed. A summary row update redraws the
-  grid's rows once, where it redrew them twice.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
@@ -146,6 +144,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
+* `Grid` now passes AG Grid only the pinned rows that changed. A summary row update redraws the
+  grid's rows once, where it redrew them twice.
 * Improved autosize performance on large grids. Column values are now ranked by cached
   per-character widths, and only the 500 widest are measured exactly.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
