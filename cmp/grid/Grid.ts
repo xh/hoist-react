@@ -606,8 +606,10 @@ export class GridLocalModel extends HoistModel {
             {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
             filterSummaryFn = record => !record.isSummary,
-            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
-            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
+            prevTop = agGridModel.getPinnedTopRowData(),
+            prevBottom = agGridModel.getPinnedBottomRowData(),
+            pinnedTopRowData = prevTop.filter(filterSummaryFn),
+            pinnedBottomRowData = prevBottom.filter(filterSummaryFn);
 
         if (showSummary && !isEmpty(store.summaryRecords)) {
             if (showSummary === 'bottom') {
@@ -617,18 +619,12 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        // Early out if the data hasn't actually changed
-        if (
-            isEqual(pinnedTopRowData, agGridModel.getPinnedTopRowData()) &&
-            isEqual(pinnedBottomRowData, agGridModel.getPinnedBottomRowData())
-        ) {
-            return;
-        }
-
-        agApi.updateGridOptions({
-            pinnedTopRowData,
-            pinnedBottomRowData
-        });
+        // Pass only the side that changed - ag-Grid redraws all rows for each pinned option set.
+        const opts: GridOptions = {};
+        if (!isEqual(pinnedTopRowData, prevTop)) opts.pinnedTopRowData = pinnedTopRowData;
+        if (!isEqual(pinnedBottomRowData, prevBottom))
+            opts.pinnedBottomRowData = pinnedBottomRowData;
+        if (!isEmpty(opts)) agApi.updateGridOptions(opts);
     }
 
     syncData() {

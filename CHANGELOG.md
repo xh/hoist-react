@@ -134,6 +134,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `icon`. Support for both ends in v91.
 * `XH.isDesktop`, `XH.isPhone`, and `XH.isTablet` now parse the user agent once at startup, not on
   every read.
+* `Grid` now hands ag-Grid only the pinned rows that changed. A summary row update redraws the
+  grid's rows once, where it redrew them twice.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.

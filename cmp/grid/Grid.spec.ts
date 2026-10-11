@@ -9,7 +9,7 @@ import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {render, waitFor} from '@testing-library/react';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * What the Grid component hands to ag-Grid, and what ag-Grid renders from it. Row and header
@@ -55,6 +55,32 @@ describe('Grid', () => {
         gridModel.hideHeaders = true;
         await waitFor(() => expect(agApi.getGridOption('headerHeight')).toBe(0));
     });
+
+    // ag-Grid redraws every rendered row for each pinned row option it is given.
+    it.each(['top', 'bottom'] as const)(
+        'hands ag-Grid only the %s pinned rows when the summary changes',
+        async showSummary => {
+            const {gridModel} = await renderGridAsync({showSummary}),
+                {agApi, agGridModel} = gridModel,
+                updateGridOptions = vi.spyOn(agApi, 'updateGridOptions'),
+                key = showSummary === 'top' ? 'pinnedTopRowData' : 'pinnedBottomRowData',
+                pinnedKeys = () =>
+                    updateGridOptions.mock.calls
+                        .map(([opts]) => Object.keys(opts).filter(k => k.startsWith('pinned')))
+                        .filter(keys => keys.length);
+
+            gridModel.loadData([{id: 1, name: 'Alpha', qty: 1}], {id: 'sum', qty: 1});
+            await waitFor(() => expect(pinnedKeys()).toEqual([[key]]));
+
+            gridModel.loadData([{id: 1, name: 'Alpha', qty: 1}], {id: 'sum', qty: 1});
+            expect(pinnedKeys()).toEqual([[key]]);
+            expect(
+                showSummary === 'top'
+                    ? agGridModel.getPinnedTopRowData()
+                    : agGridModel.getPinnedBottomRowData()
+            ).toHaveLength(1);
+        }
+    );
 
     it('renders columns without a renderer as plain text, and others through the wrapper', async () => {
         const {container} = await renderGridAsync({
