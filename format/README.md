@@ -241,16 +241,6 @@ interface ColorSpec {
 
 Default classes (when `colorSpec: true`): `xh-pos-val`, `xh-neg-val`, `xh-neutral-val`.
 
-Formatters accept class names only. To share one spec between renderers and formatters, type it as
-a `ColorClassSpec`, which holds a class name per sign:
-
-```typescript
-const pnlColors: ColorClassSpec = {pos: 'app-gain', neg: 'app-loss'};
-
-numberRenderer({precision: 0, colorSpec: pnlColors})
-numberFormatter({precision: 0, colorSpec: pnlColors})
-```
-
 ```typescript
 // Default color classes — green for positive, red for negative
 numberRenderer({precision: 0, ledger: true, colorSpec: true})
@@ -260,6 +250,16 @@ fmtNumber(overdueAmount, {prefix: '$', colorSpec: {pos: 'xh-intent-danger'}})
 
 // Custom: inline CSS styles instead of classes
 fmtNumber(value, {colorSpec: {pos: {color: '#00aa00'}, neg: {color: '#cc0000'}}})
+```
+
+Formatters accept class names only. To share one spec between renderers and formatters, type it as
+a `ColorClassSpec`, which holds a class name per sign:
+
+```typescript
+const pnlColors: ColorClassSpec = {pos: 'app-gain', neg: 'app-loss'};
+
+numberRenderer({precision: 0, colorSpec: pnlColors})
+numberFormatter({precision: 0, colorSpec: pnlColors})
 ```
 
 ColorSpec is commonly combined with `ledger`, `withPlusSign`, or `withSignGlyph` for financial
@@ -573,12 +573,13 @@ export function fmtMoney(v: number, opts: NumberFormatOptions = {}) {
 span(fmtMoney(summary.openAmount))
 ```
 
-A grid column that switches scale by an app setting needs a formatter that picks one per call. The
-column reads `cellClassRules` once, when it is created, so give the wrapper rules that defer to the
-current formatter. Refresh the column's cells when the setting changes, for example with
-`gridModel.agApi.refreshCells({columns: ['pnl'], force: true})`.
+A grid column that switches scale by an app setting needs a wrapper formatter that picks the current
+scale on each call. The column reads `cellClassRules` once, when it is created, so give the wrapper
+rules that defer to the current formatter. Refresh the column's cells when the setting changes, for
+example with `gridModel.agApi?.refreshCells({columns: ['pnl'], force: true})`.
 
 ```typescript
+import {XH} from '@xh/hoist/core';
 import {millionsFormatter, thousandsFormatter, type StringFormatter} from '@xh/hoist/format';
 import {mapValues} from 'lodash';
 
