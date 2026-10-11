@@ -47,7 +47,7 @@ import type {
     GridReadyEvent,
     ProcessCellForExportParams
 } from '@xh/hoist/kit/ag-grid';
-import {computed, observer, runInAction} from '@xh/hoist/mobx';
+import {computed, observer, runInAction, untracked} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -297,7 +297,11 @@ export class GridLocalModel extends HoistModel {
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
-            groupDefaultExpanded: model.expandLevel,
+            // An app's own `groupDefaultExpanded` in agOptions takes the place of this callback.
+            isGroupOpenByDefault:
+                this.componentProps.agOptions?.groupDefaultExpanded == null
+                    ? this.isGroupOpenByDefault
+                    : undefined,
             groupDisplayType: 'groupRows',
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -798,6 +802,10 @@ export class GridLocalModel extends HoistModel {
     onColumnGroupOpened = ev => {
         this.model.noteAgColumnGroupStateChanged(ev.api.getColumnGroupState());
     };
+
+    // Reads the level on each call, so rows added later open to the grid's current expandLevel.
+    // Untracked, as ag-Grid can resolve a row's expanded state inside a MobX derivation.
+    isGroupOpenByDefault = ({level}) => untracked(() => this.model.isLevelExpanded(level));
 
     groupSortComparator = ({nodeA, nodeB}) => {
         const gridModel = this.model;

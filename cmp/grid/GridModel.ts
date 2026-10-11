@@ -1258,26 +1258,26 @@ export class GridModel extends HoistModel {
     expandToLevel(level: number) {
         this.expandLevel = level;
 
-        // 0) Not rendered, we are done.
-        const {agApi, store} = this;
+        const {agApi} = this;
         if (!agApi) return;
 
-        // 1) Update rendered grid.
-        agApi.setGridOption('groupDefaultExpanded', level);
-        if (level == 0 || level >= this.maxDepth) {
-            level == 0 ? agApi.collapseAll() : agApi.expandAll();
-        } else {
-            // Update raw nodes for efficiency
-            // This approach documented in agGrids onGroupExpandedOrCollapsed() docs (2025)
-            store.records.forEach(rec => {
-                const node = agApi.getRowNode(rec.agId);
-                if (node) {
-                    node.expanded = rec.depth < level;
-                }
-            });
-            agApi.onGroupExpandedOrCollapsed();
-        }
+        // Set the flag on each group node, then remap rows once - the bulk approach documented for
+        // ag-Grid's `onGroupExpandedOrCollapsed()`. Rows added later get their state from Grid's
+        // `isGroupOpenByDefault` callback.
+        agApi.forEachNode(node => {
+            if (node.group) node.expanded = this.isLevelExpanded(node.level);
+        });
+        agApi.onGroupExpandedOrCollapsed();
         this.noteAgExpandStateChange();
+    }
+
+    /**
+     * @internal - true if the current `expandLevel` opens a group row at the given depth. A
+     * negative level opens every depth.
+     */
+    isLevelExpanded(depth: number): boolean {
+        const {expandLevel} = this;
+        return expandLevel < 0 || depth < expandLevel;
     }
 
     /**

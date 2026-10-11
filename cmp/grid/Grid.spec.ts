@@ -9,7 +9,7 @@ import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {render, waitFor} from '@testing-library/react';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * What the Grid component hands to ag-Grid, and what ag-Grid renders from it. Row and header
@@ -54,6 +54,52 @@ describe('Grid', () => {
 
         gridModel.hideHeaders = true;
         await waitFor(() => expect(agApi.getGridOption('headerHeight')).toBe(0));
+    });
+
+    // ag-Grid's grouping and tree data modules are enterprise-only, so these tests check what the
+    // grid hands to ag-Grid, not which rows open.
+    describe('expand level', () => {
+        // A change to ag-Grid's `groupDefaultExpanded` regroups, re-sorts and redraws every row.
+        it('expands and collapses rows without changing ag-Grid options', async () => {
+            const {gridModel} = await renderGridAsync(),
+                setGridOption = vi.spyOn(gridModel.agApi, 'setGridOption');
+
+            gridModel.expandToLevel(2);
+            gridModel.expandAll();
+            gridModel.collapseAll();
+
+            expect(setGridOption).not.toHaveBeenCalled();
+        });
+
+        it('opens rows added later to the current expandLevel, or to all levels for -1', async () => {
+            const {gridModel} = await renderGridAsync({expandLevel: 1}),
+                isOpenByDefault = gridModel.agApi.getGridOption('isGroupOpenByDefault'),
+                openLevels = () => [0, 1, 2].filter(level => isOpenByDefault({level} as any));
+
+            expect(openLevels()).toEqual([0]);
+
+            gridModel.expandToLevel(2);
+            expect(openLevels()).toEqual([0, 1]);
+
+            gridModel.collapseAll();
+            expect(openLevels()).toEqual([]);
+
+            gridModel.expandToLevel(-1);
+            expect(openLevels()).toEqual([0, 1, 2]);
+        });
+
+        it("leaves rows to an app's own agOptions.groupDefaultExpanded", async () => {
+            const gridModel = new GridModel({columns: [{field: 'name'}]});
+            onTestFinished(() => gridModel.destroy());
+            render(grid({model: gridModel, agOptions: {groupDefaultExpanded: 2}}));
+            await waitFor(() => expect(gridModel.isReady).toBe(true));
+
+            gridModel.expandToLevel(1);
+
+            const {agApi} = gridModel;
+            expect(agApi.getGridOption('isGroupOpenByDefault')).toBeUndefined();
+            expect(agApi.getGridOption('groupDefaultExpanded')).toBe(2);
+        });
     });
 
     it('renders columns without a renderer as plain text, and others through the wrapper', async () => {

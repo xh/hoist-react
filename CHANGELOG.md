@@ -121,6 +121,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed an explicit `rowHeight` on `AgGrid`, or in `Grid.agOptions`, being ignored when sizing rows.
 * Fixed tree grid parent rows ignoring `Column.rowHeight`, and so sitting shorter than their
   children.
+* Fixed `GridModel.expandToLevel()` ignoring intermediate levels in grids grouped by two or more
+  columns.
 * Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
 * Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
   Titled icons also get the title as their `aria-label`, so screen readers announce them again.
@@ -160,6 +162,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
   by a change append rather than taking their source position. This may affect the sort ordering
   of unsorted grids when data changes.
+* Made `GridModel.expandToLevel()`, `expandAll()` and `collapseAll()` faster on large grouped and
+  tree grids. They no longer change AG Grid's `groupDefaultExpanded`, which regrouped and re-sorted
+  every row. `Grid` passes AG Grid an `isGroupOpenByDefault` callback instead, unless
+  `Grid.agOptions` sets `groupDefaultExpanded`.
 
 ### ⚙️ Typescript API Adjustments
 
