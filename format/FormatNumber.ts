@@ -501,8 +501,8 @@ function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSP
 }
 
 /**
- * Resolve a precisionSpec to a concrete number of decimal places. A fixed precision is used as-is
- * (capped at max), while 'auto' is derived from the scale of the value.
+ * Resolve a precisionSpec to a concrete number of decimal places. A fixed precision is clamped to
+ * 0-12, while 'auto' is derived from the scale of the value.
  */
 function parsePrecision(v: number, precisionSpec: Precision): number {
     // Fixed precision - use requested, clamped to the supported range.
@@ -562,13 +562,17 @@ function fmtDigits(
                 (maxFD === 0 || (!zeroPad && Number.isInteger(absVal)))
             );
 
-    // Round a value within float error of a tie (1e-14 relative) here, with lodash `round` on its
-    // magnitude. It shifts the decimal point before it rounds half up, which absorbs most float
-    // error: 1.15 * 3 (3.4499999999999997) rounds to 3.5, as the arithmetic intended. Any other
-    // value rounds the same under every Intl rounding mode, so the output does not depend on the
-    // browser.
+    // Round a value within float error of a tie here, with lodash `round` on its magnitude. It
+    // shifts the decimal point before it rounds half up, which absorbs float error: 1.15 * 3
+    // (3.4499999999999997) rounds to 3.5, as the arithmetic intended. A tolerance of
+    // 2 * Number.EPSILON covers every value the shift can move onto a tie. Any other value rounds
+    // the same under every Intl rounding mode. Past 15 significant digits the tolerance would
+    // cover nearly every value, so Intl rounds those as they are.
     const shifted = absVal * 10 ** maxFD;
-    if (Math.abs(shifted - Math.floor(shifted) - 0.5) < shifted * 1e-14) {
+    if (
+        shifted < 1e15 &&
+        Math.abs(shifted - Math.floor(shifted) - 0.5) < shifted * 2 * Number.EPSILON
+    ) {
         absVal = round(absVal, maxFD);
     }
 

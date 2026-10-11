@@ -104,7 +104,8 @@ const positives = [
     224845.94999999998,
     (1.46 + 1.47) / 2,
     (1.13 + 1.14) / 2,
-    44.324999999999996
+    44.324999999999996,
+    (512345678901.21 + 512345678901.22) / 2
 ];
 const negatives = [
     -0,
@@ -134,7 +135,7 @@ const ratioValues = helperValues.filter(v => Math.abs(v) < 1000);
 const precisions: NumberFormatOptions[] = [
     {},
     {precision: null},
-    ...[0, 1, 2, 4, 6, 8, 12].map(precision => ({precision}) as NumberFormatOptions)
+    ...[0, 1, 2, 3, 4, 6, 8, 12].map(precision => ({precision}) as NumberFormatOptions)
 ];
 const zeroPads: NumberFormatOptions[] = [{}, {zeroPad: true}, {zeroPad: false}, {zeroPad: 2}];
 
@@ -343,7 +344,8 @@ describe.skipIf(WRITE)('Number formatter edge cases that changed on purpose in v
             '0.00',
             () => fmtNumber(1e-7, {precision: 8, zeroPad: 2})
         ],
-        // Past 15 significant digits there is no float noise from numbro's decimal shift.
+        // Past 15 significant digits Intl formats the value as it is, with no float noise from a
+        // decimal shift.
         [
             '2390421244 at 12dp',
             '2,390,421,244.000000000000',
@@ -355,6 +357,12 @@ describe.skipIf(WRITE)('Number formatter edge cases that changed on purpose in v
             '-307,720,365,289.3383',
             '-307,720,365,289.3382',
             () => fmtNumber(-307720365289.33826, {precision: 4})
+        ],
+        [
+            '486868540.05791247 at 8dp',
+            '486,868,540.05791247',
+            '486,868,540.05791247',
+            () => fmtNumber(486868540.05791247, {precision: 8})
         ],
         // Infinity shows the Intl symbol, with Hoist's sign and ledger.
         ['Infinity', '∞', 'Infinity', () => fmtNumber(Infinity)],
