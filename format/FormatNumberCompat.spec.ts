@@ -315,7 +315,7 @@ describe('Number formatters match the numbro baseline for ordinary values', () =
 
 // Each row: the input, what v89 shows, what numbro showed. Write mode skips this table, which
 // fails on numbro.
-describe.skipIf(WRITE)('Number formatter edge cases that changed on purpose in v89', () => {
+describe.skipIf(WRITE)('Number formatter edge cases in v89', () => {
     it.each<[string, string, string, () => ReactNode]>([
         // Ties round half away from zero for both signs. numbro took negative ties toward zero.
         ['-2.5 at 0dp', '-3', '-2', () => fmtNumber(-2.5, {precision: 0})],
@@ -385,7 +385,7 @@ describe.skipIf(WRITE)('Number formatter edge cases that changed on purpose in v
         // NaN and -0 are unchanged.
         ['NaN', 'NaN', 'NaN', () => fmtNumber(NaN)],
         ['-0 at 2dp', '0.00', '0.00', () => fmtNumber(-0, {precision: 2})],
-        // Strings are not parsed. A plain decimal string formats as its number, any other is NaN.
+        // A string renders as JavaScript's Number() reads it, so formatted text renders NaN.
         [
             "'-1234.5' at 2dp",
             '-1,234.50',
@@ -412,9 +412,16 @@ describe.skipIf(WRITE)('Number formatter edge cases that changed on purpose in v
         expect(html(fmt())).toBe(expected);
     });
 
-    it('throws for the removed formatConfig option, naming its replacements', () => {
-        const opts = {formatConfig: {thousandSeparated: false, mantissa: 0}} as any;
-        expect(() => fmtNumber(1234, opts)).toThrow("Use 'precision', 'zeroPad' and 'withCommas'");
-        expect(() => fmtNumber(null, opts)).toThrow('formatConfig');
+    it('rejects the removed formatConfig option, at compile time and when called', () => {
+        // Each call is a compile error - `pnpm typecheck` fails if one stops being one.
+        const msg = "Use 'precision', 'zeroPad' and 'withCommas'",
+            formatConfig = {thousandSeparated: false, mantissa: 0},
+            opts = {formatConfig};
+        // @ts-expect-error - formatConfig
+        expect(() => fmtNumber(1234, {formatConfig})).toThrow(msg);
+        // @ts-expect-error - formatConfig, by variable
+        expect(() => fmtNumber(1234, opts)).toThrow(msg);
+        // @ts-expect-error - formatConfig, by spread, for a null value
+        expect(() => fmtNumber(null, {...opts, ledger: true})).toThrow('formatConfig');
     });
 });
