@@ -404,8 +404,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 });
 
                 // Fast-forward the current view if it was updated elsewhere. Read it here, as a
-                // selection can change it during the fetch. Skip while a view load is pending -
-                // that load is newer, and wins.
+                // selection can change it during the fetch. Skip while a view load is pending - a
+                // fast-forward would overtake it.
                 const {view} = this;
                 if (!view.isDefault && !this.selectTask.isPending) {
                     const latestInfo = find(views, {token: view.token});

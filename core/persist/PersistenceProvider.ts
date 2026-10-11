@@ -235,6 +235,14 @@ export abstract class PersistenceProvider<S = any> {
     }
 
     /**
+     * Drop any debounced write still pending. For a subclass that overrides `pushStateToTarget()`
+     * without calling super.
+     */
+    protected cancelPendingWrite() {
+        this.debouncedWrite?.cancel();
+    }
+
+    /**
      * Resolve the PersistenceProvider class that the given options would produce, applying the
      * same precedence used by {@link create}. Throws if the options do not resolve to a known
      * provider.
@@ -263,10 +271,6 @@ export abstract class PersistenceProvider<S = any> {
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 
         return ret;
-    }
-
-    private cancelPendingWrite() {
-        this.debouncedWrite?.cancel();
     }
 
     // The debounced write function, or null if writes are not debounced - see constructor.
