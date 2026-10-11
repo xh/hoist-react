@@ -52,7 +52,7 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge, union} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
 import {type MouseEvent} from 'react';
 import {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -448,22 +448,14 @@ export class GridLocalModel extends HoistModel {
                 if (!api) return;
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
-                    // ag-Grid caches a cell's formatted value when it creates the cell. A new
-                    // colDef skips cells created but not yet mounted, such as the rows of a sort
-                    // or grouping change made in the same tick. Refresh the columns that have or
-                    // had a valueFormatter so those cells update their cached text. The colDef
-                    // change already refreshed mounted cells, so no force is needed.
-                    const formattedColIds = () =>
-                        (api.getColumns() ?? [])
-                            .filter(col => col.getColDef().valueFormatter)
-                            .map(col => col.getColId());
-
-                    const prevColIds = formattedColIds();
                     api.updateGridOptions({columnDefs: this.getColumnDefs()});
-                    const colIds = union(prevColIds, formattedColIds());
-                    if (colIds.length) {
-                        api.refreshCells({columns: colIds, suppressFlash: true});
-                    }
+
+                    // ag-Grid caches a cell's value and formatted text when it creates the cell.
+                    // A new colDef skips cells created but not yet mounted, such as the rows of a
+                    // sort or grouping change made in the same tick. Refresh all cells so ag-Grid
+                    // rebuilds those from the new colDef. The colDef change already refreshed
+                    // mounted cells, so no force is needed.
+                    api.refreshCells({suppressFlash: true});
                 });
             }
         };
