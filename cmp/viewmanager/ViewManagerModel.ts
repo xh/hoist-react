@@ -771,10 +771,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Install a saved view, keeping as pending any value set while the save was in flight. */
     @action
     private setAsSavedView(saved: View<T>, sent: PendingValue<T>) {
-        // The user selected another view while this save was in flight. Record the save in the
-        // views list, but keep the current view.
+        // The user selected another view while this save was in flight. Update its entry in the
+        // views list, but keep the current view. A view removed from the list meanwhile stays out.
         if (saved.token !== this.view.token) {
-            this.noteViewInfo(saved);
+            this.views = this.views.map(it => (it.token === saved.token ? saved.info : it));
             return;
         }
 
