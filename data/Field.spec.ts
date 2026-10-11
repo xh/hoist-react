@@ -156,6 +156,7 @@ describe('Field', () => {
 
             expect(warn).toHaveBeenCalledTimes(1);
             expect(warn.mock.calls[0].join(' ')).toContain("Field 'openTime' is typed 'date'");
+            expect(warn.mock.calls[0]).toContain('12:30');
         });
 
         it('does not warn outside development mode', () => {
