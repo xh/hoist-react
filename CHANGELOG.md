@@ -132,6 +132,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Deprecated `IconProps.iconName` in favor of `faName`, and `SpinnerProps.iconName` in favor of
   `icon`. Support for both ends in v91.
+* `XH.isDesktop`, `XH.isPhone`, and `XH.isTablet` now parse the user agent once at startup, not on
+  every read.
 * `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
   `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
   column def, and static `cellClass` and `editable` values replace per-cell callbacks.
