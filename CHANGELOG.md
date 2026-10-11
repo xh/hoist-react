@@ -142,6 +142,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
+* Improved autosize performance on large grids. Column values are now ranked by cached
+  per-character widths, and only the 500 widest are measured exactly.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
   `Grid` against ag-Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
