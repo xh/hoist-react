@@ -70,6 +70,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
 * Fixed `ViewManagerModel` views picking up unsaved changes from the prior view when selected in
   quick succession. A destroyed `PersistenceProvider` now writes any pending change at once.
+* Fixed `ViewManagerModel` installing an earlier selected view when it finished loading after a
+  later one. A refresh also no longer reloads the prior view over a newer selection.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.

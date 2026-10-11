@@ -487,6 +487,68 @@ describe('ViewManagerModel', () => {
                 await vi.advanceTimersByTimeAsync(250);
                 expect(vmm.isValueDirty).toBe(false);
             });
+
+            it('applies the view selected last when an earlier selection loads after it', async () => {
+                const vmm = await createAsync(),
+                    model = createGroupingModel(vmm),
+                    release = views.holdView('east');
+                vi.useFakeTimers();
+
+                const east = vmm.selectViewAsync('east');
+                await vmm.selectViewAsync('west');
+                expect(vmm.selectTask.isPending).toBe(false);
+
+                release();
+                await east;
+                await vi.advanceTimersByTimeAsync(250);
+
+                expect(vmm.view.token).toBe('west');
+                expect(model.groupBy).toBe('desk');
+                expect(vmm.isValueDirty).toBe(false);
+            });
+
+            it('ignores the failure of a selection overtaken by a later one', async () => {
+                const vmm = await createAsync(),
+                    release = views.holdView('east');
+                views.failNextView('east');
+
+                const east = vmm.selectViewAsync('east');
+                await vmm.selectViewAsync('west');
+                release();
+
+                await expect(east).resolves.toBeUndefined();
+                expect(vmm.view.token).toBe('west');
+            });
+
+            it('keeps a selection that loads during a refresh over an update to the prior view', async () => {
+                views.state.currentView = 'east';
+                const vmm = await createAsync();
+                views.get('east').lastUpdated += 1000;
+
+                const release = views.holdResponses('xhView/allData'),
+                    refresh = vmm.refreshAsync();
+                await vmm.selectViewAsync('west');
+                release();
+                await refresh;
+                await views.settleAsync();
+
+                expect(vmm.view.token).toBe('west');
+            });
+
+            it('keeps a selection still loading over a refresh that finds the current view updated', async () => {
+                views.state.currentView = 'east';
+                const vmm = await createAsync();
+                views.get('east').lastUpdated += 1000;
+
+                const release = views.holdView('west'),
+                    west = vmm.selectViewAsync('west');
+                await vmm.refreshAsync();
+                release();
+                await west;
+                await views.settleAsync();
+
+                expect(vmm.view.token).toBe('west');
+            });
         });
     });
 });
@@ -541,8 +603,9 @@ class ViewServer {
     manageGlobal: boolean = false;
 
     private failLoad = false;
+    private failToken: string = null;
     private gate: Promise<void> = null;
-    private gatePath: string = null;
+    private gateFilter: (req: RecordedRequest) => boolean = null;
     private pending = new Set<Promise<Response>>();
 
     add(token: string, name: string, opts: ViewOptions = {}): JsonBlob {
@@ -560,15 +623,19 @@ class ViewServer {
         this.failLoad = true;
     }
 
+    /** Answer the next fetch of one view with a server error. */
+    failNextView(token: string) {
+        this.failToken = token;
+    }
+
     /** Hold responses - all, or those to one path - until the returned function is called. */
     holdResponses(path: string = null): () => void {
-        let release: () => void;
-        this.gate = new Promise(resolve => (release = resolve));
-        this.gatePath = path;
-        return () => {
-            this.gate = this.gatePath = null;
-            release();
-        };
+        return this.hold(req => !path || req.path === path);
+    }
+
+    /** Hold the response to a fetch of one view until the returned function is called. */
+    holdView(token: string): () => void {
+        return this.hold(req => req.path === 'xhView/get' && req.form.token === token);
     }
 
     /** Wait until the client has sent no new request, and every request has been answered. */
@@ -597,7 +664,13 @@ class ViewServer {
                 });
             }),
 
-            this.post('xhView/get', req => HttpResponse.json(this.get(req.form.token))),
+            this.post('xhView/get', ({form}) => {
+                if (form.token === this.failToken) {
+                    this.failToken = null;
+                    return hoistError(500, {message: 'Database unavailable'});
+                }
+                return HttpResponse.json(this.get(form.token));
+            }),
 
             // ViewService.create - also records `isPinned`, if given, in the user's state.
             this.post('xhView/create', ({json}) => {
@@ -696,7 +769,17 @@ class ViewServer {
                 headers: {}
             };
         hoistCore.requests.push(req);
-        if (!this.gatePath || path === this.gatePath) await this.gate;
+        if (!this.gateFilter || this.gateFilter(req)) await this.gate;
         return fn(req);
+    }
+
+    private hold(filter: (req: RecordedRequest) => boolean): () => void {
+        let release: () => void;
+        this.gate = new Promise(resolve => (release = resolve));
+        this.gateFilter = filter;
+        return () => {
+            this.gate = this.gateFilter = null;
+            release();
+        };
     }
 }
