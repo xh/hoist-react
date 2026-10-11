@@ -187,6 +187,24 @@ describe('PersistenceProvider', () => {
             await vi.advanceTimersByTimeAsync(250);
             expect(store.setData).toHaveBeenCalledOnce();
         });
+
+        it('logs a pending write that fails when its owner is destroyed, and still stops writing', async () => {
+            vi.useFakeTimers();
+            const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {}),
+                setData = vi.fn(() => {
+                    throw new Error('Storage quota exceeded');
+                }),
+                model = createModel({getData: () => ({}), setData});
+
+            model.size = 300;
+            model.destroy();
+            expect(setData).toHaveBeenCalledOnce();
+            expect(consoleError).toHaveBeenCalled();
+
+            model.size = 400;
+            await vi.advanceTimersByTimeAsync(250);
+            expect(setData).toHaveBeenCalledOnce();
+        });
     });
 });
 

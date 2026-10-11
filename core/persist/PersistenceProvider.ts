@@ -152,9 +152,15 @@ export abstract class PersistenceProvider<S = any> {
     }
 
     destroy() {
-        // Write any change still pending now, rather than from a timer once this provider is gone.
-        this.debouncedWrite?.flush();
         this.disposer?.();
+
+        // Write any change still pending now, rather than from a timer once this provider is gone.
+        // A failed write must not abort the destroy of this provider's owner.
+        try {
+            this.debouncedWrite?.flush();
+        } catch (e) {
+            logError(e, this.owner);
+        }
     }
 
     /**
