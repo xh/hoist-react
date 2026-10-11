@@ -487,6 +487,8 @@ Ordinary values render exactly as before. These edge cases changed:
 | `fmtPercent(-0.0045, {precision: 1})` | `-0.4%` | `-0.5%` | A negative value near a tie rounds as a positive one. `0.0045` gives `0.5%`, as before. |
 | `fmtNumber(5e-7)` | `0` | `0.000001` | Values below 1e-6 round like any other. numbro truncated them. |
 | `fmtMillions(0.5, {label: true})` | `0m` | `0.000001m` | The same rule, after scaling to millions. |
+| `fmtNumber(2390421244, {precision: 12})` | `2,390,421,243.999999500000` | `2,390,421,244.000000000000` | Past 15 significant digits the stored value shows. numbro added float noise when it shifted the decimal point. |
+| `fmtNumber(1234.0001, {precision: 2, zeroPad: 0, omitFourDigitComma: true})` | `1234` | `1,234` | A `zeroPad` of `0` is the same as `false`. |
 | `fmtNumber(Infinity)` | `Infinity` | `∞` | The `Intl.NumberFormat` symbol for infinity. |
 | `fmtNumber('1,234.5', {precision: 2})` | `1,234.50` | `NaN` | A string renders as JavaScript's `Number()` reads it. `'1234.5'` still formats. |
 | `fmtNumber('N/A')` | throws a `TypeError` | `NaN` | The same rule. |
