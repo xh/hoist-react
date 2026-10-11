@@ -11,7 +11,6 @@ scripts
 # @xh/hoist/test-support for apps - only the specs and hoist-react's own CI reporter stay out.
 *.spec.ts
 *.spec.d.ts
-*.spec.json
 /test-support/report
 /build/types/test-support/report
 /.vitest
