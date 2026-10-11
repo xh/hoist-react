@@ -7,6 +7,7 @@
 
 import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {XH} from '@xh/hoist/core';
+import type {CellClassParams} from '@xh/hoist/kit/ag-grid';
 import {CompoundFilter, FieldFilter, Filter, StoreRecord} from '@xh/hoist/data';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {logWarn, stripTags} from '@xh/hoist/utils/js';
@@ -124,14 +125,19 @@ export class ColumnWidthCalculator {
         options: Omit<GridAutosizeOptions, 'columns'>,
         indentationPx = 0
     ): Promise<number> {
-        const {field, getValueFn, renderer, rendererIsComplex, cellClassRules} = column,
+        const {field, getValueFn, renderer, formatter, rendererIsComplex, cellClassRules} = column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get map of rendered values to data about it
         const measurer = this.getMeasurer(),
             estimatesByValue = new Map<any, ValueEstimate>(),
-            renderMemo = renderer && !rendererIsComplex ? new Map() : null;
+            // A formatter's text is measured as text, and a renderer's markup as HTML.
+            render = renderer ?? formatter,
+            renderMemo = render && !rendererIsComplex ? new Map() : null,
+            // A formatter's ledger alignment is a hidden `::after`, not part of its text. Count it
+            // in the estimate below, so that the widest positives make the sample.
+            ledgerRule = renderer ? null : cellClassRules?.['xh-cell--ledger-align'];
 
         await forEachAsync(records, record => {
             if (!record) return;
@@ -141,11 +147,11 @@ export class ColumnWidthCalculator {
 
             // 1a) Get rendered markup value from raw.  Use memoization if appropriate
             let value = rawValue;
-            if (renderer) {
+            if (render) {
                 if (renderMemo?.has(rawValue)) {
                     value = renderMemo.get(rawValue);
                 } else {
-                    value = renderer(rawValue, ctx);
+                    value = render(rawValue, ctx);
                     if (isValidElement(value)) value = renderToStaticMarkup(value);
                     renderMemo?.set(rawValue, value);
                 }
@@ -155,7 +161,10 @@ export class ColumnWidthCalculator {
             // Strip html tags but include parentheses / units etc. for renderers that may return elements.
             const est = estimatesByValue.get(value);
             if (!est) {
-                const text = isNil(value) ? null : stripTags(value.toString());
+                let text = isNil(value) ? null : stripTags(value.toString());
+                if (text && ledgerRule?.({value: rawValue, data: record} as CellClassParams)) {
+                    text += ')';
+                }
                 estimatesByValue.set(value, {
                     value,
                     text,

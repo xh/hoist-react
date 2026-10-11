@@ -23,3 +23,14 @@ export function createRenderer<V = any, C = PlainObject, R = any>(
         return (v: V) => formatter(v, config);
     };
 }
+
+/**
+ * A formatter that always returns a string, for use as a grid `Column.formatter`: ag-Grid writes
+ * the text into the cell directly, with no component per cell.
+ *
+ * Styling that the markup-returning formatters apply inline (e.g. `colorSpec`, ledger alignment)
+ * is carried instead as `cellClassRules`, which the grid applies to the cell by value.
+ */
+export type StringFormatter<V = any> = ((v: V, ...rest: any[]) => string) & {
+    cellClassRules?: Record<string, (params: {value: any}) => boolean>;
+};
