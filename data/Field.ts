@@ -139,8 +139,11 @@ export class Field {
         ) {
             this.warnedInvalidDate = true;
             logWarn(
-                `Field '${this.name}' is typed 'date', but ${JSON.stringify(raw)} parses to an ` +
-                    `Invalid Date. Records holding such values are rebuilt on every load.`,
+                [
+                    `Field '${this.name}' is typed 'date', but this value parses to an Invalid ` +
+                        `Date. Records holding such values are rebuilt on every load.`,
+                    raw
+                ],
                 'Field'
             );
         }
@@ -201,8 +204,8 @@ export function parseFieldValue(
 
 /**
  * Sanitize via DOMPurify, preserving the reference identity of values it does not modify.
- * DOMPurify allocates a fresh string on every call, even when sanitization is a no-op -
- * returning the original in that case keeps values deduplicated upstream (e.g. via
+ * DOMPurify allocates a fresh string whenever it parses markup, even when sanitization is a
+ * no-op - returning the original in that case keeps values deduplicated upstream (e.g. via
  * `FetchOptions.internStrings`) shared, and avoids retaining a second copy of every parsed
  * string value alongside `StoreRecord.raw`.
  *
