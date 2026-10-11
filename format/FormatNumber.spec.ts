@@ -86,6 +86,13 @@ describe('fmtNumber', () => {
             expect(fmtNumber(123450, {precision: 0, zeroPad: false})).toBe('123,450');
             expect(fmtNumber(100, {precision: null})).toBe('100');
         });
+
+        // A computed zeroPad can be fractional. Its call must not change how other calls format.
+        it('formats a fractional zeroPad without affecting other calls', () => {
+            const v = 1.23456789012;
+            expect(fmtNumber(v, {precision: 4, zeroPad: 1.5 as any})).toBe('1.2346');
+            expect(fmtNumber(v, {precision: 12, zeroPad: 1})).toBe('1.23456789012');
+        });
     });
 
     describe('signs, prefix and ledger', () => {

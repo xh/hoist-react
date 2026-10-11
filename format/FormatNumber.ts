@@ -550,8 +550,9 @@ function fmtDigits(
     let absVal = Math.abs(v);
     const maxFD = parsePrecision(v, precisionSpec),
         // A numeric zeroPad pads to that many places and shows any further places the value has,
-        // up to the precision.
-        minFD = isNumber(zeroPad) ? clamp(zeroPad, 0, maxFD) : zeroPad ? maxFD : 0,
+        // up to the precision. Like Intl, this floors a fractional zeroPad, which keeps the cache
+        // key unique.
+        minFD = isNumber(zeroPad) ? clamp(Math.floor(zeroPad), 0, maxFD) : zeroPad ? maxFD : 0,
         // Group thousands unless omitFourDigitComma applies - a value under 10,000 shown whole.
         useGrouping =
             withCommas &&
