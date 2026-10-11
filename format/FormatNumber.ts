@@ -565,9 +565,10 @@ function fmtDigits(
     // Round a value within float error of a tie here, with lodash `round` on its magnitude. It
     // shifts the decimal point before it rounds half up, which absorbs float error: 1.15 * 3
     // (3.4499999999999997) rounds to 3.5, as the arithmetic intended. A tolerance of
-    // 2 * Number.EPSILON covers every value the shift can move onto a tie. Any other value rounds
-    // the same under every Intl rounding mode. Past 15 significant digits the tolerance would
-    // cover nearly every value, so Intl rounds those as they are.
+    // 2 * Number.EPSILON covers every value the shift can move onto a tie. Within 15 significant
+    // digits, any other value rounds the same whichever way Intl breaks ties. Past that the
+    // tolerance would cover nearly every value, so Intl rounds those as they are, with ties half
+    // away from zero.
     const shifted = absVal * 10 ** maxFD;
     if (
         shifted < 1e15 &&
