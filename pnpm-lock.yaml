@@ -170,8 +170,8 @@ importers:
         specifier: ~2.28.2
         version: 2.28.2
       '@azure/msal-browser':
-        specifier: ~5.24.0
-        version: 5.24.0
+        specifier: ~5.25.0
+        version: 5.25.0
       '@azure/msal-common':
         specifier: ~16.14.2
         version: 16.14.2
@@ -228,7 +228,7 @@ importers:
         version: 18.0.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.0
-        version: 1.32.0(supports-color@10.2.2)(zod@4.6.5)
+        version: 1.32.1(supports-color@10.2.2)(zod@4.6.5)
       '@uiw/codemirror-theme-github':
         specifier: ~4.25.12
         version: 4.25.12(@codemirror/language@6.12.4)(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)
@@ -293,8 +293,8 @@ importers:
         specifier: ~20.1.2
         version: 20.1.2(@types/react@19.3.0)(react@19.3.0)
       react-grid-layout:
-        specifier: ~2.2.4
-        version: 2.2.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ~2.3.0
+        version: 2.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react-markdown:
         specifier: ~10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2)
@@ -460,8 +460,8 @@ packages:
   '@auth0/auth0-spa-js@2.28.2':
     resolution: {integrity: sha512-/oC42x9jxeZu45167+jAP2bqBGLOsbxdkNBp/h0fsUr2BmTSRrF1265r+bkwSx7AdesS5UTG66y8gHY+DU5DFQ==}
 
-  '@azure/msal-browser@5.24.0':
-    resolution: {integrity: sha512-jS1stt81tslcVZi7fqVD+g6vr8w/IWqFl/vAB2dx/6EOroQDuCR4+z0o3C+d6a/GpLATvdoO+kwnDcYzsBXKQA==}
+  '@azure/msal-browser@5.25.0':
+    resolution: {integrity: sha512-7GyXzDUrdLG5zPDCYJbQdJqbl9a2U9SWUSC4lxr7cXjkBq6diTfWcJsi0UjdGWlqy+EevQg9dSC4g3s3BEp19g==}
     engines: {node: '>=0.8.0'}
 
   '@azure/msal-common@16.14.2':
@@ -1209,8 +1209,8 @@ packages:
   '@microsoft/tsdoc@0.17.1':
     resolution: {integrity: sha512-VHyYyyoH63jFoO3shpw9Zfijk5v/9p/VrClW35z0/q6ooK7sSmxpzOkS4iZPxs3vO4XtBW4H38HRAKkAMIK7DA==}
 
-  '@modelcontextprotocol/sdk@1.32.0':
-    resolution: {integrity: sha512-8BviX/hK4Gd2eL1KdTwm0gfl4d3wdoErW0Jd00h6nomUAtk6IJk5vwQJc6kfWtJTzN5OEV/lgIiJKI8fiDGAlA==}
+  '@modelcontextprotocol/sdk@1.32.1':
+    resolution: {integrity: sha512-2DdE+SJDtzLEEWzY1ZjY7Q+VcPhcV1KisD3zI4u0XZyktsjHum1mwbMI+JaulUBi2OZk+KJAi2uPXzxichPkdw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -3558,8 +3558,8 @@ packages:
   react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
 
-  react-grid-layout@2.2.4:
-    resolution: {integrity: sha512-Eb57FsgOMYOfsUGrMI1ku/FFR+dPNPrE8qo+3hwZubpqVSy4GO9v52DeX50Tl3JDYAlCypP4rmw7Vrqk/zOIvA==}
+  react-grid-layout@2.3.0:
+    resolution: {integrity: sha512-4ofzuR/MlYchp+ixDUVBxH6ybaw+JH51M+rpf675ik/++4Dn0Kax/Vf2Gv/7Z++mV1ZC7mY9UV2sRRycjGjKXQ==}
     peerDependencies:
       react: '>= 16.3.0'
       react-dom: '>= 16.3.0'
@@ -4506,7 +4506,7 @@ snapshots:
       dpop: 2.1.2
       es-cookie: 1.3.2
 
-  '@azure/msal-browser@5.24.0':
+  '@azure/msal-browser@5.25.0':
     dependencies:
       '@azure/msal-common': 16.14.2
 
@@ -5419,7 +5419,7 @@ snapshots:
 
   '@microsoft/tsdoc@0.17.1': {}
 
-  '@modelcontextprotocol/sdk@1.32.0(supports-color@10.2.2)(zod@4.6.5)':
+  '@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.5)':
     dependencies:
       '@hono/node-server': 2.1.3(hono@4.13.12)
       ajv: 8.20.0
@@ -7931,7 +7931,7 @@ snapshots:
 
   react-fast-compare@3.2.2: {}
 
-  react-grid-layout@2.2.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+  react-grid-layout@2.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
       clsx: 2.1.1
       fast-equals: 4.0.3
