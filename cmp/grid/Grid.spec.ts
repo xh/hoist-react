@@ -56,31 +56,50 @@ describe('Grid', () => {
         await waitFor(() => expect(agApi.getGridOption('headerHeight')).toBe(0));
     });
 
-    // ag-Grid redraws every rendered row for each pinned row option it is given.
+    // AG Grid redraws every rendered row for each pinned row option it is passed.
     it.each(['top', 'bottom'] as const)(
-        'hands ag-Grid only the %s pinned rows when the summary changes',
+        'passes AG Grid only the %s pinned rows when the summary changes',
         async showSummary => {
             const {gridModel} = await renderGridAsync({showSummary}),
-                {agApi, agGridModel} = gridModel,
+                {agApi, store} = gridModel,
                 updateGridOptions = vi.spyOn(agApi, 'updateGridOptions'),
                 key = showSummary === 'top' ? 'pinnedTopRowData' : 'pinnedBottomRowData',
                 pinnedKeys = () =>
-                    updateGridOptions.mock.calls
-                        .map(([opts]) => Object.keys(opts).filter(k => k.startsWith('pinned')))
-                        .filter(keys => keys.length);
+                    updateGridOptions.mock.calls.flatMap(([opts]) =>
+                        Object.keys(opts).filter(k => k.startsWith('pinned'))
+                    ),
+                rows = [
+                    {id: 1, name: 'Alpha', qty: 1},
+                    {id: 2, name: 'Beta', qty: 2}
+                ];
 
-            gridModel.loadData([{id: 1, name: 'Alpha', qty: 1}], {id: 'sum', qty: 1});
-            await waitFor(() => expect(pinnedKeys()).toEqual([[key]]));
+            gridModel.loadData(rows, {id: 'sum', qty: 3});
+            await waitFor(() => expect(pinnedKeys()).toEqual([key]));
 
-            gridModel.loadData([{id: 1, name: 'Alpha', qty: 1}], {id: 'sum', qty: 1});
-            expect(pinnedKeys()).toEqual([[key]]);
-            expect(
-                showSummary === 'top'
-                    ? agGridModel.getPinnedTopRowData()
-                    : agGridModel.getPinnedBottomRowData()
-            ).toHaveLength(1);
+            // A data change that keeps the summary record passes no pinned rows.
+            store.setFilter({field: 'name', op: '=', value: 'Alpha'});
+            await waitFor(() => expect(agApi.getDisplayedRowCount()).toBe(1));
+            expect(pinnedKeys()).toEqual([key]);
+
+            gridModel.loadData(rows, {id: 'sum', qty: 4});
+            await waitFor(() => expect(pinnedKeys()).toEqual([key, key]));
         }
     );
+
+    it('moves the summary row when showSummary changes side', async () => {
+        const {gridModel} = await renderGridAsync({showSummary: 'top'}),
+            {agGridModel} = gridModel,
+            pinned = () =>
+                [agGridModel.getPinnedTopRowData(), agGridModel.getPinnedBottomRowData()].map(
+                    rows => rows.map(it => (it.isSummary ? 'summary' : it.id))
+                );
+
+        gridModel.loadData([{id: 1, name: 'Alpha', qty: 1}], {id: 'sum', qty: 1});
+        await waitFor(() => expect(pinned()).toEqual([['summary'], []]));
+
+        gridModel.showSummary = 'bottom';
+        await waitFor(() => expect(pinned()).toEqual([[], ['summary']]));
+    });
 
     it('renders columns without a renderer as plain text, and others through the wrapper', async () => {
         const {container} = await renderGridAsync({

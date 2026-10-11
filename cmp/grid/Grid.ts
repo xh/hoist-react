@@ -608,22 +608,24 @@ export class GridLocalModel extends HoistModel {
             filterSummaryFn = record => !record.isSummary,
             prevTop = agGridModel.getPinnedTopRowData(),
             prevBottom = agGridModel.getPinnedBottomRowData(),
-            pinnedTopRowData = prevTop.filter(filterSummaryFn),
-            pinnedBottomRowData = prevBottom.filter(filterSummaryFn);
+            top = prevTop.filter(filterSummaryFn),
+            bottom = prevBottom.filter(filterSummaryFn);
 
         if (showSummary && !isEmpty(store.summaryRecords)) {
             if (showSummary === 'bottom') {
-                pinnedBottomRowData.push(...store.summaryRecords);
+                bottom.push(...store.summaryRecords);
             } else {
-                pinnedTopRowData.unshift(...store.summaryRecords);
+                top.unshift(...store.summaryRecords);
             }
         }
 
-        // Pass only the side that changed - ag-Grid redraws all rows for each pinned option set.
-        const opts: GridOptions = {};
-        if (!isEqual(pinnedTopRowData, prevTop)) opts.pinnedTopRowData = pinnedTopRowData;
-        if (!isEqual(pinnedBottomRowData, prevBottom))
-            opts.pinnedBottomRowData = pinnedBottomRowData;
+        // Pass only the side that changed, as AG Grid redraws all rows for each pinned row option
+        // it is passed. Compare by identity - AG Grid holds the row objects it was given.
+        const isChanged = (rows: PlainObject[], prev: PlainObject[]) =>
+                rows.length !== prev.length || rows.some((it, idx) => it !== prev[idx]),
+            opts: GridOptions = {};
+        if (isChanged(top, prevTop)) opts.pinnedTopRowData = top;
+        if (isChanged(bottom, prevBottom)) opts.pinnedBottomRowData = bottom;
         if (!isEmpty(opts)) agApi.updateGridOptions(opts);
     }
 
