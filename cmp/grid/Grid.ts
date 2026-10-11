@@ -49,7 +49,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer, runInAction, untracked} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed, logWarn} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
@@ -174,6 +174,9 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 //------------------------
 // Implementation
 //------------------------
+// GridModels already warned about an `agOptions.groupDefaultExpanded` - see `onLinked()`.
+const _warnedGroupDefaultExpanded = new WeakSet<GridModel>();
+
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
@@ -239,6 +242,21 @@ export class GridLocalModel extends HoistModel {
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+
+        // GridModel does not see a level set this way, so its expand menus and persisted
+        // `expandLevel` would not match what the grid shows.
+        const {model} = this;
+        if (
+            this.componentProps.agOptions?.groupDefaultExpanded != null &&
+            !_warnedGroupDefaultExpanded.has(model)
+        ) {
+            _warnedGroupDefaultExpanded.add(model);
+            logWarn(
+                `Grid agOptions set 'groupDefaultExpanded', which GridModel does not track. ` +
+                    `Set GridConfig.expandLevel instead.`,
+                model
+            );
+        }
         this.rowHeightSupport = new RowHeightSupport(this);
         this.transactionMgr = new GridTransactionManager(this.model);
     }

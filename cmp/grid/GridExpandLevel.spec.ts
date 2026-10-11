@@ -82,10 +82,34 @@ describe('Grid expand level', () => {
         expect(optionsAtRegroup[0]).toBeTypeOf('function');
     });
 
+    // GridModel does not track a level set through agOptions, so its expand menus can disagree.
+    it('warns once when an app sets agOptions.groupDefaultExpanded, and not otherwise', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        onTestFinished(() => warn.mockRestore());
+        const optionWarnings = () =>
+            warn.mock.calls.filter(args => args.join(' ').includes('groupDefaultExpanded'));
+
+        await renderGridAsync();
+        expect(optionWarnings()).toHaveLength(0);
+
+        const gridModel = new GridModel({columns: [{field: 'name'}]});
+        onTestFinished(() => gridModel.destroy());
+        const agOptions = {groupDefaultExpanded: 1},
+            {unmount} = render(grid({model: gridModel, agOptions}));
+        await waitFor(() => expect(gridModel.isReady).toBe(true));
+        unmount();
+        render(grid({model: gridModel, agOptions}));
+        await waitFor(() => expect(gridModel.isReady).toBe(true));
+        expect(optionWarnings()).toHaveLength(1);
+        expect(optionWarnings()[0].join(' ')).toContain('GridConfig.expandLevel');
+    });
+
     it.each([
         ['groupDefaultExpanded', {groupDefaultExpanded: 2}],
         ['isGroupOpenByDefault', {isGroupOpenByDefault: () => true}]
     ])("leaves rows to an app's own agOptions.%s", async (_, agOptions: Record<string, any>) => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        onTestFinished(() => warn.mockRestore());
         const gridModel = new GridModel({columns: [{field: 'name'}]});
         onTestFinished(() => gridModel.destroy());
         render(grid({model: gridModel, agOptions}));
