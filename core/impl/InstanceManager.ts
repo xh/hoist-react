@@ -27,7 +27,13 @@ class InstanceManager {
     @observableShallow accessor views: Set<View> = new Set();
 
     private modelsByTestId: Map<string, HoistModel> = new Map();
-    private testSupportedModels = new Set(['GridModel', 'DataViewModel', 'FormModel', 'TabModel']);
+    private testSupportedModels = new Set([
+        'GridModel',
+        'DataViewModel',
+        'FormModel',
+        'TabModel',
+        'ViewManagerModel'
+    ]);
 
     registerModel(m: HoistModel) {
         wait().thenAction(() => this.models.add(m));

@@ -48,6 +48,13 @@ if (!window.screen.orientation) {
     });
 }
 
+// jsdom has no ResizeObserver, which Hoist components use to track their size and visibility.
+window.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+};
+
 // Onsen UI, loaded by the mobile platform, throws "Invalid state" at import unless the root
 // element's computed style lists a transition property. jsdom lists only the properties set on it.
 document.documentElement.style.transitionDuration = '0s';

@@ -256,9 +256,23 @@ Desktop `ViewManager` renders its `testId` on its outer element. It also generat
 - The Manage dialog: `${testId}-manage-dialog`, with `${testId}-manage-dialog-close-btn` and
   `${testId}-manage-dialog-activate-btn`.
 
-The menu and dialogs render in portals, outside the outer element. A view inside a group or
-shared-owner submenu renders only while that submenu is open. Views rendered by a custom
+The menu and dialogs render in portals, outside the outer element.
+
+View tokens are random 8-character ids that the server assigns. They differ across environments
+and databases, and a test cannot know the token of a view it just saved. To pick a view by name,
+query the menu by role. For a `ViewManager` with `testId: 'vm'`:
+
+```typescript
+await page.getByTestId('vm-menu').getByRole('menuitem', {name: 'My Positions'}).click();
+```
+
+Group and shared-owner submenus get no testId, because their names are user-entered text. A test
+opens such a submenu by hovering its text, then picks the view inside. Views rendered by a custom
 `viewMenuItemFn` get no testId.
+
+`ViewManager` registers its `ViewManagerModel` for `XH.getModelByTestId()`. Test code can read view
+tokens from `ViewManagerModel.views` and switch views with `selectViewAsync()`. The Save As form
+registers its `FormModel` under the dialog's testId, `${testId}-save-as-dialog`.
 
 ## XH.getModelByTestId()
 
@@ -278,6 +292,7 @@ of supported model types when their component receives a `testId`:
 | `DataViewModel` |
 | `FormModel` |
 | `TabModel` |
+| `ViewManagerModel` |
 
 Registration happens when the component mounts and is cleaned up on unmount.
 
@@ -492,9 +507,9 @@ ambiguous selectors and unreliable test results.
 ### getModelByTestId Only Works for Certain Model Types
 
 `XH.getModelByTestId()` only finds models of types registered with `InstanceManager`:
-`GridModel`, `DataViewModel`, `FormModel`, and `TabModel`. Calling it with a `testId` assigned
-to a `Button` or `Panel` will return `null`, because those components do not register their
-models (or have no models at all).
+`GridModel`, `DataViewModel`, `FormModel`, `TabModel`, and `ViewManagerModel`. Calling it with a
+`testId` assigned to a `Button` or `Panel` will return `null`, because those components do not
+register their models (or have no models at all).
 
 ## Key Source Files
 

@@ -4,12 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {FormModel} from '@xh/hoist/cmp/form';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {XH} from '@xh/hoist/core';
 import {viewManager} from '@xh/hoist/desktop/cmp/viewmanager';
 import type {JsonBlob} from '@xh/hoist/svc';
 import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen} from '@testing-library/react';
-import {beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
  * The testIds that desktop ViewManager renders on itself and on the parts a test drives - its
@@ -20,7 +22,10 @@ describe('ViewManager', () => {
     beforeAll(async () => {
         hoistCore.route('POST', 'xhView/allData', () => ({
             state: {userPinned: {}, autoSave: false},
-            views: [blob('mine', 'My Positions', hoistCore.username), blob('firm', 'Firm', null)],
+            views: [
+                blob(1, 'mine', 'My Positions', hoistCore.username),
+                blob(2, 'firm', 'Firm', null)
+            ],
             manageGlobal: false
         }));
         hoistCore.route('POST', 'xhView/updateState', req => ({
@@ -29,18 +34,6 @@ describe('ViewManager', () => {
             ...req.json
         }));
         await initTestAppAsync();
-    });
-
-    // jsdom has no ResizeObserver, which ViewManager uses to track its own visibility. Vitest
-    // removes stubbed globals before each test.
-    beforeEach(() => {
-        vi.stubGlobal(
-            'ResizeObserver',
-            class {
-                observe() {}
-                disconnect() {}
-            }
-        );
     });
 
     it('renders its testId on its outer element and derives one for each button', async () => {
@@ -92,6 +85,30 @@ describe('ViewManager', () => {
                 'vm-save-as-dialog-cancel-btn'
             ])
         );
+        expect(XH.getModelByTestId('vm-save-as-dialog')).toBeInstanceOf(FormModel);
+    });
+
+    it('registers its model for XH.getModelByTestId while mounted', async () => {
+        const model = await createAsync(),
+            {unmount} = render(viewManager({model, testId: 'vm'}));
+        expect(XH.getModelByTestId('vm')).toBe(model);
+
+        unmount();
+        expect(XH.getModelByTestId('vm')).toBeFalsy();
+    });
+
+    it('renders no testIds when given none', async () => {
+        const model = await createAsync();
+        render(viewManager({model}));
+
+        // Check the menu and the Save As dialog, which derive testIds of their own when given one.
+        act(() => fireEvent.click(document.querySelector('.xh-view-manager__menu-button')));
+        const saveAs = await screen.findByText('Save As...');
+        expect(testIdsWithin(document.body)).toEqual([]);
+
+        act(() => fireEvent.click(saveAs));
+        expect(document.querySelector('.xh-view-manager__save-dialog')).not.toBeNull();
+        expect(testIdsWithin(document.body)).toEqual([]);
     });
 
     it('tags the Manage dialog and its Close button', async () => {
@@ -129,9 +146,9 @@ function testIdsWithin(el: HTMLElement): string[] {
 }
 
 /** A view as hoist-core's `xhView/allData` lists it - without its value. */
-function blob(token: string, name: string, owner: string): Omit<JsonBlob, 'value'> {
+function blob(id: number, token: string, name: string, owner: string): Omit<JsonBlob, 'value'> {
     return {
-        id: token.length,
+        id,
         token,
         type: TYPE,
         owner,

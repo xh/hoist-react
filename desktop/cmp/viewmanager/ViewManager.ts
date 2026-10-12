@@ -21,6 +21,7 @@ import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {getTestId} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import {startCase} from 'lodash';
 import {ReactElement} from 'react';
 import {viewMenu} from './ViewMenu';
@@ -161,10 +162,11 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
 });
 
 const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model, icon, ...rest}) {
+    // Merge className - the popover clones this target with a className of its own.
+    render({model, icon, className, ...rest}) {
         const {view, defaultDisplayName, typeDisplayName, isLoading} = model.parent;
         return button({
-            className: 'xh-view-manager__menu-button',
+            className: classNames('xh-view-manager__menu-button', className),
             text: view.isDefault
                 ? `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`
                 : view.name,

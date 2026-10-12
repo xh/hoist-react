@@ -56,6 +56,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
   hoist-dev-utils 16.1. Experimental in v89 - it may change.
+* Added `testId` support to desktop `ViewManager`, with derived ids for its buttons, menu, views,
+  and dialogs. See `docs/test-automation.md`.
 
 ### 🐞 Bug Fixes
 
@@ -69,8 +71,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   reporting true while a changed record's first async validation was still running.
 * Fixed `ViewManagerModel` overwriting the user's saved current view when views failed to load.
 * Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
-* Fixed desktop `ViewManager` dropping its `testId`. It now renders the id and derives others for
-  its buttons, menu, views, and dialogs, as listed in `docs/test-automation.md`.
+* Fixed the desktop `ViewManager` menu button dropping its `xh-view-manager__menu-button` class.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
