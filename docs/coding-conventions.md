@@ -62,6 +62,28 @@ const items = castArray(itemOrItems);            // normalize to array
 const valid = compact(results);                  // remove falsy values
 ```
 
+Before writing a loop or closure that compares, searches, groups, partitions, dedupes, sorts,
+merges or reshapes collections, check lodash and `@xh/hoist/utils` for an existing helper.
+Framework code can also use the `@internal` helpers in `@xh/hoist/utils/impl` - see
+[Internal Utilities](../utils/README.md#internal-utilities).
+
+```typescript
+// ❌ Hand-rolled - each of these already exists
+const changed = a.length !== b.length || a.some((it, idx) => it !== b[idx]);
+const byId = {};
+records.forEach(r => (byId[r.id] = r));
+const done = items.filter(it => it.done),
+    todo = items.filter(it => !it.done);
+
+// ✅ Existing helpers
+import {keyBy, partition} from 'lodash';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl'; // framework code only
+
+const changed = !shallowEqualArrays(a, b);
+const byId = keyBy(records, 'id');
+const [done, todo] = partition(items, 'done');
+```
+
 ### Keep Code Concise
 
 Favor direct, compact expression over verbose or ceremonial patterns. Hoist's own utilities
