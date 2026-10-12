@@ -163,6 +163,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
   by a change append rather than taking their source position. This may affect the sort ordering
   of unsorted grids when data changes.
+* `Field` now skips DOMPurify for strings with no `<` when `enableXssProtection` is set. Such
+  strings hold no markup, so large loads skip one DOMPurify call per string value.
+* `Field` now parses every unparseable `date` value to one shared Invalid Date, preventing an
+  unparseable Date from causing extra record allocation on every data load.
 
 ### ⚙️ Typescript API Adjustments
 
