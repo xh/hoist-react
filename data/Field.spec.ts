@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Field, type FieldType, genDisplayName, parseFieldValue, Store} from '@xh/hoist/data';
-import {XH} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import DOMPurify from 'dompurify';
@@ -64,6 +63,25 @@ describe('parseFieldValue', () => {
         it('converts a LocalDate to local midnight on the same day', () => {
             const ret = parseFieldValue(LocalDate.get('2026-03-15'), 'date');
             expect(ret).toEqual(new Date(2026, 2, 15));
+        });
+
+        it('parses every unparseable value to one shared Invalid Date', () => {
+            const ret = parseFieldValue('Open', 'date');
+            expect(ret.getTime()).toBeNaN();
+            ['12:30', '', new Date(NaN)].forEach(val =>
+                expect(parseFieldValue(val, 'date')).toBe(ret)
+            );
+        });
+
+        // Store compares values on reload, and separate Invalid Dates never compare equal.
+        it('lets a Store reuse records holding an unparseable date', () => {
+            const data = [{id: 1, openTime: 'Open'}],
+                store = new Store({fields: [{name: 'openTime', type: 'date'}], data});
+            onTestFinished(() => store.destroy());
+
+            const rec = store.getById(1);
+            store.loadData(data);
+            expect(store.getById(1)).toBe(rec);
         });
     });
 
@@ -138,34 +156,6 @@ describe('Field', () => {
                 expect(sanitize).not.toHaveBeenCalled();
             }
         );
-    });
-
-    describe('date values that do not parse', () => {
-        it('warns once per field in development mode', () => {
-            const devMode = XH.isDevelopmentMode,
-                warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-            (XH as any).isDevelopmentMode = true;
-            onTestFinished(() => {
-                (XH as any).isDevelopmentMode = devMode;
-                warn.mockRestore();
-            });
-
-            const field = new Field({name: 'openTime', type: 'date'});
-            ['12:30', 'Open', ''].forEach(val => expect(field.parseVal(val).getTime()).toBeNaN());
-            expect(field.parseVal('2026-03-15').getTime()).not.toBeNaN();
-
-            expect(warn).toHaveBeenCalledTimes(1);
-            expect(warn.mock.calls[0].join(' ')).toContain("Field 'openTime' is typed 'date'");
-            expect(warn.mock.calls[0]).toContain('12:30');
-        });
-
-        it('does not warn outside development mode', () => {
-            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-            onTestFinished(() => warn.mockRestore());
-
-            new Field({name: 'openTime', type: 'date'}).parseVal('Open');
-            expect(warn).not.toHaveBeenCalled();
-        });
     });
 });
 

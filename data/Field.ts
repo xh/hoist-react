@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {logWarn, withDefault} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import {Rule} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
@@ -124,30 +124,8 @@ export class Field {
         });
     }
 
-    private warnedInvalidDate = false;
-
     private parseValueInternal(raw: any): any {
-        const ret = parseFieldValue(raw, this.type, null, this.enableXssProtection);
-        // An Invalid Date never equals another, so a Store rebuilds every record holding one on
-        // each load. Warn once per field in development, where a mistyped field is fixable.
-        if (
-            this.type === 'date' &&
-            ret &&
-            isNaN(ret.getTime()) &&
-            !this.warnedInvalidDate &&
-            XH.isDevelopmentMode
-        ) {
-            this.warnedInvalidDate = true;
-            logWarn(
-                [
-                    `Field '${this.name}' is typed 'date', but this value parses to an Invalid ` +
-                        `Date. Records holding such values are rebuilt on every load.`,
-                    raw
-                ],
-                'Field'
-            );
-        }
-        return ret;
+        return parseFieldValue(raw, this.type, null, this.enableXssProtection);
     }
 }
 
@@ -192,7 +170,8 @@ export function parseFieldValue(
             val = !enableXssProtection || !isString(val) ? val : sanitizeVal(val);
             return val.toString();
         case 'date':
-            return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
+            val = isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
+            return isNaN(val.getTime()) ? INVALID_DATE : val;
         case 'localDate':
             if (isLocalDate(val)) return val;
             // `get` parses strict 'YYYYMMDD'/'YYYY-MM-DD' strings; `from` coerces Date/number/moment.
@@ -248,3 +227,9 @@ export function genDisplayName(fieldName: string): string {
 export function getFieldName(field: string | Field | FieldSpec): string {
     return field ? (isString(field) ? field : field.name) : null;
 }
+
+/**
+ * Shared result for every unparseable `date` value. Invalid Dates never compare equal, but this
+ * instance does by identity, so Stores can reuse records holding it. Never mutate it.
+ */
+const INVALID_DATE = new Date(NaN);
