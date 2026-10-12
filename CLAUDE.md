@@ -326,6 +326,12 @@ important guidelines to internalize:
   an existing helper. Lodash is null-safe, battle-tested, and aids readability. Use native JS only
   when equally expressive (e.g., `array.map()`, `array.filter()`). See
   [Prefer Lodash for Utility Operations](docs/coding-conventions.md#prefer-lodash-for-utility-operations).
+- **Match the existing pattern** - Before special-casing one member of a family (one option, prop,
+  config key or override), check how its siblings are handled and do the same. If the pattern
+  itself seems wrong, raise it rather than changing one case. A drive-by fix to a single member
+  leaves the codebase inconsistent. When consolidating code, keep every condition the old code
+  checked. See
+  [Match the Existing Pattern](docs/coding-conventions.md#match-the-existing-pattern).
 - **Keep code concise** — Favor direct, compact expression over verbose or ceremonial patterns.
   Use Hoist's own utilities (`withDefault`, `throwIf`, element factories) to reduce boilerplate.
 - **Named exports only** — No default exports. Components export `[Component, factory]` pairs

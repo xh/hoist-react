@@ -84,6 +84,31 @@ const byId = keyBy(records, 'id');
 const [done, todo] = partition(items, 'done');
 ```
 
+### Match the Existing Pattern
+
+Code that handles one member of a family - one grid option, one prop, one config key - should
+treat it the way its siblings are treated. Before adding a special case, find how the
+neighbouring cases work and follow them. A one-off rule surprises readers and callers, who learn
+the general rule and then find it does not hold.
+
+If the pattern itself seems wrong, raise it as a separate change that covers the whole family. Do
+not improve a single member in passing.
+
+For example, `Grid` merges an app's `agOptions` over Hoist's defaults, so the app's value wins for
+any option, with no warning:
+
+```typescript
+// ❌ One option treated differently from every other agOptions override
+warnIf(agOptions.groupDefaultExpanded != null, 'groupDefaultExpanded is ignored.');
+this.agOptions = merge(defaults, omit(agOptions, 'groupDefaultExpanded'));
+
+// ✅ Same rule as every other option - the app's value wins
+this.agOptions = merge(defaults, agOptions);
+```
+
+When inlining or consolidating code, carry over every condition the old code checked. A merged
+helper that drops one check can quietly change behaviour for the cases that check covered.
+
 ### Keep Code Concise
 
 Favor direct, compact expression over verbose or ceremonial patterns. Hoist's own utilities
