@@ -122,6 +122,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed an explicit `rowHeight` on `AgGrid`, or in `Grid.agOptions`, being ignored when sizing rows.
 * Fixed tree grid parent rows ignoring `Column.rowHeight`, and so sitting shorter than their
   children.
+* Fixed `GridModel.expandToLevel()` ignoring intermediate levels in grids grouped by two or more
+  columns. `expandToLevel(-1)` also collapsed every row - it now expands all levels, as
+  `expandLevel: -1` does.
 * Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
 * Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
   Titled icons also get the title as their `aria-label`, so screen readers announce them again.
@@ -149,6 +152,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   grid's rows once, where it redrew them twice.
 * Improved autosize performance on large grids. Column values are now ranked by cached
   per-character widths, and only the 500 widest are measured exactly.
+* Made `GridModel.expandToLevel()`, `expandAll()` and `collapseAll()` faster on large tree and
+  grouped grids.
 * Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
   `Grid` against ag-Grid's community modules.
 * Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and

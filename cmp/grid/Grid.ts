@@ -47,10 +47,10 @@ import type {
     GridReadyEvent,
     ProcessCellForExportParams
 } from '@xh/hoist/kit/ag-grid';
-import {computed, observer, runInAction} from '@xh/hoist/mobx';
+import {computed, observer, runInAction, untracked} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
-import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed, warnIf} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
@@ -232,6 +232,7 @@ export class GridLocalModel extends HoistModel {
             this.columnGroupStateReaction(),
             this.dataReaction(),
             this.groupReaction(),
+            this.expandLevelReaction(),
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
             this.modalReaction(),
@@ -239,6 +240,10 @@ export class GridLocalModel extends HoistModel {
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+        warnIf(
+            this.componentProps.agOptions?.groupDefaultExpanded != null,
+            'agOptions.groupDefaultExpanded is not supported. Use GridModel.expandLevel instead.'
+        );
         this.rowHeightSupport = new RowHeightSupport(this);
         this.transactionMgr = new GridTransactionManager(this.model);
     }
@@ -298,7 +303,7 @@ export class GridLocalModel extends HoistModel {
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
-            groupDefaultExpanded: model.expandLevel,
+            isGroupOpenByDefault: this.isGroupOpenByDefault,
             groupDisplayType: 'groupRows',
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -430,6 +435,9 @@ export class GridLocalModel extends HoistModel {
             track: () => [model.agApi, model.groupBy],
             run: ([agApi, groupBy]) => {
                 if (!agApi) return;
+
+                // Sync first - new group rows read it once, and a view switch may change level too.
+                this.syncGroupOpenByDefault();
                 agApi.setRowGroupColumns(groupBy);
 
                 // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
@@ -599,6 +607,16 @@ export class GridLocalModel extends HoistModel {
                 if (elem) this.model.agApi.redrawRows();
             },
             debounce: 0
+        };
+    }
+
+    expandLevelReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.expandLevel],
+            run: ([agApi]) => {
+                if (agApi) this.syncGroupOpenByDefault();
+            }
         };
     }
 
@@ -791,6 +809,22 @@ export class GridLocalModel extends HoistModel {
     onColumnGroupOpened = ev => {
         this.model.noteAgColumnGroupStateChanged(ev.api.getColumnGroupState());
     };
+
+    // Unset at level 0, where ag-Grid's default `groupDefaultExpanded` of 0 opens nothing. With the
+    // option set, ag-Grid's state module, when registered, walks every row after each data update.
+    get isGroupOpenByDefault() {
+        return this.model.expandLevel !== 0 ? this._isGroupOpenByDefault : undefined;
+    }
+
+    // Untracked - ag-Grid can resolve a row's expanded state inside a MobX derivation.
+    private _isGroupOpenByDefault = ({level}) => untracked(() => this.model.isLevelExpanded(level));
+
+    private syncGroupOpenByDefault() {
+        // Let app escape hatch win.
+        if (!this.componentProps.agOptions?.isGroupOpenByDefault) {
+            this.model.agApi.setGridOption('isGroupOpenByDefault', this.isGroupOpenByDefault);
+        }
+    }
 
     groupSortComparator = ({nodeA, nodeB}) => {
         const gridModel = this.model;
