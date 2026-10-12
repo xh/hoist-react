@@ -49,6 +49,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer, runInAction, untracked} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {consumeEvent, isDisplayed} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -635,32 +636,24 @@ export class GridLocalModel extends HoistModel {
 
     updatePinnedSummaryRowData() {
         const {model} = this,
-            {store, showSummary, agGridModel} = model,
+            {showSummary, agGridModel} = model,
+            {summaryRecords} = model.store,
             {agApi} = agGridModel,
             filterSummaryFn = record => !record.isSummary,
-            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
-            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
+            prevTop = agGridModel.getPinnedTopRowData(),
+            prevBot = agGridModel.getPinnedBottomRowData(),
+            top = prevTop.filter(filterSummaryFn),
+            bot = prevBot.filter(filterSummaryFn);
 
-        if (showSummary && !isEmpty(store.summaryRecords)) {
-            if (showSummary === 'bottom') {
-                pinnedBottomRowData.push(...store.summaryRecords);
-            } else {
-                pinnedTopRowData.unshift(...store.summaryRecords);
-            }
+        if (showSummary && !isEmpty(summaryRecords)) {
+            showSummary === 'bottom' ? bot.push(...summaryRecords) : top.unshift(...summaryRecords);
         }
 
-        // Early out if the data hasn't actually changed
-        if (
-            isEqual(pinnedTopRowData, agGridModel.getPinnedTopRowData()) &&
-            isEqual(pinnedBottomRowData, agGridModel.getPinnedBottomRowData())
-        ) {
-            return;
-        }
-
-        agApi.updateGridOptions({
-            pinnedTopRowData,
-            pinnedBottomRowData
-        });
+        // Pass only the side that changed - AG Grid redraws all rows for each pinned option passed.
+        const opts: GridOptions = {};
+        if (!shallowEqualArrays(top, prevTop)) opts.pinnedTopRowData = top;
+        if (!shallowEqualArrays(bot, prevBot)) opts.pinnedBottomRowData = bot;
+        if (!isEmpty(opts)) agApi.updateGridOptions(opts);
     }
 
     syncData() {

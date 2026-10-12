@@ -51,7 +51,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Icon` factories. Apps that call FontAwesome's `library.add()` directly should switch to these.
   Added `Icon.get()` to render an icon by name and `Icon.getCatalog()` to list them all.
 * Added `IconPicker`, a desktop input that picks from a searchable grid of all catalog icons. The
-  Admin Console alert banner editor now uses it.
+  Admin Console alert banner editor now uses it. Its grid renders only the rows in view, so it
+  stays responsive with thousands of icons.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
   hoist-dev-utils 16.1. Experimental in v89 - it may change.
@@ -147,6 +148,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
+* `Grid` now passes AG Grid only the pinned rows that changed. A summary row update redraws the
+  grid's rows once, where it redrew them twice.
 * Improved autosize performance on large grids. Column values are now ranked by cached
   per-character widths, and only the 500 widest are measured exactly.
 * Made `GridModel.expandToLevel()`, `expandAll()` and `collapseAll()` faster on large tree and
@@ -188,6 +191,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 ### ✨ Styles
 
 * Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
+* Restyled the desktop login form to match mobile - a centered card with the `loginPanelIcon`,
+  labeled fields, and a full-width login button.
 
 ### 📚 Libraries
 

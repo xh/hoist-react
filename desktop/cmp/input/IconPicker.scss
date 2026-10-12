@@ -67,9 +67,8 @@
 }
 
 // Popover content renders in a portal, outside the root DOM of the control above.
+// Cell size is set inline on the grid list from IconPicker.ts, which needs exact row heights.
 .xh-icon-picker__popover.bp6-popover {
-  --xh-icon-picker-cell-size: 30px;
-
   .bp6-popover-content {
     padding: 0;
     border-radius: var(--xh-border-radius-px);
@@ -78,8 +77,6 @@
   }
 
   &.xh-icon-picker__popover--compact {
-    --xh-icon-picker-cell-size: 24px;
-
     font-size: var(--xh-tbar-compact-font-size-px);
 
     .xh-icon-picker__filter,
@@ -98,11 +95,19 @@
   }
 
   .xh-icon-picker__grid {
-    display: grid;
-    gap: 2px;
     padding: var(--xh-pad-half-px);
-    overflow-y: auto;
+  }
+
+  // The list's width includes room for a scrollbar - keep that room whether or not one shows.
+  .xh-icon-picker__grid-list {
     overflow-x: hidden;
+    scrollbar-gutter: stable;
+  }
+
+  // One windowed row of cells. Its columns and gap are set inline from IconPicker.ts.
+  .xh-icon-picker__row {
+    display: grid;
+    align-content: start;
   }
 
   .xh-icon-picker__cell {
