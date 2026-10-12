@@ -16,7 +16,10 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, union, uniqBy} from 'lodash';
-import {KeyboardEvent} from 'react';
+import type {CSSProperties, KeyboardEvent} from 'react';
+import {useEffect} from 'react';
+import type {ListImperativeAPI, RowComponentProps} from 'react-window';
+import {getScrollbarSize, List} from 'react-window';
 import {textInput} from './TextInput';
 import './IconPicker.scss';
 
@@ -111,6 +114,12 @@ export const [IconPicker, iconPicker] = hoistCmp.withFactory<IconPickerProps>({
 // Implementation
 //-----------------------
 const buttonEl = elementFactory('button');
+const reactWindowList = elementFactory(List);
+
+// Cell sizes in px, set here rather than in CSS as the windowed grid needs exact row heights.
+const CELL_SIZE = 30,
+    COMPACT_CELL_SIZE = 24,
+    CELL_GAP = 2;
 
 /** One cell in the picker grid. */
 interface IconOption {
@@ -120,6 +129,8 @@ interface IconOption {
     entry: IconCatalogEntry;
     displayName: string;
     factory: IconFactory;
+    /** Lowercase text the filter matches against - names, aliases and keywords. */
+    searchText: string;
 }
 
 class IconPickerModel extends HoistInputModel {
@@ -137,8 +148,11 @@ class IconPickerModel extends HoistInputModel {
     /** Index within `filteredOptions` of the keyboard-highlighted icon. */
     @observable accessor activeIdx: number = 0;
 
-    gridRef = createObservableRef<HTMLElement>();
+    listRef = createObservableRef<ListImperativeAPI>();
     menuRef = createObservableRef<HTMLElement>();
+
+    /** True from opening the popover until its grid has centered the highlighted icon. */
+    private centerOnOpen = false;
 
     get valueField(): 'faName' | 'name' {
         return withDefault(this.componentProps.valueField, 'faName');
@@ -163,10 +177,7 @@ class IconPickerModel extends HoistInputModel {
             terms = (this.filterValue ?? '').toLowerCase().split(/\s+/).filter(Boolean);
 
         if (isEmpty(terms)) return options;
-        return options.filter(it => {
-            const searchText = searchTextFor(it);
-            return terms.every(term => searchText.includes(term));
-        });
+        return options.filter(it => terms.every(term => it.searchText.includes(term)));
     }
 
     /**
@@ -200,6 +211,28 @@ class IconPickerModel extends HoistInputModel {
         return withDefault(this.componentProps.columns, 8);
     }
 
+    get maxMenuHeight(): number {
+        return this.componentProps.maxMenuHeight ?? 260;
+    }
+
+    get cellSize(): number {
+        return this.componentProps.compact ? COMPACT_CELL_SIZE : CELL_SIZE;
+    }
+
+    /** Height of one grid row, including the gap below it. */
+    get rowHeight(): number {
+        return this.cellSize + CELL_GAP;
+    }
+
+    get rowCount(): number {
+        return Math.ceil(this.filteredOptions.length / this.columns);
+    }
+
+    /** Height of the scrolling grid - its rows, up to `maxMenuHeight`. */
+    get gridHeight(): number {
+        return Math.min(this.rowCount * this.rowHeight, this.maxMenuHeight);
+    }
+
     override onLinked() {
         this.addReaction(
             {
@@ -208,14 +241,25 @@ class IconPickerModel extends HoistInputModel {
                 run: () => this.setActiveIdx(0)
             },
             {
-                // Keep the highlighted icon in view as it moves through the grid.
-                track: () => [this.activeIdx, this.popoverIsOpen],
-                run: () =>
-                    this.gridRef.current?.children[this.activeIdx]?.scrollIntoView({
-                        block: 'nearest'
-                    })
+                // Center the highlighted icon once the opened grid is in the DOM. The list sets its
+                // handle before its element, and can scroll only once it has both.
+                track: () => this.listRef.current,
+                run: list => {
+                    if (!this.centerOnOpen || !list?.element) return;
+                    this.centerOnOpen = false;
+                    this.scrollToActive('center');
+                }
             }
         );
+    }
+
+    /**
+     * Scroll the grid to the highlighted icon's row. `auto` scrolls the least distance needed, and
+     * does nothing if the row is already in view.
+     */
+    scrollToActive(align: 'auto' | 'center') {
+        const row = Math.floor(this.activeIdx / this.columns);
+        if (row < this.rowCount) this.listRef.current?.scrollToRow({index: row, align});
     }
 
     /** Focus is held by the trigger button - the popover's filter input takes over when open. */
@@ -232,6 +276,7 @@ class IconPickerModel extends HoistInputModel {
         this.catalog = Icon.getCatalog();
         this.popoverIsOpen = true;
         this.filterValue = '';
+        this.centerOnOpen = true;
         const selectedValue = this.selectedOption?.value;
         this.activeIdx = Math.max(
             this.filteredOptions.findIndex(it => it.value === selectedValue),
@@ -271,17 +316,17 @@ class IconPickerModel extends HoistInputModel {
 
         if (this.valueField === 'faName') {
             const {faName, displayName, factory} = entry;
-            return {value: faName, entry, displayName, factory};
+            return withSearchText({value: faName, entry, displayName, factory});
         }
 
         // Keep an `Icon` name as given, so names that share a glyph stay distinct options.
         const value = name === entry.faName ? entry.name : name;
-        return {
+        return withSearchText({
             value,
             entry,
             displayName: Icon.getDisplayName(value),
             factory: Icon.getFactory(value)
-        };
+        });
     }
 
     clear() {
@@ -290,14 +335,15 @@ class IconPickerModel extends HoistInputModel {
     }
 
     /**
-     * Arrow keys move the highlight through the grid, enter selects it, and escape closes the
-     * popover - all handled from the filter input, so users can type and navigate without
-     * moving focus.
+     * Arrow keys move the highlight through the grid, page up and page down move it a grid height
+     * at a time, enter selects it, and escape closes the popover - all handled from the filter
+     * input, so users can type and navigate without moving focus.
      */
     @action
     onKeyDown = (e: KeyboardEvent) => {
         const {filteredOptions, columns, activeIdx} = this,
-            {length} = filteredOptions;
+            {length} = filteredOptions,
+            pageSize = Math.max(Math.floor(this.gridHeight / this.rowHeight), 1) * columns;
 
         switch (e.key) {
             case 'Escape':
@@ -319,6 +365,12 @@ class IconPickerModel extends HoistInputModel {
             case 'ArrowDown':
                 this.activeIdx = clamp(activeIdx + columns, length);
                 break;
+            case 'PageUp':
+                this.activeIdx = clamp(activeIdx - pageSize, length);
+                break;
+            case 'PageDown':
+                this.activeIdx = clamp(activeIdx + pageSize, length);
+                break;
             default:
                 return;
         }
@@ -331,8 +383,12 @@ function clamp(idx: number, length: number): number {
     return Math.min(Math.max(idx, 0), length - 1);
 }
 
-function searchTextFor({value, displayName, entry}: IconOption): string {
-    return union([displayName, value], entry.names, entry.keywords).join(' ').toLowerCase();
+function withSearchText(option: Omit<IconOption, 'searchText'>): IconOption {
+    const {value, displayName, entry} = option;
+    return {
+        ...option,
+        searchText: union([displayName, value], entry.names, entry.keywords).join(' ').toLowerCase()
+    };
 }
 
 //---------------------------------------------
@@ -444,36 +500,94 @@ const iconMenu = hoistCmp.factory<IconPickerModel>(({model, props}) => {
     });
 });
 
+/**
+ * Grid of icon cells, windowed by row with react-window - only the rows in or near view render, so
+ * the picker stays fast with thousands of icons.
+ */
 const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
-    const {filteredOptions, columns} = model,
-        selectedValue = model.selectedOption?.value,
-        maxMenuHeight = withDefault(props.maxMenuHeight, 260),
-        {prefix} = props;
+    const {filteredOptions, activeIdx, columns, cellSize, gridHeight} = model;
+
+    // Keep the highlighted icon in view as it moves - see also `centerOnOpen`. Run as an effect, not
+    // a reaction, so the list has rendered any new rows before scrolling to one.
+    useEffect(() => model.scrollToActive('auto'), [model, activeIdx, filteredOptions]);
 
     if (isEmpty(filteredOptions)) {
         return div({className: 'xh-icon-picker__no-results', item: 'No matching icons found.'});
     }
 
+    // Size the list to its columns, plus room for a scrollbar so one never covers the last column.
+    const rowWidth = columns * cellSize + (columns - 1) * CELL_GAP;
+
     return div({
         className: 'xh-icon-picker__grid',
-        ref: model.gridRef,
+        item: reactWindowList({
+            className: 'xh-icon-picker__grid-list',
+            listRef: model.listRef,
+            rowComponent: iconRow,
+            rowCount: model.rowCount,
+            rowHeight: model.rowHeight,
+            rowProps: {
+                model,
+                prefix: props.prefix,
+                filteredOptions,
+                columns,
+                activeIdx,
+                selectedValue: model.selectedOption?.value
+            },
+            overscanCount: 4,
+            style: {
+                height: gridHeight,
+                width: rowWidth + getScrollbarSize(),
+                '--xh-icon-picker-cell-size': `${cellSize}px`
+            } as CSSProperties
+        })
+    });
+});
+
+interface IconRowProps {
+    model: IconPickerModel;
+    prefix: HoistIconPrefix;
+    filteredOptions: IconOption[];
+    columns: number;
+    activeIdx: number;
+    selectedValue: string;
+}
+
+/**
+ * One windowed row of the grid. The highlight and selection arrive as row props, so react-window
+ * re-renders rows when either changes.
+ */
+function iconRow({
+    index,
+    style,
+    model,
+    prefix,
+    filteredOptions,
+    columns,
+    activeIdx,
+    selectedValue
+}: RowComponentProps<IconRowProps>) {
+    const start = index * columns;
+    return div({
+        className: 'xh-icon-picker__row',
         style: {
-            maxHeight: maxMenuHeight,
-            gridTemplateColumns: `repeat(${columns}, var(--xh-icon-picker-cell-size))`
+            ...style,
+            gridTemplateColumns: `repeat(${columns}, var(--xh-icon-picker-cell-size))`,
+            columnGap: CELL_GAP
         },
-        items: filteredOptions.map((option, idx) =>
+        items: filteredOptions.slice(start, start + columns).map((option, i) =>
             iconCell({
                 key: option.value,
                 model,
                 option,
-                idx,
+                idx: start + i,
                 prefix,
-                isActive: idx === model.activeIdx,
+                isActive: start + i === activeIdx,
                 isSelected: option.value === selectedValue
             })
         )
     });
-});
+}
 
 const iconCell = hoistCmp.factory<IconPickerModel>(
     ({model, option, idx, prefix, isActive, isSelected}) =>
