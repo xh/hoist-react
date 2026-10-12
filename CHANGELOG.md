@@ -163,8 +163,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Field` now skips DOMPurify for strings with no `<` when `enableXssProtection` is set. Such
   strings hold no markup, so large loads skip one DOMPurify call per string value.
 * `Field` now parses every unparseable `date` value to one shared Invalid Date, preventing an
-   unparseable Date from causing extra record allocation on every data load.
-
+  unparseable Date from causing extra record allocation on every data load.
 
 ### ⚙️ Typescript API Adjustments
 
