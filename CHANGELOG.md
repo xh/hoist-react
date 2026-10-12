@@ -69,6 +69,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   reporting true while a changed record's first async validation was still running.
 * Fixed `ViewManagerModel` overwriting the user's saved current view when views failed to load.
 * Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
+* Fixed `ViewManagerModel` views picking up unsaved changes from the prior view when selected in
+  quick succession. A destroyed `PersistenceProvider` now writes any pending change at once.
+* Fixed `ViewManagerModel` installing an earlier selected view when it finished loading after a
+  later one. A refresh also no longer reloads the prior view over a newer selection.
+* Fixed `ViewManagerModel` reinstalling the prior view when a save of it finished after the user
+  selected another view. An auto-save could then write the new view's state into the prior one.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.

@@ -268,6 +268,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      */
     private providers: ViewManagerProvider<any>[] = [];
 
+    /** Count of calls to {@link loadViewAsync}, used to identify the latest. */
+    private loadCount = 0;
+
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
 
@@ -386,7 +389,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {dataAccess, view} = this;
+        const {dataAccess} = this;
         await this.runner({loadSpec})
             .span('refresh')
             .run(async ctx => {
@@ -400,8 +403,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     this.serverManageGlobal = manageGlobal ?? null;
                 });
 
-                // potentially fast-forward current view.
-                if (!view.isDefault) {
+                // Fast-forward the current view if it was updated elsewhere. Read it here, as a
+                // selection can change it during the fetch. Skip while a view load is pending - a
+                // fast-forward would overtake it.
+                const {view} = this;
+                if (!view.isDefault && !this.selectTask.isPending) {
                     const latestInfo = find(views, {token: view.token});
                     if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
                         this.loadViewAsync(view.token, this.pendingValue, ctx);
@@ -719,11 +725,20 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         pendingValue: PendingValue<T> = null,
         ctx: CallContext
     ): Promise<void> {
+        // Loads can overlap, e.g. a view selected while another is still loading. Only the latest
+        // applies its view or reports a failure, so a slower earlier load cannot replace it.
+        const loadNum = ++this.loadCount,
+            isStale = () => loadNum !== this.loadCount;
+
         return this.dataAccess
             .fetchViewAsync(token, ctx)
             .thenAction(latest => {
+                if (isStale()) return;
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
+            })
+            .catch(e => {
+                if (!isStale()) throw e;
             })
             .linkTo(this.selectTask);
     }
@@ -756,6 +771,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Install a saved view, keeping as pending any value set while the save was in flight. */
     @action
     private setAsSavedView(saved: View<T>, sent: PendingValue<T>) {
+        // The user selected another view while this save was in flight. Update its entry in the
+        // views list, but keep the current view. A view removed from the list meanwhile stays out.
+        if (saved.token !== this.view.token) {
+            this.views = this.views.map(it => (it.token === saved.token ? saved.info : it));
+            return;
+        }
+
         const value = this.getValue(),
             pendingValue = isEqual(value, sent.value)
                 ? null
@@ -768,12 +790,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.view = view;
         this.pendingValue = pendingValue;
         // Ensure we update meta-data as well.
-        if (!view.isDefault) {
-            this.views = uniqBy([view.info, ...this.views], 'token');
-        }
+        if (!view.isDefault) this.noteViewInfo(view);
 
         // Ensure providers have a clean reference of the current view state.
         this.providers.forEach(it => it.read());
+    }
+
+    @action
+    private noteViewInfo(view: View<T>) {
+        this.views = uniqBy([view.info, ...this.views], 'token');
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {

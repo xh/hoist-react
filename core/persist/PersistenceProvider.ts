@@ -138,7 +138,7 @@ export abstract class PersistenceProvider<S = any> {
 
         // Drop any debounced write still pending - it holds pre-clear state and would otherwise
         // land after this call and resurrect it.
-        (this.writeInternal as DebouncedFunc<(data: S) => void>).cancel?.();
+        this.cancelPendingWrite();
 
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
@@ -153,10 +153,21 @@ export abstract class PersistenceProvider<S = any> {
 
     destroy() {
         this.disposer?.();
+
+        // Write any change still pending now, rather than from a timer once this provider is gone.
+        // A failed write must not abort the destroy of this provider's owner.
+        try {
+            this.debouncedWrite?.flush();
+        } catch (e) {
+            logError(e, this.owner);
+        }
     }
 
     /** Push the current state of this provider to its target. */
     pushStateToTarget() {
+        // Drop any pending write. It holds the target's state from before this push, and would
+        // overwrite the new state, such as a view that a ViewManagerModel just loaded.
+        this.cancelPendingWrite();
         const state = this.read();
         this.target.setPersistableState(state ? state : this.defaultState);
     }
@@ -224,6 +235,14 @@ export abstract class PersistenceProvider<S = any> {
     }
 
     /**
+     * Drop any debounced write still pending. For a subclass that overrides `pushStateToTarget()`
+     * without calling super.
+     */
+    protected cancelPendingWrite() {
+        this.debouncedWrite?.cancel();
+    }
+
+    /**
      * Resolve the PersistenceProvider class that the given options would produce, applying the
      * same precedence used by {@link create}. Throws if the options do not resolve to a known
      * provider.
@@ -252,6 +271,11 @@ export abstract class PersistenceProvider<S = any> {
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 
         return ret;
+    }
+
+    // The debounced write function, or null if writes are not debounced - see constructor.
+    private get debouncedWrite(): DebouncedFunc<(data: S) => void> {
+        return this.debounce ? (this.writeInternal as DebouncedFunc<(data: S) => void>) : null;
     }
 
     private ensureValid() {
