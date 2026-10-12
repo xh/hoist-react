@@ -19,8 +19,7 @@ beforeAll(async () => {
 // ag-Grid's grouping and tree data modules are enterprise-only, so these tests check what the
 // grid hands to ag-Grid, not which rows open.
 describe('Grid expand level', () => {
-    // Fixed in 89.0.0 - each level change set ag-Grid's `groupDefaultExpanded`, which regroups,
-    // re-sorts and redraws every row.
+    // Setting `groupDefaultExpanded` regroups, re-sorts and redraws every row.
     it("expands and collapses without changing ag-Grid's groupDefaultExpanded", async () => {
         const {gridModel} = await renderGridAsync(),
             {agApi} = gridModel,
@@ -82,47 +81,18 @@ describe('Grid expand level', () => {
         expect(optionsAtRegroup[0]).toBeTypeOf('function');
     });
 
-    // GridModel does not track a level set through agOptions, so its expand menus can disagree.
-    it('warns once per GridModel when agOptions set groupDefaultExpanded', async () => {
-        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-        onTestFinished(() => warn.mockRestore());
-        const optionWarnings = () =>
-            warn.mock.calls.filter(args => args.join(' ').includes('groupDefaultExpanded'));
-
-        await renderGridAsync();
-        expect(optionWarnings()).toHaveLength(0);
-
-        const gridModel = new GridModel({columns: [{field: 'name'}]});
-        onTestFinished(() => gridModel.destroy());
-        const agOptions = {groupDefaultExpanded: 1},
-            {unmount} = render(grid({model: gridModel, agOptions}));
-        await waitFor(() => expect(gridModel.isReady).toBe(true));
-        unmount();
-        render(grid({model: gridModel, agOptions}));
-        await waitFor(() => expect(gridModel.isReady).toBe(true));
-        expect(optionWarnings()).toHaveLength(1);
-        expect(optionWarnings()[0].join(' ')).toContain("Set the GridModel's expandLevel instead");
-    });
-
-    it.each([
-        ['groupDefaultExpanded', {groupDefaultExpanded: 2}],
-        ['isGroupOpenByDefault', {isGroupOpenByDefault: () => true}]
-    ])("leaves rows to an app's own agOptions.%s", async (_, agOptions: Record<string, any>) => {
-        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-        onTestFinished(() => warn.mockRestore());
-        const gridModel = new GridModel({columns: [{field: 'name'}]});
+    it("leaves rows to an app's own agOptions.isGroupOpenByDefault", async () => {
+        const agOptions = {isGroupOpenByDefault: () => true},
+            gridModel = new GridModel({columns: [{field: 'name'}]});
         onTestFinished(() => gridModel.destroy());
         render(grid({model: gridModel, agOptions}));
         await waitFor(() => expect(gridModel.isReady).toBe(true));
-
-        gridModel.expandToLevel(2);
-        gridModel.collapseAll();
 
         const {agApi} = gridModel;
+        gridModel.expandToLevel(2);
         expect(agApi.getGridOption('isGroupOpenByDefault')).toBe(agOptions.isGroupOpenByDefault);
-        expect(agApi.getGridOption('groupDefaultExpanded')).toBe(
-            agOptions.groupDefaultExpanded ?? 0
-        );
+        gridModel.collapseAll();
+        expect(agApi.getGridOption('isGroupOpenByDefault')).toBe(agOptions.isGroupOpenByDefault);
     });
 });
 

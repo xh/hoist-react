@@ -1264,7 +1264,7 @@ export class GridModel extends HoistModel {
 
         // Set the flag on each group node, then remap rows once - the bulk approach documented for
         // ag-Grid's `onGroupExpandedOrCollapsed()`. Grid opens rows added later to this level too,
-        // unless `agOptions` sets `groupDefaultExpanded` or `isGroupOpenByDefault`.
+        // unless `agOptions` sets `isGroupOpenByDefault`.
         agApi.forEachNode(node => {
             if (node.group) node.expanded = this.isLevelExpanded(node.level);
         });
