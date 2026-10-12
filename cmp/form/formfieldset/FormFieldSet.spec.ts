@@ -23,9 +23,8 @@ import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 describe('FormFieldSet', () => {
     beforeAll(() => initTestAppAsync());
 
+    // Fixed in v89 - a set passed its model became its own parent, a MobX cycle on render.
     describe('with an explicit model', () => {
-        // Fixed in v89 - a set passed its model found itself in context and became its own
-        // parent, a MobX cycle that threw on render.
         it('renders with no parent when not nested', () => {
             const {contact} = renderAccountForm(m => fieldSet(m.contact, 'name'));
 
@@ -55,6 +54,15 @@ describe('FormFieldSet', () => {
                 );
 
             expect(innerRef.current.parent).toBe(account);
+        });
+
+        it('takes an enclosing implicit set as its parent', () => {
+            const outerRef = createRef<FormFieldSetModel>(),
+                {contact} = renderAccountForm(m =>
+                    formFieldSet({modelRef: outerRef, item: fieldSet(m.contact, 'name')})
+                );
+
+            expect(contact.parent).toBe(outerRef.current);
         });
 
         it('shows validation for the fields it contains', async () => {
@@ -99,7 +107,7 @@ describe('FormFieldSet', () => {
             expect(inputFor(container, 'cardNumber').disabled).toBe(true);
         });
 
-        it('does not take fields outside it', async () => {
+        it('does not register fields outside it', async () => {
             const {account, contact, billing, formModel, container} = renderAccountPanel(m =>
                 div(
                     formField({field: 'name', item: textInput()}),
