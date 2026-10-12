@@ -617,8 +617,7 @@ export class GridLocalModel extends HoistModel {
             showSummary === 'bottom' ? bot.push(...summaryRecords) : top.unshift(...summaryRecords);
         }
 
-        // Pass only the side that changed, as AG Grid redraws all rows for each pinned row option
-        // it is passed. Compare by identity - AG Grid holds the row objects it was given.
+        // Pass only the side that changed - AG Grid redraws all rows for each pinned option passed.
         const opts: GridOptions = {};
         if (!shallowEqualArrays(top, prevTop)) opts.pinnedTopRowData = top;
         if (!shallowEqualArrays(bot, prevBot)) opts.pinnedBottomRowData = bot;
