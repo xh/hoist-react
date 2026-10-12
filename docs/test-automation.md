@@ -239,6 +239,27 @@ gets `${testId}-${recordId}`.
 The `RestForm` also passes its `testId` to the internal `Form`, enabling automatic field-level
 testIds.
 
+### ViewManager (Menu and Dialogs)
+
+Desktop `ViewManager` renders its `testId` on its outer element. It also generates testIds for:
+
+- The menu button: `${testId}-menu-btn`
+- The inline save and revert buttons: `${testId}-save-btn` and `${testId}-revert-btn`
+- The view menu: `${testId}-menu`
+- Each view in the menu: `${testId}-menu-view-${token}`, using the view's token. The default view
+  gets `${testId}-menu-view-default`.
+- The menu actions: `${testId}-menu-save`, `${testId}-menu-save-as`, `${testId}-menu-revert`,
+  and `${testId}-menu-manage`. The Auto Save switch gets `${testId}-menu-auto-save`.
+- The Save As dialog: `${testId}-save-as-dialog`, with `${testId}-save-as-dialog-save-btn` and
+  `${testId}-save-as-dialog-cancel-btn`. Its fields derive their testIds from the dialog's, for
+  example `${testId}-save-as-dialog-name-input`.
+- The Manage dialog: `${testId}-manage-dialog`, with `${testId}-manage-dialog-close-btn` and
+  `${testId}-manage-dialog-activate-btn`.
+
+The menu and dialogs render in portals, outside the outer element. A view inside a group or
+shared-owner submenu renders only while that submenu is open. Views rendered by a custom
+`viewMenuItemFn` get no testId.
+
 ## XH.getModelByTestId()
 
 For advanced testing scenarios, `XH.getModelByTestId()` provides programmatic access to model
@@ -492,6 +513,7 @@ models (or have no models at all).
 | [`desktop/cmp/tab/impl/TabContainer.ts`](../desktop/cmp/tab/impl/TabContainer.ts) | TabContainer with sub-testIds for tabs and switcher |
 | [`desktop/cmp/rest/RestGrid.ts`](../desktop/cmp/rest/RestGrid.ts) | RestGrid with sub-testIds for inner grid and form |
 | [`desktop/cmp/grouping/GroupingChooser.ts`](../desktop/cmp/grouping/GroupingChooser.ts) | GroupingChooser with sub-testIds for editor and favorites |
+| [`desktop/cmp/viewmanager/ViewManager.ts`](../desktop/cmp/viewmanager/ViewManager.ts) | ViewManager with sub-testIds for its buttons, menu, views, and dialogs |
 | [`core/impl/InstanceManager.ts`](../core/impl/InstanceManager.ts) | Registers models by testId for `XH.getModelByTestId()` |
 | [`core/XH.ts`](../core/XH.ts) | `getModelByTestId()` API on the `XH` singleton |
 | [`desktop/cmp/rest/Actions.ts`](../desktop/cmp/rest/Actions.ts) | RestGrid built-in actions with pre-defined testIds |
