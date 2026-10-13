@@ -16,8 +16,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed desktop `DashCanvas` failing to render in v89.0.0. The header menu of each view threw
-  `ContextMenu is not a function`, unless the view set `hideMenuButton`.
+* Fixed desktop `DashCanvas` failing to render in v89.0.0. 
 
 ### ⚙️ Technical
 
