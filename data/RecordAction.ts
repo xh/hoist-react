@@ -186,7 +186,8 @@ export class RecordAction {
             tooltip: this.tooltip,
             items: this.items,
             hidden: this.hidden,
-            disabled: this.disabled || !this.meetsRecordRequirement(recordCount)
+            disabled: this.disabled || !this.meetsRecordRequirement(recordCount),
+            testId: this.testId
         };
 
         if (this.displayFn) {
