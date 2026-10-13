@@ -58,12 +58,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
   hoist-dev-utils 16.1. Experimental in v89 - it may change.
-* Added `MenuItem.testId`, rendered as `data-testid` in desktop and mobile menus. Grid context
-  menus now render `RecordAction.testId` too. A desktop `MenuButton` with a `testId` gives its open
-  menu `${testId}-menu`.
-* Added `MenuItem.keepMenuOpen`, which leaves a menu open after a click so users can toggle several
-  items in turn. Desktop `Menu` and `ContextMenu` now re-run each `prepareFn` when the state it
-  reads changes, so items stay current while the menu is open.
+* Added `MenuItem.testId` for desktop and mobile menus. Grid context menus now also render
+  `RecordAction.testId`.
+* Added `MenuItem.keepMenuOpen` to leave a menu open after a click. Open desktop menus now re-run
+  `prepareFn` when the state it reads changes.
 
 ### 🐞 Bug Fixes
 
