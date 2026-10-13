@@ -14,6 +14,7 @@ import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {getTestId} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {groupField} from './editpanels/GroupField';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
@@ -27,7 +28,7 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
     className: 'xh-view-manager__save-dialog',
     model: uses(SaveAsDialogModel),
 
-    render({model, className}) {
+    render({model, className, testId}) {
         if (!model.isOpen) return null;
 
         return dialog({
@@ -37,20 +38,24 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
             style: {width: 550},
             canOutsideClickClose: false,
             onClose: () => model.close(),
-            item: formPanel()
+            item: formPanel({testId})
         });
     }
 });
 
 const formPanel = hoistCmp.factory<SaveAsDialogModel>({
-    render({model}) {
+    render({model, testId}) {
         const {parent, formModel} = model,
             {visibility} = formModel.values,
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
 
+        // Blueprint's Dialog does not pass `data-testid` through, so tag the panel within it.
+        // The form takes the same testId to derive one for each field.
         return panel({
+            testId,
             item: form({
+                testId,
                 fieldDefaults: {
                     commitOnChange: true,
                     inline: true,
@@ -86,19 +91,20 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                     ]
                 })
             }),
-            bbar: bbar(),
+            bbar: bbar({testId}),
             mask: model.parent.saveTask
         });
     }
 });
 
 const bbar = hoistCmp.factory<SaveAsDialogModel>({
-    render({model}) {
+    render({model, testId}) {
         const {typeDisplayName} = model.parent;
         return toolbar(
             filler(),
             button({
                 text: 'Cancel',
+                testId: getTestId(testId, 'cancel-btn'),
                 onClick: () => model.close()
             }),
             button({
@@ -106,6 +112,7 @@ const bbar = hoistCmp.factory<SaveAsDialogModel>({
                 outlined: true,
                 intent: 'success',
                 disabled: !model.formModel.isValid,
+                testId: getTestId(testId, 'save-btn'),
                 onClick: () => model.saveAsAsync()
             })
         );

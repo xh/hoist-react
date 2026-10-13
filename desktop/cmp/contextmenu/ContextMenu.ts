@@ -26,9 +26,7 @@ export interface ContextMenuProps extends HoistProps {
  */
 export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>({
     displayName: 'ContextMenu',
-    memo: false,
     model: false,
-    observer: false,
 
     render({menuItems, context}) {
         // Anchored at the cursor rather than a target element, where submenus mis-position
