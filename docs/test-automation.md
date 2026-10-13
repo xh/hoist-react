@@ -31,7 +31,8 @@ provided, the component renders a `data-testid` attribute on an appropriate DOM 
 |---|---|
 | `BoxProps` | All layout components (`Box`, `VBox`, `HBox`, `Frame`, etc.) accept `testId` |
 | `HoistInputProps` | All input components (`TextInput`, `Select`, `Checkbox`, etc.) accept `testId` |
-| `RecordActionSpec` | Record actions (`RecordAction`) accept `testId` for action buttons |
+| `RecordActionSpec` | Record actions (`RecordAction`) accept `testId` for action buttons and grid context menu items |
+| `MenuItem` | Config-driven menu items accept `testId` for their rendered element |
 | Component-specific props | `ButtonProps`, `PanelProps`, `GridProps`, `AppBarProps`, `TabSwitcherProps`, `FormProps`, `ChartProps`, `DataViewProps`, `BadgeProps`, `FormFieldSetProps`, and many others |
 
 Because `BoxProps` extends `TestSupportProps`, and nearly every Hoist layout component is built on
@@ -229,7 +230,23 @@ stringified `value` (not its label). A "None" option with `value: null` gets `${
 ### RecordAction (Per-Record Buttons)
 
 When a `RecordAction` has a `testId` and is rendered as an action column button, each row's button
-gets `${testId}-${recordId}`.
+gets `${testId}-${recordId}`. In a grid context menu, the item gets the `testId` as given.
+
+### Menu and MenuButton
+
+Each `MenuItem` with a `testId` renders it on its element, as given. This applies to the desktop
+`Menu`, `MenuButton`, and context menus, and to the mobile `MenuButton`. A `MenuButton` on either
+platform puts its own `testId` on the button and generates `${testId}-menu` for the open menu.
+
+```typescript
+menuButton({
+    testId: 'group-by',
+    menuItems: [
+        {heading: 'Group By'},
+        {text: 'Region', testId: 'group-by-region', actionFn: () => model.groupBy('region')}
+    ]
+});
+```
 
 ### RestGrid (Built-in Actions)
 
