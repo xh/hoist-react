@@ -398,6 +398,8 @@
   background: var(--xh-grid-tooltip-bg);
   border: var(--xh-grid-tooltip-border);
   border-radius: var(--xh-grid-tooltip-border-radius);
+  filter: var(--xh-grid-tooltip-shadow);
+  font-size: var(--xh-grid-tooltip-font-size-px);
   max-width: var(--xh-grid-tooltip-max-width);
 }
 

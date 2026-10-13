@@ -194,6 +194,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
 * Restyled the desktop login form to match mobile - a centered card with the `loginPanelIcon`,
   labeled fields, and a full-width login button.
+* Blueprint and grid tooltips now follow the app theme, styled by new `--xh-tooltip-*` vars. Apps
+  can remove their own overrides of Blueprint's inverted tooltip colors.
 
 ### 📚 Libraries
 

@@ -301,11 +301,9 @@
 }
 
 // Blueprint portals the popover to the document body, so these rules must live outside .xh-col-chooser.
+// Colors, border and radius come from the standard `--xh-tooltip-*` styling.
 .xh-col-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
   padding: 0;
-  background: var(--xh-bg);
-  border: var(--xh-border-solid);
-  border-radius: var(--xh-border-radius-px);
 }
 
 .xh-col-chooser__meta-tip {
