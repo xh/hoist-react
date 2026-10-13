@@ -11,6 +11,12 @@ import {
     PasswordManagerSupportProps,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
+import {
+    addCommasWhileEditing,
+    getCaretSkippingCommas,
+    setCaretSkippingCommas,
+    skipCommaOnDelete
+} from '@xh/hoist/cmp/input/impl/LiveCommas';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
@@ -20,6 +26,7 @@ import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
+import {useEffect} from 'react';
 import './NumberInput.scss';
 
 export interface NumberInputProps
@@ -29,8 +36,11 @@ export interface NumberInputProps
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
 
-    /** True to insert commas in displayed value. */
-    displayWithCommas?: boolean;
+    /**
+     * Insert commas in displayed value - 'whenBlurred' (or true) to show them only when the input
+     * does not have focus, 'always' to also show them while the user types.
+     */
+    displayWithCommas?: boolean | 'always' | 'whenBlurred';
 
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits?: boolean;
@@ -120,6 +130,13 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.enableShorthandUnits, false);
     }
 
+    get commasWhileEditing(): boolean {
+        return this.componentProps.displayWithCommas === 'always';
+    }
+
+    // Caret position to restore after a reformat while editing, as a count of non-comma chars.
+    caretPos: number = null;
+
     override select() {
         // first focus, and then wait one tick for value to be put into input element
         this.focus();
@@ -127,6 +144,8 @@ class NumberInputModel extends HoistInputModel {
     }
 
     onValueChange = ev => {
+        if (this.commasWhileEditing)
+            this.caretPos = getCaretSkippingCommas(this.inputEl as HTMLInputElement);
         this.noteValueChange(ev.target.value);
     };
 
@@ -176,6 +195,7 @@ class NumberInputModel extends HoistInputModel {
 
     onKeyDown = ev => {
         if (ev.key === 'Enter') this.doCommit();
+        if (this.commasWhileEditing) skipCommaOnDelete(this.inputEl as HTMLInputElement, ev.key);
         this.componentProps.onKeyDown?.(ev);
     };
 
@@ -196,7 +216,9 @@ class NumberInputModel extends HoistInputModel {
 
         if (this.hasFocus) {
             if (isNumber(value) && !isNil(precision)) value = round(value, precision);
-            return value.toString();
+            return this.commasWhileEditing
+                ? addCommasWhileEditing(value.toString())
+                : value.toString();
         }
 
         const {valueLabel, displayWithCommas} = componentProps,
@@ -244,6 +266,16 @@ const cmp = hoistCmp.factory<NumberInputModel>(
         const {width, ...layoutProps} = getLayoutProps(props),
             renderValue = model.formatRenderValue(model.renderValue),
             inputMode = enableShorthandUnits ? 'text' : 'decimal';
+
+        // Restore the caret after a reformat while editing moved it. Runs after Onsen's own
+        // effect writes the value into the input.
+        useEffect(() => {
+            const input = model.inputEl as HTMLInputElement;
+            if (input && model.caretPos != null) {
+                setCaretSkippingCommas(input, model.caretPos);
+                model.caretPos = null;
+            }
+        });
 
         // Using type=text rather than type=number, to support shorthand units and rich
         // rendering but also because of issues with typing in decimal point (see #3450)

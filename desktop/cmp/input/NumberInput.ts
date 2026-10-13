@@ -11,6 +11,12 @@ import {
     PasswordManagerSupportProps,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
+import {
+    addCommasWhileEditing,
+    getCaretSkippingCommas,
+    setCaretSkippingCommas,
+    skipCommaOnDelete
+} from '@xh/hoist/cmp/input/impl/LiveCommas';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
@@ -32,8 +38,11 @@ export interface NumberInputProps
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
 
-    /** True to insert commas in displayed value. */
-    displayWithCommas?: boolean;
+    /**
+     * Insert commas in displayed value - 'whenBlurred' (or true) to show them only when the input
+     * does not have focus, 'always' to also show them while the user types.
+     */
+    displayWithCommas?: boolean | 'always' | 'whenBlurred';
 
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits?: boolean;
@@ -147,7 +156,16 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.scaleFactor, 1);
     }
 
+    get commasWhileEditing(): boolean {
+        return this.componentProps.displayWithCommas === 'always';
+    }
+
+    // Caret position to restore after a reformat while editing, as a count of non-comma chars.
+    caretPos: number = null;
+
     onValueChange = (val, valAsString) => {
+        if (this.commasWhileEditing)
+            this.caretPos = getCaretSkippingCommas(this.inputEl as HTMLInputElement);
         this.noteValueChange(valAsString);
     };
 
@@ -196,6 +214,7 @@ class NumberInputModel extends HoistInputModel {
 
     onKeyDown: KeyboardEventHandler<HTMLInputElement> = ev => {
         if (ev.key === 'Enter') this.doCommit();
+        if (this.commasWhileEditing) skipCommaOnDelete(ev.currentTarget, ev.key);
         this.componentProps.onKeyDown?.(ev);
     };
 
@@ -206,7 +225,9 @@ class NumberInputModel extends HoistInputModel {
 
         if (this.hasFocus) {
             const ret = isNumber(value) && !isNil(precision) ? round(value, precision) : value;
-            return ret?.toString();
+            return this.commasWhileEditing
+                ? addCommasWhileEditing(ret.toString())
+                : ret?.toString();
         }
 
         const {valueLabel, displayWithCommas} = componentProps,
@@ -242,9 +263,15 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
 
     // BP workaround -- min, max, and stepsize can block Blueprint from rendering
     // intended value in underlying control -- ensure it is always shown.
+    // Also restore the caret after a reformat while editing moved it.
     useLayoutEffect(() => {
-        const input = model.inputEl;
-        if (input) input.value = renderValue;
+        const input = model.inputEl as HTMLInputElement;
+        if (!input) return;
+        input.value = renderValue;
+        if (model.caretPos != null) {
+            setCaretSkippingCommas(input, model.caretPos);
+            model.caretPos = null;
+        }
     });
 
     // BP bases expected precision off of dps in minorStepSize, if specified.
@@ -265,6 +292,8 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         disabled: props.disabled,
         inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
+        // Lets BP parse a comma-formatted value when stepping with the arrow keys.
+        locale: model.commasWhileEditing ? 'en-US' : undefined,
         min: props.min,
         max: props.max,
         minorStepSize,
