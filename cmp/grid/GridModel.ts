@@ -115,7 +115,8 @@ import {
     omit,
     pick,
     pull,
-    take
+    take,
+    uniqBy
 } from 'lodash';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
@@ -2024,20 +2025,18 @@ export class GridModel extends HoistModel {
         const gridCols = this.getLeafColumns();
 
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
-        // under a prior release of the app and have since been removed from the code.
-        // Also REMOVE any duplicated state columns that may have gotten into the state somehow
-        // so that we do not keep them around forever.
-        const seenColIds = new Set<string>();
-        let ret = columnState.filter(({colId}) => {
-            if (!this.getColumn(colId) || seenColIds.has(colId)) return false;
-            seenColIds.add(colId);
-            return true;
-        });
+        // under a prior release of the app and have since been removed from the code. Also
+        // REMOVE any repeated columns, keeping the first.
+        let ret = uniqBy<any>(
+            columnState.filter(({colId}) => this.getColumn(colId)),
+            'colId'
+        );
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
+        const retColIds = new Set(ret.map(s => s.colId));
         gridCols.forEach((col, idx) => {
-            if (!seenColIds.has(col.colId)) {
+            if (!retColIds.has(col.colId)) {
                 const state = this.getDefaultStateForColumn(col);
 
                 // Hide new columns if so requested - but never those the app requires to be shown,
