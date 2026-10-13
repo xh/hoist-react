@@ -41,7 +41,6 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
     displayName: 'Menu',
     className: 'xh-menu',
     defaults: MENU_DEFAULTS,
-    memo: false,
     model: false,
 
     render({menuItems, context, className, testId}) {

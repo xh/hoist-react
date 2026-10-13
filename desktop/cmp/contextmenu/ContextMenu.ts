@@ -26,7 +26,6 @@ export interface ContextMenuProps extends HoistProps {
  */
 export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>({
     displayName: 'ContextMenu',
-    memo: false,
     model: false,
 
     render({menuItems, context}) {
