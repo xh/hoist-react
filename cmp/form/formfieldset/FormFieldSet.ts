@@ -35,9 +35,10 @@ export interface FormFieldSetProps
 }
 
 /**
- * Context that publishes the model of the nearest enclosing FormFieldSet. Nested sets and
- * FormFields read it to register with that set. A model lookup would also match sets held by an
- * ancestor's model, and a set passed its model in props would find itself.
+ * Context that publishes the model of the nearest enclosing FormFieldSet, as `FormContext` does for
+ * Form. Nested sets and FormFields read it to register with the set that encloses them in the
+ * component tree. A model lookup does not fit: it also finds sets held on an enclosing model, and a
+ * set passed its model would find itself.
  * @internal
  */
 export const FormFieldSetContext = createContext<FormFieldSetModel>(null);

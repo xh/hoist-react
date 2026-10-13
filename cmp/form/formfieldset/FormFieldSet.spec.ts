@@ -16,9 +16,9 @@ import {createRef, type ReactNode} from 'react';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
- * How a FormFieldSet finds the set that encloses it, and the fields it contains. Validation
- * display and disabled / readonly cascading depend on this registration. It must work whether the
- * component creates the set's model or an app passes one in.
+ * A FormFieldSet registers with the set that encloses it in the component tree, and its fields
+ * register with it. Validation display and disabled / readonly cascading depend on this. It must
+ * work whether the component creates the set's model or an app passes one in.
  */
 describe('FormFieldSet', () => {
     beforeAll(() => initTestAppAsync());
@@ -88,9 +88,9 @@ describe('FormFieldSet', () => {
         });
     });
 
-    // An app model published in the default mode exposes the models it holds to context lookups.
-    // These can include sets that do not enclose the component.
-    describe('with a model held by an app model', () => {
+    // A published app model holds several sets. Each set and field must still register with the
+    // set that encloses it in the component tree, not with another set on that model.
+    describe('with sets held by a published app model', () => {
         it('does not take a sibling set as its parent', async () => {
             const {contact, billing, formModel, container} = renderAccountPanel(m =>
                 div(fieldSet(m.contact, 'name'), fieldSet(m.billing, 'cardNumber'))
