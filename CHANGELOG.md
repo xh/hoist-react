@@ -12,7 +12,7 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 89.0.1-SNAPSHOT - unreleased
+## 90.0.0-SNAPSHOT - unreleased
 
 ### 🐞 Bug Fixes
 
