@@ -140,6 +140,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed the Admin Console config differ flagging typed JSON configs as changed, based on their
   code-derived resolved and default values, and showing those values as `[object Object]`.
 * Fixed `Badge` ignoring the `align` of its grid column. It now renders inline.
+* Fixed `FormFieldSet` throwing a MobX cycle error when passed a `model`. Fields and nested sets
+  register with the `FormFieldSet` that encloses them.
 
 ### ⚙️ Technical
 
