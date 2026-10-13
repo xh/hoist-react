@@ -226,6 +226,9 @@ Before v89, a spec for any one field disabled filters on all other `filterable` 
 grep -rn "fieldSpecs" client-app/src/
 ```
 
+Only `fieldSpecs` in a grid's `filterModel` config (a `GridFilterModelConfig`) changed.
+`FilterChooserModel` also takes `fieldSpecs`, and those hits need no change.
+
 For each grid that sets `fieldSpecs`, check the columns that the list omits. If a column should
 have no filter, set `filterable: false` on it.
 
@@ -362,6 +365,31 @@ dragonIcon();
 
 Icons added via `library.add()` still render. `Icon.get()` logs a one-time warning for each one it
 looks up by name.
+
+Register icons in one app-level module imported by `Bootstrap.ts`, so they are registered before
+the app renders. A registration runs when its module loads, so one left in a lazily loaded tab is
+missing from `IconPicker` and from `Icon.get()` until that tab loads. Toolbox keeps its icons in
+`client-app/src/core/Icons.ts`.
+
+```typescript
+// client-app/src/core/Icons.ts - imported by Bootstrap.ts
+import {faGithub} from '@fortawesome/free-brands-svg-icons';
+import {faFaceFrown, faFaceSmile} from '@fortawesome/pro-regular-svg-icons';
+import {Icon} from '@xh/hoist/icon';
+
+export const githubIcon = Icon.register({name: 'github', defs: faGithub});
+
+export const [faceFrownIcon, faceSmileIcon] = Icon.registerAll([
+    {name: 'faceFrown', defs: faFaceFrown},
+    {name: 'faceSmile', defs: faFaceSmile}
+]);
+```
+
+- **Use the returned factory.** Registered names are added to `Icon` at runtime only, so
+  `Icon.github()` does not type-check. Call `githubIcon()`, or `Icon.get('github')` by name.
+- **Check the built-in set first.** Registering a name that `Icon` already has keeps the existing
+  icon and logs a warning. Use the built-in factory, register under another name, or pass
+  `replace: true` to override it.
 
 ### 9. Review Grid Rendering Defaults
 
