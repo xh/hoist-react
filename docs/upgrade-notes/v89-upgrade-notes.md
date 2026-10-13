@@ -4,7 +4,7 @@
 
 ## Overview
 
-Hoist React v89 is a light upgrade with four required changes and one strongly recommended change.
+Hoist React v89 is a light upgrade with five required changes and one strongly recommended change.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -18,6 +18,8 @@ Hoist React v89 is a light upgrade with four required changes and one strongly r
   `props.iconName` - see Step 7.
 - **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
   follow text need a space or a container `gap` - see Step 10.
+- **Column Library config (required if used)** - `ColLibraryConfig.autoExpandOnFilter` is gone.
+  Remove the key from any `columnLibrary` config - see Step 11.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -431,6 +433,31 @@ After:
 span('Alerts ', badge({item: count, intent: 'danger'}))
 ```
 
+### 11. Remove `ColLibraryConfig.autoExpandOnFilter`
+
+The Column Library now expands every group with a match while a search is active, so the
+threshold no longer applies. An app that still passes the key fails to compile.
+
+**Find affected code:**
+
+```bash
+grep -rn "autoExpandOnFilter" client-app/src/
+```
+
+Remove the key.
+
+Before:
+
+```typescript
+colChooserModel: {columnLibrary: {collapseGroups: true, autoExpandOnFilter: 3}}
+```
+
+After:
+
+```typescript
+colChooserModel: {columnLibrary: {collapseGroups: true}}
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -448,6 +475,7 @@ After completing all steps:
       `useVirtualColumns: false`.
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
 - [ ] Badges that follow a label are spaced from it.
+- [ ] No `columnLibrary` config sets `autoExpandOnFilter`.
 
 ## Reference
 

@@ -14,7 +14,7 @@
 
 ## 89.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing, column library config)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -33,6 +33,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   target `.ag-cell` instead.
 * `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
+* Removed `ColLibraryConfig.autoExpandOnFilter`. The Column Library now expands every group with a
+  match while a search is active. Remove the key from any `columnLibrary` config.
 
 ### 🎁 New Features
 
