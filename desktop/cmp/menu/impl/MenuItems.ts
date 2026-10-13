@@ -15,6 +15,7 @@ import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import type {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {
     filterMenuHeadings,
     isVisibleMenuEntry,
@@ -113,7 +114,9 @@ export function parseMenuItems(
                 className: item.className,
                 onClick: actionFn ? e => wait().then(() => actionFn(e, context)) : null, // do async to allow menu to close
                 disabled: item.disabled,
-                active: item.active
+                active: item.active,
+                shouldDismissPopover: !item.keepMenuOpen,
+                [TEST_ID]: item.testId
             };
 
             // Recursively parse any submenus

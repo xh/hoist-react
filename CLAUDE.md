@@ -124,6 +124,34 @@ IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rath
 them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
 instance on another port needs a local override.
 
+### Chrome DevTools MCP Server (`chrome-devtools`)
+
+Google's [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) lets an agent
+drive and inspect a Chrome window: navigate, click, type, read the console and network requests, and
+take screenshots. Use it to check a change in a real browser, with Toolbox running against this
+checkout as described in
+[Running Toolbox against this checkout](#running-toolbox-against-this-checkout).
+
+The server connects to a Chrome that you start yourself, with remote debugging on port 9222:
+
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 --user-data-dir="$HOME/.chrome-debug-profile"
+```
+
+The separate `--user-data-dir` is required. Chrome ignores the debugging flags on its default
+profile. A fixed folder keeps logins between sessions and keeps the agent out of your everyday
+profile. To check that the port is open, run `curl -s http://127.0.0.1:9222/json/version`.
+
+**Not enabled by default** - add `"chrome-devtools"` to `enabledMcpjsonServers` in
+`.claude/settings.local.json` to enable it for yourself:
+
+```json
+{
+  "enabledMcpjsonServers": ["hoist-react", "chrome-devtools"]
+}
+```
+
 ### hoist-ai plugin (`xh@hoist-ai`)
 
 The shared `.claude/settings.json` enables XH's `xh@hoist-ai` plugin, the same plugin that Hoist

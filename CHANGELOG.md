@@ -60,6 +60,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   hoist-dev-utils 16.1. Experimental in v89 - it may change.
 * Added `testId` support to desktop `ViewManager`, with derived ids for its buttons, menu, views,
   and dialogs. See `docs/test-automation.md`.
+* Added `MenuItem.testId` for desktop and mobile menus. Grid context menus now also render
+  `RecordAction.testId`.
+* Added `MenuItem.keepMenuOpen` to leave a menu open after a click. Open desktop menus now re-run
+  `prepareFn` when the state it reads changes.
 
 ### 🐞 Bug Fixes
 

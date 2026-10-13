@@ -9,6 +9,7 @@ import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
 import {isNil, isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
+import type {TestSupportProps} from '../HoistProps';
 import {Intent, Thunkable} from './Types';
 
 //------------------------
@@ -333,9 +334,10 @@ export interface MenuContext {
 /**
  * Basic interface for a MenuItem to appear in a menu.
  *
- * MenuItems can be displayed within a context menu, or shown when clicking on a button.
+ * MenuItems can be displayed within a context menu, or shown when clicking on a button. A
+ * `testId` renders as a `data-testid` attribute on the item's element.
  */
-export interface MenuItem<T = MenuToken, C = MenuContext> {
+export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportProps {
     /** Label to be displayed. */
     text: ReactNode;
 
@@ -362,6 +364,15 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
 
     /** True to render this item as active - e.g. to mark the current selection. */
     active?: boolean;
+
+    /**
+     * True to leave the menu open when the user clicks this item, so they can toggle several
+     * items in turn. Default false.
+     *
+     * The open menu re-runs each `prepareFn` when the observable state it reads changes, so set
+     * properties such as `active` there to keep them current while the menu stays open.
+     */
+    keepMenuOpen?: boolean;
 
     /** True to hide this item. May be set dynamically via prepareFn. */
     hidden?: boolean;
