@@ -320,8 +320,18 @@ important guidelines to internalize:
   Balance DRY against readability — extract when a genuine, stable pattern exists, not prematurely.
 - **Clear, descriptive naming** — Names should convey intent and read naturally. Be descriptive but
   not verbose (`selectedRecord`, not `r` or `theCurrentlySelectedRecordFromTheStore`).
-- **Prefer lodash** for collection/object utilities — it's null-safe, battle-tested, and aids
-  readability. Use native JS only when equally expressive (e.g., `array.map()`, `array.filter()`).
+- **Don't hand-roll collection manipulation** - Before writing or approving a loop or inline
+  closure that compares, searches, groups, partitions, dedupes, sorts, merges or reshapes arrays
+  and objects, check lodash and `@xh/hoist/utils` (including `utils/impl` for framework code) for
+  an existing helper. Lodash is null-safe, battle-tested, and aids readability. Use native JS only
+  when equally expressive (e.g., `array.map()`, `array.filter()`). See
+  [Prefer Lodash for Utility Operations](docs/coding-conventions.md#prefer-lodash-for-utility-operations).
+- **Match the existing pattern** - Before special-casing one member of a family (one option, prop,
+  config key or override), check how its siblings are handled and do the same. If the pattern
+  itself seems wrong, raise it rather than changing one case. A drive-by fix to a single member
+  leaves the codebase inconsistent. When consolidating code, keep every condition the old code
+  checked. See
+  [Match the Existing Pattern](docs/coding-conventions.md#match-the-existing-pattern).
 - **Keep code concise** — Favor direct, compact expression over verbose or ceremonial patterns.
   Use Hoist's own utilities (`withDefault`, `throwIf`, element factories) to reduce boilerplate.
 - **Named exports only** — No default exports. Components export `[Component, factory]` pairs
