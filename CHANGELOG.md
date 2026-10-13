@@ -18,6 +18,12 @@
 
 * `GridModel.setColumnState()` now drops repeated `colId` entries from saved column state, keeping
   the first. Saved state with a repeated column made the v87 column chooser silently error and break.
+* Fixed desktop `DashCanvas` failing to render in v89.0.0.
+
+### ⚙️ Technical
+
+* The unit test kit now stubs `ResizeObserver`, which jsdom lacks, so app specs can render
+  components that track their own size.
 
 ## 89.0.0 - 2026-10-13
 
