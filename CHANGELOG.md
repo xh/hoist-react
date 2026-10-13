@@ -12,7 +12,17 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 90.0.0-SNAPSHOT - unreleased
+## 89.0.1-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Fixed desktop `DashCanvas` failing to render in v89.0.0. The header menu of each view threw
+  `ContextMenu is not a function`, unless the view set `hideMenuButton`.
+
+### ⚙️ Technical
+
+* The unit test kit now stubs `ResizeObserver`, which jsdom lacks, so app specs can render
+  components that track their own size.
 
 ## 89.0.0 - 2026-10-13
 
