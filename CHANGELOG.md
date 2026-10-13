@@ -133,6 +133,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed the Admin Console config differ flagging typed JSON configs as changed, based on their
   code-derived resolved and default values, and showing those values as `[object Object]`.
 * Fixed `Badge` ignoring the `align` of its grid column. It now renders inline.
+* Fixed `SelectEditor` overwriting a cell's value when an edit was started by typing a character.
+  The character now goes into the select's search text and opens its menu.
 
 ### ⚙️ Technical
 
