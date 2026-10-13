@@ -12,7 +12,7 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 89.0.0-SNAPSHOT - unreleased
+## 89.0.0 - 2026-10-13
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing, column library config)
 
