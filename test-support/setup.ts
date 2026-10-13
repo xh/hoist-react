@@ -48,14 +48,6 @@ if (!window.screen.orientation) {
     });
 }
 
-// jsdom has no ResizeObserver, which the useOnResize hook creates. jsdom has no layout either, so
-// an element never resizes - observe nothing.
-globalThis.ResizeObserver ??= class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-};
-
 // Onsen UI, loaded by the mobile platform, throws "Invalid state" at import unless the root
 // element's computed style lists a transition property. jsdom lists only the properties set on it.
 document.documentElement.style.transitionDuration = '0s';

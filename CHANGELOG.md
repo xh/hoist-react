@@ -12,17 +12,6 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 89.0.1 - 2026-10-13
-
-### 🐞 Bug Fixes
-
-* Fixed desktop `DashCanvas` failing to render in v89.0.0. 
-
-### ⚙️ Technical
-
-* The unit test kit now stubs `ResizeObserver`, which jsdom lacks, so app specs can render
-  components that track their own size.
-
 ## 89.0.0 - 2026-10-13
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing, column library config)
