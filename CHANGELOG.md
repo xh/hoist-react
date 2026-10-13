@@ -12,6 +12,13 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+## 89.0.1-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* `GridModel.setColumnState()` now drops repeated `colId` entries from saved column state, keeping
+  the first. Saved state with a repeated column made the v87 column chooser silently error and break.
+
 ## 89.0.0 - 2026-10-13
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing, column library config)

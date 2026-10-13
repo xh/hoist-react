@@ -46,6 +46,18 @@ describe('GridModel', () => {
             });
             expect(visibleColIds(gridModel)).toEqual(['name', 'trader', 'internalId']);
         });
+
+        it('drops repeated columns, keeping the first entry for each', () => {
+            const gridModel = createGridModel();
+
+            gridModel.setColumnState([
+                {colId: 'pnl', width: 100, hidden: false},
+                {colId: 'name', width: 100, hidden: false},
+                {colId: 'pnl', width: 60, hidden: true}
+            ]);
+            expect(colIds(gridModel)).toEqual(['pnl', 'region', 'name', 'actions']);
+            expect(gridModel.isColumnVisible('pnl')).toBe(true);
+        });
     });
 
     describe('updateColumnState', () => {
