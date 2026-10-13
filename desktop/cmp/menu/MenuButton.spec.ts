@@ -9,7 +9,7 @@ import {menuButton, type MenuButtonProps} from '@xh/hoist/desktop/cmp/menu';
 import {bindable} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {beforeAll, describe, expect, it, vi} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * How the desktop MenuButton renders its `MenuItem` configs. App test suites locate menu items by
@@ -61,6 +61,7 @@ describe('MenuButton', () => {
 
     it('re-runs prepareFn while open when the state it reads changes', async () => {
         const model = new SelectionModel();
+        onTestFinished(() => model.destroy());
         render(
             host({
                 testId: 'series',
@@ -94,12 +95,14 @@ class SelectionModel extends HoistModel {
     }
 }
 
+class HostModel extends HoistModel {}
+
 /**
- * Hosts a MenuButton under a model, as every app view is. Popover transitions are disabled so the
- * menu mounts and unmounts synchronously.
+ * Hosts a MenuButton under a model, as every app view is - MenuButton renders nothing without one
+ * in context. Popover transitions are disabled so the menu mounts and unmounts synchronously.
  */
-const host = hoistCmp.factory<Omit<MenuButtonProps, 'model'> & HoistProps<SelectionModel>>({
-    model: creates(SelectionModel),
+const host = hoistCmp.factory<Omit<MenuButtonProps, 'model'> & HoistProps<HostModel>>({
+    model: creates(HostModel),
     render({model, ...props}) {
         return menuButton({...props, popoverProps: {transitionDuration: 0}});
     }
