@@ -234,9 +234,9 @@ gets `${testId}-${recordId}`. In a grid context menu, the item gets the `testId`
 
 ### Menu and MenuButton
 
-Each `MenuItem` with a `testId` renders it on its element, as given. This applies
-to the desktop `Menu`, `MenuButton`, and context menus, and to the mobile `MenuButton`. A desktop
-`MenuButton` puts its own `testId` on the button and generates `${testId}-menu` for the open menu.
+Each `MenuItem` with a `testId` renders it on its element, as given. This applies to the desktop
+`Menu`, `MenuButton`, and context menus, and to the mobile `MenuButton`. A `MenuButton` on either
+platform puts its own `testId` on the button and generates `${testId}-menu` for the open menu.
 
 ```typescript
 menuButton({

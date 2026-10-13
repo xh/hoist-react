@@ -17,7 +17,7 @@ import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {popover, PopoverProps} from '@xh/hoist/mobile/cmp/popover';
 import '@xh/hoist/mobile/register';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
-import {executeIfFunction} from '@xh/hoist/utils/js';
+import {executeIfFunction, getTestId} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {ReactNode} from 'react';
 import {menu} from './impl/Menu';
@@ -65,7 +65,8 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
 }
 
 /**
- * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.
+ * Convenience Button preconfigured for use as a trigger for a dropdown menu operation. A `testId`
+ * lands on the button, and the open menu gets `${testId}-menu`.
  */
 export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
@@ -80,6 +81,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
         disabled,
         popoverProps,
         icon = Icon.menu(),
+        testId,
         ...props
     }) {
         const impl = useLocalModel(MenuButtonLocalModel);
@@ -88,12 +90,13 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             isOpen: impl.isOpen,
             position: menuPosition,
             disabled: disabled,
-            item: button({icon, disabled, ...props}),
+            item: button({icon, disabled, testId, ...props}),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
                 context: isFunction(context) ? impl.context : context,
                 className: menuClassName,
                 title,
+                testId: getTestId(testId, 'menu'),
                 onDismiss: () => (impl.isOpen = false)
             }),
             onInteraction: nextOpenState => impl.setOpen(nextOpenState, menuItems, context),
