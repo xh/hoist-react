@@ -212,8 +212,9 @@ export interface GridConfig {
     groupBy?: Some<string>;
 
     /**
-     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.
-     * Defaults to 0 for tree grids (i.e. treeMode = true), 1 for standard grouped grids.
+     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.,
+     * and -1 = all levels expanded. Defaults to 0 for tree grids (i.e. treeMode = true), 1 for
+     * standard grouped grids.
      */
     expandLevel?: number;
 
@@ -1253,31 +1254,29 @@ export class GridModel extends HoistModel {
         this.expandToLevel(0);
     }
 
-    /** Expand all parent rows in grouped or tree grid to the specified level. */
+    /** Expand all parent rows in grouped or tree grid to the specified level, or all for -1. */
     @action
     expandToLevel(level: number) {
         this.expandLevel = level;
 
-        // 0) Not rendered, we are done.
-        const {agApi, store} = this;
+        const {agApi} = this;
         if (!agApi) return;
 
-        // 1) Update rendered grid.
-        agApi.setGridOption('groupDefaultExpanded', level);
-        if (level == 0 || level >= this.maxDepth) {
-            level == 0 ? agApi.collapseAll() : agApi.expandAll();
-        } else {
-            // Update raw nodes for efficiency
-            // This approach documented in agGrids onGroupExpandedOrCollapsed() docs (2025)
-            store.records.forEach(rec => {
-                const node = agApi.getRowNode(rec.agId);
-                if (node) {
-                    node.expanded = rec.depth < level;
-                }
-            });
-            agApi.onGroupExpandedOrCollapsed();
-        }
+        // Bulk approach per ag-Grid's `onGroupExpandedOrCollapsed()` docs.
+        agApi.forEachNode(node => {
+            if (node.group) node.expanded = this.isLevelExpanded(node.level);
+        });
+        agApi.onGroupExpandedOrCollapsed();
         this.noteAgExpandStateChange();
+    }
+
+    /**
+     * @internal - true if the current `expandLevel` opens a group row at the given depth. A
+     * negative level opens every depth.
+     */
+    isLevelExpanded(depth: number): boolean {
+        const {expandLevel} = this;
+        return expandLevel < 0 || depth < expandLevel;
     }
 
     /**
@@ -1293,12 +1292,13 @@ export class GridModel extends HoistModel {
     /**
      * True if the given `resolvedLevelLabels` index is the grid's current expand level - used to
      * mark the active item in the "Expand to..." menu. The deepest labelled level counts as current
-     * whenever the grid is expanded to or beyond it.
+     * whenever the grid is expanded to or beyond it, including to all levels with -1.
      */
     isCurrentExpandLevel(idx: number): boolean {
         const {expandLevel, resolvedLevelLabels} = this,
-            lastIdx = resolvedLevelLabels?.length - 1;
-        return expandLevel === idx || (idx === lastIdx && expandLevel > lastIdx);
+            lastIdx = resolvedLevelLabels?.length - 1,
+            expandedPastLast = expandLevel < 0 || expandLevel > lastIdx;
+        return expandLevel === idx || (idx === lastIdx && expandedPastLast);
     }
 
     /**

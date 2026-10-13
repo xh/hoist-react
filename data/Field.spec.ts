@@ -7,7 +7,8 @@
 import {Field, type FieldType, genDisplayName, parseFieldValue, Store} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import DOMPurify from 'dompurify';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * Field parsing and defaults. Every value loaded into a Store or Cube passes through
@@ -62,6 +63,25 @@ describe('parseFieldValue', () => {
         it('converts a LocalDate to local midnight on the same day', () => {
             const ret = parseFieldValue(LocalDate.get('2026-03-15'), 'date');
             expect(ret).toEqual(new Date(2026, 2, 15));
+        });
+
+        it('parses every unparseable value to one shared Invalid Date', () => {
+            const ret = parseFieldValue('Open', 'date');
+            expect(ret.getTime()).toBeNaN();
+            ['12:30', '', new Date(NaN)].forEach(val =>
+                expect(parseFieldValue(val, 'date')).toBe(ret)
+            );
+        });
+
+        // Store compares values on reload, and separate Invalid Dates never compare equal.
+        it('lets a Store reuse records holding an unparseable date', () => {
+            const data = [{id: 1, openTime: 'Open'}],
+                store = new Store({fields: [{name: 'openTime', type: 'date'}], data});
+            onTestFinished(() => store.destroy());
+
+            const rec = store.getById(1);
+            store.loadData(data);
+            expect(store.getById(1)).toBe(rec);
         });
     });
 
@@ -122,6 +142,20 @@ describe('Field', () => {
             const field = new Field({name: 'note', type: 'string'});
             expect(field.parseVal(markup)).toBe(markup);
         });
+
+        // Large loads parse many strings, and DOMPurify parses its config on every call.
+        it.each(['', 'A & B', 'x > y', '&lt;b&gt;', '\u0000', '中文 ✓', '{{name}}'])(
+            'returns %j as DOMPurify would, without calling it',
+            val => {
+                const field = new Field({name: 'note', type: 'string', enableXssProtection: true}),
+                    expected = DOMPurify.sanitize(val),
+                    sanitize = vi.spyOn(DOMPurify, 'sanitize');
+                onTestFinished(() => sanitize.mockRestore());
+
+                expect(field.parseVal(val)).toBe(expected);
+                expect(sanitize).not.toHaveBeenCalled();
+            }
+        );
     });
 });
 

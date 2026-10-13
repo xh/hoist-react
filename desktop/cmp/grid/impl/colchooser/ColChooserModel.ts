@@ -239,8 +239,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         if (this.columnLibraryEnabled) {
             this.libraryModel = new ColLibraryModel({
                 parent: this,
-                collapseGroups: !!libraryConfig.collapseGroups,
-                autoExpandOnFilter: libraryConfig.autoExpandOnFilter ?? 5
+                collapseGroups: !!libraryConfig.collapseGroups
             });
         }
 
