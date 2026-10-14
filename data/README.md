@@ -270,8 +270,9 @@ store.count;         // Filtered record count
 store.allCount;      // Total record count
 ```
 
-Store re-filters automatically whenever record data changes. Call `refreshFilter()` only when the
-state behind a `FunctionFilter` changes without any change to the records themselves.
+Store re-filters automatically whenever record data changes, but a patched change (the default for
+small changes) re-tests only the records it touches. Call `refreshFilter()` when the state behind a
+`FunctionFilter` changes without any change to the records themselves.
 
 ### Observable Properties
 

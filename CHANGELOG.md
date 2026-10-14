@@ -12,9 +12,26 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+## 89.0.1 - 2026-10-14
+
+### 🐞 Bug Fixes
+
+* `GridModel.setColumnState()` now drops repeated `colId` entries from saved column state, keeping
+  the first. Saved state with a repeated column made the v87 column chooser silently error and break.
+* Fixed desktop `DashCanvas` failing to render in v89.0.0.
+* Fixed `XH.message()`, `XH.confirm()`, and `XH.prompt()` resolving to `null` when a route change
+  or other forced close shut the dialog. Callers that tested `!== false` ran the confirmed action.
+  A dialog closed without a choice now resolves to `false`, the same as a cancel. A dismiss with
+  `cancelOnDismiss: false` also resolves to `false` - the flag now only skips `onCancel`.
+
+### ⚙️ Technical
+
+* The unit test kit now stubs `ResizeObserver`, which jsdom lacks, so app specs can render
+  components that track their own size.
+
 ## 89.0.0 - 2026-10-13
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing, column library config)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, grid options, badge spacing, column library config)
 
 See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -35,6 +52,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
 * Removed `ColLibraryConfig.autoExpandOnFilter`. The Column Library now expands every group with a
   match while a search is active. Remove the key from any `columnLibrary` config.
+* `Grid` now ignores `agOptions.groupDefaultExpanded`. Set `GridModel.expandLevel` instead.
+* Removed `GridExperimentalFlags.disableScrollOptimization`. The post-load row height pass it
+  disabled now runs only for grids whose rows vary in height. Remove the key from grid configs.
 
 ### 🎁 New Features
 
@@ -123,7 +143,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `@sharePendingPromise` running a method twice when it threw synchronously.
 * Fixed a cancelled `Timer` keeping its heartbeat alive, and a `Timer` with `delay: true` and a
   disabled interval scheduling a negative timeout.
-* Fixed a `PUT` with `params` labeling its form body `text/plain`, so servers ignored the params.
+* `FetchService` now sends every `PUT` without a `Content-Type` as form-encoded, as for `POST`.
+  A `PUT` with `params` sent `text/plain`, so servers ignored the params.
 * Fixed errors reported by `ExceptionHandler` omitting the type and number of a failed load.
   Arrays in these reports, such as the stack trace, are also no longer sent as objects.
 * Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
@@ -155,8 +176,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `AgGrid` now publishes its row and header heights to ag-Grid as `--ag-row-height` and
   `--ag-header-height`. `Grid` and `AgGrid` pass ag-Grid a `getRowHeight` function only when row
   heights vary, so uniform grids skip per-row height calls and the post-load row height pass.
-* Removed `GridExperimentalFlags.disableScrollOptimization`. The post-load row height pass now
-  runs only for grids whose rows vary in height, where it prevents rows shifting on scroll.
 * `Column` tooltips no longer mount for rows without a record, or for editable cells with no
   validation results, and the tooltip component is a plain function component.
 * `Grid` now passes AG Grid only the pinned rows that changed. A summary row update redraws the
@@ -178,7 +197,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   spurious one-time re-render.
 * `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
   by a change append rather than taking their source position. This may affect the sort ordering
-  of unsorted grids when data changes.
+  of unsorted grids when data changes. Filters that read state outside the record must call
+  `Store.refreshFilter()` when that state changes.
 * `Field` now skips DOMPurify for strings with no `<` when `enableXssProtection` is set. Such
   strings hold no markup, so large loads skip one DOMPurify call per string value.
 * `Field` now parses every unparseable `date` value to one shared Invalid Date, preventing an
