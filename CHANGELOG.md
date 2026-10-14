@@ -19,8 +19,9 @@
 * `GridModel.setColumnState()` now drops repeated `colId` entries from saved column state, keeping
   the first. Saved state with a repeated column made the v87 column chooser silently error and break.
 * Fixed desktop `DashCanvas` failing to render in v89.0.0.
-* Fixed `SelectEditor` overwriting a cell's value when an edit was started by typing a character.
-  The character now goes into the select's search text and opens its menu.
+* Fixed `SelectEditor`, `DateEditor`, and `BooleanEditor` overwriting a cell's value when an edit
+  was started by typing a character. `SelectEditor` now enters the character as search text,
+  `DateEditor` as typed text, and `BooleanEditor` ignores it.
 * Fixed `XH.message()`, `XH.confirm()`, and `XH.prompt()` resolving to `null` when a route change
   or other forced close shut the dialog. Callers that tested `!== false` ran the confirmed action.
   A dialog closed without a choice now resolves to `false`, the same as a cancel. A dismiss with
