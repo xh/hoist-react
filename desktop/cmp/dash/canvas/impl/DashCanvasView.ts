@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isEmpty} from 'lodash';
-import {ReactElement} from 'react';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {hoistCmp, type MenuItemLike, uses} from '@xh/hoist/core';
+import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
+import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {elementFromContent, useOnResize} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
@@ -72,55 +72,52 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
             viewId: id,
             replaceExisting: true
         }),
-        content = ContextMenu({
-            menuItems: [
-                {
-                    text: 'Add',
-                    icon: Icon.add(),
-                    items: addMenuItems,
-                    hidden: contentLocked || isEmpty(addMenuItems)
-                },
-                {
-                    text: 'Remove',
-                    icon: Icon.cross(),
-                    hidden: !viewSpec.allowRemove || contentLocked,
-                    actionFn: () => containerModel.removeView(id)
-                },
-                {
-                    text: 'Rename',
-                    icon: Icon.edit(),
-                    hidden: !viewSpec.allowRename || renameLocked,
-                    actionFn: () => containerModel.renameView(id)
-                },
-                {
-                    text: 'Replace',
-                    icon: Icon.transaction(),
-                    items: replaceMenuItems,
-                    hidden: !viewSpec.allowRemove || contentLocked || isEmpty(replaceMenuItems)
-                },
-                {
-                    text: 'Duplicate',
-                    icon: Icon.copy(),
-                    hidden: !allowDuplicate || contentLocked || viewSpec.unique,
-                    actionFn: () =>
-                        containerModel
-                            .addViewInternal(viewSpec.id, {
-                                layout: getDuplicateLayout(positionParams, model),
-                                state: viewState,
-                                title
-                            })
-                            .ensureVisible()
-                },
-                '-',
-                ...(model.extraMenuItems ?? []),
-                '-',
-                ...(containerModel.extraMenuItems ?? [])
-            ]
-        }) as ReactElement;
+        menuItems: MenuItemLike[] = [
+            {
+                text: 'Add',
+                icon: Icon.add(),
+                items: addMenuItems,
+                hidden: contentLocked || isEmpty(addMenuItems)
+            },
+            {
+                text: 'Remove',
+                icon: Icon.cross(),
+                hidden: !viewSpec.allowRemove || contentLocked,
+                actionFn: () => containerModel.removeView(id)
+            },
+            {
+                text: 'Rename',
+                icon: Icon.edit(),
+                hidden: !viewSpec.allowRename || renameLocked,
+                actionFn: () => containerModel.renameView(id)
+            },
+            {
+                text: 'Replace',
+                icon: Icon.transaction(),
+                items: replaceMenuItems,
+                hidden: !viewSpec.allowRemove || contentLocked || isEmpty(replaceMenuItems)
+            },
+            {
+                text: 'Duplicate',
+                icon: Icon.copy(),
+                hidden: !allowDuplicate || contentLocked || viewSpec.unique,
+                actionFn: () =>
+                    containerModel
+                        .addViewInternal(viewSpec.id, {
+                            layout: getDuplicateLayout(positionParams, model),
+                            state: viewState,
+                            title
+                        })
+                        .ensureVisible()
+            },
+            '-',
+            ...(model.extraMenuItems ?? []),
+            '-',
+            ...(containerModel.extraMenuItems ?? [])
+        ];
 
-    // Workaround using React functional component to check if ContextMenu renders null
-    // TODO - build a popover wrapper that null-checks content instead of this workaround
-    if (!content) return null;
+    // Skip the button if every item is hidden.
+    if (isEmpty(parseMenuItems(menuItems))) return null;
 
     return popover({
         position: Position.BOTTOM,
@@ -128,7 +125,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
         item: button({
             icon: Icon.ellipsisVertical()
         }),
-        content
+        content: contextMenu({menuItems})
     });
 });
 
