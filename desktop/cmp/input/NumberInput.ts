@@ -187,7 +187,7 @@ class NumberInputModel extends HoistInputModel {
         if (isNaN(val)) return false;
         if (val === null) return true;
 
-        // Enforce min/max here on commit - they are not passed to BP.
+        // Hoist owns min/max, checking the parsed value - see clampSteppedValue().
         if (!isNil(min) && val < min) return false;
         if (!isNil(max) && val > max) return false;
 
@@ -200,7 +200,7 @@ class NumberInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    // BP applies arrow-key steps before calling onKeyDown, and knows nothing of min/max.
+    // BP has already applied the arrow-key step - clamp the result to min/max.
     private clampSteppedValue() {
         const {min, max} = this.componentProps,
             val = this.toExternal(this.internalValue);
@@ -276,8 +276,8 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         disabled: props.disabled,
         inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
-        // Not passing min/max - BP clamps on any bounds change, blanking formatted values
-        // such as '1,000' or '50%'. Enforced instead by isValid() and clampSteppedValue().
+        // No min/max - Hoist applies them to the parsed value, independent of format. BP
+        // would clamp the formatted text, blanking values such as '1,000' or '50%'.
         minorStepSize,
         majorStepSize,
         placeholder: props.placeholder,
