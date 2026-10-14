@@ -38,9 +38,9 @@ describe('SelectEditor', () => {
     });
 
     it('keeps the value when an edit started by a key ends without a pick', async () => {
-        const {gridModel} = await renderGridAsync();
-        await startEditWithKeyAsync(gridModel, 'category', 'E');
-        await settleAsync();
+        const {gridModel} = await renderGridAsync(),
+            input = await startEditWithKeyAsync(gridModel, 'category', 'E');
+        await waitFor(() => expect(input.value).toBe('E'));
 
         gridModel.agApi.stopEditing();
         await waitFor(() => expect(gridModel.isEditing).toBe(false));
@@ -110,7 +110,7 @@ async function startEditWithKeyAsync(gridModel: GridModel, colKey: string, key: 
     return input;
 }
 
-// Let the editor finish handling the key that started the edit.
+// Give the editor time to handle the key that started the edit, when asserting it did nothing.
 function settleAsync() {
     return wait(50);
 }

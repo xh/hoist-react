@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {select, SelectProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -50,23 +49,9 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorPro
             }
         };
 
-        return useInlineEditorModel(select, props, ref, enterSearchText);
+        // A select's value holds an option, so enter the key that started the edit as search text.
+        return useInlineEditorModel(select, props, ref, (input, key) =>
+            (input as any).enterSearchText(key)
+        );
     }
 });
-
-// Enter the key that started the edit as search text and open the menu, as typing would. The
-// select's value holds an option, so the key cannot be entered as a value as other editors do.
-function enterSearchText(input: HoistInputModel, key: string) {
-    // Ignore the key when search is off, as the select has no search text to enter it into.
-    const rsSelectCmp = (input as any).reactSelectRef?.current;
-    if (!rsSelectCmp?.props.isSearchable) return;
-
-    // Wait for the select to finish handling focus, which selects any existing input text.
-    wait().then(() => {
-        rsSelectCmp.props.onInputChange(key, {
-            action: 'input-change',
-            prevInputValue: rsSelectCmp.props.inputValue ?? ''
-        });
-        rsSelectCmp.openMenu('first');
-    });
-}
