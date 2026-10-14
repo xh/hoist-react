@@ -29,6 +29,10 @@ the move to TypeScript 7 is strongly recommended.
 - **App option presets (required if used)** - Desktop `themeAppOption()` and
   `sizingModeAppOption()` now render a `RadioCardInput`. Apps passing `SegmentedControl` props via
   `inputProps` should add `previewCards: false` - see Step 12.
+- **`agOptions.groupDefaultExpanded` (required if used)** - `Grid` now ignores it. Set
+  `GridModel.expandLevel` instead - see Step 13.
+- **`disableScrollOptimization` flag (required if used)** - `GridExperimentalFlags` no longer has
+  this flag. An app that sets it fails to compile - see Step 14.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -559,6 +563,47 @@ After:
 themeAppOption({previewCards: false, inputProps: {outlined: true}})
 ```
 
+### 13. Replace `agOptions.groupDefaultExpanded` with `expandLevel`
+
+`Grid` now opens group rows with ag-Grid's `isGroupOpenByDefault` callback, driven by
+`GridModel.expandLevel`. ag-Grid checks that callback before `groupDefaultExpanded`, so a grid
+that sets `groupDefaultExpanded` in `agOptions` now ignores it. Such a grid logs a console warning
+and opens only one level, the default `expandLevel` for grouped grids.
+
+**Find affected code:**
+
+```bash
+grep -rn "groupDefaultExpanded" client-app/src/
+```
+
+Move the value to `expandLevel` on the `GridModel`.
+
+Before:
+
+```typescript
+grid({agOptions: {groupDefaultExpanded: 2}})
+```
+
+After:
+
+```typescript
+new GridModel({groupBy: ['region', 'desk'], expandLevel: 2, ...})
+```
+
+### 14. Remove `GridExperimentalFlags.disableScrollOptimization`
+
+The post-load row height pass this flag disabled now runs only for grids whose rows vary in height,
+so the flag is gone. An app that still sets it fails to compile.
+
+**Find affected code:**
+
+```bash
+grep -rn "disableScrollOptimization" client-app/src/
+```
+
+Remove the key from the grid's `experimental` config, and from any `xhGridExperimental` soft
+config.
+
 ## Other Changes to Review
 
 These need no code change in most apps.
@@ -571,6 +616,14 @@ These need no code change in most apps.
   source position. Grids with no
   sort may show new rows in a different order. Set a sort, or set `maxPatchRatio: 0` in the
   store's `experimental` config to restore the old behavior.
+- **Filters that read outside state need `refreshFilter()`.** A patched change re-tests only the
+  records it touches. A `FunctionFilter` that reads state other than the record, such as a model
+  property, no longer re-runs on the other records when data changes. Call
+  `store.refreshFilter()` when that state changes. v88 hid a missing call by re-filtering every
+  record on each change.
+- **`PUT` requests default to a form-encoded body.** `FetchService` now labels every `PUT` without
+  an explicit `Content-Type` as `application/x-www-form-urlencoded`, as it does for `POST`. v88
+  sent `text/plain`. A `PUT` that sends a raw `body` should set its own `Content-Type`.
 
 ## Verification Checklist
 
@@ -592,6 +645,7 @@ After completing all steps:
 - [ ] No `columnLibrary` config sets `autoExpandOnFilter`.
 - [ ] The Options dialog shows theme and sizing choices as intended - cards, or a segmented
       control where `previewCards: false` is set.
+- [ ] No grid sets `agOptions.groupDefaultExpanded`, and grouped grids open to the intended level.
 
 ## Reference
 
