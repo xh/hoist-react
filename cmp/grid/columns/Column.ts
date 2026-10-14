@@ -807,7 +807,8 @@ export class Column {
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
-                hide: this.hidden,
+                // Undefined keeps ag-Grid's current visibility on update.
+                hide: gridModel.isColumnHiddenByGrouping(this.colId) ? undefined : this.hidden,
                 columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,

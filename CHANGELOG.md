@@ -13,6 +13,12 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a grouped `Grid` showing its grouped column again on any column state change, such as a
+  resize, an autosize or a view restore. A header drag while grouped also saved the column as
+  hidden, so it stayed hidden after ungrouping.
+
 ## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes

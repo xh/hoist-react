@@ -9,6 +9,7 @@ import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {render, waitFor} from '@testing-library/react';
+import type {GridApi} from 'ag-grid-community';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -101,6 +102,30 @@ describe('Grid', () => {
         await waitFor(() => expect(pinned()).toEqual([[], ['summary']]));
     });
 
+    it('leaves the visibility of a grouped column to ag-Grid', async () => {
+        const {gridModel} = await renderGridAsync({
+                columns: [{field: 'name'}, {field: 'qty'}, {field: 'region'}]
+            }),
+            {agApi} = gridModel,
+            agHidden = (colId: string) =>
+                agApi.getColumnState().find(it => it.colId === colId).hide;
+        stubAgGrouping(agApi);
+
+        gridModel.setGroupBy('name');
+        await waitFor(() => expect(agHidden('name')).toBe(true));
+
+        // Column state changes must not show the grouped column, or record it as hidden.
+        gridModel.setColumns([{field: 'name'}, {field: 'qty'}, {field: 'region'}]);
+        gridModel.updateColumnState([{colId: 'qty', width: 150}]);
+        gridModel.noteAgColumnStateChanged(agApi.getColumnState());
+        await waitFor(() => expect(agApi.getColumnState()[1].width).toBe(150));
+        expect(agHidden('name')).toBe(true);
+        expect(gridModel.isColumnVisible('name')).toBe(true);
+
+        gridModel.setGroupBy(null);
+        await waitFor(() => expect(agHidden('name')).toBe(false));
+    });
+
     it('renders columns without a renderer as plain text, and others through the wrapper', async () => {
         const {container} = await renderGridAsync({
                 columns: [{field: 'name'}, {field: 'qty', renderer: v => `${v}!`}]
@@ -115,6 +140,19 @@ describe('Grid', () => {
         expect(qty.querySelector('.xh-cell-inner-wrapper').textContent).toBe('1!');
     });
 });
+
+// Stands in for ag-Grid Enterprise row grouping: hide each grouped column, re-show each ungrouped.
+function stubAgGrouping(agApi: GridApi) {
+    let grouped: string[] = [];
+    vi.spyOn(agApi, 'setRowGroupColumns').mockImplementation((colIds: string[]) => {
+        const state = [
+            ...grouped.filter(it => !colIds.includes(it)).map(colId => ({colId, hide: false})),
+            ...colIds.map(colId => ({colId, hide: true}))
+        ];
+        grouped = colIds;
+        agApi.applyColumnState({state});
+    });
+}
 
 async function renderGridAsync(config: GridConfig = {}) {
     const gridModel = new GridModel({columns: [{field: 'name'}, {field: 'qty'}], ...config});
