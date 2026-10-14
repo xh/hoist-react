@@ -200,7 +200,7 @@ class NumberInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    // Clamp arrow-key steps to min/max, which BP has already applied by this point.
+    // BP steps the value on arrow keys without applying min/max - clamp the stepped value.
     private clampSteppedValue() {
         const {min, max} = this.componentProps,
             val = this.toExternal(this.internalValue);
