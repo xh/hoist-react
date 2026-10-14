@@ -170,17 +170,13 @@ export class MessageModel extends HoistModel {
     @action
     doCancel() {
         this.onCancel?.();
-        this.close(false);
+        this.close();
     }
 
     @action
     doEscape() {
         if (!this.dismissable) return;
-        if (this.cancelOnDismiss) {
-            this.doCancel();
-            return;
-        }
-        this.close(null);
+        this.cancelOnDismiss ? this.doCancel() : this.close();
     }
 
     /**

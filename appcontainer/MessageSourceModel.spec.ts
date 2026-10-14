@@ -56,11 +56,16 @@ describe('MessageSourceModel', () => {
             expect(await result).toBe(false);
         });
 
-        it('resolves null on escape when cancelOnDismiss is false', async () => {
-            // Lets a caller tell "closed the dialog" apart from an explicit "Cancel".
-            const result = XH.confirm({message: 'Discard changes?', cancelOnDismiss: false});
+        it('resolves false on escape but skips onCancel when cancelOnDismiss is false', async () => {
+            const onCancel = vi.fn(),
+                result = XH.confirm({
+                    message: 'Discard changes?',
+                    cancelOnDismiss: false,
+                    onCancel
+                });
             openMessage().doEscape();
-            expect(await result).toBeNull();
+            expect(await result).toBe(false);
+            expect(onCancel).not.toHaveBeenCalled();
         });
 
         it('ignores escape for an alert, which must be acknowledged', async () => {
