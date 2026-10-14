@@ -20,7 +20,8 @@ the move to TypeScript 7 is strongly recommended.
 - **Icons added via `library.add()` (recommended)** - Register them with `Icon.register()` so
   `IconPicker` offers them - see Step 8.
 - **Grid rendering defaults (review)** - Column virtualisation is now on, and columns without a
-  `renderer` render plain text with no wrapper span - see Step 9.
+  `renderer` render plain text with no wrapper span. React element values in those columns need a
+  `renderer` - see Step 9.
 - **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
   follow text need a space or a container `gap` - see Step 10.
 - **Column Library config (required if used)** - `ColLibraryConfig.autoExpandOnFilter` is gone.
@@ -437,6 +438,44 @@ After:
 ```scss
 .my-grid .ag-cell {
   color: var(--xh-text-color-muted);
+}
+```
+
+**Element values need a renderer.** ag-Grid writes a plain cell's value as text, so a React
+element value now shows as `[object Object]`. The usual source is a `getValueFn` that calls a Hoist
+formatter. `fmtNumber` and its variants return an element for options such as `label`, `ledger`,
+`colorSpec` and `tooltip`. Have the `getValueFn` return the raw value, and format it in a
+`renderer`. Sorting, filtering and export also read the raw value.
+
+**Find affected columns:**
+
+```bash
+grep -rn "getValueFn" client-app/src/
+```
+
+Before:
+
+```typescript
+{
+    field: 'elapsed',
+    getValueFn: ({record}) => {
+        const {startTime, endTime} = record.data;
+        if (!startTime || !endTime) return '-';
+        return fmtNumber((endTime - startTime) / 1000, {precision: 2, label: 's'});
+    }
+}
+```
+
+After:
+
+```typescript
+{
+    field: 'elapsed',
+    getValueFn: ({record}) => {
+        const {startTime, endTime} = record.data;
+        return startTime && endTime ? (endTime - startTime) / 1000 : null;
+    },
+    renderer: numberRenderer({precision: 2, label: 's', nullDisplay: '-'})
 }
 ```
 
