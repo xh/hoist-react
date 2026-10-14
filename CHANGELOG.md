@@ -12,7 +12,22 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 89.0.0-SNAPSHOT - unreleased
+## 90.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* `GridModel.setColumnState()` now drops repeated `colId` entries from saved column state, keeping
+  the first. Saved state with a repeated column made the v87 column chooser silently error and break.
+* Fixed desktop `DashCanvas` failing to render in v89.0.0.
+* Fixed `SelectEditor` overwriting a cell's value when an edit was started by typing a character.
+  The character now goes into the select's search text and opens its menu.
+
+### ⚙️ Technical
+
+* The unit test kit now stubs `ResizeObserver`, which jsdom lacks, so app specs can render
+  components that track their own size.
+
+## 89.0.0 - 2026-10-13
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, badge spacing, column library config)
 
@@ -58,6 +73,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
   headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
   hoist-dev-utils 16.1. Experimental in v89 - it may change.
+* Added `testId` support to desktop `ViewManager`, with derived ids for its buttons, menu, views,
+  and dialogs. See `docs/test-automation.md`.
+* Added `MenuItem.testId` for desktop and mobile menus. Grid context menus now also render
+  `RecordAction.testId`.
+* Added `MenuItem.keepMenuOpen` to leave a menu open after a click. Open desktop menus now re-run
+  `prepareFn` when the state it reads changes.
 
 ### 🐞 Bug Fixes
 
@@ -71,6 +92,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   reporting true while a changed record's first async validation was still running.
 * Fixed `ViewManagerModel` overwriting the user's saved current view when views failed to load.
 * Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
+* Fixed the desktop `ViewManager` menu button dropping its `xh-view-manager__menu-button` class.
 * Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
   highlights stopping at the last column. Also fixed the total row highlighting on hover.
 * Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
@@ -133,8 +155,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed the Admin Console config differ flagging typed JSON configs as changed, based on their
   code-derived resolved and default values, and showing those values as `[object Object]`.
 * Fixed `Badge` ignoring the `align` of its grid column. It now renders inline.
-* Fixed `SelectEditor` overwriting a cell's value when an edit was started by typing a character.
-  The character now goes into the select's search text and opens its menu.
+* Fixed `FormFieldSet` throwing a MobX cycle error when passed a `model`. Fields and nested sets
+  register with the `FormFieldSet` that encloses them.
 
 ### ⚙️ Technical
 

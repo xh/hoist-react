@@ -1,10 +1,11 @@
 # Hoist React v89 Upgrade Notes
 
-> **From:** v88.x → v89.0.0 | **Released:** TBD | **Difficulty:** 🟢 LOW
+> **From:** v88.x → v89.0.0 | **Released:** 2026-10-13 | **Difficulty:** 🟢 LOW
 
 ## Overview
 
-Hoist React v89 is a light upgrade with five required changes and one strongly recommended change.
+Hoist React v89 is a light upgrade. Most steps apply only to apps that use the affected API, and
+the move to TypeScript 7 is strongly recommended.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -16,10 +17,17 @@ Hoist React v89 is a light upgrade with five required changes and one strongly r
   switch to `Icon.getCatalog()` - see Step 6.
 - **Icon `faName` (required if used)** - Icon elements carry their FA name as `props.faName`, not
   `props.iconName` - see Step 7.
+- **Icons added via `library.add()` (recommended)** - Register them with `Icon.register()` so
+  `IconPicker` offers them - see Step 8.
+- **Grid rendering defaults (review)** - Column virtualisation is now on, and columns without a
+  `renderer` render plain text with no wrapper span - see Step 9.
 - **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
   follow text need a space or a container `gap` - see Step 10.
 - **Column Library config (required if used)** - `ColLibraryConfig.autoExpandOnFilter` is gone.
   Remove the key from any `columnLibrary` config - see Step 11.
+- **App option presets (required if used)** - Desktop `themeAppOption()` and
+  `sizingModeAppOption()` now render a `RadioCardInput`. Apps passing `SegmentedControl` props via
+  `inputProps` should add `previewCards: false` - see Step 12.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -218,6 +226,9 @@ Before v89, a spec for any one field disabled filters on all other `filterable` 
 grep -rn "fieldSpecs" client-app/src/
 ```
 
+Only `fieldSpecs` in a grid's `filterModel` config (a `GridFilterModelConfig`) changed.
+`FilterChooserModel` also takes `fieldSpecs`, and those hits need no change.
+
 For each grid that sets `fieldSpecs`, check the columns that the list omits. If a column should
 have no filter, set `filterable: false` on it.
 
@@ -355,6 +366,31 @@ dragonIcon();
 Icons added via `library.add()` still render. `Icon.get()` logs a one-time warning for each one it
 looks up by name.
 
+Register icons in one app-level module imported by `Bootstrap.ts`, so they are registered before
+the app renders. A registration runs when its module loads, so one left in a lazily loaded tab is
+missing from `IconPicker` and from `Icon.get()` until that tab loads. Toolbox keeps its icons in
+`client-app/src/core/Icons.ts`.
+
+```typescript
+// client-app/src/core/Icons.ts - imported by Bootstrap.ts
+import {faGithub} from '@fortawesome/free-brands-svg-icons';
+import {faFaceFrown, faFaceSmile} from '@fortawesome/pro-regular-svg-icons';
+import {Icon} from '@xh/hoist/icon';
+
+export const githubIcon = Icon.register({name: 'github', defs: faGithub});
+
+export const [faceFrownIcon, faceSmileIcon] = Icon.registerAll([
+    {name: 'faceFrown', defs: faFaceFrown},
+    {name: 'faceSmile', defs: faFaceSmile}
+]);
+```
+
+- **Use the returned factory.** Registered names are added to `Icon` at runtime only, so
+  `Icon.github()` does not type-check. Call `githubIcon()`, or `Icon.get('github')` by name.
+- **Check the built-in set first.** Registering a name that `Icon` already has keeps the existing
+  icon and logs a warning. Use the built-in factory, register under another name, or pass
+  `replace: true` to override it.
+
 ### 9. Review Grid Rendering Defaults
 
 Two `Grid` rendering defaults changed for performance. Most apps need no change, but check the
@@ -458,6 +494,45 @@ After:
 colChooserModel: {columnLibrary: {collapseGroups: true}}
 ```
 
+### 12. Review App Option `inputProps`
+
+Desktop `themeAppOption()` and `sizingModeAppOption()` now show their choices as `RadioCardInput`
+cards, each with a mini preview. Their `inputProps` go to that input. An app that passes
+`SegmentedControl` props there should set `previewCards: false` to keep the segmented control.
+
+**Find affected code:**
+
+```bash
+grep -rnE "(themeAppOption|sizingModeAppOption)\(\{" client-app/src/
+```
+
+Calls with no `inputProps` need no change. They get the new cards.
+
+Before:
+
+```typescript
+themeAppOption({inputProps: {outlined: true}})
+```
+
+After:
+
+```typescript
+themeAppOption({previewCards: false, inputProps: {outlined: true}})
+```
+
+## Other Changes to Review
+
+These need no code change in most apps.
+
+- **`@bindable`, `@bindableRef` and `@persist` are typed as `accessor` decorators.** `tsc` now
+  reports one of them on a plain field. Such a field never worked: it threw in development and was
+  not observable in production builds. Add the `accessor` keyword where `tsc` asks.
+- **`Store` patches small changes by default.** With `experimental.maxPatchRatio` now 0.1, records
+  added by a small change, or newly passing a filter, are appended rather than placed at their
+  source position. Grids with no
+  sort may show new rows in a different order. Set a sort, or set `maxPatchRatio: 0` in the
+  store's `experimental` config to restore the old behavior.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -476,6 +551,8 @@ After completing all steps:
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
 - [ ] Badges that follow a label are spaced from it.
 - [ ] No `columnLibrary` config sets `autoExpandOnFilter`.
+- [ ] The Options dialog shows theme and sizing choices as intended - cards, or a segmented
+      control where `previewCards: false` is set.
 
 ## Reference
 
