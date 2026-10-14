@@ -20,7 +20,7 @@ import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {clamp, debounce, isNaN, isNil, isNumber, round} from 'lodash';
-import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
+import {KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
 
 export interface NumberInputProps
     extends HoistProps, LayoutProps, StyleProps, HoistInputProps, PasswordManagerSupportProps {
@@ -200,7 +200,7 @@ class NumberInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    // BP has already applied the arrow-key step - clamp the result to min/max.
+    // Clamp arrow-key steps to min/max, which BP has already applied by this point.
     private clampSteppedValue() {
         const {min, max} = this.componentProps,
             val = this.toExternal(this.internalValue);
@@ -251,13 +251,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     const {width, flex, ...layoutProps} = getLayoutProps(props),
         renderValue = model.formatRenderValue(model.renderValue);
 
-    // BP workaround -- stepsize can block Blueprint from rendering intended value in
-    // underlying control -- ensure it is always shown.
-    useLayoutEffect(() => {
-        const input = model.inputEl;
-        if (input) input.value = renderValue;
-    });
-
     // BP bases expected precision off of dps in minorStepSize, if specified.
     // The default BP value of 0.1 for this prop emits a console warning any time the input
     // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
@@ -276,8 +269,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         disabled: props.disabled,
         inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
-        // No min/max - Hoist applies them to the parsed value, independent of format. BP
-        // would clamp the formatted text, blanking values such as '1,000' or '50%'.
         minorStepSize,
         majorStepSize,
         placeholder: props.placeholder,
