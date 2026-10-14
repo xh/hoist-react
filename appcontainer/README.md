@@ -84,6 +84,10 @@ methods return a `Promise` that resolves when the user responds, making them ide
 The generic modal dialog API — all other message methods delegate to it. Returns
 `Promise<boolean>` that resolves to `true` on confirm, `false` on cancel.
 
+A message that closes without a choice also resolves to `false`, so callers treat it as a cancel.
+A route change, a later message with the same `messageKey`, or a destroy closes a message this
+way. If a message sets `cancelOnDismiss: false`, a dismiss by the user resolves to `null`.
+
 ```typescript
 const result = await XH.message({
     title: 'Export Complete',
@@ -153,7 +157,8 @@ const confirmed = await XH.confirm({
 ### `XH.prompt(config)`
 
 An input collection dialog with a default `TextInput`, "OK" and "Cancel" buttons. Returns
-`Promise<value | false>` — the input value on confirm, `false` on cancel.
+`Promise<value | false>` — the input value on confirm, `false` on cancel. If an empty input is a
+valid answer, test the result with `!== false`, because `null` and `''` are confirmed values.
 
 The default TextInput comes pre-configured with `autoFocus`, `selectOnFocus`, and
 enter-to-confirm (desktop only). Custom inputs must set their own props.
