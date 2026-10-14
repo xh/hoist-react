@@ -19,6 +19,9 @@
 * `GridModel.setColumnState()` now drops repeated `colId` entries from saved column state, keeping
   the first. Saved state with a repeated column made the v87 column chooser silently error and break.
 * Fixed desktop `DashCanvas` failing to render in v89.0.0.
+* Fixed `XH.message()`, `XH.confirm()`, and `XH.prompt()` resolving to `null` when a route change
+  or other forced close shut the dialog. Callers that tested `!== false` ran the confirmed action.
+  A dialog closed without a choice now resolves to `false`, the same as a cancel.
 
 ### ⚙️ Technical
 

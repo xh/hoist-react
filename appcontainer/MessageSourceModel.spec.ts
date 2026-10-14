@@ -122,12 +122,12 @@ describe('MessageSourceModel', () => {
             expect(openMessage().message).toBe('Reconnect now?');
         });
 
-        it('resolves a replaced message with null', async () => {
+        it('resolves a replaced message with false, as if cancelled', async () => {
             const first = XH.confirm({message: 'Reconnect?', messageKey: 'retry'});
 
             XH.confirm({message: 'Reconnect now?', messageKey: 'retry'});
 
-            expect(await first).toBeNull();
+            expect(await first).toBe(false);
         });
     });
 
@@ -136,11 +136,57 @@ describe('MessageSourceModel', () => {
             const result = XH.confirm({message: 'Delete 3 trades?'}),
                 msg = openMessage();
 
-            await navigateAsync('default.detail');
+            await navigateAwayAsync();
 
             expect(msg.isOpen).toBe(false);
             expect(openMessages()).toHaveLength(0);
-            expect(await result).toBeNull();
+            expect(await result).toBe(false);
+        });
+
+        it('resolves an open prompt with false, which callers treat as a cancel', async () => {
+            // Prompt callers must test `!== false`, as null and '' are valid confirmed values.
+            const result = XH.prompt({message: 'Suspend message (optional)'}),
+                msg = openMessage();
+
+            await navigateAwayAsync();
+
+            expect(msg.isOpen).toBe(false);
+            expect(await result).toBe(false);
+        });
+    });
+
+    describe('destroy', () => {
+        it('resolves an open message with false, as if cancelled', async () => {
+            const msg = new MessageModel({message: 'Delete 3 trades?'});
+
+            msg.destroy();
+
+            expect(await msg.result).toBe(false);
+        });
+    });
+
+    describe('forced close during confirm', () => {
+        it('skips onConfirm and suppress when closed while the input validates', async () => {
+            const onConfirm = vi.fn(),
+                spec = {
+                    message: 'Name this view',
+                    messageKey: 'closedMidConfirm',
+                    suppress: true,
+                    onConfirm
+                },
+                result = XH.prompt(spec),
+                msg = openMessage();
+            msg.formModel.getField('value').setValue('Q4 Positions');
+            msg.formModel.getField('suppress').setValue(true);
+
+            // Replacing the message closes it synchronously, while validation is still pending.
+            const confirming = msg.doConfirmAsync();
+            XH.prompt(spec);
+            await confirming;
+
+            expect(await result).toBe(false);
+            expect(onConfirm).not.toHaveBeenCalled();
+            expect(MessageModel.getSuppressedResult(spec)).toBeNull();
         });
     });
 
@@ -246,7 +292,9 @@ function trackSettled<T>(promise: Promise<T>) {
     return ret;
 }
 
-function navigateAsync(routeName: string): Promise<void> {
+// Navigate to whichever test route is not current, so each call is a real route change.
+function navigateAwayAsync(): Promise<void> {
+    const routeName = XH.routerState?.name === 'default.detail' ? 'default' : 'default.detail';
     return new Promise((resolve, reject) =>
         XH.router.navigate(routeName, {}, err => (err ? reject(err) : resolve()))
     );

@@ -38,7 +38,7 @@ export class MessageModel extends HoistModel {
     dismissable;
     cancelOnDismiss;
 
-    // Promise settled when the message closes - with the user's choice, or null if forced close
+    // Promise settled when the message closes - with the user's choice, or false if forced closed
     result;
     _resolver;
 
@@ -152,7 +152,8 @@ export class MessageModel extends HoistModel {
         const {formModel} = this;
         if (formModel) {
             await formModel.validateAsync();
-            if (!formModel.isValid) return;
+            // Message may have been force closed while validating - its result is already false.
+            if (!this.isOpen || !formModel.isValid) return;
             const data = formModel.getData();
             if (formModel.getField('value')) {
                 resolvedVal = data.value;
@@ -179,12 +180,16 @@ export class MessageModel extends HoistModel {
             this.doCancel();
             return;
         }
-        this.close();
+        this.close(null);
     }
 
-    /** Close the message, settling `result` with the given value. */
+    /**
+     * Close the message, settling `result` with the given value. Defaults to false, so a close
+     * the user did not choose reads as a cancel to every caller - see `XH.message()`.
+     */
     @action
-    close(result: unknown = null) {
+    close(result: unknown = false) {
+        if (!this.isOpen) return;
         this._resolver(result);
         this.isOpen = false;
     }
