@@ -12,7 +12,7 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 89.1.0 - 2026-10-14
+## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes
 
