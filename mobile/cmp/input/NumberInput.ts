@@ -23,7 +23,7 @@ import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnMount} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {useEffect} from 'react';
@@ -195,8 +195,11 @@ class NumberInputModel extends HoistInputModel {
 
     onKeyDown = ev => {
         if (ev.key === 'Enter') this.doCommit();
-        if (this.commasWhileEditing) skipCommaOnDelete(this.inputEl as HTMLInputElement, ev.key);
         this.componentProps.onKeyDown?.(ev);
+    };
+
+    onBeforeInput = (ev: InputEvent) => {
+        if (this.commasWhileEditing) skipCommaOnDelete(ev);
     };
 
     override onFocus = ev => {
@@ -276,6 +279,9 @@ const cmp = hoistCmp.factory<NumberInputModel>(
                 model.caretPos = null;
             }
         });
+
+        // Native listener, as React's onBeforeInput does not fire for deletes.
+        useOnMount(() => model.inputEl?.addEventListener('beforeinput', model.onBeforeInput));
 
         // Using type=text rather than type=number, to support shorthand units and rich
         // rendering but also because of issues with typing in decimal point (see #3450)

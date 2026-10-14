@@ -13,6 +13,11 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `NumberInput.displayWithCommas` now accepts `'always'` to insert commas while the user types,
+  on desktop and mobile. `'whenBlurred'` names the existing behavior, and `true` remains its alias.
+
 ## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes
@@ -280,8 +285,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
   available as `BaseOAuthClient.lastAuthMethod`. Apps opt in by passing the ctx from
   `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
-* `NumberInput.displayWithCommas` now accepts `'always'` to insert commas while the user types,
-  on desktop and mobile. `'whenBlurred'` names the existing behavior, and `true` remains its alias.
 
 ### 🐞 Bug Fixes
 * Fixed `defaultReadonlyRenderer` reformatting plain strings that happen to parse as JSON scalars -

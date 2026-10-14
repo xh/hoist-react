@@ -23,7 +23,7 @@ import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, useComposedRefs, useOnMount} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
@@ -214,8 +214,11 @@ class NumberInputModel extends HoistInputModel {
 
     onKeyDown: KeyboardEventHandler<HTMLInputElement> = ev => {
         if (ev.key === 'Enter') this.doCommit();
-        if (this.commasWhileEditing) skipCommaOnDelete(ev.currentTarget, ev.key);
         this.componentProps.onKeyDown?.(ev);
+    };
+
+    onBeforeInput = (ev: InputEvent) => {
+        if (this.commasWhileEditing) skipCommaOnDelete(ev);
     };
 
     formatRenderValue(value: number) {
@@ -273,6 +276,9 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
             model.caretPos = null;
         }
     });
+
+    // Native listener, as React's onBeforeInput does not fire for deletes.
+    useOnMount(() => model.inputEl?.addEventListener('beforeinput', model.onBeforeInput));
 
     // BP bases expected precision off of dps in minorStepSize, if specified.
     // The default BP value of 0.1 for this prop emits a console warning any time the input

@@ -42,16 +42,18 @@ export function setCaretSkippingCommas(input: HTMLInputElement, count: number) {
 }
 
 /**
- * Step the caret over an adjacent comma before Backspace or Delete, so the key removes the digit
- * beyond it. Otherwise the reformat would restore the deleted comma and the key would do nothing.
+ * `beforeinput` listener that steps the caret over an adjacent comma before Backspace or Delete, so
+ * the key removes the digit beyond it. Otherwise the reformat would restore the deleted comma.
+ * Listens for the native event, which (unlike `keydown`) reports deletes from mobile soft keyboards.
  */
-export function skipCommaOnDelete(input: HTMLInputElement, key: string) {
-    const {selectionStart: start, selectionEnd: end, value} = input;
+export function skipCommaOnDelete(ev: InputEvent) {
+    const input = ev.target as HTMLInputElement,
+        {selectionStart: start, selectionEnd: end, value} = input;
     if (start == null || start !== end) return;
 
-    if (key === 'Backspace' && value[start - 1] === ',') {
+    if (ev.inputType === 'deleteContentBackward' && value[start - 1] === ',') {
         input.setSelectionRange(start - 1, start - 1);
-    } else if (key === 'Delete' && value[start] === ',') {
+    } else if (ev.inputType === 'deleteContentForward' && value[start] === ',') {
         input.setSelectionRange(start + 1, start + 1);
     }
 }

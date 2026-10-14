@@ -71,28 +71,39 @@ describe('LiveCommas', () => {
     });
 
     describe('skipCommaOnDelete', () => {
+        function deleteFrom(input: HTMLInputElement, inputType: string) {
+            input.addEventListener('beforeinput', skipCommaOnDelete);
+            input.dispatchEvent(new InputEvent('beforeinput', {inputType}));
+        }
+
         it('moves the caret before a comma on Backspace', () => {
             const input = inputWith('1,234', 2);
-            skipCommaOnDelete(input, 'Backspace');
+            deleteFrom(input, 'deleteContentBackward');
             expect(input.selectionStart).toBe(1);
         });
 
         it('moves the caret past a comma on Delete', () => {
             const input = inputWith('1,234', 1);
-            skipCommaOnDelete(input, 'Delete');
+            deleteFrom(input, 'deleteContentForward');
             expect(input.selectionStart).toBe(2);
         });
 
         it('leaves the caret alone when no comma is adjacent', () => {
             const input = inputWith('1,234', 4);
-            skipCommaOnDelete(input, 'Backspace');
+            deleteFrom(input, 'deleteContentBackward');
             expect(input.selectionStart).toBe(4);
+        });
+
+        it('leaves the caret alone for other input types', () => {
+            const input = inputWith('1,234', 2);
+            deleteFrom(input, 'deleteWordBackward');
+            expect(input.selectionStart).toBe(2);
         });
 
         it('leaves a selected range alone', () => {
             const input = inputWith('1,234', 0);
             input.setSelectionRange(1, 3);
-            skipCommaOnDelete(input, 'Delete');
+            deleteFrom(input, 'deleteContentForward');
             expect([input.selectionStart, input.selectionEnd]).toEqual([1, 3]);
         });
     });
