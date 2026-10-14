@@ -19,7 +19,7 @@ import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
-import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
+import {clamp, debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
 export interface NumberInputProps
@@ -187,7 +187,7 @@ class NumberInputModel extends HoistInputModel {
         if (isNaN(val)) return false;
         if (val === null) return true;
 
-        // Enforce min/max here on commit. BP props only limit the incremental step change
+        // Enforce min/max here on commit - they are not passed to BP.
         if (!isNil(min) && val < min) return false;
         if (!isNil(max) && val > max) return false;
 
@@ -196,8 +196,19 @@ class NumberInputModel extends HoistInputModel {
 
     onKeyDown: KeyboardEventHandler<HTMLInputElement> = ev => {
         if (ev.key === 'Enter') this.doCommit();
+        if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') this.clampSteppedValue();
         this.componentProps.onKeyDown?.(ev);
     };
+
+    // BP applies arrow-key steps before calling onKeyDown, and knows nothing of min/max.
+    private clampSteppedValue() {
+        const {min, max} = this.componentProps,
+            val = this.toExternal(this.internalValue);
+        if (!isNumber(val) || isNaN(val)) return;
+
+        const clamped = clamp(val, min ?? -Infinity, max ?? Infinity);
+        if (clamped !== val) this.noteValueChange(this.toInternal(clamped));
+    }
 
     formatRenderValue(value: number) {
         const {componentProps, precision} = this;
@@ -240,8 +251,8 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     const {width, flex, ...layoutProps} = getLayoutProps(props),
         renderValue = model.formatRenderValue(model.renderValue);
 
-    // BP workaround -- min, max, and stepsize can block Blueprint from rendering
-    // intended value in underlying control -- ensure it is always shown.
+    // BP workaround -- stepsize can block Blueprint from rendering intended value in
+    // underlying control -- ensure it is always shown.
     useLayoutEffect(() => {
         const input = model.inputEl;
         if (input) input.value = renderValue;
@@ -265,8 +276,8 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         disabled: props.disabled,
         inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
-        min: props.min,
-        max: props.max,
+        // Not passing min/max - BP clamps on any bounds change, blanking formatted values
+        // such as '1,000' or '50%'. Enforced instead by isValid() and clampSteppedValue().
         minorStepSize,
         majorStepSize,
         placeholder: props.placeholder,
