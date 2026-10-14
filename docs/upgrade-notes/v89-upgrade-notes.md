@@ -20,7 +20,8 @@ the move to TypeScript 7 is strongly recommended.
 - **Icons added via `library.add()` (recommended)** - Register them with `Icon.register()` so
   `IconPicker` offers them - see Step 8.
 - **Grid rendering defaults (review)** - Column virtualisation is now on, and columns without a
-  `renderer` render plain text with no wrapper span - see Step 9.
+  `renderer` render plain text with no wrapper span. React element values in those columns need a
+  `renderer` - see Step 9.
 - **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
   follow text need a space or a container `gap` - see Step 10.
 - **Column Library config (required if used)** - `ColLibraryConfig.autoExpandOnFilter` is gone.
@@ -28,6 +29,10 @@ the move to TypeScript 7 is strongly recommended.
 - **App option presets (required if used)** - Desktop `themeAppOption()` and
   `sizingModeAppOption()` now render a `RadioCardInput`. Apps passing `SegmentedControl` props via
   `inputProps` should add `previewCards: false` - see Step 12.
+- **`agOptions.groupDefaultExpanded` (required if used)** - `Grid` now ignores it. Set
+  `GridModel.expandLevel` instead - see Step 13.
+- **`disableScrollOptimization` flag (required if used)** - `GridExperimentalFlags` no longer has
+  this flag. An app that sets it fails to compile - see Step 14.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -440,6 +445,44 @@ After:
 }
 ```
 
+**Element values need a renderer.** ag-Grid writes a plain cell's value as text, so a React
+element value now shows as `[object Object]`. The usual source is a `getValueFn` that calls a Hoist
+formatter. `fmtNumber` and its variants return an element for options such as `label`, `ledger`,
+`colorSpec` and `tooltip`. Have the `getValueFn` return the raw value, and format it in a
+`renderer`. Sorting, filtering and export also read the raw value.
+
+**Find affected columns:**
+
+```bash
+grep -rn "getValueFn" client-app/src/
+```
+
+Before:
+
+```typescript
+{
+    field: 'elapsed',
+    getValueFn: ({record}) => {
+        const {startTime, endTime} = record.data;
+        if (!startTime || !endTime) return '-';
+        return fmtNumber((endTime - startTime) / 1000, {precision: 2, label: 's'});
+    }
+}
+```
+
+After:
+
+```typescript
+{
+    field: 'elapsed',
+    getValueFn: ({record}) => {
+        const {startTime, endTime} = record.data;
+        return startTime && endTime ? (endTime - startTime) / 1000 : null;
+    },
+    renderer: numberRenderer({precision: 2, label: 's', nullDisplay: '-'})
+}
+```
+
 ### 10. Space Badges from Preceding Text
 
 `Badge` now renders inline with no outer margin, like a badge in most component libraries. The old
@@ -520,6 +563,47 @@ After:
 themeAppOption({previewCards: false, inputProps: {outlined: true}})
 ```
 
+### 13. Replace `agOptions.groupDefaultExpanded` with `expandLevel`
+
+`Grid` now opens group rows with ag-Grid's `isGroupOpenByDefault` callback, driven by
+`GridModel.expandLevel`. ag-Grid checks that callback before `groupDefaultExpanded`, so a grid
+that sets `groupDefaultExpanded` in `agOptions` now ignores it. Such a grid logs a console warning
+and opens only one level, the default `expandLevel` for grouped grids.
+
+**Find affected code:**
+
+```bash
+grep -rn "groupDefaultExpanded" client-app/src/
+```
+
+Move the value to `expandLevel` on the `GridModel`.
+
+Before:
+
+```typescript
+grid({agOptions: {groupDefaultExpanded: 2}})
+```
+
+After:
+
+```typescript
+new GridModel({groupBy: ['region', 'desk'], expandLevel: 2, ...})
+```
+
+### 14. Remove `GridExperimentalFlags.disableScrollOptimization`
+
+The post-load row height pass this flag disabled now runs only for grids whose rows vary in height,
+so the flag is gone. An app that still sets it fails to compile.
+
+**Find affected code:**
+
+```bash
+grep -rn "disableScrollOptimization" client-app/src/
+```
+
+Remove the key from the grid's `experimental` config, and from any `xhGridExperimental` soft
+config.
+
 ## Other Changes to Review
 
 These need no code change in most apps.
@@ -532,6 +616,14 @@ These need no code change in most apps.
   source position. Grids with no
   sort may show new rows in a different order. Set a sort, or set `maxPatchRatio: 0` in the
   store's `experimental` config to restore the old behavior.
+- **Filters that read outside state need `refreshFilter()`.** A patched change re-tests only the
+  records it touches. A `FunctionFilter` that reads state other than the record, such as a model
+  property, no longer re-runs on the other records when data changes. Call
+  `store.refreshFilter()` when that state changes. v88 hid a missing call by re-filtering every
+  record on each change.
+- **`PUT` requests default to a form-encoded body.** `FetchService` now labels every `PUT` without
+  an explicit `Content-Type` as `application/x-www-form-urlencoded`, as it does for `POST`. v88
+  sent `text/plain`. A `PUT` that sends a raw `body` should set its own `Content-Type`.
 
 ## Verification Checklist
 
@@ -553,6 +645,7 @@ After completing all steps:
 - [ ] No `columnLibrary` config sets `autoExpandOnFilter`.
 - [ ] The Options dialog shows theme and sizing choices as intended - cards, or a segmented
       control where `previewCards: false` is set.
+- [ ] No grid sets `agOptions.groupDefaultExpanded`, and grouped grids open to the intended level.
 
 ## Reference
 

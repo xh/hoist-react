@@ -242,7 +242,7 @@ export class GridLocalModel extends HoistModel {
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
         warnIf(
             this.componentProps.agOptions?.groupDefaultExpanded != null,
-            'agOptions.groupDefaultExpanded is not supported. Use GridModel.expandLevel instead.'
+            'agOptions.groupDefaultExpanded is ignored. Set GridModel.expandLevel instead.'
         );
         this.rowHeightSupport = new RowHeightSupport(this);
         this.transactionMgr = new GridTransactionManager(this.model);
