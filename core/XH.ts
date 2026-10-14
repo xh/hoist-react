@@ -671,11 +671,10 @@ export class XHApi {
      * this method will resolve immediately to their previously saved response, without showing
      * a dialog. This also applies to the `alert`, `confirm`, and `prompt` variants below.
      *
-     * @returns a Promise that resolves to one of:
-     *   - true if the user confirms, or the input value if an input is provided.
-     *   - false if the user cancels, or if the message closes without a choice. A route change,
-     *     a later message with the same `messageKey`, or a destroy closes a message this way.
-     *   - null if the user dismisses a message that sets `cancelOnDismiss: false`.
+     * @returns true if the user confirms, or the input value if an input is provided. Resolves
+     * false for any other outcome - a cancel, a dismiss, or a close without a choice, e.g. by a
+     * route change or a later message with the same `messageKey`. With an input, test the result
+     * with `!== false`, as null and an empty string are valid confirmed values.
      */
     message<T = unknown>(config: MessageSpec): Promise<T | boolean> {
         return this.acm.messageSourceModel.message(config);
@@ -691,8 +690,7 @@ export class XHApi {
 
     /**
      * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
-     * @returns true if user confirms, false if user cancels or the dialog closes without a choice.
-     * See {@link message} for details.
+     * @returns true if user confirms, false otherwise. See {@link message} for details.
      */
     confirm(config: MessageSpec): Promise<boolean> {
         return this.acm.messageSourceModel.confirm(config);
@@ -707,9 +705,8 @@ export class XHApi {
      *   3. onKeyDown handler to confirm on <enter> (same as clicking 'OK') (desktop only)
      * Applications may also provide a custom HoistInput, in which all props must be set.
      *
-     * @returns value of input if user confirms, false if user cancels or the dialog closes
-     * without a choice. See {@link message} for details. Test the result with `!== false`,
-     * as null and an empty string are valid confirmed values.
+     * @returns value of input if user confirms, false otherwise. See {@link message} for details.
+     * Test the result with `!== false`, as null and an empty string are valid confirmed values.
      */
     prompt<T = unknown>(config: MessageSpec): Promise<T | false> {
         return this.acm.messageSourceModel.prompt(config);

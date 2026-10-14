@@ -84,9 +84,8 @@ methods return a `Promise` that resolves when the user responds, making them ide
 The generic modal dialog API — all other message methods delegate to it. Returns
 `Promise<boolean>` that resolves to `true` on confirm, `false` on cancel.
 
-A message that closes without a choice also resolves to `false`, so callers treat it as a cancel.
-A route change, a later message with the same `messageKey`, or a destroy closes a message this
-way. If a message sets `cancelOnDismiss: false`, a dismiss by the user resolves to `null`.
+A message that the user dismisses, or that closes without a choice, also resolves to `false`. A
+route change, a later message with the same `messageKey`, or a destroy closes a message this way.
 
 ```typescript
 const result = await XH.message({
@@ -227,7 +226,7 @@ XH.alert({
 | `onConfirm` | `() => void` | Callback fired on confirm (in addition to Promise resolution) |
 | `onCancel` | `() => void` | Callback fired on cancel (in addition to Promise resolution) |
 | `dismissable` | `boolean` | Whether Escape or clicking outside closes the dialog. Defaults to `true` when cancel button is present |
-| `cancelOnDismiss` | `boolean` | Whether dismissing executes the cancel action (vs resolving to `null`). Default `true` |
+| `cancelOnDismiss` | `boolean` | Whether dismissing calls `onCancel`. The result is `false` either way. Default `true` |
 
 **MessageSpecInput** (for `XH.prompt()` config):
 
