@@ -13,6 +13,16 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `Column.DEFAULT_WIDTH` is now 100px, up from 60px, to reduce layout shift when autosizing.
+
+### 🐞 Bug Fixes
+
+* Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
+  was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
+  `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+
 ### 🤖 AI Docs + Tooling
 
 * The hoist-react MCP server and `hoist-docs` CLI now serve docs from companion libraries that build

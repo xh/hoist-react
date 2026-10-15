@@ -231,7 +231,10 @@ instead. Runtime installation matters when you replace a built-in (see below), b
 calls to that factory then render the app's icon.
 
 Registration is a one-time task at app startup. Import your `Icons.ts` from `Bootstrap.ts`, or any
-module that runs before the first render, so the factories exist before use.
+module that runs before the first render, so the factories exist before use. Put that import below
+the import of `@xh/hoist/core` - an app crashes at startup if `@xh/hoist/icon` is the first Hoist
+module it loads. See
+[Import `@xh/hoist/core` First](../docs/lifecycle-app.md#import-xhhoistcore-first).
 
 ### Registering Multiple Weights
 
