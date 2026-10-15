@@ -1,10 +1,11 @@
 /**
  * Path utilities for the Hoist MCP server.
  *
- * Provides repo root resolution (via `import.meta.url`) and safe path
- * construction that prevents directory traversal outside the repository.
+ * Provides repo root resolution (via `import.meta.url`), app root and installed package lookup
+ * for companion library discovery, and safe path construction that prevents directory traversal
+ * outside a package root.
  */
-import {existsSync, readFileSync} from 'node:fs';
+import {existsSync, readFileSync, realpathSync} from 'node:fs';
 import {resolve, dirname, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -74,6 +75,78 @@ export function resolveHoistVersion(): string {
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {version?: string};
     cachedHoistVersion = pkg.version ?? 'unknown';
     return cachedHoistVersion;
+}
+
+//------------------------------------------------------------------
+// Consuming package (app root) and its dependencies
+//------------------------------------------------------------------
+
+/** The subset of a package.json the tools read. */
+export interface PackageJson {
+    name?: string;
+    version?: string;
+    description?: string;
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    hoist?: {docRegistry?: string};
+}
+
+/** Read `<dir>/package.json`, or return null if it is missing or unreadable. */
+export function readPackageJson(dir: string): PackageJson | null {
+    const path = resolve(dir, 'package.json');
+    if (!existsSync(path)) return null;
+    try {
+        return JSON.parse(readFileSync(path, 'utf8'));
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Resolve the root of the package that consumes `@xh/hoist` - the anchor for companion library
+ * discovery. The server cannot find companion libraries from its own location, because under
+ * pnpm `@xh/hoist` lives in the `.pnpm` store and does not depend on them.
+ *
+ * Checks, in order:
+ *  1. The `HOIST_MCP_APP_ROOT` env var, if set. Used as given.
+ *  2. `cwd` and `cwd/client-app` (the standard Hoist app layout). The first with a package.json
+ *     that is `@xh/hoist` or depends on it wins, else the first with any package.json.
+ *
+ * Returns null when no package.json is found. Params exist for specs - callers pass none.
+ */
+export function resolveAppRoot(
+    cwd: string = process.cwd(),
+    env: Record<string, string | undefined> = process.env
+): string | null {
+    if (env.HOIST_MCP_APP_ROOT) return resolve(cwd, env.HOIST_MCP_APP_ROOT);
+
+    const found = [cwd, resolve(cwd, 'client-app')]
+        .map(dir => ({dir, pkg: readPackageJson(dir)}))
+        .filter(it => it.pkg != null);
+
+    const usesHoist = found.find(({pkg}) => {
+        const deps = {...pkg!.dependencies, ...pkg!.devDependencies, ...pkg!.peerDependencies};
+        return pkg!.name === '@xh/hoist' || '@xh/hoist' in deps;
+    });
+    return (usesHoist ?? found[0])?.dir ?? null;
+}
+
+/**
+ * Find an installed package by walking up from `fromDir` through each `node_modules/<name>`,
+ * as Node does. Returns its real path (pnpm links direct dependencies into `node_modules`), or
+ * null if not installed. Reads the folder directly rather than `require.resolve()`, which fails
+ * for packages whose `exports` map hides `package.json`.
+ */
+export function findInstalledPackage(fromDir: string, name: string): string | null {
+    let dir = resolve(fromDir);
+    while (true) {
+        const candidate = resolve(dir, 'node_modules', name);
+        if (existsSync(resolve(candidate, 'package.json'))) return realpathSync(candidate);
+        const parent = dirname(dir);
+        if (parent === dir) return null;
+        dir = parent;
+    }
 }
 
 /**

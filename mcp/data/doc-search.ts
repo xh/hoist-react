@@ -1,5 +1,6 @@
 /**
- * Section-level ranked search over hoist-react documentation.
+ * Section-level ranked search over hoist-react documentation, plus any companion library docs in
+ * the registry. All libraries share one index.
  *
  * Every registered doc is split into sections (see `doc-sections.ts`) and indexed with
  * MiniSearch (BM25+). Each section is indexed on two fields: its heading breadcrumb
@@ -16,7 +17,7 @@
 import MiniSearch, {type SearchOptions, type SearchResult} from 'minisearch';
 
 import {log} from '../util/logger.js';
-import {loadDocContent, type DocEntry} from './doc-registry.js';
+import {HOIST_PACKAGE, loadDocContent, type DocEntry} from './doc-registry.js';
 import {LINK_DEF_RE, parseDocSections, stripLinks, type DocSection} from './doc-sections.js';
 import {
     createTermProcessor,
@@ -44,6 +45,8 @@ export interface DocSearchResult {
 export interface DocSearchOptions {
     /** MCP category ID to filter by, or `all`. */
     category?: string;
+    /** Library to filter by - a package name, `@xh/hoist` for hoist-react's own docs. */
+    library?: string;
     /** Maximum results. Clamped to 1-{@link MAX_SEARCH_LIMIT}. */
     limit?: number;
 }
@@ -101,6 +104,7 @@ export function searchDocs(
     const idx = getSearchIndex(registry),
         limit = Math.min(Math.max(options.limit ?? DEFAULT_SEARCH_LIMIT, 1), MAX_SEARCH_LIMIT),
         category = options.category && options.category !== 'all' ? options.category : null,
+        library = options.library ?? null,
         querySet = new Set(terms),
         searchOpts: SearchOptions = {
             boost: FIELD_BOOST,
@@ -116,7 +120,16 @@ export function searchDocs(
                     meta = idx.metaTerms.get(section.docId);
                 return idx.weights.get(section.docId)! * (meta?.has(term) ? DOC_META_BOOST : 1);
             },
-            filter: category ? hit => idx.sections[hit.id].category === category : undefined
+            filter:
+                category || library
+                    ? hit => {
+                          const it = idx.sections[hit.id];
+                          return (
+                              (!category || it.category === category) &&
+                              (!library || it.library === library)
+                          );
+                      }
+                    : undefined
         },
         q = terms.join(' ');
 
@@ -161,7 +174,7 @@ interface IndexedSection {
 interface SearchIndex {
     miniSearch: MiniSearch<IndexedSection>;
     /** Indexed sections by MiniSearch document id. */
-    sections: Array<{section: DocSection; category: string; docId: string}>;
+    sections: Array<{section: DocSection; category: string; library: string; docId: string}>;
     entries: Map<string, DocEntry>;
     /** Processed terms from each doc's registry title, description, and keywords. */
     metaTerms: Map<string, Set<string>>;
@@ -213,7 +226,12 @@ function getSearchIndex(registry: DocEntry[]): SearchIndex {
             if (body.replace(/[^\p{L}\p{N}]/gu, '').length < 20) continue;
 
             const id = sections.length;
-            sections.push({section, category: entry.mcpCategory, docId: entry.id});
+            sections.push({
+                section,
+                category: entry.mcpCategory,
+                library: entry.library ?? HOIST_PACKAGE,
+                docId: entry.id
+            });
             docs.push({id, heading: [section.breadcrumb, ...subHeadings(body)].join(' '), body});
         }
     }
