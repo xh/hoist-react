@@ -145,6 +145,8 @@ export class AppContainerModel extends HoistModel {
      * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
+        this.removeCacheBusterFromUrl();
+
         // Avoid bug where "Discarded" browser tabs can re-init an old version (see #3574)
         if (window.document['wasDiscarded']) {
             XH.reloadApp();
@@ -390,6 +392,20 @@ export class AppContainerModel extends HoistModel {
         const env = XH.getEnv('appEnvironment'),
             {clientAppName} = this.appSpec;
         document.title = env === 'Production' ? clientAppName : `${clientAppName} (${env})`;
+    }
+
+    // Drop the param `XH.reloadApp()` appends to bypass the browser cache. Filter the raw query
+    // string rather than using URLSearchParams, which would re-encode the other params.
+    private removeCacheBusterFromUrl() {
+        const {pathname, search, hash} = window.location;
+        if (!search.includes('xhCacheBuster=')) return;
+
+        const params = search
+                .slice(1)
+                .split('&')
+                .filter(it => it && !it.startsWith('xhCacheBuster=')),
+            newSearch = params.length ? `?${params.join('&')}` : '';
+        window.history.replaceState(window.history.state, '', pathname + newSearch + hash);
     }
 
     private startRouter() {

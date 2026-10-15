@@ -372,7 +372,7 @@ export class TabContainerModel extends HoistModel {
     activatePrevTab(cycle: boolean = false) {
         const {tabs} = this,
             idx = tabs.indexOf(this.activeTab);
-        let target = findLast(tabs, f => !f.disabled, idx - 1);
+        let target = idx > 0 ? findLast(tabs, f => !f.disabled, idx - 1) : null;
         if (cycle && !target) target = findLast(tabs, f => !f.disabled);
         if (target) this.setActiveTabId(target.id);
     }

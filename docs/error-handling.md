@@ -125,7 +125,7 @@ options in most cases:
 |--------------------------|---------------|---------------|-------------|-----------------|
 | Standard exception | `true` | `true` | `true` | `false` |
 | `isRoutine: true` | `false` | `false` | `true` | `false` |
-| Auto-refresh failure (`fetchOptions.loadSpec.isAutoRefresh`) | (unchanged) | `false` | `false` | `false` |
+| Auto-refresh failure (`callContext.loadSpec.isAutoRefresh`) | (unchanged) | `false` | `false` | `false` |
 | Aborted fetch (`isFetchAborted`) | (unchanged) | (unchanged) | `false` | `false` |
 | Session mismatch (`SessionMismatchException`) | (unchanged) | (unchanged) | (unchanged) | `true` |
 
@@ -486,6 +486,7 @@ The logged payload includes:
 - HTTP status and server details (for fetch exceptions)
 - Distributed trace ID, when tracing is enabled (for correlation with server-side traces)
 - Fetch request details (URL, params, headers -- with sensitive values redacted)
+- Load type and number, for a fetch made with a `loadSpec` in its call context
 - App version, username, and browser metadata
 - Whether the user was shown an alert
 - An optional user-provided message (via the "Report" dialog)

@@ -165,7 +165,7 @@
             "mcpCategory": "package",
             "viewerCategory": "desktop",
             "description": "Desktop-specific components and app container.",
-            "keywords": ["desktop components", "Blueprint wrappers", "dialog", "modal", "toolbar", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
+            "keywords": ["desktop components", "Blueprint wrappers", "dialog", "modal", "toolbar", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "RadioCardInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
         },
         {
             "id": "mobile/README.md",
@@ -189,7 +189,7 @@
             "mcpCategory": "package",
             "viewerCategory": "utilities",
             "description": "Application shell -- lifecycle, dialogs, toasts, banners, theming, and environment.",
-            "keywords": ["AppContainerModel", "MessageSpec", "ToastSpec", "BannerSpec", "ThemeModel", "RouterModel", "AppOption", "dark mode", "light mode", "theming", "ExceptionDialogModel", "SizingModeModel", "XH.toast", "XH.confirm", "XH.alert"]
+            "keywords": ["AppContainerModel", "MessageSpec", "ToastSpec", "BannerSpec", "ThemeModel", "RouterModel", "AppOption", "themeAppOption", "sizingModeAppOption", "dark mode", "light mode", "theming", "ExceptionDialogModel", "SizingModeModel", "XH.toast", "XH.confirm", "XH.alert"]
         },
         {
             "id": "utils/README.md",
@@ -236,8 +236,8 @@
             "title": "Icon System",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "Factory-based icon system wrapping FontAwesome Pro.",
-            "keywords": ["Icon singleton", "IconProps", "intent coloring", "size variants", "asHtml", "fileIcon"]
+            "description": "Factory-based icon system wrapping FontAwesome Pro, including registration of custom app icons and a user-facing icon picker.",
+            "keywords": ["Icon singleton", "IconProps", "intent coloring", "size variants", "asHtml", "fileIcon", "Icon.register", "custom icons", "IconPicker", "Icon.get", "icon catalog"]
         },
         {
             "id": "security/README.md",
@@ -392,6 +392,14 @@
             "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "pnpm", "yarn", "IntelliJ", "VS Code", "rsbuild dev server"]
         },
         {
+            "id": "docs/unit-testing.md",
+            "title": "Unit Testing",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "Unit tests on Vitest for apps and hoist-react: the @xh/hoist/test-support kit, the fake hoist-core server, setting up tests in an app with configureVitest(), writing tests, and CI reports.",
+            "keywords": ["unit tests", "Vitest", "pnpm test", "spec.ts", "@xh/hoist/test-support", "initTestAppAsync", "hoistCore", "configureVitest", "app unit tests", "MSW", "it.fails", "test report"]
+        },
+        {
             "id": "docs/compilation-notes.md",
             "title": "Compilation Notes",
             "mcpCategory": "devops",
@@ -534,6 +542,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v87.x to v88.0.0. High difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v88", "v87", "experimentalDecorators", "makeObservable", "configureWebpack", "webpack.config.js", "ag-theme-balham", "PopoverFilterChooser", "mergePersistOptions", "LogSource", "localDateCol"]
+        },
+        {
+            "id": "docs/upgrade-notes/v89-upgrade-notes.md",
+            "title": "v89 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v88.x to v89.0.0. Low difficulty. Covers the move to TypeScript 7.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88"]
         }
     ]
 }

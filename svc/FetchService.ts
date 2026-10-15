@@ -372,7 +372,7 @@ export class FetchService extends HoistService {
 
     private async withResolvedHeadersAsync(opts: FetchOptions, span: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            isPost = method === 'POST';
+            isForm = ['POST', 'PUT'].includes(method);
 
         const defaultHeaders = {};
         for (const h of this.defaultHeaders) {
@@ -380,7 +380,7 @@ export class FetchService extends HoistService {
         }
 
         const headers = {
-            'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
+            'Content-Type': isForm ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
             ...(span

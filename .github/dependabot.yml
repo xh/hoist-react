@@ -21,7 +21,18 @@ updates:
     open-pull-requests-limit: 5
     # Group routine version bumps to keep the PR volume manageable. Major
     # bumps are excluded so they always surface as their own PR for review.
+    #
+    # vitest, msw, jsdom and @testing-library/* are also optional peers of
+    # @xh/hoist, for apps that use the @xh/hoist/test-support kit. Dependabot rewrites
+    # a matching peer range when it bumps one of these majors, which changes
+    # what apps must install - so such a PR needs a CHANGELOG entry.
     groups:
+      # Vitest packages require each other's exact version, so they must
+      # move together - including for major bumps, which get a PR of their own.
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       production-minor-and-patch:
         dependency-type: "production"
         update-types:

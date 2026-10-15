@@ -406,8 +406,13 @@ export class View
     // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
     private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
         const {_leafMap, stores, fields} = this,
-            checkFields = changedFields ? fields.filter(it => changedFields.has(it.name)) : fields,
             changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
+
+        // Fields to diff at each leaf - those that changed, plus any aggregated from them.
+        const isChanged = name => changedFields.has(name),
+            checkFields = changedFields
+                ? fields.filter(f => isChanged(f.name) || f.aggregator?.dependsOn?.some(isChanged))
+                : fields;
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {

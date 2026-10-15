@@ -10,3 +10,4 @@ yarn.lock
 webpack.config.intellij.js
 *.md
 /kit/pdfjs/pdf_viewer.css
+pnpm-workspace.yaml

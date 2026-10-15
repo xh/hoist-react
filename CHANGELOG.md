@@ -11,8 +11,9 @@
      codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
+## 90.0.0-SNAPSHOT - unreleased
 
-## 89.0.0-SNAPSHOT - unreleased
+## 89.0.1 - 2026-10-14
 
 ### 🎁 New Features
 
@@ -32,9 +33,287 @@
 
 ### 🐞 Bug Fixes
 
+* `GridModel.setColumnState()` now drops repeated `colId` entries from saved column state, keeping
+  the first. Saved state with a repeated column made the v87 column chooser silently error and break.
+* Fixed desktop `DashCanvas` failing to render in v89.0.0.
+* Fixed `XH.message()`, `XH.confirm()`, and `XH.prompt()` resolving to `null` when a route change
+  or other forced close shut the dialog. Callers that tested `!== false` ran the confirmed action.
+  A dialog closed without a choice now resolves to `false`, the same as a cancel. A dismiss with
+  `cancelOnDismiss: false` also resolves to `false` - the flag now only skips `onCancel`.
+
+### ⚙️ Technical
+
+* The unit test kit now stubs `ResizeObserver`, which jsdom lacks, so app specs can render
+  components that track their own size.
+
+## 89.0.0 - 2026-10-13
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - filter specs, app option presets, icon listing, grid defaults, grid options, badge spacing, column library config)
+
+See [`docs/upgrade-notes/v89-upgrade-notes.md`](docs/upgrade-notes/v89-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* `GridFilterModelConfig.fieldSpecs` is no longer an allow-list. Any `filterable` column it omits
+  now gets a default filter - set `filterable: false` on columns that should have none.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now pass `inputProps` to a
+  `RadioCardInput`. Apps passing `SegmentedControl` props there should add `previewCards: false`.
+* `Icon` now holds registration and lookup methods next to its factories. Apps that list icons via
+  `Object.keys(Icon)` must switch to `Icon.getCatalog()`.
+* Rendered icon elements carry their FA name as `props.faName`, not `props.iconName`.
+* `GridModel.useVirtualColumns` now defaults to true. Set it to false on grids whose offscreen
+  cells must be in the DOM, such as for test automation that reads them.
+* Grid cells in columns without a `renderer` now render as plain text, with an `xh-cell--plain`
+  class and no `xh-cell-inner-wrapper` span. Styles targeting that span in such columns should
+  target `.ag-cell` instead.
+* `Badge` no longer has a 5px left margin. Separate a badge from preceding text with a space, as in
+  `span('Users ', badge(n))`, or with a `gap` on an enclosing `hbox`.
+* Removed `ColLibraryConfig.autoExpandOnFilter`. The Column Library now expands every group with a
+  match while a search is active. Remove the key from any `columnLibrary` config.
+* `Grid` now ignores `agOptions.groupDefaultExpanded`. Set `GridModel.expandLevel` instead.
+* Removed `GridExperimentalFlags.disableScrollOptimization`. The post-load row height pass it
+  disabled now runs only for grids whose rows vary in height. Remove the key from grid configs.
+
+### 🎁 New Features
+
+* Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
+  `{absolute: true}` to weight by magnitude.
+* Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
+  re-aggregates the field on changes to those as well.
+* Reorganized the Admin Console for clarity. Its General tab now holds the former Servers and User
+  Data tabs as sidebar groups, with their URLs moved under `/admin/general/...`.
+* Added desktop `RadioCardInput`, a single-select input that shows each option as a card with a
+  preview, label, and optional description.
+* Desktop `themeAppOption()` and `sizingModeAppOption()` now show their choices as `RadioCardInput`
+  cards with a mini preview of each theme or grid sizing mode. Pass `previewCards: false` for a
+  `SegmentedControl`, now sized to its options.
+* Added `Icon.register()` and `Icon.registerAll()` so apps can add their own FontAwesome icons as
+  `Icon` factories. Apps that call FontAwesome's `library.add()` directly should switch to these.
+  Added `Icon.get()` to render an icon by name and `Icon.getCatalog()` to list them all.
+* Added `IconPicker`, a desktop input that picks from a searchable grid of all catalog icons. The
+  Admin Console alert banner editor now uses it. Its grid renders only the rows in view, so it
+  stays responsive with thousands of icons.
+* Added `@xh/hoist/test-support`, a Vitest kit for app unit tests. `initTestAppAsync()` boots a
+  headless app against an in-memory fake of hoist-core. Needs `configureVitest()` from
+  hoist-dev-utils 16.1. Experimental in v89 - it may change.
+* Added `testId` support to desktop `ViewManager`, with derived ids for its buttons, menu, views,
+  and dialogs. See `docs/test-automation.md`.
+* Added `MenuItem.testId` for desktop and mobile menus. Grid context menus now also render
+  `RecordAction.testId`.
+* Added `MenuItem.keepMenuOpen` to leave a menu open after a click. Open desktop menus now re-run
+  `prepareFn` when the state it reads changes.
+
+### 🐞 Bug Fixes
+
+* Fixed `GridFilterModelConfig.fieldSpecs` disabling filters on all other `filterable` columns.
+  See Breaking Changes above.
+* Fixed the desktop `SegmentedControl` rendering 2px taller than adjacent buttons when `outlined`.
+* `XH.message()`, `XH.confirm()`, and `XH.prompt()` now resolve to `null` when closed without a
+  choice, instead of never settling.
+* Fixed `Store.modifyRecords()` leaving `Store.isDirty` true after its only edit was undone.
+* Fixed `Store.validateAsync()` skipping records changed just before the call, and `Store.isValid`
+  reporting true while a changed record's first async validation was still running.
+* Fixed `ViewManagerModel` overwriting the user's saved current view when views failed to load.
+* Fixed `ViewManagerModel` dropping changes made while a save or auto-save was in flight.
+* Fixed the desktop `ViewManager` menu button dropping its `xh-view-manager__menu-button` class.
+* Fixed grid row backgrounds (stripes, tree / group colors, total row) and the hover and selection
+  highlights stopping at the last column. Also fixed the total row highlighting on hover.
+* Fixed spurious "Failed to convert GL to state" console warnings from `DashContainerModel`.
+* Fixed `TrackService` sending the time an entry was queued in place of its `timestamp`.
+* Fixed `HoistBase.addReaction()` letting a pending debounced `run` fire after its owner was
+  destroyed or the reaction was disposed.
+* Fixed `FormModel.allErrors` and `SubformsFieldModel.allErrors` omitting errors from nested
+  subforms.
+* Fixed the focused cell dropping its column border under `cellBorders`, and shifting its content
+  under `rowBorders`, when `showCellFocus` is off (the default).
+* Fixed `Store.updateData()` and `Store.modifyRecords()` dropping other summary records when one
+  changed, and `Store.revert()` dropping default field values from summary records.
+* Fixed `FieldFilter` text operators (`like`, `begins`, `ends` and their negations) matching blank
+  values as the text "null" or "undefined".
+* Fixed `FieldFilter.equals()` treating filters on equal `Date` values as different, for example a
+  filter restored from JSON.
+* Fixed `FilterChooserFieldSpec` and `GridFilterFieldSpec` dropping `0`, `false` and `''` from
+  explicit `values`.
+* Fixed `FilterChooserModel` cutting off a typed value at an operator word or symbol inside it, for
+  example `Name = This Is Us`.
+* Fixed `StoreSelectionModel` holding two records in `single` mode after `select()` with
+  `clearSelection: false`.
+* Fixed `StoreRecord.isDirty` returning `null` in place of `false` for an added record.
+* Fixed the `validEmail` constraint failing blank values in place of leaving them to `required`.
+* Fixed `GridModel.getSortedRecords()` ignoring a column's record-based `sortValue` before the grid
+  renders.
+* Fixed `GridFilterModel.mergeColumnFilters()` throwing for a `FieldFilter` instance and changing
+  the filter specs passed to it.
+* Fixed the grid column header filter logging a MobX reaction error on first open. Its Apply button
+  also no longer turns on for an unchanged OR filter.
+* Fixed `TabContainerModel.activatePrevTab()` wrapping to the last tab without `cycle: true`.
+* Fixed `GroupingChooserModel.favoritesOptions` sorting favorites by only the first letter of their
+  labels.
+* Fixed `fmtNumberTooltip` and `precision: null` showing spurious digits for large values, for
+  example `44,510,347.00000001`. Full precision now stops at 15 significant digits.
+* Fixed `parseNumber` returning float artifacts for decimal shorthand, for example `'8.2m'` as
+  `8199999.999999999`, which broke equality filters in `FilterChooser`.
+* Fixed `fmtQuantity` adding `.00` to values of 1m or more left unscaled by `useMillions: false` or
+  `useBillions: false`.
+* Fixed `fmtCompactDate` ignoring `nullDisplay`, and formatting times on its near-future cutoff day
+  differently depending on the time of day.
+* Fixed `timestampReplacer` and `withFormattedTimestamps` ignoring their `format` option.
+* Fixed `@sharePendingPromise` running a method twice when it threw synchronously.
+* Fixed a cancelled `Timer` keeping its heartbeat alive, and a `Timer` with `delay: true` and a
+  disabled interval scheduling a negative timeout.
+* `FetchService` now sends every `PUT` without a `Content-Type` as form-encoded, as for `POST`.
+  A `PUT` with `params` sent `text/plain`, so servers ignored the params.
+* Fixed errors reported by `ExceptionHandler` omitting the type and number of a failed load.
+  Arrays in these reports, such as the stack trace, are also no longer sent as objects.
+* Fixed `XH.reloadApp()` re-encoding spaces in existing query params as `+`, and leaving its
+  `xhCacheBuster` param in the URL after the reload.
+* Fixed an explicit `rowHeight` on `AgGrid`, or in `Grid.agOptions`, being ignored when sizing rows.
+* Fixed tree grid parent rows ignoring `Column.rowHeight`, and so sitting shorter than their
+  children.
+* Fixed `GridModel.expandToLevel()` ignoring intermediate levels in grids grouped by two or more
+  columns. `expandToLevel(-1)` also collapsed every row - it now expands all levels, as
+  `expandLevel: -1` does.
+* Fixed desktop `Select` ignoring changes to its `leftIcon` prop after the first render.
+* Fixed `Icon` factories not showing `title` as a tooltip since the FontAwesome 7 upgrade in v84.
+  Titled icons also get the title as their `aria-label`, so screen readers announce them again.
+* Fixed the Admin Console config differ flagging typed JSON configs as changed, based on their
+  code-derived resolved and default values, and showing those values as `[object Object]`.
+* Fixed `Badge` ignoring the `align` of its grid column. It now renders inline.
+* Fixed `FormFieldSet` throwing a MobX cycle error when passed a `model`. Fields and nested sets
+  register with the `FormFieldSet` that encloses them.
+
+### ⚙️ Technical
+
+* Deprecated `IconProps.iconName` in favor of `faName`, and `SpinnerProps.iconName` in favor of
+  `icon`. Support for both ends in v91.
+* `XH.isDesktop`, `XH.isPhone`, and `XH.isTablet` now parse the user agent once at startup, not on
+  every read.
+* `Column.getAgSpec()` creates its renderer, tooltip, editor and comparator functions once per
+  `Column`, sorting reads the comparator via `Column.getAgComparator()` instead of building a
+  column def, and static `cellClass` and `editable` values replace per-cell callbacks.
+* `AgGrid` now publishes its row and header heights to ag-Grid as `--ag-row-height` and
+  `--ag-header-height`. `Grid` and `AgGrid` pass ag-Grid a `getRowHeight` function only when row
+  heights vary, so uniform grids skip per-row height calls and the post-load row height pass.
+* `Column` tooltips no longer mount for rows without a record, or for editable cells with no
+  validation results, and the tooltip component is a plain function component.
+* `Grid` now passes AG Grid only the pinned rows that changed. A summary row update redraws the
+  grid's rows once, where it redrew them twice.
+* Improved autosize performance on large grids. Column values are now ranked by cached
+  per-character widths, and only the 500 widest are measured exactly.
+* Made `GridModel.expandToLevel()`, `expandAll()` and `collapseAll()` faster on large tree and
+  grouped grids.
+* Added `installAgGridForTests()` to `@xh/hoist/test-support/agGrid`, so unit tests can render a
+  `Grid` against ag-Grid's community modules.
+* Added a Vitest unit test suite for the library, run with `pnpm test`. CI runs it on every PR and
+  before publishing snapshot and release builds. See `docs/unit-testing.md`.
+* Declared `vitest`, `msw`, `jsdom` and Testing Library as optional peer dependencies. Apps install
+  them only to run unit tests.
+* Updated Hoist to build with TypeScript 7. Apps can stay on 5.9 or move to 7, which needs two
+  `tsconfig.json` overrides. See the upgrade notes.
+* `creates()`, `uses()` and `useLocalModel()` now build and link their models untracked by MobX.
+  Observable state read during model construction or `onLinked()` no longer triggers a
+  spurious one-time re-render.
+* `Store` now patches small changes by default (`experimental.maxPatchRatio` of 0.1). Records added
+  by a change append rather than taking their source position. This may affect the sort ordering
+  of unsorted grids when data changes. Filters that read state outside the record must call
+  `Store.refreshFilter()` when that state changes.
+* `Field` now skips DOMPurify for strings with no `<` when `enableXssProtection` is set. Such
+  strings hold no markup, so large loads skip one DOMPurify call per string value.
+* `Field` now parses every unparseable `date` value to one shared Invalid Date, preventing an
+  unparseable Date from causing extra record allocation on every data load.
+
+### ⚙️ Typescript API Adjustments
+
+* `RowUpdate` passed to `Aggregator.replace()` now carries the leaf's full data before and after
+  as `leafOldData` / `leafNewData`.
+* Fixed `GridProps.agOptions` rejecting an `HTMLElement` for `popupParent` and other DOM-typed
+  options under TypeScript 6 and later.
+* Typed `@bindable`, `@bindableRef`, `@persist`, and `@persist.with()` as `accessor` decorators.
+  `tsc` now reports a plain field under any of them, which compiled before and threw at runtime.
+
+### 🤖 AI Docs + Tooling
+
+* Indexed `@xh/hoist/test-support` in the symbol tools, so `hoist-search-symbols` and `hoist-ts`
+  find the test kit for app agents.
+* Added support for reference-style Markdown links (`[text][label]`) to the doc tools. Section reads
+  now include the link definitions they use.
+
+### ✨ Styles
+
+* Widened the desktop Options dialog from 500px to 560px to fit the new theme and grid sizing cards.
+* Restyled the desktop login form to match mobile - a centered card with the `loginPanelIcon`,
+  labeled fields, and a full-width login button.
+* Blueprint and grid tooltips now follow the app theme, styled by new `--xh-tooltip-*` vars. Apps
+  can remove their own overrides of Blueprint's inverted tooltip colors.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.27 → 2.28`
+* @azure/msal-browser `5.23 → 5.25`
+* @blueprintjs/core `6.20 → 6.21`
+* @blueprintjs/datetime `6.2 → 6.3`
+* @fortawesome/fontawesome-pro `removed` (unused - icons come from the `pro-*-svg-icons` packages)
+* react-grid-layout `2.2 → 2.3`
+* swiper `12.2 → 14.3`
+* ts-morph `27.0 → 28.0`
+* typescript `5.9 → 7.0`
+
+## 88.1.2 - 2026-10-06
+
+### 🐞 Bug Fixes
+
+* Restored the `MsalClient` defaults lost in v88: `enableSsoSilent` and `enableTelemetry` again
+  default to `true`, and MSAL logs at `Warning` level. Also restored the 3000ms
+  `system.iframeBridgeTimeout` that caps `ssoSilent` failures, dropped in the MSAL 5 upgrade.
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the v88 `codemod-remove-makeObservable.mjs` deleting constructors that merged defaults into
+  their `super()` call. It now removes only constructors it emptied itself, whose remaining
+  `super()` passes through the constructor's own params. The v88 upgrade notes gain a grep to find
+  constructors an earlier copy removed.
+
+## 88.1.1 - 2026-10-06
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the `@persist` ordering check in the v88 upgrade notes. It missed the stacked
+  `@persist.with({...})` form and flagged fields that were already in the correct order. The check
+  for removed `*Col` aliases now matches whole words only.
+* Added a step to the v88 upgrade notes to restart the hoist-react MCP server after installing v88.
+* The v88 codemods now print file paths relative to the working directory.
+
+## 88.1.0 - 2026-10-01
+
+### 🎁 New Features
+
+* Both `StoreFilterField` and `GridFindField` now fully support `ZoneGrid`. Their `gridModel` prop
+  accepts a `ZoneGridModel`, in which case they search the fields mapped to the grid's zones, not
+  its two zone columns. With no prop, both bind to the nearest `GridModel` or `ZoneGridModel` in
+  context. Both now also re-derive their searchable fields when columns are shown or hidden, not
+  only when the grid's columns are replaced.
+* `BaseOAuthClient.initAsync()` now accepts an optional `CallContextLike`, and tags its span with
+  `xh.auth.method` (`acquireSilent`, `ssoSilent`, `loginPopup`, or `loginRedirect`) so auth latency
+  can be broken down by token path. Both `MsalClient` and `AuthZeroClient` report the method, also
+  available as `BaseOAuthClient.lastAuthMethod`. Apps opt in by passing the ctx from
+  `HoistAuthModel.completeAuthAsync()` to `client.initAsync(ctx)`.
+
+### 🐞 Bug Fixes
+* Fixed `defaultReadonlyRenderer` reformatting plain strings that happen to parse as JSON scalars -
+  e.g. a JsonBlob token like `3473e37` rendered as `3.473e+40` in read-only form fields. Only JSON
+  objects and arrays are now pretty-printed, and other strings render as-is.
+* Fixed `StoreFilterField` ignoring changes to its `gridModel` or `store` props after mount.
+* Fixed app load tracking recording inflated load times for pages hidden at any point during load,
+  such as a page opened in a background tab or switched away from while loading. These loads now
+  omit `elapsed` and report `hiddenDuringLoad: true` in their data. This also drops them from the
+  server's `xh.client.load.*` metrics.
 * Fixed `DashContainer` views intermittently rendering blank until their tab was re-selected or
   dragged. Active state was set on a fixed timer that could fire before the view's model existed,
   most often on slower clients. Affected tabs could also miss their context menu and title updates.
+
+### ✨ Styles
+
+* Increased the default width of `GridFindField` from 180px to 240px, leaving room to type once its
+  match count and nav buttons appear.
 
 ## 88.0.0 - 2026-09-29
 

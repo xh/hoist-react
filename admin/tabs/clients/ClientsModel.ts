@@ -136,7 +136,7 @@ export class ClientsModel extends BaseAdminTabModel {
             topic: XH.webSocketService.REQ_CLIENT_HEALTH_RPT_TOPIC
         });
         XH.successToast(
-            `Client health report requested for ${pluralize('client', toRecs.length, true)} - available in User Activity shortly...`
+            `Client health report requested for ${pluralize('client', toRecs.length, true)} - available in Activity tab shortly...`
         );
     }
 

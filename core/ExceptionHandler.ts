@@ -19,6 +19,7 @@ import {
     isString,
     last,
     mapValues,
+    omit,
     omitBy,
     partition,
     pick,
@@ -289,33 +290,24 @@ export class ExceptionHandler {
 
             ret = omitBy(ret, isNil);
 
-            // 2) Deep clone/protect against circularity/monstrosity
-            ret = this.cloneAndTrim(ret);
-
-            // 3) Additional ad-hoc cleanups
-            // Remove finger pointing at Hoist
+            // 2) Ad-hoc cleanups. Done before cloning and trim, so do not mutate.
+            // Summarize verbose callContext, remove grails wrapper and problematic fetchOptions
             delete ret.isHoistException;
-
-            // Remove noisy grails exception wrapper info
-            const {serverDetails} = ret;
-            if (serverDetails?.className === 'GrailsCompressingFilter') {
-                delete serverDetails.className;
-                delete serverDetails.lineNumber;
-            }
-
-            // Clean up fetchOptions for serialization.
-            const {fetchOptions} = ret;
-            if (fetchOptions) {
-                delete fetchOptions.loadSpec;
-                delete fetchOptions.span;
-            }
-            // Extract summary fields from verbose callContext into fetchOptions.
             const loadSpec = ret.callContext?.loadSpec;
             if (loadSpec instanceof LoadSpec) {
                 ret.loadType = loadSpec.typeDisplay;
                 ret.loadNumber = loadSpec.loadNumber;
             }
             delete ret.callContext;
+            if (ret.serverDetails?.className === 'GrailsCompressingFilter') {
+                ret.serverDetails = omit(ret.serverDetails, ['className', 'lineNumber']);
+            }
+            if (ret.fetchOptions) {
+                ret.fetchOptions = omit(ret.fetchOptions, ['loadSpec', 'span']);
+            }
+
+            // 3) Deep clone/protect against circularity/monstrosity
+            ret = this.cloneAndTrim(ret);
 
             // 4) Redact specified values
             this.redact(ret);
@@ -396,15 +388,7 @@ export class ExceptionHandler {
         forOwn(obj, (val, key) => {
             try {
                 if (key.startsWith('_')) return;
-                if (val && !val.toJSON) {
-                    if (isObject(val)) {
-                        val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
-                    }
-                    if (isArray(val)) {
-                        val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
-                    }
-                }
-                ret[key] = val;
+                ret[key] = this.trimValue(val, depth);
             } catch (e) {
                 // fail quietly.  Note that some properties may be inaccessible, e.g. security
                 // limitations accessing popup window references.
@@ -413,6 +397,15 @@ export class ExceptionHandler {
         });
 
         return ret;
+    }
+
+    // Trim one value found at the given depth. Recurse on objects and arrays.
+    private trimValue(val, depth: number) {
+        if (!isObject(val) || (val as any).toJSON) return val;
+        if (depth <= 1) return isArray(val) ? '[...]' : '{...}';
+        return isArray(val)
+            ? val.map(it => this.trimValue(it, depth - 1))
+            : this.cloneAndTrim(val, depth - 1);
     }
 
     private redact(obj: PlainObject, extra: string[] = []) {

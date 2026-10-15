@@ -102,8 +102,8 @@ function createDraggableItems(dashCanvasModel: DashCanvasModel): ReactNode[] {
                     every(
                         entries,
                         it =>
-                            (it.icon?.props as {iconName?: string})?.iconName ===
-                            (firstIcon.props as {iconName?: string}).iconName
+                            (it.icon?.props as {faName?: string})?.faName ===
+                            (firstIcon.props as {faName?: string}).faName
                     )
                         ? firstIcon
                         : null;

@@ -33,6 +33,7 @@ export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
 export * from './cube/aggregate/UniqueAggregator';
+export * from './cube/aggregate/WeightedAverageAggregator';
 
 export * from './cube/BucketSpec';
 export * from './cube/Cube';

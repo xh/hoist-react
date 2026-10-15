@@ -10,6 +10,9 @@ build/
 node_modules/
 tsconfig.tsbuildinfo
 
+# Unit test reports
+.vitest/
+
 # Logs
 *.log
 

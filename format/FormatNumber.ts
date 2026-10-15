@@ -6,6 +6,7 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {
+    clamp,
     defaults,
     isBoolean,
     isFinite,
@@ -28,7 +29,8 @@ import {saveOriginal} from './impl/Utils';
 const THOUSAND = 1000,
     MILLION = 1000000,
     BILLION = 1000000000,
-    MAX_NUMERIC_PRECISION = 12;
+    MAX_NUMERIC_PRECISION = 12,
+    MAX_SIGNIFICANT_DIGITS = 15;
 
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
@@ -188,7 +190,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     // Resolve precision: null means full precision, other non-integers (e.g. undefined) mean 'auto'.
     const fullPrecision = precision === null;
     if (fullPrecision) {
-        precision = MAX_NUMERIC_PRECISION;
+        precision = calcFullPrecision(v);
     } else if (!isInteger(precision)) {
         precision = 'auto';
     }
@@ -298,20 +300,19 @@ export function fmtQuantity(v: number, opts?: QuantityFormatOptions) {
 
     const absV = Math.abs(v),
         lessM = absV < MILLION,
-        lessB = absV < BILLION,
-        targetPrecision = opts.precision ?? (lessM ? 0 : 2);
+        lessB = absV < BILLION;
 
     // Compute scaling, if any (Lossless flag may preclude).
     let scale = !lessB && opts.useBillions ? BILLION : !lessM && opts.useMillions ? MILLION : null;
     if (scale && opts.lossless) {
-        const precision = parsePrecision(absV / scale, targetPrecision),
+        const precision = parsePrecision(absV / scale, opts.precision ?? 2),
             lossy = v % (scale / 10 ** precision) !== 0;
         if (lossy) scale = null;
     }
 
-    // Resolve render precision (unless the caller set one).
+    // Resolve render precision (unless the caller set one) - 2 places if scaled, else 0.
     if (isUndefined(opts.precision)) {
-        opts.precision = opts.lossless ? null : targetPrecision;
+        opts.precision = opts.lossless ? null : scale ? 2 : 0;
     }
 
     switch (scale) {
@@ -364,7 +365,7 @@ export function fmtNumberTooltip(v: number, opts?: {ledger?: boolean}): string {
     return fmtNumber(v, {
         ledger: opts?.ledger,
         forceLedgerAlign: false,
-        precision: MAX_NUMERIC_PRECISION,
+        precision: null,
         zeroPad: false,
         asHtml: true
     }) as string;
@@ -516,6 +517,17 @@ function parsePrecision(v: number, precisionSpec: Precision): number {
     return 0;
 }
 
+/**
+ * Resolve full precision to the most decimal places a value can show, capped so its integer and
+ * decimal digits fit within the significant digits a double holds exactly. More places would
+ * render float noise - e.g. 44,510,347.00000001.
+ */
+function calcFullPrecision(v: number): NumericPrecision {
+    const absVal = Math.abs(v),
+        intDigits = absVal >= 1 ? Math.floor(Math.log10(absVal)) + 1 : 0;
+    return clamp(MAX_SIGNIFICANT_DIGITS - intDigits, 0, MAX_NUMERIC_PRECISION) as NumericPrecision;
+}
+
 function buildFormatConfig(
     v: number,
     precisionSpec: Precision,
@@ -604,16 +616,17 @@ export function parseNumber(value: any): number {
     value = value.replace(/,/g, '');
 
     if (shorthandValidator.test(value)) {
-        const num = +value.substring(0, value.length - 1),
+        const numStr = value.substring(0, value.length - 1),
             lastChar = value.charAt(value.length - 1).toLowerCase();
 
+        // Shift by exponent rather than multiply, to avoid float artifacts (8.2 * 1e6 != 8.2e6).
         switch (lastChar) {
             case 'k':
-                return num * 1000;
+                return +`${numStr}e3`;
             case 'm':
-                return num * 1000000;
+                return +`${numStr}e6`;
             case 'b':
-                return num * 1000000000;
+                return +`${numStr}e9`;
             default:
                 return NaN;
         }

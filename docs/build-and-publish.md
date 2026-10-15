@@ -13,6 +13,20 @@ Runs automatically on pushes and pull requests to `develop`. Includes two indepe
 - **CodeQL** — runs GitHub's CodeQL security analysis for JavaScript/TypeScript. Runs on push, PR,
   and on a weekly schedule.
 
+## Unit Tests (`unit-tests.yml`)
+
+Runs the library's unit tests on pushes and pull requests to `develop`, and on demand for any
+branch via `workflow_dispatch`. It reports as a "Unit Tests" check on each PR, separate from lint.
+
+- The run page shows a summary of every test, grouped by package, with any failures and their
+  diffs first. Failing assertions are also annotated inline on the PR diff.
+- A comment on the PR shows the current result, updated in place on each push.
+- An HTML report of the run is attached as the `unit-test-report` artifact.
+- From `develop`, the report can also be published to GitHub Pages. This is opt-in: enable Pages
+  with "GitHub Actions" as its source, and set the repo variable `PUBLISH_TEST_REPORT` to `true`.
+
+See [Unit Testing](./unit-testing.md) for how the tests and the report work.
+
 ## Deploy Snapshot (`deploySnapshot.yml`)
 
 Publishes a SNAPSHOT build to npm on every push to `develop`. Can also be triggered manually via
@@ -21,7 +35,7 @@ Publishes a SNAPSHOT build to npm on every push to `develop`. Can also be trigge
 - The version is sourced from `package.json` (e.g. `82.0.0-SNAPSHOT`). A timestamp is appended
   automatically to ensure each snapshot is unique.
 - Snapshots are published with the `next` dist-tag so they don't affect `latest`.
-- Linting runs as part of this workflow — a lint failure will block the publish.
+- Lint and unit tests run as part of this workflow. A failure in either blocks the publish.
 - Uses `concurrency` with `cancel-in-progress: true` to avoid redundant builds when multiple pushes
   land in quick succession.
 - After publishing, polls `npm view @xh/hoist@next` until the registry resolves the `next` dist-tag
@@ -44,7 +58,7 @@ Publishes a numbered release to npm. **Manually triggered** from the `master` br
   workflow to be run from a branch other than `master` or `develop`.
 
 The workflow validates the version strictly (semver format, no duplicate tags, correct increment
-relative to existing tags), then:
+relative to existing tags), runs lint and unit tests, then:
 
 1. Sets the version in `package.json`.
 2. Publishes to npm (with the default `latest` dist-tag).

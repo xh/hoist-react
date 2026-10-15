@@ -84,6 +84,9 @@ methods return a `Promise` that resolves when the user responds, making them ide
 The generic modal dialog API — all other message methods delegate to it. Returns
 `Promise<boolean>` that resolves to `true` on confirm, `false` on cancel.
 
+A message that the user dismisses, or that closes without a choice, also resolves to `false`. A
+route change, a later message with the same `messageKey`, or a destroy closes a message this way.
+
 ```typescript
 const result = await XH.message({
     title: 'Export Complete',
@@ -153,7 +156,8 @@ const confirmed = await XH.confirm({
 ### `XH.prompt(config)`
 
 An input collection dialog with a default `TextInput`, "OK" and "Cancel" buttons. Returns
-`Promise<value | false>` — the input value on confirm, `false` on cancel.
+`Promise<value | false>` — the input value on confirm, `false` on cancel. If an empty input is a
+valid answer, test the result with `!== false`, because `null` and `''` are confirmed values.
 
 The default TextInput comes pre-configured with `autoFocus`, `selectOnFocus`, and
 enter-to-confirm (desktop only). Custom inputs must set their own props.
@@ -222,7 +226,7 @@ XH.alert({
 | `onConfirm` | `() => void` | Callback fired on confirm (in addition to Promise resolution) |
 | `onCancel` | `() => void` | Callback fired on cancel (in addition to Promise resolution) |
 | `dismissable` | `boolean` | Whether Escape or clicking outside closes the dialog. Defaults to `true` when cancel button is present |
-| `cancelOnDismiss` | `boolean` | Whether dismissing executes the cancel action (vs resolving to `null`). Default `true` |
+| `cancelOnDismiss` | `boolean` | Whether dismissing calls `onCancel`. The result is `false` either way. Default `true` |
 
 **MessageSpecInput** (for `XH.prompt()` config):
 
@@ -416,7 +420,7 @@ class AppModel extends HoistAppModel {
     override getAppOptions(): AppOptionSpec[] {
         return [
             themeAppOption(),        // Built-in: light/dark/system
-            sizingModeAppOption(),   // Built-in: compact/standard/large
+            sizingModeAppOption(),   // Built-in: tiny/compact/standard/large grid sizing
             autoRefreshAppOption(),  // Built-in: enable/disable auto-refresh
             {
                 name: 'loadInactiveLoans',
@@ -434,6 +438,11 @@ class AppModel extends HoistAppModel {
 
 Each option can be backed by a preference (`prefName`) or use custom `valueGetter`/`valueSetter`
 functions for more complex handling. Return an empty array to disable the options menu item.
+
+On desktop, `themeAppOption()` and `sizingModeAppOption()` render as a `RadioCardInput` with a
+small preview on each card: a mini app window per theme, and a mini grid drawn at each sizing
+mode's row height. Pass `previewCards: false` to either for a compact `SegmentedControl`. Custom
+options can use `radioCardInput()` the same way for choices that are easier to show than to name.
 
 `XH.showOptionsDialog()` opens the dialog. Set `reloadRequired: true` on options that need an
 app reload to take effect — the dialog handles this automatically.

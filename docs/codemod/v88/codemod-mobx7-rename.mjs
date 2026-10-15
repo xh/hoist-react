@@ -127,13 +127,13 @@ async function processFile(filePath) {
             `import {${names.join(', ')}} from '${m[2]}';` +
             content.slice(m.index + m[0].length);
     } else if (Object.values(RENAMES).some(to => new RegExp(`\\b${to}\\b`).test(content))) {
-        console.log(`  WARN no mobx import found to update: ${path.relative(REPO_ROOT, filePath)}`);
+        console.log(`  WARN no mobx import found to update: ${path.relative(process.cwd(), filePath)}`);
     }
 
     filesChanged++;
     renameCount += localCount;
     if (!DRY) await fs.writeFile(filePath, content);
-    console.log(`  ${path.relative(REPO_ROOT, filePath)} — ${localCount} renamed`);
+    console.log(`  ${path.relative(process.cwd(), filePath)} — ${localCount} renamed`);
 }
 
 /** Move names imported from 'mobx' onto '@xh/hoist/mobx', merging into an existing Hoist import. */
@@ -157,7 +157,7 @@ function redirectMobxImport(content, filePath) {
     if (kept.length) {
         console.log(
             `  WARN not re-exported by @xh/hoist/mobx, left on 'mobx': ${kept.join(', ')} ` +
-                `(${path.relative(REPO_ROOT, filePath)})`
+                `(${path.relative(process.cwd(), filePath)})`
         );
     }
     if (!moved.length) {

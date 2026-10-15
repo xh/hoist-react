@@ -210,7 +210,8 @@ new GridModel({
     filterModel: true,  // Default config
     filterModel: {
         bind: store,    // Filter target (defaults to grid's store)
-        commitOnChange: true
+        commitOnChange: true,
+        fieldSpecs: [{field: 'status', renderer: statusRenderer}]  // Optional custom config
     },
     columns: [
         {field: 'status', filterable: true},  // Enable filter on specific columns
@@ -218,6 +219,10 @@ new GridModel({
     ]
 });
 ```
+
+A `filterable` column gets a filter with default config even if `fieldSpecs` omits its field, as
+long as that field exists in the bound Store or View.
+List only the fields that need custom config. Set `filterable: false` to disable a column's filter.
 
 ### Inline Editing
 

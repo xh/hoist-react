@@ -7,6 +7,9 @@
  *
  * Headings inside fenced code blocks are ignored. `####` and deeper headings stay inside their
  * containing section. Line numbers are 1-based and inclusive throughout.
+ *
+ * Reference-style link definitions (`[label]: url`) usually sit at the end of a doc, outside the
+ * section that uses them. A section read appends the definitions its links need.
  */
 import type {DocEntry} from './doc-registry.js';
 
@@ -162,9 +165,23 @@ export function parseDocSections(entry: DocEntry, content: string): DocSection[]
     return sections;
 }
 
-/** Return the markdown for a section's full extent, including its heading and subsections. */
+/**
+ * Return the markdown for a section's full extent, including its heading and subsections. Any
+ * reference link definitions the section uses but does not contain are appended at the end.
+ */
 export function getSectionContent(content: string, section: DocSection): string {
-    return sliceLines(splitLines(content), section.startLine, section.extentEndLine).trimEnd();
+    const lines = splitLines(content),
+        body = sliceLines(lines, section.startLine, section.extentEndLine).trimEnd(),
+        used = referencedLabels(body),
+        defs = [...parseLinkDefinitions(lines).entries()]
+            .filter(([label, def]) => {
+                const inSection =
+                    def.line >= section.startLine && def.line <= section.extentEndLine;
+                return used.has(label) && !inSection;
+            })
+            .map(([, def]) => def.text);
+
+    return defs.length ? `${body}\n\n${defs.join('\n')}` : body;
 }
 
 /** Sections nested within (and including) the given section. */
@@ -172,6 +189,52 @@ export function getSubsections(sections: DocSection[], section: DocSection): Doc
     return sections.filter(
         s => s.startLine >= section.startLine && s.startLine <= section.extentEndLine
     );
+}
+
+//------------------------------------------------------------------
+// Links
+//------------------------------------------------------------------
+
+/** A reference link definition line, e.g. `[ts7]: https://...`. Captures the label. */
+export const LINK_DEF_RE = /^ {0,3}\[([^\]]+)\]:\s*\S/;
+
+const INLINE_LINK_RE = /\[([^\]]+)\]\([^)]*\)/g,
+    REF_LINK_RE = /\[([^\]]+)\]\[([^\]]*)\]/g;
+
+/** Reduce inline (`[text](url)`) and reference (`[text][label]`, `[text][]`) links to their text. */
+export function stripLinks(text: string): string {
+    return text.replace(INLINE_LINK_RE, '$1').replace(REF_LINK_RE, '$1');
+}
+
+/**
+ * Reference link definitions outside fenced code, keyed by normalized label. The first
+ * definition of a label wins, as in CommonMark.
+ */
+function parseLinkDefinitions(lines: string[]): Map<string, {line: number; text: string}> {
+    const ret = new Map<string, {line: number; text: string}>();
+    let inFence = false;
+    lines.forEach((text, i) => {
+        if (FENCE_RE.test(text)) {
+            inFence = !inFence;
+            return;
+        }
+        const match = inFence ? null : LINK_DEF_RE.exec(text);
+        if (!match) return;
+
+        const label = normalizeLabel(match[1]);
+        if (!ret.has(label)) ret.set(label, {line: i + 1, text});
+    });
+    return ret;
+}
+
+/** Normalized labels of the `[text][label]` and `[text][]` links in some markdown. */
+function referencedLabels(markdown: string): Set<string> {
+    return new Set([...markdown.matchAll(REF_LINK_RE)].map(m => normalizeLabel(m[2] || m[1])));
+}
+
+/** Match labels as CommonMark does - ignoring case and runs of whitespace. */
+function normalizeLabel(label: string): string {
+    return label.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 //------------------------------------------------------------------
@@ -247,9 +310,7 @@ export function resolveSection(
 
 /** Strip inline markdown from heading text: backticks, emphasis, links, trailing anchors. */
 function cleanHeading(raw: string): string {
-    return raw
-        .replace(/\s*\{#[^}]*\}\s*$/, '')
-        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    return stripLinks(raw.replace(/\s*\{#[^}]*\}\s*$/, ''))
         .replace(/[`*]/g, '')
         .trim();
 }

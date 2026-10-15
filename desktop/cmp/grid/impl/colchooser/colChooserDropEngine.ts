@@ -144,9 +144,9 @@ export function collapseSelection<T extends SelectionUnit>(rows: T[]): T[] {
                 if (j === i || !g.isGroup) return false;
                 const gLeaves = new Set(g.leafColIds);
                 if (!r.leafColIds.every(id => gLeaves.has(id))) return false;
-                // Equal leaf sets (e.g. a single-column group and its child): keep the earlier row,
-                // else the two subsume each other into nothing.
-                return g.leafColIds.length === r.leafColIds.length ? j < i : true;
+                // A group always subsumes a leaf. Between groups with equal leaf sets (e.g. nested
+                // single-column groups), keep the earlier, else neither survives.
+                return r.isGroup && g.leafColIds.length === r.leafColIds.length ? j < i : true;
             })
     );
 }

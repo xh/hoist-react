@@ -163,6 +163,10 @@ export interface GridFilterModelConfig {
      * Specifies the fields this model supports for filtering. Should be configs for
      * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or
      * omitted entirely to indicate that all fields should be filter-enabled.
+     *
+     * Any `filterable` column with a field not listed here gets a default spec, so this list only
+     * needs to include fields that require custom config. Set `filterable: false` on a column to
+     * disable its filter.
      */
     fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 
@@ -288,12 +292,6 @@ export interface ColLibraryConfig {
      * for large column sets.
      */
     collapseGroups?: boolean;
-
-    /**
-     * Max number of matching columns for a library group to be expanded while the chooser's filter
-     * is active (default 5). Set to 0 to disable.
-     */
-    autoExpandOnFilter?: number;
 
     /**
      * Fixed width of the Column Library panel (default 250).
