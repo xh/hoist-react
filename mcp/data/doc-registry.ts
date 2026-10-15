@@ -90,6 +90,12 @@ export interface DocLibrary {
     /** Id of the library's `docs/README.md` index, if it registers one. */
     indexId: string | null;
     docCount: number;
+    /**
+     * Guidance for agents from the library's `mcpInstructions`, for example which Hoist
+     * components it replaces. The server instructions and ping surfaces show it. Always null for
+     * hoist-react, whose guidance is the server instructions themselves.
+     */
+    instructions: string | null;
 }
 
 /** Loaded registry data: entries, MCP category metadata, and the libraries they came from. */
@@ -113,6 +119,8 @@ export interface RegistryData {
  */
 interface RegistryJson {
     mcpCategories?: McpCategory[];
+    /** Guidance for agents from a companion library. A string, or an array of lines. */
+    mcpInstructions?: string | string[];
     viewerCategories?: Array<{id: string; title: string}>;
     entries?: Array<{
         id: string;
@@ -279,11 +287,41 @@ function loadLibrary(
             root,
             primary,
             indexId: index?.id ?? null,
-            docCount: entries.length
+            docCount: entries.length,
+            instructions: primary ? null : parseInstructions(json.mcpInstructions, warn)
         },
         entries,
         mcpCategories
     };
+}
+
+/** Longest library guidance accepted, in characters. Longer guidance is cut, with a warning. */
+export const MAX_LIBRARY_INSTRUCTIONS_CHARS = 1500;
+
+/** Normalize `mcpInstructions` to trimmed, non-empty lines, or null if absent or invalid. */
+function parseInstructions(
+    raw: RegistryJson['mcpInstructions'],
+    warn: (msg: string) => void
+): string | null {
+    if (raw == null) return null;
+    const valid =
+        typeof raw === 'string' || (Array.isArray(raw) && raw.every(it => typeof it === 'string'));
+    if (!valid) {
+        warn('ignored mcpInstructions: expected a string or an array of strings');
+        return null;
+    }
+
+    const text = [raw]
+        .flat()
+        .join('\n')
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .join('\n');
+    if (text.length <= MAX_LIBRARY_INSTRUCTIONS_CHARS) return text || null;
+
+    warn(`mcpInstructions cut to ${MAX_LIBRARY_INSTRUCTIONS_CHARS} of ${text.length} characters`);
+    return text.slice(0, MAX_LIBRARY_INSTRUCTIONS_CHARS - 3) + '...';
 }
 
 /**

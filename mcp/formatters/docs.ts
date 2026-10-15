@@ -535,13 +535,17 @@ export function companionLibraries(data: RegistryData): DocLibrary[] {
 }
 
 /**
- * Lines naming the loaded companion libraries and any load problems, for the ping surfaces.
+ * Lines naming the loaded companion libraries, their guidance, and any load problems, for the
+ * ping surfaces. CLI agents see no server instructions, so ping is where they find guidance.
  * Empty when there are none.
  */
 export function formatCompanionStatus(data: RegistryData): string[] {
-    const lines = companionLibraries(data).map(
-        l => `- ${formatLibrary(l)}: ${l.docCount} docs${l.indexId ? `, index ${l.indexId}` : ''}`
-    );
+    const lines = companionLibraries(data).flatMap(l => [
+        `- ${formatLibrary(l)}: ${l.docCount} docs${l.indexId ? `, index ${l.indexId}` : ''}`,
+        ...(l.instructions
+            ? ['  Guidance:', ...l.instructions.split('\n').map(line => `    ${line}`)]
+            : [])
+    ]);
     if (lines.length) lines.unshift('Companion library docs:');
     if (data.warnings.length) {
         lines.push('Companion library problems:', ...data.warnings.map(w => `- ${w}`));

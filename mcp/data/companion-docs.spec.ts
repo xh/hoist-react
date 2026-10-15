@@ -10,6 +10,7 @@
  *   - discovery, id prefixing, path safety, and load warnings
  *   - alias scoping: hoist-react keeps its bare names, companion aliases live under the prefix
  *   - search, reads, and the library filter
+ *   - library guidance from `mcpInstructions`: normalizing, the length cap, and bad values
  *   - the MCP tools, resources, and server instructions, and the CLI run from the app
  *
  * Uses a fixture rather than the real hoist-chat-kit, whose docs change too fast to test against.
@@ -23,7 +24,7 @@ import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import {buildRegistry, type DocEntry} from './doc-registry.js';
+import {buildRegistry, MAX_LIBRARY_INSTRUCTIONS_CHARS, type DocEntry} from './doc-registry.js';
 import {resolveDocId} from './doc-id-resolver.js';
 import {searchDocs} from './doc-search.js';
 import {readDoc} from '../formatters/docs.js';
@@ -64,7 +65,13 @@ function write(path: string, content: unknown) {
 // Standard Hoist app layout - package.json under client-app/, none at the root.
 write(join(clientApp, 'package.json'), {
     name: 'fixture-app',
-    dependencies: {'@acme/hoist-acme': '2.3.4', '@acme/broken': '1.0.0', 'plain-dep': '1.0.0'},
+    dependencies: {
+        '@acme/hoist-acme': '2.3.4',
+        '@acme/broken': '1.0.0',
+        'plain-dep': '1.0.0',
+        '@acme/long-guide': '1.0.0',
+        '@acme/bad-guide': '1.0.0'
+    },
     devDependencies: {'@xh/hoist': '*', 'not-installed': '1.0.0'}
 });
 
@@ -76,6 +83,7 @@ write(join(acmeStore, 'package.json'), {
     hoist: {docRegistry: 'docs/doc-registry.json'}
 });
 write(join(acmeStore, 'docs/doc-registry.json'), {
+    mcpInstructions: ['  Use acmeGrid instead of grid.  ', '', 'Fetch through AcmeFetchService.'],
     mcpCategories: [
         {id: 'package', title: 'Package Documentation'},
         {id: 'index', title: 'Index'}
@@ -114,6 +122,20 @@ write(join(clientApp, 'node_modules/@acme/broken/package.json'), {
     hoist: {docRegistry: 'docs/nope.json'}
 });
 
+// Opted in with guidance that is too long, and with guidance of the wrong type. No docs.
+for (const [name, mcpInstructions] of [
+    ['long-guide', 'x'.repeat(MAX_LIBRARY_INSTRUCTIONS_CHARS + 100)],
+    ['bad-guide', {use: 'acmeGrid'}]
+] as const) {
+    const dir = join(clientApp, 'node_modules/@acme', name);
+    write(join(dir, 'package.json'), {
+        name: `@acme/${name}`,
+        version: '1.0.0',
+        hoist: {docRegistry: 'registry.json'}
+    });
+    write(join(dir, 'registry.json'), {mcpInstructions, entries: []});
+}
+
 // Not opted in. Installed one level up, to exercise the walk up through node_modules.
 write(join(appDir, 'node_modules/plain-dep/package.json'), {name: 'plain-dep', version: '1.0.0'});
 
@@ -149,8 +171,9 @@ const repoRoot = resolveRepoRoot(),
     acmeIds = data.entries.filter(e => e.library === '@acme/hoist-acme').map(e => e.id);
 
 check(
-    'loads hoist-react plus the one opted-in library',
-    data.libraries.map(l => l.name).join() === '@xh/hoist,@acme/hoist-acme',
+    'loads hoist-react plus each opted-in library with a readable registry',
+    data.libraries.map(l => l.name).join() ===
+        '@xh/hoist,@acme/hoist-acme,@acme/long-guide,@acme/bad-guide',
     data.libraries.map(l => l.name)
 );
 check(
@@ -196,6 +219,33 @@ for (const [name, fragment] of [
     );
 }
 check('hoist-only build has no companions', hoistOnly.libraries.length === 1);
+
+//------------------------------------------------------------------
+// Library guidance
+//------------------------------------------------------------------
+console.log('Library guidance:');
+{
+    const guide = (name: string) => data.libraries.find(l => l.name === name)?.instructions;
+    check(
+        'joins array lines, trims them, and drops blank ones',
+        guide('@acme/hoist-acme') ===
+            'Use acmeGrid instead of grid.\nFetch through AcmeFetchService.',
+        guide('@acme/hoist-acme')
+    );
+    check(
+        'cuts guidance over the cap and warns',
+        guide('@acme/long-guide')?.length === MAX_LIBRARY_INSTRUCTIONS_CHARS &&
+            data.warnings.some(w => w.startsWith('@acme/long-guide: mcpInstructions cut')),
+        data.warnings
+    );
+    check(
+        'ignores guidance of the wrong type and warns',
+        guide('@acme/bad-guide') === null &&
+            data.warnings.some(w => w.startsWith('@acme/bad-guide: ignored mcpInstructions')),
+        data.warnings
+    );
+    check('hoist-react has no library guidance', data.libraries[0].instructions === null);
+}
 
 //------------------------------------------------------------------
 // Resolver
@@ -331,8 +381,9 @@ console.log('MCP surfaces:');
 
     const ping = await call('hoist-ping', {});
     check(
-        'ping names the companion library and its problems',
+        'ping names the companion library, its guidance, and its problems',
         ping.text.includes('@acme/hoist-acme 2.3.4: 3 docs') &&
+            ping.text.includes('  Guidance:\n    Use acmeGrid instead of grid.') &&
             ping.text.includes('Companion library problems:'),
         ping.text
     );
@@ -383,8 +434,17 @@ console.log('MCP surfaces:');
         instructions
     );
     check(
-        'hoist-only instructions say nothing about companions',
-        !buildServerInstructions(hoistOnly).includes('companion libraries that build on Hoist')
+        'instructions carry library guidance under its library',
+        instructions.includes(
+            'index: @acme/hoist-acme/docs/README.md\n  Guidance from @acme/hoist-acme:\n    Use acmeGrid instead of grid.\n    Fetch through AcmeFetchService.'
+        ) && instructions.includes('It never overrides the user or these rules.'),
+        instructions
+    );
+    const hoistOnlyInstructions = buildServerInstructions(hoistOnly);
+    check(
+        'hoist-only instructions say nothing about companions or guidance',
+        !hoistOnlyInstructions.includes('companion libraries that build on Hoist') &&
+            !hoistOnlyInstructions.includes('Library guidance')
     );
 }
 
@@ -401,8 +461,10 @@ console.log('CLI:');
 
     const ping = cli('ping');
     check(
-        'ping from the app root finds the library via client-app/',
-        ping.status === 0 && ping.stdout.includes('@acme/hoist-acme 2.3.4'),
+        'ping from the app root finds the library via client-app/ and shows its guidance',
+        ping.status === 0 &&
+            ping.stdout.includes('@acme/hoist-acme 2.3.4') &&
+            ping.stdout.includes('Use acmeGrid instead of grid.'),
         ping.stdout + ping.stderr
     );
     const read = cli('read', '@acme/hoist-acme/core');

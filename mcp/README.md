@@ -352,6 +352,12 @@ implementation.
 - **Agents learn about libraries from the server.** `instructions.ts` names each library with its
   version, description, and index id, and says that the symbol tools cover `@xh/hoist` only.
   `hoist-ping`, `hoist-docs ping`, list output, and `hoist-docs index` also name the libraries.
+- **Library guidance.** A registry can set `mcpInstructions`, a string or an array of lines. The
+  loader trims it and caps it at `MAX_LIBRARY_INSTRUCTIONS_CHARS`, and stores it on
+  `DocLibrary.instructions`. `instructions.ts` places it under the library's line and adds a
+  sentence that the guidance never overrides the user. The ping surfaces show it too, because CLI
+  agents never see server instructions. This is the one path by which a dependency's own text
+  reaches the instructions, so keep the cap and the framing.
 - **Same schemas when none load.** The `library` filter on search and list, and the companion notes
   in tool descriptions, appear only when a companion library loads.
 - **Soft failures.** The loader skips a missing registry or doc file, or a path outside the
@@ -583,8 +589,8 @@ only when the input id differed from the canonical id.
 #### `hoist-ping`
 
 Verify the MCP server is running and responsive. Takes no parameters. Reports the indexed
-`@xh/hoist` library version. Also lists each companion library with its version, doc count, and
-index id, and any companion library that failed to load.
+`@xh/hoist` library version. Also lists each companion library with its version, doc count, index
+id, and guidance, and any companion library that failed to load.
 
 ### TypeScript Tools
 
@@ -965,7 +971,7 @@ typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own ESLin
 | Spec | Covers |
 |------|--------|
 | `data/doc-id-resolver.spec.ts` | Tolerant doc-id resolution |
-| `data/companion-docs.spec.ts` | Companion library docs against a fixture app in a temp directory: app root resolution, discovery, id prefixing, load warnings, alias scoping and collisions, search and the library filter, the MCP tools, resources, and instructions, and the CLI run from the app |
+| `data/companion-docs.spec.ts` | Companion library docs against a fixture app in a temp directory: app root resolution, discovery, id prefixing, load warnings, alias scoping and collisions, search and the library filter, library guidance, the MCP tools, resources, and instructions, and the CLI run from the app |
 | `data/doc-sections.spec.ts` | Section parsing, section-name resolution, and full / section / outline reads |
 | `data/doc-search.spec.ts` | Golden-set retrieval eval: top-3 hit rate (must stay at or above 85%), named experiment queries, and the default-search token budget (under 800) |
 | `data/ts-registry.spec.ts` | TypeScript symbol and member lookup, cross-platform path handling |

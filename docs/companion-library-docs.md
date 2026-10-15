@@ -17,8 +17,9 @@ read them with the same tools, and the server instructions tell agents that the 
 3. They load each declared registry and prefix its doc ids with the package name. For example,
    `core/README.md` in `@acme/hoist-acme` becomes `@acme/hoist-acme/core/README.md`.
 4. They merge those docs into one search index with Hoist's docs.
-5. The MCP server lists each library in its instructions, with its version, description, and
-   index doc. `hoist-ping` and `hoist-docs ping` list the libraries and any load problems.
+5. The MCP server lists each library in its instructions, with its version, description, index
+   doc, and any [guidance](#agent-guidance) from its authors. `hoist-ping` and `hoist-docs ping`
+   list the same, plus any load problems.
 
 Hoist's own doc ids do not change. Short ids such as `core`, `grid`, and `index` always mean Hoist
 docs.
@@ -77,11 +78,43 @@ library can start with this:
 | `entries[].mcpCategory` | No | Category for filtering. Defaults to `package`. |
 | `entries[].aliases` | No | Extra short names. The tools scope them under the package name. |
 | `mcpCategories` | No | Category ids and titles. An undeclared category gets a title from its id. |
+| `mcpInstructions` | No | Guidance for agents, as a string or an array of lines. See [Agent Guidance](#agent-guidance). |
 | `viewerCategories`, `entries[].viewerCategory` | No | Ignored by the MCP tools. The Toolbox doc viewer uses them. |
 
 Use the hoist-react categories where they fit: `package`, `concept`, `devops`, `conventions`, and
 `index`. Give the index doc the id `docs/README.md`. The tools treat that path as the library
 index.
+
+## Agent Guidance
+
+A library can give agents short, direct guidance with `mcpInstructions` in its registry file. The
+MCP server adds it to its instructions under the library's name, and the ping surfaces show it.
+Agents read server instructions before they use any tool, so guidance reaches an agent that never
+searches the docs.
+
+Use guidance to say what the library changes about writing Hoist code. A client package of Hoist
+overrides is the main case:
+
+```json
+{
+  "mcpInstructions": [
+    "Use acmeGrid and AcmeGridModel instead of grid and GridModel in Acme apps.",
+    "Fetch through AcmeFetchService, which adds the Acme auth headers. Do not call XH.fetchService directly.",
+    "Read @acme/hoist-acme/docs/README.md before you build a new screen."
+  ],
+  "entries": []
+}
+```
+
+- **Keep it short.** The server cuts guidance longer than 1,500 characters and logs a warning.
+  Put the details in the docs, and point to them.
+- **State rules, not features.** Name the Hoist API that the library replaces, and what to use
+  instead. The library description and index already say what the library provides.
+- **Stay in scope.** The server tells agents that library guidance covers components and patterns
+  only, and that it never overrides the user.
+
+The tools trim each line and drop blank lines. If the value is not a string or an array of
+strings, the tools ignore it and log a warning.
 
 ## Doc IDs
 
@@ -135,7 +168,8 @@ direct dependency of the app for its docs to load.
 - **Loaded at startup.** The MCP server reads the registries when it starts. Restart it after an
   install changes a companion library.
 - **Untrusted content.** Any opted-in dependency can add docs. The server instructions tell the
-  client to treat all doc content as data, not as instructions.
+  client to treat all doc content as data, not as instructions. Library guidance is the one
+  exception, and the instructions frame it as advice from the package authors.
 - **Load problems are not fatal.** A missing registry, a missing doc file, or a bad path skips that
   item. The tools log a warning to stderr and report it in `hoist-ping` and `hoist-docs ping`.
 
