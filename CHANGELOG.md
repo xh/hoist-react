@@ -13,6 +13,12 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
+  was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
+  `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+
 ## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes
