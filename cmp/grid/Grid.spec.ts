@@ -8,7 +8,7 @@ import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
-import {render, waitFor} from '@testing-library/react';
+import {act, render, waitFor} from '@testing-library/react';
 import type {GridApi} from 'ag-grid-community';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -107,22 +107,24 @@ describe('Grid', () => {
                 columns: [{field: 'name'}, {field: 'qty'}, {field: 'region'}]
             }),
             {agApi} = gridModel,
-            agHidden = (colId: string) =>
-                agApi.getColumnState().find(it => it.colId === colId).hide;
+            agState = (colId: string) => agApi.getColumnState().find(it => it.colId === colId),
+            agHidden = (colId: string) => agState(colId).hide;
         stubAgGrouping(agApi);
 
-        gridModel.setGroupBy('name');
+        act(() => gridModel.setGroupBy('name'));
         await waitFor(() => expect(agHidden('name')).toBe(true));
 
         // Column state changes must not show the grouped column, or record it as hidden.
-        gridModel.setColumns([{field: 'name'}, {field: 'qty'}, {field: 'region'}]);
-        gridModel.updateColumnState([{colId: 'qty', width: 150}]);
-        gridModel.noteAgColumnStateChanged(agApi.getColumnState());
-        await waitFor(() => expect(agApi.getColumnState()[1].width).toBe(150));
+        act(() => {
+            gridModel.setColumns([{field: 'name'}, {field: 'qty'}, {field: 'region'}]);
+            gridModel.updateColumnState([{colId: 'qty', width: 150}]);
+            gridModel.noteAgColumnStateChanged(agApi.getColumnState());
+        });
+        await waitFor(() => expect(agState('qty').width).toBe(150));
         expect(agHidden('name')).toBe(true);
         expect(gridModel.isColumnVisible('name')).toBe(true);
 
-        gridModel.setGroupBy(null);
+        act(() => gridModel.setGroupBy(null));
         await waitFor(() => expect(agHidden('name')).toBe(false));
     });
 
