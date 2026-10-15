@@ -31,7 +31,6 @@ export function getZoomOptions(model: PdfViewerToolbarModel): {value: PdfScale; 
     return ret;
 }
 
-/** @internal */
-export function formatScale(scale: number): string {
+function formatScale(scale: number): string {
     return `${Math.round(scale * 100)}%`;
 }

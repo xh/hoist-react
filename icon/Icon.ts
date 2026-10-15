@@ -624,10 +624,10 @@ export const iconFactories = {
         return Icon.icon({...p, faName: 'magnifying-glass'});
     },
     magnifyingGlassMinus(p?: IconProps) {
-        return Icon.icon({...p, iconName: 'magnifying-glass-minus'});
+        return Icon.icon({...p, faName: 'magnifying-glass-minus'});
     },
     magnifyingGlassPlus(p?: IconProps) {
-        return Icon.icon({...p, iconName: 'magnifying-glass-plus'});
+        return Icon.icon({...p, faName: 'magnifying-glass-plus'});
     },
     mail(p?: IconProps) {
         return Icon.icon({...p, faName: 'envelope'});
@@ -738,7 +738,7 @@ export const iconFactories = {
         return Icon.icon({...p, faName: 'user-shield'});
     },
     rotateRight(p?: IconProps) {
-        return Icon.icon({...p, iconName: 'rotate-right'});
+        return Icon.icon({...p, faName: 'rotate-right'});
     },
     server(p?: IconProps) {
         return Icon.icon({...p, faName: 'server'});
@@ -1021,6 +1021,12 @@ export const aliasFactories = {
     },
     upload(p?: IconProps) {
         return Icon.arrowUpFromBracket(p);
+    },
+    zoomIn(p?: IconProps) {
+        return Icon.magnifyingGlassPlus(p);
+    },
+    zoomOut(p?: IconProps) {
+        return Icon.magnifyingGlassMinus(p);
     }
 };
 
@@ -1173,12 +1179,6 @@ export const Icon = {
      */
     getCatalog(): IconCatalogEntry[] {
         return iconCatalog.getEntries();
-    },
-    zoomIn(p?: IconProps) {
-        return Icon.magnifyingGlassPlus(p);
-    },
-    zoomOut(p?: IconProps) {
-        return Icon.magnifyingGlassMinus(p);
     },
 
     /**

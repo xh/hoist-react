@@ -113,8 +113,8 @@ new PdfViewerModel({
 To change the toolbar for the whole app, set `PdfViewerModel.defaults.toolbar` or
 `PdfViewerModel.defaults.mobileToolbar` at startup.
 
-The mobile toolbar renders the same tokens in a compact form. Its find input has no keyboard
-shortcuts.
+The mobile toolbar renders the same tokens in a compact form. It leaves out the page number input,
+the zoom in and out buttons, the find-previous button, and keyboard shortcuts.
 
 ## Model API
 
