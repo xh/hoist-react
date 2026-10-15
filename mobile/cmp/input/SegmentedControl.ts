@@ -12,31 +12,26 @@ import {
     SegmentedControlOption,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
-import {hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import {div, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {computed} from '@xh/hoist/mobx';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import './SegmentedControl.scss';
 
-export interface SegmentedControlProps extends HoistProps, HoistInputProps {
+export interface SegmentedControlProps extends HoistProps, HoistInputProps, LayoutProps {
     /**
-     * True (default) to render all segments at an equal width when {@link fill} is enabled,
-     * dividing the available width into equal parts regardless of label length - the conventional
-     * segmented-control appearance. Set false to instead size each segment to its content and
-     * share only the leftover space, so a longer label yields a wider segment. No effect when
-     * `fill` is false. Either way, a label too wide for its segment truncates with an ellipsis.
+     * True (default) to render all segments at an equal width - the conventional segmented-control
+     * appearance. A control sized to its content gives every segment the width of its widest
+     * label. A control sized by layout props divides that width equally. Set false to size each
+     * segment to its own label, sharing any extra width among them. Either way, a label too wide
+     * for its segment truncates with an ellipsis.
      */
     equalSegmentWidths?: boolean;
-
-    /**
-     * True (default) to stretch the control to fill available width. Set false to size the control
-     * to its options. See `equalSegmentWidths` for how the filled width is divided up.
-     */
-    fill?: boolean;
 
     /**
      * Default visual intent applied to the selected option, and as a subtle text-color hint
@@ -171,7 +166,6 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         options,
         // Consumed by this component
         equalSegmentWidths = true,
-        fill = true,
         intent,
         outlined = true,
         showTrayBackground = true,
@@ -213,23 +207,24 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         });
     });
 
-    return hbox({
+    // A plain div rather than a Box, so the stylesheet can switch the tray between flex and grid
+    // layout - see `equalSegmentWidths`. Box would pin `display: flex` as an inline style.
+    return div({
+        ...rest,
         className: classNames(
             className,
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
             outlined && 'xh-segmented-control--outlined',
             !showTrayBackground && 'xh-segmented-control--no-tray-bg',
             dividers && 'xh-segmented-control--dividers',
-            fill && 'xh-segmented-control--fill',
-            fill && equalSegmentWidths && 'xh-segmented-control--equal-widths'
+            equalSegmentWidths && 'xh-segmented-control--equal-widths'
         ),
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
-        ...getLayoutProps(props),
-        testId,
-        domAttrs,
-        items: buttons,
-        ...rest
+        style: {...getLayoutProps(props), ...rest.style},
+        [TEST_ID]: testId,
+        ...domAttrs,
+        items: buttons
     });
 });

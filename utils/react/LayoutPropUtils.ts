@@ -10,9 +10,7 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 const XH_PAD_VAR = 'var(--xh-pad-px)';
 
 /**
- * These utils support accepting the CSS styles enumerated below as top-level props of a Component,
- * and are typically accessed via the `@LayoutSupport` mixin (for class-based components) or the
- * `useLayoutProps()` Hook (for function components).
+ * These utils support accepting the CSS styles enumerated below as top-level props of a Component.
  *
  * Any supported properties will be extracted from the overall props bundle and returned from
  * `getLayoutProps()`. The contrasting `getNonLayoutProps()` will output all other props _not_
@@ -29,10 +27,12 @@ const XH_PAD_VAR = 'var(--xh-pad-px)';
  *     top, left, position, display
  *
  * NOTE - this system relies on Components respecting and responding to these properties.
- * Component authors must ensure they do, typically by spreading the extracted props onto a
- * child component that also implements LayoutSupport. `Box` is typically the Hoist layout Component
- * that is ultimately rendered and will actually implement this system by outputting a div with
- * appropriate styles set.
+ * Component authors must apply the extracted props in one of two ways:
+ *   - spread them onto a child component that also supports layout props, e.g. `box`/`hbox`.
+ *   - set them as the `style` of a DOM element, e.g. `div({style: getLayoutProps(props)})`.
+ * Never spread them onto a DOM element factory such as `div` - each becomes an HTML attribute
+ * (`width="150px"`) that CSS ignores. See "Supporting Layout Props in a Custom Component" in
+ * `cmp/layout/README.md` for the full checklist, including the `hasLayoutSupport` flag.
  */
 
 /**
@@ -42,6 +42,10 @@ const XH_PAD_VAR = 'var(--xh-pad-px)';
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
  * as raw numbers rather than strings. Margin, padding, and gap accept a boolean shorthand:
  * `true` resolves to the `--xh-pad-px` CSS var (default 10px), `false` is treated as unset.
+ *
+ * The result is a React style object - every key a CSS property, every value valid CSS. Apply it
+ * as the `style` of a DOM element or spread it onto a component that supports layout props.
+ * Never spread it onto a DOM element factory such as `div`.
  */
 export function getLayoutProps(props: PlainObject): ResolvedLayoutProps {
     // Harvest all keys of interest

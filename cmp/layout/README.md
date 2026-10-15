@@ -232,14 +232,12 @@ padding: '10 20 10 20'  // becomes '10px 20px 10px 20px'
 | `flexShrink` | flex-shrink | Shrink factor |
 | `flexBasis` | flex-basis | Initial size |
 | `flexDirection` | flex-direction | `'row'`, `'column'`, etc. |
+| `flexFlow` | flex-flow | Shorthand direction and wrap |
 | `flexWrap` | flex-wrap | `'wrap'`, `'nowrap'` |
 | `alignItems` | align-items | Cross-axis alignment |
 | `alignContent` | align-content | Multi-line alignment |
 | `alignSelf` | align-self | Self alignment |
 | `justifyContent` | justify-content | Main-axis alignment |
-| `justifyItems` | justify-items | Item alignment |
-| `justifySelf` | justify-self | Self justification |
-| `order` | order | Flex order |
 | `gap` | gap | Gap between items |
 | `width` | width | Element width |
 | `height` | height | Element height |
@@ -253,8 +251,65 @@ padding: '10 20 10 20'  // becomes '10px 20px 10px 20px'
 | `paddingBottom` | padding-bottom | Bottom padding |
 | `paddingLeft` | padding-left | Left padding |
 | `margin` | margin | Margin (all sides) |
+| `marginTop` | margin-top | Top margin |
+| `marginRight` | margin-right | Right margin |
+| `marginBottom` | margin-bottom | Bottom margin |
+| `marginLeft` | margin-left | Left margin |
 | `overflow` | overflow | Overflow behavior |
+| `overflowX` | overflow-x | Horizontal overflow behavior |
+| `overflowY` | overflow-y | Vertical overflow behavior |
+| `textOverflow` | text-overflow | Clipped text treatment, e.g. `'ellipsis'` |
 | `position` | position | Position type |
+| `top` | top | Top offset |
+| `left` | left | Left offset |
+| `display` | display | Display type |
+
+`margin`, `padding`, and `gap` also accept `true` for the standard app padding
+(`var(--xh-pad-px)`). A `false` value is treated as unset.
+
+### Supporting Layout Props in a Custom Component
+
+Size a component the way a developer expects without reading its docs. With no layout props, it
+takes its natural size, usually the size of its content, and does not stretch to fill its
+container. Layout props such as `width` and `flex` are the only way to size it. Do not add a
+component-specific sizing prop, such as a `fill` flag, that repeats what `flex` or `width` does.
+
+A component that accepts layout props must do three things, and all three must agree. If it skips
+one, a caller can pass `width: 150` and see it silently ignored.
+
+1. **Declare them.** Extend `LayoutProps` in the props interface, so that callers can pass them
+   without a type error.
+2. **Apply them to the rendered element.** Spread them onto a component that handles layout props
+   itself, such as `box`, `hbox`, `vbox`, or `frame`. Or set them as the `style` of a DOM element.
+   Never spread them onto a DOM element factory like `div` or `span`. React then renders each one
+   as an HTML attribute, such as `width="150px"`, which CSS ignores.
+3. **Flag an input as sizeable.** Inputs set `(MyInput as any).hasLayoutSupport = true` after the
+   component definition. `FormField` reads this flag to size the input to the field. On desktop,
+   an input with no `width` or `flex` of its own gets `flex: 1`, so it fills the field. Set the
+   flag only on an input that applies its layout props as in step 2.
+
+```typescript
+const [layoutProps, restProps] = splitLayoutProps(props);
+
+// ✅ A component that handles layout props itself
+hbox({...layoutProps, className, items: children});
+
+// ✅ The style of a DOM element
+div({style: layoutProps, className, items: children});
+
+// ❌ Each prop becomes an HTML attribute - the element renders at its natural size
+div({...layoutProps, className, items: children});
+```
+
+The `style` form is safe because `getLayoutProps()` returns a style object. Each key is a CSS
+property name, and the function converts each value to valid CSS (see the conversions above).
+`Box`, `Card`, and `Badge` apply layout props as `style` in the same way.
+
+Relay only the non-layout props (`getNonLayoutProps()`, or the second value from
+`splitLayoutProps()`) to any inner component. Layout props then size the outer element only.
+
+To check the result, inspect the rendered element in a browser. Each layout prop must appear in the
+element's `style` attribute, not as an attribute of its own.
 
 ## Common Patterns
 
