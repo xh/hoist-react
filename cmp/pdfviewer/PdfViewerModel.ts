@@ -14,6 +14,7 @@ import {clamp, isNumber, isString} from 'lodash';
 import type {PDFDocumentLoadingTask, PDFDocumentProxy} from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type {EventBus, PDFLinkService, PDFViewer} from 'pdfjs-dist/legacy/web/pdf_viewer.mjs';
 import type {ReactNode} from 'react';
+import type {PdfViewerToolbarModel} from './impl/PdfViewerToolbarModel';
 import type {PdfScale, PdfSource, PdfViewerToolbarItem, PdfViewerToolbarSpec} from './Types';
 
 export interface PdfViewerConfig {
@@ -58,7 +59,7 @@ export interface PdfViewerModelDefaults {
  *
  * @see PdfViewer
  */
-export class PdfViewerModel extends HoistModel {
+export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel {
     /** App-level defaults for PdfViewerModel. Instance config takes precedence. */
     static defaults: PdfViewerModelDefaults = {
         toolbar: ['pageNav', '-', 'zoom', '-', 'find', 'filler', 'rotate', 'download'],
@@ -192,7 +193,7 @@ export class PdfViewerModel extends HoistModel {
         const {source} = this,
             url = isString(source) ? source : (source as FetchOptions)?.url,
             lastSegment = isString(url) ? url.split(/[?#]/)[0].split('/').pop() : null;
-        if (lastSegment?.toLowerCase().endsWith('.pdf')) return lastSegment;
+        if (lastSegment?.toLowerCase().endsWith('.pdf')) return decodeSegment(lastSegment);
 
         return source instanceof File ? source.name : 'document.pdf';
     }
@@ -452,5 +453,14 @@ export class PdfViewerModel extends HoistModel {
         this.destroyViewer();
         this.closeDocumentAsync();
         super.destroy();
+    }
+}
+
+/** Decode a URL path segment for use as a filename, leaving a malformed one as is. */
+function decodeSegment(segment: string): string {
+    try {
+        return decodeURIComponent(segment);
+    } catch {
+        return segment;
     }
 }

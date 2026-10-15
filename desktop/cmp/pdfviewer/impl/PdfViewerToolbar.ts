@@ -6,7 +6,7 @@
  */
 import {filler, fragment, span} from '@xh/hoist/cmp/layout';
 import {getZoomOptions} from '@xh/hoist/cmp/pdfviewer/impl/ZoomOptions';
-import type {PdfViewerModel} from '@xh/hoist/cmp/pdfviewer/PdfViewerModel';
+import type {PdfViewerToolbarModel} from '@xh/hoist/cmp/pdfviewer/impl/PdfViewerToolbarModel';
 import type {PdfViewerToolbarItem} from '@xh/hoist/cmp/pdfviewer/Types';
 import {hoistCmp, HoistModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -21,11 +21,12 @@ import type {ReactNode} from 'react';
  * Desktop implementation of the PdfViewer toolbar.
  *
  * Note that this module is installed by the desktop AppContainer and must not import
- * PdfViewerModel at runtime, which would bring pdf.js into every app's build.
+ * PdfViewerModel, even as a type. A runtime import would bring pdf.js into every app's build, and a
+ * type import would break `tsc` in apps without `pdfjs-dist`. See {@link PdfViewerToolbarModel}.
  *
  * @internal
  */
-export const pdfViewerToolbarImpl = hoistCmp.factory<PdfViewerModel>({
+export const pdfViewerToolbarImpl = hoistCmp.factory<PdfViewerToolbarModel>({
     model: uses((m: HoistModel) => m['isPdfViewerModel']),
 
     render({model}) {
@@ -37,7 +38,11 @@ export const pdfViewerToolbarImpl = hoistCmp.factory<PdfViewerModel>({
     }
 });
 
-function renderItem(item: PdfViewerToolbarItem, key: number, model: PdfViewerModel): ReactNode {
+function renderItem(
+    item: PdfViewerToolbarItem,
+    key: number,
+    model: PdfViewerToolbarModel
+): ReactNode {
     if (!isString(item)) return item;
     switch (item) {
         case 'pageNav':
@@ -59,7 +64,7 @@ function renderItem(item: PdfViewerToolbarItem, key: number, model: PdfViewerMod
     }
 }
 
-const pageNav = hoistCmp.factory<PdfViewerModel>(({model}) => {
+const pageNav = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
     const {pageNumber, pageCount, hasDocument} = model;
     return fragment(
         button({
@@ -86,7 +91,7 @@ const pageNav = hoistCmp.factory<PdfViewerModel>(({model}) => {
     );
 });
 
-const zoom = hoistCmp.factory<PdfViewerModel>(({model}) => {
+const zoom = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
     const disabled = !model.hasDocument;
     return fragment(
         button({
@@ -113,7 +118,7 @@ const zoom = hoistCmp.factory<PdfViewerModel>(({model}) => {
     );
 });
 
-const find = hoistCmp.factory<PdfViewerModel>(({model}) => {
+const find = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
     const {findQuery, findMatchCount, findMatchNumber, hasDocument} = model;
     return fragment(
         textInput({
@@ -157,7 +162,7 @@ const find = hoistCmp.factory<PdfViewerModel>(({model}) => {
     );
 });
 
-const rotate = hoistCmp.factory<PdfViewerModel>(({model}) =>
+const rotate = hoistCmp.factory<PdfViewerToolbarModel>(({model}) =>
     button({
         icon: Icon.rotateRight(),
         title: 'Rotate clockwise',
@@ -166,7 +171,7 @@ const rotate = hoistCmp.factory<PdfViewerModel>(({model}) =>
     })
 );
 
-const download = hoistCmp.factory<PdfViewerModel>(({model}) =>
+const download = hoistCmp.factory<PdfViewerToolbarModel>(({model}) =>
     button({
         icon: Icon.download(),
         title: 'Download',

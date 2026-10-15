@@ -168,13 +168,18 @@ Pages keep their own colors in the dark theme, as in other PDF readers.
   `button` and `.dialog`. Hoist ships a copy scoped to `.xh-pdf-viewer`, so its rules never apply
   outside a viewer. `scripts/generate-pdfjs-css.mjs` builds it, and `pnpm check:vendored` keeps it
   in step with the installed pdf.js.
-- The platform toolbars install through `@xh/hoist/dynamics`. They import the model as a type
-  only, so pdf.js stays out of apps that do not use the viewer.
+- The platform toolbars install through `@xh/hoist/dynamics`. They never import the model, even
+  as a type, and use a small interface instead. pdf.js thus stays out of the build and the type
+  check of apps that do not use the viewer.
 
 ## Limitations
 
 - No print, thumbnails, outline sidebar, or annotation editing yet.
-- Password-protected documents show a load error.
+- No gesture zoom. Pinch on touch devices and ctrl+wheel are not handled - pdf.js leaves these to
+  its full viewer app, which Hoist does not use. Use the toolbar zoom controls. Pinch zoom is
+  planned for when an app needs the viewer on mobile.
+- Password-protected documents show a load error. A password prompt is planned, through the
+  pdf.js `onPassword` callback.
 - CJK text in documents that do not embed their character maps can render incorrectly. Hoist
   does not bundle the pdf.js CMap files.
 - Documents load in full before display. pdf.js range requests and streaming are not used.
