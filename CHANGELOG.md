@@ -13,6 +13,10 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `Column.DEFAULT_WIDTH` is now 100px, up from 60px, to reduce layout shift when autosizing.
+
 ### 🐞 Bug Fixes
 
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
