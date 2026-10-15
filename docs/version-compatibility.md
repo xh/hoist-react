@@ -61,7 +61,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 89.0 | -- | 42.0 | 42.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v89-upgrade-notes.md) |
+| 89.0 | -- | 42.0 | 43.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v89-upgrade-notes.md) |
 | 88.1 | -- | 42.0 | 42.0 | Use 88.1.2 or later - earlier 88 releases drop `MsalClient` defaults. `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
 | 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | [Notes](./upgrade-notes/v87-upgrade-notes.md) |
 | 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | [Notes](./upgrade-notes/v86-upgrade-notes.md) |
@@ -121,6 +121,7 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 43.0 | -- | Grails 8 / Spring Boot 4 / Java 21 server upgrade. No client-facing changes and no hoist-react bump. |
 | 42.0 | 88.0 recommended | `JsonBlobService` limits global blob writes to `xhJsonBlobConfig.globalWriteRoles` and reports `manageGlobal` on `xhView/allData`, consumed by v88's `ViewManagerModel`. Older hoist-react keeps its client-side `manageGlobal`, which the server now also enforces. No hard hoist-react bump. |
 | 41.0 | 87.0 recommended | Tabbed/typed config editor, directory group names + search endpoints - consumed by v87's Admin Console, which degrades gracefully without them. No hard hoist-react bump. |
 | 40.5 | 87.0 recommended | `ViewManager` group rename + bulk-editing endpoints consumed by v87 (which requires 40.5 as its floor). No hard hoist-react bump from 40.0. |
