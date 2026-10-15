@@ -13,6 +13,14 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🤖 AI Docs + Tooling
+
+* The hoist-react MCP server and `hoist-docs` CLI now serve docs from companion libraries that build
+  on Hoist, such as `@xh/hoist-chat-kit` or a client firm's shared package. A library opts in with
+  `"hoist": {"docRegistry": "<path>"}` in its `package.json`. Its doc ids take the package name as
+  a prefix, and the server instructions name each library. See
+  [Companion Library Docs](docs/companion-library-docs.md).
+
 ## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes
