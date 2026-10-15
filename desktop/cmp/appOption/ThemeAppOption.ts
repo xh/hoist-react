@@ -65,7 +65,8 @@ export const themeAppOption = ({
                           label,
                           icon: icon()
                       })),
-                      fill: false,
+                      // Keep to the options' width - FormField would otherwise stretch it.
+                      flex: 'none',
                       ...(inputProps as Partial<SegmentedControlProps>)
                   }),
             ...formFieldProps

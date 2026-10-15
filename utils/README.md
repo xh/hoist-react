@@ -460,14 +460,18 @@ Used internally by Hoist components but available for custom components:
 ```typescript
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 
-const layoutStyle = getLayoutProps(props);   // {flex: 1, padding: 10, ...}
+const layoutStyle = getLayoutProps(props);   // {flex: '1', padding: '10px', ...}
 const restProps = getNonLayoutProps(props);   // everything else
 ```
 
 Numeric layout prop values are automatically converted to pixel strings (e.g. `10` → `'10px'`).
+The result is a style object. Apply it as the `style` of a DOM element, or spread it onto a
+component that handles layout props. Never spread it onto a DOM element factory like `div`.
 
 See [`/cmp/layout/` — Layout Props (BoxProps)](../cmp/layout/README.md#layout-props-boxprops)
-for the full list of supported props and conversion details.
+for the full list of supported props and conversion details, and
+[Supporting Layout Props in a Custom Component](../cmp/layout/README.md#supporting-layout-props-in-a-custom-component)
+for the full authoring checklist.
 
 ### Other React Utilities
 

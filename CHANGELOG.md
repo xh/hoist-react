@@ -13,6 +13,26 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - SegmentedControl sizing)
+
+See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Removed `SegmentedControlProps.fill` (desktop and mobile). The control is now sized to its options
+  by default. Set `flex: 1` or `width: '100%'` on any control that relied on `fill` to stretch.
+* `SegmentedControl.equalSegmentWidths` (default `true`) now applies at any size. A control sized to
+  its options gives each segment the width of its widest label, including former `fill: false`
+  controls. Set `equalSegmentWidths: false` to keep label-width segments.
+
+### 🐞 Bug Fixes
+
+* Fixed desktop `SegmentedControl` and `IntentInput` ignoring layout props such as `width` and
+  `flex`.
+
+### ⚙️ Typescript API Adjustments
+
+* `SegmentedControlProps` (desktop and mobile) and `IntentInputProps` now include `LayoutProps`.
+
 ## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes

@@ -58,7 +58,8 @@ export const sizingModeAppOption = ({
                   })
                 : segmentedControl({
                       options: modes.map(mode => ({value: mode, label: startCase(mode)})),
-                      fill: false,
+                      // Keep to the options' width - FormField would otherwise stretch it.
+                      flex: 'none',
                       ...(inputProps as Partial<SegmentedControlProps>)
                   }),
             ...formFieldProps

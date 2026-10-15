@@ -13,7 +13,7 @@ import {
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
@@ -23,24 +23,17 @@ import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import './SegmentedControl.scss';
 
-export interface SegmentedControlProps extends HoistProps, HoistInputProps {
+export interface SegmentedControlProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
     compact?: boolean;
 
     /**
-     * True (default) to render all segments at an equal width when {@link fill} is enabled,
-     * dividing the available width into equal parts regardless of label length - the conventional
-     * segmented-control appearance. Set false to instead size each segment to its content and
-     * share only the leftover space, so a longer label yields a wider segment. No effect when
-     * `fill` is false.
+     * True (default) to render all segments at an equal width - the conventional segmented-control
+     * appearance. A control sized to its content gives every segment the width of its widest
+     * label. A control sized by layout props divides that width equally. Set false to size each
+     * segment to its own label, sharing any extra width among them.
      */
     equalSegmentWidths?: boolean;
-
-    /**
-     * True (default) to stretch the control to fill available width. Set false to size the control
-     * to its options. See `equalSegmentWidths` for how the filled width is divided up.
-     */
-    fill?: boolean;
 
     /**
      * Default visual intent applied to the selected option, and as a subtle text-color hint
@@ -86,6 +79,12 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
  * Similar to ButtonGroupInput but driven by an `options` prop (like Select/RadioInput)
  * rather than Button children, and with stronger visual differentiation between selected
  * and unselected states.
+ *
+ * Sized to its options by default - it does not stretch to fill its container. Size it with
+ * layout props, as for any other component: `flex: 1` to fill the rest of a row such as a
+ * toolbar, or `width` for a fixed or percentage width (e.g. `width: '100%'` in a column).
+ * A desktop `FormField` passes `flex: 1` to an input with no `width` or `flex` of its own, which
+ * stretches the control in some field layouts. Set `flex: 'none'` or a `width` to fix its size.
  *
  * Built on Blueprint's SegmentedControl component.
  */
@@ -186,7 +185,6 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         // Consumed by this component
         compact,
         equalSegmentWidths = true,
-        fill = true,
         intent,
         outlined = true,
         showTrayBackground = true,
@@ -220,8 +218,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         className: classNames(
             className,
             compact && 'xh-segmented-control--compact',
-            fill && 'xh-segmented-control--fill',
-            fill && equalSegmentWidths && 'xh-segmented-control--equal-widths',
+            equalSegmentWidths && 'xh-segmented-control--equal-widths',
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
             outlined && 'xh-segmented-control--outlined',
             !showTrayBackground && 'xh-segmented-control--no-tray-bg',
@@ -230,12 +227,14 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
-        ...getLayoutProps(props),
+        style: getLayoutProps(props),
         [TEST_ID]: props.testId,
         ...domAttrs,
         item: bpSegmentedControl({
             ...bpProps,
-            fill,
+            // The tray always fills this component's root element, which takes the control's
+            // size - from its content by default, or from any layout props.
+            fill: true,
             size: compact ? 'small' : undefined,
             options: bpOptions,
             // Blueprint resolves its selection as `value ?? internalState`, where the internal

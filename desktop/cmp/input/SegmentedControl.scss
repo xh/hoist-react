@@ -6,6 +6,11 @@
  */
 
 .xh-segmented-control {
+  // Size to the options by default, rather than spanning the parent as a block element would.
+  // Layout props set as inline styles (`width`, `flex`) take precedence, and the tray below fills
+  // whatever size results.
+  width: fit-content;
+
   .bp6-segmented-control {
     background-color: var(--xh-segmented-control-bg);
     border-radius: var(--xh-segmented-control-border-radius-px);
@@ -67,25 +72,19 @@
     border: 1px solid var(--xh-border-color);
   }
 
-  // Not filling - shrink the tray to its options. The tray is a block-level flex container, so it
-  // spans its parent regardless; BP's fill class governs only whether the options themselves grow.
-  // Without this, an unfilled control leaves an empty run of tray to the right of its options.
-  &:not(#{&}--fill) .bp6-segmented-control {
-    width: fit-content;
-  }
-
-  // Equal segment widths - zeroing the flex basis makes each option take an identical share of the
-  // tray. BP's flex-grow alone divides only the leftover space, leaving options at differing widths.
-  // The min-width keeps that equal share from shrinking an option below its own label. A zero
-  // basis otherwise lets each option fall to BP's fixed 30px floor, which is unrelated to its
-  // content: the horizontal padding is eaten first, then a single-word label spills past the
-  // border, since it can neither wrap nor ellipsize. With labels held to one line above,
-  // min-content is the full label width, not just its longest word. Options only stop sharing
-  // equally once there is genuinely not enough room, and then only the ones that need the space
-  // keep it.
-  &--fill#{&}--equal-widths .bp6-segmented-control > .bp6-button {
-    flex-basis: 0;
-    min-width: min-content;
+  // Equal segment widths - a single row of grid columns, each taking an identical `1fr` share of the
+  // tray. BP's flex-grow divides only the leftover space, leaving options at differing widths. A
+  // grid also handles a content-sized control, such as one within a toolbar, which has no leftover
+  // space to divide: the fr unit then resolves to the widest option, so every option matches it.
+  // The min-content floor keeps an equal share from shrinking an option below its own label. With
+  // labels held to one line above, that is the full label width, not just its longest word. BP's
+  // fixed 30px button floor would otherwise apply, letting a label spill past the border, since it
+  // can neither wrap nor ellipsize. Options only stop sharing equally once there is genuinely not
+  // enough room, and then only the ones that need the space keep it.
+  &--equal-widths .bp6-segmented-control {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(min-content, 1fr);
   }
 
   // Tray background suppressed - a lighter presentation, with no fill behind the options.
