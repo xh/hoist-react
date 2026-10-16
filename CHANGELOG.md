@@ -22,6 +22,7 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed stale records in a `Store` rebound from one Cube `View` to another.
 * Fixed `XH.jsonBlobService.findAsync()` finding only global blobs. It sent no owner, so it never
   returned a blob owned by the current user, as its docs describe.
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
