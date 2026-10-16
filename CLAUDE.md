@@ -520,11 +520,14 @@ credentials. Start the server on a throwaway in-memory H2 database with a tempor
 
 ```bash
 cd ../toolbox
-export AGENT_PASSWORD=$(openssl rand -hex 12)
 APP_TOOLBOX_USE_H2=true APP_TOOLBOX_OAUTH_PROVIDER=NONE \
 APP_TOOLBOX_BOOTSTRAP_ADMIN_USER=agent@xh.io \
-APP_TOOLBOX_BOOTSTRAP_ADMIN_PASSWORD=$AGENT_PASSWORD ./gradlew bootRun
+APP_TOOLBOX_BOOTSTRAP_ADMIN_PASSWORD=localDevOnly ./gradlew bootRun
 ```
+
+Always use exactly `agent@xh.io` / `localDevOnly`, never a generated password. Then the developer
+and other agents can sign in to any throwaway server they find. The user exists only in a local
+in-memory database, so the password protects nothing.
 
 Startup logs `Local admin user available as per instanceConfig`. Then log in by POSTing the
 credentials to `/api/xh/login` from a page on `localhost:3000` (a form fill can be blocked by
