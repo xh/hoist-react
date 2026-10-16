@@ -147,7 +147,10 @@ export class FakeHoistCore {
     /** Every request the fake has served in this test - the kit's setup clears it before each. */
     requests: RecordedRequest[] = [];
 
-    /** @internal - called with a message when a route throws. The kit's setup fails the test. */
+    /**
+     * @internal - called with a message for each problem the kit's guards catch, such as a route
+     * that throws. The kit's setup fails the running test, or `initTestAppAsync()` the boot.
+     */
     onProblem: (msg: string) => void = null;
 
     private routes: Route[] = [];

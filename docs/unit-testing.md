@@ -177,6 +177,9 @@ describe('PrefService', () => {
 - A file boots once. To test a different boot outcome, such as access denied, use a separate spec
   file. `initTestAppAsync()` rejects, naming `XH.appState`, if boot stops before `RUNNING`. That
   includes `LOGIN_REQUIRED`, where an app with a login form waits for the user to sign in.
+- `initTestAppAsync()` also rejects if boot triggers a problem that the kit's guards catch, such as
+  a request the fake does not handle. It waits for the requests that boot started, so none lands in
+  the first test's request log. It logs any error that the app handles during boot.
 
 Tests that do not touch services, such as `LocalDate` or filter tests, do not need to boot.
 
