@@ -110,8 +110,10 @@ export function readPackageJson(dir: string): PackageJson | null {
  *
  * Checks, in order:
  *  1. The `HOIST_MCP_APP_ROOT` env var, if set. Used as given.
- *  2. `cwd` and `cwd/client-app` (the standard Hoist app layout). The first with a package.json
- *     that is `@xh/hoist` or depends on it wins, else the first with any package.json.
+ *  2. `cwd` and `cwd/client-app` (the standard Hoist app layout), then the same pair in each
+ *     parent folder. The first package.json that is `@xh/hoist` or depends on it wins, so a run
+ *     from deep inside an app (e.g. `client-app/src`) still finds it.
+ *  3. Else the first package.json in `cwd` or `cwd/client-app`.
  *
  * Returns null when no package.json is found. Params exist for specs - callers pass none.
  */
@@ -121,15 +123,23 @@ export function resolveAppRoot(
 ): string | null {
     if (env.HOIST_MCP_APP_ROOT) return resolve(cwd, env.HOIST_MCP_APP_ROOT);
 
-    const found = [cwd, resolve(cwd, 'client-app')]
-        .map(dir => ({dir, pkg: readPackageJson(dir)}))
-        .filter(it => it.pkg != null);
+    const start = resolve(cwd);
+    let fallback: string | null = null;
+    for (let dir = start; ; dir = dirname(dir)) {
+        for (const candidate of [dir, resolve(dir, 'client-app')]) {
+            const pkg = readPackageJson(candidate);
+            if (!pkg) continue;
+            if (usesHoist(pkg)) return candidate;
+            if (dir === start) fallback ??= candidate;
+        }
+        if (dirname(dir) === dir) return fallback;
+    }
+}
 
-    const usesHoist = found.find(({pkg}) => {
-        const deps = {...pkg!.dependencies, ...pkg!.devDependencies, ...pkg!.peerDependencies};
-        return pkg!.name === '@xh/hoist' || '@xh/hoist' in deps;
-    });
-    return (usesHoist ?? found[0])?.dir ?? null;
+/** True if `pkg` is `@xh/hoist` or depends on it. */
+function usesHoist(pkg: PackageJson): boolean {
+    const deps = {...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies};
+    return pkg.name === '@xh/hoist' || '@xh/hoist' in deps;
 }
 
 /**

@@ -77,7 +77,9 @@ write(join(clientApp, 'package.json'), {
         '@acme/broken': '1.0.0',
         'plain-dep': '1.0.0',
         '@acme/long-guide': '1.0.0',
-        '@acme/bad-guide': '1.0.0'
+        '@acme/bad-guide': '1.0.0',
+        '@acme/bad-types': '1.0.0',
+        '@acme/bad-shape': '1.0.0'
     },
     devDependencies: {'@xh/hoist': '*', 'not-installed': '1.0.0'}
 });
@@ -157,6 +159,29 @@ for (const [name, mcpInstructions] of [
     write(join(dir, 'registry.json'), {mcpInstructions, entries: []});
 }
 
+// Opted in with fields of the wrong type, which must not throw.
+{
+    const dir = join(clientApp, 'node_modules/@acme/bad-types');
+    write(join(dir, 'package.json'), {
+        name: '@acme/bad-types',
+        version: 1,
+        description: 42,
+        hoist: {docRegistry: 'registry.json'}
+    });
+    write(join(dir, 'registry.json'), {
+        mcpCategories: [{id: 'package', title: 3}, {title: 'No id'}, null],
+        entries: [{id: 'docs/a.md', title: 7, mcpCategory: 5, aliases: 'a', keywords: 'k'}]
+    });
+    write(join(dir, 'docs/a.md'), '# A\n');
+    const shape = join(clientApp, 'node_modules/@acme/bad-shape');
+    write(join(shape, 'package.json'), {
+        name: '@acme/bad-shape',
+        version: '1.0.0',
+        hoist: {docRegistry: 'registry.json'}
+    });
+    write(join(shape, 'registry.json'), {mcpCategories: {}, entries: {}});
+}
+
 // Not opted in. Installed one level up, to exercise the walk up through node_modules.
 write(join(appDir, 'node_modules/plain-dep/package.json'), {name: 'plain-dep', version: '1.0.0'});
 
@@ -180,6 +205,10 @@ check(
     resolveAppRoot(toolingRoot, {}) === join(toolingRoot, 'client-app')
 );
 check('no package.json resolves to null', resolveAppRoot(join(tmp, 'store'), {}) === null);
+check(
+    'a folder deep inside the app walks up to the app',
+    resolveAppRoot(join(clientApp, 'src/desktop'), {}) === clientApp
+);
 
 //------------------------------------------------------------------
 // Discovery and loading
@@ -194,7 +223,7 @@ const repoRoot = resolveRepoRoot(),
 check(
     'loads hoist-react plus each opted-in library with a readable registry',
     data.libraries.map(l => l.name).join() ===
-        '@xh/hoist,@acme/hoist-acme,@acme/long-guide,@acme/bad-guide',
+        '@xh/hoist,@acme/hoist-acme,@acme/long-guide,@acme/bad-guide,@acme/bad-types,@acme/bad-shape',
     data.libraries.map(l => l.name)
 );
 check(
@@ -242,6 +271,30 @@ for (const [name, fragment] of [
     );
 }
 check('hoist-only build has no companions', hoistOnly.libraries.length === 1);
+{
+    const lib = data.libraries.find(l => l.name === '@acme/bad-types'),
+        e = data.entries.find(it => it.library === '@acme/bad-types');
+    check(
+        'fields of the wrong type fall back to their defaults',
+        lib?.version === 'unknown' &&
+            lib.description === '' &&
+            e?.title === 'docs/a.md' &&
+            e.mcpCategory === 'package' &&
+            e.aliases.length === 0 &&
+            e.keywords.length === 0 &&
+            data.mcpCategories.every(c => typeof c.id === 'string' && typeof c.title === 'string'),
+        {lib, e}
+    );
+    check(
+        'a registry whose lists are not arrays loads empty and warns',
+        data.libraries.find(l => l.name === '@acme/bad-shape')?.docCount === 0 &&
+            data.warnings.some(w => w === '@acme/bad-shape: ignored entries: expected an array') &&
+            data.warnings.some(
+                w => w === '@acme/bad-shape: ignored mcpCategories: expected an array'
+            ),
+        data.warnings
+    );
+}
 check(
     'skips a maintainers doc for an app that installs the library',
     !data.entries.some(e => e.path === 'docs/maintaining.md')
@@ -423,6 +476,10 @@ console.log('Relative link rewriting:');
         ['[a](other.md "Title")', '[a](@acme/kit/docs/other.md "Title")'],
         ['[a](<../core/README.md>)', '[a](<@acme/kit/core/README.md>)'],
         ['[ref]: ../core/README.md', '[ref]: @acme/kit/core/README.md'],
+        ['[ref]: <other.md> "Title"', '[ref]: <@acme/kit/docs/other.md> "Title"'],
+        ['[^1]: Footnote text here.', '[^1]: Footnote text here.'],
+        ['[Note]: remember this', '[Note]: remember this'],
+        ['See `code` [y]: z', 'See `code` [y]: z'],
         ['[a](..)', '[a](@acme/kit)'],
         ['[a](../core/AcmeModel.ts#L10)', '[a](node_modules/@acme/kit/core/AcmeModel.ts#L10)'],
         ['[a](./unserved.md)', '[a](node_modules/@acme/kit/docs/unserved.md)'],

@@ -336,9 +336,10 @@ implementation.
   built from a fixture to `registerDocTools()` and `registerDocResources()`.
 - **Discovery starts from the app.** Under pnpm, `@xh/hoist` resolves into the `.pnpm` store. It
   does not depend on the companion library, so the server cannot find it from its own location.
-  `resolveAppRoot()` in `util/paths.ts` picks the anchor package: `HOIST_MCP_APP_ROOT`, else `cwd`
-  or `cwd/client-app`. The loader checks the anchor and its direct `dependencies` and
-  `devDependencies`. `findInstalledPackage()` finds each one under `node_modules`. It does not use
+  `resolveAppRoot()` in `util/paths.ts` picks the anchor package: `HOIST_MCP_APP_ROOT`, else the
+  nearest package that uses Hoist among `cwd`, `cwd/client-app`, and the same pair in each parent
+  folder. The loader checks the anchor and its direct `dependencies` and `devDependencies`.
+  `findInstalledPackage()` finds each one under `node_modules`. It does not use
   `require.resolve()`, which fails for packages with an `exports` map. The loader resolves docs
   against the real path, and shows agents the `node_modules` path as `DocLibrary.sourcePath`,
   relative to the working directory.
@@ -371,8 +372,10 @@ implementation.
 - **Same schemas when none load.** The `library` filter on search and list, and the companion notes
   in tool descriptions, appear only when a companion library loads.
 - **Soft failures.** The loader skips a missing registry or doc file, or a path outside the
-  package, including a symlink to a file outside it. It logs a warning to stderr and adds it to
-  `RegistryData.warnings`, which the ping surfaces report.
+  package, including a symlink to a file outside it. Registry and `package.json` fields of the
+  wrong type fall back to their defaults, and `loadCompanion()` turns any other error into a
+  warning, so a bad dependency never stops Hoist's own docs from loading. Each warning goes to
+  stderr and to `RegistryData.warnings`, which the ping surfaces report.
 
 The symbol tools do not cover companion libraries. `data/ts-registry.ts` assumes one source root,
 one `tsconfig.json`, and the `@xh/hoist/` import prefix.

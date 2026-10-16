@@ -65,9 +65,15 @@ export function registerDocTools(server: McpServer, data: RegistryData = loadReg
             : '';
     // Tool args carry `library` only when the schema above includes it.
     const libraryArg = (args: object) => (args as {library?: string}).library;
-    const readNote = companions.length
-        ? ` Companion library docs take the package name as a prefix, in full or unscoped: "${companions[0].name}/core" or "${companions[0].name.replace(/^@[^/]+\//, '')}/core". A bare package name reads that library's index. Bare shortenings such as "core" always mean hoist-react docs.`
-        : '';
+    const exampleName = companions[0]?.name,
+        exampleUnscoped = exampleName?.replace(/^@[^/]+\//, ''),
+        prefixExamples =
+            exampleUnscoped === exampleName
+                ? `"${exampleName}/core"`
+                : `"${exampleName}/core" or "${exampleUnscoped}/core"`,
+        readNote = companions.length
+            ? ` Companion library docs take the package name as a prefix, in full or unscoped: ${prefixExamples}. A bare package name reads that library's index. Bare shortenings such as "core" always mean hoist-react docs.`
+            : '';
 
     //------------------------------------------------------------------
     // Tool: hoist-search-docs
@@ -79,7 +85,7 @@ export function registerDocTools(server: McpServer, data: RegistryData = loadReg
             description:
                 'Search hoist-react documentation (package READMEs, concept docs, conventions, upgrade notes) and return the best-matching sections, ranked.' +
                 companionNote +
-                '  Each result gives the doc id, the section path, its line range and size in tokens, and a short excerpt from the start of the section. Returns 5 results by default, at most 2 per doc. To read a result, call hoist-read-doc with its id and section - that returns just the section, usually a few hundred tokens, instead of the whole doc. Use this tool for how-to and concept questions (e.g. masking a panel while loading, persisting grid state). For exact class, method, or prop signatures, use hoist-search-symbols instead. Query tips: send two to four keywords rather than a sentence, and prefer the names the docs use - API names like "persistWith", "XH.confirm", or "GridModel" beat paraphrases like "save state". camelCase names also match their parts, so "persistWith" finds text about "persist".',
+                ' Each result gives the doc id, the section path, its line range and size in tokens, and a short excerpt from the start of the section. Returns 5 results by default, at most 2 per doc. To read a result, call hoist-read-doc with its id and section - that returns just the section, usually a few hundred tokens, instead of the whole doc. Use this tool for how-to and concept questions (e.g. masking a panel while loading, persisting grid state). For exact class, method, or prop signatures, use hoist-search-symbols instead. Query tips: send two to four keywords rather than a sentence, and prefer the names the docs use - API names like "persistWith", "XH.confirm", or "GridModel" beat paraphrases like "save state". camelCase names also match their parts, so "persistWith" finds text about "persist".',
             inputSchema: z.object({
                 query: z
                     .string()
@@ -128,7 +134,7 @@ export function registerDocTools(server: McpServer, data: RegistryData = loadReg
             description:
                 'List all available hoist-react documentation grouped by category, with title and description for each entry.' +
                 companionNote +
-                '  Returns the catalog only — not full document text. To read a specific doc, call hoist-read-doc with its ID (or fetch the hoist://docs/{id} resource). For keyword-based discovery across doc content, use hoist-search-docs instead.',
+                ' Returns the catalog only — not full document text. To read a specific doc, call hoist-read-doc with its ID (or fetch the hoist://docs/{id} resource). For keyword-based discovery across doc content, use hoist-search-docs instead.',
             inputSchema: z.object({
                 category: categoryEnum,
                 ...libraryFilter

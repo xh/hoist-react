@@ -206,13 +206,7 @@ export function buildRegistry(
                 warnings.push(`${name}: ${msg}`);
                 log.warn(`Companion library ${name}: ${msg}`);
             },
-            loaded = loadLibrary(
-                realpathSync(path),
-                pkg,
-                pkg.hoist!.docRegistry!,
-                {primary: false, isAppRoot: isAppRoot(path), sourcePath: displayPath(path)},
-                warn
-            );
+            loaded = loadCompanion(path, pkg, isAppRoot(path), warn);
         if (!loaded) continue;
 
         // An unscoped package named like a hoist-react folder (e.g. `core`) could produce an id
@@ -244,6 +238,30 @@ export function buildRegistry(
                 : '')
     );
     return {entries, mcpCategories, libraries, warnings};
+}
+
+/**
+ * Load a companion library, or return null. A library's files must never stop Hoist's own docs
+ * from loading, so any error it causes becomes a warning.
+ */
+function loadCompanion(
+    path: string,
+    pkg: PackageJson,
+    isAppRoot: boolean,
+    warn: (msg: string) => void
+): ReturnType<typeof loadLibrary> {
+    try {
+        return loadLibrary(
+            realpathSync(path),
+            pkg,
+            pkg.hoist!.docRegistry!,
+            {primary: false, isAppRoot, sourcePath: displayPath(path)},
+            warn
+        );
+    } catch (e) {
+        warn(`failed to load: ${(e as Error).message}`);
+        return null;
+    }
 }
 
 /** `path` relative to the working directory when inside it, else absolute. */
@@ -291,7 +309,7 @@ function loadLibrary(
 
     const entries: DocEntry[] = [],
         realRoot = realpathSync(root);
-    for (const raw of json.entries ?? []) {
+    for (const raw of arrayField(json.entries, 'entries', warn)) {
         if (typeof raw?.id !== 'string' || !raw.id) {
             warn('skipped an entry with no id');
             continue;
@@ -321,17 +339,19 @@ function loadLibrary(
             id: primary ? raw.id : `${name}/${raw.id}`,
             path: raw.id,
             library: primary ? null : name,
-            title: raw.title ?? raw.id,
+            title: stringField(raw.title, raw.id),
             filePath,
-            mcpCategory: raw.mcpCategory ?? 'package',
-            description: raw.description ?? '',
-            keywords: raw.keywords ?? [],
-            aliases: raw.aliases ?? []
+            mcpCategory: stringField(raw.mcpCategory, 'package'),
+            description: stringField(raw.description, ''),
+            keywords: stringsField(raw.keywords),
+            aliases: stringsField(raw.aliases)
         });
     }
 
     // Categories the registry declares, then any an entry uses without declaring.
-    const mcpCategories = [...(json.mcpCategories ?? [])];
+    const mcpCategories = arrayField(json.mcpCategories, 'mcpCategories', warn)
+        .filter(c => typeof c?.id === 'string' && c.id)
+        .map(c => ({id: c.id, title: stringField(c.title, c.id)}));
     for (const id of new Set(entries.map(e => e.mcpCategory))) {
         if (!mcpCategories.some(c => c.id === id)) {
             mcpCategories.push({id, title: id.charAt(0).toUpperCase() + id.slice(1)});
@@ -342,8 +362,8 @@ function loadLibrary(
     return {
         library: {
             name,
-            version: pkg.version ?? 'unknown',
-            description: pkg.description ?? '',
+            version: stringField(pkg.version, 'unknown'),
+            description: stringField(pkg.description, ''),
             root,
             sourcePath,
             primary,
@@ -354,6 +374,25 @@ function loadLibrary(
         entries,
         mcpCategories
     };
+}
+
+/*
+ * Field readers for registry and package.json values. Companion files come from any dependency,
+ * so a field of the wrong type falls back to its default rather than throwing later.
+ */
+function stringField(value: unknown, fallback: string): string {
+    return typeof value === 'string' ? value : fallback;
+}
+
+function stringsField(value: unknown): string[] {
+    return Array.isArray(value) ? value.filter(it => typeof it === 'string') : [];
+}
+
+function arrayField<T>(value: T[] | undefined, field: string, warn: (msg: string) => void): T[] {
+    if (value == null) return [];
+    if (Array.isArray(value)) return value;
+    warn(`ignored ${field}: expected an array`);
+    return [];
 }
 
 /** Longest library guidance accepted, in characters. Longer guidance is cut, with a warning. */
@@ -407,7 +446,8 @@ function discoverCompanionPackages(appRoot: string): Array<{path: string; pkg: P
 
     const seen = new Set<string>();
     return candidates.filter(({pkg}) => {
-        if (!pkg.name || pkg.name === HOIST_PACKAGE || seen.has(pkg.name)) return false;
+        if (typeof pkg.name !== 'string' || !pkg.name) return false;
+        if (pkg.name === HOIST_PACKAGE || seen.has(pkg.name)) return false;
         if (typeof pkg.hoist?.docRegistry !== 'string') return false;
         seen.add(pkg.name);
         return true;
@@ -444,8 +484,16 @@ export function loadDocContent(entry: DocEntry): string {
     return entry.links ? rewriteRelativeLinks(content, entry.path, entry.links) : content;
 }
 
-/** Inline link `](target` or reference definition `[label]: target`, capturing the target. */
-const LINK_TARGET_RE = /(\]\(\s*<?|^\s{0,3}\[[^\]]+\]:\s*<?)([^\s)>]+)/gm;
+/** Inline link or image `](target`, capturing the lead and the target. */
+const INLINE_LINK_RE = /(\]\(\s*<?)([^\s)>]+)/g;
+
+/**
+ * A whole line that is a link reference definition, `[label]: target` with an optional title.
+ * Captures the lead, the target, and the rest. Excludes footnotes (`[^1]: text`) and prose such as
+ * `[Note]: remember this`, whose text after the target is not a title.
+ */
+const REF_DEF_RE =
+    /^(\s{0,3}\[(?!\^)[^\]]+\]:\s*<?)([^\s>]+)(>?(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*)$/;
 
 /**
  * Fence that opens or closes a markdown code block. Any indent, so a fence nested in a list
@@ -486,25 +534,29 @@ export function rewriteRelativeLinks(
                 return line;
             }
             if (openFence) return line;
+            const def = REF_DEF_RE.exec(line);
+            if (def) return def[1] + rewrite(def[2]) + def[3];
             // Odd segments are inline code spans, left as written.
             return line
                 .split(/(`+[^`]*`+)/)
-                .map((seg, i) => (i % 2 ? seg : seg.replace(LINK_TARGET_RE, rewrite)))
+                .map((seg, i) =>
+                    i % 2 ? seg : seg.replace(INLINE_LINK_RE, (_, lead, t) => lead + rewrite(t))
+                )
                 .join('');
         })
         .join('\n');
 
-    function rewrite(match: string, lead: string, target: string): string {
-        if (/^([a-z][a-z0-9+.-]*:|[#/])/i.test(target)) return match;
+    function rewrite(target: string): string {
+        if (/^([a-z][a-z0-9+.-]*:|[#/])/i.test(target)) return target;
         const hashAt = target.indexOf('#'),
             path = hashAt < 0 ? target : target.slice(0, hashAt),
             anchor = hashAt < 0 ? '' : target.slice(hashAt),
             resolved = posix.normalize(posix.join(docDir, path));
-        if (resolved === '..' || resolved.startsWith('../')) return match;
-        if (resolved === '.') return `${lead}${library}${anchor}`;
+        if (resolved === '..' || resolved.startsWith('../')) return target;
+        if (resolved === '.') return library + anchor;
         const rewritten = docPaths.has(resolved)
             ? `${library}/${resolved}`
             : posix.join(sourcePath.split(sep).join('/'), resolved);
-        return `${lead}${rewritten}${anchor}`;
+        return rewritten + anchor;
     }
 }

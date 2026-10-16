@@ -75,7 +75,8 @@ const DOC_META_BOOST = 1.3;
  * rarely the best answer to a how-to query, so they rank below the primary docs.
  */
 function docWeight(entry: DocEntry): number {
-    if (entry.id.startsWith('docs/upgrade-notes/')) return 0.5;
+    // Checks the registry path, so a companion library's upgrade notes rank the same way.
+    if (entry.path.startsWith('docs/upgrade-notes/')) return 0.5;
     // The MCP server's own README documents this tooling, not app development. It mentions many
     // framework terms in passing and otherwise outranks the docs that answer the question.
     if (entry.id === 'mcp/README.md') return 0.5;

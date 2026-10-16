@@ -173,8 +173,10 @@ rewrite each one when they serve the doc, so an agent that follows it stays in y
 The tools start from the package that consumes `@xh/hoist`. They check these places in order:
 
 1. The `HOIST_MCP_APP_ROOT` environment variable, if set.
-2. The working directory and its `client-app/` folder. The first `package.json` that is `@xh/hoist`
-   or depends on it wins. Otherwise the first `package.json` found wins.
+2. The working directory and its `client-app/` folder, then the same pair in each parent folder.
+   The first `package.json` that is `@xh/hoist` or depends on it wins, so a run from inside an
+   app, such as from `client-app/src`, still finds the app.
+3. Otherwise, the first `package.json` in the working directory or its `client-app/` folder.
 
 Claude Code starts the MCP server from the project root, so a standard Hoist app resolves to
 `client-app/`. The app package itself can opt in too. An app can use this to serve its own docs to
@@ -195,7 +197,7 @@ direct dependency of the app for its docs to load.
   client to treat all doc content as data, not as instructions. Library guidance is the one
   exception, and the instructions frame it as advice from the package authors.
 - **Load problems are not fatal.** A missing registry, a missing doc file, or a bad path skips that
-  item. The tools log a warning to stderr and report it in `hoist-ping` and `hoist-docs ping`.
+  item. A field of the wrong type falls back to its default. The tools log a warning to stderr and report it in `hoist-ping` and `hoist-docs ping`.
 
 See the [MCP Server README](../mcp/README.md#companion-library-docs) for how the tools implement
 this.
