@@ -89,11 +89,6 @@ export interface DimensionValue {
     values: Set<any>;
 }
 
-// Source of every View's cubeRowDigest stamps. Shared by all Views, so a Store bound to a new View
-// never reuses a record stamped by an earlier one. Monotonic - safe-integer headroom spans
-// centuries of use.
-let lastRowDigest = 0;
-
 /**
  * Primary interface for consuming grouped and aggregated data from a {@link Cube}.
  * Created via {@link Cube.createView} with a {@link QueryConfig} and optional connected
@@ -154,10 +149,6 @@ export class View
 
     private _fieldsByName: Map<string, CubeField> = null;
     private _rowDataGenerator: RowDataGenerator = null;
-    // The latest cubeRowDigest stamp given out by any View.
-    get _rowDigest(): number {
-        return lastRowDigest;
-    }
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
@@ -342,7 +333,7 @@ export class View
      */
     newParentRowData(id: string): ViewRowData {
         const ret = this._rowDataGenerator.newParentRowData(id);
-        this.assignDigest(ret);
+        BaseRow.assignDigest(ret);
         return ret;
     }
 
@@ -352,12 +343,8 @@ export class View
      */
     newLeafRowData(id: string, src: PlainObject): ViewRowData {
         const ret = this._rowDataGenerator.newLeafRowData(id, src);
-        this.assignDigest(ret);
+        BaseRow.assignDigest(ret);
         return ret;
-    }
-
-    assignDigest(data: ViewRowData) {
-        data.cubeRowDigest = ++lastRowDigest;
     }
 
     private buildIndices() {
@@ -426,7 +413,7 @@ export class View
             _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
         });
 
-        changed.rows.forEach(rowData => this.assignDigest(rowData));
+        changed.rows.forEach(rowData => BaseRow.assignDigest(rowData));
 
         this.createAggregationContext();
 
