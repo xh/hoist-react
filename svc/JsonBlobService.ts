@@ -129,10 +129,13 @@ export class JsonBlobService extends HoistService {
 
     /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
     async findAsync(type: string, name: string, ctx?: CallContextLike): Promise<JsonBlob> {
-        return this.runner(ctx).span('find').fetchJson({
-            url: 'xh/findJsonBlob',
-            params: {type, name}
-        });
+        // The server matches `owner` exactly, and reads a missing owner as null - a global blob.
+        return this.runner(ctx)
+            .span('find')
+            .fetchJson({
+                url: 'xh/findJsonBlob',
+                params: {type, name, owner: XH.getUsername()}
+            });
     }
 
     /** Archive (soft-delete) an existing JSONBlob, as identified by its unique token. */
