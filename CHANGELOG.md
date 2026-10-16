@@ -13,6 +13,11 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `onShowLazy` tabs and other managed refresh contexts replaying a missed auto-refresh as a
+  manual refresh when shown. The replay now stays an auto-refresh unless a missed refresh was manual.
+
 ## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes
