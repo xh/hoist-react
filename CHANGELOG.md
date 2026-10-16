@@ -17,6 +17,15 @@
 
 * `Column.DEFAULT_WIDTH` is now 100px, up from 60px, to reduce layout shift when autosizing.
 
+### 🎁 New Features
+
+* `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
+  The add view menus of `DashContainer` and `DashCanvas` show each level as a submenu, and
+  `DashCanvasWidgetChooser` shows each as a card. Existing group names that contain `/` now nest.
+* `DashCanvas` add view menus and `DashCanvasWidgetChooser` now list each group where its first
+  view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
+  the top, define grouped specs first.
+
 ### 🐞 Bug Fixes
 
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
