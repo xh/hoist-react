@@ -25,14 +25,17 @@ import {ForwardedRef, ReactElement, useCallback} from 'react';
  * @param component - ElementFactory for HoistInput to render.
  * @param props - props passed to containing component
  * @param ref - forwardRef passed to containing component
+ * @param applyInitialKey - applies a printable key that started the edit to the focused input.
+ *      Defaults to entering the key as the input's value.
  */
 export function useInlineEditorModel(
     component: ElementFactory,
     props: EditorProps<any>,
-    ref: ForwardedRef<any>
+    ref: ForwardedRef<any>,
+    applyInitialKey: InitialKeyFn = (input, key) => input.noteValueChange(key)
 ): ReactElement {
     const {className, inputProps, agParams, gridModel} = props,
-        impl = useLocalModel(() => new InlineEditorModel(agParams, gridModel));
+        impl = useLocalModel(() => new InlineEditorModel(agParams, gridModel, applyInitialKey));
 
     useGridCellEditor({
         // This is called in full-row editing when the user tabs into the cell
@@ -62,6 +65,9 @@ export function useInlineEditorModel(
     });
 }
 
+/** Applies the printable key that started an edit to the editor's focused input. */
+export type InitialKeyFn = (input: HoistInputModel, key: string) => void;
+
 /**
  * Local Model supporting inline cell editor components. Provides base functionality required by
  * ag-grid plus extension points for editors needing more complex behaviors.
@@ -76,15 +82,21 @@ class InlineEditorModel extends HoistModel {
     ref = createObservableRef<HoistInputModel>();
 
     agParams: CustomCellEditorProps;
+    applyInitialKey: InitialKeyFn;
 
     get inputEl() {
         return this.ref.current?.inputEl;
     }
 
-    constructor(agParams: CustomCellEditorProps, gridModel: GridModel) {
+    constructor(
+        agParams: CustomCellEditorProps,
+        gridModel: GridModel,
+        applyInitialKey: InitialKeyFn
+    ) {
         super();
 
         this.agParams = agParams;
+        this.applyInitialKey = applyInitialKey;
         this.value = agParams.value;
 
         // Focus into the input once the component is rendered. With full row editing, multiple
@@ -104,9 +116,9 @@ class InlineEditorModel extends HoistModel {
         inputEl.focus();
 
         const {eventKey} = this.agParams;
-        // Enter initial keystroke in value (if single char and not special key e.g (F2 or Enter).
+        // Apply initial keystroke (if single char and not special key e.g (F2 or Enter).
         if (eventKey?.length === 1) {
-            ref.current.noteValueChange(eventKey);
+            this.applyInitialKey(ref.current, eventKey);
         } else {
             inputEl.select();
         }

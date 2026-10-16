@@ -414,18 +414,36 @@ class SelectInputModel extends HoistInputModel {
         super.noteFocused();
     }
 
-    private selectText() {
-        const {reactSelect} = this;
-        if (!reactSelect) return;
+    /**
+     * Enter text into the search input and open the menu, as if typed by the user.
+     * Ignored if the select is not searchable.
+     */
+    enterSearchText(text: string) {
+        // Delay to run after the text selection scheduled by `noteFocused()`.
+        wait().then(() => {
+            const selectComp = this.innerSelect;
+            if (!this.hasFocus || !selectComp?.props.isSearchable) return;
 
-        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
-        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
-        let selectComp = reactSelect;
+            selectComp.props.onInputChange(text, {
+                action: 'input-change',
+                prevInputValue: selectComp.props.inputValue ?? ''
+            });
+            selectComp.openMenu('first');
+        });
+    }
+
+    // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the inner
+    // Select via `.select`) to reach the underlying Select that owns the inputRef.
+    private get innerSelect() {
+        let selectComp = this.reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }
-        const inputElem = selectComp?.inputRef;
+        return selectComp;
+    }
 
+    private selectText() {
+        const inputElem = this.innerSelect?.inputRef;
         if (this.hasFocus && inputElem && document.activeElement === inputElem) {
             inputElem.select();
         }

@@ -7,50 +7,32 @@
 import {type ViewInfo, ViewManagerModel, type ViewManagerConfig} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, persist, type PlainObject, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
-import type {JsonBlob} from '@xh/hoist/svc';
-import {
-    hoistCore,
-    hoistError,
-    initTestAppAsync,
-    noContent,
-    type RecordedRequest,
-    server,
-    xhUrl
-} from '@xh/hoist/test-support';
-import {omit, pick} from 'lodash';
-import {http, HttpResponse} from 'msw';
-import {afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
+import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
+import {http} from 'msw';
+import {beforeAll, beforeEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
- * ViewManagerModel run against hoist-core's view endpoints: which view a user lands on, how
+ * ViewManagerModel run against the fake hoist-core's view endpoints: which view a user lands on, how
  * changes are tracked, saved and auto-saved, and the requests that carry them. Apps persist grid,
  * dashboard and filter state through these views, and the user's library of views lives only on
  * the server - a slip here loses or overwrites work users have saved.
  */
 describe('ViewManagerModel', () => {
-    let views: ViewServer;
+    const {jsonBlobs} = hoistCore;
 
     beforeAll(() => initTestAppAsync());
 
     beforeEach(() => {
-        views = new ViewServer();
-        views.add('mine', 'My Positions', {value: {sortBy: 'pnl'}});
-        views.add('bobs', 'Bob Risk', {owner: 'bsmith', isShared: true});
-        views.add('firm', 'Firm Standard', {owner: null, value: {sortBy: 'sector'}});
-        server.use(...views.handlers);
+        jsonBlobs.clear();
+        addView('mine', 'My Positions', {value: {sortBy: 'pnl'}});
+        addView('bobs', 'Bob Risk', {owner: 'bsmith', isShared: true});
+        addView('firm', 'Firm Standard', {isGlobal: true, value: {sortBy: 'sector'}});
         XH.sessionStorageService.clear();
-    });
-
-    // Let requests the model sends from reactions land before the test's handlers are removed.
-    afterEach(async () => {
-        vi.useRealTimers();
-        await views.settleAsync();
     });
 
     describe('createAsync', () => {
         it('loads views and user state for its type and instance', async () => {
-            views.state.autoSave = true;
+            setState({autoSave: true});
             const vmm = await createAsync({instance: 'blotter'});
 
             const [req] = hoistCore.requestsTo('xhView/allData');
@@ -83,11 +65,11 @@ describe('ViewManagerModel', () => {
                 null
             ]
         ])('selects %s', async (_, state, config, token) => {
-            Object.assign(views.state, state);
+            setState(state);
             const vmm = await createAsync({initialViewSpec: firstGlobalView, ...config});
 
             expect(vmm.view.token).toBe(token);
-            expect(vmm.getValue()).toEqual(token ? views.get(token).value : {});
+            expect(vmm.getValue()).toEqual(token ? jsonBlobs.get(token).value : {});
         });
 
         it("records a newly selected view as the user's current view", async () => {
@@ -102,7 +84,7 @@ describe('ViewManagerModel', () => {
         });
 
         it('installs the default view and reports the error when views fail to load', async () => {
-            views.failNextLoad();
+            failLoads();
             const handleException = vi.spyOn(XH, 'handleException').mockImplementation(() => {});
 
             const vmm = await createAsync({initialViewSpec: firstGlobalView});
@@ -114,14 +96,14 @@ describe('ViewManagerModel', () => {
         });
 
         it("leaves the user's saved current view in place when views fail to load", async () => {
-            views.state.currentView = 'mine';
-            views.failNextLoad();
+            setState({currentView: 'mine'});
+            failLoads();
             vi.spyOn(XH, 'handleException').mockImplementation(() => {});
 
             await createAsync();
-            await views.settleAsync();
+            await hoistCore.settleAsync();
 
-            expect(views.state.currentView).toBe('mine');
+            expect(jsonBlobs.viewState(TYPE).currentView).toBe('mine');
             expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(0);
         });
     });
@@ -136,7 +118,14 @@ describe('ViewManagerModel', () => {
             ['falls back to the config when the server sends no answer', undefined, true, true],
             ['is false when neither the server nor config allows it', undefined, undefined, false]
         ])('%s', async (_, fromServer, config, expected) => {
-            views.manageGlobal = fromServer;
+            if (fromServer === undefined) {
+                hoistCore.route('POST', 'xhView/allData', () => ({
+                    state: {userPinned: {}, autoSave: false},
+                    views: []
+                }));
+            } else {
+                allowGlobalWrites(fromServer);
+            }
             const vmm = await createAsync({manageGlobal: config});
 
             expect(vmm.manageGlobal).toBe(expected);
@@ -145,7 +134,7 @@ describe('ViewManagerModel', () => {
 
     describe('setValue', () => {
         it('tracks unsaved changes against the value of the current view', async () => {
-            views.state.currentView = 'mine';
+            setState({currentView: 'mine'});
             const vmm = await createAsync();
 
             vmm.setValue({sortBy: 'name'});
@@ -159,7 +148,7 @@ describe('ViewManagerModel', () => {
         });
 
         it('preserves unsaved changes when the page reloads', async () => {
-            views.state.currentView = 'mine';
+            setState({currentView: 'mine'});
             const vmm = await createAsync();
             vmm.setValue({sortBy: 'name'});
 
@@ -172,7 +161,7 @@ describe('ViewManagerModel', () => {
 
     describe('selectViewAsync', () => {
         it('confirms before discarding unsaved changes to an owned view', async () => {
-            views.state.currentView = 'mine';
+            setState({currentView: 'mine'});
             const vmm = await createAsync(),
                 confirm = vi.spyOn(XH, 'confirm').mockResolvedValueOnce(false);
             vmm.setValue({sortBy: 'name'});
@@ -192,7 +181,7 @@ describe('ViewManagerModel', () => {
 
     describe('saveAsync', () => {
         it('writes unsaved changes to the current view', async () => {
-            views.state.currentView = 'mine';
+            setState({currentView: 'mine'});
             const vmm = await createAsync(),
                 toast = vi.spyOn(XH, 'successToast').mockImplementation(() => null);
             vmm.setValue({sortBy: 'name'});
@@ -208,16 +197,14 @@ describe('ViewManagerModel', () => {
         });
 
         it('keeps changes made while a save is in flight', async () => {
-            views.state.currentView = 'mine';
+            setState({currentView: 'mine'});
             const vmm = await createAsync();
             vi.spyOn(XH, 'successToast').mockImplementation(() => null);
             vmm.setValue({sortBy: 'name'});
 
-            const release = views.holdResponses('xhView/updateValue'),
+            const {arrived, release} = holdRequests('xhView/updateValue'),
                 save = vmm.saveAsync();
-            await vi.waitFor(() =>
-                expect(hoistCore.requestsTo('xhView/updateValue')).toHaveLength(1)
-            );
+            await arrived;
             vmm.setValue({sortBy: 'size'});
             release();
             await save;
@@ -228,11 +215,11 @@ describe('ViewManagerModel', () => {
         });
 
         it('confirms before overwriting a view saved elsewhere since it was loaded', async () => {
-            views.state.currentView = 'mine';
+            setState({currentView: 'mine'});
             const vmm = await createAsync(),
                 confirm = vi.spyOn(XH, 'confirm').mockResolvedValue(false);
             vmm.setValue({sortBy: 'name'});
-            views.get('mine').lastUpdated += 60_000;
+            jsonBlobs.get('mine').lastUpdated += 60_000;
 
             await vmm.saveAsync();
 
@@ -242,8 +229,8 @@ describe('ViewManagerModel', () => {
         });
 
         it('confirms before changing a global view for all users', async () => {
-            views.state.currentView = 'firm';
-            views.manageGlobal = true;
+            setState({currentView: 'firm'});
+            allowGlobalWrites(true);
             const vmm = await createAsync(),
                 confirm = vi.spyOn(XH, 'confirm').mockResolvedValue(false);
             vmm.setValue({sortBy: 'name'});
@@ -257,7 +244,7 @@ describe('ViewManagerModel', () => {
 
     describe('autoSave', () => {
         it('saves changes to an owned view once they have settled for 2s', async () => {
-            Object.assign(views.state, {currentView: 'mine', autoSave: true});
+            setState({currentView: 'mine', autoSave: true});
             const vmm = await createAsync();
             vi.useFakeTimers();
 
@@ -274,16 +261,14 @@ describe('ViewManagerModel', () => {
         });
 
         it('keeps changes made while an auto-save is in flight', async () => {
-            Object.assign(views.state, {currentView: 'mine', autoSave: true});
+            setState({currentView: 'mine', autoSave: true});
             const vmm = await createAsync();
             vi.useFakeTimers();
 
             vmm.setValue({sortBy: 'name'});
-            const release = views.holdResponses();
+            const {arrived, release} = holdRequests('xhView/updateValue');
             await vi.advanceTimersByTimeAsync(2000);
-            await vi.waitFor(() =>
-                expect(hoistCore.requestsTo('xhView/updateValue')).toHaveLength(1)
-            );
+            await arrived;
 
             vmm.setValue({sortBy: 'size'});
             release();
@@ -322,8 +307,8 @@ describe('ViewManagerModel', () => {
 
     describe('deleteViewsAsync', () => {
         it('deletes views by token, then selects initialViewSpec if the current view was deleted', async () => {
-            views.add('mine2', 'My Risk');
-            views.state.currentView = 'mine';
+            addView('mine2', 'My Risk');
+            setState({currentView: 'mine'});
             const vmm = await createAsync({initialViewSpec: firstGlobalView});
 
             await vmm.deleteViewsAsync(vmm.ownedViews);
@@ -373,7 +358,7 @@ describe('ViewManagerModel', () => {
 
     describe('views', () => {
         it('classifies views as owned, shared with the user, or global', async () => {
-            views.add('desk', 'Desk View', {group: ' Desks / Rates '});
+            addView('desk', 'Desk View', {group: ' Desks / Rates '});
             const vmm = await createAsync();
 
             expect(names(vmm.ownedViews)).toEqual(['My Positions', 'Desk View']);
@@ -384,7 +369,7 @@ describe('ViewManagerModel', () => {
         });
 
         it('pins owned and global views by default, and saves user pins after 1s', async () => {
-            Object.assign(views.state, {currentView: 'mine', userPinned: {firm: false}});
+            setState({currentView: 'mine', userPinned: {firm: false}});
             const vmm = await createAsync();
             expect(names(vmm.pinnedViews)).toEqual(['My Positions']);
 
@@ -406,7 +391,7 @@ describe('ViewManagerModel', () => {
 
     describe('persistWith', () => {
         it('applies the selected view to bound models, and records their changes', async () => {
-            views.state.currentView = 'mine';
+            setState({currentView: 'mine'});
             const vmm = await createAsync();
             class PositionsModel extends HoistModel {
                 // No write debounce, so changes reach the view manager as they are made.
@@ -434,9 +419,7 @@ describe('ViewManagerModel', () => {
 //------------------
 // Test support
 //------------------
-const TYPE = 'portfolioGrid',
-    // A time on a whole second, which ViewInfo's rounding of server dates leaves unchanged.
-    T0 = 1_767_000_000_000;
+const TYPE = 'portfolioGrid';
 
 async function createAsync(config: Partial<ViewManagerConfig> = {}): Promise<ViewManagerModel> {
     const ret = await ViewManagerModel.createAsync({type: TYPE, ...config});
@@ -452,180 +435,45 @@ function names(views: ViewInfo[]): string[] {
     return views.map(it => it.name);
 }
 
-interface ViewOptions {
-    owner?: string;
-    isShared?: boolean;
-    group?: string;
-    value?: PlainObject;
+function addView(token: string, name: string, spec: PlainObject = {}) {
+    hoistCore.jsonBlobs.addView({type: TYPE, token, name, ...spec});
+}
+
+function setState(state: PlainObject) {
+    hoistCore.jsonBlobs.setViewState(TYPE, state);
+}
+
+/** Answer every `xhView/allData` in this test with a server error. */
+function failLoads() {
+    hoistCore.route('POST', 'xhView/allData', () =>
+        hoistError(500, {message: 'Database unavailable'})
+    );
+}
+
+/** Let - or stop - any user write global views of this type, for this test only. */
+function allowGlobalWrites(allow: boolean) {
+    const {jsonBlobs} = hoistCore,
+        prev = jsonBlobs.globalWriteRoles;
+    jsonBlobs.globalWriteRoles = {[TYPE]: allow ? ['*'] : []};
+    onTestFinished(() => {
+        jsonBlobs.globalWriteRoles = prev;
+    });
 }
 
 /**
- * In-memory stand-in for hoist-core's `XhViewController`, answering as its `ViewService` does -
- * views are JsonBlobs rendered by `JsonBlob.formatForClient`. Requests are recorded alongside the
- * fake's own, for `hoistCore.requestsTo()`.
+ * Hold requests to a path until released, then let the fake serve them. `arrived` resolves when
+ * the first request arrives - the fake records a request only once it serves it.
  */
-class ViewServer {
-    blobs: JsonBlob[] = [];
-    state: PlainObject = {userPinned: {}, autoSave: false};
-    manageGlobal: boolean = false;
-
-    private failLoad = false;
-    private gate: Promise<void> = null;
-    private gatePath: string = null;
-    private pending = new Set<Promise<Response>>();
-
-    add(token: string, name: string, opts: ViewOptions = {}): JsonBlob {
-        const ret = this.createBlob(token, name, opts);
-        this.blobs.push(ret);
-        return ret;
-    }
-
-    get(token: string): JsonBlob {
-        return this.blobs.find(it => it.token === token);
-    }
-
-    /** Answer the next `xhView/allData` with a server error. */
-    failNextLoad() {
-        this.failLoad = true;
-    }
-
-    /** Hold responses - all, or those to one path - until the returned function is called. */
-    holdResponses(path: string = null): () => void {
-        let release: () => void;
-        this.gate = new Promise(resolve => (release = resolve));
-        this.gatePath = path;
-        return () => {
-            this.gate = this.gatePath = null;
-            release();
-        };
-    }
-
-    /** Wait until the client has sent no new request, and every request has been answered. */
-    async settleAsync() {
-        // A request reaches MSW within a few event-loop turns of being sent - no real I/O is
-        // involved. Repeat while answers lead to further requests, e.g. a refresh after a save.
-        let count: number;
-        do {
-            count = hoistCore.requests.length;
-            for (let i = 0; i < 3; i++) await wait();
-            await Promise.all(this.pending);
-        } while (hoistCore.requests.length !== count);
-    }
-
-    get handlers() {
-        return [
-            this.post('xhView/allData', () => {
-                if (this.failLoad) {
-                    this.failLoad = false;
-                    return hoistError(500, {message: 'Database unavailable'});
-                }
-                return HttpResponse.json({
-                    state: this.clientState,
-                    views: this.blobs.map(it => omit(it, 'value')),
-                    manageGlobal: this.manageGlobal
-                });
-            }),
-
-            this.post('xhView/get', req => HttpResponse.json(this.get(req.form.token))),
-
-            // ViewService.create - also records `isPinned`, if given, in the user's state.
-            this.post('xhView/create', ({json}) => {
-                const {name, group, isShared = null, isGlobal, value, description} = json,
-                    ret = this.add(`new${this.blobs.length}`, name, {
-                        owner: isGlobal ? null : hoistCore.username,
-                        isShared,
-                        group,
-                        value
-                    });
-                ret.description = description;
-                if ('isPinned' in json) this.state.userPinned[ret.token] = json.isPinned;
-                return HttpResponse.json(ret);
-            }),
-
-            this.post('xhView/updateValue', ({query, json}) => {
-                const ret = this.get(query.token);
-                ret.value = json;
-                ret.lastUpdated += 1000;
-                ret.lastUpdatedBy = hoistCore.username;
-                return HttpResponse.json(ret);
-            }),
-
-            this.post('xhView/delete', ({query}) => {
-                const tokens = query.tokens.split(',');
-                this.blobs = this.blobs.filter(it => !tokens.includes(it.token));
-                return noContent();
-            }),
-
-            // ViewService.updateState - merges each given key, keeping pins only for views that
-            // still exist, and returns the new state. Other keys are ignored.
-            this.post('xhView/updateState', ({json}) => {
-                const {state} = this;
-                if ('currentView' in json) state.currentView = json.currentView;
-                if ('autoSave' in json) state.autoSave = json.autoSave;
-                state.userPinned = pick(
-                    {...state.userPinned, ...json.userPinned},
-                    this.blobs.map(it => it.token)
-                );
-                return HttpResponse.json(this.clientState);
-            })
-        ];
-    }
-
-    //------------------
-    // Implementation
-    //------------------
-    // ViewService.getStateFromBlob - `currentView` is sent only once one has been saved.
-    private get clientState(): PlainObject {
-        const {userPinned = {}, autoSave = false} = this.state;
-        return {userPinned, autoSave, ...pick(this.state, 'currentView')};
-    }
-
-    private createBlob(token: string, name: string, opts: ViewOptions): JsonBlob {
-        const {owner = hoistCore.username, isShared = false, group = null, value = {}} = opts;
-        return {
-            id: this.blobs.length + 1,
-            token,
-            type: TYPE,
-            owner,
-            acl: owner && !isShared ? null : '*',
-            name,
-            archived: false,
-            archivedDate: 0,
-            description: null,
-            dateCreated: T0,
-            lastUpdated: T0,
-            lastUpdatedBy: owner ?? 'admin',
-            meta: owner ? {group, isShared} : {group},
-            value
-        };
-    }
-
-    private post(path: string, fn: (req: RecordedRequest) => Response) {
-        return http.post(xhUrl(path), ({request}) => {
-            const ret = this.serveAsync(path, request, fn);
-            this.pending.add(ret);
-            return ret.finally(() => this.pending.delete(ret));
-        });
-    }
-
-    private async serveAsync(
-        path: string,
-        request: Request,
-        fn: (req: RecordedRequest) => Response
-    ): Promise<Response> {
-        const url = new URL(request.url),
-            body = await request.text(),
-            isJson = request.headers.get('Content-Type')?.includes('application/json'),
-            req: RecordedRequest = {
-                method: request.method,
-                path,
-                query: Object.fromEntries(url.searchParams),
-                form: body && !isJson ? Object.fromEntries(new URLSearchParams(body)) : {},
-                json: body && isJson ? JSON.parse(body) : null,
-                headers: {}
-            };
-        hoistCore.requests.push(req);
-        if (!this.gatePath || path === this.gatePath) await this.gate;
-        return fn(req);
-    }
+function holdRequests(path: string): {arrived: Promise<void>; release: () => void} {
+    let onArrived: () => void, release: () => void;
+    const arrived = new Promise<void>(resolve => (onArrived = resolve)),
+        gate = new Promise<void>(resolve => (release = resolve));
+    server.use(
+        http.post(xhUrl(path), async () => {
+            onArrived();
+            await gate;
+            // Return nothing, so the request falls through to the fake's own handler.
+        })
+    );
+    return {arrived, release};
 }
