@@ -64,6 +64,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
 | Write or run unit tests, in an app or hoist-react | [Unit Testing](./unit-testing.md) |
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
+| Serve a Hoist library's docs through the MCP tools | [Companion Library Docs](./companion-library-docs.md) |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
 | Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
@@ -158,6 +159,7 @@ for planned coverage:
 | Tool | Description |
 |------|-------------|
 | [MCP Server](../mcp/README.md) | Model Context Protocol server providing AI assistants with structured access to documentation, TypeScript types, and code generation prompts |
+| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist serves its docs through the MCP server and `hoist-docs` CLI, using a `hoist.docRegistry` field in its `package.json` |
 
 ## Upgrade Notes
 

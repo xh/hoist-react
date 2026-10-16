@@ -280,6 +280,14 @@
             "keywords": ["MCP", "Model Context Protocol", "AI assistant", "Claude Code", "tools", "resources", "prompts", "search", "symbols", "documentation"]
         },
         {
+            "id": "docs/companion-library-docs.md",
+            "title": "Companion Library Docs",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "How a library that builds on Hoist, such as hoist-chat-kit or a client firm's shared package, serves its docs through the hoist-react MCP server and hoist-docs CLI.",
+            "keywords": ["companion library", "hoist.docRegistry", "docRegistry", "package.json", "client package", "overrides", "sidecar", "HOIST_MCP_APP_ROOT", "package-prefixed doc ids", "library docs"]
+        },
+        {
             "id": "docs/lifecycle-app.md",
             "title": "Lifecycle: App Initialization",
             "mcpCategory": "concept",
