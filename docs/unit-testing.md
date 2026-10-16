@@ -59,7 +59,8 @@ Most of Hoist depends on the hoist-core server. `Store` reads a soft config, `Gr
 to user prefs, and nearly every service loads data on init. Tests therefore need a server.
 
 `test-support/hoistCore.ts` provides one. It is a small, in-memory stand-in for hoist-core's
-`XhController` endpoints: auth status, environment, configs, prefs, and activity tracking. It
+`XhController` endpoints: auth status, environment, configs, prefs, activity tracking, and
+JsonBlobs. It also serves the `XhViewController` endpoints that `ViewManagerModel` calls. It
 answers in the exact JSON shapes hoist-core renders, and names the server source of each shape.
 Hoist's real `fetch` calls reach it through [MSW](https://mswjs.io), so the code under test runs
 unchanged, from `FetchService` down.
@@ -357,8 +358,35 @@ it('flags orders over the configured limit', () => {
 - A path can also be an absolute URL, for an external API the app calls.
 - A request that the fake does not serve fails the test, and the failure names the URL.
 - A file boots once, so test each role set or user in its own spec file.
-- The fake returns canned data. It does not enforce the server's business rules or role scoping.
-  Test those against a real server.
+- The fake returns canned data. It does not enforce the server's business rules or role scoping,
+  except for which JsonBlobs a user can read - see [Views and JsonBlobs](#views-and-jsonblobs).
+  Test those rules against a real server.
+
+### Views and JsonBlobs
+
+The fake keeps an in-memory JsonBlob store, `hoistCore.jsonBlobs`. It serves `XH.jsonBlobService`
+and the endpoints that `ViewManagerModel` calls. The store starts empty. An app model that creates a
+view manager at boot therefore needs no setup: the view manager loads no views and selects its
+in-code default. Seed views and the user's view state to test anything else:
+
+```typescript
+const {jsonBlobs} = hoistCore;
+jsonBlobs.addView({type: 'portfolioGrid', name: 'My Positions', value: {sortBy: 'pnl'}});
+jsonBlobs.addView({type: 'portfolioGrid', name: 'Firm Standard', isGlobal: true, token: 'firm'});
+jsonBlobs.addView({type: 'portfolioGrid', name: 'Risk', owner: 'bsmith', isShared: true});
+jsonBlobs.setViewState('portfolioGrid', {currentView: 'firm', autoSave: true});
+jsonBlobs.add({type: 'appNotes', name: 'notes', value: {text: 'Hello'}}); // a plain JsonBlob
+```
+
+- `jsonBlobs.get(token)` returns the stored blob, so a test can assert on what the client saved.
+  Change the blob to model an edit made elsewhere, such as a later `lastUpdated`.
+- `jsonBlobs.viewState(type)` returns the user's state for a view type, as the client receives it.
+- Blobs last for the whole file, like prefs. `jsonBlobs.clear()` removes them all.
+- A user reads only the blobs they own and the blobs shared with all users, as on the server. The
+  fake sends `manageGlobal` from `hoistCore.roles` and `jsonBlobs.globalWriteRoles`. Those roles
+  default to `HOIST_ADMIN`, as in hoist-core's `xhJsonBlobConfig`.
+- The fake does not check write access or duplicate names. To test the error for one of those,
+  serve the endpoint with `hoistCore.route()` and `hoistError()`.
 
 ### Server state for every spec
 
