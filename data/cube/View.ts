@@ -89,6 +89,11 @@ export interface DimensionValue {
     values: Set<any>;
 }
 
+// Source of every View's cubeRowDigest stamps. Shared by all Views, so a Store bound to a new View
+// never reuses a record stamped by an earlier one. Monotonic - safe-integer headroom spans
+// centuries of use.
+let lastRowDigest = 0;
+
 /**
  * Primary interface for consuming grouped and aggregated data from a {@link Cube}.
  * Created via {@link Cube.createView} with a {@link QueryConfig} and optional connected
@@ -149,8 +154,10 @@ export class View
 
     private _fieldsByName: Map<string, CubeField> = null;
     private _rowDataGenerator: RowDataGenerator = null;
-    // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
-    _rowDigest = 0;
+    // The latest cubeRowDigest stamp given out by any View.
+    get _rowDigest(): number {
+        return lastRowDigest;
+    }
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
@@ -350,7 +357,7 @@ export class View
     }
 
     assignDigest(data: ViewRowData) {
-        data.cubeRowDigest = ++this._rowDigest;
+        data.cubeRowDigest = ++lastRowDigest;
     }
 
     private buildIndices() {
