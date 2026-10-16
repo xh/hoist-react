@@ -376,8 +376,14 @@ the app renders. A registration runs when its module loads, so one left in a laz
 missing from `IconPicker` and from `Icon.get()` until that tab loads. Toolbox keeps its icons in
 `client-app/src/core/Icons.ts`.
 
+Put that import below the import of `@xh/hoist/core` in `Bootstrap.ts`. Hoist's packages import each
+other in cycles that resolve only when `core` loads first. If `@xh/hoist/icon` is the first Hoist
+module to load, the app crashes at startup. Typecheck, lint and app-level cycle checks do not catch
+this, because the cycles are inside Hoist. See
+[Import `@xh/hoist/core` First](../lifecycle-app.md#import-xhhoistcore-first).
+
 ```typescript
-// client-app/src/core/Icons.ts - imported by Bootstrap.ts
+// client-app/src/core/Icons.ts - imported by Bootstrap.ts, below @xh/hoist/core
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faFaceFrown, faFaceSmile} from '@fortawesome/pro-regular-svg-icons';
 import {Icon} from '@xh/hoist/icon';

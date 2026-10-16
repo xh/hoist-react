@@ -25,7 +25,7 @@ import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useComposedRefs, useOnMount} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
-import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
+import {clamp, debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
 export interface NumberInputProps
@@ -205,7 +205,7 @@ class NumberInputModel extends HoistInputModel {
         if (isNaN(val)) return false;
         if (val === null) return true;
 
-        // Enforce min/max here on commit. BP props only limit the incremental step change
+        // Hoist owns min/max, checking the parsed value - see clampSteppedValue().
         if (!isNil(min) && val < min) return false;
         if (!isNil(max) && val > max) return false;
 
@@ -214,12 +214,23 @@ class NumberInputModel extends HoistInputModel {
 
     onKeyDown: KeyboardEventHandler<HTMLInputElement> = ev => {
         if (ev.key === 'Enter') this.doCommit();
+        if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') this.clampSteppedValue();
         this.componentProps.onKeyDown?.(ev);
     };
 
     onBeforeInput = (ev: InputEvent) => {
         if (this.commasWhileEditing) skipCommaOnDelete(ev);
     };
+
+    // BP steps the value on arrow keys without applying min/max - clamp the stepped value.
+    private clampSteppedValue() {
+        const {min, max} = this.componentProps,
+            val = this.toExternal(this.internalValue);
+        if (!isNumber(val) || isNaN(val)) return;
+
+        const clamped = clamp(val, min ?? -Infinity, max ?? Infinity);
+        if (clamped !== val) this.noteValueChange(this.toInternal(clamped));
+    }
 
     formatRenderValue(value: number) {
         const {componentProps, precision} = this;
@@ -264,17 +275,12 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     const {width, flex, ...layoutProps} = getLayoutProps(props),
         renderValue = model.formatRenderValue(model.renderValue);
 
-    // BP workaround -- min, max, and stepsize can block Blueprint from rendering
-    // intended value in underlying control -- ensure it is always shown.
-    // Also restore the caret after a reformat while editing moved it.
+    // Restore the caret after a reformat while editing moved it.
     useLayoutEffect(() => {
         const input = model.inputEl as HTMLInputElement;
-        if (!input) return;
-        input.value = renderValue;
-        if (model.caretPos != null) {
-            setCaretSkippingCommas(input, model.caretPos);
-            model.caretPos = null;
-        }
+        if (!input || model.caretPos == null) return;
+        setCaretSkippingCommas(input, model.caretPos);
+        model.caretPos = null;
     });
 
     // Native listener, as React's onBeforeInput does not fire for deletes.
@@ -300,8 +306,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         leftIcon: props.leftIcon,
         // Lets BP parse a comma-formatted value when stepping with the arrow keys.
         locale: model.commasWhileEditing ? 'en-US' : undefined,
-        min: props.min,
-        max: props.max,
         minorStepSize,
         majorStepSize,
         placeholder: props.placeholder,

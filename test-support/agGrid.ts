@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {installAgGrid} from '@xh/hoist/kit/ag-grid';
+import {agGridVersion, installAgGrid} from '@xh/hoist/kit/ag-grid';
+import {throwIf} from '@xh/hoist/utils/js';
 import {
     CellStyleModule,
     ClientSideRowModelApiModule,
@@ -41,6 +42,8 @@ let installed = false;
  * ag-Grid renders its header, rows and cells in jsdom, which has no layout. Every row and column
  * renders regardless of the viewport, so virtualisation cannot be observed here, and measured
  * sizes read back as zero. Inline styles and CSS variables can be read as set.
+ *
+ * Throws if the installed ag-Grid is outside the range Hoist supports.
  */
 export function installAgGridForTests() {
     if (installed) return;
@@ -62,6 +65,13 @@ export function installAgGridForTests() {
         TextFilterModule,
         TooltipModule
     ]);
-    installAgGrid(AgGridReact as any, ClientSideRowModelModule.version);
+    const {version} = ClientSideRowModelModule;
+    installAgGrid(AgGridReact as any, version);
+    // installAgGrid() only logs an unsupported version. Without ag-Grid, every grid renders a
+    // placeholder, and a spec could pass without testing one.
+    throwIf(
+        !agGridVersion,
+        `ag-Grid ${version} is not supported by this version of Hoist - see the logged error.`
+    );
     installed = true;
 }

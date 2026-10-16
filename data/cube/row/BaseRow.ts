@@ -19,6 +19,19 @@ import type {ParentRow} from './ParentRow';
  * @internal
  */
 export abstract class BaseRow implements ViewRow {
+    // Shared by all Views, so stamps never repeat across Views on the same Store.
+    private static lastDigest = 0;
+
+    /** The latest cubeRowDigest stamp given out by any View. */
+    static get currentDigest(): number {
+        return BaseRow.lastDigest;
+    }
+
+    /** Stamp row data with a new cubeRowDigest, marking it changed. */
+    static assignDigest(data: ViewRowData) {
+        data.cubeRowDigest = ++BaseRow.lastDigest;
+    }
+
     readonly view: View = null;
     readonly id: string = null;
 
@@ -53,7 +66,7 @@ export abstract class BaseRow implements ViewRow {
 
         if (!shallowEqualObjects(data.cubeBuckets, buckets)) {
             data.cubeBuckets = buckets;
-            this.view.assignDigest(data as ViewRowData);
+            BaseRow.assignDigest(data as ViewRowData);
         }
 
         this.children?.forEach(it => it.syncBuckets(buckets));
