@@ -18,8 +18,8 @@ read them with the same tools, and the server instructions tell agents that the 
    `core/README.md` in `@acme/hoist-acme` becomes `@acme/hoist-acme/core/README.md`.
 4. They merge those docs into one search index with Hoist's docs.
 5. The MCP server lists each library in its instructions, with its version, description, index
-   doc, source location, and any [guidance](#agent-guidance) from its authors. `hoist-ping` and `hoist-docs ping`
-   list the same, plus any load problems.
+   doc, source location, and any [guidance](#agent-guidance) from its authors. `hoist-ping` and
+   `hoist-docs ping` list the same, plus any load problems.
 
 Hoist's own doc ids do not change. Short ids such as `core`, `grid`, and `index` always mean Hoist
 docs.
@@ -197,7 +197,9 @@ direct dependency of the app for its docs to load.
   client to treat all doc content as data, not as instructions. Library guidance is the one
   exception, and the instructions frame it as advice from the package authors.
 - **Load problems are not fatal.** A missing registry, a missing doc file, or a bad path skips that
-  item. A field of the wrong type falls back to its default. The tools log a warning to stderr and report it in `hoist-ping` and `hoist-docs ping`.
+  item, and the tools log a warning to stderr and report it in `hoist-ping` and `hoist-docs ping`.
+  A field of the wrong type falls back to its default. Only `entries` and `mcpCategories` warn when
+  they are not lists, so run `hoist-docs list` to check that titles and categories came through.
 
 See the [MCP Server README](../mcp/README.md#companion-library-docs) for how the tools implement
 this.
