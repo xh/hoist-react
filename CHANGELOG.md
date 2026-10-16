@@ -19,6 +19,8 @@
 * Added JsonBlob and ViewManager support to the fake hoist-core in `@xh/hoist/test-support`. App
   specs can now boot an app that creates `ViewManagerModel`s with no setup, and seed views and view
   state with `hoistCore.jsonBlobs`.
+* `NumberInput.displayWithCommas` now accepts `'always'` to insert commas while the user types,
+  on desktop and mobile. `'whenBlurred'` names the existing behavior, and `true` remains its alias.
 
 ### 🐞 Bug Fixes
 
