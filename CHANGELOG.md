@@ -31,6 +31,8 @@
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
   was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
   `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+* Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
+  had no Hoist model above it, as in a component test rendered at the root.
 
 ### 🤖 AI Docs + Tooling
 
