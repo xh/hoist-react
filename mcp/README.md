@@ -338,8 +338,10 @@ implementation.
   does not depend on the companion library, so the server cannot find it from its own location.
   `resolveAppRoot()` in `util/paths.ts` picks the anchor package: `HOIST_MCP_APP_ROOT`, else `cwd`
   or `cwd/client-app`. The loader checks the anchor and its direct `dependencies` and
-  `devDependencies`. `findInstalledPackage()` finds each one under `node_modules` and takes its real
-  path. It does not use `require.resolve()`, which fails for packages with an `exports` map.
+  `devDependencies`. `findInstalledPackage()` finds each one under `node_modules`. It does not use
+  `require.resolve()`, which fails for packages with an `exports` map. The loader resolves docs
+  against the real path, and shows agents the `node_modules` path as `DocLibrary.sourcePath`,
+  relative to the working directory.
 - **Prefixed ids.** Companion ids are the package name plus the registry path, for example
   `@xh/hoist-chat-kit/core/README.md`. npm names are unique, so the ids are too. `DocEntry.path`
   keeps the registry path and `DocEntry.library` the package name. hoist-react entries have
@@ -349,6 +351,14 @@ implementation.
   auto-aliases only under the full and the unscoped package name, and a bare package name reaches
   the library's `docs/README.md`. Where a companion alias would collide with a hoist-react one, the
   hoist-react doc keeps it. Explicit companion aliases claim only the full prefix.
+- **Relative links are rewritten.** `loadDocContent()` rewrites relative links in a companion doc,
+  so `../core/README.md` reads as `@xh/hoist-chat-kit/core/README.md`. Left as written, the link
+  would resolve to hoist-react's `core/README.md` with no error. A link to a file that is not a
+  served doc becomes a path under `sourcePath`. Links that leave the package, and links in code,
+  stay as written. Line numbers do not change, so section ranges still match.
+- **Maintainer docs.** `loadLibrary()` drops entries with `mcpAudience: 'maintainers'` unless the
+  library's root is the app root. The rule applies to every registry, hoist-react's included, so
+  hoist-react can mark its own maintainer docs the same way.
 - **Agents learn about libraries from the server.** `instructions.ts` names each library with its
   version, description, and index id, and says that the symbol tools cover `@xh/hoist` only.
   `hoist-ping`, `hoist-docs ping`, list output, and `hoist-docs index` also name the libraries.
@@ -361,8 +371,8 @@ implementation.
 - **Same schemas when none load.** The `library` filter on search and list, and the companion notes
   in tool descriptions, appear only when a companion library loads.
 - **Soft failures.** The loader skips a missing registry or doc file, or a path outside the
-  package. It logs a warning to stderr and adds it to `RegistryData.warnings`, which the ping
-  surfaces report.
+  package, including a symlink to a file outside it. It logs a warning to stderr and adds it to
+  `RegistryData.warnings`, which the ping surfaces report.
 
 The symbol tools do not cover companion libraries. `data/ts-registry.ts` assumes one source root,
 one `tsconfig.json`, and the `@xh/hoist/` import prefix.

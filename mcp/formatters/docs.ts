@@ -541,7 +541,7 @@ export function companionLibraries(data: RegistryData): DocLibrary[] {
  */
 export function formatCompanionStatus(data: RegistryData): string[] {
     const lines = companionLibraries(data).flatMap(l => [
-        `- ${formatLibrary(l)}: ${l.docCount} docs${l.indexId ? `, index ${l.indexId}` : ''}`,
+        `- ${formatLibrary(l)}: ${l.docCount} docs${l.indexId ? `, index ${l.indexId}` : ''}, source ${l.sourcePath}`,
         ...(l.instructions
             ? ['  Guidance:', ...l.instructions.split('\n').map(line => `    ${line}`)]
             : [])

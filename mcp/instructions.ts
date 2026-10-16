@@ -54,7 +54,7 @@ function companionInstructions(data: RegistryData): string | null {
                     : desc,
             index = lib.indexId ? `index: ${lib.indexId}` : `${lib.docCount} docs`;
         return [
-            `- ${formatLibrary(lib)}${quoted ? ` (${quoted})` : ''}, ${index}`,
+            `- ${formatLibrary(lib)}${quoted ? ` (${quoted})` : ''}, ${index}, source: ${lib.sourcePath}`,
             ...(lib.instructions
                 ? [`  Guidance from ${lib.name}:`, ...indent(lib.instructions, '    ')]
                 : [])
@@ -64,6 +64,6 @@ function companionInstructions(data: RegistryData): string | null {
     return [
         "This project includes companion libraries that build on Hoist. The doc tools serve their docs alongside Hoist's own, with ids prefixed by the package name. Prefer a companion library's components and patterns where it covers the task, and follow any guidance its authors give below. Read its index to learn what it provides:",
         ...lines,
-        "The symbol tools (hoist-search-symbols, hoist-get-symbol, hoist-get-members) cover @xh/hoist only. For a companion library's exact APIs, read its docs and then its source."
+        "The symbol tools (hoist-search-symbols, hoist-get-symbol, hoist-get-members) cover @xh/hoist only. For a companion library's exact APIs, read its docs and then its source, at the path given above."
     ].join('\n');
 }

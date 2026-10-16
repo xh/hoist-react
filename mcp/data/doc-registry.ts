@@ -22,7 +22,8 @@
  * Provides metadata and file loading. Search lives in `doc-search.ts`, and the section model
  * used for search and targeted reads lives in `doc-sections.ts`.
  */
-import {existsSync, readFileSync} from 'node:fs';
+import {existsSync, readFileSync, realpathSync} from 'node:fs';
+import {isAbsolute, posix, relative, resolve, sep} from 'node:path';
 
 import {log} from '../util/logger.js';
 import {
@@ -74,6 +75,18 @@ export interface DocEntry {
      * companion library's aliases under its package name.
      */
     aliases: string[];
+    /** What a companion doc's relative links resolve against. See {@link rewriteRelativeLinks}. */
+    links?: DocLinkContext;
+}
+
+/** The docs and source location that a companion doc's relative links resolve against. */
+export interface DocLinkContext {
+    /** Package name, the prefix of each doc id. */
+    library: string;
+    /** Registry paths of the library's served docs. */
+    docPaths: ReadonlySet<string>;
+    /** Where agents find the package files. See {@link DocLibrary.sourcePath}. */
+    sourcePath: string;
 }
 
 /** A package whose docs are loaded: hoist-react itself, or an opted-in companion library. */
@@ -83,8 +96,13 @@ export interface DocLibrary {
     version: string;
     /** The package.json description, for the server instructions. */
     description: string;
-    /** Absolute package root on disk. */
+    /** Absolute package root on disk, with symlinks resolved. */
     root: string;
+    /**
+     * Where agents find the package files: relative to the working directory when inside it,
+     * else absolute. Under pnpm, the `node_modules` link rather than the store path.
+     */
+    sourcePath: string;
     /** True for hoist-react, whose doc ids carry no prefix. */
     primary: boolean;
     /** Id of the library's `docs/README.md` index, if it registers one. */
@@ -130,6 +148,8 @@ interface RegistryJson {
         description?: string;
         keywords?: string[];
         aliases?: string[];
+        /** `maintainers` to serve the doc only to agents working in the library's own repo. */
+        mcpAudience?: string;
     }>;
 }
 
@@ -167,11 +187,12 @@ export function buildRegistry(
 ): RegistryData {
     const warnings: string[] = [],
         hoistPkg = readPackageJson(repoRoot),
+        isAppRoot = (root: string) => appRoot != null && samePath(root, appRoot),
         primary = loadLibrary(
             repoRoot,
             hoistPkg ?? {name: HOIST_PACKAGE},
             'docs/doc-registry.json',
-            true,
+            {primary: true, isAppRoot: isAppRoot(repoRoot), sourcePath: displayPath(repoRoot)},
             msg => log.warn(msg)
         )!;
 
@@ -179,13 +200,19 @@ export function buildRegistry(
         entries = [...primary.entries],
         mcpCategories = [...primary.mcpCategories];
 
-    for (const {root, pkg} of appRoot ? discoverCompanionPackages(appRoot) : []) {
+    for (const {path, pkg} of appRoot ? discoverCompanionPackages(appRoot) : []) {
         const name = pkg.name!,
             warn = (msg: string) => {
                 warnings.push(`${name}: ${msg}`);
                 log.warn(`Companion library ${name}: ${msg}`);
             },
-            loaded = loadLibrary(root, pkg, pkg.hoist!.docRegistry!, false, warn);
+            loaded = loadLibrary(
+                realpathSync(path),
+                pkg,
+                pkg.hoist!.docRegistry!,
+                {primary: false, isAppRoot: isAppRoot(path), sourcePath: displayPath(path)},
+                warn
+            );
         if (!loaded) continue;
 
         // An unscoped package named like a hoist-react folder (e.g. `core`) could produce an id
@@ -197,8 +224,13 @@ export function buildRegistry(
                 return false;
             });
 
+        const links: DocLinkContext = {
+            library: name,
+            docPaths: new Set(kept.map(e => e.path)),
+            sourcePath: loaded.library.sourcePath
+        };
         libraries.push({...loaded.library, docCount: kept.length});
-        entries.push(...kept);
+        entries.push(...kept.map(e => ({...e, links})));
         for (const cat of loaded.mcpCategories) {
             if (!mcpCategories.some(c => c.id === cat.id)) mcpCategories.push(cat);
         }
@@ -214,16 +246,35 @@ export function buildRegistry(
     return {entries, mcpCategories, libraries, warnings};
 }
 
+/** `path` relative to the working directory when inside it, else absolute. */
+function displayPath(path: string): string {
+    const rel = relative(process.cwd(), path);
+    if (!rel) return '.';
+    return rel.startsWith('..') || isAbsolute(rel) ? path : rel;
+}
+
+/** True if two paths name the same folder, following symlinks. */
+function samePath(a: string, b: string): boolean {
+    try {
+        return realpathSync(a) === realpathSync(b);
+    } catch {
+        return resolve(a) === resolve(b);
+    }
+}
+
 /**
  * Load one library's registry, resolving each entry against the library's own root. Returns
  * null for a companion library whose registry cannot be read. hoist-react's own registry always
  * loads, if only as an empty one.
+ *
+ * Entries with `mcpAudience: 'maintainers'` load only when the library is the app root - that
+ * is, when an agent works in the library's own repo.
  */
 function loadLibrary(
     root: string,
     pkg: PackageJson,
     registryPath: string,
-    primary: boolean,
+    {primary, isAppRoot, sourcePath}: {primary: boolean; isAppRoot: boolean; sourcePath: string},
     warn: (msg: string) => void
 ): {library: DocLibrary; entries: DocEntry[]; mcpCategories: McpCategory[]} | null {
     const name = pkg.name ?? HOIST_PACKAGE;
@@ -238,12 +289,17 @@ function loadLibrary(
         json = {};
     }
 
-    const entries: DocEntry[] = [];
+    const entries: DocEntry[] = [],
+        realRoot = realpathSync(root);
     for (const raw of json.entries ?? []) {
         if (typeof raw?.id !== 'string' || !raw.id) {
             warn('skipped an entry with no id');
             continue;
         }
+        if (raw.mcpAudience != null && raw.mcpAudience !== 'maintainers') {
+            warn(`ignored mcpAudience "${raw.mcpAudience}" on "${raw.id}": expected "maintainers"`);
+        }
+        if (raw.mcpAudience === 'maintainers' && !isAppRoot) continue;
 
         let filePath: string;
         try {
@@ -254,6 +310,10 @@ function loadLibrary(
         }
         if (!existsSync(filePath)) {
             warn(`skipped doc entry "${raw.id}": file not found at ${filePath}`);
+            continue;
+        }
+        if (!realpathSync(filePath).startsWith(realRoot + sep)) {
+            warn(`skipped "${raw.id}": it links to a file outside the package root`);
             continue;
         }
 
@@ -285,6 +345,7 @@ function loadLibrary(
             version: pkg.version ?? 'unknown',
             description: pkg.description ?? '',
             root,
+            sourcePath,
             primary,
             indexId: index?.id ?? null,
             docCount: entries.length,
@@ -329,19 +390,19 @@ function parseInstructions(
  * `devDependencies`. Transitive dependencies are not walked. `@xh/hoist` is skipped - its docs
  * are always loaded as the primary library.
  */
-function discoverCompanionPackages(appRoot: string): Array<{root: string; pkg: PackageJson}> {
+function discoverCompanionPackages(appRoot: string): Array<{path: string; pkg: PackageJson}> {
     const appPkg = readPackageJson(appRoot);
     if (!appPkg) return [];
 
-    const candidates: Array<{root: string; pkg: PackageJson}> = [{root: appRoot, pkg: appPkg}],
+    const candidates: Array<{path: string; pkg: PackageJson}> = [{path: appRoot, pkg: appPkg}],
         depNames = new Set([
             ...Object.keys(appPkg.dependencies ?? {}),
             ...Object.keys(appPkg.devDependencies ?? {})
         ]);
     for (const depName of depNames) {
-        const root = findInstalledPackage(appRoot, depName),
-            pkg = root ? readPackageJson(root) : null;
-        if (root && pkg) candidates.push({root, pkg});
+        const path = findInstalledPackage(appRoot, depName),
+            pkg = path ? readPackageJson(path) : null;
+        if (path && pkg) candidates.push({path, pkg});
     }
 
     const seen = new Set<string>();
@@ -370,7 +431,8 @@ export function loadRegistry(): RegistryData {
 //------------------------------------------------------------------
 
 /**
- * Read and return the full content of a document.
+ * Read and return the full content of a document. A companion library doc has its relative links
+ * rewritten to full ids - see {@link rewriteRelativeLinks}.
  *
  * @throws Error if the file does not exist.
  */
@@ -378,5 +440,71 @@ export function loadDocContent(entry: DocEntry): string {
     if (!existsSync(entry.filePath)) {
         throw new Error(`Document file not found: "${entry.id}" at ${entry.filePath}`);
     }
-    return readFileSync(entry.filePath, 'utf-8');
+    const content = readFileSync(entry.filePath, 'utf-8');
+    return entry.links ? rewriteRelativeLinks(content, entry.path, entry.links) : content;
+}
+
+/** Inline link `](target` or reference definition `[label]: target`, capturing the target. */
+const LINK_TARGET_RE = /(\]\(\s*<?|^\s{0,3}\[[^\]]+\]:\s*<?)([^\s)>]+)/gm;
+
+/**
+ * Fence that opens or closes a markdown code block. Any indent, so a fence nested in a list
+ * item counts too.
+ */
+const FENCE_RE = /^\s*(`{3,}|~{3,})/;
+
+/**
+ * Rewrite relative links in a companion library doc so an agent can follow them. Read as
+ * written, `../core/README.md` in `@xh/hoist-chat-kit/docs/architecture.md` sends an agent to
+ * hoist-react's `core/README.md`, with no error to tell it the doc is the wrong one.
+ *
+ * A link to a served doc becomes its full id, prefixed with the package name. A link to any other
+ * file in the package, such as source or a doc not served here, becomes a file path under
+ * {@link DocLinkContext.sourcePath}. Leaves anchors, absolute paths, URLs, links that leave the
+ * package root, and code as they are. Keeps line numbers unchanged, so section line ranges still
+ * match the file.
+ */
+export function rewriteRelativeLinks(
+    content: string,
+    docPath: string,
+    {library, docPaths, sourcePath}: DocLinkContext
+): string {
+    const docDir = posix.dirname(docPath);
+    // The open fence, if inside a code block. It closes on a fence of the same character, at
+    // least as long.
+    let openFence: string | null = null;
+    return content
+        .split('\n')
+        .map(line => {
+            const fence = FENCE_RE.exec(line)?.[1];
+            if (fence) {
+                if (!openFence) {
+                    openFence = fence;
+                } else if (fence[0] === openFence[0] && fence.length >= openFence.length) {
+                    openFence = null;
+                }
+                return line;
+            }
+            if (openFence) return line;
+            // Odd segments are inline code spans, left as written.
+            return line
+                .split(/(`+[^`]*`+)/)
+                .map((seg, i) => (i % 2 ? seg : seg.replace(LINK_TARGET_RE, rewrite)))
+                .join('');
+        })
+        .join('\n');
+
+    function rewrite(match: string, lead: string, target: string): string {
+        if (/^([a-z][a-z0-9+.-]*:|[#/])/i.test(target)) return match;
+        const hashAt = target.indexOf('#'),
+            path = hashAt < 0 ? target : target.slice(0, hashAt),
+            anchor = hashAt < 0 ? '' : target.slice(hashAt),
+            resolved = posix.normalize(posix.join(docDir, path));
+        if (resolved === '..' || resolved.startsWith('../')) return match;
+        if (resolved === '.') return `${lead}${library}${anchor}`;
+        const rewritten = docPaths.has(resolved)
+            ? `${library}/${resolved}`
+            : posix.join(sourcePath.split(sep).join('/'), resolved);
+        return `${lead}${rewritten}${anchor}`;
+    }
 }

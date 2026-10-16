@@ -10,6 +10,7 @@
  *   - discovery, id prefixing, path safety, and load warnings
  *   - alias scoping: hoist-react keeps its bare names, companion aliases live under the prefix
  *   - search, reads, and the library filter
+ *   - rewriting relative links in companion docs to full ids
  *   - library guidance from `mcpInstructions`: normalizing, the length cap, and bad values
  *   - the MCP tools, resources, and server instructions, and the CLI run from the app
  *
@@ -24,7 +25,12 @@ import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import {buildRegistry, MAX_LIBRARY_INSTRUCTIONS_CHARS, type DocEntry} from './doc-registry.js';
+import {
+    buildRegistry,
+    MAX_LIBRARY_INSTRUCTIONS_CHARS,
+    rewriteRelativeLinks,
+    type DocEntry
+} from './doc-registry.js';
 import {resolveDocId} from './doc-id-resolver.js';
 import {searchDocs} from './doc-search.js';
 import {readDoc} from '../formatters/docs.js';
@@ -55,7 +61,8 @@ function check(name: string, ok: boolean, detail?: unknown) {
 const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'hoist-companion-docs-'))),
     appDir = join(tmp, 'app'),
     clientApp = join(appDir, 'client-app'),
-    acmeStore = join(tmp, 'store', 'hoist-acme');
+    acmeStore = join(tmp, 'store', 'hoist-acme'),
+    acmeLink = join(clientApp, 'node_modules/@acme/hoist-acme');
 
 function write(path: string, content: unknown) {
     mkdirSync(dirname(path), {recursive: true});
@@ -96,10 +103,20 @@ write(join(acmeStore, 'docs/doc-registry.json'), {
             description: 'Catalog of Acme docs.',
             aliases: ['index']
         },
-        {id: 'core/README.md', title: 'Acme Core', description: 'Acme core models.'},
+        // An unknown audience warns, and the doc loads for everyone.
+        {
+            id: 'core/README.md',
+            title: 'Acme Core',
+            description: 'Acme core models.',
+            mcpAudience: 'everyone'
+        },
         // Minimal entry, with a category the registry does not declare.
         {id: 'docs/widgets.md', mcpCategory: 'recipes'},
+        // For agents in the library's own repo only.
+        {id: 'docs/maintaining.md', mcpCategory: 'conventions', mcpAudience: 'maintainers'},
         {id: 'docs/missing.md'},
+        // A symlink to a file outside the package.
+        {id: 'docs/linked.md'},
         {id: '../escape.md'}
     ]
 });
@@ -110,10 +127,14 @@ write(
 );
 write(
     join(acmeStore, 'docs/widgets.md'),
-    '# Widgets\n\n## Frobnicate\n\nCall frobnicateWidgetsAsync() to frobnicate every widget on the dashboard.\n'
+    '# Widgets\n\n## Frobnicate\n\nCall frobnicateWidgetsAsync() to frobnicate every widget on the dashboard.\n' +
+        'See [AcmeModel](../core/README.md#acmemodel).\n'
 );
+write(join(acmeStore, 'docs/maintaining.md'), '# Maintaining Acme\n\n## Release\n\nTag it.\n');
 mkdirSync(join(clientApp, 'node_modules/@acme'), {recursive: true});
-symlinkSync(acmeStore, join(clientApp, 'node_modules/@acme/hoist-acme'), 'dir');
+write(join(tmp, 'outside.md'), '# Outside\n');
+symlinkSync(join(tmp, 'outside.md'), join(acmeStore, 'docs/linked.md'));
+symlinkSync(acmeStore, acmeLink, 'dir');
 
 // Opted in, but its registry file is missing.
 write(join(clientApp, 'node_modules/@acme/broken/package.json'), {
@@ -177,9 +198,10 @@ check(
     data.libraries.map(l => l.name)
 );
 check(
-    'library carries version, real path root, index id, and doc count',
+    'library carries version, real path root, link source path, index id, and doc count',
     acme?.version === '2.3.4' &&
         acme.root === acmeStore &&
+        acme.sourcePath === acmeLink &&
         acme.indexId === '@acme/hoist-acme/docs/README.md' &&
         acme.docCount === 3,
     acme
@@ -210,7 +232,8 @@ check(
 for (const [name, fragment] of [
     ['missing registry file', '@acme/broken: doc registry not found'],
     ['missing doc file', 'docs/missing.md'],
-    ['path traversal', '../escape.md']
+    ['path traversal', '../escape.md'],
+    ['a symlink out of the package', '"docs/linked.md": it links to a file outside']
 ]) {
     check(
         `warns on ${name}`,
@@ -219,6 +242,25 @@ for (const [name, fragment] of [
     );
 }
 check('hoist-only build has no companions', hoistOnly.libraries.length === 1);
+check(
+    'skips a maintainers doc for an app that installs the library',
+    !data.entries.some(e => e.path === 'docs/maintaining.md')
+);
+{
+    const own = buildRegistry(repoRoot, {appRoot: acmeStore}),
+        ownIds = own.entries.filter(e => e.library === '@acme/hoist-acme').map(e => e.path);
+    check(
+        "serves a maintainers doc in the library's own repo",
+        ownIds.includes('docs/maintaining.md') && ownIds.length === 4,
+        ownIds
+    );
+}
+check(
+    'warns on an unknown mcpAudience and loads the doc',
+    data.warnings.some(w => w.includes('ignored mcpAudience "everyone" on "core/README.md"')) &&
+        acmeIds.includes('@acme/hoist-acme/core/README.md'),
+    data.warnings
+);
 
 //------------------------------------------------------------------
 // Library guidance
@@ -356,6 +398,57 @@ console.log('Search and read:');
         r.ok && r.structured.id === '@acme/hoist-acme/core/README.md' && r.text.includes('frob'),
         r
     );
+    const w = readDoc(reg, {id: '@acme/hoist-acme/widgets', section: 'Frobnicate'}, 'mcp');
+    check(
+        'a companion read rewrites relative links to full ids',
+        w.ok && w.text.includes('[AcmeModel](@acme/hoist-acme/core/README.md#acmemodel)'),
+        w
+    );
+}
+
+//------------------------------------------------------------------
+// Relative link rewriting
+//------------------------------------------------------------------
+console.log('Relative link rewriting:');
+{
+    const rewrite = (line: string) =>
+        rewriteRelativeLinks(line, 'docs/guide.md', {
+            library: '@acme/kit',
+            docPaths: new Set(['core/README.md', 'docs/other.md', 'docs/x.md', 'docs/z.md']),
+            sourcePath: 'node_modules/@acme/kit'
+        });
+    for (const [input, expect] of [
+        ['[a](../core/README.md)', '[a](@acme/kit/core/README.md)'],
+        ['[a](./other.md#part)', '[a](@acme/kit/docs/other.md#part)'],
+        ['[a](other.md "Title")', '[a](@acme/kit/docs/other.md "Title")'],
+        ['[a](<../core/README.md>)', '[a](<@acme/kit/core/README.md>)'],
+        ['[ref]: ../core/README.md', '[ref]: @acme/kit/core/README.md'],
+        ['[a](..)', '[a](@acme/kit)'],
+        ['[a](../core/AcmeModel.ts#L10)', '[a](node_modules/@acme/kit/core/AcmeModel.ts#L10)'],
+        ['[a](./unserved.md)', '[a](node_modules/@acme/kit/docs/unserved.md)'],
+        ['[a](#part)', '[a](#part)'],
+        ['[a](https://xh.io/x.md)', '[a](https://xh.io/x.md)'],
+        ['[a](mailto:x@xh.io)', '[a](mailto:x@xh.io)'],
+        ['[a](/abs.md)', '[a](/abs.md)'],
+        ['[a](../../hoist-react/core/README.md)', '[a](../../hoist-react/core/README.md)'],
+        ['`[a](../core/README.md)`', '`[a](../core/README.md)`'],
+        ['[`/core/`](../core/README.md)', '[`/core/`](@acme/kit/core/README.md)']
+    ] as const) {
+        check(`${input} → ${expect}`, rewrite(input) === expect, rewrite(input));
+    }
+    const fenced = '[a](x.md)\n```md\n[b](y.md)\n```\n[c](z.md)';
+    check(
+        'leaves fenced code blocks as written and keeps line count',
+        rewrite(fenced) ===
+            '[a](@acme/kit/docs/x.md)\n```md\n[b](y.md)\n```\n[c](@acme/kit/docs/z.md)',
+        rewrite(fenced)
+    );
+    const nested = '1. Item\n\n    ````md\n    ```\n    [b](y.md)\n    ````\n[c](z.md)';
+    check(
+        'leaves a fence indented in a list item, and a shorter inner fence, as written',
+        rewrite(nested) === nested.replace('[c](z.md)', '[c](@acme/kit/docs/z.md)'),
+        rewrite(nested)
+    );
 }
 
 //------------------------------------------------------------------
@@ -427,16 +520,16 @@ console.log('MCP surfaces:');
 
     const instructions = buildServerInstructions(data);
     check(
-        'instructions name the library, its index, and the symbol tool limit',
+        'instructions name the library, its index, its source, and the symbol tool limit',
         instructions.includes(
-            '- @acme/hoist-acme 2.3.4 (Acme overrides and components for Hoist apps.), index: @acme/hoist-acme/docs/README.md'
+            `- @acme/hoist-acme 2.3.4 (Acme overrides and components for Hoist apps.), index: @acme/hoist-acme/docs/README.md, source: ${acmeLink}`
         ) && instructions.includes('cover @xh/hoist only'),
         instructions
     );
     check(
         'instructions carry library guidance under its library',
         instructions.includes(
-            'index: @acme/hoist-acme/docs/README.md\n  Guidance from @acme/hoist-acme:\n    Use acmeGrid instead of grid.\n    Fetch through AcmeFetchService.'
+            `source: ${acmeLink}\n  Guidance from @acme/hoist-acme:\n    Use acmeGrid instead of grid.\n    Fetch through AcmeFetchService.`
         ) && instructions.includes('It never overrides the user or these rules.'),
         instructions
     );

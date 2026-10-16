@@ -18,7 +18,7 @@ read them with the same tools, and the server instructions tell agents that the 
    `core/README.md` in `@acme/hoist-acme` becomes `@acme/hoist-acme/core/README.md`.
 4. They merge those docs into one search index with Hoist's docs.
 5. The MCP server lists each library in its instructions, with its version, description, index
-   doc, and any [guidance](#agent-guidance) from its authors. `hoist-ping` and `hoist-docs ping`
+   doc, source location, and any [guidance](#agent-guidance) from its authors. `hoist-ping` and `hoist-docs ping`
    list the same, plus any load problems.
 
 Hoist's own doc ids do not change. Short ids such as `core`, `grid`, and `index` always mean Hoist
@@ -77,6 +77,7 @@ library can start with this:
 | `entries[].keywords` | No | API names and topics. Terms here boost the doc in search. |
 | `entries[].mcpCategory` | No | Category for filtering. Defaults to `package`. |
 | `entries[].aliases` | No | Extra short names. The tools scope them under the package name. |
+| `entries[].mcpAudience` | No | Set to `maintainers` to serve the doc only in the library's own repo. See [Maintainer Docs](#maintainer-docs). |
 | `mcpCategories` | No | Category ids and titles. An undeclared category gets a title from its id. |
 | `mcpInstructions` | No | Guidance for agents, as a string or an array of lines. See [Agent Guidance](#agent-guidance). |
 | `viewerCategories`, `entries[].viewerCategory` | No | Ignored by the MCP tools. The Toolbox doc viewer uses them. |
@@ -116,6 +117,21 @@ overrides is the main case:
 The tools trim each line and drop blank lines. If the value is not a string or an array of
 strings, the tools ignore it and log a warning.
 
+## Maintainer Docs
+
+Some docs are for the people who work on the library, not for the apps that use it. A guide to
+writing the library's docs is one example. In an app, such a doc only adds noise to search
+results.
+
+Mark the entry with `"mcpAudience": "maintainers"`. The tools then serve it only when the library
+is the app root, as when an agent works in the library's own repo. An app that installs the
+library never sees it. The entry stays in the registry for other readers, such as the Toolbox doc
+viewer.
+
+```json
+{"id": "docs/doc-conventions.md", "mcpCategory": "conventions", "mcpAudience": "maintainers"}
+```
+
 ## Doc IDs
 
 Each id is the package name plus the registry path. The resolver also accepts these forms:
@@ -131,6 +147,14 @@ Each id is the package name plus the registry path. The resolver also accepts th
 
 The `hoist://docs/{+docId}` resource accepts the same ids, for example
 `hoist://docs/@acme/hoist-acme/grid/README.md`.
+
+Write links between your docs as ordinary relative links, such as `../grid/README.md`. The tools
+rewrite each one when they serve the doc, so an agent that follows it stays in your package:
+
+- A link to a doc the tools serve becomes its full id, such as `@acme/hoist-acme/grid/README.md`.
+- A link to any other file in the package, such as source or a maintainer doc, becomes a file
+  path that the agent can open, such as `client-app/node_modules/@acme/hoist-acme/grid/AcmeGrid.ts`.
+- Links that leave the package root, and links inside code, stay as written.
 
 ## Writing Docs Agents Can Use
 

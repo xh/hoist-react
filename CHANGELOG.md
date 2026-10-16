@@ -29,7 +29,8 @@
   on Hoist, such as `@xh/hoist-chat-kit` or a client firm's shared package. A library opts in with
   `"hoist": {"docRegistry": "<path>"}` in its `package.json`. Its doc ids take the package name as
   a prefix, and the server instructions name each library. A library can also add guidance for
-  agents with `mcpInstructions`, for example which Hoist components it replaces. See
+  agents with `mcpInstructions`, for example which Hoist components it replaces, and keep its
+  maintainer docs out of apps with `"mcpAudience": "maintainers"`. See
   [Companion Library Docs](docs/companion-library-docs.md).
 
 ## 89.0.1 - 2026-10-14

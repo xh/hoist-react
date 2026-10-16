@@ -5,7 +5,7 @@
  * for companion library discovery, and safe path construction that prevents directory traversal
  * outside a package root.
  */
-import {existsSync, readFileSync, realpathSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import {resolve, dirname, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -134,7 +134,7 @@ export function resolveAppRoot(
 
 /**
  * Find an installed package by walking up from `fromDir` through each `node_modules/<name>`,
- * as Node does. Returns its real path (pnpm links direct dependencies into `node_modules`), or
+ * as Node does. Returns its `node_modules` path, which under pnpm is a link into the store, or
  * null if not installed. Reads the folder directly rather than `require.resolve()`, which fails
  * for packages whose `exports` map hides `package.json`.
  */
@@ -142,7 +142,7 @@ export function findInstalledPackage(fromDir: string, name: string): string | nu
     let dir = resolve(fromDir);
     while (true) {
         const candidate = resolve(dir, 'node_modules', name);
-        if (existsSync(resolve(candidate, 'package.json'))) return realpathSync(candidate);
+        if (existsSync(resolve(candidate, 'package.json'))) return candidate;
         const parent = dirname(dir);
         if (parent === dir) return null;
         dir = parent;
