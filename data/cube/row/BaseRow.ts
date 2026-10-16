@@ -19,8 +19,7 @@ import type {ParentRow} from './ParentRow';
  * @internal
  */
 export abstract class BaseRow implements ViewRow {
-    // Source of every cubeRowDigest stamp. Shared by all Views, so a Store bound to a new View never
-    // reuses a record stamped by an earlier one. Monotonic - safe-integer headroom spans centuries.
+    // Shared by all Views, so stamps never repeat across Views on the same Store.
     private static lastDigest = 0;
 
     /** The latest cubeRowDigest stamp given out by any View. */
