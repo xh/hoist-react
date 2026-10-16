@@ -13,6 +13,11 @@
  *      Levenshtein or probabilistic ranking at the resolution layer.
  *   3. Ambiguity surfaces. Auto-aliases that map to more than one entry are discarded.
  *
+ * Companion library docs (ids prefixed with a package name, see `doc-registry.ts`) never claim a
+ * bare shortening. hoist-react docs own `core`, `index`, and the like. A companion library's
+ * aliases exist only under its prefix, in full (`@xh/hoist-chat-kit/core`) or unscoped
+ * (`hoist-chat-kit/core`), and its bare package name reaches its `docs/README.md` index.
+ *
  * See the `resolveDocId` JSDoc below for the full tier ordering and rationale.
  */
 import {log} from '../util/logger.js';
@@ -181,7 +186,7 @@ function suffixCandidates(input: string): string[] {
  * Build the lowercased alias → canonical id map consumed by Tier 2.
  *
  * Auto-aliases are computed per entry; keys mapping to more than one distinct
- * canonical id are dropped as ambiguous. Explicit aliases from `entry.aliases`
+ * canonical id are dropped as ambiguous, unless exactly one of them is a hoist-react doc. Explicit aliases from `entry.aliases`
  * are layered in afterward and override the auto-generated ones for the same key.
  */
 function buildAliasMap(registry: DocEntry[]): Map<string, string> {
@@ -189,7 +194,7 @@ function buildAliasMap(registry: DocEntry[]): Map<string, string> {
     const autoCandidates = new Map<string, Set<string>>();
     for (const entry of registry) {
         const canonicalLower = entry.id.toLowerCase();
-        for (const key of autoAliasesFor(entry.id)) {
+        for (const key of autoAliasesFor(entry)) {
             const lower = key.toLowerCase();
             if (lower === canonicalLower) continue;
             const set = autoCandidates.get(lower) ?? new Set<string>();
@@ -198,11 +203,16 @@ function buildAliasMap(registry: DocEntry[]): Map<string, string> {
         }
     }
 
-    // Stage 2: keep only unambiguous auto-aliases.
-    const finalMap = new Map<string, string>();
+    // Stage 2: keep only unambiguous auto-aliases. hoist-react docs own any key they share with
+    // companion library docs - e.g. hoist's `grid` against the index of a package `@acme/grid`.
+    const finalMap = new Map<string, string>(),
+        hoistIds = new Set(registry.filter(e => e.library == null).map(e => e.id));
     for (const [key, ids] of autoCandidates) {
+        const hoistOwners = [...ids].filter(id => hoistIds.has(id));
         if (ids.size === 1) {
             finalMap.set(key, [...ids][0]);
+        } else if (hoistOwners.length === 1) {
+            finalMap.set(key, hoistOwners[0]);
         } else {
             log.debug(`Discarding ambiguous auto-alias "${key}" (matches: ${[...ids].join(', ')})`);
         }
@@ -214,7 +224,11 @@ function buildAliasMap(registry: DocEntry[]): Map<string, string> {
     const canonicalLookup = new Set(registry.map(e => e.id.toLowerCase()));
     const claimedByExplicit = new Set<string>();
     for (const entry of registry) {
-        const explicit = entry.aliases ?? [];
+        // A companion library's explicit aliases claim only its full package-name prefix. The
+        // unscoped forms are auto-aliases, dropped if two libraries share an unscoped name.
+        const explicit = (entry.aliases ?? []).map(a =>
+            entry.library == null ? a : `${entry.library}/${a}`
+        );
         for (const a of explicit) {
             const lower = a.toLowerCase();
             // Warn if the alias collides with another entry's canonical id --
@@ -241,7 +255,7 @@ function buildAliasMap(registry: DocEntry[]): Map<string, string> {
 }
 
 /**
- * Compute auto-alias candidates for a single canonical id.
+ * Compute auto-alias candidates for a single entry, scoped under its library prefix.
  *
  * Examples:
  *   `cmp/grid/README.md` → `cmp/grid/README`, `cmp/grid`, `grid`
@@ -252,11 +266,26 @@ function buildAliasMap(registry: DocEntry[]): Map<string, string> {
  *       `upgrade-notes/v85-upgrade-notes`,
  *       `v85-upgrade-notes`,
  *       `v85`
+ *   `@xh/hoist-chat-kit/core/README.md` (path `core/README.md`) →
+ *       `@xh/hoist-chat-kit/core`, `hoist-chat-kit/core`, `hoist-chat-kit/core/README.md`, ...
+ *   `@xh/hoist-chat-kit/docs/README.md` additionally → `@xh/hoist-chat-kit`, `hoist-chat-kit`
  */
-function autoAliasesFor(id: string): string[] {
+function autoAliasesFor(entry: DocEntry): string[] {
+    if (entry.library == null) return pathAliasesFor(entry.path);
+
+    // Also the path itself (giving the unscoped form of the id, `hoist-chat-kit/core/README.md`)
+    // and the explicit aliases, which claim only the full prefix in Stage 3.
+    const out = scoped(entry, [...pathAliasesFor(entry.path), entry.path, ...entry.aliases]);
+    // A bare package name reaches the library's index.
+    if (entry.path === 'docs/README.md') out.push(...libraryPrefixes(entry.library));
+    return out;
+}
+
+/** Shortenings of a registry path, before any library scoping. */
+function pathAliasesFor(path: string): string[] {
     const out = new Set<string>();
 
-    const noMd = id.endsWith('.md') ? id.slice(0, -3) : id;
+    const noMd = path.endsWith('.md') ? path.slice(0, -3) : path;
     out.add(noMd);
 
     const noReadme = noMd.endsWith('/README') ? noMd.slice(0, -'/README'.length) : noMd;
@@ -275,10 +304,22 @@ function autoAliasesFor(id: string): string[] {
     }
 
     // Version shorthand for upgrade notes.
-    const versionMatch = id.match(/\/v(\d+)-upgrade-notes\.md$/);
+    const versionMatch = path.match(/\/v(\d+)-upgrade-notes\.md$/);
     if (versionMatch) out.add(`v${versionMatch[1]}`);
 
     return [...out];
+}
+
+/** Prefix aliases with both the full and the unscoped name of the entry's library. */
+function scoped(entry: DocEntry, aliases: string[]): string[] {
+    const prefixes = libraryPrefixes(entry.library!);
+    return aliases.flatMap(a => prefixes.map(p => `${p}/${a}`));
+}
+
+/** `@scope/name` → [`@scope/name`, `name`]. An unscoped name yields itself only. */
+function libraryPrefixes(library: string): string[] {
+    const unscoped = library.replace(/^@[^/]+\//, '');
+    return unscoped === library ? [library] : [library, unscoped];
 }
 
 //------------------------------------------------------------------

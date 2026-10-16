@@ -8,6 +8,7 @@ import {type PlainObject, XH} from '@xh/hoist/core';
 import {isArray, isPlainObject, mapValues, pick, pickBy} from 'lodash';
 import {http, HttpResponse, type HttpHandler, matchRequestUrl} from 'msw';
 import {setupServer} from 'msw/node';
+import {FakeJsonBlobStore, FakeServerError} from './jsonBlobs';
 
 /*
  * A small, in-memory stand-in for hoist-core, served to Hoist's real client code via MSW.
@@ -19,8 +20,9 @@ import {setupServer} from 'msw/node';
  * server contract changes.
  *
  * The fake models shapes, status codes, and the `clientUsername` session check. It deliberately
- * does not re-implement server business rules. Tests serve other endpoints, such as an app's own,
- * with `hoistCore.route()`. `server.use()` adds raw MSW handlers for one test.
+ * does not re-implement server business rules, apart from which JsonBlobs a user can read - see
+ * jsonBlobs.ts. Tests serve other endpoints, such as an app's own, with `hoistCore.route()`.
+ * `server.use()` adds raw MSW handlers for one test.
  *
  * hoist-core accepts any HTTP method on these endpoints. Each handler here accepts only the method
  * the client uses, so a test fails if the client changes how it calls the server.
@@ -139,10 +141,16 @@ export class FakeHoistCore {
      */
     environment: PlainObject;
 
+    /** JsonBlobs, including ViewManager views and each user's view state. Starts empty. */
+    readonly jsonBlobs = new FakeJsonBlobStore(this);
+
     /** Every request the fake has served in this test - the kit's setup clears it before each. */
     requests: RecordedRequest[] = [];
 
-    /** @internal - called with a message when a route throws. The kit's setup fails the test. */
+    /**
+     * @internal - called with a message for each problem the kit's guards catch, such as a route
+     * that throws. The kit's setup fails the running test, or `initTestAppAsync()` the boot.
+     */
     onProblem: (msg: string) => void = null;
 
     private routes: Route[] = [];
@@ -169,6 +177,7 @@ export class FakeHoistCore {
         this.configs = defaultConfigs();
         this.prefs = defaultPrefs();
         this.environment = defaultEnvironment();
+        this.jsonBlobs.reset();
         this.clearRequests();
     }
 
@@ -359,14 +368,32 @@ export class FakeHoistCore {
                 return HttpResponse.json({preferences: this.prefEntries(keys)});
             }),
 
-            // XhController.clearUserState - resets all of the user's prefs. The server also clears
-            // the user's ViewManager state, which this fake does not model.
+            // XhController.clearUserState - resets all of the user's prefs, and removes their
+            // ViewManager state.
             this.post('xh/clearUserState', req => {
                 const err = this.checkUser(req);
                 if (err) return err;
                 Object.values(this.prefs).forEach(pref => delete pref.value);
+                this.jsonBlobs.clearViewState();
                 return noContent();
             }),
+
+            // XhController's JsonBlob actions and XhViewController - see FakeJsonBlobStore.
+            ...this.jsonBlobs.paths.map(path =>
+                this.post(path, req => {
+                    try {
+                        const ret = this.jsonBlobs.serve(
+                            path,
+                            {...req.query, ...req.form},
+                            req.json
+                        );
+                        return ret === undefined ? noContent() : HttpResponse.json(ret);
+                    } catch (e) {
+                        if (e instanceof FakeServerError) return hoistError(e.status, e.error);
+                        throw e;
+                    }
+                })
+            ),
 
             // XhController.track, recordMetrics, submitSpans - accepted, nothing returned.
             ...['xh/track', 'xh/recordMetrics', 'xh/submitSpans'].map(path =>

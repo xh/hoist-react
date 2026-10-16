@@ -11,8 +11,35 @@
      codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
+## 90.0.0-SNAPSHOT - unreleased
 
-## 89.1.0 - 2026-10-14
+### 🎁 New Features
+
+* `Column.DEFAULT_WIDTH` is now 100px, up from 60px, to reduce layout shift when autosizing.
+* Added JsonBlob and ViewManager support to the fake hoist-core in `@xh/hoist/test-support`. App
+  specs can now boot an app that creates `ViewManagerModel`s with no setup, and seed views and view
+  state with `hoistCore.jsonBlobs`.
+
+### 🐞 Bug Fixes
+
+* Fixed stale records in a `Store` rebound from one Cube `View` to another.
+* Fixed `XH.jsonBlobService.findAsync()` finding only global blobs. It sent no owner, so it never
+  returned a blob owned by the current user, as its docs describe.
+* Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
+  was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
+  `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+
+### 🤖 AI Docs + Tooling
+
+* The hoist-react MCP server and `hoist-docs` CLI now serve docs from companion libraries that build
+  on Hoist, such as `@xh/hoist-chat-kit` or a client firm's shared package. A library opts in with
+  `"hoist": {"docRegistry": "<path>"}` in its `package.json`. Its doc ids take the package name as
+  a prefix, and the server instructions name each library. A library can also add guidance for
+  agents with `mcpInstructions`, for example which Hoist components it replaces, and keep its
+  maintainer docs out of apps with `"mcpAudience": "maintainers"`. See
+  [Companion Library Docs](docs/companion-library-docs.md).
+
+## 89.0.1 - 2026-10-14
 
 ### 🐞 Bug Fixes
 

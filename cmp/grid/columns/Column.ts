@@ -473,7 +473,7 @@ export interface ColumnSpec {
  * @mcpHint column configuration for grids
  */
 export class Column {
-    static DEFAULT_WIDTH = 60;
+    static DEFAULT_WIDTH = 100;
     static FLEX_COL_MIN_WIDTH = 30;
 
     /**
