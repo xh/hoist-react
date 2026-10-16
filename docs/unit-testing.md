@@ -259,6 +259,26 @@ Write the test for the correct behavior. If the fix belongs in a separate change
 `it.fails()` and add a `// BUG:` comment that describes the problem. The suite stays green, and the
 test starts failing once the bug is fixed, as a reminder to remove the marker.
 
+`it.fails()` cannot mark a promise that rejects with nothing to handle it, such as a load started
+without an `await`. Vitest reports that rejection as an error of the whole run, not of a test, and
+fails the run on purpose. Fix the code to await or catch the promise. If the fix must wait, filter
+that one error with Vitest's [`onUnhandledError`](https://vitest.dev/config/onunhandlederror)
+option. The filter applies to every spec, so match the error narrowly:
+
+```typescript
+// vitest.config.mts
+export default defineConfig(
+    mergeConfig(configureVitest({appCode: 'myApp'}), {
+        test: {
+            onUnhandledError(e) {
+                // BUG: OrderService.refreshAsync() leaves a rejection when the server is down.
+                if (e.message?.includes('Orders unavailable')) return false;
+            }
+        }
+    })
+);
+```
+
 ### Desktop and mobile
 
 A module graph can load the desktop or the mobile platform, not both. `initTestAppAsync()` boots a
