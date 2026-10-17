@@ -36,9 +36,8 @@ jobs:
             id-token: write
         # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
         # which every subsequent npm/pnpm invocation reads - pnpm warns when the var is
-        # unresolvable, so supply a job-wide placeholder to keep logs clean. The real token is
-        # provided to the publish step alone (step env overrides job env), keeping it out of
-        # dependency lifecycle scripts during install.
+        # unresolvable, so supply a job-wide placeholder to keep logs clean. No real npm token is
+        # provided - the publish step authenticates via OIDC trusted publishing.
         env:
             NODE_AUTH_TOKEN: 'unused-outside-publish'
 
@@ -90,20 +89,14 @@ jobs:
         # interactively, hanging a non-TTY runner), and the shallow checkout above reads as
         # out-of-date against the remote.
         #
-        # Auth prefers OIDC trusted publishing, falling back to NODE_AUTH_TOKEN. pnpm tries the
-        # OIDC exchange first and uses the resulting token when it succeeds; if no trusted
-        # publisher is configured, or the config does not match this repo/workflow, it falls back
-        # to the static token. That fallback keeps a misconfiguration from breaking snapshot
-        # builds - drop the token here (and delete the NPM_TOKEN secret) only once every publish
-        # path uses OIDC and npm is set to disallow tokens.
+        # Auth is OIDC trusted publishing only, with no NPM_TOKEN fallback. If the OIDC exchange
+        # fails, pnpm falls back to the job's placeholder token, which npm rejects - so a
+        # misconfigured trusted publisher fails the build rather than publishing without
+        # provenance.
         #
-        # No `--provenance` flag: under trusted publishing the registry's token-exchange response
-        # tells pnpm to attach a provenance attestation, and pnpm only defaults to that response
-        # (`provenance ??= ...`). Forcing the flag would also demand provenance on the token
-        # fallback path, turning a graceful degradation into a failed publish.
+        # No `--provenance` flag needed: under trusted publishing the registry's token-exchange
+        # response tells pnpm to attach a provenance attestation.
         - name: Publish snapshot to npm
-          env:
-              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           run: pnpm publish --no-git-checks --tag next
 
         - name: Write job summary
