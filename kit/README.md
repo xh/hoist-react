@@ -22,6 +22,7 @@ used by Hoist. It serves two purposes:
 ```
 kit/
 ├── ag-grid/              # ag-Grid install function + type re-exports
+├── base-ui/              # Base UI Menu parts as element factories (trial - Dash menus only)
 ├── blueprint/            # Blueprint 6 wrappers, element factories, disabled transitions
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
@@ -100,6 +101,17 @@ Kit wraps Blueprint components to:
 See [`/kit/blueprint/`](./blueprint/README.md) for full coverage, including the build-time icon
 stubbing shared with `@xh/hoist-dev-utils` and the checklist for re-verifying Blueprint's
 built-in icons when upgrading the library.
+
+### Base UI
+
+[Base UI](https://base-ui.com/react/components/menu) provides headless, accessible components built
+on Floating UI. Kit exports the parts of its `Menu` as element factories (e.g. `menuRoot()`,
+`menuItem()`, `menuSubmenuRoot()`), plus `useMenuFilter` for the locale-aware matching that its
+filter uses.
+
+Base UI is on trial. Only the internal `BaseUiMenu` in `/desktop/cmp/menu/impl/` uses it, to render
+the Dash add view menus with keyboard navigation and a filter. Hoist's other menus still render with
+Blueprint.
 
 ### Onsen UI
 

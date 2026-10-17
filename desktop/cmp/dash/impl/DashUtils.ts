@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {MenuItem, MenuItemLike} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {compact, split} from 'lodash';
 import type {DashViewSpec} from '../DashViewSpec';
 
@@ -72,19 +71,12 @@ export function createViewSpecMenuItems<T extends DashViewSpec>(
     viewSpecs: T[],
     createItem: (viewSpec: T) => MenuItem
 ): MenuItemLike[] {
-    const toMenuItems = (nodes: ViewSpecNode<T>[]): MenuItemLike[] => {
-        // If any specs sit alongside groups (i.e. in a 'mixed mode'),
-        // give each group a hidden icon to align its text with theirs.
-        const groupIcon = nodes.some(it => !(it instanceof ViewSpecGroup))
-            ? Icon.angleRight({style: {visibility: 'hidden'}})
-            : undefined;
-
-        return nodes.map(it =>
+    const toMenuItems = (nodes: ViewSpecNode<T>[]): MenuItemLike[] =>
+        nodes.map(it =>
             it instanceof ViewSpecGroup
-                ? {icon: groupIcon, text: it.name, items: toMenuItems(it.children)}
+                ? {text: it.name, items: toMenuItems(it.children)}
                 : createItem(it)
         );
-    };
 
     return toMenuItems(groupViewSpecs(viewSpecs));
 }

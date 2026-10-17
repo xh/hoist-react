@@ -25,12 +25,23 @@
 * `DashCanvas` add view menus and `DashCanvasWidgetChooser` now list each group where its first
   view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
   the top, define grouped specs first.
+* `DashContainer` and `DashCanvas` menus now render with Base UI's `Menu`, adding keyboard
+  navigation, as a trial before Hoist adopts it more widely. This covers their context menus, menu
+  buttons, and add view buttons, including `extraMenuItems`.
+* Added a filter to `DashContainer` and `DashCanvas` menus that list 20 or more view specs to add or
+  replace. It searches nested groups too, listing each match with its group path. Set the count
+  with the new `addViewFilterThreshold` config, its `defaults` entry on either model, or
+  `DashCanvasAddViewButton.filterThreshold`.
 
 ### 🐞 Bug Fixes
 
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
   was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
   `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+
+### 📚 Libraries
+
+* @base-ui/react `added @ 1.9`
 
 ## 89.0.1 - 2026-10-14
 

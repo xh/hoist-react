@@ -141,10 +141,12 @@ dashContainer({model: dashModel})
 | `persistWith` | `PersistOptions` | Persistence configuration. Default persistence path is `'dashContainer'`. |
 | `emptyText` | `string` | Placeholder text when empty. Default `'No views have been added to the container.'` |
 | `addViewButtonText` | `string` | Button label in empty overlay. Default `'Add View'`. |
+| `addViewFilterThreshold` | `number` | Minimum count of view specs an add view menu must list to show a filter. `0` always shows it. Default `20`. |
 | `extraMenuItems` | `MenuItemLike[]` | Additional context menu items shown below the 'Add' action. |
 | `goldenLayoutSettings` | `PlainObject` | Passthrough config for the GoldenLayout instance. |
 
-`DashContainerModel.defaults` exposes `margin` and `showMenuButton` for app-wide override — see
+`DashContainerModel.defaults` exposes `addViewFilterThreshold`, `margin` and `showMenuButton` for
+app-wide override — see
 `DashContainerModelDefaults` for details.
 
 ### State Structure
@@ -287,10 +289,11 @@ dashCanvas({model: canvasModel})
 | `persistWith` | `PersistOptions` | Persistence configuration. Default persistence path is `'dashCanvas'`. |
 | `emptyText` | `string` | Placeholder text when empty. Default `'No widgets have been added.'` |
 | `addViewButtonText` | `string` | Button label in empty overlay. Default `'Add Widget'`. |
+| `addViewFilterThreshold` | `number` | Minimum count of view specs an add or replace view menu must list to show a filter. `0` always shows it. Default `20`. |
 | `extraMenuItems` | `MenuItemLike[]` | Additional context menu items shown below the 'Add' action. |
 
-`DashCanvasModel.defaults` exposes layout properties (`columns`, `rowHeight`, `margin`,
-`containerPadding`, `maxRows`, `showGridBackground`) for app-wide override — see
+`DashCanvasModel.defaults` exposes `addViewFilterThreshold` and layout properties (`columns`,
+`rowHeight`, `margin`, `containerPadding`, `maxRows`, `showGridBackground`) for app-wide override — see
 `DashCanvasModelDefaults` for details.
 
 ### State Structure
@@ -577,6 +580,17 @@ class MetricWidgetModel extends HoistModel {
 
 Right-click on tabs (DashContainer) or widget headers (DashCanvas) shows a context menu for adding,
 removing, and renaming views. The menu respects all locking and permission flags.
+
+These menus, the stack and widget header menu buttons, and the add view buttons of empty dashboards
+render with [Base UI](https://base-ui.com/react/components/menu)'s `Menu` rather than Blueprint, as
+a trial before Hoist adopts it more widely. Users can move through them with the arrow keys.
+
+A list of view specs - the 'Add' and 'Replace' submenus, and the menu of an add view button - shows
+a filter atop it once it lists 20 or more specs, counting those in nested groups. Set
+`addViewFilterThreshold` on the model, or `filterThreshold` on a `DashCanvasAddViewButton`, to
+change that count. Typing lists every matching view spec within the list, including those in nested
+groups, with each spec's group path. A query also matches group names, so `Charts` lists every
+chart.
 
 Custom menu items can be added at two levels:
 

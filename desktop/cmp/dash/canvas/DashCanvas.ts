@@ -25,12 +25,12 @@ import {
 } from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
-import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
+import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {useCallback, useState} from 'react';
 import {DashCanvasModel} from './DashCanvasModel';
-import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
+import {showDashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 import 'react-grid-layout/css/styles.css';
@@ -222,14 +222,11 @@ const onContextMenu = (e, model) => {
             y = clientY + model.ref.current.scrollTop;
 
         consumeEvent(e);
-        showContextMenu(
-            dashCanvasContextMenu({
-                dashCanvasModel: model,
-                position: {x, y},
-                contextMenuEvent: e
-            }),
-            {left: clientX, top: clientY}
-        );
+        showDashCanvasContextMenu({
+            dashCanvasModel: model,
+            position: {x, y},
+            contextMenuEvent: e
+        });
     }
 };
 

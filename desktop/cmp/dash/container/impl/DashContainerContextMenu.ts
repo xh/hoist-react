@@ -4,55 +4,29 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, type MenuItemLike} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
+import {hoistCmp} from '@xh/hoist/core';
+import {
+    baseUiMenuButton,
+    type BaseUiMenuItemLike
+} from '@xh/hoist/desktop/cmp/menu/impl/BaseUiMenu';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {createViewSpecMenuItems} from '../../impl/DashUtils';
 import {DashContainerModel} from '../DashContainerModel';
 
 /**
- * Context menu for title bar/tabs of a stack in a DashContainer.
+ * Items for the menu of the title bar/tabs of a stack in a DashContainer, shown on right-click
+ * and from the stack's menu button.
  *
- * Available view specs are listed in their defined order, optionally
- * grouped by their `groupName` property into (nested) submenus.
+ * Available view specs are listed in their defined order, optionally grouped by their `groupName`
+ * property into (nested) submenus, with a filter to find them.
  *
  * @internal
  */
-export const dashContainerContextMenu = hoistCmp.factory({
-    model: null,
-    observer: null,
-    render({contextMenuEvent, ...rest}) {
-        const menuItems = createMenuItems(rest);
-        return contextMenu({menuItems, context: {contextMenuEvent}});
-    }
-});
-
-/**
- * 'Add View' menu button to display in an empty DashContainer.
- * @internal
- */
-export const dashContainerAddViewButton = hoistCmp.factory<DashContainerModel>({
-    render({model}) {
-        const {viewState, addViewButtonText} = model,
-            menuItems = createAddMenuItems({dashContainerModel: model, stack: viewState[0]});
-        return popover({
-            interactionKind: 'click',
-            item: button({icon: Icon.add(), text: addViewButtonText}),
-            content: contextMenu({menuItems})
-        });
-    }
-});
-
-//---------------------------
-// Implementation
-//---------------------------
-function createMenuItems(props): MenuItemLike[] {
+export function createDashContainerMenuItems(props): BaseUiMenuItemLike[] {
     const {dashContainerModel, viewModel} = props,
         {renameLocked} = dashContainerModel,
-        ret = [];
+        ret: BaseUiMenuItemLike[] = [];
 
     // Add context sensitive items if clicked on a tab
     if (viewModel) {
@@ -86,7 +60,8 @@ function createMenuItems(props): MenuItemLike[] {
         text: 'Add',
         icon: Icon.add(),
         disabled: isEmpty(addMenuItems),
-        items: addMenuItems
+        items: addMenuItems,
+        filterThreshold: dashContainerModel.addViewFilterThreshold
     });
 
     if (viewModel?.extraMenuItems) {
@@ -102,6 +77,26 @@ function createMenuItems(props): MenuItemLike[] {
     return ret;
 }
 
+/**
+ * 'Add View' menu button to display in an empty DashContainer.
+ * @internal
+ */
+export const dashContainerAddViewButton = hoistCmp.factory<DashContainerModel>({
+    render({model}) {
+        const {viewState, addViewButtonText, addViewFilterThreshold} = model,
+            menuItems = createAddMenuItems({dashContainerModel: model, stack: viewState[0]});
+        return baseUiMenuButton({
+            icon: Icon.add(),
+            text: addViewButtonText,
+            menuItems,
+            filterThreshold: addViewFilterThreshold
+        });
+    }
+});
+
+//---------------------------
+// Implementation
+//---------------------------
 // Convert any available viewSpecs into menu items
 function createAddMenuItems(props) {
     const {dashContainerModel, stack, index} = props;
