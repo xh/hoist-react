@@ -15,17 +15,24 @@ import {ButtonProps} from './Button';
 export interface DashCanvasAddViewButtonProps extends ButtonProps {
     /** DashCanvasModel for which this button should allow the user to add views. */
     dashCanvasModel?: DashCanvasModel;
+
+    /**
+     * Minimum count of view specs the menu must list to show a filter atop it. Set 0 to always
+     * show the filter. Defaults to the model's `addViewFilterThreshold`.
+     */
+    filterThreshold?: number;
 }
 
 /**
- * A convenience menu button to add views to a DashCanvas. Its menu has a filter to find views.
+ * A convenience menu button to add views to a DashCanvas. Its menu shows a filter to find views
+ * once it lists enough of them - see `filterThreshold`.
  */
 export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
     hoistCmp.withFactory<DashCanvasAddViewButtonProps>({
         displayName: 'DashCanvasAddViewButton',
         model: false,
 
-        render({icon, text, dashCanvasModel, ...rest}, ref) {
+        render({icon, text, dashCanvasModel, filterThreshold, ...rest}, ref) {
             dashCanvasModel = withDefault(dashCanvasModel, useContextModel(DashCanvasModel));
 
             errorIf(
@@ -40,7 +47,10 @@ export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
                 text: withDefault(text, dashCanvasModel.addViewButtonText),
                 disabled: !menuItems.length,
                 menuItems,
-                filterable: true,
+                filterThreshold: withDefault(
+                    filterThreshold,
+                    dashCanvasModel.addViewFilterThreshold
+                ),
                 ...rest
             });
         }

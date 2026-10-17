@@ -44,14 +44,15 @@ export function showDashCanvasContextMenu({
 //---------------------------
 function createMenuItems({dashCanvasModel, position}): BaseUiMenuItemLike[] {
     const addMenuItems = createViewMenuItems({dashCanvasModel, position}),
-        {extraMenuItems, contentLocked, refreshContextModel} = dashCanvasModel;
+        {extraMenuItems, contentLocked, refreshContextModel, addViewFilterThreshold} =
+            dashCanvasModel;
     return [
         {
             text: 'Add',
             icon: Icon.add(),
             hidden: contentLocked || isEmpty(addMenuItems),
             items: addMenuItems,
-            filterable: true
+            filterThreshold: addViewFilterThreshold
         },
         {
             text: 'Refresh',

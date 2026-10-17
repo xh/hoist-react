@@ -81,6 +81,7 @@ export interface DashContainerConfig extends DashConfig<
 }
 
 export interface DashContainerModelDefaults {
+    addViewFilterThreshold?: number;
     margin?: number;
     showMenuButton?: boolean;
 }
@@ -160,6 +161,7 @@ export class DashContainerModel
 {
     /** App-level defaults for DashContainerModel. Instance config takes precedence. */
     static defaults: DashContainerModelDefaults = {
+        addViewFilterThreshold: 20,
         margin: 6,
         showMenuButton: false
     };
@@ -205,6 +207,7 @@ export class DashContainerModel
         persistWith = null,
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View',
+        addViewFilterThreshold = DashContainerModel.defaults.addViewFilterThreshold,
         extraMenuItems,
         xhName = null
     }: DashContainerConfig) {
@@ -234,6 +237,7 @@ export class DashContainerModel
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
+        this.addViewFilterThreshold = addViewFilterThreshold;
         this.extraMenuItems = extraMenuItems;
         this.state = initialState;
 

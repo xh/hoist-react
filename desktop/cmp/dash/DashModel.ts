@@ -33,6 +33,7 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL extends DashViewModel> ext
     //------------------------------
     emptyText: string;
     addViewButtonText: string;
+    addViewFilterThreshold: number;
     extraMenuItems: any[];
 
     abstract get isEmpty(): boolean;

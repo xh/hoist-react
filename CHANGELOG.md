@@ -26,9 +26,12 @@
   view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
   the top, define grouped specs first.
 * `DashContainer` and `DashCanvas` menus now render with Base UI's `Menu`, adding keyboard
-  navigation, as a trial before Hoist adopts it more widely. Each list of view specs to add or
-  replace has a filter that searches nested groups too, listing each match with its group path.
-  This covers their context menus, menu buttons, and add view buttons, including `extraMenuItems`.
+  navigation, as a trial before Hoist adopts it more widely. This covers their context menus, menu
+  buttons, and add view buttons, including `extraMenuItems`.
+* Added a filter to `DashContainer` and `DashCanvas` menus that list 20 or more view specs to add or
+  replace. It searches nested groups too, listing each match with its group path. Set the count
+  with the new `addViewFilterThreshold` config, its `defaults` entry on either model, or
+  `DashCanvasAddViewButton.filterThreshold`.
 
 ### 🐞 Bug Fixes
 

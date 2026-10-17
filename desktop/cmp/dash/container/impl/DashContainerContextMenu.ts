@@ -61,7 +61,7 @@ export function createDashContainerMenuItems(props): BaseUiMenuItemLike[] {
         icon: Icon.add(),
         disabled: isEmpty(addMenuItems),
         items: addMenuItems,
-        filterable: true
+        filterThreshold: dashContainerModel.addViewFilterThreshold
     });
 
     if (viewModel?.extraMenuItems) {
@@ -83,13 +83,13 @@ export function createDashContainerMenuItems(props): BaseUiMenuItemLike[] {
  */
 export const dashContainerAddViewButton = hoistCmp.factory<DashContainerModel>({
     render({model}) {
-        const {viewState, addViewButtonText} = model,
+        const {viewState, addViewButtonText, addViewFilterThreshold} = model,
             menuItems = createAddMenuItems({dashContainerModel: model, stack: viewState[0]});
         return baseUiMenuButton({
             icon: Icon.add(),
             text: addViewButtonText,
             menuItems,
-            filterable: true
+            filterThreshold: addViewFilterThreshold
         });
     }
 });

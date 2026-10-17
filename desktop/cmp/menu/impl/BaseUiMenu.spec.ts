@@ -7,7 +7,7 @@
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
-import {baseUiMenuButton, type BaseUiMenuItemLike} from './BaseUiMenu';
+import {baseUiMenuButton, type BaseUiMenuButtonProps, type BaseUiMenuItemLike} from './BaseUiMenu';
 
 /**
  * The filter of a Base UI menu, as shown by the add view menus of DashContainer and DashCanvas.
@@ -17,6 +17,20 @@ describe('baseUiMenuButton', () => {
     beforeAll(() => initTestAppAsync());
 
     describe('filter', () => {
+        // CHART_ITEMS holds four charts, within two levels of submenus.
+        it.each([
+            [4, true],
+            [5, false]
+        ])(
+            'with filterThreshold %i, counting items of submenus, shows: %s',
+            async (threshold, shown) => {
+                openMenu(CHART_ITEMS, {filterThreshold: threshold});
+                await screen.findByText('Charts');
+
+                expect(!!screen.queryByRole('searchbox')).toBe(shown);
+            }
+        );
+
         it('lists matching items from nested submenus, with their path', async () => {
             await openFilteredMenu(CHART_ITEMS, 'line');
 
@@ -80,10 +94,13 @@ const CHART_ITEMS: BaseUiMenuItemLike[] = [
     }
 ];
 
-async function openFilteredMenu(menuItems: BaseUiMenuItemLike[], query: string, context = {}) {
-    render(baseUiMenuButton({testId: 'add', text: 'Add', menuItems, filterable: true, context}));
-
+function openMenu(menuItems: BaseUiMenuItemLike[], props: Partial<BaseUiMenuButtonProps>) {
+    render(baseUiMenuButton({testId: 'add', text: 'Add', menuItems, ...props}));
     fireEvent.click(screen.getByTestId('add'));
+}
+
+async function openFilteredMenu(menuItems: BaseUiMenuItemLike[], query: string, context = {}) {
+    openMenu(menuItems, {filterThreshold: 0, context});
     const input = await screen.findByRole('searchbox');
     fireEvent.change(input, {target: {value: query}});
     await waitFor(() => expect(listedItems()).not.toHaveLength(0));

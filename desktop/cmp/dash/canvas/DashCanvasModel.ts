@@ -91,6 +91,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 }
 
 export interface DashCanvasModelDefaults {
+    addViewFilterThreshold?: number;
     columns?: number;
     containerPadding?: [number, number] | null;
     margin?: [number, number];
@@ -136,6 +137,7 @@ export class DashCanvasModel
 {
     /** App-level defaults for DashCanvasModel. Instance config takes precedence. */
     static defaults: DashCanvasModelDefaults = {
+        addViewFilterThreshold: 20,
         columns: 12,
         containerPadding: null,
         margin: [10, 10],
@@ -218,6 +220,7 @@ export class DashCanvasModel
         persistWith = null,
         emptyText = 'No widgets have been added.',
         addViewButtonText = 'Add Widget',
+        addViewFilterThreshold = DashCanvasModel.defaults.addViewFilterThreshold,
         columns = DashCanvasModel.defaults.columns,
         rowHeight = DashCanvasModel.defaults.rowHeight,
         compact = 'vertical',
@@ -276,6 +279,7 @@ export class DashCanvasModel
         this.compact = compact === true ? 'vertical' : compact === false ? null : compact;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
+        this.addViewFilterThreshold = addViewFilterThreshold;
         this.extraMenuItems = extraMenuItems;
         this.showGridBackground = showGridBackground;
         this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;

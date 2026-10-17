@@ -58,10 +58,14 @@ import './BaseUiMenu.scss';
  */
 export interface BaseUiMenuItem extends MenuItem {
     /**
-     * True to show a filter input atop this item's submenu. A query lists every matching item
-     * within the submenu - including those of its nested submenus, with their path - as one list.
+     * Minimum count of items within this item's submenu for it to show a filter input atop it.
+     * Counts the items of nested submenus too, but not the submenus themselves. Set 0 to always
+     * show the filter. Default null, for no filter.
+     *
+     * A query lists every matching item within the submenu - including those of its nested
+     * submenus, with their path - as one list.
      */
-    filterable?: boolean;
+    filterThreshold?: number;
 
     items?: BaseUiMenuItemLike[];
 }
@@ -74,8 +78,11 @@ export interface BaseUiMenuOptions {
     /** Contextual data passed to each item's `actionFn` and `prepareFn`. */
     context?: MenuContext;
 
-    /** True to show a filter input atop the menu - see {@link BaseUiMenuItem.filterable}. */
-    filterable?: boolean;
+    /**
+     * Minimum count of items for the menu to show a filter input atop it - see
+     * {@link BaseUiMenuItem.filterThreshold}. Default null, for no filter.
+     */
+    filterThreshold?: number;
 }
 
 /** @internal */
@@ -103,7 +110,7 @@ export const baseUiMenuButton = hoistCmp.factory<BaseUiMenuButtonProps>({
         {
             menuItems,
             context,
-            filterable,
+            filterThreshold,
             menuSide = 'bottom',
             menuAlign = 'start',
             disabled,
@@ -111,7 +118,7 @@ export const baseUiMenuButton = hoistCmp.factory<BaseUiMenuButtonProps>({
         },
         ref
     ) {
-        const {query, withFilter} = useFilterQuery(filterable);
+        const {filterable, query, withFilter} = useFilter(menuItems, context, filterThreshold);
         return withFilter(
             menuRoot({
                 modal: false,
@@ -156,10 +163,10 @@ const contextMenuRoot = hoistCmp.factory({
     model: false,
     observer: false,
 
-    render({menuItems, offset, context, filterable, onClosed}) {
+    render({menuItems, offset, context, filterThreshold, onClosed}) {
         const [open, setOpen] = useState(true),
             [anchor] = useState(() => pointAnchor(offset)),
-            {query, withFilter} = useFilterQuery(filterable);
+            {filterable, query, withFilter} = useFilter(menuItems, context, filterThreshold);
 
         return withFilter(
             menuRoot({
@@ -191,8 +198,8 @@ const submenu = hoistCmp.factory<SubmenuProps>({
     observer: false,
 
     render({config, context, hasIcons}) {
-        const {filterable, items, disabled, actionFn} = config,
-            {query, withFilter} = useFilterQuery(filterable);
+        const {items, disabled, actionFn} = config,
+            {filterable, query, withFilter} = useFilter(items, context, config.filterThreshold);
 
         return withFilter(
             menuSubmenuRoot(
@@ -217,8 +224,12 @@ const submenu = hoistCmp.factory<SubmenuProps>({
     }
 });
 
-interface PopupProps extends HoistProps, BaseUiMenuOptions {
+interface PopupProps extends HoistProps {
     menuItems: BaseUiMenuItemLike[] | (() => BaseUiMenuItemLike[]);
+    context: MenuContext;
+
+    /** True to show the filter input. */
+    filterable: boolean;
 
     /** The filter query, when filterable. */
     query: string;
@@ -250,7 +261,12 @@ const popup = hoistCmp.factory<PopupProps>({
                     className: 'xh-base-ui-menu__list',
                     items: trimmedQuery
                         ? renderMatches(
-                              findMatches(items, context, text => contains(text, trimmedQuery)),
+                              findLeafItems(items, context).filter(({item, path}) =>
+                                  contains(
+                                      compact([...path, getLabel(item)]).join(' '),
+                                      trimmedQuery
+                                  )
+                              ),
                               context
                           )
                         : renderItems(items, context)
@@ -290,12 +306,26 @@ function filterBar() {
 }
 
 /**
- * Keeps the filter query for a filterable menu or submenu. Base UI's filter holds the query, and
- * Hoist matches items itself, to search nested submenus too.
+ * Decide whether a menu or submenu shows a filter, and keep its query. Base UI's filter holds the
+ * query, and Hoist matches items itself, to search nested submenus too.
+ *
+ * In Base UI the filter wraps the menu's root, so this counts the items before the menu opens -
+ * preparing the items of a submenu when its trigger renders.
  */
-function useFilterQuery(filterable: boolean) {
-    const [query, setQuery] = useState('');
+function useFilter(
+    menuItems: BaseUiMenuItemLike[] | (() => BaseUiMenuItemLike[]),
+    context: MenuContext,
+    filterThreshold: number
+) {
+    const [query, setQuery] = useState(''),
+        filterable =
+            filterThreshold != null &&
+            (filterThreshold <= 0 ||
+                findLeafItems(prepareMenuItems(executeIfFunction(menuItems), context), context)
+                    .length >= filterThreshold);
+
     return {
+        filterable,
         query,
         withFilter: (root: ReactElement) =>
             filterable
@@ -391,9 +421,9 @@ function getLabel({text}: BaseUiMenuItem): string {
 }
 
 //------------------------
-// Filter matches
+// Filter
 //------------------------
-interface MenuMatch {
+interface LeafItem {
     item: BaseUiMenuItem;
 
     /** Text of the submenus holding the item, outermost first. */
@@ -401,30 +431,29 @@ interface MenuMatch {
 }
 
 /**
- * Find the items that match a query, searching nested submenus too. Matches each item on its own
- * text together with the text of the submenus holding it, so a query for a submenu lists all of
- * its items.
+ * Find the items a filter can list - every item that is not a submenu, within prepared items and
+ * their nested submenus. A filter matches each item on its own text together with the text of the
+ * submenus holding it, so a query for a submenu lists all of its items.
  */
-function findMatches(
+function findLeafItems(
     items: BaseUiMenuItemLike[],
     context: MenuContext,
-    isMatch: (text: string) => boolean,
     path: string[] = []
-): MenuMatch[] {
+): LeafItem[] {
     return items.flatMap(item => {
         if (!isMenuItem(item)) return [];
-
-        const itemPath = compact([...path, getLabel(item)]);
-        if (isEmpty(item.items)) {
-            return isMatch(itemPath.join(' ')) ? [{item, path}] : [];
-        }
+        if (isEmpty(item.items)) return [{item, path}];
         return item.disabled
             ? []
-            : findMatches(prepareMenuItems(item.items, context), context, isMatch, itemPath);
+            : findLeafItems(
+                  prepareMenuItems(item.items, context),
+                  context,
+                  compact([...path, getLabel(item)])
+              );
     });
 }
 
-function renderMatches(matches: MenuMatch[], context: MenuContext): ReactNode[] {
+function renderMatches(matches: LeafItem[], context: MenuContext): ReactNode[] {
     const hasIcons = matches.some(it => it.item.icon);
     return matches.map(({item, path}) => leafItem(item, context, hasIcons, path.join(' › ')));
 }

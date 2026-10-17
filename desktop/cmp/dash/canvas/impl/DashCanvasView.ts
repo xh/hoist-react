@@ -78,7 +78,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                 text: 'Add',
                 icon: Icon.add(),
                 items: addMenuItems,
-                filterable: true,
+                filterThreshold: containerModel.addViewFilterThreshold,
                 hidden: contentLocked || isEmpty(addMenuItems)
             },
             {
@@ -97,7 +97,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                 text: 'Replace',
                 icon: Icon.transaction(),
                 items: replaceMenuItems,
-                filterable: true,
+                filterThreshold: containerModel.addViewFilterThreshold,
                 hidden: !viewSpec.allowRemove || contentLocked || isEmpty(replaceMenuItems)
             },
             {
