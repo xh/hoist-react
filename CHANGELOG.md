@@ -22,6 +22,15 @@
 * `NumberInput.displayWithCommas` now accepts `'always'` to insert commas while the user types,
   on desktop and mobile. `'whenBlurred'` names the existing behavior, and `true` remains its alias.
 
+### 🎁 New Features
+
+* `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
+  The add view menus of `DashContainer` and `DashCanvas` show each level as a submenu, and
+  `DashCanvasWidgetChooser` shows each as a card. Existing group names that contain `/` now nest.
+* `DashCanvas` add view menus and `DashCanvasWidgetChooser` now list each group where its first
+  view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
+  the top, define grouped specs first.
+
 ### 🐞 Bug Fixes
 
 * Fixed stale records in a `Store` rebound from one Cube `View` to another.
