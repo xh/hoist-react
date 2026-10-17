@@ -1,0 +1,212 @@
+// Base UI menus - see BaseUiMenu.ts. Styled to match Hoist's Blueprint menus.
+.xh-base-ui-menu-positioner {
+  // Above Blueprint overlays and popovers, which sit at z-index 20.
+  z-index: 30;
+  outline: none;
+}
+
+.xh-base-ui-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  // As for Blueprint menus, leave room for the toolbar the menu is often shown from.
+  max-height: min(var(--available-height), calc(100vh - 100px));
+  background-color: var(--xh-menu-bg);
+  border: var(--xh-menu-border);
+  border-radius: var(--xh-border-radius-px);
+  box-shadow:
+    0 0 0 1px var(--xh-popup-border-color),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  color: var(--xh-menu-item-text-color);
+  font-size: var(--xh-menu-item-font-size-px);
+  outline: none;
+  overflow: hidden;
+
+  &__list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 4px;
+    outline: none;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 30px;
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    line-height: 20px;
+    outline: none;
+    user-select: none;
+
+    &[data-highlighted],
+    &[data-popup-open] {
+      background-color: var(--xh-menu-item-highlight-bg);
+    }
+
+    &[data-disabled] {
+      background-color: transparent;
+      color: var(--xh-text-color-muted);
+      cursor: not-allowed;
+    }
+
+    &--active {
+      color: var(--xh-intent-primary);
+      font-weight: 600;
+    }
+
+    &--primary {
+      color: var(--xh-intent-primary);
+    }
+
+    &--success {
+      color: var(--xh-intent-success);
+    }
+
+    &--warning {
+      color: var(--xh-intent-warning);
+    }
+
+    &--danger {
+      color: var(--xh-intent-danger);
+    }
+
+    .xh-dark & {
+      &--primary,
+      &--active {
+        color: var(--xh-intent-primary-lighter);
+      }
+
+      &--success {
+        color: var(--xh-intent-success-lighter);
+      }
+
+      &--warning {
+        color: var(--xh-intent-warning-lighter);
+      }
+
+      &--danger {
+        color: var(--xh-intent-danger-lighter);
+      }
+    }
+  }
+
+  // Every item at a level with any icons gets this slot, so their text lines up.
+  &__icon {
+    display: flex;
+    flex: none;
+    justify-content: center;
+    width: 16px;
+  }
+
+  &__text {
+    flex: 1 1 auto;
+    white-space: nowrap;
+  }
+
+  &__path {
+    flex: none;
+    margin-left: var(--xh-pad-px);
+    color: var(--xh-text-color-muted);
+    font-size: var(--xh-font-size-small-px);
+    white-space: nowrap;
+  }
+
+  &__caret {
+    flex: none;
+    margin-left: var(--xh-pad-half-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  &__separator {
+    height: 1px;
+    margin: 5px;
+    background-color: var(--xh-border-color);
+  }
+
+  // Section headings - see MenuHeading. As in Blueprint menus, the rule sits below the label.
+  &__heading {
+    margin: var(--xh-pad-half-px) -4px 0;
+    padding: var(--xh-pad-half-px) 10px var(--xh-pad-half-px) 14px;
+    border-bottom: var(--xh-menu-heading-border);
+    color: var(--xh-menu-heading-text-color);
+    font-size: var(--xh-menu-heading-font-size-px);
+    font-weight: var(--xh-menu-heading-font-weight);
+  }
+
+  &__list > &__heading:first-child,
+  &__list > [role='group']:first-child > &__heading {
+    margin-top: 0;
+  }
+
+  &__filter {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--xh-pad-half-px);
+    padding: 0 6px 0 14px;
+    border-bottom: var(--xh-menu-border);
+
+    // Keyboard focus is on the input until an arrow key highlights an item.
+    &:has([data-highlighted]) {
+      box-shadow: inset 0 -2px 0 var(--xh-intent-primary);
+    }
+  }
+
+  &__filter-icon {
+    flex: none;
+    color: var(--xh-text-color-muted);
+  }
+
+  &__filter-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 32px;
+    padding: 0 4px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--xh-input-text-color);
+    font-family: var(--xh-input-font-family);
+    font-size: var(--xh-menu-item-font-size-px);
+
+    &::placeholder {
+      color: var(--xh-input-placeholder-text-color);
+    }
+  }
+
+  &__filter-clear {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--xh-text-color-muted);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--xh-menu-item-highlight-bg);
+      color: var(--xh-text-color);
+      outline: none;
+    }
+  }
+
+  &__empty {
+    padding: 10px 14px;
+    color: var(--xh-text-color-muted);
+  }
+
+  // Base UI hides filtered-out groups with the `hidden` attribute.
+  [hidden] {
+    display: none;
+  }
+}

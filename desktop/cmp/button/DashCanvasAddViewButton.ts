@@ -5,13 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {DashCanvasModel} from '@xh/hoist/desktop/cmp/dash';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
+import {baseUiMenuButton} from '@xh/hoist/desktop/cmp/menu/impl/BaseUiMenu';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from './Button';
+import {ButtonProps} from './Button';
 
 export interface DashCanvasAddViewButtonProps extends ButtonProps {
     /** DashCanvasModel for which this button should allow the user to add views. */
@@ -19,7 +18,7 @@ export interface DashCanvasAddViewButtonProps extends ButtonProps {
 }
 
 /**
- * A convenience menu button to add views to a DashCanvas.
+ * A convenience menu button to add views to a DashCanvas. Its menu has a filter to find views.
  */
 export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
     hoistCmp.withFactory<DashCanvasAddViewButtonProps>({
@@ -35,16 +34,14 @@ export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
             );
 
             const menuItems = createViewMenuItems({dashCanvasModel});
-            return popover({
-                interactionKind: 'click',
-                item: button({
-                    ref,
-                    icon: withDefault(icon, Icon.add()),
-                    text: withDefault(text, dashCanvasModel.addViewButtonText),
-                    disabled: !menuItems.length,
-                    ...rest
-                }),
-                content: contextMenu({menuItems})
+            return baseUiMenuButton({
+                ref,
+                icon: withDefault(icon, Icon.add()),
+                text: withDefault(text, dashCanvasModel.addViewButtonText),
+                disabled: !menuItems.length,
+                menuItems,
+                filterable: true,
+                ...rest
             });
         }
     });

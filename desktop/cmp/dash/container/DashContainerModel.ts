@@ -16,6 +16,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
+import {showBaseUiContextMenu} from '@xh/hoist/desktop/cmp/menu/impl/BaseUiMenu';
 import {convertIconToHtml, ResolvedIconProps} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, runInAction, observableRef} from '@xh/hoist/mobx';
@@ -38,7 +39,7 @@ import {createRoot} from 'react-dom/client';
 import {DashConfig, DashModel} from '../';
 import {DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
-import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
+import {createDashContainerMenuItems} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {
     convertGLToState,
@@ -46,7 +47,6 @@ import {
     getViewModelId,
     goldenLayoutConfig
 } from './impl/DashContainerUtils';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
 
 /**
  * Configuration for a {@link DashContainerModel} - a tab-and-stack based dashboard layout
@@ -567,15 +567,15 @@ export class DashContainerModel
             };
         }
 
-        const menu = dashContainerContextMenu({
+        const menuItems = createDashContainerMenuItems({
             stack,
             viewModel,
             index,
-            dashContainerModel: this,
-            contextMenuEvent: e
+            dashContainerModel: this
         });
 
-        showContextMenu(menu, offset);
+        // A native event, from the listener GoldenLayout's DOM requires - not a React event.
+        showBaseUiContextMenu(menuItems, offset, {context: {contextMenuEvent: e as any}});
     }
 
     //-----------------

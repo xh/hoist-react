@@ -6,14 +6,15 @@
  */
 import {isEmpty} from 'lodash';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, type MenuItemLike, uses} from '@xh/hoist/core';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
-import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
+import {
+    baseUiMenuButton,
+    type BaseUiMenuItemLike
+} from '@xh/hoist/desktop/cmp/menu/impl/BaseUiMenu';
+import {prepareMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {elementFromContent, useOnResize} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {button} from '../../../button';
 import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
@@ -72,11 +73,12 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
             viewId: id,
             replaceExisting: true
         }),
-        menuItems: MenuItemLike[] = [
+        menuItems: BaseUiMenuItemLike[] = [
             {
                 text: 'Add',
                 icon: Icon.add(),
                 items: addMenuItems,
+                filterable: true,
                 hidden: contentLocked || isEmpty(addMenuItems)
             },
             {
@@ -95,6 +97,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                 text: 'Replace',
                 icon: Icon.transaction(),
                 items: replaceMenuItems,
+                filterable: true,
                 hidden: !viewSpec.allowRemove || contentLocked || isEmpty(replaceMenuItems)
             },
             {
@@ -117,15 +120,12 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
         ];
 
     // Skip the button if every item is hidden.
-    if (isEmpty(parseMenuItems(menuItems))) return null;
+    if (isEmpty(prepareMenuItems(menuItems))) return null;
 
-    return popover({
-        position: Position.BOTTOM,
-        minimal: true,
-        item: button({
-            icon: Icon.ellipsisVertical()
-        }),
-        content: contextMenu({menuItems})
+    return baseUiMenuButton({
+        icon: Icon.ellipsisVertical(),
+        menuItems,
+        menuAlign: 'center'
     });
 });
 

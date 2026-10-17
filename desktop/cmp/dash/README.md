@@ -578,6 +578,13 @@ class MetricWidgetModel extends HoistModel {
 Right-click on tabs (DashContainer) or widget headers (DashCanvas) shows a context menu for adding,
 removing, and renaming views. The menu respects all locking and permission flags.
 
+These menus, the stack and widget header menu buttons, and the add view buttons of empty dashboards
+render with [Base UI](https://base-ui.com/react/components/menu)'s `Menu` rather than Blueprint, as
+a trial before Hoist adopts it more widely. Users can move through them with the arrow keys. Each
+list of view specs - the 'Add' and 'Replace' submenus, and the menu of an add view button - has a
+filter atop it. Typing lists every matching view spec within it, including those in nested groups,
+with each spec's group path. A query also matches group names, so `Charts` lists every chart.
+
 Custom menu items can be added at two levels:
 
 - **Model-level:** `extraMenuItems` in the model config — shown in all context menus.
