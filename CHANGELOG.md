@@ -19,6 +19,8 @@
 * Added JsonBlob and ViewManager support to the fake hoist-core in `@xh/hoist/test-support`. App
   specs can now boot an app that creates `ViewManagerModel`s with no setup, and seed views and view
   state with `hoistCore.jsonBlobs`.
+* `NumberInput.displayWithCommas` now accepts `'always'` to insert commas while the user types,
+  on desktop and mobile. `'whenBlurred'` names the existing behavior, and `true` remains its alias.
 
 ### 🐞 Bug Fixes
 
@@ -31,6 +33,8 @@
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
   was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
   `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+* Fixed `onShowLazy` tabs and other managed refresh contexts replaying a missed auto-refresh as a
+  manual refresh when shown. The replay now stays an auto-refresh unless a missed refresh was manual.
 * Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
   had no Hoist model above it, as in a component test rendered at the root.
 
