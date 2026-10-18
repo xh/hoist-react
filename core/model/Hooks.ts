@@ -67,6 +67,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 
     // 1) Linking synchronous work: resolve lookups, initialize props, and call onLinked()
     if (isLinking) {
+        model._linked = true;
         model._modelLookup = modelLookup;
         each(model['_xhInjectedParentProperties'], (selector, name) => {
             const parentModel = modelLookup?.lookupModel(selector);

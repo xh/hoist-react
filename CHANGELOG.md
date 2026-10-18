@@ -35,6 +35,8 @@
   `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
 * Fixed `onShowLazy` tabs and other managed refresh contexts replaying a missed auto-refresh as a
   manual refresh when shown. The replay now stays an auto-refresh unless a missed refresh was manual.
+* Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
+  had no Hoist model above it, as in a component test rendered at the root.
 
 ### 🤖 AI Docs + Tooling
 
