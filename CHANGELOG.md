@@ -13,8 +13,16 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - trace headers on cross-origin fetches)
+
+* `FetchService` now sends the W3C `traceparent` header only to the app's own server when tracing is
+  enabled. Requests to other origins skip the header, so they cannot fail a CORS preflight on it. To
+  send it to another server, set `propagateTrace` on the request or in `FetchService.defaults`.
+
 ### 🎁 New Features
 
+* Added `FetchOptions.propagateTrace` and `FetchService.defaults.propagateTrace` to choose which
+  requests carry a `traceparent` header. Requests without one still record a client span.
 * `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
   The add view menus of `DashContainer` and `DashCanvas` show each level as a submenu, and
   `DashCanvasWidgetChooser` shows each as a card. Existing group names that contain `/` now nest.
