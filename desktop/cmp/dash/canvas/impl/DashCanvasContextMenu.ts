@@ -19,7 +19,7 @@ import type {DashCanvasModel} from '../DashCanvasModel';
  * Show the context menu to add items to a DashCanvas, at the cursor.
  *
  * Available view specs are listed in their defined order, optionally
- * grouped by their 'groupName' property, with a filter to find them.
+ * grouped by their `groupName` property into (nested) submenus, with a filter to find them.
  * @internal
  */
 export function showDashCanvasContextMenu({

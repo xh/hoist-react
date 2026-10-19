@@ -13,6 +13,15 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
+  The add view menus of `DashContainer` and `DashCanvas` show each level as a submenu, and
+  `DashCanvasWidgetChooser` shows each as a card. Existing group names that contain `/` now nest.
+* `DashCanvas` add view menus and `DashCanvasWidgetChooser` now list each group where its first
+  view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
+  the top, define grouped specs first.
+
 ## 89.1.0 - 2026-10-19
 
 ### 🎁 New Features
@@ -51,6 +60,9 @@
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
   was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
   `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+* Fixed a grouped `Grid` showing its grouped column again on any column state change, such as a
+  resize, an autosize or a view restore. A header drag while grouped also saved the column as
+  hidden, so it stayed hidden after ungrouping.
 * Fixed `onShowLazy` tabs and other managed refresh contexts replaying a missed auto-refresh as a
   manual refresh when shown. The replay now stays an auto-refresh unless a missed refresh was manual.
 * Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
