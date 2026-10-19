@@ -21,6 +21,17 @@
 * `DashCanvas` add view menus and `DashCanvasWidgetChooser` now list each group where its first
   view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
   the top, define grouped specs first.
+* `DashContainer` and `DashCanvas` menus now render with Base UI's `Menu`, adding keyboard
+  navigation, as a trial before Hoist adopts it more widely. This covers their context menus, menu
+  buttons, and add view buttons, including `extraMenuItems`.
+* Added a filter to `DashContainer` and `DashCanvas` menus that list 20 or more view specs to add or
+  replace. It searches nested groups too, listing each match with its group path. Set the count
+  with the new `addViewFilterThreshold` config, its `defaults` entry on either model, or
+  `DashCanvasAddViewButton.filterThreshold`.
+
+### 📚 Libraries
+
+* @base-ui/react `added @ 1.9`
 
 ## 89.1.0 - 2026-10-19
 
@@ -32,22 +43,6 @@
   state with `hoistCore.jsonBlobs`.
 * `NumberInput.displayWithCommas` now accepts `'always'` to insert commas while the user types,
   on desktop and mobile. `'whenBlurred'` names the existing behavior, and `true` remains its alias.
-
-### 🎁 New Features
-
-* `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
-  The add view menus of `DashContainer` and `DashCanvas` show each level as a submenu, and
-  `DashCanvasWidgetChooser` shows each as a card. Existing group names that contain `/` now nest.
-* `DashCanvas` add view menus and `DashCanvasWidgetChooser` now list each group where its first
-  view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
-  the top, define grouped specs first.
-* `DashContainer` and `DashCanvas` menus now render with Base UI's `Menu`, adding keyboard
-  navigation, as a trial before Hoist adopts it more widely. This covers their context menus, menu
-  buttons, and add view buttons, including `extraMenuItems`.
-* Added a filter to `DashContainer` and `DashCanvas` menus that list 20 or more view specs to add or
-  replace. It searches nested groups too, listing each match with its group path. Set the count
-  with the new `addViewFilterThreshold` config, its `defaults` entry on either model, or
-  `DashCanvasAddViewButton.filterThreshold`.
 
 ### 🐞 Bug Fixes
 
@@ -77,10 +72,6 @@
   agents with `mcpInstructions`, for example which Hoist components it replaces, and keep its
   maintainer docs out of apps with `"mcpAudience": "maintainers"`. See
   [Companion Library Docs](docs/companion-library-docs.md).
-
-### 📚 Libraries
-
-* @base-ui/react `added @ 1.9`
 
 ## 89.0.1 - 2026-10-14
 
