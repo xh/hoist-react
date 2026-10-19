@@ -373,7 +373,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react.",
-            "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release"]
+            "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release", "dist-tag", "experimental"]
         },
         {
             "id": "docs/build-and-deploy-app.md",
