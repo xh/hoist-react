@@ -13,6 +13,8 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+## 89.1.0 - 2026-10-19
+
 ### 🎁 New Features
 
 * `Column.DEFAULT_WIDTH` is now 100px, up from 60px, to reduce layout shift when autosizing.
