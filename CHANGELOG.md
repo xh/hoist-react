@@ -64,7 +64,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
-* numbro `removed` (number formatting now uses the browser's `Intl.NumberFormat`)
+* numbro `removed`
 
 ## 89.0.1 - 2026-10-14
 

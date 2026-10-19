@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {throwIf} from '@xh/hoist/utils/js';
+import {apiRemoved} from '@xh/hoist/utils/js';
 import {
     clamp,
     defaults,
@@ -58,7 +58,7 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
      */
     forceLedgerAlign?: boolean;
 
-    /** Not supported - removed in v90 with numbro. Use `precision`, `zeroPad` and `withCommas`. */
+    /** Removed in v90 - use `precision`, `zeroPad` and `withCommas`. */
     formatConfig?: never;
 
     /**
@@ -155,10 +155,7 @@ export interface ColorSpec {
 /**
  * Standard number formatting for Hoist
  *
- * Formats digits with the browser's `Intl.NumberFormat`, fixed to the `en-US` locale. Values round
- * half away from zero on their decimal digits: 2.5 gives 3, -2.5 gives -3, 1.005 at 2 places gives
- * 1.01, and `fmtPercent(0.0045, {precision: 1})` gives 0.5% although 0.0045 * 100 is
- * 0.44999999999999996 in floating point.
+ * Formats digits with `Intl.NumberFormat` (`en-US`). Ties round half away from zero.
  *
  * If no options are given, a heuristic based auto-rounding will occur.
  *
@@ -168,7 +165,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let {
         nullDisplay = '',
         zeroDisplay = null,
-        formatConfig = null,
+        formatConfig,
         precision,
         zeroPad,
         ledger = false,
@@ -186,7 +183,10 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
         asHtml = false,
         originalValue = v
     } = opts ?? ({} as NumberFormatOptions);
-    throwIf(formatConfig, FORMAT_CONFIG_REMOVED);
+    apiRemoved('formatConfig', {
+        test: formatConfig,
+        msg: "Use 'precision', 'zeroPad' and 'withCommas'"
+    });
     if (isInvalidInput(v)) return nullDisplay;
 
     // Resolve precision: null means full precision, other non-integers (e.g. undefined) mean 'auto'.
@@ -528,18 +528,10 @@ function calcFullPrecision(v: number): NumericPrecision {
     return clamp(MAX_SIGNIFICANT_DIGITS - intDigits, 0, MAX_NUMERIC_PRECISION) as NumericPrecision;
 }
 
-// Intl.NumberFormat instances by resolved (minFD, maxFD, useGrouping): at most 91 x 2.
+// Cached Intl.NumberFormat instances, keyed by minFD, maxFD and useGrouping.
 const digitFormats = new Map<number, Intl.NumberFormat>();
 
-const FORMAT_CONFIG_REMOVED =
-    "Number format option 'formatConfig' was removed in Hoist v90. Use 'precision', 'zeroPad' " +
-    "and 'withCommas' instead - e.g. {precision: 0, withCommas: false}.";
-
-/**
- * Format the digits of a value: its magnitude, rounded to the resolved precision, with trailing
- * zeros padded or trimmed per zeroPad and thousands grouped per withCommas. The caller adds the
- * sign, prefix, label and ledger parentheses.
- */
+/** Format the unsigned digits of a value. The caller adds sign, prefix, label and parentheses. */
 function fmtDigits(
     v: number,
     precisionSpec: Precision,
@@ -549,9 +541,7 @@ function fmtDigits(
 ): string {
     let absVal = Math.abs(v);
     const maxFD = parsePrecision(v, precisionSpec),
-        // A numeric zeroPad pads to that many places and shows any further places the value has,
-        // up to the precision. Like Intl, this floors a fractional zeroPad, which keeps the cache
-        // key unique.
+        // A numeric zeroPad sets the minimum places, floored (as Intl does) to keep the key unique.
         minFD = isNumber(zeroPad) ? clamp(Math.floor(zeroPad), 0, maxFD) : zeroPad ? maxFD : 0,
         // Group thousands unless omitFourDigitComma applies - a value under 10,000 shown whole.
         useGrouping =
@@ -562,13 +552,8 @@ function fmtDigits(
                 (maxFD === 0 || (!zeroPad && Number.isInteger(absVal)))
             );
 
-    // Round a value within float error of a tie here, with lodash `round` on its magnitude. It
-    // shifts the decimal point before it rounds half up, which absorbs float error: 1.15 * 3
-    // (3.4499999999999997) rounds to 3.5, as the arithmetic intended. A tolerance of
-    // 2 * Number.EPSILON covers every value the shift can move onto a tie. Within 15 significant
-    // digits, any other value rounds the same whichever way Intl breaks ties. Past that the
-    // tolerance would cover nearly every value, so Intl rounds those as they are, with ties half
-    // away from zero.
+    // Round near-ties with lodash `round`, whose decimal shift absorbs float error - e.g. 1.15 * 3
+    // (3.4499999999999997) gives 3.5. Past 15 significant digits, Intl rounds the value as stored.
     const shifted = absVal * 10 ** maxFD;
     if (
         shifted < 1e15 &&
