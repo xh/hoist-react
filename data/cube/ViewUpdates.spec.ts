@@ -173,6 +173,24 @@ describe('View', () => {
 
             expect(store.summaryRecords[0].data.sum).toBe(12);
         });
+
+        // 90.0.0 (#4864) - each View numbered its row stamps from 1, so a store bound to a new View
+        // kept records that an earlier View had stamped with the same numbers.
+        it('pushes current rows to a store that an earlier View filled', async () => {
+            const cube = createCube([trade(1, 'US', 'Tech', 1), trade(2, 'EU', 'Tech', 6)]),
+                store = autoDestroy(
+                    new Store({fields: ['sum'], projectionOnly: true, loadRootAsSummary: true})
+                );
+            cube.createView({query: QUERY, stores: store, connect: true}).destroy();
+
+            // The data changes while no View feeds the store, as when its grid's widget is hidden.
+            await cube.updateDataAsync([trade(2, 'EU', 'Tech', 9)]);
+            autoDestroy(cube.createView({query: QUERY, stores: store, connect: true}));
+
+            expect(store.getById('root>>region=[EU]>>sector=[Tech]').data.sum).toBe(9);
+            expect(store.getById('root>>region=[EU]').data.sum).toBe(9);
+            expect(store.summaryRecords[0].data.sum).toBe(10);
+        });
     });
 
     describe('structural updates', () => {

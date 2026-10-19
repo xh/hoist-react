@@ -412,6 +412,16 @@ const cases: GoldenCase[] = [
             T('core/README.md', 'HoistBase')
         ],
         source: 'topic'
+    },
+    {
+        query: 'serve docs from my own Hoist library',
+        expect: [T('docs/companion-library-docs.md')],
+        source: 'topic'
+    },
+    {
+        query: 'docRegistry package.json',
+        expect: [T('docs/companion-library-docs.md')],
+        source: 'topic'
     }
 ];
 

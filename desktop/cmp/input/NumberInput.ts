@@ -11,16 +11,22 @@ import {
     PasswordManagerSupportProps,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
+import {
+    addCommasWhileEditing,
+    getCaretSkippingCommas,
+    setCaretSkippingCommas,
+    skipCommaOnDelete
+} from '@xh/hoist/cmp/input/impl/LiveCommas';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, useComposedRefs, useOnMount} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {clamp, debounce, isNaN, isNil, isNumber, round} from 'lodash';
-import {KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
+import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
 export interface NumberInputProps
     extends HoistProps, LayoutProps, StyleProps, HoistInputProps, PasswordManagerSupportProps {
@@ -32,8 +38,11 @@ export interface NumberInputProps
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
 
-    /** True to insert commas in displayed value. */
-    displayWithCommas?: boolean;
+    /**
+     * Insert commas in displayed value - 'whenBlurred' (or true) to show them only when the input
+     * does not have focus, 'always' to also show them while the user types.
+     */
+    displayWithCommas?: boolean | 'always' | 'whenBlurred';
 
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits?: boolean;
@@ -147,7 +156,16 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.scaleFactor, 1);
     }
 
+    get commasWhileEditing(): boolean {
+        return this.componentProps.displayWithCommas === 'always';
+    }
+
+    // Caret position to restore after a reformat while editing, as a count of non-comma chars.
+    caretPos: number = null;
+
     onValueChange = (val, valAsString) => {
+        if (this.commasWhileEditing)
+            this.caretPos = getCaretSkippingCommas(this.inputEl as HTMLInputElement);
         this.noteValueChange(valAsString);
     };
 
@@ -200,6 +218,10 @@ class NumberInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
+    onBeforeInput = (ev: InputEvent) => {
+        if (this.commasWhileEditing) skipCommaOnDelete(ev);
+    };
+
     // BP steps the value on arrow keys without applying min/max - clamp the stepped value.
     private clampSteppedValue() {
         const {min, max} = this.componentProps,
@@ -217,7 +239,9 @@ class NumberInputModel extends HoistInputModel {
 
         if (this.hasFocus) {
             const ret = isNumber(value) && !isNil(precision) ? round(value, precision) : value;
-            return ret?.toString();
+            return this.commasWhileEditing
+                ? addCommasWhileEditing(ret.toString())
+                : ret?.toString();
         }
 
         const {valueLabel, displayWithCommas} = componentProps,
@@ -251,6 +275,17 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     const {width, flex, ...layoutProps} = getLayoutProps(props),
         renderValue = model.formatRenderValue(model.renderValue);
 
+    // Restore the caret after a reformat while editing moved it.
+    useLayoutEffect(() => {
+        const input = model.inputEl as HTMLInputElement;
+        if (!input || model.caretPos == null) return;
+        setCaretSkippingCommas(input, model.caretPos);
+        model.caretPos = null;
+    });
+
+    // Native listener, as React's onBeforeInput does not fire for deletes.
+    useOnMount(() => model.inputEl?.addEventListener('beforeinput', model.onBeforeInput));
+
     // BP bases expected precision off of dps in minorStepSize, if specified.
     // The default BP value of 0.1 for this prop emits a console warning any time the input
     // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
@@ -269,6 +304,8 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         disabled: props.disabled,
         inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
+        // Lets BP parse a comma-formatted value when stepping with the arrow keys.
+        locale: model.commasWhileEditing ? 'en-US' : undefined,
         minorStepSize,
         majorStepSize,
         placeholder: props.placeholder,
