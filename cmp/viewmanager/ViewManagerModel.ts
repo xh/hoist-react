@@ -790,15 +790,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.view = view;
         this.pendingValue = pendingValue;
         // Ensure we update meta-data as well.
-        if (!view.isDefault) this.noteViewInfo(view);
+        if (!view.isDefault) {
+            this.views = uniqBy([view.info, ...this.views], 'token');
+        }
 
         // Ensure providers have a clean reference of the current view state.
         this.providers.forEach(it => it.read());
-    }
-
-    @action
-    private noteViewInfo(view: View<T>) {
-        this.views = uniqBy([view.info, ...this.views], 'token');
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {

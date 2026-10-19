@@ -14,6 +14,7 @@ import {
     get,
     isArray,
     isEmpty,
+    isFunction,
     isNumber,
     isObject,
     isString,
@@ -275,7 +276,8 @@ export abstract class PersistenceProvider<S = any> {
 
     // The debounced write function, or null if writes are not debounced - see constructor.
     private get debouncedWrite(): DebouncedFunc<(data: S) => void> {
-        return this.debounce ? (this.writeInternal as DebouncedFunc<(data: S) => void>) : null;
+        const ret = this.writeInternal as DebouncedFunc<(data: S) => void>;
+        return isFunction(ret.cancel) ? ret : null;
     }
 
     private ensureValid() {
