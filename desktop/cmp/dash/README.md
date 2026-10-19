@@ -78,7 +78,7 @@ DashViewSpec (base interface)
 ├── content: Content              # Rendered content
 ├── title: string                 # Default title (defaults to startCase(id))
 ├── icon: ReactElement            # Default icon
-├── groupName: string             # Menu grouping
+├── groupName: string             # Menu grouping, '/' to nest
 ├── unique: boolean               # Allow multiple instances?
 ├── allowAdd/Remove/Rename        # Permission flags
 └── omit: Thunkable<boolean>      # Exclude from dashboard
@@ -367,9 +367,10 @@ canvasModel.isEmpty;  // No widgets?
 view specs for a `DashCanvas`. Users can drag widgets from the chooser and drop them onto the
 canvas. It is typically placed inside a collapsible panel alongside the canvas.
 
-Available view specs are listed in their defined order, grouped by their `groupName` property
-if present. Specs with `unique: true` that already have an instance on the canvas are
-automatically hidden from the chooser.
+Available view specs are listed in their defined order, grouped into collapsible cards by their
+`groupName` property if present - a slash-delimited name nests cards within cards. Specs with
+`unique: true` that already have an instance on the canvas are automatically hidden from the
+chooser.
 
 ### Requirements
 
@@ -413,7 +414,7 @@ Both dash types share these base properties on their ViewSpecs:
 | `content` | `Content` | View content to render. Required. |
 | `title` | `string` | Default display title. Defaults to `startCase(id)`. |
 | `icon` | `ReactElement` | Display icon. |
-| `groupName` | `string` | Group name for the "Add" menu — specs with the same group are nested into a submenu. |
+| `groupName` | `string` | Group name for the "Add" menu - specs with the same group are nested into a submenu. Separate names with `/` to nest groups, e.g. `Charts/Line`. Each group is listed where its first spec appears. |
 | `omit` | `Thunkable<boolean>` | Skip this spec entirely. References in state are quietly dropped. Useful for role-based exclusion. Default `false`. |
 | `unique` | `boolean` | Only one instance allowed at a time. Default `false`. |
 | `allowAdd` | `boolean` | Can add new instances via the menu. Existing instances in state are still loaded. Default `true`. |

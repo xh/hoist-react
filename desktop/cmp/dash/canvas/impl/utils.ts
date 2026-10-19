@@ -6,7 +6,7 @@
  */
 
 import {type MenuItemLike} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {createViewSpecMenuItems} from '../../impl/DashUtils';
 import {DashCanvasModel} from '../DashCanvasModel';
 
 /**
@@ -21,64 +21,29 @@ export function createViewMenuItems({
 }): MenuItemLike[] {
     if (!dashCanvasModel.ref.current) return [];
 
-    const groupedItems = {},
-        ungroupedItems = [],
-        x = position?.x ?? 0,
+    const x = position?.x ?? 0,
         y = position?.y ?? 0,
-        addPosition = !viewId ? calcAddPosition(x, y, dashCanvasModel) : null;
-
-    const addToGroup = (item, groupName) => {
-        const group = groupedItems[groupName];
-        if (group) {
-            group.push(item);
-        } else {
-            groupedItems[groupName] = [item];
-        }
-    };
-
-    dashCanvasModel.viewSpecs
-        .filter(viewSpec => {
+        addPosition = !viewId ? calcAddPosition(x, y, dashCanvasModel) : null,
+        addableSpecs = dashCanvasModel.viewSpecs.filter(viewSpec => {
             return (
                 viewSpec.allowAdd &&
                 (!viewSpec.unique || !dashCanvasModel.getViewsBySpecId(viewSpec.id).length)
             );
-        })
-        .forEach(viewSpec => {
-            const {title, icon, groupName, id} = viewSpec,
-                item = {
-                    text: title,
-                    icon: icon,
-                    actionFn: () => {
-                        if (replaceExisting) {
-                            dashCanvasModel.replaceView(viewId, id);
-                        } else {
-                            dashCanvasModel
-                                .addViewInternal(id, {layout: addPosition, previousViewId: viewId})
-                                .ensureVisible();
-                        }
-                    }
-                };
-
-            if (groupName) {
-                addToGroup(item, groupName);
-            } else {
-                ungroupedItems.push(item);
-            }
         });
 
-    return [
-        ...Object.keys(groupedItems).map(group => {
-            // If we have any ungrouped root items (i.e. in a 'mixed mode'),
-            // insert a hidden icon to align the item text.
-            const icon = ungroupedItems.length
-                    ? Icon.angleRight({style: {visibility: 'hidden'}})
-                    : undefined,
-                text = group,
-                items = groupedItems[group];
-            return {icon, text, items};
-        }),
-        ...ungroupedItems
-    ];
+    return createViewSpecMenuItems(addableSpecs, ({title, icon, id}) => ({
+        text: title,
+        icon: icon,
+        actionFn: () => {
+            if (replaceExisting) {
+                dashCanvasModel.replaceView(viewId, id);
+            } else {
+                dashCanvasModel
+                    .addViewInternal(id, {layout: addPosition, previousViewId: viewId})
+                    .ensureVisible();
+            }
+        }
+    }));
 }
 
 /**
