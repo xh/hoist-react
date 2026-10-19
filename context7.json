@@ -34,6 +34,9 @@
     ],
     "previousVersions": [
         {
+            "tag": "v89.0.1"
+        },
+        {
             "tag": "v88.1.2"
         },
         {
@@ -47,9 +50,6 @@
         },
         {
             "tag": "v84.0.2"
-        },
-        {
-            "tag": "v83.1.0"
         }
     ],
     "url": "https://context7.com/xh/hoist-react",

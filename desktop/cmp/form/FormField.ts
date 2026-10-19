@@ -5,7 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
-import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
+import {
+    BaseFormFieldProps,
+    FieldModel,
+    FormContext,
+    FormContextType,
+    FormFieldSetContext
+} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import {
     DefaultHoistProps,
@@ -13,14 +19,12 @@ import {
     HoistProps,
     HSide,
     TestSupportProps,
-    useContextModel,
     uses,
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity, ValidationResult} from '@xh/hoist/data';
-import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -145,7 +149,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         }
 
         // If within a FormFieldSet, register with its model for validation grouping
-        const fieldSetModel = useContextModel(FormFieldSetModel);
+        const fieldSetModel = useContext(FormFieldSetContext);
         useEffect(() => {
             if (fieldSetModel && model) {
                 fieldSetModel.registerChildFieldModel(model);

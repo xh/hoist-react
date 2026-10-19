@@ -9,7 +9,7 @@ import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {render, waitFor} from '@testing-library/react';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * What the Grid component hands to ag-Grid, and what ag-Grid renders from it. Row and header
@@ -54,6 +54,51 @@ describe('Grid', () => {
 
         gridModel.hideHeaders = true;
         await waitFor(() => expect(agApi.getGridOption('headerHeight')).toBe(0));
+    });
+
+    // AG Grid redraws every rendered row for each pinned row option it is passed.
+    it.each(['top', 'bottom'] as const)(
+        'passes AG Grid only the %s pinned rows when the summary changes',
+        async showSummary => {
+            const {gridModel} = await renderGridAsync({showSummary}),
+                {agApi, store} = gridModel,
+                updateGridOptions = vi.spyOn(agApi, 'updateGridOptions'),
+                key = showSummary === 'top' ? 'pinnedTopRowData' : 'pinnedBottomRowData',
+                pinnedKeys = () =>
+                    updateGridOptions.mock.calls.flatMap(([opts]) =>
+                        Object.keys(opts).filter(k => k.startsWith('pinned'))
+                    ),
+                rows = [
+                    {id: 1, name: 'Alpha', qty: 1},
+                    {id: 2, name: 'Beta', qty: 2}
+                ];
+
+            gridModel.loadData(rows, {id: 'sum', qty: 3});
+            await waitFor(() => expect(pinnedKeys()).toEqual([key]));
+
+            // A data change that keeps the summary record passes no pinned rows.
+            store.setFilter({field: 'name', op: '=', value: 'Alpha'});
+            await waitFor(() => expect(agApi.getDisplayedRowCount()).toBe(1));
+            expect(pinnedKeys()).toEqual([key]);
+
+            gridModel.loadData(rows, {id: 'sum', qty: 4});
+            await waitFor(() => expect(pinnedKeys()).toEqual([key, key]));
+        }
+    );
+
+    it('moves the summary row when showSummary changes side', async () => {
+        const {gridModel} = await renderGridAsync({showSummary: 'top'}),
+            {agGridModel} = gridModel,
+            pinned = () =>
+                [agGridModel.getPinnedTopRowData(), agGridModel.getPinnedBottomRowData()].map(
+                    rows => rows.map(it => (it.isSummary ? 'summary' : it.id))
+                );
+
+        gridModel.loadData([{id: 1, name: 'Alpha', qty: 1}], {id: 'sum', qty: 1});
+        await waitFor(() => expect(pinned()).toEqual([['summary'], []]));
+
+        gridModel.showSummary = 'bottom';
+        await waitFor(() => expect(pinned()).toEqual([[], ['summary']]));
     });
 
     it('renders columns without a renderer as plain text, and others through the wrapper', async () => {

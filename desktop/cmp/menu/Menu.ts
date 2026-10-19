@@ -4,14 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, type HoistProps, type MenuContext, type MenuItemLike} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    type HoistProps,
+    type MenuContext,
+    type MenuItemLike,
+    type TestSupportProps
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import type {MouseEvent} from 'react';
 import {MENU_DEFAULTS, type MenuDefaults, parseMenuItems} from './impl/MenuItems';
 
-export interface MenuProps extends HoistProps {
+export interface MenuProps extends HoistProps, TestSupportProps {
     /** Items to display. */
     menuItems: MenuItemLike[];
 
@@ -34,15 +41,13 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
     displayName: 'Menu',
     className: 'xh-menu',
     defaults: MENU_DEFAULTS,
-    memo: false,
     model: false,
-    observer: false,
 
-    render({menuItems, context, className}) {
+    render({menuItems, context, className, testId}) {
         const items = parseMenuItems(menuItems, {context});
         return isEmpty(items)
             ? null
-            : bpMenu({className, items, onContextMenu: swallowContextMenu});
+            : bpMenu({className, items, onContextMenu: swallowContextMenu, [TEST_ID]: testId});
     }
 });
 
