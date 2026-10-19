@@ -1439,7 +1439,7 @@ export class GridModel extends HoistModel {
                 return {
                     colId,
                     pinned: isBoolean(pinned) ? (pinned ? 'left' : null) : pinned,
-                    hidden: !!hide,
+                    hidden: this.isColumnHiddenByGrouping(colId) ? null : !!hide,
                     width: col.flex ? undefined : width
                 };
             }
@@ -1588,6 +1588,19 @@ export class GridModel extends HoistModel {
     isColumnVisible(colId: string): boolean {
         const state = this.getStateForColumn(colId);
         return state ? !state.hidden : false;
+    }
+
+    /**
+     * True if ag-Grid is hiding this column because the grid is grouped by it. Hoist leaves the
+     * visibility of such a column to ag-Grid, keeping its own `hidden` state for after ungrouping.
+     * @internal
+     */
+    isColumnHiddenByGrouping(colId: string): boolean {
+        const {agApi} = this;
+        if (!agApi || !this.groupBy.includes(colId)) return false;
+
+        const suppress = agApi.getGridOption('suppressGroupChangesColumnVisibility');
+        return suppress !== true && suppress !== 'suppressHideOnGroup';
     }
 
     setColumnVisible(colId: string, visible: boolean) {

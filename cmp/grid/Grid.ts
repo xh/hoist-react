@@ -442,7 +442,7 @@ export class GridLocalModel extends HoistModel {
 
                 // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
                 const state = model.columnState
-                    .filter(({colId}) => !groupBy.includes(colId))
+                    .filter(({colId}) => !model.isColumnHiddenByGrouping(colId))
                     .map(({colId, hidden}) => ({colId, hide: hidden}));
                 agApi.applyColumnState({state});
             }
@@ -523,7 +523,7 @@ export class GridLocalModel extends HoistModel {
                             hasChanges = true;
                         }
 
-                        if (agCol.hide !== hidden) {
+                        if (agCol.hide !== hidden && !model.isColumnHiddenByGrouping(colId)) {
                             ret.hide = hidden;
                             hasChanges = true;
                         }
