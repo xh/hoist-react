@@ -10,6 +10,11 @@ import {div, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
 import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetChooserModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooserModel';
+import {
+    groupViewSpecs,
+    ViewSpecGroup,
+    type ViewSpecNode
+} from '@xh/hoist/desktop/cmp/dash/impl/DashUtils';
 import {every} from 'lodash';
 import type {ReactElement, ReactNode} from 'react';
 import './DashCanvasWidgetChooser.scss';
@@ -21,8 +26,9 @@ export interface DashCanvasWidgetChooserProps extends HoistProps, TestSupportPro
 
 /**
  * Displays available {@link DashCanvasViewSpec}s as draggable items that can be dropped onto a
- * {@link DashCanvas} to add new views. View specs are listed in their defined order, grouped by
- * their `groupName` property if present. Place inside a collapsible panel alongside a DashCanvas.
+ * {@link DashCanvas} to add new views. View specs are listed in their defined order, grouped into
+ * (nested) cards by their `groupName` property if present. Place inside a collapsible panel
+ * alongside a DashCanvas.
  */
 export const [DashCanvasWidgetChooser, dashCanvasWidgetChooser] =
     hoistCmp.withFactory<DashCanvasWidgetChooserProps>({
@@ -66,60 +72,37 @@ const draggableWidget = hoistCmp.factory<
 function createDraggableItems(dashCanvasModel: DashCanvasModel): ReactNode[] {
     if (!dashCanvasModel?.ref.current) return [];
 
-    const groupedItems: Record<string, GroupEntry[]> = {},
-        ungroupedItems: ReactElement[] = [];
+    const addableSpecs = dashCanvasModel.viewSpecs.filter(viewSpec => {
+        return (
+            viewSpec.allowAdd &&
+            (!viewSpec.unique || !dashCanvasModel.getViewsBySpecId(viewSpec.id).length)
+        );
+    });
 
-    dashCanvasModel.viewSpecs
-        .filter(viewSpec => {
-            return (
-                viewSpec.allowAdd &&
-                (!viewSpec.unique || !dashCanvasModel.getViewsBySpecId(viewSpec.id).length)
-            );
-        })
-        .forEach(viewSpec => {
-            const {groupName} = viewSpec,
-                item = draggableWidget({viewSpec});
-
-            if (groupName) {
-                const group = groupedItems[groupName],
-                    entry: GroupEntry = {item, icon: viewSpec.icon};
-                if (group) {
-                    group.push(entry);
-                } else {
-                    groupedItems[groupName] = [entry];
-                }
-            } else {
-                ungroupedItems.push(item);
-            }
-        });
-
-    return [
-        ...Object.keys(groupedItems).map(groupName => {
-            const entries = groupedItems[groupName],
-                firstIcon = entries[0]?.icon,
-                icon =
-                    firstIcon &&
-                    every(
-                        entries,
-                        it =>
-                            (it.icon?.props as {faName?: string})?.faName ===
-                            (firstIcon.props as {faName?: string}).faName
-                    )
-                        ? firstIcon
-                        : null;
-
-            return card({
-                icon,
-                title: groupName,
-                items: entries.map(it => it.item),
-                modelConfig: {collapsible: true}
-            });
-        }),
-        ...ungroupedItems
-    ];
+    return createGroupItems(groupViewSpecs(addableSpecs));
 }
 
-interface GroupEntry {
-    item: ReactElement;
-    icon?: ReactElement;
+/** Render groups as collapsible cards, nested as their `groupName` dictates. */
+function createGroupItems(nodes: ViewSpecNode<DashCanvasViewSpec>[]): ReactNode[] {
+    return nodes.map(it =>
+        it instanceof ViewSpecGroup
+            ? card({
+                  key: `group-${it.name}`,
+                  icon: getSharedIcon(it.allViewSpecs),
+                  title: it.name,
+                  items: createGroupItems(it.children),
+                  modelConfig: {collapsible: true}
+              })
+            : draggableWidget({key: it.id, viewSpec: it})
+    );
+}
+
+/** The icon of the first spec, if every spec has an icon of the same name. */
+function getSharedIcon(viewSpecs: DashCanvasViewSpec[]): ReactElement {
+    const faName = (icon: ReactElement) => (icon?.props as {faName?: string})?.faName,
+        firstIcon = viewSpecs[0]?.icon;
+
+    return firstIcon && every(viewSpecs, it => faName(it.icon) === faName(firstIcon))
+        ? firstIcon
+        : null;
 }
