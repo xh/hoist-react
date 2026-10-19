@@ -46,6 +46,9 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
                 ...inputProps
             }
         };
-        return useInlineEditorModel(dateInput, props, ref);
+        // A date input's value holds a date, so enter the key that started the edit as its text.
+        return useInlineEditorModel(dateInput, props, ref, (input, key) =>
+            (input as any).textInputRef.current?.noteValueChange(key)
+        );
     }
 });
