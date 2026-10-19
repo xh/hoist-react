@@ -280,9 +280,6 @@ importers:
       moment:
         specifier: ~2.31.0
         version: 2.31.0
-      numbro:
-        specifier: ~2.5.0
-        version: 2.5.0
       onsenui:
         specifier: ~2.12.9
         version: 2.12.9
@@ -2094,9 +2091,6 @@ packages:
   big.js@5.2.2:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
 
-  bignumber.js@9.3.1:
-    resolution: {integrity: sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==}
-
   body-parser@2.3.0:
     resolution: {integrity: sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw==}
     engines: {node: '>=18'}
@@ -3311,9 +3305,6 @@ packages:
 
   normalize.css@8.0.1:
     resolution: {integrity: sha512-qizSNPO93t1YUuUhP22btGOo3chcvDFqFaj2TRybP0DMxkHOCTYwp3n34fel4a31ORXy4m1Xq0Gyqpb5m33qIg==}
-
-  numbro@2.5.0:
-    resolution: {integrity: sha512-xDcctDimhzko/e+y+Q2/8i3qNC9Svw1QgOkSkQoO0kIPI473tR9QRbo2KP88Ty9p8WbPy+3OpTaAIzehtuHq+A==}
 
   oauth4webapi@3.8.8:
     resolution: {integrity: sha512-8N28E+a/oxfXWBgOMt+ZP/JUf/XR+IFbvkAEPP3gznXOMv9BpAAwiIj0TFNz3tGTPc0ZQ8zmWBNgN1nAys0gng==}
@@ -6274,8 +6265,6 @@ snapshots:
 
   big.js@5.2.2: {}
 
-  bignumber.js@9.3.1: {}
-
   body-parser@2.3.0(supports-color@10.2.2):
     dependencies:
       bytes: 3.1.2
@@ -7684,10 +7673,6 @@ snapshots:
   normalize-path@3.0.0: {}
 
   normalize.css@8.0.1: {}
-
-  numbro@2.5.0:
-    dependencies:
-      bignumber.js: 9.3.1
 
   oauth4webapi@3.8.8: {}
 
