@@ -87,12 +87,13 @@ function createGroupItems(nodes: ViewSpecNode<DashCanvasViewSpec>[]): ReactNode[
     return nodes.map(it =>
         it instanceof ViewSpecGroup
             ? card({
+                  key: `group-${it.name}`,
                   icon: getSharedIcon(it.allViewSpecs),
                   title: it.name,
                   items: createGroupItems(it.children),
                   modelConfig: {collapsible: true}
               })
-            : draggableWidget({viewSpec: it})
+            : draggableWidget({key: it.id, viewSpec: it})
     );
 }
 
