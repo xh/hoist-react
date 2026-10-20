@@ -14,6 +14,7 @@ import {
     get,
     isArray,
     isEmpty,
+    isFunction,
     isNumber,
     isObject,
     isString,
@@ -138,7 +139,7 @@ export abstract class PersistenceProvider<S = any> {
 
         // Drop any debounced write still pending - it holds pre-clear state and would otherwise
         // land after this call and resurrect it.
-        (this.writeInternal as DebouncedFunc<(data: S) => void>).cancel?.();
+        this.cancelPendingWrite();
 
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
@@ -153,10 +154,17 @@ export abstract class PersistenceProvider<S = any> {
 
     destroy() {
         this.disposer?.();
+        // Flush pending write now; don't let a failure abort owner's destroy.
+        try {
+            this.debouncedWrite?.flush();
+        } catch (e) {
+            logError(e, this.owner);
+        }
     }
 
     /** Push the current state of this provider to its target. */
     pushStateToTarget() {
+        this.cancelPendingWrite(); // stale - would overwrite pushed state
         const state = this.read();
         this.target.setPersistableState(state ? state : this.defaultState);
     }
@@ -223,6 +231,11 @@ export abstract class PersistenceProvider<S = any> {
         return null;
     }
 
+    /** Drop any debounced write still pending. */
+    protected cancelPendingWrite() {
+        this.debouncedWrite?.cancel();
+    }
+
     /**
      * Resolve the PersistenceProvider class that the given options would produce, applying the
      * same precedence used by {@link create}. Throws if the options do not resolve to a known
@@ -252,6 +265,12 @@ export abstract class PersistenceProvider<S = any> {
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 
         return ret;
+    }
+
+    // The debounced write function, or null if writes are not debounced - see constructor.
+    private get debouncedWrite(): DebouncedFunc<(data: S) => void> {
+        const ret = this.writeInternal as DebouncedFunc<(data: S) => void>;
+        return isFunction(ret.cancel) ? ret : null;
     }
 
     private ensureValid() {
