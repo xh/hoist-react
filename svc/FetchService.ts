@@ -72,8 +72,7 @@ export class FetchService extends HoistService {
 
     /**
      * Does a request url target the app's own server? True for relative and root-relative urls,
-     * and for absolute urls on the origin of the page or of {@link XH.baseUrl}. The default for
-     * `defaults.propagateTrace` - call it from a custom function to extend that default.
+     * and for absolute urls on the origin of the page or of {@link XH.baseUrl}.
      */
     static isHoistServerUrl(url: string): boolean {
         if (!url?.includes('//')) return true;
