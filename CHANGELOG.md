@@ -20,6 +20,8 @@
 
 ### 🎁 New Features
 
+* `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
+  consumer closes the connection early.
 * Added `FetchOptions.propagateTrace` and `FetchService.defaults.propagateTrace` to choose which
   requests carry a `traceparent` header, with `FetchService.isHoistServerUrl()` as the default.
 * `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
@@ -40,6 +42,9 @@
   change at once.
 * Fixed desktop tab switcher context menus throwing for an `extraMenuItems` entry with a static
   `items` submenu. Items a `prepareFn` adds now also receive the tab in their `actionFn`.
+* Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
+  `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
+  custom reason reports as "Fetch Aborted".
 
 ### ⚙️ Technical
 
