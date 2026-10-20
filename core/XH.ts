@@ -35,7 +35,7 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import {getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -915,7 +915,8 @@ export class XHApi {
 
     /**
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
-     * that are null / undefined or that do not implement destroy().
+     * that are null / undefined or that do not implement destroy(). Logs, rather than throws, an
+     * error from any destroy(), so the remaining args are still destroyed.
      *
      * @param args - objects to be destroyed. If any argument is an array, each top-level element
      *      in the array will be destroyed. (Note this is *not* done recursively.)
@@ -924,7 +925,11 @@ export class XHApi {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                it?.destroy?.();
+                try {
+                    it?.destroy?.();
+                } catch (e) {
+                    logError(['Error destroying object', e], it);
+                }
             });
         }
     }

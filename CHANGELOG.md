@@ -45,6 +45,8 @@
 * Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
   `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
   custom reason reports as "Fetch Aborted".
+* Fixed `XH.safeDestroy()` stopping at the first `destroy()` that threw, which left the remaining
+  objects - and the rest of a model's managed children - undestroyed. It now logs the error.
 
 ### ⚙️ Technical
 
