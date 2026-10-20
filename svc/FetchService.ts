@@ -31,6 +31,7 @@ export interface FetchServiceDefaults {
     autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
     correlationIdHeaderKey?: string;
     genCorrelationId?: () => string;
+    propagateTrace?: boolean | ((opts: FetchOptions) => boolean);
 }
 
 /**
@@ -48,6 +49,8 @@ export interface FetchServiceDefaults {
  * - Configurable timeouts (default 30s) via {@link FetchOptions.timeout}
  * - Auto-abort of duplicate in-flight requests via {@link FetchOptions.autoAbortKey}
  * - Optional correlation IDs for request tracking (see `defaults.autoGenCorrelationIds`)
+ * - W3C `traceparent` headers when tracing is enabled, sent by default only to the app's own
+ *   server (see `defaults.propagateTrace` and {@link FetchOptions.propagateTrace})
  * - Request/response interceptors via {@link addInterceptor}
  * - Default headers for all requests via {@link addDefaultHeaders}
  * - Rich exception handling with HTTP status, server messages, and trace IDs
@@ -63,8 +66,24 @@ export class FetchService extends HoistService {
     static defaults: FetchServiceDefaults = {
         autoGenCorrelationIds: false,
         correlationIdHeaderKey: 'X-Correlation-ID',
-        genCorrelationId: () => FetchService.defaultIdGenerator.rnd()
+        genCorrelationId: () => FetchService.defaultIdGenerator.rnd(),
+        propagateTrace: opts => FetchService.isHoistServerUrl(opts.url)
     };
+
+    /**
+     * Does a request url target the app's own server? True for relative and root-relative urls,
+     * and for absolute urls on the origin of the page or of {@link XH.baseUrl}.
+     */
+    static isHoistServerUrl(url: string): boolean {
+        if (!url?.includes('//')) return true;
+        try {
+            const {origin} = window.location,
+                target = new URL(url, origin).origin;
+            return target === origin || target === new URL(XH.baseUrl, origin).origin;
+        } catch {
+            return false;
+        }
+    }
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
@@ -383,7 +402,7 @@ export class FetchService extends HoistService {
             'Content-Type': isForm ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
-            ...(span
+            ...(span && this.shouldPropagateTrace(opts)
                 ? {traceparent: formatTraceparent(span.traceId, span.spanId, span.sampled)}
                 : {}),
             ...opts.headers
@@ -401,6 +420,12 @@ export class FetchService extends HoistService {
         }
 
         return {...opts, method, headers};
+    }
+
+    private shouldPropagateTrace(opts: FetchOptions): boolean {
+        if (!isNil(opts.propagateTrace)) return opts.propagateTrace;
+        const {propagateTrace} = FetchService.defaults;
+        return isFunction(propagateTrace) ? propagateTrace(opts) : propagateTrace;
     }
 
     private async managedFetchAsync(opts: FetchOptions, callCtx: CallContext): Promise<any> {
@@ -859,6 +884,17 @@ export interface FetchOptions {
      * `correlationId` will be set. If `true`, one will be auto-generated.
      */
     correlationId?: string | boolean;
+
+    /**
+     * True to send a W3C `traceparent` header with this request, false to omit it. Applies only
+     * when tracing is enabled. The request still records a client span either way, but only a
+     * server that receives the header can join the trace. Defaults to
+     * `FetchService.defaults.propagateTrace`, which sends the header only to the app's own server.
+     *
+     * Note `traceparent` is not a CORS-safelisted header. A cross-origin server must list it in
+     * `Access-Control-Allow-Headers`, or the browser blocks the request.
+     */
+    propagateTrace?: boolean;
 
     /**
      * Parameters to encode and append as a query string, or send with the request body

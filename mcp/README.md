@@ -25,7 +25,8 @@ Both interfaces share the same underlying registries and produce identical outpu
 **What they provide:**
 
 - **Documentation tools** - search and browse all hoist-react READMEs, concept docs, and upgrade
-  notes
+  notes. They also serve the docs of [companion libraries](#companion-library-docs) that the app
+  installs
 - **TypeScript tools** - search symbols, inspect types, and list class/interface members
 - **Documentation resources** - direct access to any doc by `hoist://docs/{id}` URI. Resources are
   an MCP mechanism with no CLI counterpart, but the capability is on both surfaces:
@@ -48,12 +49,14 @@ AI-authored component in hoist-react.
 ```
 mcp/
 ├── server.ts                  # MCP entry point - creates McpServer, registers all capabilities
+├── instructions.ts            # Server instructions, built from the loaded doc registry
 ├── cli/
 │   ├── docs.ts                # CLI entry point for hoist-docs
 │   ├── ts.ts                  # CLI entry point for hoist-ts
 │   └── ts-command.ts          # hoist-ts command with injectable io (specs run it in-process)
 ├── data/
-│   ├── doc-registry.ts        # Documentation inventory loader (reads docs/doc-registry.json)
+│   ├── doc-registry.ts        # Doc inventory loader: docs/doc-registry.json plus companion libraries
+│   ├── companion-docs.spec.ts # Companion library discovery, id scoping, and surfaces (see Testing)
 │   ├── doc-id-resolver.ts     # Tolerant doc-id resolver (canonical + shortenings + aliases)
 │   ├── doc-id-resolver.spec.ts # Resolver test cases (see Testing)
 │   ├── doc-sections.ts        # Splits docs into ##/### sections; section-name resolution
@@ -79,7 +82,7 @@ mcp/
 │   └── typescript.spec.ts     # MCP / CLI parity check for the TypeScript tools
 ├── util/
 │   ├── logger.ts              # Stderr-only logging (protects stdio JSON-RPC)
-│   └── paths.ts               # Repo root resolution and path traversal safety
+│   └── paths.ts               # Repo and app root resolution, package lookup, path traversal safety
 ├── eslint.config.mjs          # ESLint config for mcp/ (run by pnpm lint:mcp)
 ├── package.json               # ES module config (type: "module")
 ├── README.md                  # This document
@@ -320,6 +323,63 @@ calls is the most common bug in MCP server implementations. The custom logger in
 writes exclusively to stderr. The CLI uses `process.stdout.write()` for output and `console.error()`
 for errors.
 
+### Companion Library Docs
+
+Libraries that build on Hoist can serve their docs through these tools. Examples are
+`@xh/hoist-chat-kit` and a client firm's package of Hoist overrides. A library opts in with
+`"hoist": {"docRegistry": "<path>"}` in its `package.json`. The author guide is
+[Companion Library Docs](../docs/companion-library-docs.md). This section covers the
+implementation.
+
+- **One shared registry.** `loadRegistry()` in `data/doc-registry.ts` builds the registry once per
+  process. The tools, resources, CLI, and server instructions all use it. Specs pass a registry
+  built from a fixture to `registerDocTools()` and `registerDocResources()`.
+- **Discovery starts from the app.** Under pnpm, `@xh/hoist` resolves into the `.pnpm` store. It
+  does not depend on the companion library, so the server cannot find it from its own location.
+  `resolveAppRoot()` in `util/paths.ts` picks the anchor package: `HOIST_MCP_APP_ROOT`, else the
+  nearest package that uses Hoist among `cwd`, `cwd/client-app`, and the same pair in each parent
+  folder. The loader checks the anchor and its direct `dependencies` and `devDependencies`.
+  `findInstalledPackage()` finds each one under `node_modules`. It does not use
+  `require.resolve()`, which fails for packages with an `exports` map. The loader resolves docs
+  against the real path, and shows agents the `node_modules` path as `DocLibrary.sourcePath`,
+  relative to the working directory.
+- **Prefixed ids.** Companion ids are the package name plus the registry path, for example
+  `@xh/hoist-chat-kit/core/README.md`. npm names are unique, so the ids are too. `DocEntry.path`
+  keeps the registry path and `DocEntry.library` the package name. hoist-react entries have
+  `library: null` and unprefixed ids. Each library resolves its paths against its own root with
+  `resolveDocPath()`.
+- **Scoped aliases.** hoist-react docs own every bare shortening. The resolver builds companion
+  auto-aliases only under the full and the unscoped package name, and a bare package name reaches
+  the library's `docs/README.md`. Where a companion alias would collide with a hoist-react one, the
+  hoist-react doc keeps it. Explicit companion aliases claim only the full prefix.
+- **Relative links are rewritten.** `loadDocContent()` rewrites relative links in a companion doc,
+  so `../core/README.md` reads as `@xh/hoist-chat-kit/core/README.md`. Left as written, the link
+  would resolve to hoist-react's `core/README.md` with no error. A link to a file that is not a
+  served doc becomes a path under `sourcePath`. Links that leave the package, and links in code,
+  stay as written. Line numbers do not change, so section ranges still match.
+- **Maintainer docs.** `loadLibrary()` drops entries with `mcpAudience: 'maintainers'` unless the
+  library's root is the app root. The rule applies to every registry, hoist-react's included, so
+  hoist-react can mark its own maintainer docs the same way.
+- **Agents learn about libraries from the server.** `instructions.ts` names each library with its
+  version, description, and index id, and says that the symbol tools cover `@xh/hoist` only.
+  `hoist-ping`, `hoist-docs ping`, list output, and `hoist-docs index` also name the libraries.
+- **Library guidance.** A registry can set `mcpInstructions`, a string or an array of lines. The
+  loader trims it and caps it at `MAX_LIBRARY_INSTRUCTIONS_CHARS`, and stores it on
+  `DocLibrary.instructions`. `instructions.ts` places it under the library's line and adds a
+  sentence that the guidance never overrides the user. The ping surfaces show it too, because CLI
+  agents never see server instructions. This is the one path by which a dependency's own text
+  reaches the instructions, so keep the cap and the framing.
+- **Same schemas when none load.** The `library` filter on search and list, and the companion notes
+  in tool descriptions, appear only when a companion library loads.
+- **Soft failures.** The loader skips a missing registry or doc file, or a path outside the
+  package, including a symlink to a file outside it. Registry and `package.json` fields of the
+  wrong type fall back to their defaults, and `loadCompanion()` turns any other error into a
+  warning, so a bad dependency never stops Hoist's own docs from loading. Each warning goes to
+  stderr and to `RegistryData.warnings`, which the ping surfaces report.
+
+The symbol tools do not cover companion libraries. `data/ts-registry.ts` assumes one source root,
+one `tsconfig.json`, and the `@xh/hoist/` import prefix.
+
 ## CLI Tools
 
 The CLI tools provide the same documentation and TypeScript capabilities as the MCP server, but
@@ -409,6 +469,9 @@ path differs.
 Claude Code starts stdio servers from the project root, so the path is relative to the app's root.
 The server describes the `@xh/hoist` version installed in `node_modules`. After an install changes
 that version, restart Claude Code (or reconnect with `/mcp`) so the server reloads.
+The working directory also anchors [companion library](#companion-library-docs) discovery. Set
+`HOIST_MCP_APP_ROOT` in `env` if the app's `package.json` is not in the project root or its
+`client-app/` folder.
 
 Toolbox is the exception, not the pattern. Its `.mcp.json` runs a wrapper script that prefers a
 sibling `../hoist-react` checkout over `node_modules`, because Toolbox doubles as the framework's
@@ -472,6 +535,7 @@ most 2 results per doc. A default search costs under ~800 tokens. See
 |-----------|------|----------|-------------|
 | `query` | string | Yes | Two to four keywords, ideally the names the docs use (e.g. `"grid column renderer"`, `"persistWith"`) |
 | `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `index`, `all` (default) |
+| `library` | enum | No | Only with companion libraries loaded. Limits results to one package, for example `@xh/hoist` |
 | `limit` | number | No | Max sections, 1-10. Default: 5 |
 
 **Example output** (`hoist-docs search "grid sorting" --limit 2`):
@@ -499,6 +563,11 @@ List all available documentation with descriptions, grouped by category.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `index`, `all` (default) |
+| `library` | enum | No | Only with companion libraries loaded. Limits the list to one package |
+
+With companion libraries loaded, each library follows hoist-react's docs under its own heading.
+Structured output adds `library` to each entry, and a `libraries` array with each package's name,
+version, doc count, and index id.
 
 #### `hoist-read-doc`
 
@@ -533,7 +602,8 @@ only when the input id differed from the canonical id.
 #### `hoist-ping`
 
 Verify the MCP server is running and responsive. Takes no parameters. Reports the indexed
-`@xh/hoist` library version.
+`@xh/hoist` library version. Also lists each companion library with its version, doc count, index
+id, and guidance, and any companion library that failed to load.
 
 ### TypeScript Tools
 
@@ -776,6 +846,9 @@ prefix is also `hoist://docs/`. So `hoist://docs/routing.md` and `hoist://docs/d
 both resolve to the same entry. For a friction-free read by bare ID, prefer the `hoist-read-doc`
 tool.
 
+Companion library docs use the same template with their prefixed ids, for example
+`hoist://docs/@xh/hoist-chat-kit/core/README.md`. Reserved expansion passes the `@` through.
+
 **Discovering available documents:** The `hoist-doc` resource supports `list` and `complete`
 operations. MCP clients can enumerate all available doc IDs or get tab-completion suggestions.
 
@@ -892,6 +965,7 @@ just display without the extra hint. The `@mcpHint` tag is declared in the proje
 | Change which owners have members indexed | `mcp/data/ts-registry.ts` (`shouldIndexClassMembers` / `shouldIndexInterfaceMembers`) |
 | Raise the supported Node floor (tracks `engines` in hoist-dev-utils) | `@types/node` major in `package.json`, Node version under [Prerequisites](#prerequisites) |
 | Change doc search ranking, or add a doc that deserves golden-set coverage | `mcp/data/doc-search.ts`, `mcp/data/doc-search.spec.ts` - then run `pnpm test:mcp` |
+| Change companion library discovery, id prefixing, or alias scoping | `mcp/data/doc-registry.ts`, `mcp/util/paths.ts`, `mcp/data/doc-id-resolver.ts`, `docs/companion-library-docs.md` - then run `pnpm test:mcp` |
 | Change symbol search ranking or output shape, or add an API that deserves golden-set coverage | `mcp/data/symbol-search.ts`, `mcp/formatters/typescript.ts`, `mcp/data/symbol-search.spec.ts` - then run `pnpm test:mcp` |
 | Change the shape of `SymbolEntry`, `MemberIndexEntry`, or `SymbolDetail` | `CACHE_SCHEMA_VERSION` in `mcp/data/index-cache.ts` |
 | Add a top-level directory that should be treated as internal in symbol search | `INTERNAL_TOP_DIRS` in `mcp/data/symbol-search.ts` |
@@ -910,6 +984,7 @@ typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own ESLin
 | Spec | Covers |
 |------|--------|
 | `data/doc-id-resolver.spec.ts` | Tolerant doc-id resolution |
+| `data/companion-docs.spec.ts` | Companion library docs against a fixture app in a temp directory: app root resolution, discovery, id prefixing, load warnings, alias scoping and collisions, search and the library filter, library guidance, the MCP tools, resources, and instructions, and the CLI run from the app |
 | `data/doc-sections.spec.ts` | Section parsing, section-name resolution, and full / section / outline reads |
 | `data/doc-search.spec.ts` | Golden-set retrieval eval: top-3 hit rate (must stay at or above 85%), named experiment queries, and the default-search token budget (under 800) |
 | `data/ts-registry.spec.ts` | TypeScript symbol and member lookup, cross-platform path handling |

@@ -30,22 +30,32 @@ See [Unit Testing](./unit-testing.md) for how the tests and the report work.
 ## Deploy Snapshot (`deploySnapshot.yml`)
 
 Publishes a SNAPSHOT build to npm on every push to `develop`. Can also be triggered manually via
-`workflow_dispatch` with an optional version override.
+`workflow_dispatch` for any branch, with two optional inputs:
+
+- **Version** - overrides the version from `package.json`. `-SNAPSHOT` is appended if missing.
+- **Experimental** - publishes with the `experimental` dist-tag instead of `next`, and skips the
+  Toolbox dispatch. Tick it when building a branch with breaking or unfinished changes that
+  should not reach Toolbox or other apps tracking `next`. Pushes to `develop` never set it.
+
+How it works:
 
 - The version is sourced from `package.json` (e.g. `82.0.0-SNAPSHOT`). A timestamp is appended
   automatically to ensure each snapshot is unique.
-- Snapshots are published with the `next` dist-tag so they don't affect `latest`.
+- Snapshots are published with the `next` dist-tag so they don't affect `latest`. Experimental
+  runs use the `experimental` dist-tag and leave `next` alone. To try an experimental build in an
+  app, install the exact version shown in the run's job summary.
 - Lint and unit tests run as part of this workflow. A failure in either blocks the publish.
+- Publishing authenticates with npm via OIDC trusted publishing, with no stored npm token.
 - Uses `concurrency` with `cancel-in-progress: true` to avoid redundant builds when multiple pushes
   land in quick succession.
-- After publishing, polls `npm view @xh/hoist@next` until the registry resolves the `next` dist-tag
-  to the version just published (10 minute limit). Publishing returns once npm accepts the tarball,
-  but the new version is not guaranteed to be resolvable at that moment.
-- Finally fires a `repository_dispatch` (`hoist-react-snapshot`) to `xh/toolbox`, which rebuilds
-  and redeploys Toolbox against the new snapshot. The dispatch authenticates as the org-owned
-  **XH Build Bot** GitHub App via a short-lived installation token minted by
-  `actions/create-github-app-token`, scoped to the toolbox repo with Contents: write. Toolbox runs
-  triggered this way show `xh-build-bot[bot]` as the actor.
+- After publishing, polls `npm view` until the registry resolves the dist-tag (`next` or
+  `experimental`) to the version just published (10 minute limit). Publishing returns once npm
+  accepts the tarball, but the new version is not guaranteed to be resolvable at that moment.
+- Finally, for `next` builds only, fires a `repository_dispatch` (`hoist-react-snapshot`) to
+  `xh/toolbox`, which rebuilds and redeploys Toolbox against the new snapshot. The dispatch
+  authenticates as the org-owned **XH Build Bot** GitHub App via a short-lived installation token
+  minted by `actions/create-github-app-token`, scoped to the toolbox repo with Contents: write.
+  Toolbox runs triggered this way show `xh-build-bot[bot]` as the actor.
 
 ## Deploy Release (`deployRelease.yml`)
 
@@ -89,7 +99,7 @@ checking weekly.
 | Name | Type | Used By | Purpose |
 |------|------|---------|---------|
 | `FONTAWESOME_PACKAGE_TOKEN` | Secret | CI, Snapshot, Release | Auth token for the Font Awesome Pro npm registry (`npm.fontawesome.com`) |
-| `NPM_TOKEN` | Secret | Snapshot, Release, Unpublish | Auth token for publishing to the npm public registry |
+| `NPM_TOKEN` | Secret | Unpublish | Auth token for the npm public registry. Snapshot and Release publish via OIDC trusted publishing instead |
 | `XH_BUILD_BOT_PRIVATE_KEY` | Secret | Snapshot | Private key for the XH Build Bot GitHub App, used to mint the Toolbox dispatch token |
 | `XH_BUILD_BOT_CLIENT_ID` | Variable | Snapshot | Client ID of the XH Build Bot GitHub App |
 | `GITHUB_TOKEN` | Secret | Release | Provided automatically by GitHub Actions; used for `gh release create` |
