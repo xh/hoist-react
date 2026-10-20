@@ -725,8 +725,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         pendingValue: PendingValue<T> = null,
         ctx: CallContext
     ): Promise<void> {
-        // Loads can overlap, e.g. a view selected while another is still loading. Only the latest
-        // applies its view or reports a failure, so a slower earlier load cannot replace it.
+        // Only the latest of overlapping loads applies its view or reports a failure.
         const loadNum = ++this.viewLoadCount,
             isStale = () => loadNum !== this.viewLoadCount;
 
