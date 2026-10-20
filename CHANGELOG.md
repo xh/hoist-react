@@ -40,6 +40,8 @@
   change at once.
 * Fixed desktop tab switcher context menus throwing for an `extraMenuItems` entry with a static
   `items` submenu. Items a `prepareFn` adds now also receive the tab in their `actionFn`.
+* Fixed `XH.safeDestroy()` stopping at the first `destroy()` that threw, which left the remaining
+  objects - and the rest of a model's managed children - undestroyed. It now logs the error.
 
 ### ⚙️ Technical
 
