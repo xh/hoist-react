@@ -30,6 +30,22 @@
   view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
   the top, define grouped specs first.
 
+### 🐞 Bug Fixes
+
+* Fixed `ViewManagerModel` reinstalling the prior view when a save of it finished after the user
+  selected another view. Auto-save could then write the new view's state into the prior view.
+* Fixed `ViewManagerModel` installing an earlier selected view when it finished loading after a
+  later one. A refresh also reloaded the prior view over a newer selection.
+* Fixed `ViewManagerModel` dashboards picking up a change made in the prior view just before a
+  switch, which marked the new view dirty. A destroyed `PersistenceProvider` now writes any pending
+  change at once.
+
+### ⚙️ Technical
+
+* Added protected `PersistenceProvider.cancelPendingWrite()`. `pushStateToTarget()` now drops any
+  pending write. A custom provider that overrides it without calling `super` should call this
+  method.
+
 ## 89.1.0 - 2026-10-19
 
 ### 🎁 New Features

@@ -268,6 +268,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      */
     private providers: ViewManagerProvider<any>[] = [];
 
+    /** Count of calls to {@link loadViewAsync}, used to identify the latest. */
+    private viewLoadCount = 0;
+
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
 
@@ -386,7 +389,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {dataAccess, view} = this;
+        const {dataAccess} = this;
         await this.runner({loadSpec})
             .span('refresh')
             .run(async ctx => {
@@ -400,8 +403,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     this.serverManageGlobal = manageGlobal ?? null;
                 });
 
-                // potentially fast-forward current view.
-                if (!view.isDefault) {
+                // Fast-forward the current view if it was updated elsewhere.
+                // Skip while an explicit view load is pending - this is subordinate background work
+                const {view} = this;
+                if (!view.isDefault && !this.selectTask.isPending) {
                     const latestInfo = find(views, {token: view.token});
                     if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
                         this.loadViewAsync(view.token, this.pendingValue, ctx);
@@ -470,7 +475,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     .updateViewValueAsync(view, pendingValue.value, ctx)
                     .linkTo(this.saveTask);
 
-                this.setAsSavedView(updated, pendingValue);
+                this.applySavedView(updated, pendingValue);
                 this.noteSuccess(`Saved ${view.typedName}`);
 
                 this.refreshAsync();
@@ -719,11 +724,18 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         pendingValue: PendingValue<T> = null,
         ctx: CallContext
     ): Promise<void> {
+        const loadNum = ++this.viewLoadCount,
+            isStale = () => loadNum !== this.viewLoadCount;
+
         return this.dataAccess
             .fetchViewAsync(token, ctx)
             .thenAction(latest => {
+                if (isStale()) return;
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
+            })
+            .catch(e => {
+                if (!isStale()) throw e;
             })
             .linkTo(this.selectTask);
     }
@@ -740,7 +752,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                         .updateViewValueAsync(view, pendingValue.value, ctx)
                         .linkTo(this.saveTask);
 
-                    this.setAsSavedView(updated, pendingValue);
+                    this.applySavedView(updated, pendingValue);
                 } catch (e) {
                     // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
                     // Keep count and alert server and user once at count n?
@@ -753,9 +765,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             });
     }
 
-    /** Install a saved view, keeping as pending any value set while the save was in flight. */
+    /** Apply a completed save, installing the saved view only if it is still current. */
     @action
-    private setAsSavedView(saved: View<T>, sent: PendingValue<T>) {
+    private applySavedView(saved: View<T>, sent: PendingValue<T>) {
+        // User has moved on - just update the list entry (map, so a deleted view stays out).
+        if (saved.token !== this.view.token) {
+            this.views = this.views.map(it => (it.token === saved.token ? saved.info : it));
+            return;
+        }
+
         const value = this.getValue(),
             pendingValue = isEqual(value, sent.value)
                 ? null
