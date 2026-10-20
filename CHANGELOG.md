@@ -55,11 +55,6 @@
   pending write. A custom provider that overrides it without calling `super` should call this
   method.
 
-### ✨ Styles
-
-* Added `--xh-pdf-viewer-*` CSS variables for viewer background, page shadow and gap, and find
-  highlight colors.
-
 ## 89.1.0 - 2026-10-19
 
 ### 🎁 New Features
