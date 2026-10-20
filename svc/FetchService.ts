@@ -220,13 +220,10 @@ export class FetchService extends HoistService {
                     this.fetchInternalAsync(opts, innerCtx, aborter),
                     opts,
                     this.getInterner(opts.internStrings),
-                    // A Hoist exception as abort reason passes through, as in the request phase.
                     (cause, response) =>
-                        !this.isAborted(opts, aborter)
-                            ? this.streamFailedException(opts, innerCtx, response, cause)
-                            : cause?.isHoistException
-                              ? cause
-                              : this.abortedException(opts, innerCtx, cause)
+                        this.isAborted(opts, aborter)
+                            ? this.abortedException(opts, innerCtx, cause)
+                            : this.streamFailedException(opts, innerCtx, response, cause)
                 );
                 try {
                     await ret.whenCompleteAsync();
@@ -469,13 +466,10 @@ export class FetchService extends HoistService {
                 throw this.timeoutException(opts, callCtx, e, msg);
             }
 
-            if (!e.isHoistException) {
-                // Just two other cases where we expect this to *throw* -- Typically we get a fail status
-                throw this.isAborted(opts, aborter)
-                    ? this.abortedException(opts, callCtx, e)
-                    : this.serverUnavailableException(opts, callCtx, e);
-            }
-            throw e;
+            if (this.isAborted(opts, aborter)) throw this.abortedException(opts, callCtx, e);
+
+            // Any other non-Hoist error means the server could not be reached.
+            throw e.isHoistException ? e : this.serverUnavailableException(opts, callCtx, e);
         } finally {
             if (!streamAborter) this.releaseAutoAbortKey(autoAbortKey, aborter);
         }
@@ -731,15 +725,17 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Create an Error to throw when a fetch call is aborted.
+     * Create an Error to throw when a fetch call is aborted - or pass through the abort reason,
+     * if a caller aborted with a Hoist exception.
      * @param fetchOptions - original options passed to FetchService.
-     * @param cause - object thrown by native fetch
+     * @param cause - object thrown by native fetch, which is the abort reason
      */
     private abortedException(
         fetchOptions: FetchOptions,
         callContext: CallContextLike,
         cause: any
-    ): FetchException {
+    ): HoistException {
+        if (cause?.isHoistException) return cause;
         return this.createException({
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
