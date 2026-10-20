@@ -220,10 +220,13 @@ export class FetchService extends HoistService {
                     this.fetchInternalAsync(opts, innerCtx, aborter),
                     opts,
                     this.getInterner(opts.internStrings),
+                    // A Hoist exception as abort reason passes through, as in the request phase.
                     (cause, response) =>
-                        this.isAborted(opts, aborter)
-                            ? this.abortedException(opts, innerCtx, cause)
-                            : this.streamFailedException(opts, innerCtx, response, cause)
+                        !this.isAborted(opts, aborter)
+                            ? this.streamFailedException(opts, innerCtx, response, cause)
+                            : cause?.isHoistException
+                              ? cause
+                              : this.abortedException(opts, innerCtx, cause)
                 );
                 try {
                     await ret.whenCompleteAsync();

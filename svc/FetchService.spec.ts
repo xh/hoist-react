@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {FetchService} from '@xh/hoist/svc';
 import {hoistCore, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {LocalDate, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
@@ -313,6 +314,22 @@ describe('FetchService', () => {
             stream.abort('User stopped');
             await expect(result).rejects.toMatchObject({isFetchAborted: true});
             await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
+        });
+
+        it('throws an abort reason that is a Hoist exception as is', async () => {
+            serve(xhUrl('test/report'), () => hang());
+            serve(xhUrl('test/stream'), () => openStream());
+            const reason = Exception.create({name: 'Chat Stopped', message: 'Stopped by user'}),
+                request = new AbortController(),
+                stream = new AbortController(),
+                result = XH.fetchJson({url: 'test/report', fetchOpts: {signal: request.signal}}),
+                {lines} = XH.fetchNdjson({url: 'test/stream', fetchOpts: {signal: stream.signal}});
+            await lines.next();
+
+            request.abort(reason);
+            stream.abort(reason);
+            await expect(result).rejects.toBe(reason);
+            await expect(lines.next()).rejects.toBe(reason);
         });
 
         it('aborts a stream mid-read', async () => {
