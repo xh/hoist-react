@@ -269,7 +269,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private providers: ViewManagerProvider<any>[] = [];
 
     /** Count of calls to {@link loadViewAsync}, used to identify the latest. */
-    private loadCount = 0;
+    private viewLoadCount = 0;
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
@@ -727,8 +727,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     ): Promise<void> {
         // Loads can overlap, e.g. a view selected while another is still loading. Only the latest
         // applies its view or reports a failure, so a slower earlier load cannot replace it.
-        const loadNum = ++this.loadCount,
-            isStale = () => loadNum !== this.loadCount;
+        const loadNum = ++this.viewLoadCount,
+            isStale = () => loadNum !== this.viewLoadCount;
 
         return this.dataAccess
             .fetchViewAsync(token, ctx)
