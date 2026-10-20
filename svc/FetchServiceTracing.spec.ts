@@ -53,7 +53,7 @@ describe('FetchService', () => {
         it('applies an app-wide default from FetchService.defaults', async () => {
             const {defaults} = FetchService,
                 {propagateTrace} = defaults;
-            defaults.propagateTrace = opts => opts.url.startsWith('https://partner.example.com');
+            defaults.propagateTrace = opts => opts.url.startsWith('https://partner.example.com/');
             onTestFinished(() => {
                 defaults.propagateTrace = propagateTrace;
             });
