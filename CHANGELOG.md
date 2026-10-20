@@ -38,6 +38,8 @@
 * Fixed `ViewManagerModel` dashboards picking up a change made in the prior view just before a
   switch, which marked the new view dirty. A destroyed `PersistenceProvider` now writes any pending
   change at once.
+* Fixed desktop tab switcher context menus throwing for an `extraMenuItems` entry with a static
+  `items` submenu. Items a `prepareFn` adds now also receive the tab in their `actionFn`.
 
 ### ⚙️ Technical
 
