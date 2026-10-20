@@ -159,7 +159,8 @@ When the owning component unmounts, Hoist destroys the model by calling `destroy
 3. Calls `XH.safeDestroy()` on all objects registered via `markManaged()`
 4. Calls `XH.safeDestroy()` on all properties decorated with `@managed`
 
-This cascade ensures child models, stores, and other resources are cleaned up automatically. The
+This cascade ensures child models, stores, and other resources are cleaned up automatically. If one
+object's `destroy()` throws, the error is logged and the rest are still destroyed. The
 `@managed` decorator is the primary mechanism for declaring ownership:
 
 ```typescript

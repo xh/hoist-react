@@ -13,15 +13,20 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - trace headers on cross-origin fetches)
+### 🎁 New Features
+* `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
+  consumer closes the connection early.
 
-* `FetchService` now sends the `traceparent` header only to the app's own server, so cross-origin
-  requests cannot fail a CORS preflight on it. Set `propagateTrace` to send it elsewhere.
+### 🐞 Bug Fixes
+* Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
+  `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
+  custom reason reports as "Fetch Aborted".
+
+
+## 89.2.0 - 2026-10-20
 
 ### 🎁 New Features
 
-* `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
-  consumer closes the connection early.
 * Added `FetchOptions.propagateTrace` and `FetchService.defaults.propagateTrace` to choose which
   requests carry a `traceparent` header, with `FetchService.isHoistServerUrl()` as the default.
 * `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
@@ -42,15 +47,17 @@
   change at once.
 * Fixed desktop tab switcher context menus throwing for an `extraMenuItems` entry with a static
   `items` submenu. Items a `prepareFn` adds now also receive the tab in their `actionFn`.
-* Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
-  `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
-  custom reason reports as "Fetch Aborted".
+* Fixed `XH.safeDestroy()` stopping at the first `destroy()` that threw, which left the remaining
+  objects - and the rest of a model's managed children - undestroyed. It now logs the error.
 
 ### ⚙️ Technical
 
 * Added protected `PersistenceProvider.cancelPendingWrite()`. `pushStateToTarget()` now drops any
   pending write. A custom provider that overrides it without calling `super` should call this
   method.
+* `FetchService` now sends the `traceparent` header only to the app's own server, so cross-origin
+  requests cannot fail a CORS preflight on it. Set `propagateTrace` to send it elsewhere.
+
 
 ## 89.1.0 - 2026-10-19
 
