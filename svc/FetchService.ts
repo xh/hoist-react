@@ -70,6 +70,22 @@ export class FetchService extends HoistService {
         propagateTrace: opts => FetchService.isHoistServerUrl(opts.url)
     };
 
+    /**
+     * Does a request url target the app's own server? True for relative and root-relative urls,
+     * and for absolute urls on the origin of the page or of {@link XH.baseUrl}. The default for
+     * `defaults.propagateTrace` - call it from a custom function to extend that default.
+     */
+    static isHoistServerUrl(url: string): boolean {
+        if (!url?.includes('//')) return true;
+        try {
+            const {origin} = window.location,
+                target = new URL(url, origin).origin;
+            return target === origin || target === new URL(XH.baseUrl, origin).origin;
+        } catch {
+            return false;
+        }
+    }
+
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     /**
@@ -411,21 +427,6 @@ export class FetchService extends HoistService {
         if (!isNil(opts.propagateTrace)) return opts.propagateTrace;
         const {propagateTrace} = FetchService.defaults;
         return isFunction(propagateTrace) ? propagateTrace(opts) : propagateTrace;
-    }
-
-    /**
-     * Does a request url target the app's own server? True for relative and root-relative urls,
-     * and for absolute urls on the origin of the page or of {@link XH.baseUrl}.
-     */
-    private static isHoistServerUrl(url: string): boolean {
-        if (!url?.includes('//')) return true;
-        try {
-            const {origin} = window.location,
-                target = new URL(url, origin).origin;
-            return target === origin || target === new URL(XH.baseUrl, origin).origin;
-        } catch {
-            return false;
-        }
     }
 
     private async managedFetchAsync(opts: FetchOptions, callCtx: CallContext): Promise<any> {

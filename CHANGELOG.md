@@ -22,7 +22,8 @@
 ### 🎁 New Features
 
 * Added `FetchOptions.propagateTrace` and `FetchService.defaults.propagateTrace` to choose which
-  requests carry a `traceparent` header. Requests without one still record a client span.
+  requests carry a `traceparent` header. Requests without one still record a client span. A custom
+  default can call `FetchService.isHoistServerUrl()` to keep the built-in check.
 * `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
   The add view menus of `DashContainer` and `DashCanvas` show each level as a submenu, and
   `DashCanvasWidgetChooser` shows each as a card. Existing group names that contain `/` now nest.

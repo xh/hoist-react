@@ -131,10 +131,12 @@ await XH.fetchJson({url: 'https://pricing.example.com/quote', propagateTrace: tr
 
 // Every request, in the app's Bootstrap module - a boolean, or a function of the FetchOptions
 FetchService.defaults.propagateTrace = opts =>
-    !opts.url.includes('//') || opts.url.startsWith('https://pricing.example.com/');
+    FetchService.isHoistServerUrl(opts.url) ||
+    new URL(opts.url, window.location.href).origin === 'https://pricing.example.com';
 ```
 
-A function default replaces the built-in check, so include the app's own server in it as shown. Set
+A function default replaces the built-in check. Call `FetchService.isHoistServerUrl()` in it, as
+shown, to keep sending the header to the app's own server. Set
 `propagateTrace: false` on a request to omit the header for that request only.
 
 ### Joining a remote trace

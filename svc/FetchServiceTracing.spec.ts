@@ -53,18 +53,23 @@ describe('FetchService', () => {
         it('applies an app-wide default from FetchService.defaults', async () => {
             const {defaults} = FetchService,
                 {propagateTrace} = defaults;
-            defaults.propagateTrace = opts => opts.url.startsWith('https://partner.example.com/');
+            defaults.propagateTrace = opts =>
+                FetchService.isHoistServerUrl(opts.url) ||
+                new URL(opts.url, window.location.href).origin === 'https://partner.example.com';
             onTestFinished(() => {
                 defaults.propagateTrace = propagateTrace;
             });
 
             const partner = serve('https://partner.example.com/orders'),
-                own = serve(xhUrl('test/data'));
+                own = serve(xhUrl('test/data')),
+                other = serve('https://api.example.com/rates');
             await XH.fetchJson({url: 'https://partner.example.com/orders'});
             await XH.fetchJson({url: 'test/data'});
+            await XH.fetchJson({url: 'https://api.example.com/rates'});
 
             expect(partner[0].headers.get('traceparent')).toMatch(TRACEPARENT);
-            expect(own[0].headers.get('traceparent')).toBeNull();
+            expect(own[0].headers.get('traceparent')).toMatch(TRACEPARENT);
+            expect(other[0].headers.get('traceparent')).toBeNull();
         });
 
         it('honors the option for streamed NDJSON requests', async () => {
