@@ -404,7 +404,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 });
 
                 // Fast-forward the current view if it was updated elsewhere.
-                // Skip while an explicit view load pending -- this is subordinate background work
+                // Skip while an explicit view load is pending - this is subordinate background work
                 const {view} = this;
                 if (!view.isDefault && !this.selectTask.isPending) {
                     const latestInfo = find(views, {token: view.token});
