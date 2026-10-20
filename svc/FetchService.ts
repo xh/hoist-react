@@ -213,18 +213,23 @@ export class FetchService extends HoistService {
         // The runner will manage the lifecycle, but we won't await it here -- return
         // the result straight away. Also stifle telemetry exception. Stream already produces them.
         let ret: NdjsonResultImpl;
+        const aborter = new AbortController();
         runner
             .run(async innerCtx => {
                 ret = new NdjsonResultImpl(
-                    this.fetchInternalAsync(opts, innerCtx, true),
+                    this.fetchInternalAsync(opts, innerCtx, aborter),
                     opts,
                     this.getInterner(opts.internStrings),
                     (cause, response) =>
-                        cause?.name === 'AbortError'
+                        this.isAborted(opts, aborter)
                             ? this.abortedException(opts, innerCtx, cause)
                             : this.streamFailedException(opts, innerCtx, response, cause)
                 );
-                await ret.whenCompleteAsync();
+                try {
+                    await ret.whenCompleteAsync();
+                } finally {
+                    this.releaseAutoAbortKey(opts.autoAbortKey, aborter);
+                }
             })
             .catch(noop);
         return ret;
@@ -311,15 +316,17 @@ export class FetchService extends HoistService {
     private static readonly defaultIdGenerator = new ShortUniqueId({length: 16});
 
     /**
-     * @param forStreaming - true when called by fetchNdjson, which applies its own span and
-     *      track across the full stream lifetime - suppresses both here.
+     * @param streamAborter - aborter for a stream, set by fetchNdjson. It applies its own span and
+     *      track across the full stream lifetime - suppresses both here - and releases any
+     *      autoAbortKey once the stream completes.
      */
     private async fetchInternalAsync(
         opts: FetchOptions,
         ctx?: CallContextLike,
-        forStreaming: boolean = false
+        streamAborter: AbortController = null
     ): Promise<any> {
         ctx ??= {};
+        const forStreaming = !!streamAborter;
 
         let spanConfig = forStreaming ? null : this.createSpanConfig(opts),
             runner = spanConfig ? this.runner(ctx).span(spanConfig) : this.runner(ctx),
@@ -327,7 +334,7 @@ export class FetchService extends HoistService {
                 opts = this.withCorrelationId(opts);
                 opts = this.withTraceId(opts, ctx.span);
                 return this.withResolvedHeadersAsync(opts, ctx.span).then(opts =>
-                    this.managedFetchAsync(opts, ctx)
+                    this.managedFetchAsync(opts, ctx, streamAborter)
                 );
             });
 
@@ -428,15 +435,19 @@ export class FetchService extends HoistService {
         return isFunction(propagateTrace) ? propagateTrace(opts) : propagateTrace;
     }
 
-    private async managedFetchAsync(opts: FetchOptions, callCtx: CallContext): Promise<any> {
+    private async managedFetchAsync(
+        opts: FetchOptions,
+        callCtx: CallContext,
+        streamAborter: AbortController
+    ): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
-            aborter = new AbortController();
+            aborter = streamAborter ?? new AbortController();
 
         // autoAbortKey handling.  Abort anything running under this key, and mark this run
         if (autoAbortKey) {
-            autoAborters[autoAbortKey]?.abort();
+            this.abort(autoAbortKey);
             autoAborters[autoAbortKey] = aborter;
         }
 
@@ -455,17 +466,24 @@ export class FetchService extends HoistService {
                 throw this.timeoutException(opts, callCtx, e, msg);
             }
 
-            if (!e.isHoistException) {
-                // Just two other cases where we expect this to *throw* -- Typically we get a fail status
-                throw e.name === 'AbortError'
-                    ? this.abortedException(opts, callCtx, e)
-                    : this.serverUnavailableException(opts, callCtx, e);
-            }
-            throw e;
+            if (this.isAborted(opts, aborter)) throw this.abortedException(opts, callCtx, e);
+            if (e.isHoistException) throw e;
+
+            // Any other error means the server could not be reached.
+            throw this.serverUnavailableException(opts, callCtx, e);
         } finally {
-            if (autoAborters[autoAbortKey] === aborter) {
-                delete autoAborters[autoAbortKey];
-            }
+            if (!streamAborter) this.releaseAutoAbortKey(autoAbortKey, aborter);
+        }
+    }
+
+    // Fetch listens to both signals, joined - check each, as a custom abort reason is no AbortError.
+    private isAborted(opts: FetchOptions, aborter: AbortController): boolean {
+        return aborter.signal.aborted || !!opts.fetchOpts?.signal?.aborted;
+    }
+
+    private releaseAutoAbortKey(autoAbortKey: string, aborter: AbortController) {
+        if (autoAbortKey && this.autoAborters[autoAbortKey] === aborter) {
+            delete this.autoAborters[autoAbortKey];
         }
     }
 
@@ -478,16 +496,17 @@ export class FetchService extends HoistService {
         let {url, method, headers, body, params} = opts;
         url = this.resolveUrl(url);
 
-        // 2) Prepare options for fetch API
-        const fetchOpts: RequestInit = {
-            signal: aborter.signal,
-            credentials: 'include',
-            redirect: 'follow',
-            headers: new Headers(omitBy(headers, isNil)),
-            method,
-            body,
-            ...opts.fetchOpts
-        };
+        // 2) Prepare options for fetch API. Join any caller signal with ours, so either aborts.
+        const {signal, ...callerFetchOpts} = opts.fetchOpts ?? {},
+            fetchOpts: RequestInit = {
+                credentials: 'include',
+                redirect: 'follow',
+                headers: new Headers(omitBy(headers, isNil)),
+                method,
+                body,
+                ...callerFetchOpts,
+                signal: signal ? AbortSignal.any([aborter.signal, signal]) : aborter.signal
+            };
 
         // 3) Preprocess and apply params
         if (params) {

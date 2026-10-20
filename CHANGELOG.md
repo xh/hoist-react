@@ -13,6 +13,16 @@
 -->
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
+  consumer closes the connection early.
+
+### 🐞 Bug Fixes
+* Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
+  `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
+  custom reason reports as "Fetch Aborted".
+
+
 ## 89.2.0 - 2026-10-20
 
 ### 🎁 New Features
