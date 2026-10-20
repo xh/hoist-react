@@ -467,9 +467,10 @@ export class FetchService extends HoistService {
             }
 
             if (this.isAborted(opts, aborter)) throw this.abortedException(opts, callCtx, e);
+            if (e.isHoistException) throw e;
 
-            // Any other non-Hoist error means the server could not be reached.
-            throw e.isHoistException ? e : this.serverUnavailableException(opts, callCtx, e);
+            // Any other error means the server could not be reached.
+            throw this.serverUnavailableException(opts, callCtx, e);
         } finally {
             if (!streamAborter) this.releaseAutoAbortKey(autoAbortKey, aborter);
         }
