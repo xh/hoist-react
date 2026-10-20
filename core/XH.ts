@@ -928,7 +928,7 @@ export class XHApi {
                 try {
                     it?.destroy?.();
                 } catch (e) {
-                    logError(e, it);
+                    logError(['Error destroying object', e], it);
                 }
             });
         }
