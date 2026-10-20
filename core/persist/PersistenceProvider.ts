@@ -155,8 +155,7 @@ export abstract class PersistenceProvider<S = any> {
     destroy() {
         this.disposer?.();
 
-        // Write any change still pending now, rather than from a timer once this provider is gone.
-        // A failed write must not abort the destroy of this provider's owner.
+        // Flush pending write now; don't let a failure abort owner's destroy.
         try {
             this.debouncedWrite?.flush();
         } catch (e) {
@@ -233,10 +232,7 @@ export abstract class PersistenceProvider<S = any> {
         return null;
     }
 
-    /**
-     * Drop any debounced write still pending. For a subclass that overrides `pushStateToTarget()`
-     * without calling super.
-     */
+    /** Drop any debounced write still pending. */
     protected cancelPendingWrite() {
         this.debouncedWrite?.cancel();
     }
