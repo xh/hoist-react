@@ -403,9 +403,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     this.serverManageGlobal = manageGlobal ?? null;
                 });
 
-                // Fast-forward the current view if it was updated elsewhere. Read it here, as a
-                // selection can change it during the fetch. Skip while a view load is pending - a
-                // fast-forward would overtake it.
+                // Fast-forward the current view if it was updated elsewhere.
+                // Skip while an explicit view load pending -- this is subordinate background work
                 const {view} = this;
                 if (!view.isDefault && !this.selectTask.isPending) {
                     const latestInfo = find(views, {token: view.token});
@@ -476,7 +475,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     .updateViewValueAsync(view, pendingValue.value, ctx)
                     .linkTo(this.saveTask);
 
-                this.setAsSavedView(updated, pendingValue);
+                this.applySavedView(updated, pendingValue);
                 this.noteSuccess(`Saved ${view.typedName}`);
 
                 this.refreshAsync();
@@ -725,7 +724,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         pendingValue: PendingValue<T> = null,
         ctx: CallContext
     ): Promise<void> {
-        // Only the latest of overlapping loads applies its view or reports a failure.
         const loadNum = ++this.viewLoadCount,
             isStale = () => loadNum !== this.viewLoadCount;
 
@@ -754,7 +752,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                         .updateViewValueAsync(view, pendingValue.value, ctx)
                         .linkTo(this.saveTask);
 
-                    this.setAsSavedView(updated, pendingValue);
+                    this.applySavedView(updated, pendingValue);
                 } catch (e) {
                     // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
                     // Keep count and alert server and user once at count n?
@@ -767,9 +765,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             });
     }
 
-    /** Install a saved view, keeping as pending any value set while the save was in flight. */
+    /**
+     * Apply the result of a save. Install the saved view if it is still current, keeping as pending
+     * any value set while the save was in flight.
+     */
     @action
-    private setAsSavedView(saved: View<T>, sent: PendingValue<T>) {
+    private applySavedView(saved: View<T>, sent: PendingValue<T>) {
         // The user selected another view while this save was in flight. Update its entry in the
         // views list, but keep the current view. A view removed from the list meanwhile stays out.
         if (saved.token !== this.view.token) {
