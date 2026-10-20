@@ -765,14 +765,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             });
     }
 
-    /**
-     * Apply the result of a save. Install the saved view if it is still current, keeping as pending
-     * any value set while the save was in flight.
-     */
+    /** Apply a completed save, installing the saved view only if it is still current. */
     @action
     private applySavedView(saved: View<T>, sent: PendingValue<T>) {
-        // The user selected another view while this save was in flight. Update its entry in the
-        // views list, but keep the current view. A view removed from the list meanwhile stays out.
+        // User has moved on - just update the list entry (map, so a deleted view stays out).
         if (saved.token !== this.view.token) {
             this.views = this.views.map(it => (it.token === saved.token ? saved.info : it));
             return;
