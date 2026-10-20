@@ -11,12 +11,7 @@
      codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
-## 90.0.0-SNAPSHOT - unreleased
-
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - trace headers on cross-origin fetches)
-
-* `FetchService` now sends the `traceparent` header only to the app's own server, so cross-origin
-  requests cannot fail a CORS preflight on it. Set `propagateTrace` to send it elsewhere.
+## 89.2.0 - 2026-10-20
 
 ### 🎁 New Features
 
@@ -48,6 +43,9 @@
 * Added protected `PersistenceProvider.cancelPendingWrite()`. `pushStateToTarget()` now drops any
   pending write. A custom provider that overrides it without calling `super` should call this
   method.
+* `FetchService` now sends the `traceparent` header only to the app's own server, so cross-origin
+  requests cannot fail a CORS preflight on it. Set `propagateTrace` to send it elsewhere.
+
 
 ## 89.1.0 - 2026-10-19
 
