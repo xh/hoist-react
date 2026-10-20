@@ -316,7 +316,7 @@ describe('FetchService', () => {
             await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
         });
 
-        it('throws an abort reason that is a Hoist exception as is', async () => {
+        it('wraps an abort reason that is a Hoist exception as the cause', async () => {
             serve(xhUrl('test/report'), () => hang());
             serve(xhUrl('test/stream'), () => openStream());
             const reason = Exception.create({name: 'Chat Stopped', message: 'Stopped by user'}),
@@ -328,8 +328,8 @@ describe('FetchService', () => {
 
             request.abort(reason);
             stream.abort(reason);
-            await expect(result).rejects.toBe(reason);
-            await expect(lines.next()).rejects.toBe(reason);
+            await expect(result).rejects.toMatchObject({isFetchAborted: true, cause: reason});
+            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true, cause: reason});
         });
 
         it('aborts a stream mid-read', async () => {

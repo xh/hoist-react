@@ -6,9 +6,9 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {Exception, type HoistException} from '@xh/hoist/exception';
+import {Exception} from '@xh/hoist/exception';
 import {noop} from 'lodash';
-import type {NdjsonFetchOptions, NdjsonResult} from '../FetchService';
+import type {FetchException, NdjsonFetchOptions, NdjsonResult} from '../FetchService';
 import {StringInterner} from './StringInterner';
 
 /**
@@ -42,7 +42,7 @@ export class NdjsonResultImpl implements NdjsonResult {
         private response: Promise<Response>,
         opts: NdjsonFetchOptions,
         private interner: StringInterner,
-        private enrichError: (cause: any, response: Response) => HoistException
+        private enrichError: (cause: any, response: Response) => FetchException
     ) {
         this.completion = new Promise<void>(
             (res, rej) => (this.onComplete = err => (err ? rej(err) : res()))

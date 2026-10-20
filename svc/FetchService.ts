@@ -725,17 +725,15 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Create an Error to throw when a fetch call is aborted - or pass through the abort reason,
-     * if a caller aborted with a Hoist exception.
+     * Create an Error to throw when a fetch call is aborted.
      * @param fetchOptions - original options passed to FetchService.
-     * @param cause - object thrown by native fetch, which is the abort reason
+     * @param cause - object thrown by native fetch
      */
     private abortedException(
         fetchOptions: FetchOptions,
         callContext: CallContextLike,
         cause: any
-    ): HoistException {
-        if (cause?.isHoistException) return cause;
+    ): FetchException {
         return this.createException({
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
