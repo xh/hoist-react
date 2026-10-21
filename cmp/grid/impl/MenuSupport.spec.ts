@@ -30,8 +30,9 @@ describe('Grid header context menu', () => {
             'Hide Column',
             'Autosize Column',
             'separator',
-            'Autosize Columns',
-            'Restore Grid Defaults'
+            'Restore Grid Defaults',
+            'separator',
+            'Autosize Columns'
         ]);
     });
 
@@ -39,7 +40,7 @@ describe('Grid header context menu', () => {
         const gridModel = createGridModel(),
             items = headerItems(gridModel, null);
 
-        expect(texts(items)).toEqual(['Autosize Columns', 'Restore Grid Defaults']);
+        expect(texts(items)).toEqual(['Restore Grid Defaults', 'separator', 'Autosize Columns']);
     });
 
     it('offers the column chooser only when the grid has one', () => {

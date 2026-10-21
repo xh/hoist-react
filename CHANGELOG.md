@@ -29,8 +29,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   chooser. Set `false` to show none. Requires ag-Grid's `ColumnMenuModule` (part of `MenuModule`).
 * Added `sortAsc`, `sortDesc`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which
   act on the clicked column, and `Column.availableSorts`.
-* The default `GridModel.contextMenu` now ends with the column chooser, autosize and restore
-  defaults items as one group, matching the header menu.
 
 
 ## 89.3.0 - 2026-10-21
