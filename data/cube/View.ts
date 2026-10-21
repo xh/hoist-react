@@ -25,7 +25,7 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {castArray, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
@@ -258,9 +258,13 @@ export class View
 
     /** Gather all unique values for each dimension field in the query. */
     getDimensionValues(): DimensionValue[] {
-        const ret = this.query.fields
-            .filter(it => it.isDimension)
-            .map(field => ({field, values: new Set<any>()}));
+        // Applied dimensions are appended for queries that do not auto-include them in fields.
+        const {query} = this,
+            dimFields = uniq([
+                ...query.fields.filter(it => it.isDimension),
+                ...(query.dimensions ?? [])
+            ]),
+            ret = dimFields.map(field => ({field, values: new Set<any>()}));
 
         this._leafMap.forEach(leaf => {
             const {data} = leaf.cubeRecord;

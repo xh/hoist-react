@@ -22,6 +22,14 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### 🎁 New Features
+
+* Added `QueryConfig.autoIncludeDimensions` (default `true`, the established behavior). Set
+  `false` to keep an explicit `fields` list exactly as specified: dimension values are then not
+  published on row data, so row shape no longer varies with grouping and every leaf survives any
+  regroup. If you set this flag and need these values for grid columns or in your
+  `lockFn`/`omitFn`/`bucketSpecFn`, specify your dimension explicitly in `fields`.
+
 
 ## 89.3.0 - 2026-10-21
 
