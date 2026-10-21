@@ -22,18 +22,25 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
-### ⚙️ Technical
+### 🐞 Bug Fixes
+* Fixed a spec file in `@xh/hoist/test-support` failing with an unhandled error when it ended
+  within 5 seconds of boot. The kit now sends pending pref, activity, metric and span pushes before
+  it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
 
+### ⚙️ Technical
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
-  Keys and JSON values are stored exactly as before. A value that is not valid JSON now reads as
-  missing rather than as a raw string. A custom subclass of `BaseStorageService` now implements
-  the `browserStorage` getter in place of `storeInstance`. Removed the unused `isFake` getter - when
+  Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
 
 ### 📚 Libraries
 
 * store2 `removed`
 
+## 89.3.1 - 2026-10-21
+
+### 🐞 Bug Fixes
+* Fixed pinned columns scrolling out of view in the summary row of mobile grids during horizontal
+  scroll.
 
 ## 89.3.0 - 2026-10-21
 
