@@ -17,13 +17,10 @@ import {
     isString,
     isUndefined,
     mergeWith,
-    mixin,
     uniq,
     uniqBy
 } from 'lodash';
-import _inflection from 'lodash-inflection';
-
-mixin(_inflection);
+import * as inflection from 'inflection';
 
 /**
  * Get a cached value on an object, creating it if it does not yet exist.
@@ -179,7 +176,7 @@ export function ensureUniqueBy(arr: any[], uniqueKey: string, exceptionMessage?:
  * Returns the singular version of the plural word passed to it.
  */
 export function singularize(s: string): string {
-    return _inflection.singularize(s);
+    return inflection.singularize(s);
 }
 
 /**
@@ -190,7 +187,9 @@ export function singularize(s: string): string {
  * @param includeCount - include count in the output
  */
 export function pluralize(s: string, count?: number, includeCount?: boolean): string {
-    return _inflection.pluralize(s, count, includeCount);
+    if (count == null) return inflection.pluralize(s);
+    const ret = inflection.inflect(s, count);
+    return includeCount ? `${count} ${ret}` : ret;
 }
 
 /**
@@ -199,7 +198,7 @@ export function pluralize(s: string, count?: number, includeCount?: boolean): st
  * @param n - the number to ordinalize
  */
 export function ordinalize(n: number): string {
-    return _inflection.ordinalize(n);
+    return inflection.ordinalize(String(n));
 }
 
 /**

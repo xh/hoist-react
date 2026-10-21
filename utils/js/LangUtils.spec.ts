@@ -6,7 +6,15 @@
  */
 import {HoistModel, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {mergeDeep, parseNameSource, pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    mergeDeep,
+    ordinalize,
+    parseNameSource,
+    pluralize,
+    singularize,
+    throwIf,
+    withDefault
+} from '@xh/hoist/utils/js';
 import {describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -100,12 +108,33 @@ describe('LangUtils', () => {
 
     describe('pluralize', () => {
         it('pluralizes to match a count, optionally prefixed with that count', () => {
-            // Pins the contract of this wrapper over the unmaintained lodash-inflection package.
+            // Pins the contract of this wrapper over the inflection package.
             expect(pluralize('role', 1, true)).toBe('1 role');
             expect(pluralize('role', 0, true)).toBe('0 roles');
             expect(pluralize('selected entry', 3, true)).toBe('3 selected entries');
+            expect(pluralize('Hibernate Cache', 2, true)).toBe('2 Hibernate Caches');
             expect(pluralize('file', 1)).toBe('file');
             expect(pluralize('person')).toBe('people');
+            expect(pluralize('roles', 1)).toBe('role');
+        });
+    });
+
+    describe('singularize', () => {
+        it('returns the singular form of a plural word', () => {
+            expect(singularize('entries')).toBe('entry');
+            expect(singularize('people')).toBe('person');
+            expect(singularize('selected entries')).toBe('selected entry');
+        });
+    });
+
+    describe('ordinalize', () => {
+        it('appends the ordinal suffix for a number', () => {
+            expect(ordinalize(1)).toBe('1st');
+            expect(ordinalize(2)).toBe('2nd');
+            expect(ordinalize(3)).toBe('3rd');
+            expect(ordinalize(11)).toBe('11th');
+            expect(ordinalize(22)).toBe('22nd');
+            expect(ordinalize(113)).toBe('113th');
         });
     });
 

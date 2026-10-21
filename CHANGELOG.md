@@ -22,6 +22,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### 📚 Libraries
+
+* inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
+* lodash-inflection `removed`
+
 
 ## 89.3.0 - 2026-10-21
 
