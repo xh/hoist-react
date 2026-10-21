@@ -20,7 +20,7 @@ See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-n
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
-  and `withCommas` instead. Passing it fails to compile and throws at runtime.
+  and `withCommas` instead.
 
 
 ## 89.3.0 - 2026-10-21
