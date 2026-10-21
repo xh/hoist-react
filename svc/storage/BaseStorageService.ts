@@ -18,13 +18,7 @@ export abstract class BaseStorageService extends HoistService {
 
     constructor() {
         super();
-        this.area = this.loadStorageOrNull();
-        if (!this.area) {
-            this.logWarn(
-                'Browser storage is unavailable - values will be held in memory and lost when the page closes.'
-            );
-            this.area = {};
-        }
+        this.area = this.loadStorageArea();
     }
 
     /** Returns the stored value, or the default (else null) if missing or not valid JSON. */
@@ -71,8 +65,8 @@ export abstract class BaseStorageService extends HoistService {
     /** The browser storage area to use. Access can throw when storage is disabled. */
     protected abstract get browserStorage(): Storage;
 
-    /** The browser storage area, confirmed to accept writes, or null if unavailable. */
-    private loadStorageOrNull(): Storage {
+    /** The browser storage area, confirmed to accept writes, or an in-memory object if not. */
+    private loadStorageArea(): Record<string, string> {
         try {
             const ret = this.browserStorage,
                 testKey = '_xhStorageProbe';
@@ -80,7 +74,10 @@ export abstract class BaseStorageService extends HoistService {
             ret.removeItem(testKey);
             return ret;
         } catch {
-            return null;
+            this.logWarn(
+                'Browser storage is unavailable - values will be held in memory and lost when the page closes.'
+            );
+            return {};
         }
     }
 
