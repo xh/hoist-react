@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type ViewInfo, ViewManagerModel, type ViewManagerConfig} from '@xh/hoist/cmp/viewmanager';
-import {HoistModel, persist, type PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, persist, type PersistOptions, type PlainObject, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http} from 'msw';
@@ -177,6 +177,95 @@ describe('ViewManagerModel', () => {
             expect(vmm.getValue()).toEqual({sortBy: 'sector'});
             expect(hoistCore.requestsTo('xhView/get').at(-1).form).toEqual({token: 'firm'});
         });
+
+        // 90.0.0 - a slower, earlier view load replaced a later one.
+        describe('when selections overlap', () => {
+            beforeEach(() => addDeskViews());
+
+            it('applies the view selected last when an earlier selection loads after it', async () => {
+                const vmm = await createAsync(),
+                    model = createGroupingModel(vmm),
+                    {release} = holdView('east');
+                vi.useFakeTimers();
+
+                const east = vmm.selectViewAsync('east');
+                await vmm.selectViewAsync('west');
+                expect(vmm.selectTask.isPending).toBe(false);
+
+                release();
+                await east;
+                await vi.advanceTimersByTimeAsync(250);
+
+                expect(vmm.view.token).toBe('west');
+                expect(model.groupBy).toBe('desk');
+                expect(vmm.isValueDirty).toBe(false);
+            });
+
+            it('ignores the failure of a selection overtaken by a later one', async () => {
+                const vmm = await createAsync();
+                failNextView('east');
+                const {release} = holdView('east');
+
+                const east = vmm.selectViewAsync('east');
+                await vmm.selectViewAsync('west');
+                release();
+
+                await expect(east).resolves.toBeUndefined();
+                expect(vmm.view.token).toBe('west');
+            });
+
+            it('reports the failure of the latest selection', async () => {
+                const vmm = await createAsync(),
+                    {release} = holdView('east');
+                failNextView('west');
+
+                const east = vmm.selectViewAsync('east'),
+                    west = await vmm.selectViewAsync('west').then(
+                        () => 'loaded',
+                        () => 'failed'
+                    );
+                release();
+                await east;
+
+                expect(west).toBe('failed');
+                expect(vmm.view.token).not.toBe('east');
+            });
+        });
+    });
+
+    // 90.0.0 - a refresh reloaded the prior view over a newer selection.
+    describe('refreshAsync', () => {
+        beforeEach(() => addDeskViews());
+
+        it('keeps a selection that loads during a refresh over an update to the prior view', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            jsonBlobs.get('east').lastUpdated += 1000;
+
+            const {release} = holdRequests('xhView/allData'),
+                refresh = vmm.refreshAsync();
+            await vmm.selectViewAsync('west');
+            release();
+            await refresh;
+            await hoistCore.settleAsync();
+
+            expect(vmm.view.token).toBe('west');
+        });
+
+        it('keeps a selection still loading over a refresh that finds the current view updated', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            jsonBlobs.get('east').lastUpdated += 1000;
+
+            const {release} = holdView('west'),
+                west = vmm.selectViewAsync('west');
+            await vmm.refreshAsync();
+            release();
+            await west;
+            await hoistCore.settleAsync();
+
+            expect(vmm.view.token).toBe('west');
+        });
     });
 
     describe('saveAsync', () => {
@@ -277,6 +366,35 @@ describe('ViewManagerModel', () => {
             expect(vmm.view.value).toEqual({sortBy: 'name'});
             expect(vmm.getValue()).toEqual({sortBy: 'size'});
             expect(vmm.isValueDirty).toBe(true);
+        });
+
+        // 90.0.0 - a save that landed after a view switch reinstalled the prior view.
+        it('keeps the newly selected view when an auto-save of the prior view lands after it', async () => {
+            setState({currentView: 'mine', autoSave: true});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            vmm.setValue({sortBy: 'name'});
+            const {arrived, release} = holdRequests('xhView/updateValue', {once: true});
+            await vi.advanceTimersByTimeAsync(2000);
+            await arrived;
+
+            // Selecting a view saves the change again before it loads the view.
+            await vmm.selectViewAsync('firm');
+            const {lastUpdated} = findView(vmm, 'mine');
+
+            // The held save lands last, and is recorded in the views list. Views list times in
+            // whole seconds, so wait one before the save lands to give it a later time.
+            await vi.advanceTimersByTimeAsync(1000);
+            release();
+            await vi.waitFor(() =>
+                expect(findView(vmm, 'mine').lastUpdated).toBeGreaterThan(lastUpdated)
+            );
+            await vi.advanceTimersByTimeAsync(2000);
+
+            expect(vmm.view.token).toBe('firm');
+            expect(vmm.isValueDirty).toBe(false);
+            expect(jsonBlobs.get('mine').value).toEqual({sortBy: 'name'});
         });
     });
 
@@ -413,6 +531,63 @@ describe('ViewManagerModel', () => {
             expect(vmm.isValueDirty).toBe(true);
             expect(vmm.getValue()).toEqual({sortBy: 'name'});
         });
+
+        // 90.0.0 - a write pending at a view switch landed in the new view.
+        describe('when views are selected in quick succession', () => {
+            beforeEach(() => addDeskViews());
+
+            it('keeps a change made in the prior view out of the new one', async () => {
+                const vmm = await createAsync(),
+                    // A settleTime, as dashboards use, skips the write of the incoming view's
+                    // state, which would otherwise replace the pending one.
+                    model = createGroupingModel(vmm, {settleTime: 1000});
+                await vmm.selectViewAsync('east');
+
+                vi.useFakeTimers();
+                await vi.advanceTimersByTimeAsync(1001);
+                model.groupBy = 'trader';
+                await vmm.selectViewAsync('west');
+                await vi.advanceTimersByTimeAsync(250);
+
+                expect(model.groupBy).toBe('desk');
+                expect(vmm.isValueDirty).toBe(false);
+                expect(vmm.getValue()).toEqual({groupBy: 'desk'});
+            });
+
+            it('applies the new view to a model rebuilt across the switch', async () => {
+                const vmm = await createAsync();
+                vi.useFakeTimers();
+
+                // Applying a view queues a write of the model's state. The model is destroyed, as
+                // when its component unmounts, while that write is still pending.
+                const prior = createGroupingModel(vmm);
+                await vmm.selectViewAsync('east');
+                prior.destroy();
+                await vmm.selectViewAsync('west');
+                const model = createGroupingModel(vmm);
+                await vi.advanceTimersByTimeAsync(250);
+
+                expect(model.groupBy).toBe('desk');
+                expect(vmm.isValueDirty).toBe(false);
+                expect(createGroupingModel(vmm).groupBy).toBe('desk');
+            });
+
+            it('keeps a change made in the prior view out of the new one when its model is destroyed', async () => {
+                const vmm = await createAsync(),
+                    model = createGroupingModel(vmm, {settleTime: 1000});
+                await vmm.selectViewAsync('east');
+
+                vi.useFakeTimers();
+                await vi.advanceTimersByTimeAsync(1001);
+                model.groupBy = 'trader';
+                await vmm.selectViewAsync('west');
+                model.destroy();
+                expect(vmm.getValue()).toEqual({groupBy: 'desk'});
+
+                await vi.advanceTimersByTimeAsync(250);
+                expect(vmm.isValueDirty).toBe(false);
+            });
+        });
     });
 });
 
@@ -425,6 +600,27 @@ async function createAsync(config: Partial<ViewManagerConfig> = {}): Promise<Vie
     const ret = await ViewManagerModel.createAsync({type: TYPE, ...config});
     onTestFinished(() => ret.destroy());
     return ret;
+}
+
+/** Two views that group by different fields. */
+function addDeskViews() {
+    addView('east', 'East Desks', {value: {groupBy: 'region'}});
+    addView('west', 'West Desks', {value: {groupBy: 'desk'}});
+}
+
+/** A model bound to a view manager, writing its changes with the default 250ms debounce. */
+function createGroupingModel(vmm: ViewManagerModel, opts: PersistOptions = {}) {
+    class GroupingModel extends HoistModel {
+        override persistWith = {viewManagerModel: vmm, ...opts};
+        @bindable @persist accessor groupBy = 'none';
+    }
+    const ret = new GroupingModel();
+    onTestFinished(() => ret.destroy());
+    return ret;
+}
+
+function findView(vmm: ViewManagerModel, token: string): ViewInfo {
+    return vmm.views.find(it => it.token === token);
 }
 
 function firstGlobalView(views: ViewInfo[]): ViewInfo {
@@ -462,18 +658,52 @@ function allowGlobalWrites(allow: boolean) {
 
 /**
  * Hold requests to a path until released, then let the fake serve them. `arrived` resolves when
- * the first request arrives - the fake records a request only once it serves it.
+ * the first held request arrives - the fake records a request only once it serves it. With `once`,
+ * only the first request is held, and later ones go straight through.
  */
-function holdRequests(path: string): {arrived: Promise<void>; release: () => void} {
-    let onArrived: () => void, release: () => void;
+function holdRequests(
+    path: string,
+    {once = false, filter}: {once?: boolean; filter?: (req: Request) => Promise<boolean>} = {}
+): {arrived: Promise<void>; release: () => void} {
+    let onArrived: () => void,
+        release: () => void,
+        held = false;
     const arrived = new Promise<void>(resolve => (onArrived = resolve)),
         gate = new Promise<void>(resolve => (release = resolve));
     server.use(
-        http.post(xhUrl(path), async () => {
+        http.post(xhUrl(path), async ({request}) => {
+            if (once && held) return;
+            if (filter && !(await filter(request))) return;
+            held = true;
             onArrived();
             await gate;
-            // Return nothing, so the request falls through to the fake's own handler.
+            // Return nothing, so the request falls through to the next handler and the fake.
         })
     );
     return {arrived, release};
+}
+
+/** Hold fetches of one view until released. Fetches of other views go through. */
+function holdView(token: string): {arrived: Promise<void>; release: () => void} {
+    return holdRequests('xhView/get', {filter: async req => (await viewToken(req)) === token});
+}
+
+/**
+ * Answer the next fetch of one view with a server error. Call it before {@link holdView} for the
+ * same view, so a held fetch fails once released.
+ */
+function failNextView(token: string) {
+    let failed = false;
+    server.use(
+        http.post(xhUrl('xhView/get'), async ({request}) => {
+            if (failed || (await viewToken(request)) !== token) return;
+            failed = true;
+            return hoistError(500, {message: 'Database unavailable'});
+        })
+    );
+}
+
+/** The token of a view fetch, read from a copy of its form-encoded body. */
+async function viewToken(req: Request): Promise<string> {
+    return (await req.clone().formData()).get('token') as string;
 }

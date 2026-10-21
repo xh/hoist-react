@@ -11,6 +11,7 @@
      codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
+
 ## 90.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - number `formatConfig`)
@@ -20,6 +21,58 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead. Passing it fails to compile and throws at runtime.
+
+
+## 89.3.0 - 2026-10-21
+
+### 🎁 New Features
+* `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
+  consumer closes the connection early.
+
+### 🐞 Bug Fixes
+* Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
+  `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
+  custom reason reports as "Fetch Aborted".
+* Fixed oversized pinned column zones in the desktop column chooser. They now fit their columns.
+
+
+## 89.2.0 - 2026-10-20
+
+### 🎁 New Features
+
+* Added `FetchOptions.propagateTrace` and `FetchService.defaults.propagateTrace` to choose which
+  requests carry a `traceparent` header, with `FetchService.isHoistServerUrl()` as the default.
+* `DashViewSpec.groupName` now nests groups when it separates names with `/`, as in `Charts/Line`.
+  The add view menus of `DashContainer` and `DashCanvas` show each level as a submenu, and
+  `DashCanvasWidgetChooser` shows each as a card. Existing group names that contain `/` now nest.
+* `DashCanvas` add view menus and `DashCanvasWidgetChooser` now list each group where its first
+  view spec appears, as `DashContainer` does, not ahead of all ungrouped specs. To keep groups at
+  the top, define grouped specs first.
+
+### 🐞 Bug Fixes
+
+* Fixed `ViewManagerModel` reinstalling the prior view when a save of it finished after the user
+  selected another view. Auto-save could then write the new view's state into the prior view.
+* Fixed `ViewManagerModel` installing an earlier selected view when it finished loading after a
+  later one. A refresh also reloaded the prior view over a newer selection.
+* Fixed `ViewManagerModel` dashboards picking up a change made in the prior view just before a
+  switch, which marked the new view dirty. A destroyed `PersistenceProvider` now writes any pending
+  change at once.
+* Fixed desktop tab switcher context menus throwing for an `extraMenuItems` entry with a static
+  `items` submenu. Items a `prepareFn` adds now also receive the tab in their `actionFn`.
+* Fixed `XH.safeDestroy()` stopping at the first `destroy()` that threw, which left the remaining
+  objects - and the rest of a model's managed children - undestroyed. It now logs the error.
+
+### ⚙️ Technical
+
+* Added protected `PersistenceProvider.cancelPendingWrite()`. `pushStateToTarget()` now drops any
+  pending write. A custom provider that overrides it without calling `super` should call this
+  method.
+* `FetchService` now sends the `traceparent` header only to the app's own server, so cross-origin
+  requests cannot fail a CORS preflight on it. Set `propagateTrace` to send it elsewhere.
+
+
+## 89.1.0 - 2026-10-19
 
 ### 🎁 New Features
 
@@ -41,6 +94,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
   was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
   `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
+* Fixed a grouped `Grid` showing its grouped column again on any column state change, such as a
+  resize, an autosize or a view restore. A header drag while grouped also saved the column as
+  hidden, so it stayed hidden after ungrouping.
 * Fixed `onShowLazy` tabs and other managed refresh contexts replaying a missed auto-refresh as a
   manual refresh when shown. The replay now stays an auto-refresh unless a missed refresh was manual.
 * Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
