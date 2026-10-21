@@ -26,12 +26,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
 
-
 ### 🐞 Bug Fixes
 
 * Fixed a spec file in `@xh/hoist/test-support` failing with an unhandled error when it ended
   within 5 seconds of boot. The kit now sends pending pref, activity, metric and span pushes before
   it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
+* Fixed desktop `Select` waiting on its selected option after its menu closed or it unmounted. The
+  wait could scroll another select's menu, or leave an unhandled rejection after five seconds.
 
 ### ⚙️ Technical
 
