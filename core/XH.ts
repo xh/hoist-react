@@ -35,11 +35,10 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import {genRandomId, getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
-import ShortUniqueId from 'short-unique-id';
 import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
@@ -952,13 +951,13 @@ export class XHApi {
     }
 
     private genLoadId(): string {
-        return new ShortUniqueId({length: 8}).rnd();
+        return genRandomId();
     }
 
     private genTabId(): string {
         let ret = window.sessionStorage?.getItem('xhTabId');
         if (!ret) {
-            ret = new ShortUniqueId({length: 8}).rnd();
+            ret = genRandomId();
             window.sessionStorage?.setItem('xhTabId', ret);
         }
         return ret;

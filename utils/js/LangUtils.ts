@@ -202,6 +202,17 @@ export function ordinalize(n: number): string {
 }
 
 /**
+ * Generate a random alphanumeric ID using the platform's cryptographic random source.
+ * Suitable for correlation IDs, load IDs and similar - not for secrets.
+ *
+ * @param length - number of characters in the generated ID. Default 8.
+ */
+export function genRandomId(length: number = 8): string {
+    const bytes = crypto.getRandomValues(new Uint8Array(length));
+    return Array.from(bytes, b => ID_CHARS[b % ID_CHARS.length]).join('');
+}
+
+/**
  * Remove when lodash adds Set/Map support.
  */
 export function findIn<T>(collection: Set<T> | Map<unknown, T>, fn: (it: T) => boolean): T {
@@ -326,3 +337,5 @@ export function parseTypeName(source: NameSource): string {
     if (source.constructor) return source.constructor.name;
     return null;
 }
+
+const ID_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

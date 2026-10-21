@@ -7,6 +7,7 @@
 import {HoistModel, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {
+    genRandomId,
     mergeDeep,
     ordinalize,
     parseNameSource,
@@ -135,6 +136,15 @@ describe('LangUtils', () => {
             expect(ordinalize(11)).toBe('11th');
             expect(ordinalize(22)).toBe('22nd');
             expect(ordinalize(113)).toBe('113th');
+        });
+    });
+
+    describe('genRandomId', () => {
+        it('returns distinct alphanumeric IDs of the requested length', () => {
+            const ids = Array.from({length: 50}, () => genRandomId(16));
+            expect(new Set(ids).size).toBe(50);
+            ids.forEach(id => expect(id).toMatch(/^[a-zA-Z0-9]{16}$/));
+            expect(genRandomId()).toHaveLength(8);
         });
     });
 

@@ -22,10 +22,16 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### 🎁 New Features
+
+* Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+
 ### 📚 Libraries
 
+* http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
+* short-unique-id `removed`
 
 
 ## 89.3.0 - 2026-10-21
