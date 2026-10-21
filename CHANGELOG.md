@@ -14,6 +14,15 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - number `formatConfig`)
+
+See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
+  and `withCommas` instead.
+
+
 ## 89.3.0 - 2026-10-21
 
 ### 🎁 New Features
@@ -93,6 +102,12 @@
 * Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
   had no Hoist model above it, as in a component test rendered at the root.
 
+### ⚙️ Technical
+
+* `fmtNumber` and the formatters built on it now format digits with a cached `Intl.NumberFormat` in
+  place of numbro. This speeds up bulk formatting such as all-rows grid autosizing. Ordinary values
+  render as before. Edge cases such as negative ties and `Infinity` changed - see the upgrade notes.
+
 ### 🤖 AI Docs + Tooling
 
 * The hoist-react MCP server and `hoist-docs` CLI now serve docs from companion libraries that build
@@ -102,6 +117,10 @@
   agents with `mcpInstructions`, for example which Hoist components it replaces, and keep its
   maintainer docs out of apps with `"mcpAudience": "maintainers"`. See
   [Companion Library Docs](docs/companion-library-docs.md).
+
+### 📚 Libraries
+
+* numbro `removed`
 
 ## 89.0.1 - 2026-10-14
 

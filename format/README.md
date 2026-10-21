@@ -242,7 +242,18 @@ number of decimal places to pad to (without extending all the way to full `preci
 ```
 
 When `precision` is a fixed number, `zeroPad` defaults to `true`. When `precision` is `'auto'`,
-`zeroPad` defaults to `false`.
+`zeroPad` defaults to `false`. A `zeroPad` of `0` is the same as `false`.
+
+### Rounding
+
+Digits come from the browser's `Intl.NumberFormat`, fixed to `en-US`. Values round half away from
+zero on their decimal digits, for both signs: `2.5` gives `3`, `-2.5` gives `-3`, and `1.005` at 2
+places gives `1.01`. Near a tie, Hoist shifts the decimal point before it rounds, which absorbs most
+float error from arithmetic. So `fmtPercent(0.0045, {precision: 1})` gives `"0.5%"`, although
+`0.0045 * 100` is `0.44999999999999996` in floating point.
+
+`Infinity` renders as `∞`. A string renders as JavaScript's `Number()` reads it, so `'1234.5'`
+formats and `'1,234.5'` renders as `NaN`. Parse formatted text with `parseNumber()` first.
 
 ### Convenience Number Formatters
 
@@ -552,7 +563,7 @@ const dayOfWeekCol: ColumnSpec = {
 
 Hoist does not yet offer built-in localization, but it is on the roadmap. Today it assumes English
 and US conventions: its own UI text (buttons, menus, prompts) is English, `fmtDate()` uses MomentJS's
-default `en` locale, `fmtNumber()` uses Numbro's default `en-US` separators, and the calendars of
+default `en` locale, `fmtNumber()` uses `Intl.NumberFormat` fixed to `en-US`, and the calendars of
 both desktop and mobile `DateInput` are fixed to date-fns' `en-US` locale. Each of these libraries -
 along with ag-Grid, Highcharts, and Blueprint - supports other locales, so localizing a Hoist app is
 achievable, but it means coordinating all of them and is not yet a turnkey setting.

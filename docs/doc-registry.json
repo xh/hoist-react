@@ -550,6 +550,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v88.x to v89.0.0. Low difficulty. Covers the move to TypeScript 7.",
             "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88"]
+        },
+        {
+            "id": "docs/upgrade-notes/v90-upgrade-notes.md",
+            "title": "v90 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and NumberFormatOptions.formatConfig.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig"]
         }
     ]
 }

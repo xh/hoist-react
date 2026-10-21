@@ -93,7 +93,6 @@
     "mobx": "~7.0.6",
     "mobx-react-lite": "~5.1.0",
     "moment": "~2.31.0",
-    "numbro": "~2.5.0",
     "onsenui": "~2.12.9",
     "qs": "^6.16.0",
     "react-dropzone": "~20.1.3",
