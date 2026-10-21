@@ -22,6 +22,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### 🐞 Bug Fixes
+* Fixed pinned columns scrolling out of view in the summary row of mobile grids during horizontal
+  scroll.
+
 
 ## 89.3.0 - 2026-10-21
 
