@@ -26,27 +26,44 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
 
+
+### 🐞 Bug Fixes
+
+* Fixed a spec file in `@xh/hoist/test-support` failing with an unhandled error when it ended
+  within 5 seconds of boot. The kit now sends pending pref, activity, metric and span pushes before
+  it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
+
+### ⚙️ Technical
+
+* `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
+  Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
+  storage is unavailable the service logs a warning and holds values in memory, as before.
+
 ### 📚 Libraries
 
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
 * short-unique-id `removed`
-
+* store2 `removed`
+* numbro `removed`
 
 ## 89.3.1 - 2026-10-21
 
 ### 🐞 Bug Fixes
+
 * Fixed pinned columns scrolling out of view in the summary row of mobile grids during horizontal
   scroll.
 
 ## 89.3.0 - 2026-10-21
 
 ### 🎁 New Features
+
 * `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
   consumer closes the connection early.
 
 ### 🐞 Bug Fixes
+
 * Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
   `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
   custom reason reports as "Fetch Aborted".
@@ -135,9 +152,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   maintainer docs out of apps with `"mcpAudience": "maintainers"`. See
   [Companion Library Docs](docs/companion-library-docs.md).
 
-### 📚 Libraries
-
-* numbro `removed`
 
 ## 89.0.1 - 2026-10-14
 
