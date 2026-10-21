@@ -11,7 +11,7 @@
      codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
-## 90.0.0-SNAPSHOT - unreleased
+## 89.3.0 - 2026-10-21
 
 ### 🎁 New Features
 * `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
