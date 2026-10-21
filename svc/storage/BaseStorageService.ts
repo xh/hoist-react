@@ -5,8 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
-import {StoreType} from 'store2';
 
 /**
  * Service to provide simple key/value access to browser local/session storage, appropriately
@@ -16,8 +14,11 @@ import {StoreType} from 'store2';
  * storage to support its operations and API.
  */
 export abstract class BaseStorageService extends HoistService {
+    private readonly area: Storage;
+
     constructor() {
         super();
+        this.area = this.probeBrowserStorage() ?? new MemoryStorage();
         if (this.isFake) {
             XH.handleException(
                 XH.exception(
@@ -30,15 +31,12 @@ export abstract class BaseStorageService extends HoistService {
     }
 
     get(key: string, defaultValue?: any): any {
-        const storage = this.storeInstance,
-            val = storage.get(key, defaultValue);
-
-        throwIf(val === undefined, `Key '${key}' not found`);
-        return val;
+        const raw = this.area.getItem(this.prefix + key);
+        return raw != null ? parseStored(raw) : (defaultValue ?? null);
     }
 
     set(key: string, value: any) {
-        this.storeInstance.set(key, value, true);
+        this.area.setItem(this.prefix + key, JSON.stringify(value));
     }
 
     apply(key: string, newProps: object) {
@@ -49,7 +47,7 @@ export abstract class BaseStorageService extends HoistService {
     }
 
     remove(key: string) {
-        this.storeInstance.remove(key);
+        this.area.removeItem(this.prefix + key);
     }
 
     removeIf(predicateFn: (s: string) => boolean) {
@@ -59,19 +57,77 @@ export abstract class BaseStorageService extends HoistService {
     }
 
     clear() {
-        this.storeInstance.clear();
+        this.keys().forEach(key => this.remove(key));
     }
 
     keys(): string[] {
-        return this.storeInstance.keys();
+        const {area, prefix} = this,
+            ret = [];
+        for (let i = 0; i < area.length; i++) {
+            const key = area.key(i);
+            if (key.startsWith(prefix)) ret.push(key.substring(prefix.length));
+        }
+        return ret;
     }
 
+    /** True if browser storage is unavailable and values are held in memory for this page only. */
     get isFake(): boolean {
-        return this.storeInstance.isFake();
+        return this.area instanceof MemoryStorage;
     }
 
     //------------------
     //  Implementation
     //------------------
-    protected abstract get storeInstance(): StoreType;
+    /** The browser storage area to use. Access can throw when storage is disabled. */
+    protected abstract get browserStorage(): Storage;
+
+    /** The browser storage area, confirmed to accept writes, or null if unavailable. */
+    private probeBrowserStorage(): Storage {
+        try {
+            const ret = this.browserStorage,
+                testKey = '_xhStorageProbe';
+            ret.setItem(testKey, 'ok');
+            ret.removeItem(testKey);
+            return ret;
+        } catch {
+            return null;
+        }
+    }
+
+    private get prefix(): string {
+        return `${XH.appCode}.${XH.getUsername()}.`;
+    }
+}
+
+/** Values are stored as JSON. A value that does not parse is returned as the raw string. */
+function parseStored(raw: string): any {
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return raw;
+    }
+}
+
+/** In-memory stand-in for a browser Storage area. */
+class MemoryStorage implements Storage {
+    private items = new Map<string, string>();
+
+    get length() {
+        return this.items.size;
+    }
+    key(i: number) {
+        return [...this.items.keys()][i] ?? null;
+    }
+    getItem(k: string) {
+        return this.items.get(k) ?? null;
+    }
+    setItem(k: string, v: string) {
+        this.items.set(k, String(v));
+    }
+    removeItem(k: string) {
+        this.items.delete(k);
+    }
+    clear() {
+        this.items.clear();
+    }
 }
