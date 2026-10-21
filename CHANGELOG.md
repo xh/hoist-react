@@ -26,19 +26,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
 
-### ⚙️ Technical
-
-* `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
-  Keys and JSON values are stored exactly as before. A custom subclass of `BaseStorageService`
-  now implements the `browserStorage` getter in place of `storeInstance`.
-
 ### 📚 Libraries
 
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
 * short-unique-id `removed`
-* store2 `removed`
 
 
 ## 89.3.0 - 2026-10-21

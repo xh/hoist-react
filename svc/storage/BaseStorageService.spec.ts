@@ -29,30 +29,6 @@ describe('BaseStorageService', () => {
             expect(XH.localStorageService.get('recentSearches')).toEqual(['TSLA', 'AAPL']);
         });
 
-        it('returns the default, or null, for a missing key', () => {
-            expect(XH.localStorageService.get('missing')).toBeNull();
-            expect(XH.localStorageService.get('missing', 'fallback')).toBe('fallback');
-        });
-
-        it('returns a value that is not JSON as the raw string', () => {
-            localStorage.setItem('testApp.jdoe.legacy', 'plain text');
-
-            expect(XH.localStorageService.get('legacy')).toBe('plain text');
-        });
-
-        it('lists and removes only its own keys', () => {
-            XH.localStorageService.set('gridState', {});
-            XH.localStorageService.set('gridCols', []);
-            localStorage.setItem('testApp.bob.gridState', '{}');
-
-            expect(XH.localStorageService.keys().sort()).toEqual(['gridCols', 'gridState']);
-
-            XH.localStorageService.removeIf(k => k.startsWith('gridC'));
-
-            expect(XH.localStorageService.keys()).toEqual(['gridState']);
-            expect(localStorage.getItem('testApp.bob.gridState')).toBe('{}');
-        });
-
         it('clears only the values of its own app and user', () => {
             XH.localStorageService.set('recentSearches', ['TSLA']);
             localStorage.setItem('testApp.bob.recentSearches', '["MSFT"]');
