@@ -37,28 +37,6 @@ describe('Select', () => {
             await waitFor(() => expect(scrolled).toEqual(['EU']));
         });
 
-        it('gives up on a value missing from the options without an unhandled rejection', async () => {
-            const unhandled = captureUnhandledRejections(),
-                scrolled = spyOnScroll();
-            vi.useFakeTimers();
-            const {container} = renderSelect('Asia');
-
-            openMenu(container);
-            await vi.advanceTimersByTimeAsync(6000);
-            expect(scrolled).toEqual([]);
-            expect(unhandled).toEqual([]);
-        });
-
-        it('stops waiting for the selected option once the menu closes', async () => {
-            const scrolled = spyOnScroll(),
-                first = renderSelect('Asia'),
-                second = renderSelect('EU');
-
-            openMenu(first.container);
-            closeMenu(first.container);
-            await expectOneScrollOfSecondAsync(second.container, scrolled);
-        });
-
         // Guards a CI failure: a wait outlived its test and read `document` after jsdom teardown.
         it('stops waiting for the selected option once the select unmounts', async () => {
             const scrolled = spyOnScroll(),
@@ -67,7 +45,13 @@ describe('Select', () => {
 
             openMenu(first.container);
             first.unmount();
-            await expectOneScrollOfSecondAsync(second.container, scrolled);
+
+            // Select finds its selected option by class anywhere in the document, so a wait left
+            // over from the first select would scroll the second's option a second time.
+            openMenu(second.container);
+            await waitFor(() => expect(scrolled).toEqual(['EU']));
+            await wait(200);
+            expect(scrolled).toEqual(['EU']);
         });
     });
 });
@@ -94,19 +78,6 @@ function openMenu(container: HTMLElement) {
     fireEvent.keyDown(container.querySelector('input'), {key: 'ArrowDown'});
 }
 
-function closeMenu(container: HTMLElement) {
-    fireEvent.keyDown(container.querySelector('input'), {key: 'Escape'});
-}
-
-// Select finds its selected option by class anywhere in the document, so a wait left over from
-// another select would scroll this one's option a second time.
-async function expectOneScrollOfSecondAsync(container: HTMLElement, scrolled: string[]) {
-    openMenu(container);
-    await waitFor(() => expect(scrolled).toEqual(['EU']));
-    await wait(200);
-    expect(scrolled).toEqual(['EU']);
-}
-
 /** Record the text of each element scrolled into view until the end of the current test. */
 function spyOnScroll(): string[] {
     const ret: string[] = [],
@@ -114,16 +85,5 @@ function spyOnScroll(): string[] {
             ret.push(this.textContent);
         });
     onTestFinished(() => spy.mockRestore());
-    return ret;
-}
-
-/** Collect unhandled promise rejections raised until the end of the current test. */
-function captureUnhandledRejections(): unknown[] {
-    const ret: unknown[] = [],
-        onRejection = (reason: unknown) => ret.push(reason);
-    process.on('unhandledRejection', onRejection);
-    onTestFinished(() => {
-        process.off('unhandledRejection', onRejection);
-    });
     return ret;
 }

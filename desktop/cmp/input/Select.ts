@@ -341,7 +341,6 @@ class SelectInputModel extends HoistInputModel {
     }
 
     reactSelectRef = createObservableRef<any>();
-    menuIsOpen = false;
 
     get reactSelect() {
         return this.reactSelectRef.current;
@@ -385,21 +384,19 @@ class SelectInputModel extends HoistInputModel {
     };
 
     // Scroll selected option into view on open - react-select's own does not fire for portalled
-    // menus. Wait for the option to render, but stop if the menu closes or the input unmounts.
+    // menus. Poll from the next tick (menuIsOpen not yet committed), stop if menu closes/unmounts.
     onMenuOpen = () => {
-        this.menuIsOpen = true;
         let selected: Element;
-        waitFor(() => {
-            if (!this.menuIsOpen || this.isDestroyed) return true;
-            selected = document.getElementsByClassName('xh-select__option--is-selected')[0];
-            return !!selected;
-        })
+        wait()
+            .then(() =>
+                waitFor(() => {
+                    if (this.isDestroyed || !this.reactSelect?.props.menuIsOpen) return true;
+                    selected = document.getElementsByClassName('xh-select__option--is-selected')[0];
+                    return !!selected;
+                })
+            )
             .then(() => selected?.scrollIntoView({block: 'end'}))
             .catch(noop);
-    };
-
-    onMenuClose = () => {
-        this.menuIsOpen = false;
     };
 
     //-------------------------
@@ -860,7 +857,6 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.controlShouldRenderValue = !model.hasFocus;
     }
 
-    rsProps.onMenuClose = model.onMenuClose;
     if (!model.multiMode && model.renderValue) {
         rsProps.onMenuOpen = model.onMenuOpen;
     }
