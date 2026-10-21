@@ -17,17 +17,27 @@ import {
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
+import {banner, BannerProps} from '@xh/hoist/mobile/cmp/banner';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {omitBy} from 'lodash';
-import {isValidElement, ReactNode, ReactElement} from 'react';
+import {castArray, isString, omitBy} from 'lodash';
+import {Children, cloneElement, isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 import {logWarn} from '@xh/hoist/utils/js';
 
 export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
+    /**
+     * One or more banners to show within the panel, for info, warning, or error states that
+     * apply to its contents. Set to a {@link PanelBannerSpec}, a message string for a default
+     * 'primary' banner, or a ReactElement. Banners render between the top toolbar and the
+     * panel's contents by default - set `position: 'bottom'` on a spec to show above the bottom
+     * toolbar instead. Null entries are ignored, supporting conditional banners.
+     */
+    banner?: Some<PanelBannerSpec | string | ReactElement>;
+
     /** A toolbar to be docked at the bottom of the panel. */
     bbar?: ReactNode;
 
@@ -71,6 +81,12 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     title?: ReactNode;
 }
 
+/** Config for a banner shown via {@link PanelProps.banner}. */
+export interface PanelBannerSpec extends BannerProps {
+    /** Where to show the banner - above (default) or below the panel's contents. */
+    position?: 'top' | 'bottom';
+}
+
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
@@ -89,6 +105,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             className,
             tbar,
             bbar,
+            banner: bannerProp,
             title,
             icon,
             headerClassName,
@@ -112,11 +129,14 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         // 2) Prepare combined layout.
+        const banners = parseBanners(bannerProp);
         return vbox({
             className,
-            items: [
+            // Keyed via toArray so a banner appearing or hiding does not remount the content frame.
+            items: Children.toArray([
                 panelHeader({title, icon, className: headerClassName, headerItems}),
                 parseToolbar(tbar),
+                banners.top,
                 frame({
                     display: scrollable ? 'block' : 'flex',
                     ...contentBoxProps,
@@ -125,10 +145,11 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
                     items: children
                 }),
+                banners.bottom,
                 parseToolbar(bbar),
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
-            ],
+            ]),
             ref,
             ...rest,
             ...layoutProps
@@ -156,6 +177,28 @@ function parseLoadDecorator(propVal: any, propName: string, ctxModel: HoistModel
         return cmp({bind: loadObserver, spinner: true});
     }
     return cmp({bind: propVal, spinner: true});
+}
+
+function parseBanners(propVal: PanelProps['banner']) {
+    const ret = {top: [], bottom: []};
+    castArray(propVal).forEach(spec => {
+        if (!spec) return;
+        if (isValidElement<BannerProps>(spec)) {
+            ret.top.push(cloneElement(spec, {className: bannerClass(spec.props.className, 'top')}));
+            return;
+        }
+        const {
+            position = 'top',
+            className,
+            ...rest
+        }: PanelBannerSpec = isString(spec) ? {message: spec} : (spec as PanelBannerSpec);
+        ret[position].push(banner({...rest, className: bannerClass(className, position)}));
+    });
+    return ret;
+}
+
+function bannerClass(className: string, position: 'top' | 'bottom') {
+    return classNames(className, 'xh-panel__banner', `xh-panel__banner--${position}`);
 }
 
 function parseToolbar(barSpec) {

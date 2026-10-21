@@ -13,25 +13,20 @@ import {UAParser} from 'ua-parser-js';
  */
 export class UserAgentModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'userAgentModel';
 
-    private _uaParser: any = null;
+    // Parse once - `UAParser.getDevice()` re-runs its full regex set on every call.
+    private readonly deviceType: string = new UAParser().getDevice().type;
 
     get isPhone(): boolean {
-        return this.uaParser.getDevice().type === 'mobile';
+        return this.deviceType === 'mobile';
     }
 
     get isTablet(): boolean {
-        return this.uaParser.getDevice().type === 'tablet';
+        return this.deviceType === 'tablet';
     }
 
     get isDesktop(): boolean {
-        return this.uaParser.getDevice().type === undefined;
-    }
-
-    //---------------------
-    // Implementation
-    //---------------------
-    private get uaParser() {
-        return (this._uaParser = this._uaParser ?? new UAParser());
+        return this.deviceType === undefined;
     }
 }

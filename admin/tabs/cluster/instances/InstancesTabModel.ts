@@ -16,13 +16,13 @@ import {
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
 import {badge} from '@xh/hoist/cmp/badge';
-import {GridContextMenuSpec, GridModel, numberCol} from '@xh/hoist/cmp/grid';
-import {hbox} from '@xh/hoist/cmp/layout';
+import * as Col from '@xh/hoist/cmp/grid/columns';
+import {GridContextMenuSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {span} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
@@ -87,7 +87,6 @@ export class InstancesTabModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.timer = Timer.create({
             runFn: () => {
@@ -113,9 +112,9 @@ export class InstancesTabModel extends HoistModel {
 
     formatInstance(instance: PlainObject): ReactNode {
         const content = [instance.name];
-        if (instance.isPrimary) content.push(badge({item: 'primary', intent: 'primary'}));
-        if (instance.isLocal) content.push(badge('local'));
-        return hbox(content);
+        if (instance.isPrimary) content.push(' ', badge({item: 'primary', intent: 'primary'}));
+        if (instance.isLocal) content.push(' ', badge('local'));
+        return span({items: content});
     }
 
     //------------------
@@ -172,7 +171,7 @@ export class InstancesTabModel extends HoistModel {
                         description: 'Active Websocket Connections'
                     },
                     headerName: Icon.bolt(),
-                    ...numberCol
+                    ...Col.number
                 },
                 {
                     ...timestampNoYear,
@@ -206,7 +205,7 @@ export class InstancesTabModel extends HoistModel {
 
     private createTabContainerModel() {
         return new TabContainerModel({
-            route: 'default.servers.instances',
+            route: 'default.general.instances',
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
                 {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},

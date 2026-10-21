@@ -5,9 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {DifferModel} from './DifferModel';
 import {StoreRecord} from '@xh/hoist/data';
+import {isEqual} from 'lodash';
 
 /**
  * @internal
@@ -15,11 +16,10 @@ import {StoreRecord} from '@xh/hoist/data';
 export class DifferDetailModel extends HoistModel {
     parent: DifferModel = null;
 
-    @observable.ref record: StoreRecord = null;
+    @observableRef accessor record: StoreRecord = null;
 
     constructor({parent}) {
         super();
-        makeObservable(this);
         this.parent = parent;
     }
 
@@ -35,7 +35,7 @@ export class DifferDetailModel extends HoistModel {
 
     createDiffClass(field, local, remote) {
         if (!remote) return;
-        if (!local || local[field] !== remote[field]) return 'diff';
+        if (!local || !isEqual(local[field], remote[field])) return 'diff';
     }
 
     confirmApplyRemote() {

@@ -3,6 +3,7 @@
     font-size: 0.9em;
   }
 
+  .xh-impl-row .ag-cell,
   .xh-impl-row .xh-cell-inner-wrapper {
     color: var(--xh-text-color-muted);
   }
@@ -15,4 +16,20 @@
 .xh-inspector-panel-header {
   background-color: hsl(33, 93%, 40%);
   color: white;
+}
+
+// Popped-out window layout - these rules reach the child window via its synced stylesheets.
+// The Inspector panel itself flexes to fill the host (see `flex` prop in InspectorPanel).
+body.xh-inspector-window {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .xh-inspector-window-host {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }

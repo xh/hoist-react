@@ -6,17 +6,18 @@
  */
 
 import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
-import {RecordDigest, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {Store, StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {RecordSetDelta} from '../impl/RecordSet';
 import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
 import {Query, QueryConfig} from './Query';
-import {BaseRow} from './row/BaseRow';
-import {AggregateRow, BucketRow} from './row/ParentRow';
+import {ViewRow} from './ViewRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
@@ -45,18 +46,15 @@ export interface CubeConfig {
     /** See {@link StoreConfig.processRawData} */
     processRawData?: (data: PlainObject) => PlainObject;
 
-    /** See {@link StoreConfig.retainRaw} */
-    retainRaw?: boolean;
-
-    /** See {@link StoreConfig.projectionOnly} */
-    projectionOnly?: boolean;
-
     /**
-     * See {@link StoreConfig.reuseRecords}. Recommended whenever the source can supply a cheap
-     * per-row digest - preserves record identity for unchanged rows across loads and updates,
-     * allowing connected Views to reuse their generated rows and connected stores their records.
+     * Additional configs for the internal {@link Store} of leaf-level records maintained by this
+     * Cube - i.e. tuning of how that Store holds the data described by `fields` / `idSpec` above.
+     *
+     * Note `digestSpec` is recommended whenever the source can supply a cheap per-row digest - it
+     * preserves record identity for unchanged rows across loads and updates, allowing connected
+     * Views to reuse their generated rows and connected stores their records.
      */
-    reuseRecords?: boolean | string | ((raw: PlainObject) => RecordDigest);
+    store?: CubeStoreConfig;
 
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
     info?: PlainObject;
@@ -78,22 +76,55 @@ export interface CubeConfig {
      * Return true to omit the row.
      */
     omitFn?: OmitFn;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
- * Function to be called for each node to aggregate to determine if it should be "locked",
+ * Configs available for a {@link Cube}'s internal {@link Store}, via {@link CubeConfig.store}.
+ *
+ * Excludes configs specified on {@link CubeConfig} itself (`fields`, `data`, `idSpec`,
+ * `processRawData`) or required by the Cube's internal representation (`freezeData`,
+ * `idEncodesTreePath`), along with configs that do not apply to a flat store of leaf-level facts:
+ *
+ *  - Tree loading (`loadTreeData`, `loadTreeDataFrom`, `loadRootAsSummary`) - hierarchy is produced
+ *    by `View`s from the Cube's dimensions, not loaded into its source store.
+ *  - Filtering (`filter`, `filterIncludesChildren`) - filter via `QueryConfig.filter` instead, so
+ *    that aggregations remain consistent with the facts loaded into the Cube.
+ *  - `projectionOnly` - incompatible with `Cube.modifyRecordsAsync()`, which requires a store that
+ *    supports local record modification.
+ */
+export type CubeStoreConfig = Omit<
+    StoreConfig,
+    | 'fields'
+    | 'data'
+    | 'idSpec'
+    | 'processRawData'
+    | 'freezeData'
+    | 'idEncodesTreePath'
+    | 'loadTreeData'
+    | 'loadTreeDataFrom'
+    | 'loadRootAsSummary'
+    | 'filter'
+    | 'filterIncludesChildren'
+    | 'projectionOnly'
+>;
+
+/**
+ * Function to be called for each aggregate or bucket row to determine if it should be "locked",
  * preventing drilldown into its children. If true returned for a node, no drilldown will be
  * allowed, and the row will be marked with a boolean "locked" property.
  */
-export type LockFn = (row: AggregateRow | BucketRow) => boolean;
+export type LockFn = (row: ViewRow) => boolean;
 
 /**
- * Function to be called for each node during row generation to determine if it should be
- * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
+ * Function to be called for each aggregate or bucket row during row generation to determine if
+ * it should be skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
  * Note that skipping in this way has no effect on aggregations -- all children of this node are
  * simply promoted to their parent node.
  */
-export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
+export type OmitFn = (row: ViewRow) => boolean;
 
 /**
  * Function to be called for rows making up an aggregated dimension to determine if the children of
@@ -107,7 +138,7 @@ export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
  * @param rows - the rows being checked for bucketing
  * @returns {@link BucketSpec} for dynamic sub-aggregations, or null to perform no bucketing.
  */
-export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
+export type BucketSpecFn = (rows: ViewRow[]) => BucketSpec;
 
 /**
  * Client-side OLAP-style data structure for multi-dimensional grouping and aggregation.
@@ -133,13 +164,18 @@ export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
 export class Cube extends HoistBase {
     static RECORD_ID_DELIMITER = '>>';
 
+    static isCube(obj: unknown): obj is Cube {
+        return obj instanceof Cube;
+    }
+
+    _created = Date.now();
+
     @managed store: Store;
     lockFn: LockFn;
     bucketSpecFn: BucketSpecFn;
     omitFn: OmitFn;
 
-    @observable.ref
-    info: any = null;
+    @observableRef accessor info: any = null;
 
     _connectedViews: Set<View> = new Set();
 
@@ -149,31 +185,31 @@ export class Cube extends HoistBase {
         data = [],
         idSpec = 'id',
         processRawData,
-        retainRaw,
-        projectionOnly,
-        reuseRecords,
+        store,
         info = {},
         lockFn,
         bucketSpecFn,
-        omitFn
+        omitFn,
+        xhName = null
     }: CubeConfig) {
         super();
-        makeObservable(this);
+        this.xhName = xhName;
         this.store = new Store({
+            xhName: this.childXhName('store'),
+            ...store,
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
-            processRawData: processRawData,
-            retainRaw: retainRaw,
-            projectionOnly: projectionOnly,
-            reuseRecords: reuseRecords,
+            processRawData,
             freezeData: false,
             idEncodesTreePath: true
         });
+        this.validateFields();
         this.store.loadData(data);
         this.info = info;
         this.lockFn = lockFn;
         this.bucketSpecFn = bucketSpecFn;
         this.omitFn = omitFn;
+        instanceManager.registerCube(this);
     }
 
     /** Fields configured for this Cube. */
@@ -250,16 +286,19 @@ export class Cube extends HoistBase {
     createView({
         query,
         stores,
-        connect = false
+        connect = false,
+        xhName = null
     }: {
         query: QueryConfig;
         stores?: Store[] | Store;
         connect?: boolean;
+        xhName?: string;
     }): View {
         return new View({
             query: new Query({...query, cube: this}),
             stores,
-            connect
+            connect,
+            xhName
         });
     }
 
@@ -398,6 +437,19 @@ export class Cube extends HoistBase {
         this.info = Object.freeze(info);
     }
 
+    private validateFields() {
+        const {fields} = this,
+            names = new Set(fields.map(it => it.name));
+        fields.forEach(field => {
+            field.aggregator?.dependsOn?.forEach(dep => {
+                throwIf(
+                    !names.has(dep),
+                    `Aggregator for CubeField '${field.name}' depends on unknown field '${dep}'.`
+                );
+            });
+        });
+    }
+
     private parseFields(fields = [], defaults) {
         return fields.map(f => {
             if (f instanceof CubeField) return f;
@@ -411,6 +463,7 @@ export class Cube extends HoistBase {
     }
 
     override destroy() {
+        instanceManager.unregisterCube(this);
         this._connectedViews.forEach(v => v.disconnect());
         super.destroy();
     }

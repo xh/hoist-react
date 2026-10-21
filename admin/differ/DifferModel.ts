@@ -12,7 +12,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, isNil, isString, omit, remove, trimEnd} from 'lodash';
 import {hspacer} from '../../cmp/layout';
@@ -29,6 +29,8 @@ export class DifferModel extends HoistModel {
     displayName: string;
     columnFields: Array<string | Partial<ColumnSpec>>;
     matchFields: string[];
+    /** Fields the server computes from code rather than storing - excluded from diffs. */
+    ignoreFields: string[];
     valueRenderer: ColumnRenderer;
     url: string;
 
@@ -40,11 +42,9 @@ export class DifferModel extends HoistModel {
     @managed
     gridModel: GridModel;
 
-    @bindable
-    remoteHost: string = null;
+    @bindable accessor remoteHost: string = null;
 
-    @observable
-    hasLoaded = false;
+    @observable accessor hasLoaded = false;
 
     get readonly() {
         return this.parentModel?.gridModel.readonly;
@@ -78,15 +78,16 @@ export class DifferModel extends HoistModel {
         displayName,
         columnFields = ['name'],
         matchFields = ['name'],
+        ignoreFields = [],
         valueRenderer
     }: Partial<DifferModel>) {
         super();
-        makeObservable(this);
         this.parentModel = parentModel;
         this.entityName = entityName;
         this.displayName = displayName ?? entityName;
         this.columnFields = columnFields;
         this.matchFields = matchFields;
+        this.ignoreFields = ignoreFields;
         this.valueRenderer = valueRenderer ?? (v => (isNil(v) ? '' : v.value));
 
         this.url = entityName + 'DiffAdmin';
@@ -288,10 +289,8 @@ export class DifferModel extends HoistModel {
     }
 
     cleanRawData(data) {
-        data.forEach(it => {
-            delete it.dateCreated;
-            delete it.id;
-        });
+        const omitFields = ['dateCreated', 'id', ...this.ignoreFields];
+        data.forEach(it => omitFields.forEach(field => delete it[field]));
 
         return data;
     }

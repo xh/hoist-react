@@ -19,7 +19,7 @@ import {
     Side
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, isNumber, isString} from 'lodash';
@@ -111,6 +111,9 @@ export interface PanelConfig {
 
     /** @internal */
     xhImpl?;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface PanelPersistState {
@@ -162,16 +165,13 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
      * True when collapsed in its "home" location as per this model's state.
      * See also {@link isRenderedCollapsed}, which takes modal state into account.
      */
-    @observable
-    collapsed: boolean = false;
+    @observable accessor collapsed: boolean = false;
 
     /** Size in pixels or percents along sizing dimension. Used when object is *not* collapsed. */
-    @bindable
-    size: number | string = null;
+    @bindable accessor size: number | string = null;
 
     /** Is this panel currently resizing? */
-    @observable
-    isResizing: boolean = false;
+    @observable accessor isResizing: boolean = false;
 
     /** Is the panel rendering in its modal view state? Observable property. */
     get isModal(): boolean {
@@ -215,11 +215,12 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
         showModalToggleButton = true,
+        xhName = null,
         xhImpl = false
     }: PanelConfig) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         defaultSize =
             isString(defaultSize) && defaultSize.endsWith('px')
@@ -267,6 +268,7 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
                 modalSupport === true
                     ? new ModalSupportModel()
                     : new ModalSupportModel(modalSupport);
+            this.modalSupportModel.xhName = this.childXhName('modalSupportModel');
         }
 
         if (errorBoundary) {
@@ -274,10 +276,12 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
                 errorBoundary === true
                     ? new ErrorBoundaryModel()
                     : new ErrorBoundaryModel(errorBoundary);
+            this.errorBoundaryModel.xhName = this.childXhName('errorBoundaryModel');
         }
 
         if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
+            this.refreshContextModel.xhName = this.childXhName('refreshContextModel');
         }
 
         if (collapsible || resizable) {

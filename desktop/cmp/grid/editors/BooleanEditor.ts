@@ -46,7 +46,8 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditor
 
         return quickToggle
             ? useInstantEditor(props.agParams, ref)
-            : useInlineEditorModel(checkbox, props, ref);
+            : // A checkbox's value is a boolean, so ignore the key that started the edit.
+              useInlineEditorModel(checkbox, props, ref, () => {});
     }
 });
 

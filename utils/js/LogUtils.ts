@@ -27,9 +27,6 @@ import {intersperse, type NameSource, parseNameSource} from './LangUtils';
 /** Severity Level for log statement */
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
-/** @deprecated Use {@link NameSource} from LangUtils. */
-export type LogSource = NameSource;
-
 export interface APIWarnOptions {
     /**
      * If provided and undefined, this method will be a no-op.
@@ -266,7 +263,7 @@ function writeLog(msgs: unknown[], src: string, level: LogLevel) {
     }
 }
 
-/** Parse a LogSource into a canonical string label. */
+/** Parse a NameSource into a canonical string label. */
 function parseSource(source: NameSource): string {
     return parseNameSource(source);
 }

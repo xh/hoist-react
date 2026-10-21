@@ -24,7 +24,8 @@
  */
 import {resolveRepoRoot, resolveRepoRootPosix, toPosixPath} from '../util/paths.js';
 import {toRelativePath} from '../formatters/typescript.js';
-import {searchSymbols, getSymbolDetail, getMembers} from './ts-registry.js';
+import {searchSymbols} from './symbol-search.js';
+import {getSymbolDetail, getMembers} from './ts-registry.js';
 
 // Suppress info logs during test run; we only want test output. (Warns still print.)
 process.env.HOIST_MCP_QUIET = '1';
@@ -112,11 +113,14 @@ eq('strips + normalizes a backslash absolute path', toRelativePath(backslashAbs)
 console.log('\nLive index cases:');
 
 const results = await searchSymbols('GridModel', {limit: 5});
-const gm = results.find(r => r.name === 'GridModel' && r.kind === 'class');
-ok('searchSymbols("GridModel") finds the class', !!gm, `got ${results.length} results`);
+const gm = results.symbols.find(
+    r => r.entry.name === 'GridModel' && r.entry.kind === 'class'
+)?.entry;
+ok('searchSymbols("GridModel") finds the class', !!gm, `got ${results.symbols.length} results`);
 if (gm) {
     eq('GridModel resolves to cmp/grid/GridModel.ts', toRelativePath(gm.filePath), sampleRel);
     eq('GridModel sourcePackage is cmp/grid', gm.sourcePackage, 'cmp/grid');
+    eq('GridModel importPath is @xh/hoist/cmp/grid', gm.importPath, '@xh/hoist/cmp/grid');
 }
 
 const detail = await getSymbolDetail('GridModel');
@@ -129,14 +133,14 @@ ok(
 const members = await getMembers('GridModel');
 ok(
     'getMembers("GridModel") returns members',
-    !!members && members.members.length > 0,
-    `count=${members?.members.length ?? 0}`
+    members.ok && members.members.length > 0,
+    `count=${members.ok ? members.members.length : 0}`
 );
 
 // --file disambiguation (the secondary Windows bug): a repo-relative path passed
 // to findIndexEntry must resolve to the matching entry. `View` exists in both
 // cmp/viewmanager and data/cube; the path selects the data/cube one.
-const view = await getSymbolDetail('View', 'data/cube/View.ts');
+const view = await getSymbolDetail('View', {filePath: 'data/cube/View.ts'});
 ok(
     'getSymbolDetail("View", "data/cube/View.ts") disambiguates by repo-relative path',
     !!view && toRelativePath(view.filePath) === 'data/cube/View.ts',

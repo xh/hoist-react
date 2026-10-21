@@ -15,9 +15,9 @@ export function managedRenderer<T extends ColumnRenderer | GroupRowRenderer>(
     identifier: string
 ): T {
     if (!isFunction(fn)) return fn;
-    return function () {
+    return function (v, ctx) {
         try {
-            return fn.apply(null, arguments);
+            return (fn as any)(v, ctx);
         } catch (e) {
             logWarn([`Renderer for '${identifier}' has thrown an error`, e]);
             return '#ERROR';

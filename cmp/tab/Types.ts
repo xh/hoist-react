@@ -10,6 +10,7 @@ import {
     PersistOptions,
     Side
 } from '@xh/hoist/core';
+import {ReactElement, ReactNode} from 'react';
 
 export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProps {
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
@@ -48,6 +49,22 @@ export interface TabSwitcherConfig {
     extraMenuItems?: Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>>;
     /** IDs of favorite tabs to display by default (in order). Only for `dynamic` switchers */
     initialFavorites?: string[];
+    /**
+     * Display titles and optional icons for the group keys assigned via {@link TabConfig.group}.
+     * Groups without an entry here use their key as their title. Only for `static` switchers
+     * rendered in a vertical (left/right) orientation on desktop.
+     */
+    groups?: TabGroupSpec[];
+}
+
+/** Display spec for a group header within a vertical TabSwitcher. See {@link TabConfig.group}. */
+export interface TabGroupSpec {
+    /** Group key, matching `TabConfig.group`. */
+    key: string;
+    /** Display title for the group header. Defaults to the key. */
+    title?: ReactNode;
+    /** Optional icon for the group header. */
+    icon?: ReactElement;
 }
 
 export interface TabContainerModelPersistOptions extends PersistOptions {

@@ -10,7 +10,7 @@ import {hoistCmp, MenuItemLike, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, popover, Position} from '@xh/hoist/kit/blueprint';
-import {parseMenuItems} from '@xh/hoist/utils/impl';
+import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {logError, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import {button, ButtonProps} from '../Button';

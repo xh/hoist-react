@@ -6,6 +6,7 @@
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
 import {
+    DomAttrsProps,
     LayoutProps,
     StyleProps,
     hoistCmp,
@@ -23,7 +24,7 @@ import {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = HoistModel>
-    extends HoistProps<M>, TestSupportProps, LayoutProps, StyleProps {
+    extends HoistProps<M>, TestSupportProps, DomAttrsProps, LayoutProps, StyleProps {
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;
@@ -51,8 +52,19 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             classes = [],
             items = [];
 
-        const {active, className, disabled, icon, intent, onClick, style, testId, text, ...rest} =
-            nonLayoutProps;
+        const {
+            active,
+            className,
+            disabled,
+            domAttrs,
+            icon,
+            intent,
+            onClick,
+            style,
+            testId,
+            text,
+            ...rest
+        } = nonLayoutProps;
 
         let {outlined, minimal} = nonLayoutProps;
         if (disabled) {
@@ -91,6 +103,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
                 ...layoutProps
             },
             [TEST_ID]: testId,
+            ...domAttrs,
             ...rest
         });
     }

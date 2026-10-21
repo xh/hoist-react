@@ -8,16 +8,30 @@
 import {PlainObject, Some} from '@xh/hoist/core';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
-import {compact, isEmpty} from 'lodash';
+import {isArray, isEmpty} from 'lodash';
 import {View} from '../View';
+import type {ViewRow} from '../ViewRow';
 import type {ParentRow} from './ParentRow';
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
  *
- * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
+ * @internal
  */
-export abstract class BaseRow {
+export abstract class BaseRow implements ViewRow {
+    // Shared by all Views, so stamps never repeat across Views on the same Store.
+    private static lastDigest = 0;
+
+    /** The latest cubeRowDigest stamp given out by any View. */
+    static get currentDigest(): number {
+        return BaseRow.lastDigest;
+    }
+
+    /** Stamp row data with a new cubeRowDigest, marking it changed. */
+    static assignDigest(data: ViewRowData) {
+        data.cubeRowDigest = ++BaseRow.lastDigest;
+    }
+
     readonly view: View = null;
     readonly id: string = null;
 
@@ -52,7 +66,7 @@ export abstract class BaseRow {
 
         if (!shallowEqualObjects(data.cubeBuckets, buckets)) {
             data.cubeBuckets = buckets;
-            this.view.noteRowDataMutated(data);
+            BaseRow.assignDigest(data as ViewRowData);
         }
 
         this.children?.forEach(it => it.syncBuckets(buckets));
@@ -79,7 +93,7 @@ export abstract class BaseRow {
         }
 
         // 2) If omitting ourselves, we are done, return visible children.
-        if (!isLeaf && query.omitFn?.(this as any)) return dataChildren;
+        if (!isLeaf && query.omitFn?.(this)) return dataChildren;
 
         // 3) Otherwise, we can attach this data to the children data and return.
 
@@ -116,13 +130,21 @@ export abstract class BaseRow {
         // Skip all children in a locked node - only parent rows can get this far.
         if (query.lockFn) {
             const row = this as unknown as ParentRow;
-            row.locked = query.lockFn(row as any);
+            row.locked = query.lockFn(row);
             if (row.locked) return null;
         }
 
-        // Recurse
-        const ret = compact(children.flatMap(it => it.getVisibleDatas()));
-        return !isEmpty(ret) ? ret : null;
+        // Recurse - single pass, folding in null filtering and flattening.
+        const ret: ViewRowData[] = [];
+        for (const child of children) {
+            const datas = child.getVisibleDatas();
+            if (isArray(datas)) {
+                for (const data of datas) ret.push(data);
+            } else if (datas) {
+                ret.push(datas);
+            }
+        }
+        return ret.length ? ret : null;
     }
 
     // Bucket context applying to this row and its descendants - BucketRow extends with own entry.

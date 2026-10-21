@@ -8,12 +8,17 @@
 import {IconName} from '@fortawesome/fontawesome-svg-core';
 import {img} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {HoistIconPrefix, Icon} from '@xh/hoist/icon';
+import {HoistIconPrefix, Icon, IconProps} from '@xh/hoist/icon';
+import {apiDeprecated} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
+import {cloneElement, isValidElement, ReactElement} from 'react';
 import compactSpinnerImg from './spinner-20px.png';
 import spinnerImg from './spinner-50px.png';
 import './Spinner.scss';
 
 export interface SpinnerDefaults {
+    icon?: string | ReactElement;
+    /** @deprecated - use `icon` instead. Will be removed in v91. */
     iconName?: IconName;
     prefix?: HoistIconPrefix;
     usePng?: boolean;
@@ -22,9 +27,18 @@ export interface SpinnerDefaults {
 export interface SpinnerProps extends HoistProps {
     /** True to return a smaller spinner suitable for inline/compact use. */
     compact?: boolean;
-    /** FA icon name to use. Default set via `Spinner.defaults.iconName`. */
+    /**
+     * Icon to animate - a name resolved through the icon catalog, either an `Icon` name
+     * (`'circleNotch'`) or an FA name (`'circle-notch'`), or an icon element such as
+     * `Icon.circleNotch()`. A name the catalog does not know renders Hoist's default spinner.
+     * Default set via `Spinner.defaults.icon`.
+     */
+    icon?: string | ReactElement;
+    /** @deprecated - use `icon` instead. Will be removed in v91. */
     iconName?: IconName;
-    /** FA icon prefix/weight. Default set via `Spinner.defaults.prefix`. */
+    /**
+     * FA icon prefix/weight, for an icon given by name. Default set via `Spinner.defaults.prefix`.
+     */
     prefix?: HoistIconPrefix;
     /** True to use legacy animated PNG images. Default set via `Spinner.defaults.usePng`. */
     usePng?: boolean;
@@ -42,7 +56,7 @@ export interface SpinnerProps extends HoistProps {
  * `Spinner.defaults` (e.g. in app Bootstrap.ts):
  *
  * ```ts
- * Spinner.defaults.iconName = 'circle-notch';
+ * Spinner.defaults.icon = 'circleNotch';
  * Spinner.defaults.prefix = 'far';
  * Spinner.defaults.usePng = true;  // fall back to animated PNG
  * ```
@@ -53,14 +67,19 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps, SpinnerDefa
     model: false,
     observer: false,
     defaults: {
-        iconName: 'spinner-third',
+        icon: 'spinnerThird',
         prefix: 'fal',
         usePng: false
     },
     render({compact, className, ...props}) {
         const {defaults} = Spinner,
-            iconName: IconName = props.iconName ?? defaults.iconName,
+            icon =
+                props.icon ??
+                deprecatedName(props.iconName, 'SpinnerProps.iconName') ??
+                deprecatedName(defaults.iconName, 'Spinner.defaults.iconName') ??
+                defaults.icon,
             prefix = props.prefix ?? defaults.prefix,
+            size: IconProps['size'] = compact ? 'lg' : '3x',
             usePng = props.usePng ?? defaults.usePng;
 
         if (usePng) {
@@ -75,11 +94,19 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps, SpinnerDefa
 
         // Animation is applied via CSS on .xh-spinner rather than FA's animation props,
         // which are disabled by FA's blanket prefers-reduced-motion override.
-        return Icon.icon({
-            iconName,
-            prefix,
-            className,
-            size: compact ? 'lg' : '3x'
-        });
+        if (isValidElement<{className?: string}>(icon)) {
+            return cloneElement(icon, {
+                className: classNames(icon.props.className, className),
+                size
+            } as any);
+        }
+        // Icon.get() warns on an unknown name - fall back so a mask never renders blank.
+        const iconProps: IconProps = {prefix, className, size};
+        return Icon.get(icon, iconProps) ?? Icon.spinnerThird(iconProps);
     }
 });
+
+function deprecatedName(name: IconName, api: string): IconName {
+    if (name) apiDeprecated(api, {v: 'v91', msg: "Use 'icon' instead.", source: 'Spinner'});
+    return name;
+}

@@ -106,14 +106,26 @@ class MyModel extends HoistModel {
     override persistWith = {prefKey: 'MyModelState'};
 
     // Decorator form - syncs with configured PersistenceProvider
-    @persist @bindable showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 
     // Or programmatic form for custom timing
     constructor() {
         super();
-        makeObservable(this);
         this.markPersist('showAdvanced', {path: 'myModel.showAdvanced'});
     }
+}
+```
+
+**Instance Naming**
+
+Set `xhName` to distinguish instances of the same class in logs, telemetry, and the Inspector.
+Config-driven models accept it as a config; any `HoistBase` can set it directly.
+
+```typescript
+new GridModel({xhName: 'positionsGrid', store: {...}});
+
+export class PositionsModel extends HoistModel {
+    override xhName = 'positions';
 }
 ```
 
@@ -128,6 +140,8 @@ class MyModel extends HoistModel {
 | `setBindable(prop, val)` | Set value via conventional setter |
 | `destroy()` | Clean up all managed resources |
 | `xhId` | Unique identifier for this instance |
+| `xhName` | Optional developer-facing name for logs, telemetry, and Inspector |
+| `childXhName(key)` | `{xhName}.{key}`, for naming child objects |
 
 ## HoistModel
 
@@ -157,20 +171,15 @@ Models can operate in two modes:
 
 ```typescript
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, observableRef, runInAction} from '@xh/hoist/mobx';
 
 class UserListModel extends HoistModel {
     // Observable state
-    @observable.ref users: User[] = [];
-    @bindable selectedUserId: string = null;
+    @observableRef accessor users: User[] = [];
+    @bindable accessor selectedUserId: string = null;
 
     // Managed child model - we create it, so we manage it
     @managed detailModel = new UserDetailModel();
-
-    constructor() {
-        super();
-        makeObservable(this);  // Required when adding new observables
-    }
 
     // Opt into managed loading by implementing this template method
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -315,10 +324,10 @@ Services are installed in your `AppModel.initAsync()`:
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Install custom services - multiple calls for ordered initialization
-        await XH.installServicesAsync(TradeService, PortfolioService);
-        await XH.installServicesAsync(ReportService);  // Depends on above
+        await XH.installServicesAsync([TradeService, PortfolioService], ctx);
+        await XH.installServicesAsync([ReportService], ctx);  // Depends on above
     }
 }
 ```
@@ -537,6 +546,37 @@ Button.defaults.minimal = false;
 
 This pattern is analogous to `static defaults` on Model and Service classes (e.g.
 `GridModel.defaults`), adapted for functional components created via `hoistCmp`.
+
+### Extra DOM Attributes with `domAttrs`
+
+Hoist components choose which props they pass along to the elements they render. An attribute that
+a component does not model with a dedicated prop is therefore dropped and never reaches the DOM.
+
+`DomAttrsProps` provides the escape hatch. Components that support it accept a `domAttrs` object
+and apply its entries to their primary DOM element - the same element that receives `data-testid`
+when `testId` is set.
+
+```typescript
+textInput({
+    bind: 'email',
+    testId: 'signup-email',
+    domAttrs: {'data-analytics-id': 'signup-email', 'aria-describedby': 'email-help'}
+});
+```
+
+Keys are constrained by type to `data-*` and `aria-*` attributes, plus `role`, so the prop cannot
+be used to reach for attributes the component manages itself (`className`, `style`, `value`). The
+constraint applies to object literals only; a pre-built `Record<string, string>` still assigns, for
+the rare attribute outside that set. Take care there - precedence against component-managed
+attributes is not guaranteed and varies by component.
+
+As with `style`, an inline `domAttrs` literal is a new object on each render, so hoist a constant
+out of the render function when passing one to a component that relies on `memo`.
+
+Support is provided by `Box` and the layout components built on it (and therefore by `Panel`,
+`Toolbar`, and similar containers), by `Button` and `ButtonGroup`, by `Card` and `Badge`, and by
+the input components in `/cmp/input/`. See [`/cmp/input/README.md`](../cmp/input/README.md) for
+notes specific to inputs.
 
 ## Element Factories
 
@@ -782,14 +822,11 @@ XH.popRoute();
 
 ```typescript
 class MyModel extends HoistModel {
-    @observable value = null;
+    @observable accessor value = null;
     @managed childModel = new ChildModel();
 
     constructor() {
         super();
-        makeObservable(this);  // Always call when adding observables
-
-        // Set up reactions after makeObservable
         this.addReaction({
             track: () => this.value,
             run: () => this.onValueChange()
@@ -870,28 +907,28 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 ## Common Pitfalls
 
-### Forgetting `makeObservable(this)` in Subclasses
+### Forgetting the `accessor` Keyword on Observables
 
-MobX requires each class that introduces new `@observable` or `@computed` properties to call
-`makeObservable(this)` in its constructor. The base class call doesn't cover subclass decorators.
+TC39 decorators require the `accessor` keyword on properties decorated with `@observable`,
+`@observableRef`, `@bindable`, `@bindableRef`, or `@persist`. Without `accessor`, the decorator
+cannot intercept the property. `tsc` reports the error for `@bindable`, `@bindableRef`, and
+`@persist`, but not for the MobX `@observable` decorators. A dev build then throws when the class
+loads. A production build skips that check, and the property silently stops being observable.
 
 ```typescript
-// ❌ Wrong: Observables won't work
+// ❌ Wrong: Missing accessor - throws in dev, silently not observable in production
 class MyModel extends HoistModel {
     @observable data = null;
-    // Missing makeObservable call!
 }
 
-// ✅ Correct: Call makeObservable in constructor
+// ✅ Correct: Use accessor with observable decorators
 class MyModel extends HoistModel {
-    @observable data = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observable accessor data = null;
 }
 ```
+
+Note: `@computed` (on getters), `@action` (on methods), and `@managed` (on properties) do **not**
+use `accessor`.
 
 ### Calling `lookupModel()` Before Model is Linked
 
@@ -979,7 +1016,7 @@ async doLoadAsync() {
 }
 
 // ✅ Also correct: Use @bindable to reduce boilerplate
-@bindable data = null;  // Hoist installs an action-wrapped setter
+@bindable accessor data = null;  // Hoist installs an action-wrapped setter
 
 async doLoadAsync() {
     const data = await fetchData();
@@ -993,6 +1030,6 @@ async doLoadAsync() {
 - [`/svc/`](../svc/README.md) - Built-in services (FetchService, ConfigService, etc.)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components
 - [`/desktop/`](../desktop/README.md) and [`/mobile/`](../mobile/README.md) - Platform-specific components
-- [`/mobx/`](../mobx/README.md) - `@bindable`, `makeObservable`, MobX re-exports and configuration
+- [`/mobx/`](../mobx/README.md) - `@bindable`, MobX re-exports and configuration
 - [`/promise/`](../promise/README.md) - Promise extensions (`catchDefault`, `track`, `linkTo`, `timeout`)
 - [`/utils/`](../utils/README.md) - Decorators (`@debounced`, `@computeOnce`), Timer, LocalDate, logging

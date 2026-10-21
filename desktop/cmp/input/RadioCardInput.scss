@@ -1,0 +1,126 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-radio-card-input {
+  // Equal-width cards that wrap onto new rows. Flexbox (not an auto-fill grid) keeps this working
+  // when the input sizes to its content - e.g. in a toolbar or a flex column aligned to start.
+  // A card shrinks below its width only when the container is narrower than one card.
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--xh-radio-card-input-gap-px);
+
+  // Fill - span the container and stretch cards to share each row, with the card width as their
+  // minimum. A grid keeps every card in a row the same width, including on the last row.
+  &--fill {
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(var(--xh-radio-card-input-card-width), 100%), 1fr)
+    );
+    width: 100%;
+
+    .xh-radio-card-input__card {
+      width: auto;
+    }
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 1 auto;
+    width: var(--xh-radio-card-input-card-width);
+    gap: var(--xh-pad-half-px);
+    min-width: 0;
+    padding: var(--xh-pad-px);
+    border: 1px solid var(--xh-border-color);
+    border-radius: var(--xh-radio-card-input-border-radius-px);
+    background-color: var(--xh-radio-card-input-bg);
+    cursor: pointer;
+    user-select: none;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+
+    // Hover, selection, and focus all draw within the card's own box, so a container with
+    // `overflow: hidden` cannot clip them at its edges.
+    &:hover {
+      border-color: var(--xh-radio-card-input-selected-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--xh-focus-outline-color);
+      outline-offset: -4px;
+    }
+
+    &--selected,
+    &--selected:hover {
+      border-color: var(--xh-radio-card-input-selected-color);
+      box-shadow: inset 0 0 0 1px var(--xh-radio-card-input-selected-color);
+    }
+
+    // A preview's own whitespace sits above the label, so tighten the bottom to balance it.
+    &--with-preview {
+      padding-bottom: var(--xh-pad-half-px);
+    }
+
+    // Text-only cards center their content, so a short label next to taller cards in the same
+    // row does not sit at the top with empty space below.
+    &:not(#{&}--with-preview) {
+      justify-content: center;
+    }
+
+    &--disabled,
+    &--disabled:hover {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &--disabled:not(#{&}--selected):hover {
+      border-color: var(--xh-border-color);
+    }
+  }
+
+  &__preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  &__label {
+    font-size: var(--xh-font-size-small-px);
+    font-weight: 500;
+    color: var(--xh-text-color-muted);
+    text-align: center;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  // Mark the selected label by color only - a weight change would resize the card.
+  &__card--selected &__label {
+    color: var(--xh-text-color);
+  }
+
+  &__description {
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+    text-align: center;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  // Validation states - outline each unselected card, leaving the selected card's ring and hover
+  // feedback intact.
+  @each $severity in (invalid, warning, info) {
+    &.xh-input--#{$severity} &__card:not(#{&}__card--selected, :hover) {
+      border: var(--xh-form-field-#{$severity}-border);
+    }
+  }
+}

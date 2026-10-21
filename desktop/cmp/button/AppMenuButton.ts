@@ -10,7 +10,7 @@ import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, popover} from '@xh/hoist/kit/blueprint';
-import {parseMenuItems} from '@xh/hoist/utils/impl';
+import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {ReactNode} from 'react';

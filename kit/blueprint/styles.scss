@@ -1,4 +1,4 @@
-@import '~@blueprintjs/core/src/common/react-transition';
+@import '@blueprintjs/core/src/common/react-transition';
 
 //------------------------
 // Tabs
@@ -202,6 +202,31 @@
     }
   }
 
+  // Section headings - see MenuHeading, rendered here as a titled Blueprint divider. Label is
+  // aligned with the item text rather than the item icons, matching the grid context menu.
+  .bp6-menu-header {
+    // Blueprint puts the rule above its header - Hoist moves it below, tying the label to the
+    // items it introduces and sparing a leading header a stray rule at the top of the menu.
+    border-top: none;
+    border-bottom: var(--xh-menu-heading-border);
+    // Negative side margins cancel the menu's own 4px padding, so the rule runs edge to edge.
+    margin: var(--xh-pad-half-px) -4px 0;
+    padding: 0;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+
+    > h6 {
+      color: var(--xh-menu-heading-text-color);
+      font-size: var(--xh-menu-heading-font-size-px);
+      font-weight: var(--xh-menu-heading-font-weight);
+      line-height: normal;
+      // Left inset lines the label up with the item icons, not the item text.
+      padding: var(--xh-pad-half-px) 10px var(--xh-pad-half-px) 14px;
+    }
+  }
+
   .bp6-submenu {
     padding: 0;
   }
@@ -235,46 +260,93 @@
 //------------------------
 // Tooltips
 //------------------------
-.bp6-tooltip {
-  &.bp6-intent-primary {
-    .bp6-popover-content {
-      background-color: var(--xh-intent-primary);
-    }
+// Blueprint inverts tooltip colors relative to the theme (dark tooltips in light theme and vice
+// versa), and the `.bp6-popover` rules above also match tooltips. Style tooltips from the
+// `--xh-tooltip-*` vars instead, so they follow the theme. The doubled `.bp6-tooltip.bp6-popover`
+// selector outranks both BP's `.bp6-dark .bp6-tooltip` rules and the `.bp6-popover` rules above.
+.bp6-tooltip.bp6-popover {
+  color: var(--xh-tooltip-text-color);
+  border-radius: var(--xh-tooltip-border-radius-px);
+  box-shadow: 0 0 0 1px var(--xh-tooltip-border-color);
+  // A filter rather than a box-shadow layer, so the shadow follows the arrow and an app can set
+  // `--tooltip-shadow: none` without losing the border ring above.
+  filter: var(--xh-tooltip-shadow);
 
-    .bp6-popover-arrow-fill {
-      fill: var(--xh-intent-primary);
+  .bp6-popover-content {
+    color: var(--xh-tooltip-text-color);
+    background: var(--xh-tooltip-bg);
+    border-radius: var(--xh-tooltip-border-radius-px);
+    font-size: var(--xh-tooltip-font-size-px);
+    max-width: var(--xh-tooltip-max-width);
+    overflow-wrap: break-word;
+  }
+
+  .bp6-heading {
+    color: inherit;
+  }
+
+  // Arrow border and fill match the tooltip border and background.
+  .bp6-popover-arrow::before {
+    box-shadow: none;
+  }
+
+  .bp6-popover-arrow-border {
+    fill: var(--xh-tooltip-border-color);
+    fill-opacity: 1;
+  }
+
+  .bp6-popover-arrow-fill {
+    fill: var(--xh-tooltip-bg);
+  }
+
+  // BP inverts typography colors within tooltips as well - restyle text, key combos, code, and links
+  // to follow the theme.
+  .bp6-text-muted {
+    color: var(--xh-text-color-muted);
+  }
+
+  .bp6-key {
+    color: var(--xh-tooltip-text-color);
+    background: var(--xh-bg);
+    // Inset, so that a container sized to the key does not clip the ring.
+    box-shadow: inset 0 0 0 1px var(--xh-border-color);
+  }
+
+  .bp6-code {
+    color: var(--xh-tooltip-text-color);
+    background: var(--xh-bg-alt);
+    box-shadow: inset 0 0 0 1px var(--xh-border-color);
+  }
+
+  a,
+  a:hover {
+    color: #215db0;
+
+    .bp6-dark & {
+      color: #8abbff;
     }
   }
 
-  &.bp6-intent-danger {
-    .bp6-popover-content {
-      background-color: var(--xh-intent-danger);
-    }
+  @each $intent in primary, success, warning, danger {
+    &.bp6-intent-#{$intent} {
+      box-shadow: 0 0 0 1px var(--xh-intent-#{$intent});
 
-    .bp6-popover-arrow-fill {
-      fill: var(--xh-intent-danger);
+      .bp6-popover-content {
+        color: white;
+        background: var(--xh-intent-#{$intent});
+      }
+
+      .bp6-popover-arrow-border,
+      .bp6-popover-arrow-fill {
+        fill: var(--xh-intent-#{$intent});
+      }
     }
   }
+}
 
-  &.bp6-intent-success {
-    .bp6-popover-content {
-      background-color: var(--xh-intent-success);
-    }
-
-    .bp6-popover-arrow-fill {
-      fill: var(--xh-intent-success);
-    }
-  }
-
-  &.bp6-intent-warning {
-    .bp6-popover-content {
-      background-color: var(--xh-intent-warning);
-    }
-
-    .bp6-popover-arrow-fill {
-      fill: var(--xh-intent-warning);
-    }
-  }
+// Padding set at BP's own specificity, so that `.bp6-compact` tooltips keep their tighter padding.
+.bp6-tooltip .bp6-popover-content {
+  padding: var(--xh-tooltip-padding);
 }
 
 //------------------------

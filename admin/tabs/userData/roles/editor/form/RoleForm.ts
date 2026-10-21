@@ -8,6 +8,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel, GridModel} from '@xh/hoist/cmp/grid';
 import {filler, hbox, hframe, hspacer, span, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {banner} from '@xh/hoist/desktop/cmp/banner';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -19,7 +20,6 @@ import {capitalizeWords} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {RoleMemberType} from '../../Types';
-import {warningBanner} from '../../warning/WarningBanner';
 import {RoleFormModel} from './RoleFormModel';
 
 export const roleForm = hoistCmp.factory({
@@ -138,12 +138,14 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
 const bbar = hoistCmp.factory<AssignmentsPanelProps & {gridModel: GridModel}>(
     ({entity, gridModel, model}) => {
         if (entity === 'USER' && !model.moduleConfig?.userAssignmentSupported) {
-            return warningBanner({
+            return banner({
+                intent: 'warning',
                 compact: true,
                 message: 'Users assignment disabled. Will ignore.'
             });
         } else if (entity === 'DIRECTORY_GROUP' && !model.moduleConfig?.directoryGroupsSupported) {
-            return warningBanner({
+            return banner({
+                intent: 'warning',
                 compact: true,
                 message: 'Directory Groups disabled. Will ignore.'
             });
@@ -170,9 +172,7 @@ const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
                 tooltipText = `All users listed here will be directly granted ${roleName}.`;
                 break;
             case 'DIRECTORY_GROUP':
-                tooltipText =
-                    model.moduleConfig?.directoryGroupsDescription ??
-                    `All members of these directory groups will be granted ${roleName}.`;
+                tooltipText = `All members of these directory groups will be granted ${roleName}.`;
                 break;
             case 'ROLE':
                 tooltipText = `All users holding these roles will also be granted ${roleName}.`;

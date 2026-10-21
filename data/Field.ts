@@ -33,7 +33,10 @@ export interface FieldSpec {
     /** Supplementary descriptive text for this field, for use in tooltips and other UI. */
     description?: string;
 
-    /** Value to be used for records with a null, or non-existent value. */
+    /**
+     * Value to be used for records with a null, or non-existent value. Parsed per `type` when the
+     * Field is constructed.
+     */
     defaultValue?: any;
 
     /** True if this field is intended to be used for grouping.  Defaults to false. */
@@ -96,15 +99,14 @@ export class Field {
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.description = description;
-        this.defaultValue = defaultValue;
         this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
+        this.defaultValue = this.parseValueInternal(defaultValue);
     }
 
     parseVal(val: any): any {
-        const {type, defaultValue, enableXssProtection} = this;
-        return parseFieldValue(val, type, defaultValue, enableXssProtection);
+        return val == null ? this.defaultValue : this.parseValueInternal(val);
     }
 
     isEqual(val1: any, val2: any): boolean {
@@ -121,13 +123,17 @@ export class Field {
             return new Rule(spec);
         });
     }
+
+    private parseValueInternal(raw: any): any {
+        return parseFieldValue(raw, this.type, null, this.enableXssProtection);
+    }
 }
 
 /**
  * Parse a value according to a field type.
  * @param val - raw value to parse.
  * @param type - data type of the field to use for possible conversion.
- * @param defaultValue - typed value to return if `val` undefined or null.
+ * @param defaultValue - value to parse and return if `val` undefined or null.
  * @param enableXssProtection - true to enable XSS (cross-site scripting) protection.
  *      See {@link FieldSpec.enableXssProtection} for additional details.
  * @returns resulting value, potentially parsed or cast as per type.
@@ -164,7 +170,8 @@ export function parseFieldValue(
             val = !enableXssProtection || !isString(val) ? val : sanitizeVal(val);
             return val.toString();
         case 'date':
-            return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
+            val = isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
+            return isNaN(val.getTime()) ? INVALID_DATE : val;
         case 'localDate':
             if (isLocalDate(val)) return val;
             // `get` parses strict 'YYYYMMDD'/'YYYY-MM-DD' strings; `from` coerces Date/number/moment.
@@ -176,12 +183,16 @@ export function parseFieldValue(
 
 /**
  * Sanitize via DOMPurify, preserving the reference identity of values it does not modify.
- * DOMPurify allocates a fresh string on every call, even when sanitization is a no-op -
- * returning the original in that case keeps values deduplicated upstream (e.g. via
+ * DOMPurify allocates a fresh string whenever it parses markup, even when sanitization is a
+ * no-op - returning the original in that case keeps values deduplicated upstream (e.g. via
  * `FetchOptions.internStrings`) shared, and avoids retaining a second copy of every parsed
  * string value alongside `StoreRecord.raw`.
+ *
+ * A string with no `<` holds no markup, and DOMPurify returns it as-is. Return it here instead,
+ * because DOMPurify parses its config on every call before it checks for `<`.
  */
 function sanitizeVal(val: string): string {
+    if (!val.includes('<')) return val;
     const ret = DOMPurify.sanitize(val);
     return ret === val ? val : ret;
 }
@@ -216,3 +227,9 @@ export function genDisplayName(fieldName: string): string {
 export function getFieldName(field: string | Field | FieldSpec): string {
     return field ? (isString(field) ? field : field.name) : null;
 }
+
+/**
+ * Shared result for every unparseable `date` value. Invalid Dates never compare equal, but this
+ * instance does by identity, so Stores can reuse records holding it. Never mutate it.
+ */
+const INVALID_DATE = new Date(NaN);

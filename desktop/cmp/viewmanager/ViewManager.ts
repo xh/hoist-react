@@ -7,12 +7,21 @@
 
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {spinner} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistProps, MenuItemLike, useLocalModel, uses} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistProps,
+    MenuItemLike,
+    TestSupportProps,
+    useLocalModel,
+    uses
+} from '@xh/hoist/core';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
+import {getTestId} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import {startCase} from 'lodash';
 import {ReactElement} from 'react';
 import {viewMenu} from './ViewMenu';
@@ -22,7 +31,7 @@ import {saveAsDialog} from './dialog/SaveAsDialog';
 
 import './ViewManager.scss';
 
-export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
+export interface ViewManagerProps extends HoistProps<ViewManagerModel>, TestSupportProps {
     menuButtonProps?: Partial<ButtonProps>;
     saveButtonProps?: Partial<ButtonProps>;
     revertButtonProps?: Partial<ButtonProps>;
@@ -74,6 +83,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
     render({
         model,
         className,
+        testId,
         menuButtonProps,
         saveButtonProps,
         revertButtonProps,
@@ -88,8 +98,18 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
     }: ViewManagerProps) {
         const {loadObserver} = model,
             locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
-            save = saveButton({model: locModel, mode: showSaveButton, ...saveButtonProps}),
-            revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
+            save = saveButton({
+                model: locModel,
+                mode: showSaveButton,
+                testId: getTestId(testId, 'save-btn'),
+                ...saveButtonProps
+            }),
+            revert = revertButton({
+                model: locModel,
+                mode: showRevertButton,
+                testId: getTestId(testId, 'revert-btn'),
+                ...revertButtonProps
+            }),
             menu = popover({
                 disabled: !locModel.isVisible, // Prevent orphaned popover menu
                 item: menuButton({
@@ -101,6 +121,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                         sharedViewIcon,
                         globalViewIcon
                     }),
+                    testId: getTestId(testId, 'menu-btn'),
                     ...menuButtonProps
                 }),
                 content: loadObserver.isPending
@@ -111,7 +132,11 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                           height: 30,
                           width: 30
                       })
-                    : viewMenu({model: locModel, extraMenuItems}),
+                    : viewMenu({
+                          model: locModel,
+                          extraMenuItems,
+                          testId: getTestId(testId, 'menu')
+                      }),
                 onOpening: () => model.refreshAsync(),
                 placement: 'bottom',
                 popoverClassName: 'xh-view-manager__popover'
@@ -119,20 +144,29 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         return fragment(
             hbox({
                 className,
+                testId,
                 items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
                 ref: useOnVisibleChange(isVisible => (locModel.isVisible = isVisible))
             }),
-            manageDialog({model: locModel.manageDialogModel, defaultViewIcon}),
-            saveAsDialog({model: locModel.saveAsDialogModel})
+            manageDialog({
+                model: locModel.manageDialogModel,
+                defaultViewIcon,
+                testId: getTestId(testId, 'manage-dialog')
+            }),
+            saveAsDialog({
+                model: locModel.saveAsDialogModel,
+                testId: getTestId(testId, 'save-as-dialog')
+            })
         );
     }
 });
 
 const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model, icon, ...rest}) {
+    // Merge className - the popover clones this target with a className of its own.
+    render({model, icon, className, ...rest}) {
         const {view, defaultDisplayName, typeDisplayName, isLoading} = model.parent;
         return button({
-            className: 'xh-view-manager__menu-button',
+            className: classNames('xh-view-manager__menu-button', className),
             text: view.isDefault
                 ? `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`
                 : view.name,

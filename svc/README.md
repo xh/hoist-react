@@ -47,12 +47,12 @@ are installed automatically; applications add custom services in `AppModel.initA
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Install custom services - all initialize concurrently
-        await XH.installServicesAsync(TradeService, PortfolioService);
+        await XH.installServicesAsync([TradeService, PortfolioService], ctx);
 
         // Chain calls for ordered initialization (when services depend on earlier ones)
-        await XH.installServicesAsync(ReportService);  // Can now use Trade/Portfolio services
+        await XH.installServicesAsync([ReportService], ctx); // Can now use Trade/Portfolio services
     }
 }
 ```
@@ -100,6 +100,7 @@ Managed HTTP requests with enhancements over the native Fetch API.
 
 **Key Features:**
 - Automatic correlation IDs for request tracking
+- W3C `traceparent` headers on requests to the app's own server, when tracing is enabled
 - Configurable timeouts (default 30 seconds)
 - Auto-abort of duplicate requests via `autoAbortKey`
 - Request/response interceptors
@@ -135,20 +136,24 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 | `params` | object | Query string parameters                                                               |
 | `headers` | object | Additional headers                                                                    |
 | `timeout` | number | Timeout in ms (default 30000)                                                         |
-| `autoAbortKey` | string | Cancel previous requests with same key                                                |
+| `autoAbortKey` | string | Cancel previous requests with same key. For `fetchNdjson`, covers the whole stream    |
+| `fetchOpts` | object | Options for the native `fetch()`. A `signal` here also aborts the request, alongside Hoist's own |
+| `propagateTrace` | boolean | Send a `traceparent` header when tracing is enabled. Overrides `FetchService.defaults.propagateTrace` |
 | `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
 | `span` | Span | Parent span for tracing. Typically supplied via a `Runner` chain (`runner.fetchJson(...)`) rather than set directly |
 
 **App-Level Defaults (`FetchService.defaults`):**
 
-FetchService exposes a `static defaults` object for correlation ID configuration. Best configured
-in the app's `Bootstrap` module to ensure settings are active from the very first request.
+FetchService exposes a `static defaults` object for correlation ID and trace header configuration.
+Best configured in the app's `Bootstrap` module to ensure settings are active from the very first
+request.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `autoGenCorrelationIds` | `boolean \| function` | `false` | Auto-generate correlation IDs. Set `true` or a `(opts) => boolean` function for per-request control |
 | `genCorrelationId` | `() => string` | 16-char random string | Custom ID generator function |
 | `correlationIdHeaderKey` | `string` | `'X-Correlation-ID'` | HTTP header name for correlation IDs |
+| `propagateTrace` | `boolean \| function` | App's own server only | Send a `traceparent` header when tracing is enabled. Set `true` for all requests, or a `(opts) => boolean` function. See [Trace headers on fetch requests](../docs/telemetry.md#trace-headers-on-fetch-requests) |
 
 ```typescript
 // In Bootstrap module
@@ -321,7 +326,7 @@ category while all other entries continue to require INFO or above.
 > tracing, metrics, and activity tracking.
 
 Client-side distributed tracing — creates spans for user actions and fetch calls, injects
-`traceparent` headers on outgoing requests, and batches completed spans for export to the
+`traceparent` headers on requests to the app's own server, and batches completed spans for export to the
 Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation
 with server-side traces. Controlled by the `xhTraceConfig` soft config. Requires hoist-core 37+.
 
@@ -601,15 +606,10 @@ See `/core/README.md` for the full guide on creating services. Quick example:
 
 ```typescript
 import {HoistService, XH} from '@xh/hoist/core';
-import {makeObservable, observable} from '@xh/hoist/mobx';
+import {observable} from '@xh/hoist/mobx';
 
 export class PortfolioService extends HoistService {
-    @observable.ref portfolios: Portfolio[] = [];
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observableRef accessor portfolios: Portfolio[] = [];
 
     // Called during app startup
     override async initAsync() {
@@ -627,7 +627,7 @@ export class PortfolioService extends HoistService {
 }
 
 // Install in AppModel.initAsync()
-await XH.installServicesAsync(PortfolioService);
+await XH.installServicesAsync([PortfolioService], ctx);
 
 // Access anywhere
 XH.portfolioService.getPortfolio('abc123');
@@ -711,11 +711,10 @@ or coordinated multi-step workflows where you want timing visibility without a f
 ### Debounced Search with Auto-Abort
 
 ```typescript
-@bindable searchQuery = '';
+@bindable accessor searchQuery = '';
 
 constructor() {
     super();
-    makeObservable(this);
     this.addReaction({
         track: () => this.searchQuery,
         run: () => this.searchAsync(),

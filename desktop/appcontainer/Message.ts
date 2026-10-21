@@ -10,7 +10,7 @@ import {div, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -79,6 +79,16 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
                         if (evt.key === 'Enter') model.doConfirmAsync();
                     }
                 })
+            })
+        );
+    }
+    if (formModel.getField('suppress')) {
+        items.push(
+            formField({
+                field: 'suppress',
+                label: null,
+                testId: 'xh-message-suppress',
+                item: checkbox({label: model.suppressLabel})
             })
         );
     }

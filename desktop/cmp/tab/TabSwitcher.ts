@@ -5,16 +5,16 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
+import {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
 import {
     menu,
+    menuDivider,
     menuItem,
     popover,
     showContextMenu,
@@ -22,19 +22,26 @@ import {
     tabs as bpTabs,
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
+import {bindableRef} from '@xh/hoist/mobx';
 import {
-    composeRefs,
+    consumeEvent,
+    debounced,
+    getTestId,
+    isDisplayed,
+    TEST_ID,
+    throwIf
+} from '@xh/hoist/utils/js';
+import {
     createObservableRef,
     getLayoutProps,
+    useComposedRefs,
     useOnResize,
     useOnScroll,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, isFinite} from 'lodash';
-import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
+import {compact, find, isEmpty, isFinite} from 'lodash';
+import {CSSProperties, ReactElement, ReactNode, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -76,16 +83,19 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             vertical = ['left', 'right'].includes(orientation),
             impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
 
-        // Implement overflow
-        ref = impl.enableOverflow
-            ? composeRefs(
-                  ref,
-                  impl.switcherRef,
-                  useOnResize(() => impl.updateOverflowTabs()),
-                  useOnVisibleChange(() => impl.updateOverflowTabs()),
-                  useOnScroll(() => impl.updateOverflowTabs())
-              )
-            : composeRefs(ref, impl.switcherRef);
+        // Implement overflow. The tracking hooks run unconditionally to keep hook order stable -
+        // their refs are composed onto the switcher only when overflow is enabled.
+        const resizeRef = useOnResize(() => impl.updateOverflowTabs()),
+            visibleRef = useOnVisibleChange(() => impl.updateOverflowTabs()),
+            scrollRef = useOnScroll(() => impl.updateOverflowTabs());
+
+        ref = useComposedRefs(
+            ref,
+            impl.switcherRef,
+            impl.enableOverflow ? resizeRef : null,
+            impl.enableOverflow ? visibleRef : null,
+            impl.enableOverflow ? scrollRef : null
+        );
 
         // Create tabs
         const tabStyle: CSSProperties = {};
@@ -93,7 +103,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
         if (!vertical && isFinite(tabMinWidth)) tabStyle.minWidth = tabMinWidth + 'px';
         if (!vertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
 
-        const items = tabs.map(tab => {
+        const tabItems = tabs.map(tab => {
             const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab,
                 testId = getTestId(props, id);
 
@@ -126,17 +136,34 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 }),
                 onContextMenu: e => {
                     const domRect = e.currentTarget.getBoundingClientRect(),
-                        menuItems = (switcherConfig.extraMenuItems ?? []).map(it =>
-                            getContextMenuItem(it, {contextMenuEvent: e, tab})
-                        );
+                        menuItems = switcherConfig.extraMenuItems ?? [];
                     if (isEmpty(menuItems)) return;
-                    showContextMenu(contextMenu({menuItems}), {
+                    const context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
+                    showContextMenu(contextMenu({menuItems, context}), {
                         left: orientation === 'left' ? domRect.right : domRect.left,
                         top: orientation === 'top' ? domRect.bottom : domRect.top
                     });
                 }
             });
         });
+
+        // Headers and spacers are non-Tab children, which Blueprint passes through to its tab
+        // list in order.
+        const items = vertical
+            ? withGroupHeaders(
+                  tabs,
+                  tabItems,
+                  (group, key, isFirst) =>
+                      groupHeader({
+                          key,
+                          group,
+                          isFirst,
+                          spec: find(switcherConfig?.groups, {key: group}),
+                          testId: getTestId(props, `group-${group}`)
+                      }),
+                  key => div({key, className: 'xh-tab-switcher__group-end', role: 'presentation'})
+              )
+            : tabItems;
 
         return box({
             ...layoutProps,
@@ -172,11 +199,26 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 //-----------------
 // Implementation
 //-----------------
+const groupHeader = hoistCmp.factory({
+    model: false,
+    render({group, isFirst, spec, testId}) {
+        return div({
+            className: classNames(
+                'xh-tab-switcher__group-header',
+                isFirst ? 'xh-tab-switcher__group-header--first' : null
+            ),
+            role: 'presentation',
+            [TEST_ID]: testId,
+            items: [spec?.icon, span(spec?.title ?? group)]
+        });
+    }
+});
+
 const overflowMenu = hoistCmp.factory<TabContainerModel>({
     render({model, tabs, vertical}) {
         if (isEmpty(tabs)) return null;
 
-        const items = tabs.map(tab => {
+        const menuItems = tabs.map(tab => {
             const {id, title: text, icon, disabled, showRemoveAction} = tab;
             return menuItem({
                 icon,
@@ -193,6 +235,19 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 })
             });
         });
+
+        const items = vertical
+            ? withGroupHeaders(
+                  tabs,
+                  menuItems,
+                  (group, key) =>
+                      menuDivider({
+                          key,
+                          title: find(model.switcherConfig?.groups, {key: group})?.title ?? group
+                      }),
+                  key => menuDivider({key})
+              )
+            : menuItems;
 
         return popover({
             popoverClassName: 'xh-tab-switcher__overflow-popover',
@@ -212,7 +267,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
 class TabSwitcherLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable.ref overflowIds = [];
+    @bindableRef accessor overflowIds = [];
     switcherRef = createObservableRef<HTMLElement>();
     model;
     enableOverflow;
@@ -236,7 +291,6 @@ class TabSwitcherLocalModel extends HoistModel {
 
     constructor(model, enableOverflow, vertical) {
         super();
-        makeObservable(this);
         this.model = model;
         this.enableOverflow = enableOverflow;
         this.vertical = vertical;
@@ -323,6 +377,33 @@ class TabSwitcherLocalModel extends HoistModel {
 
         return {length, start, end};
     }
+}
+
+/**
+ * Interleave separators into a list of rendered items (aligned by index with `tabs`): a header
+ * before each contiguous run of tabs sharing a non-null group, and a spacer before an ungrouped tab
+ * that follows such a run. Null items are skipped. `headerFn` is told if its header leads the list.
+ */
+function withGroupHeaders(
+    tabs: TabModel[],
+    items: ReactNode[],
+    headerFn: (group: string, key: string, isFirst: boolean) => ReactNode,
+    spacerFn: (key: string) => ReactNode
+): ReactNode[] {
+    const ret = [];
+    let prevGroup: string = null;
+    items.forEach((item, idx) => {
+        if (!item) return;
+        const {group} = tabs[idx];
+        if (group != null && group !== prevGroup) {
+            ret.push(headerFn(group, `xh-group-${idx}`, ret.length === 0));
+        } else if (group == null && prevGroup != null) {
+            ret.push(spacerFn(`xh-group-end-${idx}`));
+        }
+        prevGroup = group;
+        ret.push(item);
+    });
+    return ret;
 }
 
 function flipOrientation(orientation) {

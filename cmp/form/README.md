@@ -108,6 +108,7 @@ const formModel = new FormModel({
 | `disabled` | `boolean` | Disable all fields |
 | `readonly` | `boolean` | Make all fields read-only |
 | `persistWith` | `FormPersistOptions` | Options for persisting form state |
+| `xhName` | `string` | Developer-facing name for logs, telemetry, and Inspector |
 
 ### Working with Data
 
@@ -529,13 +530,11 @@ class LocationFormModel extends HoistModel {
         ]
     });
 
-    @observable.ref states = [];
-    @observable.ref cities = [];
+    @observableRef accessor states = [];
+    @observableRef accessor cities = [];
 
     constructor() {
         super();
-        makeObservable(this);
-
         this.addReaction(
             {
                 track: () => this.formModel.values.country,

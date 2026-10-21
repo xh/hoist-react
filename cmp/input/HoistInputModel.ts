@@ -7,10 +7,10 @@
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
 import {maxSeverity} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEqual} from 'lodash';
+import {isEqual, isString} from 'lodash';
 import {FocusEvent, ForwardedRef, ReactElement, useImperativeHandle} from 'react';
 import './HoistInput.scss';
 
@@ -56,7 +56,7 @@ import './HoistInput.scss';
  */
 export class HoistInputModel extends HoistModel {
     /** Does this input have the focus? */
-    @observable hasFocus: boolean = false;
+    @observable accessor hasFocus: boolean = false;
 
     /** Field (if any) associated with this control. */
     getField(): FieldModel {
@@ -86,8 +86,7 @@ export class HoistInputModel extends HoistModel {
      */
     get inputEl(): HTMLInputElement | HTMLTextAreaElement {
         return (this.inputRef.current ?? this.domEl?.querySelector('input')) as
-            | HTMLInputElement
-            | HTMLTextAreaElement;
+            HTMLInputElement | HTMLTextAreaElement;
     }
 
     /** Bound model, if any.*/
@@ -98,15 +97,10 @@ export class HoistInputModel extends HoistModel {
     //-----------------------
     // Implementation State
     //------------------------
-    @observable.ref internalValue: any = null; // Cached internal value
+    @observableRef accessor internalValue: any = null; // Cached internal value
     inputRef = createObservableRef<HTMLElement>(); // ref to internal <input> element, if any
     domRef = createObservableRef<HTMLElement>(); // ref to outermost rendered DOM element.
     isDirty: boolean = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override afterLinked() {
         this.addReaction(this.externalValueReaction());
@@ -142,6 +136,19 @@ export class HoistInputModel extends HoistModel {
      */
     get commitOnChange(): boolean {
         return true;
+    }
+
+    /**
+     * True if this input should trim leading/trailing whitespace from string values as they are
+     * converted to their external form - i.e. as reported to `onChange` and flushed to any bound
+     * model on commit.
+     *
+     * False in this base class, as whitespace can be meaningful for multi-line and free-text
+     * controls. Single-line text inputs override to enable by default, and provide a
+     * `trimWhitespace` prop to opt out.
+     */
+    get trimWhitespace(): boolean {
+        return false;
     }
 
     /** The value to be rendered internally by control. */
@@ -195,7 +202,7 @@ export class HoistInputModel extends HoistModel {
 
     /** Hook to convert an internal representation of the value to an appropriate external one. */
     toExternal(internal: any) {
-        return internal;
+        return this.trimWhitespace && isString(internal) ? internal.trim() : internal;
     }
 
     /** Hook to convert an external representation of the value to an appropriate internal one. */

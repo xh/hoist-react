@@ -10,15 +10,16 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
+import {action, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
+import {Icon} from '@xh/hoist/icon';
+import {AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
     override telemetryPrefix = 'xh.client.admin.alertBanner';
 
     savedValue: AlertBannerSpec;
-    @bindable.ref savedPresets: PlainObject[] = [];
+    @bindableRef accessor savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
@@ -56,27 +57,25 @@ export class AlertBannerModel extends HoistModel {
     });
 
     @managed
-    @observable.ref
-    bannerModel = null;
+    @observableRef
+    accessor bannerModel = null;
 
     get intentOptions(): Intent[] {
         return ['primary', 'success', 'warning', 'danger'];
     }
 
-    get iconOptions(): AlertBannerIconName[] {
-        return [
-            'bullhorn',
-            'check-circle',
-            'exclamation-triangle',
-            'times-circle',
-            'info-circle',
-            'question-circle'
-        ];
+    /**
+     * Hoist's built-in icons, which every Hoist app can render. A banner shows in every targeted
+     * client app, so an icon registered by only one app could be missing in the others.
+     */
+    get iconOptions(): string[] {
+        return Icon.getCatalog()
+            .filter(it => it.source === 'hoist' && !it.hideFromPicker)
+            .map(it => it.faName);
     }
 
     constructor() {
         super();
-        makeObservable(this);
 
         const {formModel} = this;
         this.addReaction({

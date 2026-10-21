@@ -6,8 +6,14 @@
  */
 
 import {badge} from '@xh/hoist/cmp/badge';
-import {dateTimeCol, GridAutosizeMode, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
-import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
+import {
+    dateTime,
+    GridAutosizeMode,
+    GridContextMenuItemLike,
+    GridModel,
+    TreeStyle
+} from '@xh/hoist/cmp/grid';
+import {fragment, p, span, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
     buildViewGroupTree,
@@ -34,7 +40,14 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
 import {GridOptions, RowDropZoneEvents} from '@xh/hoist/kit/ag-grid';
-import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {
+    action,
+    computed,
+    observable,
+    runInAction,
+    observableRef,
+    bindableRef
+} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {
     capitalize,
@@ -84,7 +97,7 @@ type StripMode = 'rest' | 'armed' | 'hot' | 'blocked';
 export class ManageDialogModel extends HoistModel {
     viewManagerModel: ViewManagerModel;
 
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     @managed ownedGridModel: GridModel;
     @managed globalGridModel: GridModel;
@@ -96,16 +109,16 @@ export class ManageDialogModel extends HoistModel {
 
     @managed tabContainerModel: TabContainerModel;
 
-    @bindable.ref filter: FilterTestFn;
+    @bindableRef accessor filter: FilterTestFn;
 
     /** Anchors this dialog's toasts within it, rather than along the edge of the document. */
     readonly dialogRef = createRef<HTMLElement>();
 
     /** Pending row-drag drop target within one of the grids, for highlighting. */
-    @observable.ref private dropTarget: {type: GridType; id: string} = null;
+    @observableRef private accessor dropTarget: {type: GridType; id: string} = null;
 
     /** Row(s)/group currently mid-drag, tagged by originating grid. */
-    @observable.ref private drag: {type: GridType; payload: DragPayload} = null;
+    @observableRef private accessor drag: {type: GridType; payload: DragPayload} = null;
 
     /** Reversing action for the most recently applied move, backing the toast's Undo button. */
     private lastMove: {undo: () => Promise<void>} = null;
@@ -165,7 +178,6 @@ export class ManageDialogModel extends HoistModel {
 
     constructor(viewManagerModel: ViewManagerModel) {
         super();
-        makeObservable(this);
         this.viewManagerModel = viewManagerModel;
     }
 
@@ -300,19 +312,13 @@ export class ManageDialogModel extends HoistModel {
 
     /**
      * Display state for `gridModel`'s top-level drop strip - rest/armed/hot/blocked, matching
-     * the in-flight drag (if it originated in this grid) or, at rest, the current selection.
+     * the in-flight drag, if it originated in this grid.
      */
     stripState(gridModel: GridModel): {mode: StripMode; hint: string} {
         const type = this.gridTypeFor(gridModel),
             payload = this.drag?.type === type ? this.drag.payload : null;
 
-        if (!payload) {
-            const hasSelection = gridModel.hasSelection && !this.isDragDisabled(gridModel);
-            return {
-                mode: 'rest',
-                hint: hasSelection ? 'Click to move the selection to the top level' : ''
-            };
-        }
+        if (!payload) return {mode: 'rest', hint: ''};
 
         const name = this.dragPayloadName(payload);
         if (!this.isValidDrop(payload, TOP_LEVEL_TARGET)) {
@@ -340,17 +346,6 @@ export class ManageDialogModel extends HoistModel {
                 }
             }
         };
-    }
-
-    /**
-     * Move the grid's current selection to the top level, as clicked on its top-level strip. No-op
-     * without a draggable selection, or if the selection is already at the top level.
-     */
-    async moveSelectionToTopLevelAsync(gridModel: GridModel): Promise<void> {
-        const type = this.gridTypeFor(gridModel),
-            payload = this.getSelectionPayload(gridModel);
-        if (!payload || !this.isValidDrop(payload, TOP_LEVEL_TARGET)) return;
-        return this.doRowDragDropAsync(type, payload, TOP_LEVEL_TARGET);
     }
 
     //------------------------
@@ -538,22 +533,6 @@ export class ManageDialogModel extends HoistModel {
                 .map(n => n?.data as StoreRecord)
                 .filter(rec => rec && !rec.data.isGroupRow)
                 .map(rec => rec.data.view as ViewInfo);
-        return {views: uniqBy(compact(views), 'token')};
-    }
-
-    /**
-     * As {@link getDragPayload}, but driven by the grid's selection - for the top-level strip's
-     * click-to-move. Null when the selection is empty or undraggable.
-     */
-    private getSelectionPayload(gridModel: GridModel): DragPayload {
-        const recs = gridModel.selectedRecords;
-        if (!recs.length || this.isDragDisabled(gridModel)) return null;
-
-        if (recs.length === 1 && recs[0].data.isGroupRow) return {group: recs[0].data.group};
-
-        const views = recs.flatMap(r =>
-            r.data.isGroupRow ? r.descendants.map(d => d.data.view) : [r.data.view]
-        );
         return {views: uniqBy(compact(views), 'token')};
     }
 
@@ -950,7 +929,7 @@ export class ManageDialogModel extends HoistModel {
             }
         };
 
-        const contextMenu =
+        const contextMenu: GridContextMenuItemLike[] =
             type === 'shared' ? ['expandCollapseAll'] : [renameGroupAction, 'expandCollapseAll'];
 
         const modifier =
@@ -961,7 +940,9 @@ export class ManageDialogModel extends HoistModel {
             // Sort groups above loose views among siblings, then alpha by name.
             sortBy: ['isGroupRow|desc', 'name'],
             treeMode: true,
-            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
+            // Highlights only - the tree-border style adds a second, differently colored rule on
+            // top of each level-0 row, which doubles up with the row borders below.
+            treeStyle: TreeStyle.HIGHLIGHTS,
             rowBorders: true,
             selModel: 'multiple',
             contextMenu,
@@ -992,7 +973,9 @@ export class ManageDialogModel extends HoistModel {
                     headerName: null,
                     width: 28,
                     resizable: false,
-                    align: 'center',
+                    // Left-aligned, so the cell keeps its standard left padding and the grip lands
+                    // at the same inset as the ColChooser's. Centering zeroes that padding, which
+                    // pinned the grip against the grid's left border.
                     omit: !this.dragDropEnabled(type),
                     agOptions: {rowDrag: true}
                 },
@@ -1000,7 +983,7 @@ export class ManageDialogModel extends HoistModel {
                 {field: 'isGroupRow', hidden: true},
                 {field: 'group', hidden: true},
                 {field: 'owner', hidden: true},
-                {field: 'lastUpdated', ...dateTimeCol, hidden: true},
+                {field: 'lastUpdated', ...dateTime, hidden: true},
                 {
                     field: 'isPinned',
                     width: 40,
@@ -1080,23 +1063,23 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private get ownedTabTitle(): ReactNode {
-        return hbox(
-            `My ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
+        return span(
+            `My ${startCase(pluralize(this.viewManagerModel.typeDisplayName))} `,
             badge(this.viewCount(this.ownedGridModel))
         );
     }
 
     private get globalTabTitle(): ReactNode {
         const {globalDisplayName, typeDisplayName} = this.viewManagerModel;
-        return hbox(
-            `${startCase(globalDisplayName)} ${startCase(pluralize(typeDisplayName))}`,
+        return span(
+            `${startCase(globalDisplayName)} ${startCase(pluralize(typeDisplayName))} `,
             badge(this.viewCount(this.globalGridModel))
         );
     }
 
     private get sharedTabTitle(): ReactNode {
-        return hbox(
-            `Shared ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
+        return span(
+            `Shared ${startCase(pluralize(this.viewManagerModel.typeDisplayName))} `,
             badge(this.viewCount(this.sharedGridModel))
         );
     }

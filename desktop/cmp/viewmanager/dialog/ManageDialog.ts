@@ -16,7 +16,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {pluralize} from '@xh/hoist/utils/js';
+import {getTestId, pluralize} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {capitalize} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
@@ -33,7 +33,7 @@ export const manageDialog = hoistCmp.factory({
     className: 'xh-view-manager__manage-dialog',
     model: uses(() => ManageDialogModel),
 
-    render({model, className, defaultViewIcon}) {
+    render({model, className, defaultViewIcon, testId}) {
         if (!model.isOpen) return null;
 
         const {updateTask, loadTask, selectedViews, viewManagerModel} = model,
@@ -61,11 +61,13 @@ export const manageDialog = hoistCmp.factory({
                                   : count > 1
                                     ? viewMultiPanel({defaultViewIcon})
                                     : viewPanel(),
-                            bbar: bbar()
+                            bbar: bbar({testId})
                         })
                     ),
                     // Anchors this dialog's toasts within it - see ManageDialogModel.toastOpts.
                     ref: model.dialogRef,
+                    // Blueprint's Dialog does not pass `data-testid` through - tag this panel.
+                    testId,
                     mask: [updateTask, loadTask]
                 })
             }),
@@ -117,6 +119,15 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                                     groupContracted: Icon.folder({
                                         asHtml: true,
                                         className: 'ag-group-contracted'
+                                    }),
+                                    // Replaces ag-Grid's own grip glyph, matching the ColChooser.
+                                    // Must be set here - the row-drag comp reads only grid-level
+                                    // icons, never the column's own.
+                                    rowDrag: Icon.grip({
+                                        asHtml: true,
+                                        prefix: 'fas',
+                                        className:
+                                            'xh-view-manager__manage-dialog__drag-handle__grip'
                                     })
                                 },
                                 ...dialogModel?.getRowDragAgOptions(model)
@@ -148,18 +159,23 @@ const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
 });
 
 const bbar = hoistCmp.factory<ManageDialogModel>({
-    render({model}) {
+    render({model, testId}) {
         const {selectedView} = model;
         return toolbar(
             filler(),
             button({
                 text: selectedView?.isCurrentView ? 'Currently Active' : 'Activate + Close',
+                testId: getTestId(testId, 'activate-btn'),
                 onClick: () => model.activateSelectedViewAndClose(),
                 disabled: selectedView?.isCurrentView,
                 omit: !selectedView
             }),
             toolbarSep({omit: !selectedView}),
-            button({text: 'Close', onClick: () => model.close()})
+            button({
+                text: 'Close',
+                testId: getTestId(testId, 'close-btn'),
+                onClick: () => model.close()
+            })
         );
     }
 });

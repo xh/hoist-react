@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
-import {ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, ColumnTooltipFn, GridModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {tag} from '@xh/hoist/kit/blueprint';
@@ -34,8 +34,8 @@ export abstract class BaseMembersModel extends HoistModel {
         this.gridModel = this.createGridModel();
         this.addReaction(
             {
-                track: () => this.selectedRole,
-                run: role => this.loadGridData(role),
+                track: () => [this.selectedRole, this.roleModel.directoryGroupInfo],
+                run: () => this.loadGridData(this.selectedRole),
                 fireImmediately: true
             },
             {
@@ -64,6 +64,9 @@ export abstract class BaseMembersModel extends HoistModel {
     protected nameRenderer: ColumnRenderer = name => {
         return name;
     };
+
+    /** Optional tooltip for the name column - null for no tooltip. */
+    protected nameTooltip: ColumnTooltipFn = null;
 
     protected sourcesRenderer: ColumnRenderer = (sources: string[]) => {
         return hbox({
@@ -103,6 +106,7 @@ export abstract class BaseMembersModel extends HoistModel {
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'sources', type: 'json'},
+                    {name: 'displayName', type: 'string'}, // For directory groups
                     {name: 'error', type: 'string'}, // For directory groups
                     {name: 'dateCreated', type: 'date'}, // For direct members
                     {name: 'createdBy', type: 'string'} // For direct members
@@ -116,7 +120,11 @@ export abstract class BaseMembersModel extends HoistModel {
             columns: [
                 {
                     field: 'name',
-                    autosizeMaxWidth: 300
+                    autosizeMaxWidth: 300,
+                    renderer: this.nameRenderer,
+                    tooltip: this.nameTooltip,
+                    sortValue: (v, {record}) => record.data.displayName ?? v,
+                    exportValue: (v, {record}) => record.data.displayName ?? v
                 },
                 {
                     field: 'sources',

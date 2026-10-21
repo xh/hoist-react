@@ -49,7 +49,7 @@ import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, observableRef} from '@xh/hoist/mobx';
 import {logError, logWarn, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -89,6 +89,14 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
      */
     enableSearch?: boolean;
+
+    /**
+     * Additional CodeMirror extensions to install alongside Hoist's own - e.g. `autocompletion()`
+     * from `@codemirror/autocomplete`, `closeBrackets()`, or a custom `keymap`. Appended after
+     * Hoist's extensions, so Hoist wins on conflicts unless an app extension is wrapped in
+     * `Prec.high()`. Read once at editor creation - not reactive as a prop.
+     */
+    extensions?: Extension[];
 
     /**
      * Callback to autoformat the code. Given the unformatted code, this should return a
@@ -187,9 +195,9 @@ class CodeInputModel extends HoistInputModel {
     editor: EditorView;
 
     // Support for internal search feature.
-    @bindable query: string = '';
-    @observable currentMatchIdx: number = -1;
-    @observable.ref matches: {from: number; to: number}[] = [];
+    @bindable accessor query: string = '';
+    @observable accessor currentMatchIdx: number = -1;
+    @observableRef accessor matches: {from: number; to: number}[] = [];
     private updateMatchesEffect = StateEffect.define<void>();
 
     private themeCompartment = new Compartment();
@@ -283,7 +291,6 @@ class CodeInputModel extends HoistInputModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => this.modalSupportModel.isModal,
             run: () => this.focus(),
@@ -455,7 +462,8 @@ class CodeInputModel extends HoistInputModel {
                 lineStyles,
                 linter,
                 lineNumbers = true,
-                lineWrapping = false
+                lineWrapping = false,
+                extensions: appExtensions
             } = this.componentProps,
             extensions = [
                 // Switches between dark/light theme using GitHub theme presets.
@@ -544,6 +552,11 @@ class CodeInputModel extends HoistInputModel {
         }
         extensions.push(foldGutterExtension());
         extensions.push(lintGutterExtension());
+
+        // App extensions last, so Hoist's take precedence unless the app opts in via `Prec`.
+        if (appExtensions?.length) {
+            extensions.push(...appExtensions);
+        }
         return extensions.filter(it => !isNil(it));
     }
 
@@ -671,6 +684,7 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
             model: model.modalSupportModel,
             item: inputCmp({
                 testId: props.testId,
+                domAttrs: props.domAttrs,
                 width: '100%',
                 height: '100%',
                 className,

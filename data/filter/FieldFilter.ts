@@ -10,13 +10,15 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
-    difference,
+    differenceBy,
     escapeRegExp,
     first,
     isArray,
+    isDate,
     isEmpty,
     isEqual,
     isNil,
+    isObject,
     isString,
     isUndefined,
     uniq
@@ -181,20 +183,35 @@ export class FieldFilter extends Filter {
         // Treat null, empty string, and empty array (blank `tags`) alike as "blank".
         const isBlank = (v: any) => isNil(v) || v === '' || (isArray(v) && isEmpty(v));
 
-        let regExps, opFn: (v: any) => boolean;
+        // Generate optimized closures for hot-loops, using sets, hoisted conditionals
+        let regExps, lookup: Set<any>, opFn: (v: any) => boolean;
         switch (op) {
             case '=':
-                opFn = v => {
-                    if (isBlank(v)) v = null;
-                    // A blank filter (empty `value`) matches only blank record values.
-                    return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
-                };
+                lookup = this.lookupSet(value);
+                opFn = lookup
+                    ? v => {
+                          if (isBlank(v)) v = null;
+                          // A blank filter (empty `value`) matches only blank record values.
+                          return (v == null && !lookup.size) || lookup.has(v);
+                      }
+                    : v => {
+                          if (isBlank(v)) v = null;
+                          return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
+                      };
                 break;
             case '!=':
-                opFn = v => {
-                    if (isBlank(v)) v = null;
-                    return (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it));
-                };
+                lookup = this.lookupSet(value);
+                opFn = lookup
+                    ? v => {
+                          if (isBlank(v)) v = null;
+                          return (v != null || !!lookup.size) && !lookup.has(v);
+                      }
+                    : v => {
+                          if (isBlank(v)) v = null;
+                          return (
+                              (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it))
+                          );
+                      };
                 break;
             case '>':
                 opFn = v => !isNil(v) && v > value;
@@ -210,33 +227,35 @@ export class FieldFilter extends Filter {
                 break;
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'includes':
-                opFn = v => !isNil(v) && v.some(it => value.includes(it));
+                lookup = new Set(value);
+                opFn = v => !isNil(v) && v.some(it => lookup.has(it));
                 break;
             case 'excludes':
-                opFn = v => isNil(v) || !v.some(it => value.includes(it));
+                lookup = new Set(value);
+                opFn = v => isNil(v) || !v.some(it => lookup.has(it));
                 break;
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
@@ -288,10 +307,7 @@ export class FieldFilter extends Filter {
             other instanceof FieldFilter &&
             other.field === this.field &&
             other.op === this.op &&
-            (isArray(other.value) && isArray(this.value)
-                ? other.value.length === this.value.length &&
-                  difference(other.value, this.value).length === 0
-                : other.value === this.value)
+            valuesEqual(other.value, this.value)
         );
     }
 
@@ -317,4 +333,20 @@ export class FieldFilter extends Filter {
         if (value instanceof LocalDate) return 'localDate';
         return undefined;
     }
+
+    // Set-based candidate lookup for primitives, where `Set.has` (SameValueZero) matches `isEqual`
+    // semantics - null when any candidate is an object (e.g. Date) and requires the isEqual path.
+    private lookupSet(values: any[]): Set<any> {
+        return values.some(isObject) ? null : new Set(values);
+    }
+}
+
+// Scalars must match; arrays must hold the same values, in any order.
+function valuesEqual(a: unknown, b: unknown): boolean {
+    // Compare values by key, so Dates match by time - a filter restored from JSON holds new instances.
+    const valueKey = v => (isDate(v) ? v.getTime() : v);
+
+    return isArray(a) && isArray(b)
+        ? a.length === b.length && isEmpty(differenceBy(a, b, valueKey))
+        : valueKey(a) === valueKey(b);
 }

@@ -15,8 +15,9 @@ import {
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import {pluralize} from '@xh/hoist/utils/js';
-import {filterConsecutiveMenuSeparators, parseMenuItems} from '@xh/hoist/utils/impl';
+import {getTestId, pluralize, TEST_ID} from '@xh/hoist/utils/js';
+import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {filter, groupBy, isEmpty, isFunction, keys, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
@@ -25,21 +26,22 @@ import {ViewManagerLocalModel} from './ViewManagerLocalModel';
  * Default Menu used by ViewManager.
  */
 export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model, extraMenuItems}) {
+    render({model, extraMenuItems, testId}) {
         return menu({
             className: 'xh-view-manager__menu',
+            [TEST_ID]: testId,
             items: [
-                ...getNavMenuItems(model.parent),
+                ...getNavMenuItems(model.parent, testId),
                 menuDivider(),
                 ...parseMenuItems(extraMenuItems),
                 menuDivider(),
-                ...getOtherMenuItems(model)
+                ...getOtherMenuItems(model, testId)
             ].filter(filterConsecutiveMenuSeparators())
         });
     }
 });
 
-function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
+function getNavMenuItems(model: ViewManagerModel, testId: string): ReactNode[] {
     const {enableDefault, view, defaultDisplayName, typeDisplayName, globalDisplayName} = model,
         ownedViews = filter(model.ownedViews, 'isPinned'),
         globalViews = filter(model.globalViews, 'isPinned'),
@@ -51,13 +53,13 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
     if (!isEmpty(ownedViews)) {
         ret.push(
             menuDivider({title: `My ${pluralName}`}),
-            ...getGroupedMenuItems(ownedViews, model)
+            ...getGroupedMenuItems(ownedViews, model, testId)
         );
     }
     if (!isEmpty(globalViews)) {
         ret.push(
             menuDivider({title: `${startCase(globalDisplayName)}  ${pluralName}`}),
-            ...getGroupedMenuItems(globalViews, model)
+            ...getGroupedMenuItems(globalViews, model, testId)
         );
     }
     if (!isEmpty(sharedViews)) {
@@ -73,7 +75,7 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
                             ? Icon.check()
                             : Icon.placeholder(),
                         shouldDismissPopover: false,
-                        items: getGroupedMenuItems(sharedViews[owner], model)
+                        items: getGroupedMenuItems(sharedViews[owner], model, testId)
                     })
                 )
         );
@@ -86,6 +88,7 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
                 className: 'xh-view-manager__menu-item',
                 icon: view.isDefault ? Icon.check() : Icon.placeholder(),
                 text: `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`,
+                [TEST_ID]: getTestId(testId, 'view-default'),
                 onClick: () => model.selectViewAsync(null).catchDefault()
             })
         );
@@ -94,7 +97,7 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
     return ret;
 }
 
-function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
+function getOtherMenuItems(model: ViewManagerLocalModel, testId: string): ReactNode[] {
     const {parent} = model;
     const {
         enableAutoSave,
@@ -111,17 +114,20 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
         menuItem({
             icon: Icon.save(),
             text: 'Save',
+            [TEST_ID]: getTestId(testId, 'save'),
             disabled: !isViewSavable || !isValueDirty,
             onClick: () => model.saveAsync()
         }),
         menuItem({
             icon: Icon.placeholder(),
             text: 'Save As...',
+            [TEST_ID]: getTestId(testId, 'save-as'),
             onClick: () => model.saveAsDialogModel.open()
         }),
         menuItem({
             icon: Icon.reset(),
             text: `Revert`,
+            [TEST_ID]: getTestId(testId, 'revert'),
             disabled: !isValueDirty,
             onClick: () => model.revertAsync()
         }),
@@ -133,7 +139,8 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
                 value: !autoSaveUnavailableReason && autoSave,
                 disabled: !!autoSaveUnavailableReason,
                 onChange: v => (parent.autoSave = v),
-                inline: true
+                inline: true,
+                testId: getTestId(testId, 'auto-save')
             }),
             title: autoSaveUnavailableReason,
             shouldDismissPopover: false
@@ -142,29 +149,34 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
         menuItem({
             icon: Icon.gear(),
             text: `Manage ${pluralName}...`,
+            [TEST_ID]: getTestId(testId, 'manage'),
             onClick: () => model.manageDialogModel.open()
         })
     ];
 }
 
-function getGroupedMenuItems(views: ViewInfo[], model: ViewManagerModel): ReactNode[] {
+function getGroupedMenuItems(
+    views: ViewInfo[],
+    model: ViewManagerModel,
+    testId: string
+): ReactNode[] {
     // Groups (nested to any depth via slash-delimited group names) first, then loose views,
     // alpha by name at every level. But could easily intersperse instead.
     const {roots, ungrouped} = buildViewGroupTree(views);
     return [
-        ...roots.map(node => groupMenuItem(node, model)),
-        ...ungrouped.map(v => viewMenuItem(v, model))
+        ...roots.map(node => groupMenuItem(node, model, testId)),
+        ...ungrouped.map(v => viewMenuItem(v, model, testId))
     ];
 }
 
-function groupMenuItem(node: ViewGroupNode, model: ViewManagerModel): ReactNode {
+function groupMenuItem(node: ViewGroupNode, model: ViewManagerModel, testId: string): ReactNode {
     return menuItem({
         text: node.name,
         icon: containsSelected(node, model) ? Icon.check() : Icon.placeholder(),
         shouldDismissPopover: false,
         items: [
-            ...node.children.map(child => groupMenuItem(child, model)),
-            ...node.views.map(v => viewMenuItem(v, model))
+            ...node.children.map(child => groupMenuItem(child, model, testId)),
+            ...node.views.map(v => viewMenuItem(v, model, testId))
         ]
     });
 }
@@ -176,7 +188,7 @@ function containsSelected(node: ViewGroupNode, model: ViewManagerModel): boolean
     );
 }
 
-function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
+function viewMenuItem(view: ViewInfo, model: ViewManagerModel, testId: string): ReactNode {
     const icon = view.isCurrentView ? Icon.check() : Icon.placeholder(),
         title = [];
 
@@ -189,6 +201,7 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
               className: 'xh-view-manager__menu-item',
               key: view.token,
               text: view.name,
+              [TEST_ID]: getTestId(testId, `view-${view.token}`),
               title: title.join(' | '),
               icon,
               onClick: () => model.selectViewAsync(view).catchDefault()

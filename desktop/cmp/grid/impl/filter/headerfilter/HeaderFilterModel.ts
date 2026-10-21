@@ -94,7 +94,7 @@ export class HeaderFilterModel extends HoistModel {
 
     @computed
     get isDirty(): boolean {
-        const current = parseFilter(this.columnFilters),
+        const current = parseFilter(this.columnCompoundFilter ?? this.columnFilters),
             pending = parseFilter(this.pendingFilter);
         return current ? !current.equals(pending) : !!pending;
     }

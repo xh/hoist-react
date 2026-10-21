@@ -33,7 +33,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     /**
      *  Short code for this particular JS client application.
      *
-     *  Will default to the `appCode` specified within the project's Webpack config, but can be
+     *  Will default to the `appCode` specified within the project's Rsbuild config, but can be
      *  set to a more specific value (e.g. 'myAppMobile') to identify the client app in common
      *  code or configs that support distinct settings for different client apps.
      */
@@ -43,7 +43,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      * Display name for this particular JS client application.
      *
      * As with `clientAppCode` above, this will default to the global `appName` specified by
-     * the project's Webpack config, but can be set here to a more specific value (e.g.
+     * the project's Rsbuild config, but can be set here to a more specific value (e.g.
      * 'MyApp Mobile').
      */
     clientAppName?: string;

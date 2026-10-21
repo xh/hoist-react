@@ -71,7 +71,7 @@ developer on the project or ask XH for assistance.
 ### Node.js
 
 A recent version of Node.js is required to build and run the client-side component of the
-application (via Webpack and webpack-dev-server).
+application (via Rsbuild and its dev server).
 
 - The latest (or any recent) LTS build is recommended - you can download directly from
   https://nodejs.dev/ or use a tool (recommended) such as Homebrew or NVM (node-version-manager) to

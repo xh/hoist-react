@@ -97,6 +97,10 @@ Kit wraps Blueprint components to:
 - **Initialize focus management** — `FocusStyleManager.onlyShowFocusOnTabs()` is called on import
   to avoid focus outlines on mouse click
 
+See [`/kit/blueprint/`](./blueprint/README.md) for full coverage, including the build-time icon
+stubbing shared with `@xh/hoist-dev-utils` and the checklist for re-verifying Blueprint's
+built-in icons when upgrading the library.
+
 ### Onsen UI
 
 [Onsen UI](https://onsen.io/) provides mobile-specific components used by Hoist's `/mobile/`

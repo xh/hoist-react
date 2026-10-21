@@ -11,10 +11,11 @@
     "jsx": "react",
     "moduleResolution": "bundler",
     "skipLibCheck": true,
+    "strict": false,
 
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
     "noImplicitOverride": true,
+    "noUncheckedSideEffectImports": false,
     "resolveJsonModule": true,
     "useDefineForClassFields": true,
 

@@ -47,6 +47,19 @@ export interface UserSource {
 
 export type RoleMemberType = 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
 
+/**
+ * Display info for a directory group, as returned by the `roleAdmin/directoryGroupsInfo` and
+ * `roleAdmin/searchDirectoryGroups` endpoints. Shape is provider-specific beyond the two
+ * required keys - e.g. Entra ID returns additional fields such as `description` and `mail`.
+ */
+export interface DirectoryGroupInfo {
+    /** Stable identifier stored on the role - an object ID (GUID) for Entra ID, a DN for LDAP. */
+    id: string;
+    displayName: string;
+    description?: string;
+    mail?: string;
+}
+
 export interface RoleModuleConfig {
     enabled: boolean;
     userAssignmentSupported: boolean;

@@ -38,6 +38,7 @@ import {
     PopoverNext as BpPopover,
     popoverPropsToNextProps,
     type PopoverProps,
+    PortalProvider,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -101,6 +102,7 @@ export {
     OverflowList,
     Overlay,
     Popover,
+    PortalProvider,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -146,6 +148,7 @@ export const alert = elementFactory(Alert),
 // Container Components
 //-----------------------
 export const buttonGroup = elementFactory(ButtonGroup),
+    portalProvider = elementFactory(PortalProvider),
     callout = elementFactory(Callout),
     bpCard = elementFactory(BpCard),
     drawer = elementFactory(Drawer),

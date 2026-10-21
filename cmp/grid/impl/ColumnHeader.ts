@@ -6,7 +6,7 @@
  */
 import {XH, hoistCmp, HoistModel, creates, managed, HoistProps} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {computed, makeObservable, bindable} from '@xh/hoist/mobx';
+import {computed, bindable} from '@xh/hoist/mobx';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
@@ -80,12 +80,14 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
         };
 
         const expandCollapseIcon = () => {
-            const {xhColumn} = model;
+            const {xhColumn} = model,
+                {store} = model.gridModel;
             if (
                 !xhColumn ||
                 !xhColumn.isTreeColumn ||
                 !xhColumn.headerHasExpandCollapse ||
-                !model.rootsWithChildren
+                // Any non-root record implies at least one expandable root.
+                store.count === store.rootCount
             ) {
                 return null;
             }
@@ -178,7 +180,7 @@ class ColumnHeaderModel extends HoistModel {
     @managed columnHeaderFilterModel;
 
     // AG Filtering
-    @bindable isAgFiltered = false;
+    @bindable accessor isAgFiltered = false;
 
     agFilterButtonRef = createObservableRef<HTMLElement>();
 
@@ -186,11 +188,6 @@ class ColumnHeaderModel extends HoistModel {
     private _lastTouch = null;
     private _lastTouchStart = null;
     private _lastMouseDown = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override onLinked() {
         const {xhColumn, agColumn} = this,
@@ -239,14 +236,9 @@ class ColumnHeaderModel extends HoistModel {
     };
 
     @computed
-    get rootsWithChildren() {
-        return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children)).length;
-    }
-
-    @computed
     get majorityIsExpanded() {
-        const {expandState} = this.gridModel;
-        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren / 2;
+        const {expandState, store} = this.gridModel;
+        return !isEmpty(expandState) && size(expandState) > store.rootCount / 2;
     }
 
     // Desktop click handling
